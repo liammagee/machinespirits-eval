@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T22:20:37.323Z",
+  "generated": "2026-07-24T22:44:41.062Z",
   "counts": {
-    "total": 178,
+    "total": 179,
     "byStatus": {
-      "done": 149,
+      "done": 150,
       "blocked": 3,
       "dropped": 2,
       "triaged": 17,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 39,
-      "maintenance": 29,
+      "maintenance": 30,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -520,6 +520,7 @@
           "refactor-adaptive-trace-projection",
           "refactor-field-policy-helpers",
           "refactor-forbidden-key-audit",
+          "refactor-field-turn-projection",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -666,8 +667,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-forbidden-key-audit",
-      "title": "Consolidate dramatic forbidden-key auditing",
+      "id": "refactor-field-turn-projection",
+      "title": "Consolidate tutor-stub field-turn projection",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -675,21 +676,20 @@
       "source": "review",
       "created": "2026-07-25",
       "updated": "2026-07-25",
-      "verification": "One pure recursive walker serves all seven dramatic public-input audits; a shared nested mutation corpus proves each caller retains its exact key policy, leak order, and path shape; focused and full hermetic suites pass.",
-      "branch": "codex/refactor-forbidden-key-audit",
+      "verification": "One pure projection service serves the tutor-stub CLI and auto-eval; frozen fixtures preserve the richer learner-advance, overreach, self-assessment, and calculation fields while existing report output remains unchanged.",
+      "branch": "codex/refactor-field-turn-projection",
       "depends_on": [
-        "refactor-field-policy-helpers"
+        "refactor-forbidden-key-audit"
       ],
       "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/210"
-        ],
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/dramaticDerivation/forbiddenKeyAudit.js",
-          "tests/dramaticDerivationConductPolicy.test.js"
+          "services/tutorStubFieldTurnProjection.js",
+          "scripts/tutor-stub.js",
+          "scripts/run-tutor-stub-auto-eval.js",
+          "tests/tutorStubFieldTurnProjection.test.js"
         ],
         "items": [
           "codebase-refactoring-program"
@@ -697,8 +697,8 @@
       },
       "tags": [
         "refactoring",
-        "dramatic-derivation",
-        "non-leak-audit",
+        "tutor-stub",
+        "auto-eval",
         "duplication"
       ],
       "milestone": "evaluation-infrastructure"
@@ -1950,6 +1950,44 @@
         "tutor-stub",
         "register-policy",
         "field-trajectory",
+        "duplication"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-forbidden-key-audit",
+      "title": "Consolidate dramatic forbidden-key auditing",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "One pure recursive walker serves all seven dramatic public-input audits; a shared nested mutation corpus proves each caller retains its exact key policy, leak order, and path shape; focused and full hermetic suites pass.",
+      "branch": "codex/refactor-forbidden-key-audit",
+      "depends_on": [
+        "refactor-field-policy-helpers"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/210"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/dramaticDerivation/forbiddenKeyAudit.js",
+          "tests/dramaticDerivationConductPolicy.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "dramatic-derivation",
+        "non-leak-audit",
         "duplication"
       ],
       "milestone": "evaluation-infrastructure"
