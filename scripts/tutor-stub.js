@@ -378,6 +378,12 @@ import {
   tutorStubDirectorGuidanceSnapshot,
 } from '../services/tutorStubDirectorGuidance.js';
 import {
+  TUTOR_STUB_CLI_DIRECTOR_SYSTEM_PROMPT,
+  buildTutorStubCliDirectorPrompt,
+  cleanTutorStubCliDirectorReply,
+  normalizeTutorStubCliDirectorQuestion,
+} from '../services/tutorStubCliDirector.js';
+import {
   assertTutorStubCapabilityCompatibility,
   resolveTutorStubCapabilities,
   tutorStubCapabilityFeatureRows,
@@ -1199,7 +1205,10 @@ Interactive commands:
   /report                show the compact dialogue closeout report
   /r                     alias for /report
   /director              repeat all director notes issued so far
+  /director ask <question>
+                         privately ask the director how to use this CLI/session
   /director <request>    privately direct a persistent change to later tutor replies
+  /meta ask <question>   explicit alias for a private CLI/session question
   /meta <request>        explicit alias for a learner-to-director tutor-change request
   /meta [status|clear]   inspect or clear the active private director request
   /notes                 view-only alias for bare /director
@@ -1250,6 +1259,10 @@ Interactive commands:
                          choose or switch the mixed learner behavior profile
   /character tutor [part]
                          choose and lock the tutor part; restates the last intent
+  /learner [profile]     alias for /character learner [profile]
+  /tutor [part]          alias for /character tutor [part]
+  /mode learner|coach|auto
+                         switch the role played by subsequent terminal input
   /profile               show the active suggested-learner profile
   /profile list          list the six ordinary learner profiles
   /profile list stress   list ten specialist failure-mode profiles
@@ -4968,7 +4981,7 @@ function compactInterimCliHintPanels(active) {
     hints.push({
       label: 'Coach controls',
       tone: 'neutral',
-      text: '/coach adds private guidance | /learner returns control | /analysis inspects the exchange',
+      text: '/coach adds private guidance | /mode learner returns control | /analysis inspects the exchange',
     });
   } else if (state.interaction?.mode === 'auto' || state.interaction?.autoRunning) {
     hints.push({
@@ -9448,7 +9461,7 @@ function printInteractiveHelp(state = null) {
       `${C.dim}  /random toggles a session-only performance experiment: style and host character change randomly, independently of learner assessment; evidence, action choice, closure, and safety still work normally.${C.reset}`,
     );
     console.log(
-      `${C.dim}  /character tutor and /character learner open keyboard selectors here; direct ids still work. A changed tutor character says “Let me rephrase that” and restates the latest intent in the new part. Use auto to clear a tutor-axis lock.${C.reset}`,
+      `${C.dim}  /tutor and /learner open the two character selectors directly; /character tutor and /character learner remain the full forms. A changed tutor character says “Let me rephrase that” and restates the latest intent in the new part. Use auto to clear a tutor-axis lock.${C.reset}`,
     );
   }
   if (commandAvailable('/suggest')) {
@@ -16499,7 +16512,7 @@ async function main() {
     default: 'learner',
     modes: ['learner', 'coach', 'auto'],
     commands: {
-      learner: ['/mode learner', '/learner'],
+      learner: ['/mode learner'],
       coach: ['/mode coach [guidance]', '/coach [guidance]'],
       auto: ['/mode auto [turns]', '/auto [turns]'],
       demo: ['/demo [turns]'],
@@ -18698,6 +18711,16 @@ async function main() {
       pool = [
         ...tutorStubStaticCommandCompletions('/register', commandOptions),
         ...(state.register?.palette || []).map((stance) => `/register ${stance}`),
+      ];
+    } else if (trimmed.startsWith('/tutor ')) {
+      pool = [
+        ...tutorStubStaticCommandCompletions('/tutor', commandOptions),
+        ...tutorStubConfigurableActorialPartIds().map((part) => `/tutor ${part}`),
+      ];
+    } else if (trimmed.startsWith('/learner ')) {
+      pool = [
+        ...tutorStubStaticCommandCompletions('/learner', commandOptions),
+        ...learnerProfileIds().map((profileId) => `/learner ${profileId}`),
       ];
     } else if (trimmed.startsWith('/character ')) {
       pool = [
@@ -21837,7 +21860,7 @@ async function main() {
     console.log(`${C.dim}╭─${C.reset} ${interactionModeLabel()} ${C.dim}mode · ${description}${C.reset}`);
     if (detail && mode === 'coach') {
       console.log(
-        `${C.dim}╰─ guidance stays out of the public transcript; switch with /learner, or use /use in mixed mode${C.reset}\n`,
+        `${C.dim}╰─ guidance stays out of the public transcript; switch with /mode learner, or use /use in mixed mode${C.reset}\n`,
       );
     } else if (detail && mode === 'learner') {
       console.log(`${C.dim}╰─ switch with /coach or hand off with /auto [turns]${C.reset}\n`);
@@ -21980,6 +22003,162 @@ async function main() {
     );
   }
 
+  function cliDirectorApplicationContext() {
+    const commandMode = state.passthrough?.enabled ? 'passthrough' : 'normal';
+    const commandOptions = { mode: commandMode, capabilities: state.capabilities };
+    const availableCommandTokens = tutorStubCommandTokens(commandOptions);
+    const canonicalCommands = [
+      ...new Set(availableCommandTokens.map((token) => tutorStubCanonicalCommandToken(token)).filter(Boolean)),
+    ];
+    const definitions = getActorialPartDefinitions();
+    const profile = mixedLearnerProfilePresentation();
+    return {
+      authority: {
+        scope: 'application_interface_only',
+        mutatesSession: false,
+        publicTranscriptChanged: false,
+        excludedContext: ['concealed answer', 'hidden proof state', 'future clues', 'private tutor prompt'],
+      },
+      currentSession: {
+        sessionMode: state.passthrough?.enabled ? 'passthrough' : mixedLearner.enabled ? 'mixed' : 'human',
+        interactionRole: state.interaction?.mode || 'learner',
+        completedTutorTurns: state.turns.length,
+        scenario: state.world ? { id: state.world.id, title: state.world.title } : null,
+        curriculum: state.curriculum
+          ? { id: state.curriculum.id, title: state.curriculum.title, moduleId: state.curriculum.module?.id || null }
+          : null,
+        learnerProfile: mixedLearner.enabled
+          ? { id: profile.id, name: profile.name, behavior: profile.pattern }
+          : { id: null, name: 'Human learner', behavior: 'The operator supplies public learner turns directly.' },
+        tutorCharacter: explicitPerformanceDirectiveValue(state, 'character') || 'auto',
+        tutorStyle: explicitPerformanceDirectiveValue(state, 'register') || 'auto',
+        tutorModel: state.modelRef,
+        learnerInterpretationModel: liveModelRoleRef('classifier'),
+        learnerReasoningModel: liveModelRoleRef('reasoning'),
+        learnerVoiceModel: liveModelRoleRef('learner'),
+        directorRequest: state.directorGuidance?.active?.text || null,
+      },
+      launchRecipes: [
+        {
+          command: 'npm run tutor:stub',
+          behavior: 'open the mode picker; mixed tutor chat is the default selection',
+        },
+        {
+          command: 'npm run tutor:stub:scaffold:mixed',
+          behavior: 'launch mixed drafting with the human-facing DAG scaffold directly',
+        },
+        {
+          command: 'npm run tutor:stub:direct:mixed',
+          behavior: 'launch mixed drafting without the DAG scaffold',
+        },
+      ],
+      commands: canonicalCommands.map((token) => ({
+        token,
+        aliases: availableCommandTokens.filter(
+          (candidate) => candidate !== token && tutorStubCanonicalCommandToken(candidate) === token,
+        ),
+        summary: tutorStubCommandSummary(token),
+        examples: tutorStubStaticCommandCompletions(token, commandOptions),
+      })),
+      tutorCharacters: tutorStubConfigurableActorialPartIds().map((id) => ({
+        id,
+        label: definitions[id]?.label || displayDiagnosticLabel(id),
+        behavior: oneLine(definitions[id]?.contract, { max: 220 }),
+        selectable: true,
+      })),
+      learnerProfiles: learnerProfileIds().map((id) => ({
+        id,
+        description: learnerProfileDescription(id),
+        selectableInCurrentSession: mixedLearner.enabled,
+      })),
+      returnToScene: {
+        automaticAfterAnswer: true,
+        behavior: 'the latest tutor utterance is reprised, then the prior learner or coach prompt is restored',
+      },
+    };
+  }
+
+  async function answerCliDirectorQuestion(questionInput, { duringTurn = false, source = '/director ask' } = {}) {
+    clearStatusLine();
+    let question;
+    try {
+      question = normalizeTutorStubCliDirectorQuestion(questionInput);
+    } catch (error) {
+      console.log(`${C.red}director question error:${C.reset} ${error.message}`);
+      console.log(`${C.dim}  use /director ask <question> or /meta ask <question>${C.reset}\n`);
+      return { answered: false, error: error.message };
+    }
+
+    const context = cliDirectorApplicationContext();
+    const resolved = state.learnerDag?.resolved || state.classifier?.resolved || state.resolved;
+    const existingInterim = Boolean(getInterimState(state)?.active);
+    if (!existingInterim) startInterimAnimation(state, 'asking director', { tutorTurn: state.turns.length });
+    appendTraceEvent(state.trace, {
+      type: 'cli_director_question_started',
+      source,
+      question,
+      duringTurn,
+      context,
+      publicTranscriptChanged: false,
+    });
+
+    let response = null;
+    let reply = '';
+    try {
+      response = await callPromptModel({
+        prompt: buildTutorStubCliDirectorPrompt({ question, context }),
+        resolved,
+        systemPrompt: TUTOR_STUB_CLI_DIRECTOR_SYSTEM_PROMPT,
+        role: 'tutor_stub_cli_director_help',
+        maxTokens: Math.min(Number(state.maxTokens) || 700, 700),
+        trace: state.trace,
+        stream: { enabled: false, interim: state.interim },
+        cliEffort: state.cliEffort,
+        turn: state.turns.length,
+      });
+      reply = cleanTutorStubCliDirectorReply(response.text);
+      if (!reply) throw new Error('the director returned an empty answer');
+    } catch (error) {
+      if (error?.name === 'AbortError') throw error;
+      appendTraceEvent(state.trace, {
+        type: 'cli_director_question_failed',
+        source,
+        question,
+        duringTurn,
+        error: error.message,
+        publicTranscriptChanged: false,
+      });
+      printWithConcurrentTerminal(state, () => {
+        console.log(`${C.red}director question failed:${C.reset} ${error.message}`);
+        console.log(`${C.dim}  use /help for the current command surface; the tutor dialogue is unchanged${C.reset}\n`);
+      });
+      return { answered: false, error: error.message };
+    } finally {
+      if (!existingInterim) stopInterimAnimation(state);
+    }
+
+    printWithConcurrentTerminal(state, () => {
+      console.log(`${C.brightCyan}${C.bold}director >${C.reset} ${reply}`);
+      console.log(
+        `${C.dim}  private app help · no setting changed · returning to the ${state.interaction?.mode === 'coach' ? 'coach' : 'tutor'} interaction${C.reset}\n`,
+      );
+    });
+    appendTraceEvent(state.trace, {
+      type: 'cli_director_answer',
+      source,
+      question,
+      answer: reply,
+      duringTurn,
+      provider: response.provider,
+      model: response.model,
+      latencyMs: response.latencyMs,
+      usage: response.usage || null,
+      context,
+      publicTranscriptChanged: false,
+    });
+    return { answered: true, question, answer: reply };
+  }
+
   function handleDirectorGuidanceCommand(argument = '', { duringTurn = false, source = '/meta' } = {}) {
     const request = String(argument || '').trim();
     const action = request.toLowerCase();
@@ -22006,7 +22185,7 @@ async function main() {
         `${C.dim}  ${
           active
             ? `private tutor-change guidance from turn ${active.effectiveFromTurn}; remains active until /meta clear`
-            : 'use /meta <request> or /director <request>; this does not become learner speech'
+            : 'use /meta <request> to change tutor delivery, or /director ask <question> for private app help'
         }${C.reset}\n`,
       );
       return { changed: false, active };
@@ -24796,9 +24975,7 @@ async function main() {
       if (next) {
         console.log(`${C.dim}  Tutor replies will ${tutorCharacterPlainEffect(next)}.${C.reset}`);
         console.log(`${C.dim}  Clue-givers and the closing scene may temporarily use another character.${C.reset}`);
-        console.log(
-          `${C.dim}  Choose Tutor → Auto, or type /character tutor auto, to return to adaptive selection.${C.reset}`,
-        );
+        console.log(`${C.dim}  Choose Tutor → Auto, or type /tutor auto, to return to adaptive selection.${C.reset}`);
       } else {
         console.log(
           `${C.dim}  The tutor can now choose its character ${
@@ -25063,7 +25240,7 @@ async function main() {
       console.log(`${C.cyan}  learner character >${C.reset} ${learnerCharacter}`);
       console.log(`${C.brightMagenta}  tutor character >${C.reset} ${tutorCharacter}`);
       console.log(
-        `${C.dim}  /character learner [profile] · /character tutor [part] · legacy /profile and /character <part> still work${C.reset}\n`,
+        `${C.dim}  /learner [profile] · /tutor [part] · full /character learner|tutor forms and legacy /profile still work${C.reset}\n`,
       );
       return !requested ? { handled: true, suppressReprise: true } : true;
     }
@@ -25247,9 +25424,17 @@ async function main() {
     }
     if (command === '/register' || command === '/character') {
       const barePerformanceControl = !String(commandArg || '').trim();
+      const mappedCharacterArgument =
+        command !== '/character'
+          ? commandArg
+          : invokedToken === '/tutor'
+            ? ['tutor', commandArg].filter(Boolean).join(' ')
+            : invokedToken === '/learner'
+              ? ['learner', commandArg].filter(Boolean).join(' ')
+              : commandArg;
       const result =
         command === '/character'
-          ? handleCharacterCommand(commandArg, { duringTurn })
+          ? handleCharacterCommand(mappedCharacterArgument, { duringTurn })
           : handleExplicitPerformanceDirectiveCommand('register', commandArg, { duringTurn });
       if (result && typeof result.then === 'function') {
         const promise = Promise.resolve(result).then(
@@ -25478,17 +25663,6 @@ async function main() {
       finishSlashCommand();
       return true;
     }
-    if (command === '/learner') {
-      if (commandArg) {
-        console.log(
-          `${C.red}mode error:${C.reset} /learner takes no argument; type the learner line after switching\n`,
-        );
-      } else {
-        setInteractionMode('learner');
-      }
-      finishSlashCommand();
-      return true;
-    }
     if (command === '/coach') {
       setInteractionMode('coach', { announce: !commandArg });
       if (commandArg) queueCoachGuidance(commandArg, { duringTurn });
@@ -25573,11 +25747,29 @@ async function main() {
       return promise;
     }
     if (command === '/meta') {
+      const directorQuestion = commandArg.match(/^ask(?:\s+([\s\S]*))?$/iu);
+      if (directorQuestion) {
+        const promise = answerCliDirectorQuestion(directorQuestion[1] || '', {
+          duringTurn,
+          source: `${invokedToken} ask`,
+        }).finally(finishSlashCommand);
+        promise.tutorStubBlocksPrompt = !duringTurn;
+        return promise;
+      }
       const result = handleDirectorGuidanceCommand(commandArg, { duringTurn, source: invokedToken });
       finishSlashCommand({ reprise: false });
       return result || true;
     }
     if (command === '/director') {
+      const directorQuestion = invokedToken !== '/notes' ? commandArg.match(/^ask(?:\s+([\s\S]*))?$/iu) : null;
+      if (directorQuestion) {
+        const promise = answerCliDirectorQuestion(directorQuestion[1] || '', {
+          duringTurn,
+          source: `${invokedToken} ask`,
+        }).finally(finishSlashCommand);
+        promise.tutorStubBlocksPrompt = !duringTurn;
+        return promise;
+      }
       if (commandArg && invokedToken !== '/notes') {
         const result = handleDirectorGuidanceCommand(commandArg, { duringTurn, source: invokedToken });
         finishSlashCommand({ reprise: false });

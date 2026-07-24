@@ -66,6 +66,8 @@ process.stdin.on('end', () => {
             notes: 'No proof update.'
           }
         })
+      : input.includes('# CLI director question')
+        ? 'Use /tutor adversarial_teacher, then choose a demanding mixed learner with /learner affective_resistant. The director answer changes nothing by itself; after this answer you return to the learner prompt.'
       : input.includes('# Character restatement task')
         ? 'Let me rephrase that. Challenge the town’s first answer within the assay itself: whose hand struck the false shillings passed at the Marrick fair, and what should we examine first?'
       : input.includes('# Explanatory debug task')
@@ -1450,7 +1452,7 @@ test(
           terminal.write('/meta Please use plain words');
         } else if (
           !requestSubmitted &&
-          plain.includes('privately direct a tutor change without adding public learner speech')
+          plain.includes('ask about the CLI or privately direct a tutor change outside learner speech')
         ) {
           requestSubmitted = true;
           terminal.write('\r');
@@ -1468,7 +1470,7 @@ test(
 
     const plain = plainTerminalText(terminalOutput);
     assert.match(plain, /1 match for \/meta Please use plain words/u);
-    assert.match(plain, /privately direct a tutor change without adding public learner speech/u);
+    assert.match(plain, /ask about the CLI or privately direct a tutor change outside learner speech/u);
     assert.match(plain, /director request > Please use plain words/u);
   },
 );
@@ -1687,7 +1689,7 @@ test('coach mode keeps guidance private and incorporates it into the next tutor 
         '--world',
         'world_005_marrick',
       ],
-      initialInput: `/coach ${guidance}\n/learner\nThe assay still confuses me.\n`,
+      initialInput: `/coach ${guidance}\n/mode learner\nThe assay still confuses me.\n`,
       stopWhen: (plain) => plain.includes('1 new clue'),
     });
 
@@ -1789,6 +1791,117 @@ test('/meta directs a persistent tutor change without creating a public learner 
   }
 });
 
+test('/director ask answers from application context and returns without creating a public learner turn', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-cli-director-'));
+  try {
+    const question = 'How do I set up an adversarial teacher with a difficult learner in mixed mode?';
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--mixed-learner',
+        '--dag',
+        '--tutor-learner-dag',
+        '--dag-fact-dropout',
+        '0',
+        '--no-classifier',
+        '--register-policy',
+        'dynamic',
+        '--register-temperature',
+        '0.15',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-remember-settings',
+        '--auto-learner-profile',
+        'affective_resistant',
+        '--release-speed',
+        '1',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: `/director ask ${question}\n`,
+      stopWhen: (plain) => plain.includes('private app help · no setting changed'),
+    });
+
+    assert.match(result.plain, /director > Use \/tutor adversarial_teacher/u);
+    assert.match(result.plain, /\/learner affective_resistant/u);
+    assert.match(result.plain, /private app help · no setting changed · returning to the tutor interaction/u);
+    assert.match(result.plain, /tutor ↻ >/u);
+    assert.match(result.plain, /session status > MIXED/u);
+
+    const modelInput = fs.readFileSync(result.logPath, 'utf8');
+    const directorInput = modelInput.split('\n---CALL---\n').find((call) => call.includes('# CLI director question'));
+    assert.ok(directorInput);
+    assert.match(directorInput, new RegExp(question.replace(/[?]/gu, '\\?'), 'u'));
+    assert.match(directorInput, /"sessionMode":"mixed"/u);
+    assert.match(directorInput, /"aliases":\["\/learner","\/tutor"\]|"aliases":\["\/tutor","\/learner"\]/u);
+    assert.match(directorInput, /"adversarial_teacher"/u);
+    assert.match(directorInput, /"affective_resistant"/u);
+    assert.doesNotMatch(directorInput, /Concealed answer|Hidden premise ledger|Authored proof path/u);
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const answer = events.find((event) => event.type === 'cli_director_answer');
+    assert.equal(answer.question, question);
+    assert.equal(answer.publicTranscriptChanged, false);
+    assert.equal(answer.context.authority.scope, 'application_interface_only');
+    assert.ok(!events.some((event) => event.type === 'learner_input_routed'));
+    assert.ok(!events.some((event) => event.type === 'director_guidance_set'));
+    assert.ok(!events.some((event) => event.type === 'turn_complete'));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('/meta ask is an application-help alias rather than persistent tutor direction', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-meta-cli-director-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--mixed-learner',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-remember-settings',
+        '--auto-learner-profile',
+        'affective_resistant',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/meta ask Which command changes the tutor character?\n',
+      stopWhen: (plain) => plain.includes('private app help · no setting changed'),
+    });
+
+    assert.match(result.plain, /director > Use \/tutor adversarial_teacher/u);
+    assert.match(result.plain, /private app help · no setting changed/u);
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const answer = events.find((event) => event.type === 'cli_director_answer');
+    assert.equal(answer.source, '/meta ask');
+    assert.ok(!events.some((event) => event.type === 'director_guidance_set'));
+    assert.ok(!events.some((event) => event.type === 'learner_input_routed'));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('/director request survives reset while /notes remains view-only', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-director-reset-'));
   try {
@@ -1850,7 +1963,7 @@ test('unsafe coach guidance is sanitized and the tutor continues from a public-o
         '--world',
         'world_005_marrick',
       ],
-      initialInput: `/coach ${futureClue}\n/learner\nThe assay still confuses me.\n`,
+      initialInput: `/coach ${futureClue}\n/mode learner\nThe assay still confuses me.\n`,
       stopWhen: (plain) => plain.includes('1 new clue'),
     });
 
@@ -2254,7 +2367,7 @@ test('/character configures learner and tutor characters while preserving legacy
       encoding: 'utf8',
       env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
       input:
-        '/character\n/character tutor\n/character tutor adversarial_teacher\n/character learner counterexample_hunter\n/character\n/character opposing_counsel\n/quit\n',
+        '/character\n/tutor\n/tutor adversarial_teacher\n/learner\n/learner counterexample_hunter\n/character\n/character opposing_counsel\n/quit\n',
     },
   );
 
@@ -2270,7 +2383,7 @@ test('/character configures learner and tutor characters while preserving legacy
     /Tutor replies will actively test your ideas with subject-based counterexamples or alternatives\./u,
   );
   assert.match(result.stdout, /Clue-givers and the closing scene may temporarily use another character\./u);
-  assert.match(result.stdout, /Choose Tutor → Auto, or type \/character tutor auto/u);
+  assert.match(result.stdout, /Choose Tutor → Auto, or type \/tutor auto/u);
   assert.match(result.stdout, /switched to counterexample_hunter: Counterexample hunter/u);
   assert.match(result.stdout, /learner character > counterexample_hunter/u);
   assert.match(result.stdout, /tutor character > adversarial_teacher/u);

@@ -33,6 +33,12 @@ import {
   setTutorStubDirectorGuidance,
   tutorStubDirectorGuidancePrompt,
 } from '../services/tutorStubDirectorGuidance.js';
+import {
+  TUTOR_STUB_CLI_DIRECTOR_SCHEMA,
+  buildTutorStubCliDirectorPrompt,
+  cleanTutorStubCliDirectorReply,
+  normalizeTutorStubCliDirectorQuestion,
+} from '../services/tutorStubCliDirector.js';
 
 const NORMAL_COMMANDS = [
   '/demo',
@@ -44,6 +50,8 @@ const NORMAL_COMMANDS = [
   '/committee',
   '/register',
   '/character',
+  '/tutor',
+  '/learner',
   '/analysis',
   '/a',
   '/field',
@@ -73,7 +81,6 @@ const NORMAL_COMMANDS = [
   '/release-notes',
   '/debug',
   '/mode',
-  '/learner',
   '/coach',
   '/auto',
   '/id',
@@ -128,6 +135,8 @@ const SCENE_RETURN_COMMANDS = [
   '/random',
   '/register',
   '/character',
+  '/tutor',
+  '/learner',
   '/status',
   '/features',
   '/release-notes',
@@ -223,14 +232,14 @@ test('director guidance is a bounded private control with turn-aware and concurr
   assert.equal(merged.history.at(-1).action, 'clear');
 });
 
-test('v4 command registry freezes the slash-token and execution-effect surfaces', () => {
+test('v6 command registry freezes the slash-token and execution-effect surfaces', () => {
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 4);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 44);
-  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 59);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 6);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 43);
+  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 60);
   assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 22);
-  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 40);
+  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 42);
   assert.deepEqual(TUTOR_STUB_NORMAL_SLASH_COMMANDS, NORMAL_COMMANDS);
   assert.deepEqual(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS, PASSTHROUGH_COMMANDS);
   assert.deepEqual(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS, SCENE_RETURN_COMMANDS);
@@ -261,8 +270,8 @@ test('v4 command registry freezes the slash-token and execution-effect surfaces'
     handlers.add(definition.handler);
     traceEvents.add(definition.traceEvent);
   }
-  assert.equal(handlers.size, 44);
-  assert.equal(traceEvents.size, 44);
+  assert.equal(handlers.size, 43);
+  assert.equal(traceEvents.size, 43);
   assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
@@ -287,6 +296,10 @@ test('canonical ids and aliases resolve uniquely', () => {
   assert.equal(resolveTutorStubCommandId('visualization'), 'visualization');
   assert.equal(resolveTutorStubCommandId('/board'), 'board');
   assert.equal(resolveTutorStubCommandId('/committee'), 'committee');
+  assert.equal(resolveTutorStubCommandId('/tutor'), 'character');
+  assert.equal(resolveTutorStubCommandId('/learner'), 'character');
+  assert.equal(tutorStubCanonicalCommandToken('/tutor'), '/character');
+  assert.equal(tutorStubCanonicalCommandToken('/learner'), '/character');
   assert.deepEqual(tutorStubStaticCommandCompletions('/committee'), [
     '/committee on',
     '/committee off',
@@ -306,8 +319,63 @@ test('canonical ids and aliases resolve uniquely', () => {
     '/translate advanced',
     '/translate proficient',
   ]);
-  assert.deepEqual(tutorStubStaticCommandCompletions('/meta'), ['/meta status', '/meta clear']);
+  assert.deepEqual(tutorStubStaticCommandCompletions('/director'), ['/director ask ']);
+  assert.deepEqual(tutorStubStaticCommandCompletions('/meta'), ['/meta ask ', '/meta status', '/meta clear']);
+  assert.deepEqual(tutorStubStaticCommandCompletions('/tutor'), ['/tutor auto', '/tutor status']);
+  assert.deepEqual(tutorStubStaticCommandCompletions('/learner'), [
+    '/learner list',
+    '/learner list stress',
+    '/learner list all',
+    '/learner example',
+    '/learner default',
+    '/learner custom ',
+  ]);
+  assert.deepEqual(tutorStubCommandCompletionMetadata('/tutor'), {
+    suffixes: ['auto', 'status'],
+    dynamicProviders: ['actorial_parts'],
+  });
+  assert.deepEqual(tutorStubCommandCompletionMetadata('/learner'), {
+    suffixes: ['list', 'list stress', 'list all', 'example', 'default', 'custom '],
+    dynamicProviders: ['learner_profile_ids'],
+  });
+  const directHelp = tutorStubCommandHelpRows().find((row) => row.id === 'direct');
+  assert.ok(directHelp.commands.includes('/tutor [part]'));
+  assert.ok(directHelp.commands.includes('/learner [profile]'));
   assert.equal(resolveTutorStubCommand('/not-a-command'), null);
+});
+
+test('CLI director questions are bounded and carry explicit application-only context', () => {
+  const question = 'How do I set up an adversarial teacher with a difficult learner in mixed mode?';
+  const prompt = buildTutorStubCliDirectorPrompt({
+    question,
+    context: {
+      currentSession: { sessionMode: 'mixed', learnerProfile: { id: 'diligent' } },
+      commands: [
+        {
+          token: '/character',
+          aliases: ['/learner', '/tutor'],
+          summary: 'choose the learner profile or tutor host character',
+        },
+      ],
+      tutorCharacters: [{ id: 'adversarial_teacher' }],
+      learnerProfiles: [{ id: 'affective_resistant' }],
+      returnToScene: { automaticAfterAnswer: true },
+    },
+  });
+
+  assert.match(prompt, new RegExp(question.replace(/[?]/gu, '\\?'), 'u'));
+  assert.match(prompt, new RegExp(TUTOR_STUB_CLI_DIRECTOR_SCHEMA.replaceAll('.', '\\.'), 'u'));
+  assert.match(prompt, /"sessionMode":"mixed"/u);
+  assert.match(prompt, /"aliases":\["\/learner","\/tutor"\]/u);
+  assert.match(prompt, /"adversarial_teacher"/u);
+  assert.match(prompt, /"affective_resistant"/u);
+  assert.match(prompt, /"automaticAfterAnswer":true/u);
+  assert.equal(normalizeTutorStubCliDirectorQuestion(`  ${question}  `), question);
+  assert.throws(() => normalizeTutorStubCliDirectorQuestion(''), /CLI question is required/u);
+  assert.equal(
+    cleanTutorStubCliDirectorReply('Director: Use `/tutor adversarial_teacher`.\n'),
+    'Use `/tutor adversarial_teacher`.',
+  );
 });
 
 test('command summaries resolve for canonical commands, aliases, and subcommands', () => {
@@ -322,6 +390,8 @@ test('command summaries resolve for canonical commands, aliases, and subcommands
     'rewrite the latest tutor reply in contemporary standard English',
   );
   assert.equal(tutorStubCommandSummary('/character learner diligent'), tutorStubCommandSummary('/character'));
+  assert.equal(tutorStubCommandSummary('/tutor advocate'), tutorStubCommandSummary('/character'));
+  assert.equal(tutorStubCommandSummary('/learner diligent'), tutorStubCommandSummary('/character'));
   assert.equal(tutorStubCommandSummary('/not-a-command'), null);
 });
 
@@ -428,7 +498,6 @@ test('execution effects conservatively classify every command before transport e
     'settings',
     'debug',
     'mode',
-    'learner',
     'coach',
     'auto',
     'suggest',
