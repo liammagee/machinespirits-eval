@@ -9,7 +9,7 @@ import * as pty from 'node-pty';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-function tutorStubDryRun(extraArgs = []) {
+function tutorStubDryRun(extraArgs = [], env = {}) {
   return JSON.parse(
     execFileSync(
       process.execPath,
@@ -23,7 +23,7 @@ function tutorStubDryRun(extraArgs = []) {
         '--tutor-learner-dag',
         ...extraArgs,
       ],
-      { cwd: ROOT, encoding: 'utf8' },
+      { cwd: ROOT, encoding: 'utf8', env: { ...process.env, ...env } },
     ),
   );
 }
@@ -223,6 +223,21 @@ test('optional tutor-message feedback defaults on for humans and off for automat
   const automated = tutorStubDryRun(['--auto-learner']);
   assert.equal(automated.turnFeedback.enabled, false);
   assert.equal(automated.turnFeedback.automatedLearner, 'disabled');
+});
+
+test('compact response details default on and may be disabled at launch', () => {
+  const enabled = tutorStubDryRun();
+  assert.equal(enabled.responseDetails.enabled, true);
+  assert.equal(enabled.responseDetails.order, 'before_tutor_speech');
+  assert.equal(enabled.responseDetails.timingSchema, 'machinespirits.tutor-stub.turn-timing.v1');
+  assert.equal(enabled.responseDetails.timingScope, 'foreground_wait_from_accepted_learner_input');
+  assert.equal(enabled.responseDetails.publicTranscriptChanged, false);
+
+  const disabled = tutorStubDryRun(['--no-response-details']);
+  assert.equal(disabled.responseDetails.enabled, false);
+
+  const disabledByEnvironment = tutorStubDryRun([], { TUTOR_STUB_RESPONSE_DETAILS: '0' });
+  assert.equal(disabledByEnvironment.responseDetails.enabled, false);
 });
 
 test('--all-models overrides tutor, classifier, learner-DAG analysis, and mixed learner together', () => {

@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T06:07:01.466Z",
+  "generated": "2026-07-24T07:00:53.469Z",
   "counts": {
-    "total": 166,
+    "total": 167,
     "byStatus": {
-      "done": 136,
+      "done": 137,
       "blocked": 3,
       "dropped": 2,
       "triaged": 19,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 48,
       "infra": 37,
-      "maintenance": 20,
+      "maintenance": 21,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -2174,6 +2174,25 @@
         "replay"
       ],
       "branch": "codex/tutor-stub-session-runtime"
+    },
+    {
+      "id": "tutor-stub-dialogue-first-terminal-presentation",
+      "title": "Make tutor-stub terminal output dialogue-first",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "Focused turn-timing, command-registry, turn-feedback, and interactive CLI regressions prove compact response details and an accurate foreground analysis/tutor/local timing breakdown appear before tutor speech when enabled, can be disabled for the session or at launch, and Escape on an empty unselected prompt suppresses the optional feedback request without changing public dialogue; the full tutor-stub interactive suite and workplan validation pass.",
+      "branch": "codex/tutor-stub-dialogue-presentation",
+      "tags": [
+        "tutor-stub",
+        "cli",
+        "terminal-ux",
+        "feedback"
+      ]
     },
     {
       "id": "tutor-stub-first-draft-series",

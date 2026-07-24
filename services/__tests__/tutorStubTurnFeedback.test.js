@@ -6,6 +6,7 @@ import {
   requestTutorStubTurnFeedback,
   setTutorStubTurnFeedbackRating,
   tutorStubTurnFeedbackArrowRating,
+  tutorStubTurnFeedbackEscapeDismissal,
   tutorStubTurnFeedbackEnvelope,
   tutorStubTurnFeedbackPrompt,
 } from '../tutorStubTurnFeedback.js';
@@ -114,6 +115,25 @@ test('bare arrows rate a pending tutor response only from an empty idle prompt',
     { line: '', key: { name: 'right' }, feedback: { enabled: true, requested: false } },
   ]) {
     assert.equal(tutorStubTurnFeedbackArrowRating(blocked), null);
+  }
+});
+
+test('Escape dismisses a pending feedback request only on an idle unselected prompt', () => {
+  const feedback = {
+    enabled: true,
+    requested: true,
+  };
+  assert.equal(tutorStubTurnFeedbackEscapeDismissal({ line: '', key: { name: 'escape' }, feedback }), true);
+  assert.equal(tutorStubTurnFeedbackEscapeDismissal({ line: '', key: { name: 'escape', meta: true }, feedback }), true);
+  for (const blocked of [
+    { line: 'editing a reply', key: { name: 'escape' }, feedback },
+    { line: '', key: { name: 'escape', shift: true }, feedback },
+    { line: '', key: { name: 'escape' }, feedback, interactiveMode: 'auto' },
+    { line: '', key: { name: 'escape' }, feedback, interfaceBlocked: true },
+    { line: '', key: { name: 'escape' }, feedback, selectionActive: true },
+    { line: '', key: { name: 'escape' }, feedback: { enabled: true, requested: false } },
+  ]) {
+    assert.equal(tutorStubTurnFeedbackEscapeDismissal(blocked), false);
   }
 });
 

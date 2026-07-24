@@ -322,11 +322,13 @@ import {
   setTutorStubTurnFeedbackEnabled,
   setTutorStubTurnFeedbackRating,
   tutorStubTurnFeedbackArrowRating,
+  tutorStubTurnFeedbackEscapeDismissal,
   tutorStubTurnFeedbackEnvelope,
   tutorStubTurnFeedbackLabel,
   tutorStubTurnFeedbackPrompt,
   tutorStubTurnFeedbackRegisterPrompt,
 } from '../services/tutorStubTurnFeedback.js';
+import { buildTutorStubTurnTiming, formatTutorStubTurnTiming } from '../services/tutorStubTurnTiming.js';
 import {
   auditTutorStubFeedbackAdaptation,
   buildTutorStubFeedbackAdaptationPlan,
@@ -581,6 +583,7 @@ const STUB = {
   autoLearnerProfile: process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE || 'diligent',
   mixedLearner: process.env.TUTOR_STUB_MIXED_LEARNER === '1',
   turnFeedback: process.env.TUTOR_STUB_TURN_FEEDBACK !== '0',
+  responseDetails: process.env.TUTOR_STUB_RESPONSE_DETAILS !== '0',
   voiceModel: process.env.TUTOR_STUB_VOICE_MODEL || DEFAULT_TUTOR_STUB_VOICE_MODEL,
   voiceName: process.env.TUTOR_STUB_VOICE_NAME || DEFAULT_TUTOR_STUB_VOICE_NAME,
 };
@@ -773,6 +776,7 @@ const { values: args, positionals } = parseArgs({
     'opening-realizer': { type: 'string', default: STUB.openingRealizer },
     'no-closeout-report': { type: 'boolean', default: false },
     'no-turn-feedback': { type: 'boolean', default: false },
+    'no-response-details': { type: 'boolean', default: false },
     voice: { type: 'boolean', default: false },
     'voice-model': { type: 'string', default: STUB.voiceModel },
     'voice-name': { type: 'string', default: STUB.voiceName },
@@ -1126,6 +1130,8 @@ Options:
   --no-closeout-report   do not print the compact dialogue closeout on exit
   --no-turn-feedback     do not ask for optional thumbs feedback after tutor
                          messages (on by default in human learner mode)
+  --no-response-details  hide the compact model, timing breakdown, token, and
+                         tutor-style details for this session
   --voice                launch the local browser voice companion after the
                          opening (also available at any time with /voice)
   --voice-model <model>  OpenAI Realtime renderer, separate from the four
@@ -1147,6 +1153,8 @@ Interactive commands:
   /demo [turns]          run a guided live harness tour (default: ${DEFAULT_INTERACTIVE_DEMO_TURNS} turns)
   /theme [name]          inspect or switch the live terminal theme
   /motion [level]        inspect or switch full, subtle, or off motion
+  /details [on|off|status]
+                         show or hide compact response and turn-timing details
   /analysis              explain the learner reading and teaching approach plainly
   /analysis technical    show the full classifier, reasoning-map, field, and trace evidence
   /a                     alias for /analysis
@@ -1166,6 +1174,8 @@ Interactive commands:
   /notes                 alias for /director
   Left/Right on an empty prompt
                          rate the latest tutor message down/up immediately
+  Escape on an empty prompt
+                         hide optional tutor feedback for the rest of the session
   /up, /down             rate the latest tutor message helpful or unhelpful
                          without sending a learner turn
   /feedback [up|down] [reason] [comment]
@@ -1253,6 +1263,8 @@ Environment:
   TUTOR_STUB_WORLD       optional default detective-story world
   TUTOR_STUB_TURN_FEEDBACK=0
                          disable optional per-message thumbs feedback
+  TUTOR_STUB_RESPONSE_DETAILS=0
+                         hide compact response and timing details by default
   TUTOR_STUB_DAG_MODE    optional DAG discourse mode: strict_dag,
                          human_scaffold, or defeasible_human_scaffold
   TUTOR_STUB_LIGHT_ADAPTATION=0|1
@@ -3662,6 +3674,42 @@ function metadataLine(meta) {
     .join('');
   const tutor = meta.tutorRef ? `, tutor ${meta.tutorRef}` : '';
   return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${tokens}${cost}${effort}${register}${randomPerformance}${lightAdaptation}${directedPerformance}${pace}${guard}${stream}${cache}${tutor}`;
+}
+
+function printResponseDetails(meta, state, { suffix = '' } = {}) {
+  if (!state?.responseDetails?.enabled) return false;
+  console.log(`${C.dim}${metadataLine(meta)}${suffix}${C.reset}`);
+  const timingLine = formatTutorStubTurnTiming(meta?.turnTiming);
+  if (timingLine) console.log(`${C.dim}${timingLine}${C.reset}`);
+  console.log('');
+  return true;
+}
+
+function recordTutorStubTurnTiming({
+  response,
+  state,
+  tutorTurn,
+  classification = null,
+  tutorLearnerDag = null,
+  timingContext = null,
+}) {
+  if (!timingContext?.startedAtMs) return null;
+  const turnTiming = buildTutorStubTurnTiming({
+    ...timingContext,
+    completedAtMs: Date.now(),
+    classification,
+    tutorLearnerDag,
+    response,
+  });
+  response.turnTiming = turnTiming;
+  appendTraceEvent(state.trace, {
+    type: 'turn_timing_breakdown',
+    turn: tutorTurn,
+    turnId: turnDebugId(state, tutorTurn),
+    timing: turnTiming,
+    publicTranscriptChanged: false,
+  });
+  return turnTiming;
 }
 
 function usesFixedOpenAITemperature(resolved) {
@@ -14580,6 +14628,12 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
   });
   response.tutorRef = state.tuning?.activeRef || state.tutorInstance?.ref || null;
   assertTutorStubTurnAttemptCurrent(runtimeOptions);
+  const turnTiming = recordTutorStubTurnTiming({
+    response,
+    state,
+    tutorTurn,
+    timingContext: runtimeOptions.turnTiming,
+  });
 
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
@@ -14610,6 +14664,7 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
     latencyMs: response.latencyMs,
     usage: response.usage,
     tokenUsageAvailable: response.tokenUsageAvailable,
+    turnTiming,
   };
   state.turns.push(turnRecord);
   appendTraceEvent(state.trace, {
@@ -15065,6 +15120,15 @@ async function runOneTurn(
     },
   });
 
+  const turnTiming = recordTutorStubTurnTiming({
+    response,
+    state,
+    tutorTurn,
+    classification,
+    tutorLearnerDag,
+    timingContext: runtimeOptions.turnTiming,
+  });
+
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
   if (coachGuidance.length && state.coach) {
@@ -15202,6 +15266,7 @@ async function runOneTurn(
     latencyMs: response.latencyMs,
     usage: response.usage,
     tokenUsageAvailable: response.tokenUsageAvailable,
+    turnTiming,
   };
   state.turns.push(turnRecord);
   appendTraceEvent(state.trace, {
@@ -15240,11 +15305,14 @@ async function runAnalyzedTutorTurn(
   state,
   { precomputedRaw = null, signal = null, isCurrent = null, learnerInput = null } = {},
 ) {
+  const startedAtMs = Date.now();
+  const analysisStartedAtMs = Date.now();
   const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = await analyzeLearnerTurn(
     learnerText,
     state,
     { precomputedRaw, signal, isCurrent },
   );
+  const analysisCompletedAtMs = Date.now();
   assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   startInterimAnimation(
     state,
@@ -15259,6 +15327,7 @@ async function runAnalyzedTutorTurn(
     }),
   );
   let response;
+  const tutorStartedAtMs = Date.now();
   try {
     response = await runOneTurn(
       learnerText,
@@ -15268,7 +15337,19 @@ async function runAnalyzedTutorTurn(
       registerSelection,
       previousRegisterEfficacy,
       null,
-      { signal, isCurrent, learnerInput },
+      {
+        signal,
+        isCurrent,
+        learnerInput,
+        turnTiming: {
+          startedAtMs,
+          analysisStartedAtMs,
+          analysisCompletedAtMs,
+          tutorStartedAtMs,
+          analysisSource: precomputedRaw?.dagPreflight ? 'precomputed' : 'foreground',
+          tutorSource: 'foreground',
+        },
+      },
     );
   } catch (error) {
     error.tutorDiagnosticContext = jsonClone({
@@ -15289,9 +15370,9 @@ async function runAnalyzedTutorTurn(
   assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   printWithConcurrentTerminal(state, () => {
     if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
+    printResponseDetails(response, state);
     printDirectorPreludeBeforeFirstTutor(state, { reason: 'first_generated_tutor_response' });
     printTutorResponse(response, state.stream);
-    console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
   });
   await printExplanatoryDebugTurn(state, { signal, isCurrent });
   assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
@@ -15685,8 +15766,8 @@ async function runAutomatedLearnerDialogue({
         transaction,
       });
       printWithConcurrentTerminal(state, () => {
+        printResponseDetails(quarantine, state, { suffix: '; quarantined diagnostic turn' });
         printTutorResponse(quarantine, state.stream);
-        console.log(`${C.dim}${metadataLine(quarantine)}; quarantined diagnostic turn${C.reset}\n`);
       });
     }
     assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
@@ -16064,6 +16145,7 @@ async function main() {
   const turnFeedbackEnabled = Boolean(
     STUB.turnFeedback && !args['no-turn-feedback'] && interactiveSessionEnabled && !autoLearnerEnabled,
   );
+  const responseDetailsEnabled = Boolean(STUB.responseDetails && !args['no-response-details']);
   const learnerSuggestionEnabled = Boolean(
     !passthroughEnabled && (autoLearnerEnabled || mixedLearnerEnabled || interactiveSessionEnabled),
   );
@@ -16545,6 +16627,7 @@ async function main() {
       immediate: true,
       leftArrow: 'down',
       rightArrow: 'up',
+      escape: 'disable_for_session',
     },
     learnerMessageField: 'tutorFeedback',
     automatedLearner: 'disabled',
@@ -16561,6 +16644,19 @@ async function main() {
       separatesSubjectiveHelpfulnessFromObjectiveProgress: true,
       causalClaim: false,
     },
+  };
+  const responseDetailsConfig = {
+    schema: 'machinespirits.tutor-stub.response-details.v1',
+    enabled: responseDetailsEnabled,
+    defaultOn: true,
+    scope: 'terminal_session',
+    order: 'before_tutor_speech',
+    timingSchema: 'machinespirits.tutor-stub.turn-timing.v1',
+    timingScope: 'foreground_wait_from_accepted_learner_input',
+    command: '/details on|off|status',
+    launchFlag: '--no-response-details',
+    environment: 'TUTOR_STUB_RESPONSE_DETAILS=0',
+    publicTranscriptChanged: false,
   };
   const explanatoryDebugConfig = {
     enabledByDefault: false,
@@ -16935,6 +17031,7 @@ async function main() {
             : { enabled: false, requested: mixedLearnerRequested },
           interactiveRoleModes,
           turnFeedback: turnFeedbackConfig,
+          responseDetails: responseDetailsConfig,
           explanatoryDebug: explanatoryDebugConfig,
           learningSummaryReport: learningSummaryReportConfig,
           registerSelection: registerSelectionEnabled
@@ -17257,6 +17354,7 @@ async function main() {
       learnerResponseProvenance: interactiveRoleModes.learnerResponseProvenance,
       interactiveRoleModes,
       turnFeedback: turnFeedbackConfig,
+      responseDetails: responseDetailsConfig,
       explanatoryDebug: explanatoryDebugConfig,
       learningSummaryReport: learningSummaryReportConfig,
       registerSelection: registerSelectionEnabled
@@ -17402,6 +17500,7 @@ async function main() {
       savedAt: rememberedSettings.savedAt,
     },
     presentation: tutorStubCliPresentationSnapshot(cliPresentation),
+    responseDetails: { ...responseDetailsConfig },
     capabilities: capabilitySnapshot,
     lab: selectedLabMetadata,
     sessionRecipe,
@@ -17982,6 +18081,9 @@ async function main() {
     console.log(
       `${C.dim}optional tutor thumbs feedback: ${turnFeedbackEnabled ? 'on' : 'off'}${autoLearnerEnabled ? ' (automated learner)' : ''}${C.reset}`,
     );
+    console.log(
+      `${C.dim}compact response + timing details: ${responseDetailsEnabled ? 'on' : 'off'} · /details changes this for the session${C.reset}`,
+    );
     if (learningSummaryReportConfig.enabled) {
       console.log(
         `${C.dim}learning summary: automatic HTML on conclusion${
@@ -18104,6 +18206,8 @@ async function main() {
   }
 
   if (firstMessage) {
+    const startedAtMs = Date.now();
+    const analysisStartedAtMs = Date.now();
     const analysis = state.passthrough?.enabled
       ? {
           classification: null,
@@ -18112,6 +18216,7 @@ async function main() {
           previousRegisterEfficacy: null,
         }
       : await analyzeLearnerTurn(firstMessage, state);
+    const analysisCompletedAtMs = Date.now();
     const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = analysis;
     startInterimAnimation(
       state,
@@ -18128,6 +18233,7 @@ async function main() {
           }),
     );
     let response;
+    const tutorStartedAtMs = Date.now();
     try {
       response = await runOneTurn(
         firstMessage,
@@ -18144,17 +18250,25 @@ async function main() {
             inputMethod: 'command_line_argument',
             humanInLoop: true,
           }),
+          turnTiming: {
+            startedAtMs,
+            analysisStartedAtMs,
+            analysisCompletedAtMs,
+            tutorStartedAtMs,
+            analysisSource: state.passthrough?.enabled ? 'disabled' : 'foreground',
+            tutorSource: 'foreground',
+          },
         },
       );
     } finally {
       stopInterimAnimation(state);
     }
     if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
+    printResponseDetails(response, state);
     if (!state.passthrough?.enabled) {
       printDirectorPreludeBeforeFirstTutor(state, { reason: 'first_message_response' });
     }
     printTutorResponse(response, state.stream);
-    console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
     await printExplanatoryDebugTurn(state);
     writeFieldVisualization(state, { reason: 'once' });
     appendTraceEvent(state.trace, { type: 'run_end', reason: 'once', turns: state.turns.length });
@@ -20998,6 +21112,7 @@ async function main() {
       comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: state.turns.length + 1 }),
       interaction: jsonClone(state.interaction),
       turnFeedback: jsonClone(state.turnFeedback),
+      responseDetails: jsonClone(state.responseDetails),
       explanatoryDebug: jsonClone(state.explanatoryDebug),
       coach: jsonClone(state.coach),
       directorContext,
@@ -21043,6 +21158,7 @@ async function main() {
       turns: jsonClone(state.turns),
       settings: {
         presentation: tutorStubCliPresentationSnapshot(cliPresentation),
+        responseDetails: jsonClone(state.responseDetails),
         allModelsOverride: state.modelRouting?.allRolesOverrideRef
           ? {
               schema: 'machinespirits.tutor-stub.all-models-override.v1',
@@ -21864,6 +21980,9 @@ async function main() {
     );
     console.log(
       `${C.dim}  tutor ratings: ${state.turnFeedback?.enabled ? `on · ${tutorStubTurnFeedbackLabel(tutorStubTurnFeedbackEnvelope(state.turnFeedback))}` : 'off'} · optional and private${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  response details: ${state.responseDetails?.enabled ? 'on · model plus foreground timing shown before tutor speech' : 'off'} · /details${C.reset}`,
     );
     console.log(
       `${C.dim}  tuning: ${state.tuning?.mode || 'off'} · stable v${state.tuning?.manifest?.stableVersion ?? state.tutorInstance?.sourceVersion ?? 1}${state.tuning?.manifest?.canaryVersion ? ` · canary v${state.tuning.manifest.canaryVersion}` : ''} · ${state.tuning?.sessionCandidateIds?.length || 0} session candidates${C.reset}`,
@@ -23859,12 +23978,50 @@ async function main() {
     return null;
   }
 
+  function handleResponseDetailsCommand(action = '', { duringTurn = false, source = 'command' } = {}) {
+    clearStatusLine();
+    const normalized = String(action || 'status')
+      .trim()
+      .toLowerCase();
+    if (!normalized || normalized === 'status') {
+      console.log(`${C.accent}${C.bold}response details >${C.reset} ${state.responseDetails?.enabled ? 'on' : 'off'}`);
+      console.log(
+        `${C.dim}  compact model, foreground timing, token, and tutor-style details appear before tutor speech; /details on|off${C.reset}\n`,
+      );
+      return true;
+    }
+    if (normalized !== 'on' && normalized !== 'off') {
+      console.log(`${C.danger}details error:${C.reset} use /details on, /details off, or /details status\n`);
+      return true;
+    }
+    const previous = Boolean(state.responseDetails?.enabled);
+    const enabled = normalized === 'on';
+    state.responseDetails = {
+      ...(state.responseDetails || responseDetailsConfig),
+      enabled,
+    };
+    appendTraceEvent(state.trace, {
+      type: 'terminal_response_details_changed',
+      source,
+      previous,
+      enabled,
+      duringTurn,
+      effectiveTurn: state.turns.length + 1,
+      publicTranscriptChanged: false,
+    });
+    console.log(`${C.accent}${C.bold}response details >${C.reset} ${enabled ? 'on' : 'off'}`);
+    console.log(
+      `${C.dim}  ${enabled ? 'compact details will appear before tutor speech' : 'model and timing details are hidden for the rest of this session unless re-enabled'}${C.reset}\n`,
+    );
+    return true;
+  }
+
   function printTutorFeedbackRequest(target = latestTutorFeedbackTarget()) {
     if (!target || !state.turnFeedback?.enabled || state.interaction?.mode === 'auto' || exiting) return false;
     const feedback = requestTutorStubTurnFeedback(state.turnFeedback, target);
     if (!feedback) return false;
     console.log(
-      `${C.brightYellow}optional tutor feedback >${C.reset} ${C.red}← 👎 not helpful${C.reset} · ${C.brightGreen}👍 helpful →${C.reset} · ${C.dim}empty prompt; no Enter · or just reply${C.reset}\n`,
+      `${C.brightYellow}optional tutor feedback >${C.reset} ${C.red}← 👎 not helpful${C.reset} · ${C.brightGreen}👍 helpful →${C.reset} · ${C.dim}empty prompt; no Enter · Esc hides for session · or just reply${C.reset}\n`,
     );
     appendTraceEvent(state.trace, {
       type: 'tutor_turn_feedback_requested',
@@ -23888,7 +24045,7 @@ async function main() {
         `${C.brightYellow}${C.bold}tutor feedback >${C.reset} ${state.turnFeedback?.enabled ? 'on' : 'off'} · ${tutorStubTurnFeedbackLabel(feedback)}`,
       );
       console.log(
-        `${C.dim}  optional and private · on an empty prompt use ← for down or → for up; 👍, 👎, /up, /down, and /feedback controls also work${C.reset}\n`,
+        `${C.dim}  optional and private · on an empty prompt use ← for down, → for up, or Esc to hide for the session; 👍, 👎, /up, /down, and /feedback also work${C.reset}\n`,
       );
       return true;
     }
@@ -23897,8 +24054,10 @@ async function main() {
       appendTraceEvent(state.trace, {
         type: 'tutor_turn_feedback_setting_changed',
         enabled: true,
+        source,
         duringTurn,
         effectiveTurn: state.turns.length + 1,
+        publicTranscriptChanged: false,
       });
       console.log(`${C.brightYellow}${C.bold}tutor feedback >${C.reset} on · optional`);
       if (!duringTurn && latestTutorFeedbackTarget()) printTutorFeedbackRequest();
@@ -23910,8 +24069,10 @@ async function main() {
       appendTraceEvent(state.trace, {
         type: 'tutor_turn_feedback_setting_changed',
         enabled: false,
+        source,
         duringTurn,
         effectiveTurn: state.turns.length + 1,
+        publicTranscriptChanged: false,
       });
       console.log(`${C.brightYellow}${C.bold}tutor feedback >${C.reset} off`);
       console.log(`${C.dim}  no rating will be attached to later learner messages${C.reset}\n`);
@@ -24988,6 +25149,11 @@ async function main() {
       finishSlashCommand();
       return true;
     }
+    if (command === '/details') {
+      handleResponseDetailsCommand(commandArg, { duringTurn, source: '/details' });
+      finishSlashCommand();
+      return true;
+    }
     if (command === '/random') {
       handleRandomPerformanceCommand(commandArg, { duringTurn });
       finishSlashCommand();
@@ -25662,6 +25828,15 @@ async function main() {
           comprehension: structuredClone(state.comprehension),
           coach: structuredClone(state.coach),
         };
+        const startedAtMs = Date.now();
+        const turnTiming = {
+          startedAtMs,
+          analysisStartedAtMs: startedAtMs,
+          analysisCompletedAtMs: startedAtMs,
+          tutorStartedAtMs: startedAtMs,
+          analysisSource: 'disabled',
+          tutorSource: 'foreground',
+        };
         appendTraceEvent(state.trace, {
           type: 'learner_turn_attempt_started',
           turn: tutorTurn,
@@ -25677,6 +25852,9 @@ async function main() {
           const closureAcknowledgement = Boolean(
             attemptState.dialogueClosure?.phase === 'awaiting_checkin' && tutorStubClosureAcknowledgement(learnerText),
           );
+          if (!closureAcknowledgement && !attemptState.passthrough?.enabled) {
+            turnTiming.analysisStartedAtMs = Date.now();
+          }
           const prefetchedAnalysis =
             closureAcknowledgement || attemptState.passthrough?.enabled
               ? null
@@ -25689,18 +25867,24 @@ async function main() {
           let response;
           let completionReason = 'turn_complete';
           if (attemptState.passthrough?.enabled) {
+            turnTiming.tutorStartedAtMs = Date.now();
             startInterimAnimation(attemptState, 'calling speaker', { learnerText, tutorTurn });
             try {
               response = await runOneTurn(learnerText, attemptState, null, null, null, null, null, {
                 signal: abortController.signal,
                 isCurrent,
                 learnerInput,
+                turnTiming,
               });
             } finally {
               stopInterimAnimation(attemptState);
             }
             completionReason = 'passthrough_turn_complete';
           } else if (closureAcknowledgement) {
+            turnTiming.analysisSource = 'deterministic';
+            turnTiming.analysisCompletedAtMs = Date.now();
+            turnTiming.tutorStartedAtMs = Date.now();
+            turnTiming.tutorSource = 'deterministic';
             const inheritedModel = attemptState.turns.at(-1)?.tutorLearnerDagModel || null;
             const tutorLearnerDag = { model: inheritedModel };
             const { frame } = tutorDialogueClosureFrameForTurn({
@@ -25747,7 +25931,7 @@ async function main() {
                 closureAudit,
                 deterministicClosure: true,
               },
-              { signal: abortController.signal, isCurrent, learnerInput },
+              { signal: abortController.signal, isCurrent, learnerInput, turnTiming },
             );
             completionReason = 'dialogue_closure_acknowledgement';
           } else {
@@ -25758,6 +25942,8 @@ async function main() {
                 isCurrent,
                 tutorFeedback: learnerInput.tutorFeedback,
               });
+            turnTiming.analysisCompletedAtMs = Date.now();
+            turnTiming.analysisSource = prefetchedAnalysis?.entry ? 'prefetched' : 'foreground';
             assertTutorStubTurnAttemptCurrent({ signal: abortController.signal, isCurrent });
             const humanDiscourseFrame = buildHumanDiscourseFrame({
               state: attemptState,
@@ -25771,6 +25957,7 @@ async function main() {
               tutorTurn,
               tutorLearnerDag,
             });
+            turnTiming.tutorStartedAtMs = Date.now();
             const prefetchedResponse = await takeMixedLearnerTutorPrefetch(prefetchedAnalysis?.entry, {
               learnerText,
               classification,
@@ -25780,6 +25967,7 @@ async function main() {
               dialogueClosureFrame,
               tutorFeedback: learnerInput.tutorFeedback,
             });
+            turnTiming.tutorSource = prefetchedResponse ? 'prefetched' : 'foreground';
             assertTutorStubTurnAttemptCurrent({ signal: abortController.signal, isCurrent });
             if (!prefetchedResponse) {
               startInterimAnimation(
@@ -25804,7 +25992,7 @@ async function main() {
                 registerSelection,
                 previousRegisterEfficacy,
                 prefetchedResponse,
-                { signal: abortController.signal, isCurrent, learnerInput },
+                { signal: abortController.signal, isCurrent, learnerInput, turnTiming },
               );
             } finally {
               stopInterimAnimation(attemptState);
@@ -25842,6 +26030,7 @@ async function main() {
           });
           printWithConcurrentTerminal(state, () => {
             if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
+            printResponseDetails(response, state);
             if (!state.passthrough?.enabled) {
               printDirectorPreludeBeforeFirstTutor(state, {
                 reason: closureAcknowledgement
@@ -25850,7 +26039,6 @@ async function main() {
               });
             }
             printTutorResponse(response, state.stream);
-            console.log(`${C.dim}${metadataLine(response)}${C.reset}\n`);
             printTutorFeedbackRequest({ tutorTurn, tutorTurnId: turnId, kind: 'tutor_response' });
           });
           publishAcceptedTutorToVoice({
@@ -26057,15 +26245,31 @@ async function main() {
           });
         }
       }
+      const feedbackInterfaceBlocked = Boolean(
+        exiting || initialSetupStage !== 'off' || scenarioPickerActive || awaitingAnotherScenario,
+      );
+      const pendingTutorFeedback = tutorStubTurnFeedbackEnvelope(state.turnFeedback);
+      const escapeDismissesFeedback = tutorStubTurnFeedbackEscapeDismissal({
+        line: rl.line,
+        key,
+        feedback: pendingTutorFeedback,
+        interactiveMode: state.interaction?.mode,
+        interfaceBlocked: feedbackInterfaceBlocked,
+        selectionActive: lineSelection.snapshot().active,
+      });
+      if (escapeDismissesFeedback) {
+        lineSelection.clear();
+        handleTutorFeedbackCommand('off', { source: 'empty_prompt_escape' });
+        promptIfIdle();
+        return;
+      }
       const arrowRating = tutorStubTurnFeedbackArrowRating({
         line: rl.line,
         key,
-        feedback: tutorStubTurnFeedbackEnvelope(state.turnFeedback),
+        feedback: pendingTutorFeedback,
         busy: processingTurn,
         interactiveMode: state.interaction?.mode,
-        interfaceBlocked: Boolean(
-          exiting || initialSetupStage !== 'off' || scenarioPickerActive || awaitingAnotherScenario,
-        ),
+        interfaceBlocked: feedbackInterfaceBlocked,
       });
       if (arrowRating) {
         lineSelection.clear();

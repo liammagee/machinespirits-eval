@@ -7,8 +7,8 @@ import {
 import { TUTOR_STUB_CURRICULUM_TRANSLATION_LEVELS } from './tutorStubCurriculumTranslation.js';
 import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 
-export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v2';
-export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 2;
+export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v3';
+export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 3;
 export const TUTOR_STUB_COMMAND_MODES = Object.freeze(['normal', 'passthrough']);
 export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
   'terminal_picker',
@@ -35,6 +35,7 @@ const COMMAND_EFFECT_DECLARATIONS = Object.freeze({
   demo: ['modelCall', 'fileWrite', 'persistentMutation'],
   theme: ['fileWrite', 'persistentMutation'],
   motion: ['fileWrite', 'persistentMutation'],
+  details: ['persistentMutation'],
   random: ['modelCall', 'persistentMutation'],
   light: ['modelCall', 'persistentMutation'],
   committee: ['modelCall', 'fileWrite', 'persistentMutation'],
@@ -103,6 +104,7 @@ const COMMAND_SUMMARIES = Object.freeze({
   demo: 'run a short guided exchange, analysis, and HTML evidence tour',
   theme: 'preview or change the terminal color theme',
   motion: 'preview or change terminal animation and reduced-motion behavior',
+  details: 'show or hide compact model, foreground timing, and tutor-response details',
   random: 'randomize tutor style and host character within safe constraints',
   light: 'toggle difficulty-triggered tutor style and character changes',
   committee: 'toggle the learned warrant-gap specialist used by the tutor',
@@ -249,6 +251,7 @@ const HELP_GROUPS = [
       { id: 'tune' },
       { id: 'theme' },
       { id: 'motion' },
+      { id: 'details', arguments: 'on|off|status' },
     ],
     summary: 'change session controls, tutor tuning, and presentation',
   },
@@ -293,8 +296,8 @@ const HELP_GROUPS = [
     id: 'appearance',
     mode: 'passthrough',
     label: 'appearance',
-    commands: [{ id: 'theme' }, { id: 'motion' }],
-    summary: 'change terminal theme or motion',
+    commands: [{ id: 'theme' }, { id: 'motion' }, { id: 'details', arguments: 'on|off|status' }],
+    summary: 'change terminal theme, motion, or compact response details',
   },
   {
     id: 'setup',
@@ -415,6 +418,16 @@ const COMMANDS = [
     completion: { normal: { suffixes: [...TUTOR_STUB_CLI_MOTION_IDS] } },
   }),
   command({
+    id: 'details',
+    token: '/details',
+    passthroughOrder: 2,
+    sceneReturnOrder: 28,
+    completion: {
+      normal: { suffixes: ['on', 'off', 'status'] },
+      passthrough: { suffixes: ['on', 'off', 'status'] },
+    },
+  }),
+  command({
     id: 'random',
     token: '/random',
     sceneReturnOrder: 3,
@@ -481,7 +494,7 @@ const COMMANDS = [
     id: 'transcript',
     token: '/transcript',
     aliases: ['/html'],
-    passthroughOrder: 6,
+    passthroughOrder: 7,
     sceneReturnOrder: 12,
     completion: { normal: { suffixes: ['no-open', 'write'] } },
     transportEffects: ['browser_open'],
@@ -489,7 +502,7 @@ const COMMANDS = [
   command({
     id: 'voice',
     token: '/voice',
-    passthroughOrder: 7,
+    passthroughOrder: 8,
     sceneReturnOrder: 13,
     completion: {
       normal: {
@@ -509,7 +522,7 @@ const COMMANDS = [
     id: 'director',
     token: '/director',
     aliases: ['/notes'],
-    passthroughOrder: 8,
+    passthroughOrder: 9,
     sceneReturnOrder: 14,
   }),
   command({
@@ -560,7 +573,7 @@ const COMMANDS = [
   command({
     id: 'settings',
     token: '/settings',
-    passthroughOrder: 2,
+    passthroughOrder: 3,
     sceneReturnOrder: 11,
     completion: {
       normal: {
@@ -601,12 +614,12 @@ const COMMANDS = [
     },
     transportEffects: ['terminal_picker'],
   }),
-  command({ id: 'status', token: '/status', passthroughOrder: 3, sceneReturnOrder: 6 }),
-  command({ id: 'features', token: '/features', passthroughOrder: 4, sceneReturnOrder: 7 }),
+  command({ id: 'status', token: '/status', passthroughOrder: 4, sceneReturnOrder: 6 }),
+  command({ id: 'features', token: '/features', passthroughOrder: 5, sceneReturnOrder: 7 }),
   command({
     id: 'release_notes',
     token: '/release-notes',
-    passthroughOrder: 5,
+    passthroughOrder: 6,
     sceneReturnOrder: 8,
   }),
   command({
@@ -631,7 +644,7 @@ const COMMANDS = [
     id: 'id',
     token: '/id',
     aliases: ['/turn-id', '/debug-id'],
-    passthroughOrder: 10,
+    passthroughOrder: 11,
     sceneReturnOrder: 21,
   }),
   command({ id: 'suggest', token: '/suggest' }),
@@ -650,7 +663,7 @@ const COMMANDS = [
   command({
     id: 'scenario',
     token: '/scenario',
-    passthroughOrder: 9,
+    passthroughOrder: 10,
     sceneReturnOrder: 23,
     completion: { normal: { dynamicProviders: ['world_ids'] } },
     transportEffects: ['terminal_picker', 'process_relaunch'],
@@ -664,13 +677,13 @@ const COMMANDS = [
   }),
   command({ id: 'use', token: '/use', aliases: ['/accept'] }),
   command({ id: 'regen', token: '/regen' }),
-  command({ id: 'reset', token: '/reset', aliases: ['/clear'], passthroughOrder: 11 }),
-  command({ id: 'help', token: '/help', passthroughOrder: 12, sceneReturnOrder: 0 }),
-  command({ id: 'quit', token: '/quit', aliases: ['/exit'], passthroughOrder: 13 }),
+  command({ id: 'reset', token: '/reset', aliases: ['/clear'], passthroughOrder: 12 }),
+  command({ id: 'help', token: '/help', passthroughOrder: 13, sceneReturnOrder: 0 }),
+  command({ id: 'quit', token: '/quit', aliases: ['/exit'], passthroughOrder: 14 }),
   command({
     id: 'lab',
     token: '/lab',
-    passthroughOrder: 14,
+    passthroughOrder: 15,
     sceneReturnOrder: 25,
     completion: { normal: { suffixes: ['list'], dynamicProviders: ['lab_ids'] } },
     transportEffects: ['relaunch_instruction'],
