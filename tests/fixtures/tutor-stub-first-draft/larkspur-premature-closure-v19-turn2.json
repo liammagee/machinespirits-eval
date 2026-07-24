@@ -1,0 +1,2101 @@
+{
+  "schema": "machinespirits.tutor-stub.first-draft-regression-fixture.v1",
+  "sourceTrace": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/larkspur_premature_closure/2026-07-16T05-50-54-527Z.jsonl",
+  "cases": [
+    {
+      "id": "2026-07-16T05-50-54-527Z:t002",
+      "turn": 2,
+      "worldId": "world_028_larkspur_fridge",
+      "learnerProfile": "premature_closure",
+      "bundle": {
+        "schema": "machinespirits.tutor-stub.frozen-replay.v1",
+        "sourceTrace": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/larkspur_premature_closure/2026-07-16T05-50-54-527Z.jsonl",
+        "runId": "2026-07-16T05-50-54-527Z",
+        "turn": 2,
+        "turnId": "2026-07-16T05-50-54-527Z:t002",
+        "worldId": "world_028_larkspur_fridge",
+        "learnerProfile": "premature_closure",
+        "loopMode": "strict",
+        "learnerText": "It puts Dario by the fridge at 12:02, so he probably took the lunchbox; you still need to check whether anyone saw him use shelf two.",
+        "priorTurns": [
+          {
+            "turn": 1,
+            "turnId": "2026-07-16T05-50-54-527Z:t001",
+            "learner": "Dario took it—he’s got history with the fridge.",
+            "tutor": "Dario’s past makes him a plausible suspicion, but it does not show a hand on Priya’s lunchbox. I open the badge log beside the fridge and mark one fact: Dario was in the kitchen at 12:02, carrying a mug; that shows access, not yet that he cleared shelf two. What does that badge entry change for you?"
+          }
+        ],
+        "priorTutorTexts": [
+          "Priya has the fridge door open and the office is already pointing at Dario. The incident log is still blank: Who took Priya's labelled lunchbox from shelf two of the studio fridge? Tell me what you want checked first — or stop me if any part of that question needs unpacking.",
+          "Dario’s past makes him a plausible suspicion, but it does not show a hand on Priya’s lunchbox. I open the badge log beside the fridge and mark one fact: Dario was in the kitchen at 12:02, carrying a mug; that shows access, not yet that he cleared shelf two. What does that badge entry change for you?"
+        ],
+        "selectedResponseConfiguration": {
+          "schema": "machinespirits.tutor-stub.response-configuration.v2",
+          "policy": "continuous_dynamical_system",
+          "engagement_stance": "precise",
+          "action_family": "stage_next_step",
+          "audience_register": "domain_apprentice",
+          "lexical_accessibility": "standard",
+          "scene_immersion": "immersive",
+          "actorial_part": "skeptic",
+          "actorial_part_label": "skeptical examiner",
+          "actorial_host_part": "skeptic",
+          "actorial_host_part_label": "skeptical examiner",
+          "actorial_part_selection": {
+            "id": "skeptic",
+            "label": "skeptical examiner",
+            "contract": "Challenge one unsafe leap or weak link in the live case. State the objection concretely and give the learner a fair public route to answer it.",
+            "probability": 0.8752,
+            "score": 2.508,
+            "temperature": 0.15,
+            "distribution": [
+              {
+                "part": "skeptic",
+                "score": 2.508,
+                "weight": 1,
+                "probability": 0.8752
+              },
+              {
+                "part": "record_keeper",
+                "score": 2.214,
+                "weight": 0.14087250746745295,
+                "probability": 0.1233
+              },
+              {
+                "part": "advocate",
+                "score": 1.551,
+                "weight": 0.0016989695931994538,
+                "probability": 0.0015
+              },
+              {
+                "part": "examiner",
+                "score": 1.034,
+                "weight": 0.00005397983538146205,
+                "probability": 0
+              },
+              {
+                "part": "scene_partner",
+                "score": 0.277,
+                "weight": 3.4763943521657195e-7,
+                "probability": 0
+              },
+              {
+                "part": "foreperson",
+                "score": 0,
+                "weight": 5.4762144983515065e-8,
+                "probability": 0
+              }
+            ],
+            "drivers": [
+              {
+                "part": "skeptic",
+                "source": "unsafe_leap",
+                "contribution": 1.15
+              },
+              {
+                "part": "skeptic",
+                "source": "action:answer_accountably",
+                "contribution": 0.75
+              },
+              {
+                "part": "skeptic",
+                "source": "stance:precise",
+                "contribution": 0.608
+              }
+            ],
+            "reason": "unsafe leap; action:answer accountably; stance:precise",
+            "authored_role": "front-desk clerk reading the visitor badge log",
+            "evidence_enactment": {
+              "active": true,
+              "mode": "enacted_role",
+              "authored_role": "front-desk clerk reading the visitor badge log",
+              "entry_count": 1
+            },
+            "selection_method": "seeded_distribution",
+            "locked": false,
+            "lock_reason": null,
+            "random": {
+              "schema": "machinespirits.tutor-stub.policy-draw.v1",
+              "method": "sha256-keyed-unit-v1",
+              "runSeed": 20260921,
+              "decision": {
+                "schema": "machinespirits.deterministic-experiment-draw.v1",
+                "algorithm": "sha256-keyed-unit-v1",
+                "masterSeed": 20260921,
+                "material": {
+                  "profile": "premature_closure",
+                  "policy": "continuous_dynamical_system",
+                  "repeat": 1,
+                  "learnerTurn": 2,
+                  "decisionKind": "actorial_part",
+                  "jobId": "continuous_dynamical_system-r1"
+                },
+                "seedMaterial": "{\"masterSeed\":20260921,\"material\":{\"decisionKind\":\"actorial_part\",\"jobId\":\"continuous_dynamical_system-r1\",\"learnerTurn\":2,\"policy\":\"continuous_dynamical_system\",\"profile\":\"premature_closure\",\"repeat\":1}}",
+                "seed": 3446560556,
+                "draw": 0.8024649128303558,
+                "distribution": [
+                  {
+                    "value": "skeptic",
+                    "weight": 1,
+                    "probability": 0.8751771123180357
+                  },
+                  {
+                    "value": "record_keeper",
+                    "weight": 0.14087250746745295,
+                    "probability": 0.1232883942903664
+                  },
+                  {
+                    "value": "advocate",
+                    "weight": 0.0016989695931994538,
+                    "probability": 0.0014868993024924459
+                  },
+                  {
+                    "value": "examiner",
+                    "weight": 0.00005397983538146205,
+                    "probability": 0.000047241916452550896
+                  },
+                  {
+                    "value": "scene_partner",
+                    "weight": 3.4763943521657195e-7,
+                    "probability": 3.042460770407123e-7
+                  },
+                  {
+                    "value": "foreperson",
+                    "weight": 5.4762144983515065e-8,
+                    "probability": 4.7926575819090544e-8
+                  }
+                ],
+                "selectedIndex": 0,
+                "selectedValue": "skeptic"
+              },
+              "material": {
+                "profile": "premature_closure",
+                "policy": "continuous_dynamical_system",
+                "repeat": 1,
+                "learnerTurn": 2,
+                "decisionKind": "actorial_part",
+                "jobId": "continuous_dynamical_system-r1"
+              },
+              "seedMaterial": "{\"masterSeed\":20260921,\"material\":{\"decisionKind\":\"actorial_part\",\"jobId\":\"continuous_dynamical_system-r1\",\"learnerTurn\":2,\"policy\":\"continuous_dynamical_system\",\"profile\":\"premature_closure\",\"repeat\":1}}",
+              "seed": 3446560556,
+              "draw": 0.8024649128303558,
+              "distribution": [
+                {
+                  "value": "skeptic",
+                  "weight": 1,
+                  "probability": 0.8751771123180357
+                },
+                {
+                  "value": "record_keeper",
+                  "weight": 0.14087250746745295,
+                  "probability": 0.1232883942903664
+                },
+                {
+                  "value": "advocate",
+                  "weight": 0.0016989695931994538,
+                  "probability": 0.0014868993024924459
+                },
+                {
+                  "value": "examiner",
+                  "weight": 0.00005397983538146205,
+                  "probability": 0.000047241916452550896
+                },
+                {
+                  "value": "scene_partner",
+                  "weight": 3.4763943521657195e-7,
+                  "probability": 3.042460770407123e-7
+                },
+                {
+                  "value": "foreperson",
+                  "weight": 5.4762144983515065e-8,
+                  "probability": 4.7926575819090544e-8
+                }
+              ],
+              "selectedIndex": 0,
+              "selectedValue": "skeptic"
+            }
+          },
+          "evidence_enactment": {
+            "active": true,
+            "mode": "enacted_role",
+            "authored_role": "front-desk clerk reading the visitor badge log",
+            "entry_count": 1
+          },
+          "actorial_performance": {
+            "id": "evidentiary_boundary",
+            "label": "evidentiary boundary",
+            "contract": "Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.",
+            "engagement_stance": "precise",
+            "actorial_part": "skeptic",
+            "selection_method": "stance_realization_contract",
+            "displaced_tactic": null,
+            "forbidden_meta_frames": [
+              "let us role-play",
+              "I will be the role",
+              "I will take the part",
+              "speaking as the role",
+              "back to us"
+            ]
+          },
+          "surface_budgets": {
+            "max_average_sentence_words": 23
+          },
+          "unresolved_terms": [],
+          "learner_advance": {
+            "schema": "machinespirits.tutor-stub.learner-advance.v1",
+            "pace": "advancing",
+            "accelerated": false,
+            "multiPremise": false,
+            "multiStep": false,
+            "suppliedFollowUp": false,
+            "adoptedPremiseCount": 1,
+            "derivedFactCount": 0,
+            "supportedMoveCount": 1,
+            "retractedPremiseCount": 0,
+            "adoptedPremiseIds": ["p_noon"],
+            "derivedFacts": [],
+            "delta": {
+              "groundedCount": 1,
+              "voicedDerivedCount": 0,
+              "missingPremiseCount": 0,
+              "bestPathCoverage": 0
+            },
+            "strength": 0.33
+          },
+          "release_pacing": {
+            "schema": "machinespirits.tutor-stub.release-pacing.v1",
+            "turn": 2,
+            "baseSpeed": 1,
+            "adaptive": true,
+            "effectiveSpeed": 1,
+            "tempo": 0,
+            "direction": "steady",
+            "virtualTurn": 3,
+            "signal": {
+              "direction": "steady",
+              "strength": 0,
+              "source": "no_current_signal",
+              "reason": "No clear request to change the clue pace was detected."
+            },
+            "urgentAdvance": false,
+            "completionAdvance": false,
+            "conversationalCompletion": null,
+            "dueNow": [],
+            "releasedNow": [],
+            "notDeliveredNow": [],
+            "nextRelease": {
+              "premise": "p_crew",
+              "via": "director",
+              "authoredTurn": 3,
+              "effectiveTurn": 2,
+              "releasedTurn": null
+            },
+            "counts": {
+              "released": 1,
+              "early": 1,
+              "late": 0,
+              "onAuthoredTurn": 0,
+              "accelerationSignals": 0,
+              "decelerationSignals": 0
+            },
+            "schedule": [
+              {
+                "premise": "p_noon",
+                "via": "tutor",
+                "authoredTurn": 2,
+                "effectiveTurn": 1,
+                "releasedTurn": 1
+              },
+              {
+                "premise": "p_crew",
+                "via": "director",
+                "authoredTurn": 3,
+                "effectiveTurn": 2,
+                "releasedTurn": null
+              },
+              {
+                "premise": "p_permit",
+                "via": "director",
+                "authoredTurn": 5,
+                "effectiveTurn": 3,
+                "releasedTurn": null
+              },
+              {
+                "premise": "p_tag",
+                "via": "tutor",
+                "authoredTurn": 7,
+                "effectiveTurn": 5,
+                "releasedTurn": null
+              }
+            ]
+          },
+          "engagement_stance_distribution": [
+            {
+              "engagement_stance": "precise",
+              "register": "precise",
+              "weight": 0.8682,
+              "probability": 0.8682,
+              "sourceScore": 10
+            },
+            {
+              "engagement_stance": "warm",
+              "register": "warm",
+              "weight": 0.1231,
+              "probability": 0.1231,
+              "sourceScore": 1.4173
+            },
+            {
+              "engagement_stance": "plain",
+              "register": "plain",
+              "weight": 0.0075,
+              "probability": 0.0075,
+              "sourceScore": 0.0862
+            },
+            {
+              "engagement_stance": "charismatic",
+              "register": "charismatic",
+              "weight": 0.0012,
+              "probability": 0.0012,
+              "sourceScore": 0.0143
+            }
+          ],
+          "engagement_stance_vector": {
+            "precise": 0.8682,
+            "warm": 0.1231,
+            "plain": 0.0075,
+            "charismatic": 0.0012
+          },
+          "engagement_stance_temperature": 0.15,
+          "actorial_part_temperature": 0.15,
+          "temperature_scope": "engagement_stance_and_actorial_part",
+          "selection_reasons": {
+            "action_family": "The learner has overreached, so the next action must expose the warrant and correction path.",
+            "audience_register": "Default to a capable apprentice who can use domain language when each inference stays inspectable.",
+            "lexical_accessibility": "Use ordinary educated prose with locally clear story terminology.",
+            "scene_immersion": "The active dramatic world should remain transcript-visible through concrete scene language.",
+            "actorial_part": "unsafe leap; action:answer accountably; stance:precise",
+            "actorial_performance": "Realize precise through the selected public part instead of attaching a tone label to generic tutor prose."
+          },
+          "compatibility": {
+            "selected_register": "precise",
+            "legacy_selected_register": "accountable_bid_authority",
+            "proposed_action_family": null,
+            "pre_conversational_completion_action_family": "answer_accountably"
+          },
+          "conversational_completion": {
+            "schema": "machinespirits.tutor-stub.conversational-completion.v1",
+            "mode": "defeasible_human_scaffold",
+            "active": true,
+            "status": "qualified",
+            "resolved": true,
+            "sourceTutorQuestion": "What does that badge entry change for you?",
+            "learnerSurface": "It puts Dario by the fridge at 12:02, so he probably took the lunchbox; you still need to check whether anyone saw him use shelf two.",
+            "acceptedMeaning": "Uses the badge entry but keeps Dario’s guilt provisional.",
+            "reason": "the learner completed at least one supported public move",
+            "reopenForbidden": true,
+            "requiresNewPressure": true,
+            "releaseNextClue": true,
+            "conceptSignature": [
+              "badge",
+              "entry",
+              "change",
+              "for",
+              "uses",
+              "but",
+              "keeps",
+              "darios",
+              "guilt",
+              "provisional"
+            ],
+            "instruction": "Credit or qualify this move once, without paraphrasing the same distinction into another question. Then advance to genuinely new public evidence or a new implication. Do not ask for a safer restatement of the resolved point."
+          }
+        },
+        "firstDraftContract": {
+          "schema": "machinespirits.tutor-stub.first-draft-turn-contract.v1",
+          "learner_move": "Uses the badge entry but keeps Dario’s guilt provisional.",
+          "opening": {
+            "instruction": "Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.",
+            "responsive_repair_required": false,
+            "writable_entry_requested": false,
+            "complementary_to_due_evidence": false,
+            "causal_relation_contract": null,
+            "causal_performance_entry_instruction": null,
+            "causal_performance_response_instruction": null
+          },
+          "development": {
+            "action_family": "stage_next_step",
+            "instruction": "Put the next available public evidence into the scene before asking the learner to interpret it.",
+            "learner_acceleration_instruction": null,
+            "support_level": null,
+            "support_instruction": null
+          },
+          "performance": {
+            "engagement_stance": "precise",
+            "engagement_operation_contract": null,
+            "stance_instruction": "State one distinction or warrant cleanly, expose what would count against it, and ask for one check. Do not smuggle in proof-path answers.",
+            "stance_execution": null,
+            "actorial_part": "skeptic",
+            "actorial_part_label": "skeptical examiner",
+            "part_instruction": "Challenge one unsafe leap or weak link in the live case. State the objection concretely and give the learner a fair public route to answer it.",
+            "part_execution": "In the unquoted host voice, challenge one unsafe leap or weak link and give the learner a fair public route to answer it.",
+            "tactic": "evidentiary_boundary",
+            "tactic_label": "evidentiary boundary",
+            "tactic_instruction": "Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.",
+            "tactic_execution": "Name the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute. Ask no question here; HANDOFF owns it.",
+            "enactment_instruction": "In the unquoted host voice, challenge one unsafe leap or weak link and give the learner a fair public route to answer it. Name the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute. Ask no question here; HANDOFF owns it.",
+            "prop_instruction": "Enter through concrete first-person action or direct speech; never announce or label the part.",
+            "obligation_contract": null
+          },
+          "evidence": {
+            "active": true,
+            "cues": [
+              "Copy exactly, marks included: “I read from the record: One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” Keep SOURCE words inside; inherit no deed or ownership."
+            ],
+            "sources": [
+              {
+                "schema": "machinespirits.tutor-stub.due-source-render.v1",
+                "id": "source_1",
+                "premise": "p_crew",
+                "mode": "enacted_role",
+                "surface": "One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.",
+                "text": "“I read from the record: One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.”",
+                "reporting": {
+                  "kind": "record_reading",
+                  "text": "I read from the record",
+                  "separator": "colon",
+                  "complementizer": null
+                },
+                "action_referents": {
+                  "schema": "machinespirits.tutor-stub.due-source-action-referents.v1",
+                  "active": true,
+                  "required": true,
+                  "primary": {
+                    "kind": "role_carrier",
+                    "label": "the visitor badge log",
+                    "source": "authored_role",
+                    "alignment_required": true
+                  },
+                  "referents": [
+                    {
+                      "kind": "role_carrier",
+                      "label": "the visitor badge log",
+                      "source": "authored_role",
+                      "alignment_required": true
+                    },
+                    {
+                      "kind": "role_carrier_head",
+                      "label": "log",
+                      "source": "authored_role",
+                      "alignment_required": false
+                    },
+                    {
+                      "kind": "fact_argument",
+                      "id": "noonWindow",
+                      "label": "noon Window",
+                      "source": "typed_fact",
+                      "argument_index": 2,
+                      "public_surface_validated": true,
+                      "speaker_eligible": true,
+                      "alignment_required": false
+                    }
+                  ],
+                  "trace_only_fact_referents": [
+                    {
+                      "kind": "fact_argument",
+                      "id": "wrenfold",
+                      "label": "wrenfold",
+                      "source": "typed_fact",
+                      "argument_index": 1,
+                      "public_surface_validated": false,
+                      "speaker_eligible": false,
+                      "alignment_required": false
+                    }
+                  ]
+                }
+              }
+            ],
+            "committed_public_surfaces": [],
+            "exact_public_only": true,
+            "source_accessibility": {
+              "schema": "machinespirits.tutor-stub.source-accessibility-contract.v1",
+              "version": 1,
+              "policy": "direct_only",
+              "active": true,
+              "ok": true,
+              "effective_mode": "direct",
+              "direct_accessible": true,
+              "compensation_required": false,
+              "compensation_contract_ready": false,
+              "owner": null,
+              "issues": [],
+              "source_count": 1,
+              "inaccessible_source_count": 0,
+              "sources": [
+                {
+                  "id": "source_1",
+                  "mode": "enacted_role",
+                  "surface": "One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.",
+                  "text": "“I read from the record: One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.”",
+                  "semantic_text": "One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.",
+                  "accessibility": {
+                    "text": "“I read from the record: One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.”",
+                    "wordCount": 37,
+                    "sentenceCount": 2,
+                    "sentenceWordCounts": [27, 10],
+                    "averageSentenceWords": 18.5,
+                    "maxSentenceWords": 27,
+                    "audienceRegister": "domain_apprentice",
+                    "audienceMaximum": 23,
+                    "lexicalAccessibility": "standard",
+                    "lexicalMaximum": 23,
+                    "measurementTolerance": 0.1,
+                    "audienceVisible": true,
+                    "lexicalVisible": true,
+                    "ok": true
+                  },
+                  "token_count": 32,
+                  "material_source_tokens": [
+                    "one",
+                    "badge",
+                    "noon",
+                    "window",
+                    "visitor",
+                    "code",
+                    "wf-11",
+                    "issued",
+                    "front",
+                    "desk",
+                    "outside",
+                    "crew",
+                    "hi-vis",
+                    "nobody",
+                    "desks",
+                    "remembers",
+                    "kettle",
+                    "queue"
+                  ],
+                  "fact_derived_anchors": [
+                    "one",
+                    "badge",
+                    "noon",
+                    "window",
+                    "visitor",
+                    "code",
+                    "wf-11",
+                    "issued",
+                    "front",
+                    "desk",
+                    "outside",
+                    "crew",
+                    "hi-vis",
+                    "nobody",
+                    "desks",
+                    "remembers",
+                    "kettle",
+                    "queue"
+                  ],
+                  "source_relation_tokens": ["issued", "does"],
+                  "required_qualifier_bindings": []
+                }
+              ],
+              "source_accessibility": [
+                {
+                  "id": "source_1",
+                  "text": "“I read from the record: One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.”",
+                  "wordCount": 37,
+                  "sentenceCount": 2,
+                  "sentenceWordCounts": [27, 10],
+                  "averageSentenceWords": 18.5,
+                  "maxSentenceWords": 27,
+                  "audienceRegister": "domain_apprentice",
+                  "audienceMaximum": 23,
+                  "lexicalAccessibility": "standard",
+                  "lexicalMaximum": 23,
+                  "measurementTolerance": 0.1,
+                  "audienceVisible": true,
+                  "lexicalVisible": true,
+                  "ok": true
+                }
+              ],
+              "compensation": null
+            }
+          },
+          "ending": {
+            "instruction": "State the due evidence in ordinary scene language first, then ask what that newly public evidence changes. Do not quiz before staging it. If the learner is struggling, explicitly permit a short question about which clue or term is unclear.",
+            "clarification_invitation_required": false,
+            "closure_required": false
+          },
+          "language": {
+            "audience_register": "domain_apprentice",
+            "audience_instruction": "Address a learner who can work with the domain once terms are anchored. Permit precise domain vocabulary, but keep each inference inspectable.",
+            "lexical_accessibility": "standard",
+            "lexical_instruction": "Use ordinary educated prose. Specialist story terms are allowed when their meaning is clear from the sentence.",
+            "scene_immersion": "immersive",
+            "scene_instruction": "Make the action feel situated in the dramatic world through at least two concrete scene objects or setting-specific terms. Do not break the fourth wall.",
+            "max_average_sentence_words": 23,
+            "host_sentence_word_target": 23
+          },
+          "compatibility": {
+            "decisions": [
+              "due_public_evidence_replaces_generic_development",
+              "authored_source_is_nested_inside_host_part",
+              "question_ownership_recasts_tactic_as_declarative"
+            ],
+            "composite_axis_ownership": null
+          },
+          "progression": {
+            "schema": "machinespirits.tutor-stub.turn-progression-contract.v1",
+            "complete": true,
+            "public_only": true,
+            "learner_uptake": {
+              "required": true,
+              "mode": "credit_or_qualify_resolved_move",
+              "learner_surface": "It puts Dario by the fridge at 12:02, so he probably took the lunchbox; you still need to check whether anyone saw him use shelf two.",
+              "accepted_meaning": "Uses the badge entry but keeps Dario’s guilt provisional.",
+              "focus_terms": ["uses", "badge", "entry", "keep", "dario", "guilt", "provisional"],
+              "instruction": "UPTAKE must visibly answer, credit, qualify, correct, or receive the learner’s actual move before development begins."
+            },
+            "turn_focus_contract": {
+              "primary_surface": "Uses the badge entry but keeps Dario’s guilt provisional",
+              "primary_source": "conversational_completion",
+              "raw_learner_surface": "It puts Dario by the fridge at 12:02, so he probably took the lunchbox; you still need to check whether anyone saw him use shelf two.",
+              "semantic_focus_candidates": {
+                "accepted_meaning": "Uses the badge entry but keeps Dario’s guilt provisional",
+                "summary": "Uses the badge entry but keeps Dario’s guilt provisional",
+                "pedagogical_need": "Separate kitchen access from shelf clearance"
+              },
+              "primary_terms": ["uses", "badge", "entry", "keep", "dario", "guilt", "provisional"],
+              "primary_groups": [
+                {
+                  "surface": "Uses the badge entry but keeps Dario’s guilt provisional",
+                  "terms": ["uses", "badge", "entry", "keep", "dario", "guilt", "provisional"]
+                }
+              ],
+              "due_surfaces": [
+                "One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does."
+              ],
+              "due_terms": [
+                "one",
+                "more",
+                "badge",
+                "noon",
+                "window",
+                "visitor",
+                "code",
+                "issu",
+                "front",
+                "desk",
+                "outside",
+                "crew",
+                "vis",
+                "nobody",
+                "remember",
+                "kettle",
+                "queue"
+              ],
+              "sibling_relation_requires_explicit_bridge": false,
+              "relation_kind": "unmapped",
+              "relation_basis": null,
+              "bridge_markers": [
+                "before we",
+                "first",
+                "to answer",
+                "to connect",
+                "because",
+                "so that",
+                "which bears on"
+              ],
+              "instruction": "Keep the learner’s requested focus primary: “Uses the badge entry but keeps Dario’s guilt provisional”. Do not silently replace its relation with a neighbouring one."
+            },
+            "handoff_contract": {
+              "mode": "new_unresolved_check",
+              "question_allowed": true,
+              "question_required": true,
+              "question_owner": "handoff",
+              "terminal_if_question": true,
+              "required_target_surfaces": [
+                "One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does."
+              ],
+              "required_target_terms": [
+                "one",
+                "more",
+                "badge",
+                "noon",
+                "window",
+                "visitor",
+                "code",
+                "issu",
+                "front",
+                "desk",
+                "outside",
+                "crew",
+                "vis",
+                "nobody",
+                "remember",
+                "kettle",
+                "queue"
+              ],
+              "prohibited_settled_surfaces": [
+                "What does that badge entry change for you?",
+                "Uses the badge entry but keeps Dario’s guilt provisional."
+              ],
+              "instruction": "HANDOFF alone asks one final question about the due SOURCE. Do not reopen the settled point."
+            }
+          },
+          "host_plan": {
+            "schema": "machinespirits.tutor-stub.host-plan.v1",
+            "ordered_slot_ids": ["uptake", "part", "source", "tactic", "handoff"],
+            "host_sentence_count": 4,
+            "slots": [
+              {
+                "id": "uptake",
+                "kind": "host",
+                "required": true,
+                "sentence_count": 1,
+                "instruction": "Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise. Carry forward this move: Uses the badge entry but keeps Dario’s guilt provisional."
+              },
+              {
+                "id": "part",
+                "kind": "host",
+                "required": true,
+                "sentence_count": 1,
+                "instruction": "As skeptical examiner, without naming the role, challenge one unsafe leap and show one fair public route through it. Name one public scene object. Anchor the due source entrance in its own referent (the visitor badge log); do not substitute an unrelated prop. A declarative part may name that referent without handling it."
+              },
+              {
+                "id": "source",
+                "kind": "source",
+                "required": true,
+                "exact": true,
+                "cues": [
+                  "Copy exactly, marks included: “I read from the record: One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” Keep SOURCE words inside; inherit no deed or ownership."
+                ],
+                "sources": [
+                  {
+                    "schema": "machinespirits.tutor-stub.due-source-render.v1",
+                    "id": "source_1",
+                    "premise": "p_crew",
+                    "mode": "enacted_role",
+                    "surface": "One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.",
+                    "text": "“I read from the record: One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.”",
+                    "reporting": {
+                      "kind": "record_reading",
+                      "text": "I read from the record",
+                      "separator": "colon",
+                      "complementizer": null
+                    },
+                    "action_referents": {
+                      "schema": "machinespirits.tutor-stub.due-source-action-referents.v1",
+                      "active": true,
+                      "required": true,
+                      "primary": {
+                        "kind": "role_carrier",
+                        "label": "the visitor badge log",
+                        "source": "authored_role",
+                        "alignment_required": true
+                      },
+                      "referents": [
+                        {
+                          "kind": "role_carrier",
+                          "label": "the visitor badge log",
+                          "source": "authored_role",
+                          "alignment_required": true
+                        },
+                        {
+                          "kind": "role_carrier_head",
+                          "label": "log",
+                          "source": "authored_role",
+                          "alignment_required": false
+                        },
+                        {
+                          "kind": "fact_argument",
+                          "id": "noonWindow",
+                          "label": "noon Window",
+                          "source": "typed_fact",
+                          "argument_index": 2,
+                          "public_surface_validated": true,
+                          "speaker_eligible": true,
+                          "alignment_required": false
+                        }
+                      ],
+                      "trace_only_fact_referents": [
+                        {
+                          "kind": "fact_argument",
+                          "id": "wrenfold",
+                          "label": "wrenfold",
+                          "source": "typed_fact",
+                          "argument_index": 1,
+                          "public_surface_validated": false,
+                          "speaker_eligible": false,
+                          "alignment_required": false
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "tactic",
+                "kind": "host",
+                "required": true,
+                "sentence_count": 1,
+                "instruction": "After SOURCE closes, make TACTIC a new unquoted sentence. Name the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute. Ask no question here; HANDOFF owns it.",
+                "semantic_instruction": ""
+              },
+              {
+                "id": "handoff",
+                "kind": "host",
+                "required": true,
+                "sentence_count": 1,
+                "closure": false,
+                "instruction": "Ask one HANDOFF question about what SOURCE changes, supports, or rules out. Make it distinguish one concrete claim. Do not reopen the settled point."
+              }
+            ],
+            "axis_ownership": {
+              "audience_register": ["uptake", "part", "tactic", "handoff"],
+              "lexical_accessibility": ["uptake", "part", "tactic", "handoff"],
+              "scene_immersion": ["part"],
+              "actorial_part": ["part"],
+              "actorial_performance": ["tactic"],
+              "public_evidence": ["source"],
+              "action_family": ["handoff"],
+              "engagement_stance": ["handoff"]
+            }
+          }
+        },
+        "frames": {
+          "responseComposition": {
+            "schema": "machinespirits.tutor-stub.response-composition.v1",
+            "active": true,
+            "delivery": {
+              "atomic_assistant_turn": true,
+              "public_history_messages": 1,
+              "internal_functions": 2,
+              "display_beats": 1,
+              "public_shape": "continuous_performance"
+            },
+            "learner_move": {
+              "summary": "Uses the badge entry but keeps Dario’s guilt provisional.",
+              "request_type": "answer_seeking_or_overreach",
+              "discourse_move": "hypothesis",
+              "evidence_use": "overleaps_evidence",
+              "epistemic_stance": "reflective",
+              "pedagogical_need": "Separate kitchen access from shelf clearance."
+            },
+            "learner_dag": {
+              "status": "available",
+              "bottleneck": "premature_assertion",
+              "best_path_coverage": 0,
+              "grounded_count": 2,
+              "missing_premise_count": 3,
+              "final_secret_entailed": false,
+              "asserted_secret": false,
+              "learner_advance": {
+                "pace": "advancing",
+                "accelerated": false,
+                "supported_move_count": 1,
+                "adopted_premise_count": 1,
+                "derived_fact_count": 0
+              }
+            },
+            "selected_action_family": "stage_next_step",
+            "action_target": "development",
+            "conversational_completion": {
+              "schema": "machinespirits.tutor-stub.conversational-completion.v1",
+              "mode": "defeasible_human_scaffold",
+              "active": true,
+              "status": "qualified",
+              "resolved": true,
+              "sourceTutorQuestion": "What does that badge entry change for you?",
+              "learnerSurface": "It puts Dario by the fridge at 12:02, so he probably took the lunchbox; you still need to check whether anyone saw him use shelf two.",
+              "acceptedMeaning": "Uses the badge entry but keeps Dario’s guilt provisional.",
+              "reason": "the learner completed at least one supported public move",
+              "reopenForbidden": true,
+              "requiresNewPressure": true,
+              "releaseNextClue": true,
+              "conceptSignature": [
+                "badge",
+                "entry",
+                "change",
+                "for",
+                "uses",
+                "but",
+                "keeps",
+                "darios",
+                "guilt",
+                "provisional"
+              ],
+              "instruction": "Credit or qualify this move once, without paraphrasing the same distinction into another question. Then advance to genuinely new public evidence or a new implication. Do not ask for a safer restatement of the resolved point."
+            },
+            "due_evidence_surfaces": [
+              "One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does."
+            ],
+            "scene_action_budget": {
+              "recent_scene_action_count": 1,
+              "saturated": false
+            },
+            "uptake": {
+              "required": true,
+              "action_family": null,
+              "instruction": "Respond to the learner’s actual contribution first: credit, answer, qualify, correct, or receive it without reopening an accepted reasoning step."
+            },
+            "development": {
+              "required": true,
+              "action_family": "stage_next_step",
+              "kind": "dramatic_clue_release",
+              "expected_dag_move": "The previous local question is conversationally complete. Introduce or work with genuinely new public evidence; do not ask for the same distinction again.",
+              "expected_interaction_move": "Credit the learner once, then create forward movement through a new public pressure rather than another formulation check.",
+              "clue_release_required": true,
+              "closure_phase": "open",
+              "instruction": "Without announcing a switch, continue through the selected part (skeptical examiner) and perform the next action: advance the public reasoning, stage the due clue, clarify, or close as the current state requires."
+            },
+            "shared_realization": {
+              "engagement_stance": "precise",
+              "audience_register": "domain_apprentice",
+              "lexical_accessibility": "standard",
+              "scene_immersion": "immersive",
+              "actorial_part": "skeptic",
+              "actorial_part_label": "skeptical examiner",
+              "evidence_enactment": {
+                "active": true,
+                "mode": "enacted_role",
+                "authored_role": "front-desk clerk reading the visitor badge log",
+                "entry_count": 1
+              }
+            }
+          },
+          "dramaticRelease": {
+            "schema": "machinespirits.tutor-stub.dramatic-release.v1",
+            "active": true,
+            "entries": [
+              {
+                "premise": "p_crew",
+                "fact": ["badgedIntoKitchen", "wrenfold", "noonWindow"],
+                "via": "director",
+                "surface": "One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.",
+                "mode": "enacted_role",
+                "role": "front-desk clerk reading the visitor badge log",
+                "cue": null
+              }
+            ],
+            "requiresEnactment": true,
+            "requiresExhibitHandoff": false
+          },
+          "questionSupport": {
+            "schema": "machinespirits.tutor-stub.question-support.v1",
+            "answerability": "answerable_after_staging",
+            "modality": "stage_then_ask",
+            "adaptiveMultipleChoice": false,
+            "guardRequired": false,
+            "clarificationInvitationRequired": false,
+            "responsiveRepairRequired": false,
+            "learnerMoves": ["answer_from_stated_clue", "ask_which_clue", "ask_what_term_means"],
+            "struggleCount": 0,
+            "adaptiveChoiceCoolingDown": false,
+            "reason": "the next needed evidence is due now and must enter the public discourse before the learner is questioned about it",
+            "tutorInstruction": "State the due evidence in ordinary scene language first, then ask what that newly public evidence changes. Do not quiz before staging it. If the learner is struggling, explicitly permit a short question about which clue or term is unclear."
+          },
+          "dialogueClosure": {
+            "schema": "machinespirits.tutor-stub.dialogue-closure.v1",
+            "enabled": true,
+            "phase": "open",
+            "mandatory": false,
+            "available": false,
+            "strictGrounded": false,
+            "authoredDagSatisfied": false,
+            "allowCheckIn": false,
+            "answerTerm": "wrenfold",
+            "basis": null
+          },
+          "generousInference": {
+            "schema": "machinespirits.tutor-stub.generous-inference.v1",
+            "applied": false,
+            "kind": null,
+            "confidence": "none",
+            "learnerSurface": "It puts Dario by the fridge at 12:02, so he probably took the lunchbox; you still need to check whether anyone saw him use shelf two.",
+            "sourceTutorQuestion": "What does that badge entry change for you?",
+            "resolvedMeaning": null,
+            "reason": "classifier_detected_unsafe_or_conflicting_move",
+            "tutorInstruction": null
+          }
+        },
+        "guards": {
+          "enabled": true,
+          "leak": true,
+          "humanScaffold": false,
+          "questionSupport": false,
+          "dramaticRelease": true,
+          "actorialRealization": true,
+          "responseComposition": true,
+          "repetition": true,
+          "dialogueClosure": false
+        },
+        "publicPremiseIds": ["p_noon", "p_crew"],
+        "duePremiseIds": ["p_crew"],
+        "request": {
+          "systemPrompt": "You are an experimental AI tutor stub.\n\nTopic: The Lunchbox on Shelf Two\nLearner: Automated learner run 1/1 for policy continuous_dynamical_system.\nGoal: Help the learner make one small conceptual move. Prefer questions and concrete examples over explanation dumps.\nStyle: Calm, concise, Socratic, and specific. Do not perform the whole solution unless the learner is truly stuck.\n\nRules:\n- Treat tutoring here as acting in a shared inquiry. Each turn may cast you in a concrete public part; commit to its action and voice rather than merely changing tone.\n- A part never grants knowledge. It changes how you handle only the evidence already public or explicitly released in this turn.\n- Start by locating the learner's current idea, not by grading them.\n- Ask at most one main question per turn.\n- Use a tiny concrete example when it helps.\n- Keep the answer short enough that the learner can respond.\n- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.\n- Treat learner questions as legitimate moves, not evasions. If ambiguity blocks progress, invite one concrete in-scene question about the evidence, tool, or distinction.\n- When asking would be better than guessing, make that option explicit in character: for example, \"Which part of that mark needs clarifying?\" Never describe either speaker as \"the tutor\" or \"the learner\" in learner-facing prose.\n- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.\n- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.\n- In story mode, speak only in public evidence language. Never give an example in formal notation or name an internal route.\n- Do not make the learner deduce a claim and then separately enter it in the incident log. Their stated warranted claim is the entry.\n- Let human learners compress obvious reasoning. Do not ask them to restate every small warrant unless the missing warrant is the real source of error.\n- In story mode, keep the plain contemporary flavour but be terse: usually 2-4 short sentences, never a catalogue of routes.\n- Do not default to multiple choice. A tutor-only question-support instruction may still authorize one bounded choice when uncertainty shows that an open prompt is not answerable enough.\n- If no question-support override applies and the learner seems unsure, put a directional hint into the discourse before asking; never ask them to invent a record, source, name, or fact that has not entered the public scene.\n- When talking through options, collapse them to one live issue: what changed, what remains unsafe, or what the learner now thinks follows.\n- End with one light prompt for the learner's natural next thought; do not require a full proof step unless their leap is unsafe or case-closing.\n- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.\n- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.\n# Detective-story world\nWorld: world_028_larkspur_fridge — The Lunchbox on Shelf Two\nDiscipline: Office forensics (a very small mystery)\nPublic question: Who took Priya's labelled lunchbox from shelf two of the studio fridge?\nOpening situation visible to the learner:\nLarkspur Studio is eleven desks, one kitchen, and a fridge with a strict labelling rule. On Tuesday, during the noon window, Priya's lunchbox — labelled, dated, and famously well-packed — vanished from shelf two. The studio has its verdict before the kettle boils: Dario from accounts, twice caught raiding the fridge, entirely unrepentant both times, and badged into the kitchen at noon today. You are the studio coordinator, keeper of the incident log, and you would love for it to be Dario. The office manager's rule stands anyway: entries come from evidence, the badge system and the ledgers say what they say, and nobody gets written up for their reputation.\nLearner role:\nThe studio coordinator: organized, fair-minded on a good day, and not having a good day — Priya is furious, Dario has history, and closing the incident log by two o'clock would feel wonderful. Learning, entry by entry, that a history with the fridge is not a hand on the shelf.\nYour task in story mode:\n- Play the tutor/investigator guiding the learner through the case.\n- Treat the learner as the investigator; do not solve the case for them.\n- Keep the public question alive and ask for grounded inferences from evidence.\n- Treat a concrete learner question as a legitimate investigative move. When clarification is more useful than a guess, invite the investigator to ask what evidence, tool, or distinction needs explaining.\n- Make that permission visible: name the clue in plain language, or explicitly invite a short clarification question when a term or referent may be unclear. Never assume the investigator knows that a question may be answered with a clarifying question.\n- Stay inside the scene: address the investigator directly and never call either speaker \"the tutor\" or \"the learner\".\n- You are an adaptive scene actor as well as an investigator. A private turn instruction may cast you as a fellow investigator, examiner, record-keeper, witness/source, advocate, skeptic, or closer.\n- Take that part through a visible first-person action or voice, using only public evidence. Do not merely decorate the same question with theatrical language.\n# Speaking-tutor evidence contract\nA private deterministic planner owns the answer, proof path, future evidence, and release schedule.\nYou are the speaking tutor. You receive only the public scene, public rule glosses, public dialogue, and evidence available through the current turn.\nNever speculate about withheld evidence. The turn context will state exactly what evidence may enter the scene now.\nPublic evidence rules in ordinary language:\n1. A person or crew could clear the fridge shelf only if they entered the kitchen in the noon window and held the building's appliance-clearance authority.\n2. If an authorized crew could clear the shelf and its job record logs the lunchbox into lost property, that crew took the lunchbox from the fridge.\nSpeaking conduct:\n- Work only from evidence already public or explicitly made available in the current turn context.\n- Speak in ordinary scene language. Never invent formal notation, internal identifiers, paths, or hidden bookkeeping.\n- Treat the incident log as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the incident log entry.\n- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.\n- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.\n- If the learner guesses an answer, acknowledge it only as a hypothesis until the public evidence licenses it.\n- When new evidence is made available for this turn, introduce at most that one authored batch and ask for the learner's natural reading of what it changes, not a full proof ledger.\n- The one-new-clue limit constrains your staging, not the learner’s reasoning. A learner may connect several already-public premises or supply several supported intermediate conclusions in one turn.\n- When the learner makes a warranted multi-premise or multi-step advance, credit the whole chain. Do not make them restate its parts one by one; match their pace and test only the next unresolved edge.\n\n[Named tutor instance: The Dramatic Detective Tutor (dramatic-detective)]\n# Dramatic Detective Tutor\n\nYou are the continuing speaking presence in this inquiry, not an interchangeable response generator.\n\n- Hear and answer the learner's actual words before developing the scene.\n- When a public part is selected, perform its action directly. Do not announce that you are role-playing or describe the part from outside it.\n- Let register, part, pace, and accessibility visibly alter sentence shape, rhythm, address, and dramatic action.\n- Preserve continuity of place, people, objects, evidence, and the open question across every model or setting change.\n- Prefer concrete public language over abstract labels such as condition, rule, reading, route, or whole case.\n- Treat confusion, boredom, skepticism, and acceleration as actions addressed to you in the shared scene.\n- Do not reuse a stock release speech. Make each new clue enter through the selected part and the present dramatic situation.\n[End named tutor instance]",
+          "messages": [
+            {
+              "role": "assistant",
+              "content": "Priya has the fridge door open and the office is already pointing at Dario. The incident log is still blank: Who took Priya's labelled lunchbox from shelf two of the studio fridge? Tell me what you want checked first — or stop me if any part of that question needs unpacking."
+            },
+            {
+              "role": "user",
+              "content": "Dario took it—he’s got history with the fridge."
+            },
+            {
+              "role": "assistant",
+              "content": "Dario’s past makes him a plausible suspicion, but it does not show a hand on Priya’s lunchbox. I open the badge log beside the fridge and mark one fact: Dario was in the kitchen at 12:02, carrying a mug; that shows access, not yet that he cleared shelf two. What does that badge entry change for you?"
+            },
+            {
+              "role": "user",
+              "content": "[Tutor context continuity]\nAll 3 previous public user/assistant messages are replayed in their original order for this model call.\n[End tutor context continuity]\n\n[Tutor-only public evidence window]\nCurrent tutor turn in this lightweight stub: 2\nEvidence actually spoken before this turn:\n- [learner-grounded] The badge log has Dario in the kitchen at 12:02 — mug in hand, by his own cheerful admission, and not one bit sorry about the last two times.\nNew evidence permitted now (it becomes public only if this reply says it):\n- scene evidence: One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.\nNo future evidence, answer key, proof path, or release detail is included here.\nUse this as a hard speaking boundary, not merely pacing advice.\n[End tutor-only public evidence window]\n\n[Tutor-only learner classifier]\nThis turn: Uses the badge entry but keeps Dario’s guilt provisional.\nOverall: The learner is revising an initial accusation into a testable hypothesis.\nDiscourse move: hypothesis\nEvidence use: overleaps_evidence\nEpistemic stance: reflective\nImmediate pedagogical need: Separate kitchen access from shelf clearance.\nUse this as advisory context. Do not mention classifier labels, scores, rubrics, or hidden analysis to the learner.\n[End tutor-only learner classifier]\n\n[Tutor-only redacted learner-DAG model]\nBest-path coverage: 0\nBottleneck: premature_assertion\nCounts: grounded=2, voiced=0, hypotheses=1, answerCandidates=0, missing=3\n\nGrounding status:\n- 1 released public evidence item currently learner-grounded; exact item labels appear in the public evidence window.\n- 1 additional public or derived fact currently grounded\nLearner hypotheses:\n- Dario probably took the lunchbox.\nAnswer candidates derivable from the tutor model of the learner record:\n- none\nUse this as advisory context only. Do not mention DAGs, coverage, missing counts, hidden paths, or internal state.\n[End tutor-only redacted learner-DAG model]\n\n[Tutor-only human discourse scaffold]\nMode: defeasible_human_scaffold; strict DAG remains the audit, but the learner-facing scaffold is active.\nStep compression: on; accept obvious public bridges as implied proof debt; ask for explicit warrants only when the leap is unsafe, conflicting, or case-closing; max explicit demands per turn 1.\nCurrent branch: current public clue.\nLocal question: Keep “Who took Priya's labelled lunchbox from shelf two of the studio fridge?” in view while discussing this stated clue: “One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them;…”.\nWarrant frame: Explain this connection in ordinary scene language: A person or crew could clear the fridge shelf only if they entered the kitchen in the noon window and held the building's appliance-clearance authority. Do not call it a rule or condition.\nJoin reminder: Keep what this clue tells us separate from what is still unknown about “Who took Priya's labelled lunchbox from shelf two of the studio fridge?”.\nEvidence available now: scene evidence: One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobo...\nConversational completion: qualified. The immediately preceding local question is closed in learner-facing discourse.\nAccepted learner meaning: Uses the badge entry but keeps Dario’s guilt provisional.\nAuthoritative completion rule: Credit or qualify this move once, without paraphrasing the same distinction into another question. Then advance to genuinely new public evidence or a new implication. Do not ask for a safer restatement of the resolved point.\nSide arc: none detected; stay on the local warrant.\nProof debt status: open_proof_debt; open=3; harmful=0.\nOpen proof debt:\n- It puts Dario by the fridge at 12:02, so he probably took the lunchbox; you still need to check whether anyone saw hi... — classifier marked overreach or answer-seeking before an explicit public warrant was stored\n- Dario could clear shelf two.\n- The lunchbox was logged to lost property under Dario.\nTreat plausible learner leaps as compressed human reasoning. Keep obvious omitted bridges as internal proof debt, and surface a warrant gap only when the leap is unsafe, conflicting, or would close the case.\nLearner-facing behavior: use plain public evidence language, answer side clarifications briefly, and usually move with the learner's compressed inference rather than forcing them to spell out every link.\nWhen the learner skips an obvious public bridge, do not quiz them on it. Carry the bridge internally as implied proof debt and continue to the next useful pressure.\nAsk for an explicit warrant only if the learner is about to name/confirm a suspect, contradicts public evidence, relies on unstaged evidence, or reaches a conclusion that would be false without the missing bridge.\nNever mention scaffold state, proof debt, side arcs, DAGs, premise ids, rule ids, hidden facts, or release schedules.\n[End tutor-only human discourse scaffold]\n\n[Tutor-only host plan]\nWrite one paragraph: four unlabeled, unquoted host sentences, each at most 23 words. Follow UPTAKE > PART > SOURCE > TACTIC > HANDOFF. SOURCE is a separate quotation. Never merge slots.\nGLOBAL — Intelligent domain apprentice; standard common words; one relation per host sentence. Keep immersive scene contact with public objects. Add no fact.\nUPTAKE — Answer, credit, qualify, correct, or receive the learner’s concrete move; never use generic praise. Carry forward this move: Uses the badge entry but keeps Dario’s guilt provisional.\nPART — As skeptical examiner, without naming the role, challenge one unsafe leap and show one fair public route through it. Name one public scene object. Anchor the due source entrance in its own referent (the visitor badge log); do not substitute an unrelated prop. A declarative part may name that referent without handling it.\nSOURCE — Copy exactly, marks included: “I read from the record: One more badge in the noon window: a visitor code, WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” Keep SOURCE words inside; inherit no deed or ownership.\nTACTIC — After SOURCE closes, make TACTIC a new unquoted sentence. Name the public evidence, what it supports, and the named conclusion it does not establish. Keep both conclusions explicit; use no pronoun substitute. Ask no question here; HANDOFF owns it.\nHANDOFF — Ask one HANDOFF question about what SOURCE changes, supports, or rules out. Make it distinguish one concrete claim. Do not reopen the settled point.\nUse one voice. Never announce roles, strategy, analysis, proof machinery, or hidden/future evidence. State SOURCE once.\n[End tutor-only host plan]\n\nLearner says:\nIt puts Dario by the fridge at 12:02, so he probably took the lunchbox; you still need to check whether anyone saw him use shelf two."
+            }
+          ],
+          "config": {
+            "temperature": 0.35,
+            "maxTokens": 4096,
+            "historyTurns": 4,
+            "leakGuard": true,
+            "scaffoldGuard": false,
+            "questionSupportGuard": false,
+            "actorialRealizationGuard": true,
+            "responseCompositionGuard": true,
+            "repetitionGuard": true,
+            "closureGuard": false,
+            "repairAttempt": 0,
+            "messageHistoryMode": "full_public_replay",
+            "availableMessageCount": 3,
+            "replayedMessageCount": 3,
+            "replayedUserMessageCount": 1,
+            "replayedAssistantMessageCount": 2,
+            "contextActivatedBy": "session_start",
+            "firstDraftContractSchema": "machinespirits.tutor-stub.first-draft-turn-contract.v1",
+            "firstDraftCompatibilityDecisions": [
+              "due_public_evidence_replaces_generic_development",
+              "authored_source_is_nested_inside_host_part"
+            ],
+            "passthrough": false,
+            "promptAudit": {
+              "schema": "machinespirits.tutor-stub.prompt-audit.v1",
+              "surface": "tutor_turn",
+              "budget": {
+                "maxChars": 42000,
+                "maxApproxTokens": 10500
+              },
+              "chars": 18301,
+              "approximateTokens": 4576,
+              "duplicateInstructionLines": [],
+              "violations": [],
+              "ok": true
+            },
+            "speakerPrivilegeAudit": {
+              "schema": "machinespirits.tutor-stub.speaker-privilege-audit.v1",
+              "tutorTurn": 2,
+              "speakerAccess": "public_scene_public_rules_and_evidence_available_through_current_turn",
+              "issues": [],
+              "ok": true
+            },
+            "cliEffort": "low"
+          },
+          "provider": "codex",
+          "model": "gpt-5.6-terra",
+          "effort": "low"
+        },
+        "semanticAdjudicatorDefault": {
+          "provider": "codex",
+          "model": "gpt-5.6-sol",
+          "effort": "low"
+        },
+        "recorded": {
+          "originalCandidate": {
+            "kind": "original_candidate",
+            "attempt": 0,
+            "provider": "codex",
+            "model": "gpt-5.6-terra",
+            "deliveryConfiguration": {
+              "schema": "machinespirits.tutor-stub.response-configuration.v2",
+              "policy": "continuous_dynamical_system",
+              "engagement_stance": "precise",
+              "action_family": "stage_next_step",
+              "audience_register": "domain_apprentice",
+              "lexical_accessibility": "standard",
+              "scene_immersion": "immersive",
+              "actorial_part": "skeptic",
+              "actorial_part_label": "skeptical examiner",
+              "actorial_host_part": "skeptic",
+              "actorial_host_part_label": "skeptical examiner",
+              "actorial_performance": {
+                "id": "evidentiary_boundary",
+                "label": "evidentiary boundary",
+                "contract": "Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.",
+                "engagement_stance": "precise",
+                "actorial_part": "skeptic",
+                "selection_method": "stance_realization_contract",
+                "displaced_tactic": null,
+                "forbidden_meta_frames": [
+                  "let us role-play",
+                  "I will be the role",
+                  "I will take the part",
+                  "speaking as the role",
+                  "back to us"
+                ]
+              },
+              "surface_budgets": {
+                "max_average_sentence_words": 23
+              }
+            },
+            "candidate": {
+              "start": 0,
+              "end": 419,
+              "text": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?",
+              "offsetEncoding": "utf16_code_units"
+            },
+            "audits": {
+              "ok": false,
+              "leakAudit": {
+                "ok": true,
+                "leaks": [],
+                "finalEntailed": false,
+                "answerNamePublic": false,
+                "publicPremiseIds": ["p_noon", "p_crew"]
+              },
+              "scaffoldAudit": {
+                "ok": true,
+                "issues": [],
+                "similarity": 0
+              },
+              "questionSupportAudit": {
+                "ok": true,
+                "issues": []
+              },
+              "dramaticReleaseAudit": {
+                "schema": "machinespirits.tutor-stub.dramatic-release.v1",
+                "ok": true,
+                "active": true,
+                "entranceVisible": true,
+                "handoffVisible": true,
+                "enactmentVisible": true,
+                "exhibitHandoffVisible": true,
+                "returnVisible": true,
+                "metaRoleplayAnnouncement": false,
+                "metaReleaseAnnouncement": false,
+                "roleStageDirection": false,
+                "sourcePerspectiveDrift": false,
+                "firstPersonRoleVoice": true,
+                "issues": []
+              },
+              "actorialRealizationAudit": {
+                "schema": "machinespirits.tutor-stub.actorial-realization-audit.v1",
+                "ok": false,
+                "issues": [
+                  {
+                    "type": "missing_selected_actorial_part",
+                    "reason": "does not directly perform the selected public part: skeptical examiner"
+                  }
+                ]
+              },
+              "responseConfigurationAudit": {
+                "schema": "machinespirits.tutor-stub.response-configuration-audit.v2",
+                "configuration_signature": "precise|stage_next_step|domain_apprentice|standard|immersive|skeptic|evidentiary_boundary",
+                "visible_signature": "length:medium|syntax:plain|questions:1|glosses:0|scene:3|second_person:0|cues:none|part:not_visible|tactic:evidentiary_boundary",
+                "axes": {
+                  "engagement_stance": {
+                    "selected": "precise",
+                    "visible": true
+                  },
+                  "action_family": {
+                    "selected": "stage_next_step",
+                    "visible": true,
+                    "evaluated_segment": "development"
+                  },
+                  "audience_register": {
+                    "selected": "domain_apprentice",
+                    "visible": true,
+                    "max_average_sentence_words": 23,
+                    "measurement_tolerance": 0.1
+                  },
+                  "lexical_accessibility": {
+                    "selected": "standard",
+                    "visible": true,
+                    "max_average_sentence_words": 23,
+                    "measurement_tolerance": 0.1
+                  },
+                  "scene_immersion": {
+                    "selected": "immersive",
+                    "visible": true
+                  },
+                  "actorial_part": {
+                    "selected": "skeptic",
+                    "label": "skeptical examiner",
+                    "performance_tactic": "evidentiary_boundary",
+                    "performance_label": "evidentiary boundary",
+                    "part_visible": false,
+                    "performance_visible": true,
+                    "visible": false,
+                    "evaluated_segment": "adaptive_host_without_authored_source"
+                  }
+                },
+                "metrics": {
+                  "wordCount": 76,
+                  "sentenceCount": 4,
+                  "averageSentenceWords": 19,
+                  "maxSentenceWords": 28,
+                  "longWordRatio": 0.039,
+                  "questionCount": 1,
+                  "secondPerson": false,
+                  "concreteSceneTerms": [
+                    "fridge",
+                    "dario",
+                    "shelf",
+                    "kitchen",
+                    "noon",
+                    "badge",
+                    "kettle",
+                    "nobody",
+                    "window",
+                    "desks",
+                    "crew",
+                    "remembers"
+                  ],
+                  "concreteSceneTermCount": 16,
+                  "glossedTerms": [],
+                  "fourthWallBreak": false,
+                  "surfaceCueProfile": {
+                    "definition": false,
+                    "conditional": false,
+                    "invitation": false,
+                    "acknowledgement": false,
+                    "challenge": false,
+                    "closure": false
+                  }
+                },
+                "visible_axis_count": 5,
+                "axis_count": 6,
+                "realization_rate": 0.833,
+                "actorial_realization": {
+                  "schema": "machinespirits.tutor-stub.actorial-realization-audit.v1",
+                  "ok": false,
+                  "issues": [
+                    {
+                      "type": "missing_selected_actorial_part",
+                      "reason": "does not directly perform the selected public part: skeptical examiner"
+                    }
+                  ]
+                },
+                "transcript_visible": false,
+                "limitations": "Deterministic surface audit: it checks legible character actions and stance-specific performance cues; contrastive replay is still required to establish human-perceived difference."
+              },
+              "responseCompositionAudit": {
+                "schema": "machinespirits.tutor-stub.response-composition-audit.v1",
+                "ok": true,
+                "active": true,
+                "atomic_assistant_turn": true,
+                "action_family": "stage_next_step",
+                "action_target": "development",
+                "development_kind": "dramatic_clue_release",
+                "expected_dag_move": "The previous local question is conversationally complete. Introduce or work with genuinely new public evidence; do not ask for the same distinction again.",
+                "conversational_completion": {
+                  "schema": "machinespirits.tutor-stub.conversational-completion.v1",
+                  "ok": true,
+                  "active": true,
+                  "newEvidenceVisible": true,
+                  "questionOverlap": 0.75,
+                  "sharedQuestionTokenCount": 3,
+                  "issues": []
+                },
+                "issues": [],
+                "segments": {
+                  "uptake": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two.",
+                  "development": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?",
+                  "method": "fused_opening",
+                  "formatted": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?"
+                }
+              },
+              "repetitionAudit": {
+                "schema": "machinespirits.tutor-stub.response-guard.v1",
+                "ok": true,
+                "issues": [],
+                "maxSimilarity": 0.25806451612903225
+              },
+              "closureAudit": {
+                "ok": true,
+                "closesDialogue": false,
+                "invitesCheckIn": false,
+                "issues": []
+              },
+              "deliveryOk": false,
+              "deliveryDecision": {
+                "schema": "machinespirits.tutor-stub.guard-delivery-decision.v1",
+                "ok": false,
+                "allowActorialAdvisory": false,
+                "hardIssues": [
+                  {
+                    "guard": "actorial_realization",
+                    "type": "missing_selected_actorial_part",
+                    "reason": "does not directly perform the selected public part: skeptical examiner"
+                  }
+                ],
+                "advisoryIssues": []
+              }
+            },
+            "auditOk": false,
+            "generation": {
+              "callId": "2:1",
+              "role": "tutor_stub_tutor",
+              "latencyMs": 5909,
+              "usage": {
+                "inputTokens": 15749,
+                "outputTokens": 100,
+                "totalTokens": 15849,
+                "cost": 0
+              },
+              "tokenUsageAvailable": true
+            }
+          },
+          "attempts": [
+            {
+              "kind": "original_candidate",
+              "attempt": 0,
+              "provider": "codex",
+              "model": "gpt-5.6-terra",
+              "deliveryConfiguration": {
+                "schema": "machinespirits.tutor-stub.response-configuration.v2",
+                "policy": "continuous_dynamical_system",
+                "engagement_stance": "precise",
+                "action_family": "stage_next_step",
+                "audience_register": "domain_apprentice",
+                "lexical_accessibility": "standard",
+                "scene_immersion": "immersive",
+                "actorial_part": "skeptic",
+                "actorial_part_label": "skeptical examiner",
+                "actorial_host_part": "skeptic",
+                "actorial_host_part_label": "skeptical examiner",
+                "actorial_performance": {
+                  "id": "evidentiary_boundary",
+                  "label": "evidentiary boundary",
+                  "contract": "Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.",
+                  "engagement_stance": "precise",
+                  "actorial_part": "skeptic",
+                  "selection_method": "stance_realization_contract",
+                  "displaced_tactic": null,
+                  "forbidden_meta_frames": [
+                    "let us role-play",
+                    "I will be the role",
+                    "I will take the part",
+                    "speaking as the role",
+                    "back to us"
+                  ]
+                },
+                "surface_budgets": {
+                  "max_average_sentence_words": 23
+                }
+              },
+              "candidate": {
+                "start": 0,
+                "end": 419,
+                "text": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?",
+                "offsetEncoding": "utf16_code_units"
+              },
+              "audits": {
+                "ok": false,
+                "leakAudit": {
+                  "ok": true,
+                  "leaks": [],
+                  "finalEntailed": false,
+                  "answerNamePublic": false,
+                  "publicPremiseIds": ["p_noon", "p_crew"]
+                },
+                "scaffoldAudit": {
+                  "ok": true,
+                  "issues": [],
+                  "similarity": 0
+                },
+                "questionSupportAudit": {
+                  "ok": true,
+                  "issues": []
+                },
+                "dramaticReleaseAudit": {
+                  "schema": "machinespirits.tutor-stub.dramatic-release.v1",
+                  "ok": true,
+                  "active": true,
+                  "entranceVisible": true,
+                  "handoffVisible": true,
+                  "enactmentVisible": true,
+                  "exhibitHandoffVisible": true,
+                  "returnVisible": true,
+                  "metaRoleplayAnnouncement": false,
+                  "metaReleaseAnnouncement": false,
+                  "roleStageDirection": false,
+                  "sourcePerspectiveDrift": false,
+                  "firstPersonRoleVoice": true,
+                  "issues": []
+                },
+                "actorialRealizationAudit": {
+                  "schema": "machinespirits.tutor-stub.actorial-realization-audit.v1",
+                  "ok": false,
+                  "issues": [
+                    {
+                      "type": "missing_selected_actorial_part",
+                      "reason": "does not directly perform the selected public part: skeptical examiner"
+                    }
+                  ]
+                },
+                "responseConfigurationAudit": {
+                  "schema": "machinespirits.tutor-stub.response-configuration-audit.v2",
+                  "configuration_signature": "precise|stage_next_step|domain_apprentice|standard|immersive|skeptic|evidentiary_boundary",
+                  "visible_signature": "length:medium|syntax:plain|questions:1|glosses:0|scene:3|second_person:0|cues:none|part:not_visible|tactic:evidentiary_boundary",
+                  "axes": {
+                    "engagement_stance": {
+                      "selected": "precise",
+                      "visible": true
+                    },
+                    "action_family": {
+                      "selected": "stage_next_step",
+                      "visible": true,
+                      "evaluated_segment": "development"
+                    },
+                    "audience_register": {
+                      "selected": "domain_apprentice",
+                      "visible": true,
+                      "max_average_sentence_words": 23,
+                      "measurement_tolerance": 0.1
+                    },
+                    "lexical_accessibility": {
+                      "selected": "standard",
+                      "visible": true,
+                      "max_average_sentence_words": 23,
+                      "measurement_tolerance": 0.1
+                    },
+                    "scene_immersion": {
+                      "selected": "immersive",
+                      "visible": true
+                    },
+                    "actorial_part": {
+                      "selected": "skeptic",
+                      "label": "skeptical examiner",
+                      "performance_tactic": "evidentiary_boundary",
+                      "performance_label": "evidentiary boundary",
+                      "part_visible": false,
+                      "performance_visible": true,
+                      "visible": false,
+                      "evaluated_segment": "adaptive_host_without_authored_source"
+                    }
+                  },
+                  "metrics": {
+                    "wordCount": 76,
+                    "sentenceCount": 4,
+                    "averageSentenceWords": 19,
+                    "maxSentenceWords": 28,
+                    "longWordRatio": 0.039,
+                    "questionCount": 1,
+                    "secondPerson": false,
+                    "concreteSceneTerms": [
+                      "fridge",
+                      "dario",
+                      "shelf",
+                      "kitchen",
+                      "noon",
+                      "badge",
+                      "kettle",
+                      "nobody",
+                      "window",
+                      "desks",
+                      "crew",
+                      "remembers"
+                    ],
+                    "concreteSceneTermCount": 16,
+                    "glossedTerms": [],
+                    "fourthWallBreak": false,
+                    "surfaceCueProfile": {
+                      "definition": false,
+                      "conditional": false,
+                      "invitation": false,
+                      "acknowledgement": false,
+                      "challenge": false,
+                      "closure": false
+                    }
+                  },
+                  "visible_axis_count": 5,
+                  "axis_count": 6,
+                  "realization_rate": 0.833,
+                  "actorial_realization": {
+                    "schema": "machinespirits.tutor-stub.actorial-realization-audit.v1",
+                    "ok": false,
+                    "issues": [
+                      {
+                        "type": "missing_selected_actorial_part",
+                        "reason": "does not directly perform the selected public part: skeptical examiner"
+                      }
+                    ]
+                  },
+                  "transcript_visible": false,
+                  "limitations": "Deterministic surface audit: it checks legible character actions and stance-specific performance cues; contrastive replay is still required to establish human-perceived difference."
+                },
+                "responseCompositionAudit": {
+                  "schema": "machinespirits.tutor-stub.response-composition-audit.v1",
+                  "ok": true,
+                  "active": true,
+                  "atomic_assistant_turn": true,
+                  "action_family": "stage_next_step",
+                  "action_target": "development",
+                  "development_kind": "dramatic_clue_release",
+                  "expected_dag_move": "The previous local question is conversationally complete. Introduce or work with genuinely new public evidence; do not ask for the same distinction again.",
+                  "conversational_completion": {
+                    "schema": "machinespirits.tutor-stub.conversational-completion.v1",
+                    "ok": true,
+                    "active": true,
+                    "newEvidenceVisible": true,
+                    "questionOverlap": 0.75,
+                    "sharedQuestionTokenCount": 3,
+                    "issues": []
+                  },
+                  "issues": [],
+                  "segments": {
+                    "uptake": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two.",
+                    "development": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?",
+                    "method": "fused_opening",
+                    "formatted": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?"
+                  }
+                },
+                "repetitionAudit": {
+                  "schema": "machinespirits.tutor-stub.response-guard.v1",
+                  "ok": true,
+                  "issues": [],
+                  "maxSimilarity": 0.25806451612903225
+                },
+                "closureAudit": {
+                  "ok": true,
+                  "closesDialogue": false,
+                  "invitesCheckIn": false,
+                  "issues": []
+                },
+                "deliveryOk": false,
+                "deliveryDecision": {
+                  "schema": "machinespirits.tutor-stub.guard-delivery-decision.v1",
+                  "ok": false,
+                  "allowActorialAdvisory": false,
+                  "hardIssues": [
+                    {
+                      "guard": "actorial_realization",
+                      "type": "missing_selected_actorial_part",
+                      "reason": "does not directly perform the selected public part: skeptical examiner"
+                    }
+                  ],
+                  "advisoryIssues": []
+                }
+              },
+              "auditOk": false,
+              "generation": {
+                "callId": "2:1",
+                "role": "tutor_stub_tutor",
+                "latencyMs": 5909,
+                "usage": {
+                  "inputTokens": 15749,
+                  "outputTokens": 100,
+                  "totalTokens": 15849,
+                  "cost": 0
+                },
+                "tokenUsageAvailable": true
+              }
+            },
+            {
+              "kind": "actorial_part_repair_candidate",
+              "attempt": 1,
+              "provider": "codex",
+              "model": "gpt-5.6-terra",
+              "deliveryConfiguration": {
+                "schema": "machinespirits.tutor-stub.response-configuration.v2",
+                "policy": "continuous_dynamical_system",
+                "engagement_stance": "precise",
+                "action_family": "stage_next_step",
+                "audience_register": "domain_apprentice",
+                "lexical_accessibility": "standard",
+                "scene_immersion": "immersive",
+                "actorial_part": "skeptic",
+                "actorial_part_label": "skeptical examiner",
+                "actorial_host_part": "skeptic",
+                "actorial_host_part_label": "skeptical examiner",
+                "actorial_performance": {
+                  "id": "evidentiary_boundary",
+                  "label": "evidentiary boundary",
+                  "contract": "Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.",
+                  "engagement_stance": "precise",
+                  "actorial_part": "skeptic",
+                  "selection_method": "stance_realization_contract",
+                  "displaced_tactic": null,
+                  "forbidden_meta_frames": [
+                    "let us role-play",
+                    "I will be the role",
+                    "I will take the part",
+                    "speaking as the role",
+                    "back to us"
+                  ]
+                },
+                "surface_budgets": {
+                  "max_average_sentence_words": 23
+                }
+              },
+              "candidate": {
+                "start": 0,
+                "end": 475,
+                "text": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. Not so fast—I hold the claim against the public record. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?",
+                "offsetEncoding": "utf16_code_units"
+              },
+              "audits": {
+                "ok": true,
+                "leakAudit": {
+                  "ok": true,
+                  "leaks": [],
+                  "finalEntailed": false,
+                  "answerNamePublic": false,
+                  "publicPremiseIds": ["p_noon", "p_crew"]
+                },
+                "scaffoldAudit": {
+                  "ok": true,
+                  "issues": [],
+                  "similarity": 0
+                },
+                "questionSupportAudit": {
+                  "ok": true,
+                  "issues": []
+                },
+                "dramaticReleaseAudit": {
+                  "schema": "machinespirits.tutor-stub.dramatic-release.v1",
+                  "ok": true,
+                  "active": true,
+                  "entranceVisible": true,
+                  "handoffVisible": true,
+                  "enactmentVisible": true,
+                  "exhibitHandoffVisible": true,
+                  "returnVisible": true,
+                  "metaRoleplayAnnouncement": false,
+                  "metaReleaseAnnouncement": false,
+                  "roleStageDirection": false,
+                  "sourcePerspectiveDrift": false,
+                  "firstPersonRoleVoice": true,
+                  "issues": []
+                },
+                "actorialRealizationAudit": {
+                  "schema": "machinespirits.tutor-stub.actorial-realization-audit.v1",
+                  "ok": true,
+                  "issues": []
+                },
+                "responseConfigurationAudit": {
+                  "schema": "machinespirits.tutor-stub.response-configuration-audit.v2",
+                  "configuration_signature": "precise|stage_next_step|domain_apprentice|standard|immersive|skeptic|evidentiary_boundary",
+                  "visible_signature": "length:medium|syntax:plain|questions:1|glosses:0|scene:3|second_person:0|cues:none|part:skeptic|tactic:evidentiary_boundary",
+                  "axes": {
+                    "engagement_stance": {
+                      "selected": "precise",
+                      "visible": true
+                    },
+                    "action_family": {
+                      "selected": "stage_next_step",
+                      "visible": true,
+                      "evaluated_segment": "development"
+                    },
+                    "audience_register": {
+                      "selected": "domain_apprentice",
+                      "visible": true,
+                      "max_average_sentence_words": 23,
+                      "measurement_tolerance": 0.1
+                    },
+                    "lexical_accessibility": {
+                      "selected": "standard",
+                      "visible": true,
+                      "max_average_sentence_words": 23,
+                      "measurement_tolerance": 0.1
+                    },
+                    "scene_immersion": {
+                      "selected": "immersive",
+                      "visible": true
+                    },
+                    "actorial_part": {
+                      "selected": "skeptic",
+                      "label": "skeptical examiner",
+                      "performance_tactic": "evidentiary_boundary",
+                      "performance_label": "evidentiary boundary",
+                      "part_visible": true,
+                      "performance_visible": true,
+                      "visible": true,
+                      "evaluated_segment": "adaptive_host_without_authored_source"
+                    }
+                  },
+                  "metrics": {
+                    "wordCount": 87,
+                    "sentenceCount": 5,
+                    "averageSentenceWords": 17.4,
+                    "maxSentenceWords": 28,
+                    "longWordRatio": 0.034,
+                    "questionCount": 1,
+                    "secondPerson": false,
+                    "concreteSceneTerms": [
+                      "fridge",
+                      "dario",
+                      "shelf",
+                      "kitchen",
+                      "noon",
+                      "badge",
+                      "kettle",
+                      "nobody",
+                      "window",
+                      "desks",
+                      "crew",
+                      "remembers"
+                    ],
+                    "concreteSceneTermCount": 16,
+                    "glossedTerms": [],
+                    "fourthWallBreak": false,
+                    "surfaceCueProfile": {
+                      "definition": false,
+                      "conditional": false,
+                      "invitation": false,
+                      "acknowledgement": false,
+                      "challenge": false,
+                      "closure": false
+                    }
+                  },
+                  "visible_axis_count": 6,
+                  "axis_count": 6,
+                  "realization_rate": 1,
+                  "actorial_realization": {
+                    "schema": "machinespirits.tutor-stub.actorial-realization-audit.v1",
+                    "ok": true,
+                    "issues": []
+                  },
+                  "transcript_visible": true,
+                  "limitations": "Deterministic surface audit: it checks legible character actions and stance-specific performance cues; contrastive replay is still required to establish human-perceived difference."
+                },
+                "responseCompositionAudit": {
+                  "schema": "machinespirits.tutor-stub.response-composition-audit.v1",
+                  "ok": true,
+                  "active": true,
+                  "atomic_assistant_turn": true,
+                  "action_family": "stage_next_step",
+                  "action_target": "development",
+                  "development_kind": "dramatic_clue_release",
+                  "expected_dag_move": "The previous local question is conversationally complete. Introduce or work with genuinely new public evidence; do not ask for the same distinction again.",
+                  "conversational_completion": {
+                    "schema": "machinespirits.tutor-stub.conversational-completion.v1",
+                    "ok": true,
+                    "active": true,
+                    "newEvidenceVisible": true,
+                    "questionOverlap": 0.75,
+                    "sharedQuestionTokenCount": 3,
+                    "issues": []
+                  },
+                  "issues": [],
+                  "segments": {
+                    "uptake": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two.",
+                    "development": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. Not so fast—I hold the claim against the public record. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?",
+                    "method": "fused_opening",
+                    "formatted": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. Not so fast—I hold the claim against the public record. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?"
+                  }
+                },
+                "repetitionAudit": {
+                  "schema": "machinespirits.tutor-stub.response-guard.v1",
+                  "ok": true,
+                  "issues": [],
+                  "maxSimilarity": 0.23880597014925373
+                },
+                "closureAudit": {
+                  "ok": true,
+                  "closesDialogue": false,
+                  "invitesCheckIn": false,
+                  "issues": []
+                },
+                "deliveryOk": true,
+                "deliveryDecision": {
+                  "schema": "machinespirits.tutor-stub.guard-delivery-decision.v1",
+                  "ok": true,
+                  "allowActorialAdvisory": false,
+                  "hardIssues": [],
+                  "advisoryIssues": []
+                }
+              },
+              "auditOk": true,
+              "generation": {
+                "callId": "2:1",
+                "role": "tutor_stub_tutor",
+                "latencyMs": 5909,
+                "usage": {
+                  "inputTokens": 15749,
+                  "outputTokens": 100,
+                  "totalTokens": 15849,
+                  "cost": 0
+                },
+                "tokenUsageAvailable": true
+              }
+            }
+          ],
+          "finalDelivery": {
+            "source": "actorial_part_repair_candidate",
+            "provider": "codex",
+            "model": "gpt-5.6-terra",
+            "deterministicFallback": false,
+            "deterministicClosure": false,
+            "candidate": {
+              "start": 0,
+              "end": 475,
+              "text": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. Not so fast—I hold the claim against the public record. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?",
+              "offsetEncoding": "utf16_code_units"
+            },
+            "audits": {
+              "ok": true,
+              "leakAudit": {
+                "ok": true,
+                "leaks": [],
+                "finalEntailed": false,
+                "answerNamePublic": false,
+                "publicPremiseIds": ["p_noon", "p_crew"]
+              },
+              "scaffoldAudit": {
+                "ok": true,
+                "issues": [],
+                "similarity": 0
+              },
+              "questionSupportAudit": {
+                "ok": true,
+                "issues": []
+              },
+              "dramaticReleaseAudit": {
+                "schema": "machinespirits.tutor-stub.dramatic-release.v1",
+                "ok": true,
+                "active": true,
+                "entranceVisible": true,
+                "handoffVisible": true,
+                "enactmentVisible": true,
+                "exhibitHandoffVisible": true,
+                "returnVisible": true,
+                "metaRoleplayAnnouncement": false,
+                "metaReleaseAnnouncement": false,
+                "roleStageDirection": false,
+                "sourcePerspectiveDrift": false,
+                "firstPersonRoleVoice": true,
+                "issues": []
+              },
+              "actorialRealizationAudit": {
+                "schema": "machinespirits.tutor-stub.actorial-realization-audit.v1",
+                "ok": true,
+                "issues": []
+              },
+              "responseConfigurationAudit": {
+                "schema": "machinespirits.tutor-stub.response-configuration-audit.v2",
+                "configuration_signature": "precise|stage_next_step|domain_apprentice|standard|immersive|skeptic|evidentiary_boundary",
+                "visible_signature": "length:medium|syntax:plain|questions:1|glosses:0|scene:3|second_person:0|cues:none|part:skeptic|tactic:evidentiary_boundary",
+                "axes": {
+                  "engagement_stance": {
+                    "selected": "precise",
+                    "visible": true
+                  },
+                  "action_family": {
+                    "selected": "stage_next_step",
+                    "visible": true,
+                    "evaluated_segment": "development"
+                  },
+                  "audience_register": {
+                    "selected": "domain_apprentice",
+                    "visible": true,
+                    "max_average_sentence_words": 23,
+                    "measurement_tolerance": 0.1
+                  },
+                  "lexical_accessibility": {
+                    "selected": "standard",
+                    "visible": true,
+                    "max_average_sentence_words": 23,
+                    "measurement_tolerance": 0.1
+                  },
+                  "scene_immersion": {
+                    "selected": "immersive",
+                    "visible": true
+                  },
+                  "actorial_part": {
+                    "selected": "skeptic",
+                    "label": "skeptical examiner",
+                    "performance_tactic": "evidentiary_boundary",
+                    "performance_label": "evidentiary boundary",
+                    "part_visible": true,
+                    "performance_visible": true,
+                    "visible": true,
+                    "evaluated_segment": "adaptive_host_without_authored_source"
+                  }
+                },
+                "metrics": {
+                  "wordCount": 87,
+                  "sentenceCount": 5,
+                  "averageSentenceWords": 17.4,
+                  "maxSentenceWords": 28,
+                  "longWordRatio": 0.034,
+                  "questionCount": 1,
+                  "secondPerson": false,
+                  "concreteSceneTerms": [
+                    "fridge",
+                    "dario",
+                    "shelf",
+                    "kitchen",
+                    "noon",
+                    "badge",
+                    "kettle",
+                    "nobody",
+                    "window",
+                    "desks",
+                    "crew",
+                    "remembers"
+                  ],
+                  "concreteSceneTermCount": 16,
+                  "glossedTerms": [],
+                  "fourthWallBreak": false,
+                  "surfaceCueProfile": {
+                    "definition": false,
+                    "conditional": false,
+                    "invitation": false,
+                    "acknowledgement": false,
+                    "challenge": false,
+                    "closure": false
+                  }
+                },
+                "visible_axis_count": 6,
+                "axis_count": 6,
+                "realization_rate": 1,
+                "actorial_realization": {
+                  "schema": "machinespirits.tutor-stub.actorial-realization-audit.v1",
+                  "ok": true,
+                  "issues": []
+                },
+                "transcript_visible": true,
+                "limitations": "Deterministic surface audit: it checks legible character actions and stance-specific performance cues; contrastive replay is still required to establish human-perceived difference."
+              },
+              "responseCompositionAudit": {
+                "schema": "machinespirits.tutor-stub.response-composition-audit.v1",
+                "ok": true,
+                "active": true,
+                "atomic_assistant_turn": true,
+                "action_family": "stage_next_step",
+                "action_target": "development",
+                "development_kind": "dramatic_clue_release",
+                "expected_dag_move": "The previous local question is conversationally complete. Introduce or work with genuinely new public evidence; do not ask for the same distinction again.",
+                "conversational_completion": {
+                  "schema": "machinespirits.tutor-stub.conversational-completion.v1",
+                  "ok": true,
+                  "active": true,
+                  "newEvidenceVisible": true,
+                  "questionOverlap": 0.75,
+                  "sharedQuestionTokenCount": 3,
+                  "issues": []
+                },
+                "issues": [],
+                "segments": {
+                  "uptake": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two.",
+                  "development": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. Not so fast—I hold the claim against the public record. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?",
+                  "method": "fused_opening",
+                  "formatted": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. Not so fast—I hold the claim against the public record. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?"
+                }
+              },
+              "repetitionAudit": {
+                "schema": "machinespirits.tutor-stub.response-guard.v1",
+                "ok": true,
+                "issues": [],
+                "maxSimilarity": 0.23880597014925373
+              },
+              "closureAudit": {
+                "ok": true,
+                "closesDialogue": false,
+                "invitesCheckIn": false,
+                "issues": []
+              },
+              "deliveryOk": true,
+              "deliveryDecision": {
+                "schema": "machinespirits.tutor-stub.guard-delivery-decision.v1",
+                "ok": true,
+                "allowActorialAdvisory": false,
+                "hardIssues": [],
+                "advisoryIssues": []
+              }
+            },
+            "auditOk": true
+          }
+        }
+      },
+      "candidates": [
+        {
+          "kind": "original_candidate",
+          "attempt": 0,
+          "text": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?",
+          "deliveryConfiguration": {
+            "schema": "machinespirits.tutor-stub.response-configuration.v2",
+            "policy": "continuous_dynamical_system",
+            "engagement_stance": "precise",
+            "action_family": "stage_next_step",
+            "audience_register": "domain_apprentice",
+            "lexical_accessibility": "standard",
+            "scene_immersion": "immersive",
+            "actorial_part": "skeptic",
+            "actorial_part_label": "skeptical examiner",
+            "actorial_host_part": "skeptic",
+            "actorial_host_part_label": "skeptical examiner",
+            "actorial_performance": {
+              "id": "evidentiary_boundary",
+              "label": "evidentiary boundary",
+              "contract": "Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.",
+              "engagement_stance": "precise",
+              "actorial_part": "skeptic",
+              "selection_method": "stance_realization_contract",
+              "displaced_tactic": null,
+              "forbidden_meta_frames": [
+                "let us role-play",
+                "I will be the role",
+                "I will take the part",
+                "speaking as the role",
+                "back to us"
+              ]
+            },
+            "surface_budgets": {
+              "max_average_sentence_words": 23
+            }
+          },
+          "recordedAuditOk": false,
+          "recordedFailureClusters": ["actorialRealizationAudit:missing_selected_actorial_part"]
+        },
+        {
+          "kind": "actorial_part_repair_candidate",
+          "attempt": 1,
+          "text": "That keeps Dario as a suspicion, not a conclusion: the mug-and-badge entry puts him in the kitchen only, not at shelf two. Not so fast—I hold the claim against the public record. “I read in the record that one more badge appeared in the noon window: visitor code WF-11, issued at the front desk to an outside crew in hi-vis. Nobody at the desks remembers them; the kettle queue does.” With the fridge door and badge log in view, what does that other noon-window entry change?",
+          "deliveryConfiguration": {
+            "schema": "machinespirits.tutor-stub.response-configuration.v2",
+            "policy": "continuous_dynamical_system",
+            "engagement_stance": "precise",
+            "action_family": "stage_next_step",
+            "audience_register": "domain_apprentice",
+            "lexical_accessibility": "standard",
+            "scene_immersion": "immersive",
+            "actorial_part": "skeptic",
+            "actorial_part_label": "skeptical examiner",
+            "actorial_host_part": "skeptic",
+            "actorial_host_part_label": "skeptical examiner",
+            "actorial_performance": {
+              "id": "evidentiary_boundary",
+              "label": "evidentiary boundary",
+              "contract": "Make the exact line and the limit of what it establishes visible in the character’s handling of the clue.",
+              "engagement_stance": "precise",
+              "actorial_part": "skeptic",
+              "selection_method": "stance_realization_contract",
+              "displaced_tactic": null,
+              "forbidden_meta_frames": [
+                "let us role-play",
+                "I will be the role",
+                "I will take the part",
+                "speaking as the role",
+                "back to us"
+              ]
+            },
+            "surface_budgets": {
+              "max_average_sentence_words": 23
+            }
+          },
+          "recordedAuditOk": true,
+          "recordedFailureClusters": []
+        }
+      ]
+    }
+  ]
+}

@@ -19,6 +19,7 @@ import {
   buildTutorStubFirstDraftPreflightFailureResult,
   expandTutorStubFirstDraftCampaign,
   loadTutorStubFirstDraftCampaign,
+  loadTutorStubFirstDraftFrozenBundle,
   releaseTutorStubFirstDraftCellClaim,
   summarizeTutorStubWorkingScreen,
   tutorStubFirstDraftDevelopmentExecutionPlan,
@@ -41,10 +42,7 @@ import {
 } from '../services/tutorStubJointPerformanceFirstDraft.js';
 import { TUTOR_STUB_COMPACT_SPEAKING_PROMPT_SCHEMA } from '../services/tutorStubCompactSpeakingPrompt.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
-import {
-  extractTutorStubFrozenTurn,
-  refreshTutorStubFrozenFirstDraftRequest,
-} from '../services/tutorStubFrozenReplay.js';
+import { refreshTutorStubFrozenFirstDraftRequest } from '../services/tutorStubFrozenReplay.js';
 import {
   auditTutorStubSourceAccessibilityCompensation,
   compileTutorStubSourceAccessibilityContract,
@@ -57,14 +55,9 @@ import {
   validateTutorStubFirstDraftPreflightCertificate,
 } from '../services/tutorStubFirstDraftPreflightCertificate.js';
 
-// The V-series campaign validators pin machine-local sealed run artifacts by
-// absolute path (gitignored .tutor-stub-auto-eval roots on the research
-// machine). On hosts without them — CI runners — these regression pins cannot
-// execute; skipping mirrors the hermetic missing-environment-is-no-data rule.
-// The validators themselves stay fail-closed.
-const V_SERIES_ARTIFACTS_SKIP = fs.existsSync('/Users/lmagee/Dev/.tutor-stub-auto-eval')
-  ? false
-  : 'machine-local V-series artifacts absent on this host';
+// These formerly host-gated cases now always run against the repo fixture
+// fallback. Keep them sequential because they share the same immutable corpus.
+const V_SERIES_REPO_SOURCE_FIXTURE_OPTS = { concurrency: false };
 
 test('campaign token aggregation excludes unstarted cells and never treats missing usage as zero', () => {
   const complete = aggregateTutorStubFirstDraftCampaignTokenUsage([
@@ -1006,7 +999,7 @@ test('four-draw confirmation requires the exact unique turn and draw inventory',
 
 test(
   'V7 draw inventory binds every row and report to the exact frozen target',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
     const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v7.yaml');
@@ -1047,7 +1040,7 @@ test(
 
 test(
   'V8 expands the structural working panel hard-cell first with fresh development labels',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
     const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml');
@@ -1145,7 +1138,7 @@ test(
 
 test(
   'V8 reports a valid predeclaration separately from its failed deterministic preflight',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
     const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml');
@@ -1234,7 +1227,7 @@ test(
 
 test(
   'deterministic preflight command failures preserve validation, exact failure, and zero-call seed state',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
     const sourceConfigPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml');
@@ -1391,7 +1384,7 @@ test(
 
 test(
   'structured focused suite failure is captured once and blocks every model call',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-structured-preflight-'));
@@ -1488,7 +1481,7 @@ test(
   },
 );
 
-test('zero-test TAP is a failed captured suite and cannot unlock a replay', { skip: V_SERIES_ARTIFACTS_SKIP }, () => {
+test('zero-test TAP is a failed captured suite and cannot unlock a replay', V_SERIES_REPO_SOURCE_FIXTURE_OPTS, () => {
   const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-zero-tap-'));
   try {
@@ -1570,7 +1563,7 @@ test('zero-test TAP is a failed captured suite and cannot unlock a replay', { sk
 
 test(
   'V9 preflight makes the dense Ravensmark source effectively accessible without changing direct controls',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
     const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v9.yaml');
@@ -1686,7 +1679,7 @@ test('a required dirty worktree becomes a recorded zero-call preflight blocker',
 
 test(
   'V8 validation fails closed if its clean-worktree requirement is removed',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
     const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml');
@@ -1702,24 +1695,15 @@ test(
 
 test(
   'V8 activation preflight recompiles the legacy frozen request before checking typed contracts',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
     const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml');
     const config = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot }).config;
     const tallow = config.matrix.find((cell) => cell.id === 'tallow_answer_seeking');
-    const rawEvents = fs
-      .readFileSync(tallow.source_trace, 'utf8')
-      .split(/\r?\n/u)
-      .filter(Boolean)
-      .map((line) => JSON.parse(line));
-    const legacyCall = rawEvents.find(
-      (event) => event.type === 'model_call' && event.role === 'tutor_stub_tutor' && Number(event.turn) === 5,
-    );
-    const legacyRequest = legacyCall.request.messages.at(-1).content;
+    const extracted = loadTutorStubFirstDraftFrozenBundle({ root: repoRoot, cell: tallow, turn: 5 });
+    const legacyRequest = extracted.request.messages.at(-1).content;
     assert.doesNotMatch(legacyRequest, /writable_entry|turn-progression-contract/iu);
-
-    const extracted = extractTutorStubFrozenTurn({ tracePath: tallow.source_trace, turn: 5 });
     const world = loadWorld(path.join(repoRoot, 'config/drama-derivation/world-025-tallow-street.yaml'));
     const refreshed = refreshTutorStubFrozenFirstDraftRequest({ bundle: extracted, world });
     assert.equal(refreshed.firstDraftContract.progression.complete, true);

@@ -17,14 +17,9 @@ import {
   TUTOR_STUB_JOINT_PERFORMANCE_FIRST_DRAFT_SCHEMA,
 } from '../services/tutorStubJointPerformanceFirstDraft.js';
 
-// The V-series campaign validators pin machine-local sealed run artifacts by
-// absolute path (gitignored .tutor-stub-auto-eval roots on the research
-// machine). On hosts without them — CI runners — these regression pins cannot
-// execute; skipping mirrors the hermetic missing-environment-is-no-data rule.
-// The validators themselves stay fail-closed.
-const V_SERIES_ARTIFACTS_SKIP = fs.existsSync('/Users/lmagee/Dev/.tutor-stub-auto-eval')
-  ? false
-  : 'machine-local V-series artifacts absent on this host';
+// These formerly host-gated cases now always run against the repo fixture
+// fallback. Keep them sequential because they share the same immutable corpus.
+const V_SERIES_REPO_SOURCE_FIXTURE_OPTS = { concurrency: false };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MANIFEST_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-outer-loop-v1.yaml');
@@ -394,7 +389,7 @@ function v33Fixture(tmp) {
 
 test(
   'outer-loop manifest validates the predeclared V27 cross-world confirmation screen',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-loop-'));
     try {
@@ -430,7 +425,7 @@ test(
 
 test(
   'outer-loop status exposes only the predeclared V27 working transition and makes no model call',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-status-'));
     try {
@@ -456,7 +451,7 @@ test(
 
 test(
   'outer-loop manifest advances honestly to the predeclared V28 structural screen',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v28-'));
     try {
@@ -501,7 +496,7 @@ test(
 
 test(
   'V28 preserves the failed V27 confirmation and its exact seed dispositions',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v28-provenance-'));
     try {
@@ -604,7 +599,7 @@ test('V28 change control separates structural generation from recognition and le
 
 test(
   'V28 validator fails closed on result, seed, or structural change-control drift',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const cases = [
       {
@@ -665,7 +660,7 @@ test(
 
 test(
   'outer-loop advances V28 zero-call evidence into the predeclared V29 accessibility screen',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v29-'));
     try {
@@ -744,7 +739,7 @@ test('V29 change control is additive, typed, and preserves every strict delivery
 
 test(
   'V29 validator fails closed on V28 provenance, fresh seed, or accessibility-policy drift',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const cases = [
       {
@@ -797,7 +792,7 @@ test(
 
 test(
   'outer-loop preserves V30 as a zero-call preflight failure awaiting the next screen',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v30-'));
     try {
@@ -900,7 +895,7 @@ test('V30 changes recovery and audit provenance without changing the speaking pr
 
 test(
   'V30 validator fails closed on V29 provenance, fresh seed, or recovery change drift',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const cases = [
       {
@@ -960,7 +955,7 @@ test(
 
 test(
   'outer-loop preserves the V31 hard-cell failure while awaiting the next screen',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v31-'));
     try {
@@ -1098,7 +1093,7 @@ test('V31 changes only named preflight orchestration and diagnostics from V30', 
 
 test(
   'V31 validator fails closed on V30 provenance, fresh seed, behavior, gate, or suite drift',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const cases = [
       {
@@ -1205,7 +1200,7 @@ test(
 
 test(
   'outer-loop preserves V32 as a failed but measurably improved staged diagnostic',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v32-'));
     try {
@@ -1393,7 +1388,7 @@ test('V32 preserves the exact frozen V31 Tallow prefix while changing only speak
 
 test(
   'V32 validator fails closed on provenance, staging, one-draw gates, or seed binding drift',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const cases = [
       {
@@ -1464,7 +1459,7 @@ test(
 
 test(
   'outer-loop preserves terminal V33 hard-cell evidence and stops at the causal-role architectural blocker',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v33-'));
     try {
@@ -1628,7 +1623,7 @@ test('V33 preserves V32 frozen inputs and adds only separated speaking, recognit
 
 test(
   'V33 validator fails closed on result provenance, fresh seeds, change separation, or qualitative-review weakening',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const cases = [
       {
@@ -1718,7 +1713,7 @@ test(
 
 test(
   'V27 preserves exact V26 terminal provenance and retires all V26 labels',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v26-evidence-'));
     try {
@@ -1797,7 +1792,7 @@ test(
 
 test(
   'V27 preserves the exact iteration-1 result and iteration-2 speaking-prompt change',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i1-'));
     try {
@@ -1895,7 +1890,7 @@ test(
 
 test(
   'V27 preserves the exact improved iteration-2 result before iteration 3',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i2-'));
     try {
@@ -1985,7 +1980,7 @@ test(
 
 test(
   'V27 preserves the iteration-3 typed composite-part audit-recognition predeclaration',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i3-'));
     try {
@@ -2043,7 +2038,7 @@ test(
 
 test(
   'V27 preserves the exact failed iteration-3 result and provenance before iteration 4',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i3-result-'));
     try {
@@ -2130,7 +2125,7 @@ test(
 
 test(
   'V27 preserves the iteration-4 transport-only outer-whitespace predeclaration',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i4-'));
     try {
@@ -2184,7 +2179,7 @@ test(
 
 test(
   'V27 preserves the exact iteration-4 result and provenance before iteration 5',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i4-result-'));
     try {
@@ -2298,7 +2293,7 @@ test(
 
 test(
   'V27 iteration 5 predeclares only typed public-judgment-falter recognition',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i5-'));
     try {
@@ -2354,7 +2349,7 @@ test(
   },
 );
 
-test('V27 preserves the exact iteration-5 result and provenance in history', { skip: V_SERIES_ARTIFACTS_SKIP }, () => {
+test('V27 preserves the exact iteration-5 result and provenance in history', V_SERIES_REPO_SOURCE_FIXTURE_OPTS, () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i5-result-'));
   try {
     const { manifest } = fixture(tmp);
@@ -2422,7 +2417,7 @@ test('V27 preserves the exact iteration-5 result and provenance in history', { s
 
 test(
   'V27 iteration 6 predeclares only world-general terminal-s scene morphology',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i6-'));
     try {
@@ -2461,7 +2456,7 @@ test(
 
 test(
   'V27 preserves the exact iteration-6 result and provenance before iteration 7',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i6-result-'));
     try {
@@ -2546,7 +2541,7 @@ test(
 
 test(
   'V27 preserves the exact iteration-7 passing result and provenance before confirmation',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i7-result-'));
     try {
@@ -2640,7 +2635,7 @@ test(
 
 test(
   'V27 iteration 7 predeclares only the two adjudicated typed recognitions',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-v27-i7-'));
     try {
@@ -2832,7 +2827,7 @@ test('outer-loop validator rejects held-out seeds before acceptance predeclarati
 
 test(
   'outer-loop validator binds the primary and four fresh confirmation development seeds',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-development-seed-'));
     try {
@@ -2862,7 +2857,7 @@ test(
 
 test(
   'outer-loop validator keeps V27 at four strict originals and full configuration realization',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-gate-'));
     try {
@@ -2888,7 +2883,7 @@ test(
 
 test(
   'outer-loop validator fails closed on V27 joint flag, schema, and gate drift',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-joint-'));
     try {
@@ -2932,7 +2927,7 @@ test(
 
 test(
   'outer-loop validator preserves the V26-to-V27 architectural transition',
-  { skip: V_SERIES_ARTIFACTS_SKIP },
+  V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
   () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-outer-reset-'));
     try {
