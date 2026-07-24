@@ -28,10 +28,12 @@ function run(dir, args, extraEnv = {}) {
     env: { ...process.env, WORKPLAN_DIR: dir, ...extraEnv },
   });
 }
-function runPrLink(dir, body) {
+function runPrLink(dir, body, { headRef = '' } = {}) {
   const bodyFile = path.join(dir, 'body.md');
   fs.writeFileSync(bodyFile, body);
-  return spawnSync('node', [PR_LINK, '--body-file', bodyFile], {
+  const args = [PR_LINK, '--body-file', bodyFile];
+  if (headRef) args.push('--head-ref', headRef);
+  return spawnSync('node', args, {
     encoding: 'utf8',
     env: { ...process.env, WORKPLAN_DIR: dir },
   });
@@ -185,7 +187,45 @@ test('PR link check rejects the template placeholder', () => {
   writeItem(dir, 'sample-good', GOOD);
   const r = runPrLink(dir, '- [ ] Linked workplan item: <id or N/A>\n');
   assert.equal(r.status, 1);
-  assert.match(r.stderr, /must include/);
+  assert.match(r.stderr, /no valid workplan item/);
+});
+
+test('PR link check infers an untouched template from one exact workplan branch', () => {
+  const dir = makeBoard();
+  writeItem(dir, 'sample-good', { ...GOOD, branch: 'codex/sample-good' });
+  const r = runPrLink(dir, '- [ ] Linked workplan item: <id or N/A>\n', {
+    headRef: 'codex/sample-good',
+  });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /linked sample-good via branch codex\/sample-good/);
+});
+
+test('PR link branch inference fails closed for unknown and ambiguous branches', () => {
+  const dir = makeBoard();
+  writeItem(dir, 'sample-good', { ...GOOD, branch: 'codex/shared' });
+
+  const unknown = runPrLink(dir, '- [ ] Linked workplan item: <id or N/A>\n', {
+    headRef: 'codex/unknown',
+  });
+  assert.equal(unknown.status, 1);
+  assert.match(unknown.stderr, /matches no workplan item/);
+
+  writeItem(dir, 'sample-other', { ...GOOD, id: 'sample-other', branch: 'codex/shared' });
+  const ambiguous = runPrLink(dir, '- [ ] Linked workplan item: <id or N/A>\n', {
+    headRef: 'codex/shared',
+  });
+  assert.equal(ambiguous.status, 1);
+  assert.match(ambiguous.stderr, /matches multiple workplan items: sample-good, sample-other/);
+});
+
+test('PR link check does not mask an explicitly invalid id with branch inference', () => {
+  const dir = makeBoard();
+  writeItem(dir, 'sample-good', { ...GOOD, branch: 'codex/sample-good' });
+  const r = runPrLink(dir, 'Workplan item: misspelled-item\n', {
+    headRef: 'codex/sample-good',
+  });
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /Saw: misspelled-item/);
 });
 
 test('add --inbox then triage produces a valid item', () => {

@@ -61,3 +61,8 @@ Log:
   with only the separately declared cast-layer skip, then 133/133 tutor-core
   tests; lint, formatting, and the 165-item workplan check also pass. Moved to
   review pending clean Node 20/22 CI.
+- 2026-07-24 — PR #192 exposed a recurring integration failure: the PR template
+  placeholder reached the link check unchanged, and rerunning the failed job
+  reused its stale event body. Hardened the check to infer only one exact item
+  `branch:` match, fail closed on unknown/ambiguous branches or explicit typos,
+  and rerun on PR-body edits; the PR body itself now links this item explicitly.

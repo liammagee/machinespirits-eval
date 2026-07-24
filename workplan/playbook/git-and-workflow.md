@@ -24,8 +24,11 @@ Defaults, not laws. Deviate when it helps; note why in the item log.
   artifacts out of the eval repo.
 
 ## PRs
-- Link the workplan item id in the PR body. When the work folds a result into the
-  paper, also link the paper § and the version.
+- Link the workplan item id in the PR body. If the template placeholder is left
+  untouched, CI can infer the link only when exactly one item declares the PR's
+  head branch; unknown and ambiguous branches fail closed. Editing the PR body
+  reruns that check. When the work folds a result into the paper, also link the
+  paper § and the version.
 - Daily-routine roundup PRs follow `notes/daily-notes/README.md`: non-overlapping
   windows, dedup by arxiv id, tile the timeline. Triage their actions into
   `workplan/inbox/` rather than letting them live only in the PR.
