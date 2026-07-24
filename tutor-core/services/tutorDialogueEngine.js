@@ -25,7 +25,10 @@ import * as configLoader from './tutorConfigLoader.js';
 import * as monitoringService from './monitoringService.js';
 import { parseSSEStream } from './sseStreamParser.js';
 import { externalProviderHandles, callExternalProvider } from './externalAIProvider.js';
+import { isQuietOrTranscript, setQuietMode } from './dialogueLoggingState.js';
 import { jsonrepair } from 'jsonrepair';
+
+export { isQuietOrTranscript, setQuietMode } from './dialogueLoggingState.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -291,22 +294,6 @@ try {
 // Additional options:
 // - TUTOR_EXPAND=true or --expand: Show full prompt/response for each message
 // - Metrics (tokens, latency) shown when available
-
-let _quietMode = false;
-
-/**
- * Enable/disable quiet mode. When enabled, all verbose console output is
- * suppressed (dialogue headers, learner context, API call logs, etc.)
- * without activating transcript step formatting.
- * Intended for use by the eval CLI's --live flag.
- */
-export function setQuietMode(enabled) {
-  _quietMode = Boolean(enabled);
-}
-
-export function isQuietOrTranscript() {
-  return _quietMode || process.env.TUTOR_TRANSCRIPT === 'true';
-}
 
 function isTranscriptMode() {
   return process.env.TUTOR_TRANSCRIPT === 'true';

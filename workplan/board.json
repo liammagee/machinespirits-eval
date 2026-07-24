@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T09:30:50.761Z",
+  "generated": "2026-07-24T09:49:53.201Z",
   "counts": {
-    "total": 169,
+    "total": 170,
     "byStatus": {
-      "done": 139,
+      "done": 140,
       "blocked": 3,
       "dropped": 2,
       "triaged": 18,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 48,
       "infra": 37,
-      "maintenance": 23,
+      "maintenance": 24,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -547,6 +547,7 @@
           "refactor-cast-layer-fixture",
           "refactor-pty-ci-lane",
           "refactor-rubric-parser-tests",
+          "refactor-tutor-core-cycle",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -694,8 +695,8 @@
       "branch": "codex/make-pilot-state-writes-atomic"
     },
     {
-      "id": "refactor-rubric-parser-tests",
-      "title": "Test the production rubric response parser directly",
+      "id": "refactor-tutor-core-cycle",
+      "title": "Break the tutor-core dialogue and writing-pad import cycle",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -703,16 +704,12 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-07-24",
-      "verification": "The rubric evaluator suite imports production parseJudgeResponse directly, contains no copied parser or temporary generated module, and passes its malformed-response corpus against the complete v2.1 and v2.2 tutor dimension sets with focused plus full hermetic parity.",
-      "branch": "codex/refactor-rubric-parser-tests",
+      "verification": "Writing-pad logging imports only a dependency-free quiet-mode leaf; the dialogue engine preserves its existing named and package exports; the static import-cycle gate reports only the separately queued tutor-stub cycle; and focused plus full hermetic parity passes.",
+      "branch": "codex/refactor-tutor-core-cycle",
       "depends_on": [
-        "refactor-required-run-manifest",
-        "refactor-pty-ci-lane"
+        "refactor-rubric-parser-tests"
       ],
       "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/196"
-        ],
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
@@ -721,12 +718,12 @@
         ]
       },
       "tags": [
-        "testing",
-        "rubric",
-        "parser",
-        "json",
-        "hermetic",
-        "refactoring"
+        "refactoring",
+        "tutor-core",
+        "imports",
+        "cycles",
+        "logging",
+        "hermetic"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -1866,6 +1863,43 @@
       "tags": [
         "testing",
         "ci",
+        "hermetic",
+        "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-rubric-parser-tests",
+      "title": "Test the production rubric response parser directly",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "The rubric evaluator suite imports production parseJudgeResponse directly, contains no copied parser or temporary generated module, and passes its malformed-response corpus against the complete v2.1 and v2.2 tutor dimension sets with focused plus full hermetic parity.",
+      "branch": "codex/refactor-rubric-parser-tests",
+      "depends_on": [
+        "refactor-required-run-manifest",
+        "refactor-pty-ci-lane"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/196"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "testing",
+        "rubric",
+        "parser",
+        "json",
         "hermetic",
         "refactoring"
       ],
