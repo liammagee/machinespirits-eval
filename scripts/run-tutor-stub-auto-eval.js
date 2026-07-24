@@ -66,6 +66,10 @@ import {
   normalizeTutorStubReleaseSpeed,
 } from '../services/tutorStubReleasePacing.js';
 import {
+  buildTutorStubAutoEvalLightweightDialogueField as buildLightweightDialogueField,
+  projectTutorStubAutoEvalLightweightFieldTurn as lightweightFieldTurn,
+} from '../services/tutorStubFieldTurnProjection.js';
+import {
   learnerProfileContract,
   learnerProfileContractSummary,
   learnerProfileDescription,
@@ -646,108 +650,6 @@ function wordsInText(text) {
   return String(text || '')
     .split(/\s+/)
     .filter(Boolean).length;
-}
-
-function lightweightFieldTurn(turn, previous = null) {
-  const classification = turn?.classification || {};
-  const turnAnalysis = classification.turn || {};
-  const scores = turnAnalysis.scores || {};
-  const model = turn?.tutorLearnerDagModel || {};
-  const metrics = model.metrics || {};
-  const assessment = model.assessment || {};
-  const register = turn?.registerSelection || {};
-  const priorEfficacy = turn?.previousRegisterEfficacy || null;
-  const leakOk = !turn?.tutorLeakAudit || turn.tutorLeakAudit.ok === true;
-  const conceptual = fieldScore(scores.conceptual_engagement);
-  const readiness = fieldScore(scores.epistemic_readiness);
-  const coverage = clampField01(Number(assessment.bestPathCoverage || 0));
-  const grounded = clampField01(Number(metrics.groundedCount || 0) / 8);
-  const missing = clampField01(Number(metrics.missingPremiseCount || 0) / 8);
-  const overreach = /overconfident|answer_seeking|overleaps_evidence|unsupported|resistant/iu.test(
-    [turnAnalysis.epistemic_stance, turnAnalysis.evidence_use, assessment.bottleneck, priorEfficacy?.label]
-      .filter(Boolean)
-      .join(' '),
-  )
-    ? 0.25
-    : 0;
-  const responseWords = wordsInText(turn?.tutor);
-  const brevity = clampField01(1 - Math.max(0, responseWords - 95) / 130);
-  const registerConfidence = Number.isFinite(Number(register.confidence))
-    ? clampField01(Number(register.confidence))
-    : 0.5;
-  const efficacyScore = priorEfficacy ? clampField01((Number(priorEfficacy.progressScore || 0) + 4) / 8) : 0.5;
-
-  const learnerMastery = roundField(0.34 * conceptual + 0.26 * readiness + 0.3 * coverage + 0.1 * grounded);
-  const learnerRisk = roundField(clampField01(0.45 * missing + 0.25 * (1 - readiness) + overreach));
-  const tutorAlignment = roundField(
-    clampField01(0.3 * registerConfidence + 0.24 * efficacyScore + 0.22 * brevity + 0.24 * (leakOk ? 1 : 0)),
-  );
-  const jointMomentum = roundField(
-    clampField01(
-      0.42 * Math.max(0, fieldDelta(learnerMastery, previous?.learnerMastery)) +
-        0.28 * Math.max(0, fieldDelta(coverage, previous?.coverage)) +
-        0.18 * efficacyScore +
-        (0.12 * (turn?.tutorDag?.leavesReleased || 0)) / Math.max(1, turn?.tutorDag?.leavesTotal || 1),
-    ),
-  );
-
-  return {
-    turn: turn.turn,
-    learnerMastery,
-    learnerRisk,
-    tutorAlignment,
-    jointMomentum,
-    coverage,
-    groundedCount: Number(metrics.groundedCount || 0),
-    missingCount: Number(metrics.missingPremiseCount || 0),
-    conceptual,
-    readiness,
-    register: register.selected_register || null,
-    bottleneck: assessment.bottleneck || 'unknown',
-    learnerMove: turnAnalysis.discourse_move || 'unknown',
-    speed: previous
-      ? roundField(
-          Math.sqrt(
-            fieldDelta(learnerMastery, previous.learnerMastery) ** 2 +
-              fieldDelta(learnerRisk, previous.learnerRisk) ** 2 +
-              fieldDelta(tutorAlignment, previous.tutorAlignment) ** 2 +
-              fieldDelta(jointMomentum, previous.jointMomentum) ** 2,
-          ),
-        )
-      : 0,
-  };
-}
-
-function buildLightweightDialogueField(turnRecords = []) {
-  const rows = [];
-  for (const turn of turnRecords) {
-    rows.push(lightweightFieldTurn(turn, rows.at(-1) || null));
-  }
-  const first = rows[0] || {};
-  const final = rows.at(-1) || {};
-  return {
-    schema: 'machinespirits.tutor-stub.lightweight-field.v1',
-    turnCount: rows.length,
-    rows,
-    summary: {
-      finalTurn: final.turn || null,
-      meanSpeed: roundField(rows.reduce((sum, row) => sum + row.speed, 0) / Math.max(1, rows.length)),
-      fieldDelta: {
-        learnerMastery: fieldDelta(final.learnerMastery, first.learnerMastery),
-        learnerRisk: fieldDelta(final.learnerRisk, first.learnerRisk),
-        tutorAlignment: fieldDelta(final.tutorAlignment, first.tutorAlignment),
-        jointMomentum: fieldDelta(final.jointMomentum, first.jointMomentum),
-      },
-      final: {
-        learnerMastery: final.learnerMastery ?? null,
-        learnerRisk: final.learnerRisk ?? null,
-        tutorAlignment: final.tutorAlignment ?? null,
-        jointMomentum: final.jointMomentum ?? null,
-        coverage: final.coverage ?? null,
-        bottleneck: final.bottleneck || null,
-      },
-    },
-  };
 }
 
 function roundOptionalField(value) {

@@ -386,6 +386,7 @@
         "tests/tutorStubDueSourceRenderer.test.js",
         "tests/tutorStubEngagementOperation.test.js",
         "tests/tutorStubFieldTrajectory.test.js",
+        "tests/tutorStubFieldTurnProjection.test.js",
         "tests/tutorStubFirstDraftBlindReview.test.js",
         "tests/tutorStubFirstDraftCampaign.test.js",
         "tests/tutorStubFirstDraftContract.test.js",

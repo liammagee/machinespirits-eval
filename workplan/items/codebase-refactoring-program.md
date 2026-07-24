@@ -32,6 +32,7 @@ links:
     - refactor-adaptive-trace-projection
     - refactor-field-policy-helpers
     - refactor-forbidden-key-audit
+    - refactor-field-turn-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -166,3 +167,12 @@ Log:
   copies reduced to one pure helper, caller-specific policies pinned by a
   shared corpus, and focused plus full hermetic parity green. The next queued
   independent duplicate family remains lightweight field-turn projection.
+- 2026-07-25 — PR #210 merged and closed the forbidden-key audit child.
+  Activated `refactor-field-turn-projection` to consolidate only the CLI and
+  auto-eval lightweight field-turn projection while preserving the richer CLI
+  fields and the existing auto-eval report contract.
+- 2026-07-25 — The field-turn projection child reached review with one pure
+  service, explicit interactive and auto-eval v1 compatibility adapters, and
+  byte-stable frozen outputs. Focused and complete hermetic parity are green;
+  the next queued slice is the canonical evaluation-profile registry on
+  `codex/refactor-eval-profile-registry` after this branch lands.
