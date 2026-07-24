@@ -9,8 +9,8 @@ Archived refs are historical provenance, not live workplan items.
 
 | Surface | Declared version | Latest canonical tag | State |
 | --- | ---: | --- | --- |
-| Repository/package | `0.6.0` | — | canonical namespace not yet baselined |
-| Canonical paper | `3.0.228` | — | canonical namespace not yet baselined |
+| Repository/package | `0.6.0` | `release/v0.6.0` | aligned |
+| Canonical paper | `3.0.228` | `paper/v3.0.228` | aligned |
 | Legacy mixed `v*` namespace | — | `v3.0.92` | frozen; do not add new tags here |
 
 The repository and paper versions are intentionally independent. See [Tagging and Version Protocol](tagging-and-version-protocol.md).
