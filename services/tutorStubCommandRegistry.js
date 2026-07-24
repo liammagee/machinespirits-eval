@@ -97,7 +97,6 @@ const COMMAND_CAPABILITY_REQUIREMENTS = {
   use: { active: ['mixed_drafting'] },
   regen: { active: ['mixed_drafting'] },
   board: { available: ['curriculum'] },
-  translate: { active: ['curriculum'] },
 };
 
 const HELP_GROUPS = [

@@ -161,7 +161,8 @@ export function tutorStubTraceModelRole(traceRole) {
     normalized.startsWith('tutor_stub_tutor') ||
     normalized === 'tutor_stub_opening' ||
     normalized === 'tutor_stub_clarifier' ||
-    normalized === 'tutor_stub_curriculum_translator'
+    normalized === 'tutor_stub_curriculum_translator' ||
+    normalized === 'tutor_stub_turn_translator'
   ) {
     return 'tutor';
   }
