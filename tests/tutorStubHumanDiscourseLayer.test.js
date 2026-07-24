@@ -1215,7 +1215,7 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /\/transcript opens raw, script, swimlane/u);
   assert.match(result.stdout, /no tutor message is available yet/u);
   assert.match(result.stdout, /\/suggest is unavailable in this direct session: mixed learner drafting is not active/u);
-  assert.doesNotMatch(result.stdout, /\/translate \[level\]/u);
+  assert.match(result.stdout, /\/translate \[level\]/u);
 });
 
 test('curriculum sessions expose translation levels without changing the curriculum source', () => {

@@ -53,6 +53,7 @@ test('semantic performance adjudication has its own bounded non-speaking prompt 
 
 test('curriculum translation uses the bounded clarification prompt surface', () => {
   assert.equal(tutorStubPromptSurfaceForRole('tutor_stub_curriculum_translator'), 'clarifier');
+  assert.equal(tutorStubPromptSurfaceForRole('tutor_stub_turn_translator'), 'clarifier');
 });
 
 test('exact duplicate-only prompt rows can be compacted and re-audited safely', () => {

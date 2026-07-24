@@ -541,7 +541,11 @@ test('resolved capabilities filter commands, completions, and generated help wit
   assert.equal(tutorStubCommandAvailable('/committee', { capabilities: direct }), true);
   assert.equal(tutorStubCommandAvailable('/coach', { capabilities: direct }), true);
   assert.equal(tutorStubCommandAvailable('/suggest', { capabilities: direct }), false);
-  assert.equal(tutorStubCommandAvailable('/translate', { capabilities: direct }), false);
+  assert.equal(tutorStubCommandAvailable('/translate', { capabilities: direct }), true);
+  assert.ok(tutorStubCommandTokens({ capabilities: direct }).includes('/translate'));
+  assert.ok(
+    tutorStubCommandHelpRows({ capabilities: direct }).some((row) => row.commands.includes('/translate [level]')),
+  );
   assert.deepEqual(tutorStubCommandUnavailableReasons('/suggest', { capabilities: direct }), [
     'mixed learner drafting is not active',
   ]);

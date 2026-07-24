@@ -720,12 +720,16 @@ Useful variants:
   include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/light`, `/register`, `/character`, `/theme`, `/motion`, `/field`, `/viz`,
   `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
-- In an active curriculum session, bare `/translate` renders the canonical
-  module at all four learner-facing language levels: `basic`, `intermediate`,
-  `advanced`, and `proficient`. `/translate <level>` renders one. Translation
-  changes wording only: exact curriculum segment boundaries and verification
-  requirements are preserved, the canonical source remains authoritative, and
-  neither the public transcript nor proof/dialogue state advances.
+- `/translate` is available in every normal tutor-stub session. Without an
+  active curriculum, bare `/translate` rewrites the latest completed public
+  tutor reply in basic contemporary standard English, replacing unnecessary
+  world-specific jargon, apparatus labels, and dramatic phrasing with literal
+  wording. A named level selects `basic`, `intermediate`, `advanced`, or
+  `proficient`; `/translate all` renders all four. In an active curriculum,
+  bare `/translate` keeps the existing contract and renders the canonical
+  module at all four levels, while `/translate <level>` renders one. Both forms
+  are temporary wording views: the public transcript, accepted tutor output,
+  canonical curriculum, and proof/dialogue state remain unchanged.
 - Consecutive public learner lines entered before the tutor reply appears form
   one compound learner turn. Each added line aborts or invalidates the current
   analysis/tutor attempt, every assessment is regenerated from the full input,

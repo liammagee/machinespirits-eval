@@ -53,10 +53,15 @@ import {
 } from '../services/curriculum/tutorStubCurriculum.js';
 import {
   TUTOR_STUB_CURRICULUM_TRANSLATOR_SYSTEM_PROMPT,
+  TUTOR_STUB_TUTOR_OUTPUT_TRANSLATOR_SYSTEM_PROMPT,
   buildTutorStubCurriculumTranslationPrompt,
+  buildTutorStubTutorOutputTranslationPrompt,
   normalizeTutorStubCurriculumTranslationLevels,
+  normalizeTutorStubTutorOutputTranslationLevels,
   parseTutorStubCurriculumTranslation,
+  parseTutorStubTutorOutputTranslation,
   renderTutorStubCurriculumTranslation,
+  renderTutorStubTutorOutputTranslation,
 } from '../services/tutorStubCurriculumTranslation.js';
 import {
   consumeMixedLearnerReadyAnnouncement,
@@ -1147,9 +1152,9 @@ Interactive commands:
   /clarify [phrase]      explain a complex or unclear term from tutor dialogue
   /explain [phrase]      alias for /clarify
   /c [phrase]            alias for /clarify
-  /translate [level]     render the active curriculum in basic, intermediate,
-                         advanced, or proficient contemporary standard English;
-                         no level renders all four variants
+  /translate [level]     rewrite the latest tutor reply in contemporary standard
+                         English (basic by default); in a curriculum session,
+                         translate the canonical module (all levels by default)
   /report                show the compact dialogue closeout report
   /r                     alias for /report
   /director              repeat all director notes issued so far
@@ -13561,6 +13566,30 @@ async function generateTutorStubCurriculumTranslation({ state, levels, signal = 
   };
 }
 
+async function generateTutorStubTutorOutputTranslation({ state, sourceText, levels, signal = null }) {
+  const request = buildTutorStubTutorOutputTranslationPrompt({ text: sourceText, levels });
+  const requestedMaxTokens = levels.length === 1 ? 900 : 2_400;
+  const raw = await callPromptModel({
+    prompt: request.prompt,
+    resolved: state.resolved,
+    systemPrompt: TUTOR_STUB_TUTOR_OUTPUT_TRANSLATOR_SYSTEM_PROMPT,
+    role: 'tutor_stub_turn_translator',
+    maxTokens: Math.min(Number(state.maxTokens) || requestedMaxTokens, requestedMaxTokens),
+    trace: state.trace,
+    stream: { enabled: false },
+    cliEffort: state.cliEffort,
+    turn: state.turns.length,
+    signal,
+  });
+  return {
+    ...raw,
+    translation: parseTutorStubTutorOutputTranslation(raw.text, {
+      sourceText: request.sourceText,
+      levels,
+    }),
+  };
+}
+
 function cleanAutomatedLearnerReply(text) {
   const cleaned = String(text || '')
     .replace(/^```(?:text|markdown)?/iu, '')
@@ -18167,7 +18196,7 @@ async function main() {
   let onInteractiveKeypress = null;
   let processingTurn = false;
   let clarificationInFlight = null;
-  let curriculumTranslationInFlight = null;
+  let translationInFlight = null;
   let scenarioPickerActive = false;
   let awaitingAnotherScenario = false;
   let interactiveDemoRunning = false;
@@ -21150,8 +21179,8 @@ async function main() {
     activeAutoRun?.abortController?.abort();
     if (clarificationInFlight) clarificationInFlight.cancelledReason = reason;
     clarificationInFlight?.abortController?.abort();
-    if (curriculumTranslationInFlight) curriculumTranslationInFlight.cancelledReason = reason;
-    curriculumTranslationInFlight?.abortController?.abort();
+    if (translationInFlight) translationInFlight.cancelledReason = reason;
+    translationInFlight?.abortController?.abort();
     stopInterimAnimation(state);
     void stopVoiceBridge(reason);
     concurrentTerminal.close();
@@ -22126,22 +22155,130 @@ async function main() {
     }
   }
 
-  async function runCurriculumTranslationCommand(levelArgument = '', { duringTurn = false } = {}) {
+  async function runTutorOutputTranslationCommand(levelArgument = '', { duringTurn = false } = {}) {
     clearStatusLine();
-    const module = state.curriculum?.module || null;
-    if (!module) {
-      console.log(`${C.cyan}translate >${C.reset} no curriculum module is active`);
-      console.log(
-        `${C.dim}  launch with --curriculum <workplan|path> --module <id>, then use /translate [level]${C.reset}\n`,
-      );
+    const sourceText = String(latestTutorMessage(state) || '').trim();
+    if (!sourceText) {
+      console.log(`${C.cyan}translate >${C.reset} no tutor message is available yet`);
+      console.log(`${C.dim}  ask the tutor something first, then use /translate${C.reset}\n`);
       appendTraceEvent(state.trace, {
-        type: 'curriculum_translation_unavailable',
-        reason: 'no_curriculum_module',
+        type: 'tutor_output_translation_unavailable',
+        reason: 'no_tutor_message',
         duringTurn,
         publicTranscriptChanged: false,
       });
       return;
     }
+    let levels;
+    try {
+      levels = normalizeTutorStubTutorOutputTranslationLevels(levelArgument);
+    } catch (error) {
+      console.log(`${C.red}translate error:${C.reset} ${error.message}\n`);
+      appendTraceEvent(state.trace, {
+        type: 'tutor_output_translation_error',
+        argument: levelArgument || null,
+        duringTurn,
+        error: error.message,
+        publicTranscriptChanged: false,
+      });
+      return;
+    }
+    if (translationInFlight) {
+      console.log(`${C.dim}translation is already running; wait for it to finish, then try again${C.reset}\n`);
+      appendTraceEvent(state.trace, {
+        type: 'tutor_output_translation_skipped',
+        reason: 'already_in_flight',
+        levels,
+        duringTurn,
+        publicTranscriptChanged: false,
+      });
+      return;
+    }
+
+    const attempt = {
+      id: `${stateRunDebugId(state)}:translate:${Date.now()}`,
+      abortController: new AbortController(),
+      cancelledReason: null,
+    };
+    translationInFlight = attempt;
+    appendTraceEvent(state.trace, {
+      type: 'tutor_output_translation_start',
+      schema: 'machinespirits.tutor-stub.tutor-output-translation-request.v1',
+      translationId: attempt.id,
+      levels,
+      duringTurn,
+      publicTranscriptChanged: false,
+    });
+    try {
+      console.log(
+        `${C.dim}rewriting the latest tutor reply in ${levels.length === 1 ? levels[0] : 'basic through proficient'} English...${C.reset}`,
+      );
+      const response = await generateTutorStubTutorOutputTranslation({
+        state,
+        sourceText,
+        levels,
+        signal: attempt.abortController.signal,
+      });
+      assertTutorStubTurnAttemptCurrent({
+        signal: attempt.abortController.signal,
+        isCurrent: () => translationInFlight === attempt,
+      });
+      const rendered = renderTutorStubTutorOutputTranslation(response.translation);
+      printWithConcurrentTerminal(state, () => {
+        clearStatusLine();
+        console.log(`${C.brightCyan}${C.bold}translate >${C.reset} latest tutor reply`);
+        console.log(`${C.dim}  temporary wording view; the transcript and tutor state are unchanged${C.reset}\n`);
+        console.log(`${rendered}\n`);
+        if (duringTurn) {
+          console.log(
+            `${C.dim}tutor is still thinking; this rewrote the previous completed reply and did not change the pending turn${C.reset}\n`,
+          );
+        }
+      });
+      appendTraceEvent(state.trace, {
+        type: 'tutor_output_translation_complete',
+        schema: response.translation.schema,
+        translationId: attempt.id,
+        levels,
+        duringTurn,
+        translation: response.translation,
+        provider: response.provider,
+        model: response.model,
+        latencyMs: response.latencyMs,
+        usage: response.usage,
+        publicTranscriptChanged: false,
+      });
+    } catch (error) {
+      if (error?.name === 'AbortError' && attempt.cancelledReason) {
+        appendTraceEvent(state.trace, {
+          type: 'tutor_output_translation_discarded',
+          translationId: attempt.id,
+          reason: attempt.cancelledReason,
+          publicTranscriptChanged: false,
+        });
+        return;
+      }
+      printWithConcurrentTerminal(state, () => {
+        clearStatusLine();
+        console.log(`${C.red}translate error:${C.reset} ${error.message}\n`);
+      });
+      appendTraceEvent(state.trace, {
+        type: 'tutor_output_translation_error',
+        translationId: attempt.id,
+        levels,
+        duringTurn,
+        error: error.message,
+        publicTranscriptChanged: false,
+      });
+    } finally {
+      if (translationInFlight === attempt) translationInFlight = null;
+    }
+  }
+
+  async function runCurriculumTranslationCommand(levelArgument = '', { duringTurn = false } = {}) {
+    const module = state.curriculum?.module || null;
+    if (!module) return runTutorOutputTranslationCommand(levelArgument, { duringTurn });
+    clearStatusLine();
     let levels;
     try {
       levels = normalizeTutorStubCurriculumTranslationLevels(levelArgument);
@@ -22157,10 +22294,8 @@ async function main() {
       });
       return;
     }
-    if (curriculumTranslationInFlight) {
-      console.log(
-        `${C.dim}curriculum translation is already running; wait for it to finish, then try again${C.reset}\n`,
-      );
+    if (translationInFlight) {
+      console.log(`${C.dim}translation is already running; wait for it to finish, then try again${C.reset}\n`);
       appendTraceEvent(state.trace, {
         type: 'curriculum_translation_skipped',
         reason: 'already_in_flight',
@@ -22177,7 +22312,7 @@ async function main() {
       abortController: new AbortController(),
       cancelledReason: null,
     };
-    curriculumTranslationInFlight = attempt;
+    translationInFlight = attempt;
     appendTraceEvent(state.trace, {
       type: 'curriculum_translation_start',
       schema: 'machinespirits.tutor-stub.curriculum-translation-request.v1',
@@ -22199,7 +22334,7 @@ async function main() {
       });
       assertTutorStubTurnAttemptCurrent({
         signal: attempt.abortController.signal,
-        isCurrent: () => curriculumTranslationInFlight === attempt,
+        isCurrent: () => translationInFlight === attempt,
       });
       const rendered = renderTutorStubCurriculumTranslation(response.translation);
       printWithConcurrentTerminal(state, () => {
@@ -22254,7 +22389,7 @@ async function main() {
         publicTranscriptChanged: false,
       });
     } finally {
-      if (curriculumTranslationInFlight === attempt) curriculumTranslationInFlight = null;
+      if (translationInFlight === attempt) translationInFlight = null;
     }
   }
 
@@ -22372,15 +22507,10 @@ async function main() {
     const learnerAttempt = activeLearnerTurn;
     const autoAttempt = activeAutoRun;
     const clarificationAttempt = clarificationInFlight;
-    const curriculumTranslationAttempt = curriculumTranslationInFlight;
+    const translationAttempt = translationInFlight;
     const queuedLearnerLines = pendingLearnerLines.length;
     const interrupted = Boolean(
-      learnerAttempt ||
-      autoAttempt ||
-      clarificationAttempt ||
-      curriculumTranslationAttempt ||
-      duringTurn ||
-      processingTurn,
+      learnerAttempt || autoAttempt || clarificationAttempt || translationAttempt || duringTurn || processingTurn,
     );
 
     stopInterimAnimation(state);
@@ -22399,10 +22529,10 @@ async function main() {
       clarificationInFlight = null;
       clarificationAttempt.abortController.abort();
     }
-    if (curriculumTranslationAttempt) {
-      curriculumTranslationAttempt.cancelledReason = 'dialogue_reset';
-      curriculumTranslationInFlight = null;
-      curriculumTranslationAttempt.abortController.abort();
+    if (translationAttempt) {
+      translationAttempt.cancelledReason = 'dialogue_reset';
+      translationInFlight = null;
+      translationAttempt.abortController.abort();
     }
     processingTurn = false;
     pendingLearnerLines.length = 0;
@@ -22437,7 +22567,8 @@ async function main() {
         : null,
       interruptedAutoRunId: autoAttempt?.id || null,
       interruptedClarificationId: clarificationAttempt?.id || null,
-      interruptedCurriculumTranslationId: curriculumTranslationAttempt?.id || null,
+      interruptedTranslationId: translationAttempt?.id || null,
+      interruptedCurriculumTranslationId: state.curriculum?.module ? translationAttempt?.id || null : null,
       queuedLearnerLinesDiscarded: queuedLearnerLines,
       preserved: ['scenario', 'learner_profile', 'settings'],
     });
@@ -25016,7 +25147,10 @@ async function main() {
       return runClarificationCommand(commandArg, { duringTurn }).finally(finishSlashCommand);
     }
     if (command === '/translate') {
-      return runCurriculumTranslationCommand(commandArg, { duringTurn }).finally(finishSlashCommand);
+      const curriculumView = Boolean(state.curriculum?.module);
+      return runCurriculumTranslationCommand(commandArg, { duringTurn }).finally(() =>
+        finishSlashCommand({ reprise: curriculumView }),
+      );
     }
     if (trimmed === '/report' || trimmed === '/r') {
       clearStatusLine();

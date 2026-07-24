@@ -338,6 +338,27 @@ causal model and proposed evidence rather than merely summarize the card. The
 session records the curriculum id, module id, and source hash in dry-run and
 trace metadata.
 
+`/board` and `/translate` are separate features. `/board` relaunches tutor-stub
+with the selected workplan card projected through the curriculum interface;
+that shared interface was why translation originally appeared only after a
+board or curriculum launch. `/translate` is now available in every normal
+tutor-stub session:
+
+- With no active curriculum, bare `/translate` rewrites the latest completed
+  public tutor reply in basic contemporary standard English. It removes
+  world-specific jargon, apparatus labels, and dramatic phrasing where they
+  are not needed for the literal meaning. `/translate intermediate`,
+  `/translate advanced`, and `/translate proficient` select another level;
+  `/translate all` displays all four.
+- With an active curriculum, the existing contract remains: bare `/translate`
+  renders the complete canonical module at all four levels, while
+  `/translate <level>` renders one level.
+
+Both forms are temporary wording views. They make a bounded model call using
+only the public source being rewritten, do not replace the accepted tutor
+utterance or canonical curriculum, and do not advance transcript, proof, or
+dialogue state.
+
 This mode is deliberately non-DAG. A workplan dependency graph says which work
 precedes other work; it is not a scenario proof DAG, and a card's verification
 line is not a concealed answer. `--curriculum` therefore rejects `--dag`,

@@ -84,7 +84,7 @@ export function tutorStubPromptSurfaceForRole(role) {
   if (value.includes('learner_analysis') || value.includes('learner_record') || value.includes('classifier')) {
     return 'learner_analysis';
   }
-  if (value.includes('curriculum_translator')) return 'clarifier';
+  if (value.includes('curriculum_translator') || value.includes('turn_translator')) return 'clarifier';
   if (value.includes('clarifier')) return 'clarifier';
   if (value.includes('tutor')) return 'tutor_turn';
   return 'default';
