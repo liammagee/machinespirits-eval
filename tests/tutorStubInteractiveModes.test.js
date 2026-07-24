@@ -1839,7 +1839,7 @@ test('/register and /character explicitly direct their own performance axes and 
     });
 
     assert.match(result.plain, /teaching style direction > warm/u);
-    assert.match(result.plain, /host character direction > advocate/u);
+    assert.match(result.plain, /tutor character > Advocate for the live case/u);
     assert.match(result.plain, /directed performance: style warm · character advocate/u);
     assert.match(result.plain, /style warm/u);
     assert.match(result.plain, /character advocate for the live case/u);
@@ -1915,11 +1915,17 @@ test('/character configures learner and tutor characters while preserving legacy
   assert.match(result.stdout, /tutor character > auto/u);
   assert.match(result.stdout, /adversarial_teacher\s+adversarial teacher/u);
   assert.match(result.stdout, /exacting_schoolmaster\s+exacting schoolmaster/u);
-  assert.match(result.stdout, /host character direction > adversarial_teacher/u);
+  assert.match(result.stdout, /tutor character > Adversarial teacher/u);
+  assert.match(
+    result.stdout,
+    /Tutor replies will actively test your ideas with subject-based counterexamples or alternatives\./u,
+  );
+  assert.match(result.stdout, /Clue-givers and the closing scene may temporarily use another character\./u);
+  assert.match(result.stdout, /Choose Tutor → Auto, or type \/character tutor auto/u);
   assert.match(result.stdout, /switched to counterexample_hunter: Counterexample hunter/u);
   assert.match(result.stdout, /learner character > counterexample_hunter/u);
   assert.match(result.stdout, /tutor character > adversarial_teacher/u);
-  assert.match(result.stdout, /host character direction > exacting_schoolmaster/u);
+  assert.match(result.stdout, /tutor character > Exacting schoolmaster/u);
 });
 
 test('changing the tutor character publicly restates the latest intent and replaces the cached reprise', async () => {
@@ -1955,7 +1961,7 @@ test('changing the tutor character publicly restates the latest intent and repla
       },
     });
 
-    assert.match(result.plain, /host character direction > adversarial_teacher/u);
+    assert.match(result.plain, /tutor character > Adversarial teacher/u);
     assert.match(
       result.plain,
       /tutor ↻ > Let me rephrase that\. Challenge the town’s first answer within the assay itself:/u,
@@ -2056,7 +2062,7 @@ test(
           } else if (!selectedTutor && plain.includes('does > Return character choice to light adaptation')) {
             selectedTutor = true;
             terminal.write('\x1b[B\r');
-          } else if (!openedCharacterForLearner && plain.includes('host character direction > scene_partner')) {
+          } else if (!openedCharacterForLearner && plain.includes('tutor character > Fellow investigator')) {
             openedCharacterForLearner = true;
             terminal.write('/character\r');
           } else if (
@@ -2087,7 +2093,7 @@ test(
       assert.match(plain, /Tutor\s+auto/u);
       assert.match(plain, /Tutor character · choose with ↑\/↓ and Enter/u);
       assert.match(plain, /scene_partner.*adaptive-safe/u);
-      assert.match(plain, /host character direction > scene_partner/u);
+      assert.match(plain, /tutor character > Fellow investigator/u);
       assert.match(plain, /Learner character · choose with ↑\/↓ and Enter/u);
       assert.match(plain, /pattern >/u);
       assert.match(plain, /learner profile > switched to [a-z_]+:/u);
@@ -2206,7 +2212,7 @@ test('/register auto and /character auto clear only their session locks', async 
     });
 
     assert.match(result.plain, /teaching style direction > auto/u);
-    assert.match(result.plain, /host character direction > auto/u);
+    assert.match(result.plain, /tutor character > Automatic/u);
     assert.match(result.plain, /directed performance: style auto · character auto/u);
     const events = fs
       .readdirSync(tmp)
