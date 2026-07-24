@@ -35,6 +35,8 @@ const HOST_SLOT_IDS = Object.freeze(['uptake', 'part', 'tactic', 'handoff']);
 const ACTION_CUES = Object.freeze({
   clarify_term:
     'Define the unresolved word in ordinary language with one concrete scene referent. Do not turn the definition into a proof test.',
+  repair_explanation:
+    'Restate the latest tutor explanation in plain contemporary English. Answer the wording problem directly, keep proof state and evidence unchanged, and do not turn the learner’s request into a proposition or test.',
   clarify_distinction:
     'State one concrete distinction, show what each side would look like in this scene, and test only that distinction.',
   stage_next_step: 'Put the next available public evidence into the scene before asking the learner to interpret it.',
@@ -149,7 +151,15 @@ function releaseCue(entry, index = 0) {
   return `After PART, open, read, show, test, or place this public exhibit exactly once: ${surface}`;
 }
 
-function endingCue({ questionSupport = null, dramaticReleaseFrame = null, dialogueClosureFrame = null } = {}) {
+function endingCue({
+  questionSupport = null,
+  dramaticReleaseFrame = null,
+  dialogueClosureFrame = null,
+  discoursePlane = null,
+} = {}) {
+  if (discoursePlane?.plane === 'instructional_meta') {
+    return 'End after the plain restatement or one declarative invitation to unpack another phrase. Do not return to the proof and do not ask a proof question in this turn.';
+  }
   if (dialogueClosureFrame?.phase === 'final_checkin_response') {
     return 'Answer the final check-in from the public exchange, explicitly close the inquiry, and ask no question.';
   }
@@ -528,6 +538,7 @@ export function buildTutorStubFirstDraftContract({
   sourceAccessibilityOwner = 'performance_response',
 } = {}) {
   const configuration = responseConfiguration || {};
+  const discoursePlane = responseCompositionFrame?.discourse_plane || configuration.discourse_plane || null;
   const stance = configuration.engagement_stance || 'precise';
   const actionFamily = configuration.action_family || 'clarify_distinction';
   const part = configuration.actorial_part || 'scene_partner';
@@ -634,11 +645,14 @@ export function buildTutorStubFirstDraftContract({
     schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
     learner_move: learnerMove,
     opening: {
-      instruction: writableEntryBeforeDueEvidence
-        ? 'The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.'
-        : writableEntryRequested
-          ? 'The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.'
-          : 'Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.',
+      instruction:
+        discoursePlane?.plane === 'instructional_meta'
+          ? 'Begin by directly acknowledging that the learner wants the explanation made easier to follow. Restate the latest tutor point in ordinary words. Do not quote the whole learner request, treat it as evidence, or advance the inquiry.'
+          : writableEntryBeforeDueEvidence
+            ? 'The learner asked what to write while new evidence is due in this reply. Begin exactly with “Write:” and supply one complete learner-sayable sentence about the pre-turn public status or evidentiary limit. It must complement the new evidence: do not state, paraphrase, preview, or summarize any PUBLIC EVIDENCE DUE NOW. Only then enact each due clue once in the development beat.'
+            : writableEntryRequested
+              ? 'The learner asked what to write. Begin exactly with “Write:” and supply one complete learner-sayable sentence licensed by the current public evidence. This direct entry is the learner uptake; only then perform the selected development beat. Do not substitute a prop action or another question for the requested sentence.'
+              : 'Respond to the learner’s actual contribution in the first sentence by answering, crediting, qualifying, correcting, or receiving it. Paraphrase its concrete claim or concern rather than echoing the learner’s substantive wording; do not begin with generic praise.',
       responsive_repair_required: questionSupport?.responsiveRepairRequired === true,
       writable_entry_requested: writableEntryRequested,
       complementary_to_due_evidence: writableEntryBeforeDueEvidence,
@@ -703,7 +717,7 @@ export function buildTutorStubFirstDraftContract({
       source_accessibility: sourceAccessibility,
     },
     ending: {
-      instruction: endingCue({ questionSupport, dramaticReleaseFrame, dialogueClosureFrame }),
+      instruction: endingCue({ questionSupport, dramaticReleaseFrame, dialogueClosureFrame, discoursePlane }),
       clarification_invitation_required: questionSupport?.clarificationInvitationRequired === true,
       closure_required: dialogueClosureFrame?.mandatory === true,
     },
@@ -741,6 +755,20 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
   const plainNovice =
     ['adult_novice', 'child'].includes(contract.language?.audience_register) &&
     ['plain', 'glossed_plain'].includes(contract.language?.lexical_accessibility);
+  const instructionalMetaRepair = contract.progression?.discourse_plane?.plane === 'instructional_meta';
+  if (instructionalMetaRepair) {
+    return [
+      '[Tutor-only host plan]',
+      `Write one paragraph in two or three short, unquoted sentences, each at most ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words. Follow ACKNOWLEDGE > RESTATE > optional CONTINUITY.`,
+      'ACKNOWLEDGE — Directly say that you will make the explanation plainer or easier to follow. “Of course” or “Yes” alone is not enough. Do not quote the learner’s whole request.',
+      'RESTATE — Put the designated public restatement target into ordinary contemporary English. Preserve its meaning, add no fact or clue, and do not turn the wording request into evidence.',
+      'CONTINUITY — You may end with one short declarative invitation to unpack another phrase. Do not ask a question, quote the public inquiry question, or output a question mark.',
+      'REALIZATION — Use one direct, unadorned shared action beside an already-named public object only if it helps continuity; do not create a separate dramatic beat.',
+      `GLOBAL — Intelligent ${contract.language.audience_register.replace(/_/gu, ' ')}; ${contract.language.lexical_accessibility.replace(/_/gu, ' ')} common words; one relation per sentence. Keep scene contact minimal and add no fact.`,
+      'Use one voice. Never announce roles, strategy, analysis, proof machinery, or hidden/future evidence.',
+      '[End tutor-only host plan]',
+    ].join('\n');
+  }
   if (liveCompensation) {
     return [
       '[Tutor-only host plan]',

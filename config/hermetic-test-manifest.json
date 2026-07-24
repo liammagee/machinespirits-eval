@@ -377,6 +377,7 @@
         "tests/tutorStubContinuousRegister.test.js",
         "tests/tutorStubCurriculumTranslation.test.js",
         "tests/tutorStubDevelopmentSpeakerTransport.test.js",
+        "tests/tutorStubDiscoursePlane.test.js",
         "tests/tutorStubDramaticRelease.test.js",
         "tests/tutorStubDueSourceRenderer.test.js",
         "tests/tutorStubEngagementOperation.test.js",

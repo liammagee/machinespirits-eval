@@ -64,6 +64,7 @@ const DEVELOPMENT_BOUNDARY_PATTERN =
 const SCENE_ACTION_PATTERN = /\bi\s+(?:flatten|lay|mark|open|place|set|slide|tap|underline|unfold)\b/iu;
 const LEARNER_RESPONSIVE_ACTION_FAMILIES = new Set([
   'answer_accountably',
+  'repair_explanation',
   'receive_vulnerability',
   'challenge_resistance',
 ]);
@@ -515,6 +516,7 @@ export function buildTutorStubResponseCompositionFrame({
   conversationalCompletion = null,
   publicFocusMapping = null,
   recentTutorTexts = [],
+  discoursePlane = null,
 } = {}) {
   const configuration = registerSelection?.response_configuration || registerSelection || {};
   const move = learnerMove(classification);
@@ -537,6 +539,7 @@ export function buildTutorStubResponseCompositionFrame({
       public_shape: 'continuous_performance',
     },
     learner_move: move,
+    discourse_plane: discoursePlane ? structuredClone(discoursePlane) : null,
     learner_dag: dag,
     selected_action_family: actionFamily,
     action_target: actionTarget,
@@ -560,14 +563,19 @@ export function buildTutorStubResponseCompositionFrame({
       action_family: actionTarget === 'development' ? actionFamily : null,
       kind: dialogueClosureFrame?.mandatory
         ? 'dialogue_closure'
-        : dramaticReleaseFrame?.active
-          ? 'dramatic_clue_release'
-          : 'pedagogical_continuation',
+        : discoursePlane?.plane === 'instructional_meta'
+          ? 'instructional_meta_repair'
+          : dramaticReleaseFrame?.active
+            ? 'dramatic_clue_release'
+            : 'pedagogical_continuation',
       expected_dag_move: registerSelection?.expected_dag_move || null,
       expected_interaction_move: registerSelection?.expected_field_move || null,
       clue_release_required: dramaticReleaseFrame?.active === true,
       closure_phase: closurePhase,
-      instruction: `Without announcing a switch, continue through the selected part${configuration.actorial_part_label ? ` (${configuration.actorial_part_label})` : ''} and perform the next action: advance the public reasoning, stage the due clue, clarify, or close as the current state requires.`,
+      instruction:
+        discoursePlane?.plane === 'instructional_meta'
+          ? 'Stay with the explanation itself. Restate the latest tutor point in plain contemporary English, keep the proof state unchanged, release no clue, and do not return to an object-level proof question in this turn.'
+          : `Without announcing a switch, continue through the selected part${configuration.actorial_part_label ? ` (${configuration.actorial_part_label})` : ''} and perform the next action: advance the public reasoning, stage the due clue, clarify, or close as the current state requires.`,
     },
     shared_realization: {
       engagement_stance: configuration.engagement_stance || registerSelection?.engagement_stance || null,
@@ -597,6 +605,9 @@ export function tutorStubResponseCompositionPrompt(frame = null) {
     }`,
     move.summary ? `Public learner move to take up: ${move.summary}` : null,
     move.pedagogical_need ? `Immediate public-facing need: ${move.pedagogical_need}` : null,
+    frame.discourse_plane?.plane === 'instructional_meta'
+      ? 'Discourse plane: instructional repair. The learner is asking about this explanation, not making a claim about the inquiry. Rephrase the latest tutor point first; do not treat the request itself as evidence and do not advance the proof in this turn.'
+      : null,
     learnerAdvance?.supported_move_count
       ? `The learner has already made ${learnerAdvance.supported_move_count} supported move${
           learnerAdvance.supported_move_count === 1 ? '' : 's'
@@ -1451,7 +1462,7 @@ function configuredFallbackObject({ world = null, learnerText = '', part = '' } 
     `${learnerText} ${world?.setting || ''} ${world?.openingFrame?.situation || ''} ${world?.question || ''}`,
   );
   const recordPattern =
-    /\b(?:trial-book|visitor badge log|badge log|lost-property ledger|ledger|log|record|register|notebook|file)\b/iu;
+    /\b(?:proposal card|formulation card|trial-book|visitor badge log|badge log|lost-property ledger|ledger|log|record|register|notebook|file|card)\b/iu;
   const exhibitPattern =
     /\b(?:shilling|coin|crucible|cupel|touchstone|balance|tool|sample|notice|report|photograph|photo|lunchbox)\b/iu;
   if (part === 'record_keeper') return source.match(recordPattern)?.[0] || 'record';
@@ -1536,6 +1547,49 @@ function configuredFallbackVariationBridge(variant) {
   );
 }
 
+function configuredMetaFallbackHost({ part, object }) {
+  const normalizedPart =
+    {
+      cross_examiner: 'adversarial_teacher',
+      opposing_counsel: 'exacting_schoolmaster',
+    }[part] || part;
+  return (
+    {
+      scene_partner: `I make room for you beside the ${object} and set the technical wording aside.`,
+      examiner: `I point to the ${object} and replace the technical wording with ordinary words.`,
+      record_keeper: `I mark the wording in the ${object} as something to explain, not as a new finding.`,
+      advocate: `My case is simple: the wording needs repair before we continue with the ${object}.`,
+      skeptic: `Not so fast—I leave the ${object} where it is and repair the explanation first.`,
+      adversarial_teacher: `Stop at the wording. I keep the ${object} unchanged while I explain the same point plainly.`,
+      exacting_schoolmaster: `We keep our place at the ${object}; I will state the same point one short step at a time.`,
+      foreperson: `I leave the ${object} open and restate the last point before any finding is entered.`,
+    }[normalizedPart] || `I keep our place at the ${object} and set the technical wording aside.`
+  );
+}
+
+export function deterministicTutorStubInstructionalMetaFallback({
+  uptake = '',
+  responseConfiguration = null,
+  world = null,
+  learnerText = '',
+} = {}) {
+  const part = oneLine(
+    responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'scene_partner',
+  );
+  const object = configuredFallbackObject({ world, learnerText, part });
+  const responsiveUptake = /\b(?:explain|follow|plain|simpl|understand|word)\b/iu.test(uptake)
+    ? oneLine(uptake)
+    : 'You are asking me to explain the last point in plainer words; I will do that now.';
+  return [
+    responsiveUptake,
+    configuredMetaFallbackHost({ part, object }),
+    'That request is about how I explained the last point; it does not add a clue or move the inquiry forward.',
+    'I will keep the same point and state it in short, ordinary sentences before we return to the inquiry.',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
 function configuredFallbackVariantOrder({ variationKey = '', recentTutorTexts = [], count = 4 } = {}) {
   if (!(Array.isArray(recentTutorTexts) ? recentTutorTexts : []).filter(oneLine).length) return [0];
   let hash = 2166136261;
@@ -1567,6 +1621,17 @@ export function deterministicTutorStubConfiguredContinuationFallback({
   recentTutorTexts = [],
   variationKey = '',
 } = {}) {
+  if (
+    responseConfiguration?.discourse_plane?.plane === 'instructional_meta' ||
+    turnProgressionContract?.discourse_plane?.plane === 'instructional_meta'
+  ) {
+    return deterministicTutorStubInstructionalMetaFallback({
+      uptake,
+      responseConfiguration,
+      world,
+      learnerText,
+    });
+  }
   const stance = oneLine(responseConfiguration?.engagement_stance || 'plain');
   const part = oneLine(responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner');
   const actionFamily = oneLine(responseConfiguration?.action_family || '');

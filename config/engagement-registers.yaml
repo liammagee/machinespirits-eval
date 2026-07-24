@@ -410,6 +410,9 @@ action_families:
   clarify_term:
     role: dag_device
     description: Gloss one unresolved term or phrase before asking for any further proof move.
+  repair_explanation:
+    role: discourse_repair
+    description: Restate the current tutor explanation in plain language without advancing the proof or releasing another clue.
   clarify_distinction:
     role: dag_device
     description: Define or sharpen one conceptual edge.

@@ -69,9 +69,16 @@ function configurationSignal({ learnerText, classification }) {
   );
 }
 
-export function selectTutorStubActionFamily({ classification, tutorLearnerDag, comprehension, releasePacing } = {}) {
+export function selectTutorStubActionFamily({
+  classification,
+  tutorLearnerDag,
+  comprehension,
+  releasePacing,
+  discoursePlane,
+} = {}) {
   const requestType = requestTypeFrom(classification);
   const features = comprehensionFeatures(comprehension);
+  const unresolvedTerms = Array.isArray(features.unresolvedTerms) ? features.unresolvedTerms : [];
   const model = modelFrom(tutorLearnerDag);
   const assessment = model.assessment || {};
   const memoryReliability = model.memoryReliability || {};
@@ -79,7 +86,12 @@ export function selectTutorStubActionFamily({ classification, tutorLearnerDag, c
   let actionFamily = 'clarify_distinction';
   let reason = 'Default to one inspectable distinction or check.';
 
-  if (Number(features.pressure || 0) > 0) {
+  if (discoursePlane?.plane === 'instructional_meta') {
+    actionFamily = unresolvedTerms.length ? 'clarify_term' : 'repair_explanation';
+    reason = unresolvedTerms.length
+      ? 'The learner named a wording gap, so define it before any proof move.'
+      : 'The learner requested an instructional repair; restate the explanation without advancing evidence or proof state.';
+  } else if (Number(features.pressure || 0) > 0) {
     actionFamily = 'clarify_term';
     reason = 'An unresolved or recent wording gap must be repaired before another proof move.';
   } else if (assessment.finalSecretEntailed === true && assessment.assertedSecret === true) {
@@ -290,6 +302,7 @@ const STANCE_PART_AFFINITY = {
 
 const ACTION_PART_AFFINITY = {
   clarify_term: { examiner: 1.4, record_keeper: 0.45 },
+  repair_explanation: { scene_partner: 1.8, examiner: 0.15 },
   clarify_distinction: { examiner: 1.25, skeptic: 0.45 },
   stage_next_step: { authored_source: 1, examiner: 0.75, record_keeper: 0.4 },
   answer_accountably: { advocate: 1.2, skeptic: 0.75 },
@@ -584,16 +597,43 @@ export function buildTutorStubResponseConfiguration({
   dueEvidence = [],
   recentActorialParts = [],
   actorialPartOverride = null,
+  discoursePlane = null,
 } = {}) {
-  const action = selectTutorStubActionFamily({ classification, tutorLearnerDag, comprehension, releasePacing });
+  const instructionalMetaRepair = discoursePlane?.plane === 'instructional_meta';
+  const requestedEngagementStance = engagementStance || 'precise';
+  const effectiveEngagementStance = instructionalMetaRepair ? 'plain' : requestedEngagementStance;
+  const effectiveStanceDistribution = instructionalMetaRepair
+    ? [
+        {
+          engagement_stance: 'plain',
+          register: 'plain',
+          weight: 1,
+          probability: 1,
+          sourceScore: 1,
+        },
+      ]
+    : stanceDistribution;
+  const action = selectTutorStubActionFamily({
+    classification,
+    tutorLearnerDag,
+    comprehension,
+    releasePacing,
+    discoursePlane,
+  });
   const audience = selectTutorStubAudienceRegister({ learnerText, classification, tutorLearnerDag, comprehension });
   const lexical = selectTutorStubLexicalAccessibility({ classification, tutorLearnerDag, comprehension });
-  const scene = selectTutorStubSceneImmersion({ classification, comprehension, world });
+  const scene =
+    discoursePlane?.plane === 'instructional_meta'
+      ? {
+          sceneImmersion: 'minimal',
+          reason: 'Instructional repair outranks dramatic or evidentiary scene development.',
+        }
+      : selectTutorStubSceneImmersion({ classification, comprehension, world });
   const actorialPart =
     actorialPartOverride ||
     selectTutorStubActorialPart({
-      engagementStance: engagementStance || 'precise',
-      stanceDistribution,
+      engagementStance: effectiveEngagementStance,
+      stanceDistribution: effectiveStanceDistribution,
       actionFamily: action.actionFamily,
       temperature,
       classification,
@@ -604,7 +644,7 @@ export function buildTutorStubResponseConfiguration({
       recentActorialParts,
     });
   const actorialPerformance = selectTutorStubActorialPerformance({
-    engagementStance: engagementStance || 'precise',
+    engagementStance: effectiveEngagementStance,
     actorialPart: actorialPart.id,
   });
   const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
@@ -618,8 +658,9 @@ export function buildTutorStubResponseConfiguration({
   return {
     schema: RESPONSE_CONFIGURATION_SCHEMA,
     policy,
-    engagement_stance: engagementStance || 'precise',
+    engagement_stance: effectiveEngagementStance,
     action_family: action.actionFamily,
+    discourse_plane: discoursePlane ? structuredClone(discoursePlane) : null,
     audience_register: audience.audienceRegister,
     lexical_accessibility: lexical.lexicalAccessibility,
     scene_immersion: scene.sceneImmersion,
@@ -636,23 +677,34 @@ export function buildTutorStubResponseConfiguration({
     unresolved_terms: unresolvedTerms,
     learner_advance: learnerAdvance ? structuredClone(learnerAdvance) : null,
     release_pacing: releasePacing ? structuredClone(releasePacing) : null,
-    engagement_stance_distribution: Array.isArray(stanceDistribution) ? structuredClone(stanceDistribution) : null,
+    engagement_stance_distribution: Array.isArray(effectiveStanceDistribution)
+      ? structuredClone(effectiveStanceDistribution)
+      : null,
     engagement_stance_vector: stanceVector && typeof stanceVector === 'object' ? structuredClone(stanceVector) : null,
     engagement_stance_temperature: Number.isFinite(Number(temperature)) ? Number(temperature) : null,
     actorial_part_temperature: actorialPart.temperature,
     temperature_scope: 'engagement_stance_and_actorial_part',
     selection_reasons: {
+      engagement_stance: instructionalMetaRepair
+        ? 'Instructional repair uses a plain, unadorned stance before any return to the inquiry.'
+        : null,
       action_family: action.reason,
       audience_register: audience.reason,
       lexical_accessibility: lexical.reason,
       scene_immersion: scene.reason,
       actorial_part: actorialPart.reason,
-      actorial_performance: `Realize ${engagementStance || 'precise'} through the selected public part instead of attaching a tone label to generic tutor prose.`,
+      actorial_performance: instructionalMetaRepair
+        ? 'Realize the wording repair as one direct, unadorned public action rather than a dramatic invitation or proof handoff.'
+        : `Realize ${effectiveEngagementStance} through the selected public part instead of attaching a tone label to generic tutor prose.`,
     },
     compatibility: {
-      selected_register: engagementStance || 'precise',
+      selected_register: effectiveEngagementStance,
       legacy_selected_register: legacySelectedRegister,
       proposed_action_family: proposedActionFamily,
+      pre_instructional_meta_engagement_stance:
+        instructionalMetaRepair && requestedEngagementStance !== effectiveEngagementStance
+          ? requestedEngagementStance
+          : null,
     },
   };
 }
@@ -1002,6 +1054,11 @@ function actionVisible(actionFamily, text, metrics, unresolvedTerms) {
     return unresolvedTerms.length
       ? glossed.length === unresolvedTerms.length
       : /\b(?:is|means|refers to)\b/iu.test(text);
+  }
+  if (actionFamily === 'repair_explanation') {
+    return /\b(?:explain(?:ed|ing)?|plain(?:er)?|ordinary words?|eas(?:y|ier|iest)(?:\s+to\s+follow)?|rephras(?:e|ed|ing)|restate(?:d|ment|ing)?|say (?:it|that|this) (?:more )?simply|simpl(?:e|er|ify|ified|ification)|unpack|in other words|(?:simply|just) mean(?:s|ing)?|mean(?:s|ing)? by)\b/iu.test(
+      text,
+    );
   }
   if (actionFamily === 'clarify_distinction') {
     return (
@@ -2112,16 +2169,18 @@ export function auditTutorStubResponseConfiguration({
       selected: configuration.action_family,
       visible: actionVisible(
         configuration.action_family,
-        ['answer_accountably', 'receive_vulnerability', 'challenge_resistance'].includes(configuration.action_family) &&
-          composition?.uptake
+        ['answer_accountably', 'receive_vulnerability', 'challenge_resistance', 'repair_explanation'].includes(
+          configuration.action_family,
+        ) && composition?.uptake
           ? composition.uptake
           : composition?.development || text,
         metrics,
         unresolvedTerms,
       ),
       evaluated_segment:
-        ['answer_accountably', 'receive_vulnerability', 'challenge_resistance'].includes(configuration.action_family) &&
-        composition?.uptake
+        ['answer_accountably', 'receive_vulnerability', 'challenge_resistance', 'repair_explanation'].includes(
+          configuration.action_family,
+        ) && composition?.uptake
           ? 'uptake'
           : composition?.development
             ? 'development'

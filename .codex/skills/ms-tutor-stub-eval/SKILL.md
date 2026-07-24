@@ -739,6 +739,14 @@ Useful variants:
   module at all four levels, while `/translate <level>` renders one. Both forms
   are temporary wording views: the public transcript, accepted tutor output,
   canonical curriculum, and proof/dialogue state remain unchanged.
+- Natural requests to simplify, rephrase, or explain the tutor's latest words
+  use the `instructional_meta` discourse plane. That plane selects
+  `repair_explanation`, freezes learner-DAG updates and clue release for the
+  turn, outranks clue pacing, and temporarily selects the plain, unadorned
+  fellow-investigator configuration. Its compact first-draft sequence is
+  `ACKNOWLEDGE > RESTATE > optional CONTINUITY`: it omits the local proof
+  question surface and ends declaratively before returning to object language.
+  Its deterministic fallback must never treat the wording request as evidence.
 - Consecutive public learner lines entered before the tutor reply appears form
   one compound learner turn. Each added line aborts or invalidates the current
   analysis/tutor attempt, every assessment is regenerated from the full input,

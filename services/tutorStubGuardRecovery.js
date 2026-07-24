@@ -37,7 +37,7 @@ function responseConfigurationSignature(configuration = null) {
 
 function simplifiedRecoveryPart(configuration = null, { closureRequired = false } = {}) {
   if (closureRequired || configuration?.action_family === 'close_inquiry') return 'foreperson';
-  if (['receive_vulnerability', 'reanchor_lived_stake'].includes(configuration?.action_family)) {
+  if (['receive_vulnerability', 'reanchor_lived_stake', 'repair_explanation'].includes(configuration?.action_family)) {
     return 'scene_partner';
   }
   if (['compress_sayback', 'reanchor_public_evidence'].includes(configuration?.action_family)) {
@@ -61,11 +61,12 @@ export function buildTutorStubSimplifiedRecoveryConfiguration(
   const part = simplifiedRecoveryPart(source, { closureRequired });
   const definition = SIMPLIFIED_RECOVERY_PARTS[part];
   const selectedSignature = responseConfigurationSignature(source);
+  const instructionalMetaRepair = source.discourse_plane?.plane === 'instructional_meta';
   const configuration = {
     ...structuredClone(source),
     engagement_stance: 'plain',
     lexical_accessibility: 'plain',
-    scene_immersion: 'grounded',
+    scene_immersion: instructionalMetaRepair ? 'minimal' : 'grounded',
     actorial_part: part,
     actorial_part_label: definition.label,
     actorial_host_part: part,
@@ -102,6 +103,7 @@ export function buildTutorStubSimplifiedRecoveryConfiguration(
 
 export function tutorStubSimplifiedRecoveryPrompt({ configuration = null, firstDraftContract = null } = {}) {
   const part = configuration?.actorial_part || 'examiner';
+  const instructionalMetaRepair = configuration?.discourse_plane?.plane === 'instructional_meta';
   const partCue = {
     scene_partner:
       'Use one short first-person shared action beside a named public object and make room for the learner.',
@@ -113,9 +115,11 @@ export function tutorStubSimplifiedRecoveryPrompt({ configuration = null, firstD
   return [
     '[Tutor-only minimal recovery contract]',
     'Write a genuinely different replacement in two to four short sentences. Do not reuse the policy repair’s opening or sentence shape.',
-    firstDraftContract?.learner_move
-      ? `OPEN — Directly answer or credit this move without echoing it: ${firstDraftContract.learner_move}`
-      : 'OPEN — Directly answer or credit the learner’s concrete move without generic praise.',
+    instructionalMetaRepair
+      ? 'OPEN — Directly acknowledge that the learner wants plainer or easier wording. “Of course” or “Yes” alone is not enough, and do not quote the whole request.'
+      : firstDraftContract?.learner_move
+        ? `OPEN — Directly answer or credit this move without echoing it: ${firstDraftContract.learner_move}`
+        : 'OPEN — Directly answer or credit the learner’s concrete move without generic praise.',
     firstDraftContract?.development?.instruction ? `ACT — ${firstDraftContract.development.instruction}` : null,
     `ENACT — ${partCue} Keep it direct and unadorned.`,
     evidence.length ? 'PUBLIC EVIDENCE — deliver each supplied line once and add nothing beyond it:' : null,

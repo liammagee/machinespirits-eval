@@ -20,6 +20,7 @@ const NO_QUESTION_ACTIONS = new Set([
   'answer_accountably',
   'close_inquiry',
   'compress_sayback',
+  'repair_explanation',
   'reanchor_lived_stake',
   'reanchor_public_evidence',
   'receive_vulnerability',
@@ -144,6 +145,10 @@ function normalizeToken(value) {
     .replace(/[’']/gu, '')
     .replace(/(?:ies)$/u, 'y')
     .replace(/(?:ing|ed|es|s)$/u, (suffix) => (String(value || '').length - suffix.length >= 4 ? '' : suffix));
+  if (/^(?:plain|simpl)/u.test(token)) return 'plain';
+  if (/^eas(?:y|ier|iest)$/u.test(token)) return 'plain';
+  if (/^(?:language|word)/u.test(token)) return 'language';
+  if (/^(?:clear|follow|understand)/u.test(token)) return 'understand';
   return (
     {
       begin: 'start',
@@ -219,7 +224,14 @@ function interrogativeUptake(value) {
   );
 }
 
-function realizeTurnProgressionUptakeVariants(quotedFocus) {
+function realizeTurnProgressionUptakeVariants(quotedFocus, discoursePlane = null) {
+  if (discoursePlane?.plane === 'instructional_meta') {
+    return [
+      'You are asking me to explain the last point in plainer words; I will do that now.',
+      'I hear that the explanation is hard to follow, so I will restate it in ordinary words.',
+      'You want a simpler explanation of the same point; that is what I will answer now.',
+    ];
+  }
   return [
     `I keep your point about “${quotedFocus}” in view before we develop it.`,
     `I hear the focus: “${quotedFocus}”; that stays at the centre of this turn.`,
@@ -295,7 +307,7 @@ export function deterministicTutorStubTurnProgressionUptake({
     contract.turn_focus_contract?.primary_surface || contract.learner_uptake?.learner_surface,
   );
   if (!focus) return fallback;
-  const variants = realizeTurnProgressionUptakeVariants(focus);
+  const variants = realizeTurnProgressionUptakeVariants(focus, contract.discourse_plane);
   const variantIndex = (Array.isArray(recentTutorTexts) ? recentTutorTexts : []).filter(oneLine).length
     ? 1 + stableVariationIndex(variationKey, variants.length - 1)
     : 0;
@@ -304,7 +316,7 @@ export function deterministicTutorStubTurnProgressionUptake({
   const candidate = variants[variantIndex];
   if (!echoes(candidate)) return visible(candidate) ? candidate : fallback;
   const bounded = boundedQuotedFocusCandidates(focus)
-    .map((quotedFocus) => realizeTurnProgressionUptakeVariants(quotedFocus)[variantIndex])
+    .map((quotedFocus) => realizeTurnProgressionUptakeVariants(quotedFocus, contract.discourse_plane)[variantIndex])
     .find((row) => !echoes(row) && visible(row));
   return bounded || fallback;
 }
@@ -339,7 +351,7 @@ function semanticFocusCandidate(value = '') {
     .trim();
 }
 
-function focusSurface({ learnerText = '', responseCompositionFrame = null } = {}) {
+function focusSurface({ learnerText = '', responseCompositionFrame = null, discoursePlane = null } = {}) {
   const learner = oneLine(learnerText);
   const move = responseCompositionFrame?.learner_move || {};
   const summary = semanticFocusCandidate(move.summary);
@@ -347,6 +359,22 @@ function focusSurface({ learnerText = '', responseCompositionFrame = null } = {}
   const completion = responseCompositionFrame?.conversational_completion || null;
   const acceptedMeaning = completion?.resolved ? semanticFocusCandidate(completion.acceptedMeaning) : '';
   const writable = tutorStubLearnerRequestsWritableEntry(learner);
+  if (discoursePlane?.plane === 'instructional_meta') {
+    const selected = [
+      [summary, 'learner_move_summary'],
+      [pedagogicalNeed, 'pedagogical_need'],
+    ].find(([surface]) => contentTerms(surface).length > 0);
+    return {
+      surface: selected?.[0] || 'explain the last point in plain language',
+      source: selected?.[1] || 'instructional_meta_default',
+      semanticCandidates: {
+        accepted_meaning: acceptedMeaning || null,
+        summary: summary || null,
+        pedagogical_need: pedagogicalNeed || null,
+        meta_target: discoursePlane.meta_target || null,
+      },
+    };
+  }
   if (writable && (GENERIC_WRITABLE_FOCUS_PATTERN.test(learner) || contentTerms(learner).length === 0) && summary) {
     return {
       surface: summary,
@@ -459,7 +487,9 @@ function chooseHandoffMode({
   dialogueClosureFrame = null,
   questionSupport = null,
   actionFamily = null,
+  discoursePlane = null,
 } = {}) {
+  if (discoursePlane?.plane === 'instructional_meta') return 'instructional_meta_repair';
   if (dialogueClosureFrame?.mandatory === true) return 'closure';
   if (questionSupport?.responsiveRepairRequired === true) return 'direct_answer';
   if (completion?.resolved === true && due.length) return 'new_unresolved_check';
@@ -476,6 +506,9 @@ function chooseHandoffMode({
 function handoffInstruction(contract) {
   const handoff = contract.handoff_contract;
   const focus = contract.turn_focus_contract;
+  if (contract.discourse_plane?.plane === 'instructional_meta') {
+    return 'End after the plain restatement or one declarative invitation to unpack another phrase. Do not return to the proof or ask a proof question in this turn.';
+  }
   const target = focus.due_surfaces.length ? 'the due SOURCE' : 'TURN FOCUS';
   const settled = handoff.prohibited_settled_surfaces.length ? ' Do not reopen the settled point.' : '';
   const bridge = focus.sibling_relation_requires_explicit_bridge
@@ -498,8 +531,9 @@ export function compileTutorStubTurnProgressionContract({
   actionFamily = null,
   tactic = null,
 } = {}) {
+  const discoursePlane = responseCompositionFrame?.discourse_plane || null;
   const completion = responseCompositionFrame?.conversational_completion || null;
-  const focus = focusSurface({ learnerText, responseCompositionFrame });
+  const focus = focusSurface({ learnerText, responseCompositionFrame, discoursePlane });
   const primaryGroups = focusGroups(focus.surface);
   const primaryTerms = [...new Set(primaryGroups.flatMap((group) => group.terms))];
   const due = dueSurfaces({ responseCompositionFrame, dramaticReleaseFrame });
@@ -512,10 +546,18 @@ export function compileTutorStubTurnProgressionContract({
     dialogueClosureFrame,
     questionSupport,
     actionFamily,
+    discoursePlane,
   });
   const questionAllowed = ['new_unresolved_check', 'question_on_due_source'].includes(handoffMode);
-  const requiredTargetSurfaces = due.length && questionAllowed ? due : focus.surface ? [focus.surface] : [];
-  const requiredTargetTerms = due.length && questionAllowed ? dueTerms : primaryTerms;
+  const instructionalMeta = discoursePlane?.plane === 'instructional_meta';
+  const requiredTargetSurfaces = instructionalMeta
+    ? []
+    : due.length && questionAllowed
+      ? due
+      : focus.surface
+        ? [focus.surface]
+        : [];
+  const requiredTargetTerms = instructionalMeta ? [] : due.length && questionAllowed ? dueTerms : primaryTerms;
   const prohibitedSettledSurfaces = completion?.resolved
     ? [completion.sourceTutorQuestion, completion.acceptedMeaning].map(oneLine).filter(Boolean)
     : [];
@@ -529,6 +571,7 @@ export function compileTutorStubTurnProgressionContract({
     schema: TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
     complete: Boolean(focus.surface || due.length || dialogueClosureFrame?.mandatory),
     public_only: true,
+    discourse_plane: discoursePlane ? structuredClone(discoursePlane) : null,
     learner_uptake: {
       required: Boolean(oneLine(learnerText)),
       mode: writableEntryRequested
@@ -541,7 +584,9 @@ export function compileTutorStubTurnProgressionContract({
       focus_terms: primaryTerms,
       instruction: writableEntryRequested
         ? 'UPTAKE must answer the wording request directly with the licensed entry; it must not substitute another question.'
-        : 'UPTAKE must visibly answer, credit, qualify, correct, or receive the learner’s actual move before development begins.',
+        : instructionalMeta
+          ? 'UPTAKE must answer the request for a simpler explanation directly. Treat it as a repair to the instructional dialogue, not as a proposition, clue, or proof move.'
+          : 'UPTAKE must visibly answer, credit, qualify, correct, or receive the learner’s actual move before development begins.',
     },
     turn_focus_contract: {
       primary_surface: focus.surface || null,
@@ -556,9 +601,11 @@ export function compileTutorStubTurnProgressionContract({
       relation_kind: focusRelation.kind,
       relation_basis: focusRelation.basis,
       bridge_markers: ['before we', 'first', 'to answer', 'to connect', 'because', 'so that', 'which bears on'],
-      instruction: focus.surface
-        ? `Keep the learner’s requested focus primary: “${focus.surface}”. Do not silently replace its relation with a neighbouring one.`
-        : 'Keep the current public relation primary; do not silently substitute a neighbouring relation.',
+      instruction: instructionalMeta
+        ? 'Keep the explanation itself as the turn focus. Restate the latest tutor point in plain contemporary English; do not advance the inquiry or reinterpret the request as evidence.'
+        : focus.surface
+          ? `Keep the learner’s requested focus primary: “${focus.surface}”. Do not silently replace its relation with a neighbouring one.`
+          : 'Keep the current public relation primary; do not silently substitute a neighbouring relation.',
     },
     handoff_contract: {
       mode: handoffMode,
@@ -594,6 +641,9 @@ function declarativeFallbackFocus(
   const focus = contract?.turn_focus_contract || {};
   const uptake = contract?.learner_uptake || {};
   const surface = oneLine(focus.primary_surface || uptake.accepted_meaning || uptake.learner_surface);
+  if (contract?.discourse_plane?.plane === 'instructional_meta') {
+    return 'I will keep the same point and restate it in short, ordinary words before we return to the inquiry.';
+  }
   const terms = new Set([...(focus.primary_terms || []), ...(uptake.focus_terms || [])].map(normalizeToken));
   if (
     ['pace', 'slow', 'confus', 'overwhelm'].some((term) => terms.has(term)) ||
