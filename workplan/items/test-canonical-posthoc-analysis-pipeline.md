@@ -1,7 +1,7 @@
 ---
 id: test-canonical-posthoc-analysis-pipeline
 title: Add fixture-to-report tests for the canonical post-hoc analysis pipeline
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -53,6 +53,7 @@ Acceptance:
 
 Log:
 
+- 2026-07-24 — PR #175 merged as `5c887d8a` with lint, validation, workplan, Node 20, Node 22, and review checks passing; moved to done.
 - 2026-07-24 — Opened PR #175 with the workplan linkage and post-rebase contract, analysis smoke, lint, formatting, and board validation evidence.
 - 2026-07-24 — Added the strict `canonical-posthoc-v1` runner, explicit DB/log/judge seams for all five commands, machine-readable reliability output, and a frozen fixture spanning missing data, repeated judges, three-turn trajectories, and legacy/current cell names.
 - 2026-07-24 — Golden replay passed 5/5 pipeline tests; mixed rubric, unpaired judge, provenance drift, and mixed trace-version mutations all failed closed. Analysis smoke tests passed 14/14; full hermetic suite passed 6,507 with 1 skip; lint and format checks passed.

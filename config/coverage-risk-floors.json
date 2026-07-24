@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "minimum_node_version": "22.10.0",
+  "groups": [
+    {
+      "id": "evaluation-store",
+      "label": "Evaluation store integrity",
+      "runner": "node",
+      "sources": ["services/evaluationStore.js"],
+      "tests": [
+        "services/__tests__/evaluationStoreTransientStats.test.js",
+        "tests/evaluationStore.test.js",
+        "tests/evaluationStoreRoundtripIntegrity.test.js"
+      ],
+      "floors": { "lines": 80, "branches": 62, "functions": 72 }
+    },
+    {
+      "id": "admin-auth",
+      "label": "Admin routes and authentication",
+      "runner": "node",
+      "sources": ["services/httpBasicAuth.js", "routes/a19AdjudicationRoutes.js", "routes/tutorStubSessionRoutes.js"],
+      "tests": [
+        "services/__tests__/httpBasicAuth.test.js",
+        "tests/a19AdjudicationKeyedRoutes.test.js",
+        "tests/a19AdjudicationRoutes.test.js",
+        "tests/tutorStubSessionHttp.test.js"
+      ],
+      "floors": { "lines": 86, "branches": 70, "functions": 84 }
+    },
+    {
+      "id": "evaluator-provenance",
+      "label": "Evaluator and provenance integrity",
+      "runner": "node",
+      "sources": ["services/rubricEvaluator.js", "services/evalSignature.js"],
+      "tests": [
+        "services/__tests__/rubricEvaluatorSanitization.test.js",
+        "services/__tests__/rubricFallbackProvenance.test.js",
+        "services/__tests__/rubricScoring.test.js",
+        "tests/rubricEvaluator.test.js",
+        "tests/evalSignature.test.js"
+      ],
+      "floors": { "lines": 54, "branches": 52, "functions": 48 }
+    },
+    {
+      "id": "labelling-save-state",
+      "label": "Browser labelling save state",
+      "runner": "node",
+      "sources": [
+        "services/humanCodingStore.js",
+        "services/labellingGameStore.js",
+        "services/labellingGameCli.js",
+        "routes/humanCodingRoutes.js"
+      ],
+      "tests": [
+        "services/__tests__/humanCodingStore.test.js",
+        "tests/humanCodingRoutes.test.js",
+        "tests/labellingGameCli.test.js"
+      ],
+      "floors": { "lines": 74, "branches": 64, "functions": 80 }
+    },
+    {
+      "id": "tutor-core-recognition-memory",
+      "label": "Tutor-core recognition and memory",
+      "runner": "vitest",
+      "sources": [
+        "tutor-core/services/writingPadService.js",
+        "tutor-core/services/memoryDynamicsService.js",
+        "tutor-core/services/recognitionOrchestrator.js",
+        "tutor-core/services/recognitionGamificationService.js"
+      ],
+      "tests": ["tutor-core/services/__tests__"],
+      "floors": { "lines": 82, "branches": 69, "functions": 79 }
+    }
+  ]
+}
