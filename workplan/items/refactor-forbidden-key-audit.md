@@ -16,6 +16,8 @@ branch: codex/refactor-forbidden-key-audit
 depends_on:
   - refactor-field-policy-helpers
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/210
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -75,3 +77,4 @@ Log:
   focused assertions, lint, formatting, zero cycles across 347 files, the
   178-item source-only workplan check, and diff checks; generated board views
   remain outside the feature diff.
+- 2026-07-25 — Opened PR #210 with explicit workplan and ref-impact metadata.
