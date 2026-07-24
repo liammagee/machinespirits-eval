@@ -699,7 +699,11 @@
                 </div>
                 <label>
                   Notes
-                  <textarea id="human-notes" placeholder="Boundary case, evidence for the label, or other relevant context."></textarea>
+                  <textarea
+                    id="human-notes"
+                    maxlength="5000"
+                    placeholder="Boundary case, evidence for the label, or other relevant context."
+                  ></textarea>
                 </label>
                 <div class="form-actions">
                   <div class="left">
@@ -1184,6 +1188,8 @@
 
       async function loadCodebook() {
         state.codebook = await api(datasetPath('/codebook'));
+        const notesMaxChars = Number(state.codebook?.limits?.notes_max_chars);
+        if (Number.isInteger(notesMaxChars) && notesMaxChars > 0) $('human-notes').maxLength = notesMaxChars;
         renderLabelControls();
         renderCategories();
         renderTask();

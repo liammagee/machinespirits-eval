@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import pty from 'node-pty';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const STANDALONE_CLI = path.join(ROOT, 'scripts', 'labelling-game.js');
 
 function plainTerminalText(value) {
   const ansi = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'gu');
@@ -105,6 +106,52 @@ describe('labelling-game CLI integration', () => {
     assert.match(result.stdout, /coder > env-coder/);
     assert.doesNotMatch(result.stdout, /Coder ID \[rater-A\]:/);
     assert.match(result.stdout, /tutor-stub-impasses · 0\/1 complete/);
+    assert.equal(fs.existsSync(fixture.outputDir), false);
+  });
+
+  it('treats standalone stdin EOF as a deterministic clean exit', () => {
+    const fixture = fixtureWorkspace();
+    const result = spawnSync(
+      process.execPath,
+      [STANDALONE_CLI, '--dataset', 'tutor-stub-impasses', '--coder', 'eof-rater'],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '',
+        env: {
+          ...process.env,
+          LABELLING_GAME_IMPASSE_DATASET: fixture.datasetPath,
+          LABELLING_GAME_IMPASSE_OUTPUT_DIR: fixture.outputDir,
+        },
+      },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Input closed; no incomplete label was saved\./u);
+    assert.doesNotMatch(result.stderr, /unsettled top-level await|Warning:/u);
+    assert.equal(fs.existsSync(fixture.outputDir), false);
+  });
+
+  it('reports standalone setup failures without a stack trace and exits one', () => {
+    const fixture = fixtureWorkspace();
+    const missingPath = path.join(fixture.root, 'missing-impasses.json');
+    const result = spawnSync(
+      process.execPath,
+      [STANDALONE_CLI, '--dataset', 'tutor-stub-impasses', '--coder', 'setup-rater'],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '',
+        env: {
+          ...process.env,
+          LABELLING_GAME_IMPASSE_DATASET: missingPath,
+          LABELLING_GAME_IMPASSE_OUTPUT_DIR: fixture.outputDir,
+        },
+      },
+    );
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout.split('\n')[0], 'Machine Spirits · Labelling Game');
+    assert.match(result.stderr, /^Labelling game failed: impasse dataset not found:/u);
+    assert.doesNotMatch(result.stderr, /\n\s+at /u);
     assert.equal(fs.existsSync(fixture.outputDir), false);
   });
 

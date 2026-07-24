@@ -13,6 +13,36 @@ function write(output, value = '') {
   output.write(`${value}\n`);
 }
 
+class LabellingGameInputClosedError extends Error {
+  constructor() {
+    super('labelling-game input closed');
+    this.name = 'LabellingGameInputClosedError';
+  }
+}
+
+function question(rl, prompt) {
+  if (rl.closed) return Promise.reject(new LabellingGameInputClosedError());
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      rl.removeListener('close', onClose);
+      callback(value);
+    };
+    const onClose = () => finish(reject, new LabellingGameInputClosedError());
+    rl.once('close', onClose);
+    try {
+      rl.question(prompt).then(
+        (answer) => finish(resolve, answer),
+        (error) => finish(reject, error),
+      );
+    } catch (error) {
+      finish(reject, error);
+    }
+  });
+}
+
 function oneLine(value, max = 140) {
   const compact = String(value || '')
     .replace(/\s+/gu, ' ')
@@ -37,7 +67,7 @@ async function askChoice(rl, output, prompt, choices, { current = '', optional =
       write(output, `  ${index + 1}. ${choice.id}${choice.name ? ` - ${choice.name}` : ''}`),
     );
     const suffix = current ? ` [${current}]` : optional ? ' [skip]' : '';
-    const answer = await rl.question(`${prompt}${suffix}: `);
+    const answer = await question(rl, `${prompt}${suffix}: `);
     if (!answer.trim() && current) return current;
     if (!answer.trim() && optional) return '';
     const selected = numberedChoice(answer, choices);
@@ -50,7 +80,7 @@ async function askMultiple(rl, output, prompt, choices, { current = [] } = {}) {
   choices.forEach((choice, index) => write(output, `  ${index + 1}. ${choice.id} - ${choice.name}`));
   while (true) {
     const suffix = current.length ? ` [${current.join(',')}]` : '';
-    const answer = await rl.question(`${prompt} (comma-separated)${suffix}: `);
+    const answer = await question(rl, `${prompt} (comma-separated)${suffix}: `);
     if (!answer.trim() && current.length) return current;
     const tokens = answer
       .split(',')
@@ -118,8 +148,8 @@ async function labelTaxonomyItem({ rl, output, item, codebook }) {
     ],
     { current: item.human_confident || '', optional: true },
   );
-  const secondaryAnswer = await rl.question(`Secondary labels, comma-separated [${item.human_secondary || 'skip'}]: `);
-  const notes = await rl.question(`Notes [${oneLine(item.human_notes || 'skip', 60)}]: `);
+  const secondaryAnswer = await question(rl, `Secondary labels, comma-separated [${item.human_secondary || 'skip'}]: `);
+  const notes = await question(rl, `Notes [${oneLine(item.human_notes || 'skip', 60)}]: `);
   return {
     human_primary: primary,
     human_confident: confidence,
@@ -169,7 +199,7 @@ async function labelImpasseItem({ rl, output, item, codebook }) {
     ],
     { current: item.resolved_within_2 || '' },
   );
-  const notes = await rl.question(`Notes [${oneLine(item.notes || 'skip', 60)}]: `);
+  const notes = await question(rl, `Notes [${oneLine(item.notes || 'skip', 60)}]: `);
   return {
     impasse,
     impasse_types: impasseTypes,
@@ -186,7 +216,7 @@ async function chooseDataset(rl, output, env) {
     write(output, `  ${index + 1}. ${dataset.id} - ${dataset.title} (${dataset.total})`),
   );
   while (true) {
-    const answer = await rl.question(`Dataset [${datasets[0].id}]: `);
+    const answer = await question(rl, `Dataset [${datasets[0].id}]: `);
     if (!answer.trim()) return datasets[0].id;
     const selected = numberedChoice(answer, datasets);
     if (selected) return selected;
@@ -211,7 +241,7 @@ export async function runLabellingGameCli({
     write(output, 'Human judgments only. Hidden model keys remain sealed until a packet is complete.');
     const selectedDataset = datasetId || (await chooseDataset(rl, output, env));
     const configuredCoder = coderId || env.LABELLING_GAME_CODER || '';
-    const selectedCoder = configuredCoder || (await rl.question('Coder ID [rater-A]: ')) || 'rater-A';
+    const selectedCoder = configuredCoder || (await question(rl, 'Coder ID [rater-A]: ')) || 'rater-A';
     const codebook = getLabellingGameCodebook({ datasetId: selectedDataset, env });
     let packet = getLabellingGameItems({ datasetId: selectedDataset, coderId: selectedCoder, env });
     let index = Math.max(
@@ -224,7 +254,7 @@ export async function runLabellingGameCli({
     while (packet.items.length) {
       const item = packet.items[index];
       renderLabellingGameItem(output, packet.dataset_id, item, index, packet.items.length);
-      const command = (await rl.question('\nEnter=label · n=next · p=previous · j <id>=jump · s=status · q=quit > '))
+      const command = (await question(rl, '\nEnter=label · n=next · p=previous · j <id>=jump · s=status · q=quit > '))
         .trim()
         .toLowerCase();
       if (command === 'q' || command === 'quit' || command === 'exit') break;
@@ -278,6 +308,10 @@ export async function runLabellingGameCli({
       index = nextOpen >= 0 ? nextOpen : packet.items.findIndex((entry) => !entry.labelling_complete);
     }
     return { dataset_id: packet.dataset_id, coder_id: selectedCoder, progress: packet.progress };
+  } catch (error) {
+    if (!(error instanceof LabellingGameInputClosedError)) throw error;
+    write(output, '\nInput closed; no incomplete label was saved.');
+    return { exit_reason: 'input_closed' };
   } finally {
     rl.close();
   }

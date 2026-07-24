@@ -17,6 +17,7 @@ import {
   getComparison as getHumanCodingComparison,
   getItems as getHumanCodingItems,
   getStatus as getHumanCodingStatus,
+  HUMAN_CODING_MAX_NOTES_CHARS,
   HumanCodingError,
   safeCoderId,
   saveCoding as saveHumanCoding,
@@ -27,6 +28,15 @@ import {
   coderIdFromArtifactToken,
   legacyImpasseCoderKey,
 } from './labellingCoderIdentity.js';
+import {
+  assertImpasseSidecarProvenance,
+  buildImpasseCorpusProvenance,
+  impasseEpisodeContentHash,
+  IMPASSE_ITEM_HASH_FIELD,
+  ImpasseProvenanceError,
+  IMPASSE_RATER_SCHEMA,
+  validateImpasseCorpus,
+} from './labellingImpasseProvenance.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -37,7 +47,7 @@ export const LABELLING_GAME_DATASETS = Object.freeze({
 
 const DEFAULT_IMPASSE_SOURCE = path.join(ROOT, 'notes', 'impasse', '2026-07-17-phase1-episodes.json');
 const DEFAULT_IMPASSE_OUTPUT_DIR = path.join(ROOT, 'exports');
-const IMPASSE_RATER_PREFIX = 'impasse-corpus-phase1-rater-';
+export const IMPASSE_RATER_PREFIX = 'impasse-corpus-phase1-rater-';
 
 export const IMPASSE_TYPES = Object.freeze([
   {
@@ -103,7 +113,7 @@ function normalizeDatasetId(datasetId) {
   return resolved;
 }
 
-function resolveImpasseWorkspace(env = process.env) {
+export function resolveImpasseWorkspace(env = process.env) {
   return {
     sourcePath: path.resolve(env.LABELLING_GAME_IMPASSE_DATASET || DEFAULT_IMPASSE_SOURCE),
     outputDir: path.resolve(
@@ -128,11 +138,16 @@ function readImpasseCorpus(workspace) {
       code: 'impasse_dataset_missing',
     });
   }
-  const parsed = JSON.parse(fs.readFileSync(workspace.sourcePath, 'utf8'));
-  if (!Array.isArray(parsed.episodes)) {
-    throw new HumanCodingError('impasse dataset has no episodes[] array', {
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(workspace.sourcePath, 'utf8'));
+    validateImpasseCorpus(parsed);
+  } catch (error) {
+    if (error instanceof HumanCodingError) throw error;
+    throw new HumanCodingError(error.message, {
       status: 422,
-      code: 'invalid_impasse_dataset',
+      code: error.code || 'invalid_impasse_dataset',
+      details: error.details || null,
     });
   }
   return parsed;
@@ -149,7 +164,7 @@ function emptyImpasseCoding(itemId) {
   };
 }
 
-function readImpasseRater(workspace, coderId) {
+function readImpasseRater(workspace, coderId, corpus) {
   const filePath = impasseRaterPath(workspace, coderId);
   const legacyPath = legacyImpasseRaterPath(workspace, coderId);
   if (legacyPath && fs.existsSync(legacyPath)) {
@@ -175,6 +190,20 @@ function readImpasseRater(workspace, coderId) {
       status: 409,
       code: 'coder_artifact_identity_mismatch',
       details: { rater_path: repoRel(filePath) },
+    });
+  }
+  try {
+    assertImpasseSidecarProvenance(parsed, corpus, { source: repoRel(workspace.sourcePath) });
+  } catch (error) {
+    if (!(error instanceof ImpasseProvenanceError)) throw error;
+    throw new HumanCodingError(error.message, {
+      status: 409,
+      code: error.code,
+      details: {
+        ...(error.details || {}),
+        rater_path: repoRel(filePath),
+        migration_command: 'npm run labelling-game:impasse-provenance -- --check',
+      },
     });
   }
   return new Map((parsed.items || []).map((item) => [item.item_id, item]));
@@ -229,9 +258,13 @@ function normalizeImpasseTypes(value) {
 function normalizeImpasseCoding(coding = {}, prior = {}) {
   const impasse = normalizeEnum(coding.impasse ?? prior.impasse, IMPASSE_VALUES, 'impasse');
   const impasseTypes = normalizeImpasseTypes(coding.impasse_types ?? prior.impasse_types);
-  const notes = String(coding.notes ?? prior.notes ?? '')
-    .trim()
-    .slice(0, 5000);
+  const notes = String(coding.notes ?? prior.notes ?? '').trim();
+  if (notes.length > HUMAN_CODING_MAX_NOTES_CHARS) {
+    throw new HumanCodingError(`notes is too long (max ${HUMAN_CODING_MAX_NOTES_CHARS} chars)`, {
+      status: 422,
+      code: 'notes_too_long',
+    });
+  }
   if (impasse === 'yes' && impasseTypes.length === 0) {
     throw new HumanCodingError('at least one impasse type is required when impasse=yes', {
       status: 422,
@@ -339,7 +372,10 @@ function getImpasseStatus(env = process.env) {
     output_dir: repoRel(workspace.outputDir),
     raters: impasseRaterSummaries(workspace),
     comparison_available: false,
-    commands: { check_coder_artifacts: 'npm run labelling-game:coder-artifacts -- --check' },
+    commands: {
+      check_coder_artifacts: 'npm run labelling-game:coder-artifacts -- --check',
+      check_corpus_provenance: 'npm run labelling-game:impasse-provenance -- --check',
+    },
   };
 }
 
@@ -361,6 +397,7 @@ function getImpasseCodebook() {
       tutor_addressed: [...ADDRESSED_VALUES],
       resolved_within_2: [...RESOLUTION_VALUES],
     },
+    limits: { notes_max_chars: HUMAN_CODING_MAX_NOTES_CHARS },
   };
 }
 
@@ -368,7 +405,7 @@ function getImpasseItems({ coderId, env = process.env } = {}) {
   const workspace = resolveImpasseWorkspace(env);
   const safeId = safeCoderId(coderId);
   const corpus = readImpasseCorpus(workspace);
-  const saved = readImpasseRater(workspace, safeId);
+  const saved = readImpasseRater(workspace, safeId, corpus);
   const items = corpus.episodes.map((episode) =>
     impasseItem(episode, { ...emptyImpasseCoding(episode.episode_id), ...(saved.get(episode.episode_id) || {}) }),
   );
@@ -393,17 +430,18 @@ function saveImpasseCoding({ coderId, itemId, coding, env = process.env } = {}) 
       code: 'item_not_found',
     });
   }
-  const saved = readImpasseRater(workspace, safeId);
+  const saved = readImpasseRater(workspace, safeId, corpus);
   const prior = { ...emptyImpasseCoding(itemId), ...(saved.get(itemId) || {}), item_id: itemId };
   const normalized = normalizeImpasseCoding(coding, prior);
   saved.set(itemId, normalized);
 
   const filePath = impasseRaterPath(workspace, safeId);
-  const orderedItems = corpus.episodes.map(
-    (entry) => saved.get(entry.episode_id) || emptyImpasseCoding(entry.episode_id),
-  );
+  const orderedItems = corpus.episodes.map((entry) => ({
+    ...(saved.get(entry.episode_id) || emptyImpasseCoding(entry.episode_id)),
+    [IMPASSE_ITEM_HASH_FIELD]: impasseEpisodeContentHash(entry),
+  }));
   writeJsonAtomic(filePath, {
-    schema: 'machinespirits.labelling-game.impasse-rater.v1',
+    schema: IMPASSE_RATER_SCHEMA,
     dataset_id: LABELLING_GAME_DATASETS.TUTOR_STUB_IMPASSES,
     coder_id: safeId,
     coder_identity: {
@@ -411,6 +449,7 @@ function saveImpasseCoding({ coderId, itemId, coding, env = process.env } = {}) 
       artifact_token: coderArtifactToken(safeId),
     },
     source: repoRel(workspace.sourcePath),
+    corpus_provenance: buildImpasseCorpusProvenance(corpus, { source: repoRel(workspace.sourcePath) }),
     updated_at: new Date().toISOString(),
     items: orderedItems,
   });
