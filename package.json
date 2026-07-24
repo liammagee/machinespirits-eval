@@ -25,6 +25,7 @@
     "dev": "STANDALONE=true node server.js",
     "chat": "node scripts/chat-cli.js",
     "labelling-game": "node scripts/labelling-game.js",
+    "labelling-game:coder-artifacts": "node scripts/migrate-labelling-coder-artifacts.js",
     "tutor:stub": "TUTOR_STUB_DEFAULT_LAB=mixed_drafting node scripts/tutor-stub.js",
     "tutor:stub:passthrough": "node scripts/tutor-stub.js --passthrough --trace-dir .tutor-stub-traces/passthrough",
     "tutor:stub:direct": "node scripts/tutor-stub.js --register-policy continuous_dynamical_system --cli-effort medium --history-turns 4 --max-tokens 4096 --trace-dir .tutor-stub-traces/direct-no-dag",

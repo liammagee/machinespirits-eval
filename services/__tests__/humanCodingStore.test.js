@@ -4,7 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { getComparison, saveCoding, stringifyCsv } from '../humanCodingStore.js';
+import { getComparison, getItems, saveCoding, stringifyCsv } from '../humanCodingStore.js';
+import { coderArtifactToken } from '../labellingCoderIdentity.js';
 
 test('getComparison reports false positives, false negatives, precision, and recall in the correct direction', (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'human-coding-store-'));
@@ -49,4 +50,51 @@ test('getComparison reports false positives, false negatives, precision, and rec
   assert.equal(category.precision, 1 / 3);
   assert.equal(category.recall, 1 / 2);
   assert.equal(category.f1, 0.4);
+});
+
+test('coder identities that collided under the legacy filename sanitizer write separate artifacts', (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'human-coding-identities-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const samplePath = path.join(root, 'sample.csv');
+  const env = {
+    HUMAN_CODING_OUTPUT_DIR: root,
+    HUMAN_CODING_SAMPLE: samplePath,
+  };
+  fs.writeFileSync(samplePath, stringifyCsv([{ item_id: 'item-a', feedback: 'feedback' }]), 'utf8');
+
+  saveCoding({ coderId: 'rater a', itemId: 'item-a', coding: { human_primary: 'VAGUENESS' }, env });
+  saveCoding({ coderId: 'rater/a', itemId: 'item-a', coding: { human_primary: 'APPROVAL' }, env });
+
+  const first = path.join(root, `human-validation-pilot-rater-${coderArtifactToken('rater a')}.csv`);
+  const second = path.join(root, `human-validation-pilot-rater-${coderArtifactToken('rater/a')}.csv`);
+  assert.notEqual(first, second);
+  assert.match(fs.readFileSync(first, 'utf8'), /VAGUENESS/u);
+  assert.match(fs.readFileSync(second, 'utf8'), /APPROVAL/u);
+});
+
+test('legacy coder artifacts fail closed until the explicit migration runs', (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'human-coding-legacy-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const samplePath = path.join(root, 'sample.csv');
+  const env = {
+    HUMAN_CODING_OUTPUT_DIR: root,
+    HUMAN_CODING_SAMPLE: samplePath,
+  };
+  fs.writeFileSync(samplePath, stringifyCsv([{ item_id: 'item-a', feedback: 'feedback' }]), 'utf8');
+  fs.writeFileSync(path.join(root, 'human-validation-pilot-rater-ratera.csv'), 'item_id,human_primary\n', 'utf8');
+
+  assert.throws(
+    () => getItems({ coderId: 'rater a', env }),
+    (error) => error.code === 'coder_artifact_migration_required' && error.httpStatus === 409,
+  );
+
+  fs.writeFileSync(
+    path.join(root, `human-validation-pilot-rater-${coderArtifactToken('rater a')}.csv`),
+    'item_id,human_primary\n',
+    'utf8',
+  );
+  assert.throws(
+    () => getItems({ coderId: 'rater a', env }),
+    (error) => error.code === 'coder_artifact_collision' && error.httpStatus === 409,
+  );
 });

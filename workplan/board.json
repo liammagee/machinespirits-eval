@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-24T01:00:24.793Z",
+  "generated": "2026-07-24T01:22:18.540Z",
   "counts": {
     "total": 160,
     "byStatus": {
@@ -584,7 +584,7 @@
       "verification": "Navigation and dataset switches cannot lose queued or in-flight edits; coder artifacts cannot collide; impasse labels are bound to immutable corpus hashes; browser, route, store, and CLI regressions pass.",
       "claim_status": "planned",
       "depends_on": [],
-      "branch": "codex/harden-consolidated-labelling-integrity",
+      "branch": "codex/harden-labelling-coder-identities",
       "links": {
         "prs": [
           "https://github.com/liammagee/machinespirits-eval/pull/180"

@@ -13,7 +13,7 @@ verification: Navigation and dataset switches cannot lose queued or in-flight
   corpus hashes; browser, route, store, and CLI regressions pass.
 claim_status: planned
 depends_on: []
-branch: codex/harden-consolidated-labelling-integrity
+branch: codex/harden-labelling-coder-identities
 links:
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/180
@@ -54,3 +54,5 @@ Log:
 - 2026-07-24 — Activated from merged `origin/main` after PR #177 made the labelling save-state coverage group first-class. Initial implementation slice targets immutable browser save payloads, ordered save flushing across navigation/dataset changes, and matching browser regressions before changing artifact identity or corpus formats.
 - 2026-07-24 — Completed the first browser-integrity slice: saves now use immutable operation snapshots, coalesce pending edits, serialize in-flight requests, and flush before item, coder, comparison, or dataset transitions. Six queue regressions and the 19-test labelling risk group pass (77.78% lines, 68.14% branches, 83.56% functions); live browser QA loaded and switched to the 29-item impasse packet with no console warnings or errors.
 - 2026-07-24 — Opened PR #180 for the browser save-integrity tranche. The card remains active for the coder-ID, corpus-provenance, note-limit, and CLI failure-handling acceptance criteria.
+- 2026-07-24 — PR #180 merged. Continued in `codex/harden-labelling-coder-identities` with a shared reversible coder-ID artifact token and an explicit fail-closed legacy check/migration path for both taxonomy CSVs and impasse JSON sidecars.
+- 2026-07-24 — Completed the coder-identity tranche locally. Exact normalized IDs now round-trip through unambiguous `cid~` artifact tokens; both stores reject legacy/current collisions and impasse sidecars with mismatched embedded identity. `npm run labelling-game:coder-artifacts -- --check` reports legacy/current/collision state, while `--apply` requires a mapping or explicit inferred-ID confirmation and preflights all files before mutation. The 27-test labelling risk group passes at 79.57% lines, 70.96% branches, and 85.96% functions.
