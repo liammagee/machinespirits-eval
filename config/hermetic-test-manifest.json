@@ -112,6 +112,7 @@
         "tests/adaptiveStateStage2Lineage.test.js",
         "tests/adaptiveStateValidity.test.js",
         "tests/adaptiveStateValidityV2.test.js",
+        "tests/adaptiveTraceProjection.test.js",
         "tests/aggregatePoeticsPairedIncrement.test.js",
         "tests/agonEpisode.test.js",
         "tests/agonReferee.test.js",

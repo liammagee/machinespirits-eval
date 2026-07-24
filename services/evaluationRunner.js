@@ -66,6 +66,12 @@ import * as learnerConfigLoader from './learnerConfigLoader.js';
 import * as turnComparisonAnalyzer from './turnComparisonAnalyzer.js';
 import * as dialogueTraceAnalyzer from './dialogueTraceAnalyzer.js';
 import { projectLearnerDeliberationTrace, TRACE_SCHEMA_VERSION } from './traceSchema.js';
+import {
+  adaptiveTraceScenarioContext,
+  adaptiveTraceToDialogueLog,
+  extractLearnerTurnsFromTrace,
+  isAdaptiveTraceLog,
+} from './adaptiveTraceProjection.js';
 import * as promptRewriter from './promptRewriter.js';
 import { captureApiCalls, attachApiPayloadsToTrace } from './apiPayloadCapture.js';
 import { warnIfWeakStackDefault } from './stackDefaultWarning.js';
@@ -108,96 +114,6 @@ const LOGS_ROOT = resolveEvaluationLogsRoot(EVAL_ROOT);
 const LOGS_DIR = resolveTutorDialoguesDir(EVAL_ROOT);
 const TRANSCRIPTS_DIR = resolveEvaluationSecondaryArtifactDir(EVAL_ROOT, 'transcripts');
 const CHECKPOINTS_DIR = resolveEvaluationSecondaryArtifactDir(EVAL_ROOT, 'checkpoints');
-
-function isAdaptiveTraceLog(log) {
-  return Boolean(log?.schemaVersion >= 5 && log?.original && Array.isArray(log.original.dialogue));
-}
-
-function adaptiveTraceScenarioContext(trace, result) {
-  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
-  const hidden = trace?.scenario?.hidden || {};
-  const expected = trace?.scenario?.expectedStrategyShift;
-  const expectedLabel = Array.isArray(expected) ? expected.join(', ') : expected || 'adaptive response';
-  const hiddenSummary = [
-    hidden.actual_misconception,
-    hidden.actual_sophistication && `sophistication: ${hidden.actual_sophistication}`,
-  ]
-    .filter(Boolean)
-    .join('; ');
-  return {
-    id: result.scenarioId,
-    type: 'adaptive_trap',
-    name: result.scenarioName || trace?.scenario?.id || result.scenarioId,
-    description: hiddenSummary || `Adaptive trap scenario ${result.scenarioId}`,
-    topic: result.scenarioType || result.scenarioId,
-    learner_context: initialLearner,
-    expected_behavior: `The tutor should adapt to the learner signal and realize the expected strategy shift: ${expectedLabel}.`,
-    required_elements: [],
-    forbidden_elements: [],
-  };
-}
-
-function adaptiveTraceToDialogueLog(trace) {
-  const dialogue = trace?.original?.dialogue || [];
-  const initialLearner = trace?.scenario?.openingTurns?.find((turn) => turn?.role === 'learner')?.content || '';
-  const turnResults = [];
-  const conversationHistory = [];
-  const dialogueTrace = [];
-  let tutorIndex = 0;
-  let lastLearner = initialLearner;
-  let learnerAfterTutorIndex = 0;
-
-  for (const message of dialogue) {
-    if (message?.role === 'learner') {
-      lastLearner = message.content || '';
-      if (tutorIndex > 0) {
-        learnerAfterTutorIndex += 1;
-        conversationHistory.push({ learnerMessage: lastLearner });
-        dialogueTrace.push({
-          agent: 'learner',
-          action: 'turn_action',
-          turnIndex: learnerAfterTutorIndex,
-          contextSummary: lastLearner,
-          detail: 'adaptive external learner turn',
-        });
-      }
-      continue;
-    }
-    if (message?.role !== 'tutor') continue;
-    turnResults.push({
-      turnIndex: tutorIndex,
-      turnId: `adaptive-turn-${tutorIndex}`,
-      suggestions: [{ message: message.content || '' }],
-      learnerAction: null,
-      learnerMessage: tutorIndex === 0 ? null : lastLearner,
-      contentTurnId: `adaptive-turn-${tutorIndex}`,
-    });
-    tutorIndex += 1;
-  }
-
-  const publicTranscript = dialogue
-    .map((message) => {
-      if (message.role === 'learner') return `[Learner] ${message.content || ''}`;
-      if (message.role === 'tutor') return `[Tutor Ego] ${message.content || ''}`;
-      return null;
-    })
-    .filter(Boolean)
-    .join('\n');
-
-  return {
-    isMultiTurn: turnResults.length > 1,
-    turnResults,
-    dialogueTrace,
-    conversationHistory,
-    learnerContext: initialLearner,
-    learnerArchitecture: 'adaptive_externalised',
-    transcripts: {
-      public: publicTranscript,
-      full: publicTranscript,
-    },
-    adaptiveTrace: trace,
-  };
-}
 
 function resolveRejudgeScenarioAndDialogueLog(result, preloadedDialogueLog = null) {
   const standardScenario = evalConfigLoader.getScenario(result.scenarioId);
@@ -5814,78 +5730,6 @@ export function generateReport(runId) {
   lines.push('='.repeat(80));
 
   return lines.join('\n');
-}
-
-/**
- * Extract learner turns from a dialogue trace, mirroring eval-cli.js extractLearnerTurnsFromTrace.
- * Each turn contains the external message and any internal deliberation entries (for multi-agent learners).
- */
-function extractLearnerTurnsFromTrace(trace, isMultiAgent, conversationHistory) {
-  const learnerTurns = [];
-
-  // Strategy 1: look for explicit turn_action entries (single-prompt mode)
-  let turnMarkers = trace.filter((t) => (t.agent === 'learner' || t.agent === 'user') && t.action === 'turn_action');
-
-  // Strategy 2: fall back to learner final output entries (messages mode — any learner architecture)
-  if (turnMarkers.length === 0) {
-    turnMarkers = trace.filter(
-      (t) =>
-        (t.agent === 'learner_synthesis' && t.action === 'response') ||
-        (t.agent === 'learner' && t.action === 'final_output'),
-    );
-  }
-
-  // Build conversationHistory lookup for supplementing empty messages
-  const convHistByTurn = {};
-  if (Array.isArray(conversationHistory)) {
-    conversationHistory.forEach((ch, i) => {
-      if (ch.learnerMessage) convHistByTurn[i] = ch.learnerMessage;
-    });
-  }
-
-  for (const ta of turnMarkers) {
-    let rawMessage = ta.action === 'final_output' ? ta.detail || ta.contextSummary || '' : ta.contextSummary || '';
-
-    // Strip [INTERNAL] section from unified learner output
-    const externalMatch = rawMessage.match(/\[EXTERNAL\]:?\s*([\s\S]*)/i);
-    if (externalMatch) rawMessage = externalMatch[1].trim();
-
-    const turnData = {
-      turnIndex: ta.turnIndex,
-      externalMessage: rawMessage,
-      internalDeliberation: [],
-    };
-
-    if (!turnData.externalMessage && ta.turnIndex != null) {
-      turnData.externalMessage = convHistByTurn[ta.turnIndex - 1] || '';
-    }
-
-    if (isMultiAgent) {
-      const taIdx = trace.indexOf(ta);
-      for (let j = taIdx - 1; j >= 0; j--) {
-        const entry = trace[j];
-        if (entry.agent === 'learner_ego_initial' && entry.action === 'deliberation') {
-          turnData.internalDeliberation.unshift({ role: 'ego_initial', content: entry.contextSummary || '' });
-          break;
-        } else if (entry.agent === 'learner_superego' && entry.action === 'deliberation') {
-          turnData.internalDeliberation.unshift({ role: 'superego', content: entry.contextSummary || '' });
-        } else if (entry.agent === 'learner_ego_revision' && entry.action === 'deliberation') {
-          turnData.internalDeliberation.unshift({ role: 'ego_revision', content: entry.contextSummary || '' });
-        } else if (
-          (entry.agent === 'learner_synthesis' && entry.action === 'response') ||
-          (entry.agent === 'learner' && entry.action === 'final_output')
-        ) {
-          // final learner output — if this IS our marker, skip it
-        } else if (entry.agent === 'ego' || entry.agent === 'system' || entry.agent === 'superego') {
-          break;
-        }
-      }
-    }
-
-    learnerTurns.push(turnData);
-  }
-
-  return learnerTurns;
 }
 
 /**

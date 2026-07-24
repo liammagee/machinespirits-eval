@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-response-cycle
 title: Break the tutor-stub response-configuration import cycle
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -17,6 +17,8 @@ branch: codex/refactor-tutor-response-cycle
 depends_on:
   - refactor-tutor-core-cycle
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/200
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -66,3 +68,5 @@ Log:
   suite completed all 456 root files and all 11 tutor-core files (137/137 core
   tests), while lint, formatting, the 172-item workplan check, and diff checks
   remain green. R1.2 is ready for review.
+- 2026-07-24 — PR #200 merged to `main` at `8a48ae04`; the zero-cycle ratchet
+  and compatibility projections are now integrated, so R1.2 is closed.
