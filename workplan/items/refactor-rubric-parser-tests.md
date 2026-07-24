@@ -18,6 +18,8 @@ depends_on:
   - refactor-required-run-manifest
   - refactor-pty-ci-lane
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/196
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -68,3 +70,5 @@ Log:
   #195 landed. Re-ran the 58/58 focused parser suite, lint, Prettier, the
   expanded 169-item workplan check, and the full `npm test` sequence; every
   gate remains green with zero full-suite failures or skips.
+- 2026-07-24 — Opened PR #196 with the explicit workplan link and no managed
+  ref or version impact.
