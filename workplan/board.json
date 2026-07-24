@@ -1,10 +1,10 @@
 {
-  "generated": "2026-07-24T09:34:15.156Z",
+  "generated": "2026-07-24T10:58:13.164Z",
   "counts": {
-    "total": 157,
+    "total": 158,
     "byStatus": {
       "done": 121,
-      "blocked": 3,
+      "blocked": 4,
       "dropped": 2,
       "triaged": 25,
       "archived": 4,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 35,
+      "infra": 36,
       "maintenance": 12,
       "content": 2,
       "paper": 6,
@@ -709,38 +709,34 @@
       "branch": "main"
     },
     {
-      "id": "program-2-weights-interface-factorial",
-      "title": "Separate trained skill from interface transmission",
+      "id": "tutor-stub-final-audit-reliability-gate",
+      "title": "Stabilize the shared tutor final-audit fallback path",
       "status": "active",
-      "type": "experiment",
+      "type": "infra",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-07-24",
-      "verification": "A preregistered 2×2 trained/untuned × v1/v2 cohort passes provenance and cue-blind-enforcement gates, seals with the frozen missingness thresholds, and reports blinded first-pass semantic skill, transmission, burden, attrition, and final operational outcomes without historical pooling.",
+      "verification": "The four archived weights×interface smoke failure attempts reproduce without model calls and are classified; any repair changes common downstream construction without weakening final audits or treatment seams; focused/full tests pass; and the same excluded four-cell smoke rerun from a fresh root seals 4/4 with no attrition, at most one recovered retry, 11/11 provenance, zero mini resamples, and unchanged treatment commands.",
       "branch": "codex/program2-committee-floor-ablation",
       "claim_status": "planned",
       "links": {
-        "paper": "§6.21",
         "notes": [
-          "PROGRAM-2-WEIGHTS-INTERFACE-FACTORIAL-PREREGISTRATION.md",
-          "notes/program-2/2026-07-24-floor-ablation-interface-diagnosis.md"
+          "notes/program-2/2026-07-24-weights-interface-paid-smoke-hold.md"
         ],
         "exports": [
-          "exports/program2-committee-floor-ablation-amendment-4/analysis.json",
-          "exports/program2-committee-floor-ablation-amendment-4/mediation-analysis.json",
-          "exports/program2-committee-floor-ablation-amendment-4/provenance-audit.json"
+          "exports/program2-weights-interface-factorial-paid-smoke/launch-state.json",
+          "exports/program2-weights-interface-factorial-paid-smoke/provenance-audit.json"
         ],
         "items": [
-          "program-2-committee-floor-ablation"
+          "program-2-weights-interface-factorial"
         ]
       },
       "tags": [
         "tutor-stub",
-        "fine-tune",
-        "interface",
-        "factorial"
+        "reliability",
+        "response-guard"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
     },
@@ -800,6 +796,44 @@
         "ground-truth"
       ],
       "milestone": "impasse-program-v1"
+    },
+    {
+      "id": "program-2-weights-interface-factorial",
+      "title": "Separate trained skill from interface transmission",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "A preregistered 2×2 trained/untuned × v1/v2 cohort passes provenance and cue-blind-enforcement gates, seals with the frozen missingness thresholds, and reports blinded first-pass semantic skill, transmission, burden, attrition, and final operational outcomes without historical pooling.",
+      "branch": "codex/program2-committee-floor-ablation",
+      "blocked_by": "The excluded four-cell paid smoke sealed 3/4 with one finalized attrition and four counted common downstream final-audit failures. Complete tutor-stub-final-audit-reliability-gate and pass a fresh 4/4 smoke before any cohort launch.",
+      "claim_status": "planned",
+      "links": {
+        "paper": "§6.21",
+        "notes": [
+          "PROGRAM-2-WEIGHTS-INTERFACE-FACTORIAL-PREREGISTRATION.md",
+          "notes/program-2/2026-07-24-floor-ablation-interface-diagnosis.md"
+        ],
+        "exports": [
+          "exports/program2-committee-floor-ablation-amendment-4/analysis.json",
+          "exports/program2-committee-floor-ablation-amendment-4/mediation-analysis.json",
+          "exports/program2-committee-floor-ablation-amendment-4/provenance-audit.json"
+        ],
+        "items": [
+          "program-2-committee-floor-ablation",
+          "tutor-stub-final-audit-reliability-gate"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "interface",
+        "factorial"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "superego-taxonomy-human-validation",

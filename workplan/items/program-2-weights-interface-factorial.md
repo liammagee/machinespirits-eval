@@ -1,7 +1,7 @@
 ---
 id: program-2-weights-interface-factorial
 title: "Separate trained skill from interface transmission"
-status: active
+status: blocked
 type: experiment
 priority: P1
 owner: codex
@@ -10,6 +10,7 @@ created: 2026-07-24
 updated: 2026-07-24
 verification: "A preregistered 2×2 trained/untuned × v1/v2 cohort passes provenance and cue-blind-enforcement gates, seals with the frozen missingness thresholds, and reports blinded first-pass semantic skill, transmission, burden, attrition, and final operational outcomes without historical pooling."
 branch: codex/program2-committee-floor-ablation
+blocked_by: "The excluded four-cell paid smoke sealed 3/4 with one finalized attrition and four counted common downstream final-audit failures. Complete tutor-stub-final-audit-reliability-gate and pass a fresh 4/4 smoke before any cohort launch."
 claim_status: planned
 links:
   paper: §6.21
@@ -22,6 +23,7 @@ links:
     - exports/program2-committee-floor-ablation-amendment-4/provenance-audit.json
   items:
     - program-2-committee-floor-ablation
+    - tutor-stub-final-audit-reliability-gate
 tags:
   - tutor-stub
   - fine-tune
@@ -50,3 +52,10 @@ Log:
 - 2026-07-24 — user approved the frozen sequence as a separate implementation
   slice and authorized paid smoke/cohort calls when the preregistered clean-SHA,
   zero-model, provenance, and smoke gates pass.
+- 2026-07-24 — implementation committed at
+  `c32c5c0c89d2a419a64e6d7a0cd361b919202c1c`; zero-model, focused tests,
+  prompt/world quality, lint, prelaunch provenance, and local-mini smoke passed.
+  The excluded paid four-cell smoke ended 3/4 sealed with `trained_v2`
+  finalized attrition. Post-smoke provenance passed 11/11, 64/64 committee
+  moments carried cue-blind ledgers, and mini resamples were zero. Cohort and
+  semantic judging are blocked pending [[tutor-stub-final-audit-reliability-gate]].
