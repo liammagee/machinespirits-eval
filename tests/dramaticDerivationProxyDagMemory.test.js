@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+
+import { DataFactory, Store } from 'n3';
 
 import {
   buildLearnerProxyDagMemory,
@@ -16,6 +19,15 @@ import {
   buildTutorLearnerDagModel,
   TUTOR_LEARNER_DAG_MODEL_SCHEMA,
 } from '../services/dramaticDerivation/index.js';
+import {
+  auditPublicProofDagProjection,
+  PROOF_DAG_NAMESPACES,
+} from '../services/dramaticDerivation/semanticWebProofDag.js';
+import {
+  loadProofDagShaclShapes,
+  validateProofDagDataset,
+} from '../services/dramaticDerivation/semanticWebValidation.js';
+import { buildNocturneProofDagSemanticWebBundle } from '../scripts/export-proof-dag-semantic-web.js';
 import { parseProxyDagABArgs, planLearnerProxyDagAB } from '../scripts/run-learner-proxy-dag-ab.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -136,6 +148,98 @@ test('tutor learner-DAG model redacts authored proof identifiers while preservin
   const serialized = JSON.stringify(model);
   assert.doesNotMatch(serialized, /\bp1\b|\bp2\b|\bp3\b|path_1|R1_lineage|R2_succession/u);
   assert.doesNotMatch(serialized, new RegExp(escapeRegExp(surfaces.get(factKey(p3))), 'u'));
+});
+
+test('Nocturne proof-DAG semantic-web artifacts conform while preserving authority boundaries', async () => {
+  const worldPath = path.join(ROOT, 'config/drama-derivation/world-001-nocturne.yaml');
+  const bundle = await buildNocturneProofDagSemanticWebBundle(worldPath);
+
+  assert.equal(bundle.validation.conforms, true);
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(bundle.validation.graphs).map(([name, graph]) => [name, graph.conforms])),
+    { authored: true, learner: true, tutor: true },
+  );
+  assert.match(bundle.files['authored.ttl'], /prov:generated/);
+  assert.match(bundle.files['authored.ttl'], /"p_hand"/);
+  assert.match(bundle.files['learner-proxy.jsonld'], /"@context"/);
+  assert.match(bundle.files['tutor-model.jsonld'], /ms:bestPathCoverage/);
+  assert.doesNotMatch(bundle.files['learner-proxy.jsonld'], /p_hand|R4_attribution|path_1/);
+  assert.doesNotMatch(bundle.files['tutor-model.jsonld'], /p_hand|R4_attribution|path_1/);
+  assert.equal(bundle.projections.learnerProxyDag.metrics.groundedCount, 6);
+  assert.equal(bundle.projections.learnerProxyDag.metrics.voicedDerivedCount, 3);
+  assert.equal(bundle.projections.tutorLearnerDagModel.assessment.bestPathCoverage, 0.857);
+  assert.equal(bundle.projections.tutorLearnerDagModel.assessment.missingPremiseCount, 1);
+});
+
+test('tutor-stub exposes and executes public proof-DAG fixture inspection without a model call', () => {
+  const help = spawnSync(process.execPath, ['scripts/tutor-stub.js', '--help'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /\/proof\s+check the Nocturne Lean certificate/u);
+  assert.match(help.stdout, /\/proof inspect \[authored\|learner\|tutor\]/u);
+
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+      '--no-remember-settings',
+      '--world',
+      'world_005_marrick',
+      '--dag',
+      '--tutor-learner-dag',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      input: '/proof inspect learner\n/quit\n',
+      env: {
+        ...process.env,
+        NO_COLOR: '1',
+        TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+      },
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /proof DAG > inspect · deterministic Nocturne fixture/u);
+  assert.match(result.stdout, /semantic web: PASS/u);
+  assert.match(result.stdout, /learner > public-only proxy graph at fixture turn 26/u);
+  assert.match(result.stdout, /93 quads · SHACL conforms · 6 grounded · 3 voiced/u);
+  assert.match(result.stdout, /Use \/analysis technical for the live session/u);
+});
+
+test('SHACL and source audits reject authored identifiers in learner and tutor projections', async () => {
+  const worldPath = path.join(ROOT, 'config/drama-derivation/world-001-nocturne.yaml');
+  const bundle = await buildNocturneProofDagSemanticWebBundle(worldPath);
+  const publicShapes = loadProofDagShaclShapes(
+    path.join(ROOT, 'tools/proof-dag-semantic-web/shapes/public-projections.ttl'),
+  );
+  const { literal, namedNode, quad } = DataFactory;
+  const forbiddenPredicate = namedNode(`${PROOF_DAG_NAMESPACES.ms}premiseId`);
+
+  for (const artifact of [bundle.artifacts.learner, bundle.artifacts.tutor]) {
+    const mutated = new Store(artifact.store.getQuads(null, null, null, null));
+    mutated.addQuad(quad(namedNode(artifact.root), forbiddenPredicate, literal('p_hand')));
+    const report = await validateProofDagDataset(mutated, publicShapes);
+    assert.equal(report.conforms, false);
+    assert.ok(
+      report.results.some((row) => String(row.sourceConstraintComponent).endsWith('MaxCountConstraintComponent')),
+    );
+  }
+
+  const leaked = structuredClone(bundle.projections.learnerProxyDag);
+  leaked.hypotheses.push({ turn: 26, text: 'Use p_hand next.' });
+  const audit = auditPublicProofDagProjection(bundle.world, leaked);
+  assert.equal(audit.ok, false);
+  assert.ok(audit.violations.some((row) => row.includes('p_hand')));
 });
 
 test('runDrama supplies opt-in learner memory and tutor/director pacing views', async () => {

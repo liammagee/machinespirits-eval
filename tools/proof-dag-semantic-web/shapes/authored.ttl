@@ -1,0 +1,89 @@
+@prefix ms: <https://machinespirits.org/ns/proof-dag#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ms:AuthoredProofDagShape
+  a sh:NodeShape ;
+  sh:targetClass ms:AuthoredProofDag ;
+  sh:property [
+    sh:path ms:worldId ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path ms:hasSecret ;
+    sh:class ms:SecretFact ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path ms:hasProofPath ;
+    sh:class ms:AuthoredProofPath ;
+    sh:minCount 1
+  ] ;
+  sh:property [
+    sh:path prov:wasDerivedFrom ;
+    sh:class ms:WorldSpecification ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] .
+
+ms:AuthoredProofPathShape
+  a sh:NodeShape ;
+  sh:targetClass ms:AuthoredProofPath ;
+  sh:property [
+    sh:path ms:pathId ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path ms:requiresPremise ;
+    sh:class ms:AuthoredPremise ;
+    sh:minCount 1
+  ] ;
+  sh:property [
+    sh:path ms:hasRuleApplication ;
+    sh:class ms:RuleApplication ;
+    sh:minCount 1
+  ] ;
+  sh:property [
+    sh:path ms:concludes ;
+    sh:class ms:SecretFact ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] .
+
+ms:RuleApplicationShape
+  a sh:NodeShape ;
+  sh:targetClass ms:RuleApplication ;
+  sh:property [
+    sh:path ms:appliesRule ;
+    sh:class ms:HornRule ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path ms:input ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI
+  ] ;
+  sh:property [
+    sh:path ms:output ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI
+  ] ;
+  sh:property [
+    sh:path prov:used ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:IRI
+  ] ;
+  sh:property [
+    sh:path prov:generated ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI
+  ] .

@@ -1,0 +1,22 @@
+{
+  "schema": "machinespirits.derivation.proof-dag-shacl-report.v1",
+  "worldId": "world_001_nocturne",
+  "conforms": true,
+  "graphs": {
+    "authored": {
+      "conforms": true,
+      "results": [],
+      "quadCount": 534
+    },
+    "learner": {
+      "conforms": true,
+      "results": [],
+      "quadCount": 93
+    },
+    "tutor": {
+      "conforms": true,
+      "results": [],
+      "quadCount": 103
+    }
+  }
+}

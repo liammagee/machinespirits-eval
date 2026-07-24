@@ -1,0 +1,115 @@
+@prefix ms: <https://machinespirits.org/ns/proof-dag#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ms:LearnerProxyDagShape
+  a sh:NodeShape ;
+  sh:targetClass ms:LearnerProxyDag ;
+  sh:property [
+    sh:path ms:worldId ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path ms:publicOnly ;
+    sh:datatype xsd:boolean ;
+    sh:hasValue true ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path ms:turn ;
+    sh:datatype xsd:integer ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path prov:wasDerivedFrom ;
+    sh:class ms:PublicInteractionRecord ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] .
+
+ms:TutorLearnerDagModelShape
+  a sh:NodeShape ;
+  sh:targetClass ms:TutorLearnerDagModel ;
+  sh:property [
+    sh:path ms:worldId ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path ms:publicOnly ;
+    sh:datatype xsd:boolean ;
+    sh:hasValue true ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path ms:advisoryOnly ;
+    sh:datatype xsd:boolean ;
+    sh:hasValue true ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path ms:turn ;
+    sh:datatype xsd:integer ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] ;
+  sh:property [
+    sh:path prov:wasDerivedFrom ;
+    sh:class ms:LearnerProxyDagReference ;
+    sh:minCount 1 ;
+    sh:maxCount 1
+  ] .
+
+# These predicates carry the authored graph's private identifiers or exact
+# proof structure. Any subject that uses one becomes a focus node and then
+# violates its corresponding zero-cardinality constraint.
+ms:NoAuthoredIdentifierShape
+  a sh:NodeShape ;
+  sh:targetSubjectsOf ms:premiseId ;
+  sh:targetSubjectsOf ms:ruleId ;
+  sh:targetSubjectsOf ms:pathId ;
+  sh:targetSubjectsOf ms:missingPremiseId ;
+  sh:targetSubjectsOf ms:hasProofPath ;
+  sh:targetSubjectsOf ms:requiresPremise ;
+  sh:targetSubjectsOf ms:appliesRule ;
+  sh:targetSubjectsOf ms:releaseSchedule ;
+  sh:targetSubjectsOf ms:hasSecret ;
+  sh:targetSubjectsOf ms:secretLabel ;
+  sh:targetSubjectsOf ms:factJson ;
+  sh:property [ sh:path ms:premiseId ; sh:maxCount 0 ] ;
+  sh:property [ sh:path ms:ruleId ; sh:maxCount 0 ] ;
+  sh:property [ sh:path ms:pathId ; sh:maxCount 0 ] ;
+  sh:property [ sh:path ms:missingPremiseId ; sh:maxCount 0 ] ;
+  sh:property [ sh:path ms:hasProofPath ; sh:maxCount 0 ] ;
+  sh:property [ sh:path ms:requiresPremise ; sh:maxCount 0 ] ;
+  sh:property [ sh:path ms:appliesRule ; sh:maxCount 0 ] ;
+  sh:property [ sh:path ms:releaseSchedule ; sh:maxCount 0 ] ;
+  sh:property [ sh:path ms:hasSecret ; sh:maxCount 0 ] ;
+  sh:property [ sh:path ms:secretLabel ; sh:maxCount 0 ] ;
+  sh:property [ sh:path ms:factJson ; sh:maxCount 0 ] .
+
+# Learner/tutor text may contain public names and conclusions, but not the
+# internal p_*, m_*, path_* or R<n>_* labels used by the authored world.
+ms:NoAuthoredIdentifierTextShape
+  a sh:NodeShape ;
+  sh:targetClass ms:PublicProjectionNode ;
+  sh:property [
+    sh:path ms:surface ;
+    sh:pattern "^(?!.*(?:^|[^A-Za-z0-9_])(?:p_|m_|path_|R[0-9]+_)[A-Za-z0-9_]+).*$"
+  ] ;
+  sh:property [
+    sh:path ms:text ;
+    sh:pattern "^(?!.*(?:^|[^A-Za-z0-9_])(?:p_|m_|path_|R[0-9]+_)[A-Za-z0-9_]+).*$"
+  ] ;
+  sh:property [
+    sh:path ms:answer ;
+    sh:pattern "^(?!.*(?:^|[^A-Za-z0-9_])(?:p_|m_|path_|R[0-9]+_)[A-Za-z0-9_]+).*$"
+  ] .

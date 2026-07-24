@@ -18,6 +18,7 @@ import {
   createIsolatedPaths,
   discoverRootTestFiles,
   parseRunnerArgs,
+  replayCapturedOutput,
   runPhase,
   selectTestShard,
 } from '../scripts/run-hermetic-tests.js';
@@ -151,6 +152,51 @@ test('quiet phases wait for inherited stdout pipes to close before parsing the T
   assert.equal(result.code, 0);
   assert.match(result.stdout, /# tests 1/u);
   assert.match(result.stdout, /# fail 0/u);
+});
+
+test('quiet phases bound the drain wait when a detached descendant keeps stdout open', async () => {
+  const childScript = `
+    const { spawn } = require('node:child_process');
+    const holder = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 3000)'], {
+      detached: true,
+      stdio: ['ignore', 1, 2],
+    });
+    holder.unref();
+  `;
+  const startedAt = Date.now();
+  const result = await runPhase({
+    phase: 'root',
+    forceExit: true,
+    args: ['-e', childScript],
+    env: process.env,
+    quiet: true,
+    projectRoot: path.resolve('.'),
+    onChild: () => {},
+  });
+
+  assert.equal(result.code, 0);
+  assert.ok(Date.now() - startedAt < 2_500, 'stdio drain wait should be bounded');
+});
+
+test('captured failure replay waits for backpressured output to flush', async () => {
+  let replayed = '';
+  let flushed = false;
+  const slowStream = {
+    write(chunk, callback) {
+      setTimeout(() => {
+        replayed += String(chunk);
+        flushed = true;
+        callback();
+      }, 25);
+      return false;
+    },
+  };
+  const emptyStream = { write: (_chunk, callback) => callback() };
+
+  await replayCapturedOutput({ stdout: 'complete TAP output', stderr: '' }, slowStream, emptyStream);
+
+  assert.equal(flushed, true);
+  assert.equal(replayed, 'complete TAP output');
 });
 
 test('root discovery stays explicit while the core phase targets all in-housed Vitest files', () => {

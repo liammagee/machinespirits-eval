@@ -1,0 +1,303 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "ms": "https://machinespirits.org/ns/proof-dag#",
+    "prov": "http://www.w3.org/ns/prov#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26",
+      "@type": [
+        "ms:LearnerProxyDag",
+        "ms:PublicProjectionNode",
+        "prov:Collection",
+        "prov:Entity"
+      ],
+      "prov:hadMember": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/1"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/2"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/3"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/4"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/5"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/6"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/hypotheses/1"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/1"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/2"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/3"
+        }
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:answerCandidateCount": [
+        0
+      ],
+      "ms:candidateConclusionCount": [
+        0
+      ],
+      "ms:groundedCount": [
+        6
+      ],
+      "ms:hasRecord": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/1"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/2"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/3"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/4"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/5"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/6"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/hypotheses/1"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/1"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/2"
+        },
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/3"
+        }
+      ],
+      "ms:hypothesisCount": [
+        1
+      ],
+      "ms:publicOnly": [
+        true
+      ],
+      "ms:schema": [
+        "machinespirits.derivation.learner-proxy-dag-memory.v1"
+      ],
+      "ms:turn": [
+        26
+      ],
+      "ms:voicedDerivedCount": [
+        3
+      ],
+      "ms:worldId": [
+        "world_001_nocturne"
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26",
+      "@type": [
+        "ms:PublicInteractionRecord",
+        "ms:PublicProjectionNode",
+        "prov:Entity"
+      ],
+      "ms:turn": [
+        26
+      ],
+      "ms:worldId": [
+        "world_001_nocturne"
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/1",
+      "@type": [
+        "ms:GroundedPublicFact",
+        "ms:PublicProjectionNode",
+        "prov:Entity"
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:surface": [
+        "Held to the lamp, every leaf of the nocturne shows the same heron watermark — the Brell mill's mark."
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/2",
+      "@type": [
+        "ms:GroundedPublicFact",
+        "ms:PublicProjectionNode",
+        "prov:Entity"
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:surface": [
+        "The steward's stock-book is plain: heron paper entered the copy-room in the winter of the flood, and the last of it was spent before the thaw. None before, none since."
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/3",
+      "@type": [
+        "ms:GroundedPublicFact",
+        "ms:PublicProjectionNode",
+        "prov:Entity"
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:surface": [
+        "The night porter remembers the flood winter well: the copy-room lamps burned past midnight, week upon week, and it was the archive girl, Liane, who kept them burning."
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/4",
+      "@type": [
+        "ms:GroundedPublicFact",
+        "ms:PublicProjectionNode",
+        "prov:Entity"
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:surface": [
+        "Played through once, the nocturne gives up its middle voice: it carries an older tune entire — a cradle-song, set like a keepsake under the right hand's figures."
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/5",
+      "@type": [
+        "ms:GroundedPublicFact",
+        "ms:PublicProjectionNode",
+        "prov:Entity"
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:surface": [
+        "Mistress Odile knows the tune at one hearing: the Vara cradle-song, never printed, never performed, sung only within that house's walls."
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/6",
+      "@type": [
+        "ms:GroundedPublicFact",
+        "ms:PublicProjectionNode",
+        "prov:Entity"
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:surface": [
+        "Liane was raised within the Vara house — the music-master's orphan, taken in as ward; she grew up under that roof and under its songs."
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/hypotheses/1",
+      "@type": [
+        "ms:LearnerHypothesis",
+        "ms:PublicProjectionNode",
+        "prov:Entity"
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:text": [
+        "Liane had both opportunity and access, but the correcting hand is still missing."
+      ],
+      "ms:turn": [
+        23
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/1",
+      "@type": [
+        "ms:PublicProjectionNode",
+        "ms:VoicedPublicConclusion",
+        "prov:Entity"
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:surface": [
+        "writtenDuring: nocturne, floodWinter"
+      ],
+      "ms:turn": [
+        25
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/2",
+      "@type": [
+        "ms:PublicProjectionNode",
+        "ms:VoicedPublicConclusion",
+        "prov:Entity"
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:surface": [
+        "couldHaveWritten: liane, nocturne"
+      ],
+      "ms:turn": [
+        25
+      ]
+    },
+    {
+      "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/3",
+      "@type": [
+        "ms:PublicProjectionNode",
+        "ms:VoicedPublicConclusion",
+        "prov:Entity"
+      ],
+      "prov:wasDerivedFrom": [
+        {
+          "@id": "https://machinespirits.org/derivation/world/world_001_nocturne/public-interaction-record/26"
+        }
+      ],
+      "ms:surface": [
+        "hadSourceOf: liane, nocturne"
+      ],
+      "ms:turn": [
+        25
+      ]
+    }
+  ]
+}

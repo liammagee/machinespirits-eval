@@ -29,3 +29,7 @@ What this does not prove:
 - It does not prove prefix non-entailment or underivability.
 - It does not prove the JS closure algorithm complete. That would require a
   separate formalization of the finite Horn-rule closure procedure.
+
+For the combined Lean and semantic-web verification workflow, artifact
+inspection order, and the tutor-stub `/proof` command, see
+[`docs/proof-dag-verification-and-inspection.md`](../../docs/proof-dag-verification-and-inspection.md).

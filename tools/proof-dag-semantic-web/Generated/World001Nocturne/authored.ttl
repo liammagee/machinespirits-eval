@@ -1,0 +1,318 @@
+@prefix ms: <https://machinespirits.org/ns/proof-dag#>.
+@prefix prov: <http://www.w3.org/ns/prov#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+
+<https://machinespirits.org/derivation/source/config%2Fdrama-derivation%2Fworld-001-nocturne.yaml> a prov:Entity, ms:WorldSpecification;
+    ms:sourcePath "config/drama-derivation/world-001-nocturne.yaml".
+<https://machinespirits.org/derivation/world/world_001_nocturne/authored-proof-dag> a prov:Entity, ms:AuthoredProofDag;
+    rdfs:label "The Unsigned Nocturne";
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/source/config%2Fdrama-derivation%2Fworld-001-nocturne.yaml>;
+    ms:hasBackgroundFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/03af64550c973ac8b8c0>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/43c1960101874d222d2f>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7b6410f21826233906e5>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/985d64f9f75ef2909acd>;
+    ms:hasPremise <https://machinespirits.org/derivation/world/world_001_nocturne/premise/m_away>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/m_guest>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/m_style>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_batch>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_hand>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_heardOnly>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ink>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ledger>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_porter>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_quotes>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_stock>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ward>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_watermark>;
+    ms:hasProofPath <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4>;
+    ms:hasRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R1_watermark_dating>, <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R1a_ink_dating>, <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R2_presence>, <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R2a_ledger_presence>, <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R3_source_access>, <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R4_attribution>;
+    ms:hasSecret <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>;
+    ms:schema "machinespirits.derivation.proof-dag-semantic-web.v1";
+    ms:worldId "world_001_nocturne".
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31> a prov:Entity, ms:Fact;
+    rdfs:label "[\"couldHaveWritten\",\"liane\",\"nocturne\"]";
+    prov:wasGeneratedBy <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/3>;
+    ms:factJson "[\"couldHaveWritten\",\"liane\",\"nocturne\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/03af64550c973ac8b8c0> a prov:Entity, ms:BackgroundFact;
+    rdfs:label "background 2";
+    ms:factJson "[\"unsigned\",\"nocturne\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2> a prov:Entity, ms:Fact;
+    rdfs:label "[\"writtenDuring\",\"nocturne\",\"floodWinter\"]";
+    prov:wasGeneratedBy <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/1>;
+    ms:factJson "[\"writtenDuring\",\"nocturne\",\"floodWinter\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/2b5effb11a9187633f86> a prov:Entity, ms:Fact, ms:PremiseFact;
+    rdfs:label "[\"draftCorrectedBy\",\"nocturne\",\"liane\"]", "Set beside her ledger entries, the draft's corrections show the same hand: the strokes that cross out and rewrite are Liane's.";
+    ms:factJson "[\"draftCorrectedBy\",\"nocturne\",\"liane\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/41754b8603ae13086b92> a prov:Entity, ms:Fact, ms:PremiseFact;
+    rdfs:label "[\"signedLedger\",\"liane\",\"floodWinter\"]", "The copy-room ledger's winter pages carry the same initials line after line: Liane signed in through the whole of the flood winter.";
+    ms:factJson "[\"signedLedger\",\"liane\",\"floodWinter\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/43c1960101874d222d2f> a prov:Entity, ms:BackgroundFact;
+    rdfs:label "background 1";
+    ms:factJson "[\"foundIn\",\"nocturne\",\"archive\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/5aabc786188a1c3dc084> a prov:Entity, ms:PremiseFact;
+    rdfs:label "The capital's concert bills run unbroken through the flood winter: Vess played the Esten halls every week of it, and did not return until the thaw.";
+    ms:factJson "[\"awayDuring\",\"vess\",\"floodWinter\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11> a prov:Entity, ms:Fact, ms:SecretFact;
+    rdfs:label "[\"composed\",\"liane\",\"nocturne\"]", "Liane of the Vara house composed the nocturne.";
+    prov:wasGeneratedBy <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/4>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/5>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/4>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/5>;
+    ms:factJson "[\"composed\",\"liane\",\"nocturne\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/68505fea8280abc0b071> a prov:Entity, ms:PremiseFact;
+    rdfs:label "And yet — Vess summered at the Vara house for years, the patron's own guest; whatever was sung under that roof, he will have heard.";
+    ms:factJson "[\"dwelledIn\",\"vess\",\"varaHouse\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/6917f1b6d61d56716299> a prov:Entity, ms:Fact, ms:PremiseFact;
+    rdfs:label "[\"quotes\",\"nocturne\",\"cradleSong\"]", "Played through once, the nocturne gives up its middle voice: it carries an older tune entire — a cradle-song, set like a keepsake under the right hand's figures.";
+    ms:factJson "[\"quotes\",\"nocturne\",\"cradleSong\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/6e2a42be27437de83e4a> a prov:Entity, ms:PremiseFact;
+    rdfs:label "Every musician shown the leaves says the same: this is Vess's late manner — the suspensions, the long pedal, the way the bass walks.";
+    ms:factJson "[\"styleOf\",\"nocturne\",\"vess\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/78f7fb3cffd3f1e8e202> a prov:Entity, ms:Fact, ms:PremiseFact;
+    rdfs:label "[\"heardOnlyWithin\",\"cradleSong\",\"varaHouse\"]", "Mistress Odile knows the tune at one hearing: the Vara cradle-song, never printed, never performed, sung only within that house's walls.";
+    ms:factJson "[\"heardOnlyWithin\",\"cradleSong\",\"varaHouse\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/7b6410f21826233906e5> a prov:Entity, ms:BackgroundFact;
+    rdfs:label "background 4";
+    ms:factJson "[\"maestroOf\",\"vess\",\"conservatory\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6> a prov:Entity, ms:Fact, ms:PremiseFact;
+    rdfs:label "[\"atConservatoryDuring\",\"liane\",\"floodWinter\"]", "The night porter remembers the flood winter well: the copy-room lamps burned past midnight, week upon week, and it was the archive girl, Liane, who kept them burning.";
+    prov:wasGeneratedBy <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/2>;
+    ms:factJson "[\"atConservatoryDuring\",\"liane\",\"floodWinter\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/985d64f9f75ef2909acd> a prov:Entity, ms:BackgroundFact;
+    rdfs:label "background 3";
+    ms:factJson "[\"keptAt\",\"archive\",\"conservatory\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/9aed125bb9e1f25cbaca> a prov:Entity, ms:Fact, ms:PremiseFact;
+    rdfs:label "[\"watermark\",\"nocturne\",\"heronStock\"]", "Held to the lamp, every leaf of the nocturne shows the same heron watermark — the Brell mill's mark.";
+    ms:factJson "[\"watermark\",\"nocturne\",\"heronStock\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/a8650e9576ba7f22a616> a prov:Entity, ms:Fact, ms:PremiseFact;
+    rdfs:label "[\"dwelledIn\",\"liane\",\"varaHouse\"]", "Liane was raised within the Vara house — the music-master's orphan, taken in as ward; she grew up under that roof and under its songs.";
+    ms:factJson "[\"dwelledIn\",\"liane\",\"varaHouse\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/cd30fd7e3f163455ed61> a prov:Entity, ms:Fact, ms:PremiseFact;
+    rdfs:label "[\"batchMixedOnlyDuring\",\"galleyBatch\",\"floodWinter\"]", "The batch-book records the galley ink mixed in the flood winter only, and the butt poured off by spring.";
+    ms:factJson "[\"batchMixedOnlyDuring\",\"galleyBatch\",\"floodWinter\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a> a prov:Entity, ms:Fact;
+    rdfs:label "[\"hadSourceOf\",\"liane\",\"nocturne\"]";
+    prov:wasGeneratedBy <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/4>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/4>;
+    ms:factJson "[\"hadSourceOf\",\"liane\",\"nocturne\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/ec6ea64363c34603f0d7> a prov:Entity, ms:Fact, ms:PremiseFact;
+    rdfs:label "[\"stockUsedOnlyDuring\",\"heronStock\",\"floodWinter\"]", "The steward's stock-book is plain: heron paper entered the copy-room in the winter of the flood, and the last of it was spent before the thaw. None before, none since.";
+    ms:factJson "[\"stockUsedOnlyDuring\",\"heronStock\",\"floodWinter\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/fact/efda75cef80d6c945785> a prov:Entity, ms:Fact, ms:PremiseFact;
+    rdfs:label "[\"inkOf\",\"nocturne\",\"galleyBatch\"]", "The draft's ink is the copy-room's own iron-gall — the galley batch, mixed with flood-silted water; it greys at the stroke's edge like no other.";
+    ms:factJson "[\"inkOf\",\"nocturne\",\"galleyBatch\"]"^^rdf:JSON.
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/m_away> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "The capital's concert bills run unbroken through the flood winter: Vess played the Esten halls every week of it, and did not return until the thaw.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5aabc786188a1c3dc084>;
+    ms:premiseId "m_away".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/m_guest> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "And yet — Vess summered at the Vara house for years, the patron's own guest; whatever was sung under that roof, he will have heard.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/68505fea8280abc0b071>;
+    ms:premiseId "m_guest".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/m_style> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "Every musician shown the leaves says the same: this is Vess's late manner — the suspensions, the long pedal, the way the bass walks.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/6e2a42be27437de83e4a>;
+    ms:premiseId "m_style".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_batch> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "The batch-book records the galley ink mixed in the flood winter only, and the butt poured off by spring.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/cd30fd7e3f163455ed61>;
+    ms:premiseId "p_batch".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_hand> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "Set beside her ledger entries, the draft's corrections show the same hand: the strokes that cross out and rewrite are Liane's.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2b5effb11a9187633f86>;
+    ms:premiseId "p_hand".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_heardOnly> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "Mistress Odile knows the tune at one hearing: the Vara cradle-song, never printed, never performed, sung only within that house's walls.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/78f7fb3cffd3f1e8e202>;
+    ms:premiseId "p_heardOnly".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ink> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "The draft's ink is the copy-room's own iron-gall — the galley batch, mixed with flood-silted water; it greys at the stroke's edge like no other.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/efda75cef80d6c945785>;
+    ms:premiseId "p_ink".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ledger> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "The copy-room ledger's winter pages carry the same initials line after line: Liane signed in through the whole of the flood winter.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/41754b8603ae13086b92>;
+    ms:premiseId "p_ledger".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_porter> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "The night porter remembers the flood winter well: the copy-room lamps burned past midnight, week upon week, and it was the archive girl, Liane, who kept them burning.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    ms:premiseId "p_porter".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_quotes> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "Played through once, the nocturne gives up its middle voice: it carries an older tune entire — a cradle-song, set like a keepsake under the right hand's figures.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/6917f1b6d61d56716299>;
+    ms:premiseId "p_quotes".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_stock> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "The steward's stock-book is plain: heron paper entered the copy-room in the winter of the flood, and the last of it was spent before the thaw. None before, none since.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/ec6ea64363c34603f0d7>;
+    ms:premiseId "p_stock".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ward> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "Liane was raised within the Vara house — the music-master's orphan, taken in as ward; she grew up under that roof and under its songs.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/a8650e9576ba7f22a616>;
+    ms:premiseId "p_ward".
+<https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_watermark> a prov:Entity, ms:AuthoredPremise;
+    rdfs:label "Held to the lamp, every leaf of the nocturne shows the same heron watermark — the Brell mill's mark.";
+    ms:describesFact <https://machinespirits.org/derivation/world/world_001_nocturne/fact/9aed125bb9e1f25cbaca>;
+    ms:premiseId "p_watermark".
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/1> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/9aed125bb9e1f25cbaca>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/ec6ea64363c34603f0d7>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R1_watermark_dating>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/9aed125bb9e1f25cbaca>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/ec6ea64363c34603f0d7>;
+    ms:order 1;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/2> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R2_presence>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    ms:order 2;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/3> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/6917f1b6d61d56716299>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/78f7fb3cffd3f1e8e202>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/a8650e9576ba7f22a616>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R3_source_access>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/6917f1b6d61d56716299>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/78f7fb3cffd3f1e8e202>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/a8650e9576ba7f22a616>;
+    ms:order 3;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/4> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2b5effb11a9187633f86>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R4_attribution>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2b5effb11a9187633f86>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    ms:order 4;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1> a prov:Collection, ms:AuthoredProofPath;
+    prov:hadMember <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/4>;
+    ms:concludes <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>;
+    ms:hasRuleApplication <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_1/rule-application/4>;
+    ms:pathId "path_1";
+    ms:requiresPremise <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_hand>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_heardOnly>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_porter>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_quotes>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_stock>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ward>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_watermark>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/1> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/9aed125bb9e1f25cbaca>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/ec6ea64363c34603f0d7>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R1_watermark_dating>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/9aed125bb9e1f25cbaca>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/ec6ea64363c34603f0d7>;
+    ms:order 1;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/2> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/41754b8603ae13086b92>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R2a_ledger_presence>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/41754b8603ae13086b92>;
+    ms:order 2;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/3> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R2_presence>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    ms:order 3;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/4> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/6917f1b6d61d56716299>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/78f7fb3cffd3f1e8e202>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/a8650e9576ba7f22a616>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R3_source_access>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/6917f1b6d61d56716299>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/78f7fb3cffd3f1e8e202>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/a8650e9576ba7f22a616>;
+    ms:order 4;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/5> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2b5effb11a9187633f86>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R4_attribution>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2b5effb11a9187633f86>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    ms:order 5;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2> a prov:Collection, ms:AuthoredProofPath;
+    prov:hadMember <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/4>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/5>;
+    ms:concludes <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>;
+    ms:hasRuleApplication <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/4>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_2/rule-application/5>;
+    ms:pathId "path_2";
+    ms:requiresPremise <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_hand>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_heardOnly>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ledger>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_quotes>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_stock>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ward>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_watermark>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/1> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/cd30fd7e3f163455ed61>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/efda75cef80d6c945785>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R1a_ink_dating>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/cd30fd7e3f163455ed61>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/efda75cef80d6c945785>;
+    ms:order 1;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/2> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R2_presence>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    ms:order 2;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/3> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/6917f1b6d61d56716299>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/78f7fb3cffd3f1e8e202>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/a8650e9576ba7f22a616>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R3_source_access>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/6917f1b6d61d56716299>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/78f7fb3cffd3f1e8e202>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/a8650e9576ba7f22a616>;
+    ms:order 3;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/4> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2b5effb11a9187633f86>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R4_attribution>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2b5effb11a9187633f86>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    ms:order 4;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3> a prov:Collection, ms:AuthoredProofPath;
+    prov:hadMember <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/4>;
+    ms:concludes <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>;
+    ms:hasRuleApplication <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_3/rule-application/4>;
+    ms:pathId "path_3";
+    ms:requiresPremise <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_batch>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_hand>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_heardOnly>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ink>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_porter>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_quotes>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ward>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/1> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/cd30fd7e3f163455ed61>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/efda75cef80d6c945785>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R1a_ink_dating>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/cd30fd7e3f163455ed61>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/efda75cef80d6c945785>;
+    ms:order 1;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/2> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/41754b8603ae13086b92>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R2a_ledger_presence>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/41754b8603ae13086b92>;
+    ms:order 2;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/3> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R2_presence>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2309b06a446c85fc97a2>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/7dfbbd2a34c5f08ab7e6>;
+    ms:order 3;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/4> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/6917f1b6d61d56716299>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/78f7fb3cffd3f1e8e202>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/a8650e9576ba7f22a616>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R3_source_access>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/6917f1b6d61d56716299>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/78f7fb3cffd3f1e8e202>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/a8650e9576ba7f22a616>;
+    ms:order 4;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/5> a prov:Activity, ms:RuleApplication;
+    prov:generated <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>;
+    prov:used <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2b5effb11a9187633f86>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    ms:appliesRule <https://machinespirits.org/derivation/world/world_001_nocturne/rule/R4_attribution>;
+    ms:input <https://machinespirits.org/derivation/world/world_001_nocturne/fact/02b97e7a0f800d2f4d31>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/2b5effb11a9187633f86>, <https://machinespirits.org/derivation/world/world_001_nocturne/fact/db46dcaa55c8ce57820a>;
+    ms:order 5;
+    ms:output <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4> a prov:Collection, ms:AuthoredProofPath;
+    prov:hadMember <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/4>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/5>;
+    ms:concludes <https://machinespirits.org/derivation/world/world_001_nocturne/fact/5b5313cf388b66c57b11>;
+    ms:hasRuleApplication <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/4>, <https://machinespirits.org/derivation/world/world_001_nocturne/proof-path/path_4/rule-application/5>;
+    ms:pathId "path_4";
+    ms:requiresPremise <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_batch>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_hand>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_heardOnly>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ink>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ledger>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_quotes>, <https://machinespirits.org/derivation/world/world_001_nocturne/premise/p_ward>.
+<https://machinespirits.org/derivation/world/world_001_nocturne/rule/R1_watermark_dating> a prov:Plan, ms:HornRule;
+    rdfs:label "A leaf carries its mill's watermark; if a paper stock was in the copy-room only during one period, whatever is written on that stock was written there in that period.";
+    ms:antecedentJson "[[\"watermark\",\"?w\",\"?stock\"],[\"stockUsedOnlyDuring\",\"?stock\",\"?period\"]]"^^rdf:JSON;
+    ms:consequentJson "[[\"writtenDuring\",\"?w\",\"?period\"]]"^^rdf:JSON;
+    ms:ruleId "R1_watermark_dating".
+<https://machinespirits.org/derivation/world/world_001_nocturne/rule/R1a_ink_dating> a prov:Plan, ms:HornRule;
+    rdfs:label "Ink betrays its batch; if a work's ink was mixed only during one period, the work was written in that period.";
+    ms:antecedentJson "[[\"inkOf\",\"?w\",\"?batch\"],[\"batchMixedOnlyDuring\",\"?batch\",\"?period\"]]"^^rdf:JSON;
+    ms:consequentJson "[[\"writtenDuring\",\"?w\",\"?period\"]]"^^rdf:JSON;
+    ms:ruleId "R1a_ink_dating".
+<https://machinespirits.org/derivation/world/world_001_nocturne/rule/R2_presence> a prov:Plan, ms:HornRule;
+    rdfs:label "Whoever was at the conservatory during the period a work was written there could have written it; no one writes in a room they never entered.";
+    ms:antecedentJson "[[\"writtenDuring\",\"?w\",\"?period\"],[\"atConservatoryDuring\",\"?x\",\"?period\"]]"^^rdf:JSON;
+    ms:consequentJson "[[\"couldHaveWritten\",\"?x\",\"?w\"]]"^^rdf:JSON;
+    ms:ruleId "R2_presence".
+<https://machinespirits.org/derivation/world/world_001_nocturne/rule/R2a_ledger_presence> a prov:Plan, ms:HornRule;
+    rdfs:label "The copy-room ledger does not lie: whoever signed it through a period was at the conservatory then.";
+    ms:antecedentJson "[[\"signedLedger\",\"?x\",\"?period\"]]"^^rdf:JSON;
+    ms:consequentJson "[[\"atConservatoryDuring\",\"?x\",\"?period\"]]"^^rdf:JSON;
+    ms:ruleId "R2a_ledger_presence".
+<https://machinespirits.org/derivation/world/world_001_nocturne/rule/R3_source_access> a prov:Plan, ms:HornRule;
+    rdfs:label "If a work quotes a tune that was kept within one house's walls — never printed, never performed — then whoever dwelled within those walls had the source of the work.";
+    ms:antecedentJson "[[\"quotes\",\"?w\",\"?m\"],[\"heardOnlyWithin\",\"?m\",\"?place\"],[\"dwelledIn\",\"?x\",\"?place\"]]"^^rdf:JSON;
+    ms:consequentJson "[[\"hadSourceOf\",\"?x\",\"?w\"]]"^^rdf:JSON;
+    ms:ruleId "R3_source_access".
+<https://machinespirits.org/derivation/world/world_001_nocturne/rule/R4_attribution> a prov:Plan, ms:HornRule;
+    rdfs:label "The archive attributes a work to one who could have written it, who had its source, and whose hand corrected its draft — copyists copy fair; only the composer strikes out and rewrites.";
+    ms:antecedentJson "[[\"couldHaveWritten\",\"?x\",\"?w\"],[\"hadSourceOf\",\"?x\",\"?w\"],[\"draftCorrectedBy\",\"?w\",\"?x\"]]"^^rdf:JSON;
+    ms:consequentJson "[[\"composed\",\"?x\",\"?w\"]]"^^rdf:JSON;
+    ms:ruleId "R4_attribution".

@@ -1,17 +1,28 @@
 ---
 id: lean-semantic-web-proof-dag-validation
 title: Evaluate Lean certificates and Semantic Web exports for proof DAGs
-status: triaged
+status: review
 type: research
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-06-24
-updated: 2026-07-22
+updated: 2026-07-25
+branch: codex/lean-semantic-web-proof-dag-validation
 verification: A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.
 claim_status: future
 links:
   notes: notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/214
+  code:
+    - services/dramaticDerivation/semanticWebProofDag.js
+    - services/dramaticDerivation/semanticWebValidation.js
+    - scripts/export-proof-dag-semantic-web.js
+    - scripts/tutor-stub.js
+    - services/tutorStubCommandRegistry.js
+    - tools/proof-dag-semantic-web/
+    - docs/proof-dag-verification-and-inspection.md
 tags:
   - proof-dag
   - lean
@@ -38,9 +49,9 @@ Acceptance criteria:
 
 - [x] Pick a small Lantern or Nocturne world as the fixture.
 - [x] Generate a Lean file that checks the authored positive proof.
-- [ ] Generate RDF/JSON-LD + PROV for authored DAG, learner proxy DAG, and
+- [x] Generate RDF/JSON-LD + PROV for authored DAG, learner proxy DAG, and
       tutor learner-DAG model.
-- [ ] Add SHACL shapes that validate required graph structure and forbid hidden
+- [x] Add SHACL shapes that validate required graph structure and forbid hidden
       authored identifiers in learner/tutor projections.
 - [x] Document why non-entailment/prefix-safety remains with the JS chainer
       unless the finite closure algorithm is formalized in Lean.
@@ -65,3 +76,31 @@ redaction/shape validation.
 2026-07-22 Codex: Parked in triage. The Lean certificate slice is complete;
 the RDF/PROV exporter and SHACL boundary checks remain coherent future work,
 but no active branch or near-term paper dependency currently owns them.
+
+2026-07-25 Codex: Reactivated after explicit user confirmation from current
+`main` at `768d46b9`. The bounded implementation slice is the optional
+RDF/JSON-LD + PROV export and SHACL validation layer for Nocturne. The live
+JavaScript proof-entitlement gate and paid-model paths remain out of scope.
+
+2026-07-25 Codex: Implemented three authority-separated RDF/JSON-LD + PROV
+exports, authored/public SHACL shapes, pre-serialization identifier audits, a
+deterministic checked-in Nocturne fixture, and positive/negative regressions.
+`npm run derivation:semantic-web:check` passes at 534 authored, 93 learner,
+and 103 tutor quads; `npm run derivation:lean-cert:check`, lint, formatting,
+source-only workplan validation, and the full hermetic suite also pass. No
+model calls were made and the live JavaScript proof gate was not changed.
+
+2026-07-25 Codex: Added the operator-facing verification and inspection guide
+and the in-session `/proof` command. `/proof` runs both external checks;
+targeted forms check Lean or semantic-web layers, inspect each authority
+projection, list raw paths, or explicitly refresh the generated graph fixture.
+The command names the fixed Nocturne scope and routes live-session inspection
+to `/analysis technical`. While making the learner graph inspectable, fixed a
+fixture ledger lookup that had produced a structurally valid but empty grounded
+record; regressions now require six public grounded facts, three voiced
+conclusions, 0.857 best-path coverage, and one unreleased missing premise.
+
+2026-07-25 Codex: Rebased the implementation unchanged onto `origin/main` at
+`a2335617`, reran the targeted and full hermetic verification gates, and opened
+PR #214. The feature PR remains source-only for workplan state; generated board
+views are left to the serialized post-merge renderer.
