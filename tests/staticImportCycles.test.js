@@ -38,15 +38,9 @@ test('strongly connected components distinguish cycles from acyclic edges', () =
   assert.deepEqual(findStronglyConnectedComponents(graph), [['a', 'b'], ['d']]);
 });
 
-test('repository static import cycles match the ratcheted one-cycle baseline', () => {
+test('repository static imports match the ratcheted zero-cycle baseline', () => {
   const result = checkStaticImportCycles({ repoRoot });
 
   assert.equal(result.ok, true);
-  assert.deepEqual(result.actualCycles, [
-    [
-      'services/tutorStubDramaticRelease.js',
-      'services/tutorStubResponseConfiguration.js',
-      'services/tutorStubSourceAccessibilityContract.js',
-    ],
-  ]);
+  assert.deepEqual(result.actualCycles, []);
 });
