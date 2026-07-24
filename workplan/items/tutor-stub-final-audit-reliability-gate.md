@@ -14,6 +14,7 @@ claim_status: planned
 links:
   notes:
     - notes/program-2/2026-07-24-weights-interface-paid-smoke-hold.md
+    - PROGRAM-2-FINAL-AUDIT-RELIABILITY-GATE-AMENDMENT-1.md
   exports:
     - exports/program2-weights-interface-factorial-paid-smoke/launch-state.json
     - exports/program2-weights-interface-factorial-paid-smoke/provenance-audit.json
@@ -42,3 +43,8 @@ Log:
 - 2026-07-24 — activated after the excluded paid smoke ended 3/4 sealed with
   one finalized attrition and four counted downstream final-audit failures.
   The 48-dialogue cohort and paid semantic judging remain on hold.
+- 2026-07-24 — Amendment 1 frozen before runtime changes. It fixes the four
+  archived trace hashes and classification grammar, limits repair authority to
+  common downstream public-state construction, preserves every treatment and
+  audit seam, and licenses only a fresh excluded four-cell smoke after the
+  zero-model and test gates pass.
