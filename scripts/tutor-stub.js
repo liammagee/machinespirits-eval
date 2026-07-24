@@ -25,6 +25,7 @@ import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
+import { collectGitActivity, collectSourceMetrics, renderReport } from './repository-metrics.js';
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
 import { getProviderConfig, loadProviders, resolveModel } from '../services/evalConfigLoader.js';
@@ -1257,6 +1258,7 @@ Interactive commands:
   /settings forget       stop using the saved defaults after this session
   /release-notes [hours]
                          show recent tutor-stub changes and their expected effects
+  /metrics               show repository source, language, file, and Git metrics
   /features              show the capability map, quick starts, and active mode
   /lab [list|id]         show the active lab or a safe lab's relaunch command
   /id                    show and copy the current debug id and trace path
@@ -25795,6 +25797,43 @@ async function main() {
           type: 'release_notes_error',
           duringTurn,
           argument: commandArg,
+          error: error.message,
+          publicTranscriptChanged: false,
+        });
+      }
+      finishSlashCommand();
+      return true;
+    }
+    if (command === '/metrics') {
+      clearStatusLine();
+      try {
+        if (commandArg) throw new Error('/metrics takes no arguments');
+        const source = collectSourceMetrics();
+        const gitActivity = collectGitActivity();
+        console.log(`${renderReport({ source, gitActivity })}\n`);
+        appendTraceEvent(state.trace, {
+          type: 'repository_metrics_popup',
+          duringTurn,
+          repositoryFiles: source.repositoryFiles,
+          sourceFiles: source.sourceFiles,
+          skippedSourceFiles: source.skippedSourceFiles,
+          lines: source.totals,
+          git: {
+            branch: gitActivity.branch,
+            commitCount: gitActivity.commitCount,
+            latestCommit: gitActivity.latest.sha,
+          },
+          publicTranscriptChanged: false,
+        });
+        if (duringTurn) {
+          console.log(`${C.dim}tutor is still thinking; metrics reflect the current working tree${C.reset}\n`);
+        }
+      } catch (error) {
+        console.log(`${C.red}metrics error:${C.reset} ${error.message}\n`);
+        appendTraceEvent(state.trace, {
+          type: 'repository_metrics_error',
+          duringTurn,
+          argument: commandArg || null,
           error: error.message,
           publicTranscriptChanged: false,
         });

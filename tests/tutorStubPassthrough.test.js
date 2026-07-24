@@ -78,7 +78,7 @@ test('passthrough dry run disables every auxiliary tutoring stage', () => {
   assert.equal(config.memorySummary.enabled, false);
 });
 
-test('passthrough exposes live release notes without invoking a model', () => {
+test('passthrough exposes live release notes and repository metrics without invoking a model', () => {
   const result = spawnSync(
     process.execPath,
     [
@@ -96,7 +96,7 @@ test('passthrough exposes live release notes without invoking a model', () => {
       cwd: ROOT,
       env: { ...process.env, TUTOR_STUB_SUMMARY_OPEN: '0' },
       encoding: 'utf8',
-      input: '/release-notes\n/quit\n',
+      input: '/release-notes\n/metrics\n/quit\n',
       timeout: 10_000,
     },
   );
@@ -105,6 +105,8 @@ test('passthrough exposes live release notes without invoking a model', () => {
   const stdout = plainTerminalText(result.stdout);
   assert.match(stdout, /release notes > last 24 hours/u);
   assert.match(stdout, /effect >/u);
+  assert.match(stdout, /Repository metrics: machinespirits-eval/u);
+  assert.match(stdout, /Git activity/u);
   assert.doesNotMatch(stdout, /intentionally unavailable in passthrough mode/u);
   assert.doesNotMatch(stdout, /tutor >/u);
 });

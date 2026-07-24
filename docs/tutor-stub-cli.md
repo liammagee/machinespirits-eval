@@ -507,6 +507,19 @@ The command is available in normal and passthrough modes, does not alter public
 message history, and repeats the latest tutor utterance when it returns to the
 scene. Newly committed changes appear automatically; uncommitted work does not.
 
+## Repository metrics
+
+Use `/metrics` inside a normal or passthrough tutor-stub session to print the
+same dependency-free repository summary as `npm run metrics`. It reports files,
+source code, comments, blank lines, a per-language breakdown, and concise local
+Git activity. Generated artifacts, datasets, dependency trees, and vendored
+code are excluded from source totals.
+
+The command reads the current working tree and local Git history without making
+a model call or changing public dialogue. Comment counts are language-aware
+heuristics, and the latest tutor utterance is repeated when the command returns
+to the scene.
+
 ## Directing and randomizing performance
 
 `/character` is the shared character control. In an interactive terminal, the

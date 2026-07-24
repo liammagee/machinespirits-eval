@@ -240,11 +240,19 @@ To re-run evaluations from scratch (rather than reproducing from saved data), ex
 
 | Script | Description |
 |--------|-------------|
+| `repository-metrics.js` | Dependency-free source lines, file/language counts, and concise local Git activity (`npm run metrics`) |
 | `test-rate-limit.js [model]` | Probe OpenRouter rate limits (default: nemotron) |
 | `test-latency.js` | Latency test across all configured models |
 | `seed-db.js` | Initialize/seed the SQLite database |
 
 All scripts are in `scripts/` and run with `node scripts/<name>`.
+
+Run `npm run metrics` for a quick repository summary. It counts tracked and
+untracked non-ignored working-tree files, while excluding generated artifacts,
+datasets, dependency trees, and vendored code from source totals. Comment-line
+counts are language-aware heuristics, so they are useful for orientation rather
+than a substitute for a language parser. The same report is available as
+`/metrics` inside an interactive tutor-stub session.
 
 ## Claude Code Skills
 

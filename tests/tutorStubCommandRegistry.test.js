@@ -80,6 +80,7 @@ const NORMAL_COMMANDS = [
   '/status',
   '/features',
   '/release-notes',
+  '/metrics',
   '/debug',
   '/mode',
   '/coach',
@@ -127,6 +128,7 @@ const PASSTHROUGH_COMMANDS = [
   '/quit',
   '/exit',
   '/lab',
+  '/metrics',
 ];
 
 const SCENE_RETURN_COMMANDS = [
@@ -173,6 +175,7 @@ const SCENE_RETURN_COMMANDS = [
   '/light',
   '/details',
   '/proof',
+  '/metrics',
 ];
 
 const NORMAL_SETTINGS_COMPLETIONS = [
@@ -234,14 +237,14 @@ test('director guidance is a bounded private control with turn-aware and concurr
   assert.equal(merged.history.at(-1).action, 'clear');
 });
 
-test('v7 command registry freezes the slash-token and execution-effect surfaces', () => {
+test('v8 command registry freezes the slash-token and execution-effect surfaces', () => {
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 7);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 44);
-  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 61);
-  assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 22);
-  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 43);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 8);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 45);
+  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 62);
+  assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 23);
+  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 44);
   assert.deepEqual(TUTOR_STUB_NORMAL_SLASH_COMMANDS, NORMAL_COMMANDS);
   assert.deepEqual(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS, PASSTHROUGH_COMMANDS);
   assert.deepEqual(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS, SCENE_RETURN_COMMANDS);
@@ -272,8 +275,8 @@ test('v7 command registry freezes the slash-token and execution-effect surfaces'
     handlers.add(definition.handler);
     traceEvents.add(definition.traceEvent);
   }
-  assert.equal(handlers.size, 44);
-  assert.equal(traceEvents.size, 44);
+  assert.equal(handlers.size, 45);
+  assert.equal(traceEvents.size, 45);
   assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
@@ -303,6 +306,7 @@ test('canonical ids and aliases resolve uniquely', () => {
   assert.equal(tutorStubCanonicalCommandToken('/tutor'), '/character');
   assert.equal(tutorStubCanonicalCommandToken('/learner'), '/character');
   assert.equal(resolveTutorStubCommandId('/proof'), 'proof');
+  assert.equal(resolveTutorStubCommandId('/metrics'), 'repository_metrics');
   assert.deepEqual(tutorStubStaticCommandCompletions('/committee'), [
     '/committee on',
     '/committee off',

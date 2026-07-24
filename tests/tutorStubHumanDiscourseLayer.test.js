@@ -1208,7 +1208,7 @@ test('tutor-stub interactive help exposes clarification commands', () => {
     {
       cwd: ROOT,
       encoding: 'utf8',
-      input: '/help\n/features\n/release-notes\n/id\n/clarify cupel\n/suggest\n/quit\n',
+      input: '/help\n/features\n/release-notes\n/metrics\n/id\n/clarify cupel\n/suggest\n/quit\n',
       env: { ...process.env, TUTOR_STUB_CLIPBOARD: '0' },
     },
   );
@@ -1220,12 +1220,16 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /\/analysis \[technical\]/u);
   assert.match(result.stdout, /\/transcript \[no-open\]/u);
   assert.match(result.stdout, /\/release-notes/u);
+  assert.match(result.stdout, /\/metrics/u);
   assert.match(result.stdout, /\/features/u);
   assert.match(result.stdout, /tutor-stub capability map/u);
   assert.match(result.stdout, /active now > learner · scenario:/u);
   assert.match(result.stdout, /release notes > last 24 hours/u);
   assert.match(result.stdout, /effect >/u);
   assert.match(result.stdout, /look for >/u);
+  assert.match(result.stdout, /Repository metrics: machinespirits-eval/u);
+  assert.match(result.stdout, /Per language/u);
+  assert.match(result.stdout, /Git activity/u);
   assert.match(result.stdout, /raw, script, swimlane, analysis, prompt, settings, and Replay JS views/u);
   assert.match(result.stdout, /\/id/u);
   assert.match(result.stdout, /debug id >/u);
