@@ -1,3 +1,5 @@
+import { auditForbiddenKeys } from './forbiddenKeyAudit.js';
+
 export const CAST_LAYER_SCHEMA = 'dramatic-derivation.cast-state.v0';
 export const TUTOR_REINVENTION_SCHEMA = 'dramatic-derivation.tutor-reinvention.v0';
 
@@ -82,23 +84,8 @@ function cleanList(value, maxItems = 4, maxChars = 100) {
     .slice(0, maxItems);
 }
 
-function auditForbiddenKeys(value, path = []) {
-  const leaks = [];
-  if (!value || typeof value !== 'object') return leaks;
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => leaks.push(...auditForbiddenKeys(item, [...path, String(index)])));
-    return leaks;
-  }
-  for (const [key, child] of Object.entries(value)) {
-    const nextPath = [...path, key];
-    if (FORBIDDEN_KEYS.has(key)) leaks.push({ path: nextPath.join('.'), key });
-    leaks.push(...auditForbiddenKeys(child, nextPath));
-  }
-  return leaks;
-}
-
 export function auditCastLayerPublicInput(input = {}) {
-  const leaks = auditForbiddenKeys(input);
+  const leaks = auditForbiddenKeys(input, FORBIDDEN_KEYS);
   return {
     ok: leaks.length === 0,
     leaks,

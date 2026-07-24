@@ -1,3 +1,4 @@
+import { auditForbiddenKeys } from './forbiddenKeyAudit.js';
 import { deriveObjectOwnershipState } from './objectOwnership.js';
 
 export const LEARNER_TRANSFORMATION_SCHEMA = 'dramatic-derivation.learner-transformation.v0';
@@ -52,23 +53,8 @@ const FORBIDDEN_KEYS = new Set([
   'ledger',
 ]);
 
-function auditForbiddenKeys(value, path = []) {
-  const leaks = [];
-  if (!value || typeof value !== 'object') return leaks;
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => leaks.push(...auditForbiddenKeys(item, [...path, String(index)])));
-    return leaks;
-  }
-  for (const [key, child] of Object.entries(value)) {
-    const nextPath = [...path, key];
-    if (FORBIDDEN_KEYS.has(key)) leaks.push({ path: nextPath.join('.'), key });
-    leaks.push(...auditForbiddenKeys(child, nextPath));
-  }
-  return leaks;
-}
-
 export function auditLearnerTransformationPublicInput(input = {}) {
-  const leaks = auditForbiddenKeys(input);
+  const leaks = auditForbiddenKeys(input, FORBIDDEN_KEYS);
   return {
     ok: leaks.length === 0,
     leaks,

@@ -1,3 +1,5 @@
+import { auditForbiddenKeys } from './forbiddenKeyAudit.js';
+
 export const CONDUCT_POLICY_SCHEMA = 'dramatic-derivation.conduct-policy.v0';
 export const CONDUCT_COMPLIANCE_SCHEMA = 'dramatic-derivation.conduct-policy-compliance.v0';
 
@@ -414,23 +416,8 @@ function buildTutorView(state, classification, spec) {
   return Object.fromEntries(Object.entries(view).filter(([, value]) => value != null));
 }
 
-function auditForbiddenKeys(value, path = []) {
-  const leaks = [];
-  if (!value || typeof value !== 'object') return leaks;
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => leaks.push(...auditForbiddenKeys(item, [...path, String(index)])));
-    return leaks;
-  }
-  for (const [key, child] of Object.entries(value)) {
-    const nextPath = [...path, key];
-    if (FORBIDDEN_TUTOR_KEYS.has(key)) leaks.push({ path: nextPath.join('.'), key });
-    leaks.push(...auditForbiddenKeys(child, nextPath));
-  }
-  return leaks;
-}
-
 export function auditConductTutorView(view) {
-  const leaks = auditForbiddenKeys(view);
+  const leaks = auditForbiddenKeys(view, FORBIDDEN_TUTOR_KEYS);
   return {
     ok: leaks.length === 0,
     leaks,

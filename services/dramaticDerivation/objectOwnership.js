@@ -1,3 +1,5 @@
+import { auditForbiddenKeys } from './forbiddenKeyAudit.js';
+
 export const OBJECT_OWNERSHIP_SCHEMA = 'dramatic-derivation.object-ownership.v0';
 
 export const OWNERSHIP_PROBE_FAMILIES = Object.freeze([
@@ -36,23 +38,8 @@ function norm(text) {
   return String(text || '').toLowerCase();
 }
 
-function auditForbiddenKeys(value, path = []) {
-  const leaks = [];
-  if (!value || typeof value !== 'object') return leaks;
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => leaks.push(...auditForbiddenKeys(item, [...path, String(index)])));
-    return leaks;
-  }
-  for (const [key, child] of Object.entries(value)) {
-    const nextPath = [...path, key];
-    if (FORBIDDEN_KEYS.has(key)) leaks.push({ path: nextPath.join('.'), key });
-    leaks.push(...auditForbiddenKeys(child, nextPath));
-  }
-  return leaks;
-}
-
 export function auditObjectOwnershipPublicInput(input = {}) {
-  const leaks = auditForbiddenKeys(input);
+  const leaks = auditForbiddenKeys(input, FORBIDDEN_KEYS);
   return {
     ok: leaks.length === 0,
     leaks,

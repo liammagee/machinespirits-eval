@@ -31,6 +31,7 @@ links:
     - refactor-tutor-response-cycle
     - refactor-adaptive-trace-projection
     - refactor-field-policy-helpers
+    - refactor-forbidden-key-audit
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -157,3 +158,11 @@ Log:
   binding identity plus deep-equality coverage, and focused/full hermetic parity
   green. The next queued duplicate family is forbidden-key auditing on
   `codex/refactor-forbidden-key-audit` after this branch lands.
+- 2026-07-25 — PR #208 merged and closed the field-policy helper child.
+  Activated the next R1.3 duplicate family on
+  `codex/refactor-forbidden-key-audit`; this branch touches only the seven
+  dramatic-derivation auditors, their shared helper, and parity coverage.
+- 2026-07-25 — The forbidden-key audit leaf reached review with seven recursive
+  copies reduced to one pure helper, caller-specific policies pinned by a
+  shared corpus, and focused plus full hermetic parity green. The next queued
+  independent duplicate family remains lightweight field-turn projection.

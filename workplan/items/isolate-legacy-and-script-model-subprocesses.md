@@ -1,7 +1,7 @@
 ---
 id: isolate-legacy-and-script-model-subprocesses
 title: Classify and isolate legacy and research-script model subprocesses
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -72,3 +72,6 @@ Log:
   persistent-output-bound, and launch-inventory regressions. After rebasing on
   merged PRs #200 and #201, lint and workplan validation pass; the complete
   hermetic suite passes 6,593/6,593 root tests and 137/137 tutor-core tests.
+- 2026-07-25 — PR #204 merged as `e64bf971`; the feature branch was confirmed
+  ancestral to `origin/main`, its clean worktree was removed, and the local and
+  remote feature branches were deleted.

@@ -4,8 +4,14 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
+  auditCastLayerPublicInput,
   auditConductGeneratorCompliance,
   auditConductTutorView,
+  auditDidacticModePublicInput,
+  auditDiscursiveCalibrationPublicInput,
+  auditLearnerDriftPublicInput,
+  auditLearnerTransformationPublicInput,
+  auditObjectOwnershipPublicInput,
   CONDUCT_COMPLIANCE_SCHEMA,
   conductMoveSpecs,
   CONDUCT_MOVE_FAMILIES,
@@ -292,6 +298,54 @@ test('conduct tutor-view audit catches forbidden hidden fields', () => {
   });
   assert.equal(audit.ok, false);
   assert.deepEqual(audit.leaks.map((leak) => leak.key).sort(), ['dNow', 'proofPath', 'rawBoard']);
+});
+
+test('dramatic forbidden-key audits preserve caller-specific policy over one nested corpus', () => {
+  const publicInput = {
+    safe: { answer: 'still public' },
+    proofPath: ['p1'],
+    nested: [
+      { hiddenBoard: [['private']] },
+      { proofTree: { root: 'p1' } },
+      { fact: 'private fact' },
+      { premiseId: 'p1' },
+    ],
+    transcript: [{ meta: { raw_board: [['private']] } }],
+  };
+  const expectedLeaks = new Map([
+    [auditConductTutorView, ['proofPath', 'nested.2.fact', 'transcript.0.meta.raw_board']],
+    [
+      auditObjectOwnershipPublicInput,
+      ['proofPath', 'nested.0.hiddenBoard', 'nested.1.proofTree', 'transcript.0.meta.raw_board'],
+    ],
+    [auditDiscursiveCalibrationPublicInput, ['proofPath', 'nested.0.hiddenBoard', 'transcript.0.meta.raw_board']],
+    [
+      auditLearnerDriftPublicInput,
+      ['proofPath', 'nested.0.hiddenBoard', 'nested.1.proofTree', 'nested.3.premiseId', 'transcript.0.meta.raw_board'],
+    ],
+    [
+      auditCastLayerPublicInput,
+      ['proofPath', 'nested.0.hiddenBoard', 'nested.1.proofTree', 'nested.3.premiseId', 'transcript.0.meta.raw_board'],
+    ],
+    [
+      auditDidacticModePublicInput,
+      ['proofPath', 'nested.0.hiddenBoard', 'nested.1.proofTree', 'transcript.0.meta.raw_board'],
+    ],
+    [
+      auditLearnerTransformationPublicInput,
+      ['proofPath', 'nested.0.hiddenBoard', 'nested.1.proofTree', 'nested.3.premiseId', 'transcript.0.meta.raw_board'],
+    ],
+  ]);
+
+  for (const [audit, paths] of expectedLeaks) {
+    const result = audit(publicInput);
+    assert.equal(result.ok, false, audit.name);
+    assert.deepEqual(
+      result.leaks.map((leak) => leak.path),
+      paths,
+      audit.name,
+    );
+  }
 });
 
 test('generator compliance audit checks realized move family and target', () => {

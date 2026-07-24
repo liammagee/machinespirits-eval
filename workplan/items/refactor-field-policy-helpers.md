@@ -1,7 +1,7 @@
 ---
 id: refactor-field-policy-helpers
 title: Consolidate tutor-stub field-policy helpers
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -17,6 +17,8 @@ branch: codex/refactor-field-policy-helpers
 depends_on:
   - refactor-adaptive-trace-projection
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/208
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -78,3 +80,5 @@ Log:
   projection into the neutral import-free `tutorStubDagFeatures.js` leaf. Both
   established modules retain identical compatibility exports, now pinned to
   the neutral binding by the facade-identity test.
+- 2026-07-25 — Closed after PR #208 merged to `main` at `945316b5`; the next
+  duplicate family is tracked separately by `refactor-forbidden-key-audit`.
