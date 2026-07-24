@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-24T22:11:25.643Z",
+  "generated": "2026-07-24T22:20:37.323Z",
   "counts": {
-    "total": 177,
+    "total": 178,
     "byStatus": {
-      "done": 147,
+      "done": 149,
       "blocked": 3,
       "dropped": 2,
       "triaged": 17,
       "active": 2,
       "archived": 4,
-      "review": 2
+      "review": 1
     },
     "byType": {
       "research": 46,
       "experiment": 49,
       "infra": 39,
-      "maintenance": 28,
+      "maintenance": 29,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -519,6 +519,7 @@
           "refactor-tutor-response-cycle",
           "refactor-adaptive-trace-projection",
           "refactor-field-policy-helpers",
+          "refactor-forbidden-key-audit",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -665,49 +666,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "isolate-legacy-and-script-model-subprocesses",
-      "title": "Classify and isolate legacy and research-script model subprocesses",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-24",
-      "updated": "2026-07-24",
-      "verification": "A checked repository-wide launch manifest accounts for every remaining model CLI subprocess; active non-interactive calls use the shared fail-closed bridge, while explicit interactive or persistent exceptions use reviewed least-privilege launch policies and pass secret-canary tests.",
-      "depends_on": [
-        "isolate-remaining-direct-model-subprocesses"
-      ],
-      "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/204"
-        ],
-        "code": [
-          "services/cliProviderBridge.js",
-          "services/modelCliProcessPolicy.js",
-          "services/legacyChatTutorEngine.js",
-          "services/evaluationRunner.js",
-          "config/model-cli-launch-manifest.json",
-          "scripts/check-model-cli-launches.js",
-          "scripts/generate-pedagogical-dramas.js",
-          "scripts/replay-discursive-transcript.js"
-        ],
-        "items": [
-          "isolate-remaining-direct-model-subprocesses"
-        ]
-      },
-      "tags": [
-        "security",
-        "providers",
-        "process-isolation",
-        "scripts"
-      ],
-      "milestone": "evaluation-infrastructure",
-      "branch": "codex/isolate-legacy-and-script-model-subprocesses"
-    },
-    {
-      "id": "refactor-field-policy-helpers",
-      "title": "Consolidate tutor-stub field-policy helpers",
+      "id": "refactor-forbidden-key-audit",
+      "title": "Consolidate dramatic forbidden-key auditing",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -715,25 +675,30 @@
       "source": "review",
       "created": "2026-07-25",
       "updated": "2026-07-25",
-      "verification": "A neutral DAG-feature leaf owns DAG normalization; tutorStubFieldTrajectory and tutorStubRegisterPolicy re-export the canonical helper bindings; identity and frozen-fixture parity tests pass; focused and full hermetic suites remain green with zero static cycles.",
-      "branch": "codex/refactor-field-policy-helpers",
+      "verification": "One pure recursive walker serves all seven dramatic public-input audits; a shared nested mutation corpus proves each caller retains its exact key policy, leak order, and path shape; focused and full hermetic suites pass.",
+      "branch": "codex/refactor-forbidden-key-audit",
       "depends_on": [
-        "refactor-adaptive-trace-projection"
+        "refactor-field-policy-helpers"
       ],
       "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/210"
+        ],
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
+        "code": [
+          "services/dramaticDerivation/forbiddenKeyAudit.js",
+          "tests/dramaticDerivationConductPolicy.test.js"
+        ],
         "items": [
-          "codebase-refactoring-program",
-          "tutor-stub-register-policy-extraction"
+          "codebase-refactoring-program"
         ]
       },
       "tags": [
         "refactoring",
-        "tutor-stub",
-        "register-policy",
-        "field-trajectory",
+        "dramatic-derivation",
+        "non-leak-audit",
         "duplication"
       ],
       "milestone": "evaluation-infrastructure"
@@ -1497,6 +1462,47 @@
       "milestone": "impasse-program-v1"
     },
     {
+      "id": "isolate-legacy-and-script-model-subprocesses",
+      "title": "Classify and isolate legacy and research-script model subprocesses",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "A checked repository-wide launch manifest accounts for every remaining model CLI subprocess; active non-interactive calls use the shared fail-closed bridge, while explicit interactive or persistent exceptions use reviewed least-privilege launch policies and pass secret-canary tests.",
+      "depends_on": [
+        "isolate-remaining-direct-model-subprocesses"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/204"
+        ],
+        "code": [
+          "services/cliProviderBridge.js",
+          "services/modelCliProcessPolicy.js",
+          "services/legacyChatTutorEngine.js",
+          "services/evaluationRunner.js",
+          "config/model-cli-launch-manifest.json",
+          "scripts/check-model-cli-launches.js",
+          "scripts/generate-pedagogical-dramas.js",
+          "scripts/replay-discursive-transcript.js"
+        ],
+        "items": [
+          "isolate-remaining-direct-model-subprocesses"
+        ]
+      },
+      "tags": [
+        "security",
+        "providers",
+        "process-isolation",
+        "scripts"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "codex/isolate-legacy-and-script-model-subprocesses"
+    },
+    {
       "id": "isolate-remaining-direct-model-subprocesses",
       "title": "Route reviewed production model adapters through one isolation boundary",
       "status": "done",
@@ -1909,6 +1915,42 @@
         "dialogue-logs",
         "hermetic",
         "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-field-policy-helpers",
+      "title": "Consolidate tutor-stub field-policy helpers",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "A neutral DAG-feature leaf owns DAG normalization; tutorStubFieldTrajectory and tutorStubRegisterPolicy re-export the canonical helper bindings; identity and frozen-fixture parity tests pass; focused and full hermetic suites remain green with zero static cycles.",
+      "branch": "codex/refactor-field-policy-helpers",
+      "depends_on": [
+        "refactor-adaptive-trace-projection"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/208"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "tutor-stub-register-policy-extraction"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "register-policy",
+        "field-trajectory",
+        "duplication"
       ],
       "milestone": "evaluation-infrastructure"
     },
