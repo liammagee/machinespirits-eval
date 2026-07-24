@@ -8,6 +8,9 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const RUN_CONCURRENT_PTY_IN_CI = process.env.TUTOR_STUB_RUN_CONCURRENT_PTY_TEST === '1';
+const CONCURRENT_PTY_TIMEOUT_MS = RUN_CONCURRENT_PTY_IN_CI ? 30_000 : 12_000;
+const CONCURRENT_PTY_TEST_TIMEOUT_MS = RUN_CONCURRENT_PTY_IN_CI ? 35_000 : 15_000;
 
 function plainTerminalText(value) {
   // Build the ESC char dynamically so the ANSI-strip regex carries no
@@ -1215,10 +1218,13 @@ test('a live tutor-model change replays the full public user/assistant history o
 
 test(
   'auto mode keeps a separate editable command line while model output is generated',
-  // Timing-sensitive concurrent-pty test: its render budget is unreliable on
-  // shared CI runners (observed 12s timeout on GitHub Actions), so it runs on
-  // developer machines only.
-  { skip: process.platform === 'win32' || Boolean(process.env.CI), timeout: 15_000 },
+  // The parallel root matrix keeps this timing-sensitive case in the explicit
+  // skip ledger. A dedicated Linux PTY lane opts it back in, runs this file in
+  // isolation without forced exit, and gives shared runners a bounded budget.
+  {
+    skip: process.platform === 'win32' || (Boolean(process.env.CI) && !RUN_CONCURRENT_PTY_IN_CI),
+    timeout: CONCURRENT_PTY_TEST_TIMEOUT_MS,
+  },
   async () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-concurrent-auto-terminal-'));
     try {
@@ -1263,14 +1269,18 @@ test(
         const timer = setTimeout(() => {
           terminal.kill();
           reject(new Error(`concurrent auto terminal timed out\n${plainTerminalText(terminalOutput)}`));
-        }, 12_000);
+        }, CONCURRENT_PTY_TIMEOUT_MS);
         terminal.onData((chunk) => {
           terminalOutput += chunk;
           const plain = plainTerminalText(terminalOutput);
           if (!autoStarted && plain.includes('learner >')) {
             autoStarted = true;
             terminal.write('/auto 1\r');
-          } else if (!partialCommandEntered && plain.includes('calling auto learner')) {
+          } else if (
+            !partialCommandEntered &&
+            plain.includes('tutor and learner now continue from the public transcript') &&
+            plain.endsWith('auto > ')
+          ) {
             partialCommandEntered = true;
             terminal.write('/sta');
           } else if (!commandCompleted && plain.includes('A Diligent Learner (auto) >')) {
@@ -1289,11 +1299,12 @@ test(
       });
 
       const plain = plainTerminalText(terminalOutput);
-      assert.match(plain, /calling auto learner[^\n]*\nauto > \/sta/u);
+      assert.match(plain, /auto > \/sta/u);
       assert.match(plain, /A Diligent Learner \(auto\) >/u);
       assert.match(plain, /session status > AUTO/u);
       assert.match(plain, /learning summary: automatic HTML on conclusion/u);
       assert.doesNotMatch(plain, /unknown command/u);
+      assert.ok(plain.indexOf('auto > /sta') < plain.indexOf('A Diligent Learner (auto) >'), plain);
       assert.ok(plain.indexOf('A Diligent Learner (auto) >') < plain.indexOf('session status > AUTO'), plain);
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });

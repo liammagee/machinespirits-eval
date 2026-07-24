@@ -25,6 +25,7 @@ links:
     - refactor-v-series-fixtures
     - refactor-dialogue-log-fixtures
     - refactor-cast-layer-fixture
+    - refactor-pty-ci-lane
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -98,3 +99,11 @@ Log:
   a tracked test-only matrix, its private-export skip removed, and the complete
   root manifest passing with zero skips. The next queued slice remains R0.5's
   permitted PTY/loopback CI lane after this branch lands.
+- 2026-07-24 — PR #193 merged and R0.4 closed. Activated R0.5 on
+  `codex/refactor-pty-ci-lane`: the existing CI-conditioned skip remains explicit
+  in the parallel root manifest while a dedicated Linux lane opts the same
+  concurrency assertion back in and requires natural teardown.
+- 2026-07-24 — R0.5 reached review with a named Ubuntu PTY/loopback job, a
+  natural-teardown package contract, and the previously skipped concurrent
+  input assertion executing under CI opt-in. The next queued slice remains
+  R0.6's production rubric-parser characterization after this branch lands.

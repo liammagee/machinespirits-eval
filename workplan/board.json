@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T07:00:53.469Z",
+  "generated": "2026-07-24T07:16:40.364Z",
   "counts": {
-    "total": 167,
+    "total": 168,
     "byStatus": {
-      "done": 137,
+      "done": 138,
       "blocked": 3,
       "dropped": 2,
       "triaged": 19,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 48,
       "infra": 37,
-      "maintenance": 21,
+      "maintenance": 22,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -574,6 +574,7 @@
           "refactor-v-series-fixtures",
           "refactor-dialogue-log-fixtures",
           "refactor-cast-layer-fixture",
+          "refactor-pty-ci-lane",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -691,8 +692,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-cast-layer-fixture",
-      "title": "Make cast-layer reader-quality scoring hermetic",
+      "id": "refactor-pty-ci-lane",
+      "title": "Gate concurrent tutor-stub PTY behavior in CI",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -700,11 +701,11 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-07-24",
-      "verification": "A clean checkout executes the cast-layer reader-quality scorer against a tracked synthetic S0/S1/S2 matrix, preserves its conservative proof and branch-ordering assertions, removes the cast-layer-private-matrix skip, and passes focused plus full hermetic parity without production export writes.",
-      "branch": "codex/refactor-cast-layer-fixture",
+      "verification": "A dedicated Ubuntu Node 22 job opts the existing concurrent tutor-stub PTY assertion back in under CI, runs the hermetic interactive suite without forced exit, terminates deterministically, and passes alongside the unchanged Node 20/22 root matrix and its explicit parallel-run skip ledger.",
+      "branch": "codex/refactor-pty-ci-lane",
       "depends_on": [
         "refactor-required-run-manifest",
-        "refactor-dialogue-log-fixtures"
+        "refactor-cast-layer-fixture"
       ],
       "links": {
         "notes": [
@@ -716,9 +717,10 @@
       },
       "tags": [
         "testing",
-        "fixtures",
-        "cast-layer",
-        "dramatic-derivation",
+        "ci",
+        "pty",
+        "loopback",
+        "tutor-stub",
         "hermetic",
         "refactoring"
       ],
@@ -1719,6 +1721,43 @@
         "form-carrier"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "refactor-cast-layer-fixture",
+      "title": "Make cast-layer reader-quality scoring hermetic",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "A clean checkout executes the cast-layer reader-quality scorer against a tracked synthetic S0/S1/S2 matrix, preserves its conservative proof and branch-ordering assertions, removes the cast-layer-private-matrix skip, and passes focused plus full hermetic parity without production export writes.",
+      "branch": "codex/refactor-cast-layer-fixture",
+      "depends_on": [
+        "refactor-required-run-manifest",
+        "refactor-dialogue-log-fixtures"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/193"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "testing",
+        "fixtures",
+        "cast-layer",
+        "dramatic-derivation",
+        "hermetic",
+        "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "refactor-dialogue-log-fixtures",

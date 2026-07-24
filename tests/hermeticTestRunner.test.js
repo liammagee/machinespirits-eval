@@ -277,3 +277,19 @@ test('checked-in skip ledger matches the declared clean Linux CI skip shapes', (
     ['paper-superego-private-archive', 'model-cli-fingerprints', 'concurrent-pty-ci'],
   );
 });
+
+test('the concurrent PTY skip is discharged by a dedicated natural-teardown CI lane', () => {
+  const packageManifest = JSON.parse(fs.readFileSync(path.resolve('package.json'), 'utf8'));
+  assert.equal(
+    packageManifest.scripts['test:pty:ci'],
+    'TUTOR_STUB_RUN_CONCURRENT_PTY_TEST=1 node scripts/run-hermetic-tests.js --suite root --no-force-exit tests/tutorStubInteractiveModes.test.js',
+  );
+
+  const workflow = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
+  assert.match(workflow, /^ {2}pty-concurrency:\n {4}name: PTY \/ loopback concurrency$/mu);
+  assert.match(workflow, /^ {8}run: npm run test:pty:ci$/mu);
+
+  const interactiveSuite = fs.readFileSync(path.resolve('tests/tutorStubInteractiveModes.test.js'), 'utf8');
+  assert.match(interactiveSuite, /process\.env\.TUTOR_STUB_RUN_CONCURRENT_PTY_TEST === '1'/u);
+  assert.match(interactiveSuite, /Boolean\(process\.env\.CI\) && !RUN_CONCURRENT_PTY_IN_CI/u);
+});
