@@ -115,7 +115,17 @@ The rater packet is `exports/human-validation-pilot-sample.csv`. Columns you fil
 
 Do NOT modify the `item_id`, `feedback`, `ego_generate`, `ego_revision`, or `learner_context_snippet` columns.
 
-Save your filled file as `exports/human-validation-pilot-rater-A.csv` (or `-rater-B.csv`, `-rater-C.csv`, etc. — one per rater). The analysis script auto-discovers anything matching `exports/human-validation-pilot-rater-*.csv`.
+For the offline spreadsheet workflow, save a filled copy as
+`exports/human-validation-pilot-rater-A.csv` (or `-rater-B.csv`, `-rater-C.csv`,
+etc. — one per rater). The analysis script continues to auto-discover those
+legacy filenames. The browser and labelling CLI preserve the exact coder ID and
+write a reversible encoded filename so punctuation, spaces, and Unicode cannot
+cause two raters to overwrite one another; do not rename those generated files.
+
+Before opening an older spreadsheet artifact in the browser, run
+`npm run labelling-game:coder-artifacts -- --check`. Migrate it with an explicit
+identity mapping, or use `--apply --accept-inferred` only after confirming that
+each legacy filename suffix is the intended coder ID.
 
 ## What to do if you disagree with the superego
 

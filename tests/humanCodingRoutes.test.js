@@ -5,6 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
+import { coderArtifactToken } from '../services/labellingCoderIdentity.js';
+
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'human-coding-routes-'));
 const samplePath = path.join(tmpDir, 'human-validation-pilot-sample.csv');
 const outputDir = path.join(tmpDir, 'out');
@@ -163,6 +165,15 @@ describe('human coding dashboard routes', () => {
     assert.equal(taxonomy.status, 200);
     assert.equal(taxonomy.body.items[0].labelling_complete, false);
     assert.equal(taxonomy.body.items[0].labelling_summary, 'open');
+
+    const preservedIdentity = await request(
+      baseUrl,
+      'GET',
+      '/api/human-coding/datasets/superego-taxonomy/items?coder_id=Rater%20A%2Falpha',
+    );
+    assert.equal(preservedIdentity.status, 200);
+    assert.equal(preservedIdentity.body.coder_id, 'Rater A/alpha');
+    assert.match(preservedIdentity.body.rater_path, new RegExp(`${coderArtifactToken('Rater A/alpha')}\\.csv$`, 'u'));
   });
 
   it('loads and saves structured tutor-stub impasse labels', async () => {
@@ -189,7 +200,10 @@ describe('human coding dashboard routes', () => {
     assert.deepEqual(saved.body.item.impasse_types, ['comprehension', 'pacing_stall']);
     assert.equal(saved.body.progress.complete, 1);
 
-    const sidecarPath = path.join(impasseOutputDir, 'impasse-corpus-phase1-rater-impasse-rater.json');
+    const sidecarPath = path.join(
+      impasseOutputDir,
+      `impasse-corpus-phase1-rater-${coderArtifactToken('impasse-rater')}.json`,
+    );
     const sidecar = JSON.parse(fs.readFileSync(sidecarPath, 'utf8'));
     assert.equal(sidecar.schema, 'machinespirits.labelling-game.impasse-rater.v1');
     assert.equal(sidecar.items[0].tutor_addressed, 'partly');
@@ -236,6 +250,28 @@ describe('human coding dashboard routes', () => {
     assert.equal(unexplainedOther.body.code, 'impasse_other_notes_required');
   });
 
+  it('refuses an impasse sidecar whose embedded coder identity does not match its filename', async () => {
+    const sidecarPath = path.join(
+      impasseOutputDir,
+      `impasse-corpus-phase1-rater-${coderArtifactToken('impasse-rater')}.json`,
+    );
+    const original = fs.readFileSync(sidecarPath, 'utf8');
+    const tampered = JSON.parse(original);
+    tampered.coder_id = 'different-rater';
+    fs.writeFileSync(sidecarPath, `${JSON.stringify(tampered, null, 2)}\n`, 'utf8');
+    try {
+      const response = await request(
+        baseUrl,
+        'GET',
+        '/api/human-coding/datasets/tutor-stub-impasses/items?coder_id=impasse-rater',
+      );
+      assert.equal(response.status, 409);
+      assert.equal(response.body.code, 'coder_artifact_identity_mismatch');
+    } finally {
+      fs.writeFileSync(sidecarPath, original, 'utf8');
+    }
+  });
+
   it('loads a coder packet and writes analyzer-compatible rater CSV rows', async () => {
     const items = await request(baseUrl, 'GET', '/api/human-coding/items?coder_id=rater-A');
     assert.equal(items.status, 200);
@@ -255,7 +291,7 @@ describe('human coding dashboard routes', () => {
     assert.equal(saved.body.item.human_primary, 'MEMORY_FAILURE');
     assert.equal(saved.body.progress.complete, 1);
 
-    const csvPath = path.join(outputDir, 'human-validation-pilot-rater-rater-A.csv');
+    const csvPath = path.join(outputDir, `human-validation-pilot-rater-${coderArtifactToken('rater-A')}.csv`);
     assert.equal(fs.existsSync(csvPath), true);
     const csv = fs.readFileSync(csvPath, 'utf8');
     assert.match(csv, /^item_id,feedback,ego_generate/m);
@@ -294,7 +330,8 @@ describe('human coding dashboard routes', () => {
   });
 
   it('rejects invalid labels without overwriting the rater file', async () => {
-    const before = fs.readFileSync(path.join(outputDir, 'human-validation-pilot-rater-rater-A.csv'), 'utf8');
+    const raterPath = path.join(outputDir, `human-validation-pilot-rater-${coderArtifactToken('rater-A')}.csv`);
+    const before = fs.readFileSync(raterPath, 'utf8');
     const bad = await request(baseUrl, 'PUT', '/api/human-coding/items/item-b', {
       coder_id: 'rater-A',
       human_primary: 'NOT_A_LABEL',
@@ -302,7 +339,7 @@ describe('human coding dashboard routes', () => {
     assert.equal(bad.status, 422);
     assert.equal(bad.body.success, false);
     assert.equal(bad.body.code, 'invalid_category');
-    const after = fs.readFileSync(path.join(outputDir, 'human-validation-pilot-rater-rater-A.csv'), 'utf8');
+    const after = fs.readFileSync(raterPath, 'utf8');
     assert.equal(after, before);
   });
 });

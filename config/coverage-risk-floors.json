@@ -47,6 +47,8 @@
       "runner": "node",
       "sources": [
         "services/humanCodingStore.js",
+        "services/labellingCoderArtifactMigration.js",
+        "services/labellingCoderIdentity.js",
         "services/labellingGameStore.js",
         "services/labellingGameCli.js",
         "routes/humanCodingRoutes.js",
@@ -55,6 +57,7 @@
       "tests": [
         "services/__tests__/humanCodingStore.test.js",
         "tests/humanCodingRoutes.test.js",
+        "tests/labellingCoderArtifacts.test.js",
         "tests/labellingGameCli.test.js",
         "tests/labellingSaveQueue.test.js"
       ],

@@ -28,14 +28,18 @@ import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
 import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 
+import { coderIdFromArtifactToken } from '../services/labellingCoderIdentity.js';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+const exportsDir = process.env.HUMAN_CODING_OUTPUT_DIR || join(ROOT, 'exports');
 
 const args = process.argv.slice(2);
-const keyPath = join(ROOT, 'exports', 'human-validation-pilot-key.jsonl');
+const keyPath = process.env.HUMAN_CODING_KEY || join(ROOT, 'exports', 'human-validation-pilot-key.jsonl');
 const outPath = (() => {
   const i = args.indexOf('--out');
-  return i !== -1 ? args[i + 1] : join(ROOT, 'exports', 'human-validation-pilot-analysis.md');
+  if (i !== -1) return args[i + 1];
+  return process.env.HUMAN_CODING_ANALYSIS || join(exportsDir, 'human-validation-pilot-analysis.md');
 })();
 
 const raterArgs = [];
@@ -125,8 +129,10 @@ function normalizeLabel(s) {
 }
 
 function loadRater(raterArg) {
-  const [id, ...pathParts] = raterArg.split(':');
-  const path = pathParts.join(':');
+  const [id, path] =
+    typeof raterArg === 'string'
+      ? [raterArg.split(':')[0], raterArg.split(':').slice(1).join(':')]
+      : [raterArg.id, raterArg.path];
   if (!existsSync(path)) throw new Error(`Rater CSV not found: ${path}`);
   const { rows } = parseCsv(readFileSync(path, 'utf-8'));
   const map = {};
@@ -161,12 +167,13 @@ function loadSyntheticRater(arg) {
 }
 
 function autoDiscoverRaters() {
-  const dir = join(ROOT, 'exports');
+  const dir = exportsDir;
   if (!existsSync(dir)) return [];
   const files = readdirSync(dir).filter((f) => /^human-validation-pilot-rater-.+\.csv$/.test(f));
   return files.map((f) => {
-    const id = f.replace(/^human-validation-pilot-rater-/, '').replace(/\.csv$/, '');
-    return `${id}:${join(dir, f)}`;
+    const artifactKey = f.replace(/^human-validation-pilot-rater-/, '').replace(/\.csv$/, '');
+    const id = coderIdFromArtifactToken(artifactKey) || artifactKey;
+    return { id, path: join(dir, f) };
   });
 }
 

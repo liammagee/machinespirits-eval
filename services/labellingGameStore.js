@@ -18,8 +18,15 @@ import {
   getItems as getHumanCodingItems,
   getStatus as getHumanCodingStatus,
   HumanCodingError,
+  safeCoderId,
   saveCoding as saveHumanCoding,
 } from './humanCodingStore.js';
+import {
+  CODER_IDENTITY_SCHEMA,
+  coderArtifactToken,
+  coderIdFromArtifactToken,
+  legacyImpasseCoderKey,
+} from './labellingCoderIdentity.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -74,16 +81,6 @@ function repoRel(filePath) {
   return path.relative(ROOT, path.resolve(filePath));
 }
 
-function safeCoderId(value) {
-  const normalized = String(value || '')
-    .trim()
-    .replace(/[^a-zA-Z0-9._-]+/gu, '-');
-  if (!normalized) {
-    throw new HumanCodingError('coder_id is required', { status: 400, code: 'coder_id_required' });
-  }
-  return normalized.slice(0, 80);
-}
-
 function normalizeDatasetId(datasetId) {
   const value = String(datasetId || LABELLING_GAME_DATASETS.SUPEREGO_TAXONOMY)
     .trim()
@@ -116,7 +113,12 @@ function resolveImpasseWorkspace(env = process.env) {
 }
 
 function impasseRaterPath(workspace, coderId) {
-  return path.join(workspace.outputDir, `${IMPASSE_RATER_PREFIX}${safeCoderId(coderId)}.json`);
+  return path.join(workspace.outputDir, `${IMPASSE_RATER_PREFIX}${coderArtifactToken(safeCoderId(coderId))}.json`);
+}
+
+function legacyImpasseRaterPath(workspace, coderId) {
+  const legacyKey = legacyImpasseCoderKey(coderId);
+  return legacyKey ? path.join(workspace.outputDir, `${IMPASSE_RATER_PREFIX}${legacyKey}.json`) : null;
 }
 
 function readImpasseCorpus(workspace) {
@@ -149,8 +151,32 @@ function emptyImpasseCoding(itemId) {
 
 function readImpasseRater(workspace, coderId) {
   const filePath = impasseRaterPath(workspace, coderId);
+  const legacyPath = legacyImpasseRaterPath(workspace, coderId);
+  if (legacyPath && fs.existsSync(legacyPath)) {
+    throw new HumanCodingError('legacy coder artifact must be migrated before it can be edited', {
+      status: 409,
+      code: fs.existsSync(filePath) ? 'coder_artifact_collision' : 'coder_artifact_migration_required',
+      details: {
+        legacy_path: repoRel(legacyPath),
+        current_path: fs.existsSync(filePath) ? repoRel(filePath) : null,
+        migration_command: 'npm run labelling-game:coder-artifacts -- --check',
+      },
+    });
+  }
   if (!fs.existsSync(filePath)) return new Map();
   const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  const expectedCoderId = safeCoderId(coderId);
+  if (
+    safeCoderId(parsed.coder_id) !== expectedCoderId ||
+    parsed.coder_identity?.schema !== CODER_IDENTITY_SCHEMA ||
+    parsed.coder_identity?.artifact_token !== coderArtifactToken(expectedCoderId)
+  ) {
+    throw new HumanCodingError('coder artifact identity does not match its filename', {
+      status: 409,
+      code: 'coder_artifact_identity_mismatch',
+      details: { rater_path: repoRel(filePath) },
+    });
+  }
   return new Map((parsed.items || []).map((item) => [item.item_id, item]));
 }
 
@@ -284,10 +310,13 @@ function impasseRaterSummaries(workspace) {
     .map((name) => {
       try {
         const parsed = JSON.parse(fs.readFileSync(path.join(workspace.outputDir, name), 'utf8'));
+        const artifactKey = name.slice(IMPASSE_RATER_PREFIX.length, -'.json'.length);
+        const decodedCoderId = coderIdFromArtifactToken(artifactKey);
         const items = parsed.items || [];
         const complete = items.filter(impasseCodingComplete).length;
         return {
-          coder_id: parsed.coder_id || name.slice(IMPASSE_RATER_PREFIX.length, -'.json'.length),
+          coder_id: decodedCoderId || parsed.coder_id || artifactKey,
+          identity_format: decodedCoderId ? 'v1' : 'legacy',
           complete,
           total: items.length,
           path: repoRel(path.join(workspace.outputDir, name)),
@@ -310,7 +339,7 @@ function getImpasseStatus(env = process.env) {
     output_dir: repoRel(workspace.outputDir),
     raters: impasseRaterSummaries(workspace),
     comparison_available: false,
-    commands: {},
+    commands: { check_coder_artifacts: 'npm run labelling-game:coder-artifacts -- --check' },
   };
 }
 
@@ -377,6 +406,10 @@ function saveImpasseCoding({ coderId, itemId, coding, env = process.env } = {}) 
     schema: 'machinespirits.labelling-game.impasse-rater.v1',
     dataset_id: LABELLING_GAME_DATASETS.TUTOR_STUB_IMPASSES,
     coder_id: safeId,
+    coder_identity: {
+      schema: CODER_IDENTITY_SCHEMA,
+      artifact_token: coderArtifactToken(safeId),
+    },
     source: repoRel(workspace.sourcePath),
     updated_at: new Date().toISOString(),
     items: orderedItems,

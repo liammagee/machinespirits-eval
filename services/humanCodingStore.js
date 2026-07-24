@@ -14,6 +14,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  coderArtifactToken,
+  coderIdFromArtifactToken,
+  legacyTaxonomyCoderKey,
+  normalizeCoderId,
+} from './labellingCoderIdentity.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_EXPORTS_DIR = path.join(ROOT, 'exports');
 const DEFAULT_SAMPLE_NAME = 'human-validation-pilot-sample.csv';
@@ -260,14 +267,14 @@ function writeFileAtomic(filePath, text) {
 }
 
 export function safeCoderId(value) {
-  const coderId = String(value || '')
-    .trim()
-    .replace(/[^\w-]/gu, '');
-  if (!coderId) throw new HumanCodingError('coder_id is required', { status: 400, code: 'coder_id_required' });
-  if (coderId.length > 80) {
-    throw new HumanCodingError('coder_id is too long', { status: 400, code: 'coder_id_too_long' });
+  try {
+    return normalizeCoderId(value);
+  } catch (error) {
+    throw new HumanCodingError(error.message, {
+      status: 400,
+      code: error.code || 'invalid_coder_id',
+    });
   }
-  return coderId;
 }
 
 function normalizeLabel(value, { allowEmpty = true } = {}) {
@@ -355,11 +362,28 @@ export function readSample(workspace = resolveWorkspace()) {
 }
 
 function raterFilePath(workspace, coderId) {
-  return path.join(workspace.outputDir, `human-validation-pilot-rater-${safeCoderId(coderId)}.csv`);
+  return path.join(workspace.outputDir, `human-validation-pilot-rater-${coderArtifactToken(safeCoderId(coderId))}.csv`);
+}
+
+function legacyRaterFilePath(workspace, coderId) {
+  const legacyKey = legacyTaxonomyCoderKey(coderId);
+  return legacyKey ? path.join(workspace.outputDir, `human-validation-pilot-rater-${legacyKey}.csv`) : null;
 }
 
 function readCoderMap(workspace, coderId) {
   const filePath = raterFilePath(workspace, coderId);
+  const legacyPath = legacyRaterFilePath(workspace, coderId);
+  if (legacyPath && fs.existsSync(legacyPath)) {
+    throw new HumanCodingError('legacy coder artifact must be migrated before it can be edited', {
+      status: 409,
+      code: fs.existsSync(filePath) ? 'coder_artifact_collision' : 'coder_artifact_migration_required',
+      details: {
+        legacy_path: repoRel(legacyPath),
+        current_path: fs.existsSync(filePath) ? repoRel(filePath) : null,
+        migration_command: 'npm run labelling-game:coder-artifacts -- --check',
+      },
+    });
+  }
   if (!fs.existsSync(filePath)) return new Map();
   const { rows } = readCsvFile(filePath);
   return new Map(rows.filter((row) => row.item_id).map((row) => [row.item_id, row]));
@@ -472,11 +496,13 @@ export function listRaterSummaries(workspace = resolveWorkspace()) {
     .filter((entry) => /^human-validation-pilot-rater-.+\.csv$/u.test(entry))
     .sort()
     .map((entry) => {
-      const coderId = entry.replace(/^human-validation-pilot-rater-/u, '').replace(/\.csv$/u, '');
+      const artifactKey = entry.replace(/^human-validation-pilot-rater-/u, '').replace(/\.csv$/u, '');
+      const decodedCoderId = coderIdFromArtifactToken(artifactKey);
       const filePath = path.join(workspace.outputDir, entry);
       const { rows } = readCsvFile(filePath);
       return {
-        coder_id: coderId,
+        coder_id: decodedCoderId || artifactKey,
+        identity_format: decodedCoderId ? 'v1' : 'legacy',
         path: repoRel(filePath),
         updated_at: fs.statSync(filePath).mtime.toISOString(),
         ...progressForRows(rows),
@@ -509,6 +535,7 @@ export function getStatus(env = process.env) {
     commands: {
       build_sample: sampleBuildCommand(workspace),
       analyze: 'node scripts/human-validation-analyze.js',
+      check_coder_artifacts: 'npm run labelling-game:coder-artifacts -- --check',
     },
   };
 }
