@@ -151,6 +151,9 @@ test('manifest validation reports missing, extra, and unclassified test files', 
     assert.throws(() => validateTestManifest(manifest, projectRoot), /exactly one root, core, or fixture/u);
     manifest.fixtureExclusions.pop();
 
+    writeTest('prototypes/local-prototype/tests/ignored.test.js');
+    assert.deepEqual(validateTestManifest(manifest, projectRoot).excludedFiles, ['tests/fixtures/captured.test.js']);
+
     writeTest('tests/extra.test.js');
     assert.throws(() => validateTestManifest(manifest, projectRoot), /root test manifest drift; extra/u);
 

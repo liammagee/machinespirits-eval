@@ -14,6 +14,7 @@ const TEST_SCAN_EXCLUDED_DIRECTORIES = new Set([
   'exports',
   'logs',
   'node_modules',
+  'prototypes',
   'vendor',
 ]);
 
