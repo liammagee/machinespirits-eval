@@ -1,16 +1,16 @@
 ---
 id: tutor-stub-final-audit-reliability-gate
 title: "Stabilize the shared tutor final-audit fallback path"
-status: active
+status: done
 type: infra
 priority: P1
 owner: codex
 source: review
 created: 2026-07-24
 updated: 2026-07-24
-verification: "The four archived weights×interface smoke failure attempts reproduce without model calls and are classified; any repair changes common downstream construction without weakening final audits or treatment seams; focused/full tests pass; and the same excluded four-cell smoke rerun from a fresh root seals 4/4 with no attrition, at most one recovered retry, 11/11 provenance, zero mini resamples, and unchanged treatment commands."
+verification: "The four archived weights×interface smoke failure attempts reproduce without model calls and are classified; any repair changes common downstream construction without weakening final audits or treatment seams; focused gates pass and the full suite discloses no repair-related failure, with unrelated pre-existing failures recorded under Amendment 1; and the same excluded four-cell smoke rerun from a fresh root seals 4/4 with no attrition, at most one recovered retry, 11/11 provenance, zero mini resamples, and unchanged treatment commands."
 branch: codex/program2-committee-floor-ablation
-claim_status: planned
+claim_status: methods
 links:
   notes:
     - notes/program-2/2026-07-24-weights-interface-paid-smoke-hold.md
@@ -20,6 +20,8 @@ links:
     - exports/program2-weights-interface-factorial-paid-smoke/launch-state.json
     - exports/program2-weights-interface-factorial-paid-smoke/provenance-audit.json
     - exports/program2-final-audit-reliability-gate/replay-classification.json
+    - exports/program2-weights-interface-factorial-paid-smoke-reliability-a1/launch-state.json
+    - exports/program2-weights-interface-factorial-paid-smoke-reliability-a1/provenance-audit.json
   items:
     - program-2-weights-interface-factorial
 tags:
@@ -63,3 +65,11 @@ Log:
   restricted-run loopback failures; none is concealed or changed in this
   preregistered slice. The clean-SHA treatment-command comparison and fresh
   excluded four-cell paid smoke remain pending.
+- 2026-07-24 — gate passed at clean SHA
+  `6faca5440eb911fe9f2d24bbd5e45c123a7814ad`: the fresh excluded smoke sealed
+  4/4 with zero attrition and exactly one recovered retry; provenance passed
+  11/11; mini resamples were zero; and normalized treatment commands matched
+  the archived smoke exactly. One `trained_v2` turn-10 final-audit failure is
+  retained as residual reliability evidence before its unchanged retry sealed.
+  The gate is complete, but it does not launch the 48-dialogue cohort or paid
+  semantic judging.

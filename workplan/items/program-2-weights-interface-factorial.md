@@ -1,7 +1,7 @@
 ---
 id: program-2-weights-interface-factorial
 title: "Separate trained skill from interface transmission"
-status: blocked
+status: triaged
 type: experiment
 priority: P1
 owner: codex
@@ -10,7 +10,6 @@ created: 2026-07-24
 updated: 2026-07-24
 verification: "A preregistered 2×2 trained/untuned × v1/v2 cohort passes provenance and cue-blind-enforcement gates, seals with the frozen missingness thresholds, and reports blinded first-pass semantic skill, transmission, burden, attrition, and final operational outcomes without historical pooling."
 branch: codex/program2-committee-floor-ablation
-blocked_by: "The excluded four-cell paid smoke sealed 3/4 with one finalized attrition and four counted common downstream final-audit failures. Complete tutor-stub-final-audit-reliability-gate and pass a fresh 4/4 smoke before any cohort launch."
 claim_status: planned
 links:
   paper: §6.21
@@ -59,3 +58,9 @@ Log:
   finalized attrition. Post-smoke provenance passed 11/11, 64/64 committee
   moments carried cue-blind ledgers, and mini resamples were zero. Cohort and
   semantic judging are blocked pending [[tutor-stub-final-audit-reliability-gate]].
+- 2026-07-24 — the separate common final-audit reliability gate passed at
+  `6faca5440eb911fe9f2d24bbd5e45c123a7814ad`: fresh smoke 4/4 sealed, zero
+  attrition, exactly one recovered retry, 11/11 provenance, zero mini
+  resamples, and no normalized treatment-command drift. The card returns to
+  triage for a separate explicit 48-dialogue launch decision; no cohort or
+  semantic judging was started by the gate.

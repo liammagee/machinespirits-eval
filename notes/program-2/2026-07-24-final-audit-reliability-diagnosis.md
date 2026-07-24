@@ -62,3 +62,39 @@ isolated two unrelated pre-existing failures:
 Neither file nor the underlying settings/history seams is changed by this
 repair. They are recorded rather than folded into the preregistered reliability
 slice.
+
+## Fresh excluded-smoke result
+
+The clean-SHA confirmation smoke ran from
+`6faca5440eb911fe9f2d24bbd5e45c123a7814ad` in the fresh output root
+`exports/program2-weights-interface-factorial-paid-smoke-reliability-a1`.
+After normalizing only output-root and implementation-SHA provenance, all four
+treatment commands, their ordering, seeds, models, fixed flags, and treatment
+assignments exactly match the archived smoke.
+
+The reliability decision rule passes:
+
+| Gate | Result |
+|---|---|
+| sealed jobs | 4/4 |
+| finalized attrition | 0 |
+| recovered retries | 1 |
+| provenance checks | 11/11 |
+| mini resamples | 0 |
+| normalized treatment-command drift | none |
+
+The one recovered retry was `trained_v2` attempt 1 at turn 10. Its minimal
+learner overclaim (`I enter: Edony's hand struck ...`) contained no independent
+safe clause and exhausted the fallback with `private_final_conclusion`,
+`generic_learner_uptake`, and `learner_uptake_not_realized`. The unchanged
+logical attempt 2 sealed with zero final-check failures. This is retained as
+residual reliability evidence; it is not erased by the aggregate pass.
+
+The `trained_v1` job sealed normally at its frozen 40-turn horizon with one
+evidence step still missing and zero final-check failures. This reliability
+gate concerns operational sealing and common-audit integrity, not semantic
+success, so no semantic outcome is promoted from the smoke.
+
+Under Amendment 1, this pass removes the reliability blocker and authorizes a
+separate explicit decision about the 48-dialogue cohort. It does not itself
+authorize or launch that cohort or semantic judging.
