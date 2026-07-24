@@ -105,3 +105,12 @@ Log:
   pending. This is launcher-only provenance: job commands, runtime treatment,
   retry limit, estimands, and reading rules are unchanged. See preregistration
   §12.
+- 2026-07-24 — after 19 terminal jobs (14 sealed, five finalized attritions),
+  the command-host session disappeared twice during job 20. One complete
+  deterministic-audit failure was trace-visible but not launch-state-visible,
+  so another blind resume would have reset its retry allowance. Amendment 6
+  reconciles only terminal `model_call_error` traces, checkpoints every
+  retryable failure before the retry, persists the transport-failure counter,
+  and resumes job 20 at its remaining attempt 2. The two interrupted traces
+  stay non-terminal and excluded; treatment and estimands remain frozen. See
+  preregistration §13.

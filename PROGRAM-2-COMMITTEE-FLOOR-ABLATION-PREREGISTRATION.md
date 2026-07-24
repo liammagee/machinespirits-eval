@@ -407,3 +407,44 @@ from the beginning, and the remaining jobs continue in the frozen order. The
 post-repair commit SHA therefore marks launcher provenance only, not a change
 of experimental treatment, and the Amendment 4 cohort remains the sole
 inferential cohort.
+
+## 13. Amendment 6 — crash-consistent retry checkpointing (2026-07-24)
+
+After Amendment 5, the cohort reached 19 terminal jobs: 14 sealed dialogues and
+five finalized two-attempt attritions. The command-host session then disappeared
+during job 20, leaving trace `2026-07-24T01-31-20-878Z.jsonl` incomplete at turn
+7 with neither `run_end` nor `model_call_error`. The SHA and terminal checkpoint
+were verified and the repaired launcher was restarted. Job 20's next trace,
+`2026-07-24T01-46-46-229Z.jsonl`, ended at turn 23 with the first counted
+deterministic-audit failure. The launcher began the permitted retry, but the
+command-host session disappeared again during
+`2026-07-24T01-58-17-893Z.jsonl`, leaving it incomplete at turn 12.
+
+The launcher previously wrote a job outcome only after both attempts had
+finished. Consequently, the completed first failure was present in the trace
+but absent from `launch-state.json`; another blind restart would have reset job
+20 to attempt 1 and granted extra counted failures. No such restart occurred.
+
+Before another provider call, retry accounting becomes crash-consistent:
+
+- every retryable terminal failure is written to launch state immediately,
+  before the next attempt begins;
+- a pending job resumes at the next attempt number carried by that checkpoint;
+- startup reconciles a missing checkpoint only from trace files whose last
+  complete event is `model_call_error`; incomplete traces consume no attempt,
+  and `run_end` retains precedence;
+- two reconciled terminal failures finalize preregistered attrition rather than
+  opening another attempt; and
+- the consecutive provider-transport counter is checkpointed with the failure
+  ledger so a process restart cannot reset the frozen three-failure abort gate.
+
+For job 20, reconciliation restores exactly the turn-23 deterministic-audit
+failure as attempt 1. The two infrastructure-interrupted traces remain
+non-terminal and excluded; job 20 resumes only its remaining attempt 2.
+
+This is a launcher-state durability amendment only. It changes no tutor-stub
+source, job command, seed, order, model, prompt, learner profile, committee
+artifact, fallback policy, retry limit, stopping rule, audit, estimator, or
+reading grammar. The 19 terminal Amendment 4 outcomes remain fixed, and the
+Amendment 4 cohort remains the sole inferential cohort under a newly pinned
+launcher-provenance SHA.

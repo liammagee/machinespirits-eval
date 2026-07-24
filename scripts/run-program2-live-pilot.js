@@ -7,9 +7,10 @@
 // Mirrors scripts/run-step4-point-of-action-gate.js: a zero-model dry run
 // writes the sha-pinned plan artifact; the paid launch requires
 // --launch-approved --expected-sha <clean HEAD>. Additions: sealed-trace
-// resume (jobs whose trace already contains run_end are skipped), a local
-// ollama preflight for the committee mini, one same-seed retry per failed
-// job, and an abort after three consecutive provider-transport failures
+// resume (sealed jobs and finalized attrition are skipped; terminal failures
+// are crash-checkpointed before retry), a local ollama preflight for the
+// committee mini, one same-seed retry per failed job, and an abort after three
+// consecutive provider-transport failures
 // (prereg §3). Deterministic final-audit exits consume the job retry but are
 // recorded as audit attrition rather than being mislabeled as transport.
 
@@ -694,6 +695,30 @@ function latestJobErrorEvent(outputRoot, job, { sinceMs = 0 } = {}) {
   return null;
 }
 
+function terminalJobErrorEvents(outputRoot, job) {
+  const dir = path.join(outputRoot, 'traces', job.id);
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((file) => file.endsWith('.jsonl'))
+    .sort()
+    .flatMap((file) => {
+      const lines = fs.readFileSync(path.join(dir, file), 'utf8').trim().split('\n');
+      for (let index = lines.length - 1; index >= 0; index -= 1) {
+        try {
+          const event = JSON.parse(lines[index]);
+          return event?.type === 'model_call_error'
+            ? [{ ...event, traceFile: path.join(dir, file) }]
+            : [];
+        } catch {
+          // Ignore a partially written tail and classify from the last complete
+          // event. Only a terminal model_call_error consumes an attempt.
+        }
+      }
+      return [];
+    });
+}
+
 export function classifyProgram2LaunchFailure({ error = null, traceEvent = null } = {}) {
   const childError = String(error?.message || error || '').trim();
   const traceError = String(traceEvent?.error || '').trim();
@@ -730,6 +755,50 @@ export function classifyProgram2LaunchFailure({ error = null, traceEvent = null 
     turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
     traceFile: traceEvent?.traceFile || null,
   };
+}
+
+export function reconcileProgram2RetryCheckpoint({ outputRoot, job, priorOutcome = null } = {}) {
+  if (jobSealed(outputRoot, job)) return priorOutcome;
+  const priorAttempts = Number.isInteger(priorOutcome?.attempts) ? priorOutcome.attempts : 0;
+  const observed = terminalJobErrorEvents(outputRoot, job);
+  if (observed.length <= priorAttempts) return priorOutcome;
+  const failures = observed.slice(0, 2).map((traceEvent, index) => {
+    const failure = classifyProgram2LaunchFailure({
+      error: new Error('recovered terminal trace failure'),
+      traceEvent,
+    });
+    return {
+      attempt: index + 1,
+      kind: failure.kind,
+      detail: failure.detail.slice(0, 500),
+      turn: failure.turn,
+      traceFile: failure.traceFile ? path.relative(ROOT, failure.traceFile) : null,
+    };
+  });
+  const latest = failures.at(-1);
+  return {
+    status: 'failed',
+    attempts: failures.length,
+    failureKind: latest.kind,
+    error: latest.detail.slice(0, 300),
+    failures,
+    attrition: failures.length >= 2,
+    checkpointSource: 'terminal_trace_reconciliation',
+  };
+}
+
+export function program2ResumeAttemptState(priorOutcome = null) {
+  if (
+    priorOutcome?.status === 'failed' &&
+    priorOutcome?.attrition !== true &&
+    priorOutcome?.attempts === 1
+  ) {
+    return {
+      nextAttempt: 2,
+      failures: Array.isArray(priorOutcome.failures) ? [...priorOutcome.failures] : [],
+    };
+  }
+  return { nextAttempt: 1, failures: [] };
 }
 
 async function main() {
@@ -818,14 +887,32 @@ async function main() {
     ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
     : { schema: 'machinespirits.tutor-stub.program2-phase5-launch-state.v1', jobs: {} };
   const saveState = () => fs.writeFileSync(statePath, `${JSON.stringify(launchState, null, 2)}\n`);
-  let consecutiveTransportFailures = 0;
+  let consecutiveTransportFailures = Number.isInteger(launchState.consecutiveTransportFailures)
+    ? launchState.consecutiveTransportFailures
+    : 0;
   let executed = 0;
   for (const job of plan.jobs) {
     if (executed >= limit) break;
+    const priorOutcome = launchState.jobs[job.id] || null;
+    const reconciledOutcome = reconcileProgram2RetryCheckpoint({ outputRoot, job, priorOutcome });
+    if (reconciledOutcome && JSON.stringify(reconciledOutcome) !== JSON.stringify(priorOutcome)) {
+      launchState.jobs[job.id] = reconciledOutcome;
+      const priorAttempts = Number.isInteger(priorOutcome?.attempts) ? priorOutcome.attempts : 0;
+      for (const failure of reconciledOutcome.failures.slice(priorAttempts)) {
+        consecutiveTransportFailures =
+          failure.kind === 'provider_transport' ? consecutiveTransportFailures + 1 : 0;
+      }
+      launchState.consecutiveTransportFailures = consecutiveTransportFailures;
+      saveState();
+      console.log(
+        `[phase5] ${job.id} recovered ${reconciledOutcome.attempts} terminal attempt checkpoint(s) from traces`,
+      );
+    }
+    const effectivePriorOutcome = launchState.jobs[job.id] || null;
     const resumeDisposition = classifyProgram2ResumeDisposition({
       outputRoot,
       job,
-      priorOutcome: launchState.jobs[job.id] || null,
+      priorOutcome: effectivePriorOutcome,
     });
     if (resumeDisposition === 'sealed') {
       launchState.jobs[job.id] = { status: 'sealed', skipped: true };
@@ -840,14 +927,16 @@ async function main() {
       continue;
     }
     executed += 1;
-    let outcome = null;
-    const failures = [];
-    for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const resumeAttemptState = program2ResumeAttemptState(effectivePriorOutcome);
+    let outcome = effectivePriorOutcome;
+    const failures = resumeAttemptState.failures;
+    for (let attempt = resumeAttemptState.nextAttempt; attempt <= 2; attempt += 1) {
       const attemptStartedAt = Date.now();
       try {
         await runCommand(job.command, job.ordinal, plan.jobs.length);
         outcome = { status: 'sealed', attempts: attempt, failures };
         consecutiveTransportFailures = 0;
+        launchState.consecutiveTransportFailures = 0;
         break;
       } catch (error) {
         const failure = classifyProgram2LaunchFailure({
@@ -870,7 +959,11 @@ async function main() {
           failureKind: failure.kind,
           error: failure.detail.slice(0, 300),
           failures,
+          attrition: attempt >= 2,
         };
+        launchState.jobs[job.id] = outcome;
+        launchState.consecutiveTransportFailures = consecutiveTransportFailures;
+        saveState();
         console.error(
           `[phase5] ${job.id} attempt ${attempt} failed (${failure.kind}): ${outcome.error}`,
         );

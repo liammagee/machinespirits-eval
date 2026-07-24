@@ -13,6 +13,8 @@ import {
   classifyProgram2ResumeDisposition,
   COMMITTEE_FLOOR_ABLATION_SPEC,
   PHASE5_LIVE_PILOT_SPEC,
+  program2ResumeAttemptState,
+  reconcileProgram2RetryCheckpoint,
   validateCommitteeFloorAblationPlan,
 } from '../scripts/run-program2-live-pilot.js';
 import {
@@ -289,7 +291,7 @@ test('launcher resume skips finalized attrition without treating incomplete trac
   try {
     fs.writeFileSync(
       path.join(traceDir, 'incomplete.jsonl'),
-      `${JSON.stringify({ type: 'model_call_error', turn: 3, error: 'fixture failure' })}\n`,
+      `${JSON.stringify({ type: 'turn_complete', turn: 3 })}\n`,
     );
     assert.equal(
       classifyProgram2ResumeDisposition({
@@ -324,6 +326,63 @@ test('launcher resume skips finalized attrition without treating incomplete trac
         priorOutcome: { status: 'failed', attempts: 2, attrition: true },
       }),
       'sealed',
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('launcher reconciles terminal failures and resumes only the remaining attempt', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'program2-floor-retry-checkpoint-'));
+  const job = { id: 'fixture-job' };
+  const traceDir = path.join(root, 'traces', job.id);
+  fs.mkdirSync(traceDir, { recursive: true });
+  try {
+    fs.writeFileSync(
+      path.join(traceDir, '2026-07-24T01-00-00-000Z.jsonl'),
+      `${JSON.stringify({ type: 'tutor_first_draft_contract', turn: 7 })}\n`,
+    );
+    assert.equal(reconcileProgram2RetryCheckpoint({ outputRoot: root, job }), null);
+
+    fs.writeFileSync(
+      path.join(traceDir, '2026-07-24T01-10-00-000Z.jsonl'),
+      `${JSON.stringify({
+        type: 'model_call_error',
+        turn: 23,
+        error: 'Tutor deterministic fallback failed final audit: response_configuration:axis_not_visible',
+      })}\n`,
+    );
+    const oneFailure = reconcileProgram2RetryCheckpoint({ outputRoot: root, job });
+    assert.equal(oneFailure.status, 'failed');
+    assert.equal(oneFailure.attempts, 1);
+    assert.equal(oneFailure.attrition, false);
+    assert.equal(oneFailure.checkpointSource, 'terminal_trace_reconciliation');
+    assert.deepEqual(program2ResumeAttemptState(oneFailure), {
+      nextAttempt: 2,
+      failures: oneFailure.failures,
+    });
+
+    fs.writeFileSync(
+      path.join(traceDir, '2026-07-24T01-20-00-000Z.jsonl'),
+      `${JSON.stringify({ type: 'model_call_error', turn: 9, error: 'provider transport: HTTP 503' })}\n`,
+    );
+    const twoFailures = reconcileProgram2RetryCheckpoint({
+      outputRoot: root,
+      job,
+      priorOutcome: oneFailure,
+    });
+    assert.equal(twoFailures.attempts, 2);
+    assert.equal(twoFailures.attrition, true);
+    assert.deepEqual(
+      twoFailures.failures.map((failure) => [failure.attempt, failure.kind]),
+      [
+        [1, 'deterministic_final_audit'],
+        [2, 'provider_transport'],
+      ],
+    );
+    assert.equal(
+      classifyProgram2ResumeDisposition({ outputRoot: root, job, priorOutcome: twoFailures }),
+      'finalized_attrition',
     );
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
