@@ -1,0 +1,51 @@
+schema: machinespirits.tutor-stub.latency-benchmark.v1
+id: tutor-stub-object-meta-mixed-v1
+draws: 1
+
+defaults:
+  world: world_016_ai_syllabus_af1
+  tutor: dramatic-detective
+  tutor_model: codex.gpt-5.6-terra
+  analysis_model: codex.gpt-5.6-sol
+  cli_effort: medium
+  prompt_profile: baseline
+  prefetch_policy: always
+  dag_mode: defeasible_human_scaffold
+  register_policy: continuous_dynamical_system
+  history_turns: 4
+  max_tokens: 4096
+
+cases:
+  - id: object
+    expected_plane: object
+    learner_text: >-
+      I think we should begin by asking students which questions matter most,
+      then use that evidence to choose the first baseline.
+
+  - id: instructional-meta
+    expected_plane: instructional_meta
+    learner_text: >-
+      Can you explain “first implementation baseline” in simpler words? I am
+      not following that phrase.
+
+  - id: mixed
+    expected_plane: mixed
+    learner_text: >-
+      Please explain “baseline” in plain English. Separately, I think student
+      interviews should come before we choose one.
+
+variants:
+  - id: baseline-medium-sol
+    factor: baseline
+
+  - id: effort-low-sol
+    factor: effort
+    cli_effort: low
+
+  - id: routing-medium-terra
+    factor: routing
+    analysis_model: codex.gpt-5.6-terra
+
+  - id: prompt-compact-v1
+    factor: prompt
+    prompt_profile: compact_v1

@@ -34,6 +34,16 @@ export function mixedLearnerSuggestionMove(answer, declaredMove = '') {
   return 'respond';
 }
 
+export function mixedLearnerTutorPrefetchDecision({ policy = 'always', typedActionsEnabled = false } = {}) {
+  if (String(policy || 'always') === 'analysis_only') {
+    return { enabled: false, reason: 'analysis_only_policy' };
+  }
+  if (typedActionsEnabled) {
+    return { enabled: false, reason: 'typed_action_must_precede_tutor_output_generation' };
+  }
+  return { enabled: true, reason: null };
+}
+
 export function consumeMixedLearnerReadyAnnouncement(mixedLearner) {
   if (!mixedLearner) return false;
   const profileKey = oneLine(mixedLearner.profileId || mixedLearner.profile || 'custom').toLowerCase();

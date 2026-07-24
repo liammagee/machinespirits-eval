@@ -27,6 +27,23 @@ export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES = Object.freeze({
   INTERACTIVE: 'interactive',
 });
 
+export const TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES = Object.freeze({
+  BASELINE: 'baseline',
+  COMPACT_V1: 'compact_v1',
+});
+
+export function normalizeTutorStubPublicLearnerAnalysisPromptProfile(value = 'baseline') {
+  const profile = String(value || 'baseline')
+    .trim()
+    .toLowerCase();
+  if (!Object.values(TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES).includes(profile)) {
+    throw new TutorStubPublicLearnerAnalysisError(`unknown public learner analysis prompt profile: ${value}`, {
+      code: 'invalid_prompt_profile',
+    });
+  }
+  return profile;
+}
+
 export const TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA = 'machinespirits.tutor-stub.learner-dag-preflight.v1';
 
 export const TUTOR_STUB_PUBLIC_STAGED_EVIDENCE_SCHEMA = Object.freeze({
@@ -1077,6 +1094,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   priorPublicLearnerState = null,
   includeBenchmarkTransitionEvent = false,
   strictProviderEnvelope = false,
+  promptProfile = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
 } = {}) {
   if (!world) throw new TutorStubPublicLearnerAnalysisError('public learner analysis requires a world');
   if (!Number.isInteger(Number(tutorTurn)) || Number(tutorTurn) < 1) {
@@ -1084,6 +1102,8 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   }
   const staged = resolvedPublicStagedEvidence(world, Number(tutorTurn), publicStagedEvidence);
   const policy = String(registerPolicy || '').trim();
+  const normalizedPromptProfile = normalizeTutorStubPublicLearnerAnalysisPromptProfile(promptProfile);
+  const compactPrompt = normalizedPromptProfile === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.COMPACT_V1;
   const includeRegisterSelection = Boolean(
     registerEnabled && !LOCAL_REGISTER_POLICIES.has(policy) && Array.isArray(registerPalette) && registerPalette.length,
   );
@@ -1122,10 +1142,10 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     '',
     `Topic: ${topic}`,
     classifierWorldContext({ world, learnerDagEnabled }),
-    '',
-    '# Public question',
-    '',
-    world.question,
+    compactPrompt ? null : '',
+    compactPrompt ? null : '# Public question',
+    compactPrompt ? null : '',
+    compactPrompt ? null : world.question,
     '',
     '# Public rules',
     '',
@@ -1142,7 +1162,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     dagPreflight
       ? 'The deterministic postprocessor will independently reject any unstaged premise or underivable conclusion after this call.'
       : null,
-    dagPreflight ? JSON.stringify(dagPreflight, null, 2) : null,
+    dagPreflight ? JSON.stringify(dagPreflight, null, compactPrompt ? 0 : 2) : null,
     dagPreflight ? '' : null,
     '# Staged public evidence available at or before this turn',
     '',
@@ -1218,7 +1238,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
             asserted_answers: [],
           },
           null,
-          2,
+          compactPrompt ? 0 : 2,
         )
       : null,
     includeBenchmarkTransitionEvent ? '' : null,
@@ -1293,7 +1313,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     '',
     '# JSON schema',
     '',
-    JSON.stringify(schema, null, 2),
+    JSON.stringify(schema, null, compactPrompt ? 0 : 2),
   ]
     .filter((line) => line !== null && line !== undefined)
     .join('\n');
@@ -1837,6 +1857,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
   role = 'tutor_stub_public_learner_analysis',
   maxTokens = 2500,
   prompt = null,
+  promptProfile = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
   modelCallOptions = {},
 } = {}) {
   const strict = parseMode === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK;
@@ -1908,6 +1929,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
         priorPublicLearnerState,
         includeBenchmarkTransitionEvent,
         strictProviderEnvelope: strict,
+        promptProfile,
       });
   } catch (error) {
     throw attachCallFailure(error, {
