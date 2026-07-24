@@ -12,6 +12,8 @@ branch: codex/workplan-source-only-prs
 verification: "Feature PR CI rejects generated-view diffs while `wp:source-check` and workplan tests pass, and the serialized main renderer regenerates and strictly validates both views."
 links:
   notes: workplan/playbook/git-and-workflow.md
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/207
 tags:
   - workplan
   - ci
