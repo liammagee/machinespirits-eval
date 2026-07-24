@@ -1,7 +1,8 @@
 /**
  * Dialogue Structural Integrity & Multi-Agent Logic Tests
  *
- * Validates trace-level invariants against real dialogue log files:
+ * Validates trace-level invariants against tracked synthetic fixtures and,
+ * outside the hermetic runner, a bounded sample of real dialogue log files:
  *   1. Learner-request → tutor-response pairing
  *   2. Multi-agent tutor deliberation sequence
  *   3. Multi-agent learner deliberation sequence
@@ -14,22 +15,55 @@ import fs from 'fs';
 import path from 'path';
 import { resolveConfigModels } from '../services/evaluationRunner.js';
 import { loadTutorAgents } from '../services/evalConfigLoader.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 // ── Log discovery ──────────────────────────────────────────────────────
 
-const LOGS_DIR = path.resolve('logs/tutor-dialogues');
+const PROJECT_ROOT = path.resolve('.');
+const FIXTURE_LOGS_DIR = path.join(PROJECT_ROOT, 'tests', 'fixtures', 'dialogue-structure');
+const HERMETIC_LOGS_DIR = resolveTutorDialoguesDir(PROJECT_ROOT);
+const IS_HERMETIC = Boolean(process.env.MACHINESPIRITS_HERMETIC_TEST_ROOT);
+const FIXTURE_PREFIX = 'dialogue-structure-fixture-';
 
-function discoverLogs() {
-  if (!fs.existsSync(LOGS_DIR)) return [];
-  return fs
-    .readdirSync(LOGS_DIR)
-    .filter((f) => f.endsWith('.json') && !f.includes('e2e-test') && !f.includes('debug') && !f.includes('demo'))
+function listLogFiles(directory, { fixturesOnly = false, limit = null, label = '' } = {}) {
+  if (!fs.existsSync(directory)) return [];
+  const files = fs
+    .readdirSync(directory)
+    .filter(
+      (file) =>
+        file.endsWith('.json') &&
+        (!fixturesOnly || file.startsWith(FIXTURE_PREFIX)) &&
+        !file.includes('e2e-test') &&
+        !file.includes('debug') &&
+        !file.includes('demo'),
+    )
     .sort()
-    .slice(-30);
+    .map((file) => ({ file: `${label}${file}`, path: path.join(directory, file) }));
+  return limit == null ? files : files.slice(-limit);
 }
 
-function loadLog(filename) {
-  return JSON.parse(fs.readFileSync(path.join(LOGS_DIR, filename), 'utf-8'));
+function seedHermeticFixtures() {
+  assert.ok(process.env.EVAL_LOGS_DIR, 'hermetic dialogue fixtures require EVAL_LOGS_DIR');
+  fs.mkdirSync(HERMETIC_LOGS_DIR, { recursive: true });
+  for (const fixture of listLogFiles(FIXTURE_LOGS_DIR, { fixturesOnly: true })) {
+    fs.copyFileSync(fixture.path, path.join(HERMETIC_LOGS_DIR, path.basename(fixture.path)));
+  }
+}
+
+function discoverLogs() {
+  if (IS_HERMETIC) {
+    seedHermeticFixtures();
+    return listLogFiles(HERMETIC_LOGS_DIR, { fixturesOnly: true });
+  }
+
+  const fixtures = listLogFiles(FIXTURE_LOGS_DIR, { fixturesOnly: true });
+  const localLogsDir = resolveTutorDialoguesDir(PROJECT_ROOT);
+  if (localLogsDir === FIXTURE_LOGS_DIR) return fixtures;
+  return [...fixtures, ...listLogFiles(localLogsDir, { limit: 30, label: 'local:' })];
+}
+
+function loadLog(logFile) {
+  return JSON.parse(fs.readFileSync(logFile.path, 'utf-8'));
 }
 
 // ── Trace helpers ──────────────────────────────────────────────────────
@@ -128,16 +162,45 @@ function isDesubDiagnosticLog(d) {
 }
 
 // Pre-classify logs
-for (const f of logFiles) {
+for (const logFile of logFiles) {
   try {
-    const d = loadLog(f);
+    const d = loadLog(logFile);
     if (isDesubDiagnosticLog(d)) continue;
-    if (d.isMultiTurn && d.totalTurns > 1) multiTurnLogs.push({ file: f, data: d });
-    else singleTurnLogs.push({ file: f, data: d });
+    if (d.isMultiTurn && d.totalTurns > 1) multiTurnLogs.push({ file: logFile.file, data: d });
+    else singleTurnLogs.push({ file: logFile.file, data: d });
   } catch {
     /* skip unparseable */
   }
 }
+
+describe('Dialogue log fixture contract', () => {
+  it('loads the three tracked architecture variants', () => {
+    const fixtureLogs = [...multiTurnLogs, ...singleTurnLogs].filter(({ file }) => file.startsWith(FIXTURE_PREFIX));
+    assert.strictEqual(fixtureLogs.length, 3, 'expected exactly three tracked dialogue-structure fixtures');
+    assert.ok(
+      fixtureLogs.every(({ data }) => data.dialogueTrace?.length > 0),
+      'fixture traces must be non-empty',
+    );
+    assert.ok(
+      fixtureLogs.every(({ data }) => data.isMultiTurn && data.totalTurns > 1),
+      'fixtures must be multi-turn',
+    );
+    const fixtureTraces = fixtureLogs.map(({ data }) => data.dialogueTrace);
+    assert.ok(fixtureTraces.some((trace) => trace.some((entry) => entry.agent === 'superego')));
+    assert.ok(fixtureTraces.some((trace) => trace.some((entry) => entry.agent === 'learner_ego_initial')));
+    assert.ok(fixtureTraces.some((trace) => trace.some((entry) => entry.agent === 'learner_unified')));
+    assert.ok(
+      fixtureTraces.some((trace) => trace.some((entry) => entry.agent === 'learner' && entry.action === 'turn_action')),
+    );
+  });
+
+  it('uses the isolated EVAL_LOGS_DIR in the hermetic runner', () => {
+    if (!IS_HERMETIC) return;
+    assert.ok(process.env.EVAL_LOGS_DIR, 'hermetic runner should define EVAL_LOGS_DIR');
+    assert.strictEqual(HERMETIC_LOGS_DIR, path.join(path.resolve(process.env.EVAL_LOGS_DIR), 'tutor-dialogues'));
+    assert.ok(logFiles.every((logFile) => logFile.path.startsWith(HERMETIC_LOGS_DIR)));
+  });
+});
 
 // ═══════════════════════════════════════════════════════════════════════
 // Group 1: Learner-Request → Tutor-Response Pairing
@@ -145,56 +208,61 @@ for (const f of logFiles) {
 
 describe(
   'Group 1: learner-request → tutor-response pairing',
-  { skip: multiTurnLogs.length === 0 && 'no multi-turn logs on disk' },
+  {
+    // Keep local-log sampling serial with the required tracked fixtures.
+    concurrency: false,
+  },
   () => {
     for (const { file, data } of multiTurnLogs) {
       describe(`[${file}]`, () => {
         // Trace-structure invariants only apply to logs that carry an agent-level
         // dialogueTrace (ego-superego / messages-mode runs). Single-prompt-mode
-        // multi-turn logs capture their dialogue in conversationHistory / turnResults
-        // and leave dialogueTrace empty, so the three trace tests are skipped for them
-        // (the conversationHistory tests below still run on every multi-turn log).
-        const traceSkip = (data.dialogueTrace || []).length === 0 && 'no agent-level dialogueTrace (single-prompt log)';
+        // local logs can leave dialogueTrace empty, so only their always-applicable
+        // conversationHistory contract is checked. The tracked fixtures guarantee
+        // that all trace tests execute in clean hermetic runs.
+        const trace = data.dialogueTrace || [];
+        if (trace.length > 0) {
+          it('trace starts with tutor-side entries (Turn 0 has no preceding learner)', () => {
+            const first = trace[0];
+            assert.ok(
+              isTutorEntry(first),
+              `first trace entry should be tutor-side, got ${first.agent}/${first.action}`,
+            );
+          });
 
-        it('trace starts with tutor-side entries (Turn 0 has no preceding learner)', { skip: traceSkip }, () => {
-          const trace = data.dialogueTrace || [];
-          assert.ok(trace.length > 0, 'trace should be non-empty');
-          const first = trace[0];
-          assert.ok(isTutorEntry(first), `first trace entry should be tutor-side, got ${first.agent}/${first.action}`);
-        });
+          it('tutor blocks and learner blocks alternate after Turn 0', () => {
+            const segments = getNonSystemSegments(trace);
 
-        it('tutor blocks and learner blocks alternate after Turn 0', { skip: traceSkip }, () => {
-          const segments = getNonSystemSegments(data.dialogueTrace || []);
+            // First segment must be tutor (Turn 0)
+            assert.strictEqual(segments[0]?.type, 'tutor', 'first segment should be tutor');
 
-          // First segment must be tutor (Turn 0)
-          assert.strictEqual(segments[0]?.type, 'tutor', 'first segment should be tutor');
-
-          // After the first tutor segment, check alternation
-          for (let i = 1; i < segments.length; i++) {
-            const prev = segments[i - 1].type;
-            const curr = segments[i].type;
-            assert.notStrictEqual(prev, curr, `segments ${i - 1} and ${i} are both '${curr}' — expected alternation`);
-          }
-        });
-
-        it('every learner block is eventually followed by a tutor block', { skip: traceSkip }, () => {
-          const segments = getNonSystemSegments(data.dialogueTrace || []);
-
-          for (let i = 0; i < segments.length; i++) {
-            if (segments[i].type === 'learner') {
-              // Either followed by a tutor block, or it's the very last segment (final learner turn)
-              const nextNonSystem = segments[i + 1];
-              if (nextNonSystem) {
-                assert.strictEqual(
-                  nextNonSystem.type,
-                  'tutor',
-                  `learner block at index ${i} not followed by tutor block`,
-                );
-              }
-              // If it IS the last segment, that's the final learner message — acceptable
+            // After the first tutor segment, check alternation
+            for (let i = 1; i < segments.length; i++) {
+              const prev = segments[i - 1].type;
+              const curr = segments[i].type;
+              assert.notStrictEqual(prev, curr, `segments ${i - 1} and ${i} are both '${curr}' — expected alternation`);
             }
-          }
-        });
+          });
+
+          it('every learner block is eventually followed by a tutor block', () => {
+            const segments = getNonSystemSegments(trace);
+
+            for (let i = 0; i < segments.length; i++) {
+              if (segments[i].type === 'learner') {
+                // Either followed by a tutor block, or it's the very last segment (final learner turn)
+                const nextNonSystem = segments[i + 1];
+                if (nextNonSystem) {
+                  assert.strictEqual(
+                    nextNonSystem.type,
+                    'tutor',
+                    `learner block at index ${i} not followed by tutor block`,
+                  );
+                }
+                // If it IS the last segment, that's the final learner message — acceptable
+              }
+            }
+          });
+        }
 
         it('conversationHistory entries have both suggestion and learnerMessage', () => {
           const history = data.conversationHistory;
@@ -253,7 +321,7 @@ describe(
 // Group 2: Multi-Agent Tutor Deliberation Logic
 // ═══════════════════════════════════════════════════════════════════════
 
-describe('Group 2: multi-agent tutor deliberation', { skip: logFiles.length === 0 && 'no logs on disk' }, () => {
+describe('Group 2: multi-agent tutor deliberation', () => {
   for (const { file, data } of [...multiTurnLogs, ...singleTurnLogs]) {
     const trace = data.dialogueTrace || [];
     const hasSuperego = trace.some((e) => e.agent === 'superego');
@@ -312,7 +380,10 @@ describe('Group 2: multi-agent tutor deliberation', { skip: logFiles.length === 
 
 describe(
   'Group 3: multi-agent learner deliberation',
-  { skip: multiTurnLogs.length === 0 && 'no multi-turn logs on disk' },
+  {
+    // Keep local-log sampling serial with the required tracked fixtures.
+    concurrency: false,
+  },
   () => {
     for (const { file, data } of multiTurnLogs) {
       const trace = data.dialogueTrace || [];

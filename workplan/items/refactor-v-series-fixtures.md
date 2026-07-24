@@ -1,7 +1,7 @@
 ---
 id: refactor-v-series-fixtures
 title: Make V-series validator fixtures repo-relative
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -19,6 +19,8 @@ depends_on:
   - tutor-stub-first-draft-series
   - adaptive-eval-immutable-provenance
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/188
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -65,3 +67,6 @@ Log:
   full hermetic run passes 6,574 root assertions plus 133/133 tutor-core tests;
   lint and fixture-integrity checks pass. Moved to review pending clean Node
   20/22 CI.
+- 2026-07-24 — Closed after PR #188 merged with the clean Node 20/22 matrix
+  green; the merged branch and worktree were removed after ancestry and
+  clean-worktree checks.

@@ -21,6 +21,9 @@ links:
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
+    - refactor-required-run-manifest
+    - refactor-v-series-fixtures
+    - refactor-dialogue-log-fixtures
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -79,3 +82,10 @@ Log:
   four source/hash-bound compact fixtures tracked, and focused plus full
   hermetic parity green. The next queued slice remains R0.3 dialogue-log
   fixtures after this branch lands.
+- 2026-07-24 — PR #188 merged and R0.2 closed. Activated R0.3 on
+  `codex/refactor-dialogue-log-fixtures` to replace ambient dialogue-log
+  discovery with tracked hermetic fixtures and discharge its skip-ledger entry.
+- 2026-07-24 — R0.3 reached review with three tracked architecture fixtures,
+  all dialogue-structure groups executing hermetically, the ambient-log skip
+  removed, and focused plus full local validation green. The next queued slice
+  remains R0.4 cast-layer fixture extraction after this branch lands.

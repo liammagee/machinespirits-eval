@@ -1,0 +1,38 @@
+{
+  "fixtureVersion": 1,
+  "isMultiTurn": true,
+  "totalTurns": 2,
+  "learnerArchitecture": "ego_superego",
+  "conversationHistory": [
+    {
+      "turnIndex": 0,
+      "suggestion": { "message": "Let us distinguish the claim from its evidence." },
+      "learnerMessage": "I can name the evidence I used."
+    },
+    {
+      "turnIndex": 1,
+      "suggestion": { "message": "Now test whether that evidence supports the claim." },
+      "learnerMessage": "The evidence supports only a narrower claim."
+    }
+  ],
+  "dialogueTrace": [
+    { "agent": "tutor", "action": "context_input", "turnIndex": 0 },
+    { "agent": "ego", "action": "generate", "turnIndex": 0 },
+    { "agent": "superego", "action": "review", "turnIndex": 0 },
+    { "agent": "ego", "action": "revise", "turnIndex": 0 },
+    { "agent": "tutor", "action": "final_output", "turnIndex": 0 },
+    { "agent": "learner_ego_initial", "action": "deliberation", "turnIndex": 0 },
+    { "agent": "learner_superego", "action": "deliberation", "turnIndex": 0 },
+    { "agent": "learner_ego_revision", "action": "deliberation", "turnIndex": 0 },
+    { "agent": "learner", "action": "final_output", "turnIndex": 0 },
+    { "agent": "tutor", "action": "context_input", "turnIndex": 1 },
+    { "agent": "ego", "action": "generate", "turnIndex": 1 },
+    { "agent": "superego", "action": "review", "turnIndex": 1 },
+    { "agent": "ego", "action": "revise", "turnIndex": 1 },
+    { "agent": "tutor", "action": "final_output", "turnIndex": 1 },
+    { "agent": "learner_ego_initial", "action": "deliberation", "turnIndex": 1 },
+    { "agent": "learner_superego", "action": "deliberation", "turnIndex": 1 },
+    { "agent": "learner_ego_revision", "action": "deliberation", "turnIndex": 1 },
+    { "agent": "learner", "action": "final_output", "turnIndex": 1 }
+  ]
+}

@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-24T04:32:25.458Z",
+  "generated": "2026-07-24T05:32:04.094Z",
   "counts": {
-    "total": 164,
+    "total": 165,
     "byStatus": {
-      "done": 133,
+      "done": 135,
       "blocked": 3,
       "dropped": 2,
       "triaged": 19,
       "active": 1,
       "archived": 4,
-      "review": 2
+      "review": 1
     },
     "byType": {
       "research": 46,
       "experiment": 48,
       "infra": 37,
-      "maintenance": 18,
+      "maintenance": 19,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -570,6 +570,9 @@
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "items": [
+          "refactor-required-run-manifest",
+          "refactor-v-series-fixtures",
+          "refactor-dialogue-log-fixtures",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -687,41 +690,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "harden-consolidated-labelling-integrity",
-      "title": "Harden consolidated labelling saves, identities, and corpus provenance",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-24",
-      "verification": "Navigation and dataset switches cannot lose queued or in-flight edits; coder artifacts cannot collide; impasse labels are bound to immutable corpus hashes; browser, route, store, and CLI regressions pass.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "branch": "codex/harden-labelling-corpus-provenance",
-      "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/180",
-          "https://github.com/liammagee/machinespirits-eval/pull/181",
-          "https://github.com/liammagee/machinespirits-eval/pull/186"
-        ],
-        "items": [
-          "consolidated-labelling-game-harness",
-          "impasse-corpus-phase1"
-        ]
-      },
-      "tags": [
-        "human-labelling",
-        "data-integrity",
-        "impasse-program",
-        "evaluation-infrastructure"
-      ],
-      "milestone": "impasse-program-v1"
-    },
-    {
-      "id": "refactor-v-series-fixtures",
-      "title": "Make V-series validator fixtures repo-relative",
+      "id": "refactor-dialogue-log-fixtures",
+      "title": "Make dialogue-structure tests hermetic",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -729,28 +699,25 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-07-24",
-      "verification": "On a clean checkout, all 41 previously host-path-gated first-draft outer-loop and campaign cases execute against deterministic repo-relative fixtures; historical hashes and verdicts remain byte-identical, the related skip-ledger entries disappear, and focused plus hermetic CI passes.",
-      "branch": "codex/refactor-v-series-fixtures",
+      "verification": "Clean hermetic runs seed tracked dialogue fixtures through EVAL_LOGS_DIR; every dialogue-structure group executes without ambient logs or undeclared skips; the dialogue-logs-absent ledger entry is removed; and focused plus full hermetic parity passes.",
+      "branch": "codex/refactor-dialogue-log-fixtures",
       "depends_on": [
         "refactor-required-run-manifest",
-        "tutor-stub-first-draft-series",
-        "adaptive-eval-immutable-provenance"
+        "refactor-v-series-fixtures"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "items": [
-          "codebase-refactoring-program",
-          "tutor-stub-first-draft-series",
-          "adaptive-eval-immutable-provenance"
+          "codebase-refactoring-program"
         ]
       },
       "tags": [
         "testing",
         "fixtures",
-        "tutor-stub",
-        "provenance",
+        "dialogue-logs",
+        "hermetic",
         "refactoring"
       ],
       "milestone": "evaluation-infrastructure"
@@ -1481,6 +1448,39 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "harden-consolidated-labelling-integrity",
+      "title": "Harden consolidated labelling saves, identities, and corpus provenance",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-24",
+      "verification": "Navigation and dataset switches cannot lose queued or in-flight edits; coder artifacts cannot collide; impasse labels are bound to immutable corpus hashes; browser, route, store, and CLI regressions pass.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "branch": "codex/harden-labelling-corpus-provenance",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/180",
+          "https://github.com/liammagee/machinespirits-eval/pull/181",
+          "https://github.com/liammagee/machinespirits-eval/pull/186"
+        ],
+        "items": [
+          "consolidated-labelling-game-harness",
+          "impasse-corpus-phase1"
+        ]
+      },
+      "tags": [
+        "human-labelling",
+        "data-integrity",
+        "impasse-program",
+        "evaluation-infrastructure"
+      ],
+      "milestone": "impasse-program-v1"
+    },
+    {
       "id": "layered-decision-loops",
       "title": "Strategy Ledger v1 — per-agent commit/audit loops at block/scene/act scope",
       "status": "done",
@@ -1748,6 +1748,45 @@
         "testing",
         "ci",
         "hermetic",
+        "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-v-series-fixtures",
+      "title": "Make V-series validator fixtures repo-relative",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "On a clean checkout, all 41 previously host-path-gated first-draft outer-loop and campaign cases execute against deterministic repo-relative fixtures; historical hashes and verdicts remain byte-identical, the related skip-ledger entries disappear, and focused plus hermetic CI passes.",
+      "branch": "codex/refactor-v-series-fixtures",
+      "depends_on": [
+        "refactor-required-run-manifest",
+        "tutor-stub-first-draft-series",
+        "adaptive-eval-immutable-provenance"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/188"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "tutor-stub-first-draft-series",
+          "adaptive-eval-immutable-provenance"
+        ]
+      },
+      "tags": [
+        "testing",
+        "fixtures",
+        "tutor-stub",
+        "provenance",
         "refactoring"
       ],
       "milestone": "evaluation-infrastructure"

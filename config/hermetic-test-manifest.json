@@ -489,14 +489,6 @@
       "removalSlice": "tracked-or-generated-paper-fixture decision"
     },
     {
-      "id": "dialogue-logs-absent",
-      "suite": "root",
-      "reasonPattern": "^(?:no multi-turn logs on disk|no logs on disk|no agent-level dialogueTrace \\(single-prompt log\\))$",
-      "owner": "codebase-refactoring-program",
-      "reason": "Dialogue structure tests still depend on non-hermetic on-disk logs.",
-      "removalSlice": "codex/refactor-dialogue-log-fixtures"
-    },
-    {
       "id": "model-cli-fingerprints",
       "suite": "root",
       "reasonPattern": "^codex/claude CLIs not installed on this host$",
