@@ -15,6 +15,8 @@ verification: A clean root install runs root and in-housed tutor-core suites
 claim_status: planned
 depends_on: []
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/177
   code:
     - scripts/run-hermetic-tests.js
     - scripts/run-risk-coverage.js

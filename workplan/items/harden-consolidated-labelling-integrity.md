@@ -1,19 +1,22 @@
 ---
 id: harden-consolidated-labelling-integrity
 title: Harden consolidated labelling saves, identities, and corpus provenance
-status: triaged
+status: active
 type: infra
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-22
-updated: 2026-07-22
+updated: 2026-07-24
 verification: Navigation and dataset switches cannot lose queued or in-flight
   edits; coder artifacts cannot collide; impasse labels are bound to immutable
   corpus hashes; browser, route, store, and CLI regressions pass.
 claim_status: planned
 depends_on: []
+branch: codex/harden-consolidated-labelling-integrity
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/180
   items:
     - consolidated-labelling-game-harness
     - impasse-corpus-phase1
@@ -45,3 +48,9 @@ Acceptance:
   client limits.
 - Make standalone CLI EOF and setup failures exit deterministically, with spawn
   tests covering both paths.
+
+Log:
+
+- 2026-07-24 — Activated from merged `origin/main` after PR #177 made the labelling save-state coverage group first-class. Initial implementation slice targets immutable browser save payloads, ordered save flushing across navigation/dataset changes, and matching browser regressions before changing artifact identity or corpus formats.
+- 2026-07-24 — Completed the first browser-integrity slice: saves now use immutable operation snapshots, coalesce pending edits, serialize in-flight requests, and flush before item, coder, comparison, or dataset transitions. Six queue regressions and the 19-test labelling risk group pass (77.78% lines, 68.14% branches, 83.56% functions); live browser QA loaded and switched to the 29-item impasse packet with no console warnings or errors.
+- 2026-07-24 — Opened PR #180 for the browser save-integrity tranche. The card remains active for the coder-ID, corpus-provenance, note-limit, and CLI failure-handling acceptance criteria.

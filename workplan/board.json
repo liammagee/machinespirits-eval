@@ -1,13 +1,14 @@
 {
-  "generated": "2026-07-24T00:23:59.431Z",
+  "generated": "2026-07-24T01:00:24.793Z",
   "counts": {
     "total": 160,
     "byStatus": {
       "done": 132,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 19,
-      "archived": 4
+      "triaged": 18,
+      "archived": 4,
+      "active": 1
     },
     "byType": {
       "research": 46,
@@ -89,33 +90,6 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "harden-consolidated-labelling-integrity",
-      "title": "Harden consolidated labelling saves, identities, and corpus provenance",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "Navigation and dataset switches cannot lose queued or in-flight edits; coder artifacts cannot collide; impasse labels are bound to immutable corpus hashes; browser, route, store, and CLI regressions pass.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "items": [
-          "consolidated-labelling-game-harness",
-          "impasse-corpus-phase1"
-        ]
-      },
-      "tags": [
-        "human-labelling",
-        "data-integrity",
-        "impasse-program",
-        "evaluation-infrastructure"
-      ],
-      "milestone": "impasse-program-v1"
     },
     {
       "id": "isolate-remaining-direct-model-subprocesses",
@@ -596,6 +570,37 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
+    },
+    {
+      "id": "harden-consolidated-labelling-integrity",
+      "title": "Harden consolidated labelling saves, identities, and corpus provenance",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-24",
+      "verification": "Navigation and dataset switches cannot lose queued or in-flight edits; coder artifacts cannot collide; impasse labels are bound to immutable corpus hashes; browser, route, store, and CLI regressions pass.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "branch": "codex/harden-consolidated-labelling-integrity",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/180"
+        ],
+        "items": [
+          "consolidated-labelling-game-harness",
+          "impasse-corpus-phase1"
+        ]
+      },
+      "tags": [
+        "human-labelling",
+        "data-integrity",
+        "impasse-program",
+        "evaluation-infrastructure"
+      ],
+      "milestone": "impasse-program-v1"
     },
     {
       "id": "a1-human-learner-validation",
@@ -1534,6 +1539,9 @@
       "claim_status": "planned",
       "depends_on": [],
       "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/177"
+        ],
         "code": [
           "scripts/run-hermetic-tests.js",
           "scripts/run-risk-coverage.js",

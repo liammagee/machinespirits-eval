@@ -776,7 +776,9 @@
     </main>
 
     <script src="/components/rail-inject.js" data-active="human-coding-admin" defer></script>
-    <script>
+    <script type="module">
+      import { createSaveQueue } from './save-queue.js';
+
       const coderStorageKey = 'ms_human_coding_coder_id';
       const datasetStorageKey = 'ms_labelling_game_dataset_id';
       const state = {
@@ -788,8 +790,6 @@
         items: [],
         selectedId: null,
         filter: 'all',
-        saveTimer: null,
-        saving: false,
         comparison: null,
       };
 
@@ -827,6 +827,10 @@
 
       function datasetPath(suffix) {
         return `/api/human-coding/datasets/${encodeURIComponent(state.datasetId)}${suffix}`;
+      }
+
+      function datasetPathFor(datasetId, suffix) {
+        return `/api/human-coding/datasets/${encodeURIComponent(datasetId)}${suffix}`;
       }
 
       function currentItem() {
@@ -1068,7 +1072,9 @@
         }
       }
 
-      function selectItem(itemId) {
+      async function selectItem(itemId) {
+        if (itemId === state.selectedId) return;
+        if (!(await flushPendingSave())) return;
         state.selectedId = itemId;
         renderCurrentItem();
         renderWorklist();
@@ -1189,6 +1195,10 @@
           setSaveState('coder id required', true);
           return;
         }
+        if (state.coderId && !(await flushPendingSave())) {
+          if (coderId !== state.coderId) $('coder-id').value = state.coderId;
+          return;
+        }
         state.coderId = coderId;
         localStorage.setItem(coderStorageKey, coderId);
         try {
@@ -1242,40 +1252,68 @@
         renderCurrentItem();
       }
 
-      async function saveCurrent() {
+      function captureSaveOperation() {
         const item = currentItem();
-        if (!item || !state.coderId || state.saving) return;
-        clearTimeout(state.saveTimer);
-        state.saving = true;
-        setSaveState('saving');
-        try {
-          const body = await api(datasetPath(`/items/${encodeURIComponent(item.item_id)}`), {
+        if (!item || !state.coderId) return null;
+        return {
+          datasetId: state.datasetId,
+          coderId: state.coderId,
+          itemId: item.item_id,
+          coding: formCoding(),
+        };
+      }
+
+      async function persistSaveOperation(operation, { isLatest }) {
+        if (isLatest()) setSaveState('saving');
+        const body = await api(
+          datasetPathFor(operation.datasetId, `/items/${encodeURIComponent(operation.itemId)}`),
+          {
             method: 'PUT',
-            body: JSON.stringify(formCoding()),
-          });
-          applySavedItem(body.item, body.progress);
-          setSaveState('saved');
-          if (body.progress?.remaining !== 0) hideComparison();
-          await loadStatus();
-        } catch (error) {
-          setSaveState(error.message, true);
-        } finally {
-          state.saving = false;
+            body: JSON.stringify(operation.coding),
+          },
+        );
+        if (!isLatest()) return;
+        if (state.datasetId !== operation.datasetId || state.coderId !== operation.coderId) return;
+        applySavedItem(body.item, body.progress);
+        setSaveState('saved');
+        if (body.progress?.remaining !== 0) hideComparison();
+        await loadStatus();
+      }
+
+      const saveQueue = createSaveQueue({
+        persist: persistSaveOperation,
+        onError: (error) => setSaveState(error.message, true),
+      });
+
+      async function flushPendingSave() {
+        try {
+          await saveQueue.flush();
+          return true;
+        } catch {
+          return false;
         }
       }
 
-      function scheduleSave() {
-        clearTimeout(state.saveTimer);
-        setSaveState('unsaved');
-        if (isTaxonomy()) state.saveTimer = setTimeout(saveCurrent, 700);
+      async function saveCurrent() {
+        const operation = captureSaveOperation();
+        if (!operation) return;
+        saveQueue.schedule(operation);
+        await flushPendingSave();
       }
 
-      function move(delta) {
+      function scheduleSave() {
+        const operation = captureSaveOperation();
+        if (!operation) return;
+        setSaveState('unsaved');
+        saveQueue.schedule(operation, { delay: isTaxonomy() ? 700 : null });
+      }
+
+      async function move(delta) {
         const visible = filteredItems();
         if (!visible.length) return;
         const currentIndex = visible.findIndex((item) => item.item_id === state.selectedId);
         const nextIndex = Math.min(visible.length - 1, Math.max(0, currentIndex + delta));
-        selectItem(visible[nextIndex].item_id);
+        await selectItem(visible[nextIndex].item_id);
       }
 
       function fmtNumber(value, digits = 3) {
@@ -1419,6 +1457,7 @@
 
       async function loadComparison() {
         if (!state.coderId) return;
+        if (!(await flushPendingSave())) return;
         $('comparison-section').hidden = false;
         $('comparison-report').hidden = true;
         const notice = $('comparison-notice');
@@ -1450,19 +1489,28 @@
         });
         $('coding-form').addEventListener('submit', (event) => {
           event.preventDefault();
-          saveCurrent();
+          void saveCurrent();
         });
         $('coding-form').addEventListener('change', scheduleSave);
         $('human-notes').addEventListener('input', scheduleSave);
         $('human-primary').addEventListener('change', () => renderCategoryDetail($('human-primary').value));
-        $('prev-item').addEventListener('click', () => move(-1));
-        $('next-item').addEventListener('click', () => move(1));
-        $('dataset-id').addEventListener('change', switchDataset);
+        $('prev-item').addEventListener('click', () => void move(-1));
+        $('next-item').addEventListener('click', () => void move(1));
+        $('dataset-id').addEventListener('change', () => void switchDataset());
+        window.addEventListener('beforeunload', (event) => {
+          if (!saveQueue.hasWork()) return;
+          event.preventDefault();
+          event.returnValue = '';
+        });
       }
 
       async function switchDataset() {
-        clearTimeout(state.saveTimer);
-        state.datasetId = $('dataset-id').value;
+        const nextDatasetId = $('dataset-id').value;
+        if (state.datasetId && nextDatasetId !== state.datasetId && !(await flushPendingSave())) {
+          $('dataset-id').value = state.datasetId;
+          return;
+        }
+        state.datasetId = nextDatasetId;
         state.items = [];
         state.selectedId = null;
         state.status = null;
