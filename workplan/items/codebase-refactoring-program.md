@@ -27,6 +27,7 @@ links:
     - refactor-cast-layer-fixture
     - refactor-pty-ci-lane
     - refactor-rubric-parser-tests
+    - refactor-tutor-core-cycle
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -117,3 +118,12 @@ Log:
   production parser, and focused plus full hermetic parity green. The next
   queued slice is R1.1 on `codex/refactor-tutor-core-cycle` after this branch
   lands.
+- 2026-07-24 — PR #196 merged and R0.6 closed. Activated R1.1 on
+  `codex/refactor-tutor-core-cycle` to move shared quiet-mode state into a
+  dependency-free leaf and ratchet the static import-cycle baseline from two
+  strongly connected components to one.
+- 2026-07-24 — R1.1 reached review with the tutor-core cycle removed, the
+  existing quiet-mode export surface preserved, and an exact CI cycle ratchet
+  admitting only the queued tutor-stub response component. Full hermetic parity
+  is green; the next queued slice is R1.2 on
+  `codex/refactor-tutor-response-cycle` after this branch lands.

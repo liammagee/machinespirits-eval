@@ -22,14 +22,6 @@ vi.mock('../dbService.js', () => ({
   _setDbForTesting: vi.fn(),
 }));
 
-// writingPadService.js -> tutorDialogueEngine.js (for isQuietOrTranscript) ->
-// aiService.js -> aiConfigService.js, which calls getDb() at module-load
-// time. Without this mock, that top-level call reaches the real dbService
-// mock's getDb() before beforeEach has a chance to set testDb, and throws.
-vi.mock('../aiService.js', () => ({
-  generateText: vi.fn(),
-}));
-
 const { createRecognitionMoment, getRecognitionMoment, getRecognitionMoments } =
   await import('../writingPadService.js');
 

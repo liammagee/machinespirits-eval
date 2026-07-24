@@ -296,6 +296,7 @@
     "merge:preflight": "node scripts/closeout-worktree-db.js --check",
     "content:validate": "node scripts/validate-content.js",
     "lint": "eslint .",
+    "lint:cycles": "node scripts/check-static-import-cycles.js",
     "lint:fix": "eslint --fix .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

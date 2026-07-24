@@ -354,6 +354,7 @@
         "tests/scorePoeticsPhase2.test.js",
         "tests/screenSUnderivability.test.js",
         "tests/skillSync.test.js",
+        "tests/staticImportCycles.test.js",
         "tests/streamingReporter.test.js",
         "tests/structureLearnerContext.test.js",
         "tests/superego-guard.test.js",
@@ -462,6 +463,7 @@
     "core": {
       "requiredFiles": [
         "tutor-core/services/__tests__/callStream.test.js",
+        "tutor-core/services/__tests__/dialogueLoggingState.test.js",
         "tutor-core/services/__tests__/dialecticalEngine.superegoCritique.test.js",
         "tutor-core/services/__tests__/emptyContentRetry.test.js",
         "tutor-core/services/__tests__/externalAIProvider.test.js",
