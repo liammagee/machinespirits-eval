@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-24T01:48:36.343Z",
+  "generated": "2026-07-24T02:06:38.861Z",
   "counts": {
     "total": 161,
     "byStatus": {
@@ -8,7 +8,8 @@
       "dropped": 2,
       "triaged": 18,
       "archived": 4,
-      "active": 2
+      "review": 1,
+      "active": 1
     },
     "byType": {
       "research": 46,
@@ -572,38 +573,6 @@
       "branch": "main"
     },
     {
-      "id": "harden-consolidated-labelling-integrity",
-      "title": "Harden consolidated labelling saves, identities, and corpus provenance",
-      "status": "active",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-24",
-      "verification": "Navigation and dataset switches cannot lose queued or in-flight edits; coder artifacts cannot collide; impasse labels are bound to immutable corpus hashes; browser, route, store, and CLI regressions pass.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "branch": "codex/harden-labelling-coder-identities",
-      "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/180",
-          "https://github.com/liammagee/machinespirits-eval/pull/181"
-        ],
-        "items": [
-          "consolidated-labelling-game-harness",
-          "impasse-corpus-phase1"
-        ]
-      },
-      "tags": [
-        "human-labelling",
-        "data-integrity",
-        "impasse-program",
-        "evaluation-infrastructure"
-      ],
-      "milestone": "impasse-program-v1"
-    },
-    {
       "id": "refactor-required-run-manifest",
       "title": "Make required test discovery and skips explicit",
       "status": "active",
@@ -723,6 +692,38 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "harden-consolidated-labelling-integrity",
+      "title": "Harden consolidated labelling saves, identities, and corpus provenance",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-24",
+      "verification": "Navigation and dataset switches cannot lose queued or in-flight edits; coder artifacts cannot collide; impasse labels are bound to immutable corpus hashes; browser, route, store, and CLI regressions pass.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "branch": "codex/harden-labelling-corpus-provenance",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/180",
+          "https://github.com/liammagee/machinespirits-eval/pull/181"
+        ],
+        "items": [
+          "consolidated-labelling-game-harness",
+          "impasse-corpus-phase1"
+        ]
+      },
+      "tags": [
+        "human-labelling",
+        "data-integrity",
+        "impasse-program",
+        "evaluation-infrastructure"
+      ],
+      "milestone": "impasse-program-v1"
     },
     {
       "id": "adaptive-eval-immutable-provenance",

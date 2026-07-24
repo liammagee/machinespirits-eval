@@ -4,8 +4,13 @@ import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { coderArtifactToken } from '../services/labellingCoderIdentity.js';
+import { migrateImpasseProvenanceArtifacts } from '../services/labellingImpasseProvenance.js';
+import { IMPASSE_RATER_PREFIX } from '../services/labellingGameStore.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'human-coding-routes-'));
 const samplePath = path.join(tmpDir, 'human-validation-pilot-sample.csv');
@@ -144,6 +149,7 @@ describe('human coding dashboard routes', () => {
     assert.equal(page.status, 200);
     assert.match(page.contentType || '', /text\/html/);
     assert.match(page.body, /Labelling Game/);
+    assert.match(page.body, /id="human-notes"[\s\S]*maxlength="5000"/u);
   });
 
   it('lists both datasets through the consolidated labelling-game API', async () => {
@@ -205,7 +211,11 @@ describe('human coding dashboard routes', () => {
       `impasse-corpus-phase1-rater-${coderArtifactToken('impasse-rater')}.json`,
     );
     const sidecar = JSON.parse(fs.readFileSync(sidecarPath, 'utf8'));
-    assert.equal(sidecar.schema, 'machinespirits.labelling-game.impasse-rater.v1');
+    assert.equal(sidecar.schema, 'machinespirits.labelling-game.impasse-rater.v2');
+    assert.equal(sidecar.corpus_provenance.schema, 'machinespirits.labelling-game.impasse-corpus-provenance.v1');
+    assert.match(sidecar.corpus_provenance.content_hash, /^sha256:[a-f0-9]{64}$/u);
+    assert.equal(sidecar.corpus_provenance.item_count, 2);
+    assert.match(sidecar.items[0].source_content_hash, /^sha256:[a-f0-9]{64}$/u);
     assert.equal(sidecar.items[0].tutor_addressed, 'partly');
 
     const unavailable = await request(
@@ -248,6 +258,143 @@ describe('human coding dashboard routes', () => {
     });
     assert.equal(unexplainedOther.status, 422);
     assert.equal(unexplainedOther.body.code, 'impasse_other_notes_required');
+  });
+
+  it('rejects overlong notes for both datasets instead of truncating artifacts', async () => {
+    const impasseRaterPath = path.join(
+      impasseOutputDir,
+      `impasse-corpus-phase1-rater-${coderArtifactToken('long-note-impasse')}.json`,
+    );
+    const impasse = await request(baseUrl, 'PUT', '/api/human-coding/datasets/tutor-stub-impasses/items/E01', {
+      coder_id: 'long-note-impasse',
+      impasse: 'no',
+      tutor_addressed: 'yes',
+      resolved_within_2: 'yes',
+      notes: 'x'.repeat(5001),
+    });
+    assert.equal(impasse.status, 422);
+    assert.equal(impasse.body.code, 'notes_too_long');
+    assert.equal(fs.existsSync(impasseRaterPath), false);
+
+    const taxonomyRaterPath = path.join(
+      outputDir,
+      `human-validation-pilot-rater-${coderArtifactToken('long-note-taxonomy')}.csv`,
+    );
+    const taxonomy = await request(baseUrl, 'PUT', '/api/human-coding/items/item-a', {
+      coder_id: 'long-note-taxonomy',
+      human_primary: 'VAGUENESS',
+      human_notes: 'x'.repeat(5001),
+    });
+    assert.equal(taxonomy.status, 422);
+    assert.equal(taxonomy.body.code, 'notes_too_long');
+    assert.equal(fs.existsSync(taxonomyRaterPath), false);
+  });
+
+  it('rejects duplicate corpus episode ids before labels can be joined', async () => {
+    const original = fs.readFileSync(impassePath, 'utf8');
+    const duplicate = JSON.parse(original);
+    duplicate.episodes[1].episode_id = duplicate.episodes[0].episode_id;
+    fs.writeFileSync(impassePath, `${JSON.stringify(duplicate, null, 2)}\n`, 'utf8');
+    try {
+      const response = await request(
+        baseUrl,
+        'GET',
+        '/api/human-coding/datasets/tutor-stub-impasses/items?coder_id=duplicate-corpus-rater',
+      );
+      assert.equal(response.status, 422);
+      assert.equal(response.body.code, 'duplicate_impasse_episode_id');
+    } finally {
+      fs.writeFileSync(impassePath, original, 'utf8');
+    }
+  });
+
+  it('refuses corpus and per-item content drift after a sidecar is bound', async () => {
+    const coderId = 'provenance-rater';
+    const saved = await request(baseUrl, 'PUT', '/api/human-coding/datasets/tutor-stub-impasses/items/E02', {
+      coder_id: coderId,
+      impasse: 'no',
+      tutor_addressed: 'yes',
+      resolved_within_2: 'yes',
+      notes: 'No breakdown.',
+    });
+    assert.equal(saved.status, 200);
+    const sidecarPath = path.join(impasseOutputDir, `impasse-corpus-phase1-rater-${coderArtifactToken(coderId)}.json`);
+    const originalCorpus = fs.readFileSync(impassePath, 'utf8');
+    const changedCorpus = JSON.parse(originalCorpus);
+    changedCorpus.episodes[1].excerpt_turns[0].learner_text = 'Changed after coding.';
+    fs.writeFileSync(impassePath, `${JSON.stringify(changedCorpus, null, 2)}\n`, 'utf8');
+    try {
+      const response = await request(
+        baseUrl,
+        'GET',
+        `/api/human-coding/datasets/tutor-stub-impasses/items?coder_id=${encodeURIComponent(coderId)}`,
+      );
+      assert.equal(response.status, 409);
+      assert.equal(response.body.code, 'impasse_corpus_provenance_mismatch');
+      assert.match(response.body.details.migration_command, /impasse-provenance/u);
+    } finally {
+      fs.writeFileSync(impassePath, originalCorpus, 'utf8');
+    }
+
+    const originalSidecar = fs.readFileSync(sidecarPath, 'utf8');
+    const tamperedSidecar = JSON.parse(originalSidecar);
+    tamperedSidecar.items[0].source_content_hash = `sha256:${'0'.repeat(64)}`;
+    fs.writeFileSync(sidecarPath, `${JSON.stringify(tamperedSidecar, null, 2)}\n`, 'utf8');
+    try {
+      const response = await request(
+        baseUrl,
+        'GET',
+        `/api/human-coding/datasets/tutor-stub-impasses/items?coder_id=${encodeURIComponent(coderId)}`,
+      );
+      assert.equal(response.status, 409);
+      assert.equal(response.body.code, 'impasse_item_content_hash_mismatch');
+      assert.equal(response.body.details.item_id, 'E01');
+    } finally {
+      fs.writeFileSync(sidecarPath, originalSidecar, 'utf8');
+    }
+  });
+
+  it('requires and then accepts an explicit provenance migration for legacy sidecars', async () => {
+    const coderId = 'legacy-provenance-rater';
+    const saved = await request(baseUrl, 'PUT', '/api/human-coding/datasets/tutor-stub-impasses/items/E01', {
+      coder_id: coderId,
+      impasse: 'no',
+      tutor_addressed: 'yes',
+      resolved_within_2: 'yes',
+    });
+    assert.equal(saved.status, 200);
+    const sidecarPath = path.join(impasseOutputDir, `impasse-corpus-phase1-rater-${coderArtifactToken(coderId)}.json`);
+    const legacy = JSON.parse(fs.readFileSync(sidecarPath, 'utf8'));
+    legacy.schema = 'machinespirits.labelling-game.impasse-rater.v1';
+    delete legacy.corpus_provenance;
+    for (const item of legacy.items) delete item.source_content_hash;
+    fs.writeFileSync(sidecarPath, `${JSON.stringify(legacy, null, 2)}\n`, 'utf8');
+
+    const refused = await request(
+      baseUrl,
+      'GET',
+      `/api/human-coding/datasets/tutor-stub-impasses/items?coder_id=${encodeURIComponent(coderId)}`,
+    );
+    assert.equal(refused.status, 409);
+    assert.equal(refused.body.code, 'impasse_corpus_provenance_migration_required');
+
+    const migrated = migrateImpasseProvenanceArtifacts({
+      sourcePath: impassePath,
+      source: path.relative(ROOT, impassePath),
+      outputDir: impasseOutputDir,
+      prefix: IMPASSE_RATER_PREFIX,
+      acceptCurrentCorpus: true,
+    });
+    assert.equal(migrated.success, true);
+    assert.ok(migrated.migrated.includes(sidecarPath));
+
+    const accepted = await request(
+      baseUrl,
+      'GET',
+      `/api/human-coding/datasets/tutor-stub-impasses/items?coder_id=${encodeURIComponent(coderId)}`,
+    );
+    assert.equal(accepted.status, 200);
+    assert.equal(accepted.body.items[0].impasse, 'no');
   });
 
   it('refuses an impasse sidecar whose embedded coder identity does not match its filename', async () => {

@@ -49,6 +49,7 @@
         "services/humanCodingStore.js",
         "services/labellingCoderArtifactMigration.js",
         "services/labellingCoderIdentity.js",
+        "services/labellingImpasseProvenance.js",
         "services/labellingGameStore.js",
         "services/labellingGameCli.js",
         "routes/humanCodingRoutes.js",
@@ -58,6 +59,7 @@
         "services/__tests__/humanCodingStore.test.js",
         "tests/humanCodingRoutes.test.js",
         "tests/labellingCoderArtifacts.test.js",
+        "tests/labellingImpasseProvenance.test.js",
         "tests/labellingGameCli.test.js",
         "tests/labellingSaveQueue.test.js"
       ],

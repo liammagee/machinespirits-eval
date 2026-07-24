@@ -34,7 +34,7 @@ const DEFAULT_CLASSIFIED_INPUT = path.join(
   'superego-critiques-classified-paper-6.2-n500.jsonl',
 );
 
-const MAX_NOTES_CHARS = 5000;
+export const HUMAN_CODING_MAX_NOTES_CHARS = 5000;
 
 export const HUMAN_CODING_COLUMNS = Object.freeze([
   'item_id',
@@ -321,8 +321,8 @@ function normalizeConfidence(value) {
 
 function normalizeNotes(value) {
   const notes = String(value || '').trim();
-  if (notes.length > MAX_NOTES_CHARS) {
-    throw new HumanCodingError(`human_notes is too long (max ${MAX_NOTES_CHARS} chars)`, {
+  if (notes.length > HUMAN_CODING_MAX_NOTES_CHARS) {
+    throw new HumanCodingError(`human_notes is too long (max ${HUMAN_CODING_MAX_NOTES_CHARS} chars)`, {
       status: 422,
       code: 'notes_too_long',
     });
@@ -532,6 +532,7 @@ export function getStatus(env = process.env) {
     output_dir: repoRel(workspace.outputDir),
     raters: listRaterSummaries(workspace),
     categories: HUMAN_CODING_CATEGORIES,
+    limits: { notes_max_chars: HUMAN_CODING_MAX_NOTES_CHARS },
     commands: {
       build_sample: sampleBuildCommand(workspace),
       analyze: 'node scripts/human-validation-analyze.js',

@@ -276,6 +276,7 @@
         "tests/intervention-ledger.test.js",
         "tests/labellingCoderArtifacts.test.js",
         "tests/labellingGameCli.test.js",
+        "tests/labellingImpasseProvenance.test.js",
         "tests/labellingSaveQueue.test.js",
         "tests/latentKernelFilter.test.js",
         "tests/learnerTurnTargets.test.js",
