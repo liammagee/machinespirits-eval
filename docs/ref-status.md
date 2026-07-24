@@ -17,7 +17,7 @@ The repository and paper versions are intentionally independent. See [Tagging an
 
 ## Archive refs
 
-Inventory: 12 archives; 5 paired; 7 grandfathered tag-only; 0 validation errors.
+Inventory: 14 archives; 7 paired; 7 grandfathered tag-only; 0 validation errors.
 
 | Archive ID | Browsable branch | Immutable tag | Target | State | Note |
 | --- | --- | --- | --- | --- | --- |
@@ -28,6 +28,8 @@ Inventory: 12 archives; 5 paired; 7 grandfathered tag-only; 0 validation errors.
 | `codex/charisma-role-isolation-next` | `origin/archive/codex/charisma-role-isolation-next` | `archive/codex/charisma-role-isolation-next` | `a71ee5f9e4` | complete (legacy collision) | Closed-arc residue: charisma role-isolation matrix close-out (Jul 2026). |
 | `codex/preconscious-speaking-contract` | `origin/archive/codex/preconscious-speaking-contract` | `archive/codex/preconscious-speaking-contract` | `88873d2479` | complete (legacy collision) | Unadopted codex probe: tutor speaking handoff/recovery variant. Preconscious arc closed via PR #129; the adopted recove… |
 | `experiment/speech-act-lock-prototype` | — | `archive/experiment/speech-act-lock-prototype` | `fc7056893a` | legacy tag only | Archived prototype: A17 speech-act-lock, judge-free 3-arm memory constraint (May 2026). |
+| `preconscious-step4-evidence-2026-07-25` | `origin/archive/preconscious-step4-evidence-2026-07-25` | `archive-snapshot/preconscious-step4-evidence-2026-07-25` | `91b8a50e79` | complete | Archive evidence supplement: preconscious Step-4 and private state |
+| `preconscious-step4-frozen-2026-07-25` | `origin/archive/preconscious-step4-frozen-2026-07-25` | `archive-snapshot/preconscious-step4-frozen-2026-07-25` | `91b8a50e79` | complete | Archive snapshot: frozen preconscious Step-4 runtime |
 | `program-2-corpus-v2-2026-07-18` | `origin/archive/program-2-corpus-v2-2026-07-18` | `archive/program-2-corpus-v2-2026-07-18` | `e56d7a094b` | complete (legacy collision) | Historical Program 2 Task B corpus; do not merge wholesale. Private corpus archive: program-2-corpus-v2-2026-07-18.tgz;… |
 | `program-2-phase5-pinned-runtime` | — | `archive/program-2-phase5-pinned-runtime` | `27aae3b7b4` | legacy tag only | Archived frozen execution lineage for Program-2 committee live pilots (Phases 5/5b/5c/5d), built on the frozen Step-4 b… |
 | `worktree-blueprint-composition` | — | `archive/worktree-blueprint-composition` | `bec132f635` | legacy tag only | Closed-arc residue: blueprint-composition (cells 199-200) working state. Deliverables merged (paper §6.14 + §7.11); arc… |
