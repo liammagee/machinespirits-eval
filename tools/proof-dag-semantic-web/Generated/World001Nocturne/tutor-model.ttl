@@ -1,0 +1,66 @@
+@prefix ms: <https://machinespirits.org/ns/proof-dag#>.
+@prefix prov: <http://www.w3.org/ns/prov#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+
+<https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26> a prov:Entity, ms:LearnerProxyDagReference, ms:PublicProjectionNode;
+    ms:turn 26;
+    ms:worldId "world_001_nocturne".
+<https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/1> a prov:Entity, ms:GroundedPublicFact, ms:PublicProjectionNode;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:surface "Held to the lamp, every leaf of the nocturne shows the same heron watermark — the Brell mill's mark.".
+<https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/2> a prov:Entity, ms:GroundedPublicFact, ms:PublicProjectionNode;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:surface "The steward's stock-book is plain: heron paper entered the copy-room in the winter of the flood, and the last of it was spent before the thaw. None before, none since.".
+<https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/3> a prov:Entity, ms:GroundedPublicFact, ms:PublicProjectionNode;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:surface "The night porter remembers the flood winter well: the copy-room lamps burned past midnight, week upon week, and it was the archive girl, Liane, who kept them burning.".
+<https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/4> a prov:Entity, ms:GroundedPublicFact, ms:PublicProjectionNode;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:surface "Played through once, the nocturne gives up its middle voice: it carries an older tune entire — a cradle-song, set like a keepsake under the right hand's figures.".
+<https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/5> a prov:Entity, ms:GroundedPublicFact, ms:PublicProjectionNode;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:surface "Mistress Odile knows the tune at one hearing: the Vara cradle-song, never printed, never performed, sung only within that house's walls.".
+<https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/6> a prov:Entity, ms:GroundedPublicFact, ms:PublicProjectionNode;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:surface "Liane was raised within the Vara house — the music-master's orphan, taken in as ward; she grew up under that roof and under its songs.".
+<https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/hypotheses/1> a prov:Entity, ms:LearnerHypothesis, ms:PublicProjectionNode;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:text "Liane had both opportunity and access, but the correcting hand is still missing.";
+    ms:turn 23.
+<https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/1> a prov:Entity, ms:PublicProjectionNode, ms:VoicedPublicConclusion;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:surface "writtenDuring: nocturne, floodWinter";
+    ms:turn 25.
+<https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/2> a prov:Entity, ms:PublicProjectionNode, ms:VoicedPublicConclusion;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:surface "couldHaveWritten: liane, nocturne";
+    ms:turn 25.
+<https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/3> a prov:Entity, ms:PublicProjectionNode, ms:VoicedPublicConclusion;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:surface "hadSourceOf: liane, nocturne";
+    ms:turn 25.
+<https://machinespirits.org/derivation/world/world_001_nocturne/tutor-learner-dag-model/26> a prov:Collection, prov:Entity, ms:PublicProjectionNode, ms:TutorLearnerDagModel;
+    prov:hadMember <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/4>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/5>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/6>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/hypotheses/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/3>;
+    prov:wasDerivedFrom <https://machinespirits.org/derivation/world/world_001_nocturne/learner-proxy-dag/26>;
+    ms:advisoryOnly true;
+    ms:answerCandidateCount 0;
+    ms:assertedMirror false;
+    ms:assertedSecret false;
+    ms:assessmentStatus "available";
+    ms:bestPathCoverage 0.857;
+    ms:bottleneck "release_or_pacing_gap";
+    ms:candidateConclusionCount 0;
+    ms:finalSecretEntailed false;
+    ms:groundedCount 6;
+    ms:hasRecord <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/3>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/4>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/5>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/grounded/6>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/hypotheses/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/1>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/2>, <https://machinespirits.org/derivation/world/world_001_nocturne/public-record/26/voicedDerived/3>;
+    ms:hypothesisCount 1;
+    ms:missingPremiseBucketsJson "{\"unreleased\":1}"^^rdf:JSON;
+    ms:missingPremiseCount 1;
+    ms:publicOnly true;
+    ms:role "tutor";
+    ms:schema "machinespirits.derivation.tutor-learner-dag-model.v1";
+    ms:turn 26;
+    ms:voicedDerivedCount 3;
+    ms:worldId "world_001_nocturne".

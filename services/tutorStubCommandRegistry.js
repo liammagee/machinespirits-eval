@@ -7,8 +7,8 @@ import {
 import { TUTOR_STUB_CURRICULUM_TRANSLATION_LEVELS } from './tutorStubCurriculumTranslation.js';
 import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 
-export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v6';
-export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 6;
+export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v7';
+export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 7;
 export const TUTOR_STUB_COMMAND_MODES = Object.freeze(['normal', 'passthrough']);
 export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
   'terminal_picker',
@@ -42,6 +42,7 @@ const COMMAND_EFFECT_DECLARATIONS = Object.freeze({
   register: ['modelCall', 'persistentMutation'],
   character: ['modelCall', 'persistentMutation'],
   analysis: [],
+  proof: ['fileWrite'],
   field: [],
   visualization: ['fileWrite'],
   clarify: ['modelCall', 'persistentMutation'],
@@ -110,6 +111,7 @@ const COMMAND_SUMMARIES = Object.freeze({
   register: 'inspect or lock the tutor engagement style for later turns',
   character: 'choose the learner profile or tutor host character',
   analysis: 'explain the latest learner reading and tutor response choices',
+  proof: 'verify or inspect the Nocturne proof-DAG certificates and graph projections',
   field: 'show the conversation state, pressure, alignment, and momentum',
   visualization: 'write and open a visual map of the conversation field',
   clarify: 'explain public wording without advancing the proof state',
@@ -183,6 +185,7 @@ const HELP_GROUPS = [
     label: 'understand',
     commands: [
       { id: 'analysis', arguments: '[technical]' },
+      { id: 'proof', arguments: '[check|inspect|export|paths]' },
       { id: 'debug', arguments: 'on|off' },
       { id: 'status' },
       { id: 'director', arguments: '[request]|ask <question>' },
@@ -471,6 +474,26 @@ const COMMANDS = [
     aliases: ['/a'],
     sceneReturnOrder: 16,
     completion: { normal: { suffixes: ['technical'] } },
+  }),
+  command({
+    id: 'proof',
+    token: '/proof',
+    sceneReturnOrder: 29,
+    completion: {
+      normal: {
+        suffixes: [
+          'check',
+          'check lean',
+          'check semantic',
+          'inspect',
+          'inspect authored',
+          'inspect learner',
+          'inspect tutor',
+          'export',
+          'paths',
+        ],
+      },
+    },
   }),
   command({ id: 'field', token: '/field', aliases: ['/f'], sceneReturnOrder: 17 }),
   command({

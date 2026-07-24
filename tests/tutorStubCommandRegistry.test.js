@@ -54,6 +54,7 @@ const NORMAL_COMMANDS = [
   '/learner',
   '/analysis',
   '/a',
+  '/proof',
   '/field',
   '/f',
   '/viz',
@@ -171,6 +172,7 @@ const SCENE_RETURN_COMMANDS = [
   '/translate',
   '/light',
   '/details',
+  '/proof',
 ];
 
 const NORMAL_SETTINGS_COMPLETIONS = [
@@ -232,14 +234,14 @@ test('director guidance is a bounded private control with turn-aware and concurr
   assert.equal(merged.history.at(-1).action, 'clear');
 });
 
-test('v6 command registry freezes the slash-token and execution-effect surfaces', () => {
+test('v7 command registry freezes the slash-token and execution-effect surfaces', () => {
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 6);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 43);
-  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 60);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 7);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 44);
+  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 61);
   assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 22);
-  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 42);
+  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 43);
   assert.deepEqual(TUTOR_STUB_NORMAL_SLASH_COMMANDS, NORMAL_COMMANDS);
   assert.deepEqual(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS, PASSTHROUGH_COMMANDS);
   assert.deepEqual(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS, SCENE_RETURN_COMMANDS);
@@ -270,8 +272,8 @@ test('v6 command registry freezes the slash-token and execution-effect surfaces'
     handlers.add(definition.handler);
     traceEvents.add(definition.traceEvent);
   }
-  assert.equal(handlers.size, 43);
-  assert.equal(traceEvents.size, 43);
+  assert.equal(handlers.size, 44);
+  assert.equal(traceEvents.size, 44);
   assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
@@ -300,12 +302,24 @@ test('canonical ids and aliases resolve uniquely', () => {
   assert.equal(resolveTutorStubCommandId('/learner'), 'character');
   assert.equal(tutorStubCanonicalCommandToken('/tutor'), '/character');
   assert.equal(tutorStubCanonicalCommandToken('/learner'), '/character');
+  assert.equal(resolveTutorStubCommandId('/proof'), 'proof');
   assert.deepEqual(tutorStubStaticCommandCompletions('/committee'), [
     '/committee on',
     '/committee off',
     '/committee status',
   ]);
   assert.deepEqual(tutorStubStaticCommandCompletions('/light'), ['/light on', '/light off', '/light status']);
+  assert.deepEqual(tutorStubStaticCommandCompletions('/proof'), [
+    '/proof check',
+    '/proof check lean',
+    '/proof check semantic',
+    '/proof inspect',
+    '/proof inspect authored',
+    '/proof inspect learner',
+    '/proof inspect tutor',
+    '/proof export',
+    '/proof paths',
+  ]);
   assert.equal(tutorStubCommandAvailable('/board'), true);
   assert.equal(tutorStubCommandAvailable('/board', { mode: 'passthrough' }), false);
   assert.equal(tutorStubCommandReturnsToScene('/board'), true);
@@ -427,6 +441,7 @@ test('transport metadata classifies picker, browser, voice, and relaunch side ef
   assert.deepEqual(tutorStubCommandTransportMetadata('/voice').effects, ['browser_open', 'voice_device']);
   assert.deepEqual(tutorStubCommandTransportMetadata('/scenario').effects, ['terminal_picker', 'process_relaunch']);
   assert.deepEqual(tutorStubCommandTransportMetadata('/board').effects, ['terminal_picker', 'process_relaunch']);
+  assert.deepEqual(tutorStubCommandTransportMetadata('/proof').effects, []);
   assert.deepEqual(tutorStubCommandTransportMetadata('/lab').effects, ['relaunch_instruction']);
   assert.equal(tutorStubCommandTransportMetadata('/status').processHttp, 'blocked_pending_adapter');
   assert.equal(tutorStubCommandTransportMetadata('/not-a-command'), null);
@@ -465,6 +480,7 @@ test('execution effects conservatively classify every command before transport e
     'theme',
     'motion',
     'committee',
+    'proof',
     'visualization',
     'transcript',
     'voice',

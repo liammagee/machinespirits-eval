@@ -153,6 +153,8 @@
     "derivation:quality": "node scripts/audit-derivation-world-quality.js",
     "derivation:lean-cert": "node scripts/check-proof-dag-lean.js",
     "derivation:lean-cert:check": "node scripts/check-proof-dag-lean.js --require-lake",
+    "derivation:semantic-web": "node scripts/export-proof-dag-semantic-web.js",
+    "derivation:semantic-web:check": "node scripts/export-proof-dag-semantic-web.js --check",
     "derivation:screen": "node scripts/screen-derivation-world.js",
     "derivation:loop": "node scripts/run-derivation-loop.js",
     "derivation:episode": "node scripts/run-derivation-episode.js",
@@ -354,6 +356,7 @@
     "jsonrepair": "3.13.2",
     "n3": "^2.0.3",
     "node-pty": "^1.0.0",
+    "rdf-validate-shacl": "^0.6.5",
     "yaml": "2.9.0",
     "zod": "^4.4.1"
   },

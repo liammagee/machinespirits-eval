@@ -1192,6 +1192,13 @@ Interactive commands:
   /analysis              explain the learner reading and teaching approach plainly
   /analysis technical    show the full classifier, reasoning-map, field, and trace evidence
   /a                     alias for /analysis
+  /proof                 check the Nocturne Lean certificate and semantic-web projections
+  /proof check [lean|semantic]
+                         run both proof checks or one named check
+  /proof inspect [authored|learner|tutor]
+                         inspect graph counts, boundaries, and artifact paths
+  /proof export          regenerate and validate the semantic-web fixture
+  /proof paths           show the raw certificate and graph artifact locations
   /field                 show a lightweight interaction-field trajectory
   /f                     alias for /field
   /viz                   write a lightweight field SVG + JSON now
@@ -9388,6 +9395,7 @@ function printTutorStubFeatureMap(state = null) {
   );
   console.log(`${C.cyan}  curriculum ${C.reset} npm run tutor:stub:workplan -- --module <id>`);
   console.log(`${C.cyan}  board      ${C.reset} /board inside any normal tutor-stub session`);
+  console.log(`${C.cyan}  proof DAG  ${C.reset} /proof inside any normal tutor-stub session`);
   console.log(`${C.cyan}  pure chat  ${C.reset} npm run tutor:stub:passthrough`);
   console.log(`${C.cyan}  QA preview ${C.reset} npm run tutor:stub:qa -- --suite core --runs 1 --dry-run`);
 
@@ -9479,6 +9487,11 @@ function printInteractiveHelp(state = null) {
   if (commandAvailable('/board')) {
     console.log(
       `${C.dim}  /board reads workplan/items live and starts the selected card as a fresh reflective inquiry; /board <item-id> selects directly.${C.reset}`,
+    );
+  }
+  if (commandAvailable('/proof')) {
+    console.log(
+      `${C.dim}  /proof checks the deterministic Nocturne certificate fixture; /proof inspect learner or tutor shows the public projections. Use /analysis technical for this session's live DAG state.${C.reset}`,
     );
   }
   if (state?.capabilities?.capabilities?.learning_summary?.active) {
@@ -18739,6 +18752,8 @@ async function main() {
       pool = tutorStubStaticCommandCompletions('/settings', commandOptions);
     } else if (trimmed.startsWith('/analysis ')) {
       pool = tutorStubStaticCommandCompletions('/analysis', commandOptions);
+    } else if (trimmed.startsWith('/proof ')) {
+      pool = tutorStubStaticCommandCompletions('/proof', commandOptions);
     } else if (trimmed.startsWith('/demo ')) {
       pool = tutorStubStaticCommandCompletions('/demo', commandOptions);
     } else if (trimmed.startsWith('/transcript ') || trimmed.startsWith('/html ')) {
@@ -22157,6 +22172,208 @@ async function main() {
       publicTranscriptChanged: false,
     });
     return { answered: true, question, answer: reply };
+  }
+
+  function printProofDagArtifactPaths() {
+    const rows = [
+      ['operator guide', 'docs/proof-dag-verification-and-inspection.md'],
+      ['Lean certificate', 'tools/proof-dag-lean/ProofDag/Generated/World001Nocturne.lean'],
+      ['authored graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/authored.ttl'],
+      ['learner graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/learner-proxy.ttl'],
+      ['tutor graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/tutor-model.ttl'],
+      ['combined graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/proof-dags.trig'],
+      ['SHACL report', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/validation-report.json'],
+    ];
+    console.log(`${C.brightCyan}${C.bold}proof-DAG artifacts >${C.reset} deterministic Nocturne fixture`);
+    for (const [label, file] of rows) console.log(`${C.dim}  ${label}: ${file}${C.reset}`);
+    console.log(
+      `${C.dim}  authored files contain private world truth; learner and tutor files must remain public-only${C.reset}\n`,
+    );
+    return rows;
+  }
+
+  function runProofDagLeanCheck() {
+    const result = spawnSync(process.execPath, ['scripts/check-proof-dag-lean.js', '--require-lake'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: process.env,
+    });
+    if (result.error) throw result.error;
+    if (result.status !== 0) {
+      const detail = [result.stdout, result.stderr]
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+        .join('\n');
+      throw new Error(`Lean certificate check failed${detail ? `:\n${detail}` : ''}`);
+    }
+    const theoremCount = /World\s+\S+:\s+(\d+) authored proof-path theorem/u.exec(result.stdout)?.[1] || 'all';
+    return {
+      ok: true,
+      theoremCount,
+      command: 'npm run derivation:lean-cert:check',
+    };
+  }
+
+  function printProofDagSemanticLayer(result, layer) {
+    const graph = result.validation.graphs[layer];
+    if (layer === 'authored') {
+      console.log(`${C.brightMagenta}${C.bold}authored >${C.reset} private authority graph`);
+      console.log(
+        `${C.dim}  ${graph.quadCount} quads · SHACL ${graph.conforms ? 'conforms' : 'fails'} · ${result.world.premises.length} premises · ${result.world.rules.length} rules · ${result.world.proofPaths.length} positive proof paths${C.reset}`,
+      );
+      console.log(
+        `${C.dim}  raw: tools/proof-dag-semantic-web/Generated/World001Nocturne/authored.ttl (contains the secret and authored identifiers)${C.reset}`,
+      );
+      return;
+    }
+    if (layer === 'learner') {
+      const projection = result.projections.learnerProxyDag;
+      const metrics = projection.metrics || {};
+      console.log(`${C.cyan}${C.bold}learner >${C.reset} public-only proxy graph at fixture turn ${projection.turn}`);
+      console.log(
+        `${C.dim}  ${graph.quadCount} quads · SHACL ${graph.conforms ? 'conforms' : 'fails'} · ${metrics.groundedCount || 0} grounded · ${metrics.voicedDerivedCount || 0} voiced · ${metrics.hypothesisCount || 0} hypotheses · ${metrics.answerCandidateCount || 0} answers${C.reset}`,
+      );
+      console.log(
+        `${C.dim}  source redaction audit passed · raw: tools/proof-dag-semantic-web/Generated/World001Nocturne/learner-proxy.ttl${C.reset}`,
+      );
+      return;
+    }
+    const projection = result.projections.tutorLearnerDagModel;
+    const assessment = projection.assessment || {};
+    console.log(
+      `${C.brightBlue}${C.bold}tutor >${C.reset} public-only advisory model at fixture turn ${projection.turn}`,
+    );
+    console.log(
+      `${C.dim}  ${graph.quadCount} quads · SHACL ${graph.conforms ? 'conforms' : 'fails'} · best-path coverage ${assessment.bestPathCoverage ?? 0} · bottleneck ${assessment.bottleneck || 'none'} · ${assessment.missingPremiseCount || 0} missing premises (counts only)${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  source redaction audit passed · raw: tools/proof-dag-semantic-web/Generated/World001Nocturne/tutor-model.ttl${C.reset}`,
+    );
+  }
+
+  async function handleProofDagCommand(argument = '', { duringTurn = false } = {}) {
+    clearStatusLine();
+    const parts = String(argument || '')
+      .trim()
+      .toLowerCase()
+      .split(/\s+/u)
+      .filter(Boolean);
+    const action = parts[0] || 'check';
+    const target = parts[1] || 'all';
+    const usage = '/proof [check [lean|semantic] | inspect [authored|learner|tutor] | export | paths]';
+    const validCheckTargets = new Set(['all', 'lean', 'semantic']);
+    const validInspectTargets = new Set(['all', 'authored', 'learner', 'tutor']);
+
+    if (action === 'help') {
+      console.log(`${C.brightCyan}${C.bold}proof DAG >${C.reset} ${usage}`);
+      console.log(
+        `${C.dim}  /proof runs both checks; inspect reads the deterministic fixture; /analysis technical inspects this session's live DAG state${C.reset}\n`,
+      );
+      return { handled: true, ok: true, action };
+    }
+    if (action === 'paths') {
+      const paths = printProofDagArtifactPaths();
+      appendTraceEvent(state.trace, {
+        type: 'proof_dag_verification_popup',
+        action,
+        target: 'all',
+        paths: paths.map(([, file]) => file),
+        duringTurn,
+        publicTranscriptChanged: false,
+      });
+      return { handled: true, ok: true, action };
+    }
+    if (
+      !['check', 'inspect', 'export'].includes(action) ||
+      (action === 'check' && !validCheckTargets.has(target)) ||
+      (action === 'inspect' && !validInspectTargets.has(target)) ||
+      (action === 'export' && parts.length > 1)
+    ) {
+      console.log(`${C.red}proof error:${C.reset} use ${usage}\n`);
+      return { handled: true, ok: false, action, reason: 'invalid_arguments' };
+    }
+
+    console.log(`${C.brightCyan}${C.bold}proof DAG >${C.reset} ${action} · deterministic Nocturne fixture`);
+    if (state.world?.id && state.world.id !== 'world_001_nocturne') {
+      console.log(
+        `${C.dim}  current session is ${state.world.id}; these formal artifacts remain the fixed Nocturne fixture. Use /analysis technical for the live session.${C.reset}`,
+      );
+    }
+
+    const outcome = {
+      handled: true,
+      ok: true,
+      action,
+      target,
+      worldId: 'world_001_nocturne',
+      lean: null,
+      semantic: null,
+    };
+    try {
+      if (action === 'check' && target !== 'semantic') {
+        outcome.lean = runProofDagLeanCheck();
+        console.log(
+          `${C.green}  Lean: PASS${C.reset}${C.dim} · ${outcome.lean.theoremCount} authored proof-path theorems type-check${C.reset}`,
+        );
+      }
+
+      if (action !== 'check' || target !== 'lean') {
+        const { runProofDagSemanticWebExport } = await import('./export-proof-dag-semantic-web.js');
+        const result = await runProofDagSemanticWebExport({
+          world: 'config/drama-derivation/world-001-nocturne.yaml',
+          outDir: 'tools/proof-dag-semantic-web/Generated/World001Nocturne',
+          check: action !== 'export',
+        });
+        outcome.semantic = {
+          conforms: result.validation.conforms,
+          stale: result.stale,
+          graphs: result.validation.graphs,
+        };
+
+        if (action === 'export') {
+          console.log(
+            `${C.green}  semantic export: PASS${C.reset}${C.dim} · ${result.stale.length ? `refreshed ${result.stale.join(', ')}` : 'artifacts already current'}${C.reset}`,
+          );
+        } else {
+          console.log(
+            `${C.green}  semantic web: PASS${C.reset}${C.dim} · source redaction audit, SHACL, and stale-artifact check passed${C.reset}`,
+          );
+        }
+
+        const layers = action === 'inspect' ? (target === 'all' ? ['authored', 'learner', 'tutor'] : [target]) : [];
+        for (const layer of layers) printProofDagSemanticLayer(result, layer);
+        if (action !== 'inspect') {
+          for (const [layer, graph] of Object.entries(result.validation.graphs)) {
+            console.log(
+              `${C.dim}    ${layer}: ${graph.quadCount} quads · SHACL ${graph.conforms ? 'conforms' : 'fails'}${C.reset}`,
+            );
+          }
+        }
+      }
+
+      console.log(
+        `${C.dim}  This does not replace or prove the live JS entitlement gate. /proof inspect learner shows the fixture; /analysis technical shows this session.${C.reset}\n`,
+      );
+    } catch (error) {
+      outcome.ok = false;
+      outcome.error = error.message;
+      console.log(`${C.red}  FAIL:${C.reset} ${error.message}\n`);
+    }
+
+    appendTraceEvent(state.trace, {
+      type: 'proof_dag_verification_popup',
+      action,
+      target,
+      fixtureWorldId: outcome.worldId,
+      currentWorldId: state.world?.id || null,
+      ok: outcome.ok,
+      lean: outcome.lean,
+      semantic: outcome.semantic,
+      error: outcome.error || null,
+      duringTurn,
+      publicTranscriptChanged: false,
+    });
+    return outcome;
   }
 
   function handleDirectorGuidanceCommand(argument = '', { duringTurn = false, source = '/meta' } = {}) {
@@ -25724,6 +25941,11 @@ async function main() {
         duringTurn,
       }).finally(finishSlashCommand);
       promise.tutorStubBlocksPrompt = true;
+      return promise;
+    }
+    if (command === '/proof') {
+      const promise = handleProofDagCommand(commandArg, { duringTurn }).finally(finishSlashCommand);
+      promise.tutorStubBlocksPrompt = !duringTurn;
       return promise;
     }
     if (command === '/settings') {
