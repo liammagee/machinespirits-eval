@@ -1,0 +1,56 @@
+name: Workplan main renderer
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/workplan-render-main.yml'
+      - 'package.json'
+      - 'scripts/workplan.js'
+      - 'workplan/items/**'
+      - 'workplan/schema/item.schema.json'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: workplan-main-render
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The renderer only imports yaml; avoid building the repository's native dependencies.
+      - name: Install yaml
+        run: npm install --no-save yaml
+
+      - name: Fast-forward to the latest main
+        run: git pull --ff-only origin main
+
+      - name: Render and validate generated views
+        run: |
+          npm run wp:render
+          npm run wp:check
+
+      - name: Commit generated views
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add workplan/BOARD.md workplan/board.json
+          if git diff --cached --quiet; then
+            echo "Generated workplan views are already current."
+            exit 0
+          fi
+          git commit -m "workplan: refresh generated views [skip ci]"
+          git push origin HEAD:main

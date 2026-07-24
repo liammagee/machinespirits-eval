@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { generatedViewPolicy } from '../scripts/workplan.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = path.join(ROOT, 'scripts', 'workplan.js');
@@ -139,6 +140,36 @@ test('check passes only when generated board files match items', () => {
   assert.equal(stale.status, 1);
   assert.match(stale.stdout, /board\.json.*stale/);
   assert.match(stale.stdout, /BOARD\.md.*stale/);
+});
+
+test('source-only check validates items without requiring generated views', () => {
+  const dir = makeBoard();
+  writeItem(dir, 'sample-good', GOOD);
+  const missingViews = run(dir, ['check', '--source-only']);
+  assert.equal(missingViews.status, 0, missingViews.stdout + missingViews.stderr);
+  assert.match(missingViews.stdout, /source check passed.*generated views not inspected/);
+
+  writeItem(dir, 'sample-bad', { ...GOOD, id: 'sample-bad', priority: 'P9' });
+  const invalidSource = run(dir, ['check', '--source-only']);
+  assert.equal(invalidSource.status, 1);
+  assert.match(invalidSource.stdout, /priority="P9" not in/);
+});
+
+test('generated-view PR policy rejects aggregate files unless explicitly allowed', () => {
+  const sourceOnly = generatedViewPolicy(['workplan/items/sample-good.md', 'scripts/workplan.js']);
+  assert.deepEqual(sourceOnly, { changes: [], allowed: true });
+
+  const generated = generatedViewPolicy([
+    './workplan/board.json',
+    'workplan/board.json',
+    'workplan/items/sample-good.md',
+    'workplan/BOARD.md',
+  ]);
+  assert.deepEqual(generated, {
+    changes: ['workplan/BOARD.md', 'workplan/board.json'],
+    allowed: false,
+  });
+  assert.equal(generatedViewPolicy(generated.changes, { allow: true }).allowed, true);
 });
 
 test('ingest --daily skips self-work captures by arxiv id', () => {

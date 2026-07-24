@@ -29,6 +29,18 @@ Defaults, not laws. Deviate when it helps; note why in the item log.
   head branch; unknown and ambiguous branches fail closed. Editing the PR body
   reruns that check. When the work folds a result into the paper, also link the
   paper § and the version.
+- Keep workplan changes source-only. Commit `workplan/items/*.md` and other
+  authored inputs, but do not commit `workplan/BOARD.md` or
+  `workplan/board.json`; they are shared aggregate outputs and are the usual
+  source of otherwise pointless merge conflicts. Use `--no-render` with
+  mutating workplan CLI commands when practical. If a local UI or command has
+  refreshed the views, leave them unstaged or restore those two files before
+  opening the PR. Run `npm run wp:source-check`; PR CI applies the same check and
+  rejects generated-view diffs.
+- A serialized workflow regenerates and strictly checks the views on `main`
+  after source changes merge. The `workplan-generated-update` PR label is an
+  audited exception for deliberate renderer migrations, not a routine conflict
+  workaround.
 - Daily-routine roundup PRs follow `notes/daily-notes/README.md`: non-overlapping
   windows, dedup by arxiv id, tile the timeline. Triage their actions into
   `workplan/inbox/` rather than letting them live only in the PR.

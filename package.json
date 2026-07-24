@@ -57,6 +57,8 @@
     "wp:list": "node scripts/workplan.js list",
     "wp:validate": "node scripts/workplan.js validate",
     "wp:check": "node scripts/workplan.js check",
+    "wp:source-check": "node scripts/workplan.js check --source-only",
+    "wp:generated-pr-check": "node scripts/workplan.js check-generated-pr",
     "wp:render": "node scripts/workplan.js render",
     "wp:ingest": "node scripts/workplan.js ingest",
     "wp:pr-link": "node scripts/check-pr-workplan-link.js",

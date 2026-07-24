@@ -23,6 +23,10 @@ derived view, historical context, or a cross-link. Concretely:
 - `BOARD.md` is the canonical human-readable board and `board.json` is the
   dashboard/machine view. Both are **generated** from `items/` by
   `scripts/workplan.js render`. Never hand-edit them.
+- Feature PRs commit workplan **source only**: `items/*.md`, `milestones.yaml`,
+  schema/tooling, or other authored files. They do not commit `BOARD.md` or
+  `board.json`. PR CI enforces this, then one serialized workflow on `main`
+  regenerates and commits both views after merge.
 - We **link, never copy.** An item points at the paper §, the `notes/` design
   doc, the `exports/` report, the run IDs, the atlas module, the PR. It does not
   restate them. `TODO.md` and `notes/` stay design history and rationale; they
@@ -130,16 +134,21 @@ Everyone reads this README first, then:
 
 1. **Agents (Claude Code, Codex, Gemini).** Read `items/` + `playbook/`. Create
    and edit item files directly — they're plain markdown. Set `owner` to
-   yourself and `branch` when you pick one up. The CLI (`add`/`triage`/`set`)
-   auto-renders the views; only run `workplan render` after hand-editing item
-   files. Follow the playbook; if you deviate, say so in the item log.
+   yourself and `branch` when you pick one up. On feature branches, use
+   `--no-render` with mutating CLI commands when practical, run
+   `npm run wp:source-check`, and leave `BOARD.md` / `board.json` out of the
+   commit. Local UI/CLI auto-renders are working views only; discard those two
+   diffs before opening the PR. Follow the playbook; if you deviate, say so in
+   the item log.
 
 2. **CLI (`scripts/workplan.js`).** The programmatic surface:
    `list`, `show <id>`, `add`, `triage <inbox-file>`, `set <id> <field> <value>`,
    `validate` (frontmatter ⇄ schema), `check` (validate items and prove the
-   generated board files are current), `render` (regenerate `BOARD.md` +
-   `board.json`), `ingest` (pull from `TODO.md` + `notes/daily-notes/`). Wired
-   into `npm run wp:*`.
+   generated board files are current), `check --source-only` (validate authored
+   source without inspecting generated files), `check-generated-pr` (enforce
+   source-only PRs), `render` (regenerate `BOARD.md` + `board.json`), and
+   `ingest` (pull from `TODO.md` + `notes/daily-notes/`). Wired into
+   `npm run wp:*`.
 
 3. **Skill (`/ms-workplan`).** The conversational entry. Routes a request
    ("what's active?", "capture this", "what's blocked on budget?") to the right
@@ -157,8 +166,15 @@ Everyone reads this README first, then:
    straight to `items/`, so capture and commitment stay separate on purpose.
 
 5. **GitHub.** GitHub is an integration surface, not the source of truth.
-   `.github/workflows/workplan-validate.yml` runs `npm run wp:check`,
-   `npm run wp:test`, and the PR workplan-link check. The PR template requests
+   `.github/workflows/workplan-validate.yml` runs `npm run wp:source-check`,
+   rejects generated workplan views in feature PRs, runs `npm run wp:test`, and
+   checks the PR's workplan link. The exceptional
+   `workplan-generated-update` label explicitly permits generated diffs for a
+   renderer migration; routine feature work must not use it. After merge,
+   `.github/workflows/workplan-render-main.yml` serializes renders on `main`,
+   runs the strict `npm run wp:check`, and commits only `BOARD.md` plus
+   `board.json` as `github-actions[bot]`. The repository must allow that
+   workflow's `contents: write` token to push its generated-only commit. The PR template requests
    `Workplan item: <id or N/A>`. If its placeholder is left untouched, the
    validator accepts only an exact, unique match between the PR head branch and
    an item's `branch:` field; explicit unknown ids and ambiguous branches still
@@ -194,6 +210,6 @@ older context:
 
 ## Conventions, in one breath
 
-Capture in `inbox/`, commit in `items/`, generate the views, link everything,
-copy nothing, and let every item say how it will prove it's done. The playbook
-holds the rest.
+Capture in `inbox/`, commit source in `items/`, let `main` publish the generated
+views, link everything, copy nothing, and let every item say how it will prove
+it's done. The playbook holds the rest.

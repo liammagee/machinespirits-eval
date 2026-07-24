@@ -15,6 +15,8 @@
  *   validate                 # frontmatter ⇄ schema/item.schema.json (exit 1 on failure)
  *   render                   # regenerate BOARD.md + board.json
  *   check                    # validate items and verify generated board files are current
+ *   check --source-only      # validate source items without requiring generated views to change
+ *   check-generated-pr       # reject generated board views in feature PR diffs
  *   ingest [--todo] [--daily]# pull open TODO.md items + daily-notes actions → inbox/
  *
  * Paths are env-overridable for hermetic tests:
@@ -23,6 +25,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 
@@ -38,6 +41,7 @@ export const OWNERS = ['human', 'claude', 'codex', 'gemini', 'unassigned'];
 const PRIORITY_ORDER = { P0: 0, P1: 1, P2: 2, P3: 3 };
 const SELF_WORK_ARXIV_IDS = new Set(['2603.10450']);
 const SELF_WORK_PATTERNS = [/\bLiam\s+Magee\b/i, /\bMachine\s+Spirits\b/i];
+export const GENERATED_WORKPLAN_VIEWS = ['workplan/BOARD.md', 'workplan/board.json'];
 
 // ---- paths (lazy, env-overridable) ----------------------------------------
 function paths() {
@@ -169,6 +173,20 @@ function flags(argv) {
     } else out._.push(a);
   }
   return out;
+}
+
+export function findGeneratedViewChanges(changedPaths) {
+  const generated = new Set(GENERATED_WORKPLAN_VIEWS);
+  const normalized = changedPaths.map((file) => String(file).replaceAll('\\', '/').replace(/^\.\//, ''));
+  return [...new Set(normalized)].filter((file) => generated.has(file)).sort();
+}
+
+export function generatedViewPolicy(changedPaths, { allow = false } = {}) {
+  const changes = findGeneratedViewChanges(changedPaths);
+  return {
+    changes,
+    allowed: changes.length === 0 || allow,
+  };
 }
 
 function cmdList(argv) {
@@ -574,11 +592,25 @@ export function renderBoard() {
   return core.counts;
 }
 
-function cmdCheck() {
+function cmdCheck(argv = []) {
+  const f = flags(argv);
   const validation = validateItems();
   printValidationResult(validation);
   const errors = [];
   if (validation.failures.length) errors.push('fix invalid item frontmatter');
+
+  const sourceOnly = Boolean(f['source-only']);
+  if (sourceOnly) {
+    const expected = buildBoardDocuments(process.env.WORKPLAN_RENDERED_AT || 'source-only-check');
+    JSON.parse(expected.json);
+    if (errors.length) {
+      console.log('');
+      for (const e of errors) console.log(`workplan source check: ${e}`);
+      process.exit(1);
+    }
+    console.log(`\nworkplan source check passed (${expected.board.counts.total} items; generated views not inspected)`);
+    return;
+  }
 
   const p = paths();
   const actualBoard = readBoardJson(p.boardJson);
@@ -601,6 +633,55 @@ function cmdCheck() {
     process.exit(1);
   }
   console.log(`\nworkplan check passed (${expected.board.counts.total} items)`);
+}
+
+function envAllowsGeneratedViews() {
+  return ['1', 'true', 'yes'].includes(String(process.env.WORKPLAN_ALLOW_GENERATED_CHANGES || '').toLowerCase());
+}
+
+function cmdCheckGeneratedPr(argv = []) {
+  const f = flags(argv);
+  const base = f.base || process.env.GITHUB_BASE_SHA;
+  const head = f.head || process.env.GITHUB_HEAD_SHA || 'HEAD';
+  if (!base) fail('usage: check-generated-pr --base <base-sha> [--head <head-sha>]');
+
+  const result = spawnSync(
+    'git',
+    ['diff', '--name-only', '--diff-filter=ACDMRTUXB', `${base}...${head}`, '--', ...GENERATED_WORKPLAN_VIEWS],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  if (result.error) {
+    fail(`could not inspect PR diff (${result.error.message})`);
+  }
+  if (result.status !== 0) {
+    fail(`could not inspect PR diff (${String(result.stderr || '').trim() || `git exited ${result.status}`})`);
+  }
+
+  const changedPaths = result.stdout
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const policy = generatedViewPolicy(changedPaths, {
+    allow: Boolean(f.allow) || envAllowsGeneratedViews(),
+  });
+  if (!policy.allowed) {
+    fail(
+      [
+        'feature PRs must not modify generated workplan views:',
+        ...policy.changes.map((file) => `  - ${file}`),
+        '',
+        'Commit only workplan/items/*.md (and other source files), then discard these generated-view changes.',
+        'The serialized main-only renderer refreshes both files after merge.',
+        'For an exceptional renderer migration, add the workplan-generated-update label to the PR.',
+      ].join('\n'),
+    );
+  }
+
+  if (policy.changes.length) {
+    console.log(`generated workplan view exception accepted: ${policy.changes.join(', ')}`);
+  } else {
+    console.log('generated workplan view check passed (feature PR is source-only)');
+  }
 }
 
 function cmdRender() {
@@ -829,7 +910,8 @@ const USAGE = `workplan — the project working board (see workplan/README.md)
   triage <inbox-file> [--type T --priority P --owner O --verification "…"]
   set <id> <field> <value> [--owner O --branch B]
   validate
-  check
+  check [--source-only]
+  check-generated-pr --base <base-sha> [--head <head-sha>]
   render          (add/triage/set auto-render BOARD.md + board.json; --no-render to skip)
   ingest [--todo] [--daily]`;
 
@@ -849,7 +931,9 @@ function main() {
     case 'validate':
       return cmdValidate();
     case 'check':
-      return cmdCheck();
+      return cmdCheck(argv);
+    case 'check-generated-pr':
+      return cmdCheckGeneratedPr(argv);
     case 'render':
       return cmdRender();
     case 'ingest':
