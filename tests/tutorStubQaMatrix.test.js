@@ -1270,7 +1270,7 @@ test('auto-eval dry run records selected learner profile contract', () => {
     assert.equal(summary.config.autoLearnerProfileId, 'proof_skipper');
     assert.equal(
       summary.config.autoLearnerProfileContract.schema,
-      'machinespirits.tutor-stub.learner-profile-contract.v3',
+      'machinespirits.tutor-stub.learner-profile-contract.v4',
     );
     assert.equal(summary.config.autoLearnerProfileContract.id, 'proof_skipper');
     const profileArg = summary.results[0].command[summary.results[0].command.indexOf('--auto-learner-profile') + 1];

@@ -647,10 +647,17 @@ test('learner prompts contain behavior only while measurement targets stay exter
     const summary = learnerProfileContractSummary(id);
     assert.match(prompt, /private behavior brief/u, id);
     assert.match(prompt, /Recurring behavior:/u, id);
+    assert.match(prompt, /Visible voice:/u, id);
+    assert.ok(summary.publicVoice?.signature?.length > 40, id);
     assert.doesNotMatch(prompt, measurementLanguage, id);
     assert.doesNotMatch(prompt, new RegExp(`\\b${id}\\b`, 'u'), id);
     assert.ok(summary.traceSignatureTargets, id);
     assert.ok(summary.dagSignatureTargets, id);
     assert.ok(Object.hasOwn(summary, 'observabilityContract'), id);
   }
+});
+
+test('every built-in learner character has a unique visible voice signature', () => {
+  const signatures = learnerProfileIds().map((id) => learnerProfileContractSummary(id).publicVoice.signature);
+  assert.equal(new Set(signatures).size, signatures.length);
 });

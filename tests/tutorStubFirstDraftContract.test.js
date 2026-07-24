@@ -136,6 +136,57 @@ test('assigns every delivered response axis to exactly its intended host slot', 
   );
 });
 
+test('gives every tutor register a distinct executable voice instruction', () => {
+  const stances = [
+    'plain',
+    'precise',
+    'brisk',
+    'warm',
+    'witnessing',
+    'charismatic',
+    'ironic',
+    'sarcastic',
+    'face_threat',
+  ];
+  const instructions = stances.map((engagementStance) => {
+    const contract = buildTutorStubFirstDraftContract({
+      learnerText: 'What follows from the assay?',
+      responseConfiguration: configuration({ engagement_stance: engagementStance }),
+      dramaticReleaseFrame: { active: false, entries: [] },
+    });
+    assert.ok(contract.performance.stance_execution?.length > 60, engagementStance);
+    return contract.host_plan.slots.find((slot) => slot.id === 'handoff').instruction;
+  });
+
+  assert.equal(new Set(instructions).size, stances.length);
+  assert.match(instructions[stances.indexOf('witnessing')], /Reflect concern/iu);
+  assert.match(instructions[stances.indexOf('sarcastic')], /Mock-praise the claim/iu);
+});
+
+test('explicit-only tutor characters receive concrete subject-action instructions', () => {
+  const adversarial = buildTutorStubFirstDraftContract({
+    learnerText: 'I think the assay proves the metal is pure.',
+    responseConfiguration: configuration({
+      actorial_part: 'adversarial_teacher',
+      actorial_part_label: 'adversarial teacher',
+    }),
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const exacting = buildTutorStubFirstDraftContract({
+    learnerText: 'I think the assay proves the metal is pure.',
+    responseConfiguration: configuration({
+      actorial_part: 'exacting_schoolmaster',
+      actorial_part_label: 'exacting schoolmaster',
+    }),
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+
+  assert.match(adversarial.performance.part_execution, /subject-native counterexample/iu);
+  assert.match(adversarial.host_plan.slots.find((slot) => slot.id === 'part').instruction, /bounded revision/iu);
+  assert.match(exacting.performance.part_execution, /discipline-specific performance/iu);
+  assert.match(exacting.host_plan.slots.find((slot) => slot.id === 'part').instruction, /precise retry/iu);
+});
+
 test('keeps a writable-entry scene invitation declarative after the uptake answers the learner', () => {
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'What should I write next?',

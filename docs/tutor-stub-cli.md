@@ -536,11 +536,21 @@ compatible. Because `/learner` now selects the learner character, use `/mode
 learner` to return terminal input from coach or auto mode to public learner
 speech.
 
-Use `/register <style>` to direct the engagement stance. In an interactive
-terminal, `/character tutor` and `/character learner` open scrolling keyboard
-selectors with the current choice highlighted; Up/Down, Page Up/Down,
-Home/End, Enter, and Escape follow the other CLI pickers. Pipes and scripts
-retain the current-value-and-choice list. All direct forms autocomplete:
+Use `/register <style>` to direct the engagement stance. A register controls
+**how the tutor sounds**—literal, clipped, inviting, witnessing, dramatic,
+ironic, or sarcastic. A tutor character controls **what the tutor repeatedly
+does**—work beside the learner, inspect an exhibit, keep the record, argue a
+case, challenge an inference, introduce a counterexample, or demand a concrete
+performance. These axes compose: a warm skeptic makes the objection gently; a
+sarcastic scene partner collaborates while giving the weak claim a dry edge.
+
+In an interactive terminal, bare `/register`, `/character tutor`, and
+`/character learner` open scrolling keyboard selectors with the current choice
+highlighted. The register picker shows a `sounds >` signature; the tutor picker
+shows a `does >` signature; the learner picker shows both its recurring pattern
+and public voice. Up/Down, Page Up/Down, Home/End, Enter, and Escape follow the
+other CLI pickers. Pipes and scripts retain detailed current-value-and-choice
+lists. All direct forms autocomplete:
 
 Bare `/character` and `/register` are control navigation, so they do not repeat
 the latest tutor utterance when they finish. Choosing a new tutor character is
@@ -554,11 +564,19 @@ trace rather than being printed as a terminal report.
 
 ```text
 /register warm
+/register sarcastic
 /tutor advocate
 /learner counterexample_hunter
 /register auto
 /tutor auto
 ```
+
+`sarcastic` is an explicit-only negative register. It uses one unmistakable
+beat of dry mock praise aimed at the claim, formula, or dodge, immediately
+reverses that praise against public evidence, and supplies a repair move. It
+must never insult the learner. Adaptive selection and `/random` will not choose
+it. The more severe `face_threat` condition remains simulated-only and is
+rejected by the interactive command surface.
 
 Launch-time aliases provide the same distinction:
 

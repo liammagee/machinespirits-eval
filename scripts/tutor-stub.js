@@ -3878,6 +3878,8 @@ function engagementStanceDefinitionSummary(name) {
     valence: def.valence || 'unknown',
     router_selectable: def.router_selectable === true,
     simulated_only: def.simulated_only === true,
+    public_signature: String(def.public_signature || '').trim() || null,
+    contrast: String(def.contrast || '').trim() || null,
     reviewer_cues: def.reviewer_cues || def.trigger || null,
     stance_contract: String(def.stance_contract || '').trim(),
     required_moves: Array.isArray(def.required_moves) ? def.required_moves : [],
@@ -20439,6 +20441,7 @@ async function main() {
         label: contract?.intent?.shortName || id,
         group: presentation?.group || (coreIds.has(id) ? 'core' : 'stress probe'),
         description: presentation?.description || contract?.behaviorContract?.stableFailure?.description || '',
+        voice: presentation?.voice || contract?.publicVoice?.signature || '',
         nearestNeighbor: presentation?.nearestNeighbor || null,
         contrast: presentation?.contrast || null,
       };
@@ -20449,6 +20452,7 @@ async function main() {
         label: 'Custom launch profile',
         group: 'custom',
         description: oneLine(mixedLearner.profile, { max: 180 }),
+        voice: 'Uses the custom launch prompt without a named public voice contract.',
         nearestNeighbor: null,
         contrast: null,
       });
@@ -20507,6 +20511,7 @@ async function main() {
         `${C.brightYellow}${C.bold}  pattern >${C.reset} ${oneLine(selectedEntry.description, {
           max: descriptionWidth,
         })}`,
+        `${C.cyan}${C.bold}  sounds >${C.reset} ${oneLine(selectedEntry.voice, { max: descriptionWidth })}`,
         selectedEntry.nearestNeighbor && selectedEntry.contrast
           ? `${C.dim}  differs > from ${selectedEntry.nearestNeighbor}: ${oneLine(selectedEntry.contrast, {
               max: Math.max(24, width - selectedEntry.nearestNeighbor.length - 20),
@@ -20574,6 +20579,119 @@ async function main() {
     });
   }
 
+  async function pickLiveTutorRegisterWithKeyboard(defaultRegisterId = 'auto') {
+    const definitions = getEngagementStanceDefinitions();
+    const palette = state.register?.palette || [];
+    const entries = [
+      {
+        id: 'auto',
+        label: 'Adaptive selection',
+        group: 'automatic',
+        signature: 'The conversation chooses how the tutor sounds on each turn.',
+        contrast: 'Character remains independent: it controls what the tutor does in the scene.',
+      },
+      ...palette
+        .filter((id) => definitions[id]?.simulated_only !== true)
+        .map((id) => ({
+          id,
+          label: displayDiagnosticLabel(id),
+          group: definitions[id]?.router_selectable === true ? 'adaptive-safe' : 'explicit-only',
+          signature: oneLine(definitions[id]?.public_signature || definitions[id]?.stance_contract, { max: 220 }),
+          contrast: oneLine(definitions[id]?.contrast, { max: 220 }),
+        })),
+    ];
+    let selectedIndex = Math.max(
+      0,
+      entries.findIndex((entry) => entry.id === (defaultRegisterId || 'auto')),
+    );
+    const viewportHeight = Math.min(entries.length, Math.max(4, Math.min(8, Number(output.rows || 24) - 9)));
+    let viewportStart = Math.max(0, Math.min(selectedIndex, entries.length - viewportHeight));
+    let renderedLineCount = 0;
+    const keepVisible = () => {
+      if (selectedIndex < viewportStart) viewportStart = selectedIndex;
+      if (selectedIndex >= viewportStart + viewportHeight) viewportStart = selectedIndex - viewportHeight + 1;
+    };
+    const clearMenu = () => {
+      if (!renderedLineCount) return;
+      moveCursor(output, 0, -renderedLineCount);
+      for (let index = 0; index < renderedLineCount; index += 1) {
+        cursorTo(output, 0);
+        clearLine(output, 0);
+        if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
+      }
+      if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
+      renderedLineCount = 0;
+    };
+    const render = () => {
+      keepVisible();
+      clearMenu();
+      const width = Math.max(60, Math.min(Number(output.columns || 100), 140));
+      const visible = entries.slice(viewportStart, viewportStart + viewportHeight);
+      const selected = entries[selectedIndex];
+      const lines = [
+        `${C.dim}${viewportStart > 0 ? `  ↑ ${viewportStart} more` : '  '}${C.reset}`,
+        ...visible.map((entry, offset) => {
+          const active = viewportStart + offset === selectedIndex;
+          const plain = `${active ? '›' : ' '} ${entry.id.padEnd(16)} ${oneLine(entry.label, {
+            max: Math.max(12, width - 38),
+          })} [${entry.group}]`;
+          return active ? `${C.brightMagenta}${C.bold}${plain}${C.reset}` : plain;
+        }),
+        `${C.dim}${
+          viewportStart + viewportHeight < entries.length
+            ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
+            : '  '
+        }${C.reset}`,
+        `${C.brightYellow}${C.bold}  sounds >${C.reset} ${oneLine(selected.signature, {
+          max: Math.max(36, width - 13),
+        })}`,
+        `${C.dim}  differs > ${oneLine(selected.contrast, { max: Math.max(34, width - 13) })}${C.reset}`,
+        `${C.dim}  register changes voice; tutor character changes the repeated public action${C.reset}`,
+      ];
+      for (const line of lines) output.write(`${line}\n`);
+      renderedLineCount = lines.length;
+    };
+    emitKeypressEvents(input);
+    const priorListeners = input.listeners('keypress');
+    for (const listener of priorListeners) input.removeListener('keypress', listener);
+    const wasRaw = Boolean(input.isRaw);
+    if (!wasRaw) input.setRawMode(true);
+    return new Promise((resolve) => {
+      const finish = (selection) => {
+        input.removeListener('keypress', onKeypress);
+        for (const listener of priorListeners) input.on('keypress', listener);
+        if (!wasRaw) input.setRawMode(false);
+        clearMenu();
+        resolve(selection);
+      };
+      const move = (delta) => {
+        selectedIndex = (selectedIndex + delta + entries.length) % entries.length;
+        render();
+      };
+      const onKeypress = (character, key = {}) => {
+        if ((key.ctrl && key.name === 'c') || key.name === 'escape') return finish(null);
+        if (key.name === 'up' || character === 'k') return move(-1);
+        if (key.name === 'down' || character === 'j') return move(1);
+        if (key.name === 'pageup') return move(-viewportHeight);
+        if (key.name === 'pagedown') return move(viewportHeight);
+        if (key.name === 'home') {
+          selectedIndex = 0;
+          render();
+          return;
+        }
+        if (key.name === 'end') {
+          selectedIndex = entries.length - 1;
+          render();
+          return;
+        }
+        if (key.name === 'return' || key.name === 'enter') finish(entries[selectedIndex]);
+      };
+      input.on('keypress', onKeypress);
+      input.resume();
+      render();
+    });
+  }
+
   async function pickLiveTutorCharacterWithKeyboard(defaultCharacterId = 'auto') {
     const definitions = getActorialPartDefinitions();
     const adaptiveParts = new Set(tutorStubRandomizableActorialPartIds());
@@ -20582,14 +20700,16 @@ async function main() {
         id: 'auto',
         label: 'Adaptive selection',
         group: 'automatic',
-        description:
+        signature:
           'Return character choice to light adaptation, random performance, or the configured teaching policy.',
+        contrast: 'Register remains independent: it controls how that action sounds.',
       },
       ...tutorStubConfigurableActorialPartIds().map((id) => ({
         id,
         label: definitions[id]?.label || displayDiagnosticLabel(id),
         group: adaptiveParts.has(id) ? 'adaptive-safe' : 'explicit-only',
-        description: oneLine(definitions[id]?.contract, { max: 220 }),
+        signature: oneLine(definitions[id]?.public_signature || definitions[id]?.contract, { max: 220 }),
+        contrast: oneLine(definitions[id]?.contrast, { max: 220 }),
       })),
     ];
     let selectedIndex = Math.max(
@@ -20634,7 +20754,9 @@ async function main() {
             ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
             : '  '
         }${C.reset}`,
-        `${C.brightYellow}${C.bold}  does >${C.reset} ${oneLine(selected.description, { max: Math.max(36, width - 11) })}`,
+        `${C.brightYellow}${C.bold}  does >${C.reset} ${oneLine(selected.signature, { max: Math.max(36, width - 11) })}`,
+        `${C.dim}  differs > ${oneLine(selected.contrast, { max: Math.max(34, width - 13) })}${C.reset}`,
+        `${C.dim}  character changes the repeated public action; register changes its voice${C.reset}`,
       ];
       for (const line of lines) output.write(`${line}\n`);
       renderedLineCount = lines.length;
@@ -25135,6 +25257,25 @@ async function main() {
       return true;
     }
 
+    if (axis === 'register' && !String(argument || '').trim() && liveSettingsPickerAvailable() && !duringTurn) {
+      console.log(
+        `${C.brightMagenta}${C.bold}Tutor register · choose how the voice sounds with ↑/↓ and Enter${C.reset}`,
+      );
+      return pickLiveTutorRegisterWithKeyboard(explicitPerformanceDirectiveValue(state, 'register') || 'auto').then(
+        (selection) => {
+          if (!selection) return { suppressReprise: true, selected: false };
+          return Promise.resolve(
+            handleExplicitPerformanceDirectiveCommand('register', selection.id, { duringTurn: false }),
+          ).then((outcome) => ({
+            ...(outcome && typeof outcome === 'object' ? outcome : {}),
+            suppressReprise: true,
+            selected: true,
+            value: selection.id,
+          }));
+        },
+      );
+    }
+
     const rawAction = String(argument || '')
       .trim()
       .toLowerCase();
@@ -25150,7 +25291,21 @@ async function main() {
     if (!rawAction || rawAction === 'status') {
       console.log(`${C.brightMagenta}${C.bold}${publicAxis} direction >${C.reset} ${current || 'auto'}`);
       if (axis === 'register') {
-        console.log(`${C.dim}  choose: ${options.join(' · ')}${C.reset}`);
+        for (const option of options) {
+          const definition = getEngagementStanceDefinition(option) || {};
+          const group = definition.simulated_only
+            ? 'simulated-only'
+            : definition.router_selectable
+              ? 'adaptive-safe'
+              : 'explicit-only';
+          console.log(
+            `${C.dim}  ${option.padEnd(13)} [${group}] ${oneLine(
+              definition.public_signature || definition.stance_contract,
+              { max: 120 },
+            )}${C.reset}`,
+          );
+        }
+        console.log(`${C.dim}  register changes how the tutor sounds; character changes what it does${C.reset}`);
       } else {
         for (const option of options) {
           console.log(
@@ -25167,6 +25322,12 @@ async function main() {
     const clearing = EXPLICIT_PERFORMANCE_CLEAR_WORDS.has(rawAction);
     if (!clearing && !options.includes(requestedValue)) {
       console.log(`${C.red}${publicAxis} error:${C.reset} choose ${options.join(', ')}, or use ${command} auto\n`);
+      return true;
+    }
+    if (axis === 'register' && !clearing && getEngagementStanceDefinition(requestedValue)?.simulated_only === true) {
+      console.log(
+        `${C.red}${publicAxis} error:${C.reset} ${requestedValue} is a simulated-only evaluation condition and cannot be used in an interactive learner session\n`,
+      );
       return true;
     }
     const next = clearing ? null : requestedValue;
@@ -25229,6 +25390,17 @@ async function main() {
       }
     } else {
       console.log(`${C.brightMagenta}${C.bold}${publicAxis} direction >${C.reset} ${next || 'auto'}`);
+      const definition = next ? getEngagementStanceDefinition(next) : null;
+      if (definition?.public_signature) {
+        console.log(
+          `${C.dim}  Tutor replies will sound distinct in this way: ${oneLine(definition.public_signature)}${C.reset}`,
+        );
+      }
+      if (definition?.router_selectable === false) {
+        console.log(
+          `${C.dim}  This is an explicit-only ${definition.valence || 'manual'} register; adaptive selection will not choose it.${C.reset}`,
+        );
+      }
       console.log(
         `${C.dim}  ${
           next

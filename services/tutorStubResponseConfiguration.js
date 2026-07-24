@@ -728,12 +728,16 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
   const actorialPartLabel = oneLine(
     actorialDefinitions[actorialPartId]?.label || configuration.actorial_part_label || actorialPartId,
   );
+  const actorialPartSignature = oneLine(actorialDefinitions[actorialPartId]?.public_signature);
   const stance = configuration.engagement_stance;
-  const stanceContract = oneLine(stanceContractOverride || getEngagementStanceDefinition(stance)?.stance_contract);
+  const stanceDefinition = getEngagementStanceDefinition(stance) || {};
+  const stanceContract = oneLine(stanceContractOverride || stanceDefinition.stance_contract);
+  const stanceSignature = oneLine(stanceDefinition.public_signature);
   const unresolved = configuration.unresolved_terms?.length ? configuration.unresolved_terms.join(', ') : 'none';
   return [
     '[Tutor-only response configuration]',
     `Engagement stance: ${stance}. ${stanceContract}`,
+    stanceSignature ? `Visible stance signature: ${stanceSignature}` : null,
     `Action family: ${configuration.action_family}. ${definitionContract(
       actionDefinitions,
       configuration.action_family,
@@ -753,6 +757,7 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
       configuration.scene_immersion,
     )}`,
     `Actorial host part: ${actorialPartLabel}. ${definitionContract(actorialDefinitions, actorialPartId)}`,
+    actorialPartSignature ? `Visible character signature: ${actorialPartSignature}` : null,
     configuration.actorial_part_selection?.authored_role
       ? `Authored public clue source: ${configuration.actorial_part_selection.authored_role}. This source enactment is separate from the adaptive host part. Let the host respond to the learner and frame the encounter, then voice the supplied evidence from inside the source in first person inside quotation marks. Do not prefix the speech with the role name or a stage direction. The source supplies no knowledge beyond the public clue in the current turn context.`
       : null,
