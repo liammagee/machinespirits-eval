@@ -28,6 +28,7 @@ links:
     - refactor-pty-ci-lane
     - refactor-rubric-parser-tests
     - refactor-tutor-core-cycle
+    - refactor-tutor-response-cycle
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -127,3 +128,12 @@ Log:
   admitting only the queued tutor-stub response component. Full hermetic parity
   is green; the next queued slice is R1.2 on
   `codex/refactor-tutor-response-cycle` after this branch lands.
+- 2026-07-24 — PR #198 merged and R1.1 closed. Activated R1.2 on
+  `codex/refactor-tutor-response-cycle` to move the three remaining cross-module
+  accessibility, role-visibility, and schema seams into leaf modules while
+  preserving each existing facade and ratcheting static cycles from one to
+  zero.
+- 2026-07-24 — R1.2 reached review with static import cycles eliminated,
+  compatibility bindings preserved, and focused plus full hermetic parity
+  green. The next queued slice is R1.3 adaptive trace projection on
+  `codex/refactor-adaptive-trace-projection` after this branch lands.

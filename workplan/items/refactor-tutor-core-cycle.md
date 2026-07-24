@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-core-cycle
 title: Break the tutor-core dialogue and writing-pad import cycle
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -17,6 +17,8 @@ branch: codex/refactor-tutor-core-cycle
 depends_on:
   - refactor-rubric-parser-tests
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/198
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -68,3 +70,5 @@ Log:
   formatting, workplan, and exact static-cycle gates are green without model or
   API calls. R1.1 is ready for review; R1.2 remains the separate tutor-stub
   response-cycle slice.
+- 2026-07-24 — Closed after PR #198 merged at `0695cbbf` with all required
+  checks green.
