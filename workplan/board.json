@@ -1,15 +1,15 @@
 {
-  "generated": "2026-07-24T09:23:32.930Z",
+  "generated": "2026-07-24T09:30:50.761Z",
   "counts": {
     "total": 169,
     "byStatus": {
       "done": 139,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 19,
+      "triaged": 18,
       "active": 1,
       "archived": 4,
-      "review": 1
+      "review": 2
     },
     "byType": {
       "research": 46,
@@ -79,35 +79,6 @@
         "secrets"
       ],
       "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "make-pilot-state-writes-atomic",
-      "title": "Make human-pilot artifact writes and state transitions atomic",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "Invalid retries and out-of-state tutor turns fail without changing pilot artifacts; valid writes and state transitions commit together under concurrent requests; store and route tests pass hermetically.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "items": [
-          "a1-human-learner-validation"
-        ],
-        "code": [
-          "services/pilotStore.js"
-        ]
-      },
-      "tags": [
-        "human-pilot",
-        "transactions",
-        "data-integrity",
-        "concurrency"
-      ],
-      "milestone": "human-pilot-prep"
     },
     {
       "id": "upgrade-electron-and-rebuild-toolchain-past-audited-advisori",
@@ -691,6 +662,36 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "make-pilot-state-writes-atomic",
+      "title": "Make human-pilot artifact writes and state transitions atomic",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-24",
+      "verification": "Invalid retries and out-of-state tutor turns fail without changing pilot artifacts; valid writes and state transitions commit together under concurrent requests; store and route tests pass hermetically.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "items": [
+          "a1-human-learner-validation"
+        ],
+        "code": [
+          "services/pilotStore.js"
+        ]
+      },
+      "tags": [
+        "human-pilot",
+        "transactions",
+        "data-integrity",
+        "concurrency"
+      ],
+      "milestone": "human-pilot-prep",
+      "branch": "codex/make-pilot-state-writes-atomic"
     },
     {
       "id": "refactor-rubric-parser-tests",

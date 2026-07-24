@@ -39,6 +39,7 @@ fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+db.pragma('busy_timeout = 5000');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS pilot_sessions (
@@ -355,14 +356,25 @@ function assertTransition(currentStatus, nextStatus, learnerSource = LEARNER_SOU
   }
 }
 
-function updateSession(id, patch) {
+function requireSession(id) {
   const session = getSession(id);
-  if (!session) {
-    const err = new Error(`session ${id} not found`);
-    err.code = 'PILOT_SESSION_NOT_FOUND';
-    err.statusCode = 404;
-    throw err;
-  }
+  if (session) return session;
+  const err = new Error(`session ${id} not found`);
+  err.code = 'PILOT_SESSION_NOT_FOUND';
+  err.statusCode = 404;
+  throw err;
+}
+
+function assertSessionStatus(session, expectedStatus, operation) {
+  if (session.status === expectedStatus) return;
+  const err = new Error(`${operation} requires pilot status ${expectedStatus} (current: ${session.status})`);
+  err.code = 'PILOT_WRONG_PHASE';
+  err.statusCode = 409;
+  throw err;
+}
+
+function updateSessionInTransaction(id, patch) {
+  const session = requireSession(id);
   if (patch.status) assertTransition(session.status, patch.status, session.learner_source);
   const fields = Object.keys(patch);
   if (fields.length === 0) return session;
@@ -374,6 +386,12 @@ function updateSession(id, patch) {
   });
   db.prepare(`UPDATE pilot_sessions SET ${sets}, updated_at = ? WHERE id = ?`).run(...values, nowMs(), id);
   return getSession(id);
+}
+
+const updateSessionTransaction = db.transaction(updateSessionInTransaction);
+
+function updateSession(id, patch) {
+  return updateSessionTransaction.immediate(id, patch);
 }
 
 export function recordConsent(id) {
@@ -414,8 +432,13 @@ export function recordTestResponses(id, { phase, form = null, responses = [] }) 
        (session_id, phase, form, item_id, item_position, response_value, is_correct, response_ms, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   );
-  const now = nowMs();
-  const insert = db.transaction((rows) => {
+  const write = db.transaction((rows) => {
+    const session = requireSession(id);
+    const nextStatus =
+      phase === 'pretest' ? PILOT_STATUSES.PRETEST_DONE : phase === 'posttest' ? PILOT_STATUSES.POSTTEST_DONE : null;
+    if (nextStatus) assertTransition(session.status, nextStatus, session.learner_source);
+
+    const now = nowMs();
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
       const v = r.response_value !== undefined && r.response_value !== null ? String(r.response_value) : null;
@@ -431,22 +454,22 @@ export function recordTestResponses(id, { phase, form = null, responses = [] }) 
         now,
       );
     }
-  });
-  insert(responses);
 
-  if (phase === 'pretest') {
-    return updateSession(id, {
-      status: PILOT_STATUSES.PRETEST_DONE,
-      pretest_completed_at: nowMs(),
-    });
-  }
-  if (phase === 'posttest') {
-    return updateSession(id, {
-      status: PILOT_STATUSES.POSTTEST_DONE,
-      posttest_completed_at: nowMs(),
-    });
-  }
-  return getSession(id);
+    if (phase === 'pretest') {
+      return updateSessionInTransaction(id, {
+        status: PILOT_STATUSES.PRETEST_DONE,
+        pretest_completed_at: now,
+      });
+    }
+    if (phase === 'posttest') {
+      return updateSessionInTransaction(id, {
+        status: PILOT_STATUSES.POSTTEST_DONE,
+        posttest_completed_at: now,
+      });
+    }
+    return getSession(id);
+  });
+  return write.immediate(responses);
 }
 
 export function listTestResponses(id, phase = null) {
@@ -493,27 +516,28 @@ export function tutoringTimeRemainingMs(session, atMs = nowMs()) {
 }
 
 export function recordExitSurvey(id, { nasa_tlx = null, engagement_likert = null, open_ended = null } = {}) {
-  const session = getSession(id);
-  if (!session) {
-    const err = new Error(`session ${id} not found`);
-    err.statusCode = 404;
-    throw err;
-  }
-  db.prepare(
+  const stmt = db.prepare(
     `INSERT OR REPLACE INTO pilot_exit_survey
        (session_id, nasa_tlx, engagement_likert, open_ended, created_at)
      VALUES (?, ?, ?, ?, ?)`,
-  ).run(
-    id,
-    nasa_tlx ? JSON.stringify(nasa_tlx) : null,
-    engagement_likert ? JSON.stringify(engagement_likert) : null,
-    open_ended ? JSON.stringify(open_ended) : null,
-    nowMs(),
   );
-  return updateSession(id, {
-    status: PILOT_STATUSES.COMPLETED,
-    exit_completed_at: nowMs(),
+  const write = db.transaction(() => {
+    const session = requireSession(id);
+    assertTransition(session.status, PILOT_STATUSES.COMPLETED, session.learner_source);
+    const now = nowMs();
+    stmt.run(
+      id,
+      nasa_tlx ? JSON.stringify(nasa_tlx) : null,
+      engagement_likert ? JSON.stringify(engagement_likert) : null,
+      open_ended ? JSON.stringify(open_ended) : null,
+      now,
+    );
+    return updateSessionInTransaction(id, {
+      status: PILOT_STATUSES.COMPLETED,
+      exit_completed_at: now,
+    });
   });
+  return write.immediate();
 }
 
 export function abandonSession(id, reason = null) {
@@ -561,12 +585,6 @@ export function listTurns(sessionId) {
 }
 
 export function appendTurn(sessionId, params) {
-  const session = getSession(sessionId);
-  if (!session) {
-    const err = new Error(`session ${sessionId} not found`);
-    err.statusCode = 404;
-    throw err;
-  }
   if (!params.role || !['tutor', 'learner'].includes(params.role)) {
     throw new Error(`invalid turn role: ${params.role}`);
   }
@@ -577,38 +595,44 @@ export function appendTurn(sessionId, params) {
     throw new Error('configHash is required (use computeConfigHash)');
   }
 
-  const existing = listTurns(sessionId);
-  const turnIndex = existing.length;
-  const cumulative = [
-    ...existing.map((t) => ({ role: t.role, content: t.content })),
-    { role: params.role, content: params.content },
-  ];
-  const dialogueContentHash = computeDialogueContentHash(cumulative);
-
-  db.prepare(
+  const stmt = db.prepare(
     `INSERT INTO pilot_turns
        (session_id, turn_index, role, content, deliberation, was_revised,
         config_hash, dialogue_content_hash, input_tokens, output_tokens,
         latency_ms, ego_model, superego_model, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    sessionId,
-    turnIndex,
-    params.role,
-    params.content,
-    params.deliberation ? JSON.stringify(params.deliberation) : null,
-    params.wasRevised ? 1 : 0,
-    params.configHash,
-    dialogueContentHash,
-    params.inputTokens ?? null,
-    params.outputTokens ?? null,
-    params.latencyMs ?? null,
-    params.egoModel ?? null,
-    params.superegoModel ?? null,
-    nowMs(),
   );
+  const append = db.transaction(() => {
+    const session = requireSession(sessionId);
+    assertSessionStatus(session, PILOT_STATUSES.TUTORING, 'appendTurn');
+    const existing = listTurns(sessionId);
+    const turnIndex = existing.length === 0 ? 0 : existing[existing.length - 1].turn_index + 1;
+    const cumulative = [
+      ...existing.map((t) => ({ role: t.role, content: t.content })),
+      { role: params.role, content: params.content },
+    ];
+    const dialogueContentHash = computeDialogueContentHash(cumulative);
 
-  return { turnIndex, dialogueContentHash };
+    stmt.run(
+      sessionId,
+      turnIndex,
+      params.role,
+      params.content,
+      params.deliberation ? JSON.stringify(params.deliberation) : null,
+      params.wasRevised ? 1 : 0,
+      params.configHash,
+      dialogueContentHash,
+      params.inputTokens ?? null,
+      params.outputTokens ?? null,
+      params.latencyMs ?? null,
+      params.egoModel ?? null,
+      params.superegoModel ?? null,
+      nowMs(),
+    );
+
+    return { turnIndex, dialogueContentHash };
+  });
+  return append.immediate();
 }
 
 // ─── Operational queries ─────────────────────────────────────────────────
