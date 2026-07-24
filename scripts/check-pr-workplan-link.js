@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import YAML from 'yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -38,23 +39,45 @@ function workplanDir() {
   return process.env.WORKPLAN_DIR ? path.resolve(process.env.WORKPLAN_DIR) : path.join(ROOT, 'workplan');
 }
 
-function loadKnownIds() {
+function loadKnownItems() {
   const itemsDir = path.join(workplanDir(), 'items');
-  if (!fs.existsSync(itemsDir)) return new Set();
-  return new Set(
-    fs
-      .readdirSync(itemsDir)
-      .filter((f) => f.endsWith('.md') && f.toLowerCase() !== 'readme.md')
-      .map((f) => path.basename(f, '.md')),
-  );
+  if (!fs.existsSync(itemsDir)) return new Map();
+  const items = new Map();
+  for (const file of fs
+    .readdirSync(itemsDir)
+    .filter((entry) => entry.endsWith('.md') && entry.toLowerCase() !== 'readme.md')) {
+    const id = path.basename(file, '.md');
+    const text = fs.readFileSync(path.join(itemsDir, file), 'utf8');
+    const frontmatter = text.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+    let branch = null;
+    if (frontmatter) {
+      try {
+        const metadata = YAML.parse(frontmatter[1]);
+        if (typeof metadata?.branch === 'string') branch = metadata.branch.trim();
+      } catch {
+        // The workplan validation step reports malformed item frontmatter. A
+        // malformed item must never become an inferred PR link here.
+      }
+    }
+    items.set(id, { id, branch });
+  }
+  return items;
 }
 
-function readBody(opts) {
-  if (opts['body-file']) return fs.readFileSync(path.resolve(opts['body-file']), 'utf8');
+function readPullRequestContext(opts) {
+  if (opts['body-file']) {
+    return {
+      body: fs.readFileSync(path.resolve(opts['body-file']), 'utf8'),
+      headRef: typeof opts['head-ref'] === 'string' ? opts['head-ref'].trim() : '',
+    };
+  }
   const eventPath = process.env.GITHUB_EVENT_PATH;
   if (!eventPath) fail('set --body-file or run under a pull_request GitHub event');
   const event = JSON.parse(fs.readFileSync(eventPath, 'utf8'));
-  return (event.pull_request && event.pull_request.body) || '';
+  return {
+    body: event.pull_request?.body || '',
+    headRef: event.pull_request?.head?.ref || '',
+  };
 }
 
 function explicitWorkplanValues(body) {
@@ -85,19 +108,45 @@ function findLinkedId(body, knownIds) {
   return { ok: false, values };
 }
 
+function isUntouchedTemplate(values) {
+  return values.length === 0 || values.every((value) => /^<\s*id\s+or\s+n\/a\s*>$/i.test(value));
+}
+
+function findBranchLinkedId(headRef, knownItems) {
+  if (!headRef) return { ok: false, reason: 'no PR head branch was available for inference' };
+  const matches = [...knownItems.values()].filter((item) => item.branch === headRef);
+  if (matches.length === 1) return { ok: true, kind: 'id', id: matches[0].id, headRef };
+  if (matches.length === 0) return { ok: false, reason: `branch ${headRef} matches no workplan item` };
+  return {
+    ok: false,
+    reason: `branch ${headRef} matches multiple workplan items: ${matches.map((item) => item.id).join(', ')}`,
+  };
+}
+
 function main() {
   const opts = flags(process.argv.slice(2));
-  const body = readBody(opts);
-  const knownIds = loadKnownIds();
+  const { body, headRef } = readPullRequestContext(opts);
+  const knownItems = loadKnownItems();
+  const knownIds = new Set(knownItems.keys());
   const result = findLinkedId(body, knownIds);
-  if (!result.ok) {
-    const seen = result.values.length ? ` Saw: ${result.values.join(' | ')}` : '';
-    fail(
-      'PR body must include `Workplan item: <id>` or `Workplan item: N/A` using an item from workplan/items/.' + seen,
-    );
+  if (result.ok) {
+    if (result.kind === 'na') console.log('workplan-pr-link: explicit N/A accepted');
+    else console.log(`workplan-pr-link: linked ${result.id}`);
+    return;
   }
-  if (result.kind === 'na') console.log('workplan-pr-link: explicit N/A accepted');
-  else console.log(`workplan-pr-link: linked ${result.id}`);
+
+  if (isUntouchedTemplate(result.values)) {
+    const inferred = findBranchLinkedId(headRef, knownItems);
+    if (inferred.ok) {
+      console.log(`workplan-pr-link: linked ${inferred.id} via branch ${inferred.headRef}`);
+      return;
+    }
+    const seen = result.values.length ? ` Saw: ${result.values.join(' | ')}.` : '';
+    fail(`PR body has no valid workplan item and ${inferred.reason}.${seen}`);
+  }
+
+  const seen = result.values.length ? ` Saw: ${result.values.join(' | ')}` : '';
+  fail('PR body must include `Workplan item: <id>` or `Workplan item: N/A` using an item from workplan/items/.' + seen);
 }
 
 main();

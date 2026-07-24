@@ -1,0 +1,30 @@
+{
+  "fixtureVersion": 1,
+  "isMultiTurn": true,
+  "totalTurns": 2,
+  "learnerArchitecture": "unified_llm",
+  "conversationHistory": [
+    {
+      "turnIndex": 0,
+      "suggestion": { "message": "Which part of the explanation remains uncertain?" },
+      "learnerMessage": "I am uncertain about the causal step."
+    },
+    {
+      "turnIndex": 1,
+      "suggestion": { "message": "How could you test that causal step?" },
+      "learnerMessage": "I would compare it with a case where the cause is absent."
+    }
+  ],
+  "dialogueTrace": [
+    { "agent": "tutor", "action": "context_input", "turnIndex": 0 },
+    { "agent": "ego", "action": "generate", "turnIndex": 0 },
+    { "agent": "tutor", "action": "final_output", "turnIndex": 0 },
+    { "agent": "learner_unified", "action": "deliberation", "turnIndex": 0 },
+    { "agent": "learner", "action": "final_output", "turnIndex": 0 },
+    { "agent": "tutor", "action": "context_input", "turnIndex": 1 },
+    { "agent": "ego", "action": "generate", "turnIndex": 1 },
+    { "agent": "tutor", "action": "final_output", "turnIndex": 1 },
+    { "agent": "learner_unified", "action": "deliberation", "turnIndex": 1 },
+    { "agent": "learner", "action": "final_output", "turnIndex": 1 }
+  ]
+}

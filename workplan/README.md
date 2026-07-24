@@ -158,8 +158,11 @@ Everyone reads this README first, then:
 
 5. **GitHub.** GitHub is an integration surface, not the source of truth.
    `.github/workflows/workplan-validate.yml` runs `npm run wp:check`,
-   `npm run wp:test`, and the PR workplan-link check. The PR template requires
-   `Workplan item: <id or N/A>`, validated by
+   `npm run wp:test`, and the PR workplan-link check. The PR template requests
+   `Workplan item: <id or N/A>`. If its placeholder is left untouched, the
+   validator accepts only an exact, unique match between the PR head branch and
+   an item's `branch:` field; explicit unknown ids and ambiguous branches still
+   fail. PR-body edits rerun this check. The validator lives at
    `scripts/check-pr-workplan-link.js`. `.github/workflows/workplan-github-mirror.yml`
    can manually mirror selected statuses (default: `active,blocked`) to GitHub
    Issues through `scripts/workplan-github-mirror.js`; it dry-runs unless the

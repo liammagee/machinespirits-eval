@@ -1,0 +1,28 @@
+{
+  "fixtureVersion": 1,
+  "isMultiTurn": true,
+  "totalTurns": 2,
+  "learnerArchitecture": "unified",
+  "conversationHistory": [
+    {
+      "turnIndex": 0,
+      "suggestion": { "message": "What assumption connects those two observations?" },
+      "learnerMessage": "I assumed that they had the same cause."
+    },
+    {
+      "turnIndex": 1,
+      "suggestion": { "message": "What alternative cause would fit them?" },
+      "learnerMessage": "A shared constraint could explain both."
+    }
+  ],
+  "dialogueTrace": [
+    { "agent": "tutor", "action": "context_input", "turnIndex": 0 },
+    { "agent": "ego", "action": "generate", "turnIndex": 0 },
+    { "agent": "tutor", "action": "final_output", "turnIndex": 0 },
+    { "agent": "learner", "action": "turn_action", "turnIndex": 0 },
+    { "agent": "tutor", "action": "context_input", "turnIndex": 1 },
+    { "agent": "ego", "action": "generate", "turnIndex": 1 },
+    { "agent": "tutor", "action": "final_output", "turnIndex": 1 },
+    { "agent": "learner", "action": "turn_action", "turnIndex": 1 }
+  ]
+}

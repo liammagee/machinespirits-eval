@@ -261,14 +261,13 @@ test('checked-in skip ledger matches the declared clean Linux CI skip shapes', (
       test: 'reproduces published figures',
       reason: 'archived corpus absent (/repo/data/paper2/superego.jsonl); sibling private repo not checked out',
     },
-    { test: 'Group 1: learner-request → tutor-response pairing', reason: 'no multi-turn logs on disk' },
     { test: 'a sealed passing preflight', reason: 'codex/claude CLIs not installed on this host' },
     { test: 'cast-layer reader-quality scorer emits conservative rubric and branch scores', reason: '' },
     { test: 'auto mode keeps a separate editable command line while model output is generated', reason: '' },
   ];
   const summary = validatePhaseSummary({
     phase: 'root',
-    summary: { tests: 5, skipped: 5, skipEvents },
+    summary: { tests: 4, skipped: 4, skipEvents },
     selectedFiles: ['tests/example.test.js'],
     allowedSkips: manifest.allowedSkips,
     env: { CI: 'true' },
@@ -277,12 +276,6 @@ test('checked-in skip ledger matches the declared clean Linux CI skip shapes', (
   });
   assert.deepEqual(
     summary.matchedSkips.map((skip) => skip.ledger.id),
-    [
-      'paper-superego-private-archive',
-      'dialogue-logs-absent',
-      'model-cli-fingerprints',
-      'cast-layer-private-matrix',
-      'concurrent-pty-ci',
-    ],
+    ['paper-superego-private-archive', 'model-cli-fingerprints', 'cast-layer-private-matrix', 'concurrent-pty-ci'],
   );
 });
