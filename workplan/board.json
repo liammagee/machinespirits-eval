@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T07:16:40.364Z",
+  "generated": "2026-07-24T07:27:44.096Z",
   "counts": {
-    "total": 168,
+    "total": 169,
     "byStatus": {
-      "done": 138,
+      "done": 139,
       "blocked": 3,
       "dropped": 2,
       "triaged": 19,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 48,
       "infra": 37,
-      "maintenance": 22,
+      "maintenance": 23,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -575,6 +575,7 @@
           "refactor-dialogue-log-fixtures",
           "refactor-cast-layer-fixture",
           "refactor-pty-ci-lane",
+          "refactor-rubric-parser-tests",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -692,8 +693,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-pty-ci-lane",
-      "title": "Gate concurrent tutor-stub PTY behavior in CI",
+      "id": "refactor-rubric-parser-tests",
+      "title": "Test the production rubric response parser directly",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -701,11 +702,11 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-07-24",
-      "verification": "A dedicated Ubuntu Node 22 job opts the existing concurrent tutor-stub PTY assertion back in under CI, runs the hermetic interactive suite without forced exit, terminates deterministically, and passes alongside the unchanged Node 20/22 root matrix and its explicit parallel-run skip ledger.",
-      "branch": "codex/refactor-pty-ci-lane",
+      "verification": "The rubric evaluator suite imports production parseJudgeResponse directly, contains no copied parser or temporary generated module, and passes its malformed-response corpus against the complete v2.1 and v2.2 tutor dimension sets with focused plus full hermetic parity.",
+      "branch": "codex/refactor-rubric-parser-tests",
       "depends_on": [
         "refactor-required-run-manifest",
-        "refactor-cast-layer-fixture"
+        "refactor-pty-ci-lane"
       ],
       "links": {
         "notes": [
@@ -717,10 +718,9 @@
       },
       "tags": [
         "testing",
-        "ci",
-        "pty",
-        "loopback",
-        "tutor-stub",
+        "rubric",
+        "parser",
+        "json",
         "hermetic",
         "refactoring"
       ],
@@ -1790,6 +1790,44 @@
         "testing",
         "fixtures",
         "dialogue-logs",
+        "hermetic",
+        "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-pty-ci-lane",
+      "title": "Gate concurrent tutor-stub PTY behavior in CI",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "A dedicated Ubuntu Node 22 job opts the existing concurrent tutor-stub PTY assertion back in under CI, runs the hermetic interactive suite without forced exit, terminates deterministically, and passes alongside the unchanged Node 20/22 root matrix and its explicit parallel-run skip ledger.",
+      "branch": "codex/refactor-pty-ci-lane",
+      "depends_on": [
+        "refactor-required-run-manifest",
+        "refactor-cast-layer-fixture"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/194"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "pty",
+        "loopback",
+        "tutor-stub",
         "hermetic",
         "refactoring"
       ],

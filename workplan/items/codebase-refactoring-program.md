@@ -26,6 +26,7 @@ links:
     - refactor-dialogue-log-fixtures
     - refactor-cast-layer-fixture
     - refactor-pty-ci-lane
+    - refactor-rubric-parser-tests
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -107,3 +108,12 @@ Log:
   natural-teardown package contract, and the previously skipped concurrent
   input assertion executing under CI opt-in. The next queued slice remains
   R0.6's production rubric-parser characterization after this branch lands.
+- 2026-07-24 — PR #194 merged and R0.5 closed with the dedicated PTY/loopback
+  check green. Activated R0.6 on `codex/refactor-rubric-parser-tests` to delete
+  the test-local parser copy and run the malformed-response corpus against the
+  production export under v2.1 and v2.2 rubric configuration.
+- 2026-07-24 — R0.6 reached review with the copied parser and generated test
+  module removed, both versioned tutor-rubric shapes characterized through the
+  production parser, and focused plus full hermetic parity green. The next
+  queued slice is R1.1 on `codex/refactor-tutor-core-cycle` after this branch
+  lands.
