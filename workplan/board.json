@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T09:30:50.761Z",
+  "generated": "2026-07-24T09:57:05.817Z",
   "counts": {
-    "total": 169,
+    "total": 170,
     "byStatus": {
-      "done": 139,
+      "done": 140,
       "blocked": 3,
       "dropped": 2,
       "triaged": 18,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 46,
       "experiment": 48,
-      "infra": 37,
+      "infra": 38,
       "maintenance": 23,
       "content": 2,
       "paper": 6,
@@ -49,34 +49,35 @@
       }
     },
     {
-      "id": "isolate-remaining-direct-model-subprocesses",
-      "title": "Route remaining direct model subprocesses through one isolation boundary",
+      "id": "isolate-legacy-and-script-model-subprocesses",
+      "title": "Classify and isolate legacy and research-script model subprocesses",
       "status": "triaged",
       "type": "infra",
       "priority": "P1",
       "owner": "unassigned",
       "source": "review",
-      "created": "2026-07-23",
-      "updated": "2026-07-23",
-      "verification": "Every repository-owned model CLI launch uses the shared provider environment allowlist and fail-closed event policy; a spawn inventory test rejects new direct model subprocesses and secret-canary tests cover each retained adapter.",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "A checked repository-wide launch manifest accounts for every remaining model CLI subprocess; active non-interactive calls use the shared fail-closed bridge, while explicit interactive or persistent exceptions use reviewed least-privilege launch policies and pass secret-canary tests.",
       "depends_on": [
-        "harden-cli-provider-process-isolation"
+        "isolate-remaining-direct-model-subprocesses"
       ],
       "links": {
         "code": [
-          "services/rubricEvaluator.js",
-          "services/adaptiveTutor/realLLM.js",
-          "services/dramaticDerivation/llmClient.js"
+          "services/legacyChatTutorEngine.js",
+          "services/evaluationRunner.js",
+          "scripts/generate-pedagogical-dramas.js",
+          "scripts/replay-discursive-transcript.js"
         ],
         "items": [
-          "harden-cli-provider-process-isolation"
+          "isolate-remaining-direct-model-subprocesses"
         ]
       },
       "tags": [
         "security",
         "providers",
         "process-isolation",
-        "secrets"
+        "scripts"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -664,34 +665,38 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "make-pilot-state-writes-atomic",
-      "title": "Make human-pilot artifact writes and state transitions atomic",
+      "id": "isolate-remaining-direct-model-subprocesses",
+      "title": "Route reviewed production model adapters through one isolation boundary",
       "status": "review",
-      "type": "maintenance",
+      "type": "infra",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
-      "created": "2026-07-22",
+      "created": "2026-07-23",
       "updated": "2026-07-24",
-      "verification": "Invalid retries and out-of-state tutor turns fail without changing pilot artifacts; valid writes and state transitions commit together under concurrent requests; store and route tests pass hermetically.",
-      "claim_status": "planned",
-      "depends_on": [],
+      "verification": "The three production adapters named by the refactoring review use the shared provider environment allowlist and fail-closed event policy; a service-spawn regression and secret-canary tests cover each migrated adapter.",
+      "depends_on": [
+        "harden-cli-provider-process-isolation"
+      ],
       "links": {
-        "items": [
-          "a1-human-learner-validation"
-        ],
         "code": [
-          "services/pilotStore.js"
+          "services/rubricEvaluator.js",
+          "services/adaptiveTutor/realLLM.js",
+          "services/dramaticDerivation/llmClient.js"
+        ],
+        "items": [
+          "harden-cli-provider-process-isolation",
+          "isolate-legacy-and-script-model-subprocesses"
         ]
       },
       "tags": [
-        "human-pilot",
-        "transactions",
-        "data-integrity",
-        "concurrency"
+        "security",
+        "providers",
+        "process-isolation",
+        "secrets"
       ],
-      "milestone": "human-pilot-prep",
-      "branch": "codex/make-pilot-state-writes-atomic"
+      "milestone": "evaluation-infrastructure",
+      "branch": "codex/isolate-remaining-direct-model-subprocesses"
     },
     {
       "id": "refactor-rubric-parser-tests",
@@ -1629,6 +1634,39 @@
       ],
       "milestone": "evaluation-infrastructure",
       "branch": "codex/make-inhoused-tests-and-coverage-first-class"
+    },
+    {
+      "id": "make-pilot-state-writes-atomic",
+      "title": "Make human-pilot artifact writes and state transitions atomic",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-24",
+      "verification": "Invalid retries and out-of-state tutor turns fail without changing pilot artifacts; valid writes and state transitions commit together under concurrent requests; store and route tests pass hermetically.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "items": [
+          "a1-human-learner-validation"
+        ],
+        "code": [
+          "services/pilotStore.js"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/197"
+        ]
+      },
+      "tags": [
+        "human-pilot",
+        "transactions",
+        "data-integrity",
+        "concurrency"
+      ],
+      "milestone": "human-pilot-prep",
+      "branch": "codex/make-pilot-state-writes-atomic"
     },
     {
       "id": "paper2-priority1-closeout",

@@ -449,6 +449,7 @@ async function callClaudeCli({
   spawnImpl = spawn,
   maxStdoutBytes,
   maxStderrBytes,
+  preserveDefaultSystemPrompt = false,
 }) {
   if (signal?.aborted) throw abortError(role);
   const userText = buildCliUserText(userPrompt, messageHistory);
@@ -466,7 +467,9 @@ async function callClaudeCli({
   const isolation = claudeCliIsolation();
   try {
     return await new Promise((resolve, reject) => {
-      const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt, ...isolation.args];
+      const args = ['-p', '-', '--output-format', 'text'];
+      if (!preserveDefaultSystemPrompt) args.push('--system-prompt', systemPrompt);
+      args.push(...isolation.args);
       if (model) args.push('--model', model);
       if (effectiveEffort && effectiveEffort !== 'config') args.push('--effort', effectiveEffort);
       if (schema) {
@@ -913,6 +916,7 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       spawnImpl: opts?.spawnImpl,
       maxStdoutBytes: opts?.maxStdoutBytes,
       maxStderrBytes: opts?.maxStderrBytes,
+      preserveDefaultSystemPrompt: opts?.preserveDefaultSystemPrompt === true,
     });
   }
   if (agentConfig?.provider === 'codex') {

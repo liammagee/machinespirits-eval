@@ -37,14 +37,10 @@
  * total and per role.
  */
 
-import { spawn } from 'node:child_process';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import { unifiedAIProvider } from '../../tutor-core/index.js';
 import { getProviderConfig } from '../learnerConfigLoader.js';
 import { lookupRates } from '../adaptiveTutor/budgetTracker.js';
-import { CLAUDE_CLI_ISOLATION_ARGS } from '../cliProviderBridge.js';
+import { callAIWithCliBridge } from '../cliProviderBridge.js';
 
 const DEFAULT_PROVIDER = 'openrouter';
 const DEFAULT_MODEL_ALIAS = 'gemini-flash';
@@ -118,136 +114,26 @@ const NON_RETRYABLE = [
   /not logged in/i,
 ];
 
-// Neutral working dir for CLI calls: keeps the repo's AGENTS.md (developer
-// instructions) out of the drama roles' context, and hosts the per-call
-// last-message files.
-let cliWorkDir = null;
-let cliCallSeq = 0;
-function ensureCliWorkDir() {
-  if (!cliWorkDir) cliWorkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-cli-'));
-  return cliWorkDir;
-}
-
-/**
- * One atomic `codex exec` call (the repo's proven judge pattern: prompt on
- * stdin, no session state). codex has no system-prompt flag, so system + user
- * fold into a single stdin payload; the role contract's "reply with ONLY the
- * JSON object" plus llmRoles' fence-then-brace parse absorb any chatter.
- */
-function callCodexCli(system, user, model) {
-  const workDir = ensureCliWorkDir();
-  cliCallSeq += 1;
-  const outFile = path.join(workDir, `last-message-${cliCallSeq}.txt`);
-  const args = ['exec', '-', '--skip-git-repo-check', '--ephemeral', '--color', 'never', '-o', outFile];
-  const reasoning = process.env.DERIVATION_CODEX_REASONING || DEFAULT_CODEX_REASONING;
-  if (reasoning !== 'config') args.push('-c', `model_reasoning_effort="${reasoning}"`);
-  if (model) args.push('-m', model);
-  return new Promise((resolve, reject) => {
-    const child = spawn('codex', args, {
-      cwd: workDir,
-      env: { ...process.env },
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-    let stdout = '';
-    let stderr = '';
-    let settled = false;
-    const finish = (fn, value) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      fn(value);
-    };
-    const timer = setTimeout(() => {
-      child.kill('SIGKILL');
-      finish(reject, new Error(`codex CLI timed out after ${CLI_TIMEOUT_MS / 1000}s`));
-    }, CLI_TIMEOUT_MS);
-    child.stdout.on('data', (d) => {
-      stdout += d;
-    });
-    child.stderr.on('data', (d) => {
-      stderr += d;
-    });
-    child.on('error', (err) => finish(reject, new Error(`codex CLI spawn failed: ${err.message}`)));
-    child.on('close', (code) => {
-      if (code !== 0) {
-        finish(reject, new Error(`codex CLI exited ${code}: ${(stderr || stdout).slice(-500)}`));
-        return;
-      }
-      let content = '';
-      try {
-        content = fs.readFileSync(outFile, 'utf8');
-        fs.rmSync(outFile, { force: true });
-      } catch {
-        /* fall through to stdout scrape */
-      }
-      if (!content.trim()) content = stdout;
-      const banner = `${stdout}\n${stderr}`.match(/^\s*model:\s*(\S+)/m);
-      finish(resolve, {
-        content,
-        model: model || (banner ? banner[1] : 'codex-default'),
-        usage: { inputTokens: 0, outputTokens: 0, cost: 0 },
-      });
-    });
-    child.stdin.write(`${system}\n\n=== TURN INPUT ===\n\n${user}`);
-    child.stdin.end();
+export async function callDerivationCli(system, user, target, { callCli = callAIWithCliBridge, spawnImpl } = {}) {
+  const provider = target.provider === 'claude' ? 'claude-code' : target.provider;
+  const effort = provider === 'codex' ? process.env.DERIVATION_CODEX_REASONING || DEFAULT_CODEX_REASONING : null;
+  const response = await callCli({ provider, model: target.model }, system, user, 'dramatic-derivation', {
+    timeoutMs: CLI_TIMEOUT_MS,
+    effort,
+    spawnImpl,
   });
-}
-
-/**
- * One atomic `claude -p` call (the pattern proven in adaptiveTutor/realLLM.js
- * and rubricEvaluator.js). --system-prompt REPLACES the CLI's default system
- * prompt — which both separates system from user cleanly and suppresses any
- * ambient output-style additions that would corrupt the JSON parse. The child
- * env must drop the API/session vars or the CLI silently bills the metered
- * API instead of the Max-plan quota window.
- */
-function callClaudeCli(system, user, model) {
-  // ensureCliWorkDir() already neutralizes the cwd; CLAUDE_CLI_ISOLATION_ARGS
-  // (--safe-mode etc.) additionally stops the CLI loading CLAUDE.md, skills,
-  // hooks, and MCP servers from user-level config.
-  const args = ['-p', '-', '--output-format', 'text', '--system-prompt', system, ...CLAUDE_CLI_ISOLATION_ARGS];
-  if (model) args.push('--model', model);
-  const env = { ...process.env };
-  delete env.CLAUDE_CODE;
-  delete env.CLAUDECODE;
-  delete env.ANTHROPIC_API_KEY;
-  delete env.ANTHROPIC_AUTH_TOKEN;
-  return new Promise((resolve, reject) => {
-    const child = spawn('claude', args, { cwd: ensureCliWorkDir(), env, stdio: ['pipe', 'pipe', 'pipe'] });
-    let stdout = '';
-    let stderr = '';
-    let settled = false;
-    const finish = (fn, value) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      fn(value);
-    };
-    const timer = setTimeout(() => {
-      child.kill('SIGKILL');
-      finish(reject, new Error(`claude CLI timed out after ${CLI_TIMEOUT_MS / 1000}s`));
-    }, CLI_TIMEOUT_MS);
-    child.stdout.on('data', (d) => {
-      stdout += d;
-    });
-    child.stderr.on('data', (d) => {
-      stderr += d;
-    });
-    child.on('error', (err) => finish(reject, new Error(`claude CLI spawn failed: ${err.message}`)));
-    child.on('close', (code) => {
-      if (code !== 0) {
-        finish(reject, new Error(`claude CLI exited ${code}: ${(stderr || stdout).slice(-500)}`));
-        return;
-      }
-      finish(resolve, {
-        content: stdout.trim(),
-        model: model || 'claude-default',
-        usage: { inputTokens: 0, outputTokens: 0, cost: 0 },
-      });
-    });
-    child.stdin.write(user);
-    child.stdin.end();
-  });
+  return {
+    content: response.text || '',
+    model: target.model || `${target.provider}-default`,
+    usage: {
+      // Preserve the dramatic runtime's subscription-path accounting
+      // contract. The shared Codex bridge can observe tokens, but these calls
+      // remain quota-backed and historically report zero metered usage/cost.
+      inputTokens: 0,
+      outputTokens: 0,
+      cost: 0,
+    },
+  };
 }
 
 function mockResponse(role, meta = {}) {
@@ -711,7 +597,13 @@ function mockResponse(role, meta = {}) {
  *             usage() => {calls, inputTokens, outputTokens, costUSD, byRole},
  *             mode: string }}
  */
-export function makeLlmClient({ mode = llmMode(), temperature = 0.7, maxTokens = 600 } = {}) {
+export function makeLlmClient({
+  mode = llmMode(),
+  temperature = 0.7,
+  maxTokens = 600,
+  callCli = callAIWithCliBridge,
+  cliSpawnImpl,
+} = {}) {
   const usage = { calls: 0, inputTokens: 0, outputTokens: 0, costUSD: 0, byRole: {} };
 
   function ledgerFor(role) {
@@ -721,9 +613,10 @@ export function makeLlmClient({ mode = llmMode(), temperature = 0.7, maxTokens =
 
   async function callOnce(system, user, target) {
     if (target.cli) {
-      if (target.provider === 'codex') return callCodexCli(system, user, target.model);
-      if (target.provider === 'claude') return callClaudeCli(system, user, target.model);
-      throw new Error(`derivation.llmClient: no CLI bridge for provider '${target.provider}'`);
+      if (!CLI_PROVIDERS.has(target.provider)) {
+        throw new Error(`derivation.llmClient: no CLI bridge for provider '${target.provider}'`);
+      }
+      return callDerivationCli(system, user, target, { callCli, spawnImpl: cliSpawnImpl });
     }
     return unifiedAIProvider.call({
       provider: target.provider,

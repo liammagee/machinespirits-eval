@@ -16,12 +16,11 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
 import { unifiedAIProvider } from '../../tutor-core/index.js';
 import { z } from 'zod';
 import { jsonrepair } from 'jsonrepair';
 import { getProviderConfig } from '../learnerConfigLoader.js';
-import { callAIWithCliBridge, claudeCliIsolation, CLAUDE_CLI_CONTEXT_ISOLATION } from '../cliProviderBridge.js';
+import { callAIWithCliBridge } from '../cliProviderBridge.js';
 import { POLICY_ACTIONS, POLICY_ACTION_DESCRIPTIONS, POLICY_ACTION_DETAILS } from './policyActions.js';
 import { lookupRates } from './budgetTracker.js';
 import { parseIdConstruction } from '../idDirectorEngine.js';
@@ -75,15 +74,10 @@ function isRetryableError(err) {
   return RETRYABLE_ERROR_PATTERNS.some((re) => re.test(msg));
 }
 
-// Subscription-path CLI bridge for `provider: claude-code`. Lifted from
-// services/rubricEvaluator.js:824 (the judge-side bridge); the runner side
-// needs the same child-env discipline (unset ANTHROPIC_API_KEY) or the CLI
-// silently routes via metered API mode and bills per-call. The whole point
-// of using the CLI is to use the Max-plan quota window instead.
-//
-// tutor-core's unifiedAIProvider.call does NOT recognise `claude-code` as a
-// provider; bridging here keeps the adaptive runner self-contained without
-// requiring a tutor-core release.
+// Subscription-path CLI roles use the shared provider bridge. That boundary
+// owns the provider-specific environment allowlist, ambient-context/tool
+// isolation, output bounds, and Codex event audit; this adapter retains only
+// adaptive tracing and the historical flat usage shape.
 //
 // Returns the same flat-token shape callAI synthesizes for OpenRouter/Anthropic
 // so the rest of callRole (budget tracker recording, schema validation) stays
@@ -91,7 +85,7 @@ function isRetryableError(err) {
 // not echo usage and the call hits a subscription window, not a metered
 // endpoint — assertBelowCeiling therefore never aborts a CLI call, which is
 // the intended behaviour.
-const CLAUDE_CLI_TIMEOUT_MS = 360_000;
+const CLI_TIMEOUT_MS = 360_000;
 
 // Set ADAPTIVE_TUTOR_CLI_TRACE=1 to log every claude-code CLI subprocess call
 // to stderr (start with role+prompt size, end with duration, timeout-fire with
@@ -101,99 +95,37 @@ const CLAUDE_CLI_TIMEOUT_MS = 360_000;
 // default so noisy smokes stay clean.
 const CLI_TRACE = process.env.ADAPTIVE_TUTOR_CLI_TRACE === '1';
 
-async function callClaudeCli(systemPrompt, userPrompt, model, role) {
+export async function callAdaptiveCli(agentConfig, systemPrompt, userPrompt, role, { spawnImpl } = {}) {
   const start = Date.now();
   if (CLI_TRACE) {
     console.error(
-      `[claude-cli] start role=${role} sys=${systemPrompt.length}ch usr=${userPrompt.length}ch model=${model || 'default'}`,
+      `[adaptive-cli] start role=${role} provider=${agentConfig.provider} sys=${systemPrompt.length}ch usr=${userPrompt.length}ch model=${agentConfig.model || 'default'}`,
     );
   }
-  // Context isolation (claudeCliIsolation): --safe-mode + no session
-  // persistence + tools off + empty temp cwd, so the adaptive tutor's role
-  // calls never see the repo's ambient project context (CLAUDE.md etc.).
-  const isolation = claudeCliIsolation();
   try {
-    return await new Promise((resolve, reject) => {
-      // Pass the system prompt via --system-prompt rather than concatenating
-      // into stdin. Two reasons:
-      //   1. It REPLACES the default system prompt, which suppresses any
-      //      ambient output-style additions (e.g. the "★ Insight" annotation
-      //      the explanatory style appends after the model's response).
-      //      Without this, parseJsonLoose receives `<json>\n<insight prose>`
-      //      and either fails or jsonrepair coerces the prose into JSON.
-      //   2. Cleanly separates system from user — stdin carries just the user
-      //      prompt, mirroring the (system, messages[]) shape of the API.
-      const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt, ...isolation.args];
-      if (model) args.push('--model', model);
-      const env = { ...process.env };
-      delete env.CLAUDE_CODE;
-      delete env.CLAUDECODE;
-      delete env.ANTHROPIC_API_KEY;
-      delete env.ANTHROPIC_AUTH_TOKEN;
-      const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: isolation.cwd });
-      let out = '';
-      let err = '';
-      let firstByteAt = null;
-      const cliTimeout = setTimeout(() => {
-        const elapsed = Date.now() - start;
-        // Always emit a stderr line on timeout, even without CLI_TRACE, so
-        // future smokes never repeat the silent-hang failure mode. firstByteAt
-        // distinguishes "child never produced any output" from "child stalled
-        // mid-stream" — the former points at CLI/network init issues, the
-        // latter at server-side stream completion.
-        const sawAny = firstByteAt != null;
-        console.error(
-          `[claude-cli] TIMEOUT role=${role} elapsed=${elapsed}ms outBytes=${out.length} firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'}`,
-        );
-        try {
-          child.kill('SIGKILL');
-        } catch (_) {
-          /* already gone */
-        }
-        reject(
-          new Error(
-            `claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length}, firstByte=${sawAny ? `${firstByteAt - start}ms` : 'never'})`,
-          ),
-        );
-      }, CLAUDE_CLI_TIMEOUT_MS);
-      child.stdout.on('data', (d) => {
-        if (firstByteAt == null) firstByteAt = Date.now();
-        out += d;
-      });
-      child.stderr.on('data', (d) => {
-        err += d;
-      });
-      child.on('error', (e) => {
-        clearTimeout(cliTimeout);
-        reject(e);
-      });
-      child.on('close', (code) => {
-        clearTimeout(cliTimeout);
-        if (code !== 0) {
-          reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code} (role=${role})`));
-        } else {
-          const latencyMs = Date.now() - start;
-          if (CLI_TRACE) {
-            const ttfb = firstByteAt != null ? `${firstByteAt - start}ms` : 'no-output';
-            console.error(`[claude-cli] done  role=${role} latency=${latencyMs}ms ttfb=${ttfb} outBytes=${out.length}`);
-          }
-          resolve({
-            text: out.trim(),
-            model: model || 'claude-cli',
-            provider: 'claude-code',
-            latencyMs,
-            inputTokens: 0,
-            outputTokens: 0,
-            cost: 0,
-            contextIsolation: CLAUDE_CLI_CONTEXT_ISOLATION,
-          });
-        }
-      });
-      child.stdin.write(userPrompt);
-      child.stdin.end();
+    const result = await callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role, {
+      timeoutMs: CLI_TIMEOUT_MS,
+      spawnImpl,
     });
-  } finally {
-    isolation.cleanup();
+    if (CLI_TRACE) {
+      console.error(
+        `[adaptive-cli] done  role=${role} latency=${result.latencyMs}ms outBytes=${Buffer.byteLength(result.text || '')}`,
+      );
+    }
+    // Keep the flat token/cost contract used by the adaptive budget tracker.
+    // Subscription-backed CLIs may not report usage, so retain the historical
+    // zero values rather than leaking bridge-level nulls into callers.
+    return {
+      ...result,
+      inputTokens: result.inputTokens ?? 0,
+      outputTokens: result.outputTokens ?? 0,
+      cost: result.cost ?? 0,
+    };
+  } catch (error) {
+    if (/timed out/iu.test(error?.message || '')) {
+      console.error(`[adaptive-cli] TIMEOUT role=${role} elapsed=${Date.now() - start}ms`);
+    }
+    throw error;
   }
 }
 
@@ -204,22 +136,20 @@ async function callAI(agentConfig, systemPrompt, userPrompt, role) {
   // tutor-core entirely; everything else keeps the existing
   // unifiedAIProvider path. Retry/backoff applies uniformly.
   const callOnce =
-    provider === 'claude-code'
-      ? () => callClaudeCli(systemPrompt, userPrompt, model, role)
-      : provider === 'codex'
-        ? () => callAIWithCliBridge(agentConfig, systemPrompt, userPrompt, role)
-        : () =>
-            unifiedAIProvider.call({
-              provider,
-              model,
-              systemPrompt,
-              messages: [{ role: 'user', content: userPrompt }],
-              preset: 'direct',
-              config: {
-                temperature: hyperparameters?.temperature,
-                maxTokens: hyperparameters?.max_tokens,
-              },
-            });
+    provider === 'claude-code' || provider === 'codex'
+      ? () => callAdaptiveCli(agentConfig, systemPrompt, userPrompt, role)
+      : () =>
+          unifiedAIProvider.call({
+            provider,
+            model,
+            systemPrompt,
+            messages: [{ role: 'user', content: userPrompt }],
+            preset: 'direct',
+            config: {
+              temperature: hyperparameters?.temperature,
+              maxTokens: hyperparameters?.max_tokens,
+            },
+          });
 
   const maxAttempts = 3;
   const backoffsMs = [500, 2000]; // wait[i] applies after attempt i+1 fails
