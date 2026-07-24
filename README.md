@@ -2,7 +2,9 @@
 
 Evaluation framework for the Machine Spirits tutor system. It tests how prompt orientation, ego/superego architecture, learner simulation, and explicit state-policy control change AI tutor behaviour.
 
-This is the evaluation and analysis companion to [`@machinespirits/tutor-core`](https://github.com/liammagee/machinespirits-tutor-core).
+The tutor engine formerly published as `@machinespirits/tutor-core` is now
+in-housed under [`tutor-core/`](tutor-core/), so engine, evaluation, and prompt
+changes are versioned and tested together.
 
 ## Overview
 
@@ -17,7 +19,6 @@ The system runs automated tutoring dialogues across configurable experimental ce
 ## Prerequisites
 
 - **Node.js** >= 20.0.0
-- **@machinespirits/tutor-core** >= 0.5.0 (peer dependency)
 - At least one AI provider API key (see below)
 
 ## Installation
@@ -32,12 +33,6 @@ Or clone and install locally:
 git clone https://github.com/liammagee/machinespirits-eval.git
 cd machinespirits-eval
 npm install
-```
-
-You will also need `@machinespirits/tutor-core` installed as a peer dependency:
-
-```bash
-npm install @machinespirits/tutor-core
 ```
 
 ## Configuration

@@ -9,7 +9,7 @@ Archived refs are historical provenance, not live workplan items.
 
 | Surface | Declared version | Latest canonical tag | State |
 | --- | ---: | --- | --- |
-| Repository/package | `0.5.0` | — | canonical namespace not yet baselined |
+| Repository/package | `0.6.0` | — | canonical namespace not yet baselined |
 | Canonical paper | `3.0.228` | — | canonical namespace not yet baselined |
 | Legacy mixed `v*` namespace | — | `v3.0.92` | frozen; do not add new tags here |
 

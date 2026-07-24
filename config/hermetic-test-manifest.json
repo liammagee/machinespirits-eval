@@ -329,6 +329,7 @@
         "tests/recursiveTutorPolicyCorrectness.test.js",
         "tests/recursiveTutorPolicyCorrectnessReport.test.js",
         "tests/refGovernance.test.js",
+        "tests/releasePackaging.test.js",
         "tests/registerRouter.test.js",
         "tests/registerStanceFidelity.test.js",
         "tests/regression-bug-007.test.js",

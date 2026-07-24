@@ -38,7 +38,7 @@ test('default hermetic run selects root and in-housed core suites', () => {
     ],
   );
   assert.equal(phases[1].args[0], path.join(projectRoot, 'node_modules/vitest/vitest.mjs'));
-  assert.equal(phases[0].selectedFiles.length, 450);
+  assert.equal(phases[0].selectedFiles.length, 451);
   assert.equal(phases[1].selectedFiles.length, 10);
   assert.equal(phases[1].reportPath, '/tmp/hermetic-reports/tutor-core-vitest-results.json');
 });
@@ -108,7 +108,7 @@ test('checked-in manifest exactly classifies root, core, and deliberate fixture 
   const projectRoot = path.resolve('.');
   const manifest = loadTestManifest(projectRoot);
   const state = validateTestManifest(manifest, projectRoot);
-  assert.equal(state.rootFiles.length, 450);
+  assert.equal(state.rootFiles.length, 451);
   assert.equal(state.coreFiles.length, 10);
   assert.deepEqual(state.excludedFiles, [
     'tests/fixtures/tutor-stub-first-draft/captured-deterministic-failure.test.js',
