@@ -18,6 +18,8 @@ import {
   createIsolatedPaths,
   discoverRootTestFiles,
   parseRunnerArgs,
+  runPhase,
+  selectTestShard,
 } from '../scripts/run-hermetic-tests.js';
 
 test('default hermetic run selects root and in-housed core suites', () => {
@@ -26,6 +28,8 @@ test('default hermetic run selects root and in-housed core suites', () => {
     suite: 'all',
     forceExit: true,
     printEnv: false,
+    quiet: false,
+    shard: null,
     forwarded: [],
   });
   const projectRoot = path.resolve('.');
@@ -48,6 +52,8 @@ test('explicit historical test paths remain scoped to the root suite', () => {
     suite: 'root',
     forceExit: true,
     printEnv: false,
+    quiet: false,
+    shard: null,
     forwarded: ['tests/workplan.test.js'],
   });
 });
@@ -57,11 +63,70 @@ test('suite and no-force-exit controls are parsed without leaking into child arg
     suite: 'root',
     forceExit: false,
     printEnv: false,
+    quiet: false,
+    shard: null,
     forwarded: [],
   });
   assert.throws(() => parseRunnerArgs(['--suite', 'unknown']), /Invalid test suite/);
   assert.throws(() => parseRunnerArgs(['--test-reporter=spec']), /reserve --test-reporter/);
   assert.throws(() => parseRunnerArgs(['--suite', 'core', '--reporter=dot']), /reserve --reporter/);
+});
+
+test('root sharding is deterministic, exhaustive, and isolated from forwarded runner arguments', () => {
+  const files = ['a.test.js', 'b.test.js', 'c.test.js', 'd.test.js', 'e.test.js'];
+  const first = selectTestShard(files, { index: 1, total: 2 });
+  const second = selectTestShard(files, { index: 2, total: 2 });
+  assert.deepEqual(first, ['a.test.js', 'c.test.js', 'e.test.js']);
+  assert.deepEqual(second, ['b.test.js', 'd.test.js']);
+  assert.deepEqual([...first, ...second].sort(), files);
+  assert.equal(
+    first.some((file) => second.includes(file)),
+    false,
+  );
+
+  const options = parseRunnerArgs(['--suite', 'root', '--shard=1/2', '--quiet']);
+  assert.deepEqual(options, {
+    suite: 'root',
+    forceExit: true,
+    printEnv: false,
+    quiet: true,
+    shard: { index: 1, total: 2 },
+    forwarded: [],
+  });
+  const phase = buildTestPhases(options, path.resolve('.'), '/tmp/hermetic-reports')[0];
+  const rootFiles = discoverRootTestFiles();
+  assert.equal(phase.selectedFiles.length, Math.ceil(rootFiles.length / 2));
+  assert.deepEqual(
+    phase.selectedFiles,
+    rootFiles.filter((_, index) => index % 2 === 0),
+  );
+  assert.deepEqual(phase.args.slice(-phase.selectedFiles.length), phase.selectedFiles);
+
+  assert.throws(() => parseRunnerArgs(['--shard=0/2']), /Invalid test shard/u);
+  assert.throws(() => parseRunnerArgs(['--shard=1/1']), /Invalid test shard/u);
+  assert.throws(() => parseRunnerArgs(['--shard=3/2']), /Invalid test shard/u);
+  assert.throws(() => parseRunnerArgs(['--suite', 'core', '--shard=1/2']), /only for the root suite/u);
+  assert.throws(
+    () => parseRunnerArgs(['--shard=1/2', 'tests/workplan.test.js']),
+    /cannot be combined with explicit test paths/u,
+  );
+});
+
+test('quiet phases retain child output for accounting without mirroring successful chatter', async () => {
+  let mirrored = '';
+  const result = await runPhase({
+    phase: 'root',
+    forceExit: true,
+    args: ['-e', "process.stdout.write('captured-child-output')"],
+    env: process.env,
+    quiet: true,
+    projectRoot: path.resolve('.'),
+    stdoutStream: { write: (chunk) => (mirrored += String(chunk)) },
+    onChild: () => {},
+  });
+  assert.equal(result.code, 0);
+  assert.equal(result.stdout, 'captured-child-output');
+  assert.doesNotMatch(mirrored, /captured-child-output/u);
 });
 
 test('root discovery stays explicit while the core phase targets all in-housed Vitest files', () => {
@@ -295,4 +360,20 @@ test('the concurrent PTY skip is discharged by a dedicated natural-teardown CI l
   const interactiveSuite = fs.readFileSync(path.resolve('tests/tutorStubInteractiveModes.test.js'), 'utf8');
   assert.match(interactiveSuite, /process\.env\.TUTOR_STUB_RUN_CONCURRENT_PTY_TEST === '1'/u);
   assert.match(interactiveSuite, /Boolean\(process\.env\.CI\) && !RUN_CONCURRENT_PTY_IN_CI/u);
+});
+
+test('CI shards both supported Node versions, caches npm downloads, and avoids unneeded LFS checkout', () => {
+  const workflow = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
+  assert.match(workflow, /^concurrency:\n {2}group: .*github\.workflow.*github\.ref/mu);
+  assert.match(workflow, /^ {8}node-version: \[20, 22\]\n {8}shard: \[1, 2\]$/mu);
+  assert.match(workflow, /npm run test:root -- --shard=\$\{\{ matrix\.shard \}\}\/2 --quiet/u);
+  assert.match(workflow, /^ {8}if: matrix\.shard == 1\n {8}run: npm run test:core -- --quiet$/mu);
+  assert.equal(workflow.match(/cache: npm/gu)?.length, 4);
+  assert.doesNotMatch(workflow, /lfs: true/u);
+
+  for (const workflowPath of ['.github/workflows/validate.yml', '.github/workflows/workplan-validate.yml']) {
+    const companionWorkflow = fs.readFileSync(path.resolve(workflowPath), 'utf8');
+    assert.match(companionWorkflow, /^concurrency:\n {2}group: .*github\.workflow.*github\.ref/mu);
+    assert.match(companionWorkflow, /cache: npm/u);
+  }
 });

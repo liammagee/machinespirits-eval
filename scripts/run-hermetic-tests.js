@@ -23,10 +23,28 @@ const VALID_SUITES = new Set(['all', 'root', 'core']);
 
 export { discoverCoreTestFiles, discoverRootTestFiles } from './hermetic-test-contract.js';
 
+function parseShard(value) {
+  const match = String(value || '').match(/^(\d+)\/(\d+)$/u);
+  if (!match) throw new Error(`Invalid test shard "${value}"; expected INDEX/TOTAL`);
+  const index = Number(match[1]);
+  const total = Number(match[2]);
+  if (total < 2 || index < 1 || index > total) {
+    throw new Error(`Invalid test shard "${value}"; expected 1 <= INDEX <= TOTAL and TOTAL >= 2`);
+  }
+  return { index, total };
+}
+
+export function selectTestShard(files, shard) {
+  if (!shard) return [...files];
+  return files.filter((_, fileIndex) => fileIndex % shard.total === shard.index - 1);
+}
+
 export function parseRunnerArgs(argv = []) {
   let suite = 'all';
   let forceExit = true;
   let printEnv = false;
+  let quiet = false;
+  let shard = null;
   const forwarded = [];
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -40,6 +58,13 @@ export function parseRunnerArgs(argv = []) {
       forceExit = false;
     } else if (argument === '--print-env') {
       printEnv = true;
+    } else if (argument === '--quiet') {
+      quiet = true;
+    } else if (argument === '--shard') {
+      shard = parseShard(argv[index + 1]);
+      index += 1;
+    } else if (argument.startsWith('--shard=')) {
+      shard = parseShard(argument.slice('--shard='.length));
     } else {
       forwarded.push(argument);
     }
@@ -54,13 +79,18 @@ export function parseRunnerArgs(argv = []) {
   if (forwarded.some((argument) => argument.startsWith('--reporter') || argument.startsWith('--outputFile'))) {
     throw new Error('Hermetic core tests reserve --reporter/--outputFile for manifest accounting');
   }
+  if (shard && suite === 'core') throw new Error('Test sharding is supported only for the root suite');
+  if (shard && forwarded.length > 0) {
+    throw new Error('Test sharding cannot be combined with explicit test paths or forwarded runner arguments');
+  }
 
   // Preserve the historical `npm test -- tests/example.test.js` behavior:
   // explicit test paths select the root Node test phase unless the caller
   // deliberately chose the core Vitest phase.
   if (forwarded.length > 0 && suite === 'all') suite = 'root';
+  if (shard && suite === 'all') suite = 'root';
 
-  return { suite, forceExit, printEnv, forwarded };
+  return { suite, forceExit, printEnv, quiet, shard, forwarded };
 }
 
 export function createIsolatedPaths(root) {
@@ -77,9 +107,9 @@ export function createIsolatedPaths(root) {
   };
 }
 
-export function buildRootTestArgs({ projectRoot = PROJECT_ROOT, forceExit = true, forwarded = [] } = {}) {
-  const testFiles = forwarded.length ? forwarded : discoverRootTestFiles(projectRoot);
-  return ['--test', '--test-reporter=tap', ...(forceExit ? ['--test-force-exit'] : []), ...testFiles];
+export function buildRootTestArgs({ projectRoot = PROJECT_ROOT, forceExit = true, forwarded = [], testFiles } = {}) {
+  const selectedFiles = testFiles || (forwarded.length ? forwarded : discoverRootTestFiles(projectRoot));
+  return ['--test', '--test-reporter=tap', ...(forceExit ? ['--test-force-exit'] : []), ...selectedFiles];
 }
 
 export function buildCoreTestArgs({ projectRoot = PROJECT_ROOT, forwarded = [], reportPath } = {}) {
@@ -97,17 +127,20 @@ export function buildCoreTestArgs({ projectRoot = PROJECT_ROOT, forwarded = [], 
 export function buildTestPhases(options, projectRoot = PROJECT_ROOT, reportRoot = projectRoot) {
   const phases = [];
   if (options.suite === 'all' || options.suite === 'root') {
+    const discoveredFiles = discoverRootTestFiles(projectRoot);
     const selectedFiles = options.forwarded.length
       ? options.forwarded.filter((argument) => argument.endsWith('.test.js'))
-      : discoverRootTestFiles(projectRoot);
+      : selectTestShard(discoveredFiles, options.shard);
     phases.push({
       phase: 'root',
       forceExit: options.forceExit,
+      shard: options.shard,
       selectedFiles,
       args: buildRootTestArgs({
         projectRoot,
         forceExit: options.forceExit,
         forwarded: options.forwarded,
+        testFiles: options.shard ? selectedFiles : undefined,
       }),
     });
   }
@@ -130,13 +163,30 @@ export function buildTestPhases(options, projectRoot = PROJECT_ROOT, reportRoot 
   return phases;
 }
 
-function phaseLabel(phase, forceExit) {
+function phaseLabel(phase, forceExit, shard) {
   if (phase === 'core') return 'in-housed tutor-core (Vitest, natural teardown)';
-  return `root Node tests (${forceExit ? 'legacy forced exit' : 'natural teardown handle audit'})`;
+  const shardLabel = shard ? `, shard ${shard.index}/${shard.total}` : '';
+  return `root Node tests (${forceExit ? 'legacy forced exit' : 'natural teardown handle audit'}${shardLabel})`;
 }
 
-function runPhase({ phase, forceExit, args, env, projectRoot = PROJECT_ROOT, onChild }) {
-  console.log(`\n[test:hermetic] ${phaseLabel(phase, forceExit)}`);
+function replayCapturedOutput(result) {
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+}
+
+export function runPhase({
+  phase,
+  forceExit,
+  shard,
+  args,
+  env,
+  quiet = false,
+  projectRoot = PROJECT_ROOT,
+  stdoutStream = process.stdout,
+  stderrStream = process.stderr,
+  onChild,
+}) {
+  console.log(`\n[test:hermetic] ${phaseLabel(phase, forceExit, shard)}`);
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, args, {
       cwd: projectRoot,
@@ -148,11 +198,11 @@ function runPhase({ phase, forceExit, args, env, projectRoot = PROJECT_ROOT, onC
     const stderrChunks = [];
     child.stdout.on('data', (chunk) => {
       stdoutChunks.push(chunk);
-      process.stdout.write(chunk);
+      if (!quiet) stdoutStream.write(chunk);
     });
     child.stderr.on('data', (chunk) => {
       stderrChunks.push(chunk);
-      process.stderr.write(chunk);
+      if (!quiet) stderrStream.write(chunk);
     });
     onChild(child);
     child.once('error', reject);
@@ -207,20 +257,33 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
     }
 
     for (const phase of buildTestPhases(options, PROJECT_ROOT, hermeticRoot)) {
-      const result = await runPhase({ ...phase, env, onChild: (child) => (currentChild = child) });
+      const result = await runPhase({
+        ...phase,
+        env,
+        quiet: options.quiet,
+        onChild: (child) => (currentChild = child),
+      });
       currentChild = null;
       if (result.signal) {
+        if (options.quiet) replayCapturedOutput(result);
         interruptedSignal = result.signal;
         return 1;
       }
-      const phaseSummary = validatePhaseSummary({
-        phase: phase.phase,
-        summary: readPhaseSummary(phase, result, PROJECT_ROOT),
-        selectedFiles: phase.selectedFiles,
-        allowedSkips: manifestState.allowedSkips,
-        env,
-        requireExactFiles: phase.selectedFiles.length > 0,
-      });
+      if (options.quiet && result.code !== 0) replayCapturedOutput(result);
+      let phaseSummary;
+      try {
+        phaseSummary = validatePhaseSummary({
+          phase: phase.phase,
+          summary: readPhaseSummary(phase, result, PROJECT_ROOT),
+          selectedFiles: phase.selectedFiles,
+          allowedSkips: manifestState.allowedSkips,
+          env,
+          requireExactFiles: phase.selectedFiles.length > 0,
+        });
+      } catch (error) {
+        if (options.quiet && result.code === 0) replayCapturedOutput(result);
+        throw error;
+      }
       printPhaseSummary(phase.phase, phaseSummary);
       if (result.code !== 0) return result.code;
     }
