@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-24T01:29:56.295Z",
+  "generated": "2026-07-24T01:48:36.343Z",
   "counts": {
-    "total": 160,
+    "total": 161,
     "byStatus": {
       "done": 132,
       "blocked": 3,
       "dropped": 2,
       "triaged": 18,
       "archived": 4,
-      "active": 1
+      "active": 2
     },
     "byType": {
       "research": 46,
       "experiment": 48,
       "infra": 37,
-      "maintenance": 14,
+      "maintenance": 15,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -602,6 +602,37 @@
         "evaluation-infrastructure"
       ],
       "milestone": "impasse-program-v1"
+    },
+    {
+      "id": "refactor-required-run-manifest",
+      "title": "Make required test discovery and skips explicit",
+      "status": "active",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "The hermetic root and in-housed tutor-core phases validate a checked-in exact file manifest, report selected file/test/skip counts and skip reasons, reject an unexpected skip or zero-test required phase, and pass focused runner tests plus the clean Node 20/22 CI matrix.",
+      "branch": "codex/refactor-required-run-manifest",
+      "depends_on": [
+        "make-inhoused-tests-and-coverage-first-class"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "hermetic",
+        "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "a1-human-learner-validation",
