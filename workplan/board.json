@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-24T12:20:17.370Z",
+  "generated": "2026-07-24T12:33:59.419Z",
   "counts": {
-    "total": 171,
+    "total": 172,
     "byStatus": {
       "done": 141,
       "blocked": 3,
       "dropped": 2,
       "triaged": 18,
-      "active": 1,
+      "active": 2,
       "archived": 4,
       "review": 2
     },
     "byType": {
       "research": 46,
-      "experiment": 48,
+      "experiment": 49,
       "infra": 38,
       "maintenance": 24,
       "content": 2,
@@ -574,6 +574,35 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "tutor-stub-latency-routing-optimization",
+      "title": "Optimize tutor-stub foreground latency with attributable routing experiments",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "A frozen object/meta/mixed transcript matrix reports first-draft acceptance, recovery/fallback rate, foreground p50/p95 latency, model-call latency, token use, and tutor-quality/safety outcomes for isolated effort, role-routing, prompt-compaction, and prefetch-policy contrasts; no candidate becomes a default without preserving the instructional-meta regression and public-safety gates.",
+      "branch": "codex/tutor-stub-latency-routing",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-07-24-tutor-stub-latency-and-discourse-plane.md"
+        ],
+        "items": [
+          "tutor-stub-dialogue-first-terminal-presentation"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "latency",
+        "model-routing",
+        "discourse-plane",
+        "mixed-mode"
+      ]
     },
     {
       "id": "a1-human-learner-validation",

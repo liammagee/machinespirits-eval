@@ -68,6 +68,7 @@ import {
   invalidateMixedLearnerCache,
   mixedLearnerAnalysisCacheKey,
   mixedLearnerSuggestionMove,
+  mixedLearnerTutorPrefetchDecision,
   parseMixedLearnerArtifacts,
   refreshMixedLearnerPrompt,
 } from '../services/mixedLearnerArtifacts.js';
@@ -126,11 +127,13 @@ import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.
 import { buildTutorStubProofDebtState } from '../services/tutorStubProofDebt.js';
 import {
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
+  TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES,
   TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   applyTutorStubPublicLearnerRecordUpdate as applyLearnerRecordUpdate,
   buildTutorStubLearnerDagPreflight,
   buildTutorStubPublicLearnerAnalysisPrompt,
   extractTutorStubPublicLearnerAnalysis,
+  normalizeTutorStubPublicLearnerAnalysisPromptProfile,
   normalizeTutorStubHumanDiscourseExtraction as normalizeHumanDiscourseExtraction,
   normalizeTutorStubHumanDiscourseRows as normalizeDiscourseRows,
   parseTutorStubPublicLearnerAnalysisInteractive as parseClassifierJson,
@@ -534,6 +537,10 @@ const STUB = {
     process.env.TUTOR_STUB_LEARNER_RECORD_MODEL ||
     process.env.TUTOR_STUB_CLASSIFIER_MODEL ||
     DEFAULT_INTERPRETATION_MODEL_REF,
+  learnerAnalysisPromptProfile:
+    process.env.TUTOR_STUB_LEARNER_ANALYSIS_PROMPT_PROFILE ||
+    TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
+  mixedTutorPrefetchPolicy: process.env.TUTOR_STUB_MIXED_TUTOR_PREFETCH_POLICY || 'always',
   topic: process.env.TUTOR_STUB_TOPIC || 'fractions',
   world: process.env.TUTOR_STUB_WORLD || 'world_005_marrick',
   learner: 'A curious learner who may be partly right, partly confused, and unsure how to explain their thinking.',
@@ -673,6 +680,7 @@ const { values: args, positionals } = parseArgs({
     passthrough: { type: 'boolean', default: false },
     'tutor-learner-dag': { type: 'boolean', default: false },
     'learner-record-model': { type: 'string', default: STUB.learnerRecordModel },
+    'learner-analysis-prompt-profile': { type: 'string', default: STUB.learnerAnalysisPromptProfile },
     'no-register-selection': { type: 'boolean', default: false },
     'register-palette': { type: 'string', default: 'all' },
     'register-policy': { type: 'string', default: STUB.registerPolicy },
@@ -746,6 +754,7 @@ const { values: args, positionals } = parseArgs({
     'acknowledge-research-use': { type: 'boolean', default: false },
     'no-auto-stop-on-grounded': { type: 'boolean', default: false },
     'mixed-learner': { type: 'boolean', default: STUB.mixedLearner },
+    'mixed-tutor-prefetch-policy': { type: 'string', default: STUB.mixedTutorPrefetchPolicy },
     'mixed-mode': { type: 'boolean', default: false },
     demo: { type: 'boolean', default: false },
     save: { type: 'string' },
@@ -949,6 +958,9 @@ Options:
                          model for --tutor-learner-dag; when the classifier is
                          also on, this single call returns both outputs
                          (default: ${STUB.learnerRecordModel})
+  --learner-analysis-prompt-profile <baseline|compact_v1>
+                         learner-analysis prompt profile; compact_v1 removes
+                         only duplicate question text and JSON indentation
   --no-register-selection
                          keep tutor speaking style fixed instead of adapting it
   --register-palette <all|safe|negative|non-simulated|csv>
@@ -1140,6 +1152,9 @@ Options:
   --cli-effort <level>   effort for codex/claude-code CLI calls:
                          low, medium, high, xhigh, max, or config
                          (default: ${STUB.cliEffort})
+  --mixed-tutor-prefetch-policy <always|analysis_only>
+                         warm the full tutor reply (current default), or warm
+                         only the learner analysis until the learner submits
   --temperature <n>      API temperature (default: ${STUB.temperature})
   --max-tokens <n>       response token cap for API providers (default: ${STUB.maxTokens})
   --history-turns <n>    raw recent turns kept in compact analysis prompts
@@ -1259,6 +1274,8 @@ Environment:
                          optional default classifier model override
   TUTOR_STUB_LEARNER_RECORD_MODEL
                          optional default learner-record / combined-analysis model override
+  TUTOR_STUB_LEARNER_ANALYSIS_PROMPT_PROFILE
+                         baseline (default) or compact_v1
   TUTOR_STUB_TOPIC       optional default topic override
   TUTOR_STUB_WORLD       optional default detective-story world
   TUTOR_STUB_TURN_FEEDBACK=0
@@ -1319,6 +1336,8 @@ Environment:
                          optional built-in id or custom automated learner profile
   TUTOR_STUB_MIXED_LEARNER=1
                          enable mixed manual/autocomplete learner mode
+  TUTOR_STUB_MIXED_TUTOR_PREFETCH_POLICY
+                         always (default) or analysis_only
 `);
 }
 
@@ -6184,6 +6203,7 @@ function buildCombinedLearnerAnalysisPrompt({
     },
     publicStagedEvidence,
     dagPreflight,
+    promptProfile: state.learnerAnalysisPromptProfile,
   });
 }
 async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn, dagPreflight = null, signal = null }) {
@@ -16415,6 +16435,15 @@ async function main() {
     allowAuthoredDagClosure: Boolean(!autoLearnerEnabled),
   });
   const cliEffort = normalizeCliEffort(args['cli-effort']);
+  const learnerAnalysisPromptProfile = normalizeTutorStubPublicLearnerAnalysisPromptProfile(
+    args['learner-analysis-prompt-profile'],
+  );
+  const mixedTutorPrefetchPolicy = String(args['mixed-tutor-prefetch-policy'] || 'always')
+    .trim()
+    .toLowerCase();
+  if (!['always', 'analysis_only'].includes(mixedTutorPrefetchPolicy)) {
+    throw new Error('--mixed-tutor-prefetch-policy must be always or analysis_only');
+  }
   const tutorStreamState = !streamEnabled
     ? 'off'
     : providerSupportsEventStreaming(resolved)
@@ -16962,6 +16991,7 @@ async function main() {
             precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
           },
           promptArchitecture,
+          learnerAnalysisPromptProfile,
           directorContext,
           temperature: effectiveTemperature,
           requestedTemperature: temperature,
@@ -17012,6 +17042,7 @@ async function main() {
                 accept: 'Tab on an empty learner prompt, /use, or /accept',
                 inspect: '/suggest',
                 regenerate: '/regen',
+                tutorPrefetchPolicy: mixedTutorPrefetchPolicy,
                 profilePresentation: {
                   promptLabel: true,
                   intendedPattern: true,
@@ -17387,6 +17418,8 @@ async function main() {
           }
         : { enabled: false },
       cliEffort: cliEffort || null,
+      learnerAnalysisPromptProfile,
+      mixedTutorPrefetchPolicy,
       stream: {
         enabled: streamEnabled,
         tutor: tutorStreamState,
@@ -17521,6 +17554,8 @@ async function main() {
     temperature: effectiveTemperature,
     maxTokens,
     historyTurns,
+    learnerAnalysisPromptProfile,
+    mixedTutorPrefetchPolicy,
     tutorContext: {
       schema: 'machinespirits.tutor-stub.tutor-context-policy.v2',
       historyMode: 'full_public_replay',
@@ -19072,13 +19107,17 @@ async function main() {
 
   async function startMixedLearnerTutorPrefetch(entry, raw) {
     if (mixedLearner.analysisCache !== entry || exiting) return null;
-    if (state.typedActions?.enabled) {
+    const prefetchDecision = mixedLearnerTutorPrefetchDecision({
+      policy: state.mixedTutorPrefetchPolicy,
+      typedActionsEnabled: state.typedActions?.enabled,
+    });
+    if (!prefetchDecision.enabled) {
       entry.tutorStatus = 'disabled';
       appendTraceEvent(state.trace, {
         type: 'mixed_learner_tutor_prefetch_skipped',
         turn: entry.turn,
         turnId: entry.turnId,
-        reason: 'typed_action_must_precede_tutor_output_generation',
+        reason: prefetchDecision.reason,
       });
       return null;
     }

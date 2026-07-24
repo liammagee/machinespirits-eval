@@ -7,6 +7,7 @@ import {
   invalidateMixedLearnerCache,
   mixedLearnerAnalysisCacheKey,
   mixedLearnerSuggestionMove,
+  mixedLearnerTutorPrefetchDecision,
   parseMixedLearnerArtifacts,
   profileSignalSafelyDescribesAnswer,
   refreshMixedLearnerPrompt,
@@ -161,5 +162,20 @@ describe('mixed learner artifacts', () => {
     assert.equal(cachedAnalysis.tutorContextKey, null);
     assert.equal(cachedAnalysis.tutorPromise, null);
     assert.equal(cachedAnalysis.tutorResponse, null);
+  });
+
+  it('keeps analysis warming while analysis_only disables speculative tutor generation', () => {
+    assert.deepEqual(mixedLearnerTutorPrefetchDecision({ policy: 'analysis_only' }), {
+      enabled: false,
+      reason: 'analysis_only_policy',
+    });
+    assert.deepEqual(mixedLearnerTutorPrefetchDecision({ policy: 'always' }), {
+      enabled: true,
+      reason: null,
+    });
+    assert.deepEqual(mixedLearnerTutorPrefetchDecision({ policy: 'always', typedActionsEnabled: true }), {
+      enabled: false,
+      reason: 'typed_action_must_precede_tutor_output_generation',
+    });
   });
 });
