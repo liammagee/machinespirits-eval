@@ -15,6 +15,9 @@ import os from 'os';
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'http';
+import { spawn } from 'child_process';
+import { pathToFileURL } from 'url';
+import Database from 'better-sqlite3';
 
 // Configure isolated DB BEFORE importing modules that open it.
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pilot-test-'));
@@ -24,6 +27,88 @@ process.env.PILOT_ADMIN_TOKEN = 'test-admin-token';
 
 const { app } = await import('../server.js');
 const pilotStore = await import('../services/pilotStore.js');
+
+const APPEND_WORKER_SOURCE = `
+const store = await import(process.env.PILOT_STORE_URL);
+const params = JSON.parse(process.env.PILOT_APPEND_PARAMS);
+process.send({ type: 'ready' });
+process.on('message', (message) => {
+  if (message?.type !== 'append') return;
+  try {
+    const result = store.appendTurn(params.sessionId, params.turn);
+    process.send({ type: 'result', result }, () => process.exit(0));
+  } catch (error) {
+    process.send(
+      { type: 'result', error: { code: error.code || null, message: error.message } },
+      () => process.exit(1),
+    );
+  }
+});
+`;
+
+function waitForChildMessage(child, type, getStderr) {
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      child.off('message', onMessage);
+      child.off('error', onError);
+      child.off('exit', onExit);
+    };
+    const onMessage = (message) => {
+      if (message?.type !== type) return;
+      cleanup();
+      resolve(message);
+    };
+    const onError = (error) => {
+      cleanup();
+      reject(error);
+    };
+    const onExit = (code, signal) => {
+      cleanup();
+      reject(new Error(`pilot append worker exited before ${type}: code=${code} signal=${signal}; ${getStderr()}`));
+    };
+    child.on('message', onMessage);
+    child.once('error', onError);
+    child.once('exit', onExit);
+  });
+}
+
+function prepareAppendWorker(params) {
+  let stderr = '';
+  const child = spawn(process.execPath, ['--input-type=module', '--eval', APPEND_WORKER_SOURCE], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      PILOT_STORE_URL: pathToFileURL(path.resolve('services/pilotStore.js')).href,
+      PILOT_APPEND_PARAMS: JSON.stringify(params),
+    },
+    stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
+  });
+  child.stderr.setEncoding('utf8');
+  child.stderr.on('data', (chunk) => {
+    stderr += chunk;
+  });
+  const exited = new Promise((resolve) => {
+    child.once('exit', (code, signal) => resolve({ code, signal, stderr }));
+  });
+  return {
+    ready: waitForChildMessage(child, 'ready', () => stderr),
+    append() {
+      const result = waitForChildMessage(child, 'result', () => stderr);
+      child.send({ type: 'append' });
+      return result;
+    },
+    exited,
+  };
+}
+
+function readExitSurveyRow(sessionId) {
+  const inspectionDb = new Database(process.env.EVAL_DB_PATH, { readonly: true });
+  try {
+    return inspectionDb.prepare('SELECT * FROM pilot_exit_survey WHERE session_id = ?').get(sessionId);
+  } finally {
+    inspectionDb.close();
+  }
+}
 
 function request(baseUrl, method, route, body = null, headers = {}) {
   return new Promise((resolve, reject) => {
@@ -434,6 +519,173 @@ describe('pilotStore — turn persistence + hashing', () => {
     });
     assert.strictEqual(a, b, 'identical inputs must produce identical hash');
     assert.notStrictEqual(a, c, 'changed prompt text must change hash');
+  });
+});
+
+function createHumanSessionAtPretestStart() {
+  const session = pilotStore.enrollSession({ forceCondition: 'cell_1_base_single_unified' });
+  pilotStore.recordConsent(session.id);
+  pilotStore.recordIntake(session.id, {});
+  pilotStore.startPretest(session.id);
+  return session;
+}
+
+function createHumanSessionAtPosttestStart() {
+  const session = createHumanSessionAtPretestStart();
+  pilotStore.recordTestResponses(session.id, {
+    phase: 'pretest',
+    form: 'A',
+    responses: [{ item_id: 'pre-atomic', item_position: 0, response_value: 'before' }],
+  });
+  pilotStore.startTutoring(session.id);
+  pilotStore.endTutoring(session.id);
+  pilotStore.startPosttest(session.id);
+  return session;
+}
+
+function createHumanSessionAtPosttestDone() {
+  const session = createHumanSessionAtPosttestStart();
+  pilotStore.recordTestResponses(session.id, {
+    phase: 'posttest',
+    form: 'B',
+    responses: [{ item_id: 'post-atomic', item_position: 0, response_value: 'before' }],
+  });
+  return session;
+}
+
+describe('pilotStore — atomic artifacts and state', () => {
+  it('rejects a changed pretest retry without changing finalized rows or session state', () => {
+    const session = createHumanSessionAtPretestStart();
+    pilotStore.recordTestResponses(session.id, {
+      phase: 'pretest',
+      form: 'A',
+      responses: [{ item_id: 'pre-retry', item_position: 0, response_value: 'before', is_correct: true }],
+    });
+    const rowsBefore = pilotStore.listTestResponses(session.id, 'pretest');
+    const sessionBefore = pilotStore.getSession(session.id);
+
+    assert.throws(
+      () =>
+        pilotStore.recordTestResponses(session.id, {
+          phase: 'pretest',
+          form: 'A',
+          responses: [{ item_id: 'pre-retry', item_position: 0, response_value: 'changed', is_correct: false }],
+        }),
+      (error) => error.code === 'PILOT_BAD_TRANSITION' && error.statusCode === 409,
+    );
+    assert.deepStrictEqual(pilotStore.listTestResponses(session.id, 'pretest'), rowsBefore);
+    assert.deepStrictEqual(pilotStore.getSession(session.id), sessionBefore);
+  });
+
+  it('rejects a changed posttest retry without changing finalized rows or session state', () => {
+    const session = createHumanSessionAtPosttestStart();
+    pilotStore.recordTestResponses(session.id, {
+      phase: 'posttest',
+      form: 'B',
+      responses: [{ item_id: 'post-retry', item_position: 0, response_value: 'before', is_correct: true }],
+    });
+    const rowsBefore = pilotStore.listTestResponses(session.id, 'posttest');
+    const sessionBefore = pilotStore.getSession(session.id);
+
+    assert.throws(
+      () =>
+        pilotStore.recordTestResponses(session.id, {
+          phase: 'posttest',
+          form: 'B',
+          responses: [{ item_id: 'post-retry', item_position: 0, response_value: 'changed', is_correct: false }],
+        }),
+      (error) => error.code === 'PILOT_BAD_TRANSITION' && error.statusCode === 409,
+    );
+    assert.deepStrictEqual(pilotStore.listTestResponses(session.id, 'posttest'), rowsBefore);
+    assert.deepStrictEqual(pilotStore.getSession(session.id), sessionBefore);
+  });
+
+  it('rejects a changed exit-survey retry without changing the finalized artifact', () => {
+    const session = createHumanSessionAtPosttestDone();
+    pilotStore.recordExitSurvey(session.id, {
+      nasa_tlx: { effort: 20 },
+      engagement_likert: { learned_something: 4 },
+      open_ended: { comment: 'before' },
+    });
+    const surveyBefore = readExitSurveyRow(session.id);
+    const sessionBefore = pilotStore.getSession(session.id);
+
+    assert.throws(
+      () =>
+        pilotStore.recordExitSurvey(session.id, {
+          nasa_tlx: { effort: 99 },
+          engagement_likert: { learned_something: 1 },
+          open_ended: { comment: 'changed' },
+        }),
+      (error) => error.code === 'PILOT_BAD_TRANSITION' && error.statusCode === 409,
+    );
+    assert.deepStrictEqual(readExitSurveyRow(session.id), surveyBefore);
+    assert.deepStrictEqual(pilotStore.getSession(session.id), sessionBefore);
+  });
+
+  it('rejects turn persistence outside the tutoring phase', () => {
+    const session = pilotStore.enrollSession({ forceCondition: 'cell_1_base_single_unified' });
+    assert.throws(
+      () =>
+        pilotStore.appendTurn(session.id, {
+          role: 'learner',
+          content: 'too early',
+          configHash: 'test-config-hash',
+        }),
+      (error) => error.code === 'PILOT_WRONG_PHASE' && error.statusCode === 409,
+    );
+    assert.deepStrictEqual(pilotStore.listTurns(session.id), []);
+  });
+
+  it('serializes concurrent append clients into distinct stable turn indices', async () => {
+    const session = pilotStore.enrollSession({
+      learnerSource: pilotStore.LEARNER_SOURCES.LLM,
+      forceCondition: 'cell_1_base_single_unified',
+    });
+    pilotStore.startTutoring(session.id);
+    const configHash = pilotStore.computeConfigHash({
+      cellName: session.condition_cell,
+      egoConfig: { provider: 'test', model: 'test' },
+      egoPromptText: 'test',
+    });
+    const workers = [
+      prepareAppendWorker({
+        sessionId: session.id,
+        turn: { role: 'learner', content: 'concurrent learner', configHash },
+      }),
+      prepareAppendWorker({
+        sessionId: session.id,
+        turn: { role: 'tutor', content: 'concurrent tutor', configHash },
+      }),
+    ];
+
+    await Promise.all(workers.map((worker) => worker.ready));
+    const messages = await Promise.all(workers.map((worker) => worker.append()));
+    const exits = await Promise.all(workers.map((worker) => worker.exited));
+    assert.deepStrictEqual(
+      exits.map((exit) => exit.code),
+      [0, 0],
+      exits.map((exit) => exit.stderr).join('\n'),
+    );
+    assert.ok(
+      messages.every((message) => !message.error),
+      JSON.stringify(messages),
+    );
+    assert.deepStrictEqual(
+      messages.map((message) => message.result.turnIndex).sort((a, b) => a - b),
+      [0, 1],
+    );
+
+    const turns = pilotStore.listTurns(session.id);
+    assert.deepStrictEqual(
+      turns.map((turn) => turn.turn_index),
+      [0, 1],
+    );
+    assert.deepStrictEqual(
+      new Set(turns.map((turn) => turn.content)),
+      new Set(['concurrent learner', 'concurrent tutor']),
+    );
+    assert.strictEqual(new Set(turns.map((turn) => turn.dialogue_content_hash)).size, 2);
   });
 });
 
