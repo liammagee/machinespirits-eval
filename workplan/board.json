@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-23T23:48:25.325Z",
+  "generated": "2026-07-24T00:23:59.431Z",
   "counts": {
-    "total": 159,
+    "total": 160,
     "byStatus": {
       "done": 132,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 18,
+      "triaged": 19,
       "archived": 4
     },
     "byType": {
       "research": 46,
       "experiment": 48,
       "infra": 37,
-      "maintenance": 13,
+      "maintenance": 14,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -29,8 +29,66 @@
       "owner": "unassigned",
       "source": "review",
       "created": "2026-07-23",
-      "updated": "2026-07-23",
-      "verification": "CI launches the real shared tutor surface with a fake provider in both web and packaged Electron hosts and exercises create, turn, reset, interrupt, finalize, export provenance, keyboard, text fallback, and accessibility contracts."
+      "updated": "2026-07-24",
+      "verification": "CI launches the real shared tutor surface with a fake provider in both web and packaged Electron hosts and exercises create, turn, reset, interrupt, finalize, export provenance, keyboard, text fallback, and accessibility contracts.",
+      "depends_on": [
+        "tutor-stub-unified-session-surface"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "tutor-stub-headless-session-transport",
+          "tutor-stub-process-session-factory",
+          "tutor-stub-unified-session-surface"
+        ]
+      }
+    },
+    {
+      "id": "codebase-refactoring-program",
+      "title": "Execute the evidence-led codebase refactoring programme",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "make-inhoused-tests-and-coverage-first-class",
+          "make-pilot-state-writes-atomic",
+          "isolate-remaining-direct-model-subprocesses",
+          "harden-consolidated-labelling-integrity",
+          "automate-browser-and-packaged-electron-tutor-stub-acceptance",
+          "test-canonical-posthoc-analysis-pipeline",
+          "decide-rich-learner-memory-service-retention",
+          "tutor-stub-register-policy-extraction",
+          "tutor-stub-capability-session-runtime",
+          "tutor-stub-headless-session-transport",
+          "tutor-stub-process-session-factory",
+          "tutor-stub-unified-session-surface",
+          "normalize-provenance-validator-data-paths",
+          "tutor-stub-first-draft-series",
+          "adaptive-eval-immutable-provenance"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "testing",
+        "coverage",
+        "dead-code",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "harden-consolidated-labelling-integrity",
