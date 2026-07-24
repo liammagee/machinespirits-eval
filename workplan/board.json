@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T05:32:04.094Z",
+  "generated": "2026-07-24T06:07:01.466Z",
   "counts": {
-    "total": 165,
+    "total": 166,
     "byStatus": {
-      "done": 135,
+      "done": 136,
       "blocked": 3,
       "dropped": 2,
       "triaged": 19,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 48,
       "infra": 37,
-      "maintenance": 19,
+      "maintenance": 20,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -573,6 +573,7 @@
           "refactor-required-run-manifest",
           "refactor-v-series-fixtures",
           "refactor-dialogue-log-fixtures",
+          "refactor-cast-layer-fixture",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -690,8 +691,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-dialogue-log-fixtures",
-      "title": "Make dialogue-structure tests hermetic",
+      "id": "refactor-cast-layer-fixture",
+      "title": "Make cast-layer reader-quality scoring hermetic",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -699,11 +700,11 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-07-24",
-      "verification": "Clean hermetic runs seed tracked dialogue fixtures through EVAL_LOGS_DIR; every dialogue-structure group executes without ambient logs or undeclared skips; the dialogue-logs-absent ledger entry is removed; and focused plus full hermetic parity passes.",
-      "branch": "codex/refactor-dialogue-log-fixtures",
+      "verification": "A clean checkout executes the cast-layer reader-quality scorer against a tracked synthetic S0/S1/S2 matrix, preserves its conservative proof and branch-ordering assertions, removes the cast-layer-private-matrix skip, and passes focused plus full hermetic parity without production export writes.",
+      "branch": "codex/refactor-cast-layer-fixture",
       "depends_on": [
         "refactor-required-run-manifest",
-        "refactor-v-series-fixtures"
+        "refactor-dialogue-log-fixtures"
       ],
       "links": {
         "notes": [
@@ -716,7 +717,8 @@
       "tags": [
         "testing",
         "fixtures",
-        "dialogue-logs",
+        "cast-layer",
+        "dramatic-derivation",
         "hermetic",
         "refactoring"
       ],
@@ -1717,6 +1719,42 @@
         "form-carrier"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "refactor-dialogue-log-fixtures",
+      "title": "Make dialogue-structure tests hermetic",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "Clean hermetic runs seed tracked dialogue fixtures through EVAL_LOGS_DIR; every dialogue-structure group executes without ambient logs or undeclared skips; the dialogue-logs-absent ledger entry is removed; and focused plus full hermetic parity passes.",
+      "branch": "codex/refactor-dialogue-log-fixtures",
+      "depends_on": [
+        "refactor-required-run-manifest",
+        "refactor-v-series-fixtures"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/192"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "testing",
+        "fixtures",
+        "dialogue-logs",
+        "hermetic",
+        "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "refactor-required-run-manifest",

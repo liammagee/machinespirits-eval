@@ -1,0 +1,175 @@
+{
+  "fixtureVersion": 1,
+  "evidenceStatus": "synthetic_test_fixture",
+  "description": "Minimal fixed-prose S0/S1/S2 scorer contract; not empirical evidence.",
+  "sharedLive": {
+    "turns": [
+      {
+        "turn": 1,
+        "D": 2,
+        "scene": { "index": 1 },
+        "exchange": { "type": "hypothesis" },
+        "lines": [
+          { "role": "tutor", "text": "Which clue can we establish first?" },
+          { "role": "learner", "text": "I see; the first clue supports a cautious beginning." }
+        ]
+      },
+      {
+        "turn": 2,
+        "D": 2,
+        "scene": { "index": 2 },
+        "exchange": { "type": "hypothesis" },
+        "lines": [
+          { "role": "tutor", "text": "What follows without adding a new premise?" },
+          { "role": "learner", "text": "Yes, the second clue narrows the possible account." }
+        ]
+      },
+      {
+        "turn": 3,
+        "D": 1,
+        "scene": { "index": 3 },
+        "exchange": { "type": "substantive" },
+        "lines": [
+          { "role": "tutor", "text": "How do those two established clues connect?" },
+          { "role": "learner", "text": "I follow; together they rule out the earlier guess." }
+        ]
+      },
+      {
+        "turn": 4,
+        "D": 1,
+        "scene": { "index": 4 },
+        "exchange": { "type": "substantive" },
+        "lines": [
+          { "role": "tutor", "text": "What uncertainty still blocks the conclusion?" },
+          { "role": "learner", "text": "I see; we still need to identify who fits both clues." }
+        ]
+      },
+      {
+        "turn": 5,
+        "D": 1,
+        "scene": { "index": 5 },
+        "exchange": { "type": "substantive" },
+        "lines": [
+          { "role": "tutor", "text": "Which candidate survives that comparison?" },
+          { "role": "learner", "text": "Only Oswin remains consistent with what we established." }
+        ]
+      },
+      {
+        "turn": 6,
+        "D": 1,
+        "scene": { "index": 6 },
+        "exchange": { "type": "substantive" },
+        "lines": [
+          { "role": "tutor", "text": "Can you state the chain in your own words?" },
+          { "role": "learner", "text": "The clues exclude the alternatives and leave Oswin." }
+        ]
+      },
+      {
+        "turn": 7,
+        "D": 0,
+        "scene": { "index": 6 },
+        "exchange": { "type": "assertion" },
+        "lines": [
+          { "role": "tutor", "text": "What conclusion is now grounded?" },
+          { "role": "learner", "text": "Then it is shown: Oswin." }
+        ]
+      }
+    ]
+  },
+  "conditions": {
+    "cast-layer-local-s0-no-cast": {
+      "result": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 7,
+        "firstForcedTurn": 7,
+        "assertedGroundedTurn": 7
+      },
+      "diagnosis": {
+        "turnsPlayed": 7,
+        "firstForcedTurn": 7,
+        "assertedGroundedTurn": 7,
+        "dCurve": [2, 2, 1, 1, 1, 1, 0],
+        "releaseAdherence": { "deviations": [], "missed": [], "unscheduled": [] },
+        "castLayer": false,
+        "castReinvention": false
+      }
+    },
+    "cast-layer-local-s1-static-cast": {
+      "result": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 7,
+        "firstForcedTurn": 7,
+        "assertedGroundedTurn": 7,
+        "castLayer": [
+          {
+            "turn": 1,
+            "inputAuditOk": true,
+            "nonLeakAuditOk": true,
+            "mayOverrideProofControl": false,
+            "tutorStance": "craft examiner",
+            "learnerPosture": "ordinary"
+          },
+          {
+            "turn": 7,
+            "inputAuditOk": true,
+            "nonLeakAuditOk": true,
+            "mayOverrideProofControl": false,
+            "tutorStance": "craft examiner",
+            "learnerPosture": "defensive_after_correction"
+          }
+        ]
+      },
+      "diagnosis": {
+        "turnsPlayed": 7,
+        "firstForcedTurn": 7,
+        "assertedGroundedTurn": 7,
+        "dCurve": [2, 2, 1, 1, 1, 1, 0],
+        "releaseAdherence": { "deviations": [], "missed": [], "unscheduled": [] },
+        "castLayer": true,
+        "castReinvention": false
+      }
+    },
+    "cast-layer-local-s2-reinvention": {
+      "result": {
+        "verdict": "grounded_anagnorisis",
+        "turnsPlayed": 7,
+        "firstForcedTurn": 7,
+        "assertedGroundedTurn": 7,
+        "castLayer": [
+          {
+            "turn": 1,
+            "inputAuditOk": true,
+            "nonLeakAuditOk": true,
+            "mayOverrideProofControl": false,
+            "tutorStance": "craft examiner",
+            "learnerPosture": "ordinary"
+          },
+          {
+            "turn": 7,
+            "inputAuditOk": true,
+            "nonLeakAuditOk": true,
+            "mayOverrideProofControl": false,
+            "tutorStance": "co investigator",
+            "learnerPosture": "defensive_after_correction",
+            "reinvention": {
+              "active": true,
+              "trigger": "defensive_after_correction",
+              "fromStance": "craft examiner",
+              "toStance": "co investigator",
+              "mayOverrideProofControl": false
+            }
+          }
+        ]
+      },
+      "diagnosis": {
+        "turnsPlayed": 7,
+        "firstForcedTurn": 7,
+        "assertedGroundedTurn": 7,
+        "dCurve": [2, 2, 1, 1, 1, 1, 0],
+        "releaseAdherence": { "deviations": [], "missed": [], "unscheduled": [] },
+        "castLayer": true,
+        "castReinvention": true
+      }
+    }
+  }
+}

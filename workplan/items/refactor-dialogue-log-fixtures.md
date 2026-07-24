@@ -1,7 +1,7 @@
 ---
 id: refactor-dialogue-log-fixtures
 title: Make dialogue-structure tests hermetic
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -18,6 +18,8 @@ depends_on:
   - refactor-required-run-manifest
   - refactor-v-series-fixtures
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/192
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -66,3 +68,6 @@ Log:
   reused its stale event body. Hardened the check to infer only one exact item
   `branch:` match, fail closed on unknown/ambiguous branches or explicit typos,
   and rerun on PR-body edits; the PR body itself now links this item explicitly.
+- 2026-07-24 — Closed after PR #192 merged with the clean Node 20/22 matrix;
+  stable `main` was synchronized and the merged local branch and worktree were
+  removed after ancestry and clean-worktree checks.

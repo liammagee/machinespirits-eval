@@ -498,14 +498,6 @@
       "removalSlice": "runtime-fingerprint fixture or dedicated integration lane"
     },
     {
-      "id": "cast-layer-private-matrix",
-      "suite": "root",
-      "testPattern": "^cast-layer reader-quality scorer emits conservative rubric and branch scores$",
-      "owner": "dramatic-derivation",
-      "reason": "The scorer currently depends on a gitignored cast-layer matrix.",
-      "removalSlice": "codex/refactor-cast-layer-fixture"
-    },
-    {
       "id": "concurrent-pty-ci",
       "suite": "root",
       "testPattern": "^auto mode keeps a separate editable command line while model output is generated$",
