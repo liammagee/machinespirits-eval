@@ -24,6 +24,7 @@ links:
     - refactor-required-run-manifest
     - refactor-v-series-fixtures
     - refactor-dialogue-log-fixtures
+    - refactor-cast-layer-fixture
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -89,3 +90,11 @@ Log:
   all dialogue-structure groups executing hermetically, the ambient-log skip
   removed, and focused plus full local validation green. The next queued slice
   remains R0.4 cast-layer fixture extraction after this branch lands.
+- 2026-07-24 — PR #192 merged and R0.3 closed. Activated R0.4 on
+  `codex/refactor-cast-layer-fixture` to replace the gitignored reader-quality
+  matrix dependency with an explicitly synthetic tracked scorer fixture and
+  discharge its skip-ledger entry.
+- 2026-07-24 — R0.4 reached review with the cast-layer scorer executing against
+  a tracked test-only matrix, its private-export skip removed, and the complete
+  root manifest passing with zero skips. The next queued slice remains R0.5's
+  permitted PTY/loopback CI lane after this branch lands.

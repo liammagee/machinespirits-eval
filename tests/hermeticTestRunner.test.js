@@ -113,7 +113,6 @@ test('checked-in manifest exactly classifies root, core, and deliberate fixture 
   assert.deepEqual(state.excludedFiles, [
     'tests/fixtures/tutor-stub-first-draft/captured-deterministic-failure.test.js',
   ]);
-  assert.ok(state.allowedSkips.some((entry) => entry.id === 'cast-layer-private-matrix'));
 });
 
 test('manifest validation reports missing, extra, and unclassified test files', () => {
@@ -262,12 +261,11 @@ test('checked-in skip ledger matches the declared clean Linux CI skip shapes', (
       reason: 'archived corpus absent (/repo/data/paper2/superego.jsonl); sibling private repo not checked out',
     },
     { test: 'a sealed passing preflight', reason: 'codex/claude CLIs not installed on this host' },
-    { test: 'cast-layer reader-quality scorer emits conservative rubric and branch scores', reason: '' },
     { test: 'auto mode keeps a separate editable command line while model output is generated', reason: '' },
   ];
   const summary = validatePhaseSummary({
     phase: 'root',
-    summary: { tests: 4, skipped: 4, skipEvents },
+    summary: { tests: 3, skipped: 3, skipEvents },
     selectedFiles: ['tests/example.test.js'],
     allowedSkips: manifest.allowedSkips,
     env: { CI: 'true' },
@@ -276,6 +274,6 @@ test('checked-in skip ledger matches the declared clean Linux CI skip shapes', (
   });
   assert.deepEqual(
     summary.matchedSkips.map((skip) => skip.ledger.id),
-    ['paper-superego-private-archive', 'model-cli-fingerprints', 'cast-layer-private-matrix', 'concurrent-pty-ci'],
+    ['paper-superego-private-archive', 'model-cli-fingerprints', 'concurrent-pty-ci'],
   );
 });
