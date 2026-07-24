@@ -27,7 +27,7 @@ import {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-function fakeChild({ stdoutText = '', stderrText = '', onEnd = null } = {}) {
+function fakeChild({ stdoutText = '', stderrText = '', onEnd = null, exitCode = 0 } = {}) {
   const child = new EventEmitter();
   child.stdout = new PassThrough();
   child.stderr = new PassThrough();
@@ -41,7 +41,7 @@ function fakeChild({ stdoutText = '', stderrText = '', onEnd = null } = {}) {
         if (stderrText) child.stderr.write(stderrText);
         child.stdout.end();
         child.stderr.end();
-        child.emit('close', 0);
+        child.emit('close', exitCode);
       });
     },
   };
@@ -114,6 +114,11 @@ describe('cliProviderBridge', () => {
         expected: { CLAUDE_CODE_OAUTH_TOKEN: 'claude-selected-secret' },
         absent: ['OPENAI_API_KEY', 'CODEX_HOME', 'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN'],
       },
+      {
+        provider: 'gemini-cli',
+        expected: { GEMINI_API_KEY: 'gemini-secret-canary' },
+        absent: ['OPENAI_API_KEY', 'CODEX_HOME', 'CLAUDE_CODE_OAUTH_TOKEN', 'ANTHROPIC_API_KEY'],
+      },
     ];
 
     for (const { provider, expected, absent } of cases) {
@@ -127,7 +132,7 @@ describe('cliProviderBridge', () => {
         'NODE_PATH',
         'DYLD_INSERT_LIBRARIES',
         'OPENROUTER_API_KEY',
-        'GEMINI_API_KEY',
+        ...(provider === 'gemini-cli' ? [] : ['GEMINI_API_KEY']),
         'FAKE_CODEX_LOG',
       ]) {
         assert.equal(env[key], undefined, `${provider} must not receive ${key}`);
@@ -154,12 +159,14 @@ describe('cliProviderBridge', () => {
   it('recognizes repo-local CLI providers', () => {
     assert.equal(isCliProvider('claude-code'), true);
     assert.equal(isCliProvider('codex'), true);
+    assert.equal(isCliProvider('gemini-cli'), true);
     assert.equal(isCliProvider('openrouter'), false);
   });
 
   it('marks CLI providers configured without API keys', () => {
     assert.equal(isProviderConfigured('claude-code', { isConfigured: false }), true);
     assert.equal(isProviderConfigured('codex', { isConfigured: false }), true);
+    assert.equal(isProviderConfigured('gemini-cli', { isConfigured: false }), true);
     assert.equal(isProviderConfigured('openai', { isConfigured: false }), false);
     assert.deepEqual(cliAwareProviderConfig('codex', { isConfigured: false, apiKey: 'secret' }), {
       isConfigured: true,
@@ -676,6 +683,62 @@ describe('cliProviderBridge', () => {
     assert.equal(result.structuredOutput, false);
     assert.equal(result.contextIsolation, CLAUDE_CLI_CONTEXT_ISOLATION);
     assert.equal(result.structuredEventAudit.enforcement, 'claude_tools_disabled');
+  });
+
+  it('runs Gemini headless under a deny-all admin policy with a provider-only environment', async () => {
+    const launches = [];
+    const spawnImpl = (command, args, options) => {
+      launches.push({
+        command,
+        args,
+        options,
+        policyText: fs.readFileSync(args[args.indexOf('--admin-policy') + 1], 'utf8'),
+      });
+      return fakeChild({ stdoutText: JSON.stringify({ response: 'gemini response', stats: { tools: { calls: 0 } } }) });
+    };
+
+    const result = await withSecretCanaries(
+      async () =>
+        await callAIWithCliBridge({ provider: 'gemini-cli', model: 'gemini-test' }, 'system', 'user', 'judge', {
+          timeoutMs: 1000,
+          spawnImpl,
+        }),
+    );
+
+    assert.equal(result.text, 'gemini response');
+    assert.equal(result.provider, 'gemini-cli');
+    assert.equal(result.contextIsolation, 'admin-deny-all-tools-v1');
+    assert.equal(launches[0].command, 'gemini');
+    assert.ok(launches[0].args.includes('--output-format'));
+    assert.ok(launches[0].args.includes('json'));
+    assert.match(launches[0].policyText, /toolName = "\*"/u);
+    assert.match(launches[0].policyText, /decision = "deny"/u);
+    assert.equal(launches[0].options.env.GEMINI_API_KEY, 'gemini-adapter-secret-canary');
+    assert.equal(launches[0].options.env.OPENROUTER_API_KEY, undefined);
+    assert.equal(launches[0].options.env.ANTHROPIC_API_KEY, undefined);
+    assert.equal(launches[0].options.env.NODE_OPTIONS, undefined);
+    assert.equal(fs.existsSync(launches[0].options.cwd), false);
+  });
+
+  it('fails closed when Gemini reports tool calls and never exposes raw child output', async () => {
+    const secret = 'gemini-raw-output-secret-canary';
+    await assert.rejects(
+      () =>
+        callAIWithCliBridge({ provider: 'gemini-cli' }, '', 'prompt', 'judge', {
+          timeoutMs: 1000,
+          spawnImpl: () =>
+            fakeChild({
+              stdoutText: JSON.stringify({ response: secret, stats: { tools: { calls: 1 } } }),
+              stderrText: secret,
+            }),
+        }),
+      (error) => {
+        assert.ok(error instanceof CliProviderPolicyError);
+        assert.doesNotMatch(error.message, new RegExp(secret, 'u'));
+        assert.equal(error.audit.prohibited_event_count, 1);
+        return true;
+      },
+    );
   });
 
   it('keeps direct Claude and Codex service launches inside the shared bridge', () => {

@@ -28,10 +28,10 @@ import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'node:child_process';
-import os from 'node:os';
 import yaml from 'yaml';
 import { jsonrepair } from 'jsonrepair';
+import { callModelCliText } from '../services/cliProviderBridge.js';
+import { callExternalModelCliText } from '../services/modelCliProcessPolicy.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -79,45 +79,12 @@ async function callModel(prompt, modelKey) {
 }
 
 async function callClaudeCode(prompt) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-claude-'));
-  const stdout = await new Promise((resolve, reject) => {
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY;
-    const args = [
-      '--no-session-persistence',
-      '--disable-slash-commands',
-      '--no-chrome',
-      '--setting-sources',
-      'user',
-      '--tools',
-      '',
-      '-p',
-      '-',
-      '--output-format',
-      'text',
-    ];
-    if (process.env.CLAUDE_CODE_BARE === '1') args.unshift('--bare');
-    if (process.env.CLAUDE_CODE_MODEL) args.splice(1, 0, '--model', process.env.CLAUDE_CODE_MODEL);
-    const child = spawn('claude', args, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env,
-      cwd: tmpDir,
-    });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => (out += d));
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (e) => reject(new Error(`Failed to spawn claude: ${e.message}`)));
-    child.on('close', (code) => {
-      if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
-      else resolve(out);
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
-  }).finally(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+  return await callModelCliText({
+    provider: 'claude-code',
+    model: process.env.CLAUDE_CODE_MODEL || null,
+    prompt,
+    role: 'score-poetics-calibration',
   });
-  return stdout.trim();
 }
 
 // codex CLI critic (non-interactive `codex exec`). Uses codex's own stored login
@@ -131,67 +98,26 @@ async function callClaudeCode(prompt) {
 const CODEX_REASONING_EFFORT = process.env.CODEX_REASONING_EFFORT || 'xhigh';
 const CODEX_MODEL = process.env.CODEX_MODEL || null;
 async function callCodex(prompt) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'poetics-codex-'));
-  const outFile = path.join(tmpDir, 'last.txt');
-  try {
-    await new Promise((resolve, reject) => {
-      const codexArgs = [
-        'exec',
-        '--skip-git-repo-check',
-        '--ephemeral',
-        '--ignore-user-config',
-        '-s',
-        'read-only',
-        '-C',
-        tmpDir,
-        '--color',
-        'never',
-      ];
-      if (CODEX_MODEL) codexArgs.push('-m', CODEX_MODEL);
-      if (CODEX_REASONING_EFFORT) codexArgs.push('-c', `model_reasoning_effort="${CODEX_REASONING_EFFORT}"`);
-      codexArgs.push('-o', outFile, '-');
-      const child = spawn('codex', codexArgs, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
-      let err = '';
-      child.stderr.on('data', (d) => (err += d));
-      child.stdout.on('data', () => {});
-      child.on('error', (e) => reject(new Error(`Failed to spawn codex: ${e.message}`)));
-      child.on('close', (code) => {
-        if (code !== 0) reject(new Error(err || `codex exited with code ${code}`));
-        else resolve();
-      });
-      child.stdin.write(prompt);
-      child.stdin.end();
-    });
-    const content = fs.readFileSync(outFile, 'utf8').trim();
-    if (!content) throw new Error('codex produced no output message');
-    return content;
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
+  return await callModelCliText({
+    provider: 'codex',
+    model: CODEX_MODEL,
+    prompt,
+    role: 'score-poetics-calibration',
+    effort: CODEX_REASONING_EFFORT,
+  });
 }
 
 async function callOllama(prompt, modelKey) {
   const model = String(modelKey || '').replace(/^ollama:/, '');
   if (!model) throw new Error(`Invalid Ollama model key: ${modelKey}`);
-  const stdout = await new Promise((resolve, reject) => {
-    const child = spawn('ollama', ['run', model, '--format', 'json', '--hidethinking', '--nowordwrap'], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, OLLAMA_NOHISTORY: '1', TERM: 'dumb' },
-      cwd: ROOT,
-    });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => (out += d));
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (e) => reject(new Error(`Failed to spawn ollama: ${e.message}`)));
-    child.on('close', (code) => {
-      if (code !== 0) reject(new Error(err || out || `ollama exited with code ${code}`));
-      else resolve(out);
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
+  const result = await callExternalModelCliText({
+    provider: 'ollama',
+    args: ['run', model, '--format', 'json', '--hidethinking', '--nowordwrap'],
+    prompt,
+    role: 'score-poetics-calibration',
+    envOverrides: { OLLAMA_NOHISTORY: '1' },
   });
-  const cleaned = stripTerminalControls(stdout).trim();
+  const cleaned = stripTerminalControls(result.text).trim();
   if (!cleaned) throw new Error(`ollama ${model} produced no output`);
   return cleaned;
 }
@@ -199,25 +125,13 @@ async function callOllama(prompt, modelKey) {
 async function callAgy(prompt, modelKey) {
   const model = MODEL_MAP[modelKey];
   if (!model) throw new Error(`Unknown agy model: ${modelKey}`);
-  const stdout = await new Promise((resolve, reject) => {
-    const child = spawn('agy', ['--model', model, '--print', '--print-timeout', AGY_PRINT_TIMEOUT], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, TERM: 'dumb' },
-      cwd: ROOT,
-    });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => (out += d));
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (e) => reject(new Error(`Failed to spawn agy: ${e.message}`)));
-    child.on('close', (code) => {
-      if (code !== 0) reject(new Error(err || out || `agy exited with code ${code}`));
-      else resolve(out);
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
+  const result = await callExternalModelCliText({
+    provider: 'agy',
+    args: ['--model', model, '--print', '--print-timeout', AGY_PRINT_TIMEOUT],
+    prompt,
+    role: 'score-poetics-calibration',
   });
-  const cleaned = stripTerminalControls(stdout).trim();
+  const cleaned = stripTerminalControls(result.text).trim();
   if (!cleaned) throw new Error(`agy ${model} produced no output`);
   return cleaned;
 }

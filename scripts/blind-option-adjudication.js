@@ -32,8 +32,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -195,40 +195,15 @@ function matchesAny(committedOption, aliases) {
   return aliases.some((a) => aliasMatches(committedOption, a));
 }
 
-function callClaudeCli(systemPrompt, userPrompt, model) {
-  return new Promise((resolve, reject) => {
-    const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
-    if (model) args.push('--model', model);
-    const env = { ...process.env };
-    delete env.CLAUDE_CODE;
-    delete env.CLAUDECODE;
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '';
-    let err = '';
-    const timer = setTimeout(() => {
-      try {
-        child.kill('SIGKILL');
-      } catch {
-        /* gone */
-      }
-      reject(new Error(`claude CLI timed out after ${CLI_TIMEOUT_MS}ms`));
-    }, CLI_TIMEOUT_MS);
-    child.stdout.on('data', (d) => (out += d));
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (e) => {
-      clearTimeout(timer);
-      reject(e);
-    });
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      if (code !== 0) reject(new Error(err.trim() || out.trim() || `claude CLI exited ${code}`));
-      else resolve(out.trim());
-    });
-    child.stdin.write(userPrompt);
-    child.stdin.end();
-  });
+async function callClaudeCli(systemPrompt, userPrompt, model) {
+  const result = await callAIWithCliBridge(
+    { provider: 'claude-code', model },
+    systemPrompt,
+    userPrompt,
+    'blind-option-adjudication',
+    { timeoutMs: CLI_TIMEOUT_MS },
+  );
+  return result.text;
 }
 
 // Operational resilience only — NOT a verdict-logic change. The Max-plan CLI

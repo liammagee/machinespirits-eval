@@ -13,6 +13,7 @@ import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 import * as evaluationStore from '../services/evaluationStore.js';
 import promptRecommendationService from '../services/promptRecommendationService.js';
 import { resolveEvalProfile } from '../services/evaluationRunner.js';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1213,49 +1214,11 @@ function resolveRecommenderConfig(options = {}) {
 
 async function callStructuredCliJson(prompt, cliName, modelOverride = null) {
   const cli = normalizeCliName(cliName);
-  let cliBinary;
-  let cliArgs;
-  let cliEnv;
-
-  if (cli === 'gemini') {
-    cliBinary = 'gemini';
-    cliArgs = ['-o', 'text'];
-    if (modelOverride) cliArgs.push('-m', modelOverride);
-    cliEnv = { ...process.env };
-  } else if (cli === 'codex') {
-    cliBinary = 'codex';
-    cliArgs = ['exec', '-'];
-    if (modelOverride) cliArgs.push('-m', modelOverride);
-    cliEnv = { ...process.env };
-  } else {
-    cliBinary = 'claude';
-    cliArgs = ['-p', '-', '--output-format', 'text'];
-    if (modelOverride) cliArgs.push('--model', modelOverride);
-    cliEnv = { ...process.env };
-    delete cliEnv.ANTHROPIC_API_KEY;
-    delete cliEnv.CLAUDECODE;
-  }
-
-  const rawText = await new Promise((resolve, reject) => {
-    const child = spawn(cliBinary, cliArgs, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: cliEnv,
-    });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (chunk) => {
-      out += chunk.toString();
-    });
-    child.stderr.on('data', (chunk) => {
-      err += chunk.toString();
-    });
-    child.on('error', reject);
-    child.on('close', (code) => {
-      if (code !== 0) reject(new Error(err || out || `${cliBinary} exited with code ${code}`));
-      else resolve(out);
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
+  const rawText = await callModelCliText({
+    provider: cli,
+    model: modelOverride,
+    prompt,
+    role: 'prompt-lab-recommender',
   });
 
   try {
@@ -1265,7 +1228,8 @@ async function callStructuredCliJson(prompt, cliName, modelOverride = null) {
       usage: null,
     };
   } catch (error) {
-    error.rawText = rawText;
+    error.rawTextSha256 = sha16(rawText);
+    error.rawTextBytes = Buffer.byteLength(rawText);
     throw error;
   }
 }
@@ -1286,7 +1250,8 @@ async function callRecommenderJson(systemPrompt, userPrompt, options = {}) {
       };
     } catch (error) {
       const wrapped = new Error(`Could not parse recommender output as JSON: ${error.message}`);
-      wrapped.rawText = error.rawText || '';
+      wrapped.rawTextSha256 = error.rawTextSha256 || null;
+      wrapped.rawTextBytes = error.rawTextBytes || 0;
       wrapped.recommenderRef = config.modelRef;
       wrapped.recommenderModel = config.model || 'auto';
       throw wrapped;
@@ -1315,7 +1280,8 @@ async function callRecommenderJson(systemPrompt, userPrompt, options = {}) {
     };
   } catch (error) {
     const wrapped = new Error(`Could not parse recommender output as JSON: ${error.message}`);
-    wrapped.rawText = rawText;
+    wrapped.rawTextSha256 = sha16(rawText);
+    wrapped.rawTextBytes = Buffer.byteLength(rawText);
     wrapped.recommenderRef = config.modelRef;
     wrapped.recommenderModel = response.model || config.model;
     throw wrapped;

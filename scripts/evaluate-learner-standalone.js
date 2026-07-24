@@ -8,9 +8,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
 import store from '../services/evaluationStore.js';
 import { buildLearnerEvaluationPrompt, calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 
 const args = process.argv.slice(2);
 const runId = args.find((a) => !a.startsWith('--'));
@@ -169,33 +169,11 @@ for (let i = 0; i < toEvaluate.length; i++) {
         topic: result.scenarioId,
       });
 
-      const claudeArgs = ['-p', '-', '--output-format', 'text'];
-
       if (verbose) console.log(`${turnTag} ... calling claude`);
-
-      const stdout = await new Promise((resolve, reject) => {
-        const env = { ...process.env };
-        delete env.ANTHROPIC_API_KEY;
-        delete env.CLAUDECODE;
-        const child = spawn('claude', claudeArgs, {
-          stdio: ['pipe', 'pipe', 'pipe'],
-          env,
-        });
-        let out = '';
-        let err = '';
-        child.stdout.on('data', (d) => {
-          out += d;
-        });
-        child.stderr.on('data', (d) => {
-          err += d;
-        });
-        child.on('error', reject);
-        child.on('close', (code) => {
-          if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
-          else resolve(out);
-        });
-        child.stdin.write(prompt);
-        child.stdin.end();
+      const stdout = await callModelCliText({
+        provider: 'claude-code',
+        prompt,
+        role: 'evaluate-learner-standalone',
       });
 
       // Parse JSON response

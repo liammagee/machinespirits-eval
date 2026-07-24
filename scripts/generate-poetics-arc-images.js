@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
+import { spawnModelCliProcess } from '../services/modelCliProcessPolicy.js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -582,13 +582,14 @@ async function runCodex(prompt, panel, opts) {
 
   await new Promise((resolve, reject) => {
     const transcript = fs.createWriteStream(transcriptPath, { flags: 'w' });
-    const child = spawn(opts.codexBin, args, {
+    const { child } = spawnModelCliProcess({
+      provider: 'codex',
+      command: opts.codexBin,
+      args,
+      mode: 'agentic-batch-user-authorized',
       cwd: ROOT,
-      env: {
-        ...process.env,
-        CODEX_GENERATED_POETICS_ARC_IMAGE: '1',
-      },
-      stdio: ['pipe', 'pipe', 'pipe'],
+      envOverrides: { CODEX_GENERATED_POETICS_ARC_IMAGE: '1' },
+      allowTools: true,
     });
     let settled = false;
     const timer = setTimeout(() => {

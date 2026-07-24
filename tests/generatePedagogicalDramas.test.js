@@ -10,6 +10,7 @@ import { prefixThroughTutorTurn, renderTurns } from '../scripts/extract-poetics-
 import {
   attachApproaches,
   ClaudePersistentPool,
+  ClaudeStreamWorker,
   curriculumScriptNotesForDrama,
   formatPublicTurnText,
   intrusiveStageDirectionFailures,
@@ -204,6 +205,35 @@ describe('generate-pedagogical-dramas', () => {
     assert.equal(first.provenance.worker.key, second.provenance.worker.key);
     assert.notEqual(first.provenance.worker.key, third.provenance.worker.key);
     assert.equal(createdKeys.length, 2);
+  });
+
+  it('terminates a persistent Claude worker when an unterminated stream frame exceeds its bound', () => {
+    const worker = new ClaudeStreamWorker({
+      systemPrompt: 'bounded system prompt',
+      model: 'sonnet',
+      effort: 'low',
+      role: 'tutor_ego',
+      key: 'bounded-worker',
+    });
+    let killedWith = null;
+    let rejected = null;
+    worker.child = {
+      kill(signal) {
+        killedWith = signal;
+      },
+    };
+    worker.pending = {
+      reject(error) {
+        rejected = error;
+      },
+    };
+
+    worker.onStdout('x'.repeat(1024 * 1024 + 1));
+
+    assert.equal(killedWith, 'SIGKILL');
+    assert.equal(worker.closed, true);
+    assert.match(rejected.message, /stream buffer exceeded safety limit/);
+    assert.equal(rejected.outputBytes, 1024 * 1024 + 1);
   });
 
   it('records token/cost telemetry as null when a backend reports no usage, numeric when it does', () => {

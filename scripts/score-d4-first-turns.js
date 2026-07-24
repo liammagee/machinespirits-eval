@@ -2,7 +2,6 @@
 
 import 'dotenv/config';
 
-import { spawn } from 'child_process';
 import { createHash } from 'crypto';
 
 import * as evaluationStore from '../services/evaluationStore.js';
@@ -14,6 +13,7 @@ import {
   calculateRecognitionScore,
   parseJudgeResponse,
 } from '../services/rubricEvaluator.js';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 
 const args = process.argv.slice(2);
 const runId = args.find((arg) => !arg.startsWith('--'));
@@ -100,45 +100,12 @@ function normalizeScores(parsed) {
 }
 
 async function callClaude(prompt) {
-  return await new Promise((resolve, reject) => {
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    delete env.CLAUDECODE;
-    delete env.CLAUDE_CODE;
-
-    const child = spawn('claude', ['-p', '-', '--output-format', 'text', '--model', judgeModel], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env,
-    });
-
-    let out = '';
-    let err = '';
-    const timer = setTimeout(() => {
-      child.kill('SIGKILL');
-      reject(new Error(`claude CLI timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
-
-    child.stdout.on('data', (chunk) => {
-      out += chunk;
-    });
-    child.stderr.on('data', (chunk) => {
-      err += chunk;
-    });
-    child.on('error', (error) => {
-      clearTimeout(timer);
-      reject(error);
-    });
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      if (code !== 0) {
-        reject(new Error(err.trim() || out.trim() || `claude exited with code ${code}`));
-      } else {
-        resolve(out);
-      }
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
+  return await callModelCliText({
+    provider: 'claude-code',
+    model: judgeModel,
+    prompt,
+    role: 'score-d4-first-turns',
+    timeoutMs,
   });
 }
 

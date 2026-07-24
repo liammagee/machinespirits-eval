@@ -82,12 +82,14 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn, execSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import yaml from 'yaml';
 import { jsonrepair } from 'jsonrepair';
 import { createProgressReporter, runTasksWithConcurrency } from './progress.js';
+import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { callExternalModelCliText, spawnModelCliProcess } from '../services/modelCliProcessPolicy.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1988,87 +1990,43 @@ function wrapLlmCallWithTelemetry(llmCall, recorder) {
 // card) can take ~100s+ per call; GEN_DRAMAS_CLAUDE_TIMEOUT_MS raises the per-call
 // ceiling for those runs without changing the default.
 const CLAUDE_CLI_TIMEOUT_MS = Number(process.env.GEN_DRAMAS_CLAUDE_TIMEOUT_MS) || 360_000;
+const CLAUDE_STREAM_BUFFER_MAX_BYTES = 1024 * 1024;
+const CLAUDE_STREAM_OUTPUT_MAX_BYTES = 16 * 1024 * 1024;
+const CLAUDE_STREAM_STDERR_MAX_BYTES = 1024 * 1024;
 const CLI_TRACE = process.env.GEN_DRAMAS_CLI_TRACE === '1';
 
-function claudeCliEnv() {
-  const env = { ...process.env };
-  delete env.CLAUDE_CODE;
-  delete env.CLAUDECODE;
-  // The run's --effort flag is the single source of truth for the reasoning tier.
-  // A parent session may export CLAUDE_CODE_EFFORT_LEVEL (e.g. =max); left in the
-  // child env it silently overrides --effort, so the run *records* xhigh but
-  // *executes* max — both a latency surprise and a provenance lie. Strip it so
-  // behaviour and provenance agree.
-  delete env.CLAUDE_CODE_EFFORT_LEVEL;
-  delete env.ANTHROPIC_API_KEY; // force subscription window, not metered API
-  delete env.ANTHROPIC_AUTH_TOKEN;
-  return env;
-}
-
-function callClaudeCli(systemPrompt, userPrompt, model, effort, role) {
+async function callClaudeCli(systemPrompt, userPrompt, model, effort, role) {
   const start = Date.now();
-  return new Promise((resolve, reject) => {
-    // --system-prompt REPLACES the default system prompt → suppresses ambient
-    // output-style additions (the "★ Insight" block) that would pollute turns.
-    const args = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
-    if (model) args.push('--model', model);
-    // --effort <low|medium|high|xhigh|max>: claude CLI reasoning tier. Unset → CLI
-    // default (preserves the original default-effort claude arm); pinned → recorded
-    // in provenance below so the run carries its own reasoning setting.
-    if (effort) args.push('--effort', effort);
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env: claudeCliEnv() });
-    let out = '';
-    let err = '';
-    const to = setTimeout(() => {
-      try {
-        child.kill('SIGKILL');
-      } catch (_) {
-        /* gone */
-      }
-      reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length})`));
-    }, CLAUDE_CLI_TIMEOUT_MS);
-    child.stdout.on('data', (d) => (out += d));
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (e) => {
-      clearTimeout(to);
-      reject(e);
-    });
-    child.on('close', (code) => {
-      clearTimeout(to);
-      if (code !== 0) {
-        reject(new Error(err.trim() || out.trim() || `claude CLI exited ${code} (role=${role})`));
-      } else {
-        const latencyMs = Date.now() - start;
-        if (CLI_TRACE) console.error(`[gen-cli] role=${role} ${latencyMs}ms ${out.length}b`);
-        resolve({
-          content: out.trim(),
-          latencyMs,
-          provenance: buildCallProvenance({
-            agentRole: role,
-            backend: 'claude',
-            cli: 'claude',
-            model: model || 'default',
-            reasoningEffort: effort || null,
-            systemPrompt,
-            userPrompt,
-            latencyMs,
-            args: [
-              '-p',
-              '-',
-              '--output-format',
-              'text',
-              '--system-prompt',
-              `<sha256:${sha256Short(systemPrompt)}>`,
-              ...(model ? ['--model', model] : []),
-              ...(effort ? ['--effort', effort] : []),
-            ],
-          }),
-        });
-      }
-    });
-    child.stdin.write(userPrompt);
-    child.stdin.end();
+  const result = await callAIWithCliBridge({ provider: 'claude-code', model }, systemPrompt, userPrompt, role, {
+    timeoutMs: CLAUDE_CLI_TIMEOUT_MS,
+    effort,
   });
+  const latencyMs = Date.now() - start;
+  if (CLI_TRACE) console.error(`[gen-cli] role=${role} ${latencyMs}ms ${result.text.length}b`);
+  return {
+    content: result.text,
+    latencyMs,
+    provenance: buildCallProvenance({
+      agentRole: role,
+      backend: 'claude',
+      cli: 'claude',
+      model: model || 'default',
+      reasoningEffort: effort || null,
+      systemPrompt,
+      userPrompt,
+      latencyMs,
+      args: [
+        '-p',
+        '-',
+        '--output-format',
+        'text',
+        '--system-prompt',
+        `<sha256:${sha256Short(systemPrompt)}>`,
+        ...(model ? ['--model', model] : []),
+        ...(effort ? ['--effort', effort] : []),
+      ],
+    }),
+  };
 }
 
 function extractClaudeStreamText(event) {
@@ -2097,7 +2055,7 @@ class ClaudeStreamWorker {
     this.key = key;
     this.child = null;
     this.buffer = '';
-    this.stderr = '';
+    this.stderrBytes = 0;
     this.pending = null;
     this.queue = Promise.resolve();
     this.closed = false;
@@ -2117,17 +2075,26 @@ class ClaudeStreamWorker {
     ];
     if (this.model) args.push('--model', this.model);
     if (this.effort) args.push('--effort', this.effort);
-    this.child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env: claudeCliEnv() });
+    const launch = spawnModelCliProcess({
+      provider: 'claude-code',
+      args,
+      mode: 'persistent-text',
+      allowTools: false,
+    });
+    this.child = launch.child;
     this.child.stdout.on('data', (chunk) => this.onStdout(chunk));
     this.child.stderr.on('data', (chunk) => {
-      this.stderr += chunk;
+      this.stderrBytes += Buffer.byteLength(chunk);
+      if (this.stderrBytes > CLAUDE_STREAM_STDERR_MAX_BYTES) {
+        this.failForOutputLimit('stderr', this.stderrBytes);
+      }
     });
     this.child.on('error', (err) => this.failPending(err));
     this.child.on('close', (code) => {
       this.closed = true;
-      this.failPending(
-        new Error(this.stderr.trim() || `persistent claude worker exited ${code} (role=${this.role}, key=${this.key})`),
-      );
+      const error = new Error(`persistent claude worker exited ${code} (role=${this.role}, key=${this.key})`);
+      error.stderrBytes = this.stderrBytes;
+      this.failPending(error);
     });
     if (CLI_TRACE) console.error(`[gen-cli] persistent claude worker start role=${this.role} key=${this.key}`);
   }
@@ -2205,6 +2172,11 @@ class ClaudeStreamWorker {
 
   onStdout(chunk) {
     this.buffer += chunk;
+    const bufferBytes = Buffer.byteLength(this.buffer);
+    if (bufferBytes > CLAUDE_STREAM_BUFFER_MAX_BYTES) {
+      this.failForOutputLimit('stream buffer', bufferBytes);
+      return;
+    }
     let idx;
     while ((idx = this.buffer.indexOf('\n')) >= 0) {
       const line = this.buffer.slice(0, idx).trim();
@@ -2214,7 +2186,9 @@ class ClaudeStreamWorker {
       try {
         event = JSON.parse(line);
       } catch (_) {
-        this.failPending(new Error(`invalid claude stream-json line: ${line.slice(0, 200)}`));
+        const error = new Error('persistent claude worker returned invalid stream JSON');
+        error.outputBytes = Buffer.byteLength(line);
+        this.failPending(error);
         continue;
       }
       this.onEvent(event);
@@ -2224,11 +2198,18 @@ class ClaudeStreamWorker {
   onEvent(event) {
     if (event.type === 'assistant') {
       const text = extractClaudeStreamText(event);
-      if (text && this.pending) this.pending.output += text;
+      if (text && this.pending) {
+        const outputBytes = Buffer.byteLength(this.pending.output) + Buffer.byteLength(text);
+        if (outputBytes > CLAUDE_STREAM_OUTPUT_MAX_BYTES) {
+          this.failForOutputLimit('response', outputBytes);
+          return;
+        }
+        this.pending.output += text;
+      }
       return;
     }
     if (event.type === 'error' || event.is_error) {
-      this.failPending(new Error(event.message || event.error || JSON.stringify(event)));
+      this.failPending(new Error('persistent claude worker reported a model error'));
       return;
     }
     if (event.type !== 'result') return;
@@ -2236,6 +2217,18 @@ class ClaudeStreamWorker {
     const pending = this.pending;
     this.pending = null;
     if (pending) pending.resolve(text);
+  }
+
+  failForOutputLimit(stream, bytes) {
+    const error = new Error(`persistent claude worker ${stream} exceeded safety limit`);
+    error.outputBytes = bytes;
+    this.closed = true;
+    try {
+      this.child?.kill('SIGKILL');
+    } catch (_) {
+      /* already gone */
+    }
+    this.failPending(error);
   }
 
   failPending(err) {
@@ -2352,74 +2345,29 @@ const CODEX_CLI_TIMEOUT_MS = 360_000;
 const CODEX_REASONING_EFFORT = process.env.CODEX_REASONING_EFFORT || 'xhigh';
 const CODEX_MODEL = process.env.CODEX_MODEL || null;
 
-function callCodexExec(systemPrompt, userPrompt, role) {
+async function callCodexExec(systemPrompt, userPrompt, role) {
   const start = Date.now();
-  return new Promise((resolve, reject) => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gen-codex-'));
-    const outFile = path.join(tmpDir, 'out.txt');
-    const cleanup = () => {
-      try {
-        fs.rmSync(tmpDir, { recursive: true, force: true });
-      } catch (_) {
-        /* gone */
-      }
-    };
-    // -s read-only + --ephemeral + per-call -C tmpDir: codex cannot touch the repo.
-    const args = ['exec', '--skip-git-repo-check', '--ephemeral', '-s', 'read-only', '-C', tmpDir, '--color', 'never'];
-    if (CODEX_MODEL) args.push('-m', CODEX_MODEL);
-    if (CODEX_REASONING_EFFORT) args.push('-c', `model_reasoning_effort="${CODEX_REASONING_EFFORT}"`);
-    args.push('-o', outFile, '-');
-    const child = spawn('codex', args, { stdio: ['pipe', 'pipe', 'pipe'] });
-    let err = '';
-    const to = setTimeout(() => {
-      try {
-        child.kill('SIGKILL');
-      } catch (_) {
-        /* gone */
-      }
-      cleanup();
-      reject(new Error(`codex CLI timed out after ${CODEX_CLI_TIMEOUT_MS}ms (role=${role})`));
-    }, CODEX_CLI_TIMEOUT_MS);
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (e) => {
-      clearTimeout(to);
-      cleanup();
-      reject(e);
-    });
-    child.on('close', (code) => {
-      clearTimeout(to);
-      let out = '';
-      try {
-        out = fs.readFileSync(outFile, 'utf8');
-      } catch (_) {
-        /* missing */
-      }
-      cleanup();
-      if (code !== 0 && !out.trim()) {
-        reject(new Error(err.trim() || `codex CLI exited ${code} (role=${role})`));
-      } else {
-        const latencyMs = Date.now() - start;
-        if (CLI_TRACE) console.error(`[gen-cli] role=${role} (codex) ${latencyMs}ms ${out.length}b`);
-        resolve({
-          content: out.trim(),
-          latencyMs,
-          provenance: buildCallProvenance({
-            agentRole: role,
-            backend: 'codex',
-            cli: 'codex exec',
-            model: CODEX_MODEL || 'config-default',
-            reasoningEffort: CODEX_REASONING_EFFORT || null,
-            systemPrompt,
-            userPrompt,
-            latencyMs,
-            args,
-          }),
-        });
-      }
-    });
-    child.stdin.write(`${systemPrompt}\n\n---\n\n${userPrompt}`);
-    child.stdin.end();
+  const result = await callAIWithCliBridge({ provider: 'codex', model: CODEX_MODEL }, systemPrompt, userPrompt, role, {
+    timeoutMs: CODEX_CLI_TIMEOUT_MS,
+    effort: CODEX_REASONING_EFFORT,
   });
+  const latencyMs = Date.now() - start;
+  if (CLI_TRACE) console.error(`[gen-cli] role=${role} (codex) ${latencyMs}ms ${result.text.length}b`);
+  return {
+    content: result.text,
+    latencyMs,
+    provenance: buildCallProvenance({
+      agentRole: role,
+      backend: 'codex',
+      cli: 'codex exec',
+      model: CODEX_MODEL || 'config-default',
+      reasoningEffort: CODEX_REASONING_EFFORT || null,
+      systemPrompt,
+      userPrompt,
+      latencyMs,
+      args: ['central-cli-provider-bridge'],
+    }),
+  };
 }
 
 // ── gemini CLI bridge: now routes through `agy` (~/.local/bin/agy) ───────────
@@ -2437,77 +2385,34 @@ const GEMINI_CLI_TIMEOUT_MS = 600_000;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 const AGY_BIN = process.env.AGY_BIN || path.join(os.homedir(), '.local/bin/agy');
 
-function callGeminiCli(systemPrompt, userPrompt, role) {
+async function callGeminiCli(systemPrompt, userPrompt, role) {
   const start = Date.now();
-  return new Promise((resolve, reject) => {
-    // cwd: tmpDir keeps agy from auto-loading the repo's CLAUDE.md or any other
-    // project context — the bridge is meant to produce arm's-length transcripts.
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gen-agy-'));
-    const cleanup = () => {
-      try {
-        fs.rmSync(tmpDir, { recursive: true, force: true });
-      } catch (_) {
-        /* gone */
-      }
-    };
-    // --print + stdin: agy reads the prompt from stdin in --print mode.
-    // --print-timeout 10m matches our wall-clock ceiling so the CLI cannot
-    // declare success before we time out the spawn.
-    // --dangerously-skip-permissions auto-approves any tool gate so a single
-    // background tool prompt cannot stall the batch (same role --yolo played
-    // for the deprecated gemini CLI). The poetics prompts don't invoke tools
-    // in normal operation; this is belt-and-braces against a stalled batch.
-    const args = ['--print', '--print-timeout', '10m', '--dangerously-skip-permissions'];
-    const env = { ...process.env };
-    delete env.CLAUDE_CODE;
-    delete env.CLAUDECODE;
-    const child = spawn(AGY_BIN, args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: tmpDir });
-    let out = '';
-    let err = '';
-    const to = setTimeout(() => {
-      try {
-        child.kill('SIGKILL');
-      } catch (_) {
-        /* gone */
-      }
-      cleanup();
-      reject(new Error(`agy CLI timed out after ${GEMINI_CLI_TIMEOUT_MS}ms (role=${role}, outBytes=${out.length})`));
-    }, GEMINI_CLI_TIMEOUT_MS);
-    child.stdout.on('data', (d) => (out += d));
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (e) => {
-      clearTimeout(to);
-      cleanup();
-      reject(e);
-    });
-    child.on('close', (code) => {
-      clearTimeout(to);
-      cleanup();
-      if (code !== 0) {
-        reject(new Error(err.trim() || out.trim() || `agy CLI exited ${code} (role=${role})`));
-      } else {
-        const latencyMs = Date.now() - start;
-        if (CLI_TRACE) console.error(`[gen-cli] role=${role} (agy/${GEMINI_MODEL}) ${latencyMs}ms ${out.length}b`);
-        resolve({
-          content: out.trim(),
-          latencyMs,
-          provenance: buildCallProvenance({
-            agentRole: role,
-            backend: 'gemini',
-            cli: 'agy',
-            model: GEMINI_MODEL,
-            reasoningEffort: null,
-            systemPrompt,
-            userPrompt,
-            latencyMs,
-            args,
-          }),
-        });
-      }
-    });
-    child.stdin.write(`${systemPrompt}\n\n---\n\n${userPrompt}`);
-    child.stdin.end();
+  const args = ['--print', '--print-timeout', '10m'];
+  const result = await callExternalModelCliText({
+    provider: 'agy',
+    command: AGY_BIN,
+    args,
+    prompt: `${systemPrompt}\n\n---\n\n${userPrompt}`,
+    role,
+    timeoutMs: GEMINI_CLI_TIMEOUT_MS,
   });
+  const latencyMs = Date.now() - start;
+  if (CLI_TRACE) console.error(`[gen-cli] role=${role} (agy/${GEMINI_MODEL}) ${latencyMs}ms ${result.text.length}b`);
+  return {
+    content: result.text,
+    latencyMs,
+    provenance: buildCallProvenance({
+      agentRole: role,
+      backend: 'gemini',
+      cli: 'agy',
+      model: GEMINI_MODEL,
+      reasoningEffort: null,
+      systemPrompt,
+      userPrompt,
+      latencyMs,
+      args: [...args, '--sandbox'],
+    }),
+  };
 }
 
 // ── metered-API generation backend (--generator api) ────────────────────────
@@ -5642,6 +5547,7 @@ if (path.resolve(process.argv[1] || '') === __filename) {
 export {
   attachApproaches,
   callTelemetrySummary,
+  ClaudeStreamWorker,
   ClaudePersistentPool,
   curriculumScriptNotesForDrama,
   formatPublicTurnText,
