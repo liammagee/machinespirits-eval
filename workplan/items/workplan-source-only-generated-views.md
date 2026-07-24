@@ -13,6 +13,7 @@ links:
   notes: workplan/playbook/git-and-workflow.md
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/207
+    - https://github.com/liammagee/machinespirits-eval/pull/209
 tags:
   - workplan
   - ci
