@@ -1,10 +1,10 @@
 ---
 id: codebase-refactoring-program
 title: Execute the evidence-led codebase refactoring programme
-status: triaged
+status: active
 type: maintenance
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-24
 updated: 2026-07-24
@@ -72,3 +72,10 @@ Log:
 - 2026-07-24 — Comprehensive static, structural, packaging, test-surface, and
   selected-runtime coverage review completed at `2a5d8981`; programme captured
   without starting implementation or deleting any candidate.
+- 2026-07-24 — Execution started: R0.1 merged through PR #182; R0.2 activated
+  on `codex/refactor-v-series-fixtures` with the closed first-draft and immutable
+  provenance cards as explicit dependencies.
+- 2026-07-24 — R0.2 reached review with the machine-local V-series skip removed,
+  four source/hash-bound compact fixtures tracked, and focused plus full
+  hermetic parity green. The next queued slice remains R0.3 dialogue-log
+  fixtures after this branch lands.

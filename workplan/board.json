@@ -1,20 +1,21 @@
 {
-  "generated": "2026-07-24T02:08:12.902Z",
+  "generated": "2026-07-24T02:39:22.689Z",
   "counts": {
-    "total": 163,
+    "total": 164,
     "byStatus": {
-      "done": 132,
+      "done": 133,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 20,
+      "triaged": 19,
+      "active": 2,
       "archived": 4,
-      "active": 2
+      "review": 1
     },
     "byType": {
       "research": 46,
       "experiment": 48,
       "infra": 37,
-      "maintenance": 17,
+      "maintenance": 18,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -46,50 +47,6 @@
           "tutor-stub-unified-session-surface"
         ]
       }
-    },
-    {
-      "id": "codebase-refactoring-program",
-      "title": "Execute the evidence-led codebase refactoring programme",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-24",
-      "updated": "2026-07-24",
-      "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
-        ],
-        "items": [
-          "make-inhoused-tests-and-coverage-first-class",
-          "make-pilot-state-writes-atomic",
-          "isolate-remaining-direct-model-subprocesses",
-          "harden-consolidated-labelling-integrity",
-          "automate-browser-and-packaged-electron-tutor-stub-acceptance",
-          "test-canonical-posthoc-analysis-pipeline",
-          "decide-rich-learner-memory-service-retention",
-          "tutor-stub-register-policy-extraction",
-          "tutor-stub-capability-session-runtime",
-          "tutor-stub-headless-session-transport",
-          "tutor-stub-process-session-factory",
-          "tutor-stub-unified-session-surface",
-          "normalize-provenance-validator-data-paths",
-          "tutor-stub-first-draft-series",
-          "adaptive-eval-immutable-provenance"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "testing",
-        "coverage",
-        "dead-code",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "isolate-remaining-direct-model-subprocesses",
@@ -596,6 +553,50 @@
       "branch": "main"
     },
     {
+      "id": "codebase-refactoring-program",
+      "title": "Execute the evidence-led codebase refactoring programme",
+      "status": "active",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "make-inhoused-tests-and-coverage-first-class",
+          "make-pilot-state-writes-atomic",
+          "isolate-remaining-direct-model-subprocesses",
+          "harden-consolidated-labelling-integrity",
+          "automate-browser-and-packaged-electron-tutor-stub-acceptance",
+          "test-canonical-posthoc-analysis-pipeline",
+          "decide-rich-learner-memory-service-retention",
+          "tutor-stub-register-policy-extraction",
+          "tutor-stub-capability-session-runtime",
+          "tutor-stub-headless-session-transport",
+          "tutor-stub-process-session-factory",
+          "tutor-stub-unified-session-surface",
+          "normalize-provenance-validator-data-paths",
+          "tutor-stub-first-draft-series",
+          "adaptive-eval-immutable-provenance"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "testing",
+        "coverage",
+        "dead-code",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "harden-consolidated-labelling-integrity",
       "title": "Harden consolidated labelling saves, identities, and corpus provenance",
       "status": "active",
@@ -626,37 +627,6 @@
         "evaluation-infrastructure"
       ],
       "milestone": "impasse-program-v1"
-    },
-    {
-      "id": "refactor-required-run-manifest",
-      "title": "Make required test discovery and skips explicit",
-      "status": "active",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-24",
-      "updated": "2026-07-24",
-      "verification": "The hermetic root and in-housed tutor-core phases validate a checked-in exact file manifest, report selected file/test/skip counts and skip reasons, reject an unexpected skip or zero-test required phase, and pass focused runner tests plus the clean Node 20/22 CI matrix.",
-      "branch": "codex/refactor-required-run-manifest",
-      "depends_on": [
-        "make-inhoused-tests-and-coverage-first-class"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
-        ],
-        "items": [
-          "codebase-refactoring-program"
-        ]
-      },
-      "tags": [
-        "testing",
-        "ci",
-        "hermetic",
-        "refactoring"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "a1-human-learner-validation",
@@ -747,6 +717,42 @@
         "inter-rater-reliability"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "refactor-v-series-fixtures",
+      "title": "Make V-series validator fixtures repo-relative",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "On a clean checkout, all 41 previously host-path-gated first-draft outer-loop and campaign cases execute against deterministic repo-relative fixtures; historical hashes and verdicts remain byte-identical, the related skip-ledger entries disappear, and focused plus hermetic CI passes.",
+      "branch": "codex/refactor-v-series-fixtures",
+      "depends_on": [
+        "refactor-required-run-manifest",
+        "tutor-stub-first-draft-series",
+        "adaptive-eval-immutable-provenance"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "tutor-stub-first-draft-series",
+          "adaptive-eval-immutable-provenance"
+        ]
+      },
+      "tags": [
+        "testing",
+        "fixtures",
+        "tutor-stub",
+        "provenance",
+        "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -1710,6 +1716,40 @@
         "form-carrier"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "refactor-required-run-manifest",
+      "title": "Make required test discovery and skips explicit",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "The hermetic root and in-housed tutor-core phases validate a checked-in exact file manifest, report selected file/test/skip counts and skip reasons, reject an unexpected skip or zero-test required phase, and pass focused runner tests plus the clean Node 20/22 CI matrix.",
+      "branch": "codex/refactor-required-run-manifest",
+      "depends_on": [
+        "make-inhoused-tests-and-coverage-first-class"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/182"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "hermetic",
+        "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "refusal-stall-trigger-codex",

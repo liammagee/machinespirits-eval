@@ -1,7 +1,7 @@
 ---
 id: refactor-required-run-manifest
 title: Make required test discovery and skips explicit
-status: active
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -17,6 +17,8 @@ branch: codex/refactor-required-run-manifest
 depends_on:
   - make-inhoused-tests-and-coverage-first-class
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/182
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -59,3 +61,5 @@ Log:
 - 2026-07-24 — Current-base local proof: root selected 450 files and passed
   6,573/6,574 tests with one test skip plus three named suite skips, all four
   ledger-matched; tutor-core selected 10 files and passed 133/133 with no skips.
+- 2026-07-24 — Closed after PR #182 merged as `8cd11351`; all seven refreshed
+  GitHub checks passed on Node 20/22 and the clean required-run manifest.

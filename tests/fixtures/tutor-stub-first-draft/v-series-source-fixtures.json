@@ -1,0 +1,55 @@
+{
+  "schema": "machinespirits.tutor-stub.v-series-source-fixtures.v1",
+  "fixtures": [
+    {
+      "source_trace": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v18-live/ravensmark_affective_resistant/2026-07-16T04-44-58-444Z.jsonl",
+      "source_trace_sha256": "f3435a216646758cb27e71ae86597b63eddcd104bc49514df5573b8d25baff92",
+      "fixture": "ravensmark-affective-resistant-v18-turn5.json",
+      "fixture_sha256": "b9f852ed62463d56a9784ee4a32b58a91c9a6158c691a06dbf186e3b1d0a87e4",
+      "case_id": "2026-07-16T04-44-58-444Z:t005",
+      "turn": 5,
+      "prior_tutor_delivery_sources": [
+        { "turn": 1, "source": "original_candidate" },
+        { "turn": 2, "source": "original_candidate" },
+        { "turn": 3, "source": "original_candidate" },
+        { "turn": 4, "source": "original_candidate" }
+      ]
+    },
+    {
+      "source_trace": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/foxtrot_diligent/2026-07-16T05-56-49-920Z.jsonl",
+      "source_trace_sha256": "cbdf897ccd592d9ed7bf3d79b135079a2eb121a8f1291a6b7450c36c8fe773da",
+      "fixture": "foxtrot-diligent-v19-turn4.json",
+      "fixture_sha256": "4d93a2da51775bc06db03be84916c363e5598648f211afbb551fea15f6d3ab5a",
+      "case_id": "2026-07-16T05-56-49-920Z:t004",
+      "turn": 4,
+      "prior_tutor_delivery_sources": [
+        { "turn": 1, "source": "original_candidate" },
+        { "turn": 2, "source": "original_candidate" },
+        { "turn": 3, "source": "original_candidate" }
+      ]
+    },
+    {
+      "source_trace": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v19-live/larkspur_premature_closure/2026-07-16T05-50-54-527Z.jsonl",
+      "source_trace_sha256": "307e77091962297b25832499a5c311eb133b84919ad1688485c9fcb9f21bd820",
+      "fixture": "larkspur-premature-closure-v19-turn2.json",
+      "fixture_sha256": "879a20e9a9c2440694c750ab3eabc8aa364e1aa35656e47f49df305c2f45f74c",
+      "case_id": "2026-07-16T05-50-54-527Z:t002",
+      "turn": 2,
+      "prior_tutor_delivery_sources": [{ "turn": 1, "source": "original_candidate" }]
+    },
+    {
+      "source_trace": "/Users/lmagee/Dev/.tutor-stub-auto-eval/first-draft-generalization-v20-live/tallow_answer_seeking/2026-07-16T07-03-36-147Z.jsonl",
+      "source_trace_sha256": "5ffe6180107ef050565108d4c8341d750e47c4712450dc5b789da9a3b02b202d",
+      "fixture": "tallow-answer-seeking-v20-turn5.json",
+      "fixture_sha256": "41b50076bf33607e5eb84acf19bbc0814c9d0e4c7aeb6904edda4d235638fc62",
+      "case_id": "2026-07-16T07-03-36-147Z:t005",
+      "turn": 5,
+      "prior_tutor_delivery_sources": [
+        { "turn": 1, "source": "original_candidate" },
+        { "turn": 2, "source": "original_candidate" },
+        { "turn": 3, "source": "original_candidate" },
+        { "turn": 4, "source": "original_candidate" }
+      ]
+    }
+  ]
+}

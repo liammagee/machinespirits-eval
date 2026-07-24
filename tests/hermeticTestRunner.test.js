@@ -257,7 +257,6 @@ test('phase accounting rejects zero tests and undeclared skips but accepts a hos
 test('checked-in skip ledger matches the declared clean Linux CI skip shapes', () => {
   const manifest = loadTestManifest(path.resolve('.'));
   const skipEvents = [
-    { test: 'V27 preserves frozen evidence', reason: 'machine-local V-series artifacts absent on this host' },
     {
       test: 'reproduces published figures',
       reason: 'archived corpus absent (/repo/data/paper2/superego.jsonl); sibling private repo not checked out',
@@ -269,7 +268,7 @@ test('checked-in skip ledger matches the declared clean Linux CI skip shapes', (
   ];
   const summary = validatePhaseSummary({
     phase: 'root',
-    summary: { tests: 6, skipped: 6, skipEvents },
+    summary: { tests: 5, skipped: 5, skipEvents },
     selectedFiles: ['tests/example.test.js'],
     allowedSkips: manifest.allowedSkips,
     env: { CI: 'true' },
@@ -279,7 +278,6 @@ test('checked-in skip ledger matches the declared clean Linux CI skip shapes', (
   assert.deepEqual(
     summary.matchedSkips.map((skip) => skip.ledger.id),
     [
-      'v-series-machine-artifacts',
       'paper-superego-private-archive',
       'dialogue-logs-absent',
       'model-cli-fingerprints',
