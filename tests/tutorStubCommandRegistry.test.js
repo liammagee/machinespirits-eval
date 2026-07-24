@@ -26,6 +26,13 @@ import {
   tutorStubStaticCommandCompletions,
 } from '../services/tutorStubCommandRegistry.js';
 import { resolveTutorStubCapabilities } from '../services/tutorStubCapabilities.js';
+import {
+  clearTutorStubDirectorGuidance,
+  createTutorStubDirectorGuidanceState,
+  mergeConcurrentTutorStubDirectorGuidance,
+  setTutorStubDirectorGuidance,
+  tutorStubDirectorGuidancePrompt,
+} from '../services/tutorStubDirectorGuidance.js';
 
 const NORMAL_COMMANDS = [
   '/demo',
@@ -55,6 +62,7 @@ const NORMAL_COMMANDS = [
   '/voice',
   '/director',
   '/notes',
+  '/meta',
   '/up',
   '/down',
   '/feedback',
@@ -131,6 +139,7 @@ const SCENE_RETURN_COMMANDS = [
   '/voice',
   '/director',
   '/notes',
+  '/meta',
   '/analysis',
   '/a',
   '/field',
@@ -187,14 +196,41 @@ const NORMAL_SETTINGS_COMPLETIONS = [
   '/settings policy threshold ',
 ];
 
-test('v3 command registry freezes the slash-token and execution-effect surfaces', () => {
+test('director guidance is a bounded private control with turn-aware and concurrent semantics', () => {
+  const baseline = createTutorStubDirectorGuidanceState();
+  const attempt = createTutorStubDirectorGuidanceState(baseline);
+  const current = createTutorStubDirectorGuidanceState(baseline);
+  const entry = setTutorStubDirectorGuidance(current, 'Use shorter\n replies with less jargon.', {
+    effectiveFromTurn: 2,
+    source: '/meta',
+    now: new Date('2026-07-24T00:00:00.000Z'),
+  });
+  assert.equal(entry.text, 'Use shorter replies with less jargon.');
+  assert.equal(tutorStubDirectorGuidancePrompt(current, { tutorTurn: 1 }), '');
+  const prompt = tutorStubDirectorGuidancePrompt(current, { tutorTurn: 2 });
+  assert.match(prompt, /request to change how the tutor responds, not public learner speech/u);
+  assert.match(prompt, /Use shorter replies with less jargon\./u);
+  assert.match(prompt, /cannot change the inquiry, facts, evidence-release schedule, proof state/u);
+
+  const merged = mergeConcurrentTutorStubDirectorGuidance(attempt, baseline, current);
+  assert.equal(merged.active.text, entry.text);
+  assert.notEqual(merged, current);
+  const cleared = clearTutorStubDirectorGuidance(merged, {
+    now: new Date('2026-07-24T00:01:00.000Z'),
+  });
+  assert.equal(cleared.text, entry.text);
+  assert.equal(merged.active, null);
+  assert.equal(merged.history.at(-1).action, 'clear');
+});
+
+test('v4 command registry freezes the slash-token and execution-effect surfaces', () => {
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 3);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 43);
-  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 58);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 4);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 44);
+  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 59);
   assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 22);
-  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 39);
+  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 40);
   assert.deepEqual(TUTOR_STUB_NORMAL_SLASH_COMMANDS, NORMAL_COMMANDS);
   assert.deepEqual(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS, PASSTHROUGH_COMMANDS);
   assert.deepEqual(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS, SCENE_RETURN_COMMANDS);
@@ -225,8 +261,8 @@ test('v3 command registry freezes the slash-token and execution-effect surfaces'
     handlers.add(definition.handler);
     traceEvents.add(definition.traceEvent);
   }
-  assert.equal(handlers.size, 43);
-  assert.equal(traceEvents.size, 43);
+  assert.equal(handlers.size, 44);
+  assert.equal(traceEvents.size, 44);
   assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
@@ -270,6 +306,7 @@ test('canonical ids and aliases resolve uniquely', () => {
     '/translate advanced',
     '/translate proficient',
   ]);
+  assert.deepEqual(tutorStubStaticCommandCompletions('/meta'), ['/meta status', '/meta clear']);
   assert.equal(resolveTutorStubCommand('/not-a-command'), null);
 });
 
@@ -339,6 +376,8 @@ test('execution effects conservatively classify every command before transport e
     'clarify',
     'translate',
     'voice',
+    'director',
+    'meta',
     'settings',
     'debug',
     'mode',
@@ -380,6 +419,8 @@ test('execution effects conservatively classify every command before transport e
     'character',
     'clarify',
     'voice',
+    'director',
+    'meta',
     'feedback_up',
     'feedback_down',
     'feedback',

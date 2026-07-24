@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T12:57:42.097Z",
+  "generated": "2026-07-24T21:28:13.199Z",
   "counts": {
-    "total": 174,
+    "total": 175,
     "byStatus": {
-      "done": 143,
+      "done": 144,
       "blocked": 3,
       "dropped": 2,
       "triaged": 18,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 38,
-      "maintenance": 26,
+      "maintenance": 27,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -2448,6 +2448,34 @@
         "cli",
         "terminal-ux",
         "feedback"
+      ]
+    },
+    {
+      "id": "tutor-stub-director-meta-control",
+      "title": "Separate learner-to-director tutor controls from object-language turns",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "Focused command-registry, interactive CLI, transcript/replay, reset/resume, prompt-boundary, and formatting/lint checks prove /meta and /director requests alter subsequent tutor delivery without entering public learner dialogue, learner-DAG evidence, or Replay JS; bare /director and /notes retain released-note viewing behavior.",
+      "branch": "codex/tutor-stub-director-command",
+      "links": {
+        "notes": [
+          "notes/2026-07-24-tutor-stub-latency-and-discourse-plane.md"
+        ],
+        "items": [
+          "tutor-stub-human-discourse-layer",
+          "tutor-stub-dialogue-first-terminal-presentation"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "cli",
+        "discourse-plane",
+        "director"
       ]
     },
     {

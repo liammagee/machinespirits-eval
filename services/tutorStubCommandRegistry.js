@@ -7,8 +7,8 @@ import {
 import { TUTOR_STUB_CURRICULUM_TRANSLATION_LEVELS } from './tutorStubCurriculumTranslation.js';
 import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 
-export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v3';
-export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 3;
+export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v4';
+export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 4;
 export const TUTOR_STUB_COMMAND_MODES = Object.freeze(['normal', 'passthrough']);
 export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
   'terminal_picker',
@@ -49,7 +49,8 @@ const COMMAND_EFFECT_DECLARATIONS = Object.freeze({
   report: [],
   transcript: ['fileWrite'],
   voice: ['modelCall', 'fileWrite', 'persistentMutation'],
-  director: [],
+  director: ['modelCall', 'persistentMutation'],
+  meta: ['modelCall', 'persistentMutation'],
   feedback_up: ['fileWrite', 'persistentMutation'],
   feedback_down: ['fileWrite', 'persistentMutation'],
   feedback: ['fileWrite', 'persistentMutation'],
@@ -118,7 +119,8 @@ const COMMAND_SUMMARIES = Object.freeze({
   report: 'show the current compact learning and closeout report',
   transcript: 'write or open the complete HTML transcript and replay views',
   voice: 'open or configure the browser microphone and tutor voice companion',
-  director: 'repeat public stage directions and released director notes',
+  director: 'view released notes or privately direct a change to later tutor replies',
+  meta: 'privately direct a tutor change without adding public learner speech',
   feedback_up: 'mark the latest tutor response helpful, with an optional reason',
   feedback_down: 'mark the latest tutor response unhelpful and explain why',
   feedback: 'turn optional tutor feedback on or off, or clear a pending rating',
@@ -187,7 +189,7 @@ const HELP_GROUPS = [
       { id: 'analysis', arguments: '[technical]' },
       { id: 'debug', arguments: 'on|off' },
       { id: 'status' },
-      { id: 'director' },
+      { id: 'director', arguments: '[request]' },
       { id: 'translate', arguments: '[level]' },
       { id: 'transcript', arguments: '[no-open]' },
       { id: 'voice' },
@@ -235,6 +237,7 @@ const HELP_GROUPS = [
     commands: [
       { id: 'register', arguments: '<style>' },
       { id: 'character', arguments: '[tutor|learner] [choice]' },
+      { id: 'meta', arguments: '<request>|status|clear' },
       { id: 'random' },
       { id: 'light', arguments: '[on|off|status]' },
     ],
@@ -524,6 +527,12 @@ const COMMANDS = [
     aliases: ['/notes'],
     passthroughOrder: 9,
     sceneReturnOrder: 14,
+  }),
+  command({
+    id: 'meta',
+    token: '/meta',
+    sceneReturnOrder: 15,
+    completion: { normal: { suffixes: ['status', 'clear'] } },
   }),
   command({
     id: 'feedback_up',

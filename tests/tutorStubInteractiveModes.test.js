@@ -900,7 +900,7 @@ test('/reset cancels an in-flight tutor turn and reopens the same scenario witho
     });
 
     assert.match(result.plain, /dialogue reset > unfinished work cancelled; starting this scenario again/u);
-    assert.match(result.plain, /previous turns discarded · learner profile and settings kept/u);
+    assert.match(result.plain, /previous turns discarded · learner profile, settings, and director request kept/u);
     assert.doesNotMatch(result.plain, /tutor > Take the crucible as a fingerprint/u);
     assert.doesNotMatch(result.plain, /error: learner turn attempt was superseded/u);
 
@@ -1402,6 +1402,78 @@ test(
 );
 
 test(
+  'free-form /meta input keeps its command summary visible in the slash palette',
+  { skip: process.platform === 'win32', timeout: 15_000 },
+  async () => {
+    let terminalOutput = '';
+    let requestEntered = false;
+    let requestSubmitted = false;
+    let requestedExit = false;
+    const terminal = pty.spawn(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+        '--no-remember-settings',
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        cols: 120,
+        rows: 30,
+        name: 'xterm-color',
+        env: {
+          ...process.env,
+          TERM: 'xterm-color',
+          TUTOR_STUB_SUMMARY_OPEN: '0',
+        },
+      },
+    );
+
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        terminal.kill();
+        reject(new Error(`meta palette terminal timed out\n${plainTerminalText(terminalOutput)}`));
+      }, 12_000);
+      terminal.onData((chunk) => {
+        terminalOutput += chunk;
+        const plain = plainTerminalText(terminalOutput);
+        if (!requestEntered && plain.includes('learner >')) {
+          requestEntered = true;
+          terminal.write('/meta Please use plain words');
+        } else if (
+          !requestSubmitted &&
+          plain.includes('privately direct a tutor change without adding public learner speech')
+        ) {
+          requestSubmitted = true;
+          terminal.write('\r');
+        } else if (!requestedExit && plain.includes('director request > Please use plain words')) {
+          requestedExit = true;
+          terminal.write('/quit\r');
+        }
+      });
+      terminal.onExit(({ exitCode, signal }) => {
+        clearTimeout(timer);
+        if (exitCode === 0) resolve();
+        else reject(new Error(`meta palette terminal exited ${exitCode} (${signal})\n${terminalOutput}`));
+      });
+    });
+
+    const plain = plainTerminalText(terminalOutput);
+    assert.match(plain, /1 match for \/meta Please use plain words/u);
+    assert.match(plain, /privately direct a tutor change without adding public learner speech/u);
+    assert.match(plain, /director request > Please use plain words/u);
+  },
+);
+
+test(
   'profile palette completes the documented stress-list command',
   { skip: process.platform === 'win32', timeout: 15_000 },
   async () => {
@@ -1641,6 +1713,122 @@ test('coach mode keeps guidance private and incorporates it into the next tutor 
   }
 });
 
+test('/meta directs a persistent tutor change without creating a public learner turn', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-director-guidance-'));
+  try {
+    const direction = 'Use shorter replies with less world-specific jargon.';
+    const learner = 'The assay still confuses me.';
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: `/meta ${direction}\n${learner}\n`,
+      stopWhen: (plain) => plain.includes('1 new clue'),
+    });
+
+    assert.match(result.plain, /director request > Use shorter replies with less world-specific jargon\./u);
+    assert.match(result.plain, /private control, not learner speech · applies from tutor turn 1/u);
+    const modelInput = fs.readFileSync(result.logPath, 'utf8');
+    assert.match(modelInput, /\[Private learner-to-director tutor-change request\]/u);
+    assert.match(modelInput, /Use shorter replies with less world-specific jargon\./u);
+    assert.match(modelInput, new RegExp(`Learner says:\\n${learner.replace('.', '\\.')}`, 'u'));
+
+    const trace = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const completed = trace.find((event) => event.type === 'turn_complete');
+    assert.equal(completed.turnRecord.learner, learner);
+    assert.equal(completed.turnRecord.directorGuidance.text, direction);
+    assert.equal(completed.turnRecord.directorGuidance.publicTranscriptChanged, false);
+    assert.ok(!completed.turnRecord.learner.includes(direction));
+    assert.equal(trace.find((event) => event.type === 'director_guidance_set').publicTranscriptChanged, false);
+    assert.equal(trace.find((event) => event.type === 'director_guidance_applied').turn, 1);
+
+    const sourceTrace = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .map((name) => path.join(tmp, name))
+      .find((filePath) => fs.readFileSync(filePath, 'utf8').includes('director_guidance_set'));
+    assert.ok(sourceTrace);
+    const resumed = await runInteractive({
+      tmp,
+      args: [
+        '--resume',
+        sourceTrace,
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/status\n',
+      stopWhen: (plain) => plain.includes(`director request: ${direction}`),
+    });
+    assert.match(resumed.plain, /resume: loaded 1 turn/u);
+    assert.match(resumed.plain, /director request: Use shorter replies with less world-specific jargon\./u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('/director request survives reset while /notes remains view-only', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-director-reset-'));
+  try {
+    const direction = 'Keep the tutor literal and concise.';
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: `/director ${direction}\n/reset\n/notes Replace the active request.\n/status\n`,
+      stopWhen: (plain) => plain.includes(`director request: ${direction}`),
+    });
+
+    assert.match(result.plain, /private control, not learner speech/u);
+    assert.match(result.plain, /previous turns discarded · learner profile, settings, and director request kept/u);
+    assert.match(result.plain, /\/notes takes no argument; use \/meta <request>/u);
+    assert.match(result.plain, /director request: Keep the tutor literal and concise\./u);
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const reset = events.find((event) => event.type === 'interactive_dialogue_reset');
+    assert.equal(reset.directorGuidance.active.text, direction);
+    assert.ok(reset.preserved.includes('director_guidance'));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('unsafe coach guidance is sanitized and the tutor continues from a public-only rebuilt prompt', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-coach-boundary-recovery-'));
   try {
@@ -1689,6 +1877,54 @@ test('unsafe coach guidance is sanitized and the tutor continues from a public-o
     assert.doesNotMatch(tutorPrompt, /worn burin with the sprung heel/u);
     assert.match(tutorPrompt, /Private coach guidance/u);
     assert.ok(trace.some((event) => event.type === 'turn_complete'));
+    assert.equal(
+      trace.some((event) => event.type === 'model_call_error'),
+      false,
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('unsafe director guidance cannot place future evidence in the tutor prompt', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-director-boundary-'));
+  try {
+    const futureClue =
+      "The old founder's tools were never sold off. The inventory of his estate, sworn and unredeemed, leaves his graving-irons to his widow alone — among them the worn burin with the sprung heel, kept in Edony's keeping these ten years.";
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--dag',
+        '--tutor-learner-dag',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: `/meta ${futureClue}\nThe assay still confuses me.\n`,
+      stopWhen: (plain) => plain.includes('1 new clue'),
+    });
+
+    assert.doesNotMatch(result.plain, /Speaking-tutor prompt crossed the private-planner boundary/u);
+    const trace = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const tutorCall = trace.find((event) => event.type === 'model_call' && event.role === 'tutor_stub_tutor');
+    assert.ok(tutorCall);
+    assert.equal(tutorCall.request.config.speakerPrivilegeAudit.ok, true);
+    const tutorPrompt = tutorCall.request.messages.at(-1)?.content || '';
+    assert.match(tutorPrompt, /Private learner-to-director tutor-change request/u);
+    assert.doesNotMatch(tutorPrompt, /worn burin with the sprung heel/u);
+    assert.equal(trace.find((event) => event.type === 'director_guidance_applied').guidance.text, futureClue);
     assert.equal(
       trace.some((event) => event.type === 'model_call_error'),
       false,

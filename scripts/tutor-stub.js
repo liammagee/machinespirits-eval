@@ -369,6 +369,15 @@ import {
   tutorStubStaticCommandCompletions,
 } from '../services/tutorStubCommandRegistry.js';
 import {
+  clearTutorStubDirectorGuidance,
+  createTutorStubDirectorGuidanceState,
+  mergeConcurrentTutorStubDirectorGuidance,
+  setTutorStubDirectorGuidance,
+  tutorStubDirectorGuidanceEntry,
+  tutorStubDirectorGuidancePrompt,
+  tutorStubDirectorGuidanceSnapshot,
+} from '../services/tutorStubDirectorGuidance.js';
+import {
   assertTutorStubCapabilityCompatibility,
   resolveTutorStubCapabilities,
   tutorStubCapabilityFeatureRows,
@@ -1186,7 +1195,10 @@ Interactive commands:
   /report                show the compact dialogue closeout report
   /r                     alias for /report
   /director              repeat all director notes issued so far
-  /notes                 alias for /director
+  /director <request>    privately direct a persistent change to later tutor replies
+  /meta <request>        explicit alias for a learner-to-director tutor-change request
+  /meta [status|clear]   inspect or clear the active private director request
+  /notes                 view-only alias for bare /director
   Left/Right on an empty prompt
                          rate the latest tutor message down/up immediately
   Escape on an empty prompt
@@ -5413,6 +5425,23 @@ function restoreComprehensionState(state, turns, events = []) {
   };
 }
 
+function restoreDirectorGuidanceState(state, events = []) {
+  const lastClear = events.reduce(
+    (index, event, candidate) => (event?.type === 'history_clear' ? candidate : index),
+    -1,
+  );
+  const snapshot = [...events.slice(lastClear + 1)]
+    .reverse()
+    .map((event) => event?.directorGuidance || null)
+    .find(Boolean);
+  state.directorGuidance = createTutorStubDirectorGuidanceState(snapshot);
+  return {
+    restored: Boolean(snapshot),
+    revision: state.directorGuidance.revision,
+    active: Boolean(state.directorGuidance.active),
+  };
+}
+
 function typedActionDecisionFromTurn(turn) {
   const candidates = [
     turn?.typedActionDecision,
@@ -5602,6 +5631,7 @@ function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening 
 
   const register = restoreRegisterStateFromTurns(state, turns);
   const comprehension = restoreComprehensionState(state, turns, resume.events || []);
+  const directorGuidance = restoreDirectorGuidanceState(state, resume.events || []);
   const learnerDag = replayLearnerDagFromTurns(state, turns);
   const typedActions = restoreTypedActionState(state, turns, resume.events || []);
   const storedClosure = turns.at(-1)?.dialogueClosure?.lifecycle || null;
@@ -5647,6 +5677,7 @@ function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening 
     turns: turns.length,
     register,
     comprehension,
+    directorGuidance,
     learnerDag,
     typedActions,
     dialogueClosure: state.dialogueClosure,
@@ -11729,6 +11760,9 @@ async function callTutor({
   const comprehensionAdvisory = passthrough
     ? null
     : tutorStubComprehensionPrompt(state?.comprehension, { turn: tutorTurn });
+  const directorGuidanceAdvisory = passthrough
+    ? null
+    : tutorStubDirectorGuidancePrompt(state?.directorGuidance, { tutorTurn });
   const coachAdvisory = passthrough ? null : tutorCoachGuidanceContext(state, { tutorTurn });
   const pointOfActionAdvisory = passthrough ? null : tutorStubPointOfActionPrompt(state?.pointOfAction?.current);
   const tuningAdvisory = passthrough ? null : tutorStubTuningTurnAdvisory(state?.tuning);
@@ -11754,6 +11788,7 @@ async function callTutor({
     firstDraftHumanDiscourseAdvisory,
     instructionalMetaRestatementAdvisory,
     comprehensionAdvisory,
+    directorGuidanceAdvisory,
     coachAdvisory,
     pointOfActionAdvisory,
     tuningAdvisory,
@@ -12919,6 +12954,7 @@ async function callTutor({
       firstDraftHumanDiscourseAdvisory,
       instructionalMetaRestatementAdvisory,
       comprehensionAdvisory,
+      directorGuidanceAdvisory,
       coachAdvisory,
       tutorFeedbackAdvisory,
     ]
@@ -14760,6 +14796,7 @@ async function runOneTurn(
   });
   const comprehensionBeforeTutor = tutorStubComprehensionSnapshot(state.comprehension, { turn: tutorTurn });
   const dagFactDropout = tutorLearnerDag?.dagFactDropout || null;
+  const directorGuidance = tutorStubDirectorGuidanceEntry(state.directorGuidance, tutorTurn);
   const coachGuidance = precomputedResponse?.deterministicClosure
     ? []
     : tutorCoachGuidanceEntries(state, tutorTurn).map((entry) => ({ ...entry }));
@@ -15151,6 +15188,15 @@ async function runOneTurn(
 
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
+  if (directorGuidance) {
+    appendTraceEvent(state.trace, {
+      type: 'director_guidance_applied',
+      turn: tutorTurn,
+      turnId,
+      guidance: directorGuidance,
+      publicTranscriptChanged: false,
+    });
+  }
   if (coachGuidance.length && state.coach) {
     const appliedIds = new Set(coachGuidance.map((entry) => entry.id));
     state.coach.pending = state.coach.pending.filter((entry) => !appliedIds.has(entry.id));
@@ -15181,6 +15227,7 @@ async function runOneTurn(
           learnerMessages: learnerInput.messages,
         }
       : {}),
+    directorGuidance,
     coachGuidance,
     stateObservation,
     classification,
@@ -17581,6 +17628,7 @@ async function main() {
     openingRealizer,
     directorContext,
     directorOpeningPresented: false,
+    directorGuidance: createTutorStubDirectorGuidanceState(),
     dag: args.dag,
     dagMode,
     humanDiscourse: humanDiscourseConfig,
@@ -17924,6 +17972,7 @@ async function main() {
       source: path.relative(ROOT, resumedDialogue.source),
       turns: resumedDialogue.turns,
       register: resumedDialogue.register,
+      directorGuidance: resumedDialogue.directorGuidance,
       learnerDag: resumedDialogue.learnerDag,
       typedActions: resumedDialogue.typedActions,
       dialogueClosure: resumedDialogue.dialogueClosure,
@@ -18810,6 +18859,12 @@ async function main() {
       pool = tutorStubStaticCommandCompletions(command, commandOptions);
     } else if (trimmed.startsWith('/voice ')) {
       pool = tutorStubStaticCommandCompletions('/voice', commandOptions);
+    } else if (trimmed.startsWith('/meta ') || trimmed.startsWith('/director ')) {
+      const command = trimmed.startsWith('/meta ') ? '/meta' : '/director';
+      const staticMatches = tutorStubStaticCommandCompletions(command, commandOptions).filter((candidate) =>
+        candidate.startsWith(trimmed),
+      );
+      pool = staticMatches.length ? staticMatches : [trimmed];
     } else if (trimmed.startsWith('/lab ')) {
       pool = [
         ...tutorStubStaticCommandCompletions('/lab', commandOptions),
@@ -18934,6 +18989,7 @@ async function main() {
         register: explicitPerformanceDirectiveValue(state, 'register'),
         character: explicitPerformanceDirectiveValue(state, 'character'),
       },
+      directorGuidance: tutorStubDirectorGuidanceSnapshot(state.directorGuidance),
       registerOverlayThreshold: state.register?.overlayThreshold ?? null,
       registerTemperature: state.register?.temperature ?? null,
       dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout),
@@ -18967,6 +19023,7 @@ async function main() {
       lightAdaptation: structuredClone(state.lightAdaptation),
       performanceDirectives: structuredClone(state.performanceDirectives),
       dialogueClosure: structuredClone(state.dialogueClosure),
+      directorGuidance: structuredClone(state.directorGuidance),
       coach: structuredClone(state.coach),
       stream: { enabled: false, interim: state.interim },
     };
@@ -18986,6 +19043,7 @@ async function main() {
       performanceDirectives: structuredClone(state.performanceDirectives),
       dialogueClosure: structuredClone(state.dialogueClosure),
       typedActions: structuredClone(state.typedActions),
+      directorGuidance: structuredClone(state.directorGuidance),
       coach: structuredClone(state.coach),
       stream: { ...state.stream, interim: state.interim, deferOutput: true },
     };
@@ -19042,6 +19100,7 @@ async function main() {
 
   function commitInteractiveLearnerAttempt(attemptState, baseline) {
     const currentComprehension = state.comprehension;
+    const currentDirectorGuidance = state.directorGuidance;
     const currentCoach = state.coach;
     state.history = attemptState.history;
     state.turns = attemptState.turns;
@@ -19054,6 +19113,11 @@ async function main() {
       attemptState.comprehension,
       baseline.comprehension,
       currentComprehension,
+    );
+    state.directorGuidance = mergeConcurrentTutorStubDirectorGuidance(
+      attemptState.directorGuidance,
+      baseline.directorGuidance,
+      currentDirectorGuidance,
     );
     state.coach = mergeConcurrentCoachChanges(attemptState.coach, baseline.coach, currentCoach);
   }
@@ -19095,6 +19159,9 @@ async function main() {
           ? dagTurnContext(runtimeState, runtimeState.turns.length + 1, tutorLearnerDag)
           : null,
       coachGuidance: tutorCoachGuidanceContext(runtimeState),
+      directorGuidance: tutorStubDirectorGuidancePrompt(runtimeState.directorGuidance, {
+        tutorTurn: runtimeState.turns.length + 1,
+      }),
       tutorFeedback: tutorFeedback?.supplied ? { rating: tutorFeedback.rating } : null,
       systemPrompt: runtimeState.systemPrompt,
       tutorModel: runtimeState.resolved,
@@ -21154,6 +21221,7 @@ async function main() {
       responseDetails: jsonClone(state.responseDetails),
       explanatoryDebug: jsonClone(state.explanatoryDebug),
       coach: jsonClone(state.coach),
+      directorGuidance: tutorStubDirectorGuidanceSnapshot(state.directorGuidance),
       directorContext,
       trace: traceDisplayPath(state.trace),
       lab: jsonClone(state.lab),
@@ -21192,6 +21260,7 @@ async function main() {
       title: state.world?.title || state.topic || 'Tutor Stub Transcript',
       directorContext: jsonClone(state.directorContext),
       directorNotes: directorNotesIssuedSoFar(state),
+      directorGuidance: tutorStubDirectorGuidanceSnapshot(state.directorGuidance),
       opening,
       history: jsonClone(state.history),
       turns: jsonClone(state.turns),
@@ -21293,6 +21362,7 @@ async function main() {
           applied: jsonClone(state.coach?.history || []),
           publicTranscriptChanged: false,
         },
+        directorGuidance: tutorStubDirectorGuidanceSnapshot(state.directorGuidance),
         turnFeedback: {
           enabled: Boolean(state.turnFeedback?.enabled),
           optional: true,
@@ -21956,6 +22026,7 @@ async function main() {
     const policy = tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays);
     const directedRegister = explicitPerformanceDirectiveValue(state, 'register');
     const directedCharacter = explicitPerformanceDirectiveValue(state, 'character');
+    const directorDirection = state.directorGuidance?.active || null;
     const randomPerformanceAxes = [!directedRegister ? 'style' : null, !directedCharacter ? 'character' : null].filter(
       Boolean,
     );
@@ -22015,6 +22086,13 @@ async function main() {
       `${C.dim}  directed performance: style ${directedRegister || 'auto'} · character ${directedCharacter || 'auto'} · /register · /character${C.reset}`,
     );
     console.log(
+      `${C.dim}  director request: ${
+        directorDirection
+          ? `${oneLine(directorDirection.text, { max: 120 })} · from tutor turn ${directorDirection.effectiveFromTurn}`
+          : 'none'
+      } · /meta · /director${C.reset}`,
+    );
+    console.log(
       `${C.dim}  conversation: ${displayDiagnosticLabel(closure)}; private coaching: ${coachPending} waiting, ${state.coach?.history?.length || 0} used${C.reset}`,
     );
     console.log(
@@ -22036,6 +22114,103 @@ async function main() {
     console.log(
       `${C.dim}  explanations: ${state.explanatoryDebug?.enabled ? `on (${state.explanatoryDebug.format === 'technical' ? 'technical details' : 'plain'})` : 'off'} · commands remain live while models work · /analysis · /transcript · /help${C.reset}\n`,
     );
+  }
+
+  function handleDirectorGuidanceCommand(argument = '', { duringTurn = false, source = '/meta' } = {}) {
+    const request = String(argument || '').trim();
+    const action = request.toLowerCase();
+    clearStatusLine();
+    if (state.passthrough?.enabled) {
+      console.log(
+        `${C.red}director request unavailable:${C.reset} passthrough has no private tutor-control layer; use ordinary chat or relaunch a normal tutor session\n`,
+      );
+      appendTraceEvent(state.trace, {
+        type: 'director_guidance_rejected',
+        source,
+        request: request || null,
+        reason: 'passthrough_has_no_private_tutor_control_layer',
+        duringTurn,
+        publicTranscriptChanged: false,
+      });
+      return { changed: false, reason: 'passthrough' };
+    }
+
+    if (!request || action === 'status') {
+      const active = state.directorGuidance?.active || null;
+      console.log(`${C.brightCyan}${C.bold}director request >${C.reset} ${active ? active.text : 'none'}`);
+      console.log(
+        `${C.dim}  ${
+          active
+            ? `private tutor-change guidance from turn ${active.effectiveFromTurn}; remains active until /meta clear`
+            : 'use /meta <request> or /director <request>; this does not become learner speech'
+        }${C.reset}\n`,
+      );
+      return { changed: false, active };
+    }
+
+    const effectiveFromTurn = state.turns.length + (duringTurn || processingTurn ? 2 : 1);
+    if (['clear', 'off', 'reset'].includes(action)) {
+      const previous = state.directorGuidance?.active || null;
+      if (!previous) {
+        console.log(`${C.brightCyan}${C.bold}director request >${C.reset} none active`);
+        console.log(`${C.dim}  use /meta <request> to direct a change to later tutor replies${C.reset}\n`);
+        return { changed: false, active: null };
+      }
+      clearTutorStubDirectorGuidance(state.directorGuidance, {
+        source: `${source} ${action}`,
+        effectiveFromTurn,
+      });
+      if (!duringTurn && !processingTurn) resetMixedLearnerSuggestion('director_guidance_cleared');
+      appendTraceEvent(state.trace, {
+        type: 'director_guidance_cleared',
+        source,
+        previous,
+        directorGuidance: tutorStubDirectorGuidanceSnapshot(state.directorGuidance),
+        effectiveFromTurn,
+        duringTurn: Boolean(duringTurn || processingTurn),
+        publicTranscriptChanged: false,
+      });
+      console.log(`${C.brightCyan}${C.bold}director request >${C.reset} cleared`);
+      console.log(
+        `${C.dim}  private tutor-change guidance stops from tutor turn ${effectiveFromTurn}; public dialogue and proof state are unchanged${C.reset}\n`,
+      );
+      if (mixedLearner.enabled && !duringTurn && !processingTurn && latestTutorMessage(state)) {
+        startMixedLearnerPrefetch('director_guidance_cleared');
+      }
+      return { changed: true, active: null, previous };
+    }
+
+    let entry;
+    try {
+      entry = setTutorStubDirectorGuidance(state.directorGuidance, request, {
+        source,
+        effectiveFromTurn,
+      });
+    } catch (error) {
+      console.log(`${C.red}director request error:${C.reset} ${error.message}\n`);
+      return { changed: false, error: error.message };
+    }
+    if (!duringTurn && !processingTurn) resetMixedLearnerSuggestion('director_guidance_changed');
+    appendTraceEvent(state.trace, {
+      type: 'director_guidance_set',
+      guidance: entry,
+      directorGuidance: tutorStubDirectorGuidanceSnapshot(state.directorGuidance),
+      duringTurn: Boolean(duringTurn || processingTurn),
+      publicTranscriptChanged: false,
+    });
+    console.log(`${C.brightCyan}${C.bold}director request >${C.reset} ${entry.text}`);
+    console.log(
+      `${C.dim}  private control, not learner speech · applies from tutor turn ${entry.effectiveFromTurn} until /meta clear${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  changes delivery only; public evidence, proof state, release timing, closure, and safety remain authoritative${C.reset}`,
+    );
+    if (mixedLearner.enabled && !duringTurn && !processingTurn && latestTutorMessage(state)) {
+      startMixedLearnerPrefetch('director_guidance_changed');
+      console.log(`${C.dim}  rebuilding the next tutor response with this direction${C.reset}`);
+    }
+    console.log();
+    return { changed: true, active: entry };
   }
 
   function queueCoachGuidance(text, { duringTurn = false } = {}) {
@@ -22929,7 +23104,8 @@ async function main() {
       interruptedTranslationId: translationAttempt?.id || null,
       interruptedCurriculumTranslationId: state.curriculum?.module ? translationAttempt?.id || null : null,
       queuedLearnerLinesDiscarded: queuedLearnerLines,
-      preserved: ['scenario', 'learner_profile', 'settings'],
+      directorGuidance: tutorStubDirectorGuidanceSnapshot(state.directorGuidance),
+      preserved: ['scenario', 'learner_profile', 'settings', 'director_guidance'],
     });
     clearStatusLine();
     console.log(
@@ -22937,7 +23113,9 @@ async function main() {
         interrupted ? 'unfinished work cancelled; ' : ''
       }starting this scenario again`,
     );
-    console.log(`${C.dim}  previous turns discarded · learner profile and settings kept${C.reset}\n`);
+    console.log(
+      `${C.dim}  previous turns discarded · learner profile, settings, and director request kept${C.reset}\n`,
+    );
     const opening = await emitOpeningPrompt('reset');
     if (opening) startMixedLearnerPrefetch('reset_opening');
     return true;
@@ -25066,7 +25244,7 @@ async function main() {
     return applyTutorCharacterChoice(requested, { duringTurn, source: '/character legacy' });
   }
 
-  function executeSlashCommand({ canonicalToken, argument = '', context = {} }) {
+  function executeSlashCommand({ canonicalToken, token: invokedToken = canonicalToken, argument = '', context = {} }) {
     const duringTurn = Boolean(context.duringTurn);
     const command = canonicalToken;
     const commandArg = argument;
@@ -25530,10 +25708,20 @@ async function main() {
       const promise = handleVoiceCommand(commandArg, { source: 'slash' }).finally(finishSlashCommand);
       return promise;
     }
-    if (command === '/director' || command === '/notes') {
+    if (command === '/meta') {
+      const result = handleDirectorGuidanceCommand(commandArg, { duringTurn, source: invokedToken });
+      finishSlashCommand({ reprise: false });
+      return result || true;
+    }
+    if (command === '/director') {
+      if (commandArg && invokedToken !== '/notes') {
+        const result = handleDirectorGuidanceCommand(commandArg, { duringTurn, source: invokedToken });
+        finishSlashCommand({ reprise: false });
+        return result || true;
+      }
       clearStatusLine();
       if (commandArg) {
-        console.log(`${C.red}director notes error:${C.reset} use /director or /notes\n`);
+        console.log(`${C.red}director notes error:${C.reset} /notes takes no argument; use /meta <request>\n`);
       } else {
         const notes = printDirectorNotesIssuedSoFar(state);
         appendTraceEvent(state.trace, {
@@ -25865,6 +26053,7 @@ async function main() {
         const attemptState = cloneStateForInteractiveLearnerAttempt();
         const baseline = {
           comprehension: structuredClone(state.comprehension),
+          directorGuidance: structuredClone(state.directorGuidance),
           coach: structuredClone(state.coach),
         };
         const startedAtMs = Date.now();

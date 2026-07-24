@@ -40,6 +40,27 @@ function fixtureSnapshot() {
         },
       ],
     },
+    directorGuidance: {
+      schema: 'machinespirits.tutor-stub.director-guidance.v1',
+      revision: 1,
+      active: {
+        id: 'director-guidance-001',
+        revision: 1,
+        text: 'Use shorter replies with less world-specific jargon.',
+        effectiveFromTurn: 1,
+        publicTranscriptChanged: false,
+      },
+      history: [
+        {
+          action: 'set',
+          id: 'director-guidance-001',
+          revision: 1,
+          text: 'Use shorter replies with less world-specific jargon.',
+          effectiveFromTurn: 1,
+          publicTranscriptChanged: false,
+        },
+      ],
+    },
     opening: 'Read the first mark.',
     history: [
       { role: 'assistant', content: 'Read the first mark.' },
@@ -266,6 +287,9 @@ test('transcript HTML renders raw, script, swimlane, analysis, prompt, settings,
   assert.match(html, /Director notes so far/u);
   assert.match(html, /The first public assay note is now on the table\./u);
   assert.match(html, /Future notes remain withheld\./u);
+  assert.match(html, /Learner-to-director requests/u);
+  assert.match(html, /Use shorter replies with less world-specific jargon\./u);
+  assert.match(html, /Private control from tutor turn 1; not public learner speech\./u);
   assert.match(html, /\[OPENING · TUTOR\]/u);
   assert.match(html, /\[TURN 1 · LEARNER\]/u);
   assert.match(html, /\[TURN 1 · TUTOR REPLY\]/u);
@@ -304,6 +328,8 @@ test('replay JavaScript preserves exact public message order without harness pro
   assert.match(javascript, /input: messages/u);
   assert.doesNotMatch(javascript, /FULL TUTOR BASE PROMPT/u);
   assert.doesNotMatch(javascript, /missing/u);
+  assert.doesNotMatch(javascript, /Use shorter replies with less world-specific jargon/u);
+  assert.doesNotMatch(javascript, /learner-to-director/u);
 });
 
 test('replay JavaScript uses the Anthropic Messages API for Claude transcripts', () => {
