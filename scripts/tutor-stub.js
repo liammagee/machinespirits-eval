@@ -106,6 +106,7 @@ import {
   snapshotTutorStubDiagnosticTransaction,
 } from '../services/tutorStubDiagnosticCollection.js';
 import {
+  auditTutorStubClueDeliveryMultiplicity,
   auditTutorStubDramaticReleaseResponse,
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
@@ -13126,6 +13127,35 @@ async function callTutor({
     const candidateFallbackUptake = fallbackRequiresSpecificUptake
       ? defaultFallbackUptake
       : preservableTutorUptake(audits) || firstRepairUptake || defaultFallbackUptake;
+    const fallbackDueSourceText = (firstDraftContract?.evidence?.sources || [])
+      .map((source) => source?.text)
+      .filter(Boolean)
+      .join(' ');
+    const deterministicFallbackCandidateGuard = (candidate) => {
+      const text = oneLine(candidate);
+      if (!text) return false;
+      if (leakGuardEnabled) {
+        const candidateLeakAudit = auditTutorResponseLeak({
+          text,
+          world,
+          tutorTurn,
+          learnerText,
+          state,
+          publicPremiseIds: speakerPublicPremiseIds,
+        });
+        if (!candidateLeakAudit.ok) return false;
+      }
+      if (
+        dramaticReleaseGuardEnabled &&
+        !auditTutorStubClueDeliveryMultiplicity({
+          text: [text, fallbackDueSourceText].filter(Boolean).join(' '),
+          frame: dramaticReleaseFrame,
+        }).ok
+      ) {
+        return false;
+      }
+      return true;
+    };
     // A repair candidate can have passed an earlier segmentation while still
     // losing the learner's typed focus once it is composed into the terminal
     // fallback. Re-run every candidate through the same progression contract
@@ -13136,6 +13166,7 @@ async function callTutor({
       recentTutorTexts,
       variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
       learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
+      candidateGuard: deterministicFallbackCandidateGuard,
     });
     const fallbackUptake =
       firstDraftContract?.opening?.writable_entry_requested === true &&
@@ -13156,6 +13187,7 @@ async function callTutor({
             avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
             turnProgressionContract: firstDraftContract?.progression || null,
             sourceAccessibilityContract: firstDraftContract?.evidence?.source_accessibility || null,
+            candidateGuard: deterministicFallbackCandidateGuard,
           })
         : scaffoldGuardEnabled
           ? deterministicGenerousInferenceFallback(fallbackContext)
@@ -13169,6 +13201,7 @@ async function callTutor({
                 turnProgressionContract: firstDraftContract?.progression || null,
                 recentTutorTexts,
                 variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+                candidateGuard: deterministicFallbackCandidateGuard,
               })
             : actorialRealizationGuardEnabled
               ? deterministicTutorStubConfiguredContinuationFallback({
@@ -13180,6 +13213,7 @@ async function callTutor({
                   turnProgressionContract: firstDraftContract?.progression || null,
                   recentTutorTexts,
                   variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+                  candidateGuard: deterministicFallbackCandidateGuard,
                 })
               : firstDraftContract?.progression?.complete === true
                 ? deterministicTutorStubConfiguredContinuationFallback({
@@ -13191,6 +13225,7 @@ async function callTutor({
                     turnProgressionContract: firstDraftContract.progression,
                     recentTutorTexts,
                     variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+                    candidateGuard: deterministicFallbackCandidateGuard,
                   })
                 : deterministicTutorStubContextualFallback(fallbackContext);
     const fallbackText = dramaticReleaseGuardEnabled

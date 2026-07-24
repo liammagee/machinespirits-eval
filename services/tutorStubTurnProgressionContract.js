@@ -251,6 +251,10 @@ function trimQuotedFocusFragment(value) {
  */
 function boundedQuotedFocusCandidates(focus) {
   const source = oneLine(focus);
+  const substantiveSource = source
+    .replace(/^(?:i|we)\s+(?:add|enter|mark|note|record|say|think|write)\s*:?[\s]*/iu, '')
+    .replace(/^that\s+/iu, '')
+    .trim();
   const candidates = [];
   const seen = new Set([source]);
   const push = (value) => {
@@ -260,15 +264,17 @@ function boundedQuotedFocusCandidates(focus) {
       candidates.push(fragment);
     }
   };
-  const clauses = source
+  const clauses = substantiveSource
     .split(/\s*(?:[;:—–]|,)\s*|\s+(?:and|because|but|so|which|while)\s+/iu)
     .map(oneLine)
     .filter(Boolean);
   for (let end = clauses.length - 1; end >= 2; end -= 1) push(clauses.slice(0, end).join(', '));
-  push(clauses[0] || '');
-  const words = (clauses[0] || source).split(' ').filter(Boolean);
-  for (const length of [10, 8, 6, 5, 4, 3]) {
-    if (length < words.length) push(words.slice(0, length).join(' '));
+  for (const clause of clauses) push(clause);
+  for (const clause of clauses) {
+    const words = clause.split(' ').filter(Boolean);
+    for (const length of [10, 8, 6, 5, 4, 3]) {
+      if (length < words.length) push(words.slice(0, length).join(' '));
+    }
   }
   return candidates;
 }
@@ -289,6 +295,7 @@ export function deterministicTutorStubTurnProgressionUptake({
   recentTutorTexts = [],
   variationKey = '',
   learnerEchoGuard = null,
+  candidateGuard = null,
 } = {}) {
   const fallback = oneLine(defaultUptake);
   if (contract?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA || contract.complete !== true) {
@@ -297,7 +304,8 @@ export function deterministicTutorStubTurnProgressionUptake({
   const focusTerms = contract.learner_uptake?.focus_terms || [];
   const acceptedMeaning = contract.learner_uptake?.accepted_meaning || '';
   const linkage = substantiveLearnerUptake({ uptake: fallback, focusTerms, acceptedMeaning });
-  if (linkage.visible && !interrogativeUptake(fallback)) return fallback;
+  const allowed = (candidate) => typeof candidateGuard !== 'function' || candidateGuard(candidate) !== false;
+  if (linkage.visible && !interrogativeUptake(fallback) && allowed(fallback)) return fallback;
 
   const focus = boundedPublicFocus(
     contract.turn_focus_contract?.primary_surface || contract.learner_uptake?.learner_surface,
@@ -310,7 +318,9 @@ export function deterministicTutorStubTurnProgressionUptake({
   const echoes = (candidate) => typeof learnerEchoGuard === 'function' && learnerEchoGuard(candidate) === true;
   const visible = (candidate) => substantiveLearnerUptake({ uptake: candidate, focusTerms, acceptedMeaning }).visible;
   const candidate = variants[variantIndex];
-  if (!echoes(candidate)) return visible(candidate) ? candidate : fallback;
+  if (!echoes(candidate) && allowed(candidate)) {
+    return visible(candidate) ? candidate : allowed(fallback) ? fallback : '';
+  }
   const typedGroupCandidates = (contract.turn_focus_contract?.primary_groups || []).flatMap((group) => [
     oneLine(group?.surface),
     ...boundedQuotedFocusCandidates(group?.surface),
@@ -318,8 +328,8 @@ export function deterministicTutorStubTurnProgressionUptake({
   const bounded = [...typedGroupCandidates, ...boundedQuotedFocusCandidates(focus)]
     .filter((value, index, rows) => rows.indexOf(value) === index)
     .map((quotedFocus) => realizeTurnProgressionUptakeVariants(quotedFocus)[variantIndex])
-    .find((row) => !echoes(row) && visible(row));
-  return bounded || fallback;
+    .find((row) => !echoes(row) && visible(row) && allowed(row));
+  return bounded || (allowed(fallback) ? fallback : '');
 }
 
 /**
@@ -335,6 +345,7 @@ export function selectTutorStubDeterministicFallbackUptake({
   recentTutorTexts = [],
   variationKey = '',
   learnerEchoGuard = null,
+  candidateGuard = null,
 } = {}) {
   const realized = (Array.isArray(candidates) ? candidates : [candidates])
     .map((defaultUptake) =>
@@ -344,6 +355,7 @@ export function selectTutorStubDeterministicFallbackUptake({
         recentTutorTexts,
         variationKey,
         learnerEchoGuard,
+        candidateGuard,
       }),
     )
     .map(oneLine)
@@ -800,7 +812,12 @@ export function tutorStubTurnProgressionContractPrompt(contract = null) {
 
 function declarativeFallbackFocus(
   contract,
-  { clarificationInvitationRequired = false, boundedChoiceRequired = false, publicObject = '' } = {},
+  {
+    clarificationInvitationRequired = false,
+    boundedChoiceRequired = false,
+    publicObject = '',
+    candidateGuard = null,
+  } = {},
 ) {
   const focus = contract?.turn_focus_contract || {};
   const uptake = contract?.learner_uptake || {};
@@ -856,14 +873,28 @@ function declarativeFallbackFocus(
       .replace(/[?]+/gu, '')
       .replace(/[.!]+$/gu, '')
       .trim();
-    if (contract?.public_claim_status?.status === 'supported') {
-      return boundedClaim
-        ? `That public line now stands: ${boundedClaim.charAt(0).toLowerCase()}${boundedClaim.slice(1)}.`
-        : 'That supported public line now stands.';
-    }
-    return boundedClaim
-      ? `The claim that ${boundedClaim.charAt(0).toLowerCase()}${boundedClaim.slice(1)} remains open until the public evidence supports it.`
-      : 'That claim remains open until the public evidence supports it.';
+    const primary =
+      contract?.public_claim_status?.status === 'supported'
+        ? boundedClaim
+          ? `That public line now stands: ${boundedClaim.charAt(0).toLowerCase()}${boundedClaim.slice(1)}.`
+          : 'That supported public line now stands.'
+        : boundedClaim
+          ? `The claim that ${boundedClaim.charAt(0).toLowerCase()}${boundedClaim.slice(1)} remains open until the public evidence supports it.`
+          : 'That claim remains open until the public evidence supports it.';
+    if (typeof candidateGuard !== 'function' || candidateGuard(primary) !== false) return primary;
+    const handoff = contract?.handoff_contract || {};
+    const safeFragment = (focus.primary_groups || [])
+      .flatMap((group) => [oneLine(group?.surface), ...boundedQuotedFocusCandidates(group?.surface)])
+      .filter(Boolean)
+      .filter((value, index, rows) => rows.indexOf(value) === index)
+      .filter((value) => handoffTargetVisible(handoff, value))
+      .map((value) => `Keep this public limit in view: ${value.replace(/[.!]+$/gu, '')}.`)
+      .filter((candidate) => candidateGuard(candidate) !== false)
+      .sort((left, right) => {
+        const wordDelta = contentTerms(left).length - contentTerms(right).length;
+        return wordDelta || left.length - right.length || left.localeCompare(right);
+      })[0];
+    return safeFragment || 'That claim remains open until the public evidence supports it.';
   }
   const focusObject = surface.match(
     /\b(?:badge log|call log|incident log|visitor log|trial-book|book|ledger|log|record|register|notice|report|file|photograph|photo|crucible|coin|shilling|tool|sample|lunchbox)\b/iu,
@@ -924,6 +955,7 @@ export function deterministicTutorStubTurnProgressionHandoff({
   support = null,
   defaultQuestion = '',
   publicObject = '',
+  candidateGuard = null,
 } = {}) {
   if (contract?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA || contract.complete !== true) {
     return oneLine(defaultQuestion);
@@ -933,6 +965,7 @@ export function deterministicTutorStubTurnProgressionHandoff({
       clarificationInvitationRequired: support?.clarificationInvitationRequired === true,
       boundedChoiceRequired: /bounded.*choice/u.test(String(support?.modality || '')),
       publicObject,
+      candidateGuard,
     });
   }
   return contractAwareFallbackQuestion(contract, defaultQuestion);

@@ -977,6 +977,102 @@ test('deterministic declarative recovery keeps an unsupported learner conclusion
   assert.equal(audit.ok, true, JSON.stringify(audit.issues));
 });
 
+test('terminal recovery preserves a safe later clause instead of replaying an unsupported final conclusion', () => {
+  const learnerText = 'Edony’s hand struck the false shillings; the charcoal book names her alone at the weir forge.';
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: {
+      learner_move: {
+        summary: 'Names Edony from the charcoal book but skips the die proof.',
+        evidence_use: 'overleaps_evidence',
+      },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'answer_accountably',
+    tactic: 'unadorned_report',
+  });
+  const rejectsUnsupportedConclusion = (candidate) =>
+    !/Edony[^.!?]{0,80}(?:struck|strike)[^.!?]{0,40}(?:shilling|coin)/iu.test(candidate);
+  const uptake = selectTutorStubDeterministicFallbackUptake({
+    contract,
+    candidates: ['That is a possible conclusion, but the public evidence does not settle it yet.'],
+    recentTutorTexts: ['An earlier tutor response.'],
+    variationKey: 'reliability-r1:t010',
+    learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
+    candidateGuard: rejectsUnsupportedConclusion,
+  });
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract,
+    candidateGuard: rejectsUnsupportedConclusion,
+  });
+
+  assert.match(uptake, /charcoal book|weir forge/iu);
+  assert.doesNotMatch(uptake, /Edony[^.!?]{0,80}(?:struck|strike)/iu);
+  assert.match(handoff, /charcoal book|weir forge/iu);
+  assert.doesNotMatch(handoff, /Edony[^.!?]{0,80}(?:struck|strike)/iu);
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: composition({ uptake, handoff }),
+  });
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+});
+
+test('terminal recovery looks past a ledger preface for learner-specific uptake', () => {
+  const learnerText = 'I enter: Edony’s charcoal signature places her at the weir-forge after it was shut.';
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: {
+      learner_move: { summary: 'Affirms Edony’s documented link to the weir-forge.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: ['The founder’s inventory leaves the worn burin to the widow.'],
+    },
+    actionFamily: 'stage_next_step',
+    tactic: 'unadorned_report',
+  });
+  const uptake = selectTutorStubDeterministicFallbackUptake({
+    contract,
+    candidates: ['That conclusion now follows from the public evidence; I will carry only that supported finding.'],
+    recentTutorTexts: ['An earlier tutor response.'],
+    variationKey: 'reliability-r2:t021',
+    learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
+  });
+
+  assert.match(uptake, /Edony|charcoal|weir-forge/iu);
+  assert.doesNotMatch(uptake, /^That conclusion now follows/iu);
+  assert.equal(tutorStubSubstantiveLearnerEcho(uptake, learnerText), false);
+});
+
+test('terminal recovery candidate guard can avoid overlapping a due clue while retaining focus', () => {
+  const learnerText =
+    'The guild will swear the broad graver is Verrell’s alone, and the broken R bears the square notch.';
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: {
+      learner_move: { summary: 'Cites Verrell’s graver and the coin’s notch.' },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [
+        "The die-sinker reads the notch as the bite of a worn burin. It is not the broad graver from Verrell's bench.",
+      ],
+    },
+    actionFamily: 'stage_next_step',
+    tactic: 'unadorned_report',
+  });
+  const wouldDuplicateDueContrast = (candidate) =>
+    !(/\bbroad graver\b/iu.test(candidate) && /\bVerrell/iu.test(candidate));
+  const uptake = selectTutorStubDeterministicFallbackUptake({
+    contract,
+    candidates: [`I am answering your point about “${learnerText}”.`],
+    recentTutorTexts: ['An earlier tutor response.'],
+    variationKey: 'reliability-r4:t017',
+    learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
+    candidateGuard: wouldDuplicateDueContrast,
+  });
+
+  assert.equal(wouldDuplicateDueContrast(uptake), true);
+  assert.match(uptake, /guild|graver|broken|square|notch/iu);
+});
+
 test('public claim status carries an established Marrick premise through terminal recovery', () => {
   const learnerText = 'I enter: the lead-sweat answers to the weir-forge crucible’s leavings.';
   const committedPublicEvidence = [

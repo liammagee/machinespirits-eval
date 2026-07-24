@@ -54,3 +54,12 @@ Log:
   four cases are fallback-construction defects with an archived public-safe
   clause accepted by the unchanged leak and due-clue multiplicity audits; no
   case was classified as a true unsafe-draft limit or audit/input mismatch.
+- 2026-07-24 — the narrow shared constructor repair now passes all four frozen
+  cases through the unchanged final-audit bundle with zero model calls.
+  Focused tests, derivation quality, prompt/world audits, lint, and workplan
+  checks pass. The full hermetic run disclosed two unrelated pre-existing test
+  assertions (`tutorStubLastSettings` omits the live `spanInterface` field;
+  `tutorStubRoleHistory` no longer crosses its assumed synthetic budget) plus
+  restricted-run loopback failures; none is concealed or changed in this
+  preregistered slice. The clean-SHA treatment-command comparison and fresh
+  excluded four-cell paid smoke remain pending.

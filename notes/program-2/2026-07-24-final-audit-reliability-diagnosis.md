@@ -30,3 +30,35 @@ selection should reject candidates that fail the already-active public leak or
 due-clue multiplicity checks. The final audits, their dispositions, the
 committee seam, treatment flags, prompts, weights, v1/v2 extraction, and
 cue-blind resolver remain unchanged.
+
+## Repair result
+
+The implemented repair passes all four fixed-hash cases through the unchanged
+common final-audit bundle. It makes three shared changes only:
+
+1. bounded learner-focus recovery strips ledger-style prefaces and considers
+   every substantive clause before shortening a clause;
+2. uptake and declarative handoff candidates are screened by the already-live
+   leak and due-clue multiplicity audits; and
+3. dramatic-release and configured-continuation fallbacks receive that same
+   public-state candidate guard from the common runtime.
+
+No audit disposition, treatment seam, prompt, weight, v1/v2 extraction rule,
+committee decision, cue-blind rule, retry limit, or model-call count changed.
+The replay result is 4/4 reproduced, 4/4 classified, and 4/4 repaired with zero
+model calls.
+
+Focused regression tests, `npm run derivation:quality`, the prompt/world audit
+tests, lint, and workplan checks pass. The full hermetic suite was run both in
+the restricted runner and with loopback permission. The restricted run had 27
+network-bind failures and 96 consequent cancellations. The permitted run
+isolated two unrelated pre-existing failures:
+
+- `tests/tutorStubLastSettings.test.js:139` expects the human committee status
+  object without the already-live `spanInterface: v1` field; and
+- `tests/tutorStubRoleHistory.test.js:220` assumes its synthetic long history
+  will cross a prompt-budget threshold, but the current fixture does not.
+
+Neither file nor the underlying settings/history seams is changed by this
+repair. They are recorded rather than folded into the preregistered reliability
+slice.

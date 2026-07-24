@@ -1592,6 +1592,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
   turnProgressionContract = null,
   recentTutorTexts = [],
   variationKey = '',
+  candidateGuard = null,
 } = {}) {
   const stance = oneLine(responseConfiguration?.engagement_stance || 'plain');
   const part = oneLine(responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner');
@@ -1615,6 +1616,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
         support,
         defaultQuestion: configuredFallbackHandoff({ support, actionFamily }),
         publicObject: object,
+        candidateGuard,
       }),
     ]
       .filter(Boolean)

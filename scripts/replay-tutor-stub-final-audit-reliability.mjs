@@ -8,17 +8,20 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { loadWorld } from '../services/dramaticDerivation/world.js';
-import { auditTutorStubClueDeliveryMultiplicity } from '../services/tutorStubDramaticRelease.js';
-import { auditTutorStubFrozenLeak } from '../services/tutorStubFrozenReplay.js';
+import {
+  auditTutorStubClueDeliveryMultiplicity,
+  deterministicTutorStubDramaticReleaseFallback,
+} from '../services/tutorStubDramaticRelease.js';
+import {
+  deterministicTutorStubConfiguredContinuationFallback,
+  tutorStubSubstantiveLearnerEcho,
+} from '../services/tutorStubResponseComposition.js';
+import { auditTutorStubFrozenCandidate, auditTutorStubFrozenLeak } from '../services/tutorStubFrozenReplay.js';
+import { selectTutorStubDeterministicFallbackUptake } from '../services/tutorStubTurnProgressionContract.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_CONFIG = path.join(ROOT, 'config', 'tutor-stub-final-audit-reliability-gate.json');
-const DEFAULT_OUT = path.join(
-  ROOT,
-  'exports',
-  'program2-final-audit-reliability-gate',
-  'replay-classification.json',
-);
+const DEFAULT_OUT = path.join(ROOT, 'exports', 'program2-final-audit-reliability-gate', 'replay-classification.json');
 
 function sha256(buffer) {
   return crypto.createHash('sha256').update(buffer).digest('hex');
@@ -124,6 +127,88 @@ export function analyzeTutorStubFinalAuditTraceCase({ spec, tracePath, world }) 
       ? 'true_unsafe_draft'
       : 'audit_input_mismatch';
   checks.classification_matches = inferredClassification === spec.classification;
+  const recentTutorTexts = priorTurns.map((row) => row.tutor).filter(Boolean);
+  const candidateGuard = (candidate) => {
+    const text = oneLine(candidate);
+    if (!text) return false;
+    const leak = auditTutorStubFrozenLeak({
+      text,
+      world,
+      tutorTurn: turn,
+      learnerText,
+      priorTurns,
+      publicPremiseIds,
+    });
+    if (!leak.ok) return false;
+    return auditTutorStubClueDeliveryMultiplicity({
+      text: [text, dueSourceText].filter(Boolean).join(' '),
+      frame: dramaticEvent?.frame || null,
+    }).ok;
+  };
+  const archivedUptake = fallbackAttempt.audits?.responseCompositionAudit?.segments?.uptake || '';
+  const repairUptake = selectTutorStubDeterministicFallbackUptake({
+    contract: contractEvent.contract?.progression || null,
+    candidates: [archivedUptake],
+    recentTutorTexts,
+    variationKey: `${events[0]?.runId || 'run'}:${turn}`,
+    learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
+    candidateGuard,
+  });
+  const responseCompositionEvent = events.findLast(
+    (event) =>
+      event.type === 'tutor_response_composition_audit' &&
+      event.turn === turn &&
+      String(event.role || '').endsWith('_fallback'),
+  );
+  const deliveryConfiguration = fallbackAttempt.deliveryConfiguration || null;
+  const repairCandidate = dramaticEvent?.frame?.active
+    ? deterministicTutorStubDramaticReleaseFallback({
+        frame: dramaticEvent.frame,
+        uptake: repairUptake,
+        responseConfiguration: deliveryConfiguration,
+        variationKey: `${events[0]?.runId || 'run'}:${turn}`,
+        turnProgressionContract: contractEvent.contract?.progression || null,
+        sourceAccessibilityContract: contractEvent.contract?.evidence?.source_accessibility || null,
+        candidateGuard,
+      })
+    : deterministicTutorStubConfiguredContinuationFallback({
+        uptake: repairUptake,
+        responseConfiguration: deliveryConfiguration,
+        world,
+        learnerText,
+        turnProgressionContract: contractEvent.contract?.progression || null,
+        recentTutorTexts,
+        variationKey: `${events[0]?.runId || 'run'}:${turn}`,
+        candidateGuard,
+      });
+  const repairBundle = {
+    turn,
+    learnerText,
+    priorTurns,
+    priorTutorTexts: recentTutorTexts,
+    selectedResponseConfiguration: deliveryConfiguration,
+    speakingResponseConfiguration: deliveryConfiguration,
+    firstDraftContract: contractEvent.contract,
+    performanceObligationContract: contractEvent.contract?.performance?.obligation_contract || null,
+    frames: {
+      responseComposition: responseCompositionEvent?.frame || null,
+      dramaticRelease: dramaticEvent?.frame || null,
+      questionSupport: null,
+      dialogueClosure: null,
+      generousInference: null,
+    },
+    guards: exhausted.accounting?.guards || {},
+    publicPremiseIds,
+    duePremiseIds: (dramaticEvent?.frame?.entries || []).map((entry) => entry.premise).filter(Boolean),
+  };
+  const repairAudit = auditTutorStubFrozenCandidate({
+    bundle: repairBundle,
+    world,
+    text: repairCandidate,
+    deliveryConfiguration,
+    candidateKind: 'deterministic_fallback',
+  });
+  checks.repair_candidate_passes_unchanged_final_audits = repairAudit.ok;
   return {
     id: spec.id,
     trace: path.relative(ROOT, tracePath),
@@ -140,6 +225,11 @@ export function analyzeTutorStubFinalAuditTraceCase({ spec, tracePath, world }) 
     safeAudit: {
       leak: safeLeakAudit,
       clueDeliveryMultiplicity: safeMultiplicityAudit,
+    },
+    repair: {
+      uptake: repairUptake,
+      candidate: repairCandidate,
+      audit: repairAudit,
     },
     checks,
     ok: Object.values(checks).every(Boolean),
@@ -171,6 +261,7 @@ export function runTutorStubFinalAuditReliabilityReplay({ configPath = DEFAULT_C
       fallbackConstructionDefects: cases.filter((row) => row.classification === 'fallback_construction_defect').length,
       trueUnsafeDrafts: cases.filter((row) => row.classification === 'true_unsafe_draft').length,
       auditInputMismatches: cases.filter((row) => row.classification === 'audit_input_mismatch').length,
+      repaired: cases.filter((row) => row.checks.repair_candidate_passes_unchanged_final_audits).length,
     },
     ok: cases.length === 4 && cases.every((row) => row.ok),
   };

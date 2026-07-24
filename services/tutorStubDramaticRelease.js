@@ -814,6 +814,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
   avoidQuestion = '',
   turnProgressionContract = null,
   sourceAccessibilityContract = null,
+  candidateGuard = null,
 } = {}) {
   if (!frame?.active) return '';
   const stance = fallbackStance(responseConfiguration);
@@ -852,6 +853,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
       support,
       defaultQuestion: fallbackQuestion({ stance, variationKey, avoidQuestion }),
       publicObject: sceneObject(frame.entries[0]),
+      candidateGuard,
     }),
     turnProgressionContract?.handoff_contract?.question_allowed === false ? null : clarification,
   ]
