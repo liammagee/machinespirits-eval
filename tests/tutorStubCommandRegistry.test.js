@@ -31,6 +31,7 @@ const NORMAL_COMMANDS = [
   '/demo',
   '/theme',
   '/motion',
+  '/details',
   '/random',
   '/light',
   '/committee',
@@ -90,6 +91,7 @@ const NORMAL_COMMANDS = [
 const PASSTHROUGH_COMMANDS = [
   '/theme',
   '/motion',
+  '/details',
   '/settings',
   '/status',
   '/features',
@@ -150,6 +152,7 @@ const SCENE_RETURN_COMMANDS = [
   '/lab',
   '/translate',
   '/light',
+  '/details',
 ];
 
 const NORMAL_SETTINGS_COMPLETIONS = [
@@ -184,14 +187,14 @@ const NORMAL_SETTINGS_COMPLETIONS = [
   '/settings policy threshold ',
 ];
 
-test('v2 command registry freezes the slash-token and execution-effect surfaces', () => {
+test('v3 command registry freezes the slash-token and execution-effect surfaces', () => {
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 2);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 42);
-  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 57);
-  assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 21);
-  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 38);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 3);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 43);
+  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 58);
+  assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 22);
+  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 39);
   assert.deepEqual(TUTOR_STUB_NORMAL_SLASH_COMMANDS, NORMAL_COMMANDS);
   assert.deepEqual(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS, PASSTHROUGH_COMMANDS);
   assert.deepEqual(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS, SCENE_RETURN_COMMANDS);
@@ -222,8 +225,8 @@ test('v2 command registry freezes the slash-token and execution-effect surfaces'
     handlers.add(definition.handler);
     traceEvents.add(definition.traceEvent);
   }
-  assert.equal(handlers.size, 42);
-  assert.equal(traceEvents.size, 42);
+  assert.equal(handlers.size, 43);
+  assert.equal(traceEvents.size, 43);
   assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
@@ -369,6 +372,7 @@ test('execution effects conservatively classify every command before transport e
     'demo',
     'theme',
     'motion',
+    'details',
     'random',
     'light',
     'committee',
@@ -541,6 +545,11 @@ test('passthrough settings completions expose only speaker model, theme, and mot
   assert.ok(
     passthrough.every((candidate) => !/(?:models|temp|dropout|light|release-speed|forget|policy)/u.test(candidate)),
   );
+  assert.deepEqual(tutorStubStaticCommandCompletions('/details ', { mode: 'passthrough' }), [
+    '/details on',
+    '/details off',
+    '/details status',
+  ]);
 });
 
 test('resolved capabilities filter commands, completions, and generated help without changing frozen catalog views', () => {

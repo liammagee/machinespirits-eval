@@ -144,6 +144,27 @@ export function tutorStubTurnFeedbackArrowRating({
   return null;
 }
 
+export function tutorStubTurnFeedbackEscapeDismissal({
+  line = '',
+  key = {},
+  feedback = null,
+  interactiveMode = 'learner',
+  interfaceBlocked = false,
+  selectionActive = false,
+} = {}) {
+  return Boolean(
+    key?.name === 'escape' &&
+    !key?.shift &&
+    !key?.ctrl &&
+    String(line).length === 0 &&
+    !interfaceBlocked &&
+    !selectionActive &&
+    interactiveMode !== 'auto' &&
+    feedback?.enabled &&
+    feedback?.requested,
+  );
+}
+
 export function commitTutorStubTurnFeedback(state, { learnerTurn = null, learnerTurnId = null } = {}) {
   if (!state) return null;
   const feedback = tutorStubTurnFeedbackEnvelope(state);

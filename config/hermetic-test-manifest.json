@@ -73,6 +73,7 @@
         "services/__tests__/tutorStubStageSpeech.test.js",
         "services/__tests__/tutorStubTuning.test.js",
         "services/__tests__/tutorStubTurnFeedback.test.js",
+        "services/__tests__/tutorStubTurnTiming.test.js",
         "services/__tests__/writingPadNarrativeBuilder.test.js",
         "tests/a19AdjudicationKeyedRoutes.test.js",
         "tests/a19AdjudicationPanel.test.js",

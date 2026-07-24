@@ -272,7 +272,9 @@ Useful variants:
   Subjective helpfulness and objective progress remain separate channels, and
   the record explicitly makes no causal claim. Use `/feedback on|off|clear` or
   `--no-turn-feedback`; it is on by default for human sessions and absent from
-  fully automated learner turns.
+  fully automated learner turns. When a request is visible on an otherwise
+  empty, unselected prompt, Escape disables feedback for the rest of the
+  session. Escape continues to clear an active text selection instead.
   A rating may carry a typed reason and a short evidence comment, for example
   `/down too_abstract Uses labels instead of the objects in the scene` or
   `/up helpful_pacing`. `/tune reasons` lists the bounded taxonomy. The typed
@@ -602,10 +604,16 @@ Useful variants:
   output; `/debug on prose` returns to the default. Use `/debug off` to stop
   all automatic debug output, including turn ids, learner classifier details,
   learner/tutor DAGs, stance efficacy, stance distributions, and calculation
-  reasons. Quiet mode retains only the public dialogue and one compact model
-  line with latency, honest token availability, effort, current engagement
-  stance, action family, and the selected in-scene character (the internal
-  `actorial_part`). The mode survives `/reset`, appears with its format in
+  reasons. Quiet mode retains only the public dialogue and, when enabled, one
+  compact model line with latency, honest token availability, effort, current
+  engagement stance, action family, and the selected in-scene character (the
+  internal `actorial_part`). A second compact line breaks foreground wait into
+  learner-analysis, tutor, and local time; prefetched stages and tutor-recovery
+  latency are labeled explicitly. Both lines appear before tutor speech so
+  dialogue remains the final response content. `/details off` hides them for the session;
+  `/details on|status`, `--no-response-details`, and
+  `TUTOR_STUB_RESPONSE_DETAILS=0` provide the corresponding controls. The debug
+  mode survives `/reset`, appears with its format in
   `/status` and transcript settings, and writes an `explanatory_debug_output`
   trace event without changing the policy.
 - `/transcript` (alias `/html`) refreshes one run-specific, self-contained HTML
@@ -726,7 +734,7 @@ Useful variants:
   summary of the command's behavior; broad lists are bounded to the terminal
   height. Keep typing to filter it and press Tab to complete; the palette
   remains usable while tutor or learner generation continues. Commands include
-  `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/light`, `/register`, `/character`, `/theme`, `/motion`, `/field`, `/viz`,
+  `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/light`, `/register`, `/character`, `/theme`, `/motion`, `/details`, `/field`, `/viz`,
   `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
 - `/translate` is available in every normal tutor-stub session. Without an

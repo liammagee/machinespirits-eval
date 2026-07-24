@@ -770,6 +770,108 @@ test(
   },
 );
 
+test(
+  'Escape on an empty prompt hides optional tutor feedback for the session',
+  { skip: process.platform === 'win32', timeout: 15_000 },
+  async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-escape-feedback-'));
+    try {
+      installFakeCodex(tmp);
+      let terminalOutput = '';
+      let firstTurnSent = false;
+      let escapePressed = false;
+      let requestedStatus = false;
+      let secondTurnSent = false;
+      let requestedExit = false;
+      const terminal = pty.spawn(
+        process.execPath,
+        [
+          'scripts/tutor-stub.js',
+          '--no-opening',
+          '--no-classifier',
+          '--no-register-selection',
+          '--no-closeout-report',
+          '--no-interim-animation',
+          '--no-stream',
+          '--trace-dir',
+          tmp,
+          '--world',
+          'none',
+        ],
+        {
+          cwd: ROOT,
+          cols: 140,
+          rows: 24,
+          name: 'xterm-color',
+          env: {
+            ...process.env,
+            PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+            TERM: 'xterm-color',
+            CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+            TUTOR_STUB_SUMMARY_OPEN: '0',
+            TUTOR_STUB_REMEMBER_SETTINGS: '0',
+          },
+        },
+      );
+
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          terminal.kill();
+          reject(new Error(`escape-feedback terminal timed out\n${plainTerminalText(terminalOutput)}`));
+        }, 12_000);
+        terminal.onData((chunk) => {
+          terminalOutput += chunk;
+          const plain = plainTerminalText(terminalOutput);
+          if (!firstTurnSent && plain.includes('learner >')) {
+            firstTurnSent = true;
+            terminal.write('First learner message.\r');
+          } else if (!escapePressed && plain.includes('optional tutor feedback >')) {
+            escapePressed = true;
+            setTimeout(() => terminal.write('\x1b'), 100);
+          } else if (!requestedStatus && plain.includes('tutor feedback > off')) {
+            requestedStatus = true;
+            terminal.write('/status\r');
+          } else if (!secondTurnSent && /tutor ratings: off · optional and private/u.test(plain)) {
+            secondTurnSent = true;
+            terminal.write('Second learner message.\r');
+          } else if (!requestedExit && secondTurnSent && (plain.match(/tutor >/gu) || []).length >= 2) {
+            requestedExit = true;
+            terminal.write('/quit\r');
+          }
+        });
+        terminal.onExit(({ exitCode, signal }) => {
+          clearTimeout(timer);
+          if (exitCode === 0) resolve();
+          else reject(new Error(`escape-feedback terminal exited ${exitCode} (${signal})\n${terminalOutput}`));
+        });
+      });
+
+      const plain = plainTerminalText(terminalOutput);
+      assert.match(plain, /Esc hides for session/u);
+      assert.match(plain, /tutor feedback > off/u);
+      assert.match(plain, /tutor ratings: off · optional and private/u);
+      assert.equal((plain.match(/optional tutor feedback >/gu) || []).length, 1);
+      const events = fs
+        .readdirSync(tmp)
+        .filter((name) => name.endsWith('.jsonl'))
+        .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+        .filter(Boolean)
+        .map((line) => JSON.parse(line));
+      assert.ok(
+        events.some(
+          (event) =>
+            event.type === 'tutor_turn_feedback_setting_changed' &&
+            event.enabled === false &&
+            event.source === 'empty_prompt_escape' &&
+            event.publicTranscriptChanged === false,
+        ),
+      );
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  },
+);
+
 test('/reset cancels an in-flight tutor turn and reopens the same scenario without stale output', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-dialogue-reset-'));
   try {
@@ -2246,7 +2348,7 @@ test('/register auto and /character auto clear only their session locks', async 
   }
 });
 
-test('debug off suppresses automatic technical diagnostics but keeps the compact stance line', async () => {
+test('debug off keeps compact response details before tutor speech', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-debug-off-'));
   try {
     const result = await runInteractive({
@@ -2277,6 +2379,72 @@ test('debug off suppresses automatic technical diagnostics but keeps the compact
     assert.doesNotMatch(result.plain, /tutor DAG >/u);
     assert.doesNotMatch(result.plain, /debug explain > turn 1/u);
     assert.match(result.plain, /tokens unavailable, effort medium, style [a-z ]+, move [a-z ]+, character [^,\n]+/u);
+    const responseDetailsIndex = result.plain.search(/codex\/gpt-5\.6-terra, \d+ms, tokens unavailable/u);
+    const timingIndex = result.plain.search(
+      /time > wait (?:<0\.1s|\d+\.\d+s) · analysis (?:<0\.1s|\d+\.\d+s) · tutor (?:<0\.1s|\d+\.\d+s)/u,
+    );
+    const tutorSpeechIndex = result.plain.lastIndexOf('tutor >');
+    assert.ok(
+      responseDetailsIndex >= 0 && timingIndex > responseDetailsIndex && timingIndex < tutorSpeechIndex,
+      result.plain,
+    );
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const timingEvent = events.find((event) => event.type === 'turn_timing_breakdown' && event.turn === 1);
+    assert.equal(timingEvent.timing.schema, 'machinespirits.tutor-stub.turn-timing.v1');
+    assert.ok(timingEvent.timing.foreground.totalMs >= timingEvent.timing.foreground.tutorMs);
+    assert.equal(
+      events.find((event) => event.type === 'turn_complete' && event.turn === 1)?.turnRecord?.turnTiming?.schema,
+      'machinespirits.tutor-stub.turn-timing.v1',
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('/details off hides compact response details without changing tutor speech', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-response-details-off-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'none',
+      ],
+      initialInput: '/details off\nFirst learner message.\n',
+      stopWhen: (plain) => plain.includes('optional tutor feedback >'),
+    });
+
+    assert.match(result.plain, /response details > off/u);
+    assert.match(result.plain, /tutor >/u);
+    assert.doesNotMatch(result.plain, /codex\/gpt-5\.6-terra, \d+ms, tokens unavailable/u);
+    assert.doesNotMatch(result.plain, /time > wait/u);
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'terminal_response_details_changed' &&
+          event.enabled === false &&
+          event.publicTranscriptChanged === false,
+      ),
+    );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

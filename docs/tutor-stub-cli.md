@@ -405,6 +405,46 @@ The keyboard `/settings` panel includes live theme and motion previews. Escape
 restores the active appearance and discards the preview; choosing
 `Done — apply and return` saves it with the other interactive defaults.
 
+## Dialogue-first response details
+
+The compact model, token, and tutor-style line is shown before each tutor
+utterance, followed by a live foreground timing breakdown such as:
+
+```text
+time > wait 30.7s · analysis 13.9s · tutor 16.8s · local <0.1s
+```
+
+`wait` measures from the accepted learner input to the completed tutor turn.
+`analysis` and `tutor` are wall-clock stages, so they include the small amount
+of deterministic processing performed inside each stage; `local` is work
+between those stages. If mixed-mode analysis or a tutor response was already
+prepared, the corresponding stage is marked `(prefetched)` and reports only
+the foreground time still spent waiting. Tutor recovery calls are called out
+with their recovery latency. The details remain terminal-only and do not enter
+public dialogue history. Keeping both lines before the tutor leaves the tutor's
+words as the final response content instead of making the exchange read like a
+technical report.
+
+Use `/details off` to hide both lines for the current session, `/details on` to
+restore them, and `/details status` to inspect the setting. `/reset` preserves
+the session choice. To launch without the details, use either:
+
+```bash
+npm run tutor:stub -- --no-response-details
+TUTOR_STUB_RESPONSE_DETAILS=0 npm run tutor:stub
+```
+
+This control is independent of `/debug`: hiding response details does not
+disable an explicitly requested `/analysis technical` or `/debug technical`
+view.
+
+Optional tutor feedback is also session-controllable. `/feedback off` remains
+the explicit command; when a feedback request is visible and the learner input
+is empty, Escape performs the same session-only suppression. If text is
+selected, Escape retains its normal selection-clear behavior. Use
+`--no-turn-feedback` or `TUTOR_STUB_TURN_FEEDBACK=0` to disable the prompt at
+launch.
+
 ## Live release notes
 
 Use `/release-notes` to see meaningful tutor-stub changes committed during the
