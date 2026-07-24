@@ -236,15 +236,16 @@ npm run tutor:stub -- \
 
 Useful variants:
 
-- Interactive sessions have three live roles. `/mode learner` (or `/learner`)
-  makes typed lines public learner speech. `/mode coach` (or `/coach`) makes
+- Interactive sessions have three live roles. `/mode learner` makes typed
+  lines public learner speech. `/mode coach` (or `/coach`) makes
   typed lines private, high-priority suggestions for the next tutor response;
   `/coach <text>` switches and queues in one command. Coach guidance is never
   added to public history, is constrained by evidence/leak/closure guards, is
   stored on the tutor turn for audit, and invalidates stale mixed tutor
   prefetches. In mixed mode, queue guidance and use `/use` to send the drafted
-  learner turn; in human mode, switch back with `/learner` and type the public
-  learner response.
+  learner turn; in human mode, switch back with `/mode learner` and type the
+  public learner response. `/learner [profile]` is instead the short form of
+  `/character learner [profile]`.
 - `/mode auto` (or `/auto`) hands the current public transcript to the existing
   automated learner loop and plays both roles until grounded closure or the
   configured safety cap. `/auto 5` runs exactly five more learner-tutor turns
@@ -497,7 +498,9 @@ Useful variants:
   controls and do not reprise the latest tutor utterance when they finish. Use
   `/character learner <profile>` (or legacy `/profile <profile>`) for the mixed
   learner and `/character tutor <part>` (or legacy `/character <part>`) for the
-  tutor. `--learner-character` and `--tutor-character` provide symmetric
+  tutor. `/learner [profile]` and `/tutor [part]` are the symmetric short forms;
+  `/mode learner` remains the interaction-role switch. `--learner-character`
+  and `--tutor-character` provide symmetric
   launch-time controls. A changed tutor character prints a short learner-facing
   explanation of how replies will behave, the temporary clue-giver/closing-scene
   exception, and the route back to `Tutor → Auto`; detailed precedence and
@@ -647,8 +650,16 @@ Useful variants:
   never enters learner-DAG/object-language analysis, and cannot change public
   facts, staged-evidence timing, proof state, learner claims, role boundaries,
   closure, or safety. Bare `/meta` and `/meta status` show the active request.
-  This is a deterministic private control layer, not an additional model role;
+  This persistent tutor-change path is a deterministic private control layer;
   mixed mode may rebuild a speculative tutor prefetch after the control changes.
+  `/director ask <question>` and `/meta ask <question>` are the separate,
+  one-shot CLI-help path. They call a private director role with only the active
+  non-secret session settings, command registry, launch recipes, tutor-character
+  catalog, and learner-profile catalog. The answer changes no setting, enters no
+  public history or learner-DAG state, and automatically returns to the prior
+  learner or coach prompt with the latest tutor utterance reprised. The director
+  receives no concealed answer, hidden proof state, future clue, or private
+  speaking-tutor prompt.
   The transcript director ledger records private requests for provenance, while
   Replay JS continues to contain public dialogue only.
 - Every tutor-stub conversation with at least one completed tutor turn also
@@ -747,7 +758,7 @@ Useful variants:
   height. Keep typing to filter it and press Tab to complete; the palette
   remains usable while tutor or learner generation continues. Commands include
   `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/light`, `/register`, `/character`, `/theme`, `/motion`, `/details`, `/field`, `/viz`,
-  `/transcript`, `/director [request]`, `/notes`, `/meta [request|status|clear]`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/profile`,
+  `/transcript`, `/director [request|ask <question>]`, `/notes`, `/meta [request|ask <question>|status|clear]`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/tutor [part]`, `/learner [profile]`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
 - `/translate` is available in every normal tutor-stub session. Without an
   active curriculum, bare `/translate` rewrites the latest completed public

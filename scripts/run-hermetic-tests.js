@@ -206,7 +206,9 @@ export function runPhase({
     });
     onChild(child);
     child.once('error', reject);
-    child.once('exit', (code, signal) =>
+    // `exit` can fire before the child's stdio pipes have drained. Resolve on
+    // `close` so the captured TAP buffer always includes the trailing summary.
+    child.once('close', (code, signal) =>
       resolve({
         code: code ?? 1,
         signal,

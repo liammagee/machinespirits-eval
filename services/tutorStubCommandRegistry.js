@@ -7,8 +7,8 @@ import {
 import { TUTOR_STUB_CURRICULUM_TRANSLATION_LEVELS } from './tutorStubCurriculumTranslation.js';
 import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 
-export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v4';
-export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 4;
+export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v6';
+export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 6;
 export const TUTOR_STUB_COMMAND_MODES = Object.freeze(['normal', 'passthrough']);
 export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
   'terminal_picker',
@@ -61,7 +61,6 @@ const COMMAND_EFFECT_DECLARATIONS = Object.freeze({
   release_notes: [],
   debug: ['modelCall', 'persistentMutation'],
   mode: ['modelCall', 'persistentMutation'],
-  learner: ['persistentMutation'],
   coach: ['modelCall', 'persistentMutation'],
   auto: ['modelCall', 'persistentMutation'],
   id: [],
@@ -90,7 +89,6 @@ const COMMAND_CAPABILITY_REQUIREMENTS = {
   feedback: { available: ['turn_feedback'] },
   tune: { available: ['tutor_tuning'] },
   mode: { available: ['interactive_roles'] },
-  learner: { available: ['interactive_roles'] },
   coach: { available: ['interactive_roles'] },
   auto: { available: ['automated_learner'] },
   suggest: { active: ['mixed_drafting'] },
@@ -119,8 +117,8 @@ const COMMAND_SUMMARIES = Object.freeze({
   report: 'show the current compact learning and closeout report',
   transcript: 'write or open the complete HTML transcript and replay views',
   voice: 'open or configure the browser microphone and tutor voice companion',
-  director: 'view released notes or privately direct a change to later tutor replies',
-  meta: 'privately direct a tutor change without adding public learner speech',
+  director: 'view released notes, ask about the CLI, or privately direct later tutor replies',
+  meta: 'ask about the CLI or privately direct a tutor change outside learner speech',
   feedback_up: 'mark the latest tutor response helpful, with an optional reason',
   feedback_down: 'mark the latest tutor response unhelpful and explain why',
   feedback: 'turn optional tutor feedback on or off, or clear a pending rating',
@@ -131,7 +129,6 @@ const COMMAND_SUMMARIES = Object.freeze({
   release_notes: 'show recent tutor-stub changes and their expected effects',
   debug: 'explain or expose the tutor machinery behind completed turns',
   mode: 'switch between public learner, private coach, and automated play',
-  learner: 'return typed input to public learner speech',
   coach: 'send private guidance for the next tutor response',
   auto: 'let the configured automated learner continue the exchange',
   id: 'show and copy the current turn id and trace location',
@@ -161,10 +158,9 @@ const HELP_GROUPS = [
     mode: 'normal',
     label: 'take part',
     commands: [
-      { id: 'learner' },
       { id: 'coach', arguments: '[suggestion]' },
       { id: 'auto', arguments: '[turns]' },
-      { id: 'mode' },
+      { id: 'mode', arguments: 'learner|coach|auto' },
     ],
     summary: 'switch between public learner, private coach, and bounded auto roles',
   },
@@ -189,7 +185,7 @@ const HELP_GROUPS = [
       { id: 'analysis', arguments: '[technical]' },
       { id: 'debug', arguments: 'on|off' },
       { id: 'status' },
-      { id: 'director', arguments: '[request]' },
+      { id: 'director', arguments: '[request]|ask <question>' },
       { id: 'translate', arguments: '[level]' },
       { id: 'transcript', arguments: '[no-open]' },
       { id: 'voice' },
@@ -237,7 +233,9 @@ const HELP_GROUPS = [
     commands: [
       { id: 'register', arguments: '<style>' },
       { id: 'character', arguments: '[tutor|learner] [choice]' },
-      { id: 'meta', arguments: '<request>|status|clear' },
+      { id: 'character', token: '/tutor', arguments: '[part]' },
+      { id: 'character', token: '/learner', arguments: '[profile]' },
+      { id: 'meta', arguments: '<request>|ask <question>|status|clear' },
       { id: 'random' },
       { id: 'light', arguments: '[on|off|status]' },
     ],
@@ -457,6 +455,7 @@ const COMMANDS = [
   command({
     id: 'character',
     token: '/character',
+    aliases: ['/tutor', '/learner'],
     sceneReturnOrder: 5,
     completion: {
       normal: {
@@ -527,12 +526,13 @@ const COMMANDS = [
     aliases: ['/notes'],
     passthroughOrder: 9,
     sceneReturnOrder: 14,
+    completion: { normal: { suffixes: ['ask '] } },
   }),
   command({
     id: 'meta',
     token: '/meta',
     sceneReturnOrder: 15,
-    completion: { normal: { suffixes: ['status', 'clear'] } },
+    completion: { normal: { suffixes: ['ask ', 'status', 'clear'] } },
   }),
   command({
     id: 'feedback_up',
@@ -646,7 +646,6 @@ const COMMANDS = [
     token: '/mode',
     completion: { normal: { suffixes: ['learner', 'coach', 'auto'] } },
   }),
-  command({ id: 'learner', token: '/learner' }),
   command({ id: 'coach', token: '/coach' }),
   command({ id: 'auto', token: '/auto' }),
   command({
@@ -817,8 +816,16 @@ export function tutorStubStaticCommandCompletions(value, { mode = 'normal', capa
   const normalized = normalizedMode(mode);
   const definition = resolveTutorStubCommand(value);
   if (!tutorStubCommandAvailable(value, { mode: normalized, capabilities })) return Object.freeze([]);
-  const metadata = definition.completion?.[normalized] || definition.completion?.normal || null;
   const token = commandToken(value);
+  const metadata =
+    token === '/tutor' && definition.id === 'character'
+      ? { suffixes: ['auto', 'status'], dynamicProviders: ['actorial_parts'] }
+      : token === '/learner' && definition.id === 'character'
+        ? {
+            suffixes: ['list', 'list stress', 'list all', 'example', 'default', 'custom '],
+            dynamicProviders: ['learner_profile_ids'],
+          }
+        : definition.completion?.[normalized] || definition.completion?.normal || null;
   return Object.freeze((metadata?.suffixes || []).map((suffix) => `${token} ${suffix}`));
 }
 
@@ -826,6 +833,16 @@ export function tutorStubCommandCompletionMetadata(value, { mode = 'normal', cap
   const normalized = normalizedMode(mode);
   const definition = resolveTutorStubCommand(value);
   if (!tutorStubCommandAvailable(value, { mode: normalized, capabilities })) return null;
+  const token = commandToken(value);
+  if (token === '/tutor' && definition.id === 'character') {
+    return deepFreeze({ suffixes: ['auto', 'status'], dynamicProviders: ['actorial_parts'] });
+  }
+  if (token === '/learner' && definition.id === 'character') {
+    return deepFreeze({
+      suffixes: ['list', 'list stress', 'list all', 'example', 'default', 'custom '],
+      dynamicProviders: ['learner_profile_ids'],
+    });
+  }
   return definition.completion?.[normalized] || definition.completion?.normal || null;
 }
 
@@ -944,7 +961,11 @@ export function tutorStubCommandHelpRows({ mode = 'normal', capabilities = null 
         .filter((entry) => tutorStubCommandAvailable(entry.id, { mode: normalized, capabilities }))
         .flatMap((entry) => {
           const definition = resolveTutorStubCommand(entry.id);
-          const tokens = entry.includeAliases ? [definition.token, ...definition.aliases] : [definition.token];
+          const tokens = entry.token
+            ? [entry.token]
+            : entry.includeAliases
+              ? [definition.token, ...definition.aliases]
+              : [definition.token];
           return tokens.map((token) => `${token}${entry.arguments ? ` ${entry.arguments}` : ''}`);
         })
         .toSorted();
@@ -1077,6 +1098,9 @@ export function assertTutorStubCommandRegistryInvariants(registry = TUTOR_STUB_C
       const definition = registry.commands.find((candidate) => candidate.id === entry.id);
       if (!definition.availability[group.mode]) {
         throw new Error(`unavailable ${group.mode} command in help group ${group.id}: ${entry.id}`);
+      }
+      if (entry.token && resolveTutorStubCommand(entry.token)?.id !== entry.id) {
+        throw new Error(`invalid token override in help group ${group.id}: ${entry.token}`);
       }
     }
   }

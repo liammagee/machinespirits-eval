@@ -380,6 +380,8 @@ than a public contribution to the inquiry:
 ```text
 /meta Use shorter sentences and name the concrete objects before the rule.
 /director Keep the tutor warm, but stop using the detective-world vocabulary.
+/director ask How do I set up an adversarial teacher with a difficult learner in mixed mode?
+/meta ask Which command changes only the tutor character?
 /meta status
 /meta clear
 ```
@@ -393,6 +395,24 @@ closure, or safety rules. It is stored separately from public learner turns,
 never enters learner-DAG or object-language analysis, and is excluded from
 Replay JS. The transcript's director ledger records it explicitly as a private
 control for provenance.
+
+`/director ask <question>` and `/meta ask <question>` instead make a one-shot,
+private application-help call. The director receives the active session mode,
+current non-secret settings, available command registry, tutor-character
+catalog, learner-profile catalog, and documented launch recipes. It receives
+no concealed answer, hidden proof state, future clue, or private speaking-tutor
+prompt. Its response is labeled `director >`, changes no setting by itself,
+and never becomes learner speech or learner-DAG evidence. After the answer, the
+CLI reprises the latest tutor utterance and restores the prior learner or coach
+prompt automatically. For example, the director can recommend:
+
+```text
+/tutor adversarial_teacher
+/learner affective_resistant
+```
+
+The operator still runs those commands explicitly; asking the director does
+not silently apply them.
 
 Bare `/director` keeps its older meaning: show the opening directions and the
 director notes released so far. `/notes` remains a view-only alias for that
@@ -495,7 +515,11 @@ axis's specific profile or host-part picker. Escape returns without changing
 either axis. Pipes and scripts retain a read-only summary of the current learner
 behavior profile and tutor host part. Use `/character learner <profile>` for the
 automated or mixed learner and `/character tutor <part>` for the tutor. The
-older `/profile <id>` and `/character <part>` forms remain aliases.
+short forms `/learner [profile]` and `/tutor [part]` map to those two scoped
+commands. The older `/profile <id>` and `/character <part>` forms remain
+compatible. Because `/learner` now selects the learner character, use `/mode
+learner` to return terminal input from coach or auto mode to public learner
+speech.
 
 Use `/register <style>` to direct the engagement stance. In an interactive
 terminal, `/character tutor` and `/character learner` open scrolling keyboard
@@ -515,10 +539,10 @@ trace rather than being printed as a terminal report.
 
 ```text
 /register warm
-/character tutor advocate
-/character learner counterexample_hunter
+/tutor advocate
+/learner counterexample_hunter
 /register auto
-/character tutor auto
+/tutor auto
 ```
 
 Launch-time aliases provide the same distinction:

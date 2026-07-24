@@ -129,6 +129,30 @@ test('quiet phases retain child output for accounting without mirroring successf
   assert.doesNotMatch(mirrored, /captured-child-output/u);
 });
 
+test('quiet phases wait for inherited stdout pipes to close before parsing the TAP footer', async () => {
+  const lateTapFooter = '1..1\\n# tests 1\\n# pass 1\\n# fail 0\\n';
+  const childScript = `
+    const { spawn } = require('node:child_process');
+    const writer = spawn(process.execPath, ['-e', ${JSON.stringify(
+      `setTimeout(() => process.stdout.write(${JSON.stringify(lateTapFooter)}), 50);`,
+    )}], { detached: true, stdio: ['ignore', 1, 2] });
+    writer.unref();
+  `;
+  const result = await runPhase({
+    phase: 'root',
+    forceExit: true,
+    args: ['-e', childScript],
+    env: process.env,
+    quiet: true,
+    projectRoot: path.resolve('.'),
+    onChild: () => {},
+  });
+
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /# tests 1/u);
+  assert.match(result.stdout, /# fail 0/u);
+});
+
 test('root discovery stays explicit while the core phase targets all in-housed Vitest files', () => {
   const rootFiles = discoverRootTestFiles();
   assert.ok(rootFiles.includes(path.join('tests', 'hermeticTestRunner.test.js')));
