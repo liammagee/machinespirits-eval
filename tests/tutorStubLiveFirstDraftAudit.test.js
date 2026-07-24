@@ -18,6 +18,7 @@ import {
   deterministicTutorStubDramaticReleaseFallback,
 } from '../services/tutorStubDramaticRelease.js';
 import { decideTutorStubGuardDelivery, tutorStubGuardIssueRows } from '../services/tutorStubGuardDisposition.js';
+import { auditTutorStubQuestionSupportResponse } from '../services/tutorStubQuestionSupport.js';
 import { deterministicTutorStubConfiguredContinuationFallback } from '../services/tutorStubResponseComposition.js';
 
 function progressionContract(overrides = {}) {
@@ -258,7 +259,71 @@ test('contract-aware no-due fallback passes live audit for forbidden and allowed
     });
     assert.equal(audit.ok, true, `${fixture.name}: ${JSON.stringify(audit.issues)}`);
     assert.equal(audit.observed.question_count, fixture.questionAllowed ? 1 : 0, fixture.name);
+    if (fixture.support) {
+      const questionSupportAudit = auditTutorStubQuestionSupportResponse({ text, support: fixture.support });
+      assert.equal(questionSupportAudit.ok, true, `${fixture.name}: ${JSON.stringify(questionSupportAudit.issues)}`);
+    }
   }
+});
+
+test('latest fixed-intent no-idea regression ends with a declarative bounded choice', () => {
+  const support = {
+    guardRequired: true,
+    modality: 'bounded_directional_choice',
+    clarificationInvitationRequired: true,
+    answerability: 'direction_only_until_evidence_is_public',
+    responsiveRepairRequired: false,
+  };
+  const learnerText = 'no idea';
+  const uptake = 'I hear the fixed-intent evidence is not clear yet, so I will keep that clue concrete.';
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame: {
+      learner_move: {
+        summary: 'The learner cannot yet interpret the fixed-intent evidence',
+        discourse_move: 'affective_signal',
+        epistemic_stance: 'confused',
+        pedagogical_need: 'guided interpretation of fixed intents',
+      },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    questionSupport: support,
+    actionFamily: 'reanchor_public_evidence',
+    tactic: 'unadorned_report',
+  });
+  const text = deterministicTutorStubConfiguredContinuationFallback({
+    uptake,
+    responseConfiguration: {
+      engagement_stance: 'plain',
+      action_family: 'reanchor_public_evidence',
+      actorial_part: 'record_keeper',
+      actorial_performance: { id: 'unadorned_report' },
+    },
+    support,
+    world: {
+      setting: 'The formulation card and fixed-intent inventory lie open on the workshop table.',
+      question: 'What should the campus FAQ tool use as its first implementation baseline?',
+    },
+    learnerText,
+    turnProgressionContract: contract,
+  });
+  const development = text.slice(uptake.length).trim();
+  const progressionAudit = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text,
+    responseComposition: { segments: { uptake, development } },
+  });
+  const questionSupportAudit = auditTutorStubQuestionSupportResponse({ text, support });
+
+  assert.equal(contract.handoff_contract.mode, 'declarative_missing_support');
+  assert.equal(contract.handoff_contract.question_allowed, false);
+  assert.doesNotMatch(text, /\?/u);
+  assert.match(text, /Choose one way forward/iu);
+  assert.match(text, /or leave that reading open/iu);
+  assert.match(text, /ask me to unpack one word or connection/iu);
+  assert.equal(progressionAudit.ok, true, JSON.stringify(progressionAudit.issues));
+  assert.equal(questionSupportAudit.ok, true, JSON.stringify(questionSupportAudit.issues));
 });
 
 test('live V1 progression binds a terminal deictic question only to its adjacent typed source', () => {

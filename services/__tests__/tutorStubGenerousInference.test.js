@@ -54,6 +54,23 @@ describe('tutor-stub generous inference', () => {
     assert.match(resolution.resolvedMeaning, /immediately preceding public question/u);
   });
 
+  for (const learnerText of ['no idea', "I don't know", 'idk', 'I cannot tell']) {
+    it(`does not misread ${JSON.stringify(learnerText)} as an answer to an open question`, () => {
+      const resolution = resolveTutorStubGenerousInference({
+        mode: 'defeasible_human_scaffold',
+        learnerText,
+        previousTutorText: 'The inventory lists twelve fixed intents. What does that show?',
+        branchId: 'baseline_chain',
+        classification: {
+          turn: { discourse_move: 'affective_signal', evidence_use: 'none', epistemic_stance: 'confused' },
+        },
+      });
+
+      assert.equal(resolution.applied, false);
+      assert.equal(resolution.reason, 'learner_did_not_make_a_clear_affirmative_move');
+    });
+  }
+
   it('does not compress a guessed identity requested by an open question', () => {
     const resolution = resolveTutorStubGenerousInference({
       mode: 'defeasible_human_scaffold',

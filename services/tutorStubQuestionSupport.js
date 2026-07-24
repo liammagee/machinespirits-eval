@@ -21,7 +21,7 @@ function labelsFor(classification = null) {
 }
 
 function isStruggle(classification = null, learnerText = '') {
-  return /confus|plain_language|repair_request|uncertain|not sure|don[’']?t know/iu.test(
+  return /confus|plain_language|repair_request|uncertain|not sure|no idea|(?:do not|don[’']t) know|(?:cannot|can[’']t) tell|\b(?:idk|dunno)\b/iu.test(
     `${labelsFor(classification)} ${learnerText}`,
   );
 }
@@ -260,7 +260,8 @@ export function auditTutorStubQuestionSupportResponse({ text = '', support = nul
       issues.push({
         type: 'missing_bounded_choice',
         reason:
-          'repeated uncertainty called for a small public-safe choice, but the draft left the learner with another unsupported open prompt',
+          'the support contract required a small public-safe choice after repeated uncertainty, but the draft did not present two recognizable options',
+        excerpt: source,
       });
     }
   }

@@ -143,15 +143,47 @@ test('terminal fallback fatal messages contain only the hard issue that blocked 
     { guard: 'actorial_realization', type: 'missing_selected_performance_tactic' },
     { guard: 'response_configuration', type: 'axis_not_visible', axis: 'engagement_stance' },
     { guard: 'response_configuration', type: 'axis_not_visible', axis: 'action_family' },
-    { guard: 'leak', type: 'private_evidence_in_public_speech' },
+    { guard: 'leak', type: 'private_evidence_in_public_speech', reason: 'Edony is concealed.' },
   ];
   const decision = decideTutorStubGuardDelivery(issues, { terminalFallback: true });
   assert.equal(decision.ok, false);
-  assert.deepEqual(decision.hardIssues, [{ guard: 'leak', type: 'private_evidence_in_public_speech' }]);
-  assert.equal(
-    tutorStubTerminalFallbackFailureMessage(decision),
-    'Tutor deterministic fallback failed final audit: leak:private_evidence_in_public_speech',
+  assert.deepEqual(decision.hardIssues, [
+    { guard: 'leak', type: 'private_evidence_in_public_speech', reason: 'Edony is concealed.' },
+  ]);
+  const message = tutorStubTerminalFallbackFailureMessage(decision, {
+    candidateText: 'The concealed answer is Edony.',
+    attemptCount: 3,
+  });
+  assert.match(message, /stopped after 3 rejected candidates/u);
+  assert.match(message, /leak:private_evidence_in_public_speech/u);
+  assert.match(message, /omitted because the failed candidate may contain non-public evidence/u);
+  assert.doesNotMatch(message, /Edony/u);
+});
+
+test('terminal fallback fatal messages explain and quote a public-safe rejected fallback', () => {
+  const candidate =
+    'Keep the fixed-intent inventory in view. We can leave the wider conclusion open until another clue arrives.';
+  const decision = decideTutorStubGuardDelivery(
+    [
+      {
+        guard: 'question_support',
+        type: 'missing_bounded_choice',
+        reason:
+          'the support contract required a small public-safe choice after repeated uncertainty, but the draft did not present two recognizable options',
+      },
+    ],
+    { terminalFallback: true },
   );
+  const message = tutorStubTerminalFallbackFailureMessage(decision, {
+    candidateText: candidate,
+    attemptCount: 3,
+    tracePath: '/tmp/tutor-trace.jsonl',
+  });
+
+  assert.match(message, /question_support:missing_bounded_choice/u);
+  assert.match(message, /did not present two recognizable options/u);
+  assert.match(message, new RegExp(JSON.stringify(candidate).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'));
+  assert.match(message, /Trace: \/tmp\/tutor-trace\.jsonl/u);
 });
 
 test('unknown and malformed findings fail closed under every boundary policy', () => {

@@ -1,7 +1,8 @@
 const ELLIPTICAL_SAME_PATTERN =
   /^(?:(?:yes[,;:]?\s*)?(?:(?:it|that|this|they|he|she|the (?:one|person|hand))\s+)?(?:will|would|must|should|could|has to|have to|is|are|was|were)?\s*(?:be\s+)?)?(?:the\s+)?same(?:\s+(?:one|person|hand|place|source))?[.!]*$/iu;
 const BINARY_REPLY_PATTERN = /^(?:yes|right|exactly|correct|no|not so)[.!]*$/iu;
-const UNCERTAINTY_OR_QUESTION_PATTERN = /\?|\b(?:maybe|perhaps|possibly|i guess|not sure|uncertain)\b/iu;
+const UNCERTAINTY_OR_QUESTION_PATTERN =
+  /\?|\b(?:maybe|perhaps|possibly|i guess|no idea|(?:i )?(?:do not|don[’']t) know|(?:i )?(?:cannot|can[’']t) tell|not sure|unsure|uncertain|confused|lost)\b|^(?:idk|dunno|shrug)[.!]*$/iu;
 const CONTRADICTION_PATTERN = /\b(?:but|however|instead|different|not the same|someone else)\b/iu;
 const CASE_CLOSING_PATTERN =
   /\b(?:culprit|guilty|verdict|final answer|who (?:struck|made|coined)|write (?:their|the) name|name the (?:person|suspect|culprit))\b/iu;
