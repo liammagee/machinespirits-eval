@@ -20,6 +20,7 @@ import {
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const VALID_SUITES = new Set(['all', 'root', 'core']);
+const CHILD_STDIO_DRAIN_GRACE_MS = 1_000;
 
 export { discoverCoreTestFiles, discoverRootTestFiles } from './hermetic-test-contract.js';
 
@@ -169,9 +170,18 @@ function phaseLabel(phase, forceExit, shard) {
   return `root Node tests (${forceExit ? 'legacy forced exit' : 'natural teardown handle audit'}${shardLabel})`;
 }
 
-function replayCapturedOutput(result) {
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
+function writeCapturedOutput(stream, output) {
+  if (!output) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    stream.write(output, (error) => (error ? reject(error) : resolve()));
+  });
+}
+
+export async function replayCapturedOutput(result, stdoutStream = process.stdout, stderrStream = process.stderr) {
+  // GitHub Actions applies backpressure to large TAP replays. Await each write
+  // so the useful failure and footer are not truncated when this process exits.
+  await writeCapturedOutput(stdoutStream, result.stdout);
+  await writeCapturedOutput(stderrStream, result.stderr);
 }
 
 export function runPhase({
@@ -196,6 +206,25 @@ export function runPhase({
     });
     const stdoutChunks = [];
     const stderrChunks = [];
+    let childResult = null;
+    let drainTimer = null;
+    let settled = false;
+
+    const finish = () => {
+      if (settled || !childResult) return;
+      settled = true;
+      if (drainTimer) clearTimeout(drainTimer);
+      // A detached descendant can keep inherited pipes open indefinitely after
+      // the test runner exits. Stop waiting after the bounded drain window.
+      child.stdout.destroy();
+      child.stderr.destroy();
+      resolve({
+        ...childResult,
+        stdout: Buffer.concat(stdoutChunks).toString('utf8'),
+        stderr: Buffer.concat(stderrChunks).toString('utf8'),
+      });
+    };
+
     child.stdout.on('data', (chunk) => {
       stdoutChunks.push(chunk);
       if (!quiet) stdoutStream.write(chunk);
@@ -205,17 +234,21 @@ export function runPhase({
       if (!quiet) stderrStream.write(chunk);
     });
     onChild(child);
-    child.once('error', reject);
-    // `exit` can fire before the child's stdio pipes have drained. Resolve on
-    // `close` so the captured TAP buffer always includes the trailing summary.
-    child.once('close', (code, signal) =>
-      resolve({
-        code: code ?? 1,
-        signal,
-        stdout: Buffer.concat(stdoutChunks).toString('utf8'),
-        stderr: Buffer.concat(stderrChunks).toString('utf8'),
-      }),
-    );
+    child.once('error', (error) => {
+      settled = true;
+      if (drainTimer) clearTimeout(drainTimer);
+      reject(error);
+    });
+    child.once('exit', (code, signal) => {
+      childResult = { code: code ?? 1, signal };
+      // Usually `close` follows immediately after stdout/stderr drain. Keep a
+      // grace period for late TAP bytes, but do not let inherited pipes hang CI.
+      drainTimer = setTimeout(finish, CHILD_STDIO_DRAIN_GRACE_MS);
+    });
+    child.once('close', (code, signal) => {
+      childResult ||= { code: code ?? 1, signal };
+      finish();
+    });
   });
 }
 
@@ -267,11 +300,11 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
       });
       currentChild = null;
       if (result.signal) {
-        if (options.quiet) replayCapturedOutput(result);
+        if (options.quiet) await replayCapturedOutput(result);
         interruptedSignal = result.signal;
         return 1;
       }
-      if (options.quiet && result.code !== 0) replayCapturedOutput(result);
+      if (options.quiet && result.code !== 0) await replayCapturedOutput(result);
       let phaseSummary;
       try {
         phaseSummary = validatePhaseSummary({
@@ -283,7 +316,7 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
           requireExactFiles: phase.selectedFiles.length > 0,
         });
       } catch (error) {
-        if (options.quiet && result.code === 0) replayCapturedOutput(result);
+        if (options.quiet && result.code === 0) await replayCapturedOutput(result);
         throw error;
       }
       printPhaseSummary(phase.phase, phaseSummary);
