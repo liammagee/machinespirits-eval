@@ -1,7 +1,7 @@
 ---
 id: refactor-forbidden-key-audit
 title: Consolidate dramatic forbidden-key auditing
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -78,3 +78,6 @@ Log:
   178-item source-only workplan check, and diff checks; generated board views
   remain outside the feature diff.
 - 2026-07-25 — Opened PR #210 with explicit workplan and ref-impact metadata.
+- 2026-07-25 — PR #210 merged at `ea7b4462`; generated source-only board
+  views were refreshed on `main` at `768d46b9`. Closed this child and handed
+  the next independent duplicate family to `refactor-field-turn-projection`.
