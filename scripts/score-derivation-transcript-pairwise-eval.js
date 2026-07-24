@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { jsonrepair } from 'jsonrepair';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_PACKET_DIR = path.join(ROOT, 'exports/dramatic-derivation/pairwise-transcript-eval');
@@ -143,74 +142,23 @@ ${packet}
 Return JSON only. Do not include markdown fences, caveats outside JSON, or guesses about runtime arm identity.`;
 }
 
-function callClaude(prompt, { model, effort }) {
-  return new Promise((resolve, reject) => {
-    const args = ['-p', '-', '--output-format', 'text'];
-    if (model) args.push('--model', model);
-    if (effort) args.push('--effort', effort);
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    delete env.CLAUDECODE;
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', reject);
-    child.on('close', (code) => (code === 0 ? resolve(out) : reject(new Error(err || out || `claude exited ${code}`))));
-    child.stdin.write(prompt);
-    child.stdin.end();
+async function callClaude(prompt, { model, effort }) {
+  return await callModelCliText({
+    provider: 'claude-code',
+    model,
+    prompt,
+    role: 'score-derivation-transcript-pairwise-eval',
+    effort,
   });
 }
 
-function callCodex(prompt, model) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-pairwise-codex-'));
-  const outFile = path.join(tmpDir, 'last-message.txt');
-  return new Promise((resolve, reject) => {
-    const args = [
-      'exec',
-      '--skip-git-repo-check',
-      '--ephemeral',
-      '--ignore-user-config',
-      '-s',
-      'read-only',
-      '-C',
-      tmpDir,
-      '--color',
-      'never',
-    ];
-    if (model) args.push('-m', model);
-    if (process.env.CODEX_REASONING_EFFORT)
-      args.push('-c', `model_reasoning_effort="${process.env.CODEX_REASONING_EFFORT}"`);
-    else args.push('-c', 'model_reasoning_effort="medium"');
-    args.push('-o', outFile, '-');
-    const child = spawn('codex', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
-    let err = '';
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', (error) => {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-      reject(error);
-    });
-    child.on('close', (code) => {
-      try {
-        if (code !== 0) throw new Error(err || `codex exited ${code}`);
-        const out = fs.readFileSync(outFile, 'utf8');
-        resolve(out);
-      } catch (error) {
-        reject(error);
-      } finally {
-        fs.rmSync(tmpDir, { recursive: true, force: true });
-      }
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
+async function callCodex(prompt, model) {
+  return await callModelCliText({
+    provider: 'codex',
+    model,
+    prompt,
+    role: 'score-derivation-transcript-pairwise-eval',
+    effort: process.env.CODEX_REASONING_EFFORT || 'medium',
   });
 }
 

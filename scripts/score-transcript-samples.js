@@ -21,7 +21,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DIR = path.resolve(__dirname, '..', 'logs', 'transcript-samples');
@@ -92,40 +92,15 @@ function discoverPairs(dir, filter) {
 
 // ── Call claude judge ───────────────────────────────────────────────────────
 
-function callJudge(promptText, model, verbose) {
-  return new Promise((resolve, reject) => {
-    const claudeArgs = ['-p', '-', '--output-format', 'text'];
-    if (model) claudeArgs.push('--model', model);
-
-    const env = { ...process.env };
-    // Avoid nested-session detection
-    delete env.CLAUDE_CODE;
-    delete env.CLAUDECODE;
-
-    const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', reject);
-    child.on('close', (code) => {
-      if (verbose) {
-        console.log(`  [stdout] ${out.slice(0, 300)}`);
-        if (err) console.log(`  [stderr] ${err.slice(0, 200)}`);
-      }
-      if (code !== 0) {
-        reject(new Error(err || out || `claude exited with code ${code}`));
-      } else {
-        resolve(out);
-      }
-    });
-    child.stdin.write(promptText);
-    child.stdin.end();
+async function callJudge(promptText, model, verbose) {
+  const out = await callModelCliText({
+    provider: 'claude-code',
+    model,
+    prompt: promptText,
+    role: 'score-transcript-samples',
   });
+  if (verbose) console.log(`  [stdout] ${out.slice(0, 300)}`);
+  return out;
 }
 
 // ── Parse judge JSON ────────────────────────────────────────────────────────

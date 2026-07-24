@@ -21,13 +21,14 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import Database from 'better-sqlite3';
 import yaml from 'yaml';
 import { jsonrepair } from 'jsonrepair';
 import { detectCliVersion, modelProvenance } from './lib/cliProvenance.js';
+import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { callExternalModelCliText } from '../services/modelCliProcessPolicy.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1626,224 +1627,92 @@ export async function callBackend(backend, prompts, options, role) {
   throw new Error(`unsupported backend for call: ${backend}`);
 }
 
-function callCodex({ systemPrompt, userPrompt }, options, role) {
+async function callCodex({ systemPrompt, userPrompt }, options, role) {
   const start = Date.now();
-  return new Promise((resolve, reject) => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-codex-'));
-    const outFile = path.join(tmpDir, 'out.txt');
-    const cleanup = () => fs.rmSync(tmpDir, { recursive: true, force: true });
-    const args = [
-      'exec',
-      '--skip-git-repo-check',
-      '--ephemeral',
-      '--ignore-user-config',
-      '-s',
-      'read-only',
-      '-C',
-      tmpDir,
-      '--color',
-      'never',
-    ];
-    if (options.codexModel) args.push('-m', options.codexModel);
-    if (options.codexEffort) args.push('-c', `model_reasoning_effort="${options.codexEffort}"`);
-    args.push('-o', outFile, '-');
-    const cliVersion = detectCliVersion('codex');
-
-    const child = spawn('codex', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir });
-    let err = '';
-    const timer = setTimeout(() => {
-      child.kill('SIGKILL');
-      cleanup();
-      reject(new Error(`codex timed out after ${options.timeoutMs}ms (${role})`));
-    }, options.timeoutMs);
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (error) => {
-      clearTimeout(timer);
-      cleanup();
-      reject(error);
-    });
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      let content = '';
-      try {
-        content = fs.readFileSync(outFile, 'utf8');
-      } catch {
-        // missing output handled below
-      }
-      cleanup();
-      if (code !== 0 && !content.trim()) {
-        reject(new Error(err.trim() || `codex exited ${code} (${role})`));
-      } else {
-        resolve({
-          content: content.trim(),
-          provenance: {
-            backend: 'codex',
-            cli: 'codex exec',
-            cliVersion,
-            role,
-            ...modelProvenance({
-              requestedModel: options.codexModel || null,
-              defaultLabel: 'config-default',
-              effort: options.codexEffort || null,
-              effortSource: options.codexEffort ? 'CODEX_REASONING_EFFORT_or_cli_arg' : null,
-            }),
-            latencyMs: Date.now() - start,
-            promptHashes: {
-              system: sha256Short(systemPrompt),
-              user: sha256Short(userPrompt),
-            },
-            args,
-          },
-        });
-      }
-    });
-    child.stdin.write(`${systemPrompt}\n\n---\n\n${userPrompt}`);
-    child.stdin.end();
-  });
+  const cliVersion = detectCliVersion('codex');
+  const result = await callAIWithCliBridge(
+    { provider: 'codex', model: options.codexModel },
+    systemPrompt,
+    userPrompt,
+    role,
+    { timeoutMs: options.timeoutMs, effort: options.codexEffort },
+  );
+  return {
+    content: result.text,
+    provenance: {
+      backend: 'codex',
+      cli: 'codex exec',
+      cliVersion,
+      role,
+      ...modelProvenance({
+        requestedModel: options.codexModel || null,
+        defaultLabel: 'config-default',
+        effort: options.codexEffort || null,
+        effortSource: options.codexEffort ? 'CODEX_REASONING_EFFORT_or_cli_arg' : null,
+      }),
+      latencyMs: Date.now() - start,
+      promptHashes: { system: sha256Short(systemPrompt), user: sha256Short(userPrompt) },
+      args: ['central-cli-provider-bridge'],
+    },
+  };
 }
 
-function callClaude({ systemPrompt, userPrompt }, options, role) {
+async function callClaude({ systemPrompt, userPrompt }, options, role) {
   const start = Date.now();
-  return new Promise((resolve, reject) => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-claude-'));
-    const cleanup = () => fs.rmSync(tmpDir, { recursive: true, force: true });
-    const args = [
-      '--no-session-persistence',
-      '--disable-slash-commands',
-      '--no-chrome',
-      '--setting-sources',
-      'user',
-      '--tools',
-      '',
-      '-p',
-      '-',
-      '--output-format',
-      'text',
-      '--system-prompt',
-      systemPrompt,
-    ];
-    if (options.claudeModel) args.push('--model', options.claudeModel);
-    if (options.claudeEffort) args.push('--effort', options.claudeEffort);
-    const cliVersion = detectCliVersion('claude');
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY;
-
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], cwd: tmpDir, env });
-    let out = '';
-    let err = '';
-    const timer = setTimeout(() => {
-      child.kill('SIGKILL');
-      cleanup();
-      reject(new Error(`claude timed out after ${options.timeoutMs}ms (${role})`));
-    }, options.timeoutMs);
-    child.stdout.on('data', (d) => (out += d));
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (error) => {
-      clearTimeout(timer);
-      cleanup();
-      reject(error);
-    });
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      cleanup();
-      if (code !== 0) {
-        reject(new Error(err.trim() || out.trim() || `claude exited ${code} (${role})`));
-      } else {
-        resolve({
-          content: out.trim(),
-          provenance: {
-            backend: 'claude',
-            cli: 'claude',
-            cliVersion,
-            role,
-            ...modelProvenance({
-              requestedModel: options.claudeModel || null,
-              defaultLabel: 'default',
-              effort: options.claudeEffort || null,
-              effortSource: options.claudeEffort ? 'CLAUDE_CODE_EFFORT_or_cli_arg' : null,
-            }),
-            latencyMs: Date.now() - start,
-            promptHashes: {
-              system: sha256Short(systemPrompt),
-              user: sha256Short(userPrompt),
-            },
-            args: [
-              '-p',
-              '-',
-              '--output-format',
-              'text',
-              '--system-prompt',
-              `<sha256:${sha256Short(systemPrompt)}>`,
-              ...(options.claudeModel ? ['--model', options.claudeModel] : []),
-              ...(options.claudeEffort ? ['--effort', options.claudeEffort] : []),
-            ],
-          },
-        });
-      }
-    });
-    child.stdin.write(userPrompt);
-    child.stdin.end();
-  });
+  const cliVersion = detectCliVersion('claude');
+  const result = await callAIWithCliBridge(
+    { provider: 'claude-code', model: options.claudeModel },
+    systemPrompt,
+    userPrompt,
+    role,
+    { timeoutMs: options.timeoutMs, effort: options.claudeEffort },
+  );
+  return {
+    content: result.text,
+    provenance: {
+      backend: 'claude',
+      cli: 'claude',
+      cliVersion,
+      role,
+      ...modelProvenance({
+        requestedModel: options.claudeModel || null,
+        defaultLabel: 'default',
+        effort: options.claudeEffort || null,
+        effortSource: options.claudeEffort ? 'CLAUDE_CODE_EFFORT_or_cli_arg' : null,
+      }),
+      latencyMs: Date.now() - start,
+      promptHashes: { system: sha256Short(systemPrompt), user: sha256Short(userPrompt) },
+      args: ['central-cli-provider-bridge', `<system-sha256:${sha256Short(systemPrompt)}>`],
+    },
+  };
 }
 
-function callAgy({ systemPrompt, userPrompt }, options, role) {
+async function callAgy({ systemPrompt, userPrompt }, options, role) {
   const start = Date.now();
-  return new Promise((resolve, reject) => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'disc-replay-agy-'));
-    const cleanup = () => fs.rmSync(tmpDir, { recursive: true, force: true });
-    const timeoutMs = Math.max(options.timeoutMs, DEFAULT_AGY_TIMEOUT_MS);
-    const args = ['--print', '--print-timeout', '10m', '--dangerously-skip-permissions'];
-    const cliVersion = detectCliVersion(options.agyBin);
-    const child = spawn(options.agyBin, args, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      cwd: tmpDir,
-      env: { ...process.env },
-    });
-    let out = '';
-    let err = '';
-    const timer = setTimeout(() => {
-      child.kill('SIGKILL');
-      cleanup();
-      reject(new Error(`agy timed out after ${timeoutMs}ms (${role}, outBytes=${out.length})`));
-    }, timeoutMs);
-    child.stdout.on('data', (d) => (out += d));
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (error) => {
-      clearTimeout(timer);
-      cleanup();
-      reject(error);
-    });
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      cleanup();
-      if (code !== 0) {
-        reject(new Error(err.trim() || out.trim() || `agy exited ${code} (${role})`));
-      } else {
-        resolve({
-          content: out.trim(),
-          provenance: {
-            backend: 'agy',
-            cli: 'agy',
-            cliVersion,
-            role,
-            ...modelProvenance({
-              requestedModel: options.agyModelLabel || null,
-              defaultLabel: 'agy-default',
-              effort: null,
-            }),
-            latencyMs: Date.now() - start,
-            promptHashes: {
-              system: sha256Short(systemPrompt),
-              user: sha256Short(userPrompt),
-            },
-            args,
-          },
-        });
-      }
-    });
-    child.stdin.write(`${systemPrompt}\n\n---\n\n${userPrompt}`);
-    child.stdin.end();
+  const timeoutMs = Math.max(options.timeoutMs, DEFAULT_AGY_TIMEOUT_MS);
+  const args = ['--print', '--print-timeout', '10m'];
+  const cliVersion = detectCliVersion(options.agyBin);
+  const result = await callExternalModelCliText({
+    provider: 'agy',
+    command: options.agyBin,
+    args,
+    prompt: `${systemPrompt}\n\n---\n\n${userPrompt}`,
+    role,
+    timeoutMs,
   });
+  return {
+    content: result.text,
+    provenance: {
+      backend: 'agy',
+      cli: 'agy',
+      cliVersion,
+      role,
+      ...modelProvenance({ requestedModel: options.agyModelLabel || null, defaultLabel: 'agy-default', effort: null }),
+      latencyMs: Date.now() - start,
+      promptHashes: { system: sha256Short(systemPrompt), user: sha256Short(userPrompt) },
+      args: [...args, '--sandbox'],
+    },
+  };
 }
 
 async function generateRoleSeparatedRevision({ item, publicTranscript, policyMemoryText, args, itemDir }) {

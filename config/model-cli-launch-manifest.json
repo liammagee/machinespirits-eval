@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "launches": [
+    {
+      "id": "bridge-codex-version-probe",
+      "file": "services/cliProviderBridge.js",
+      "classification": "active-non-interactive-metadata",
+      "anchor": "spawnSync('codex', ['--version']",
+      "expectedOccurrences": 1,
+      "policy": "provider allowlist, bounded timeout and output"
+    },
+    {
+      "id": "bridge-one-shot-model-calls",
+      "file": "services/cliProviderBridge.js",
+      "classification": "active-non-interactive",
+      "anchor": "spawnImpl(command, args",
+      "expectedOccurrences": 3,
+      "policy": "provider allowlist, fresh temporary cwd, no-tools controls, bounded output"
+    },
+    {
+      "id": "central-retained-launch-policy",
+      "file": "services/modelCliProcessPolicy.js",
+      "classification": "persistent-and-user-authorized-policy",
+      "anchor": "spawnImpl(plan.command, plan.args",
+      "expectedOccurrences": 1,
+      "policy": "explicit launch mode, provider allowlist, cwd and tool-authority declaration"
+    },
+    {
+      "id": "interactive-codex-session",
+      "file": "services/codexSessionService.js",
+      "classification": "interactive-user-authorized",
+      "anchor": "pty.spawn(launch.command, launch.args",
+      "expectedOccurrences": 1,
+      "policy": "central interactive-user-authorized plan with provider allowlist"
+    },
+    {
+      "id": "archived-judge-prompt-inspector",
+      "file": "scripts/archive/oneoff/inspect-judge-prompt.js",
+      "classification": "archival",
+      "anchor": "spawn('claude', claudeArgs",
+      "expectedOccurrences": 1,
+      "policy": "historical one-off retained unchanged; do not execute as an active workflow"
+    }
+  ]
+}

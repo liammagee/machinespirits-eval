@@ -1,10 +1,8 @@
-import fs from 'fs';
-import path from 'path';
-import { spawn } from 'child_process';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import { extractTutorMessage } from './learnerTutorInteractionEngine.js';
 import { buildCurriculumPromptBlock, buildDirectorPromptBlock } from './legacyChatCurriculum.js';
 import { loadPromptFile } from './legacyChatPromptLoader.js';
+import { callModelCliText } from './cliProviderBridge.js';
 
 const INTERFACE_AFFORDANCE = `==============================
 INTERFACE CONSTRAINTS (read carefully)
@@ -72,83 +70,22 @@ export function callCli(cli, { system, user }) {
 async function callClaudeCli({ system, user, model = null, effort = null }) {
   const fullPrompt = `${system}\n\n---\n\n${user}`;
   const start = Date.now();
-  // Note: we do NOT pass --bare because that disables keychain auth (the user's
-  // Claude subscription). We disable all tools so the ego/superego stay pure
-  // text generators, and --no-session-persistence keeps the CLI from polluting
-  // the resume history with chat turns.
-  const args = [
-    '-p',
-    fullPrompt,
-    '--model',
-    model || CLAUDE_CLI_MODEL,
-    '--output-format',
-    'json',
-    '--no-session-persistence',
-    '--disallowedTools',
-    'Bash,Edit,Write,Read,Grep,Glob,WebFetch,WebSearch,Task,NotebookEdit,AskUserQuestion',
-  ];
-  if (effort) args.push('--effort', effort);
-  return new Promise((resolve, reject) => {
-    const proc = spawn(CLAUDE_CLI_BIN, args, { stdio: ['ignore', 'pipe', 'pipe'] });
-    let stdout = '';
-    let stderr = '';
-    const timer = setTimeout(() => {
-      try {
-        proc.kill('SIGKILL');
-      } catch {
-        /* already exited */
-      }
-      reject(new Error(`claude CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms`));
-    }, CLAUDE_CLI_TIMEOUT_MS);
-    proc.stdout.on('data', (d) => {
-      stdout += d.toString();
-    });
-    proc.stderr.on('data', (d) => {
-      stderr += d.toString();
-    });
-    proc.on('error', (err) => {
-      clearTimeout(timer);
-      reject(err);
-    });
-    proc.on('close', (code) => {
-      clearTimeout(timer);
-      const latencyMs = Date.now() - start;
-      if (code !== 0) {
-        return reject(new Error(`claude CLI exited ${code}: ${stderr.slice(0, 400)}`));
-      }
-      // --output-format json emits an array of stream events. Find the final
-      // {type:"result", subtype:"success"} entry and read its .result field.
-      let content = '';
-      let inputTokens = 0;
-      let outputTokens = 0;
-      let costUsd = 0;
-      try {
-        const payload = JSON.parse(stdout.trim());
-        if (Array.isArray(payload)) {
-          const resultEvent = [...payload].reverse().find((e) => e?.type === 'result');
-          if (resultEvent) {
-            if (resultEvent.is_error) {
-              return reject(new Error(`claude CLI error: ${resultEvent.result || 'unknown'}`));
-            }
-            content = String(resultEvent.result || '').trim();
-            inputTokens = resultEvent.usage?.input_tokens || 0;
-            outputTokens = resultEvent.usage?.output_tokens || 0;
-            costUsd = resultEvent.total_cost_usd || 0;
-          }
-        } else {
-          // single-object format (fallback)
-          content = String(payload.result ?? payload.text ?? payload.content ?? '').trim();
-          inputTokens = payload.usage?.input_tokens || 0;
-          outputTokens = payload.usage?.output_tokens || 0;
-        }
-      } catch {
-        content = stdout.trim();
-      }
-      if (!inputTokens) inputTokens = Math.ceil(fullPrompt.length / 4);
-      if (!outputTokens) outputTokens = Math.ceil(content.length / 4);
-      resolve({ content, latencyMs, inputTokens, outputTokens, costUsd });
-    });
+  const content = await callModelCliText({
+    provider: 'claude-code',
+    model: model || CLAUDE_CLI_MODEL,
+    prompt: fullPrompt,
+    effort,
+    executable: CLAUDE_CLI_BIN,
+    timeoutMs: CLAUDE_CLI_TIMEOUT_MS,
+    role: 'legacy-chat',
   });
+  return {
+    content,
+    latencyMs: Date.now() - start,
+    inputTokens: Math.ceil(fullPrompt.length / 4),
+    outputTokens: Math.ceil(content.length / 4),
+    costUsd: 0,
+  };
 }
 
 // Codex CLI substrate: `codex exec` as a pure text generator. read-only
@@ -159,68 +96,23 @@ async function callClaudeCli({ system, user, model = null, effort = null }) {
 async function callCodexCli({ system, user, model = null, effort = null }) {
   const fullPrompt = `${system}\n\n---\n\n${user}`;
   const start = Date.now();
-  const outFile = path.join(
-    fs.mkdtempSync(path.join(process.env.TMPDIR || '/tmp', 'ms-chat-codex-')),
-    'last-message.txt',
-  );
-  const args = ['exec', '--sandbox', 'read-only', '--skip-git-repo-check', '--color', 'never', '-o', outFile];
   const chosenModel = model || CODEX_CLI_MODEL;
-  if (chosenModel) args.push('-m', chosenModel);
-  if (effort) args.push('-c', `model_reasoning_effort="${effort}"`);
-  args.push(fullPrompt);
-  return new Promise((resolve, reject) => {
-    const proc = spawn(CODEX_CLI_BIN, args, { stdio: ['ignore', 'pipe', 'pipe'] });
-    let stderr = '';
-    const cleanup = () => {
-      try {
-        fs.rmSync(path.dirname(outFile), { recursive: true, force: true });
-      } catch {
-        /* best effort */
-      }
-    };
-    const timer = setTimeout(() => {
-      try {
-        proc.kill('SIGKILL');
-      } catch {
-        /* already exited */
-      }
-      cleanup();
-      reject(new Error(`codex CLI timed out after ${CLAUDE_CLI_TIMEOUT_MS}ms`));
-    }, CLAUDE_CLI_TIMEOUT_MS);
-    proc.stdout.on('data', () => {});
-    proc.stderr.on('data', (d) => {
-      stderr += d.toString();
-    });
-    proc.on('error', (err) => {
-      clearTimeout(timer);
-      cleanup();
-      reject(err);
-    });
-    proc.on('close', (code) => {
-      clearTimeout(timer);
-      const latencyMs = Date.now() - start;
-      let content = '';
-      try {
-        content = fs.readFileSync(outFile, 'utf8').trim();
-      } catch {
-        content = '';
-      }
-      cleanup();
-      if (code !== 0) {
-        return reject(new Error(`codex CLI exited ${code}: ${stderr.slice(0, 400)}`));
-      }
-      if (!content) {
-        return reject(new Error(`codex CLI returned no output: ${stderr.slice(0, 400)}`));
-      }
-      resolve({
-        content,
-        latencyMs,
-        inputTokens: Math.ceil(fullPrompt.length / 4),
-        outputTokens: Math.ceil(content.length / 4),
-        costUsd: 0,
-      });
-    });
+  const content = await callModelCliText({
+    provider: 'codex',
+    model: chosenModel,
+    prompt: fullPrompt,
+    effort,
+    executable: CODEX_CLI_BIN,
+    timeoutMs: CLAUDE_CLI_TIMEOUT_MS,
+    role: 'legacy-chat',
   });
+  return {
+    content,
+    latencyMs: Date.now() - start,
+    inputTokens: Math.ceil(fullPrompt.length / 4),
+    outputTokens: Math.ceil(content.length / 4),
+    costUsd: 0,
+  };
 }
 
 export async function callModel(apiKey, { modelId, system, user, temperature, maxTokens }) {

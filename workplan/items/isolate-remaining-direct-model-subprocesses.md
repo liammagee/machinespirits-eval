@@ -1,7 +1,7 @@
 ---
 id: isolate-remaining-direct-model-subprocesses
 title: Route reviewed production model adapters through one isolation boundary
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -14,6 +14,8 @@ verification: The three production adapters named by the refactoring review use
 depends_on:
   - harden-cli-provider-process-isolation
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/199
   code:
     - services/rubricEvaluator.js
     - services/adaptiveTutor/realLLM.js
@@ -69,3 +71,6 @@ Log:
   three production adapters named by the review plan. Those are preserved as a
   separate P1 follow-up rather than being silently bundled into this refactor
   dependency.
+- 2026-07-24 — PR #199 merged to `main` after all required checks passed; the
+  production-adapter boundary is integrated and its follow-up dependency is
+  unblocked.

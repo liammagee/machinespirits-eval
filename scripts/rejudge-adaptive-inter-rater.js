@@ -48,7 +48,7 @@
 
 import path from 'node:path';
 import fs from 'node:fs';
-import { spawn } from 'node:child_process';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { GRADER_VERSION, buildPrompt, extractJsonEnvelope } from './lib/adaptiveGraderPrompt.js';
@@ -167,42 +167,12 @@ function loadTrace(dialogueId) {
 function judgeLabel() {
   return `${ARGS.judgeCli}-cli.${ARGS.judgeCliModel || 'default'}`;
 }
-function cliInvocation() {
-  if (ARGS.judgeCli === 'gemini') {
-    const args = ['-s', '-o', 'text'];
-    if (ARGS.judgeCliModel) args.push('-m', ARGS.judgeCliModel);
-    return { bin: 'gemini', args, env: { ...process.env } };
-  }
-  if (ARGS.judgeCli === 'codex') {
-    const args = ['exec', '-'];
-    if (ARGS.judgeCliModel) args.push('-m', ARGS.judgeCliModel);
-    return { bin: 'codex', args, env: { ...process.env } };
-  }
-  // claude: use the subscription bridge — strip API-key/recursion env so it
-  // doesn't bill the API or trip the in-session guard.
-  const args = ['-p', '-', '--output-format', 'text'];
-  if (ARGS.judgeCliModel) args.push('--model', ARGS.judgeCliModel);
-  const env = { ...process.env };
-  delete env.ANTHROPIC_API_KEY;
-  delete env.CLAUDECODE;
-  return { bin: 'claude', args, env };
-}
 async function callJudge(prompt) {
-  const { bin, args, env } = cliInvocation();
-  const stdout = await new Promise((resolve, reject) => {
-    const child = spawn(bin, args, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '',
-      err = '';
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', reject);
-    child.on('close', (code) => (code !== 0 ? reject(new Error(err || out || `${bin} exit ${code}`)) : resolve(out)));
-    child.stdin.write(prompt);
-    child.stdin.end();
+  const stdout = await callModelCliText({
+    provider: ARGS.judgeCli,
+    model: ARGS.judgeCliModel,
+    prompt,
+    role: 'rejudge-adaptive-inter-rater',
   });
   return { parsed: extractJsonEnvelope(stdout), rawStdout: stdout };
 }

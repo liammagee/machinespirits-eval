@@ -10,13 +10,13 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import yaml from 'yaml';
 import { matchesAny } from './blind-option-adjudication.js';
 import { classifyCardVerdict } from './validate-teaching-drama-axiom-protocol.js';
 import { detectCliVersion, modelProvenance } from './lib/cliProvenance.js';
+import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -343,44 +343,15 @@ const FREE_TEXT_SYSTEM_PROMPT = [
   'Extract the final committed tutor repair as JSON. Do not decide whether it is correct.',
 ].join(' ');
 
-function callClaudeCli(systemPrompt, userPrompt, model) {
-  return new Promise((resolve, reject) => {
-    const cmd = ['-p', '-', '--output-format', 'text', '--system-prompt', systemPrompt];
-    if (model) cmd.push('--model', model);
-    const env = { ...process.env };
-    delete env.CLAUDE_CODE;
-    delete env.CLAUDECODE;
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    const child = spawn('claude', cmd, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '';
-    let err = '';
-    const timer = setTimeout(() => {
-      try {
-        child.kill('SIGKILL');
-      } catch {
-        /* gone */
-      }
-      reject(new Error(`claude CLI timed out after ${CLI_TIMEOUT_MS}ms`));
-    }, CLI_TIMEOUT_MS);
-    child.stdout.on('data', (data) => {
-      out += data;
-    });
-    child.stderr.on('data', (data) => {
-      err += data;
-    });
-    child.on('error', (error) => {
-      clearTimeout(timer);
-      reject(error);
-    });
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      if (code !== 0) reject(new Error(err.trim() || out.trim() || `claude CLI exited ${code}`));
-      else resolve(out.trim());
-    });
-    child.stdin.write(userPrompt);
-    child.stdin.end();
-  });
+async function callClaudeCli(systemPrompt, userPrompt, model) {
+  const result = await callAIWithCliBridge(
+    { provider: 'claude-code', model },
+    systemPrompt,
+    userPrompt,
+    'blind-teaching-drama-axiom-adjudication',
+    { timeoutMs: CLI_TIMEOUT_MS },
+  );
+  return result.text;
 }
 
 async function callClaudeCliWithRetry(systemPrompt, userPrompt, model, attempts = CLI_ATTEMPTS) {

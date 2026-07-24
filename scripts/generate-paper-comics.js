@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
+import { spawnModelCliProcess } from '../services/modelCliProcessPolicy.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -1766,13 +1767,14 @@ async function runCodex(prompt, opts, resolved) {
   console.log(`Launching ${opts.codexBin} ${args.join(' ')}`);
 
   await new Promise((resolve, reject) => {
-    const child = spawn(opts.codexBin, args, {
+    const { child } = spawnModelCliProcess({
+      provider: 'codex',
+      command: opts.codexBin,
+      args,
+      mode: 'agentic-batch-user-authorized',
       cwd: ROOT,
-      stdio: ['pipe', 'inherit', 'inherit'],
-      env: {
-        ...process.env,
-        CODEX_GENERATED_PAPER_COMICS: '1',
-      },
+      envOverrides: { CODEX_GENERATED_PAPER_COMICS: '1' },
+      allowTools: true,
     });
     let settled = false;
     const finish = (fn, value) => {

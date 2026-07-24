@@ -40,10 +40,10 @@
 
 import path from 'node:path';
 import fs from 'node:fs';
-import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { GRADER_VERSION, buildPrompt, extractJsonEnvelope } from './lib/adaptiveGraderPrompt.js';
+import { callAIWithCliBridge, callModelCliText } from '../services/cliProviderBridge.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -143,29 +143,12 @@ function loadTrace(dialogueId) {
 
 // ─────────────────────────────────────── codex CLI call
 async function callCodex(prompt) {
-  const cliArgs = ['exec', '-'];
-  if (ARGS.model) cliArgs.push('-m', ARGS.model);
-  const cliEnv = { ...process.env };
-
-  const stdout = await new Promise((resolve, reject) => {
-    const child = spawn('codex', cliArgs, { stdio: ['pipe', 'pipe', 'pipe'], env: cliEnv });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', reject);
-    child.on('close', (code) => {
-      if (code !== 0) reject(new Error(err || out || `codex exited with code ${code}`));
-      else resolve(out);
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
+  const stdout = await callModelCliText({
+    provider: 'codex',
+    model: ARGS.model,
+    prompt,
+    role: 'grade-adaptive-dialogue',
   });
-
   return { parsed: extractJsonEnvelope(stdout), rawStdout: stdout };
 }
 
@@ -182,44 +165,14 @@ const CLAUDE_JUDGE_TIMEOUT_MS = 300_000;
 
 async function callClaudeCode(prompt) {
   const cliModel = ARGS.model.replace(/^claude-code\//u, '');
-  const args = ['-p', '-', '--output-format', 'text', '--system-prompt', CLAUDE_JUDGE_SYSTEM];
-  if (cliModel) args.push('--model', cliModel);
-  const env = { ...process.env };
-  delete env.CLAUDE_CODE;
-  delete env.CLAUDECODE;
-  delete env.ANTHROPIC_API_KEY;
-  delete env.ANTHROPIC_AUTH_TOKEN;
-
-  const stdout = await new Promise((resolve, reject) => {
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '';
-    let err = '';
-    const timer = setTimeout(() => {
-      try {
-        child.kill('SIGKILL');
-      } catch (_) {
-        /* already gone */
-      }
-      reject(new Error(`claude CLI timed out after ${CLAUDE_JUDGE_TIMEOUT_MS}ms`));
-    }, CLAUDE_JUDGE_TIMEOUT_MS);
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', (e) => {
-      clearTimeout(timer);
-      reject(e);
-    });
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      if (code !== 0) reject(new Error(err || out || `claude CLI exited with code ${code}`));
-      else resolve(out);
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
-  });
+  const result = await callAIWithCliBridge(
+    { provider: 'claude-code', model: cliModel },
+    CLAUDE_JUDGE_SYSTEM,
+    prompt,
+    'grade-adaptive-dialogue',
+    { timeoutMs: CLAUDE_JUDGE_TIMEOUT_MS },
+  );
+  const stdout = result.text;
 
   return { parsed: extractJsonEnvelope(stdout), rawStdout: stdout };
 }

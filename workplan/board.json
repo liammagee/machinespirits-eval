@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-24T21:28:13.199Z",
+  "generated": "2026-07-24T21:41:37.288Z",
   "counts": {
     "total": 175,
     "byStatus": {
-      "done": 144,
+      "done": 145,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 18,
+      "triaged": 17,
       "active": 2,
       "archived": 4,
       "review": 2
@@ -47,39 +47,6 @@
           "tutor-stub-unified-session-surface"
         ]
       }
-    },
-    {
-      "id": "isolate-legacy-and-script-model-subprocesses",
-      "title": "Classify and isolate legacy and research-script model subprocesses",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-24",
-      "updated": "2026-07-24",
-      "verification": "A checked repository-wide launch manifest accounts for every remaining model CLI subprocess; active non-interactive calls use the shared fail-closed bridge, while explicit interactive or persistent exceptions use reviewed least-privilege launch policies and pass secret-canary tests.",
-      "depends_on": [
-        "isolate-remaining-direct-model-subprocesses"
-      ],
-      "links": {
-        "code": [
-          "services/legacyChatTutorEngine.js",
-          "services/evaluationRunner.js",
-          "scripts/generate-pedagogical-dramas.js",
-          "scripts/replay-discursive-transcript.js"
-        ],
-        "items": [
-          "isolate-remaining-direct-model-subprocesses"
-        ]
-      },
-      "tags": [
-        "security",
-        "providers",
-        "process-isolation",
-        "scripts"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "upgrade-electron-and-rebuild-toolchain-past-audited-advisori",
@@ -698,38 +665,45 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "isolate-remaining-direct-model-subprocesses",
-      "title": "Route reviewed production model adapters through one isolation boundary",
+      "id": "isolate-legacy-and-script-model-subprocesses",
+      "title": "Classify and isolate legacy and research-script model subprocesses",
       "status": "review",
       "type": "infra",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
-      "created": "2026-07-23",
+      "created": "2026-07-24",
       "updated": "2026-07-24",
-      "verification": "The three production adapters named by the refactoring review use the shared provider environment allowlist and fail-closed event policy; a service-spawn regression and secret-canary tests cover each migrated adapter.",
+      "verification": "A checked repository-wide launch manifest accounts for every remaining model CLI subprocess; active non-interactive calls use the shared fail-closed bridge, while explicit interactive or persistent exceptions use reviewed least-privilege launch policies and pass secret-canary tests.",
       "depends_on": [
-        "harden-cli-provider-process-isolation"
+        "isolate-remaining-direct-model-subprocesses"
       ],
       "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/204"
+        ],
         "code": [
-          "services/rubricEvaluator.js",
-          "services/adaptiveTutor/realLLM.js",
-          "services/dramaticDerivation/llmClient.js"
+          "services/cliProviderBridge.js",
+          "services/modelCliProcessPolicy.js",
+          "services/legacyChatTutorEngine.js",
+          "services/evaluationRunner.js",
+          "config/model-cli-launch-manifest.json",
+          "scripts/check-model-cli-launches.js",
+          "scripts/generate-pedagogical-dramas.js",
+          "scripts/replay-discursive-transcript.js"
         ],
         "items": [
-          "harden-cli-provider-process-isolation",
-          "isolate-legacy-and-script-model-subprocesses"
+          "isolate-remaining-direct-model-subprocesses"
         ]
       },
       "tags": [
         "security",
         "providers",
         "process-isolation",
-        "secrets"
+        "scripts"
       ],
       "milestone": "evaluation-infrastructure",
-      "branch": "codex/isolate-remaining-direct-model-subprocesses"
+      "branch": "codex/isolate-legacy-and-script-model-subprocesses"
     },
     {
       "id": "refactor-adaptive-trace-projection",
@@ -1520,6 +1494,43 @@
         "evaluation-infrastructure"
       ],
       "milestone": "impasse-program-v1"
+    },
+    {
+      "id": "isolate-remaining-direct-model-subprocesses",
+      "title": "Route reviewed production model adapters through one isolation boundary",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-23",
+      "updated": "2026-07-24",
+      "verification": "The three production adapters named by the refactoring review use the shared provider environment allowlist and fail-closed event policy; a service-spawn regression and secret-canary tests cover each migrated adapter.",
+      "depends_on": [
+        "harden-cli-provider-process-isolation"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/199"
+        ],
+        "code": [
+          "services/rubricEvaluator.js",
+          "services/adaptiveTutor/realLLM.js",
+          "services/dramaticDerivation/llmClient.js"
+        ],
+        "items": [
+          "harden-cli-provider-process-isolation",
+          "isolate-legacy-and-script-model-subprocesses"
+        ]
+      },
+      "tags": [
+        "security",
+        "providers",
+        "process-isolation",
+        "secrets"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "codex/isolate-remaining-direct-model-subprocesses"
     },
     {
       "id": "layered-decision-loops",

@@ -44,6 +44,8 @@ describe('codexSessionService', () => {
     assert.equal(session.command, 'codex');
     assert.deepEqual(session.args, ['--help']);
     assert.equal(session.status, 'running');
+    assert.equal(session.launchPolicy.mode, 'interactive-user-authorized');
+    assert.equal(session.launchPolicy.environment, 'provider-allowlist');
 
     // 2. List & Get
     const list = listCodexSessions();
@@ -97,6 +99,10 @@ describe('codexSessionService', () => {
 
     assert.throws(() => writeCodexSessionInput(session.id, 123), /must be a string/);
     assert.throws(() => writeCodexSessionInput('missing', 'test'), /not found/);
+    assert.throws(
+      () => createCodexSession({ env: { UNRELATED_SECRET: 'canary' } }),
+      /do not accept arbitrary environment overrides/,
+    );
   });
 
   it('reuses capacity immediately after a process exits while retaining its history', () => {

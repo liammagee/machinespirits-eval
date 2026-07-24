@@ -3,7 +3,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn, spawnSync } from 'child_process';
+import { spawnSync } from 'child_process';
+import { spawnModelCliProcess } from '../services/modelCliProcessPolicy.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -455,10 +456,13 @@ function main() {
   );
 
   console.log('Launching Codex interactive session...');
-  const codex = spawn('codex', codexArgs, {
+  const { child: codex } = spawnModelCliProcess({
+    provider: 'codex',
+    args: codexArgs,
+    mode: 'interactive-user-authorized',
     cwd: ROOT,
+    allowTools: true,
     stdio: 'inherit',
-    env: process.env,
   });
 
   codex.on('error', (error) => {

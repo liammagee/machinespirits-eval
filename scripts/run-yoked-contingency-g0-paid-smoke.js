@@ -10,9 +10,10 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { jsonrepair } from 'jsonrepair';
+import { callAIWithCliBridge, callModelCliText } from '../services/cliProviderBridge.js';
+import { callExternalModelCliText } from '../services/modelCliProcessPolicy.js';
 import {
   MISCONCEPTION_FAMILIES,
   estimateStateFromBehavior,
@@ -371,98 +372,23 @@ export function reasoningLeakHits(proseTurns) {
 }
 
 async function callCodex(prompt) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-g0-codex-'));
-  const outFile = path.join(tmpDir, 'last-message.txt');
-  try {
-    await new Promise((resolve, reject) => {
-      const args = [
-        'exec',
-        '--skip-git-repo-check',
-        '--ephemeral',
-        '--ignore-user-config',
-        '-s',
-        'read-only',
-        '-C',
-        tmpDir,
-        '--color',
-        'never',
-        '-c',
-        'model_reasoning_effort="low"',
-        '-o',
-        outFile,
-        '-',
-      ];
-      const child = spawn('codex', args, { cwd: tmpDir, stdio: ['pipe', 'pipe', 'pipe'] });
-      let err = '';
-      child.stderr.on('data', (d) => {
-        err += d;
-      });
-      child.on('error', (e) => reject(new Error(`failed to spawn codex: ${e.message}`)));
-      child.on('close', (code) => {
-        if (code !== 0) reject(new Error(err.trim() || `codex exited with code ${code}`));
-        else resolve();
-      });
-      child.stdin.write(prompt);
-      child.stdin.end();
-    });
-    const content = fs.readFileSync(outFile, 'utf8').trim();
-    if (!content) throw new Error('codex produced no output message');
-    return content;
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
+  return await callModelCliText({
+    provider: 'codex',
+    prompt,
+    role: 'run-yoked-contingency-g0-paid-smoke',
+    effort: 'low',
+  });
 }
 
 async function callClaudeCode(prompt, spec = backendDetail('claude-code')) {
-  return await new Promise((resolve, reject) => {
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    const effort = spec.effort || CLAUDE_CODE_EFFORT;
-    const args = [
-      '-p',
-      '-',
-      '--output-format',
-      'text',
-      '--no-session-persistence',
-      '--effort',
-      effort,
-      '--tools',
-      '',
-      '--safe-mode',
-      '--system-prompt',
-      'You are a compact JSON-only responder. Do not use tools. Return only the requested answer.',
-    ];
-    if (spec.model) args.push('--model', spec.model);
-    const child = spawn('claude', args, {
-      cwd: ROOT,
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env,
-    });
-    let out = '';
-    let err = '';
-    const timeout = setTimeout(() => {
-      child.kill('SIGKILL');
-      reject(new Error(`claude CLI timed out after ${Math.round(CLAUDE_CODE_TIMEOUT_MS / 1000)}s`));
-    }, CLAUDE_CODE_TIMEOUT_MS);
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', (e) => {
-      clearTimeout(timeout);
-      reject(new Error(`failed to spawn claude: ${e.message}`));
-    });
-    child.on('close', (code) => {
-      clearTimeout(timeout);
-      if (code !== 0) reject(new Error(err.trim() || out.trim() || `claude exited with code ${code}`));
-      else resolve(out.trim());
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
-  });
+  const result = await callAIWithCliBridge(
+    { provider: 'claude-code', model: spec.model },
+    'You are a compact JSON-only responder. Do not use tools. Return only the requested answer.',
+    prompt,
+    'run-yoked-contingency-g0-paid-smoke',
+    { timeoutMs: CLAUDE_CODE_TIMEOUT_MS, effort: spec.effort || CLAUDE_CODE_EFFORT },
+  );
+  return result.text;
 }
 
 function truthyEnv(value) {
@@ -568,125 +494,31 @@ async function callOpenRouter(prompt, spec) {
   }
 }
 
-function compactProcessOutput(text, limit = 1_000) {
-  const trimmed = String(text || '').trim();
-  if (!trimmed) return '';
-  return trimmed.length > limit ? `${trimmed.slice(0, limit)}...` : trimmed;
-}
-
 function resolveAgyModel(model) {
   if (!model) return '';
   return AGY_MODEL_ALIASES[model] || model;
 }
 
-function agyCliLogDir() {
-  return path.join(os.homedir(), '.gemini', 'antigravity-cli', 'log');
-}
-
-function readRecentAgyLogInfo(startedAtMs) {
-  const logDir = agyCliLogDir();
-  const files = [];
-  if (AGY_LOG_FILE && fs.existsSync(AGY_LOG_FILE)) files.push(AGY_LOG_FILE);
-  if (fs.existsSync(logDir)) {
-    for (const name of fs.readdirSync(logDir)) {
-      if (!/^cli-.*\.log$/.test(name)) continue;
-      const file = path.join(logDir, name);
-      const stat = fs.statSync(file);
-      if (stat.mtimeMs >= startedAtMs - 5_000) files.push(file);
-    }
-  }
-  const uniqueFiles = [...new Set(files)].sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs).slice(0, 3);
-  const interesting = [];
-  for (const file of uniqueFiles) {
-    const lines = fs
-      .readFileSync(file, 'utf8')
-      .split(/\r?\n/)
-      .filter((line) =>
-        /Print mode|Model ID|Propagating selected model|RESOURCE_EXHAUSTED|Individual quota|model unreachable|agent executor error|Created conversation|sending message/i.test(
-          line,
-        ),
-      );
-    if (lines.length) interesting.push(`${file}: ${lines.slice(-12).join(' | ')}`);
-  }
-  return {
-    files: uniqueFiles,
-    summary: interesting.join(' || '),
-  };
-}
-
-function agyProcessErrorMessage({ model, resolvedModel, code, args, promptMode, stdout, stderr, logInfo }) {
-  const label = model || 'default';
-  const resolved = resolvedModel && resolvedModel !== model ? ` resolvedModel: ${resolvedModel}` : '';
-  const displayArgs =
-    promptMode === 'arg' ? args.map((arg, index) => (index === args.length - 1 ? '<prompt>' : arg)) : args;
-  const parts = [
-    code === 0 ? `agy ${label} produced no output${resolved}` : `agy ${label} exited with code ${code}${resolved}`,
-    `promptMode: ${promptMode}`,
-    `command: ${AGY_BIN} ${displayArgs.join(' ')}`,
-  ];
-  if (AGY_LOG_FILE) parts.push(`log: ${AGY_LOG_FILE}`);
-  if (logInfo?.files?.length) parts.push(`agyCliLogs: ${logInfo.files.join(', ')}`);
-  if (logInfo?.summary) parts.push(`agyCliLogSummary: ${compactProcessOutput(logInfo.summary, 4_000)}`);
-  const stdoutSnippet = compactProcessOutput(stdout);
-  const stderrSnippet = compactProcessOutput(stderr);
-  if (stdoutSnippet) parts.push(`stdout: ${stdoutSnippet}`);
-  if (stderrSnippet) parts.push(`stderr: ${stderrSnippet}`);
-  return parts.join('; ');
-}
-
 async function callAgy(prompt, spec) {
-  return await new Promise((resolve, reject) => {
-    const startedAtMs = Date.now();
-    const args = [];
-    const resolvedModel = resolveAgyModel(spec.model);
-    if (resolvedModel) args.push('--model', resolvedModel);
-    args.push('--print', '--print-timeout', AGY_PRINT_TIMEOUT);
-    if (AGY_LOG_FILE) args.push('--log-file', AGY_LOG_FILE);
-    const promptMode = String(AGY_PROMPT_MODE || 'arg').toLowerCase();
-    if (!['arg', 'stdin'].includes(promptMode)) {
-      reject(new Error(`AGY_PROMPT_MODE must be arg or stdin, got: ${AGY_PROMPT_MODE}`));
-      return;
-    }
-    if (promptMode === 'arg') args.push(prompt);
-    const child = spawn(AGY_BIN, args, {
-      cwd: ROOT,
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: {
-        ...process.env,
-        NO_COLOR: '1',
-      },
-    });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', (e) => reject(new Error(`failed to spawn agy: ${e.message}`)));
-    child.on('close', (code) => {
-      const content = out.trim();
-      if (code !== 0 || !content) {
-        reject(
-          new Error(
-            agyProcessErrorMessage({
-              model: spec.model,
-              resolvedModel,
-              code,
-              args,
-              promptMode,
-              stdout: out,
-              stderr: err,
-              logInfo: readRecentAgyLogInfo(startedAtMs),
-            }),
-          ),
-        );
-      } else resolve(content);
-    });
-    if (promptMode === 'stdin') child.stdin.write(prompt);
-    child.stdin.end();
+  const args = [];
+  const resolvedModel = resolveAgyModel(spec.model);
+  if (resolvedModel) args.push('--model', resolvedModel);
+  args.push('--print', '--print-timeout', AGY_PRINT_TIMEOUT);
+  if (AGY_LOG_FILE) args.push('--log-file', AGY_LOG_FILE);
+  const promptMode = String(AGY_PROMPT_MODE || 'arg').toLowerCase();
+  if (!['arg', 'stdin'].includes(promptMode)) {
+    throw new Error(`AGY_PROMPT_MODE must be arg or stdin, got: ${AGY_PROMPT_MODE}`);
+  }
+  const result = await callExternalModelCliText({
+    provider: 'agy',
+    command: AGY_BIN,
+    args,
+    prompt,
+    promptTransport: promptMode === 'arg' ? 'argument' : 'stdin',
+    role: 'run-yoked-contingency-g0-paid-smoke',
+    envOverrides: { NO_COLOR: '1' },
   });
+  return result.text;
 }
 
 export async function callBackend(prompt, backend) {

@@ -26,9 +26,9 @@ import 'dotenv/config';
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
 import readline from 'readline';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 
 // ── Model Configuration ─────────────────────────────────────────────────
 
@@ -322,33 +322,8 @@ async function callModel(prompt, modelKey) {
 }
 
 async function callClaudeCode(prompt) {
-  const claudeArgs = ['-p', '-', '--output-format', 'text'];
-
-  const stdout = await new Promise((resolve, reject) => {
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY; // force subscription path
-    const child = spawn('claude', claudeArgs, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env,
-    });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', (e) => reject(new Error(`Failed to spawn claude: ${e.message}`)));
-    child.on('close', (code) => {
-      if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
-      else resolve(out);
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
-  });
-
-  return { content: stdout.trim(), usage: {} };
+  const content = await callModelCliText({ provider: 'claude-code', prompt, role: 'qualitative-analysis-ai' });
+  return { content, usage: {} };
 }
 
 async function callOpenRouter(prompt, modelKey) {

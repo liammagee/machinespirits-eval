@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import pty from 'node-pty';
+import { createModelCliLaunchPlan } from './modelCliProcessPolicy.js';
 
 const MAX_SESSIONS = 8;
 const MAX_BUFFER_CHARS = 500_000;
@@ -84,6 +85,7 @@ function sessionSummary(session) {
     exitCode: session.exitCode,
     signal: session.signal,
     eventCount: session.nextEventIdx,
+    launchPolicy: session.launchPolicy,
   };
 }
 
@@ -116,19 +118,25 @@ export function createCodexSession(options = {}) {
   const command = 'codex';
   const args = sanitizeArgs(options.args);
   const cwd = resolveCwd(options.cwd);
+  if (options.env && Object.keys(options.env).length > 0) {
+    throw new Error('interactive Codex sessions do not accept arbitrary environment overrides');
+  }
+  const launch = createModelCliLaunchPlan({
+    provider: 'codex',
+    command,
+    args,
+    mode: 'interactive-user-authorized',
+    cwd,
+    envOverrides: options.noColor ? { NO_COLOR: '1' } : {},
+    allowTools: true,
+  });
 
-  const env = {
-    ...process.env,
-    ...(options.noColor ? { NO_COLOR: '1' } : {}),
-    ...(options.env && typeof options.env === 'object' ? options.env : {}),
-  };
-
-  const child = pty.spawn(command, args, {
+  const child = pty.spawn(launch.command, launch.args, {
     name: options.termName || 'xterm-256color',
     cols: Number.isFinite(options.cols) ? Number(options.cols) : 120,
     rows: Number.isFinite(options.rows) ? Number(options.rows) : 40,
-    cwd,
-    env,
+    cwd: launch.cwd,
+    env: launch.env,
   });
 
   const id = makeSessionId();
@@ -149,6 +157,7 @@ export function createCodexSession(options = {}) {
     nextEventIdx: 0,
     totalChars: 0,
     process: child,
+    launchPolicy: launch.policy,
   };
 
   sessions.set(id, session);

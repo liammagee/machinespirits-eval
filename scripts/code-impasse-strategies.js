@@ -25,7 +25,7 @@ import 'dotenv/config';
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 
 // ── Constants ────────────────────────────────────────────────────────────
 
@@ -122,30 +122,7 @@ async function callModel(prompt, modelKey) {
 }
 
 async function callClaudeCode(prompt) {
-  const stdout = await new Promise((resolve, reject) => {
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY;
-    const child = spawn('claude', ['-p', '-', '--output-format', 'text'], {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env,
-    });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', (e) => reject(new Error(`Failed to spawn claude: ${e.message}`)));
-    child.on('close', (code) => {
-      if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
-      else resolve(out);
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
-  });
-  return stdout.trim();
+  return await callModelCliText({ provider: 'claude-code', prompt, role: 'code-impasse-strategies' });
 }
 
 async function callOpenRouter(prompt, modelKey) {

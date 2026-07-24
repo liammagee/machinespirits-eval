@@ -39,6 +39,7 @@ export const CLI_PROVIDER_COMMON_ENV_KEYS = Object.freeze([
   'no_proxy',
   'SSL_CERT_FILE',
   'SSL_CERT_DIR',
+  'NO_COLOR',
 ]);
 
 export const CLI_PROVIDER_ENV_KEYS = Object.freeze({
@@ -50,8 +51,19 @@ export const CLI_PROVIDER_ENV_KEYS = Object.freeze({
     'OPENAI_ORG_ID',
     'OPENAI_ORGANIZATION',
     'OPENAI_PROJECT_ID',
+    'CODEX_GENERATED_PAPER_COMICS',
+    'CODEX_GENERATED_POETICS_ARC_IMAGE',
   ]),
   'claude-code': Object.freeze(['CLAUDE_CONFIG_DIR', 'CLAUDE_CODE_OAUTH_TOKEN']),
+  'gemini-cli': Object.freeze([
+    'GEMINI_API_KEY',
+    'GOOGLE_API_KEY',
+    'GOOGLE_APPLICATION_CREDENTIALS',
+    'GOOGLE_CLOUD_PROJECT',
+    'GOOGLE_CLOUD_LOCATION',
+  ]),
+  agy: Object.freeze(['AGY_CONFIG_DIR']),
+  ollama: Object.freeze(['OLLAMA_HOST', 'OLLAMA_NOHISTORY', 'OLLAMA_CONTEXT_LENGTH', 'OLLAMA_KEEP_ALIVE']),
 });
 
 // Existing integration tests exercise the real process boundary with a fake
@@ -103,10 +115,11 @@ const DEFAULT_CODEX_TIMEOUT_MS = positiveIntEnv(
   'CLI_PROVIDER_CODEX_TIMEOUT_MS',
   positiveIntEnv('ID_DIRECTOR_CODEX_CLI_TIMEOUT_MS', 300_000),
 );
+const DEFAULT_GEMINI_TIMEOUT_MS = positiveIntEnv('CLI_PROVIDER_GEMINI_TIMEOUT_MS', 180_000);
 const DEFAULT_CLI_MAX_STDOUT_BYTES = positiveIntEnv('CLI_PROVIDER_MAX_STDOUT_BYTES', 16 * 1024 * 1024);
 const DEFAULT_CLI_MAX_STDERR_BYTES = positiveIntEnv('CLI_PROVIDER_MAX_STDERR_BYTES', 1024 * 1024);
 const DEFAULT_CLI_VERSION_TIMEOUT_MS = positiveIntEnv('CLI_PROVIDER_VERSION_TIMEOUT_MS', 5_000);
-const CLI_PROVIDERS = new Set(['claude-code', 'codex']);
+const CLI_PROVIDERS = new Set(['claude-code', 'codex', 'gemini-cli']);
 const CLI_EFFORT_LEVELS = new Set(['low', 'medium', 'high', 'xhigh', 'max', 'config']);
 let cachedCodexCliVersion;
 
@@ -242,6 +255,34 @@ export function resolveCliEffort(provider, explicitEffort = null) {
     );
   }
   return null;
+}
+
+export function normalizeModelCliProvider(provider) {
+  const normalized = String(provider || '')
+    .trim()
+    .toLowerCase();
+  if (normalized === 'claude') return 'claude-code';
+  if (normalized === 'gemini') return 'gemini-cli';
+  return normalized;
+}
+
+const MODEL_CLI_EXECUTABLES = Object.freeze({
+  'claude-code': 'claude',
+  codex: 'codex',
+  'gemini-cli': 'gemini',
+  agy: 'agy',
+  ollama: 'ollama',
+});
+
+export function resolveModelCliExecutable(provider, executable = null) {
+  const normalizedProvider = normalizeModelCliProvider(provider);
+  const expected = MODEL_CLI_EXECUTABLES[normalizedProvider];
+  if (!expected) throw new Error(`Unsupported model CLI provider: ${normalizedProvider || 'unknown'}`);
+  const candidate = executable ? String(executable) : expected;
+  if (path.basename(candidate) !== expected) {
+    throw new Error(`${normalizedProvider} CLI executable must resolve to a binary named ${expected}`);
+  }
+  return candidate;
 }
 
 export function isCliProvider(provider) {
@@ -450,9 +491,15 @@ async function callClaudeCli({
   maxStdoutBytes,
   maxStderrBytes,
   preserveDefaultSystemPrompt = false,
+  rawUserPrompt = false,
+  executable = null,
 }) {
   if (signal?.aborted) throw abortError(role);
-  const userText = buildCliUserText(userPrompt, messageHistory);
+  if (rawUserPrompt && (String(systemPrompt || '') || (Array.isArray(messageHistory) && messageHistory.length > 0))) {
+    throw new Error('rawUserPrompt requires an empty system prompt and no message history');
+  }
+  const userText = rawUserPrompt ? String(userPrompt || '') : buildCliUserText(userPrompt, messageHistory);
+  const command = resolveModelCliExecutable('claude-code', executable);
   const start = Date.now();
   const effectiveTimeout = timeoutMs || DEFAULT_CLAUDE_TIMEOUT_MS;
   const effectiveEffort = resolveCliEffort('claude-code', effort);
@@ -476,7 +523,7 @@ async function callClaudeCli({
         args.push('--json-schema', JSON.stringify(schema));
       }
       const env = buildCliProviderEnv('claude-code');
-      const child = spawnImpl('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: isolation.cwd });
+      const child = spawnImpl(command, args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: isolation.cwd });
       let out = '';
       let err = '';
       let outBytes = 0;
@@ -571,6 +618,176 @@ async function callClaudeCli({
   }
 }
 
+async function callGeminiCli({
+  systemPrompt,
+  userPrompt,
+  model,
+  role,
+  messageHistory,
+  timeoutMs,
+  signal,
+  spawnImpl = spawn,
+  maxStdoutBytes,
+  maxStderrBytes,
+  rawUserPrompt = false,
+  executable = null,
+}) {
+  if (signal?.aborted) throw abortError(role);
+  if (rawUserPrompt && (String(systemPrompt || '') || (Array.isArray(messageHistory) && messageHistory.length > 0))) {
+    throw new Error('rawUserPrompt requires an empty system prompt and no message history');
+  }
+  const command = resolveModelCliExecutable('gemini-cli', executable);
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-cli-provider-gemini-'));
+  const policyFile = path.join(tmpDir, 'deny-all-tools.toml');
+  fs.writeFileSync(
+    policyFile,
+    '[[rule]]\ntoolName = "*"\ndecision = "deny"\npriority = 999\ndenyMessage = "Tool use is disabled for this model-only call"\n',
+    { mode: 0o600 },
+  );
+  const prompt = rawUserPrompt
+    ? String(userPrompt || '')
+    : [String(systemPrompt || '').trim(), buildCliUserText(userPrompt, messageHistory)].filter(Boolean).join('\n\n');
+  const start = Date.now();
+  const effectiveTimeout = timeoutMs || DEFAULT_GEMINI_TIMEOUT_MS;
+  const stdoutLimit = positiveLimit(maxStdoutBytes, DEFAULT_CLI_MAX_STDOUT_BYTES);
+  const stderrLimit = positiveLimit(maxStderrBytes, DEFAULT_CLI_MAX_STDERR_BYTES);
+
+  try {
+    return await new Promise((resolve, reject) => {
+      const args = ['--output-format', 'json', '--approval-mode', 'default', '--admin-policy', policyFile];
+      if (model && model !== 'auto') args.push('--model', model);
+      const child = spawnImpl(command, args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd: tmpDir,
+        env: buildCliProviderEnv('gemini-cli'),
+      });
+      let out = '';
+      let err = '';
+      let outBytes = 0;
+      let errBytes = 0;
+      let outputExceeded = false;
+      const onAbort = () => {
+        try {
+          child.kill('SIGKILL');
+        } catch (_) {
+          /* already gone */
+        }
+        reject(abortError(role));
+      };
+      signal?.addEventListener('abort', onAbort, { once: true });
+      const cliTimeout = setTimeout(() => {
+        try {
+          child.kill('SIGKILL');
+        } catch (_) {
+          /* already gone */
+        }
+        reject(new Error(`gemini CLI timed out after ${effectiveTimeout}ms (role=${role})`));
+      }, effectiveTimeout);
+      child.stdout.on('data', (chunk) => {
+        outBytes += Buffer.byteLength(chunk);
+        if (outBytes > stdoutLimit) {
+          outputExceeded = true;
+          clearTimeout(cliTimeout);
+          child.kill('SIGKILL');
+          reject(outputLimitError('gemini', 'stdout', stdoutLimit));
+          return;
+        }
+        out += chunk;
+      });
+      child.stderr.on('data', (chunk) => {
+        errBytes += Buffer.byteLength(chunk);
+        if (errBytes > stderrLimit) {
+          outputExceeded = true;
+          clearTimeout(cliTimeout);
+          child.kill('SIGKILL');
+          reject(outputLimitError('gemini', 'stderr', stderrLimit));
+          return;
+        }
+        err += chunk;
+      });
+      child.on('error', (error) => {
+        clearTimeout(cliTimeout);
+        signal?.removeEventListener('abort', onAbort);
+        const launchError = new Error(`gemini CLI failed to start (${error?.code || 'spawn_error'})`);
+        launchError.code = error?.code || 'CLI_PROVIDER_SPAWN_FAILED';
+        reject(launchError);
+      });
+      child.on('close', (code) => {
+        clearTimeout(cliTimeout);
+        signal?.removeEventListener('abort', onAbort);
+        if (outputExceeded) return;
+        if (code !== 0) {
+          const exitError = new Error(`gemini CLI exited with code ${code}`);
+          exitError.code = 'CLI_PROVIDER_EXIT_FAILED';
+          exitError.exitCode = code;
+          exitError.stdoutBytes = Buffer.byteLength(out);
+          exitError.stderrBytes = Buffer.byteLength(err);
+          reject(exitError);
+          return;
+        }
+        let payload;
+        try {
+          payload = JSON.parse(out.trim());
+        } catch {
+          const parseError = new Error('gemini CLI returned invalid JSON');
+          parseError.code = 'CLI_PROVIDER_INVALID_OUTPUT';
+          reject(parseError);
+          return;
+        }
+        const toolCalls = Number(payload?.stats?.tools?.calls || 0);
+        if (toolCalls > 0) {
+          reject(
+            new CliProviderPolicyError('gemini-cli', {
+              event_type_counts: { tool_call: toolCalls },
+              item_type_counts: {},
+              prohibited_event_count: toolCalls,
+              prohibited_events: [],
+              policy: 'admin_deny_all_tools',
+            }),
+          );
+          return;
+        }
+        if (payload?.error) {
+          const outputError = new Error('gemini CLI reported an error');
+          outputError.code = 'CLI_PROVIDER_RESPONSE_ERROR';
+          reject(outputError);
+          return;
+        }
+        const text = typeof payload?.response === 'string' ? payload.response.trim() : '';
+        if (!text) {
+          reject(new Error(`gemini CLI produced no output message (role=${role})`));
+          return;
+        }
+        resolve({
+          text,
+          model: model || 'gemini-cli',
+          provider: 'gemini-cli',
+          effort: null,
+          latencyMs: Date.now() - start,
+          ...normalizeTokenUsage(null),
+          cost: 0,
+          structuredOutput: false,
+          contextIsolation: 'admin-deny-all-tools-v1',
+          structuredEventAudit: {
+            event_type_counts: {},
+            item_type_counts: {},
+            prohibited_event_count: 0,
+            prohibited_events: [],
+            enforcement: 'gemini_admin_deny_all_tools',
+          },
+          prohibitedToolEventCount: 0,
+          modelAttestationBasis: cliModelAttestationBasis(model),
+          modelIndependentlyAttested: false,
+        });
+      });
+      child.stdin.write(prompt);
+      child.stdin.end();
+    });
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
 async function callCodexCli({
   systemPrompt,
   userPrompt,
@@ -588,8 +805,14 @@ async function callCodexCli({
   spawnImpl = spawn,
   maxStdoutBytes,
   maxStderrBytes,
+  rawUserPrompt = false,
+  executable = null,
 }) {
   if (signal?.aborted) throw abortError(role);
+  if (rawUserPrompt && (String(systemPrompt || '') || (Array.isArray(messageHistory) && messageHistory.length > 0))) {
+    throw new Error('rawUserPrompt requires an empty system prompt and no message history');
+  }
+  const command = resolveModelCliExecutable('codex', executable);
   let replacementInstructionsSourceFile = null;
   let replacementInstructionsBytes = null;
   let replacementInstructionsSha256 = null;
@@ -628,12 +851,14 @@ async function callCodexCli({
   if (replacementInstructionsFile) {
     fs.writeFileSync(replacementInstructionsFile, replacementInstructionsBytes, { mode: 0o600 });
   }
-  const prompt = buildCodexCliPromptText({
-    systemPrompt,
-    userPrompt,
-    messageHistory,
-    structuredOutput: Boolean(schema),
-  });
+  const prompt = rawUserPrompt
+    ? String(userPrompt || '')
+    : buildCodexCliPromptText({
+        systemPrompt,
+        userPrompt,
+        messageHistory,
+        structuredOutput: Boolean(schema),
+      });
 
   try {
     return await new Promise((resolve, reject) => {
@@ -662,7 +887,7 @@ async function callCodexCli({
       if (schemaFile) args.push('--output-schema', schemaFile);
       args.push('-o', outFile, '-');
 
-      const child = spawnImpl('codex', args, {
+      const child = spawnImpl(command, args, {
         stdio: ['pipe', 'pipe', 'pipe'],
         cwd: tmpDir,
         env: buildCliProviderEnv('codex'),
@@ -795,7 +1020,7 @@ async function callCodexCli({
           modelInstructionsSource: replacementInstructionsFile ? modelInstructionsSource : null,
           modelInstructionsSha256: replacementInstructionsSha256,
           modelInstructionsBytes: replacementInstructionsBytes?.length ?? null,
-          codexCliVersion: codexCliVersion({ enabled: spawnImpl === spawn }),
+          codexCliVersion: codexCliVersion({ enabled: spawnImpl === spawn && command === 'codex' }),
         });
       });
       child.stdin.write(prompt);
@@ -917,6 +1142,8 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       maxStdoutBytes: opts?.maxStdoutBytes,
       maxStderrBytes: opts?.maxStderrBytes,
       preserveDefaultSystemPrompt: opts?.preserveDefaultSystemPrompt === true,
+      rawUserPrompt: opts?.rawUserPrompt === true,
+      executable: opts?.executable,
     });
   }
   if (agentConfig?.provider === 'codex') {
@@ -937,10 +1164,59 @@ export async function callAIWithCliBridge(agentConfig, systemPrompt, userPrompt,
       spawnImpl: opts?.spawnImpl,
       maxStdoutBytes: opts?.maxStdoutBytes,
       maxStderrBytes: opts?.maxStderrBytes,
+      rawUserPrompt: opts?.rawUserPrompt === true,
+      executable: opts?.executable,
+    });
+  }
+  if (agentConfig?.provider === 'gemini-cli') {
+    return await callGeminiCli({
+      systemPrompt,
+      userPrompt,
+      model: agentConfig.model,
+      role,
+      messageHistory: opts?.messageHistory,
+      timeoutMs: opts?.timeoutMs,
+      signal: opts?.signal,
+      spawnImpl: opts?.spawnImpl,
+      maxStdoutBytes: opts?.maxStdoutBytes,
+      maxStderrBytes: opts?.maxStderrBytes,
+      rawUserPrompt: opts?.rawUserPrompt === true,
+      executable: opts?.executable,
     });
   }
   if (!opts?.fallbackCallAI) {
     throw new Error(`No fallback AI caller supplied for provider ${agentConfig?.provider || 'unknown'}`);
   }
   return await opts.fallbackCallAI(agentConfig, systemPrompt, userPrompt, role, opts);
+}
+
+export async function callModelCliText({
+  provider,
+  model = null,
+  prompt,
+  role = 'script-model-call',
+  timeoutMs,
+  effort,
+  executable,
+  signal,
+  spawnImpl,
+  maxStdoutBytes,
+  maxStderrBytes,
+} = {}) {
+  const normalizedProvider = normalizeModelCliProvider(provider);
+  if (!isCliProvider(normalizedProvider)) {
+    throw new Error(`Unsupported model-only CLI provider: ${provider || 'unknown'}`);
+  }
+  const result = await callAIWithCliBridge({ provider: normalizedProvider, model }, '', String(prompt || ''), role, {
+    timeoutMs,
+    effort,
+    executable,
+    signal,
+    spawnImpl,
+    maxStdoutBytes,
+    maxStderrBytes,
+    rawUserPrompt: true,
+    preserveDefaultSystemPrompt: normalizedProvider === 'claude-code',
+  });
+  return result.text;
 }

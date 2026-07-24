@@ -8,7 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { execSync, spawn } from 'child_process';
+import { execSync } from 'child_process';
 import { createHash } from 'crypto';
 import { jsonrepair } from 'jsonrepair';
 import {
@@ -26,7 +26,7 @@ import {
 // future tutor-core re-exports it, this resolver picks it up.
 import * as _tutorCore from '../tutor-core/index.js';
 const setQuietMode = typeof _tutorCore.setQuietMode === 'function' ? _tutorCore.setQuietMode : () => {};
-import { buildCliProviderHook, CLAUDE_CLI_CONTEXT_ISOLATION } from './cliProviderBridge.js';
+import { buildCliProviderHook, callModelCliText, CLAUDE_CLI_CONTEXT_ISOLATION } from './cliProviderBridge.js';
 // Extend CLI providers (codex / claude-code) into tutor-core's dialogue
 // engine: the hook is injected from the eval side so tutor-core never
 // imports eval code (one-way seam). Covers the callAI standard loop
@@ -834,50 +834,11 @@ async function callCliJudge(prompt, judgeCli, modelOverride = null) {
   if (!SUPPORTED_JUDGE_CLIS.has(cli)) {
     throw new Error(`Unsupported judge CLI: ${judgeCli}`);
   }
-
-  let cliBinary;
-  let cliArgs;
-  let cliEnv;
-
-  if (cli === 'gemini') {
-    cliBinary = 'gemini';
-    cliArgs = ['-s', '-o', 'text'];
-    if (modelOverride) cliArgs.push('-m', modelOverride);
-    cliEnv = { ...process.env };
-  } else if (cli === 'codex') {
-    cliBinary = 'codex';
-    cliArgs = ['exec', '-'];
-    if (modelOverride) cliArgs.push('-m', modelOverride);
-    cliEnv = { ...process.env };
-  } else {
-    cliBinary = 'claude';
-    cliArgs = ['-p', '-', '--output-format', 'text'];
-    if (modelOverride) cliArgs.push('--model', modelOverride);
-    cliEnv = { ...process.env };
-    delete cliEnv.ANTHROPIC_API_KEY;
-    delete cliEnv.CLAUDECODE;
-  }
-
-  const stdout = await new Promise((resolve, reject) => {
-    const child = spawn(cliBinary, cliArgs, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: cliEnv,
-    });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', reject);
-    child.on('close', (code) => {
-      if (code !== 0) reject(new Error(err || out || `${cliBinary} exited with code ${code}`));
-      else resolve(out);
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
+  const stdout = await callModelCliText({
+    provider: cli,
+    model: modelOverride,
+    prompt,
+    role: 'evaluation-runner-judge',
   });
 
   return parseCliJudgeJsonResponse(stdout);

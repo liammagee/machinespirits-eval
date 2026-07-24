@@ -69,6 +69,7 @@
     "refs:render": "node scripts/ref-governance.js render",
     "refs:check": "node scripts/ref-governance.js check",
     "refs:validate": "node scripts/ref-governance.js validate",
+    "model-cli-launches:check": "node scripts/check-model-cli-launches.js",
     "prompt-lab": "node scripts/prompt-lab.js",
     "prompt-lab:init": "node scripts/prompt-lab.js init",
     "prompt-lab:fork": "node scripts/prompt-lab.js fork",

@@ -19,10 +19,10 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawnSync } from 'child_process';
 import { SCENARIOS } from './run-ontology-ab-pilot.js';
 import { buildOntologyGuidance } from '../services/ontology/reasoningOntology.js';
 import { GROUNDED, HYPOTHESIZED, checkSnapshot, snapshotRecords } from '../services/ontology/acquiredAbox.js';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 import { specToDefinedABox, observationsToAcquired, anagnorisisOverlap } from '../services/ontology/definedAbox.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -98,16 +98,14 @@ function extractJson(text) {
   }
 }
 
-function codexCall(prompt, args) {
-  const outFile = path.join(args.outDir, 'tmp', `${Date.now()}-${Math.random().toString(36).slice(2)}.txt`);
-  fs.mkdirSync(path.dirname(outFile), { recursive: true });
-  const result = spawnSync(
-    'codex',
-    ['exec', '--ephemeral', '--ignore-rules', '--sandbox', 'read-only', '-C', ROOT_DIR, '-o', outFile, '-'],
-    { input: prompt, cwd: ROOT_DIR, encoding: 'utf8', timeout: args.timeoutMs },
-  );
-  if (result.status !== 0) throw new Error(`codex failed:\n${result.stderr || result.stdout}`);
-  return extractJson(fs.readFileSync(outFile, 'utf8')) || {};
+async function codexCall(prompt, args) {
+  const text = await callModelCliText({
+    provider: 'codex',
+    prompt,
+    role: 'run-ontology-tom-ab',
+    timeoutMs: args.timeoutMs,
+  });
+  return extractJson(text) || {};
 }
 
 // Deterministic mock. RIGGED so the arms diverge — a plumbing check, NOT evidence.
@@ -173,14 +171,14 @@ Dialogue: ${JSON.stringify(dialogue)}
 Return: {"policy_alignment":n,"recognitive_support":n,"deductive_learning":n,"overclaim_risk":n,"reasoning":"..."}`;
 }
 
-function runTutor(payload, args) {
-  return args.backend === 'codex' ? codexCall(tutorPrompt(payload), args) : mockTutor(payload);
+async function runTutor(payload, args) {
+  return args.backend === 'codex' ? await codexCall(tutorPrompt(payload), args) : mockTutor(payload);
 }
-function runLearner(payload, args) {
-  return args.backend === 'codex' ? codexCall(learnerPrompt(payload), args) : mockLearner(payload);
+async function runLearner(payload, args) {
+  return args.backend === 'codex' ? await codexCall(learnerPrompt(payload), args) : mockLearner(payload);
 }
-function runJudge(payload, args) {
-  return args.backend === 'codex' ? codexCall(judgePrompt(payload), args) : mockJudge(payload);
+async function runJudge(payload, args) {
+  return args.backend === 'codex' ? await codexCall(judgePrompt(payload), args) : mockJudge(payload);
 }
 
 // ── the multi-turn dialogue for one arm ─────────────────────────────────────
@@ -203,7 +201,7 @@ async function runArmDialogue({ arm, scenario, args }) {
         : null;
     const brief = arm === 'ontology_tom' ? await computeTomBrief({ tutorRecords, def, turn }) : null;
 
-    const tutorOut = runTutor({ arm, scenario, dialogue, guidance, brief }, args);
+    const tutorOut = await runTutor({ arm, scenario, dialogue, guidance, brief }, args);
     const obsTags = (tutorOut.observed?.signals || []).concat(
       tutorOut.observed?.perceived_role ? [tutorOut.observed.perceived_role] : [],
     );
@@ -236,7 +234,7 @@ async function runArmDialogue({ arm, scenario, args }) {
     });
     dialogue.push({ role: 'tutor', content: tutorOut.message || '' });
 
-    const learnerOut = runLearner({ arm, scenario, dialogue, turn, turns: args.turns }, args);
+    const learnerOut = await runLearner({ arm, scenario, dialogue, turn, turns: args.turns }, args);
     dialogue.push({ role: 'learner', content: learnerOut.message || '' });
     const reached = detectReachedGoal(learnerOut.message) || learnerOut.understanding === 'warrant_articulated';
     if (reached) {
@@ -270,7 +268,7 @@ async function runArmDialogue({ arm, scenario, args }) {
     }
   }
 
-  const judge = runJudge({ dialogue, arm }, args);
+  const judge = await runJudge({ dialogue, arm }, args);
   const score = {
     policy_alignment: num(judge.policy_alignment),
     recognitive_support: num(judge.recognitive_support),

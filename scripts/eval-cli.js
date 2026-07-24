@@ -140,8 +140,8 @@ import {
   extractLearnerTurnsFromTrace,
   isAdaptiveTraceLog,
 } from '../services/adaptiveTraceProjection.js';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 import theme from '../services/cliTheme.js';
-import { spawn } from 'child_process';
 import { createHash } from 'crypto';
 import readline from 'readline';
 import fs from 'fs';
@@ -161,6 +161,15 @@ function positiveIntEnv(name, fallback) {
 
 const CLI_JUDGE_TIMEOUT_MS = positiveIntEnv('EVAL_CLI_JUDGE_TIMEOUT_MS', 600_000);
 
+async function callSelectedCliJudgeText(judgeCli, model, prompt, role) {
+  return await callModelCliText({
+    provider: judgeCli,
+    model,
+    prompt,
+    role,
+    timeoutMs: CLI_JUDGE_TIMEOUT_MS,
+  });
+}
 function resolveEvaluationScenarioAndDialogueLog(result) {
   const standardScenario = getScenario(result.scenarioId);
   let dialogueLog = null;
@@ -2995,77 +3004,15 @@ async function main() {
             { dialogueContext },
           );
 
-          // Build CLI command based on --judge-cli selection
-          let cliBinary, cliArgs, cliEnv;
-          if (judgeCli === 'gemini') {
-            cliBinary = 'gemini';
-            cliArgs = ['-s', '-o', 'text'];
-            if (effectiveJudgeModel) {
-              cliArgs.push('-m', effectiveJudgeModel);
-            }
-            cliEnv = { ...process.env };
-          } else if (judgeCli === 'codex') {
-            cliBinary = 'codex';
-            cliArgs = ['exec', '-'];
-            if (effectiveJudgeModel) {
-              cliArgs.push('-m', effectiveJudgeModel);
-            }
-            cliEnv = { ...process.env };
-          } else {
-            cliBinary = 'claude';
-            cliArgs = ['-p', '-', '--output-format', 'text'];
-            if (effectiveJudgeModel) {
-              cliArgs.push('--model', effectiveJudgeModel);
-            }
-            cliEnv = { ...process.env };
-            delete cliEnv.ANTHROPIC_API_KEY;
-            delete cliEnv.CLAUDECODE;
-          }
-
           if (verbose) {
-            console.log(`${tag} ${scenarioId} / ${profileName} ... calling ${cliBinary}`);
+            console.log(`${tag} ${scenarioId} / ${profileName} ... calling ${judgeCli}`);
           }
-
-          const stdout = await new Promise((resolve, reject) => {
-            const child = spawn(cliBinary, cliArgs, {
-              stdio: ['pipe', 'pipe', 'pipe'],
-              env: cliEnv,
-            });
-            let out = '';
-            let err = '';
-            let settled = false;
-            const cliTimeout = setTimeout(() => {
-              if (settled) return;
-              settled = true;
-              try {
-                child.kill('SIGKILL');
-              } catch {
-                // Child may have exited between timer firing and kill.
-              }
-              reject(new Error(`${cliBinary} CLI judge timed out after ${CLI_JUDGE_TIMEOUT_MS}ms`));
-            }, CLI_JUDGE_TIMEOUT_MS);
-            child.stdout.on('data', (d) => {
-              out += d;
-            });
-            child.stderr.on('data', (d) => {
-              err += d;
-            });
-            child.on('error', (error) => {
-              if (settled) return;
-              settled = true;
-              clearTimeout(cliTimeout);
-              reject(error);
-            });
-            child.on('close', (code) => {
-              if (settled) return;
-              settled = true;
-              clearTimeout(cliTimeout);
-              if (code !== 0) reject(new Error(err || out || `${cliBinary} exited with code ${code}`));
-              else resolve(out);
-            });
-            child.stdin.write(prompt);
-            child.stdin.end();
-          });
+          const stdout = await callSelectedCliJudgeText(
+            judgeCli,
+            effectiveJudgeModel,
+            prompt,
+            'eval-cli-tutor-evaluation',
+          );
 
           let jsonStr = stdout.trim();
           const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -3175,63 +3122,12 @@ async function main() {
 
         // Helper: call CLI judge (claude or gemini) and parse JSON response
         async function callClaudeJudge(prompt) {
-          let cliBin, cliJudgeArgs, cliJudgeEnv;
-          if (judgeCli === 'gemini') {
-            cliBin = 'gemini';
-            cliJudgeArgs = ['-s', '-o', 'text'];
-            if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
-            cliJudgeEnv = { ...process.env };
-          } else if (judgeCli === 'codex') {
-            cliBin = 'codex';
-            cliJudgeArgs = ['exec', '-'];
-            if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
-            cliJudgeEnv = { ...process.env };
-          } else {
-            cliBin = 'claude';
-            cliJudgeArgs = ['-p', '-', '--output-format', 'text'];
-            if (effectiveJudgeModel) cliJudgeArgs.push('--model', effectiveJudgeModel);
-            cliJudgeEnv = { ...process.env };
-            delete cliJudgeEnv.ANTHROPIC_API_KEY;
-            delete cliJudgeEnv.CLAUDECODE;
-          }
-
-          const stdout = await new Promise((resolve, reject) => {
-            const child = spawn(cliBin, cliJudgeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env: cliJudgeEnv });
-            let out = '';
-            let err = '';
-            let settled = false;
-            const cliTimeout = setTimeout(() => {
-              if (settled) return;
-              settled = true;
-              try {
-                child.kill('SIGKILL');
-              } catch {
-                // Child may have exited between timer firing and kill.
-              }
-              reject(new Error(`${cliBin} CLI judge timed out after ${CLI_JUDGE_TIMEOUT_MS}ms`));
-            }, CLI_JUDGE_TIMEOUT_MS);
-            child.stdout.on('data', (d) => {
-              out += d;
-            });
-            child.stderr.on('data', (d) => {
-              err += d;
-            });
-            child.on('error', (error) => {
-              if (settled) return;
-              settled = true;
-              clearTimeout(cliTimeout);
-              reject(error);
-            });
-            child.on('close', (code) => {
-              if (settled) return;
-              settled = true;
-              clearTimeout(cliTimeout);
-              if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
-              else resolve(out);
-            });
-            child.stdin.write(prompt);
-            child.stdin.end();
-          });
+          const stdout = await callSelectedCliJudgeText(
+            judgeCli,
+            effectiveJudgeModel,
+            prompt,
+            'eval-cli-holistic-evaluation',
+          );
 
           let jsonStr = stdout.trim();
           const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -5008,42 +4904,12 @@ async function main() {
               { dialogueContext: null },
             );
 
-            let cliBin, cliJudgeArgs, cliJudgeEnv;
-            if (judgeCli === 'gemini') {
-              cliBin = 'gemini';
-              cliJudgeArgs = ['-o', 'text'];
-              if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
-              cliJudgeEnv = { ...process.env };
-            } else {
-              cliBin = 'claude';
-              cliJudgeArgs = ['-p', '-', '--output-format', 'text'];
-              if (effectiveJudgeModel) cliJudgeArgs.push('--model', effectiveJudgeModel);
-              cliJudgeEnv = { ...process.env };
-              delete cliJudgeEnv.ANTHROPIC_API_KEY;
-              delete cliJudgeEnv.CLAUDECODE;
-            }
-
-            const stdout = await new Promise((resolve, reject) => {
-              const child = spawn(cliBin, cliJudgeArgs, {
-                stdio: ['pipe', 'pipe', 'pipe'],
-                env: cliJudgeEnv,
-              });
-              let out = '';
-              let err = '';
-              child.stdout.on('data', (d) => {
-                out += d;
-              });
-              child.stderr.on('data', (d) => {
-                err += d;
-              });
-              child.on('error', reject);
-              child.on('close', (code) => {
-                if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
-                else resolve(out);
-              });
-              child.stdin.write(prompt);
-              child.stdin.end();
-            });
+            const stdout = await callSelectedCliJudgeText(
+              judgeCli,
+              effectiveJudgeModel,
+              prompt,
+              'eval-cli-backfill-first-turn',
+            );
 
             let jsonStr = stdout.trim();
             const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -5362,50 +5228,15 @@ async function main() {
             `${prompt}\n\nIMPORTANT RETRY DIRECTIVE: Your prior response appeared to copy the example template. Return ONLY fresh JSON scores for this specific learner transcript. Do NOT reuse example scores or example summary text.`,
           ];
 
-          let cliBin, cliJudgeArgs, cliJudgeEnv;
-          if (judgeCli === 'gemini') {
-            cliBin = 'gemini';
-            cliJudgeArgs = ['-s', '-o', 'text'];
-            if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
-            cliJudgeEnv = { ...process.env };
-          } else if (judgeCli === 'codex') {
-            cliBin = 'codex';
-            cliJudgeArgs = ['exec', '-'];
-            if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
-            cliJudgeEnv = { ...process.env };
-          } else {
-            cliBin = 'claude';
-            cliJudgeArgs = ['-p', '-', '--output-format', 'text'];
-            if (effectiveJudgeModel) cliJudgeArgs.push('--model', effectiveJudgeModel);
-            cliJudgeEnv = { ...process.env };
-            delete cliJudgeEnv.ANTHROPIC_API_KEY;
-            delete cliJudgeEnv.CLAUDECODE;
-          }
-
           let lastError = null;
           for (let attempt = 0; attempt < attemptPrompts.length; attempt++) {
             try {
-              const stdout = await new Promise((resolve, reject) => {
-                const child = spawn(cliBin, cliJudgeArgs, {
-                  stdio: ['pipe', 'pipe', 'pipe'],
-                  env: cliJudgeEnv,
-                });
-                let out = '';
-                let err = '';
-                child.stdout.on('data', (d) => {
-                  out += d;
-                });
-                child.stderr.on('data', (d) => {
-                  err += d;
-                });
-                child.on('error', reject);
-                child.on('close', (code) => {
-                  if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
-                  else resolve(out);
-                });
-                child.stdin.write(attemptPrompts[attempt]);
-                child.stdin.end();
-              });
+              const stdout = await callSelectedCliJudgeText(
+                judgeCli,
+                effectiveJudgeModel,
+                attemptPrompts[attempt],
+                'eval-cli-learner-evaluation',
+              );
 
               const parsed = evaluationRunner.parseCliJudgeJsonResponse(stdout);
 
@@ -5932,21 +5763,6 @@ async function main() {
             const tutorLastTurnScore = result.tutorLastTurnScore ?? null;
             const judgeModel = judgeModelLabel;
 
-            let cliBin, cliJudgeArgs, cliJudgeEnv;
-            if (judgeCli === 'gemini') {
-              cliBin = 'gemini';
-              cliJudgeArgs = ['-o', 'text'];
-              if (effectiveJudgeModel) cliJudgeArgs.push('-m', effectiveJudgeModel);
-              cliJudgeEnv = { ...process.env };
-            } else {
-              cliBin = 'claude';
-              cliJudgeArgs = ['-p', '-', '--output-format', 'text'];
-              if (effectiveJudgeModel) cliJudgeArgs.push('--model', effectiveJudgeModel);
-              cliJudgeEnv = { ...process.env };
-              delete cliJudgeEnv.ANTHROPIC_API_KEY;
-              delete cliJudgeEnv.CLAUDECODE;
-            }
-
             if (tutorLastTurnScore != null) {
               lastTurnScores.push(tutorLastTurnScore);
 
@@ -5965,24 +5781,12 @@ async function main() {
 
             // ── Helper: call judge and parse JSON response ──
             async function callDialogueJudge(prompt) {
-              const raw = await new Promise((resolve, reject) => {
-                const child = spawn(cliBin, cliJudgeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env: cliJudgeEnv });
-                let out = '';
-                let err = '';
-                child.stdout.on('data', (d) => {
-                  out += d;
-                });
-                child.stderr.on('data', (d) => {
-                  err += d;
-                });
-                child.on('error', reject);
-                child.on('close', (code) => {
-                  if (code !== 0) reject(new Error(err || out || `${cliBin} exited with code ${code}`));
-                  else resolve(out);
-                });
-                child.stdin.write(prompt);
-                child.stdin.end();
-              });
+              const raw = await callSelectedCliJudgeText(
+                judgeCli,
+                effectiveJudgeModel,
+                prompt,
+                'eval-cli-dialogue-evaluation',
+              );
 
               let jsonStr = raw.trim();
               const fm = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);

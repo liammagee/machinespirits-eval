@@ -3,8 +3,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawnSync } from 'child_process';
 import { buildOntologyGuidance } from '../services/ontology/reasoningOntology.js';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -297,29 +297,19 @@ function mockRole(role, payload) {
   throw new Error(`Unknown mock role ${role}`);
 }
 
-function codexRole(role, payload, args) {
-  const outFile = path.join(args.outDir, 'tmp', `${Date.now()}-${role}-${Math.random().toString(36).slice(2)}.txt`);
-  fs.mkdirSync(path.dirname(outFile), { recursive: true });
+async function codexRole(role, payload, args) {
   const prompt = buildRolePrompt(role, payload);
-  const result = spawnSync(
-    'codex',
-    ['exec', '--ephemeral', '--ignore-rules', '--sandbox', 'read-only', '-C', ROOT_DIR, '-o', outFile, '-'],
-    {
-      input: prompt,
-      cwd: ROOT_DIR,
-      encoding: 'utf8',
-      timeout: args.timeoutMs,
-    },
-  );
-  if (result.status !== 0) {
-    throw new Error(`codex role ${role} failed:\n${result.stderr || result.stdout}`);
-  }
-  const text = fs.readFileSync(outFile, 'utf8');
+  const text = await callModelCliText({
+    provider: 'codex',
+    prompt,
+    role: `run-ontology-ab-pilot-${role}`,
+    timeoutMs: args.timeoutMs,
+  });
   return extractJson(text) || { message: text.trim(), raw: text.trim() };
 }
 
-function runRole(role, payload, args) {
-  return args.backend === 'codex' ? codexRole(role, payload, args) : mockRole(role, payload);
+async function runRole(role, payload, args) {
+  return args.backend === 'codex' ? await codexRole(role, payload, args) : mockRole(role, payload);
 }
 
 function buildRolePrompt(role, payload) {
@@ -404,8 +394,8 @@ async function runArm({ arm, opening, args, scenario }) {
   const ontologyGuidance = arm === 'ontology' ? await buildOntologyGuidance({ observations, role: 'tutor_ego' }) : null;
   const dialogue = [{ role: 'learner', content: messageFrom(opening) }];
 
-  const tutorDraft = runRole('tutor_ego', { arm, dialogue, ontologyGuidance, scenario }, args);
-  const tutorCritique = runRole(
+  const tutorDraft = await runRole('tutor_ego', { arm, dialogue, ontologyGuidance, scenario }, args);
+  const tutorCritique = await runRole(
     'tutor_superego',
     { arm, dialogue, draft: tutorDraft, ontologyGuidance, scenario },
     args,
@@ -413,8 +403,8 @@ async function runArm({ arm, opening, args, scenario }) {
   const tutorMessage = messageFrom(tutorCritique) || messageFrom(tutorDraft);
   dialogue.push({ role: 'tutor', content: tutorMessage });
 
-  const learnerDraft = runRole('learner_ego_response', { arm, dialogue, ontologyGuidance, scenario }, args);
-  const learnerCritique = runRole(
+  const learnerDraft = await runRole('learner_ego_response', { arm, dialogue, ontologyGuidance, scenario }, args);
+  const learnerCritique = await runRole(
     'learner_superego_response',
     { arm, dialogue, draft: learnerDraft, ontologyGuidance, scenario },
     args,
@@ -422,7 +412,7 @@ async function runArm({ arm, opening, args, scenario }) {
   const learnerMessage = messageFrom(learnerCritique) || messageFrom(learnerDraft);
   dialogue.push({ role: 'learner', content: learnerMessage });
 
-  const judge = runRole('judge', { arm, dialogue, ontologyGuidance, scenario }, args);
+  const judge = await runRole('judge', { arm, dialogue, ontologyGuidance, scenario }, args);
   const score = {
     policy_alignment: scoreField(judge, 'policy_alignment', ['policyAlignment']),
     recognitive_support: scoreField(judge, 'recognitive_support', ['recognitiveSupport']),
@@ -444,8 +434,8 @@ async function runArm({ arm, opening, args, scenario }) {
 async function runScenarioPilot(args, scenario) {
   const runs = [];
   for (let i = 0; i < args.runs; i++) {
-    const learnerOpeningDraft = runRole('learner_ego_opening', { dialogue: [], scenario }, args);
-    const learnerOpeningCritique = runRole(
+    const learnerOpeningDraft = await runRole('learner_ego_opening', { dialogue: [], scenario }, args);
+    const learnerOpeningCritique = await runRole(
       'learner_superego_opening',
       { dialogue: [], draft: learnerOpeningDraft, scenario },
       args,

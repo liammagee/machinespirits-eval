@@ -1,7 +1,5 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
@@ -9,6 +7,7 @@ import { renderPublicTranscript } from './build-derivation-transcript-pairwise-e
 import { parseJudgeResponse } from '../services/rubricEvaluator.js';
 import { buildDerivationAssessment } from '../services/dramaticDerivation/assessment.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_RUN_DIR = path.join(ROOT, 'exports/dramatic-derivation/cast-layer-paired-transcript-comparison/runs');
@@ -305,90 +304,16 @@ function parseScoredRubric({ raw, rubric }) {
   };
 }
 
-function cliCommand(judgeCli, model, judgeEffort, tmpDir, outFile) {
-  if (judgeCli === 'claude') {
-    const args = ['-p', '-', '--output-format', 'text'];
-    if (model) args.push('--model', model);
-    if (judgeEffort) args.push('--effort', judgeEffort);
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY;
-    delete env.ANTHROPIC_AUTH_TOKEN;
-    delete env.CLAUDECODE;
-    return { bin: 'claude', args, env, cwd: ROOT, outputFile: null };
-  }
-  if (judgeCli === 'codex') {
-    const args = [
-      'exec',
-      '--skip-git-repo-check',
-      '--ephemeral',
-      '-s',
-      'read-only',
-      '-C',
-      tmpDir,
-      '--color',
-      'never',
-      '-o',
-      outFile,
-      '-',
-    ];
-    if (model) args.splice(args.length - 2, 0, '-m', model);
-    return { bin: 'codex', args, env: { ...process.env }, cwd: tmpDir, outputFile: outFile };
-  }
-  if (judgeCli === 'gemini') {
-    const args = ['-s', '-o', 'text'];
-    if (model) args.push('-m', model);
-    return { bin: 'gemini', args, env: { ...process.env }, cwd: ROOT, outputFile: null };
-  }
-  throw new Error(`Unsupported judge CLI: ${judgeCli}`);
-}
-
 async function callCliJudge(prompt, { judgeCli, model, judgeEffort, timeoutMs }) {
   if (judgeCli === 'none') return null;
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-rubric-suite-'));
-  const outFile = path.join(tmpDir, 'last-message.txt');
-  try {
-    const command = cliCommand(judgeCli, model, judgeEffort, tmpDir, outFile);
-    const stdout = await new Promise((resolve, reject) => {
-      const child = spawn(command.bin, command.args, {
-        cwd: command.cwd,
-        env: command.env,
-        stdio: ['pipe', 'pipe', 'pipe'],
-      });
-      let out = '';
-      let err = '';
-      let settled = false;
-      const finish = (fn, value) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        fn(value);
-      };
-      const timer = setTimeout(() => {
-        child.kill('SIGKILL');
-        finish(reject, new Error(`${judgeCli} judge timed out after ${timeoutMs} ms`));
-      }, timeoutMs);
-      child.stdout.on('data', (d) => {
-        out += d;
-      });
-      child.stderr.on('data', (d) => {
-        err += d;
-      });
-      child.on('error', (error) => finish(reject, error));
-      child.on('close', (code) => {
-        if (code !== 0) finish(reject, new Error(err || out || `${command.bin} exited with code ${code}`));
-        else finish(resolve, out);
-      });
-      child.stdin.write(prompt);
-      child.stdin.end();
-    });
-    if (command.outputFile && fs.existsSync(command.outputFile)) {
-      const content = fs.readFileSync(command.outputFile, 'utf8');
-      if (content.trim()) return content;
-    }
-    return stdout;
-  } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-  }
+  return await callModelCliText({
+    provider: judgeCli,
+    model,
+    prompt,
+    role: 'score-derivation-transcript-rubric-suite',
+    effort: judgeEffort,
+    timeoutMs,
+  });
 }
 
 async function mapWithConcurrency(items, limit, worker) {

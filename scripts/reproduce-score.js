@@ -19,7 +19,6 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
-import { spawn } from 'child_process';
 import Database from 'better-sqlite3';
 import { getScenario, setRubricPathOverride, clearRubricPathOverride } from '../services/evalConfigLoader.js';
 import {
@@ -28,6 +27,7 @@ import {
   calculateOverallScore,
 } from '../services/rubricEvaluator.js';
 import { verifyTurnIdsForRow } from '../services/provableDiscourse.js';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -289,30 +289,7 @@ function rebuildSingleTurnPrompt(row, scenarioContext) {
 // ── Step 5: Optional Re-Run ─────────────────────────────────────────────────
 
 async function callClaudeJudge(prompt, model) {
-  const claudeArgs = ['-p', '-', '--output-format', 'text'];
-  if (model) claudeArgs.push('--model', model);
-
-  const stdout = await new Promise((resolve, reject) => {
-    const env = { ...process.env };
-    delete env.ANTHROPIC_API_KEY;
-    delete env.CLAUDECODE;
-    const child = spawn('claude', claudeArgs, { stdio: ['pipe', 'pipe', 'pipe'], env });
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => {
-      out += d;
-    });
-    child.stderr.on('data', (d) => {
-      err += d;
-    });
-    child.on('error', reject);
-    child.on('close', (code) => {
-      if (code !== 0) reject(new Error(err || out || `claude exited with code ${code}`));
-      else resolve(out);
-    });
-    child.stdin.write(prompt);
-    child.stdin.end();
-  });
+  const stdout = await callModelCliText({ provider: 'claude-code', model, prompt, role: 'reproduce-score' });
 
   let jsonStr = stdout.trim();
   const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);

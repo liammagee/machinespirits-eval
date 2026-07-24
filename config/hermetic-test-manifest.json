@@ -32,6 +32,7 @@
         "services/__tests__/loadDialogueLog.test.js",
         "services/__tests__/longitudinalDriftChecker.test.js",
         "services/__tests__/mixedLearnerArtifacts.test.js",
+        "services/__tests__/modelCliProcessPolicy.test.js",
         "services/__tests__/oedipusSecretGuard.test.js",
         "services/__tests__/promptRecommendationService.test.js",
         "services/__tests__/resistanceSignalGate.test.js",
