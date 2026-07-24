@@ -7,19 +7,21 @@ import process from 'node:process';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
+import {
+  discoverCoreTestFiles,
+  discoverRootTestFiles,
+  loadTestManifest,
+  parseNodeTapSummary,
+  parseVitestJsonSummary,
+  printPhaseSummary,
+  validatePhaseSummary,
+  validateTestManifest,
+} from './hermetic-test-contract.js';
+
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const ROOT_TEST_DIRECTORIES = ['services/__tests__', 'tests'];
-const CORE_TEST_DIRECTORY = 'tutor-core/services/__tests__';
 const VALID_SUITES = new Set(['all', 'root', 'core']);
 
-export function discoverRootTestFiles(projectRoot = PROJECT_ROOT) {
-  return ROOT_TEST_DIRECTORIES.flatMap((directory) =>
-    fs
-      .readdirSync(path.join(projectRoot, directory), { withFileTypes: true })
-      .filter((entry) => entry.isFile() && entry.name.endsWith('.test.js'))
-      .map((entry) => path.join(directory, entry.name)),
-  );
-}
+export { discoverCoreTestFiles, discoverRootTestFiles } from './hermetic-test-contract.js';
 
 export function parseRunnerArgs(argv = []) {
   let suite = 'all';
@@ -46,6 +48,12 @@ export function parseRunnerArgs(argv = []) {
   if (!VALID_SUITES.has(suite)) {
     throw new Error(`Invalid test suite "${suite}"; expected all, root, or core`);
   }
+  if (forwarded.some((argument) => argument.startsWith('--test-reporter'))) {
+    throw new Error('Hermetic root tests reserve --test-reporter for manifest accounting');
+  }
+  if (forwarded.some((argument) => argument.startsWith('--reporter') || argument.startsWith('--outputFile'))) {
+    throw new Error('Hermetic core tests reserve --reporter/--outputFile for manifest accounting');
+  }
 
   // Preserve the historical `npm test -- tests/example.test.js` behavior:
   // explicit test paths select the root Node test phase unless the caller
@@ -71,23 +79,31 @@ export function createIsolatedPaths(root) {
 
 export function buildRootTestArgs({ projectRoot = PROJECT_ROOT, forceExit = true, forwarded = [] } = {}) {
   const testFiles = forwarded.length ? forwarded : discoverRootTestFiles(projectRoot);
-  return ['--test', ...(forceExit ? ['--test-force-exit'] : []), ...testFiles];
+  return ['--test', '--test-reporter=tap', ...(forceExit ? ['--test-force-exit'] : []), ...testFiles];
 }
 
-export function buildCoreTestArgs({ projectRoot = PROJECT_ROOT, forwarded = [] } = {}) {
+export function buildCoreTestArgs({ projectRoot = PROJECT_ROOT, forwarded = [], reportPath } = {}) {
+  const testFiles = forwarded.length ? forwarded : discoverCoreTestFiles(projectRoot);
   return [
     path.join(projectRoot, 'node_modules', 'vitest', 'vitest.mjs'),
     'run',
-    ...(forwarded.length ? forwarded : [CORE_TEST_DIRECTORY]),
+    ...testFiles,
+    '--reporter=default',
+    '--reporter=json',
+    `--outputFile.json=${reportPath}`,
   ];
 }
 
-export function buildTestPhases(options, projectRoot = PROJECT_ROOT) {
+export function buildTestPhases(options, projectRoot = PROJECT_ROOT, reportRoot = projectRoot) {
   const phases = [];
   if (options.suite === 'all' || options.suite === 'root') {
+    const selectedFiles = options.forwarded.length
+      ? options.forwarded.filter((argument) => argument.endsWith('.test.js'))
+      : discoverRootTestFiles(projectRoot);
     phases.push({
       phase: 'root',
       forceExit: options.forceExit,
+      selectedFiles,
       args: buildRootTestArgs({
         projectRoot,
         forceExit: options.forceExit,
@@ -96,12 +112,18 @@ export function buildTestPhases(options, projectRoot = PROJECT_ROOT) {
     });
   }
   if (options.suite === 'all' || options.suite === 'core') {
+    const forwarded = options.suite === 'core' ? options.forwarded : [];
     phases.push({
       phase: 'core',
       forceExit: false,
+      selectedFiles: forwarded.length
+        ? forwarded.filter((argument) => argument.endsWith('.test.js'))
+        : discoverCoreTestFiles(projectRoot),
+      reportPath: path.join(reportRoot, 'tutor-core-vitest-results.json'),
       args: buildCoreTestArgs({
         projectRoot,
-        forwarded: options.suite === 'core' ? options.forwarded : [],
+        forwarded,
+        reportPath: path.join(reportRoot, 'tutor-core-vitest-results.json'),
       }),
     });
   }
@@ -119,17 +141,42 @@ function runPhase({ phase, forceExit, args, env, projectRoot = PROJECT_ROOT, onC
     const child = spawn(process.execPath, args, {
       cwd: projectRoot,
       env,
-      stdio: 'inherit',
+      stdio: ['inherit', 'pipe', 'pipe'],
       shell: false,
+    });
+    const stdoutChunks = [];
+    const stderrChunks = [];
+    child.stdout.on('data', (chunk) => {
+      stdoutChunks.push(chunk);
+      process.stdout.write(chunk);
+    });
+    child.stderr.on('data', (chunk) => {
+      stderrChunks.push(chunk);
+      process.stderr.write(chunk);
     });
     onChild(child);
     child.once('error', reject);
-    child.once('exit', (code, signal) => resolve({ code: code ?? 1, signal }));
+    child.once('exit', (code, signal) =>
+      resolve({
+        code: code ?? 1,
+        signal,
+        stdout: Buffer.concat(stdoutChunks).toString('utf8'),
+        stderr: Buffer.concat(stderrChunks).toString('utf8'),
+      }),
+    );
   });
+}
+
+function readPhaseSummary(phase, result, projectRoot) {
+  if (phase.phase === 'root') return parseNodeTapSummary(result.stdout);
+  if (!fs.existsSync(phase.reportPath)) throw new Error('core Vitest phase omitted its JSON report');
+  return parseVitestJsonSummary(fs.readFileSync(phase.reportPath, 'utf8'), projectRoot);
 }
 
 export async function runHermeticTests(argv = process.argv.slice(2)) {
   const options = parseRunnerArgs(argv);
+  const manifest = loadTestManifest(PROJECT_ROOT);
+  const manifestState = validateTestManifest(manifest, PROJECT_ROOT);
   const hermeticRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'machinespirits-tests-'));
   const isolatedPaths = createIsolatedPaths(hermeticRoot);
   const env = {
@@ -159,13 +206,22 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
       return 0;
     }
 
-    for (const phase of buildTestPhases(options)) {
+    for (const phase of buildTestPhases(options, PROJECT_ROOT, hermeticRoot)) {
       const result = await runPhase({ ...phase, env, onChild: (child) => (currentChild = child) });
       currentChild = null;
       if (result.signal) {
         interruptedSignal = result.signal;
         return 1;
       }
+      const phaseSummary = validatePhaseSummary({
+        phase: phase.phase,
+        summary: readPhaseSummary(phase, result, PROJECT_ROOT),
+        selectedFiles: phase.selectedFiles,
+        allowedSkips: manifestState.allowedSkips,
+        env,
+        requireExactFiles: phase.selectedFiles.length > 0,
+      });
+      printPhaseSummary(phase.phase, phaseSummary);
       if (result.code !== 0) return result.code;
     }
     return 0;
