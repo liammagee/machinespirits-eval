@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-07-24
+updated: 2026-07-25
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -30,7 +30,7 @@ links:
     - refactor-tutor-core-cycle
     - refactor-tutor-response-cycle
     - refactor-adaptive-trace-projection
-    - refactor-tutor-response-cycle
+    - refactor-field-policy-helpers
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -148,3 +148,12 @@ Log:
   plus full hermetic parity green. The next queued duplicate family is the
   field trajectory/register-policy helper slice on
   `codex/refactor-field-policy-helpers` after this branch lands.
+- 2026-07-25 — PR #202 merged and closed the adaptive trace-projection child.
+  Activated the bounded field trajectory/register-policy helper consolidation
+  on `codex/refactor-field-policy-helpers`; the intentionally divergent
+  acceleration-aware trajectory window remains out of scope.
+- 2026-07-25 — The field-policy helper child reached review with a neutral DAG
+  feature leaf, eight exact register-policy declarations removed, facade
+  binding identity plus deep-equality coverage, and focused/full hermetic parity
+  green. The next queued duplicate family is forbidden-key auditing on
+  `codex/refactor-forbidden-key-audit` after this branch lands.

@@ -19,6 +19,16 @@
 
 import { getRegisterOntologyVersion, resolveEngagementStance } from './engagementRegisterRegistry.js';
 import { tutorStubComprehensionFeatures } from './tutorStubComprehensionState.js';
+import { dagProgressFeatures } from './tutorStubDagFeatures.js';
+import {
+  classifyFieldStateRelation,
+  fieldProgressFromClassification,
+  learnerDagDeltaForFieldPolicy,
+  learnerSurfaceFieldPoint,
+  meanFinite,
+  normalizedClassifierScore,
+  previousLearnerSurfaceFieldPoint,
+} from './tutorStubFieldTrajectory.js';
 import {
   DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
   temperTutorStubEngagementStanceScores,
@@ -134,92 +144,12 @@ function scoreValue(score) {
 }
 
 // --- Learner-DAG progress features + learner-surface field points ---
-
-function dagProgressFeatures(model) {
-  const metrics = model?.metrics || {};
-  const assessment = model?.assessment || {};
-  return {
-    bestPathCoverage: Number(assessment.bestPathCoverage || 0),
-    groundedCount: Number(metrics.groundedCount || 0),
-    voicedDerivedCount: Number(metrics.voicedDerivedCount || 0),
-    candidateConclusionCount: Number(metrics.candidateConclusionCount || 0),
-    answerCandidateCount: Number(metrics.answerCandidateCount || 0),
-    missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0),
-    unsupportedAssertionCount: Number(assessment.unsupportedAssertionCount || 0),
-    finalSecretEntailed: assessment.finalSecretEntailed === true,
-    assertedSecret: assessment.assertedSecret === true,
-    assertedMirror: assessment.assertedMirror === true,
-  };
-}
-
-function meanFinite(values) {
-  const finite = values.filter((value) => Number.isFinite(value));
-  if (!finite.length) return null;
-  return finite.reduce((sum, value) => sum + value, 0) / finite.length;
-}
+// Canonical pure projections come from tutorStubFieldTrajectory.js. This
+// module re-exports those bindings below to preserve its compatibility facade.
 
 function rankLearnerFieldLabel(axis, value) {
   if (value === undefined || value === null) return null;
   return LEARNER_FIELD_RANKS[axis]?.[String(value).trim()] ?? null;
-}
-
-function normalizedClassifierScore(score) {
-  const numeric = Number(scoreValue(score));
-  return Number.isFinite(numeric) ? clampField01((numeric - 1) / 4) : null;
-}
-
-function learnerSurfaceFieldPoint(classification) {
-  const turn = classification?.turn || {};
-  const scores = turn.scores || {};
-  const dimensions = {
-    conceptual: normalizedClassifierScore(scores.conceptual_engagement),
-    epistemic: normalizedClassifierScore(scores.epistemic_readiness),
-    evidence: rankLearnerFieldLabel('evidence_use', turn.evidence_use),
-    agency: rankLearnerFieldLabel('agency', turn.agency),
-    stance: rankLearnerFieldLabel('epistemic_stance', turn.epistemic_stance),
-    discourse: rankLearnerFieldLabel('discourse_move', turn.discourse_move),
-  };
-  return {
-    score: meanFinite(Object.values(dimensions)),
-    dimensions,
-    labels: {
-      discourse_move: turn.discourse_move || null,
-      evidence_use: turn.evidence_use || null,
-      epistemic_stance: turn.epistemic_stance || null,
-      agency: turn.agency || null,
-    },
-    summary: turn.summary || null,
-  };
-}
-
-function previousLearnerSurfaceFieldPoint(state) {
-  const previousTurn = [...(state.turns || [])].reverse().find((turn) => turn.classification);
-  return previousTurn ? learnerSurfaceFieldPoint(previousTurn.classification) : null;
-}
-
-function fieldProgressFromClassification({ state, classification }) {
-  const before = previousLearnerSurfaceFieldPoint(state);
-  const after = learnerSurfaceFieldPoint(classification);
-  const delta =
-    before?.score === null || before?.score === undefined || after?.score === null || after?.score === undefined
-      ? null
-      : Number((after.score - before.score).toFixed(3));
-  return {
-    threshold: FIELD_PROGRESS_THRESHOLD,
-    beforeScore: before?.score ?? null,
-    afterScore: after?.score ?? null,
-    delta,
-    progress: delta !== null && delta >= FIELD_PROGRESS_THRESHOLD,
-    before: before || null,
-    after,
-  };
-}
-
-function classifyFieldStateRelation({ fieldProgress, dagProgress }) {
-  if (fieldProgress && !dagProgress) return 'field_without_dag';
-  if (dagProgress && !fieldProgress) return 'dag_without_field';
-  if (fieldProgress && dagProgress) return 'both_progress';
-  return 'neither_progress';
 }
 
 function summarizeDagDeltas(delta) {
@@ -381,28 +311,6 @@ function multiplyRegisterScore(scores, register, factor, drivers, reason) {
   if (!hasScoreRegister(scores, register) || !Number.isFinite(Number(factor))) return;
   scores[register] *= Number(factor);
   if (reason) drivers.push(`${register}x${Number(factor).toFixed(2)} ${reason}`);
-}
-
-function learnerDagDeltaForFieldPolicy({ state, tutorLearnerDag }) {
-  const previous = state.turns?.at(-1)?.tutorLearnerDagModel || null;
-  const current = tutorLearnerDag?.model || null;
-  const before = dagProgressFeatures(previous);
-  const after = dagProgressFeatures(current);
-  const delta = Object.fromEntries(Object.keys(after).map((key) => [key, Number(after[key]) - Number(before[key])]));
-  const progressScore =
-    delta.bestPathCoverage * 4 +
-    delta.groundedCount +
-    delta.voicedDerivedCount * 2 +
-    delta.candidateConclusionCount +
-    delta.answerCandidateCount * 3 -
-    Math.max(0, delta.unsupportedAssertionCount);
-  return {
-    before,
-    after,
-    delta,
-    progressScore: Number(progressScore.toFixed(3)),
-    progress: progressScore > 0,
-  };
 }
 
 function fieldRegisterPolicyFeatures({ state, classification, tutorLearnerDag }) {

@@ -4,6 +4,10 @@
  * process state so a saved turn can be projected exactly as it was live.
  */
 
+import { dagProgressFeatures } from './tutorStubDagFeatures.js';
+
+export { dagProgressFeatures };
+
 export const FIELD_PROGRESS_THRESHOLD = 0.05;
 
 export const LEARNER_FIELD_RANKS = Object.freeze({
@@ -93,23 +97,6 @@ function roundOptionalField(value) {
 function rankLearnerFieldLabel(axis, value) {
   if (value === undefined || value === null) return null;
   return LEARNER_FIELD_RANKS[axis]?.[String(value).trim()] ?? null;
-}
-
-export function dagProgressFeatures(model) {
-  const metrics = model?.metrics || {};
-  const assessment = model?.assessment || {};
-  return {
-    bestPathCoverage: Number(assessment.bestPathCoverage || 0),
-    groundedCount: Number(metrics.groundedCount || 0),
-    voicedDerivedCount: Number(metrics.voicedDerivedCount || 0),
-    candidateConclusionCount: Number(metrics.candidateConclusionCount || 0),
-    answerCandidateCount: Number(metrics.answerCandidateCount || 0),
-    missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0),
-    unsupportedAssertionCount: Number(assessment.unsupportedAssertionCount || 0),
-    finalSecretEntailed: assessment.finalSecretEntailed === true,
-    assertedSecret: assessment.assertedSecret === true,
-    assertedMirror: assessment.assertedMirror === true,
-  };
 }
 
 export function learnerSurfaceFieldPoint(classification) {
