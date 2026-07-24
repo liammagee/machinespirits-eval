@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-24T21:41:37.288Z",
+  "generated": "2026-07-24T22:00:57.188Z",
   "counts": {
-    "total": 175,
+    "total": 176,
     "byStatus": {
       "done": 145,
       "blocked": 3,
@@ -9,12 +9,12 @@
       "triaged": 17,
       "active": 2,
       "archived": 4,
-      "review": 2
+      "review": 3
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 38,
+      "infra": 39,
       "maintenance": 27,
       "content": 2,
       "paper": 6,
@@ -736,6 +736,32 @@
         "projections"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "workplan-source-only-generated-views",
+      "title": "Make feature PRs source-only for generated workplan views",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-24",
+      "updated": "2026-07-25",
+      "branch": "codex/workplan-source-only-prs",
+      "verification": "Feature PR CI rejects generated-view diffs while `wp:source-check` and workplan tests pass, and the serialized main renderer regenerates and strictly validates both views.",
+      "links": {
+        "notes": "workplan/playbook/git-and-workflow.md",
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/207"
+        ]
+      },
+      "tags": [
+        "workplan",
+        "ci",
+        "merge-conflicts",
+        "generated-artifacts"
+      ],
+      "milestone": "board-pm"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
