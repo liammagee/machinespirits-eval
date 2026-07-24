@@ -18,6 +18,16 @@ jobs:
 
       - run: npm ci
 
+      - name: Fetch managed archive branches and tags
+        run: >-
+          git fetch origin
+          '+refs/heads/archive/*:refs/remotes/origin/archive/*'
+          '+refs/tags/*:refs/tags/*'
+          --prune
+
+      - name: Validate ref and version registry
+        run: npm run refs:check
+
       - run: npm run lint
       - run: npm run format:check
 

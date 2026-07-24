@@ -41,7 +41,19 @@ archive/program-2-corpus-v2-YYYY-MM-DD
 Preserve the Git history twice:
 
 - a remote `archive/...` branch, so the tree remains browsable; and
-- an annotated tag with the same name, treated as the immutable commit anchor.
+- an annotated `archive-snapshot/...` tag, treated as the immutable commit
+  anchor.
+
+For the example branch above, the tag is:
+
+```text
+archive-snapshot/program-2-corpus-v2-YYYY-MM-DD
+```
+
+The namespaces differ deliberately. A branch and tag with the same short name
+make commands such as `git show archive/foo` ambiguous. Existing same-name and
+tag-only `archive/...` tags are grandfathered and remain immutable; do not
+rename or delete them merely to adopt this policy.
 
 The tag message must state:
 
@@ -73,7 +85,7 @@ Worktree and local-branch deletion is allowed only after all applicable checks
 pass:
 
 - the remote archive branch resolves to the intended commit;
-- the annotated tag dereferences to the same commit;
+- the annotated `archive-snapshot/...` tag dereferences to the same commit;
 - each private archive can be listed or opened successfully;
 - its checksum matches the value recorded in the tag; and
 - no uncommitted tracked work or unreviewed local artifact remains.
@@ -81,6 +93,17 @@ pass:
 Then remove the worktree and local source branch. Keep the remote archive
 branch and tag. A forced worktree removal is acceptable only when every
 remaining ignored or untracked file was classified as disposable or backed up.
+
+After fetching all branches and tags, refresh the generated archive registry:
+
+```bash
+git fetch --all --tags --prune
+npm run refs:render
+npm run refs:check
+```
+
+The registry is [docs/ref-status.md](ref-status.md); naming and version-family
+rules are in [Tagging and Version Protocol](tagging-and-version-protocol.md).
 
 ## Workplan and paper discipline
 
@@ -98,4 +121,5 @@ source-of-truth and provenance rules.
 Never resume development directly on the archive branch. Start a fresh branch
 from current `origin/main`, restore only the required files or commits, restore
 private artifacts from their verified bundle, and re-run current validation.
-Document the archive ref as provenance in the new workplan card or pull request.
+Document the archive branch and `archive-snapshot/...` tag as provenance in the
+new workplan card or pull request.

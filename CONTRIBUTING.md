@@ -62,7 +62,21 @@ Tests use `node --test` with files in `services/__tests__/` and `tests/`. Add ne
 1. Fork the repository and create a feature branch
 2. Make your changes with tests where applicable
 3. Run `npm test` to verify nothing is broken
-4. Open a pull request against `main`
+4. Classify the pull request's ref/version impact using
+   [`docs/tagging-and-version-protocol.md`](docs/tagging-and-version-protocol.md)
+5. Fetch managed refs and run the registry check:
+
+   ```bash
+   git fetch --all --tags --prune
+   npm run refs:check
+   ```
+
+6. Complete the workplan and ref/version sections of the pull-request template
+7. Open the pull request against `main`
+
+Do not create a managed release, paper, experiment, or archive-snapshot tag on
+a feature branch. Tags are created only after merge, once the intended `main`
+commit and its required validation have been confirmed.
 
 ## Reporting issues
 

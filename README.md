@@ -160,6 +160,15 @@ is a closed evidence archive, and root-level `*-PLAN.md` files are planning and
 evidence ledgers unless a matching workplan item makes the work live. Start with
 `PLAN_2_0/README.md` for the Plan 2.x archive map.
 
+### Ref and version governance
+
+Repository releases, paper checkpoints, experiment freezes/results, and
+archived branch snapshots use separate annotated-tag namespaces. See the
+[tagging and version protocol](docs/tagging-and-version-protocol.md) and the
+generated [ref/version status](docs/ref-status.md). Refresh the inventory with
+`git fetch --all --tags --prune && npm run refs:render`; validate it with
+`npm run refs:check`.
+
 ### Key configuration files
 
 - `config/tutor-agents.yaml` — Experimental cells and their prompt / runner mappings
