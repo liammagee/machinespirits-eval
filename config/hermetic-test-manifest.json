@@ -481,14 +481,6 @@
   ],
   "allowedSkips": [
     {
-      "id": "v-series-machine-artifacts",
-      "suite": "root",
-      "reasonPattern": "^machine-local V-series artifacts absent on this host$",
-      "owner": "tutor-stub-first-draft-series",
-      "reason": "Historical V-series pins currently require the private machine-local artifact root.",
-      "removalSlice": "codex/refactor-v-series-fixtures"
-    },
-    {
       "id": "paper-superego-private-archive",
       "suite": "root",
       "reasonPattern": "^archived corpus absent \\(.+\\); sibling private repo not checked out$",

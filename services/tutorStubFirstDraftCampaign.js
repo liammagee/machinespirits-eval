@@ -24,6 +24,8 @@ import { summarizeTutorStubPromptSizeReports } from './tutorStubPromptSizeReport
 
 export const TUTOR_STUB_FIRST_DRAFT_CAMPAIGN_SCHEMA = 'machinespirits.tutor-stub.first-draft-campaign-plan.v1';
 const CAMPAIGN_REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const V_SERIES_FIXTURE_SCHEMA = 'machinespirits.tutor-stub.v-series-source-fixtures.v1';
+const DEFAULT_V_SERIES_FIXTURE_ROOT = path.join(CAMPAIGN_REPO_ROOT, 'tests', 'fixtures', 'tutor-stub-first-draft');
 
 export function aggregateTutorStubFirstDraftCampaignTokenUsage(cells = []) {
   const completed = (Array.isArray(cells) ? cells : [])
@@ -161,6 +163,92 @@ function sha256File(filePath) {
   return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
 
+function vSeriesFixtureRoot() {
+  const configured = String(process.env.TUTOR_STUB_V_SERIES_FIXTURE_ROOT || '').trim();
+  return configured ? path.resolve(configured) : DEFAULT_V_SERIES_FIXTURE_ROOT;
+}
+
+function resolveVSeriesSourceFixture({ sourceTrace, sourceTraceSha256, turn = null } = {}) {
+  const fixtureRoot = vSeriesFixtureRoot();
+  const manifestPath = path.join(fixtureRoot, 'v-series-source-fixtures.json');
+  if (!fs.existsSync(manifestPath)) return null;
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  if (manifest?.schema !== V_SERIES_FIXTURE_SCHEMA || !Array.isArray(manifest.fixtures)) {
+    throw new Error(`invalid V-series source fixture manifest: ${manifestPath}`);
+  }
+  const pathMatches = manifest.fixtures.filter(
+    (entry) => path.resolve(entry.source_trace) === path.resolve(sourceTrace),
+  );
+  if (!pathMatches.length) return null;
+  const entry = pathMatches.find((candidate) => candidate.source_trace_sha256 === sourceTraceSha256);
+  if (!entry) throw new Error('source trace hash does not match the predeclaration');
+  if (turn != null && Number(entry.turn) !== Number(turn)) {
+    throw new Error(`V-series source fixture has no frozen turn ${turn}: ${sourceTrace}`);
+  }
+  const fixturePath = path.resolve(fixtureRoot, requiredString(entry.fixture, 'V-series source fixture path'));
+  if (!fs.existsSync(fixturePath)) throw new Error(`V-series source fixture is missing: ${fixturePath}`);
+  if (sha256File(fixturePath) !== entry.fixture_sha256) {
+    throw new Error(`V-series source fixture hash does not match its manifest: ${fixturePath}`);
+  }
+  const fixture = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
+  if (path.resolve(fixture.sourceTrace || '') !== path.resolve(sourceTrace)) {
+    throw new Error(`V-series source fixture provenance does not match: ${fixturePath}`);
+  }
+  const sourceCase = (fixture.cases || []).find((candidate) => candidate.id === entry.case_id);
+  if (
+    !sourceCase?.bundle ||
+    Number(sourceCase.turn) !== Number(entry.turn) ||
+    path.resolve(sourceCase.bundle.sourceTrace || '') !== path.resolve(sourceTrace)
+  ) {
+    throw new Error(`V-series source fixture case does not match its manifest: ${fixturePath}`);
+  }
+  return {
+    kind: 'repo_fixture',
+    sourceTrace,
+    sourceTraceSha256,
+    fixturePath,
+    turn: Number(entry.turn),
+    bundle: structuredClone(sourceCase.bundle),
+    priorTutorDeliverySources: structuredClone(entry.prior_tutor_delivery_sources || []),
+  };
+}
+
+function resolveTutorStubFirstDraftFrozenSource({ root, cell, turn = null } = {}) {
+  const sourceTrace = absolute(root, cell.source_trace);
+  const sourceTraceSha256 = cell.source_trace_sha256 || null;
+  const preferRepoFixture = String(process.env.TUTOR_STUB_V_SERIES_FIXTURE_ROOT || '').trim().length > 0;
+  if (!preferRepoFixture && fs.existsSync(sourceTrace)) {
+    if (sourceTraceSha256 && sha256File(sourceTrace) !== sourceTraceSha256) {
+      throw new Error(`${cell.id} source trace hash does not match the predeclaration`);
+    }
+    return {
+      kind: 'sealed_trace',
+      sourceTrace,
+      sourceTraceSha256,
+      bundle: null,
+      priorTutorDeliverySources: null,
+    };
+  }
+  const fixture = resolveVSeriesSourceFixture({ sourceTrace, sourceTraceSha256, turn });
+  if (fixture) return fixture;
+  if (!fs.existsSync(sourceTrace)) throw new Error(`${cell.id} source trace is missing: ${sourceTrace}`);
+  if (sourceTraceSha256 && sha256File(sourceTrace) !== sourceTraceSha256) {
+    throw new Error(`${cell.id} source trace hash does not match the predeclaration`);
+  }
+  return {
+    kind: 'sealed_trace',
+    sourceTrace,
+    sourceTraceSha256,
+    bundle: null,
+    priorTutorDeliverySources: null,
+  };
+}
+
+export function loadTutorStubFirstDraftFrozenBundle({ root = process.cwd(), cell, turn } = {}) {
+  const source = resolveTutorStubFirstDraftFrozenSource({ root, cell, turn });
+  return source.bundle || extractTutorStubFrozenTurn({ tracePath: source.sourceTrace, turn });
+}
+
 function priorTutorDeliverySources(tracePath, targetTurn) {
   const rows = [];
   for (const line of fs.readFileSync(tracePath, 'utf8').split(/\r?\n/u)) {
@@ -192,8 +280,8 @@ function worldForFrozenBundle(root, worldId) {
   return loadWorld(matches[0]);
 }
 
-function refreshedCampaignBundle({ root, trace, turn, sourceAccessibilityPolicy = 'direct_only' }) {
-  const extracted = extractTutorStubFrozenTurn({ tracePath: trace, turn });
+function refreshedCampaignBundle({ root, trace, bundle = null, turn, sourceAccessibilityPolicy = 'direct_only' }) {
+  const extracted = bundle || extractTutorStubFrozenTurn({ tracePath: trace, turn });
   return refreshTutorStubFrozenFirstDraftRequest({
     bundle: extracted,
     world: worldForFrozenBundle(root, extracted.worldId),
@@ -547,23 +635,23 @@ function validateWorkingScreen(config, { root }) {
         throw new Error(`${id} structural activation declarations must exactly cover its required targets`);
       }
     }
-    const trace = absolute(root, cell.source_trace);
-    if (!fs.existsSync(trace)) throw new Error(`${id} source trace is missing: ${trace}`);
-    if (cell.source_trace_sha256 && sha256File(trace) !== cell.source_trace_sha256) {
-      throw new Error(`${id} source trace hash does not match the predeclaration`);
-    }
     const turns = [...new Set((cell.turns || []).map(Number))];
     if (turns.length !== requiredPrefixes || turns.some((turn) => !Number.isInteger(turn) || turn < 1)) {
       throw new Error(`${id} must declare exactly ${requiredPrefixes} distinct positive prefixes`);
     }
+    const targetTurn = cell.prefix_integrity
+      ? integer(cell.prefix_integrity.target_turn, `${id} target turn`, { minimum: 1 })
+      : null;
+    const frozenSource = resolveTutorStubFirstDraftFrozenSource({ root, cell, turn: targetTurn });
+    const trace = frozenSource.sourceTrace;
     if (cell.prefix_integrity) {
-      const targetTurn = integer(cell.prefix_integrity.target_turn, `${id} target turn`, { minimum: 1 });
       if (!turns.includes(targetTurn)) throw new Error(`${id} target turn must be a declared prefix`);
       const requiredSource = requiredString(
         cell.prefix_integrity.required_prior_delivery_source,
         `${id} required prior delivery source`,
       );
-      const observed = priorTutorDeliverySources(trace, targetTurn);
+      const observed =
+        frozenSource.priorTutorDeliverySources || priorTutorDeliverySources(frozenSource.sourceTrace, targetTurn);
       const expectedTurns = (cell.prefix_integrity.verified_prior_turns || []).map(Number);
       if (JSON.stringify(observed.map((row) => row.turn)) !== JSON.stringify(expectedTurns)) {
         throw new Error(`${id} prior delivery turn inventory does not match the trace`);
@@ -575,6 +663,7 @@ function validateWorkingScreen(config, { root }) {
         const bundle = refreshedCampaignBundle({
           root,
           trace,
+          bundle: frozenSource.bundle,
           turn: targetTurn,
           sourceAccessibilityPolicy,
         });

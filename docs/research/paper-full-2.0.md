@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "July 2026"
-version: "3.0.228"
+version: "3.0.229"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -89,7 +89,7 @@ The two supported mechanisms are separable: calibration is a prompt-level effect
 
 To move from ablative findings to mechanistic explanation, we adopt **process tracing**---a methodology from comparative politics [@bennett2015process] that examines causal chains *within* cases rather than statistical patterns *across* cases. Our architecture's observability makes this unusually feasible: every ego-superego exchange is logged with verbatim text, every turn is independently scored, and every revision is recorded with full provenance.
 
-We combine process tracing with three analytical methods: a superego critique taxonomy classifying what the superego objects to empirically (Section 5.1), revision delta analysis measuring how the ego's output changes after critique (Section 5.2), and turn-by-turn trajectory analysis testing whether adaptation accumulates across conversations (Section 5.3). Every mechanistic claim is registered in a provable discourse framework that machine-verifies assertions against data, tracks claim staleness, and enforces cross-claim consistency.
+We combine process tracing with three analytical methods: a superego critique taxonomy classifying what the superego objects to empirically (Section 5.3), revision-outcome analysis measuring how the ego's output changes after critique (also Section 5.3), and turn-by-turn trajectory analysis testing whether adaptation accumulates across conversations (Section 5.4). Every mechanistic claim is registered in a provable discourse framework that machine-verifies assertions against data, tracks claim staleness, and enforces cross-claim consistency.
 
 ### The apparatus as method
 
@@ -185,7 +185,7 @@ Process tracing is a methodology from comparative politics and qualitative socia
 
 The application of process tracing to AI systems is, to our knowledge, novel. Traditional process tracing studies political decisions, institutional changes, or policy outcomes where the "mechanism" is a sequence of human decisions. Our architecture provides an unusually transparent analogue: every ego-superego exchange is logged with verbatim text, every turn is independently scored, and every revision is recorded. The dialogue trace constitutes the kind of within-case evidence that process tracing requires---we can observe the causal chain from prompt orientation through internal critique to output modification in individual dialogues, then aggregate across cases to test mechanism-level predictions.
 
-The methodological parallel is precise: process tracing in political science "opens the black box" of decision-making by examining deliberative records. Our architecture *creates* a deliberative record (the ego-superego exchange) that can be examined in exactly this way. The superego critique taxonomy (Section 5.1) functions as a coding scheme for deliberative content; the revision delta analysis (Section 5.2) traces how critique changes output; and the trajectory analysis (Section 5.3) examines how these processes accumulate across conversation turns.
+The methodological parallel is precise: process tracing in political science "opens the black box" of decision-making by examining deliberative records. Our architecture *creates* a deliberative record (the ego-superego exchange) that can be examined in exactly this way. The superego critique taxonomy and linked revision-outcome analysis (Section 5.3) code deliberative content and trace how critique changes output; the trajectory analysis (Section 5.4) examines how these processes accumulate across conversation turns.
 
 One caveat sharpens the analogy rather than dissolving it. Process tracing in political science reconstructs a record of human decisions, whereas our deliberation text is neither a human decision record nor a neural mechanism: it is an engineered artifact emitted by the same generative system under study. We therefore adopt the more precise label *engineered trace analysis*. The architecture is built to emit intermediate artifacts---prompt context, ego drafts, superego critiques, revisions, delivered outputs, and scores---whose relationship to final behavior can be coded, ablated, and cross-checked, with process tracing as the methodological inspiration rather than a literal claim of equivalence.
 
@@ -267,7 +267,7 @@ We motivate three candidate mechanisms drawing on specific components of Hegel's
 
 **Pilot evidence.** Qualitative transcript assessment (eval-2026-02-07-b6d75e87, N=118) reveals the contrast starkly. In baseline ego/superego dialogues, the superego correctly diagnoses problems but the ego regenerates the same response --- assessors tagged this "ego compliance" (70.7% of baseline bilateral dialogues vs. 60.0% recognition). The stalling tag (no meaningful evolution across turns) appears in 100% of base bilateral dialogues and drops to 45% with recognition. With recognition, the ego pivots: from prescriptive to Socratic, from content routing to engagement. The factorial interaction supports this interpretation: in the pilot $2 \times 2 \times 2$ (N=350), base ego_superego learners scored 72.6 while recognition ego_superego learners scored 85.6, a 13.0-point delta. The unified learner delta was 15.6 points (74.5 to 90.1), suggesting error correction provides a consistent but not dramatically larger benefit beyond calibration alone.
 
-**Evidence needed beyond pilot.** Systematic superego critique taxonomy (Section 5.1), revision delta classification (Section 5.2), and critique-to-revision mapping showing the causal chain from superego category to ego response type. *Addressed in Section 6.2.*
+**Evidence needed beyond pilot.** Systematic superego critique taxonomy, revision-outcome classification, and critique-to-revision mapping (Section 5.3) showing the causal chain from superego category to ego response type. *Addressed in Section 6.2.*
 
 **Key distinction.** Error correction is not "having a critic." Baseline multiagent architecture *adds* a critic, but the critic is ineffective when the ego treats critique as noise to be minimized. Recognition transforms the ego-superego relationship from compliance to deliberation. The failure cases are equally informative: when the superego adopts an adversary disposition, the adversary over-deference spiral can emerge (eval-2026-02-11-35c53e99, cells 24--25: base adversary 55.8 vs. recognition adversary 65.2), and when the superego adopts an advocate disposition, recognition adds near-zero benefit because there is no struggle to overcome.
 
@@ -457,7 +457,7 @@ The architecture provides four levels of observability for process tracing:
 3. **Provenance chain**: Content hashes, configuration hashes, prompt versions, and dialogue IDs linking scored results to raw dialogue logs
 4. **Factorial structure**: Cell definitions that map directly to mechanism isolation tests, with explicit factor tags stored in the database
 
-This observability infrastructure is not incidental --- it was designed to support the process tracing methodology described in Section 5. The trace logging makes superego critique taxonomy (Section 5.1) possible by providing verbatim critique text; the per-turn scoring enables trajectory analysis (Section 5.3) by providing score vectors over time; and the factorial structure enables mechanism isolation (Section 5.4) by providing controlled comparisons that separate prompt-level from architecture-level effects.
+This observability infrastructure is not incidental --- it was designed to support the process tracing methodology described in Section 5. The trace logging makes superego critique and revision-outcome analysis (Section 5.3) possible by providing verbatim critique text; the per-turn scoring enables trajectory analysis (Section 5.4) by providing score vectors over time; and the factorial structure enables mechanism isolation (Section 4.6) by providing controlled comparisons that separate prompt-level from architecture-level effects.
 
 ## 5. Methodology
 
@@ -4495,6 +4495,10 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.229** (2026-07-24)
+
+:   **Methodology cross-reference correction.** Corrected four early-paper passages that still used the methodology numbering from before the current §5 expansion: superego critique and revision-outcome analysis now point to §5.3, turn-by-turn trajectory analysis points to §5.4, and the architecture's factorial mechanism-isolation map points to §4.6. The revision also standardises “revision delta” to “revision-outcome analysis” where the text points to the combined taxonomy-and-revision treatment in §5.3. No empirical claim, run ID, N-count, statistical result, section heading, or bibliography entry changed.
 
 **v3.0.228** (2026-07-22)
 
