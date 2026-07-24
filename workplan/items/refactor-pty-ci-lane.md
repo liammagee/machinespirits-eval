@@ -1,7 +1,7 @@
 ---
 id: refactor-pty-ci-lane
 title: Gate concurrent tutor-stub PTY behavior in CI
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -18,6 +18,8 @@ depends_on:
   - refactor-required-run-manifest
   - refactor-cast-layer-fixture
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/194
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -69,3 +71,6 @@ Log:
   parallel-run PTY skip, followed by 133/133 tutor-core tests. Lint, formatting,
   diff checks, and the 167-item workplan check pass. Moved to review pending the
   clean GitHub lane.
+- 2026-07-24 — Closed after PR #194 merged with validation, lint, workplan,
+  risk coverage, Node 20/22, and the dedicated PTY/loopback concurrency gate
+  green.

@@ -5,9 +5,7 @@
  *   - calculateBaseScore() — weighted base score from 7 base dimensions (v2.2)
  *   - calculateRecognitionScore() — weighted recognition score from 1 treatment dimension (v2.2)
  *   - calculateOverallScore() — combined weighted score across all 8 dimensions (v2.2)
- *   - parseJudgeResponse() — 5-layer JSON parsing fallback chain
- *   - repairUnescapedQuotes() — custom JSON repair for inner quotes
- *   - regexScoreRescue() — last-resort regex extraction
+ *   - parseJudgeResponse() — production JSON parsing and repair fallback chain
  *
  * These are pure functions (except for evalConfigLoader dependency) so they're
  * straightforward to test. The score functions use the actual rubric config
@@ -34,29 +32,13 @@ import {
   buildTutorHolisticEvaluationPrompt,
   buildTutorDeliberationPrompt,
   buildLearnerDeliberationPrompt,
+  parseJudgeResponse,
+  loadRubricYaml,
+  getRubricDimensions,
   loadDialogueRubric,
   getDialogueDimensions,
 } from '../services/rubricEvaluator.js';
-
-// parseJudgeResponse, repairUnescapedQuotes, and regexScoreRescue are not
-// exported directly. We test parseJudgeResponse by importing the module's
-// evaluateSuggestion and building test inputs, but since parseJudgeResponse
-// is called internally, we instead re-import and test the module's parse
-// behavior through the exported evaluate path.
-//
-// However, parseJudgeResponse IS used internally and we can test it by
-// reconstructing its logic or by testing the public API that calls it.
-// Since the score functions ARE exported, we test those directly.
-// For parseJudgeResponse we'll import the whole module and access it
-// through a workaround.
-
-// We can access parseJudgeResponse by dynamically importing the module
-// source and extracting the function. Since it's not exported, we'll
-// test it indirectly through a helper that mimics its behavior, or
-// test the exported evaluate function with mocked judge calls.
-//
-// Actually, let's just test it by importing the raw file and eval'ing
-// the function. Since this is a test file, we can take a practical approach.
+import { clearRubricPathOverride, setRubricPathOverride } from '../services/evalConfigLoader.js';
 
 // ============================================================================
 // Score Calculation Tests
@@ -375,176 +357,19 @@ describe('calculateRecognitionMetrics', () => {
 });
 
 // ============================================================================
-// parseJudgeResponse (tested via dynamic import of the module internals)
+// parseJudgeResponse (production export)
 // ============================================================================
-//
-// parseJudgeResponse is not exported, so we import the module source and
-// extract the function. This is a pragmatic approach for testing.
 
-let parseJudgeResponse;
+const VERSIONED_TUTOR_RUBRICS = [
+  { version: '2.1', path: 'config/rubrics/v2.1/evaluation-rubric.yaml', expectedDimensions: 14 },
+  { version: '2.2', path: 'config/rubrics/v2.2/evaluation-rubric.yaml', expectedDimensions: 8 },
+];
 
-// Use a top-level await to import the function
-const _rubricModule = await import('../services/rubricEvaluator.js');
-// parseJudgeResponse is not exported — we need to test it indirectly.
-// Let's extract it by reading the source and creating a wrapper.
-// Actually, let's use a cleaner approach: create a test wrapper.
-
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import path from 'path';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const _rubricSource = readFileSync(path.join(__dirname, '../services/rubricEvaluator.js'), 'utf8');
-
-// Extract the functions we need by creating a test module dynamically.
-// Since parseJudgeResponse relies on jsonrepair and internal helpers,
-// we'll test the JSON parsing behavior by calling the function through
-// a data URI import.
-
-// Simpler approach: recreate the parse logic for testing.
-// The 5-layer fallback is:
-// 1. Extract JSON from markdown fencing or bare braces
-// 2. JSON.parse
-// 3. Clean trailing commas + control chars, JSON.parse
-// 4. repairUnescapedQuotes + JSON.parse
-// 5. jsonrepair library + JSON.parse
-// 6. regexScoreRescue (returns partial result)
-
-// We'll create a minimal test module with just the parse functions.
-
-const testModuleCode = `
-import { jsonrepair } from 'jsonrepair';
-
-function repairUnescapedQuotes(jsonStr) {
-  let result = '';
-  let i = 0;
-  const len = jsonStr.length;
-  while (i < len) {
-    const ch = jsonStr[i];
-    if (ch === '"') {
-      result += '"';
-      i++;
-      while (i < len) {
-        const c = jsonStr[i];
-        if (c === '\\\\') {
-          result += jsonStr[i] + (jsonStr[i + 1] || '');
-          i += 2;
-          continue;
-        }
-        if (c === '"') {
-          const after = jsonStr.slice(i + 1).trimStart();
-          if (after[0] === ':' || after[0] === ',' || after[0] === '}' || after[0] === ']' || after.length === 0) {
-            result += '"';
-            i++;
-            break;
-          } else {
-            result += "'";
-            i++;
-            continue;
-          }
-        }
-        result += c;
-        i++;
-      }
-    } else {
-      result += ch;
-      i++;
-    }
-  }
-  return result;
-}
-
-function regexScoreRescue(text) {
-  const dimensionNames = [
-    'relevance', 'specificity', 'pedagogical_soundness', 'personalization',
-    'actionability', 'tone', 'mutual_recognition', 'dialectical_responsiveness',
-    'memory_integration', 'transformative_potential',
-  ];
-  const scores = {};
-  for (const dim of dimensionNames) {
-    const pattern = new RegExp(\`"\${dim}"\\\\s*:\\\\s*\\\\{?\\\\s*"?score"?\\\\s*:\\\\s*(\\\\d)\`, 'i');
-    const match = text.match(pattern);
-    if (match) {
-      scores[dim] = { score: parseInt(match[1], 10), reasoning: null };
-    }
-  }
-  if (Object.keys(scores).length < 3) return null;
-  const overallMatch = text.match(/"overall_score"\\s*:\\s*(\\d+)/);
-  const summaryMatch = text.match(/"summary"\\s*:\\s*"([^"]+)"/);
-  return {
-    scores,
-    validation: { passes_required: true, required_missing: [], passes_forbidden: true, forbidden_found: [] },
-    overall_score: overallMatch ? parseInt(overallMatch[1], 10) : null,
-    summary: summaryMatch ? summaryMatch[1] : 'Partial scores recovered via regex rescue',
-  };
-}
-
-export function parseJudgeResponse(responseText) {
-  let jsonMatch = responseText.match(/\\\`\\\`\\\`(?:json)?\\s*([\\s\\S]*?)\\\`\\\`\\\`/);
-  if (!jsonMatch) {
-    const firstBrace = responseText.indexOf('{');
-    const lastBrace = responseText.lastIndexOf('}');
-    if (firstBrace !== -1 && lastBrace > firstBrace) {
-      jsonMatch = [null, responseText.slice(firstBrace, lastBrace + 1)];
-    }
-  }
-  if (!jsonMatch) {
-    throw new Error('Could not parse judge response as JSON');
-  }
-  const jsonStr = jsonMatch[1] || jsonMatch[0];
-  try {
-    return JSON.parse(jsonStr);
-  } catch (e) {
-    const cleaned = jsonStr
-      .replace(/,\\s*([}\\]])/g, '$1')
-      .replace(/[\\x00-\\x1f]/g, m =>
-        m === '\\n' ? '\\\\n' : m === '\\t' ? '\\\\t' : m === '\\r' ? '\\\\r' : '');
-    try {
-      return JSON.parse(cleaned);
-    } catch (e2) {
-      try {
-        const repaired = repairUnescapedQuotes(cleaned);
-        return JSON.parse(repaired);
-      } catch (e3) {
-        try {
-          const robustRepaired = jsonrepair(jsonStr);
-          return JSON.parse(robustRepaired);
-        } catch (e4) {
-          const rescued = regexScoreRescue(jsonStr);
-          if (rescued) return rescued;
-          throw new Error('Could not parse judge response as JSON');
-        }
-      }
-    }
-  }
-}
-`;
-
-// Write the test helper module to a temp file
-import { writeFileSync, mkdirSync, unlinkSync, rmdirSync } from 'fs';
-const tmpDir = path.join(__dirname, '../.test-tmp');
-try {
-  mkdirSync(tmpDir, { recursive: true });
-} catch (e) {
-  /* exists */
-}
-const tmpModulePath = path.join(tmpDir, 'parseJudgeResponse.mjs');
-writeFileSync(tmpModulePath, testModuleCode);
-
-try {
-  const parseMod = await import(tmpModulePath);
-  parseJudgeResponse = parseMod.parseJudgeResponse;
-} finally {
-  try {
-    unlinkSync(tmpModulePath);
-  } catch (e) {
-    /* cleanup */
-  }
-  try {
-    rmdirSync(tmpDir);
-  } catch (e) {
-    /* may not be empty */
-  }
+function versionedDimensionNames({ path: rubricPath, expectedDimensions }) {
+  const rubric = loadRubricYaml(rubricPath, { forceReload: true });
+  const dimensions = Object.keys(getRubricDimensions(rubric));
+  assert.strictEqual(dimensions.length, expectedDimensions);
+  return dimensions;
 }
 
 describe('parseJudgeResponse — valid JSON', () => {
@@ -618,27 +443,45 @@ describe('parseJudgeResponse — unescaped quotes', () => {
   });
 });
 
-describe('parseJudgeResponse — regex rescue', () => {
-  it('extracts scores via regex from malformed JSON', () => {
-    // Deliberately broken JSON that regex can still extract scores from
-    const input = `{
-      "scores": {
-        "relevance": {"score": 4,
-        "specificity": {"score": 3,
-        "pedagogical_soundness": {"score": 5,
-        "personalization": {"score": 3
-      BROKEN JSON HERE
-      "overall_score": 72,
-      "summary": "partial rescue"
-    }`;
-    const result = parseJudgeResponse(input);
-    // regex rescue should find at least 4 scores
-    assert.ok(result.scores.relevance, 'should recover relevance');
-    assert.strictEqual(result.scores.relevance.score, 4);
-    assert.strictEqual(result.scores.specificity.score, 3);
-    assert.strictEqual(result.scores.pedagogical_soundness.score, 5);
-  });
+describe('parseJudgeResponse — versioned malformed rubric corpus', () => {
+  for (const rubricCase of VERSIONED_TUTOR_RUBRICS) {
+    it(`repairs trailing commas while preserving every v${rubricCase.version} dimension`, () => {
+      const dimensionNames = versionedDimensionNames(rubricCase);
+      const scores = dimensionNames.map((dimension) => `"${dimension}":{"score":4,"reasoning":"ok"}`).join(',');
+      const input = `{"scores":{${scores},},"overall_score":75,"summary":"v${rubricCase.version}",}`;
 
+      const result = parseJudgeResponse(input);
+
+      assert.deepStrictEqual(Object.keys(result.scores), dimensionNames);
+      assert.strictEqual(result.overall_score, 75);
+    });
+
+    it(`regex-rescues configured v${rubricCase.version} dimensions from irreparable JSON`, () => {
+      const dimensionNames = versionedDimensionNames(rubricCase);
+      const rescuedDimensions = dimensionNames.slice(0, 4);
+      const scoreFragments = rescuedDimensions
+        .map((dimension, index) => `"${dimension}":{"score":${index + 2},`)
+        .join('');
+      const input = `{"scores":{${scoreFragments} BROKEN JSON HERE "overall_score":72,"summary":"partial rescue"}`;
+
+      setRubricPathOverride(rubricCase.path);
+      try {
+        const result = parseJudgeResponse(input);
+        assert.deepStrictEqual(Object.keys(result.scores), rescuedDimensions);
+        rescuedDimensions.forEach((dimension, index) => {
+          assert.strictEqual(result.scores[dimension].score, index + 2);
+          assert.strictEqual(result.scores[dimension].reasoning, null);
+        });
+        assert.strictEqual(result.overall_score, 72);
+        assert.strictEqual(result.summary, 'partial rescue');
+      } finally {
+        clearRubricPathOverride();
+      }
+    });
+  }
+});
+
+describe('parseJudgeResponse — regex rescue threshold', () => {
   it('returns null-like behavior for complete garbage (less than 3 scores)', () => {
     const input = 'This is not JSON at all, just random text with no scores.';
     assert.throws(() => parseJudgeResponse(input), /Could not parse/);
