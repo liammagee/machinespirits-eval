@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-24T21:41:23.378Z",
+  "generated": "2026-07-24T21:41:37.288Z",
   "counts": {
     "total": 175,
     "byStatus": {
@@ -679,6 +679,9 @@
         "isolate-remaining-direct-model-subprocesses"
       ],
       "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/204"
+        ],
         "code": [
           "services/cliProviderBridge.js",
           "services/modelCliProcessPolicy.js",

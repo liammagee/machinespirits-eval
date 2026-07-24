@@ -15,6 +15,8 @@ verification: A checked repository-wide launch manifest accounts for every
 depends_on:
   - isolate-remaining-direct-model-subprocesses
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/204
   code:
     - services/cliProviderBridge.js
     - services/modelCliProcessPolicy.js
