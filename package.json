@@ -287,6 +287,7 @@
     "test:hermetic": "node scripts/run-hermetic-tests.js",
     "test:root": "node scripts/run-hermetic-tests.js --suite root",
     "test:root:handles": "node scripts/run-hermetic-tests.js --suite root --no-force-exit",
+    "test:pty:ci": "TUTOR_STUB_RUN_CONCURRENT_PTY_TEST=1 node scripts/run-hermetic-tests.js --suite root --no-force-exit tests/tutorStubInteractiveModes.test.js",
     "test:core": "node scripts/run-hermetic-tests.js --suite core",
     "test:coverage:risk": "node scripts/run-risk-coverage.js",
     "test:posthoc-pipeline": "node --test tests/canonicalPosthocPipeline.test.js",
