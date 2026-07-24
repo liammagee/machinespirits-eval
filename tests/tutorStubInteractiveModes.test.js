@@ -1278,6 +1278,7 @@ test(
       const plain = plainTerminalText(terminalOutput);
       assert.match(plain, /slash commands · \d+ available/u);
       assert.match(plain, /1 match for \/sta/u);
+      assert.match(plain, /\/status\s+show the current role, models, modes, and session state/u);
       assert.match(plain, /learner > \/status/u);
       assert.match(plain, /session status > LEARNER/u);
       assert.doesNotMatch(plain, /unknown command/u);
@@ -1991,15 +1992,17 @@ test('changing the tutor character publicly restates the latest intent and repla
 });
 
 test(
-  '/character tutor and /character learner open keyboard selectors in a TTY',
+  'bare /character chooses learner or tutor before opening the axis-specific keyboard selector',
   { skip: process.platform === 'win32', timeout: 12_000 },
   async () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-character-selectors-'));
     installFakeCodex(tmp);
     let terminalOutput = '';
-    let openedTutor = false;
+    let openedCharacterForTutor = false;
+    let selectedTutorTarget = false;
     let selectedTutor = false;
-    let openedLearner = false;
+    let openedCharacterForLearner = false;
+    let selectedLearnerTarget = false;
     let selectedLearner = false;
     let requestedExit = false;
     const terminal = pty.spawn(
@@ -2039,16 +2042,31 @@ test(
         terminal.onData((chunk) => {
           terminalOutput += chunk;
           const plain = plainTerminalText(terminalOutput);
-          if (!openedTutor && plain.includes('A Diligent Learner >')) {
-            openedTutor = true;
-            terminal.write('/character tutor\r');
-          } else if (!selectedTutor && plain.includes('Tutor character · choose with')) {
+          const targetMenuCount = (plain.match(/Character · choose learner or tutor/gu) || []).length;
+          if (!openedCharacterForTutor && plain.includes('A Diligent Learner >')) {
+            openedCharacterForTutor = true;
+            terminal.write('/character\r');
+          } else if (
+            !selectedTutorTarget &&
+            targetMenuCount >= 1 &&
+            plain.includes('about > Choose the visible learner behavior profile')
+          ) {
+            selectedTutorTarget = true;
+            terminal.write('\x1b[B\r');
+          } else if (!selectedTutor && plain.includes('does > Return character choice to light adaptation')) {
             selectedTutor = true;
-            terminal.write('\x1b[F\r');
-          } else if (!openedLearner && plain.includes('host character direction > exacting_schoolmaster')) {
-            openedLearner = true;
-            terminal.write('/character learner\r');
-          } else if (!selectedLearner && plain.includes('Learner character · choose with')) {
+            terminal.write('\x1b[B\r');
+          } else if (!openedCharacterForLearner && plain.includes('host character direction > scene_partner')) {
+            openedCharacterForLearner = true;
+            terminal.write('/character\r');
+          } else if (
+            !selectedLearnerTarget &&
+            targetMenuCount >= 2 &&
+            (plain.match(/about > Choose the visible learner behavior profile/gu) || []).length >= 2
+          ) {
+            selectedLearnerTarget = true;
+            terminal.write('\r');
+          } else if (!selectedLearner && plain.includes('pattern >')) {
             selectedLearner = true;
             terminal.write('\x1b[F\r');
           } else if (!requestedExit && /learner profile > switched to [a-z_]+:/u.test(plain)) {
@@ -2064,9 +2082,12 @@ test(
       });
 
       const plain = plainTerminalText(terminalOutput);
+      assert.ok((plain.match(/Character · choose learner or tutor/gu) || []).length >= 2, plain);
+      assert.match(plain, /Learner\s+diligent/u);
+      assert.match(plain, /Tutor\s+auto/u);
       assert.match(plain, /Tutor character · choose with ↑\/↓ and Enter/u);
-      assert.match(plain, /exacting_schoolmaster.*explicit-only/u);
-      assert.match(plain, /host character direction > exacting_schoolmaster/u);
+      assert.match(plain, /scene_partner.*adaptive-safe/u);
+      assert.match(plain, /host character direction > scene_partner/u);
       assert.match(plain, /Learner character · choose with ↑\/↓ and Enter/u);
       assert.match(plain, /pattern >/u);
       assert.match(plain, /learner profile > switched to [a-z_]+:/u);

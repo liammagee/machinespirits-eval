@@ -355,6 +355,7 @@ import {
   tutorStubCommandAvailable,
   tutorStubCommandHelpRows,
   tutorStubCommandReturnsToScene,
+  tutorStubCommandSummary,
   tutorStubCommandTokens,
   tutorStubStaticCommandCompletions,
 } from '../services/tutorStubCommandRegistry.js';
@@ -1199,7 +1200,7 @@ Interactive commands:
   /lab [list|id]         show the active lab or a safe lab's relaunch command
   /id                    show and copy the current debug id and trace path
   /turn-id, /debug-id    aliases for /id (automatic ids require technical debug)
-  /character            show learner and tutor character controls
+  /character            choose learner or tutor character controls
   /character learner [profile]
                          choose or switch the mixed learner behavior profile
   /character tutor [part]
@@ -18609,21 +18610,21 @@ async function main() {
       return [header, `${C.dim}  no match · Backspace to widen the list, or use /help${C.reset}`];
     }
 
-    const widest = Math.max(...commands.map((command) => command.length));
-    const columnWidth = Math.min(terminalWidth - 2, widest + 3);
-    const columnCount = Math.max(1, Math.min(4, Math.floor((terminalWidth - 2) / columnWidth)));
-    const rows = [];
-    for (let start = 0; start < commands.length; start += columnCount) {
-      const entries = commands.slice(start, start + columnCount);
-      const row = entries
-        .map((command, index) => {
-          const padded = index === entries.length - 1 ? command : command.padEnd(columnWidth);
-          return `${C.cyan}${padded}${C.reset}`;
-        })
-        .join('');
-      rows.push(`  ${row}`);
+    const visibleLimit = Math.max(4, Math.min(10, (Number(output.rows) || 24) - 7));
+    const visibleCommands = commands.slice(0, visibleLimit);
+    const widest = Math.max(...visibleCommands.map((command) => command.length));
+    const commandWidth = Math.max(14, Math.min(42, Math.floor(terminalWidth * 0.42), widest));
+    const summaryWidth = Math.max(16, terminalWidth - commandWidth - 5);
+    const rows = visibleCommands.map((command) => {
+      const commandLabel = oneLine(command, { max: commandWidth });
+      const summary = oneLine(tutorStubCommandSummary(command) || 'run this command', { max: summaryWidth });
+      return `  ${C.cyan}${commandLabel.padEnd(commandWidth)}${C.reset}  ${C.dim}${summary}${C.reset}`;
+    });
+    const hiddenCount = commands.length - visibleCommands.length;
+    if (hiddenCount > 0) {
+      rows.push(`${C.dim}  … ${hiddenCount} more · keep typing to narrow the list${C.reset}`);
     }
-    rows.push(`${C.dim}  keep typing to filter · Tab completes · /help shows command groups${C.reset}`);
+    rows.push(`${C.dim}  Tab completes · /help shows command groups${C.reset}`);
     return [header, ...rows];
   }
 
@@ -20416,6 +20417,107 @@ async function main() {
         if (key.name === 'down' || character === 'j') return move(1);
         if (key.name === 'pageup') return move(-viewportHeight);
         if (key.name === 'pagedown') return move(viewportHeight);
+        if (key.name === 'home') {
+          selectedIndex = 0;
+          render();
+          return;
+        }
+        if (key.name === 'end') {
+          selectedIndex = entries.length - 1;
+          render();
+          return;
+        }
+        if (key.name === 'return' || key.name === 'enter') finish(entries[selectedIndex]);
+      };
+      input.on('keypress', onKeypress);
+      input.resume();
+      render();
+    });
+  }
+
+  async function pickLiveCharacterTargetWithKeyboard(defaultTarget = 'learner') {
+    const learnerCharacter = mixedLearner.enabled
+      ? mixedLearner.profileId || 'custom'
+      : state.autoLearner?.enabled
+        ? state.autoLearner.profileId || 'custom'
+        : 'human learner';
+    const tutorCharacter = state.register?.enabled
+      ? explicitPerformanceDirectiveValue(state, 'character') || 'auto'
+      : 'adaptive delivery off';
+    const entries = [
+      {
+        id: 'learner',
+        label: 'Learner',
+        value: learnerCharacter,
+        description: 'Choose the visible learner behavior profile used by mixed drafting.',
+      },
+      {
+        id: 'tutor',
+        label: 'Tutor',
+        value: tutorCharacter,
+        description: 'Choose the in-scene host part used to realize subsequent tutor turns.',
+      },
+    ];
+    let selectedIndex = Math.max(
+      0,
+      entries.findIndex((entry) => entry.id === defaultTarget),
+    );
+    let renderedLineCount = 0;
+    const clearMenu = () => {
+      if (!renderedLineCount) return;
+      moveCursor(output, 0, -renderedLineCount);
+      for (let index = 0; index < renderedLineCount; index += 1) {
+        cursorTo(output, 0);
+        clearLine(output, 0);
+        if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
+      }
+      if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
+      renderedLineCount = 0;
+    };
+    const render = () => {
+      clearMenu();
+      const width = Math.max(56, Math.min(Number(output.columns || 100), 140));
+      const selected = entries[selectedIndex];
+      const lines = [
+        `${C.brightCyan}${C.bold}Character · choose learner or tutor${C.reset}`,
+        `${C.dim}  ↑/↓ move · Enter choose · Esc return${C.reset}`,
+        ...entries.map((entry, index) => {
+          const active = index === selectedIndex;
+          const plain = `${active ? '›' : ' '} ${entry.label.padEnd(10)} ${oneLine(entry.value, {
+            max: Math.max(18, width - 19),
+          })}`;
+          if (!active) return `${C.dim}${plain}${C.reset}`;
+          const color = entry.id === 'learner' ? C.cyan : C.brightMagenta;
+          return `${color}${C.bold}${plain}${C.reset}`;
+        }),
+        `${C.brightYellow}${C.bold}  about >${C.reset} ${oneLine(selected.description, {
+          max: Math.max(38, width - 11),
+        })}`,
+      ];
+      for (const line of lines) output.write(`${line}\n`);
+      renderedLineCount = lines.length;
+    };
+    emitKeypressEvents(input);
+    const priorListeners = input.listeners('keypress');
+    for (const listener of priorListeners) input.removeListener('keypress', listener);
+    const wasRaw = Boolean(input.isRaw);
+    if (!wasRaw) input.setRawMode(true);
+    return new Promise((resolve) => {
+      const finish = (selection) => {
+        input.removeListener('keypress', onKeypress);
+        for (const listener of priorListeners) input.on('keypress', listener);
+        if (!wasRaw) input.setRawMode(false);
+        clearMenu();
+        resolve(selection);
+      };
+      const move = (delta) => {
+        selectedIndex = (selectedIndex + delta + entries.length) % entries.length;
+        render();
+      };
+      const onKeypress = (character, key = {}) => {
+        if ((key.ctrl && key.name === 'c') || key.name === 'escape') return finish(null);
+        if (key.name === 'up' || character === 'k') return move(-1);
+        if (key.name === 'down' || character === 'j') return move(1);
         if (key.name === 'home') {
           selectedIndex = 0;
           render();
@@ -24556,6 +24658,18 @@ async function main() {
     const normalizedTarget = target.toLowerCase();
     const targetArgument = rest.join(' ');
 
+    if (!requested && liveSettingsPickerAvailable() && !duringTurn) {
+      clearStatusLine();
+      return pickLiveCharacterTargetWithKeyboard().then((selection) => {
+        if (!selection) return { suppressReprise: true, selected: false };
+        return Promise.resolve(handleCharacterCommand(selection.id, { duringTurn: false })).then((outcome) => ({
+          ...(outcome && typeof outcome === 'object' ? outcome : {}),
+          suppressReprise: true,
+          selected: outcome?.selected !== false,
+          target: outcome?.target || selection.id,
+        }));
+      });
+    }
     if (!requested || normalizedTarget === 'status') {
       clearStatusLine();
       const learnerCharacter = mixedLearner.enabled
@@ -24572,17 +24686,17 @@ async function main() {
       console.log(
         `${C.dim}  /character learner [profile] · /character tutor [part] · legacy /profile and /character <part> still work${C.reset}\n`,
       );
-      return true;
+      return !requested ? { handled: true, suppressReprise: true } : true;
     }
     if (normalizedTarget === 'learner') {
       if (!targetArgument && mixedLearner.enabled && liveSettingsPickerAvailable() && !duringTurn) {
         clearStatusLine();
         console.log(`${C.cyan}${C.bold}Learner character · choose with ↑/↓ and Enter${C.reset}`);
         return pickInitialMixedLearnerProfileWithKeyboard(mixedLearner.profileId || 'custom').then((selection) => {
-          if (!selection) return { suppressReprise: false, selected: false };
+          if (!selection) return { suppressReprise: true, selected: false };
           const requestedProfile = selection.id ? selection.id : `custom ${mixedLearner.profile}`;
           handleMixedLearnerProfileCommand(requestedProfile, { duringTurn: false });
-          return { suppressReprise: false, selected: true, target: 'learner', value: selection.id || 'custom' };
+          return { suppressReprise: true, selected: true, target: 'learner', value: selection.id || 'custom' };
         });
       }
       handleMixedLearnerProfileCommand(targetArgument, { duringTurn });
@@ -24594,11 +24708,19 @@ async function main() {
         console.log(`${C.brightMagenta}${C.bold}Tutor character · choose with ↑/↓ and Enter${C.reset}`);
         return pickLiveTutorCharacterWithKeyboard(explicitPerformanceDirectiveValue(state, 'character') || 'auto').then(
           (selection) => {
-            if (!selection) return { suppressReprise: false, selected: false };
-            return applyTutorCharacterChoice(selection.id, {
-              duringTurn: false,
-              source: '/character tutor selector',
-            });
+            if (!selection) return { suppressReprise: true, selected: false };
+            return Promise.resolve(
+              applyTutorCharacterChoice(selection.id, {
+                duringTurn: false,
+                source: '/character tutor selector',
+              }),
+            ).then((outcome) => ({
+              ...(outcome && typeof outcome === 'object' ? outcome : {}),
+              suppressReprise: true,
+              selected: true,
+              target: 'tutor',
+              value: selection.id,
+            }));
           },
         );
       }
@@ -24740,6 +24862,7 @@ async function main() {
       return true;
     }
     if (command === '/register' || command === '/character') {
+      const barePerformanceControl = !String(commandArg || '').trim();
       const result =
         command === '/character'
           ? handleCharacterCommand(commandArg, { duringTurn })
@@ -24747,7 +24870,7 @@ async function main() {
       if (result && typeof result.then === 'function') {
         const promise = Promise.resolve(result).then(
           (outcome) => {
-            finishSlashCommand({ reprise: outcome?.suppressReprise !== true });
+            finishSlashCommand({ reprise: !barePerformanceControl && outcome?.suppressReprise !== true });
             return outcome;
           },
           (error) => {
@@ -24758,7 +24881,7 @@ async function main() {
         promise.tutorStubBlocksPrompt = !duringTurn;
         return promise;
       }
-      finishSlashCommand({ reprise: result?.suppressReprise !== true });
+      finishSlashCommand({ reprise: !barePerformanceControl && result?.suppressReprise !== true });
       return result || true;
     }
     if (command === '/up' || command === '/down' || command === '/feedback') {

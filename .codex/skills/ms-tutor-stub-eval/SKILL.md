@@ -489,7 +489,10 @@ Useful variants:
   public-evidence boundary, and proof position; the trace joins the original
   and replacement. Clearing to `auto`, changing only the learner, status
   views, and cancelled selectors retain normal detour behavior.
-- Bare `/character` is a read-only summary of both character axes. Use
+- Bare `/character` opens a learner/tutor selector in a TTY and then opens the
+  selected axis's specific profile or host-part picker. Pipes retain a read-only
+  summary of both axes. Bare `/character` and `/register` are navigation-only
+  controls and do not reprise the latest tutor utterance when they finish. Use
   `/character learner <profile>` (or legacy `/profile <profile>`) for the mixed
   learner and `/character tutor <part>` (or legacy `/character <part>`) for the
   tutor. `--learner-character` and `--tutor-character` provide symmetric
@@ -715,9 +718,11 @@ Useful variants:
   confined to the single progress glyph: full is fluid, subtle is a slow pulse,
   and off is still.
 - Type `/` during a run to open the live slash-command palette above the
-  editable prompt. Keep typing to filter it and press Tab to complete; the
-  palette remains usable while tutor or learner generation continues. Commands
-  include `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/light`, `/register`, `/character`, `/theme`, `/motion`, `/field`, `/viz`,
+  editable prompt. Every visible match includes a concise registry-owned
+  summary of the command's behavior; broad lists are bounded to the terminal
+  height. Keep typing to filter it and press Tab to complete; the palette
+  remains usable while tutor or learner generation continues. Commands include
+  `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/light`, `/register`, `/character`, `/theme`, `/motion`, `/field`, `/viz`,
   `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
 - `/translate` is available in every normal tutor-stub session. Without an

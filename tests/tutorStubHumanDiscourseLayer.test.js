@@ -1261,7 +1261,7 @@ test('detour slash commands reprise the latest tutor utterance before returning 
     {
       cwd: ROOT,
       encoding: 'utf8',
-      input: '/help\n/status\n/release-notes\n/id\n/quit\n',
+      input: '/help\n/status\n/register\n/character\n/release-notes\n/id\n/quit\n',
       env: {
         ...process.env,
         TUTOR_STUB_CLIPBOARD: '0',
@@ -1273,6 +1273,8 @@ test('detour slash commands reprise the latest tutor utterance before returning 
 
   assert.equal(result.status, 0, result.stderr);
   assert.equal((result.stdout.match(/tutor ↻ >/gu) || []).length, 4);
+  assert.match(result.stdout, /teaching style direction >/u);
+  assert.match(result.stdout, /character controls >/u);
   assert.match(result.stdout, /tutor ↻ >.*autumn fair at Marrick passed in light shillings/gu);
   assert.doesNotMatch(result.stdout, /Keep the case question in view/gu);
 });

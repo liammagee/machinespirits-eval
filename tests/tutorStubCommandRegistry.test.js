@@ -18,6 +18,7 @@ import {
   tutorStubCommandCompletionMetadata,
   tutorStubCommandHelpRows,
   tutorStubCommandReturnsToScene,
+  tutorStubCommandSummary,
   tutorStubCommandTokens,
   tutorStubCommandTransportAdmission,
   tutorStubCommandTransportMetadata,
@@ -209,6 +210,8 @@ test('v2 command registry freezes the slash-token and execution-effect surfaces'
     assert.equal(Object.isFrozen(definition.capabilities), true);
     assert.equal(Object.isFrozen(definition.effects), true);
     assert.equal(Object.isFrozen(definition.transport), true);
+    assert.equal(typeof definition.summary, 'string');
+    assert.ok(definition.summary.length > 12, definition.id);
     assert.deepEqual(Object.keys(definition.effects), TUTOR_STUB_COMMAND_EFFECT_KEYS);
     assert.equal(
       Object.values(definition.effects).every((value) => typeof value === 'boolean'),
@@ -265,6 +268,21 @@ test('canonical ids and aliases resolve uniquely', () => {
     '/translate proficient',
   ]);
   assert.equal(resolveTutorStubCommand('/not-a-command'), null);
+});
+
+test('command summaries resolve for canonical commands, aliases, and subcommands', () => {
+  for (const definition of TUTOR_STUB_COMMAND_REGISTRY.commands) {
+    const staticCompletions = tutorStubStaticCommandCompletions(definition.token);
+    for (const token of [definition.token, ...definition.aliases, ...staticCompletions]) {
+      assert.equal(tutorStubCommandSummary(token), definition.summary, token);
+    }
+  }
+  assert.equal(
+    tutorStubCommandSummary('/translate basic'),
+    'rewrite the latest tutor reply in contemporary standard English',
+  );
+  assert.equal(tutorStubCommandSummary('/character learner diligent'), tutorStubCommandSummary('/character'));
+  assert.equal(tutorStubCommandSummary('/not-a-command'), null);
 });
 
 test('command listings are alphabetical after mode and capability filtering', () => {

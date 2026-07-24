@@ -45,8 +45,11 @@ named explicitly. For example, mixed-drafting commands such as `/suggest` and
 `/use` appear only when mixed drafting is active, while `/random`, `/register`,
 and `/character` require adaptive delivery. Calling `/help` therefore describes
 the command surface that is actually usable rather than a larger global list.
-Palette and completion entries are globally alphabetical; `/help` keeps its
-semantic groups and alphabetizes the commands within each group.
+Each visible palette match includes a concise registry-owned summary of the
+command's behavior. Broad result sets are bounded to the terminal height and
+show how many further matches remain, while typing continues to narrow the
+list. Palette and completion entries are globally alphabetical; `/help` keeps
+its semantic groups and alphabetizes the commands within each group.
 
 The underlying command and capability registries remain frozen catalogs, so
 tests and future web or Electron adapters can inspect every supported command
@@ -406,17 +409,24 @@ scene. Newly committed changes appear automatically; uncommitted work does not.
 
 ## Directing and randomizing performance
 
-`/character` is the shared character control. With no argument it reports both
-the current learner behavior profile and the current tutor host part; it does
-not change state or make a model call. Use `/character learner <profile>` for
-the automated or mixed learner and `/character tutor <part>` for the tutor.
-The older `/profile <id>` and `/character <part>` forms remain aliases.
+`/character` is the shared character control. In an interactive terminal, the
+bare command first opens a learner/tutor selector and then opens the selected
+axis's specific profile or host-part picker. Escape returns without changing
+either axis. Pipes and scripts retain a read-only summary of the current learner
+behavior profile and tutor host part. Use `/character learner <profile>` for the
+automated or mixed learner and `/character tutor <part>` for the tutor. The
+older `/profile <id>` and `/character <part>` forms remain aliases.
 
 Use `/register <style>` to direct the engagement stance. In an interactive
 terminal, `/character tutor` and `/character learner` open scrolling keyboard
 selectors with the current choice highlighted; Up/Down, Page Up/Down,
 Home/End, Enter, and Escape follow the other CLI pickers. Pipes and scripts
 retain the current-value-and-choice list. All direct forms autocomplete:
+
+Bare `/character` and `/register` are control navigation, so they do not repeat
+the latest tutor utterance when they finish. Choosing a new tutor character is
+different: it still replaces the latest tutor utterance with the bounded
+`Let me rephrase that` restatement realized in the newly selected part.
 
 ```text
 /register warm

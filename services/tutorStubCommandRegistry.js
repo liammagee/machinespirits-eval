@@ -99,6 +99,51 @@ const COMMAND_CAPABILITY_REQUIREMENTS = {
   board: { available: ['curriculum'] },
 };
 
+const COMMAND_SUMMARIES = Object.freeze({
+  demo: 'run a short guided exchange, analysis, and HTML evidence tour',
+  theme: 'preview or change the terminal color theme',
+  motion: 'preview or change terminal animation and reduced-motion behavior',
+  random: 'randomize tutor style and host character within safe constraints',
+  light: 'toggle difficulty-triggered tutor style and character changes',
+  committee: 'toggle the learned warrant-gap specialist used by the tutor',
+  register: 'inspect or lock the tutor engagement style for later turns',
+  character: 'choose the learner profile or tutor host character',
+  analysis: 'explain the latest learner reading and tutor response choices',
+  field: 'show the conversation state, pressure, alignment, and momentum',
+  visualization: 'write and open a visual map of the conversation field',
+  clarify: 'explain public wording without advancing the proof state',
+  translate: 'rewrite the latest tutor reply in contemporary standard English',
+  report: 'show the current compact learning and closeout report',
+  transcript: 'write or open the complete HTML transcript and replay views',
+  voice: 'open or configure the browser microphone and tutor voice companion',
+  director: 'repeat public stage directions and released director notes',
+  feedback_up: 'mark the latest tutor response helpful, with an optional reason',
+  feedback_down: 'mark the latest tutor response unhelpful and explain why',
+  feedback: 'turn optional tutor feedback on or off, or clear a pending rating',
+  tune: 'inspect and manage review-gated tutor tuning candidates',
+  settings: 'inspect or change models, adaptation controls, and presentation',
+  status: 'show the current role, models, modes, and session state',
+  features: 'show available and active tutor-stub capabilities',
+  release_notes: 'show recent tutor-stub changes and their expected effects',
+  debug: 'explain or expose the tutor machinery behind completed turns',
+  mode: 'switch between public learner, private coach, and automated play',
+  learner: 'return typed input to public learner speech',
+  coach: 'send private guidance for the next tutor response',
+  auto: 'let the configured automated learner continue the exchange',
+  id: 'show and copy the current turn id and trace location',
+  suggest: 'preview the drafted learner reply',
+  clue: 'show non-revealing direction for the next learner move',
+  profile: 'inspect or change the mixed learner behavior profile',
+  scenario: 'close this inquiry and start a selected scenario',
+  board: 'close this inquiry and open a live workplan card as curriculum',
+  use: 'submit the current drafted learner reply',
+  regen: 'rebuild the learner clue, draft, analysis, and tutor prefetch',
+  reset: 'cancel unfinished work and restart the same inquiry',
+  help: 'show commands grouped by purpose',
+  quit: 'finish the session and write its learning summary',
+  lab: 'list or launch safe tutor-stub laboratory modes',
+});
+
 const HELP_GROUPS = [
   {
     id: 'demonstrate',
@@ -321,6 +366,7 @@ function command({
     id,
     token,
     aliases,
+    summary: COMMAND_SUMMARIES[id],
     handler,
     traceEvent,
     availability: {
@@ -691,6 +737,10 @@ export function tutorStubCanonicalCommandToken(value) {
   return resolveTutorStubCommand(value)?.token || null;
 }
 
+export function tutorStubCommandSummary(value) {
+  return resolveTutorStubCommand(value)?.summary || null;
+}
+
 export function tutorStubCommandAvailable(value, { mode = 'normal', capabilities = null } = {}) {
   const definition = resolveTutorStubCommand(value);
   if (!definition?.availability[normalizedMode(mode)]) return false;
@@ -911,6 +961,9 @@ export function assertTutorStubCommandRegistryInvariants(registry = TUTOR_STUB_C
     }
     if (ids.has(definition.id)) throw new Error(`duplicate canonical command id: ${definition.id}`);
     ids.add(definition.id);
+    if (typeof definition.summary !== 'string' || !definition.summary.trim()) {
+      throw new Error(`command ${definition.id} must declare a behavior summary`);
+    }
     if (!/^[a-z][a-z0-9_]*$/u.test(definition.handler || '')) {
       throw new Error(`command ${definition.id} has invalid handler id: ${definition.handler}`);
     }
