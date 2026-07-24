@@ -1,19 +1,19 @@
 ---
 id: workplan-source-only-generated-views
 title: Make feature PRs source-only for generated workplan views
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-24
 updated: 2026-07-25
-branch: codex/workplan-source-only-prs
 verification: "Feature PR CI rejects generated-view diffs while `wp:source-check` and workplan tests pass, and the serialized main renderer regenerates and strictly validates both views."
 links:
   notes: workplan/playbook/git-and-workflow.md
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/207
+    - https://github.com/liammagee/machinespirits-eval/pull/209
 tags:
   - workplan
   - ci
@@ -43,3 +43,5 @@ Review log:
   `wp:source-check`; verified lint, formatting, 15/15 workplan tests, 176/176
   source items, mirrored skills, workflow YAML, and an isolated strict render
   check of both generated views.
+- 2026-07-25 — PR #207 merged at `b4e2ea11`; the first serialized main render
+  completed successfully and committed current generated views at `c58395c4`.
