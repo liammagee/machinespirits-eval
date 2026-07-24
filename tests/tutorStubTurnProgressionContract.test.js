@@ -600,6 +600,18 @@ test('elliptical confusion and affect use typed semantic focus while retaining t
       handoff: 'The visitor badge log still leaves what it establishes open.',
     },
     {
+      learnerText: 'no idea',
+      move: {
+        summary: 'The learner cannot yet interpret the fixed-intent evidence.',
+        epistemic_stance: 'confused',
+        pedagogical_need: 'Guide interpretation of the fixed intents.',
+      },
+      expectedSource: 'learner_move_summary',
+      expectedTerms: ['learner', 'cannot', 'yet', 'interpret', 'fixed', 'intent', 'evidence'],
+      uptake: 'I hear that the fixed-intent evidence is not clear yet.',
+      handoff: 'The fixed-intent evidence remains the live public limit.',
+    },
+    {
       learnerText: 'sorry what',
       move: {
         summary: null,

@@ -360,12 +360,29 @@ export function decideTutorStubGuardDelivery(
  * Advisory and report-only findings remain in the trace/decision envelope but
  * must not be presented as causes of a terminal delivery failure.
  */
-export function tutorStubTerminalFallbackFailureMessage(deliveryDecision = null) {
+export function tutorStubTerminalFallbackFailureMessage(
+  deliveryDecision = null,
+  { candidateText = '', attemptCount = null, tracePath = '' } = {},
+) {
   const hardIssues = Array.isArray(deliveryDecision?.hardIssues) ? deliveryDecision.hardIssues : [];
-  const details = hardIssues.length
-    ? hardIssues.map((issue) => `${issue.guard || 'unknown_guard'}:${issue.type || 'unknown_issue'}`).join(', ')
-    : 'unclassified_hard_guard_failure';
-  return `Tutor deterministic fallback failed final audit: ${details}`;
+  const heading = Number.isFinite(Number(attemptCount))
+    ? `Tutor response recovery stopped after ${Number(attemptCount)} rejected candidates: the deterministic fallback did not pass its final response check.`
+    : 'Tutor deterministic fallback did not pass its final response check.';
+  const issueLines = hardIssues.length
+    ? hardIssues.map((issue) => {
+        const key = `${issue.guard || 'unknown_guard'}:${issue.type || 'unknown_issue'}`;
+        if (issue.guard === 'leak') return `- ${key} — candidate details withheld at the public-evidence boundary`;
+        return `- ${key}${issue.reason ? ` — ${issue.reason}` : ''}`;
+      })
+    : ['- unclassified_hard_guard_failure'];
+  const safeCandidate = String(candidateText || '').trim();
+  const candidateLine = hardIssues.some((issue) => issue?.guard === 'leak')
+    ? 'Rejected fallback: omitted because the failed candidate may contain non-public evidence.'
+    : safeCandidate
+      ? `Rejected fallback: ${JSON.stringify(safeCandidate)}`
+      : null;
+  const traceLine = String(tracePath || '').trim() ? `Trace: ${String(tracePath).trim()}` : null;
+  return [heading, 'Blocking issue:', ...issueLines, candidateLine, traceLine].filter(Boolean).join('\n');
 }
 
 function issueRows(guard, issues) {

@@ -2279,7 +2279,7 @@ function tutorResponseRecoveryPrompt({
     actorialRealizationRows && partCue ? `Concrete host-part cue: ${partCue}` : null,
     actorialRealizationRows && tacticCue ? `Concrete performance cue: ${tacticCue}` : null,
     questionSupportIssues.some((issue) => issue.type === 'missing_bounded_choice')
-      ? 'Ask an unmistakable two-way public choice, for example “Which should we test first: A) this public clue, or B) that public clue?” Do not disguise the choice as another open recall question.'
+      ? 'Offer an unmistakable two-way public choice. If the minimal recovery contract permits a question, you may ask “Which should we test first: A) this public clue, or B) that public clue?” If it forbids questions, state the options declaratively, for example “Choose one way forward: A) inspect this public clue, or B) leave the conclusion open.” Do not disguise the choice as open recall.'
       : null,
     missingConfigurationAxes.length
       ? `Make these delivered configuration axes plainly visible: ${missingConfigurationAxes.join(', ')}.`
@@ -13299,6 +13299,15 @@ async function callTutor({
       firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
         ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
         : candidateFallbackUptake;
+    // Question support and live progression can coexist with the human
+    // scaffold. Their compiled contract must select the fallback; the older
+    // generous-inference text does not realize bounded choices or declarative
+    // handoff ownership.
+    const configuredContinuationFallbackRequired = Boolean(
+      questionSupportGuardEnabled ||
+      actorialRealizationGuardEnabled ||
+      firstDraftContract?.progression?.complete === true,
+    );
     const baseFallbackText = instructionalMetaRepair
       ? deterministicTutorStubConfiguredContinuationFallback({
           uptake: fallbackUptake,
@@ -13325,42 +13334,20 @@ async function callTutor({
               turnProgressionContract: firstDraftContract?.progression || null,
               sourceAccessibilityContract: firstDraftContract?.evidence?.source_accessibility || null,
             })
-          : scaffoldGuardEnabled
-            ? deterministicGenerousInferenceFallback(fallbackContext)
-            : questionSupportGuardEnabled
-              ? deterministicTutorStubConfiguredContinuationFallback({
-                  uptake: fallbackUptake,
-                  responseConfiguration: simplifiedRecoveryConfiguration,
-                  support: humanDiscourseFrame?.questionSupport || null,
-                  world,
-                  learnerText,
-                  turnProgressionContract: firstDraftContract?.progression || null,
-                  recentTutorTexts,
-                  variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
-                })
-              : actorialRealizationGuardEnabled
-                ? deterministicTutorStubConfiguredContinuationFallback({
-                    uptake: fallbackUptake,
-                    responseConfiguration: simplifiedRecoveryConfiguration,
-                    support: humanDiscourseFrame?.questionSupport || null,
-                    world,
-                    learnerText,
-                    turnProgressionContract: firstDraftContract.progression,
-                    recentTutorTexts,
-                    variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
-                  })
-                : firstDraftContract?.progression?.complete === true
-                  ? deterministicTutorStubConfiguredContinuationFallback({
-                      uptake: fallbackUptake,
-                      responseConfiguration: simplifiedRecoveryConfiguration,
-                      support: humanDiscourseFrame?.questionSupport || null,
-                      world,
-                      learnerText,
-                      turnProgressionContract: firstDraftContract.progression,
-                      recentTutorTexts,
-                      variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
-                    })
-                  : deterministicTutorStubContextualFallback(fallbackContext);
+          : configuredContinuationFallbackRequired
+            ? deterministicTutorStubConfiguredContinuationFallback({
+                uptake: fallbackUptake,
+                responseConfiguration: simplifiedRecoveryConfiguration,
+                support: humanDiscourseFrame?.questionSupport || null,
+                world,
+                learnerText,
+                turnProgressionContract: firstDraftContract?.progression || null,
+                recentTutorTexts,
+                variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+              })
+            : scaffoldGuardEnabled
+              ? deterministicGenerousInferenceFallback(fallbackContext)
+              : deterministicTutorStubContextualFallback(fallbackContext);
     const fallbackText =
       dramaticReleaseGuardEnabled || instructionalMetaRepair
         ? baseFallbackText
@@ -13463,9 +13450,24 @@ async function callTutor({
         accounting: exhaustedAccounting,
         publicDelivery: null,
       });
-      const error = new Error(tutorStubTerminalFallbackFailureMessage(fallbackAudits.deliveryDecision));
+      const terminalFailure = {
+        schema: 'machinespirits.tutor-stub.terminal-fallback-failure.v1',
+        turn: tutorTurn,
+        attemptCount: attempts.length,
+        hardIssues: fallbackAudits.deliveryDecision?.hardIssues || [],
+        rejectedFallbackText: fallbackText,
+        tracePath: trace?.filePath || null,
+      };
+      const error = new Error(
+        tutorStubTerminalFallbackFailureMessage(fallbackAudits.deliveryDecision, {
+          candidateText: fallbackText,
+          attemptCount: attempts.length,
+          tracePath: trace?.filePath || null,
+        }),
+      );
       error.code = 'TUTOR_FALLBACK_AUDIT_FAILED';
       error.tutorGuardAccounting = exhaustedAccounting;
+      error.tutorFallbackFailure = terminalFailure;
       throw error;
     }
     appendTraceEvent(trace, {
@@ -13505,6 +13507,7 @@ async function callTutor({
       provider: resolved.provider,
       model: resolved.model,
       error: err.message,
+      ...(err?.tutorFallbackFailure ? { terminalFailure: err.tutorFallbackFailure } : {}),
     });
     throw err;
   }

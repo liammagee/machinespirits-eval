@@ -9,7 +9,7 @@ const WRITABLE_ENTRY_PATTERN =
 const GENERIC_WRITABLE_FOCUS_PATTERN =
   /^(?:what|which|how)\b[^.!?]{0,55}\b(?:enter|record|say|write)\b(?:\s+(?:next|now|down|in the .{0,30}))?\s*\??$/iu;
 const ELLIPTICAL_OR_AFFECTIVE_SURFACE_PATTERN =
-  /^(?:dunno|i (?:do not|don[’']t) know|not sure|sorry[,:]? what|what\??|huh\??|lost|i(?:[’']m| am) lost)\s*[.!?]*$|\b(?:move it along|slow down|speed (?:it|this) up|this is (?:boring|too slow)|let(?:[’']s| us) move)\b/iu;
+  /^(?:idk|dunno|no idea|i (?:do not|don[’']t) know|i (?:cannot|can[’']t) tell|not sure|unsure|confused|sorry[,:]? what|what\??|huh\??|lost|i(?:[’']m| am) lost)\s*[.!?]*$|\b(?:move it along|slow down|speed (?:it|this) up|this is (?:boring|too slow)|let(?:[’']s| us) move)\b/iu;
 const SEMANTIC_FOCUS_SIGNAL_PATTERN =
   /\b(?:affective|bored|boredom|clarif|confus|disengag|frustrat|lost|pace|speed|uncertain|unsure)\b/iu;
 const BRIDGE_PATTERN =

@@ -67,6 +67,16 @@ test('uncertainty before release selects a bounded public-safe choice', () => {
     }).ok,
     true,
   );
+  const missingChoiceText =
+    'Keep the fixed-intent inventory in view. We can leave the wider conclusion open until another clue arrives.';
+  const missingChoiceAudit = auditTutorStubQuestionSupportResponse({
+    text: missingChoiceText,
+    support,
+  });
+  assert.equal(missingChoiceAudit.ok, false);
+  assert.equal(missingChoiceAudit.issues[0].type, 'missing_bounded_choice');
+  assert.match(missingChoiceAudit.issues[0].reason, /did not present two recognizable options/u);
+  assert.equal(missingChoiceAudit.issues[0].excerpt, missingChoiceText);
   const fallback = deterministicTutorStubQuestionSupportFallback({
     support,
     world: { title: 'The Missing Lunchbox', question: 'Who moved the lunchbox?' },
@@ -77,6 +87,23 @@ test('uncertainty before release selects a bounded public-safe choice', () => {
   assert.doesNotMatch(fallback, /condition in the rule|whole case|supporting step|complete answer/iu);
   assert.doesNotMatch(fallback, /tool|forge|cut|decisive act/iu);
 });
+
+for (const learnerText of ['no idea', 'idk', 'I cannot tell']) {
+  test(`surface-only uncertainty ${JSON.stringify(learnerText)} selects bounded support`, () => {
+    const support = buildTutorStubQuestionSupport({
+      tutorTurn: 20,
+      scaffoldState: scaffold({ nextRelease: { premise: 'p_holder', turn: 22 } }),
+      assessment: {
+        missingPremises: [{ premiseId: 'p_holder', bucket: 'unreleased', releaseTurn: 22 }],
+      },
+      classification: { turn: { epistemic_stance: 'neutral' } },
+      learnerText,
+    });
+
+    assert.equal(support.modality, 'bounded_directional_choice');
+    assert.equal(support.clarificationInvitationRequired, true);
+  });
+}
 
 test('a scenario-grounded two-part contrast satisfies bounded directional support', () => {
   const support = buildTutorStubQuestionSupport({
