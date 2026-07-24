@@ -374,6 +374,34 @@ question is omitted rather than repeated or asked again. The deterministic
 fallback follows the same boundary and never inserts the learner's wording
 request into the evidence record.
 
+Use an explicit director command when the request is about the tutor rather
+than a public contribution to the inquiry:
+
+```text
+/meta Use shorter sentences and name the concrete objects before the rule.
+/director Keep the tutor warm, but stop using the detective-world vocabulary.
+/meta status
+/meta clear
+```
+
+`/meta <request>` and `/director <request>` create the same private,
+learner-to-director control. The request applies to subsequent tutor replies
+until it is replaced or cleared, survives `/reset`, and is restored by an
+explicit trace resume. It changes delivery only: it cannot change the public
+facts, staged-evidence schedule, proof state, learner claims, role boundary,
+closure, or safety rules. It is stored separately from public learner turns,
+never enters learner-DAG or object-language analysis, and is excluded from
+Replay JS. The transcript's director ledger records it explicitly as a private
+control for provenance.
+
+Bare `/director` keeps its older meaning: show the opening directions and the
+director notes released so far. `/notes` remains a view-only alias for that
+ledger. Bare `/meta` reports the active tutor-change request. This explicit
+control differs from a natural public request such as “say that more simply”:
+the natural request is itself a public instructional-meta turn and receives a
+public repair response, while a slash command silently configures how the tutor
+will answer the next public learner turn.
+
 This mode is deliberately non-DAG. A workplan dependency graph says which work
 precedes other work; it is not a scenario proof DAG, and a card's verification
 line is not a concealed answer. `--curriculum` therefore rejects `--dag`,

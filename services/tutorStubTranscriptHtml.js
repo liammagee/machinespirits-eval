@@ -237,7 +237,9 @@ function directorNotesView(snapshot) {
   const supplied = snapshot.directorNotes || {};
   const opening = supplied.opening || snapshot.directorContext || null;
   const releases = Array.isArray(supplied.releases) ? supplied.releases : [];
-  if (!opening && !releases.length) {
+  const guidance = snapshot.directorGuidance || snapshot.settings?.directorGuidance || {};
+  const guidanceHistory = Array.isArray(guidance.history) ? guidance.history : [];
+  if (!opening && !releases.length && !guidanceHistory.length) {
     return '<aside class="director-ledger" data-director-notes><details open><summary>Director notes so far</summary><p class="empty">No director notes have been issued yet.</p></details></aside>';
   }
   const openingRows = opening
@@ -260,11 +262,24 @@ function directorNotesView(snapshot) {
         `<div class="director-note release"><strong>Turn ${escapeHtml(release.turn)} · scene note</strong><div>${escapeHtml(release.surface || '')}</div></div>`,
     )
     .join('');
+  const guidanceRows = guidanceHistory
+    .map((entry) => {
+      if (entry.action === 'set') {
+        const active = guidance.active?.id === entry.id;
+        return `<div class="director-note"><strong>Request ${escapeHtml(entry.revision)}${active ? ' · active' : ''}</strong><div>${escapeHtml(entry.text || '')}<br><small>Private control from tutor turn ${escapeHtml(entry.effectiveFromTurn || 1)}; not public learner speech.</small></div></div>`;
+      }
+      if (entry.action === 'clear') {
+        return `<div class="director-note"><strong>Request cleared</strong><div>Private tutor-change guidance ended from tutor turn ${escapeHtml(entry.effectiveFromTurn || 1)}.</div></div>`;
+      }
+      return '';
+    })
+    .join('');
   const throughTurn = Number.isFinite(Number(supplied.throughTurn)) ? Number(supplied.throughTurn) : null;
   return `<aside class="director-ledger" data-director-notes><details open><summary>Director notes so far</summary>
-    <p class="director-scope">Opening directions and released scene notes${throughTurn === null ? '' : throughTurn > 0 ? ` through completed turn ${escapeHtml(throughTurn)}` : ' through the opening'}. Future notes remain withheld.</p>
+    <p class="director-scope">Opening directions and released scene notes${throughTurn === null ? '' : throughTurn > 0 ? ` through completed turn ${escapeHtml(throughTurn)}` : ' through the opening'}. Future notes remain withheld. Learner-to-director tutor-change requests are private controls and never public learner turns.</p>
     ${openingRows ? `<section><h2>Opening directions</h2>${openingRows}</section>` : ''}
     ${releaseRows ? `<section><h2>Released scene notes</h2>${releaseRows}</section>` : ''}
+    ${guidanceRows ? `<section><h2>Learner-to-director requests</h2>${guidanceRows}</section>` : ''}
   </details></aside>`;
 }
 

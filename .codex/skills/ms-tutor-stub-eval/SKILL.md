@@ -635,10 +635,22 @@ Useful variants:
   The opening is labeled as an unnumbered prelude, and completed learner-to-
   tutor exchanges begin at turn 1. Swimlanes render the learner message before
   its tutor reply instead of placing the later reply first in the row.
-- `/director` (alias `/notes`) repeats the same opening directions and released
-  director notes in the CLI, then returns to the live scene with the usual
-  tutor-utterance reprise. It never prints future or in-progress director notes
-  and records `publicTranscriptChanged: false` in the trace.
+- Bare `/director` (alias `/notes`) repeats the same opening directions and
+  released director notes in the CLI, then returns to the live scene with the
+  usual tutor-utterance reprise. It never prints future or in-progress director
+  notes and records `publicTranscriptChanged: false` in the trace. `/notes` is
+  deliberately view-only.
+- `/meta <request>` and `/director <request>` create a private
+  learner-to-director request to change subsequent tutor delivery. The request
+  persists until replaced or `/meta clear`, survives `/reset`, and is restored
+  by explicit trace resume. It is stored separately from public learner speech,
+  never enters learner-DAG/object-language analysis, and cannot change public
+  facts, staged-evidence timing, proof state, learner claims, role boundaries,
+  closure, or safety. Bare `/meta` and `/meta status` show the active request.
+  This is a deterministic private control layer, not an additional model role;
+  mixed mode may rebuild a speculative tutor prefetch after the control changes.
+  The transcript director ledger records private requests for provenance, while
+  Replay JS continues to contain public dialogue only.
 - Every tutor-stub conversation with at least one completed tutor turn also
   writes `<run-id>-learning-summary.html` when it concludes, whether through
   natural grounded closure, `/quit`, SIGINT, or the automated learner reaching
@@ -735,7 +747,7 @@ Useful variants:
   height. Keep typing to filter it and press Tab to complete; the palette
   remains usable while tutor or learner generation continues. Commands include
   `/demo [turns]`, `/analysis`, `/settings [model|temp n|dropout n]`, `/random`, `/light`, `/register`, `/character`, `/theme`, `/motion`, `/details`, `/field`, `/viz`,
-  `/transcript`, `/director`, `/notes`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/profile`,
+  `/transcript`, `/director [request]`, `/notes`, `/meta [request|status|clear]`, `/clarify [phrase]`, `/explain [phrase]`, `/translate [level]`, `/id`, `/profile`,
   `/clue`, `/hint`, `/suggest`, `/use`, `/regen`, and `/quit`.
 - `/translate` is available in every normal tutor-stub session. Without an
   active curriculum, bare `/translate` rewrites the latest completed public

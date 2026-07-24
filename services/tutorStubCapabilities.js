@@ -75,7 +75,8 @@ const GROUPS = [
   {
     id: 'inspect',
     label: 'inspect',
-    description: 'plain/technical analysis · field view · transcript/replay · director notes · learning summary',
+    description:
+      'plain/technical analysis · field view · transcript/replay · director notes and private tutor-change requests · learning summary',
   },
   {
     id: 'evaluate',
