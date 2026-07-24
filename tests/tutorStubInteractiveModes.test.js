@@ -1762,7 +1762,7 @@ test('light adaptation forces a replayable style and character shift after conti
       followupInputs: [
         {
           afterPlainIncludes: 'optional tutor feedback >',
-          text: '/up\nI am frustrated and still do not understand the residue comparison.\n',
+          text: '/up\nI am frustrated and still uncertain about the residue comparison.\n',
         },
       ],
       // Stop once the second register selection is observable; response composition is covered separately.

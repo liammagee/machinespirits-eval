@@ -362,6 +362,18 @@ only the public source being rewritten, do not replace the accepted tutor
 utterance or canonical curriculum, and do not advance transcript, proof, or
 dialogue state.
 
+Natural requests such as `can you say that more simply?` stay inside the
+dialogue rather than becoming proof claims. Tutor-stub records them on the
+`instructional_meta` discourse plane, freezes learner-DAG updates and clue
+release for that turn, and selects the `repair_explanation` action. It also
+temporarily overrides the engagement stance with the plain, unadorned fellow
+investigator configuration. The first-draft contract is deliberately small:
+acknowledge the wording problem, restate the latest tutor point in ordinary
+English, then optionally offer declarative continuity. The public proof
+question is omitted rather than repeated or asked again. The deterministic
+fallback follows the same boundary and never inserts the learner's wording
+request into the evidence record.
+
 This mode is deliberately non-DAG. A workplan dependency graph says which work
 precedes other work; it is not a scenario proof DAG, and a card's verification
 line is not a concealed answer. `--curriculum` therefore rejects `--dag`,

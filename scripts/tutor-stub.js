@@ -195,6 +195,10 @@ import {
   tutorStubResponseConfigurationPrompt,
 } from '../services/tutorStubResponseConfiguration.js';
 import {
+  freezeTutorStubLearnerRecordUpdateForDiscoursePlane,
+  resolveTutorStubDiscoursePlane,
+} from '../services/tutorStubDiscoursePlane.js';
+import {
   auditTutorStubResponseComposition,
   buildTutorStubResponseCompositionFrame,
   composeTutorStubFallbackWithUptake,
@@ -531,7 +535,7 @@ const STUB = {
   topic: process.env.TUTOR_STUB_TOPIC || 'fractions',
   world: process.env.TUTOR_STUB_WORLD || 'world_005_marrick',
   learner: 'A curious learner who may be partly right, partly confused, and unsure how to explain their thinking.',
-  goal: 'Help the learner make one small conceptual move. Prefer questions and concrete examples over explanation dumps.',
+  goal: 'Help the learner make one small conceptual move. Prefer concrete examples and, when the compiled turn contract permits, one focused question over explanation dumps.',
   style: 'Calm, concise, Socratic, and specific. Do not perform the whole solution unless the learner is truly stuck.',
   temperature: 0.35,
   maxTokens: 2000,
@@ -2173,6 +2177,7 @@ function tutorResponseRecoveryPrompt({
   const repetitionRows = rows('repetition', repetitionIssues);
   const closureRows = rows('dialogue_closure', closureIssues);
   const recoveryTransition = responseConfiguration?.recovery_transition || null;
+  const instructionalMetaRepair = responseConfiguration?.discourse_plane?.plane === 'instructional_meta';
   return [
     '[Tutor-only repair instruction]',
     'The previous draft failed a response check and was not shown to the learner.',
@@ -2192,7 +2197,9 @@ function tutorResponseRecoveryPrompt({
       ? 'Do not ask the learner to invent an unseen record, source, person, name, or fact. Put enough public direction into the reply first.'
       : null,
     liveTurnProgressionRows
-      ? 'Answer the learner substantively first. Keep any permitted question single and terminal, and make its final sentence name the typed public focus.'
+      ? instructionalMetaRepair
+        ? 'Begin with a substantive acknowledgement of the wording problem, then restate the explanation plainly. Ask no question and do not quote the public inquiry question.'
+        : 'Answer the learner substantively first. Keep any permitted question single and terminal, and make its final sentence name the typed public focus.'
       : null,
     liveSourceActionAlignmentRows
       ? 'Write the required public carrier in the host entrance immediately before the exact source words. Do not substitute an unrelated prop or rely on a later question to name the carrier.'
@@ -3276,7 +3283,7 @@ function worldPublicPrompt(world) {
     'Your task in story mode:',
     '- Play the tutor/investigator guiding the learner through the case.',
     '- Treat the learner as the investigator; do not solve the case for them.',
-    '- Keep the public question alive and ask for grounded inferences from evidence.',
+    '- Keep the public question alive across the dialogue. Ask for grounded inferences only when the compiled turn contract assigns a question; an instructional repair may leave the question unstated for that turn.',
     '- Treat a concrete learner question as a legitimate investigative move. When clarification is more useful than a guess, invite the investigator to ask what evidence, tool, or distinction needs explaining.',
     '- Make that permission visible: name the clue in plain language, or explicitly invite a short clarification question when a term or referent may be unclear. Never assume the investigator knows that a question may be answered with a clarifying question.',
     '- Stay inside the scene: address the investigator directly and never call either speaker "the tutor" or "the learner".',
@@ -3423,7 +3430,7 @@ function responseChoiceModeRules({ multipleChoice, world = null }) {
         '- Do not default to multiple choice. A tutor-only question-support instruction may still authorize one bounded choice when uncertainty shows that an open prompt is not answerable enough.',
         '- If no question-support override applies and the learner seems unsure, put a directional hint into the discourse before asking; never ask them to invent a record, source, name, or fact that has not entered the public scene.',
         '- When talking through options, collapse them to one live issue: what changed, what remains unsafe, or what the learner now thinks follows.',
-        "- End with one light prompt for the learner's natural next thought; do not require a full proof step unless their leap is unsafe or case-closing.",
+        "- When the compiled handoff permits a question, end with one light prompt for the learner's natural next thought; otherwise end declaratively. Do not require a full proof step unless their leap is unsafe or case-closing.",
       ];
 }
 
@@ -3451,7 +3458,7 @@ function buildSystemPrompt({
     '- Treat tutoring here as acting in a shared inquiry. Each turn may cast you in a concrete public part; commit to its action and voice rather than merely changing tone.',
     '- A part never grants knowledge. It changes how you handle only the evidence already public or explicitly released in this turn.',
     "- Start by locating the learner's current idea, not by grading them.",
-    '- Ask at most one main question per turn.',
+    '- Ask at most one main question when the compiled turn contract permits one; ask none when its handoff forbids questions.',
     '- Use a tiny concrete example when it helps.',
     '- Keep the answer short enough that the learner can respond.',
     '- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.',
@@ -3713,6 +3720,7 @@ function buildHumanDiscourseRunConfig({ dagMode, dagEnabled, tutorLearnerDagEnab
       'humanDiscourseFrame',
       'scaffoldState',
       'sideArc',
+      'discoursePlane',
       'proofDebt',
       'warrantPremiseAudit',
       'generousInference',
@@ -3966,6 +3974,7 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
     'Use these controlled labels where possible:',
     '- request_type: conceptual_clarity_request, stepwise_support_request, authority_refusal_or_status_challenge, plain_language_request, plain_simplification_followup, transfer_demand_or_named_material, vulnerability_or_moral_exposure, resistance_or_low_agency, answer_seeking_or_overreach, off_task_or_mixed',
     '- discourse_move: question, claim, hypothesis, inference, evidence_adoption, challenge, repair_request, affective_signal, answer_seeking, metacognitive_reflection, off_task',
+    '- discourse_plane: object, instructional_meta, or mixed. Use instructional_meta when the learner is asking about the tutor’s wording, explanation, or terminology rather than making a claim about the subject matter. A request merely to slow clue pacing remains object-level scaffolding.',
     '- evidence_use: none, repeats_setup, cites_public_evidence, omits_warrant, links_evidence_to_rule, overleaps_evidence, distorts_public_evidence, revises_from_evidence',
     '- Use omits_warrant when the learner states a correct public clue and a conclusion but leaves out the bridge that licenses the conclusion. Do not call that links_evidence_to_rule merely because the bridge is easy to infer.',
     '- Use distorts_public_evidence only when the learner misstates, blends, or reassigns an already public clue. Use overleaps_evidence for a premature conclusion or missing warrant without distorted recall.',
@@ -3989,6 +3998,7 @@ function buildLearnerClassifierPrompt({ learnerText, state }) {
           summary: 'plain-language sentence naming what the learner did in this turn',
           request_type: 'logical request type, not a tutor engagement stance',
           discourse_move: 'one controlled label',
+          discourse_plane: 'object, instructional_meta, or mixed',
           evidence_use: 'one controlled label',
           epistemic_stance: 'one controlled label',
           affect: 'brief affect/energy label',
@@ -5959,6 +5969,7 @@ function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classific
     scaffoldState,
     generousInference,
   });
+  const discoursePlane = resolveTutorStubDiscoursePlane({ learnerText, classification, sideArc });
   const warrantPremiseAudit = buildWarrantPremiseAudit({
     dagMode,
     tutorLearnerDag,
@@ -5975,7 +5986,7 @@ function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classific
     generousInference,
   });
   const questionSupport =
-    dagMode === 'strict_dag'
+    dagMode === 'strict_dag' || discoursePlane.freeze_clue_release
       ? null
       : buildTutorStubQuestionSupport({
           tutorTurn,
@@ -5996,6 +6007,7 @@ function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classific
     strictDag,
     scaffoldState,
     sideArc,
+    discoursePlane,
     proofDebt,
     questionSupport,
     warrantPremiseAudit,
@@ -7498,6 +7510,8 @@ function normalizeResponseConfigurationSelection(
   if (!state.register?.enabled) return null;
   const palette = new Set(state.register.palette || []);
   const policy = state.register?.policy || 'dynamic';
+  const discoursePlane = resolveTutorStubDiscoursePlane({ learnerText, classification });
+  const instructionalMetaRepair = discoursePlane.plane === 'instructional_meta';
   const explicitRegister = explicitPerformanceDirectiveValue(state, 'register');
   const explicitCharacter = explicitPerformanceDirectiveValue(state, 'character');
   const lightAdaptation = buildTutorStubLightAdaptationDecision({
@@ -7682,6 +7696,18 @@ function normalizeResponseConfigurationSelection(
       predeclared_pressure: true,
     });
   }
+  if (instructionalMetaRepair) {
+    source = applyEngagementStanceOverride(source, 'plain', {
+      register_reason:
+        'Instructional repair overrides proof-facing performance pressure for this turn; use plain, unadorned language before returning to the inquiry.',
+      engagement_stance_reason:
+        'Instructional repair overrides proof-facing performance pressure for this turn; use plain, unadorned language before returning to the inquiry.',
+      reviewer_signal: 'learner requested repair of the explanation itself',
+      expected_dag_move: 'Keep learner-DAG state unchanged while the explanation is repaired.',
+      expected_field_move: 'Resolve the wording gap without releasing evidence or asking another proof question.',
+      source: 'instructional_meta_repair',
+    });
+  }
   const selectedRaw = String(source.engagement_stance || source.selected_register || source.register || '').trim();
   const selectedResolution = resolveEngagementStance(selectedRaw, { fallback: 'precise' });
   const selected = selectedResolution?.register || selectedRaw;
@@ -7717,10 +7743,13 @@ function normalizeResponseConfigurationSelection(
     world: state.world,
     proposedActionFamily: proposedActionFamily || null,
     releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
-    dueEvidence: currentReleaseRows(state, tutorLearnerDag?.model?.turn ?? state.turns.length + 1),
+    dueEvidence: discoursePlane.freeze_clue_release
+      ? []
+      : currentReleaseRows(state, tutorLearnerDag?.model?.turn ?? state.turns.length + 1),
     recentActorialParts: (state.register?.history || [])
       .map((entry) => entry.actorial_part || entry.response_configuration?.actorial_part)
       .filter(Boolean),
+    discoursePlane,
   };
   let responseConfiguration = buildTutorStubResponseConfiguration(configurationInputs);
   const actorialInputs = {
@@ -7924,6 +7953,7 @@ function normalizeResponseConfigurationSelection(
       selectedResolution?.legacy_selected_register ||
       preferredLegacyRegister({ register: selected, requestType, actionFamily }),
     action_family: actionFamily || null,
+    discourse_plane: structuredClone(discoursePlane),
     audience_register: responseConfiguration.audience_register,
     lexical_accessibility: responseConfiguration.lexical_accessibility,
     scene_immersion: responseConfiguration.scene_immersion,
@@ -8126,14 +8156,19 @@ function emptyTutorLearnerDagModel(state, tutorTurn, dagPreflight = null) {
 async function buildTutorLearnerDagForTurn(
   learnerText,
   state,
-  { dagPreflight = null, signal = null, isCurrent = null } = {},
+  { dagPreflight = null, signal = null, isCurrent = null, classification = null } = {},
 ) {
   if (!state.learnerDag.enabled || !state.world) return null;
   const tutorTurn = state.turns.length + 1;
   startInterimAnimation(state, 'modeling learner DAG', { learnerText, tutorTurn });
   try {
-    const update = await extractLearnerRecordUpdate({ learnerText, state, tutorTurn, dagPreflight, signal });
+    const extractedUpdate = await extractLearnerRecordUpdate({ learnerText, state, tutorTurn, dagPreflight, signal });
     assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
+    const discoursePlane = resolveTutorStubDiscoursePlane({ learnerText, classification });
+    const update = freezeTutorStubLearnerRecordUpdateForDiscoursePlane({
+      update: extractedUpdate,
+      discoursePlane,
+    });
     const result = applyLearnerRecordUpdate({
       update,
       state,
@@ -8304,7 +8339,11 @@ async function analyzeLearnerTurnCombined(
     raw = raw || (await extractCombinedLearnerAnalysis({ learnerText, state, tutorTurn, tutorFeedback, signal }));
     assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
     const classification = classificationFromCombinedAnalysis(raw, state);
-    const update = learnerRecordFromCombinedAnalysis(raw);
+    const discoursePlane = resolveTutorStubDiscoursePlane({ learnerText, classification });
+    const update = freezeTutorStubLearnerRecordUpdateForDiscoursePlane({
+      update: learnerRecordFromCombinedAnalysis(raw),
+      discoursePlane,
+    });
     const tutorLearnerDag = applyLearnerRecordUpdate({
       update,
       state,
@@ -8442,6 +8481,7 @@ async function analyzeLearnerTurn(
     dagPreflight,
     signal,
     isCurrent,
+    classification,
   });
   assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
   applyLearnerAdvanceAssessment(classification, tutorLearnerDag);
@@ -8804,21 +8844,43 @@ function humanDiscourseTutorContext(frame, { includeQuestionSupport = true, incl
   const scaffold = frame.scaffoldState || {};
   const branch = scaffold.branch || {};
   const sideArc = frame.sideArc || {};
+  const discoursePlane = frame.discoursePlane || null;
   const proofDebt = frame.proofDebt || {};
   const audit = frame.warrantPremiseAudit || {};
   const compression = frame.stepCompression || {};
   const generousInference = frame.generousInference || null;
   const conversationalCompletion = frame.conversationalCompletion || null;
   const questionSupport = frame.questionSupport || null;
-  const due = scaffold.releaseState?.dueNow || [];
+  const due = discoursePlane?.freeze_clue_release ? [] : scaffold.releaseState?.dueNow || [];
   const latest = scaffold.releaseState?.latestReleased || null;
   const promptRule =
     frame.mode === 'defeasible_human_scaffold'
       ? 'Treat plausible learner leaps as compressed human reasoning. Keep obvious omitted bridges as internal proof debt, and surface a warrant gap only when the leap is unsafe, conflicting, or would close the case.'
       : 'Frame one local warrant in ordinary language while preserving the strict proof audit; do not expand the whole proof chain or license the final answer early.';
+  if (discoursePlane?.plane === 'instructional_meta') {
+    return [
+      '[Tutor-only human discourse scaffold]',
+      `Mode: ${frame.mode}; strict DAG remains the audit, but the learner-facing scaffold is active.`,
+      'Discourse plane: instructional repair. The learner is asking about the explanation itself, not contributing a proposition to the inquiry. Keep the learner-DAG and clue release frozen for this turn.',
+      sideArc.detected
+        ? `Side arc: ${sideArc.type}. Repair the explanation completely before any later return to the inquiry.`
+        : 'Repair the explanation completely before any later return to the inquiry.',
+      'The public inquiry question remains paused. Do not quote it, restate it, or ask any other question in this turn.',
+      includeDefaultResponseShape
+        ? 'Response shape: directly acknowledge the wording problem, restate the immediately preceding tutor point in plain words, and optionally end with one declarative invitation to unpack another phrase.'
+        : null,
+      'Never mention scaffold state, proof debt, side arcs, DAGs, premise ids, rule ids, hidden facts, or release schedules.',
+      '[End tutor-only human discourse scaffold]',
+    ]
+      .filter(Boolean)
+      .join('\n');
+  }
   return [
     '[Tutor-only human discourse scaffold]',
     `Mode: ${frame.mode}; strict DAG remains the audit, but the learner-facing scaffold is active.`,
+    discoursePlane?.plane === 'instructional_meta'
+      ? 'Discourse plane: instructional repair. The learner is asking about the explanation itself, not contributing a proposition to the inquiry. Keep the learner-DAG and clue release frozen for this turn.'
+      : null,
     compression.enabled
       ? `Step compression: on; ${compression.policy || 'accept obvious public bridges as implied'}; max explicit demands per turn ${compression.maxExplicitDemandsPerTurn ?? 1}.`
       : null,
@@ -8849,7 +8911,9 @@ function humanDiscourseTutorContext(frame, { includeQuestionSupport = true, incl
       ? `Authoritative completion rule: ${conversationalCompletion.instruction}`
       : null,
     sideArc.detected
-      ? `Side arc: ${sideArc.type}. Answer the learner's clarification/trust/affect need briefly, then ${sideArc.returnTarget?.afterSideArc || 'return to the local evidence question'}.`
+      ? discoursePlane?.plane === 'instructional_meta'
+        ? `Side arc: ${sideArc.type}. Repair the explanation completely in this turn. Do not return to the local evidence question until a later learner turn.`
+        : `Side arc: ${sideArc.type}. Answer the learner's clarification/trust/affect need briefly, then ${sideArc.returnTarget?.afterSideArc || 'return to the local evidence question'}.`
       : 'Side arc: none detected; stay on the local warrant.',
     `Proof debt status: ${proofDebt.status || 'unknown'}; open=${proofDebt.counts?.open ?? 0}; harmful=${proofDebt.counts?.harmful ?? 0}.`,
     proofDebt.open?.length ? `Open proof debt:\n${compactAuditRows(proofDebt.open)}` : null,
@@ -8882,9 +8946,11 @@ function humanDiscourseTutorContext(frame, { includeQuestionSupport = true, incl
       ? 'The immediately preceding local question is closed for learner-facing purposes. Do not paraphrase it into another question, ask for a name, ask what it licenses, or request a public-record restatement. The strict learner-DAG may remain incomplete as an audit; that incompleteness must not control this spoken turn.'
       : null,
     'Ask for an explicit warrant only if the learner is about to name/confirm a suspect, contradicts public evidence, relies on unstaged evidence, or reaches a conclusion that would be false without the missing bridge.',
-    includeDefaultResponseShape
-      ? 'Default response shape: one short acknowledgement, one sentence naming the live evidence pressure, one light question. Avoid lists of routes, ledgers, or multiple required subclaims.'
-      : null,
+    includeDefaultResponseShape && discoursePlane?.plane === 'instructional_meta'
+      ? 'Response shape: acknowledge the comprehension problem, restate the latest tutor point in plain words, and end without a proof question or new clue.'
+      : includeDefaultResponseShape
+        ? 'Default response shape: one short acknowledgement, one sentence naming the live evidence pressure, one light question. Avoid lists of routes, ledgers, or multiple required subclaims.'
+        : null,
     'Never mention scaffold state, proof debt, side arcs, DAGs, premise ids, rule ids, hidden facts, or release schedules.',
     '[End tutor-only human discourse scaffold]',
   ]
@@ -11493,14 +11559,17 @@ async function callTutor({
     : tutorLearnerDagModelContext(tutorLearnerDagModel, {
         releasedEvidence: dag && world ? committedReleaseRows(state, tutorTurn) : [],
       });
+  const instructionalMetaRepair = Boolean(
+    !passthrough && humanDiscourseFrame?.discoursePlane?.plane === 'instructional_meta',
+  );
   const dramaticReleaseFrame = passthrough
     ? { active: false, entries: [] }
     : buildTutorStubDramaticReleaseFrame({
-        dueEvidence: currentReleaseRows(state, tutorTurn),
+        dueEvidence: instructionalMetaRepair ? [] : currentReleaseRows(state, tutorTurn),
       });
   const responseConfiguration = registerSelection?.response_configuration || registerSelection || null;
   const committedPublicEvidence = passthrough ? [] : committedReleaseRows(state, tutorTurn);
-  const duePublicEvidence = passthrough ? [] : currentReleaseRows(state, tutorTurn);
+  const duePublicEvidence = passthrough || instructionalMetaRepair ? [] : currentReleaseRows(state, tutorTurn);
   const publicCounterpressure = passthrough
     ? null
     : resolveTutorStubPublicCounterpressure({
@@ -11550,6 +11619,16 @@ async function callTutor({
         includeQuestionSupport: false,
         includeDefaultResponseShape: false,
       });
+  const instructionalMetaRestatementAdvisory = instructionalMetaRepair
+    ? [
+        '[Tutor-only instructional repair target]',
+        recentTutorTexts.length
+          ? 'Restatement target: the immediately preceding public tutor message already present in replayed dialogue. Restate its meaning without copying its difficult wording.'
+          : 'No preceding public tutor message is replayed. Explain the public task in plain words without repeating the inquiry question verbatim.',
+        'Do not quote the public inquiry question and do not output a question mark. This turn repairs wording only.',
+        '[End tutor-only instructional repair target]',
+      ].join('\n')
+    : null;
   const responseCompositionFrame = passthrough
     ? { active: false }
     : buildTutorStubResponseCompositionFrame({
@@ -11562,6 +11641,7 @@ async function callTutor({
         conversationalCompletion: humanDiscourseFrame?.conversationalCompletion || null,
         publicFocusMapping: humanDiscourseFrame?.scaffoldState?.branch?.publicRelationMap || null,
         recentTutorTexts,
+        discoursePlane: humanDiscourseFrame?.discoursePlane || null,
       });
   const firstDraftContract = passthrough
     ? null
@@ -11600,10 +11680,11 @@ async function callTutor({
       : `Learner says:\n${learnerText}`;
   const speakerAdvisoryParts = [
     tutorMemory,
-    dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+    dag && world && !instructionalMetaRepair ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
     advisory,
     learnerDagAdvisory,
     firstDraftHumanDiscourseAdvisory,
+    instructionalMetaRestatementAdvisory,
     comprehensionAdvisory,
     coachAdvisory,
     pointOfActionAdvisory,
@@ -12766,8 +12847,9 @@ async function callTutor({
       firstDraftContract,
     });
     const publicRecoveryMachinePacket = [
-      dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+      dag && world && !instructionalMetaRepair ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
       firstDraftHumanDiscourseAdvisory,
+      instructionalMetaRestatementAdvisory,
       comprehensionAdvisory,
       coachAdvisory,
       tutorFeedbackAdvisory,
@@ -13252,35 +13334,35 @@ async function callTutor({
       firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
         ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
         : candidateFallbackUptake;
-    const baseFallbackText = closureFallbackSelected
-      ? deterministicTutorStubClosureResponse(dialogueClosureFrame, {
+    const baseFallbackText = instructionalMetaRepair
+      ? deterministicTutorStubConfiguredContinuationFallback({
+          uptake: fallbackUptake,
           responseConfiguration: simplifiedRecoveryConfiguration,
+          support: null,
+          world,
+          learnerText,
+          turnProgressionContract: firstDraftContract?.progression || null,
+          recentTutorTexts,
+          variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
         })
-      : dramaticReleaseGuardEnabled
-        ? deterministicTutorStubDramaticReleaseFallback({
-            frame: dramaticReleaseFrame,
-            support: humanDiscourseFrame?.questionSupport || null,
-            uptake: fallbackUptake,
+      : closureFallbackSelected
+        ? deterministicTutorStubClosureResponse(dialogueClosureFrame, {
             responseConfiguration: simplifiedRecoveryConfiguration,
-            variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
-            avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
-            turnProgressionContract: firstDraftContract?.progression || null,
-            sourceAccessibilityContract: firstDraftContract?.evidence?.source_accessibility || null,
           })
-        : scaffoldGuardEnabled
-          ? deterministicGenerousInferenceFallback(fallbackContext)
-          : questionSupportGuardEnabled
-            ? deterministicTutorStubConfiguredContinuationFallback({
-                uptake: fallbackUptake,
-                responseConfiguration: simplifiedRecoveryConfiguration,
-                support: humanDiscourseFrame?.questionSupport || null,
-                world,
-                learnerText,
-                turnProgressionContract: firstDraftContract?.progression || null,
-                recentTutorTexts,
-                variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
-              })
-            : actorialRealizationGuardEnabled
+        : dramaticReleaseGuardEnabled
+          ? deterministicTutorStubDramaticReleaseFallback({
+              frame: dramaticReleaseFrame,
+              support: humanDiscourseFrame?.questionSupport || null,
+              uptake: fallbackUptake,
+              responseConfiguration: simplifiedRecoveryConfiguration,
+              variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+              avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
+              turnProgressionContract: firstDraftContract?.progression || null,
+              sourceAccessibilityContract: firstDraftContract?.evidence?.source_accessibility || null,
+            })
+          : scaffoldGuardEnabled
+            ? deterministicGenerousInferenceFallback(fallbackContext)
+            : questionSupportGuardEnabled
               ? deterministicTutorStubConfiguredContinuationFallback({
                   uptake: fallbackUptake,
                   responseConfiguration: simplifiedRecoveryConfiguration,
@@ -13291,7 +13373,7 @@ async function callTutor({
                   recentTutorTexts,
                   variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
                 })
-              : firstDraftContract?.progression?.complete === true
+              : actorialRealizationGuardEnabled
                 ? deterministicTutorStubConfiguredContinuationFallback({
                     uptake: fallbackUptake,
                     responseConfiguration: simplifiedRecoveryConfiguration,
@@ -13302,10 +13384,22 @@ async function callTutor({
                     recentTutorTexts,
                     variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
                   })
-                : deterministicTutorStubContextualFallback(fallbackContext);
-    const fallbackText = dramaticReleaseGuardEnabled
-      ? baseFallbackText
-      : ensureFallbackComposition(baseFallbackText, fallbackUptake);
+                : firstDraftContract?.progression?.complete === true
+                  ? deterministicTutorStubConfiguredContinuationFallback({
+                      uptake: fallbackUptake,
+                      responseConfiguration: simplifiedRecoveryConfiguration,
+                      support: humanDiscourseFrame?.questionSupport || null,
+                      world,
+                      learnerText,
+                      turnProgressionContract: firstDraftContract.progression,
+                      recentTutorTexts,
+                      variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
+                    })
+                  : deterministicTutorStubContextualFallback(fallbackContext);
+    const fallbackText =
+      dramaticReleaseGuardEnabled || instructionalMetaRepair
+        ? baseFallbackText
+        : ensureFallbackComposition(baseFallbackText, fallbackUptake);
     const fallbackClosureAudit = closureGuardEnabled
       ? auditTutorStubDialogueClosureResponse({ text: fallbackText, frame: dialogueClosureFrame })
       : audits.closureAudit;
@@ -14583,6 +14677,7 @@ async function runOneTurn(
       classification,
       learnerText,
     }) || {};
+  const instructionalMetaRepair = humanDiscourseFrame?.discoursePlane?.plane === 'instructional_meta';
   const { tutorDagSnapshot: dagSnapshot, frame: dialogueClosureFrame } = tutorDialogueClosureFrameForTurn({
     state,
     tutorTurn,
@@ -14641,7 +14736,7 @@ async function runOneTurn(
         unresolvedTerms: comprehensionBeforeTutor?.features?.unresolvedTerms || [],
         nearClosure: dynamicalState?.trajectory?.flags?.nearClosure === true,
         closeInquiry: registerSelection?.action_family === 'close_inquiry' || dialogueClosureFrame?.mandatory === true,
-        duePremises: currentReleaseRows(state, tutorTurn).map((row) => row.premise),
+        duePremises: instructionalMetaRepair ? [] : currentReleaseRows(state, tutorTurn).map((row) => row.premise),
       })
     : null;
   if (state.pointOfAction) state.pointOfAction.current = pointOfAction;
@@ -14861,7 +14956,7 @@ async function runOneTurn(
     });
   }
 
-  const dueReleaseRows = currentReleaseRows(state, tutorTurn);
+  const dueReleaseRows = instructionalMetaRepair ? [] : currentReleaseRows(state, tutorTurn);
   const dramaticReleaseFrame = buildTutorStubDramaticReleaseFrame({ dueEvidence: dueReleaseRows });
   const duePremiseIds = dueReleaseRows.map((row) => row?.premise).filter(Boolean);
   const releaseDeliveryAudit =
@@ -18879,7 +18974,11 @@ async function main() {
     try {
       const speculativeState = cloneStateForMixedLearnerSpeculation();
       const classification = classificationFromCombinedAnalysis(raw, speculativeState);
-      const update = learnerRecordFromCombinedAnalysis(raw);
+      const discoursePlane = resolveTutorStubDiscoursePlane({ learnerText: entry.answer, classification });
+      const update = freezeTutorStubLearnerRecordUpdateForDiscoursePlane({
+        update: learnerRecordFromCombinedAnalysis(raw),
+        discoursePlane,
+      });
       const tutorLearnerDag = applyLearnerRecordUpdate({
         update,
         state: speculativeState,

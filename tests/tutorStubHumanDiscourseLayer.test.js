@@ -125,6 +125,7 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
     'humanDiscourseFrame',
     'scaffoldState',
     'sideArc',
+    'discoursePlane',
     'proofDebt',
     'warrantPremiseAudit',
     'generousInference',
@@ -171,6 +172,10 @@ test('tutor-stub dry run exposes human discourse trace schemas', () => {
   assert.match(config.systemPrompt, /never call either speaker "the tutor" or "the learner"/u);
   assert.match(config.systemPrompt, /learner may connect several already-public premises/u);
   assert.match(config.systemPrompt, /credit the whole chain/u);
+  assert.match(config.systemPrompt, /when the compiled turn contract permits one; ask none when its handoff forbids/u);
+  assert.match(config.systemPrompt, /an instructional repair may leave the question unstated for that turn/u);
+  assert.match(config.systemPrompt, /otherwise end declaratively/u);
+  assert.doesNotMatch(config.systemPrompt, /Keep the public question alive and ask for grounded inferences/u);
   assert.equal(config.tutorLearnerDag.multiPremiseAdvance.enabled, true);
   assert.equal(config.tutorLearnerDag.multiPremiseAdvance.schema, 'machinespirits.tutor-stub.learner-advance.v1');
   assert.ok(config.tutorLearnerDag.multiPremiseAdvance.downstream.includes('register'));
