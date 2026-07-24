@@ -496,7 +496,11 @@ Useful variants:
   `/character learner <profile>` (or legacy `/profile <profile>`) for the mixed
   learner and `/character tutor <part>` (or legacy `/character <part>`) for the
   tutor. `--learner-character` and `--tutor-character` provide symmetric
-  launch-time controls. `adversarial_teacher` and `exacting_schoolmaster` are
+  launch-time controls. A changed tutor character prints a short learner-facing
+  explanation of how replies will behave, the temporary clue-giver/closing-scene
+  exception, and the route back to `Tutor → Auto`; detailed precedence and
+  effective-turn state remain in technical traces. `adversarial_teacher` and
+  `exacting_schoolmaster` are
   deliberately adversarial, explicit-only tutor parts: they never enter
   adaptive, random, or light-adaptation draws. Both follow domain-before-
   metaphor discipline: the active subject's objects, concepts, texts, problems,
