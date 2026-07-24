@@ -39,20 +39,27 @@ playbook is in `workplan/playbook/`.
   ```bash
   node scripts/workplan.js ingest    # TODO.md open items + notes/daily-notes actions -> inbox/
   ```
-- **`add`/`triage`/`set` auto-render** `BOARD.md` + `board.json` (the dashboard
-  reads `board.json`), so you rarely call `render` directly:
+- **`add`/`triage`/`set` auto-render** `BOARD.md` + `board.json` for the local
+  dashboard. On feature branches, prefer `--no-render` and commit source files
+  only; if the views were refreshed locally, leave their diffs out of the PR:
   ```bash
-  node scripts/workplan.js render    # only needed after hand-editing item files
-  node scripts/workplan.js validate  # frontmatter vs schema/item.schema.json
+  npm run wp:source-check                         # feature-branch validation
+  node scripts/workplan.js set <id> status active --no-render
+  npm run wp:render                               # local/main rendering only
+  npm run wp:check                                # strict source + generated check
   ```
 
 ## Conventions to enforce
 - `items/` is the source of truth; `BOARD.md` / `board.json` are generated —
   never hand-edit them.
+- Feature PRs must not commit `BOARD.md` / `board.json`; the serialized
+  main-only renderer publishes them after merge. The
+  `workplan-generated-update` label is reserved for deliberate renderer
+  migrations.
 - Link, don't copy: point at the paper §, the note, the export, the run, the PR.
 - Every item needs a `verification` line before it can reach `done`.
 - For research/paper items, keep `claim_status` in sync with the atlas
   (`docs/research/atlas/atlas.yaml`).
 
-After acting, suggest the next step (triage new inbox items, run `validate`, or
-`render` to refresh the dashboard).
+After acting, suggest the next step (triage new inbox items or run
+`wp:source-check`; render only for a local dashboard refresh or on `main`).

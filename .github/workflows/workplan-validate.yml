@@ -3,7 +3,7 @@ name: Workplan validation
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
   push:
     branches: [main]
     paths:
@@ -29,6 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -40,8 +42,16 @@ jobs:
       - name: Install yaml
         run: npm install --no-save yaml
 
-      - name: Validate items and generated board views
-        run: npm run wp:check
+      - name: Validate workplan source
+        run: npm run wp:source-check
+
+      - name: Keep feature PRs source-only
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          WORKPLAN_ALLOW_GENERATED_CHANGES: ${{ contains(github.event.pull_request.labels.*.name, 'workplan-generated-update') }}
+        run: npm run wp:generated-pr-check
 
       - name: Workplan unit tests
         run: npm run wp:test

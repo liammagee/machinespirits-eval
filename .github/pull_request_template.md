@@ -6,7 +6,7 @@
 - [ ] Linked workplan item: <id or N/A>
   <!-- If this placeholder is left unchanged, CI accepts only one exact workplan `branch:` match. -->
 - [ ] Updated the item status/branch if this PR starts, blocks, reviews, or closes the work
-- [ ] Ran `npm run wp:check` if `workplan/items/` changed
+- [ ] Ran `npm run wp:source-check` if workplan source changed; generated board views are not included
 
 ## Ref and version governance
 
