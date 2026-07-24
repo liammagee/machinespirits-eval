@@ -13,6 +13,8 @@ verification: A small Lantern or Nocturne slice exports an authored Lean proof c
 claim_status: future
 links:
   notes: notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/214
   code:
     - services/dramaticDerivation/semanticWebProofDag.js
     - services/dramaticDerivation/semanticWebValidation.js
@@ -97,3 +99,8 @@ to `/analysis technical`. While making the learner graph inspectable, fixed a
 fixture ledger lookup that had produced a structurally valid but empty grounded
 record; regressions now require six public grounded facts, three voiced
 conclusions, 0.857 best-path coverage, and one unreleased missing premise.
+
+2026-07-25 Codex: Rebased the implementation unchanged onto `origin/main` at
+`a2335617`, reran the targeted and full hermetic verification gates, and opened
+PR #214. The feature PR remains source-only for workplan state; generated board
+views are left to the serialized post-merge renderer.
