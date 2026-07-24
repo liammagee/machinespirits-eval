@@ -15,9 +15,11 @@ links:
   notes:
     - notes/program-2/2026-07-24-weights-interface-paid-smoke-hold.md
     - PROGRAM-2-FINAL-AUDIT-RELIABILITY-GATE-AMENDMENT-1.md
+    - notes/program-2/2026-07-24-final-audit-reliability-diagnosis.md
   exports:
     - exports/program2-weights-interface-factorial-paid-smoke/launch-state.json
     - exports/program2-weights-interface-factorial-paid-smoke/provenance-audit.json
+    - exports/program2-final-audit-reliability-gate/replay-classification.json
   items:
     - program-2-weights-interface-factorial
 tags:
@@ -48,3 +50,7 @@ Log:
   common downstream public-state construction, preserves every treatment and
   audit seam, and licenses only a fresh excluded four-cell smoke after the
   zero-model and test gates pass.
+- 2026-07-24 — fixed-hash zero-model replay passed 4/4 with zero calls. All
+  four cases are fallback-construction defects with an archived public-safe
+  clause accepted by the unchanged leak and due-clue multiplicity audits; no
+  case was classified as a true unsafe-draft limit or audit/input mismatch.

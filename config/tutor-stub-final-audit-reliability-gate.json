@@ -1,0 +1,59 @@
+{
+  "schema": "machinespirits.tutor-stub.final-audit-reliability-gate.v1",
+  "worldId": "world_005_marrick",
+  "cases": [
+    {
+      "id": "R1",
+      "trace": "exports/program2-weights-interface-factorial-paid-smoke/traces/p2wi-smoke-01-proof_skipper-untuned_v1-r1/2026-07-24T09-37-11-989Z.jsonl",
+      "traceSha256": "0f0a91879a69df7f88a377c5abd4259572f3041c91db2f1c497490b797242906",
+      "turn": 10,
+      "expectedIssues": [
+        "leak:private_final_conclusion",
+        "response_configuration:axis_not_visible"
+      ],
+      "classification": "fallback_construction_defect",
+      "safeFocus": "the charcoal book names her alone at the weir forge",
+      "cause": "the fallback quotes the learner's unsupported final conclusion even though a public-only clause can preserve the supported charcoal-book link"
+    },
+    {
+      "id": "R2",
+      "trace": "exports/program2-weights-interface-factorial-paid-smoke/traces/p2wi-smoke-03-proof_skipper-trained_v2-r1/2026-07-24T10-09-49-794Z.jsonl",
+      "traceSha256": "1310270bd0aa2a938a9e83109a7be1378156cb09797df046852f3dbaf511cfd2",
+      "turn": 21,
+      "expectedIssues": [
+        "response_composition:generic_learner_uptake",
+        "live_turn_progression_v1:learner_uptake_not_realized"
+      ],
+      "classification": "fallback_construction_defect",
+      "safeFocus": "Edony’s charcoal signature places her at the weir-forge after it was shut",
+      "cause": "the bounded-focus constructor stops at the learner's ledger preface and falls back to generic uptake instead of retaining the public substantive clause"
+    },
+    {
+      "id": "R3",
+      "trace": "exports/program2-weights-interface-factorial-paid-smoke/traces/p2wi-smoke-03-proof_skipper-trained_v2-r1/2026-07-24T10-22-21-315Z.jsonl",
+      "traceSha256": "89f9ca7ab42112cd7186ecf13bf2e5fbd40c2711b9201965907ea12bcf52d7da",
+      "turn": 19,
+      "expectedIssues": [
+        "leak:private_final_conclusion",
+        "response_configuration:axis_not_visible"
+      ],
+      "classification": "fallback_construction_defect",
+      "safeFocus": "The worn, sprung-heeled burin was Edony’s",
+      "cause": "the uptake is safe but the declarative handoff reconstructs the full unsupported learner conclusion instead of the safe public clause"
+    },
+    {
+      "id": "R4",
+      "trace": "exports/program2-weights-interface-factorial-paid-smoke/traces/p2wi-smoke-04-proof_skipper-trained_v1-r1/2026-07-24T10-33-37-479Z.jsonl",
+      "traceSha256": "c03912e228690c83b53795deb9c35b79e1d7aa43748b3298690cc5fe577f6227",
+      "turn": 17,
+      "expectedIssues": [
+        "dramatic_release:duplicate_clue_delivery",
+        "response_configuration:axis_not_visible",
+        "response_configuration:axis_not_visible"
+      ],
+      "classification": "fallback_construction_defect",
+      "safeFocus": "the broken R bears the square notch",
+      "cause": "the fallback chooses the learner's broad-graver clause, which crosses the due clue's multiplicity threshold, even though the second learner clause preserves uptake without duplicating the release"
+    }
+  ]
+}
