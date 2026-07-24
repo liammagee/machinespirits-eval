@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import * as dagFeatures from '../services/tutorStubDagFeatures.js';
+import * as fieldTrajectory from '../services/tutorStubFieldTrajectory.js';
+import * as registerPolicy from '../services/tutorStubRegisterPolicy.js';
 import {
   FIELD_PROGRESS_THRESHOLD,
   buildFieldRegisterPolicyCoreFeatures,
@@ -128,6 +131,41 @@ const state = {
 };
 
 const tutorLearnerDag = { model: currentDag };
+
+test('register-policy facade re-exports the canonical field-state helper bindings', () => {
+  const sharedHelpers = [
+    'classifyFieldStateRelation',
+    'dagProgressFeatures',
+    'fieldProgressFromClassification',
+    'learnerDagDeltaForFieldPolicy',
+    'learnerSurfaceFieldPoint',
+    'meanFinite',
+    'normalizedClassifierScore',
+    'previousLearnerSurfaceFieldPoint',
+  ];
+
+  for (const helper of sharedHelpers) {
+    assert.equal(registerPolicy[helper], fieldTrajectory[helper], `${helper} must be one shared binding`);
+  }
+  assert.equal(fieldTrajectory.dagProgressFeatures, dagFeatures.dagProgressFeatures);
+  assert.equal(registerPolicy.dagProgressFeatures, dagFeatures.dagProgressFeatures);
+});
+
+test('register-policy facade preserves the canonical field-state projection shape', () => {
+  const canonical = buildFieldRegisterPolicyCoreFeatures({
+    state,
+    classification: currentClassification,
+    tutorLearnerDag,
+  });
+  const facade = registerPolicy.fieldRegisterPolicyFeatures({
+    state,
+    classification: currentClassification,
+    tutorLearnerDag,
+  });
+  const facadeCore = Object.fromEntries(Object.keys(canonical).map((key) => [key, facade[key]]));
+
+  assert.deepEqual(facadeCore, canonical);
+});
 
 test('field and DAG projections preserve the live legacy normalization contract', () => {
   assert.equal(FIELD_PROGRESS_THRESHOLD, 0.05);

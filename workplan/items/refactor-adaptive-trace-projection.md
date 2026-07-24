@@ -1,13 +1,13 @@
 ---
 id: refactor-adaptive-trace-projection
 title: Consolidate adaptive evaluation trace projections
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-07-24
+updated: 2026-07-25
 verification: >-
   The evaluation CLI and runner import one pure adaptive trace-projection
   service; frozen scenario, dialogue, transcript, and learner-turn fixtures are
@@ -16,6 +16,8 @@ branch: codex/refactor-adaptive-trace-projection
 depends_on:
   - refactor-tutor-response-cycle
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/202
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -62,3 +64,5 @@ Log:
   assertions, all 458 root test files, all 11 tutor-core files (137/137 core
   tests), lint, formatting, zero static cycles across 343 service files, the
   174-item workplan check, and diff checks are green. R1.3 is ready for review.
+- 2026-07-25 — Closed after PR #202 merged to `main` at `6f8770df`; the next
+  duplicate family is tracked separately by `refactor-field-policy-helpers`.
