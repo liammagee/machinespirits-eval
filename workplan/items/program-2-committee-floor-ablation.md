@@ -1,7 +1,7 @@
 ---
 id: program-2-committee-floor-ablation
 title: "Price the fine-tune: live committee with the untuned mini"
-status: active
+status: review
 type: experiment
 priority: P2
 owner: codex
@@ -10,13 +10,14 @@ created: 2026-07-22
 updated: 2026-07-24
 verification: "A frozen, contemporaneous 30-dialogue plan (12 trained committee + 12 untuned same-lineage committee + 6 fresh silent controls) passes its zero-model gate; all jobs seal under the pinned runtime; and the paired/profile-stratified analyzer reports the preregistered trained-minus-untuned warrant-compliance interval, equivalence test, fresh-control contrasts, density, coverage, safety, committee fallback burden, and tutor-response fallback/guard diagnostics without historical pooling."
 branch: codex/program2-committee-floor-ablation
-claim_status: planned
+claim_status: exploratory
 links:
   paper: §6.21
   notes:
     - PROGRAM-2-COMMITTEE-FLOOR-ABLATION-PREREGISTRATION.md
     - PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md
     - notes/program-2/2026-07-20-phase5-live-pilot-results.md
+    - notes/program-2/2026-07-24-floor-ablation-interface-diagnosis.md
   exports:
     - exports/program2-committee-floor-ablation/launch-state.json
     - exports/program2-committee-floor-ablation/analysis.json
@@ -24,8 +25,11 @@ links:
     - exports/program2-committee-floor-ablation-amendment-3/analysis.json
     - exports/program2-committee-floor-ablation-amendment-4/launch-state.json
     - exports/program2-committee-floor-ablation-amendment-4/analysis.json
+    - exports/program2-committee-floor-ablation-amendment-4/mediation-analysis.json
+    - exports/program2-committee-floor-ablation-amendment-4/provenance-audit.json
   items:
     - program-2-context-vs-weights-finetune
+    - program-2-weights-interface-factorial
 tags:
   - tutor-stub
   - fine-tune
@@ -114,3 +118,11 @@ Log:
   and resumes job 20 at its remaining attempt 2. The two interrupted traces
   stay non-terminal and excluded; treatment and estimands remain frozen. See
   preregistration §13.
+- 2026-07-24 — cohort terminal at 24/30 sealed plus six finalized attritions.
+  The unchanged frozen analyzer remains `incomplete_or_under_informative`:
+  W1 trained-minus-untuned = -0.060, 95% CI [-0.204, 0.105], not practically
+  equivalent. A separate post-hoc mediation analyzer preserves the trained raw
+  cue signature (45/55 versus 40/80) but shows differential v1 cue loss and
+  heavy final-stage overwrite; all rates are conditional on sealing. The
+  read-only model audit passed 30/30 checks. Awaiting review rather than paper
+  fold-in or a claim about weight efficacy.
