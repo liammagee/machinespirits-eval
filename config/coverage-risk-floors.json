@@ -49,12 +49,14 @@
         "services/humanCodingStore.js",
         "services/labellingGameStore.js",
         "services/labellingGameCli.js",
-        "routes/humanCodingRoutes.js"
+        "routes/humanCodingRoutes.js",
+        "public/human-coding-admin/save-queue.js"
       ],
       "tests": [
         "services/__tests__/humanCodingStore.test.js",
         "tests/humanCodingRoutes.test.js",
-        "tests/labellingGameCli.test.js"
+        "tests/labellingGameCli.test.js",
+        "tests/labellingSaveQueue.test.js"
       ],
       "floors": { "lines": 74, "branches": 64, "functions": 80 }
     },
