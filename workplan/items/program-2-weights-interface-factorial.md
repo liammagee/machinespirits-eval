@@ -1,7 +1,7 @@
 ---
 id: program-2-weights-interface-factorial
 title: "Separate trained skill from interface transmission"
-status: blocked
+status: active
 type: experiment
 priority: P1
 owner: codex
@@ -10,7 +10,6 @@ created: 2026-07-24
 updated: 2026-07-24
 verification: "A preregistered 2×2 trained/untuned × v1/v2 cohort passes provenance and cue-blind-enforcement gates, seals with the frozen missingness thresholds, and reports blinded first-pass semantic skill, transmission, burden, attrition, and final operational outcomes without historical pooling."
 branch: codex/program2-committee-floor-ablation
-blocked_by: "Human review of the frozen successor design, followed by a separate implementation and launch decision under a new clean SHA."
 claim_status: planned
 links:
   paper: §6.21
@@ -48,3 +47,6 @@ Log:
   zero-call mediation waterfall, and 30/30-check local provenance audit. No
   successor implementation, paid smoke, or cohort launch is licensed in this
   change set.
+- 2026-07-24 — user approved the frozen sequence as a separate implementation
+  slice and authorized paid smoke/cohort calls when the preregistered clean-SHA,
+  zero-model, provenance, and smoke gates pass.

@@ -438,7 +438,10 @@ import {
   buildCommitteeCompositionBlock,
   committeeFallbackBatteryPass,
   committeeMiniGenerate,
-  committeeQuestionSentences,
+  extractCommitteeSpanV1,
+  extractCuePreservingCommitteeSpanV2,
+  resolveCueBlindCommitteeDelivery,
+  runCueBlindCommitteeBattery,
   runCommitteeBattery,
   trimCommitteeFallback,
 } from '../services/program2CommitteeEngine.js';
@@ -653,6 +656,7 @@ const { values: args, positionals } = parseArgs({
     'no-committee': { type: 'boolean', default: false },
     'committee-mini-model': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.miniModel },
     'committee-ollama-url': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl },
+    'committee-span-interface': { type: 'string', default: 'v1' },
     'committee-fallback-policy': {
       type: 'string',
       default: process.env.TUTOR_STUB_COMMITTEE_FALLBACK_POLICY || 'v1',
@@ -878,11 +882,15 @@ Options:
   --committee-ollama-url <url>
                          local ollama endpoint for the committee mini
                          (default: ${PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl})
-  --committee-fallback-policy <v1|v2>
+  --committee-span-interface <v1|v2>
+                         v1 retains all question sentences; v2 selects one
+                         cue-preserving, non-generative span
+  --committee-fallback-policy <v1|v2|cue_blind>
                          v1 ships the greedy mini reply unchecked (Phase 5);
                          v2 applies the fallback battery: greedy check, two
                          resamples, cue-preserving trim (Phase 5b); human chat
-                         defaults to v2 while explicit eval arms retain v1
+                         defaults to v2 while cue_blind is reserved for the
+                         preregistered weights x interface successor
   --classifier-model <ref>
                          learner-input classifier model (default: ${STUB.classifierModel})
   --no-classifier        skip the upfront learner-input classifier
@@ -12278,10 +12286,27 @@ async function callTutor({
     // battery — greedy first, then up to two resamples at the frozen
     // sampled temperature, then the cue-preserving trim. Policy v1 ships
     // the greedy reply unchecked (the Phase 5 behavior).
-    async function resolveCommitteeFallbackEnvelope() {
+    async function resolveCommitteeFallbackEnvelope({
+      spanResult = null,
+      composedText = null,
+      composerError = null,
+      battery = null,
+    } = {}) {
       const fallback = { policy: state.committee.fallbackPolicy || 'v1', resolution: 'v1_unchecked', resamples: 0 };
       let deliveredText = miniText;
-      if (fallback.policy === 'v2') {
+      if (fallback.policy === 'cue_blind') {
+        const ledger = resolveCueBlindCommitteeDelivery({
+          miniText,
+          spanResult,
+          composedText,
+          composerError,
+          battery,
+        });
+        fallback.resolution = ledger.fallbackUsed ? 'original_greedy_mini' : 'composer_accepted';
+        fallback.failureReason = ledger.failureReason;
+        deliveredText = ledger.deliveredText;
+        moment.enforcementLedger = ledger;
+      } else if (fallback.policy === 'v2') {
         if (committeeFallbackBatteryPass(miniText)) {
           fallback.resolution = 'selected_greedy';
         } else {
@@ -12344,8 +12369,10 @@ async function callTutor({
       miniLatencyMs,
       miniError,
       miniText,
+      spanInterface: state.committee.spanInterface || 'v1',
       span: null,
       spanSentenceCount: 0,
+      spanCarriedStatement: false,
       composedText: null,
       composerLatencyMs: null,
       composerError: null,
@@ -12362,13 +12389,17 @@ async function callTutor({
         repairAttempt: 0,
       });
     } else {
-      const spans = committeeQuestionSentences(miniText);
-      moment.spanSentenceCount = spans.length;
-      if (!spans.length) {
+      const spanResult =
+        state.committee.spanInterface === 'v2'
+          ? extractCuePreservingCommitteeSpanV2(miniText)
+          : extractCommitteeSpanV1(miniText);
+      moment.spanSentenceCount = spanResult.questionCount;
+      moment.spanCarriedStatement = spanResult.carriedStatement;
+      if (spanResult.status !== 'ok') {
         moment.source = 'fallback_no_span';
-        chosen = await resolveCommitteeFallbackEnvelope();
+        chosen = await resolveCommitteeFallbackEnvelope({ spanResult });
       } else {
-        const span = spans.join(' ');
+        const span = spanResult.span;
         moment.span = span;
         const compositionBlock = buildCommitteeCompositionBlock(span);
         try {
@@ -12381,10 +12412,46 @@ async function callTutor({
           });
           moment.composedText = composer.text;
           moment.composerLatencyMs = composer.latencyMs;
-          const battery = runCommitteeBattery({ composedText: composer.text, span });
+          const leakAudit =
+            state.committee.fallbackPolicy === 'cue_blind'
+              ? auditTutorResponseLeak({
+                  text: composer.text,
+                  world,
+                  tutorTurn,
+                  learnerText,
+                  state,
+                  publicPremiseIds: speakerPublicPremiseIds,
+                })
+              : null;
+          const battery =
+            state.committee.fallbackPolicy === 'cue_blind'
+              ? runCueBlindCommitteeBattery({
+                  composedText: composer.text,
+                  span,
+                  publicEvidenceSafe: leakAudit.ok,
+                  noNewPremise: leakAudit.ok,
+                })
+              : runCommitteeBattery({ composedText: composer.text, span });
           moment.battery = battery;
+          moment.compositionEvidenceAudit = leakAudit
+            ? { ok: leakAudit.ok, leakCount: leakAudit.leaks.length, basis: 'tutor_response_leak_audit' }
+            : null;
           if (battery.pass) {
             moment.source = 'composed';
+            if (state.committee.fallbackPolicy === 'cue_blind') {
+              moment.enforcementLedger = resolveCueBlindCommitteeDelivery({
+                miniText,
+                spanResult,
+                composedText: composer.text,
+                battery,
+              });
+              moment.fallback = {
+                policy: 'cue_blind',
+                resolution: 'composer_accepted',
+                resamples: 0,
+                failureReason: null,
+              };
+            }
             chosen = composer;
             chosen.guardRole = roleBase;
           } else {
@@ -12394,12 +12461,12 @@ async function callTutor({
                 : battery.failedCheck === 'exactly_one_question'
                   ? 'fallback_multi_question'
                   : 'fallback_empty';
-            chosen = await resolveCommitteeFallbackEnvelope();
+            chosen = await resolveCommitteeFallbackEnvelope({ spanResult, composedText: composer.text, battery });
           }
         } catch (err) {
           moment.composerError = String(err?.message || err).slice(0, 300);
           moment.source = 'fallback_error';
-          chosen = await resolveCommitteeFallbackEnvelope();
+          chosen = await resolveCommitteeFallbackEnvelope({ spanResult, composerError: moment.composerError });
         }
       }
     }
@@ -15574,8 +15641,14 @@ async function main() {
   args['committee-fallback-policy'] = String(args['committee-fallback-policy'] || '')
     .trim()
     .toLowerCase();
-  if (!['v1', 'v2'].includes(args['committee-fallback-policy'])) {
-    throw new Error('--committee-fallback-policy must be v1 or v2');
+  if (!['v1', 'v2', 'cue_blind'].includes(args['committee-fallback-policy'])) {
+    throw new Error('--committee-fallback-policy must be v1, v2, or cue_blind');
+  }
+  args['committee-span-interface'] = String(args['committee-span-interface'] || '')
+    .trim()
+    .toLowerCase();
+  if (!['v1', 'v2'].includes(args['committee-span-interface'])) {
+    throw new Error('--committee-span-interface must be v1 or v2');
   }
   if (args.module && !args.curriculum) {
     throw new Error('--module requires --curriculum <workplan|path>');
@@ -16626,6 +16699,7 @@ async function main() {
                   pointOfActionArm === 'committee'
                     ? {
                         model: args['committee-mini-model'],
+                        spanInterface: args['committee-span-interface'],
                         fallbackPolicy: args['committee-fallback-policy'],
                         control: '/committee on|off|status',
                       }
@@ -16848,6 +16922,7 @@ async function main() {
               pointOfActionArm === 'committee'
                 ? {
                     model: args['committee-mini-model'],
+                    spanInterface: args['committee-span-interface'],
                     fallbackPolicy: args['committee-fallback-policy'],
                     control: '/committee on|off|status',
                   }
@@ -17175,7 +17250,8 @@ async function main() {
       enabled: pointOfActionArm === 'committee',
       miniModel: args['committee-mini-model'],
       ollamaUrl: args['committee-ollama-url'],
-      fallbackPolicy: args['committee-fallback-policy'] === 'v2' ? 'v2' : 'v1',
+      spanInterface: args['committee-span-interface'],
+      fallbackPolicy: args['committee-fallback-policy'],
       numCtx: PROGRAM2_COMMITTEE_DEFAULTS.numCtx,
       timeoutMs: PROGRAM2_COMMITTEE_DEFAULTS.timeoutMs,
     },
@@ -23703,6 +23779,7 @@ async function main() {
       enabled,
       effectiveTurn,
       miniModel: state.committee.miniModel,
+      spanInterface: state.committee.spanInterface,
       fallbackPolicy: state.committee.fallbackPolicy,
       cacheRefresh: {
         priorStateCleared: Boolean(invalidated?.hadState),

@@ -11,6 +11,8 @@
 import http from 'node:http';
 
 export const PROGRAM2_COMMITTEE_SCHEMA = 'machinespirits.tutor-stub.program2-committee-moment.v1';
+export const PROGRAM2_COMMITTEE_SUCCESSOR_LEDGER_SCHEMA =
+  'machinespirits.tutor-stub.program2-weights-interface-ledger.v1';
 
 export const PROGRAM2_COMMITTEE_DEFAULTS = Object.freeze({
   miniModel: 'program2-sft-instruct-v2',
@@ -27,6 +29,42 @@ export const PROGRAM2_WARRANT_CUE_RE = /\b(?:evidence|item|test|record|fact|rule
 // Probe-identical: maximal '?'-terminated substrings, trimmed, > 8 chars.
 export function committeeQuestionSentences(text) {
   return (String(text || '').match(/[^.!?\n]+\?/gu) || []).map((s) => s.trim()).filter((s) => s.length > 8);
+}
+
+export function committeeStatementSentences(text) {
+  return (String(text || '').match(/[^.!?\n]+[.!]/gu) || []).map((s) => s.trim()).filter((s) => s.length > 8);
+}
+
+// Historical question-only interface: retain every valid question sentence,
+// in source order. This is intentionally byte-equivalent to the Phase 5 path.
+export function extractCommitteeSpanV1(text) {
+  const questions = committeeQuestionSentences(text);
+  return questions.length
+    ? { status: 'ok', span: questions.join(' '), questionCount: questions.length, carriedStatement: false }
+    : { status: 'no_span', span: null, questionCount: 0, carriedStatement: false };
+}
+
+// Frozen successor v2 interface. Cue access ends when this function returns:
+// composition, checks, fallback, and delivery receive only the selected span.
+export function extractCuePreservingCommitteeSpanV2(text) {
+  const questions = committeeQuestionSentences(text);
+  if (!questions.length) {
+    return { status: 'no_span', span: null, questionCount: 0, carriedStatement: false };
+  }
+  const cueQuestion = questions.find((question) => PROGRAM2_WARRANT_CUE_RE.test(question));
+  if (cueQuestion) {
+    return { status: 'ok', span: cueQuestion, questionCount: questions.length, carriedStatement: false };
+  }
+  const firstQuestion = questions[0];
+  const cueStatement = committeeStatementSentences(text).find((statement) => PROGRAM2_WARRANT_CUE_RE.test(statement));
+  return cueStatement
+    ? {
+        status: 'ok',
+        span: `${cueStatement} ${firstQuestion}`,
+        questionCount: questions.length,
+        carriedStatement: true,
+      }
+    : { status: 'ok', span: firstQuestion, questionCount: questions.length, carriedStatement: false };
 }
 
 // Phase 5b fallback battery (PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md §2):
@@ -90,6 +128,53 @@ export function runCommitteeBattery({ composedText, span }) {
   };
   const failedCheck = Object.entries(checks).find(([, ok]) => !ok)?.[0] || null;
   return { pass: !failedCheck, checks, questionCount, failedCheck };
+}
+
+// Successor enforcement is deliberately cue-blind. Semantic warrant validity
+// and frozen-cue presence are outcomes, never accept/reject inputs.
+export function runCueBlindCommitteeBattery({
+  composedText,
+  span,
+  publicEvidenceSafe = true,
+  noNewPremise = true,
+} = {}) {
+  const composed = String(composedText || '').trim();
+  const questionCount = (composed.match(/\?/gu) || []).length;
+  const checks = {
+    non_empty: composed.length > 0,
+    span_contained:
+      composed.length > 0 && normalizeCommitteeWhitespace(composed).includes(normalizeCommitteeWhitespace(span)),
+    exactly_one_question: questionCount === 1,
+    public_evidence_safe: publicEvidenceSafe === true,
+    no_new_premise: noNewPremise === true,
+  };
+  const failedCheck = Object.entries(checks).find(([, ok]) => !ok)?.[0] || null;
+  return { pass: !failedCheck, checks, questionCount, failedCheck };
+}
+
+export function resolveCueBlindCommitteeDelivery({ miniText, spanResult, composedText, composerError, battery } = {}) {
+  const original = String(miniText || '').trim();
+  const hasSpan = spanResult?.status === 'ok' && String(spanResult?.span || '').trim().length > 0;
+  const compositionAccepted = !composerError && hasSpan && battery?.pass === true;
+  return {
+    schema: PROGRAM2_COMMITTEE_SUCCESSOR_LEDGER_SCHEMA,
+    selectedSpanStatus: hasSpan ? 'ok' : 'no_span',
+    composerCalled: hasSpan,
+    composerAccepted: compositionAccepted,
+    fallbackUsed: !compositionAccepted,
+    fallbackSource: compositionAccepted ? null : 'original_greedy_mini',
+    failureReason: compositionAccepted
+      ? null
+      : !hasSpan
+        ? 'no_span'
+        : composerError
+          ? 'composer_error'
+          : battery?.failedCheck || 'composition_rejected',
+    deliveredText: compositionAccepted ? String(composedText || '').trim() : original,
+    miniResamples: 0,
+    composerCalls: hasSpan ? 1 : 0,
+    cueInspectedAfterExtraction: false,
+  };
 }
 
 function postJson(urlString, body, { timeoutMs }) {

@@ -28,7 +28,14 @@ import {
   TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
   buildTutorStubPointOfActionTurn,
 } from '../services/tutorStubPointOfActionCoaching.js';
-import { PROGRAM2_COMMITTEE_DEFAULTS, runCommitteeBattery } from '../services/program2CommitteeEngine.js';
+import {
+  PROGRAM2_COMMITTEE_DEFAULTS,
+  extractCommitteeSpanV1,
+  extractCuePreservingCommitteeSpanV2,
+  resolveCueBlindCommitteeDelivery,
+  runCommitteeBattery,
+  runCueBlindCommitteeBattery,
+} from '../services/program2CommitteeEngine.js';
 import { STEP4_POINT_OF_ACTION_SPEC } from './run-step4-point-of-action-gate.js';
 import { learnerProfilePrompt } from './tutor-stub-learner-profile-contracts.js';
 
@@ -113,6 +120,7 @@ function commandForJob(
     fallbackPolicy = null,
     world = PHASE5_LIVE_PILOT_SPEC.world,
     committeeMiniModel = PHASE5_LIVE_PILOT_SPEC.committeeMiniModel,
+    committeeSpanInterface = null,
     learnerLabel = null,
     evalJobId = job.id,
   } = {},
@@ -173,6 +181,7 @@ function commandForJob(
     committeeMiniModel,
     '--committee-ollama-url',
     PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl,
+    ...(committeeSpanInterface ? ['--committee-span-interface', committeeSpanInterface] : []),
     ...(fallbackPolicy ? ['--committee-fallback-policy', fallbackPolicy] : []),
     '--dag',
     '--no-stream',
@@ -319,6 +328,160 @@ export function buildCommitteeFloorAblationPlan({
     ordering: 'seeded Fisher-Yates over 12 trained_committee + 12 untuned_committee + 6 silent_control cells',
     blocking: 'trained and untuned committee jobs share profile, repeat, pairKey, run seed, and fixed runtime seams',
     jobs,
+  };
+}
+
+export const WEIGHTS_INTERFACE_FACTORIAL_SPEC = Object.freeze({
+  schema: 'machinespirits.tutor-stub.program2-weights-interface-factorial-plan.v1',
+  preregistration: 'PROGRAM-2-WEIGHTS-INTERFACE-FACTORIAL-PREREGISTRATION.md',
+  runSeed: 20260725,
+  bootstrapSeed: 20260726,
+  repeats: 6,
+  fallbackPolicy: 'cue_blind',
+  weights: Object.freeze({
+    trained: PROGRAM2_COMMITTEE_DEFAULTS.miniModel,
+    untuned: 'program2-floor-instruct-q8',
+  }),
+  interfaces: Object.freeze(['v1', 'v2']),
+  conditions: Object.freeze(['trained_v1', 'trained_v2', 'untuned_v1', 'untuned_v2']),
+});
+
+function weightsInterfaceCells({ smoke = false } = {}) {
+  const profiles = smoke ? [PHASE5_LIVE_PILOT_SPEC.profiles[0]] : PHASE5_LIVE_PILOT_SPEC.profiles;
+  const repeats = smoke ? [1] : Array.from({ length: WEIGHTS_INTERFACE_FACTORIAL_SPEC.repeats }, (_, i) => i + 1);
+  const cells = [];
+  for (const profile of profiles) {
+    for (const repeat of repeats) {
+      const blockKey = `${profile}:r${repeat}`;
+      for (const weight of Object.keys(WEIGHTS_INTERFACE_FACTORIAL_SPEC.weights)) {
+        for (const spanInterface of WEIGHTS_INTERFACE_FACTORIAL_SPEC.interfaces) {
+          cells.push({
+            repeat,
+            profile,
+            arm: 'committee',
+            weight,
+            spanInterface,
+            condition: `${weight}_${spanInterface}`,
+            blockKey,
+          });
+        }
+      }
+    }
+  }
+  return cells;
+}
+
+function buildWeightsInterfacePlan({ outputRoot, smoke }) {
+  const prefix = smoke ? 'p2wi-smoke' : 'p2wi';
+  const cells = deterministicShuffle(weightsInterfaceCells({ smoke }), WEIGHTS_INTERFACE_FACTORIAL_SPEC.runSeed);
+  const jobs = cells.map((cell, index) => {
+    const id = [
+      `${prefix}-${String(index + 1).padStart(2, '0')}`,
+      cell.profile,
+      cell.condition,
+      `r${cell.repeat}`,
+    ].join('-');
+    const job = { ordinal: index + 1, id, tutorFamily: PHASE5_LIVE_PILOT_SPEC.tutorFamily, ...cell };
+    return {
+      ...job,
+      command: commandForJob(job, outputRoot, {
+        runSeed: WEIGHTS_INTERFACE_FACTORIAL_SPEC.runSeed,
+        fallbackPolicy: WEIGHTS_INTERFACE_FACTORIAL_SPEC.fallbackPolicy,
+        committeeMiniModel: WEIGHTS_INTERFACE_FACTORIAL_SPEC.weights[cell.weight],
+        committeeSpanInterface: cell.spanInterface,
+        evalJobId: cell.blockKey,
+        learnerLabel:
+          `Program-2 weights by interface ${smoke ? 'excluded smoke' : 'factorial'} ${cell.profile} ` +
+          `repeat ${cell.repeat}/${smoke ? 1 : WEIGHTS_INTERFACE_FACTORIAL_SPEC.repeats}.`,
+      }),
+    };
+  });
+  return {
+    ...PHASE5_LIVE_PILOT_SPEC,
+    ...WEIGHTS_INTERFACE_FACTORIAL_SPEC,
+    schema: smoke
+      ? 'machinespirits.tutor-stub.program2-weights-interface-smoke-plan.v1'
+      : WEIGHTS_INTERFACE_FACTORIAL_SPEC.schema,
+    smokeExcluded: smoke,
+    committeeMiniModels: Object.values(WEIGHTS_INTERFACE_FACTORIAL_SPEC.weights),
+    detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    outputRoot,
+    ordering: `seeded Fisher-Yates over ${jobs.length} balanced weights x interface jobs`,
+    blocking: 'all four jobs in a block share profile, repeat, blockKey, run seed, and fixed runtime seams',
+    jobs,
+  };
+}
+
+export function buildWeightsInterfaceFactorialPlan({
+  outputRoot = 'exports/program2-weights-interface-factorial',
+} = {}) {
+  return buildWeightsInterfacePlan({ outputRoot, smoke: false });
+}
+
+export function buildWeightsInterfaceFactorialSmokePlan({
+  outputRoot = 'exports/program2-weights-interface-factorial-paid-smoke',
+} = {}) {
+  return buildWeightsInterfacePlan({ outputRoot, smoke: true });
+}
+
+export function validateWeightsInterfaceFactorialPlan(plan, { smoke = false } = {}) {
+  const errors = [];
+  const expectedJobs = smoke ? 4 : 48;
+  if (plan.jobs.length !== expectedJobs) errors.push(`expected ${expectedJobs} jobs, found ${plan.jobs.length}`);
+  const cellCounts = new Map();
+  const blocks = new Map();
+  for (const job of plan.jobs) {
+    const cellKey = `${job.profile}|${job.condition}`;
+    cellCounts.set(cellKey, (cellCounts.get(cellKey) || 0) + 1);
+    const block = blocks.get(job.blockKey) || [];
+    block.push(job);
+    blocks.set(job.blockKey, block);
+    if (flagValue(job.command, '--point-of-action-arm') !== 'committee') errors.push(`${job.id} arm mismatch`);
+    if (flagValue(job.command, '--committee-fallback-policy') !== 'cue_blind') {
+      errors.push(`${job.id} is not cue-blind`);
+    }
+    if (flagValue(job.command, '--committee-span-interface') !== job.spanInterface) {
+      errors.push(`${job.id} span-interface mismatch`);
+    }
+    if (flagValue(job.command, '--committee-mini-model') !== WEIGHTS_INTERFACE_FACTORIAL_SPEC.weights[job.weight]) {
+      errors.push(`${job.id} mini-model mismatch`);
+    }
+    if (flagValue(job.command, '--eval-job-id') !== job.blockKey) errors.push(`${job.id} block key mismatch`);
+    if (flagValue(job.command, '--run-seed') !== String(WEIGHTS_INTERFACE_FACTORIAL_SPEC.runSeed)) {
+      errors.push(`${job.id} run-seed mismatch`);
+    }
+    if (flagValue(job.command, '--model') !== PHASE5_LIVE_PILOT_SPEC.tutorFamily) {
+      errors.push(`${job.id} tutor-family mismatch`);
+    }
+    for (const flag of ['--classifier-model', '--learner-record-model', '--auto-learner-model']) {
+      if (flagValue(job.command, flag) !== PHASE5_LIVE_PILOT_SPEC.supportingModel) {
+        errors.push(`${job.id} changed fixed supporting seam ${flag}`);
+      }
+    }
+  }
+  for (const [blockKey, rows] of blocks) {
+    const conditions = new Set(rows.map((job) => job.condition));
+    if (rows.length !== 4 || WEIGHTS_INTERFACE_FACTORIAL_SPEC.conditions.some((condition) => !conditions.has(condition))) {
+      errors.push(`${blockKey} is not a complete four-cell block`);
+    }
+  }
+  const expectedBlocks = smoke ? 1 : PHASE5_LIVE_PILOT_SPEC.profiles.length * WEIGHTS_INTERFACE_FACTORIAL_SPEC.repeats;
+  if (blocks.size !== expectedBlocks) errors.push(`expected ${expectedBlocks} blocks, found ${blocks.size}`);
+  if (!smoke) {
+    for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+      for (const condition of WEIGHTS_INTERFACE_FACTORIAL_SPEC.conditions) {
+        if (cellCounts.get(`${profile}|${condition}`) !== WEIGHTS_INTERFACE_FACTORIAL_SPEC.repeats) {
+          errors.push(`${profile} ${condition} cell count mismatch`);
+        }
+      }
+    }
+  }
+  return {
+    ok: errors.length === 0,
+    errors,
+    jobCount: plan.jobs.length,
+    balancedCellCount: cellCounts.size,
+    completeBlockCount: blocks.size,
   };
 }
 
@@ -570,6 +733,27 @@ export function runPhase5ZeroModelFixtures() {
       runCommitteeBattery({ composedText: 'No question here.', span }).pass === false &&
       runCommitteeBattery({ composedText: `${span} And the seal?`, span }).failedCheck === 'exactly_one_question',
   });
+  const v1 = extractCommitteeSpanV1('Which record matters? Which rule connects it?');
+  const v2 = extractCuePreservingCommitteeSpanV2('The record is public. What follows? Which hunch wins?');
+  const cueBlindBattery = runCueBlindCommitteeBattery({
+    composedText: `Stay with the page. ${v2.span}`,
+    span: v2.span,
+    publicEvidenceSafe: true,
+    noNewPremise: true,
+  });
+  const cueBlindFallback = resolveCueBlindCommitteeDelivery({
+    miniText: 'Original mini reply without a valid question.',
+    spanResult: { status: 'no_span', span: null },
+  });
+  checks.push({
+    name: 'weights_interface_cue_blind_paths',
+    ok:
+      v1.span === 'Which record matters? Which rule connects it?' &&
+      v2.span === 'The record is public. What follows?' &&
+      cueBlindBattery.pass === true &&
+      cueBlindFallback.fallbackSource === 'original_greedy_mini' &&
+      cueBlindFallback.miniResamples === 0,
+  });
   return { ok: checks.every((check) => check.ok), checks };
 }
 
@@ -815,7 +999,7 @@ async function main() {
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--plan 5|5b|5c|floor] [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--plan 5|5b|5c|floor|weights-interface|weights-interface-smoke] [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--limit-jobs N]',
     );
     return;
   }
@@ -839,8 +1023,20 @@ async function main() {
       build: buildCommitteeFloorAblationPlan,
       validate: validateCommitteeFloorAblationPlan,
     },
+    'weights-interface': {
+      root: 'exports/program2-weights-interface-factorial',
+      build: buildWeightsInterfaceFactorialPlan,
+      validate: (plan) => validateWeightsInterfaceFactorialPlan(plan),
+    },
+    'weights-interface-smoke': {
+      root: 'exports/program2-weights-interface-factorial-paid-smoke',
+      build: buildWeightsInterfaceFactorialSmokePlan,
+      validate: (plan) => validateWeightsInterfaceFactorialPlan(plan, { smoke: true }),
+    },
   };
-  if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, 5c, or floor)`);
+  if (!planTable[planKey]) {
+    throw new Error(`unknown --plan ${planKey} (expected 5, 5b, 5c, floor, weights-interface, or weights-interface-smoke)`);
+  }
   const defaultRoot = launch ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
   const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
   const plan = planTable[planKey].build({ outputRoot });
