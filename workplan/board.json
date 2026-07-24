@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T22:09:27.374Z",
+  "generated": "2026-07-24T22:11:25.643Z",
   "counts": {
-    "total": 176,
+    "total": 177,
     "byStatus": {
-      "done": 146,
+      "done": 147,
       "blocked": 3,
       "dropped": 2,
       "triaged": 17,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 39,
-      "maintenance": 27,
+      "maintenance": 28,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -500,7 +500,7 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-24",
-      "updated": "2026-07-24",
+      "updated": "2026-07-25",
       "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
       "claim_status": "planned",
       "depends_on": [],
@@ -518,7 +518,7 @@
           "refactor-tutor-core-cycle",
           "refactor-tutor-response-cycle",
           "refactor-adaptive-trace-projection",
-          "refactor-tutor-response-cycle",
+          "refactor-field-policy-helpers",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -706,34 +706,35 @@
       "branch": "codex/isolate-legacy-and-script-model-subprocesses"
     },
     {
-      "id": "refactor-adaptive-trace-projection",
-      "title": "Consolidate adaptive evaluation trace projections",
+      "id": "refactor-field-policy-helpers",
+      "title": "Consolidate tutor-stub field-policy helpers",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
-      "created": "2026-07-24",
-      "updated": "2026-07-24",
-      "verification": "The evaluation CLI and runner import one pure adaptive trace-projection service; frozen scenario, dialogue, transcript, and learner-turn fixtures are deep-equal to the historical shapes; focused and full hermetic suites pass.",
-      "branch": "codex/refactor-adaptive-trace-projection",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "A neutral DAG-feature leaf owns DAG normalization; tutorStubFieldTrajectory and tutorStubRegisterPolicy re-export the canonical helper bindings; identity and frozen-fixture parity tests pass; focused and full hermetic suites remain green with zero static cycles.",
+      "branch": "codex/refactor-field-policy-helpers",
       "depends_on": [
-        "refactor-tutor-response-cycle"
+        "refactor-adaptive-trace-projection"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "items": [
-          "codebase-refactoring-program"
+          "codebase-refactoring-program",
+          "tutor-stub-register-policy-extraction"
         ]
       },
       "tags": [
         "refactoring",
-        "evaluation",
-        "adaptive-tutor",
-        "traces",
-        "projections"
+        "tutor-stub",
+        "register-policy",
+        "field-trajectory",
+        "duplication"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -1802,6 +1803,41 @@
         "form-carrier"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "refactor-adaptive-trace-projection",
+      "title": "Consolidate adaptive evaluation trace projections",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-25",
+      "verification": "The evaluation CLI and runner import one pure adaptive trace-projection service; frozen scenario, dialogue, transcript, and learner-turn fixtures are deep-equal to the historical shapes; focused and full hermetic suites pass.",
+      "branch": "codex/refactor-adaptive-trace-projection",
+      "depends_on": [
+        "refactor-tutor-response-cycle"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/202"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "adaptive-tutor",
+        "traces",
+        "projections"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "refactor-cast-layer-fixture",
