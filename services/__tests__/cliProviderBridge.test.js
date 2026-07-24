@@ -48,6 +48,29 @@ function fakeChild({ stdoutText = '', stderrText = '', onEnd = null } = {}) {
   return child;
 }
 
+async function withSecretCanaries(fn) {
+  const values = {
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    NODE_OPTIONS: process.env.NODE_OPTIONS,
+    CLAUDE_CODE_OAUTH_TOKEN: process.env.CLAUDE_CODE_OAUTH_TOKEN,
+  };
+  process.env.OPENROUTER_API_KEY = 'openrouter-adapter-secret-canary';
+  process.env.GEMINI_API_KEY = 'gemini-adapter-secret-canary';
+  process.env.ANTHROPIC_API_KEY = 'anthropic-adapter-secret-canary';
+  process.env.NODE_OPTIONS = '--require=/tmp/adapter-secret-preload.cjs';
+  process.env.CLAUDE_CODE_OAUTH_TOKEN = 'selected-claude-adapter-token';
+  try {
+    return await fn();
+  } finally {
+    for (const [key, value] of Object.entries(values)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
 describe('cliProviderBridge', () => {
   it('makes every Codex call tool-free in both launch controls and prompt text', () => {
     const prompt = buildCodexCliPromptText({
@@ -655,7 +678,7 @@ describe('cliProviderBridge', () => {
     assert.equal(result.structuredEventAudit.enforcement, 'claude_tools_disabled');
   });
 
-  it('keeps every services/ claude spawn site on the shared isolation exports', () => {
+  it('keeps direct Claude and Codex service launches inside the shared bridge', () => {
     const walkJsFiles = (dir) => {
       const out = [];
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -670,14 +693,128 @@ describe('cliProviderBridge', () => {
     const offenders = [];
     for (const file of walkJsFiles(path.join(repoRoot, 'services'))) {
       const source = fs.readFileSync(file, 'utf8');
-      if (!/spawn(?:Impl)?\(\s*['"]claude['"]/u.test(source)) continue;
-      if (/claudeCliIsolation\(|CLAUDE_CLI_ISOLATION_ARGS/u.test(source)) continue;
-      offenders.push(path.relative(repoRoot, file));
+      if (!/spawn(?:Impl)?\(\s*['"](?:claude|codex)['"]/u.test(source)) continue;
+      const relative = path.relative(repoRoot, file);
+      if (relative === 'services/cliProviderBridge.js') continue;
+      offenders.push(relative);
     }
     assert.deepEqual(
       offenders,
       [],
-      'services/ files spawning `claude` must apply claudeCliIsolation()/CLAUDE_CLI_ISOLATION_ARGS (ambient-context leak)',
+      'repository-owned service adapters must call cliProviderBridge instead of spawning Claude or Codex directly',
     );
+  });
+
+  it('routes each reviewed Claude adapter through the provider-specific secret allowlist', async () => {
+    const [{ callClaudeCodeJudge }, { callAdaptiveCli }] = await Promise.all([
+      import('../rubricEvaluator.js'),
+      import('../adaptiveTutor/realLLM.js'),
+    ]);
+    const launches = [];
+    const spawnImpl = (command, args, options) => {
+      launches.push({ command, args, options });
+      return fakeChild({ stdoutText: '{"ok":true}' });
+    };
+
+    await withSecretCanaries(async () => {
+      const judgeText = await callClaudeCodeJudge('score this', { model: 'claude-test', spawnImpl });
+      const adaptive = await callAdaptiveCli(
+        { provider: 'claude-code', model: 'claude-test' },
+        'adaptive system',
+        'adaptive user',
+        'adaptive-test',
+        { spawnImpl },
+      );
+      assert.equal(judgeText, '{"ok":true}');
+      assert.equal(adaptive.text, '{"ok":true}');
+      assert.equal(adaptive.inputTokens, 0);
+      assert.equal(adaptive.outputTokens, 0);
+    });
+
+    assert.equal(launches.length, 2);
+    assert.equal(launches[0].args.includes('--system-prompt'), false, 'rubric judge keeps the historical CLI prompt');
+    assert.equal(
+      launches[1].args.includes('--system-prompt'),
+      true,
+      'adaptive roles retain their explicit system prompt',
+    );
+    for (const launch of launches) {
+      assert.equal(launch.command, 'claude');
+      for (const flag of CLAUDE_CLI_ISOLATION_ARGS) {
+        assert.ok(launch.args.includes(flag), `missing Claude isolation flag ${JSON.stringify(flag)}`);
+      }
+      assert.equal(launch.options.env.CLAUDE_CODE_OAUTH_TOKEN, 'selected-claude-adapter-token');
+      assert.equal(launch.options.env.OPENROUTER_API_KEY, undefined);
+      assert.equal(launch.options.env.GEMINI_API_KEY, undefined);
+      assert.equal(launch.options.env.ANTHROPIC_API_KEY, undefined);
+      assert.equal(launch.options.env.NODE_OPTIONS, undefined);
+      assert.ok(path.basename(launch.options.cwd).startsWith('ms-claude-cli-'));
+      assert.equal(fs.existsSync(launch.options.cwd), false);
+    }
+  });
+
+  it('routes dramatic Codex through the secret allowlist and fails closed on a prohibited tool event', async () => {
+    const { callDerivationCli } = await import('../dramaticDerivation/llmClient.js');
+    const launches = [];
+    let prohibited = false;
+    const spawnImpl = (command, args, options) => {
+      launches.push({ command, args, options });
+      const outFile = args[args.indexOf('-o') + 1];
+      const stdoutText = prohibited
+        ? [
+            JSON.stringify({ type: 'thread.started' }),
+            JSON.stringify({ type: 'item.completed', item: { type: 'command_execution', command: 'cat secret' } }),
+            JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: 'must be discarded' } }),
+          ].join('\n')
+        : [
+            JSON.stringify({ type: 'thread.started' }),
+            JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: '{"dialogue":"safe"}' } }),
+            JSON.stringify({
+              type: 'turn.completed',
+              usage: { input_tokens: 7, output_tokens: 3, cached_input_tokens: 0 },
+            }),
+          ].join('\n');
+      return fakeChild({
+        stdoutText: `${stdoutText}\n`,
+        onEnd: () => fs.writeFileSync(outFile, prohibited ? 'must be discarded' : '{"dialogue":"safe"}'),
+      });
+    };
+
+    await withSecretCanaries(async () => {
+      const result = await callDerivationCli(
+        'derivation system',
+        'derivation user',
+        { provider: 'codex', model: 'gpt-test', cli: true },
+        { spawnImpl },
+      );
+      assert.equal(result.content, '{"dialogue":"safe"}');
+      assert.deepEqual(result.usage, { inputTokens: 0, outputTokens: 0, cost: 0 });
+
+      prohibited = true;
+      await assert.rejects(
+        () =>
+          callDerivationCli(
+            'derivation system',
+            'derivation user',
+            { provider: 'codex', model: 'gpt-test', cli: true },
+            { spawnImpl },
+          ),
+        (error) => error instanceof CliProviderPolicyError && error.code === 'CLI_PROVIDER_POLICY_VIOLATION',
+      );
+    });
+
+    assert.equal(launches.length, 2);
+    for (const launch of launches) {
+      assert.equal(launch.command, 'codex');
+      for (const flag of CODEX_CLI_TOOL_ISOLATION_ARGS) {
+        assert.ok(launch.args.includes(flag), `missing Codex isolation flag ${JSON.stringify(flag)}`);
+      }
+      assert.equal(launch.options.env.OPENROUTER_API_KEY, undefined);
+      assert.equal(launch.options.env.GEMINI_API_KEY, undefined);
+      assert.equal(launch.options.env.ANTHROPIC_API_KEY, undefined);
+      assert.equal(launch.options.env.NODE_OPTIONS, undefined);
+      assert.ok(path.basename(launch.options.cwd).startsWith('ms-cli-provider-codex-'));
+      assert.equal(fs.existsSync(launch.options.cwd), false);
+    }
   });
 });

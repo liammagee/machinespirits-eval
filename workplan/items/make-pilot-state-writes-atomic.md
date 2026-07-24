@@ -1,7 +1,7 @@
 ---
 id: make-pilot-state-writes-atomic
 title: Make human-pilot artifact writes and state transitions atomic
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -18,6 +18,8 @@ links:
     - a1-human-learner-validation
   code:
     - services/pilotStore.js
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/197
 tags:
   - human-pilot
   - transactions
@@ -52,3 +54,5 @@ Log:
   pass 39/39; the hermetic root suite and tutor-core suite pass (133/133 core),
   alongside lint, format, workplan (168/168), and diff checks. No hermetic test
   manifest, package, or workflow files were changed.
+- 2026-07-24 — PR #197 merged to `main`; the integrated branch remained green
+  after resolving generated-board concurrency, so the card is closed.

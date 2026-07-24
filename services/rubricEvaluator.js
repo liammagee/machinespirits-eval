@@ -9,11 +9,10 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'node:child_process';
 import yaml from 'yaml';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import { sanitizeEvaluationValue, stripThinkBlocks } from './evaluationTextSanitizer.js';
-import { claudeCliIsolation } from './cliProviderBridge.js';
+import { callAIWithCliBridge } from './cliProviderBridge.js';
 import { jsonrepair } from 'jsonrepair';
 
 // HTTP request timeout for all judge API calls (ms)
@@ -825,66 +824,25 @@ async function callJudgeModel(prompt, overrides = {}) {
   }
 
   if (provider === 'claude-code') {
-    // Spawn `claude -p -` so the judge runs through the user's Claude Code
-    // subscription rather than a metered API. Avoids OpenRouter / Anthropic
-    // credit ceilings on long judge passes.
-    //
-    // CRITICAL: unset ANTHROPIC_API_KEY in the child env. When set, `claude`
-    // routes via API mode (per-call billing) rather than the subscription.
-    // The whole point of using the CLI is to avoid API credit metering.
-    //
-    // Context isolation (claudeCliIsolation): without it the judge inherits
-    // the repo cwd's ambient project context — CLAUDE.md, skills, hooks, MCP
-    // (~16k tokens, research hypotheses included) — the sharpest closed-loop
-    // contamination risk in the stack. The judge must score blind.
-    const isolation = claudeCliIsolation();
-    try {
-      return await new Promise((resolve, reject) => {
-        const args = ['-p', '-', '--output-format', 'text', ...isolation.args];
-        if (model) args.push('--model', model);
-        const env = { ...process.env };
-        delete env.CLAUDE_CODE;
-        delete env.CLAUDECODE;
-        delete env.ANTHROPIC_API_KEY;
-        delete env.ANTHROPIC_AUTH_TOKEN;
-        const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'], env, cwd: isolation.cwd });
-        let out = '';
-        let err = '';
-        const cliTimeout = setTimeout(() => {
-          try {
-            child.kill('SIGKILL');
-          } catch (_) {
-            // intentionally empty
-          }
-          reject(new Error('claude CLI judge timed out after 180s'));
-        }, 180_000);
-        child.stdout.on('data', (d) => {
-          out += d;
-        });
-        child.stderr.on('data', (d) => {
-          err += d;
-        });
-        child.on('error', (e) => {
-          clearTimeout(cliTimeout);
-          reject(e);
-        });
-        child.on('close', (code) => {
-          clearTimeout(cliTimeout);
-          if (code !== 0) {
-            reject(new Error(err.trim() || out.trim() || `claude CLI exited with code ${code}`));
-          } else {
-            resolve(out);
-          }
-        });
-        child.stdin.write(prompt);
-        child.stdin.end();
-      });
-    } finally {
-      isolation.cleanup();
-    }
+    return callClaudeCodeJudge(prompt, {
+      model,
+      spawnImpl: overrides.cliSpawnImpl,
+    });
   }
 
   throw new Error(`Unsupported judge provider: ${provider}`);
+}
+
+export async function callClaudeCodeJudge(prompt, { model = null, spawnImpl } = {}) {
+  const result = await callAIWithCliBridge({ provider: 'claude-code', model }, '', prompt, 'rubric-judge', {
+    timeoutMs: 180_000,
+    spawnImpl,
+    // The historical rubric CLI call supplied only the user prompt and kept
+    // Claude's built-in system prompt. Preserve that instrument boundary
+    // while the shared bridge still disables ambient project context/tools.
+    preserveDefaultSystemPrompt: true,
+  });
+  return result.text;
 }
 
 /**
