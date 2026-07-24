@@ -29,6 +29,8 @@ links:
     - refactor-rubric-parser-tests
     - refactor-tutor-core-cycle
     - refactor-tutor-response-cycle
+    - refactor-adaptive-trace-projection
+    - refactor-tutor-response-cycle
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -137,3 +139,12 @@ Log:
   compatibility bindings preserved, and focused plus full hermetic parity
   green. The next queued slice is R1.3 adaptive trace projection on
   `codex/refactor-adaptive-trace-projection` after this branch lands.
+- 2026-07-24 — PR #200 merged and R1.2 closed. Activated R1.3 on
+  `codex/refactor-adaptive-trace-projection` to move adaptive trace recognition,
+  scenario/dialogue conversion, and learner-turn extraction into one pure
+  projection service shared by the evaluation CLI and runner.
+- 2026-07-24 — R1.3 adaptive trace projection reached review with one pure
+  production definition, deep-equal frozen projection coverage, and focused
+  plus full hermetic parity green. The next queued duplicate family is the
+  field trajectory/register-policy helper slice on
+  `codex/refactor-field-policy-helpers` after this branch lands.

@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-24T12:47:52.824Z",
+  "generated": "2026-07-24T12:57:42.097Z",
   "counts": {
-    "total": 173,
+    "total": 174,
     "byStatus": {
-      "done": 142,
+      "done": 143,
       "blocked": 3,
       "dropped": 2,
       "triaged": 18,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 38,
-      "maintenance": 25,
+      "maintenance": 26,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -550,6 +550,8 @@
           "refactor-rubric-parser-tests",
           "refactor-tutor-core-cycle",
           "refactor-tutor-response-cycle",
+          "refactor-adaptive-trace-projection",
+          "refactor-tutor-response-cycle",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -730,8 +732,8 @@
       "branch": "codex/isolate-remaining-direct-model-subprocesses"
     },
     {
-      "id": "refactor-tutor-response-cycle",
-      "title": "Break the tutor-stub response-configuration import cycle",
+      "id": "refactor-adaptive-trace-projection",
+      "title": "Consolidate adaptive evaluation trace projections",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -739,10 +741,10 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-07-24",
-      "verification": "Response configuration, dramatic release, and source accessibility import only leaf contracts rather than one another; their existing exports retain the exact leaf bindings; the static import-cycle gate reports zero cycles; and focused plus full hermetic parity passes.",
-      "branch": "codex/refactor-tutor-response-cycle",
+      "verification": "The evaluation CLI and runner import one pure adaptive trace-projection service; frozen scenario, dialogue, transcript, and learner-turn fixtures are deep-equal to the historical shapes; focused and full hermetic suites pass.",
+      "branch": "codex/refactor-adaptive-trace-projection",
       "depends_on": [
-        "refactor-tutor-core-cycle"
+        "refactor-tutor-response-cycle"
       ],
       "links": {
         "notes": [
@@ -754,11 +756,10 @@
       },
       "tags": [
         "refactoring",
-        "tutor-stub",
-        "imports",
-        "cycles",
-        "accessibility",
-        "contracts"
+        "evaluation",
+        "adaptive-tutor",
+        "traces",
+        "projections"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2006,6 +2007,42 @@
         "cycles",
         "logging",
         "hermetic"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-response-cycle",
+      "title": "Break the tutor-stub response-configuration import cycle",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "Response configuration, dramatic release, and source accessibility import only leaf contracts rather than one another; their existing exports retain the exact leaf bindings; the static import-cycle gate reports zero cycles; and focused plus full hermetic parity passes.",
+      "branch": "codex/refactor-tutor-response-cycle",
+      "depends_on": [
+        "refactor-tutor-core-cycle"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/200"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "imports",
+        "cycles",
+        "accessibility",
+        "contracts"
       ],
       "milestone": "evaluation-infrastructure"
     },
