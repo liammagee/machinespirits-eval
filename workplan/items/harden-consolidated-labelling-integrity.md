@@ -17,6 +17,7 @@ branch: codex/harden-labelling-coder-identities
 links:
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/180
+    - https://github.com/liammagee/machinespirits-eval/pull/181
   items:
     - consolidated-labelling-game-harness
     - impasse-corpus-phase1
@@ -56,3 +57,4 @@ Log:
 - 2026-07-24 — Opened PR #180 for the browser save-integrity tranche. The card remains active for the coder-ID, corpus-provenance, note-limit, and CLI failure-handling acceptance criteria.
 - 2026-07-24 — PR #180 merged. Continued in `codex/harden-labelling-coder-identities` with a shared reversible coder-ID artifact token and an explicit fail-closed legacy check/migration path for both taxonomy CSVs and impasse JSON sidecars.
 - 2026-07-24 — Completed the coder-identity tranche locally. Exact normalized IDs now round-trip through unambiguous `cid~` artifact tokens; both stores reject legacy/current collisions and impasse sidecars with mismatched embedded identity. `npm run labelling-game:coder-artifacts -- --check` reports legacy/current/collision state, while `--apply` requires a mapping or explicit inferred-ID confirmation and preflights all files before mutation. The 27-test labelling risk group passes at 79.57% lines, 70.96% branches, and 85.96% functions.
+- 2026-07-24 — Opened PR #181 for the coder-identity tranche; the card remains active for corpus provenance, note limits, and deterministic CLI failure handling.
