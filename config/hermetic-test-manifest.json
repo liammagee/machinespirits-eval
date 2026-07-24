@@ -503,8 +503,8 @@
       "testPattern": "^auto mode keeps a separate editable command line while model output is generated$",
       "environmentPresent": ["CI"],
       "owner": "tutor-stub",
-      "reason": "The timing-sensitive concurrent PTY case is not yet reliable on shared CI runners.",
-      "removalSlice": "codex/refactor-pty-ci-lane"
+      "reason": "The parallel root matrix leaves this timing-sensitive case to the dedicated PTY concurrency job.",
+      "removalSlice": "dedicated test:pty:ci lane; retain until the parallel root phase has equivalent timing isolation"
     },
     {
       "id": "windows-pty",

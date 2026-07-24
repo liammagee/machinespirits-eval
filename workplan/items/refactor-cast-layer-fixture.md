@@ -1,7 +1,7 @@
 ---
 id: refactor-cast-layer-fixture
 title: Make cast-layer reader-quality scoring hermetic
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -18,6 +18,8 @@ depends_on:
   - refactor-required-run-manifest
   - refactor-dialogue-log-fixtures
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/193
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -64,3 +66,5 @@ Log:
   with zero skips; the unchanged tutor-core suite passes 133/133; and lint,
   formatting, and the 166-item workplan check pass. Moved to review pending the
   clean Node 20/22 CI matrix.
+- 2026-07-24 — Closed after PR #193 merged with validation, lint, workplan,
+  risk-coverage, and the clean Node 20/22 matrix green.
