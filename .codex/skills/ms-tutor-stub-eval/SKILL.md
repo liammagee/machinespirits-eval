@@ -251,7 +251,12 @@ Useful variants:
   configured safety cap. `/auto 5` runs exactly five more learner-tutor turns
   and then returns to the prior learner/coach role. It uses the active learner
   profile and `--auto-learner-model`; it does not restart the scene or repeat an
-  existing opening.
+  existing opening. When entered while an ordinary tutor response is still in
+  flight, the command queues one handoff and starts it immediately after that
+  response commits; a later `/auto` or `/mode auto` replaces the queued turn
+  cap. `/mode learner`, `/mode coach`, `/reset`, and `/quit` cancel the queued
+  handoff. Other busy commands such as `/demo`, `/scenario`, and `/board` do not
+  queue and explicitly tell the operator to run them again.
 - Human learner mode requests optional feedback after each displayed tutor
   opening or completed tutor response. With an empty learner prompt, press
   Left for not helpful or Right for helpful; the rating applies immediately

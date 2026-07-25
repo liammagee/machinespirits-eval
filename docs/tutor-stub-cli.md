@@ -522,6 +522,18 @@ a model call or changing public dialogue. Comment counts are language-aware
 heuristics, and the latest tutor utterance is repeated when the command returns
 to the scene.
 
+## Automated handoff
+
+Use `/auto` or `/mode auto` to hand the current public transcript to the
+configured automated learner. `/auto 5` runs five learner-tutor turns before
+returning control; bare `/auto` continues until grounded closure or the safety
+cap. If the tutor is already composing a response, the CLI queues one auto
+handoff and starts it only after that response commits. A later `/auto` or
+`/mode auto` replaces the queued turn count. `/mode learner`, `/mode coach`,
+`/reset`, and `/quit` cancel the queued handoff. Commands that cannot defer,
+including `/demo`, `/scenario`, and `/board`, explicitly report that they did
+not start and must be run again after the response.
+
 ## Directing and randomizing performance
 
 `/character` is the shared character control. In an interactive terminal, the

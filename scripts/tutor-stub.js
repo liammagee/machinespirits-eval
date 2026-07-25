@@ -18415,6 +18415,8 @@ async function main() {
   const pendingLearnerLines = [];
   let activeLearnerTurn = null;
   let activeAutoRun = null;
+  let pendingAutoRequest = null;
+  let pendingAutoRequestSequence = 0;
   let voiceBridge = null;
   let resolveInteractive = null;
   const interactiveDone = new Promise((resolve) => {
@@ -21648,6 +21650,7 @@ async function main() {
 
   function requestExit(reason) {
     exiting = true;
+    discardPendingInteractiveAuto(reason, { source: 'session_exit' });
     activeLearnerTurn?.abortController?.abort();
     if (activeAutoRun) activeAutoRun.cancelledReason = reason;
     activeAutoRun?.abortController?.abort();
@@ -21885,7 +21888,9 @@ async function main() {
   async function chooseAnotherScenario(argument = '', { reason = 'scenario_changed', duringTurn = false } = {}) {
     clearStatusLine();
     if (duringTurn || processingTurn) {
-      console.log(`${C.dim}the scenario picker is available after the current tutor response completes${C.reset}\n`);
+      console.log(
+        `${C.dim}scenario change not started; run /scenario again after the current tutor response completes${C.reset}\n`,
+      );
       return false;
     }
     let selection = null;
@@ -21935,7 +21940,9 @@ async function main() {
   async function chooseWorkplanModule(argument = '', { reason = 'board_item_changed', duringTurn = false } = {}) {
     clearStatusLine();
     if (duringTurn || processingTurn) {
-      console.log(`${C.dim}the board picker is available after the current tutor response completes${C.reset}\n`);
+      console.log(
+        `${C.dim}board change not started; run /board again after the current tutor response completes${C.reset}\n`,
+      );
       return false;
     }
     let selection = null;
@@ -22142,6 +22149,19 @@ async function main() {
     );
     console.log(
       `${C.dim}  conversation: ${displayDiagnosticLabel(closure)}; private coaching: ${coachPending} waiting, ${state.coach?.history?.length || 0} used${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  auto handoff: ${
+        pendingAutoRequest
+          ? `queued after tutor turn ${pendingAutoRequest.afterTurn} · ${
+              pendingAutoRequest.requestedTurns === null
+                ? 'until grounded'
+                : `${pendingAutoRequest.requestedTurns} turn${pendingAutoRequest.requestedTurns === 1 ? '' : 's'}`
+            }`
+          : state.interaction?.autoRunning
+            ? 'running'
+            : 'none'
+      } · /auto${C.reset}`,
     );
     console.log(
       `${C.dim}  tutor ratings: ${state.turnFeedback?.enabled ? `on · ${tutorStubTurnFeedbackLabel(tutorStubTurnFeedbackEnvelope(state.turnFeedback))}` : 'off'} · optional and private${C.reset}`,
@@ -22689,7 +22709,9 @@ async function main() {
       return { started: false, reason: 'passthrough' };
     }
     if (duringTurn || processingTurn || interactiveDemoRunning) {
-      console.log(`${C.dim}the demonstration can start after the current tutor response completes${C.reset}\n`);
+      console.log(
+        `${C.dim}demonstration not started; run /demo again after the current tutor response completes${C.reset}\n`,
+      );
       return { started: false, reason: 'busy' };
     }
     if (!latestTutorMessage(state)) {
@@ -22839,12 +22861,98 @@ async function main() {
     }
   }
 
-  async function runInteractiveAutoMode(argument = '', { duringTurn = false } = {}) {
-    clearStatusLine();
-    if (duringTurn || processingTurn) {
-      console.log(`${C.dim}auto mode can start after the current tutor response completes${C.reset}\n`);
-      return { started: false, reason: 'busy' };
+  function interactiveAutoTurnLabel(requestedTurns) {
+    return requestedTurns === null
+      ? `until grounded · safety cap ${autoSafetyTurns}`
+      : `${requestedTurns} turn${requestedTurns === 1 ? '' : 's'}`;
+  }
+
+  function discardPendingInteractiveAuto(reason, { source = null, announce = false } = {}) {
+    const pending = pendingAutoRequest;
+    if (!pending) return null;
+    pendingAutoRequest = null;
+    appendTraceEvent(state.trace, {
+      type: 'interactive_auto_queue_discarded',
+      requestId: pending.id,
+      reason,
+      source: source || pending.source,
+      afterTurn: pending.afterTurn,
+      requestedTurns: pending.requestedTurns,
+      publicTranscriptChanged: false,
+    });
+    if (announce) {
+      console.log(
+        `${C.dim}queued auto handoff cancelled · ${String(reason || 'cancelled').replaceAll('_', ' ')}${C.reset}\n`,
+      );
     }
+    return pending;
+  }
+
+  function queuePendingInteractiveAuto({ argument = '', requestedTurns = null, source = '/auto' } = {}) {
+    const previous = pendingAutoRequest;
+    const queuedLearnerLinesDiscarded = pendingLearnerLines.length;
+    pendingLearnerLines.length = 0;
+    const pending = {
+      id: `${stateRunDebugId(state)}:auto-queue:${++pendingAutoRequestSequence}`,
+      argument: String(argument || '').trim(),
+      requestedTurns,
+      source,
+      afterTurn: activeLearnerTurn?.turn || state.turns.length + 1,
+      queuedAt: new Date().toISOString(),
+    };
+    pendingAutoRequest = pending;
+    appendTraceEvent(state.trace, {
+      type: 'interactive_auto_queued',
+      requestId: pending.id,
+      source,
+      afterTurn: pending.afterTurn,
+      requestedTurns,
+      safetyTurns: autoSafetyTurns,
+      replacedRequestId: previous?.id || null,
+      queuedLearnerLinesDiscarded,
+      publicTranscriptChanged: false,
+    });
+    console.log(
+      `${C.brightBlue}${C.bold}auto queued >${C.reset} starts after tutor turn ${pending.afterTurn} · ${interactiveAutoTurnLabel(
+        requestedTurns,
+      )}`,
+    );
+    if (previous) console.log(`${C.dim}  replaced the earlier queued auto request${C.reset}`);
+    if (queuedLearnerLinesDiscarded) {
+      console.log(
+        `${C.dim}  discarded ${queuedLearnerLinesDiscarded} queued manual learner turn${queuedLearnerLinesDiscarded === 1 ? '' : 's'} because auto now owns the handoff${C.reset}`,
+      );
+    }
+    console.log(`${C.dim}  /mode learner, /mode coach, /reset, or /quit cancels this handoff${C.reset}\n`);
+    return { started: false, queued: true, reason: 'queued', requestId: pending.id };
+  }
+
+  function startPendingInteractiveAuto({ afterTurn, reason = 'tutor_response_completed' } = {}) {
+    const pending = pendingAutoRequest;
+    if (!pending) return false;
+    pendingAutoRequest = null;
+    appendTraceEvent(state.trace, {
+      type: 'interactive_auto_queue_started',
+      requestId: pending.id,
+      source: pending.source,
+      afterTurn: afterTurn || pending.afterTurn,
+      requestedTurns: pending.requestedTurns,
+      reason,
+      publicTranscriptChanged: false,
+    });
+    void runInteractiveAutoMode(pending.argument, {
+      duringTurn: false,
+      source: pending.source,
+      queuedRequestId: pending.id,
+    });
+    return true;
+  }
+
+  async function runInteractiveAutoMode(
+    argument = '',
+    { duringTurn = false, source = '/auto', queuedRequestId = null } = {},
+  ) {
+    clearStatusLine();
     let requestedTurns;
     try {
       requestedTurns = parseInteractiveAutoTurns(argument);
@@ -22860,6 +22968,15 @@ async function main() {
         `${C.red}auto mode error:${C.reset} ${args['auto-learner-model']} is not configured; set ${envName}\n`,
       );
       return { started: false, reason: 'model_not_configured' };
+    }
+    if (activeAutoRun) {
+      console.log(`${C.dim}automation is already running; wait for learner mode to resume or use /reset${C.reset}\n`);
+      return { started: false, reason: 'already_running' };
+    }
+    if (duringTurn || processingTurn) {
+      if (activeLearnerTurn) return queuePendingInteractiveAuto({ argument, requestedTurns, source });
+      console.log(`${C.dim}auto mode did not start; run /auto again after the current work completes${C.reset}\n`);
+      return { started: false, reason: 'busy' };
     }
     resetMixedLearnerSuggestion('interactive_auto_started');
     const pendingFeedback = tutorStubTurnFeedbackEnvelope(state.turnFeedback);
@@ -22882,10 +22999,7 @@ async function main() {
     };
     activeAutoRun = active;
     const isCurrent = () => !exiting && activeAutoRun === active && !active.abortController.signal.aborted;
-    const capLabel =
-      requestedTurns === null
-        ? `until grounded · safety cap ${autoSafetyTurns}`
-        : `${requestedTurns} turn${requestedTurns === 1 ? '' : 's'}`;
+    const capLabel = interactiveAutoTurnLabel(requestedTurns);
     console.log(
       `${C.dim}╭─${C.reset} ${interactionModeLabel()} ${C.dim}mode · ${capLabel} · profile ${mixedLearner.profileId || 'custom'}${C.reset}`,
     );
@@ -22896,6 +23010,8 @@ async function main() {
       maxTurns: requestedTurns,
       safetyTurns: autoSafetyTurns,
       profileId: mixedLearner.profileId,
+      source,
+      queuedRequestId,
     });
     try {
       const result = await runAutomatedLearnerDialogue({
@@ -23446,14 +23562,22 @@ async function main() {
   async function performInteractiveDialogueReset({ command = '/reset', duringTurn = false } = {}) {
     const learnerAttempt = activeLearnerTurn;
     const autoAttempt = activeAutoRun;
+    const queuedAutoRequest = pendingAutoRequest;
     const clarificationAttempt = clarificationInFlight;
     const translationAttempt = translationInFlight;
     const queuedLearnerLines = pendingLearnerLines.length;
     const interrupted = Boolean(
-      learnerAttempt || autoAttempt || clarificationAttempt || translationAttempt || duringTurn || processingTurn,
+      learnerAttempt ||
+      autoAttempt ||
+      queuedAutoRequest ||
+      clarificationAttempt ||
+      translationAttempt ||
+      duringTurn ||
+      processingTurn,
     );
 
     stopInterimAnimation(state);
+    discardPendingInteractiveAuto('dialogue_reset', { source: command });
     if (learnerAttempt) {
       learnerAttempt.cancelledReason = 'dialogue_reset';
       activeLearnerTurn = null;
@@ -23506,6 +23630,7 @@ async function main() {
           }
         : null,
       interruptedAutoRunId: autoAttempt?.id || null,
+      interruptedQueuedAutoRequestId: queuedAutoRequest?.id || null,
       interruptedClarificationId: clarificationAttempt?.id || null,
       interruptedTranslationId: translationAttempt?.id || null,
       interruptedCurriculumTranslationId: state.curriculum?.module ? translationAttempt?.id || null : null,
@@ -25705,6 +25830,7 @@ async function main() {
     const trimmed = [command, commandArg].filter(Boolean).join(' ');
     if (trimmed === '/quit' || trimmed === '/exit') {
       if (duringTurn) {
+        discardPendingInteractiveAuto('exit_requested_during_turn', { source: invokedToken });
         stopInterimAnimation(state);
         concurrentTerminal.close();
         clearStatusLine();
@@ -26114,6 +26240,7 @@ async function main() {
       return true;
     }
     if (command === '/coach') {
+      discardPendingInteractiveAuto('interaction_mode_changed', { source: invokedToken, announce: true });
       setInteractionMode('coach', { announce: !commandArg });
       if (commandArg) queueCoachGuidance(commandArg, { duringTurn });
       finishSlashCommand();
@@ -26125,7 +26252,7 @@ async function main() {
       return promise;
     }
     if (command === '/auto') {
-      const promise = runInteractiveAutoMode(commandArg, { duringTurn });
+      const promise = runInteractiveAutoMode(commandArg, { duringTurn, source: invokedToken });
       finishSlashCommand();
       return promise;
     }
@@ -26140,17 +26267,19 @@ async function main() {
         return true;
       }
       if (requestedMode === 'auto') {
-        const promise = runInteractiveAutoMode(modeArgument, { duringTurn });
+        const promise = runInteractiveAutoMode(modeArgument, { duringTurn, source: invokedToken });
         finishSlashCommand();
         return promise;
       }
       if (requestedMode === 'coach') {
+        discardPendingInteractiveAuto('interaction_mode_changed', { source: invokedToken, announce: true });
         setInteractionMode('coach', { announce: !modeArgument });
         if (modeArgument) queueCoachGuidance(modeArgument, { duringTurn });
         finishSlashCommand();
         return true;
       }
       if (requestedMode === 'learner' && !modeArgument) {
+        discardPendingInteractiveAuto('interaction_mode_changed', { source: invokedToken, announce: true });
         setInteractionMode('learner');
         finishSlashCommand();
         return true;
@@ -26856,8 +26985,15 @@ async function main() {
       if (!activeLearnerTurn && !activeAutoRun) processingTurn = false;
       if (!exiting && ownsActiveTurn && !active.cancelledReason) {
         if (state.dialogueClosure?.phase === 'closed') {
+          discardPendingInteractiveAuto('dialogue_closed', { source: 'turn_completion', announce: true });
           offerAnotherScenario('dialogue_grounded_closure');
+        } else if (completedTurn && startPendingInteractiveAuto({ afterTurn: tutorTurn })) {
+          // The deferred automation owns the next learner turn, so do not warm
+          // or display a mixed-mode draft for the now-superseded manual prompt.
         } else {
+          if (!completedTurn) {
+            discardPendingInteractiveAuto('tutor_turn_failed', { source: 'turn_completion', announce: true });
+          }
           const next = pendingLearnerLines.shift();
           if (next) {
             printWithConcurrentTerminal(state, () =>
@@ -26906,6 +27042,19 @@ async function main() {
         source,
       });
       return { accepted: false, reason: 'auto_mode_running' };
+    }
+    if (processingTurn && pendingAutoRequest) {
+      console.log(
+        `${C.dim}auto handoff is queued; enter a slash command, use /mode learner to cancel it, or wait for automation${C.reset}`,
+      );
+      appendTraceEvent(state.trace, {
+        type: 'auto_queue_non_command_ignored',
+        requestId: pendingAutoRequest.id,
+        text: trimmed,
+        turn: state.turns.length + 1,
+        source,
+      });
+      return { accepted: false, reason: 'auto_mode_queued' };
     }
     if (processingTurn) {
       const pausedInterim = pauseInterimAnimation(state);
