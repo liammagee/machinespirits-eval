@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-25T00:52:00.913Z",
+  "generated": "2026-07-25T01:10:51.174Z",
   "counts": {
-    "total": 180,
+    "total": 182,
     "byStatus": {
       "done": 150,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 15,
+      "triaged": 16,
       "active": 3,
       "archived": 4,
-      "review": 3
+      "review": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
       "infra": 40,
-      "maintenance": 30,
+      "maintenance": 32,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -47,18 +47,6 @@
           "tutor-stub-unified-session-surface"
         ]
       }
-    },
-    {
-      "id": "upgrade-electron-and-rebuild-toolchain-past-audited-advisori",
-      "title": "Upgrade Electron and rebuild toolchain past audited advisories",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-24",
-      "updated": "2026-07-24",
-      "verification": "A clean install reports no high/critical Electron or rebuild-chain advisories, and npm run desktop:test plus npm test pass"
     },
     {
       "id": "adaptive-curriculum-memory-controller",
@@ -405,6 +393,30 @@
       ]
     },
     {
+      "id": "upgrade-electron-builder-packaging-chain-past-audited-adviso",
+      "title": "Upgrade electron-builder packaging chain past audited advisories",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "A clean full dependency audit reports no high or critical advisories through electron-builder, app-builder-lib, @electron/asar, or platform packagers, and signed packaged smoke checks pass"
+    },
+    {
+      "id": "upgrade-eslint-toolchain-past-minimatch-advisories",
+      "title": "Upgrade ESLint toolchain past minimatch advisories",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "A clean full dependency audit reports no high or critical advisories through ESLint, minimatch, brace-expansion, glob, or rimraf, and repository lint passes"
+    },
+    {
       "id": "refusal-defense-adjudication",
       "title": "Exploration 4: adjudicating the defense — does a hollow defense earn a second refusal?",
       "status": "triaged",
@@ -702,6 +714,19 @@
         "duplication"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "upgrade-electron-and-rebuild-toolchain-past-audited-advisori",
+      "title": "Upgrade Electron and rebuild toolchain past audited advisories",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-25",
+      "verification": "A clean install reports no high/critical Electron or rebuild-chain advisories, and npm run desktop:test plus npm test pass",
+      "branch": "codex/upgrade-electron-rebuild-toolchain"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
