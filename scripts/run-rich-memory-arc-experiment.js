@@ -17,10 +17,10 @@
  *   --real           — live LLM generation + judge. THIS SPENDS MONEY. Attended only.
  *
  * Isolation: EVAL_DB_PATH + EVAL_WRITING_PAD_DIR go to a dedicated location (temp in
- * dry-run, <out-dir>/ in --real). EVAL_LOGS_DIR is intentionally NOT overridden — tutor-core
- * writes transcripts to a hardcoded <repo>/logs/tutor-dialogues and the evaluate pass must
- * read them from the same default, so isolating it breaks judging. Transcripts therefore
- * live in the shared (gitignored) repo logs/, keyed by unique dialogue_id; results do not.
+ * dry-run, <out-dir>/ in --real). EVAL_LOGS_DIR is intentionally NOT overridden, so the
+ * generation and evaluation subprocesses share the configured canonical/default log root.
+ * The evaluation runner redirects both tutor-core writers and readers to that root.
+ * Transcripts remain in the shared log archive, keyed by unique dialogue_id; results do not.
  *
  * Usage:
  *   node scripts/run-rich-memory-arc-experiment.js [--sessions N] [--learners M]
@@ -86,12 +86,11 @@ const SESSION_SCENARIOS = [
 ].slice(0, N_SESSIONS);
 
 // ── Isolate the DB + writing pads before importing anything ─────────────────
-// NOTE: we deliberately do NOT override EVAL_LOGS_DIR. tutor-core's dialogueLogService
-// writes the per-turn transcript to a hardcoded <repo>/logs/tutor-dialogues, which the
-// evaluate pass only finds if its reader (EVAL_LOGS_DIR-based) defaults to the same place.
-// Isolating EVAL_LOGS_DIR split write (repo/logs) from read (isolated) → "dialogue log not
-// found". The DB + pads (the experiment's results) stay isolated; transcripts live in the
-// shared, gitignored repo logs/ keyed by unique dialogue_id.
+// NOTE: we deliberately do NOT override EVAL_LOGS_DIR. Generation and evaluation run in
+// separate subprocesses and intentionally share the configured canonical/default log root;
+// evaluationRunner redirects both tutor-core writers and readers there. The DB + pads (the
+// experiment's results) stay isolated, while transcripts remain in the shared log archive
+// keyed by unique dialogue_id.
 const STORE_DIR = REAL ? OUT_DIR : fs.mkdtempSync(path.join(os.tmpdir(), 'rich-exp-'));
 fs.mkdirSync(STORE_DIR, { recursive: true });
 process.env.EVAL_DB_PATH = path.join(STORE_DIR, 'experiment.db');

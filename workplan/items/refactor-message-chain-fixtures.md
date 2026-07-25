@@ -1,7 +1,7 @@
 ---
 id: refactor-message-chain-fixtures
 title: Extract and fixture the message-chain integrity boundary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -17,6 +17,8 @@ branch: codex/refactor-message-chain-fixtures
 depends_on:
   - refactor-provenance-fixtures
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/232
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -84,3 +86,5 @@ Acceptance:
   an outdated shared dependency symlink missing the already-declared
   `rdf-validate-shacl`; the dependency-corrected worktree passes its affected
   proxy-DAG file at 9/9 and the complete gate.
+- 2026-07-25 — Closed after PR #232 merged at `9c060cd3` with every required
+  check green.
