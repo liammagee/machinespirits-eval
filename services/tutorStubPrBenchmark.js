@@ -17,12 +17,7 @@ export const TUTOR_PR_BENCHMARK_CONFIG_SCHEMA = 'machinespirits.tutor-stub.pr-be
 export const TUTOR_PR_BENCHMARK_REPORT_SCHEMA = 'machinespirits.tutor-stub.pr-benchmark-report.v1';
 const MODEL_PROVIDERS = new Set(['codex', 'claude-code']);
 const TERMINAL_STATUSES = new Set(['pass', 'fail', 'blocked', 'budget_exhausted']);
-const REQUIRED_GATE_KEYS = Object.freeze([
-  'require_all_jobs',
-  'require_audit_ok',
-  'require_actorial_realization',
-  'require_no_safety_failure',
-]);
+const REQUIRED_GATE_KEYS = Object.freeze(['require_all_jobs', 'require_audit_ok', 'require_no_safety_failure']);
 const REQUIRED_INVARIANTS = Object.freeze([
   'regenerate_prior_dialogue',
   'generate_learner',
@@ -97,6 +92,9 @@ export function validateTutorPrBenchmarkConfig(config) {
   if (config.budgets?.concurrency !== 1) throw new Error('budgets.concurrency must remain 1');
   for (const name of REQUIRED_GATE_KEYS)
     if (config.gate?.[name] !== true) throw new Error(`gate ${name} must remain true`);
+  if (config.gate?.require_actorial_realization !== false) {
+    throw new Error('gate require_actorial_realization must remain false; canonical audit dispositions own severity');
+  }
   for (const name of REQUIRED_INVARIANTS)
     if (config.invariants?.[name] !== false) throw new Error(`invariant ${name} must remain false`);
   return config;
