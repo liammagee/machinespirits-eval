@@ -34,6 +34,7 @@ links:
     - refactor-forbidden-key-audit
     - refactor-field-turn-projection
     - refactor-eval-profile-registry
+    - refactor-paper-manifest-fixtures
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -186,3 +187,7 @@ Log:
   source-grepping report validators use the registry API, and focused plus full
   hermetic parity are green. The next queued slice remains the paper-manifest
   fixture extraction after this child lands.
+- 2026-07-25 — PR #226 merged and closed the evaluation-profile registry child.
+  Activated `refactor-paper-manifest-fixtures` to extract the validator core,
+  add synthetic paper/SQLite fixtures, and make missing-data and drift cases
+  return exact non-zero exit results without private evaluation data.

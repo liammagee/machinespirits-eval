@@ -1,7 +1,7 @@
 ---
 id: refactor-eval-profile-registry
 title: Establish the canonical evaluation-profile registry
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -17,6 +17,8 @@ branch: codex/refactor-eval-profile-registry
 depends_on:
   - refactor-field-turn-projection
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/226
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -81,3 +83,5 @@ Acceptance:
   cases and 72 planned rows); lint, formatting, zero-cycle, manifest, workplan
   source, config validation, and diff checks pass; full hermetic parity passes
   6,692/6,692 root tests plus 137/137 in-housed core tests with zero skips.
+- 2026-07-25 — Merged through PR #226 at `2ab8d29d`; the serialized main
+  workflow refreshed generated workplan views in follow-up commit `0834ead6`.

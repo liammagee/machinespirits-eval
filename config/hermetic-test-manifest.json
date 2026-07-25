@@ -300,6 +300,7 @@
         "tests/ontologyView.test.js",
         "tests/outcome-observer.test.js",
         "tests/packagePoeticsRun.test.js",
+        "tests/paperManifestValidator.test.js",
         "tests/pedagogical-orientation-coverage.test.js",
         "tests/pilot.test.js",
         "tests/pilotTutorSessionAdapter.test.js",
