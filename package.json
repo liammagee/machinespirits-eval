@@ -30,6 +30,7 @@
     "labelling-game:coder-artifacts": "node scripts/migrate-labelling-coder-artifacts.js",
     "labelling-game:impasse-provenance": "node scripts/migrate-labelling-impasse-provenance.js",
     "tutor:stub": "TUTOR_STUB_DEFAULT_LAB=mixed_drafting node scripts/tutor-stub.js",
+    "tutor:stub:mcp": "node scripts/tutor-stub-mcp.js",
     "tutor:stub:passthrough": "node scripts/tutor-stub.js --passthrough --trace-dir .tutor-stub-traces/passthrough",
     "tutor:stub:direct": "node scripts/tutor-stub.js --register-policy continuous_dynamical_system --cli-effort medium --history-turns 4 --max-tokens 4096 --trace-dir .tutor-stub-traces/direct-no-dag",
     "tutor:stub:direct:mixed": "node scripts/tutor-stub.js --mixed-learner --register-policy continuous_dynamical_system --cli-effort medium --history-turns 4 --max-tokens 4096 --trace-dir .tutor-stub-traces/direct-no-dag-mixed",
@@ -351,6 +352,7 @@
   "dependencies": {
     "@langchain/core": "^1.1.42",
     "@langchain/langgraph": "1.4.8",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "better-sqlite3": "12.11.1",
     "chalk": "^5.6.2",
     "dotenv": "17.2.3",

@@ -280,12 +280,55 @@ Session creation accepts an allowlisted configuration: `id`, `mode`, `model`,
 The factory disables terminal-only presentation effects, keeps trace writes in
 `TUTOR_STUB_TRACE_DIR`, and closes child sessions with the host. The Electron
 path resolver relocates this trace directory below `userData`. Slash commands
-are temporarily rejected on the process-backed transport: several registered
-commands open terminal pickers, browsers, voice devices, or relaunch the CLI,
-so they need transport-safety metadata and noninteractive result adapters before
-the web surface may expose them. Learner turns, launch-time resume, reset, and
-finalize already traverse the real tutor engine; deterministic fake executables
-cover that full HTTP-to-model path in tests without spending API credits.
+remain rejected by default on the HTTP transport: several registered commands
+open terminal pickers, browsers, voice devices, or relaunch the CLI. A host may
+opt into commands only by supplying an explicit admission function; the Codex
+bridge below does this with a fail-closed allowlist and captured plain-text
+command output. Learner turns, launch-time resume, reset, and finalize already
+traverse the real tutor engine; deterministic fake executables cover that full
+HTTP-to-model path in tests without spending API credits.
+
+## Codex and Remote Control bridge
+
+The project-scoped MCP server in `scripts/tutor-stub-mcp.js` makes a real
+process-backed tutor session available as Codex tools. `.codex/config.toml`
+registers it automatically for this repository, including when a local Codex
+task is continued through Remote Control. Start a fresh Codex task after
+installing dependencies or changing the MCP configuration, then ask Codex to
+start a tutor session. The tool surface is:
+
+```text
+tutor_start       start or resume a process-backed session (mixed by default)
+tutor_turn        send learner text verbatim and return the tutor response
+tutor_command     run a supported slash command outside learner speech
+tutor_status      inspect presentation-safe state and the public transcript
+tutor_reset       restart the current inquiry
+tutor_interrupt   terminate a stuck speaking-model call
+tutor_stop        finalize traces and close the child process
+```
+
+For example, a Codex prompt can say:
+
+```text
+Start the tutor in mixed mode with codex.gpt-5.6-terra. From now on, relay my
+messages verbatim with tutor_turn and show the tutor reply without answering
+for it. If I begin with /, use tutor_command instead.
+```
+
+`/meta ask`, `/meta`, `/translate`, `/register`, `/character`, `/tutor`,
+`/learner`, `/analysis`, `/status`, and the other dialogue-safe controls run in
+the existing CLI engine and do not enter learner speech. Commands that require
+a terminal picker, browser or voice device, local artifact export, or process
+relaunch fail with a concrete local command or MCP-tool alternative. The bridge
+returns only the public message projection and captured command display; hidden
+reasoning, private tutor state, provider diagnostics, and credentials do not
+cross the tool boundary.
+
+The bridge is a Codex control surface, not a terminal emulator. The connected
+Mac still supplies the repository, model CLIs, environment credentials, and
+trace storage. Consequently it works with Remote Control of that local task;
+it is not available in an unrelated cloud task that lacks the checkout and its
+configured tools.
 
 ## Themes
 

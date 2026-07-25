@@ -476,6 +476,7 @@ export function createTutorStubProcessSessionFactory({
   traceDir = env.TUTOR_STUB_TRACE_DIR || path.join(root || process.cwd(), '.tutor-stub-traces'),
   startupTimeoutMs = 30_000,
   requestTimeoutMs = 300_000,
+  commandAdmission = null,
   spawnProcess = spawn,
   executable = process.execPath,
   electronRunAsNode = Boolean(process.versions.electron),
@@ -718,18 +719,55 @@ export function createTutorStubProcessSessionFactory({
       },
       async step(input, options = {}) {
         const kind = options.kind || 'auto';
-        if (
+        const command =
           kind === 'command' ||
           (kind === 'auto' &&
             String(input || '')
               .trim()
-              .startsWith('/'))
-        ) {
+              .startsWith('/'));
+        if (command && typeof commandAdmission !== 'function') {
           throw new TutorStubSessionHostError(
             'command_transport_unavailable',
             'slash commands are not enabled on the process-backed HTTP transport yet',
             409,
           );
+        }
+        if (command) {
+          const admission = await commandAdmission(input, {
+            kind,
+            context: clone(options.context || {}),
+            session: clone(snapshot),
+            specification: clone(specification),
+          });
+          if (admission?.allowed !== true) {
+            throw new TutorStubSessionHostError(
+              admission?.code || 'command_transport_unavailable',
+              admission?.message || 'this slash command is unavailable on the configured session transport',
+              admission?.status || 409,
+            );
+          }
+
+          await start();
+          let output = '';
+          const captureOutput = (chunk) => {
+            output = appendDiagnostic(output, chunk, 32_000);
+          };
+          child.stdout?.on('data', captureOutput);
+          let result;
+          try {
+            result = await request('step', { input, kind: 'command', context: options.context || {} });
+            await new Promise((resolve) => setImmediate(resolve));
+          } finally {
+            child.stdout?.off('data', captureOutput);
+          }
+          return {
+            accepted: result !== false,
+            command: {
+              id: admission.commandId || null,
+              input: String(input || '').trim(),
+              output: output.trim(),
+            },
+          };
         }
         const result = await request('step', { input, kind, context: options.context || {} });
         const learner = typeof result?.turn?.learner === 'string' ? result.turn.learner : null;

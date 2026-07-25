@@ -189,6 +189,71 @@ function fakeReadyRpcChild(sessionId) {
   return child;
 }
 
+function fakeCommandRpcChild(sessionId) {
+  const child = fakeReadyRpcChild(sessionId);
+  const command = child.stdio[3];
+  const response = child.stdio[4];
+  let pending = '';
+  command.on('data', (chunk) => {
+    pending += String(chunk);
+    for (;;) {
+      const newline = pending.indexOf('\n');
+      if (newline < 0) break;
+      const line = pending.slice(0, newline).trim();
+      pending = pending.slice(newline + 1);
+      if (!line) continue;
+      const frame = JSON.parse(line);
+      child.stdout.write(`status > active via ${frame.input}\n`);
+      response.write(
+        `${JSON.stringify({
+          schema: TUTOR_STUB_SESSION_RPC_SCHEMA,
+          version: TUTOR_STUB_SESSION_RPC_VERSION,
+          type: 'response',
+          id: frame.id,
+          operation: frame.operation,
+          ok: true,
+          result: true,
+          session: { sessionId, status: 'active', state: { publicMessages: [] } },
+        })}\n`,
+      );
+    }
+  });
+  return child;
+}
+
+test('process commands require explicit admission and return captured command display', async () => {
+  const createSession = createTutorStubProcessSessionFactory({
+    root: ROOT,
+    startupTimeoutMs: 100,
+    requestTimeoutMs: 100,
+    commandAdmission(input) {
+      return input === '/status'
+        ? { allowed: true, commandId: 'status' }
+        : { allowed: false, code: 'remote_command_blocked', message: 'blocked for test', status: 409 };
+    },
+    spawnProcess() {
+      return fakeCommandRpcChild('command-session');
+    },
+  });
+  const runtime = await createSession({ id: 'command-session', mode: 'direct' });
+  await runtime.load();
+
+  assert.deepEqual(await runtime.step('/status', { kind: 'command' }), {
+    accepted: true,
+    command: {
+      id: 'status',
+      input: '/status',
+      output: 'status > active via /status',
+    },
+  });
+  await assert.rejects(
+    runtime.step('/voice', { kind: 'command' }),
+    (error) => error.code === 'remote_command_blocked' && error.status === 409,
+  );
+  runtime.terminate('test_cleanup');
+  await runtime.closed;
+});
+
 test('process factory gives the child one validated absolute resume path', async (t) => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-resume-spawn-'));
   const traceRoot = path.join(tmp, 'traces');
