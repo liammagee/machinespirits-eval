@@ -241,7 +241,7 @@ test('--write-recipe and --recipe round-trip a deterministic resolved config', (
   assert.match(semanticDrift.stderr, /recipe configuration drift on option\.pressure-turns/u);
 });
 
-test('--resume selects an explicit older trace, fails drift closed, and records acknowledgement', () => {
+test('--resume and --resume-last reconstruct their selected trace before enforcing drift', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-cli-resume-'));
   const baseline = parseDryRun(runCli(['--lab', 'pure_chat', '--dry-run', '--no-trace', '--no-remember-settings']));
   const explicitPath = path.join(tmp, 'explicit.jsonl');
@@ -265,6 +265,31 @@ test('--resume selects an explicit older trace, fails drift closed, and records 
   assert.equal(resumed.resume.runId, 'explicit-run');
   assert.equal(resumed.resume.source, path.relative(ROOT, explicitPath));
   assert.equal(resumed.resume.drift.ok, true);
+
+  const resumedLast = parseDryRun(
+    runCli(['--resume-last', '--trace-dir', tmp, '--dry-run', '--no-trace', '--no-remember-settings'], {
+      TUTOR_STUB_DEFAULT_LAB: 'mixed_drafting',
+    }),
+  );
+  assert.equal(resumedLast.resume.runId, 'newer-run');
+  assert.equal(resumedLast.resume.source, path.relative(ROOT, newerPath));
+  assert.equal(resumedLast.resume.drift.ok, true);
+  assert.equal(resumedLast.lab.id, 'pure_chat');
+  assert.equal(resumedLast.sessionRecipe.configHash, baseline.sessionRecipe.configHash);
+
+  const rejectedLastOverride = runCli([
+    '--resume-last',
+    '--trace-dir',
+    tmp,
+    '--model',
+    'openai.mini',
+    '--dry-run',
+    '--no-trace',
+    '--no-remember-settings',
+  ]);
+  assert.equal(rejectedLastOverride.status, 1);
+  assert.match(rejectedLastOverride.stderr, /resume configuration drift/u);
+  assert.match(rejectedLastOverride.stderr, /--acknowledge-drift/u);
 
   const rejected = runCli([
     '--resume',
