@@ -7,15 +7,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, '..');
-const LOGS_DIR = path.join(ROOT_DIR, 'logs');
-const API_LOGS_DIR = path.join(LOGS_DIR, 'tutor-api');
-const DIALOGUE_LOGS_DIR = path.join(LOGS_DIR, 'tutor-dialogues');
-const INTERACTION_EVALS_DIR = path.join(LOGS_DIR, 'interaction-evals');
+import { getTutorCoreLogDirectories } from './dialogueLogDirectories.js';
 
 // ============================================================================
 // Log File Access
@@ -26,11 +18,12 @@ const INTERACTION_EVALS_DIR = path.join(LOGS_DIR, 'interaction-evals');
  * @returns {string[]} Array of dates (YYYY-MM-DD) with logs
  */
 export function listLogDates() {
-  if (!fs.existsSync(API_LOGS_DIR)) {
+  const { api: apiLogsDir } = getTutorCoreLogDirectories();
+  if (!fs.existsSync(apiLogsDir)) {
     return [];
   }
 
-  return fs.readdirSync(API_LOGS_DIR)
+  return fs.readdirSync(apiLogsDir)
     .filter(f => f.endsWith('.jsonl'))
     .map(f => f.replace('api-', '').replace('.jsonl', ''))
     .sort()
@@ -43,7 +36,8 @@ export function listLogDates() {
  * @returns {object[]} Array of log entries
  */
 export function getApiLogEntries(date) {
-  const logFile = path.join(API_LOGS_DIR, `api-${date}.jsonl`);
+  const { api: apiLogsDir } = getTutorCoreLogDirectories();
+  const logFile = path.join(apiLogsDir, `api-${date}.jsonl`);
 
   if (!fs.existsSync(logFile)) {
     return [];
@@ -422,17 +416,18 @@ export function getDialogues(options = {}) {
     offset = 0,
     formatted = true,
   } = options;
+  const { dialogues: dialogueLogsDir, interactions: interactionEvalsDir } = getTutorCoreLogDirectories();
 
   let allDialogues = [];
 
   // FIRST: Try to load from dialogue files (richer semantic data)
-  if (fs.existsSync(DIALOGUE_LOGS_DIR)) {
+  if (fs.existsSync(dialogueLogsDir)) {
     try {
-      const dialogueFiles = fs.readdirSync(DIALOGUE_LOGS_DIR)
+      const dialogueFiles = fs.readdirSync(dialogueLogsDir)
         .filter(f => f.startsWith('dialogue-') && f.endsWith('.json'));
 
       for (const file of dialogueFiles) {
-        const filePath = path.join(DIALOGUE_LOGS_DIR, file);
+        const filePath = path.join(dialogueLogsDir, file);
         try {
           const rawData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
           const dialogueId = file.replace('.json', '');
@@ -459,13 +454,13 @@ export function getDialogues(options = {}) {
   }
 
   // ALSO: Load interaction eval files
-  if (fs.existsSync(INTERACTION_EVALS_DIR)) {
+  if (fs.existsSync(interactionEvalsDir)) {
     try {
-      const evalFiles = fs.readdirSync(INTERACTION_EVALS_DIR)
+      const evalFiles = fs.readdirSync(interactionEvalsDir)
         .filter(f => (f.startsWith('short-') || f.startsWith('long-')) && f.endsWith('.json'));
 
       for (const file of evalFiles) {
-        const filePath = path.join(INTERACTION_EVALS_DIR, file);
+        const filePath = path.join(interactionEvalsDir, file);
         try {
           const rawData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
           const evalId = file.replace('.json', '');
@@ -602,12 +597,13 @@ export function getLogStatistics(options = {}) {
  */
 export function getDialogueById(dialogueId) {
   if (!dialogueId) return null;
+  const { dialogues: dialogueLogsDir, interactions: interactionEvalsDir } = getTutorCoreLogDirectories();
 
   // Check if this is an interaction eval ID (short-* or long-*)
   const interactionEvalMatch = dialogueId.match(/^(short|long)-.*-(\d+)$/);
   if (interactionEvalMatch) {
     const timestamp = parseInt(interactionEvalMatch[2], 10);
-    const evalFile = path.join(INTERACTION_EVALS_DIR, `${dialogueId}.json`);
+    const evalFile = path.join(interactionEvalsDir, `${dialogueId}.json`);
 
     if (fs.existsSync(evalFile)) {
       try {
@@ -629,7 +625,7 @@ export function getDialogueById(dialogueId) {
 
   // PREFER tutor-dialogues file first - it has richer semantic data
   // including action types like 'incorporate-feedback' vs generic 'openrouter_call'
-  const dialogueFile = path.join(DIALOGUE_LOGS_DIR, `${dialogueId}.json`);
+  const dialogueFile = path.join(dialogueLogsDir, `${dialogueId}.json`);
   if (fs.existsSync(dialogueFile)) {
     try {
       const rawData = JSON.parse(fs.readFileSync(dialogueFile, 'utf8'));

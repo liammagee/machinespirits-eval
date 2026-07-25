@@ -37,6 +37,7 @@ links:
     - refactor-paper-manifest-fixtures
     - refactor-provenance-fixtures
     - refactor-message-chain-fixtures
+    - refactor-log-route-data-root
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -211,3 +212,13 @@ Log:
   zero-exit compatibility, 47/47 focused tests, and full hermetic parity green.
   The next queued slice is row 17, `refactor-log-route-data-root`, after this
   child lands.
+- 2026-07-25 — PR #232 merged and closed the message-chain fixture child.
+  Activated row 17 on `codex/refactor-log-route-data-root` to unify the
+  redirected tutor-core writer/reader root and replace shape-only evaluation
+  log-route checks with exact hermetic data assertions. Row 18 SSE lifecycle
+  cleanup remains next after this branch lands.
+- 2026-07-25 — Row 17 reached review with one shared tutor-core log-root leaf,
+  exact date/collection/id/index/statistics HTTP assertions, and a decoy old
+  root proving the routes cannot pass against empty or wrong data. Root/core,
+  desktop, static, and source-only parity are green; row 18 SSE lifecycle
+  remains next after merge.

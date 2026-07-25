@@ -26,6 +26,7 @@ import * as monitoringService from './monitoringService.js';
 import { parseSSEStream } from './sseStreamParser.js';
 import { externalProviderHandles, callExternalProvider } from './externalAIProvider.js';
 import { isQuietOrTranscript, setQuietMode } from './dialogueLoggingState.js';
+import { getTutorCoreLogDirectories, setTutorCoreLogRoot } from './dialogueLogDirectories.js';
 import { jsonrepair } from 'jsonrepair';
 
 export { isQuietOrTranscript, setQuietMode } from './dialogueLoggingState.js';
@@ -33,13 +34,12 @@ export { isQuietOrTranscript, setQuietMode } from './dialogueLoggingState.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DEFAULT_LOG_ROOT = process.env.TUTOR_CORE_LOG_DIR || path.join(ROOT_DIR, 'logs');
-let _logRoot = DEFAULT_LOG_ROOT;
+const initialLogDirectories = getTutorCoreLogDirectories();
 
-// Derived log dirs — recomputed when _logRoot changes
-let LOGS_DIR = path.join(_logRoot, 'tutor-dialogues');
-let API_LOGS_DIR = path.join(_logRoot, 'tutor-api');
-let DEBUG_LOGS_DIR = path.join(_logRoot, 'tutor-debug');
+// Derived log dirs — recomputed when the shared tutor-core log root changes.
+let LOGS_DIR = initialLogDirectories.dialogues;
+let API_LOGS_DIR = initialLogDirectories.api;
+let DEBUG_LOGS_DIR = initialLogDirectories.debug;
 
 /**
  * Set the root directory for all tutor-core logs.
@@ -47,10 +47,10 @@ let DEBUG_LOGS_DIR = path.join(_logRoot, 'tutor-debug');
  * @param {string} logRoot - Absolute path to the logs directory (e.g., '/path/to/myapp/logs')
  */
 export function setLogDir(logRoot) {
-  _logRoot = logRoot;
-  LOGS_DIR = path.join(_logRoot, 'tutor-dialogues');
-  API_LOGS_DIR = path.join(_logRoot, 'tutor-api');
-  DEBUG_LOGS_DIR = path.join(_logRoot, 'tutor-debug');
+  const directories = setTutorCoreLogRoot(logRoot);
+  LOGS_DIR = directories.dialogues;
+  API_LOGS_DIR = directories.api;
+  DEBUG_LOGS_DIR = directories.debug;
   // Ensure directories exist for the new path
   try {
     for (const dir of [LOGS_DIR, API_LOGS_DIR]) {
