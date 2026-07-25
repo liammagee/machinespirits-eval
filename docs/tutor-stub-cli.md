@@ -9,9 +9,11 @@ animation.
 ## Default launch
 
 `npm run tutor:stub` now opens the full `mixed_drafting` lab by default: a
-defeasible human scaffold plus inspectable AI learner drafts. Press Tab to
-insert the current draft, or use `/suggest`, `/use`, and `/regen`. The explicit
-equivalent remains:
+defeasible human scaffold plus inspectable AI learner drafts. When a draft is
+ready, the empty learner prompt shows as much of it as fits on the current row
+in dark ghost text. The preview is not input: start typing to hide it, press Tab
+to insert the full draft for editing, or use `/suggest`, `/use`, and `/regen`.
+The explicit equivalent remains:
 
 ```bash
 npm run tutor:stub -- --lab mixed_drafting

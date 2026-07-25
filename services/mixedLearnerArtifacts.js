@@ -12,6 +12,42 @@ function oneLine(value) {
     .trim();
 }
 
+export function mixedLearnerGhostText({
+  enabled = false,
+  suggestion = null,
+  line = '',
+  processingTurn = false,
+  interactionMode = 'learner',
+  interfaceBlocked = false,
+} = {}) {
+  if (!enabled || processingTurn || interactionMode !== 'learner' || interfaceBlocked) return null;
+  if (String(line || '').length > 0) return null;
+  return oneLine(suggestion?.text) || null;
+}
+
+export function truncateMixedLearnerGhostText(text, maxColumns) {
+  const characters = Array.from(oneLine(text));
+  const width = Math.max(0, Math.floor(Number(maxColumns) || 0));
+  if (!width) return '';
+  if (characters.length <= width) return characters.join('');
+  if (width === 1) return '…';
+  return `${characters.slice(0, width - 1).join('')}…`;
+}
+
+export function renderMixedLearnerGhostText({ rl, output, text, style = (value) => value } = {}) {
+  if (!output?.isTTY || !text || typeof output.write !== 'function' || typeof rl?.getCursorPos !== 'function') {
+    return { rendered: false, text: '' };
+  }
+  const cursor = rl.getCursorPos();
+  const availableColumns = Math.max(0, Number(output.columns || 0) - Number(cursor?.cols || 0) - 1);
+  const visibleText = truncateMixedLearnerGhostText(text, availableColumns);
+  if (!visibleText) return { rendered: false, text: '' };
+  output.write('\x1b7');
+  output.write(style(visibleText));
+  output.write('\x1b8');
+  return { rendered: true, text: visibleText };
+}
+
 export function clueSafelySignalsAnswer(clue, answer) {
   const hint = oneLine(clue);
   const response = oneLine(answer);

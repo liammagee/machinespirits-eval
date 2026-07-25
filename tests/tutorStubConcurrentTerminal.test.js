@@ -64,6 +64,16 @@ test('concurrent terminal reapplies prompt decoration after every redraw', () =>
   assert.equal(decorations, 3);
 });
 
+test('unchanged palettes report no redraw so the caller can refresh prompt-only decoration', () => {
+  const { output, rl } = fixture();
+  const terminal = createTutorStubConcurrentTerminal({ rl, output });
+
+  terminal.show();
+  assert.equal(terminal.setPalette([]), false);
+  assert.equal(terminal.setPalette(['slash commands · 1 match']), true);
+  assert.equal(terminal.setPalette(['slash commands · 1 match']), false);
+});
+
 test('concurrent terminal keeps a multi-line command palette above preserved input', () => {
   const { output, rl, written } = fixture();
   const terminal = createTutorStubConcurrentTerminal({ rl, output });

@@ -31,9 +31,12 @@ function tutorStubDryRun(extraArgs = [], env = {}) {
 function plainTerminalText(value) {
   // Build the ESC char dynamically so the ANSI-strip regex carries no
   // control-character escape in a literal (no-control-regex).
-  const ansi = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'gu');
+  const escape = String.fromCharCode(27);
+  const ansi = new RegExp(`${escape}\\[[0-9;?]*[ -/]*[@-~]`, 'gu');
+  const cursorSaveRestore = new RegExp(`${escape}[78]`, 'gu');
   return String(value || '')
     .replace(ansi, '')
+    .replace(cursorSaveRestore, '')
     .replace(/\r/gu, '');
 }
 
@@ -581,7 +584,10 @@ process.stdin.on('end', () => {
         terminal.onData((chunk) => {
           terminalOutput += chunk;
           const plain = plainTerminalText(terminalOutput);
-          if (!requestedExit && plain.includes('tutor >')) {
+          if (
+            !requestedExit &&
+            plain.includes('A Diligent Learner > Which assay record would show whose hand worked the metal?')
+          ) {
             requestedExit = true;
             terminal.write('/quit\r');
           }
@@ -604,6 +610,7 @@ process.stdin.on('end', () => {
       assert.ok(tutorIndex > readyIndex, plain);
       assert.match(plain, /preparing scenario ·\s*0\.[0-9]s/u);
       assert.match(plain, /CLI hint: type \/ to browse \| type to filter \| Tab completes \| \/help/u);
+      assert.match(plain, /A Diligent Learner > Which assay record would show whose hand worked the metal\?/u);
     } finally {
       terminal.kill();
       fs.rmSync(tmp, { recursive: true, force: true });
