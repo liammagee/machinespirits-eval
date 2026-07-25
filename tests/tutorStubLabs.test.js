@@ -55,6 +55,10 @@ test('learner-safe catalog never silently enables a simulated learner or negativ
     assert.notEqual(resolution.cliOptions['register-policy'], 'negative');
     assert.notEqual(resolution.cliOptions['register-policy'], 'random');
     assert.notEqual(resolution.cliOptions['auto-learner'], true);
+    if (!resolution.cliOptions['no-register-selection']) {
+      assert.equal(resolution.cliOptions['safe-registers'], false);
+      assert.equal(resolution.cliOptions['register-palette'], 'non-simulated');
+    }
   }
   assert.equal(getTutorStubLab('research_controls').audience, 'research');
   assert.equal(resolveTutorStubLab('research_controls').cliOptions['register-policy'], 'negative');
@@ -80,6 +84,8 @@ test('lab resolution is model-free, immutable, capability-aware, and trace-ready
   const resolution = resolveTutorStubLab('mixed_drafting', { overrides: { world: 'world_005_marrick' } });
   assert.equal(resolution.lab.maturity, 'stable');
   assert.equal(resolution.cliOptions['mixed-learner'], true);
+  assert.equal(resolution.cliOptions['safe-registers'], false);
+  assert.equal(resolution.cliOptions['register-palette'], 'non-simulated');
   assert.equal(resolution.capabilities.active.includes('mixed_drafting'), true);
   assert.equal(resolution.capabilities.active.includes('learner_reasoning'), true);
   assert.equal(resolution.costClass, 'medium');

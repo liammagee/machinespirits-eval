@@ -1022,8 +1022,9 @@ Options:
                          minimum normalized turn-change strength in [0,1]
                          before an added state/field policy may override the
                          primary policy (default: ${STUB.registerOverlayThreshold})
-  --safe-registers       limit tutor-register selection to router-selectable
-                         safe registers
+  --safe-registers       limit automatic tutor-register selection to the
+                         conservative router palette; explicit /register keeps
+                         every non-simulated dramatic choice available
   --register-empirical-prior <path|auto|off>
                          JSON prior built by
                          scripts/build-tutor-stub-register-priors.js;
@@ -1122,8 +1123,8 @@ Options:
   --learner-character <id|text>
                          character-facing alias for --auto-learner-profile
   --tutor-character <part>
-                         lock the tutor host part for this session; includes
-                         explicit-only adversarial parts (see /character tutor)
+                         lock the tutor host part for this session; the same
+                         full dramatic range is available to adaptive policies
   --auto-turns <n|until-grounded>
                          maximum learner turns in --auto-learner mode, or
                          until-grounded to stop only at grounded closure
@@ -3930,6 +3931,11 @@ function buildRegisterPalette(mode) {
   }
 
   return [...new Set(resolvedNames)];
+}
+
+function humanDirectedRegisterPalette() {
+  const definitions = getEngagementStanceDefinitions();
+  return Object.keys(definitions).filter((name) => definitions[name]?.simulated_only !== true);
 }
 
 function engagementStanceDefinitionSummary(name) {
@@ -6782,24 +6788,18 @@ function performanceTemperatureScope({
 
 function randomEngagementStanceSelection({ state, classification, performanceMode = false, lightAdaptation = null }) {
   const lightMode = lightAdaptation?.triggered === true;
-  const conditionalPerformanceMode = performanceMode || lightMode;
   const activePalette = state.register?.palette || [];
-  const safePalette = activePalette.filter(
-    (register) => getEngagementStanceDefinition(register)?.router_selectable === true,
+  const humanUsablePalette = activePalette.filter(
+    (register) => getEngagementStanceDefinition(register)?.simulated_only !== true,
   );
+  const eligiblePalette = humanUsablePalette.length ? humanUsablePalette : activePalette;
   const tutorTurn = state.turns.length + 1;
   const publicEvidenceAvailable = Boolean(
     committedReleaseRows(state, tutorTurn).length || currentReleaseRows(state, tutorTurn).length,
   );
-  const performanceReadyPalette =
-    conditionalPerformanceMode && !publicEvidenceAvailable
-      ? safePalette.filter((register) => ['plain', 'warm'].includes(register))
-      : safePalette;
-  const eligiblePalette =
-    conditionalPerformanceMode && performanceReadyPalette.length ? performanceReadyPalette : activePalette;
   const previousRegister = state.register?.history?.at(-1)?.selected_register || null;
   const palette =
-    conditionalPerformanceMode && eligiblePalette.length > 1
+    (performanceMode || lightMode) && eligiblePalette.length > 1
       ? eligiblePalette.filter((register) => register !== previousRegister)
       : eligiblePalette;
   const distribution = uniformEngagementStanceDistribution(palette);
@@ -6837,11 +6837,11 @@ function randomEngagementStanceSelection({ state, classification, performanceMod
         ? 'random_performance_mode'
         : 'random_policy',
     register_reason: lightMode
-      ? `Light adaptation activated after ${lightAdaptation.streak} consecutive learner-difficulty turns and sampled a different safe stance when possible; the assessment triggered the draw but did not choose its result.`
+      ? `Light adaptation activated after ${lightAdaptation.streak} consecutive learner-difficulty turns and sampled a different non-simulated stance when possible; the assessment triggered the draw but did not choose its result.`
       : performanceMode
-        ? 'Random performance mode sampled uniformly from the safe active stance palette, excluding the immediately previous stance when alternatives exist. Learner assessment did not influence this choice.'
+        ? 'Random performance mode sampled uniformly from the full non-simulated stance palette, excluding the immediately previous stance when alternatives exist. Learner assessment did not influence this choice.'
         : 'Random register policy sampled uniformly from the active palette; this choice is not a classifier- or learner-DAG-based recommendation.',
-    evidence_span: conditionalPerformanceMode ? '' : classification?.turn?.summary || '',
+    evidence_span: performanceMode || lightMode ? '' : classification?.turn?.summary || '',
     risk_flags: [],
     expected_dag_move:
       'No register-specific DAG move is predicted; preserve evidence safety while following the sampled register stance.',
@@ -6865,7 +6865,7 @@ function randomEngagementStanceSelection({ state, classification, performanceMod
             previous_register_excluded: palette.length < eligiblePalette.length ? previousRegister : null,
             eligible_registers: eligiblePalette,
             public_evidence_available: publicEvidenceAvailable,
-            structural_filter: publicEvidenceAvailable ? null : 'no_public_evidence_yet',
+            structural_filter: 'simulated_only_excluded',
           },
         }
       : performanceMode
@@ -6876,7 +6876,7 @@ function randomEngagementStanceSelection({ state, classification, performanceMod
               previous_register_excluded: palette.length < eligiblePalette.length ? previousRegister : null,
               eligible_registers: eligiblePalette,
               public_evidence_available: publicEvidenceAvailable,
-              structural_filter: publicEvidenceAvailable ? null : 'no_public_evidence_yet',
+              structural_filter: 'simulated_only_excluded',
             },
           }
         : {}),
@@ -6925,7 +6925,7 @@ function randomPerformanceActorialPartSelection({ state, inputs, baseSelection, 
     drivers: [],
     reason: lightMode
       ? `Light adaptation activated after ${lightAdaptation.streak} consecutive learner-difficulty turns and sampled a different host character when possible; the assessment triggered the draw but did not choose its result.`
-      : 'Random performance mode sampled uniformly from the safe host-character set, excluding the immediately previous part when alternatives exist. Learner assessment did not influence this choice.',
+      : 'Random performance mode sampled uniformly from the full host-character range, excluding the immediately previous part when alternatives exist. Learner assessment did not influence this choice.',
     selection_method: lightMode ? 'light_adaptation_seeded_uniform' : 'random_performance_seeded_uniform',
     random: sampled.audit,
     [modeKey]: {
@@ -7693,6 +7693,36 @@ function applyEngagementStanceOverride(source, stance, patch = {}) {
   };
 }
 
+function characterDefaultEngagementStance(character, classification, tutorLearnerDag) {
+  const definition = getActorialPartDefinitions()[character] || {};
+  const defaults = Array.isArray(definition.default_engagement_stances)
+    ? definition.default_engagement_stances.filter(
+        (stance) =>
+          getEngagementStanceDefinition(stance) && getEngagementStanceDefinition(stance)?.simulated_only !== true,
+      )
+    : [];
+  if (!defaults.length) return null;
+  const signal = [
+    classification?.turn?.request_type,
+    classification?.turn?.discourse_move,
+    classification?.turn?.evidence_use,
+    classification?.turn?.epistemic_stance,
+    classification?.turn?.agency,
+    tutorLearnerDag?.model?.assessment?.bottleneck,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const sharperMismatch =
+    /(?:answer_seeking|challenge_resistance|distorts_public_evidence|overconfident|overleaps_evidence|premature_assertion|resistant|resistance_or_low_agency)/iu.test(
+      signal,
+    );
+  return sharperMismatch && defaults.includes('sarcastic')
+    ? 'sarcastic'
+    : defaults.includes('ironic')
+      ? 'ironic'
+      : defaults[0];
+}
+
 function normalizeResponseConfigurationSelection(
   rawSelection,
   { state, classification, tutorLearnerDag, raw, learnerText = '' },
@@ -7704,6 +7734,9 @@ function normalizeResponseConfigurationSelection(
   const instructionalMetaRepair = discoursePlane.plane === 'instructional_meta';
   const explicitRegister = explicitPerformanceDirectiveValue(state, 'register');
   const explicitCharacter = explicitPerformanceDirectiveValue(state, 'character');
+  const characterDefaultStance = explicitRegister
+    ? null
+    : characterDefaultEngagementStance(explicitCharacter, classification, tutorLearnerDag);
   const lightAdaptation = buildTutorStubLightAdaptationDecision({
     enabled: state.lightAdaptation?.enabled === true,
     threshold: state.lightAdaptation?.threshold,
@@ -7876,6 +7909,18 @@ function normalizeResponseConfigurationSelection(
       source: 'dynamic_learner_acceleration_guard',
     });
   }
+  if (!externalStanceDirective && characterDefaultStance) {
+    const definition = getEngagementStanceDefinition(characterDefaultStance) || {};
+    source = applyEngagementStanceOverride(source, characterDefaultStance, {
+      register_reason: `The explicitly selected ${explicitCharacter} character defaults to ${characterDefaultStance} so its recurring dramatic action can expose the current mismatch. Use /register to direct another voice independently.`,
+      engagement_stance_reason: `The explicitly selected ${explicitCharacter} character defaults to ${characterDefaultStance}; an explicit /register choice still takes precedence.`,
+      reviewer_signal: `character default engagement stance: ${explicitCharacter}`,
+      risk_flags: Array.isArray(definition.risk_flags) ? [...definition.risk_flags] : [],
+      expected_field_move: 'Expose the gap in the learner-facing claim while preserving a concrete route to repair it.',
+      source: 'explicit_character_default_engagement_stance',
+      character_default_engagement_stance: true,
+    });
+  }
   const pressureProbeTurn = tutorLearnerDag?.model?.turn ?? state.turns.length + 1;
   if (!externalStanceDirective && predeclaredPressureTurns().has(pressureProbeTurn)) {
     source = applyEngagementStanceOverride(source, 'face_threat', {
@@ -7921,9 +7966,11 @@ function normalizeResponseConfigurationSelection(
       ? 'light_adaptation'
       : explicitRegister
         ? 'explicit_register_directive'
-        : randomStanceEnabled
-          ? 'random_performance'
-          : policyStack,
+        : characterDefaultStance
+          ? 'character_default_engagement_stance'
+          : randomStanceEnabled
+            ? 'random_performance'
+            : policyStack,
     learnerText,
     classification,
     tutorLearnerDag,
@@ -8103,7 +8150,7 @@ function normalizeResponseConfigurationSelection(
   }
   const temperatureSelection = performanceTemperatureScope({
     policy,
-    explicitRegister,
+    explicitRegister: explicitRegister || characterDefaultStance,
     explicitCharacter,
     randomStance: randomStanceEnabled,
     randomCharacter: randomCharacterEnabled,
@@ -18848,7 +18895,7 @@ async function main() {
     } else if (trimmed.startsWith('/register ')) {
       pool = [
         ...tutorStubStaticCommandCompletions('/register', commandOptions),
-        ...(state.register?.palette || []).map((stance) => `/register ${stance}`),
+        ...humanDirectedRegisterPalette().map((stance) => `/register ${stance}`),
       ];
     } else if (trimmed.startsWith('/tutor ')) {
       pool = [
@@ -20695,7 +20742,7 @@ async function main() {
 
   async function pickLiveTutorRegisterWithKeyboard(defaultRegisterId = 'auto') {
     const definitions = getEngagementStanceDefinitions();
-    const palette = state.register?.palette || [];
+    const palette = humanDirectedRegisterPalette();
     const entries = [
       {
         id: 'auto',
@@ -20709,7 +20756,7 @@ async function main() {
         .map((id) => ({
           id,
           label: displayDiagnosticLabel(id),
-          group: definitions[id]?.router_selectable === true ? 'adaptive-safe' : 'explicit-only',
+          group: definitions[id]?.router_selectable === true ? 'adaptive-core' : 'full-range',
           signature: oneLine(definitions[id]?.public_signature || definitions[id]?.stance_contract, { max: 220 }),
           contrast: oneLine(definitions[id]?.contrast, { max: 220 }),
         })),
@@ -20808,7 +20855,6 @@ async function main() {
 
   async function pickLiveTutorCharacterWithKeyboard(defaultCharacterId = 'auto') {
     const definitions = getActorialPartDefinitions();
-    const adaptiveParts = new Set(tutorStubRandomizableActorialPartIds());
     const entries = [
       {
         id: 'auto',
@@ -20821,7 +20867,7 @@ async function main() {
       ...tutorStubConfigurableActorialPartIds().map((id) => ({
         id,
         label: definitions[id]?.label || displayDiagnosticLabel(id),
-        group: adaptiveParts.has(id) ? 'adaptive-safe' : 'explicit-only',
+        group: 'full-range',
         signature: oneLine(definitions[id]?.public_signature || definitions[id]?.contract, { max: 220 }),
         contrast: oneLine(definitions[id]?.contrast, { max: 220 }),
       })),
@@ -25558,6 +25604,7 @@ async function main() {
         record_keeper: 'organize the shared record and keep its distinctions clear',
         advocate: 'present the strongest version of the live case',
         skeptic: 'test claims before accepting them',
+        satirist: 'spot polished contradictions and expose them through irony or dry sarcasm',
         adversarial_teacher: 'actively test your ideas with subject-based counterexamples or alternatives',
         exacting_schoolmaster: 'ask for one precise, subject-appropriate piece of work',
       }[characterId] || 'use the selected character'
@@ -25607,7 +25654,7 @@ async function main() {
     const characterOptions = characterChoice.options;
     const resolvedRegister = resolveEngagementStance(normalizedAction)?.register || normalizedAction;
     const requestedValue = axis === 'register' ? resolvedRegister : characterChoice.id;
-    const options = axis === 'register' ? [...(state.register?.palette || [])] : characterOptions;
+    const options = axis === 'register' ? humanDirectedRegisterPalette() : characterOptions;
 
     if (!rawAction || rawAction === 'status') {
       console.log(`${C.brightMagenta}${C.bold}${publicAxis} direction >${C.reset} ${current || 'auto'}`);
@@ -25617,8 +25664,8 @@ async function main() {
           const group = definition.simulated_only
             ? 'simulated-only'
             : definition.router_selectable
-              ? 'adaptive-safe'
-              : 'explicit-only';
+              ? 'adaptive-core'
+              : 'full-range';
           console.log(
             `${C.dim}  ${option.padEnd(13)} [${group}] ${oneLine(
               definition.public_signature || definition.stance_contract,
@@ -25641,14 +25688,14 @@ async function main() {
     }
 
     const clearing = EXPLICIT_PERFORMANCE_CLEAR_WORDS.has(rawAction);
-    if (!clearing && !options.includes(requestedValue)) {
-      console.log(`${C.red}${publicAxis} error:${C.reset} choose ${options.join(', ')}, or use ${command} auto\n`);
-      return true;
-    }
     if (axis === 'register' && !clearing && getEngagementStanceDefinition(requestedValue)?.simulated_only === true) {
       console.log(
         `${C.red}${publicAxis} error:${C.reset} ${requestedValue} is a simulated-only evaluation condition and cannot be used in an interactive learner session\n`,
       );
+      return true;
+    }
+    if (!clearing && !options.includes(requestedValue)) {
+      console.log(`${C.red}${publicAxis} error:${C.reset} choose ${options.join(', ')}, or use ${command} auto\n`);
       return true;
     }
     const next = clearing ? null : requestedValue;
@@ -25697,6 +25744,14 @@ async function main() {
       );
       if (next) {
         console.log(`${C.dim}  Tutor replies will ${tutorCharacterPlainEffect(next)}.${C.reset}`);
+        const defaultStances = getActorialPartDefinitions()[next]?.default_engagement_stances || [];
+        if (defaultStances.length) {
+          console.log(
+            `${C.dim}  When /register is automatic, this character defaults to ${defaultStances.join(
+              ' or ',
+            )}; an explicit /register choice still wins.${C.reset}`,
+          );
+        }
         console.log(`${C.dim}  Clue-givers and the closing scene may temporarily use another character.${C.reset}`);
         console.log(`${C.dim}  Choose Tutor → Auto, or type /tutor auto, to return to adaptive selection.${C.reset}`);
       } else {
@@ -25719,7 +25774,7 @@ async function main() {
       }
       if (definition?.router_selectable === false) {
         console.log(
-          `${C.dim}  This is an explicit-only ${definition.valence || 'manual'} register; adaptive selection will not choose it.${C.reset}`,
+          `${C.dim}  This is a full-range ${definition.valence || 'dramatic'} register; conservative --safe-registers routing omits it, while full-range policies and /random may choose it.${C.reset}`,
         );
       }
       console.log(

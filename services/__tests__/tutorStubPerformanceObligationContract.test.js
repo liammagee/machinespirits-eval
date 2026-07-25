@@ -128,6 +128,40 @@ test('question-shaped learner requests cannot become pressure targets and fall b
   assert.doesNotMatch(JSON.stringify(contract.anchors), /What should I write next/u);
 });
 
+test('an irony tactic remains usable before any evidence is public by falling back to a scene action', () => {
+  const contract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration: counterpressureConfiguration({
+      engagement_stance: 'ironic',
+      actorial_part: 'satirist',
+      actorial_part_label: 'wry satirist',
+      actorial_performance: {
+        id: 'exposed_mismatch',
+        label: 'exposed mismatch',
+        contract: 'Expose a mismatch in the public material.',
+      },
+    }),
+    ...publicContext({
+      publicTurn: {
+        learner_move: 'The comparison still confuses me.',
+        pressure_target: null,
+        contrary_evidence: [],
+        public_evidence: [],
+        due_evidence: [],
+      },
+    }),
+  });
+
+  assert.equal(contract.complete, true);
+  assert.equal(contract.tactic_applicability.applicable, false);
+  assert.equal(contract.selection.actorial_part, 'satirist');
+  assert.equal(contract.selection.actorial_performance.id, 'unadorned_report');
+  assert.equal(contract.selection.speaking_transition.retained_actorial_part, 'satirist');
+  assert.deepEqual(
+    contract.obligations.map((entry) => entry.id),
+    ['visible_action', 'learner_handoff'],
+  );
+});
+
 test('prior tutor prose and merely due evidence cannot manufacture a counterpressure pair', () => {
   const contract = compileTutorStubPerformanceObligationContract({
     responseConfiguration: counterpressureConfiguration(),

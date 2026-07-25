@@ -263,8 +263,17 @@ export function selectTutorStubSceneImmersion({ classification, comprehension, w
   };
 }
 
-const ACTORIAL_PART_IDS = ['scene_partner', 'examiner', 'record_keeper', 'advocate', 'skeptic', 'foreperson'];
-const EXPLICIT_ONLY_ACTORIAL_PART_IDS = ['adversarial_teacher', 'exacting_schoolmaster'];
+const ACTORIAL_PART_IDS = [
+  'scene_partner',
+  'examiner',
+  'record_keeper',
+  'advocate',
+  'skeptic',
+  'satirist',
+  'adversarial_teacher',
+  'exacting_schoolmaster',
+  'foreperson',
+];
 const LEGACY_ACTORIAL_PART_ALIASES = Object.freeze({
   cross_examiner: 'adversarial_teacher',
   opposing_counsel: 'exacting_schoolmaster',
@@ -278,43 +287,43 @@ export function normalizeTutorStubActorialPartId(value) {
   return LEGACY_ACTORIAL_PART_ALIASES[normalized] || normalized;
 }
 
-// These host parts are safe to vary independently of the learner assessment.
+// These host parts are available to the full dramatic policy and can vary
+// independently of the learner assessment. Their individual contracts retain
+// the idea-directed and repair-path boundaries; they are not hidden merely
+// because they create pressure.
 // `foreperson` remains a structural closeout role and is therefore selected
 // only by the normal closure lock.
 export function tutorStubRandomizableActorialPartIds() {
   return ACTORIAL_PART_IDS.filter((part) => part !== 'foreperson');
 }
 
-// Deliberately adversarial parts are available only through an explicit
-// learner/tutor character choice. They must never enter the automatic, random,
-// or light-adaptation distributions without a separate safety decision.
 export function tutorStubConfigurableActorialPartIds() {
-  return [...tutorStubRandomizableActorialPartIds(), ...EXPLICIT_ONLY_ACTORIAL_PART_IDS];
+  return tutorStubRandomizableActorialPartIds();
 }
 
 const STANCE_PART_AFFINITY = {
   plain: { record_keeper: 0.8, scene_partner: 0.55, examiner: 0.35 },
-  precise: { examiner: 0.9, skeptic: 0.7, record_keeper: 0.4 },
-  brisk: { examiner: 0.7, authored_source: 0.65, advocate: 0.35 },
+  precise: { examiner: 0.9, skeptic: 0.7, exacting_schoolmaster: 0.55, record_keeper: 0.4 },
+  brisk: { examiner: 0.7, authored_source: 0.65, exacting_schoolmaster: 0.45, advocate: 0.35 },
   warm: { scene_partner: 1, record_keeper: 0.25 },
   witnessing: { scene_partner: 1.2, record_keeper: 0.2 },
-  charismatic: { advocate: 1.15, authored_source: 0.35, skeptic: 0.25 },
-  ironic: { skeptic: 0.9, advocate: 0.35 },
-  sarcastic: { skeptic: 1.05, advocate: 0.4 },
+  charismatic: { advocate: 1.15, adversarial_teacher: 0.45, authored_source: 0.35, skeptic: 0.25 },
+  ironic: { satirist: 1.35, skeptic: 0.45, advocate: 0.2 },
+  sarcastic: { satirist: 1.55, skeptic: 0.5, advocate: 0.25 },
   face_threat: { skeptic: 1.15, advocate: 0.55 },
 };
 
 const ACTION_PART_AFFINITY = {
   clarify_term: { examiner: 1.4, record_keeper: 0.45 },
   repair_explanation: { scene_partner: 1.8, examiner: 0.15 },
-  clarify_distinction: { examiner: 1.25, skeptic: 0.45 },
+  clarify_distinction: { examiner: 1.25, adversarial_teacher: 0.85, skeptic: 0.45 },
   stage_next_step: { authored_source: 1, examiner: 0.75, record_keeper: 0.4 },
   answer_accountably: { advocate: 1.2, skeptic: 0.75 },
   compress_sayback: { record_keeper: 1.35, scene_partner: 0.35 },
   reanchor_lived_stake: { scene_partner: 1.4 },
   reanchor_public_evidence: { record_keeper: 1.25, examiner: 0.65 },
-  ground_in_material: { examiner: 1.2, record_keeper: 0.5 },
-  challenge_resistance: { advocate: 1.25, skeptic: 0.7 },
+  ground_in_material: { examiner: 1.2, exacting_schoolmaster: 0.85, adversarial_teacher: 0.6, record_keeper: 0.5 },
+  challenge_resistance: { advocate: 1.25, adversarial_teacher: 1, satirist: 0.9, skeptic: 0.7 },
   receive_vulnerability: { scene_partner: 1.55 },
   close_inquiry: { foreperson: 3 },
   baseline_plain_response: { scene_partner: 0.9 },
@@ -1302,6 +1311,20 @@ function actorialPartVisible(configuration, text, metrics) {
       refusesUnsupportedNameInPublicSpeech ||
       refusesToPlacePersonUnderUnsupportedMark
     );
+  }
+  if (part === 'satirist') {
+    const exposesMismatch =
+      /\b(?:apparently|conveniently|contradict\w*|irony|mismatch|neat|nice trick|polished|wonderful)\b/iu.test(text) ||
+      /\b(?:claim|formula|method|rule|story)\b[^.!?]{0,90}\b(?:breaks|fails|forgets|skips)\b/iu.test(text);
+    const turnsTheClaimAgainstItself =
+      /\b(?:but|except|still|while|without|yet)\b/iu.test(text) ||
+      /\b(?:evidence|exhibit|record)\b[^.!?]{0,90}\b(?:against|contradicts?|refuses?)\b/iu.test(text);
+    const leavesRepairPath =
+      metrics.questionCount > 0 ||
+      /\b(?:correct|put|repair|restore|revise|show|try)\b[^.!?]{0,80}\b(?:claim|gap|reason|step|warrant|working)\b/iu.test(
+        text,
+      );
+    return metrics.concreteSceneTermCount > 0 && exposesMismatch && turnsTheClaimAgainstItself && leavesRepairPath;
   }
   if (part === 'adversarial_teacher') {
     const avoidsGenericCourtroomSpeech =

@@ -2299,7 +2299,7 @@ test('technical explanatory debug mode prints exact field calculations and the r
   }
 });
 
-test('/random samples style and host character independently while preserving the adaptive safety pipeline', async () => {
+test('/random samples the full non-simulated style and host-character range independently', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-random-performance-'));
   try {
     const result = await runInteractive({
@@ -2351,9 +2351,22 @@ test('/random samples style and host character independently while preserving th
     assert.equal(selection?.temperature_applied, false);
     assert.match(selection?.temperature_scope || '', /bypassed_for_random/u);
     assert.ok(
-      ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic'].includes(selection?.selected_register),
+      ['plain', 'precise', 'brisk', 'warm', 'witnessing', 'charismatic', 'ironic', 'sarcastic'].includes(
+        selection?.selected_register,
+      ),
     );
-    assert.ok(['scene_partner', 'examiner', 'record_keeper', 'advocate', 'skeptic'].includes(selection?.actorial_part));
+    assert.ok(
+      [
+        'scene_partner',
+        'examiner',
+        'record_keeper',
+        'advocate',
+        'skeptic',
+        'satirist',
+        'adversarial_teacher',
+        'exacting_schoolmaster',
+      ].includes(selection?.actorial_part),
+    );
     assert.equal(selection?.actorial_part_selection.selection_method, 'random_performance_seeded_uniform');
     assert.equal(selection?.random?.decision?.material?.policy, 'random_performance');
     assert.equal(selection?.actorial_part_selection.random?.decision?.material?.policy, 'random_performance');
@@ -2544,6 +2557,7 @@ test('/character configures learner and tutor characters while preserving legacy
   assert.match(result.stdout, /tutor character > auto/u);
   assert.match(result.stdout, /adversarial_teacher\s+adversarial teacher/u);
   assert.match(result.stdout, /exacting_schoolmaster\s+exacting schoolmaster/u);
+  assert.match(result.stdout, /satirist\s+wry satirist/u);
   assert.match(result.stdout, /tutor character > Adversarial teacher/u);
   assert.match(
     result.stdout,
@@ -2555,6 +2569,49 @@ test('/character configures learner and tutor characters while preserving legacy
   assert.match(result.stdout, /learner character > counterexample_hunter/u);
   assert.match(result.stdout, /tutor character > adversarial_teacher/u);
   assert.match(result.stdout, /tutor character > Exacting schoolmaster/u);
+});
+
+test('the satirist character defaults to irony while an explicit register remains independent', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-satirist-default-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--dag',
+        '--tutor-learner-dag',
+        '--register-policy',
+        'field',
+        '--register-palette',
+        'non-simulated',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: '/tutor satirist\nThe residue comparison still confuses me.\n',
+      stopWhen: (plain) => plain.includes('optional tutor feedback >'),
+      env: {
+        FAKE_CODEX_VALID_ANALYSIS: '1',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /tutor character > Wry satirist/u);
+    assert.match(result.plain, /defaults to ironic/u);
+    const events = readTutorStubTraceEvents(tmp);
+    const selection = events.find((event) => event.type === 'turn_complete')?.turnRecord?.registerSelection;
+    assert.equal(selection?.selected_register, 'ironic');
+    assert.equal(selection?.source, 'explicit_character_default_engagement_stance');
+    assert.equal(selection?.actorial_part, 'satirist');
+    assert.equal(selection?.actorial_part_selection.selection_method, 'explicit_character_directive');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });
 
 test('changing the tutor character publicly restates the latest intent and replaces the cached reprise', async () => {
@@ -2721,7 +2778,7 @@ test(
       assert.match(plain, /Learner\s+diligent/u);
       assert.match(plain, /Tutor\s+auto/u);
       assert.match(plain, /Tutor character · choose with ↑\/↓ and Enter/u);
-      assert.match(plain, /scene_partner.*adaptive-safe/u);
+      assert.match(plain, /scene_partner.*full-range/u);
       assert.match(plain, /tutor character > Fellow investigator/u);
       assert.match(plain, /Learner character · choose with ↑\/↓ and Enter/u);
       assert.match(plain, /pattern >/u);
@@ -2734,7 +2791,7 @@ test(
 );
 
 test(
-  'bare /register opens a voice-first selector and can choose explicit sarcasm',
+  'bare /register exposes full-range sarcasm even when automatic routing is safe-only',
   { skip: process.platform === 'win32' },
   async () => {
     const terminal = pty.spawn(
@@ -2749,6 +2806,7 @@ test(
         '--no-interim-animation',
         '--no-stream',
         '--no-trace',
+        '--safe-registers',
         '--world',
         'world_005_marrick',
       ],
@@ -2793,11 +2851,11 @@ test(
 
       const plain = plainTerminalText(terminalOutput);
       assert.match(plain, /Tutor register · choose how the voice sounds with ↑\/↓ and Enter/u);
-      assert.match(plain, /sarcastic.*explicit-only/u);
+      assert.match(plain, /sarcastic.*full-range/u);
       assert.match(plain, /sounds >/u);
       assert.match(plain, /register changes voice; tutor character changes the repeated public action/u);
       assert.match(plain, /teaching style direction > sarcastic/u);
-      assert.match(plain, /explicit-only negative register/u);
+      assert.match(plain, /full-range negative register/u);
     } finally {
       terminal.kill();
     }
