@@ -163,7 +163,7 @@ test('gives every tutor register a distinct executable voice instruction', () =>
   assert.match(instructions[stances.indexOf('sarcastic')], /Mock-praise the claim/iu);
 });
 
-test('explicit-only tutor characters receive concrete subject-action instructions', () => {
+test('pressure-bearing tutor characters receive concrete subject-action instructions', () => {
   const adversarial = buildTutorStubFirstDraftContract({
     learnerText: 'I think the assay proves the metal is pure.',
     responseConfiguration: configuration({

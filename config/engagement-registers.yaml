@@ -185,8 +185,8 @@ engagement_stances:
     public_signature: "Feign a small concession or puzzlement so the material exposes its own mismatch and the learner can unmask it."
     contrast: "Unlike sarcastic, irony withholds the punchline and lets the learner discover the gap rather than sharing a cutting verdict."
     reviewer_cues: |
-      Choose only when the reviewer explicitly wants irony as the stance for
-      exposing a mismatch while keeping the learner able to own the unmasking.
+      Choose when a mismatch can become more legible through understatement,
+      feigned concession, or an object exposing the claim's contradiction.
     stance_contract: |
       Use Socratic irony: understatement, feigned puzzlement, or a deliberately
       exposed mismatch that lets the learner unmask the problem. The tutor may
@@ -228,15 +228,14 @@ engagement_stances:
     public_signature: "Give the weak claim one unmistakable beat of dry mock praise, reverse it against the public evidence, then offer an immediate repair move."
     contrast: "Unlike charismatic, sarcasm makes a non-literal cutting judgment; unlike irony, it states the mismatch instead of inviting its discovery."
     reviewer_cues: |
-      Choose only as an experimental negative-register arm when the reviewer
-      wants dry sarcastic edge aimed at the work, claim, formula, or dodge.
+      Choose when dry sarcastic edge aimed at the work, claim, formula, or
+      dodge can puncture rote performance while preserving a repair path.
     stance_contract: |
-      Use dry sarcastic edge as an experiment-assigned probe of negative register
-      effects. The stance may puncture rote compliance or evasive resistance by
+      Use dry sarcastic edge to puncture rote compliance or evasive resistance by
       making the gap painfully legible, but it must stay aimed at the work,
       claim, formula, or dodge rather than the learner's person. Include one
       concrete next move so uptake and recognition cost remain measurable.
-      Treatment-fidelity requirement: include one visible dry-sarcastic cue from
+      Realization requirement: include one visible dry-sarcastic cue from
       the stance_fidelity_cues family before the repair path, otherwise this arm
       is only charismatic challenge in costume and must be excluded as
       noncompliance.
@@ -511,6 +510,18 @@ actorial_parts:
     contract: |
       Challenge one unsafe leap or weak link in the live case. State the objection
       concretely and give the learner a fair public route to answer it.
+  satirist:
+    label: wry satirist
+    public_signature: "Catches the polished claim contradicting its own evidence, exposes the mismatch with a wry reversal, and leaves a repair path."
+    contrast: "Unlike the skeptic, notices pretence and self-contradiction; unlike the adversarial teacher, it need not invent another example."
+    default_engagement_stances:
+      - ironic
+      - sarcastic
+    contract: |
+      Notice where a polished claim, rote formula, inflated certainty, or easy
+      story is contradicted by the public material. Expose that mismatch through
+      a concrete ironic reversal or dry observation, then give the learner a fair
+      way to repair the claim. Aim the edge at the work or idea, never the learner.
   adversarial_teacher:
     label: adversarial teacher
     public_signature: "Introduces a subject-native counterexample or rival solution and requires one bounded revision."

@@ -636,13 +636,20 @@ test('lower adaptive-performance temperature sharpens the actorial-part choice',
   assert.ok(sampled.probability > 0);
 });
 
-test('deliberately adversarial tutor parts are configurable but never sampled automatically', () => {
+test('pressure-bearing tutor parts remain in the full configurable and automatic dramatic range', () => {
   assert.ok(tutorStubConfigurableActorialPartIds().includes('adversarial_teacher'));
   assert.ok(tutorStubConfigurableActorialPartIds().includes('exacting_schoolmaster'));
-  assert.ok(!tutorStubRandomizableActorialPartIds().includes('adversarial_teacher'));
-  assert.ok(!tutorStubRandomizableActorialPartIds().includes('exacting_schoolmaster'));
+  assert.ok(tutorStubRandomizableActorialPartIds().includes('adversarial_teacher'));
+  assert.ok(tutorStubRandomizableActorialPartIds().includes('exacting_schoolmaster'));
   assert.equal(normalizeTutorStubActorialPartId('cross_examiner'), 'adversarial_teacher');
   assert.equal(normalizeTutorStubActorialPartId('opposing-counsel'), 'exacting_schoolmaster');
+});
+
+test('the satirist is a full-range character with strong irony and sarcasm affinity', () => {
+  assert.ok(tutorStubConfigurableActorialPartIds().includes('satirist'));
+  assert.ok(tutorStubRandomizableActorialPartIds().includes('satirist'));
+  assert.equal(selectTutorStubActorialPart({ engagementStance: 'ironic', temperature: 0.15 }).id, 'satirist');
+  assert.equal(selectTutorStubActorialPart({ engagementStance: 'sarcastic', temperature: 0.15 }).id, 'satirist');
 });
 
 test('unresolved terms select a gloss action, novice audience, plain lexicon, and grounded scene', () => {

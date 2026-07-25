@@ -553,8 +553,10 @@ Use `/register <style>` to direct the engagement stance. A register controls
 ironic, or sarcastic. A tutor character controls **what the tutor repeatedly
 does**—work beside the learner, inspect an exhibit, keep the record, argue a
 case, challenge an inference, introduce a counterexample, or demand a concrete
-performance. These axes compose: a warm skeptic makes the objection gently; a
-sarcastic scene partner collaborates while giving the weak claim a dry edge.
+performance. The `satirist` catches a polished claim or rote formula
+contradicting the public material and exposes the mismatch with a wry reversal.
+These axes compose: a warm skeptic makes the objection gently; a sarcastic
+scene partner collaborates while giving the weak claim a dry edge.
 
 In an interactive terminal, bare `/register`, `/character tutor`, and
 `/character learner` open scrolling keyboard selectors with the current choice
@@ -577,18 +579,22 @@ trace rather than being printed as a terminal report.
 ```text
 /register warm
 /register sarcastic
+/tutor satirist
 /tutor advocate
 /learner counterexample_hunter
 /register auto
 /tutor auto
 ```
 
-`sarcastic` is an explicit-only negative register. It uses one unmistakable
+`sarcastic` is a full-range negative register. It uses one unmistakable
 beat of dry mock praise aimed at the claim, formula, or dodge, immediately
 reverses that praise against public evidence, and supplies a repair move. It
-must never insult the learner. Adaptive selection and `/random` will not choose
-it. The more severe `face_threat` condition remains simulated-only and is
-rejected by the interactive command surface.
+must never insult the learner. Ordinary human labs use the complete
+`non-simulated` palette, so field/state policies and `/random` can select irony
+or sarcasm. The optional `--safe-registers` flag narrows only automatic routing;
+direct `/register` choices still expose every non-simulated register. The more
+severe `face_threat` condition remains simulated-only and is rejected by the
+interactive command surface.
 
 Launch-time aliases provide the same distinction:
 
@@ -598,15 +604,22 @@ npm run tutor:stub -- --mixed-learner \
   --tutor-character exacting_schoolmaster
 ```
 
-The deliberately adversarial tutor parts `adversarial_teacher` and
-`exacting_schoolmaster` are explicit-only. They can be chosen manually, but are
-not eligible for adaptive selection, `/random`, or light stochastic
-adaptation. The adversarial teacher tests an idea with a subject-native
+The pressure-bearing tutor parts `adversarial_teacher` and
+`exacting_schoolmaster` belong to the same full dramatic range as the other
+characters: they can be chosen manually or reached through adaptive selection,
+`/random`, and light stochastic adaptation. The adversarial teacher tests an idea with a subject-native
 counterexample, altered example, or competing solution. The exacting
 schoolmaster requires one discipline-appropriate performance: show the
 working, apply the method, define the term, read the passage, make the
 observation, demonstrate the procedure, or revise precisely. Exactness must
 retain a fair retry and must never become humiliation or personal dominance.
+
+The `satirist` is available to both adaptive and explicit character selection.
+Ironic and sarcastic stances strongly prefer it. Selecting `/tutor satirist`
+without separately locking `/register` defaults the voice to irony, escalating
+to sarcasm around resistance, inflated certainty, distorted evidence, or an
+unsupported leap. An explicit `/register` command always wins, so the character
+can still be warm, plain, precise, or otherwise deliberately counter-cast.
 
 Tutor character follows a **domain-before-metaphor** rule. The active subject's
 objects, concepts, texts, problems, methods, and standards supply the primary

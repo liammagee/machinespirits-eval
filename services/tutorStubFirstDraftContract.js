@@ -71,6 +71,8 @@ const PART_CUES = Object.freeze({
     'In one short unquoted host sentence beginning “My case is”, state the strongest licensed claim and its concrete limit. Do not append a semicolon-shaped test. Let the selected action supply a separate final handoff.',
   skeptic:
     'In the unquoted host voice, challenge one unsafe leap or weak link and give the learner a fair public route to answer it.',
+  satirist:
+    'In the unquoted host voice, catch one polished claim, rote formula, or easy story contradicting the named public material; expose it with a wry reversal and leave one fair repair path. Aim the edge at the work, never the learner.',
   adversarial_teacher:
     'In the unquoted host voice, introduce one subject-native counterexample, altered example, or rival solution using a named lesson object, then require one bounded explanation or revision. Attack the idea, never the learner.',
   exacting_schoolmaster:
@@ -86,6 +88,8 @@ const COMPACT_PART_CUES = Object.freeze({
   authored_source: 'enter the public source directly and voice only the supplied evidence',
   advocate: 'begin “My case is”, state the strongest licensed claim and its limit, and leave the test for HANDOFF',
   skeptic: 'challenge one unsafe leap and show one fair public route through it',
+  satirist:
+    'catch a polished claim or rote formula contradicting one named public object, expose the mismatch with a wry reversal, and leave a repair path',
   adversarial_teacher:
     'introduce a subject-native counterexample, altered example, or rival solution at one named lesson object, then require one bounded revision',
   exacting_schoolmaster:
@@ -532,6 +536,11 @@ function hostPlanIssues(contract) {
     (obligation.schema !== TUTOR_STUB_PERFORMANCE_OBLIGATION_CONTRACT_SCHEMA || obligation.complete !== true)
   ) {
     issues.push('invalid_performance_obligation_contract');
+    for (const compileIssue of obligation.compile_issues || []) {
+      issues.push(
+        `performance_obligation:${oneLine(compileIssue?.type) || 'unknown'}:${oneLine(compileIssue?.obligation_id) || 'contract'}`,
+      );
+    }
   }
   if (
     contract?.progression?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA ||

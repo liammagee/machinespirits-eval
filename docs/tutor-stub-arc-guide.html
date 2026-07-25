@@ -215,7 +215,7 @@
           <tr><td><code>--dag</code></td><td>Load hidden proof DAG and release schedule; prints tutor proof-DAG context.</td><td>on for serious runs</td></tr>
           <tr><td><code>--tutor-learner-dag</code></td><td>Maintain the tutor's redacted model of the learner's DAG.</td><td>on for field/register work</td></tr>
           <tr><td><code>--register-policy</code></td><td>Select how the register is chosen.</td><td><code>field</code> for manual, policy CSV for evals</td></tr>
-          <tr><td><code>--register-palette</code></td><td>Controls which registers can be selected.</td><td><code>all</code>; use <code>safe</code> for router-selectable only</td></tr>
+          <tr><td><code>--register-palette</code></td><td>Controls which registers automatic policy selection can use.</td><td><code>non-simulated</code> for human dramatic work</td></tr>
           <tr><td><code>--history-turns</code></td><td>Raw recent turns retained after compact memory.</td><td><code>4</code></td></tr>
           <tr><td><code>--max-tokens</code></td><td>Output cap passed to model providers.</td><td><code>4096</code></td></tr>
           <tr><td><code>--field-viz</code></td><td>Writes field SVG and JSON artifacts after turns.</td><td>on for visual debugging</td></tr>
@@ -292,8 +292,9 @@
       <h2>Registers</h2>
       <p>
         Registers are first-class stance decisions in <code>config/engagement-registers.yaml</code>.
-        The default palette is <code>all</code>. <code>--safe-registers</code> or
-        <code>--register-palette safe</code> restricts selection to router-selectable positive registers.
+        Human-facing labs use the full <code>non-simulated</code> palette, including irony and sarcasm.
+        <code>--safe-registers</code> or <code>--register-palette safe</code> is an optional conservative
+        restriction on automatic routing; direct <code>/register</code> choices retain every non-simulated stance.
       </p>
       <table>
         <thead><tr><th>Register</th><th>Valence</th><th>Ideal trigger</th><th>Main risk</th></tr></thead>
@@ -304,8 +305,8 @@
           <tr><td><code>warm</code></td><td>positive</td><td>Invitation, ordinary stakes, or felt continuity need restoring before the next check.</td><td>Can become sentimental or diffuse.</td></tr>
           <tr><td><code>witnessing</code></td><td>positive</td><td>The learner shows vulnerability, shame, moral exposure, or affective risk.</td><td>Can over-capture intimacy or avoid the concrete move.</td></tr>
           <tr><td><code>charismatic</code></td><td>positive</td><td>Bland instruction is preserving compliance, answer-seeking, boredom, or resistance.</td><td>Can slide into status display or over-challenge.</td></tr>
-          <tr><td><code>ironic</code></td><td>liminal</td><td>An experimental irony arm should expose a mismatch while leaving unmasking to the learner.</td><td>Can turn the learner into the target.</td></tr>
-          <tr><td><code>sarcastic</code></td><td>negative</td><td>An experimental negative arm should apply dry edge to the work, claim, formula, or dodge.</td><td>High recognition cost and contempt drift.</td></tr>
+          <tr><td><code>ironic</code></td><td>liminal</td><td>Expose a mismatch while leaving unmasking to the learner.</td><td>Can turn the learner into the target.</td></tr>
+          <tr><td><code>sarcastic</code></td><td>negative</td><td>Apply dry edge to the work, claim, formula, or dodge, then offer repair.</td><td>High recognition cost and contempt drift.</td></tr>
           <tr><td><code>face_threat</code></td><td>negative</td><td>A simulated stress-test arm intentionally measures local face threat.</td><td>Simulated only; not for human learner use.</td></tr>
         </tbody>
       </table>

@@ -78,6 +78,18 @@ test('the standard npm launcher defaults ordinary tutor chat to mixed drafting',
   assert.equal(config.mixedLearner.enabled, true);
   assert.equal(config.tutorLearnerDag.preflight.enabled, true);
   assert.equal(config.humanDiscourse.dagMode, 'defeasible_human_scaffold');
+  assert.equal(config.sessionRecipe.config.options['safe-registers'], false);
+  assert.equal(config.sessionRecipe.config.options['register-palette'], 'non-simulated');
+  assert.deepEqual(config.registerSelection.palette, [
+    'plain',
+    'precise',
+    'brisk',
+    'warm',
+    'witnessing',
+    'charismatic',
+    'ironic',
+    'sarcastic',
+  ]);
 });
 
 test('the mixed default yields to explicit non-chat architectures', () => {

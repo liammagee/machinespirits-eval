@@ -18,6 +18,12 @@ const EVIDENTIARY_BOUNDARY_PERFORMANCE = Object.freeze({
     'State the exact support and its limit with concrete boundary words such as only, not yet, or does not establish.',
 });
 
+const UNADORNED_REPORT_PERFORMANCE = Object.freeze({
+  id: 'unadorned_report',
+  label: 'unadorned report',
+  contract: 'Make the selected character visible through one direct action around a named public scene object.',
+});
+
 // These are language-level function words, not scenario vocabulary. All
 // scenario-bearing anchor terms are compiled from the explicitly public input.
 const FUNCTION_WORDS = new Set(
@@ -115,15 +121,16 @@ function exactCounterpressurePair(turn) {
   };
 }
 
-function counterpressureFallbackConfiguration(configuration, reason) {
+function counterpressureFallbackConfiguration(configuration, reason, { hasPublicEvidence = false } = {}) {
+  const deliveredPerformance = hasPublicEvidence ? EVIDENTIARY_BOUNDARY_PERFORMANCE : UNADORNED_REPORT_PERFORMANCE;
   return {
     ...configuration,
-    actorial_performance: { ...EVIDENTIARY_BOUNDARY_PERFORMANCE },
+    actorial_performance: { ...deliveredPerformance },
     speaking_transition: {
       schema: 'machinespirits.tutor-stub.speaking-configuration-transition.v1',
       reason,
       requested_tactic: configuration.actorial_performance.id,
-      delivered_tactic: EVIDENTIARY_BOUNDARY_PERFORMANCE.id,
+      delivered_tactic: deliveredPerformance.id,
       retained_actorial_part: configuration.actorial_part,
     },
   };
@@ -188,11 +195,17 @@ export function compileTutorStubPerformanceObligationContract({
   const turn = sanitizePublicTurn(publicTurn || {});
   const requestedTactic = requestedConfiguration.actorial_performance.id || 'unadorned_report';
   const pressurePair = PRESSURE_TACTICS.has(requestedTactic) ? exactCounterpressurePair(turn) : null;
+  const hasPublicEvidence = Boolean(
+    turn.contrary_evidence.length || turn.due_evidence.length || turn.public_evidence.length,
+  );
   const configuration =
     PRESSURE_TACTICS.has(requestedTactic) && !pressurePair
       ? counterpressureFallbackConfiguration(
           requestedConfiguration,
-          'counterpressure_inapplicable_without_exact_public_target_and_contrary_evidence_pair',
+          hasPublicEvidence
+            ? 'counterpressure_inapplicable_without_exact_public_target_and_contrary_evidence_pair'
+            : 'counterpressure_inapplicable_before_public_evidence',
+          { hasPublicEvidence },
         )
       : requestedConfiguration;
   const tactic = configuration.actorial_performance.id || 'unadorned_report';
