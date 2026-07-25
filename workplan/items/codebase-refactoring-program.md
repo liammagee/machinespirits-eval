@@ -40,6 +40,7 @@ links:
     - refactor-log-route-data-root
     - refactor-sse-lifecycle
     - refactor-tutor-stub-learning-summary
+    - refactor-tutor-stub-explanatory-debug
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -238,3 +239,7 @@ Log:
   queue. Refreshed line-count evidence still places `scripts/tutor-stub.js`
   first at 27,555 lines; activated `refactor-tutor-stub-learning-summary` as a
   data-only R3 extraction with no terminal, browser, model, or turn-loop change.
+- 2026-07-25 — PR #237 merged the learning-summary projection as `f56fb4b4`
+  with every CI lane green. Activated `refactor-tutor-stub-explanatory-debug`
+  to extract the next pure R3 frame/prompt/fallback seam while retaining debug
+  commands, model calls, terminal rendering, and trace writes in the CLI.

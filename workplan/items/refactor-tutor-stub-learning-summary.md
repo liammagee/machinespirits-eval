@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-learning-summary
 title: Refactor tutor-stub learning summary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -27,6 +27,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-sse-lifecycle
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/237
 tags:
   - refactoring
   - tutor-stub
@@ -74,3 +76,6 @@ Log:
   Repository-wide lint and formatting, manifest, zero-cycle (360 files),
   190-item source-only workplan, syntax, and diff checks all pass with no model
   calls.
+- 2026-07-25 — Merged through PR #237 as `f56fb4b4`; every Node 20/22,
+  PTY/loopback, coverage, lint, validation, manifest, and workplan CI lane
+  completed successfully.
