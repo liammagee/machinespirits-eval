@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-25T00:07:37.142Z",
+  "generated": "2026-07-25T00:52:00.913Z",
   "counts": {
-    "total": 179,
+    "total": 180,
     "byStatus": {
       "done": 150,
       "blocked": 3,
       "dropped": 2,
       "triaged": 15,
-      "active": 2,
+      "active": 3,
       "archived": 4,
       "review": 3
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 39,
+      "infra": 40,
       "maintenance": 30,
       "content": 2,
       "paper": 6,
@@ -510,6 +510,42 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "transcript-archive-training-data-governance",
+      "title": "Govern transcript archives, ratings, and reusable training corpora",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "branch": "codex/transcript-archive-management-plan",
+      "source": "manual",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "A clean-room build resolves every source through the private asset catalog, reproduces or exception-documents Program-2 v1, honors sole-owner opt-outs while excluding external/unknown human data and holdouts, emits row-level lineage and immutable manifests, and refuses unapproved training inputs.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "docs/transcript-archive-and-training-data-management.md",
+          "PROGRAM-2-FINETUNE-PLAN.md",
+          "PROGRAM-2-PHASE2-PREREGISTRATION.md"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune",
+          "consolidate-logs-db-private-archive",
+          "adaptive-eval-immutable-provenance",
+          "impasse-corpus-phase1",
+          "a1-human-learner-validation"
+        ]
+      },
+      "tags": [
+        "data-governance",
+        "transcripts",
+        "fine-tuning",
+        "tutor-stub",
+        "provenance",
+        "privacy"
+      ]
     },
     {
       "id": "tutor-stub-latency-routing-optimization",
