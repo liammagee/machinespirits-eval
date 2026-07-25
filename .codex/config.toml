@@ -6,6 +6,12 @@ args = [
 ]
 command = "npx"
 
+[mcp_servers.tutor-stub]
+args = ["scripts/tutor-stub-mcp.js"]
+command = "node"
+required = false
+tool_timeout_sec = 360
+
 [shell_environment_policy]
 inherit = "core"
 
