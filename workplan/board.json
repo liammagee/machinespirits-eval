@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-25T01:10:51.174Z",
+  "generated": "2026-07-25T03:19:15.341Z",
   "counts": {
-    "total": 182,
+    "total": 183,
     "byStatus": {
-      "done": 150,
+      "done": 151,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 16,
+      "triaged": 15,
       "active": 3,
       "archived": 4,
-      "review": 4
+      "review": 5
     },
     "byType": {
       "research": 46,
       "experiment": 49,
       "infra": 40,
-      "maintenance": 32,
+      "maintenance": 33,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -336,30 +336,6 @@
       ]
     },
     {
-      "id": "scenario-presentation-variety",
-      "title": "Scenario presentation variety — de-medievalize the derivation-world roster",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-12",
-      "updated": "2026-07-22",
-      "verification": "Generic tutor-stub prompts carry no unconditional assay vocabulary (period worlds opt in via presentation metadata); the world picker groups controlled variants by family; the featured set mixes period/contemporary/speculative; audit-world-variety reports family-normalized distributions; at least four non-period base worlds lint PASS.",
-      "claim_status": "methods",
-      "links": {
-        "items": [
-          "tutor-stub-headroom-contrast"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "derivation-worlds",
-        "presentation",
-        "authoring"
-      ]
-    },
-    {
       "id": "tutor-stub-curriculum-mastery-runtime",
       "title": "Add curriculum authoring, progression, and mastery to tutor-stub",
       "status": "triaged",
@@ -497,6 +473,7 @@
           "refactor-field-policy-helpers",
           "refactor-forbidden-key-audit",
           "refactor-field-turn-projection",
+          "refactor-eval-profile-registry",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -679,8 +656,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-field-turn-projection",
-      "title": "Consolidate tutor-stub field-turn projection",
+      "id": "refactor-eval-profile-registry",
+      "title": "Establish the canonical evaluation-profile registry",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -688,20 +665,21 @@
       "source": "review",
       "created": "2026-07-25",
       "updated": "2026-07-25",
-      "verification": "One pure projection service serves the tutor-stub CLI and auto-eval; frozen fixtures preserve the richer learner-advance, overreach, self-assessment, and calculation fields while existing report output remains unchanged.",
-      "branch": "codex/refactor-field-turn-projection",
+      "verification": "All 204 YAML cell names are the exact canonical registry; ten explicit legacy aliases retain reviewed targets; two-way validation catches either-side drift; missing cell and tutor-core targets fail closed; historical database usage and focused plus full hermetic parity are recorded.",
+      "branch": "codex/refactor-eval-profile-registry",
       "depends_on": [
-        "refactor-forbidden-key-audit"
+        "refactor-field-turn-projection"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubFieldTurnProjection.js",
-          "scripts/tutor-stub.js",
-          "scripts/run-tutor-stub-auto-eval.js",
-          "tests/tutorStubFieldTurnProjection.test.js"
+          "config/tutor-agents.yaml",
+          "services/evaluationRunner.js",
+          "scripts/eval-cli.js",
+          "scripts/report-charisma-desire-router-stage0.js",
+          "scripts/report-charisma-desire-stage0-matrix.js"
         ],
         "items": [
           "codebase-refactoring-program"
@@ -709,9 +687,9 @@
       },
       "tags": [
         "refactoring",
-        "tutor-stub",
-        "auto-eval",
-        "duplication"
+        "configuration",
+        "registry",
+        "provenance"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -777,6 +755,31 @@
       "updated": "2026-07-24",
       "verification": "LangGraph 1.4 or newer passes the DAG longitudinal contract, the full hermetic suite, and a production audit with no LangGraph/UUID advisory",
       "branch": "codex/migrate-adaptive-dag-langgraph-1-4"
+    },
+    {
+      "id": "scenario-presentation-variety",
+      "title": "Scenario presentation variety — de-medievalize the derivation-world roster",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-12",
+      "updated": "2026-07-25",
+      "verification": "Generic tutor-stub prompts carry no unconditional assay vocabulary (period worlds opt in via presentation metadata); the world picker groups controlled variants by family; the featured set mixes period/contemporary/speculative; audit-world-variety reports family-normalized distributions; at least four non-period base worlds lint PASS.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "tutor-stub-headroom-contrast"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "derivation-worlds",
+        "presentation",
+        "authoring"
+      ],
+      "branch": "codex/scenario-presentation-variety"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -2025,6 +2028,46 @@
         "tutor-stub",
         "register-policy",
         "field-trajectory",
+        "duplication"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-field-turn-projection",
+      "title": "Consolidate tutor-stub field-turn projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "One pure projection service serves the tutor-stub CLI and auto-eval; frozen fixtures preserve the richer learner-advance, overreach, self-assessment, and calculation fields while existing report output remains unchanged.",
+      "branch": "codex/refactor-field-turn-projection",
+      "depends_on": [
+        "refactor-forbidden-key-audit"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubFieldTurnProjection.js",
+          "scripts/tutor-stub.js",
+          "scripts/run-tutor-stub-auto-eval.js",
+          "tests/tutorStubFieldTurnProjection.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/211"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "auto-eval",
         "duplication"
       ],
       "milestone": "evaluation-infrastructure"
