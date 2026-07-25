@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-25T13:30:42.878Z",
+  "generated": "2026-07-25T14:01:46.192Z",
   "counts": {
-    "total": 190,
+    "total": 191,
     "byStatus": {
-      "done": 160,
+      "done": 161,
       "blocked": 3,
       "dropped": 2,
       "triaged": 12,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 41,
-      "maintenance": 39,
+      "maintenance": 40,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -423,6 +423,7 @@
           "refactor-log-route-data-root",
           "refactor-sse-lifecycle",
           "refactor-tutor-stub-learning-summary",
+          "refactor-tutor-stub-explanatory-debug",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -605,8 +606,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-tutor-stub-learning-summary",
-      "title": "Refactor tutor-stub learning summary",
+      "id": "refactor-tutor-stub-explanatory-debug",
+      "title": "Refactor tutor-stub explanatory debug",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -614,32 +615,30 @@
       "source": "review",
       "created": "2026-07-25",
       "updated": "2026-07-25",
-      "verification": "A pure learning-summary projection preserves the CLI and HTML contracts on frozen public-state fixtures; focused, hermetic, static, and source-only gates pass without model calls.",
-      "branch": "codex/refactor-tutor-stub-learning-summary",
+      "verification": "One pure explanatory-debug service preserves frame, prompt, cleaning, and fallback contracts; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-explanatory-debug",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-sse-lifecycle"
+        "refactor-tutor-stub-learning-summary"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubLearningSummary.js",
-          "services/tutorStubLearningSummaryHtml.js",
+          "services/tutorStubExplanatoryDebug.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubLearningSummary.test.js",
-          "tests/tutorStubLearningSummaryHtml.test.js"
+          "tests/tutorStubExplanatoryDebug.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-sse-lifecycle"
+          "refactor-tutor-stub-learning-summary"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
-        "learning-summary",
+        "debug",
         "projection"
       ],
       "milestone": "evaluation-infrastructure"
@@ -2509,6 +2508,49 @@
         "cycles",
         "accessibility",
         "contracts"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-learning-summary",
+      "title": "Refactor tutor-stub learning summary",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "A pure learning-summary projection preserves the CLI and HTML contracts on frozen public-state fixtures; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-learning-summary",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-sse-lifecycle"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubLearningSummary.js",
+          "services/tutorStubLearningSummaryHtml.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLearningSummary.test.js",
+          "tests/tutorStubLearningSummaryHtml.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-sse-lifecycle"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/237"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "learning-summary",
+        "projection"
       ],
       "milestone": "evaluation-infrastructure"
     },
