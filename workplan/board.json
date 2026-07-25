@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-25T07:54:46.168Z",
+  "generated": "2026-07-25T08:33:29.270Z",
   "counts": {
     "total": 187,
     "byStatus": {
-      "done": 155,
+      "done": 156,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 14,
+      "triaged": 13,
       "active": 3,
       "archived": 4,
       "review": 6
@@ -367,18 +367,6 @@
         "mastery",
         "authoring"
       ]
-    },
-    {
-      "id": "upgrade-electron-builder-packaging-chain-past-audited-adviso",
-      "title": "Upgrade electron-builder packaging chain past audited advisories",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-25",
-      "updated": "2026-07-25",
-      "verification": "A clean full dependency audit reports no high or critical advisories through electron-builder, app-builder-lib, @electron/asar, or platform packagers, and signed packaged smoke checks pass"
     },
     {
       "id": "refusal-defense-adjudication",
@@ -5210,6 +5198,19 @@
         "dramatic-derivation"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "upgrade-electron-builder-packaging-chain-past-audited-adviso",
+      "title": "Upgrade electron-builder packaging chain past audited advisories",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "A clean full dependency audit reports no high or critical advisories through electron-builder, app-builder-lib, @electron/asar, or platform packagers, and signed packaged smoke checks pass",
+      "branch": "codex/upgrade-electron-builder-packaging-chain-past-audited-adviso"
     },
     {
       "id": "workplan-board-focus-policy",
