@@ -1,14 +1,14 @@
 ---
 id: refusal-cross-stack-adaptive
 title: "Exploration 5: cross-stack transfer — the refusal gate on the adaptive LangGraph runner"
-status: triaged
+status: active
 type: experiment
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-07-05
-updated: 2026-07-05
-branch: worktree-strategy-ledger-followups
+updated: 2026-07-26
+branch: codex/refusal-cross-stack-adaptive
 verification: "Scoped implementation plan validated against services/adaptiveTutor/; a trap-suite smoke with strategy_shift_correctness as the native endpoint; reads pre-stated before any paid run."
 claim_status: exploratory
 links:

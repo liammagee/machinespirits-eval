@@ -1,13 +1,13 @@
 ---
 id: scenario-presentation-variety
 title: Scenario presentation variety — de-medievalize the derivation-world roster
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
 source: manual
 created: 2026-07-12
-updated: 2026-07-25
+updated: 2026-07-26
 verification: Generic tutor-stub prompts carry no unconditional assay vocabulary
   (period worlds opt in via presentation metadata); the world picker groups
   controlled variants by family; the featured set mixes

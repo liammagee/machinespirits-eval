@@ -1,13 +1,13 @@
 ---
 id: upgrade-electron-and-rebuild-toolchain-past-audited-advisori
 title: Upgrade Electron and rebuild toolchain past audited advisories
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-07-25
+updated: 2026-07-26
 verification: A clean install reports no high/critical Electron or rebuild-chain
   advisories, and npm run desktop:test plus npm test pass
 branch: codex/upgrade-electron-rebuild-toolchain

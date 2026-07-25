@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-public-answer-component-guard
 title: Distinguish public answer components in tutor-stub leak checks
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex

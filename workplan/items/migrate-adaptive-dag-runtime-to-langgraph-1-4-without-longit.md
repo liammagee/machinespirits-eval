@@ -1,13 +1,13 @@
 ---
 id: migrate-adaptive-dag-runtime-to-langgraph-1-4-without-longit
 title: Migrate adaptive DAG runtime to LangGraph 1.4 without longitudinal drift
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-07-24
+updated: 2026-07-26
 verification: LangGraph 1.4 or newer passes the DAG longitudinal contract, the
   full hermetic suite, and a production audit with no LangGraph/UUID advisory
 branch: codex/migrate-adaptive-dag-langgraph-1-4

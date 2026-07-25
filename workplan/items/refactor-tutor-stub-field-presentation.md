@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-field-presentation
 title: Refactor tutor-stub field presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex

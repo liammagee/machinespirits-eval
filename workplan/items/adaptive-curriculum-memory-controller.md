@@ -1,13 +1,13 @@
 ---
 id: adaptive-curriculum-memory-controller
 title: Evidence-anchored memory and curriculum adaptation controller
-status: triaged
+status: blocked
 type: research
 priority: P2
 owner: unassigned
 source: review
 created: 2026-07-11
-updated: 2026-07-11
+updated: 2026-07-26
 verification: "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds."
 claim_status: planned
 depends_on:
@@ -24,6 +24,7 @@ tags:
   - curriculum
   - transfer
 milestone: adaptive-tutor-evidence-v1
+blocked_by: "tutor-stub-transition-reward-model ended with a killed claim; no supported learned-ranking prerequisite"
 ---
 
 Implement Phase 6 only after within-dialogue adaptation and cautious learned
