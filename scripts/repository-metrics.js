@@ -13,6 +13,26 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+const GITHUB_METRICS_QUERY = `
+query RepositoryMetrics($owner: String!, $name: String!) {
+  repository(owner: $owner, name: $name) {
+    nameWithOwner
+    url
+    stargazerCount
+    forkCount
+    watchers { totalCount }
+    pullRequests { totalCount }
+    openPullRequests: pullRequests(states: OPEN) { totalCount }
+    mergedPullRequests: pullRequests(states: MERGED) { totalCount }
+    closedPullRequests: pullRequests(states: CLOSED) { totalCount }
+    issues { totalCount }
+    openIssues: issues(states: OPEN) { totalCount }
+    closedIssues: issues(states: CLOSED) { totalCount }
+    releases { totalCount }
+    latestRelease { tagName publishedAt url }
+  }
+}`;
+
 export const EXCLUDED_PATH_SEGMENTS = new Set([
   '.codex-tmp',
   '.git',
@@ -222,6 +242,106 @@ export function collectGitActivity(root = ROOT) {
   };
 }
 
+export function parseGitHubRemote(remoteUrl) {
+  const value = String(remoteUrl || '')
+    .trim()
+    .replace(/\/+$/u, '');
+  let owner;
+  let name;
+
+  const scpMatch = value.match(/^git@github\.com:([^/]+)\/(.+)$/iu);
+  if (scpMatch) {
+    [, owner, name] = scpMatch;
+  } else {
+    try {
+      const url = new URL(value);
+      if (url.hostname.toLowerCase() !== 'github.com') return null;
+      const segments = url.pathname.split('/').filter(Boolean);
+      if (segments.length !== 2) return null;
+      [owner, name] = segments;
+    } catch {
+      return null;
+    }
+  }
+
+  name = name.replace(/\.git$/iu, '');
+  if (!owner || !name) return null;
+  return { owner, name, nameWithOwner: `${owner}/${name}` };
+}
+
+/**
+ * Collect GitHub-hosted repository metrics through the optional `gh` CLI.
+ * Failures are data, not exceptions, so local repository metrics remain useful
+ * offline and in environments without GitHub authentication.
+ */
+export function collectGitHubMetrics(root = ROOT, { execute = execFileSync, timeoutMs = 5000 } = {}) {
+  const run = (command, args) =>
+    String(
+      execute(command, args, {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: timeoutMs,
+      }),
+    ).trim();
+
+  let repository;
+  try {
+    repository = parseGitHubRemote(run('git', ['remote', 'get-url', 'origin']));
+  } catch {
+    return { available: false, reason: 'origin remote is unavailable' };
+  }
+  if (!repository) {
+    return { available: false, reason: 'origin is not a GitHub repository' };
+  }
+
+  try {
+    const payload = JSON.parse(
+      run('gh', [
+        'api',
+        'graphql',
+        '-f',
+        `query=${GITHUB_METRICS_QUERY}`,
+        '-F',
+        `owner=${repository.owner}`,
+        '-F',
+        `name=${repository.name}`,
+      ]),
+    );
+    const result = payload?.data?.repository;
+    if (!result) throw new Error('GitHub repository response is missing');
+
+    return {
+      available: true,
+      repository: result.nameWithOwner || repository.nameWithOwner,
+      url: result.url || `https://github.com/${repository.nameWithOwner}`,
+      pullRequests: {
+        total: result.pullRequests.totalCount,
+        open: result.openPullRequests.totalCount,
+        merged: result.mergedPullRequests.totalCount,
+        closed: result.closedPullRequests.totalCount,
+      },
+      issues: {
+        total: result.issues.totalCount,
+        open: result.openIssues.totalCount,
+        closed: result.closedIssues.totalCount,
+      },
+      stars: result.stargazerCount,
+      forks: result.forkCount,
+      watchers: result.watchers.totalCount,
+      releases: {
+        total: result.releases.totalCount,
+        latest: result.latestRelease || null,
+      },
+    };
+  } catch (error) {
+    let reason = 'GitHub API unavailable or gh is not authenticated';
+    if (error?.code === 'ENOENT') reason = 'GitHub CLI (gh) is not installed';
+    else if (error?.code === 'ETIMEDOUT' || error?.signal) reason = 'GitHub request timed out';
+    return { available: false, repository: repository.nameWithOwner, reason };
+  }
+}
+
 function number(value) {
   return new Intl.NumberFormat('en-US').format(value);
 }
@@ -249,7 +369,25 @@ function renderTable(rows) {
   return [formatRow(headers), formatRow(widths.map((width) => '-'.repeat(width))), ...values.map(formatRow)].join('\n');
 }
 
-export function renderReport({ root = ROOT, source, gitActivity }) {
+function renderGitHubActivity(github) {
+  if (!github) return '';
+  if (!github.available) {
+    const repository = github.repository ? `\n  Repository:  ${github.repository}` : '';
+    return `\n\nGitHub activity${repository}\n  Unavailable: ${github.reason}`;
+  }
+
+  const latestRelease = github.releases.latest
+    ? `${github.releases.latest.tagName} · ${github.releases.latest.publishedAt}`
+    : 'none';
+  return `\n\nGitHub activity
+  Repository:    ${github.repository}
+  Pull requests: ${number(github.pullRequests.total)} total · ${number(github.pullRequests.open)} open · ${number(github.pullRequests.merged)} merged · ${number(github.pullRequests.closed)} closed
+  Issues:        ${number(github.issues.total)} total · ${number(github.issues.open)} open · ${number(github.issues.closed)} closed
+  Community:     ${number(github.stars)} stars · ${number(github.forks)} forks · ${number(github.watchers)} watchers
+  Releases:      ${number(github.releases.total)} · latest: ${latestRelease}`;
+}
+
+export function renderReport({ root = ROOT, source, gitActivity, github = null }) {
   const skipped = source.skippedSourceFiles
     ? `\n  Skipped source files: ${number(source.skippedSourceFiles)} (binary or unreadable)`
     : '';
@@ -273,15 +411,16 @@ Git activity
   Branch:  ${gitActivity.branch}
   Commits: ${number(gitActivity.commitCount)}
   Latest:  ${gitActivity.latest.sha.slice(0, 10)} · ${gitActivity.latest.date} · ${gitActivity.latest.author}
-           ${gitActivity.latest.subject}`;
+           ${gitActivity.latest.subject}${renderGitHubActivity(github)}`;
 }
 
 function usage() {
-  return `Usage: npm run metrics
-       node scripts/repository-metrics.js
+  return `Usage: npm run metrics [-- --no-github]
+       node scripts/repository-metrics.js [--no-github]
 
-Reports dependency-free source-line, file, language, and local Git metrics for
-the current repository working tree. Comment counts use language-aware heuristics.`;
+Reports dependency-free source-line, file, language, local Git, and optional
+GitHub-hosted metrics for the current repository. GitHub metrics use the gh CLI
+when available. Comment counts use language-aware heuristics.`;
 }
 
 export function main(args = process.argv.slice(2)) {
@@ -289,11 +428,14 @@ export function main(args = process.argv.slice(2)) {
     console.log(usage());
     return;
   }
-  if (args.length) throw new Error(`Unknown argument: ${args[0]}\n\n${usage()}`);
+  const unknown = args.filter((argument) => argument !== '--no-github');
+  if (unknown.length) throw new Error(`Unknown argument: ${unknown[0]}\n\n${usage()}`);
 
   const source = collectSourceMetrics(ROOT);
   const gitActivity = collectGitActivity(ROOT);
-  console.log(renderReport({ root: ROOT, source, gitActivity }));
+  const githubDisabled = args.includes('--no-github') || process.env.REPOSITORY_METRICS_GITHUB === '0';
+  const github = githubDisabled ? null : collectGitHubMetrics(ROOT);
+  console.log(renderReport({ root: ROOT, source, gitActivity, github }));
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

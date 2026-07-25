@@ -1216,7 +1216,11 @@ test('tutor-stub interactive help exposes clarification commands', () => {
       cwd: ROOT,
       encoding: 'utf8',
       input: '/help\n/features\n/release-notes\n/metrics\n/id\n/clarify cupel\n/suggest\n/quit\n',
-      env: { ...process.env, TUTOR_STUB_CLIPBOARD: '0' },
+      env: {
+        ...process.env,
+        REPOSITORY_METRICS_GITHUB: '0',
+        TUTOR_STUB_CLIPBOARD: '0',
+      },
     },
   );
 

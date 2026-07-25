@@ -94,7 +94,11 @@ test('passthrough exposes live release notes and repository metrics without invo
     ],
     {
       cwd: ROOT,
-      env: { ...process.env, TUTOR_STUB_SUMMARY_OPEN: '0' },
+      env: {
+        ...process.env,
+        REPOSITORY_METRICS_GITHUB: '0',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+      },
       encoding: 'utf8',
       input: '/release-notes\n/metrics\n/quit\n',
       timeout: 10_000,
