@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-25T14:01:46.192Z",
+  "generated": "2026-07-25T14:07:08.325Z",
   "counts": {
     "total": 191,
     "byStatus": {
-      "done": 161,
+      "done": 162,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 12,
+      "triaged": 11,
       "active": 3,
       "archived": 4,
       "review": 6
@@ -359,32 +359,6 @@
         "derivation",
         "strategy-refusal"
       ]
-    },
-    {
-      "id": "world-005-turn9-release-staging",
-      "title": "Fix world-005's turn-9 release staging (universal leak-audit trip)",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "The turn-9 leak signature is reproduced and diagnosed (which due premise's staging trips the leak audit at release-speed 1), the staging or audit interaction is fixed without changing the world's proof DAG or release schedule semantics, and a small re-run shows Marrick dialogues no longer carry the systematic turn-9 horizon leak in any arm.",
-      "claim_status": "planned",
-      "links": {
-        "paper": "§6.21",
-        "notes": [
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
-        ]
-      },
-      "tags": [
-        "drama-derivation",
-        "worlds",
-        "instrument"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "main"
     },
     {
       "id": "codebase-refactoring-program",
@@ -5708,6 +5682,32 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "world-005-turn9-release-staging",
+      "title": "Fix world-005's turn-9 release staging (universal leak-audit trip)",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-25",
+      "verification": "The turn-9 leak signature is reproduced and diagnosed (which due premise's staging trips the leak audit at release-speed 1), the staging or audit interaction is fixed without changing the world's proof DAG or release schedule semantics, and a small re-run shows Marrick dialogues no longer carry the systematic turn-9 horizon leak in any arm.",
+      "claim_status": "planned",
+      "links": {
+        "paper": "§6.21",
+        "notes": [
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md"
+        ]
+      },
+      "tags": [
+        "drama-derivation",
+        "worlds",
+        "instrument"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "codex/world-005-turn9-release-staging"
     },
     {
       "id": "layered-human-handoff-probe",
