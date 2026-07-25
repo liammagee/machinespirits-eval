@@ -874,7 +874,7 @@ let selectedLabAdmission = null;
 let selectedLabModelCallBudget = null;
 let loadedSessionRecipe = null;
 let loadedSessionRecipePath = null;
-let explicitResumeSource = null;
+let resolvedResumeSource = null;
 let loadedRecipeApplication = null;
 let resumeRecipeApplication = null;
 const resolvedLaunchOptionNames = new Set();
@@ -933,15 +933,20 @@ function prepareTutorStubLaunchConfiguration() {
     for (const key of loadedRecipeApplication.applied) resolvedLaunchOptionNames.add(key);
   }
 
-  if (args.resume) {
-    explicitResumeSource = resolveTutorStubResumeSource(args.resume, {
-      traceDir: resolveWorkspacePath(args['trace-dir']),
-      cwd: ROOT,
-    });
-    if (!loadedSessionRecipe) {
-      const resumeLab = String(args.lab || explicitResumeSource.recipe?.config?.lab || '').trim();
+  if (args.resume || args['resume-last']) {
+    resolvedResumeSource = args.resume
+      ? resolveTutorStubResumeSource(args.resume, {
+          traceDir: resolveWorkspacePath(args['trace-dir']),
+          cwd: ROOT,
+        })
+      : latestTutorStubResumeSource({
+          traceDir: resolveWorkspacePath(args['trace-dir']),
+          cwd: ROOT,
+        });
+    if (resolvedResumeSource && !loadedSessionRecipe) {
+      const resumeLab = String(args.lab || resolvedResumeSource.recipe?.config?.lab || '').trim();
       if (resumeLab && !declaredLab) applyTutorStubLabDefaults(resumeLab);
-      resumeRecipeApplication = applyTutorStubRecipeOptions(args, explicitResumeSource.recipe, {
+      resumeRecipeApplication = applyTutorStubRecipeOptions(args, resolvedResumeSource.recipe, {
         optionProvided: rawRecipeOptionProvided,
       });
       for (const key of resumeRecipeApplication.applied) resolvedLaunchOptionNames.add(key);
@@ -949,7 +954,7 @@ function prepareTutorStubLaunchConfiguration() {
   }
 
   const resolvedLab = String(
-    args.lab || loadedSessionRecipe?.config?.lab || explicitResumeSource?.recipe?.config?.lab || '',
+    args.lab || loadedSessionRecipe?.config?.lab || resolvedResumeSource?.recipe?.config?.lab || '',
   ).trim();
   if (resolvedLab) selectedLabResolution = resolveTutorStubLab(resolvedLab, { overrides: args });
 }
@@ -15975,11 +15980,7 @@ async function main() {
           : interactiveSessionEnabled
             ? 'buffered_for_concurrent_input'
             : 'live';
-  const resumeCandidate =
-    explicitResumeSource ||
-    (args['resume-last']
-      ? latestTutorStubResumeSource({ traceDir: resolveWorkspacePath(args['trace-dir']), cwd: ROOT })
-      : null);
+  const resumeCandidate = resolvedResumeSource;
   const rememberedDialogueSettingsAvailable = rememberedSettings.status === 'loaded';
   const initialProfilePromptEnabled = Boolean(
     mixedLearnerEnabled &&
