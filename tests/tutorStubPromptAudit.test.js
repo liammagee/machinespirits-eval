@@ -546,6 +546,8 @@ process.stdin.on('end', () => {
         '--auto-learner',
         '--auto-turns',
         '3',
+        '--release-speed',
+        '2',
         '--dag-mode',
         'defeasible_human_scaffold',
         '--no-register-selection',

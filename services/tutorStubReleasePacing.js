@@ -136,14 +136,24 @@ function pendingEntries(pacing, world) {
   return releaseEntries(world).filter((entry) => !released[entry.premise]);
 }
 
-function replanPendingSchedule(pacing, world, { turn }) {
+function replanPendingSchedule(pacing, world, { turn, currentTurnAdvanced = false }) {
   const pending = pendingEntries(pacing, world);
   let previousPlannedTurn = Number(turn) - 1;
   let previousAuthoredTurn = null;
   for (const entry of pending) {
     const gap = authoredTurn(entry) - Number(pacing.virtualTurn);
+    // Most replans happen between turns, when `turn` is the next available
+    // tutor turn and therefore counts toward the remaining gap. During
+    // advanceTutorStubReleasePacing, however, the current tutor turn has
+    // already advanced the virtual clock. Counting it again pulls every
+    // steady 1x release one turn early (world-005's authored turn-10
+    // p_caster consequently appeared on turn 9). Keep those two temporal
+    // boundaries explicit instead of changing the authored schedule.
+    const remainingTurnOffset = currentTurnAdvanced ? 0 : 1;
     const rawPlannedTurn =
-      gap <= 0 ? Number(turn) : Number(turn) + Math.max(0, Math.ceil(gap / pacing.effectiveSpeed) - 1);
+      gap <= 0
+        ? Number(turn)
+        : Number(turn) + Math.max(0, Math.ceil(gap / pacing.effectiveSpeed) - remainingTurnOffset);
     const sameAuthoredBatch = previousAuthoredTurn !== null && authoredTurn(entry) === previousAuthoredTurn;
     const plannedTurn = Math.max(
       Number(turn),
@@ -240,6 +250,7 @@ export function advanceTutorStubReleasePacing({
   else pacing.tempo = round(Number(pacing.tempo || 0) * 0.65);
   pacing.direction = pacing.tempo > 0.2 ? 'accelerate' : pacing.tempo < -0.2 ? 'decelerate' : 'steady';
   pacing.effectiveSpeed = effectiveSpeed(pacing.baseSpeed, pacing.tempo);
+  const currentTurnAdvanced = !pacing.suppressNextClockAdvance;
   if (pacing.suppressNextClockAdvance) pacing.suppressNextClockAdvance = false;
   else pacing.virtualTurn = round(Number(pacing.virtualTurn || 0) + pacing.effectiveSpeed);
 
@@ -262,7 +273,7 @@ export function advanceTutorStubReleasePacing({
   );
   if (completionAdvance) pacing.virtualTurn = Math.max(pacing.virtualTurn, authoredTurn(next));
 
-  replanPendingSchedule(pacing, world, { turn: tutorTurn });
+  replanPendingSchedule(pacing, world, { turn: tutorTurn, currentTurnAdvanced });
   const dueEntries = pendingEntries(pacing, world).filter((entry) => Number(entry.turn) === tutorTurn);
   const dueBatchTurn = dueEntries.length ? authoredTurn(dueEntries[0]) : null;
   const dueNow = dueEntries

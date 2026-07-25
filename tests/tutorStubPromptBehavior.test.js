@@ -121,6 +121,8 @@ test('speaking-tutor prompt produces one public, Socratic move without planner l
       tmp,
       args: [
         ...commonArgs(tmp, path.basename(savePath)),
+        '--release-speed',
+        '2',
         '--once',
         'The town suspects Verrell because he owns a graver, but that is not tested evidence.',
       ],

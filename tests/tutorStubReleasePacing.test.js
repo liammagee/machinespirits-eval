@@ -6,6 +6,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
   acknowledgeTutorStubOpeningRelease,
   advanceTutorStubReleasePacing,
@@ -42,6 +43,25 @@ test('release pace 1 preserves the authored clue schedule', () => {
   );
 });
 
+test('world-005 steady 1x pacing keeps p_caster on authored turn 10, not turn 9', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-005-marrick.yaml'));
+  const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
+  const dueByTurn = new Map();
+
+  for (let turn = 1; turn <= 10; turn += 1) {
+    const update = advanceTutorStubReleasePacing({ pacing, world, turn, learnerText: 'Continue.' });
+    dueByTurn.set(turn, update.dueNow);
+    commitTutorStubReleasePacing({ pacing, world, turn, deliveredPremises: update.dueNow });
+  }
+
+  assert.deepEqual(dueByTurn.get(9), []);
+  assert.deepEqual(dueByTurn.get(10), ['p_caster']);
+  const snapshot = tutorStubReleasePacingSnapshot(pacing, world);
+  assert.equal(snapshot.schedule.find((entry) => entry.premise === 'p_caster').releasedTurn, 10);
+  assert.equal(snapshot.counts.early, 0);
+  assert.equal(snapshot.counts.onAuthoredTurn, 5);
+});
+
 test('premises authored as one release batch stay together', () => {
   const world = {
     releaseSchedule: [
@@ -57,6 +77,8 @@ test('premises authored as one release batch stay together', () => {
     [2, 2, 5],
   );
 
+  advanceTutorStubReleasePacing({ pacing, world, turn: 1, learnerText: 'Ready.' });
+  commitTutorStubReleasePacing({ pacing, world, turn: 1, deliveredPremises: [] });
   advanceTutorStubReleasePacing({ pacing, world, turn: 2, learnerText: 'Ready.' });
   const committed = commitTutorStubReleasePacing({
     pacing,
