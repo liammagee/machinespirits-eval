@@ -655,8 +655,8 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
   assert.equal('model' in stepped.body.result.turn, false);
   assert.doesNotMatch(JSON.stringify(stepped.body.result), /provider|model|private/iu);
   assert.equal(stepped.body.result.turn.learner, 'Can we compare the public assay marks?');
-  assert.match(stepped.body.result.turn.tutor, /Marrick's ready verdict/u);
-  assert.match(stepped.body.result.turn.tutor, /Verrell alone draws the mint-yard crucible/u);
+  assert.doesNotMatch(stepped.body.result.turn.tutor, /Marrick's ready verdict/u);
+  assert.doesNotMatch(stepped.body.result.turn.tutor, /Verrell alone draws the mint-yard crucible/u);
   assert.notEqual(
     stepped.body.result.turn.tutor,
     'Take the assay as a fingerprint: which public mark differs between the two coins?',
@@ -670,6 +670,20 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
   );
   assert.equal(stepped.body.session.state.publicMessages.at(-1).content, stepped.body.result.turn.tutor);
   assert.match(fs.readFileSync(promptLog, 'utf8'), /Can we compare the public assay marks\?/u);
+
+  const releaseStep = await request(base, '/sessions/real-http-session/steps', {
+    method: 'POST',
+    body: { input: 'What does the public record add next?', kind: 'learner' },
+  });
+  assert.equal(releaseStep.status, 200, JSON.stringify(releaseStep.body));
+  assert.match(releaseStep.body.result.turn.tutor, /Marrick's ready verdict/u);
+  assert.match(releaseStep.body.result.turn.tutor, /Verrell alone draws the mint-yard crucible/u);
+  assert.equal(releaseStep.body.session.state.turnCount, 2);
+  assert.equal(releaseStep.body.session.state.publicMessageCount, 5);
+  assert.deepEqual(
+    releaseStep.body.session.state.publicMessages.map((message) => message.role),
+    ['assistant', 'user', 'assistant', 'user', 'assistant'],
+  );
 
   const command = await request(base, '/sessions/real-http-session/steps', {
     method: 'POST',
@@ -722,8 +736,8 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
   });
   assert.equal(resumedLast.status, 201, JSON.stringify(resumedLast.body));
   assert.equal(resumedLast.body.session.sessionId, 'resume-last-http-session');
-  assert.equal(resumedLast.body.session.state.turnCount, 1);
-  assert.equal(resumedLast.body.session.state.publicMessageCount, 3);
+  assert.equal(resumedLast.body.session.state.turnCount, 2);
+  assert.equal(resumedLast.body.session.state.publicMessageCount, 5);
   const resumeLastFinalized = await request(base, '/sessions/resume-last-http-session/finalize', {
     method: 'POST',
     body: { reason: 'resume_last_verified' },
@@ -743,8 +757,8 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
   });
   assert.equal(resumed.status, 201, JSON.stringify(resumed.body));
   assert.equal(resumed.body.session.sessionId, 'named-resume-http-session');
-  assert.equal(resumed.body.session.state.turnCount, 1);
-  assert.equal(resumed.body.session.state.publicMessageCount, 3);
+  assert.equal(resumed.body.session.state.turnCount, 2);
+  assert.equal(resumed.body.session.state.publicMessageCount, 5);
   assert.equal(resumed.body.session.state.opening.role, 'assistant');
 
   const reset = await request(base, '/sessions/named-resume-http-session/reset', {

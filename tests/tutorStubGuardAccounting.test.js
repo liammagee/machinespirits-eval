@@ -94,6 +94,8 @@ process.stdin.on('end', () => {
     '--world',
     'world_005_marrick',
     '--dag',
+    '--release-speed',
+    '2',
     '--no-classifier',
     '--no-register-selection',
     '--once',

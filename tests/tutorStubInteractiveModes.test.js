@@ -8,6 +8,10 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// Fixtures that inspect a due clue on the first tutor turn opt into an
+// accelerated schedule explicitly; steady 1x now preserves Marrick's authored
+// first release at turn 2.
+const FIRST_TURN_CLUE_ARGS = ['--release-speed', '2'];
 const RUN_CONCURRENT_PTY_IN_CI = process.env.TUTOR_STUB_RUN_CONCURRENT_PTY_TEST === '1';
 const CONCURRENT_PTY_TIMEOUT_MS = RUN_CONCURRENT_PTY_IN_CI ? 30_000 : 12_000;
 const CONCURRENT_PTY_TEST_TIMEOUT_MS = RUN_CONCURRENT_PTY_IN_CI ? 35_000 : 15_000;
@@ -1156,6 +1160,7 @@ test('/quit writes a learner-centred HTML summary after a completed turn', async
       tmp,
       args: [
         '--no-opening',
+        ...FIRST_TURN_CLUE_ARGS,
         '--no-classifier',
         '--no-register-selection',
         '--no-closeout-report',
@@ -1703,6 +1708,7 @@ test('coach mode keeps guidance private and incorporates it into the next tutor 
       tmp,
       args: [
         '--no-opening',
+        ...FIRST_TURN_CLUE_ARGS,
         '--no-classifier',
         '--no-register-selection',
         '--no-closeout-report',
@@ -1748,6 +1754,7 @@ test('/meta directs a persistent tutor change without creating a public learner 
       tmp,
       args: [
         '--no-opening',
+        ...FIRST_TURN_CLUE_ARGS,
         '--no-classifier',
         '--no-register-selection',
         '--no-closeout-report',
@@ -1975,6 +1982,7 @@ test('unsafe coach guidance is sanitized and the tutor continues from a public-o
       tmp,
       args: [
         '--no-opening',
+        ...FIRST_TURN_CLUE_ARGS,
         '--no-classifier',
         '--no-register-selection',
         '--dag',
@@ -2032,6 +2040,7 @@ test('unsafe director guidance cannot place future evidence in the tutor prompt'
       tmp,
       args: [
         '--no-opening',
+        ...FIRST_TURN_CLUE_ARGS,
         '--no-classifier',
         '--no-register-selection',
         '--dag',
@@ -2077,6 +2086,7 @@ test('auto mode plays both roles from the current transcript and returns after a
     const result = await runInteractive({
       tmp,
       args: [
+        ...FIRST_TURN_CLUE_ARGS,
         '--no-classifier',
         '--no-register-selection',
         '--no-closeout-report',
