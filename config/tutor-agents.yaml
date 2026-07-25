@@ -7113,6 +7113,39 @@ profiles:
       counterfactual:
         enabled: true
 
+  # Exploration 5: exact cell_110 topology plus one bounded refusal when the
+  # tutor proposes the same policy action immediately after the configured
+  # learner trap signal. The refusal must resolve once by defending the action
+  # or switching; it never receives expected_strategy_shift. Exploratory only:
+  # the deterministic three-scenario smoke licenses implementation, not an
+  # efficacy or human-learning claim.
+  # Reachable via: node scripts/eval-cli.js run --profiles cell_201_adaptive_strategy_refusal --runs 1 --dry-run
+  # For zero-DB verification use: npm run adaptive:smoke-strategy-refusal
+  cell_201_adaptive_strategy_refusal:
+    description: "Exploration 5 cross-stack transfer: cell_110 state-policy adaptive tutor plus one bounded defend-or-switch refusal when a delivered policy repeats immediately after a recorded learner trap signal. The gate reads runtime trigger/action history only, never expected_strategy_shift."
+    runner: adaptive
+    factors:
+      prompt_type: adaptive_state_policy_strategy_refusal
+      multi_agent_tutor: true
+      multi_agent_learner: false
+    learner_architecture: adaptive_externalised
+    recognition_mode: false
+    memory_enabled: false
+    conversation_mode: adaptive_trap
+    scenario_source: config/adaptive-trap-scenarios.yaml
+    dialogue:
+      enabled: true
+      max_rounds: 4
+    adaptive:
+      provider: claude-code
+      model: sonnet
+      architecture: state_policy_with_strategy_refusal
+      hyperparameters:
+        temperature: 0.6
+        max_tokens: 1500
+      counterfactual:
+        enabled: true
+
   # A13 condition C1: recognition-only baseline (single LLM call per tutor turn,
   # no superego, no profile update, no constraint check, no revision). Same
   # adaptive runner / scenarios / persistence / scoring as cell_110 so
