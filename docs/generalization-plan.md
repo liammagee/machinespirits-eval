@@ -209,7 +209,11 @@ If no `domain` config exists, fall back to current flat structure (`config/sugge
 
 ## Phase 4: Cell Registry Auto-Discovery
 
-**Problem**: `EVAL_ONLY_PROFILES` in `evaluationRunner.js:82-183` manually lists all 90+ cell names. Adding a new domain's cells requires manually extending this array.
+**Status (2026-07-25): implemented.** Canonical `cell_*` names now derive from
+the `profiles` map in `config/tutor-agents.yaml`; ten historical non-cell names
+live in an explicit alias map, and validation is two-way and fail-closed.
+
+**Problem**: `EVAL_ONLY_PROFILES` formerly duplicated every YAML cell name. Adding a new domain's cells required manually extending both sources.
 
 **Solution**: Auto-discover cells from `tutor-agents.yaml`.
 
@@ -217,7 +221,8 @@ If no `domain` config exists, fall back to current flat structure (`config/sugge
 
 | File | Change |
 |------|--------|
-| `services/evaluationRunner.js` | `resolveEvalProfile()` reads all profile names from the YAML `configurations` object at startup. The `EVAL_ONLY_PROFILES` array becomes computed, not maintained. |
+| `services/evalProfileRegistry.js` | Derive canonical cells from the YAML `profiles` object, validate both directions, and retain historical aliases explicitly. |
+| `services/evaluationRunner.js` | Consume the derived immutable registry and fail closed on missing cell or tutor-core targets. |
 
 ### Logic
 
@@ -226,7 +231,8 @@ If no `domain` config exists, fall back to current flat structure (`config/sugge
 const EVAL_ONLY_PROFILES = ['cell_1_base_single_unified', 'cell_2_base_single_psycho', ...];
 
 // Auto-discover:
-const EVAL_ONLY_PROFILES = Object.keys(evalConfigLoader.loadTutorAgents().configurations);
+const CANONICAL_EVAL_PROFILES = Object.keys(evalConfigLoader.loadTutorAgents().profiles)
+  .filter((name) => name.startsWith('cell_'));
 ```
 
 The `resolveEvalProfile()` mapping (cell name → tutor-core profile) can use YAML metadata:

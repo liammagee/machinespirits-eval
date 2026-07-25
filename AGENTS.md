@@ -140,11 +140,11 @@ A cell's architecture is determined by these YAML fields:
 
 **Superego presence summary**: Only cells with `multi_agent_tutor: true` AND an explicit superego block have an active superego agent. These are: 3-4, 7-8, 11-12, 17-18, 22-33, 82-83, 86-89. All other cells (including 34-79, 80-81, 84-85, 90, 95-96, 101-109) have `superego: null`.
 
-**Cell registry (source-of-truth):** the canonical list of registered cell names is the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (~line 102). When in doubt about whether a name is registered, grep there — not this doc.
+**Cell registry (source-of-truth):** canonical `cell_*` names are the profiles in `config/tutor-agents.yaml`. `services/evalProfileRegistry.js` derives `CANONICAL_EVAL_PROFILES` from that YAML and keeps historical non-cell names in the explicit `LEGACY_EVAL_PROFILE_ALIASES` map; `EVAL_ONLY_PROFILES` remains the combined compatibility export. When in doubt, inspect the YAML and run `node scripts/eval-cli.js validate-config`.
 
 ### Adding New Cells
 
-New eval-repo cells must be registered in the `EVAL_ONLY_PROFILES` array in `services/evaluationRunner.js` (line ~102). Without this, `resolveEvalProfile()` won't remap cell names to tutor-core profiles, and the run will silently fall back to the default profile.
+Add new eval-repo cells once in `config/tutor-agents.yaml`; the canonical registry derives them automatically. The registry count ratchet and two-way `validate-config` check make additions explicit, malformed or missing `cell_*` names fail closed, and every new non-base `prompt_type` still needs a tested `resolveEvalProfile()` dispatch (unless `runner: adaptive` bypasses tutor-core by design).
 
 Cell names must include "dialectical" if they use `prompt_type: dialectical_suspicious` (test enforced).
 

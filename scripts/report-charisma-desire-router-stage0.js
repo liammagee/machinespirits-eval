@@ -7,13 +7,13 @@ import yaml from 'yaml';
 
 import { routeEngagementMode } from '../services/engagementModeRouter.js';
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
+import { createEvalProfileRegistry } from '../services/evalProfileRegistry.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
 const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-scenarios.yaml');
 const TUTOR_AGENTS_PATH = path.join(ROOT, 'config', 'tutor-agents.yaml');
-const EVALUATION_RUNNER_PATH = path.join(ROOT, 'services', 'evaluationRunner.js');
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-router-stage0-sanity.md');
 const ROUTER_PROFILE = 'cell_180_id_director_charisma_engagement_router_verified';
 const REPAIR_PROFILE = 'cell_181_id_director_charisma_engagement_router_contract_repair_verified';
@@ -267,7 +267,7 @@ function main() {
   const checkOnly = process.argv.includes('--check');
   const scenarioData = readYaml(SCENARIO_PATH);
   const tutorAgents = readYaml(TUTOR_AGENTS_PATH);
-  const evaluationRunnerSource = fs.readFileSync(EVALUATION_RUNNER_PATH, 'utf8');
+  const registeredProfiles = new Set(createEvalProfileRegistry(tutorAgents?.profiles).canonicalCellNames);
   const scenarios = scenarioData?.scenarios || {};
   const profile = tutorAgents?.profiles?.[ROUTER_PROFILE];
   const repairProfile = tutorAgents?.profiles?.[REPAIR_PROFILE];
@@ -287,8 +287,8 @@ function main() {
       errors.push(`${ROUTER_PROFILE} must keep accountable_bid_clean as fallback floor`);
     }
   }
-  if (!evaluationRunnerSource.includes(ROUTER_PROFILE)) {
-    errors.push(`${ROUTER_PROFILE} is not registered in services/evaluationRunner.js`);
+  if (!registeredProfiles.has(ROUTER_PROFILE)) {
+    errors.push(`${ROUTER_PROFILE} is not registered in the canonical evaluation profile registry`);
   }
   if (!repairProfile) {
     errors.push(`Missing repair profile ${REPAIR_PROFILE}`);
@@ -306,8 +306,8 @@ function main() {
       errors.push(`${REPAIR_PROFILE} must keep accountable_bid_clean as fallback floor`);
     }
   }
-  if (!evaluationRunnerSource.includes(REPAIR_PROFILE)) {
-    errors.push(`${REPAIR_PROFILE} is not registered in services/evaluationRunner.js`);
+  if (!registeredProfiles.has(REPAIR_PROFILE)) {
+    errors.push(`${REPAIR_PROFILE} is not registered in the canonical evaluation profile registry`);
   }
   if (!splitRepairProfile) {
     errors.push(`Missing split repair profile ${SPLIT_REPAIR_PROFILE}`);
@@ -328,8 +328,8 @@ function main() {
       errors.push(`${SPLIT_REPAIR_PROFILE} must keep accountable_bid_clean as fallback floor`);
     }
   }
-  if (!evaluationRunnerSource.includes(SPLIT_REPAIR_PROFILE)) {
-    errors.push(`${SPLIT_REPAIR_PROFILE} is not registered in services/evaluationRunner.js`);
+  if (!registeredProfiles.has(SPLIT_REPAIR_PROFILE)) {
+    errors.push(`${SPLIT_REPAIR_PROFILE} is not registered in the canonical evaluation profile registry`);
   }
   if (!transferStakeProfile) {
     errors.push(`Missing transfer-stake profile ${TRANSFER_STAKE_PROFILE}`);
@@ -353,8 +353,8 @@ function main() {
       errors.push(`${TRANSFER_STAKE_PROFILE} must keep accountable_bid_clean as fallback floor`);
     }
   }
-  if (!evaluationRunnerSource.includes(TRANSFER_STAKE_PROFILE)) {
-    errors.push(`${TRANSFER_STAKE_PROFILE} is not registered in services/evaluationRunner.js`);
+  if (!registeredProfiles.has(TRANSFER_STAKE_PROFILE)) {
+    errors.push(`${TRANSFER_STAKE_PROFILE} is not registered in the canonical evaluation profile registry`);
   }
   if (!transferCompressionProfile) {
     errors.push(`Missing transfer-compression profile ${TRANSFER_COMPRESSION_PROFILE}`);
@@ -386,8 +386,8 @@ function main() {
       errors.push(`${TRANSFER_COMPRESSION_PROFILE} must keep accountable_bid_clean as fallback floor`);
     }
   }
-  if (!evaluationRunnerSource.includes(TRANSFER_COMPRESSION_PROFILE)) {
-    errors.push(`${TRANSFER_COMPRESSION_PROFILE} is not registered in services/evaluationRunner.js`);
+  if (!registeredProfiles.has(TRANSFER_COMPRESSION_PROFILE)) {
+    errors.push(`${TRANSFER_COMPRESSION_PROFILE} is not registered in the canonical evaluation profile registry`);
   }
   if (!dynamicBreakthroughProfile) {
     errors.push(`Missing dynamic breakthrough profile ${DYNAMIC_BREAKTHROUGH_PROFILE}`);
@@ -408,8 +408,8 @@ function main() {
       errors.push(`${DYNAMIC_BREAKTHROUGH_PROFILE} must keep accountable_bid_clean as fallback floor`);
     }
   }
-  if (!evaluationRunnerSource.includes(DYNAMIC_BREAKTHROUGH_PROFILE)) {
-    errors.push(`${DYNAMIC_BREAKTHROUGH_PROFILE} is not registered in services/evaluationRunner.js`);
+  if (!registeredProfiles.has(DYNAMIC_BREAKTHROUGH_PROFILE)) {
+    errors.push(`${DYNAMIC_BREAKTHROUGH_PROFILE} is not registered in the canonical evaluation profile registry`);
   }
 
   const cases = buildCases(scenarios);

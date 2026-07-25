@@ -16,6 +16,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  CANONICAL_EVAL_PROFILES,
+  EVAL_ONLY_PROFILES,
+  LEGACY_EVAL_PROFILE_ALIASES,
   resolveEvalProfile,
   flattenConversationHistory,
   isTransientEvaluationError,
@@ -175,6 +178,21 @@ describe('resolveEvalProfile', () => {
     assert.strictEqual(result.resolvedProfileName, 'budget');
   });
 
+  it('legacy aliases resolve through their explicit reviewed targets', () => {
+    for (const [alias, target] of Object.entries(LEGACY_EVAL_PROFILE_ALIASES)) {
+      const result = resolveEvalProfile(alias);
+      assert.strictEqual(result.resolvedProfileName, target, `${alias} should map to ${target}`);
+      assert.strictEqual(result.dispatchedProfileName, target, `${alias} should dispatch to ${target}`);
+    }
+  });
+
+  it('the compatibility export contains aliases plus every YAML-derived canonical cell', () => {
+    assert.deepStrictEqual(EVAL_ONLY_PROFILES, [
+      ...Object.keys(LEGACY_EVAL_PROFILE_ALIASES),
+      ...CANONICAL_EVAL_PROFILES,
+    ]);
+  });
+
   // --- Superego bootstrap trigger: budget profile + dialogue ON ---
 
   it('cell_3/4 (base+multi) resolve to budget with dialogue=true (superego bootstrap trigger)', () => {
@@ -205,6 +223,13 @@ describe('resolveEvalProfile', () => {
     assert.strictEqual(result.resolvedProfileName, 'some_custom_profile');
     assert.strictEqual(result.useDialogue, false, 'unknown profile defaults to no dialogue');
     assert.strictEqual(result.maxRounds, 0, 'unknown profile defaults to 0 rounds');
+  });
+
+  it('unknown cell-like profiles fail closed instead of passing through', () => {
+    assert.throws(
+      () => resolveEvalProfile('cell_999_missing_registration'),
+      /Unknown evaluation cell "cell_999_missing_registration"/u,
+    );
   });
 });
 

@@ -56,6 +56,12 @@ import {
 } from './learnerRubricEvaluator.js';
 import * as evaluationStore from './evaluationStore.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
+import {
+  assertEvalProfileTargetExists,
+  createEvalProfileRegistry,
+  LEGACY_EVAL_PROFILE_ALIASES as LEGACY_PROFILE_ALIASES,
+  validateEvalProfileRegistry,
+} from './evalProfileRegistry.js';
 import * as idDirectorEngine from './idDirectorEngine.js';
 import * as contentResolver from './contentResolver.js';
 import { ProgressLogger, getProgressLogPath } from './progressLogger.js';
@@ -174,231 +180,16 @@ export function isTransientEvaluationError(errorMessage = '') {
 }
 
 /**
- * Eval-only profile names that need remapping to tutor-core profiles.
+ * Canonical evaluation cells come from the eval YAML source of truth. Historical
+ * non-cell names remain explicit aliases for database and CLI compatibility.
  */
-export const EVAL_ONLY_PROFILES = [
-  'single_baseline',
-  'single_baseline_paid',
-  'single_recognition',
-  'single_recognition_paid',
-  'single_enhanced',
-  'baseline',
-  'baseline_paid',
-  'recognition',
-  'recognition_paid',
-  'enhanced',
-  'cell_1_base_single_unified',
-  'cell_2_base_single_psycho',
-  'cell_3_base_multi_unified',
-  'cell_4_base_multi_psycho',
-  'cell_5_recog_single_unified',
-  'cell_6_recog_single_psycho',
-  'cell_7_recog_multi_unified',
-  'cell_8_recog_multi_psycho',
-  'cell_9_enhanced_single_unified',
-  'cell_10_enhanced_single_psycho',
-  'cell_11_enhanced_multi_unified',
-  'cell_12_enhanced_multi_psycho',
-  'cell_13_hardwired_single_unified',
-  'cell_14_hardwired_single_psycho',
-  'cell_15_placebo_single_unified',
-  'cell_16_placebo_single_psycho',
-  'cell_17_placebo_multi_unified',
-  'cell_18_placebo_multi_psycho',
-  'cell_19_memory_single_unified',
-  'cell_20_recog_nomem_single_unified',
-  'cell_21_recog_multi_unified_rewrite',
-  'cell_22_base_suspicious_unified',
-  'cell_23_recog_suspicious_unified',
-  'cell_24_base_adversary_unified',
-  'cell_25_recog_adversary_unified',
-  'cell_26_base_advocate_unified',
-  'cell_27_recog_advocate_unified',
-  'cell_28_base_dialectical_suspicious_unified',
-  'cell_29_recog_dialectical_suspicious_unified',
-  'cell_30_base_dialectical_adversary_unified',
-  'cell_31_recog_dialectical_adversary_unified',
-  'cell_32_base_dialectical_advocate_unified',
-  'cell_33_recog_dialectical_advocate_unified',
-  'cell_34_base_dialectical_suspicious_unified_full',
-  'cell_35_recog_dialectical_suspicious_unified_full',
-  'cell_36_base_dialectical_adversary_unified_full',
-  'cell_37_recog_dialectical_adversary_unified_full',
-  'cell_38_base_dialectical_advocate_unified_full',
-  'cell_39_recog_dialectical_advocate_unified_full',
-  'cell_40_base_dialectical_suspicious_unified_superego',
-  'cell_41_recog_dialectical_suspicious_unified_superego',
-  'cell_42_base_dialectical_adversary_unified_superego',
-  'cell_43_recog_dialectical_adversary_unified_superego',
-  'cell_44_base_dialectical_advocate_unified_superego',
-  'cell_45_recog_dialectical_advocate_unified_superego',
-  'cell_46_base_dialectical_suspicious_unified_quantitative',
-  'cell_47_recog_dialectical_suspicious_unified_quantitative',
-  'cell_48_base_dialectical_suspicious_unified_erosion',
-  'cell_49_recog_dialectical_suspicious_unified_erosion',
-  'cell_50_base_dialectical_suspicious_unified_intersubjective',
-  'cell_51_recog_dialectical_suspicious_unified_intersubjective',
-  'cell_52_base_dialectical_suspicious_unified_combined',
-  'cell_53_recog_dialectical_suspicious_unified_combined',
-  'cell_54_base_dialectical_profile_tutor',
-  'cell_55_recog_dialectical_profile_tutor',
-  'cell_56_base_dialectical_profile_bidirectional',
-  'cell_57_recog_dialectical_profile_bidirectional',
-  'cell_58_recog_dialectical_profile_bidirectional_full',
-  'cell_59_recog_dialectical_profile_bidirectional_strategy',
-  'cell_60_base_dialectical_selfreflect_psycho',
-  'cell_61_recog_dialectical_selfreflect_psycho',
-  'cell_62_base_dialectical_profile_bidirectional_psycho',
-  'cell_63_recog_dialectical_profile_bidirectional_psycho',
-  'cell_64_recog_dialectical_intersubjective_psycho',
-  'cell_65_recog_dialectical_combined_psycho',
-  'cell_66_recog_dialectical_profile_prosthesis_descriptive',
-  'cell_67_recog_dialectical_profile_prosthesis_prescriptive',
-  'cell_68_recog_dialectical_profile_prosthesis_adversary',
-  'cell_69_base_dialectical_intersubjective_psycho',
-  'cell_70_base_dialectical_combined_psycho',
-  'cell_71_naive_single_unified',
-  'cell_72_base_dialectical_quantitative_psycho',
-  'cell_73_recog_dialectical_quantitative_psycho',
-  'cell_74_base_dialectical_erosion_psycho',
-  'cell_75_recog_dialectical_erosion_psycho',
-  'cell_76_base_dialectical_profile_tutor_psycho',
-  'cell_77_recog_dialectical_profile_tutor_psycho',
-  'cell_78_base_dialectical_selfreflect_psycho_authentic',
-  'cell_79_recog_dialectical_selfreflect_psycho_authentic',
-  'cell_80_messages_base_single_unified',
-  'cell_81_messages_base_single_psycho',
-  'cell_82_messages_base_multi_unified',
-  'cell_83_messages_base_multi_psycho',
-  'cell_84_messages_recog_single_unified',
-  'cell_85_messages_recog_single_psycho',
-  'cell_86_messages_recog_multi_unified',
-  'cell_87_messages_recog_multi_psycho',
-  'cell_88_messages_recog_multi_psycho_haiku',
-  'cell_89_messages_recog_multi_psycho_gemflash',
-  'cell_90_messages_recog_single_unified',
-  'cell_91_messages_recog_multi_unified_gemflash',
-  'cell_92_messages_recog_single_psycho_gemflash',
-  'cell_93_base_dialectical_suspicious_unified_superego_nopad',
-  'cell_94_recog_dialectical_suspicious_unified_superego_nopad',
-  'cell_95_base_matched_single_unified',
-  'cell_96_base_behaviorist_single_unified',
-  'cell_97_base_dialectical_suspicious_unified_directive',
-  'cell_98_base_dialectical_suspicious_unified_two_pass',
-  'cell_99_base_dialectical_coupling_unified_superego',
-  'cell_100_base_dialectical_suspicious_unified_best_of_n',
-  'cell_101_id_director_charisma',
-  'cell_102_recog_id_director_charisma',
-  'cell_103_id_director_charisma_register',
-  'cell_104_recog_id_director_charisma_register',
-  'cell_105_id_director_charisma_tuned',
-  'cell_106_id_director_pedagogy_tuned',
-  'cell_107_id_director_witness_exemplars',
-  'cell_108_id_director_charisma_register_exemplars',
-  'cell_109_id_director_charisma_tuned_exemplars',
-  'cell_159_id_director_charisma_desire',
-  'cell_160_id_director_charisma_agency_return',
-  'cell_161_id_director_charisma_agency_return_verified',
-  'cell_162_id_director_charisma_agency_return_warm_verified',
-  'cell_163_id_director_charisma_agency_return_warm_floor_verified',
-  'cell_164_id_director_charisma_agency_return_compact_floor_verified',
-  'cell_165_id_director_charisma_compact_arc_floor_verified',
-  'cell_166_id_director_charisma_guarded_arc_floor_verified',
-  'cell_167_id_director_charisma_affective_scene_floor_verified',
-  'cell_168_id_director_charisma_accountable_bid_floor_verified',
-  'cell_169_id_director_charisma_accountable_bid_clean_floor_verified',
-  'cell_170_id_director_charisma_accountable_bid_transfer_plain_floor_verified',
-  'cell_171_id_director_charisma_accountable_bid_transfer_plain_presence_floor_verified',
-  'cell_172_id_director_charisma_accountable_bid_transfer_plain_split_floor_verified',
-  'cell_173_id_director_charisma_accountable_bid_transfer_plain_split_check_floor_verified',
-  'cell_174_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_floor_verified',
-  'cell_175_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_floor_verified',
-  'cell_176_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_persist_floor_verified',
-  'cell_177_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_floor_verified',
-  'cell_178_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_compress_floor_verified',
-  'cell_179_id_director_charisma_accountable_bid_transfer_plain_split_check_anchor_live_lived_charged_check_floor_verified',
-  'cell_180_id_director_charisma_engagement_router_verified',
-  'cell_181_id_director_charisma_engagement_router_contract_repair_verified',
-  'cell_182_id_director_charisma_engagement_router_split_repair_verified',
-  'cell_183_id_director_charisma_engagement_router_transfer_stake_repair_verified',
-  'cell_184_id_director_charisma_engagement_router_transfer_compression_guard_verified',
-  'cell_185_id_director_charisma_resistance_breakthrough_dynamic_verified',
-  'cell_186_id_director_charisma_static_floor_breakthrough_dynamic_verified',
-  'cell_187_id_director_charisma_resistance_tuned_breakthrough_dynamic_verified',
-  'cell_188_id_director_charisma_resistance_owned_test_breakthrough_dynamic_verified',
-  'cell_189_id_director_charisma_resistance_precision_breakthrough_dynamic_verified',
-  'cell_190_id_director_charisma_resistance_generation_breakthrough_dynamic_verified',
-  'cell_191_id_director_charisma_resistance_question_lock_breakthrough_dynamic_verified',
-  'cell_192_id_director_charisma_resistance_commitment_probe_breakthrough_dynamic_verified',
-  'cell_193_id_director_charisma_resistance_boredom_stake_breakthrough_dynamic_verified',
-  'cell_194_id_director_charisma_resistance_glm_compact_breakthrough_dynamic_verified',
-  'cell_195_id_director_charisma_resistance_boredom_stake_scripted_control_verified',
-  'cell_196_id_director_ironic_challenge_breakthrough_dynamic_verified',
-  'cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified',
-  'cell_198_id_director_face_threat_challenge_breakthrough_dynamic_verified',
-  'cell_199_blueprint_kernel_verified',
-  'cell_200_blueprint_full_verified',
-  'cell_110_langgraph_adaptive',
-  'cell_111_a13_C1_recognition_only',
-  'cell_112_a13_C2_egosuperego',
-  'cell_113_a13_C4_validator',
-  'cell_114_dialogue_engine_trap_baseline',
-  'cell_115_bilateral_tom',
-  'cell_116_recognition_named_patterns',
-  'cell_117_bilateral_tom_named_patterns',
-  'cell_118_state_policy_minimal_profile',
-  'cell_119_state_policy_no_misconceptions',
-  'cell_120_state_policy_no_agency_signal',
-  'cell_111_a13_C1_recognition_only_v2',
-  'cell_115_bilateral_tom_v2',
-  'cell_116_recognition_named_patterns_v2',
-  'cell_117_bilateral_tom_named_patterns_v2',
-  'cell_121_bilateral_tom_id_director_v1',
-  'cell_122_bilateral_tom_id_director_v2',
-  'cell_123_state_policy_minimal_plus_zpd',
-  'cell_124_langgraph_adaptive_crosssuite',
-  'cell_125_dialogue_engine_crosssuite_baseline',
-  // A14 Stage 1
-  'cell_126_state_policy_evidence_bound',
-  // A14 Stage 3 (validator on)
-  'cell_127_state_policy_evidence_bound_validated',
-  // A14 Stage 5 diagnostic (full audit chain on cell_118's minimal profile)
-  'cell_128_state_policy_minimal_profile_evidence_bound_validated',
-  // A16 (P2) §6.3.10 — superego-authored ego-prompt rewrite (S0/S1 decisive contrast)
-  'cell_129_superego_revise_stateless',
-  'cell_130_superego_revise_cumulative',
-  // A16 (P3) §6.3.10 — A (advisory) arm: model-aligned ego_superego (new cell, NOT cell_112; named deviation, Appendix E v3.0.81)
-  'cell_131_a16_A_egosuperego',
-  // A16 (P3) §6.3.10 — F (floor) arm: recognition_only, byte-identical to cell_111 (new cell, NOT cell_111; protects A13 C1 provenance; named deviation, Appendix E)
-  'cell_132_a16_F_recognition_only',
-  // Plan 2.0 — explicit adaptation contract / gate / closed-loop policy ablations
-  'cell_133_plan2_contract',
-  'cell_134_plan2_contract_gate',
-  'cell_135_plan2_closed_loop',
-  'cell_136_plan2_closed_loop_crosssuite',
-  'cell_137_plan2_quality_ownership',
-  'cell_138_plan2_quality_fit',
-  'cell_139_plan2_quality_discriminating',
-  'cell_140_plan2_quality_ownership_crosssuite',
-  'cell_141_plan2_quality_fit_crosssuite',
-  'cell_142_plan2_quality_discriminating_crosssuite',
-  'cell_143_plan2_quality_progressive',
-  'cell_144_plan2_quality_progressive_crosssuite',
-  'cell_145_plan2_quality_varied',
-  'cell_146_plan2_quality_varied_crosssuite',
-  'cell_147_plan2_quality_contextual',
-  'cell_148_plan2_quality_contextual_crosssuite',
-  'cell_149_plan2_quality_repeat_contextual',
-  'cell_150_plan2_quality_repeat_contextual_crosssuite',
-  'cell_151_plan2_pair_specificity_closed_loop',
-  'cell_152_plan2_pair_specificity_repeat_contextual',
-  'cell_155_plan2_closureoff_crosssuite',
-  'cell_156_plan2_closureoff_paired',
-  'cell_157_plan2_statescramble_crosssuite',
-  'cell_158_plan2_statescramble_paired',
-  'cell_153_plan2_1_evidence_closed_loop',
-  'cell_154_plan2_1_evidence_repeat_contextual',
-];
+const loadedEvalProfiles = evalConfigLoader.loadTutorAgents()?.profiles;
+const evalProfileRegistry = createEvalProfileRegistry(loadedEvalProfiles, LEGACY_PROFILE_ALIASES);
+
+export const CANONICAL_EVAL_PROFILES = evalProfileRegistry.canonicalCellNames;
+export const LEGACY_EVAL_PROFILE_ALIASES = evalProfileRegistry.legacyAliases;
+export const EVAL_ONLY_PROFILES = evalProfileRegistry.allEvaluationNames;
+export { validateEvalProfileRegistry };
 
 /**
  * Resolve an eval profile name into dialogue settings and a tutor-core profile.
@@ -410,15 +201,23 @@ export const EVAL_ONLY_PROFILES = [
  * Exported for unit testing.
  */
 export function resolveEvalProfile(profileName) {
-  const evalProfile = evalConfigLoader.loadTutorAgents()?.profiles?.[profileName];
+  const isCanonicalCell = CANONICAL_EVAL_PROFILES.includes(profileName);
+  const legacyTarget = LEGACY_EVAL_PROFILE_ALIASES[profileName] || null;
+  if (profileName?.startsWith('cell_') && !isCanonicalCell) {
+    throw new Error(`Unknown evaluation cell "${profileName}"; no matching profile exists in tutor-agents.yaml`);
+  }
+
+  const evalProfile = isCanonicalCell ? loadedEvalProfiles[profileName] : null;
   const useDialogue = evalProfile?.dialogue?.enabled ?? false;
   const maxRounds = evalProfile?.dialogue?.max_rounds ?? 0;
-  const recognitionMode = evalProfile?.recognition_mode ?? profileName?.includes('recognition') ?? false;
+  const recognitionMode =
+    evalProfile?.recognition_mode ?? (legacyTarget === 'recognition' || profileName?.includes('recognition') || false);
 
   let resolvedProfileName = profileName;
-  let wasRemapped = false;
-  if (profileName && EVAL_ONLY_PROFILES.includes(profileName)) {
-    wasRemapped = true;
+  const wasRemapped = isCanonicalCell || Boolean(legacyTarget);
+  if (legacyTarget) {
+    resolvedProfileName = legacyTarget;
+  } else if (isCanonicalCell) {
     // Map eval profile to tutor-core profile based on prompt_type
     const promptType = evalProfile?.factors?.prompt_type;
     if (promptType === 'enhanced') {
@@ -477,9 +276,6 @@ export function resolveEvalProfile(profileName) {
     } else if (promptType === 'matched_pedagogical') {
       // A10 density control: pedagogical prompt of matched specificity, zero recognition content.
       // Registered in tutor-core as 'matched_pedagogical' profile pointing at tutor-ego-matched-pedagogical.md.
-      // If tutor-core does not have the profile registered (e.g. published package), the existence
-      // check below falls back to 'budget' explicitly, which is the correct behaviour (the A10
-      // experiment cannot run against a published-tutor-core install without the profile there).
       resolvedProfileName = 'matched_pedagogical';
     } else if (promptType === 'matched_behaviorist') {
       // A10b density control: matched-specificity behaviorist prompt orthogonal to recognition's
@@ -493,36 +289,18 @@ export function resolveEvalProfile(profileName) {
     }
   }
 
-  // The dispatch-chain output *before* the published-package existence-check
-  // fallback below. `dispatchedProfileName` answers "did the if/else-if chain
-  // route this prompt_type by name?"; `resolvedProfileName` answers "what
-  // tutor-core profile will actually load?". They diverge only when the
-  // dispatch picked a dev-tutor-core-only profile (matched_pedagogical,
-  // matched_behaviorist, …) and the installed package doesn't register it.
+  // Keep the diagnostic name for the bug_007 regression surface. In the
+  // in-housed architecture it must equal the profile that actually loads.
   // The bug_007 regression test asserts on `dispatchedProfileName`: a non-base
   // prompt_type *dispatching* to 'budget' means there's no branch for it (the
-  // bug); *falling back* to 'budget' because the named profile is absent from a
-  // published install is documented graceful degradation, not a regression.
+  // bug).
   const dispatchedProfileName = resolvedProfileName;
 
-  // For remapped eval-only profiles, verify the resolved name exists in tutor-core.
-  // Eval-specific profiles (enhanced, placebo, dialectical_*, etc.) only exist in the
-  // dev version of tutor-core. When the published package is installed, fall back to a
-  // safe base profile — the eval runner provides all real configuration via explicit
-  // overrides (egoModel, superegoModel, hyperparameters, systemPromptExtension).
+  // The tutor-core module is in-housed, so a missing dispatch target is a
+  // configuration error. Never hide it behind a budget/recognition fallback.
   if (wasRemapped) {
-    try {
-      const tutorConfig = tutorConfigLoader.loadConfig();
-      if (!tutorConfig.profiles?.[resolvedProfileName]) {
-        const fallback = recognitionMode ? 'recognition' : 'budget';
-        console.debug(
-          `[resolveEvalProfile] Profile "${resolvedProfileName}" not in tutor-core, using "${fallback}" base`,
-        );
-        resolvedProfileName = fallback;
-      }
-    } catch {
-      // tutorConfigLoader not available — keep resolved name as-is
-    }
+    const tutorConfig = tutorConfigLoader.loadConfig();
+    assertEvalProfileTargetExists(profileName, resolvedProfileName, tutorConfig?.profiles);
   }
 
   return { useDialogue, maxRounds, recognitionMode, resolvedProfileName, dispatchedProfileName };
