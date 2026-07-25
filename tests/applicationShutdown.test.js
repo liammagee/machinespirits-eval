@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { EventEmitter, once } from 'node:events';
+import { createServer } from 'node:http';
 import test from 'node:test';
 
 import {
@@ -7,6 +8,7 @@ import {
   installApplicationShutdownHandlers,
   shutdownApplication,
 } from '../services/applicationShutdown.js';
+import { createEvaluationStreamRegistry } from '../services/evaluationStreamRegistry.js';
 
 function fakeServer(events) {
   return {
@@ -24,8 +26,24 @@ function fakeServer(events) {
 
 test('shutdown drains tutor sessions before closing the application database', async () => {
   const events = [];
+  const streamRegistry = createEvaluationStreamRegistry({ logger: { log() {}, warn() {}, error() {} } });
+  const streamResponse = {
+    writableEnded: false,
+    write(message) {
+      events.push(`stream.write:${message}`);
+    },
+    end() {
+      events.push('stream.end');
+      this.writableEnded = true;
+    },
+  };
+  streamRegistry.registerStream(
+    streamResponse,
+    setInterval(() => {}, 60_000),
+  );
   const app = {
     locals: {
+      cleanupEvaluationStreams: streamRegistry.cleanupAllStreams,
       tutorStubSessionHost: {
         async closeAll(reason) {
           events.push(`host.closeAll:${reason}`);
@@ -51,8 +69,50 @@ test('shutdown drains tutor sessions before closing the application database', a
   assert.deepEqual(result, { reason: 'SIGTERM', closed: true });
   assert.ok(events.includes('server.close'));
   assert.ok(events.includes('server.closeIdleConnections'));
+  assert.ok(events.includes('stream.write:event: error\ndata: {"error": "Server restarting"}\n\n'));
+  assert.ok(events.includes('stream.end'));
+  assert.equal(streamResponse.writableEnded, true);
+  assert.equal(streamRegistry.activeCount, 0);
   assert.ok(events.includes('host.closeAll:SIGTERM'));
   assert.equal(events.at(-1), 'db.close');
+});
+
+test('shutdown drains a live tracked SSE response before the HTTP server closes', async (t) => {
+  const streamRegistry = createEvaluationStreamRegistry({ logger: { log() {}, warn() {}, error() {} } });
+  const registered = new EventEmitter();
+  const server = createServer((_request, response) => {
+    response.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    });
+    const keepAlive = setInterval(() => response.write(': keep-alive\n\n'), 60_000);
+    streamRegistry.registerStream(response, keepAlive);
+    response.write('event: ready\ndata: {}\n\n');
+    registered.emit('stream');
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  t.after(() => {
+    streamRegistry.cleanupAllStreams();
+    if (server.listening) server.close();
+  });
+
+  const response = await fetch(`http://127.0.0.1:${server.address().port}`);
+  if (streamRegistry.activeCount === 0) await once(registered, 'stream');
+  const body = response.text();
+
+  const result = await shutdownApplication({
+    app: { locals: { cleanupEvaluationStreams: streamRegistry.cleanupAllStreams } },
+    server,
+    reason: 'SIGTERM',
+    timeoutMs: 250,
+  });
+
+  assert.deepEqual(result, { reason: 'SIGTERM', closed: true });
+  assert.equal(server.listening, false);
+  assert.equal(streamRegistry.activeCount, 0);
+  assert.equal(await body, 'event: ready\ndata: {}\n\nevent: error\ndata: {"error": "Server restarting"}\n\n');
 });
 
 test('shutdown is bounded when a session host cannot finish draining', async () => {

@@ -28,6 +28,7 @@ import {
   createModelCallBudget,
   resolveHttpMaxModelCalls,
 } from '../services/httpModelWorkAdmission.js';
+import { evaluationStreamRegistry } from '../services/evaluationStreamRegistry.js';
 // Lazy-loaded tutor-core services — resolved on first request so this module
 // can be imported without tutor-core installed at parse time.
 // Module-scoped vars are populated by the middleware below; existing handler
@@ -274,112 +275,19 @@ router.use(async (req, res, next) => {
 // ============================================================================
 // CRASH PROTECTION: Track active evaluation streams
 // ============================================================================
-const activeEvalStreams = new Map();
-let streamIdCounter = 0;
+const INTERACTION_STREAM_MAX_DURATION_MS = 30 * 60 * 1000;
 
-// Configuration
-const MAX_STREAM_DURATION_MS = 2 * 60 * 60 * 1000; // 2 hours
-const TIMEOUT_WARNING_MS = 30 * 60 * 1000; // Warn at 30 minutes before timeout
-
-// Cleanup function for orphaned streams
 export function cleanupAllStreams() {
-  if (activeEvalStreams.size > 0) {
-    console.log(`[EvalRoutes] Cleaning up ${activeEvalStreams.size} active streams...`);
-    activeEvalStreams.forEach(({ res, keepAlive, timeoutTimer, streamId }) => {
-      try {
-        if (keepAlive) clearInterval(keepAlive);
-        if (timeoutTimer) clearTimeout(timeoutTimer);
-        if (res && !res.writableEnded) {
-          res.write('event: error\ndata: {"error": "Server restarting"}\n\n');
-          res.end();
-        }
-      } catch (e) {
-        console.error(`[EvalRoutes] Error cleaning stream ${streamId}:`, e.message);
-      }
-    });
-    activeEvalStreams.clear();
-  }
+  return evaluationStreamRegistry.cleanupAllStreams();
 }
 
-// Helper to register a new stream with timeout protection
 function registerStream(res, keepAlive, options = {}) {
-  const streamId = `eval-stream-${++streamIdCounter}-${Date.now()}`;
-  const maxDuration = options.maxDuration || MAX_STREAM_DURATION_MS;
-  const startedAt = Date.now();
-
-  // Set up timeout handler
-  const timeoutTimer = setTimeout(() => {
-    console.warn(`[EvalRoutes] Stream ${streamId} exceeded max duration (${maxDuration}ms), forcing cleanup`);
-    try {
-      if (res && !res.writableEnded) {
-        res.write(
-          'event: error\ndata: {"error": "Evaluation timeout - exceeded maximum duration", "timeout": true}\n\n',
-        );
-        res.end();
-      }
-    } catch (e) {
-      console.error(`[EvalRoutes] Error sending timeout to ${streamId}:`, e.message);
-    }
-    unregisterStream(streamId);
-  }, maxDuration);
-
-  activeEvalStreams.set(streamId, {
-    res,
-    keepAlive,
-    timeoutTimer,
-    streamId,
-    startedAt,
-    maxDuration,
-  });
-
-  console.log(
-    `[EvalRoutes] Stream registered: ${streamId} (Timeout: ${maxDuration}ms, Total active: ${activeEvalStreams.size})`,
-  );
-  return streamId;
+  return evaluationStreamRegistry.registerStream(res, keepAlive, options);
 }
 
-// Helper to unregister a stream
 function unregisterStream(streamId) {
-  const stream = activeEvalStreams.get(streamId);
-  if (stream) {
-    if (stream.keepAlive) clearInterval(stream.keepAlive);
-    if (stream.timeoutTimer) clearTimeout(stream.timeoutTimer);
-    activeEvalStreams.delete(streamId);
-    const duration = Math.round((Date.now() - stream.startedAt) / 1000);
-    console.log(
-      `[EvalRoutes] Stream closed: ${streamId} (Duration: ${duration}s, Remaining: ${activeEvalStreams.size})`,
-    );
-  }
+  return evaluationStreamRegistry.unregisterStream(streamId);
 }
-
-// Periodic check for hung streams (runs every 5 minutes). The watchdog must not
-// keep one-shot imports, tests, or CLI processes alive when no streams exist.
-const streamWatchdog = setInterval(
-  () => {
-    const now = Date.now();
-    activeEvalStreams.forEach((stream, streamId) => {
-      const age = now - stream.startedAt;
-
-      // Warn if approaching timeout
-      if (age > stream.maxDuration - TIMEOUT_WARNING_MS && !stream.warningShown) {
-        const remaining = Math.round((stream.maxDuration - age) / 1000 / 60);
-        console.warn(`[EvalRoutes] Stream ${streamId} will timeout in ${remaining} minutes`);
-        try {
-          if (stream.res && !stream.res.writableEnded) {
-            stream.res.write(
-              `event: warning\ndata: {"message": "Evaluation will timeout in ${remaining} minutes", "remainingMs": ${stream.maxDuration - age}}\n\n`,
-            );
-          }
-        } catch (e) {
-          // Ignore write errors
-        }
-        stream.warningShown = true;
-      }
-    });
-  },
-  5 * 60 * 1000,
-); // Check every 5 minutes
-streamWatchdog.unref?.();
 
 // Path to prompts directory
 const PROMPTS_DIR = path.join(process.cwd(), 'prompts');
@@ -1766,7 +1674,7 @@ router.get(
     }, 15000);
 
     // Register stream for crash protection (interaction evals can take a while)
-    const streamId = registerStream(res, keepAlive, { maxDuration: TIMEOUT_WARNING_MS });
+    const streamId = registerStream(res, keepAlive, { maxDuration: INTERACTION_STREAM_MAX_DURATION_MS });
 
     // Clean up on close
     req.on('close', () => {

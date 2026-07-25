@@ -90,6 +90,7 @@ test('shared eval surfaces serve the tutor shell and versioned public catalog', 
   const app = express();
   app.use(express.json());
   mountEvalSurfaces(app, { root: ROOT, tutorStubSessionHost: fakeHost() });
+  assert.equal(typeof app.locals.cleanupEvaluationStreams, 'function');
   const base = await listen(t, app);
 
   const shell = await fetch(`${base}/tutor/`);

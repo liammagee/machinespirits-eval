@@ -1,7 +1,7 @@
 ---
 id: refactor-log-route-data-root
 title: Bind evaluation log routes to the redirected data root
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -19,6 +19,8 @@ depends_on:
 links:
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
+  github:
+    - https://github.com/liammagee/machinespirits-eval/pull/233
   code:
     - tutor-core/services/dialogueLogDirectories.js
     - tutor-core/services/dialogueLogService.js
@@ -79,3 +81,6 @@ Acceptance:
   4,338/4,338, tutor-core 137/137, and desktop parity 29/29 under the matched
   Electron native runtime. Lint, formatting, manifest, zero-cycle, workplan,
   and diff gates pass with zero test skips and no model calls.
+- 2026-07-25 — PR #233 merged to `main` at `5e8be47c` with the complete CI
+  matrix green; row 18 SSE lifecycle cleanup is now active on its isolated
+  successor branch.

@@ -38,6 +38,7 @@ links:
     - refactor-provenance-fixtures
     - refactor-message-chain-fixtures
     - refactor-log-route-data-root
+    - refactor-sse-lifecycle
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -222,3 +223,13 @@ Log:
   root proving the routes cannot pass against empty or wrong data. Root/core,
   desktop, static, and source-only parity are green; row 18 SSE lifecycle
   remains next after merge.
+- 2026-07-25 — PR #233 merged and closed row 17. Activated row 18 on
+  `codex/refactor-sse-lifecycle` to extract the router-local tracker behind its
+  existing facade, attach cleanup to every shared eval host, and prove that
+  shutdown closes every stream without leaving refed timers behind.
+- 2026-07-25 — Row 18 reached review with one tested stream registry and shared
+  host lifecycle hook. A live socket test found and repaired the
+  close-idle-before-stream-end race; root/core, Electron, static, and source
+  gates are green. This completes the plan's initial 18-row execution queue once
+  merged; the next programme slice should begin from refreshed hotspot and
+  coverage metrics rather than extending this branch.
