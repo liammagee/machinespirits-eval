@@ -199,6 +199,17 @@ describe('factorial design — config integrity', () => {
       }
     }
   });
+
+  it('dialectical naming matches dialectical prompt types for every canonical cell', () => {
+    for (const [name, profile] of Object.entries(cells)) {
+      const promptType = String(profile.factors?.prompt_type || '');
+      assert.strictEqual(
+        name.includes('dialectical'),
+        promptType.startsWith('dialectical_'),
+        `${name} dialectical naming disagrees with prompt_type=${promptType}`,
+      );
+    }
+  });
 });
 
 // ============================================================================

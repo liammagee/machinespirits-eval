@@ -7,6 +7,7 @@
         "services/__tests__/adaptiveTutor.budgetTracker.test.js",
         "services/__tests__/adaptiveTutor.realLLM-budget.test.js",
         "services/__tests__/adaptiveTutor.realLLM-jsonparse.test.js",
+        "services/__tests__/adaptiveTutor.strategyRefusal.test.js",
         "services/__tests__/adaptiveTutor.superegoRevise.test.js",
         "services/__tests__/apiMessageFormatter.test.js",
         "services/__tests__/blueprintActionContracts.test.js",

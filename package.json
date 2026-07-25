@@ -113,6 +113,7 @@
     "accumulation:status:pilot": "node scripts/analyze-accumulation.js --epoch pilot",
     "provenance:validate": "node scripts/validate-provenance.js",
     "adaptive:verify-run": "node scripts/verify-experiment-run.js",
+    "adaptive:smoke-strategy-refusal": "node scripts/run-adaptive-strategy-refusal-smoke.js",
     "adaptive:package-run": "node scripts/package-adaptive-run.js",
     "adaptive:restore-run": "node scripts/restore-adaptive-run.js",
     "adaptive:export-state-benchmark": "node scripts/export-adaptive-state-benchmark.js",

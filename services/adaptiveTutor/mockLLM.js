@@ -71,6 +71,12 @@ const fixtures = {
 
   tutorEgoRevision: ({ tutorInternal }) => {
     const previous = tutorInternal.egoDraft;
+    if (/\[strategy-refusal\]/u.test(tutorInternal.superegoFeedback || '')) {
+      return {
+        text: 'I was about to repeat the same move without earning it. Before we continue, what does your last answer show that the earlier question failed to test?',
+        policyAction: 'ask_diagnostic_question',
+      };
+    }
     return {
       text: previous.replace(/let me explain/i, 'let me ask you something instead'),
       policyAction: 'scope_test',
