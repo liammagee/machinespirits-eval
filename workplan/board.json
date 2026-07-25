@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-25T22:50:27.593Z",
+  "generated": "2026-07-25T23:09:33.890Z",
   "counts": {
-    "total": 194,
+    "total": 195,
     "byStatus": {
       "done": 165,
       "blocked": 3,
       "dropped": 2,
       "triaged": 10,
-      "active": 3,
+      "active": 4,
       "archived": 4,
       "review": 7
     },
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 42,
-      "maintenance": 42,
+      "maintenance": 43,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -433,6 +433,36 @@
         "provenance",
         "privacy"
       ]
+    },
+    {
+      "id": "tutor-stub-fallback-register-and-uptake-guard",
+      "title": "Tutor-stub fallback register and learner-uptake guard",
+      "status": "active",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "A contemporary-diction world speaks its own props in its own register while every period and undeclared world keeps byte-identical deterministic text; the learner-uptake guard admits a genuinely responsive uptake that shares no tokens with the accepted meaning; targeted and hermetic suites pass without model calls.",
+      "branch": "claude/tutor-stub-scene-diction",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "services/tutorStubSceneDiction.js",
+          "services/tutorStubDramaticRelease.js",
+          "services/tutorStubResponseComposition.js",
+          "services/tutorStubTurnProgressionContract.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubSceneDiction.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "presentation",
+        "guards"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "tutor-stub-latency-routing-optimization",

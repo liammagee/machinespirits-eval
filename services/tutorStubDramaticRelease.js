@@ -5,6 +5,13 @@ import {
   TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA,
 } from './tutorStubResponseContractSchemas.js';
 import { tutorStubFirstPersonRoleVoiceVisible, tutorStubRoleStageDirectionVisible } from './tutorStubRoleVisibility.js';
+import {
+  TUTOR_STUB_SCENE_DICTION_PERIOD,
+  resolveTutorStubSceneDiction,
+  tutorStubDictionPhrase,
+  tutorStubSceneLedgerTerm,
+  tutorStubScenePublicObjects,
+} from './tutorStubSceneDiction.js';
 
 export { TUTOR_STUB_DRAMATIC_RELEASE_SCHEMA } from './tutorStubResponseContractSchemas.js';
 export { tutorStubFirstPersonRoleVoiceVisible, tutorStubRoleStageDirectionVisible } from './tutorStubRoleVisibility.js';
@@ -527,8 +534,29 @@ function fallbackQuestion({ stance, variationKey, avoidQuestion = '' }) {
   return rotated.find((candidate) => questionOverlap(candidate, avoidQuestion) < 0.55) || rotated[0];
 }
 
-function sceneObject(entry, fallback = 'record') {
+function escapeForPattern(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+}
+
+/**
+ * Match a prop the world itself declares. The static whitelists below were
+ * drawn from the assay/guild worlds, so a world whose props are absent from
+ * them silently degrades to the generic default. Consulting the author's own
+ * nouns first keeps a domestic scene speaking of its "repair notebook" rather
+ * than an abstract "record".
+ */
+function declaredSceneObject(text, world) {
+  const declared = tutorStubScenePublicObjects(world);
+  if (!declared.length || !text) return '';
+  const pattern = new RegExp(`\\b(?:${declared.map(escapeForPattern).join('|')})\\b`, 'iu');
+  return text.match(pattern)?.[0] || '';
+}
+
+function sceneObject(entry, fallback = 'record', world = null) {
   const text = oneLine(entry.surface);
+  const role = oneLine(entry.role);
+  const declaredSurfaceObject = declaredSceneObject(text, world);
+  if (declaredSurfaceObject) return declaredSurfaceObject;
   const surfaceObject = text.match(
     /\b(?:visitor badge log|badge log|lost-property ledger|trial-book|book|ledger|notice|register|notebook|call log|record|report|file|photograph|photo|crucible|coin|shilling|burin|cupel|die|graver|tool|sample|touchstone)\b/iu,
   )?.[0];
@@ -536,11 +564,17 @@ function sceneObject(entry, fallback = 'record') {
   // Authored roles often name a physical record that their paraphrased clue
   // omits. Recover only those concrete record nouns here; broad role words
   // such as "assayer" must not turn into a fictitious object named "assay".
-  return (
-    oneLine(entry.role).match(
-      /\b(?:visitor badge log|badge log|lost-property ledger|trial-book|book|ledger|notice|register|notebook|call log|record|report|file)\b/iu,
-    )?.[0] || fallback
-  );
+  const declaredRoleObject = declaredSceneObject(role, world);
+  if (declaredRoleObject) return declaredRoleObject;
+  const roleObject = role.match(
+    /\b(?:visitor badge log|badge log|lost-property ledger|trial-book|book|ledger|notice|register|notebook|call log|record|report|file)\b/iu,
+  )?.[0];
+  if (roleObject) return roleObject;
+  // Nothing concrete was named. A contemporary world still has an authored word
+  // for its evidence record; period worlds keep the frozen generic default.
+  const ledgerTerm =
+    resolveTutorStubSceneDiction(world) === TUTOR_STUB_SCENE_DICTION_PERIOD ? '' : tutorStubSceneLedgerTerm(world);
+  return ledgerTerm || fallback;
 }
 
 const ROLE_VOICE_ENTRANCES = {
@@ -644,37 +678,56 @@ function fallbackHostPart(responseConfiguration) {
     : 'examiner';
 }
 
-function hostEntrance(part, object) {
+function hostEntrance(part, object, diction = TUTOR_STUB_SCENE_DICTION_PERIOD) {
+  const phrase = (periodText, contemporaryText) => tutorStubDictionPhrase(diction, periodText, contemporaryText);
   return {
-    scene_partner: `I set the ${object} between us`,
-    examiner: `I examine the ${object}`,
+    scene_partner: phrase(`I set the ${object} between us`, `I put the ${object} where we can both see it`),
+    examiner: phrase(`I examine the ${object}`, `I look at the ${object}`),
     record_keeper:
-      object === 'record' ? 'I mark the live line in the open record' : `I mark the ${object} in the open record`,
-    advocate: `I make the strongest case the ${object} can bear; test its limit`,
-    skeptic: `Not so fast—I hold the claim against the ${object}`,
-    satirist: `I set the ${object} beside the polished claim and let its contradiction show`,
-    adversarial_teacher: `Let us test your idea with the ${object} as a counterexample: what changes, and how would you revise the idea`,
-    exacting_schoolmaster: `Show the working with the ${object}: apply the method one step at a time, name what that step teaches us, then revise precisely`,
-    foreperson: `I enter the ${object} as a provisional finding`,
+      object === 'record'
+        ? phrase('I mark the live line in the open record', 'I write the live line down where we can both see it')
+        : phrase(`I mark the ${object} in the open record`, `I write that line into the ${object}`),
+    advocate: phrase(
+      `I make the strongest case the ${object} can bear; test its limit`,
+      `I will put the ${object} at its strongest; see where it stops holding`,
+    ),
+    skeptic: phrase(
+      `Not so fast—I hold the claim against the ${object}`,
+      `Hold on—I check that claim against the ${object}`,
+    ),
+    satirist: phrase(
+      `I set the ${object} beside the polished claim and let its contradiction show`,
+      `I set the ${object} next to the tidy version and let the gap show`,
+    ),
+    adversarial_teacher: phrase(
+      `Let us test your idea with the ${object} as a counterexample: what changes, and how would you revise the idea`,
+      `Let's test your idea against the ${object} as a counterexample: what changes, and how would you revise it`,
+    ),
+    exacting_schoolmaster: phrase(
+      `Show the working with the ${object}: apply the method one step at a time, name what that step teaches us, then revise precisely`,
+      `Show the working with the ${object}: take it one step at a time, say what each step tells us, then revise precisely`,
+    ),
+    foreperson: phrase(`I enter the ${object} as a provisional finding`, `I log the ${object} as a working finding`),
   }[part];
 }
 
-function stanceInflection(stance) {
+function stanceInflection(stance, diction = TUTOR_STUB_SCENE_DICTION_PERIOD) {
+  const phrase = (periodText, contemporaryText) => tutorStubDictionPhrase(diction, periodText, contemporaryText);
   return {
     plain: '',
-    precise: 'without carrying its claim beyond the evidence',
-    brisk: 'and go straight to the live line',
-    warm: 'where we can both read it',
-    witnessing: 'and let its words stand without forcing them',
-    charismatic: "against the room's easy verdict",
-    ironic: 'at its apparently inconvenient line',
-    sarcastic: 'at the nice trick the claim forgot',
-    face_threat: 'at the weak line we cannot refuse',
+    precise: phrase('without carrying its claim beyond the evidence', 'without pushing its claim past the evidence'),
+    brisk: phrase('and go straight to the live line', 'and go straight to the open question'),
+    warm: phrase('where we can both read it', 'where we can both read it'),
+    witnessing: phrase('and let its words stand without forcing them', 'and let it say what it says, no more'),
+    charismatic: phrase("against the room's easy verdict", 'against the easy answer everyone already has'),
+    ironic: phrase('at its apparently inconvenient line', 'at the line that turns out to be inconvenient'),
+    sarcastic: phrase('at the nice trick the claim forgot', 'at the detail the claim quietly skipped'),
+    face_threat: phrase('at the weak line we cannot refuse', 'at the weak spot we cannot skip'),
   }[stance];
 }
 
-function inflectedHost(part, object, stance) {
-  return [hostEntrance(part, object), stanceInflection(stance)].filter(Boolean).join(' ');
+function inflectedHost(part, object, stance, diction = TUTOR_STUB_SCENE_DICTION_PERIOD) {
+  return [hostEntrance(part, object, diction), stanceInflection(stance, diction)].filter(Boolean).join(' ');
 }
 
 function sourceCarrierEntrance(entry) {
@@ -735,19 +788,21 @@ export function deterministicTutorStubSourceAccessibilityCompensation(contract =
   return complete[0] || '';
 }
 
-function renderEnactedEntry(entry, { stance, hostPart, index, compensation = '' }) {
-  const object = sceneObject(entry, 'account');
+function renderEnactedEntry(entry, { stance, hostPart, index, compensation = '', world = null, diction }) {
+  const object = sceneObject(entry, 'account', world);
   const source = renderTutorStubDueSource(entry, index);
-  const entrance = [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance), source.text]
+  const entrance = [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance, diction), source.text]
     .filter(Boolean)
     .join('; ');
   return [entrance, compensation].filter(Boolean).join(' ');
 }
 
-function renderExhibitEntry(entry, { stance, hostPart, index, compensation = '' }) {
-  const object = sceneObject(entry);
+function renderExhibitEntry(entry, { stance, hostPart, index, compensation = '', world = null, diction }) {
+  const object = sceneObject(entry, 'record', world);
   const source = renderTutorStubDueSource(entry, index);
-  const host = [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance)].filter(Boolean).join('; ');
+  const host = [sourceCarrierEntrance(source), inflectedHost(hostPart, object, stance, diction)]
+    .filter(Boolean)
+    .join('; ');
   return [`${host}: ${source.text}`, compensation].filter(Boolean).join(' ');
 }
 
@@ -760,8 +815,10 @@ export function deterministicTutorStubDramaticReleaseFallback({
   avoidQuestion = '',
   turnProgressionContract = null,
   sourceAccessibilityContract = null,
+  world = null,
 } = {}) {
   if (!frame?.active) return '';
+  const diction = resolveTutorStubSceneDiction(world);
   const stance = fallbackStance(responseConfiguration);
   const hostPart = fallbackHostPart(responseConfiguration);
   const compensation = deterministicTutorStubSourceAccessibilityCompensation(sourceAccessibilityContract);
@@ -774,6 +831,8 @@ export function deterministicTutorStubDramaticReleaseFallback({
           variationKey,
           index,
           compensation: !compensationSourceId || compensationSourceId === `source_${index + 1}` ? compensation : '',
+          world,
+          diction,
         })
       : renderExhibitEntry(entry, {
           stance,
@@ -781,6 +840,8 @@ export function deterministicTutorStubDramaticReleaseFallback({
           variationKey,
           index,
           compensation: !compensationSourceId || compensationSourceId === `source_${index + 1}` ? compensation : '',
+          world,
+          diction,
         }),
   );
   const clarification = support?.clarificationInvitationRequired
@@ -797,7 +858,7 @@ export function deterministicTutorStubDramaticReleaseFallback({
       contract: turnProgressionContract,
       support,
       defaultQuestion: fallbackQuestion({ stance, variationKey, avoidQuestion }),
-      publicObject: sceneObject(frame.entries[0]),
+      publicObject: sceneObject(frame.entries[0], 'record', world),
     }),
     turnProgressionContract?.handoff_contract?.question_allowed === false ? null : clarification,
   ]

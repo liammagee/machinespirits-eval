@@ -12905,6 +12905,7 @@ async function callTutor({
               avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
               turnProgressionContract: firstDraftContract?.progression || null,
               sourceAccessibilityContract: firstDraftContract?.evidence?.source_accessibility || null,
+              world,
             })
           : configuredContinuationFallbackRequired
             ? deterministicTutorStubConfiguredContinuationFallback({
