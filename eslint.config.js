@@ -15,6 +15,11 @@ export default [
       },
     },
     rules: {
+      // ESLint 10 added these to its recommended preset. Enabling either here
+      // would make this dependency-security upgrade rewrite unrelated runtime
+      // and research code; adopt them separately with dedicated behavior gates.
+      'no-useless-assignment': 'off',
+      'preserve-caught-error': 'off',
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }],
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-var': 'error',
