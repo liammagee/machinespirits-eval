@@ -91,3 +91,6 @@ Log:
   PR #242's newly merged compact-speaking-prompt test. Applied Prettier's
   line-only repair so this branch does not inherit a known-red CI gate; that
   focused file remains green at 5/5 with no production behavior change.
+- 2026-07-26 — PR #243 merged as `83d101fc` with every CI lane green; the
+  serialized workplan render followed as `b91e496b`. Closed this child and
+  handed the next pure R3 seam to `refactor-tutor-stub-closeout-projection`.

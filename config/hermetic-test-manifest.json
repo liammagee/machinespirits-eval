@@ -384,6 +384,7 @@
         "tests/tutorStubCapabilities.test.js",
         "tests/tutorStubCharacterAdaptationLoop.test.js",
         "tests/tutorStubCliTheme.test.js",
+        "tests/tutorStubCloseoutProjection.test.js",
         "tests/tutorStubCodexRemoteBridge.test.js",
         "tests/tutorStubCommandRegistry.test.js",
         "tests/tutorStubCompactSpeakingPrompt.test.js",
