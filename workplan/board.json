@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-25T22:41:06.548Z",
+  "generated": "2026-07-25T22:50:27.593Z",
   "counts": {
-    "total": 193,
+    "total": 194,
     "byStatus": {
-      "done": 164,
+      "done": 165,
       "blocked": 3,
       "dropped": 2,
       "triaged": 10,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 42,
-      "maintenance": 41,
+      "maintenance": 42,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -371,6 +371,7 @@
           "refactor-tutor-stub-learning-summary",
           "refactor-tutor-stub-explanatory-debug",
           "refactor-tutor-stub-response-details",
+          "refactor-tutor-stub-field-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -553,8 +554,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-tutor-stub-response-details",
-      "title": "Refactor tutor-stub response details",
+      "id": "refactor-tutor-stub-field-presentation",
+      "title": "Refactor tutor-stub field presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -562,31 +563,31 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "One pure response-details service preserves human-readable diagnostic, setting, repair, and model-response metadata text; focused, hermetic, static, and source-only gates pass without model calls.",
-      "branch": "codex/refactor-tutor-stub-response-details",
+      "verification": "One pure field-presentation service preserves bars, shift narratives, chart geometry, and byte-stable accessible SVG output; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-field-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-explanatory-debug"
+        "refactor-tutor-stub-response-details"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubResponseDetails.js",
+          "services/tutorStubFieldPresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubResponseDetails.test.js"
+          "tests/tutorStubFieldPresentation.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-explanatory-debug"
+          "refactor-tutor-stub-response-details"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
         "presentation",
-        "response-details"
+        "interaction-field"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2562,6 +2563,44 @@
         "tutor-stub",
         "learning-summary",
         "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-response-details",
+      "title": "Refactor tutor-stub response details",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "One pure response-details service preserves human-readable diagnostic, setting, repair, and model-response metadata text; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-response-details",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-explanatory-debug"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubResponseDetails.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubResponseDetails.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-explanatory-debug"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "response-details"
       ],
       "milestone": "evaluation-infrastructure"
     },
