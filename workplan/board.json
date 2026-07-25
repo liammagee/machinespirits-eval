@@ -1,20 +1,21 @@
 {
-  "generated": "2026-07-25T23:05:25.153Z",
+  "generated": "2026-07-25T23:17:34.175Z",
   "counts": {
-    "total": 194,
+    "total": 195,
     "byStatus": {
       "done": 172,
       "blocked": 4,
       "dropped": 3,
       "triaged": 6,
       "active": 5,
-      "archived": 4
+      "archived": 4,
+      "review": 1
     },
     "byType": {
       "research": 46,
       "experiment": 49,
       "infra": 42,
-      "maintenance": 42,
+      "maintenance": 43,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -259,6 +260,7 @@
           "refactor-tutor-stub-explanatory-debug",
           "refactor-tutor-stub-response-details",
           "refactor-tutor-stub-field-presentation",
+          "refactor-tutor-stub-closeout-projection",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -528,6 +530,44 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "blocked_by": "tutor-stub-transition-reward-model ended with a killed claim; no supported learned-ranking prerequisite"
+    },
+    {
+      "id": "refactor-tutor-stub-closeout-projection",
+      "title": "Refactor tutor-stub closeout projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Pure closeout labels, status, count formatting, and guard-accounting aggregation preserve the established report schema and values; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-closeout-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-field-presentation"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubCloseoutProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubCloseoutProjection.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-field-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "closeout",
+        "guard-accounting"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
