@@ -1,7 +1,7 @@
 ---
 id: refactor-sse-lifecycle
 title: Wire evaluation SSE streams into graceful application shutdown
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -31,6 +31,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-log-route-data-root
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/235
 tags:
   - refactoring
   - testing
@@ -85,3 +87,6 @@ Acceptance:
   shards 2,351/2,351 and 4,413/4,413 with zero skips, tutor-core 137/137, and
   Electron-ABI desktop tests 32/32. Lint, formatting, manifest, zero-cycle,
   workplan source-only, and diff gates pass with no model calls.
+- 2026-07-25 — Merged through PR #235 as `e5d9f047`; the initial 18-row queue
+  is complete. The next slice starts from refreshed hotspot evidence rather
+  than extending the merged branch.

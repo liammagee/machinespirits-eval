@@ -416,6 +416,7 @@
         "tests/tutorStubLatencyBenchmark.test.js",
         "tests/tutorStubLearnerAdvance.test.js",
         "tests/tutorStubLearnerResponseProvenance.test.js",
+        "tests/tutorStubLearningSummary.test.js",
         "tests/tutorStubLearningSummaryHtml.test.js",
         "tests/tutorStubLightAdaptation.test.js",
         "tests/tutorStubLineSelection.test.js",
