@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-25T23:27:48.461Z",
+  "generated": "2026-07-25T23:29:54.334Z",
   "counts": {
-    "total": 196,
+    "total": 197,
     "byStatus": {
-      "done": 173,
+      "done": 174,
       "blocked": 4,
       "dropped": 3,
       "triaged": 6,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 43,
+      "infra": 44,
       "maintenance": 43,
       "content": 2,
       "paper": 6,
@@ -2836,6 +2836,37 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/test-canonical-posthoc-analysis-pipeline"
+    },
+    {
+      "id": "tutor-pr-frozen-prefix-benchmark",
+      "title": "Add a bounded dual-CLI frozen-prefix benchmark for tutor PRs",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "The strong zero-call plan pins three committed transcript turns across Codex gpt-5.6-terra and Claude Code claude-sonnet-5 at medium effort (six calls maximum); hermetic tests prove frozen-prefix preservation, pass/fail/blocked/budget terminal states, and no retries; npm run tutor:stub:pr-benchmark -- --print-plan validates the attended PR command.",
+      "branch": "codex/tutor-pr-benchmark",
+      "depends_on": [
+        "tutor-stub-first-draft-series"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/248"
+        ],
+        "notes": [
+          "docs/tutor-pr-benchmark.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "regression",
+        "cli",
+        "pr-gate"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "tutor-stub-capability-session-runtime",
