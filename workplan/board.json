@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-25T22:35:32.235Z",
+  "generated": "2026-07-25T22:41:06.548Z",
   "counts": {
     "total": 193,
     "byStatus": {
-      "done": 163,
+      "done": 164,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 11,
+      "triaged": 10,
       "active": 3,
       "archived": 4,
       "review": 7
@@ -79,34 +79,6 @@
         "transfer"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "audience-register-pragmatics-runtime",
-      "title": "Carry first-order Audience into runtime register pragmatics",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-11",
-      "updated": "2026-07-11",
-      "verification": "A versioned runtime schema can represent speaker, hearer, optional audience, and audience alignment while Audience remains non-enacted; compatibility and focused tests pass.",
-      "links": {
-        "notes": [
-          "BELIEF-DESIRE-DAG.md",
-          "notes/poetics/drama-machine/TAXONOMY.md",
-          "notes/poetics/drama-machine/SPEC.md"
-        ],
-        "items": [
-          "register-taxonomy-negative-registers"
-        ]
-      },
-      "tags": [
-        "audience",
-        "registers",
-        "pragmatics",
-        "ontology"
-      ]
     },
     {
       "id": "decide-rich-learner-memory-service-retention",
@@ -3734,6 +3706,35 @@
       "milestone": "poetics-followups",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "audience-register-pragmatics-runtime",
+      "title": "Carry first-order Audience into runtime register pragmatics",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-11",
+      "updated": "2026-07-26",
+      "verification": "A versioned runtime schema can represent speaker, hearer, optional audience, and audience alignment while Audience remains non-enacted; compatibility and focused tests pass.",
+      "links": {
+        "notes": [
+          "BELIEF-DESIRE-DAG.md",
+          "notes/poetics/drama-machine/TAXONOMY.md",
+          "notes/poetics/drama-machine/SPEC.md"
+        ],
+        "items": [
+          "register-taxonomy-negative-registers"
+        ]
+      },
+      "tags": [
+        "audience",
+        "registers",
+        "pragmatics",
+        "ontology"
+      ],
+      "branch": "codex/audience-register-pragmatics-runtime"
     },
     {
       "id": "audit-dramatic-metaphor-role-vocabulary",
