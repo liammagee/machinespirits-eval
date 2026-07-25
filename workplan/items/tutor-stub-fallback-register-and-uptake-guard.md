@@ -13,7 +13,7 @@ verification: A contemporary-diction world speaks its own props in its own
   deterministic text; the learner-uptake guard admits a genuinely responsive
   uptake that shares no tokens with the accepted meaning; targeted and hermetic
   suites pass without model calls.
-branch: claude/tutor-stub-scene-diction
+branch: claude/tutor-stub-uptake-guard
 claim_status: planned
 links:
   code:
@@ -23,6 +23,8 @@ links:
     - services/tutorStubTurnProgressionContract.js
     - scripts/tutor-stub.js
     - tests/tutorStubSceneDiction.test.js
+    - services/tutorStubConversationalCompletion.js
+    - tests/tutorStubUptakeGuardLinkage.test.js
 tags:
   - tutor-stub
   - presentation
@@ -60,11 +62,11 @@ Acceptance:
   discloses the near-miss to the learner. The wording is not templated; the
   disclosure is guarded for non-fabrication against real prior attempts and
   for leak containment, and falls through to today's fallback when rejected.
-- Step 4 — `substantiveLearnerUptake` no longer requires token overlap as the
-  only route to visibility. Overlap stays sufficient; a responsive uptake whose
-  declared public focus is the learner's proposed move becomes a second
-  sufficient route, with stem-tolerant matching and uninformative required
-  terms dropped.
+- Step 4 — an accepted meaning that describes the learner's discourse act
+  rather than their content never becomes the turn focus surface and never
+  contributes required terms. Token overlap stays sufficient for uptake
+  visibility; a responsive uptake that echoes the learner's own surface becomes
+  a second sufficient route.
 
 Log:
 
@@ -86,3 +88,24 @@ Log:
   the only failure `tutorStubCodexRemoteBridge.test.js`, which cannot import
   `@modelcontextprotocol/sdk` — declared in `package.json`, absent from
   `node_modules` in this checkout, and unrelated to these edits.
+- 2026-07-26 — Step 4 landed, and the diagnosis is sharper than the one written
+  above. The guard was not too strict; it was pointed at the wrong text.
+  `conversationalCompletion.acceptedMeaning` carries two different kinds of
+  sentence — a classifier paraphrase of what the learner said, and a
+  generous-inference description of what the learner did ("The learner gives a
+  short answer whose referent and scope are supplied by the immediately
+  preceding public question"). The contract took the second as the turn focus
+  surface, so the recorded world-030 turn demanded the tutor speak "referent",
+  "scope" and "preceding" back to a learner who had said "check for sources of
+  water". No natural uptake could pass. `acceptedMeaningKind` is now stamped at
+  the point of resolution, act descriptions are excluded from the focus surface
+  and from required terms, and the previously unreachable
+  `RESPONSIVE_UPTAKE_PATTERN` route is revived as a second sufficient route for
+  a responsive uptake that echoes the learner's own words. Replaying the two
+  recorded rejections through the changed guard: both now pass, both by term
+  overlap alone, on focus terms `["check","sourc","water"]`. Seven new tests in
+  `tests/tutorStubUptakeGuardLinkage.test.js`; five fail on the pre-change code
+  and two pass on both, pinning that the loosening did not open the gate
+  generally. Tutor-stub sweep 2114/2115, same single pre-existing MCP-SDK
+  import failure. An earlier line in this item asked for stem-tolerant
+  matching; that is redundant — `normalizeToken` already stems.

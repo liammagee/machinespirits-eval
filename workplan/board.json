@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-25T23:09:33.890Z",
+  "generated": "2026-07-25T23:22:17.590Z",
   "counts": {
     "total": 195,
     "byStatus": {
@@ -445,7 +445,7 @@
       "created": "2026-07-26",
       "updated": "2026-07-26",
       "verification": "A contemporary-diction world speaks its own props in its own register while every period and undeclared world keeps byte-identical deterministic text; the learner-uptake guard admits a genuinely responsive uptake that shares no tokens with the accepted meaning; targeted and hermetic suites pass without model calls.",
-      "branch": "claude/tutor-stub-scene-diction",
+      "branch": "claude/tutor-stub-uptake-guard",
       "claim_status": "planned",
       "links": {
         "code": [
@@ -454,7 +454,9 @@
           "services/tutorStubResponseComposition.js",
           "services/tutorStubTurnProgressionContract.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubSceneDiction.test.js"
+          "tests/tutorStubSceneDiction.test.js",
+          "services/tutorStubConversationalCompletion.js",
+          "tests/tutorStubUptakeGuardLinkage.test.js"
         ]
       },
       "tags": [
