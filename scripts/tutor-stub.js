@@ -26,7 +26,12 @@ import { stdin as input, stdout as output } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
-import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
+import {
+  callAIWithCliBridge,
+  isCliProvider,
+  normalizeCliEffort,
+  safeCliProviderErrorMetadata,
+} from '../services/cliProviderBridge.js';
 import { getProviderConfig, loadProviders, resolveModel } from '../services/evalConfigLoader.js';
 import { runLabellingGameCli } from '../services/labellingGameCli.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
@@ -4219,6 +4224,7 @@ async function callPromptModel({
         promptAudit,
       },
       error: err.message,
+      ...safeCliProviderErrorMetadata(err),
     });
     throw err;
   }
@@ -13375,6 +13381,7 @@ async function callTutor({
       provider: resolved.provider,
       model: resolved.model,
       error: err.message,
+      ...safeCliProviderErrorMetadata(err),
     });
     throw err;
   }

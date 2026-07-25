@@ -26,10 +26,146 @@ export const WEIGHTS_INTERFACE_ANALYSIS_SPEC = Object.freeze({
   minCompleteBlocksPerProfile: 4,
   minOpportunitiesPerCell: 60,
   minOpportunitiesPerProfileCell: 20,
+  recoveryOrdinals: Object.freeze({ start: 35, end: 48 }),
 });
 
 function sha256(value) {
   return crypto.createHash('sha256').update(String(value)).digest('hex');
+}
+
+function normalizedRecoveryCommand(command, jobId) {
+  const normalized = [...command];
+  const traceDirIndex = normalized.indexOf('--trace-dir');
+  if (traceDirIndex >= 0) normalized[traceDirIndex + 1] = `<OUTPUT_ROOT>/traces/${jobId}`;
+  return normalized;
+}
+
+export function assertWeightsInterfaceRecoveryPlanCompatibility(originalPlan, recoveryPlan) {
+  if (originalPlan.jobs.length !== recoveryPlan.jobs.length) {
+    throw new Error(
+      `recovery plan has ${recoveryPlan.jobs.length} jobs; expected ${originalPlan.jobs.length}`,
+    );
+  }
+  const recoveryById = new Map(recoveryPlan.jobs.map((job) => [job.id, job]));
+  for (const original of originalPlan.jobs) {
+    const recovery = recoveryById.get(original.id);
+    if (!recovery) throw new Error(`recovery plan is missing ${original.id}`);
+    const { command: originalCommand, ...originalMetadata } = original;
+    const { command: recoveryCommand, ...recoveryMetadata } = recovery;
+    if (JSON.stringify(originalMetadata) !== JSON.stringify(recoveryMetadata)) {
+      throw new Error(`${original.id}: recovery job metadata drift`);
+    }
+    if (
+      JSON.stringify(normalizedRecoveryCommand(originalCommand, original.id)) !==
+      JSON.stringify(normalizedRecoveryCommand(recoveryCommand, recovery.id))
+    ) {
+      throw new Error(`${original.id}: recovery treatment command drift`);
+    }
+  }
+  return true;
+}
+
+export function mergeWeightsInterfaceSelections(original, recovery = null) {
+  if (!recovery) {
+    return {
+      ...original,
+      recoveryPlan: null,
+      sources: { original: original.jobs.filter((entry) => entry.authoritative).length, recovery: 0 },
+      jobs: original.jobs.map((entry) => ({ ...entry, source: entry.authoritative ? 'original' : null })),
+    };
+  }
+  assertWeightsInterfaceRecoveryPlanCompatibility(original.plan, recovery.plan);
+  const originalById = new Map(original.jobs.map((entry) => [entry.job.id, entry]));
+  const recoveryById = new Map(recovery.jobs.map((entry) => [entry.job.id, entry]));
+  const { start, end } = WEIGHTS_INTERFACE_ANALYSIS_SPEC.recoveryOrdinals;
+  for (const entry of recovery.jobs) {
+    const eligible = entry.job.ordinal >= start && entry.job.ordinal <= end;
+    if (entry.authoritative && !eligible) {
+      throw new Error(`${entry.job.id}: sealed recovery trace falls outside ordinals ${start}-${end}`);
+    }
+    if (entry.authoritative && originalById.get(entry.job.id)?.authoritative) {
+      throw new Error(`${entry.job.id}: recovery trace duplicates an original sealed trace`);
+    }
+  }
+  const jobs = original.plan.jobs.map((job) => {
+    const originalEntry = originalById.get(job.id);
+    const recoveryEntry = recoveryById.get(job.id);
+    if (originalEntry.authoritative) return { ...originalEntry, source: 'original' };
+    const eligible = job.ordinal >= start && job.ordinal <= end;
+    if (eligible && recoveryEntry?.authoritative) {
+      return { ...recoveryEntry, job, source: 'recovery' };
+    }
+    return { ...originalEntry, source: null };
+  });
+  return {
+    plan: original.plan,
+    launchState: original.launchState,
+    recoveryPlan: recovery.plan,
+    recoveryLaunchState: recovery.launchState,
+    jobs,
+    sources: {
+      original: jobs.filter((entry) => entry.source === 'original').length,
+      recovery: jobs.filter((entry) => entry.source === 'recovery').length,
+    },
+  };
+}
+
+export function selectWeightsInterfaceAuthoritativeTraces(root, { recoveryRoot = null } = {}) {
+  const original = selectAuthoritativeTraces(root);
+  const recovery = recoveryRoot ? selectAuthoritativeTraces(recoveryRoot) : null;
+  return mergeWeightsInterfaceSelections(original, recovery);
+}
+
+function combinedFloorRows(root, recoveryRoot, selection) {
+  const original = loadSealedFloorAblationRows(root).rows;
+  if (!recoveryRoot) return original;
+  const recovery = loadSealedFloorAblationRows(recoveryRoot).rows;
+  const originalById = new Map(original.map((row) => [row.job.id, row]));
+  const recoveryById = new Map(recovery.map((row) => [row.job.id, row]));
+  return selection.jobs.flatMap((entry) => {
+    if (entry.source === 'original' && originalById.has(entry.job.id)) return [originalById.get(entry.job.id)];
+    if (entry.source === 'recovery' && recoveryById.has(entry.job.id)) return [recoveryById.get(entry.job.id)];
+    return [];
+  });
+}
+
+function loadProvenanceGates(root, recoveryRoot, { originalProvenanceFile = null, recoveryProvenanceFile = null } = {}) {
+  const files = [
+    {
+      role: 'original',
+      file: originalProvenanceFile || path.join(root, 'provenance-audit.json'),
+      planFile: path.join(root, 'launch-plan.json'),
+    },
+  ];
+  if (recoveryRoot) {
+    files.push({
+      role: 'recovery',
+      file: recoveryProvenanceFile || path.join(recoveryRoot, 'provenance-audit.json'),
+      planFile: path.join(recoveryRoot, 'launch-plan.json'),
+    });
+  }
+  const audits = files.map((entry) => {
+    const artifact = fs.existsSync(entry.file) ? JSON.parse(fs.readFileSync(entry.file, 'utf8')) : null;
+    const expectedPlanSha256 = fs.existsSync(entry.planFile)
+      ? sha256(fs.readFileSync(entry.planFile))
+      : null;
+    const bound =
+      artifact?.schema === 'machinespirits.program2.weights-interface-provenance-audit.v1' &&
+      artifact?.status === 'pass' &&
+      artifact?.plan?.sha256 === expectedPlanSha256;
+    return { ...entry, artifact, expectedPlanSha256, bound };
+  });
+  return {
+    pass: audits.every((entry) => entry.bound),
+    files: audits.map((entry) => ({
+      role: entry.role,
+      file: entry.file,
+      status: entry.artifact?.status || 'missing',
+      planSha256: entry.artifact?.plan?.sha256 || null,
+      expectedPlanSha256: entry.expectedPlanSha256,
+      bound: entry.bound,
+    })),
+  };
 }
 
 function mulberry32(seed) {
@@ -215,12 +351,24 @@ export function licensedWeightsInterfaceReading({ completionReady, semanticReady
   return 'first_pass_semantic_skill_indeterminate';
 }
 
-export function analyzeWeightsInterfaceFactorial(root, { semanticFile = null, draws = 5000, seed = 20260726 } = {}) {
-  const selection = selectAuthoritativeTraces(root);
-  const floorRows = loadSealedFloorAblationRows(root).rows;
+export function analyzeWeightsInterfaceFactorial(
+  root,
+  {
+    recoveryRoot = null,
+    semanticFile = null,
+    originalProvenanceFile = null,
+    recoveryProvenanceFile = null,
+    draws = 5000,
+    seed = 20260726,
+  } = {},
+) {
+  const selection = selectWeightsInterfaceAuthoritativeTraces(root, { recoveryRoot });
+  const floorRows = combinedFloorRows(root, recoveryRoot, selection);
   const selectedSealed = selection.jobs.filter((entry) => entry.authoritative);
   const moments = selectedSealed.flatMap(momentsForSelectedJob);
-  const semanticArtifact = loadSemanticFile(semanticFile || path.join(root, 'semantic-judgments.json'));
+  const semanticArtifact = loadSemanticFile(
+    semanticFile || path.join(recoveryRoot || root, 'semantic-judgments.json'),
+  );
   const semantic = resolvedSemanticMap(semanticArtifact);
   const sealedByCondition = Object.fromEntries(
     WEIGHTS_INTERFACE_FACTORIAL_SPEC.conditions.map((condition) => [
@@ -264,8 +412,10 @@ export function analyzeWeightsInterfaceFactorial(root, { semanticFile = null, dr
     (spanInterface) =>
       Math.abs(attritionByCondition[`trained_${spanInterface}`] - attritionByCondition[`untuned_${spanInterface}`]) <= 1,
   );
-  const provenanceFile = path.join(root, 'provenance-audit.json');
-  const provenance = fs.existsSync(provenanceFile) ? JSON.parse(fs.readFileSync(provenanceFile, 'utf8')) : null;
+  const provenance = loadProvenanceGates(root, recoveryRoot, {
+    originalProvenanceFile,
+    recoveryProvenanceFile,
+  });
   const cueBlindTracePass = moments.every(
     (row) =>
       row.fallback?.policy === 'cue_blind' &&
@@ -302,7 +452,7 @@ export function analyzeWeightsInterfaceFactorial(root, { semanticFile = null, dr
       observed: { byCondition: opportunitiesByCondition, byProfileCondition: opportunitiesByProfileCondition },
     },
     attritionBalance: { pass: attritionBalanced, observed: attritionByCondition },
-    provenance: { pass: provenance?.status === 'pass', file: provenanceFile },
+    provenance,
     coverage: { pass: coveragePass },
     safety: { pass: safetyPass },
     cueBlindEnforcement: { pass: cueBlindTracePass },
@@ -325,16 +475,20 @@ export function analyzeWeightsInterfaceFactorial(root, { semanticFile = null, dr
     schema: WEIGHTS_INTERFACE_ANALYSIS_SPEC.schema,
     generatedAt: new Date().toISOString(),
     root,
+    recoveryRoot,
+    cohortLabel: recoveryRoot ? 'Amendment 1 infrastructure-recovered' : 'original cohort',
     planSha256: sha256(JSON.stringify(selection.plan)),
+    recoveryPlanSha256: selection.recoveryPlan ? sha256(JSON.stringify(selection.recoveryPlan)) : null,
     terminal: {
       planned: selection.plan.jobs.length,
       sealed: selectedSealed.length,
       finalizedAttrition: selection.plan.jobs.length - selectedSealed.length,
+      sources: selection.sources,
     },
     gates,
     completionReady,
     semantic: {
-      file: semanticFile || path.join(root, 'semantic-judgments.json'),
+      file: semanticFile || path.join(recoveryRoot || root, 'semantic-judgments.json'),
       rawRequired: rawRequiredUnits.length,
       rawResolved: rawRequiredUnits.filter((unitId) => semantic.resolved.has(unitId)).length,
       finalRequired: finalRequiredUnits.length,
@@ -378,12 +532,18 @@ async function main() {
     options: {
       json: { type: 'string' },
       semantic: { type: 'string' },
+      'recovery-root': { type: 'string' },
+      'original-provenance': { type: 'string' },
+      'recovery-provenance': { type: 'string' },
       draws: { type: 'string', default: String(WEIGHTS_INTERFACE_ANALYSIS_SPEC.draws) },
     },
   });
   const root = path.resolve(positionals[0] || path.join(REPO_ROOT, 'exports/program2-weights-interface-factorial'));
   const artifact = analyzeWeightsInterfaceFactorial(root, {
+    recoveryRoot: values['recovery-root'] ? path.resolve(values['recovery-root']) : null,
     semanticFile: values.semantic ? path.resolve(values.semantic) : null,
+    originalProvenanceFile: values['original-provenance'] ? path.resolve(values['original-provenance']) : null,
+    recoveryProvenanceFile: values['recovery-provenance'] ? path.resolve(values['recovery-provenance']) : null,
     draws: Number(values.draws),
   });
   if (values.json) fs.writeFileSync(path.resolve(values.json), `${JSON.stringify(artifact, null, 2)}\n`);

@@ -9,8 +9,9 @@ import { parseArgs } from 'node:util';
 
 import { unifiedAIProvider } from '../tutor-core/index.js';
 import { resolveModel } from '../services/evalConfigLoader.js';
-import { selectAuthoritativeTraces } from './analyze-program2-floor-ablation-mediation.mjs';
 import {
+  analyzeWeightsInterfaceFactorial,
+  selectWeightsInterfaceAuthoritativeTraces,
   semanticUnitId,
   WEIGHTS_INTERFACE_ANALYSIS_SPEC,
 } from './analyze-program2-weights-interface-factorial.mjs';
@@ -44,8 +45,8 @@ function publicHistoryBefore(turnRecords, turn) {
     .map((record) => ({ turn: Number(record.turn), learner: record.learner || '', tutor: record.tutor || '' }));
 }
 
-export function buildBlindSemanticPackets(root) {
-  const selection = selectAuthoritativeTraces(root);
+export function buildBlindSemanticPackets(root, { recoveryRoot = null } = {}) {
+  const selection = selectWeightsInterfaceAuthoritativeTraces(root, { recoveryRoot });
   const packets = [];
   const unitIndex = {};
   for (const selected of selection.jobs.filter((entry) => entry.authoritative)) {
@@ -91,6 +92,8 @@ export function buildBlindSemanticPackets(root) {
     schema: 'machinespirits.program2.weights-interface-semantic-blind-packets.v1',
     generatedAt: new Date().toISOString(),
     root,
+    recoveryRoot,
+    cohortLabel: recoveryRoot ? 'Amendment 1 infrastructure-recovered' : 'original cohort',
     blinding: {
       excluded: ['job_id', 'condition', 'weight', 'span_interface', 'model', 'fallback', 'surface_label'],
       includes: ['public_history', 'candidate_text', 'opaque_unit_id'],
@@ -195,14 +198,36 @@ async function main() {
       packet: { type: 'string' },
       adjudication: { type: 'string' },
       judges: { type: 'string', default: DEFAULT_JUDGES.join(',') },
+      'recovery-root': { type: 'string' },
+      'original-provenance': { type: 'string' },
+      'recovery-provenance': { type: 'string' },
       'dry-run': { type: 'boolean', default: false },
     },
   });
   const root = path.resolve(positionals[0] || path.join(REPO_ROOT, 'exports/program2-weights-interface-factorial'));
-  const out = path.resolve(values.out || path.join(root, 'semantic-judgments.json'));
-  const packetPath = path.resolve(values.packet || path.join(root, 'semantic-blind-packets.json'));
-  const adjudicationPath = path.resolve(values.adjudication || path.join(root, 'semantic-human-adjudication.json'));
-  const blindPackets = buildBlindSemanticPackets(root);
+  const recoveryRoot = values['recovery-root'] ? path.resolve(values['recovery-root']) : null;
+  const artifactRoot = recoveryRoot || root;
+  const out = path.resolve(values.out || path.join(artifactRoot, 'semantic-judgments.json'));
+  const packetPath = path.resolve(values.packet || path.join(artifactRoot, 'semantic-blind-packets.json'));
+  const adjudicationPath = path.resolve(
+    values.adjudication || path.join(artifactRoot, 'semantic-human-adjudication.json'),
+  );
+  const completion = analyzeWeightsInterfaceFactorial(root, {
+    recoveryRoot,
+    originalProvenanceFile: values['original-provenance']
+      ? path.resolve(values['original-provenance'])
+      : null,
+    recoveryProvenanceFile: values['recovery-provenance']
+      ? path.resolve(values['recovery-provenance'])
+      : null,
+  });
+  if (!completion.completionReady) {
+    const failures = Object.entries(completion.gates)
+      .filter(([, gate]) => !gate.pass)
+      .map(([name]) => name);
+    throw new Error(`semantic judging is gated until completion checks pass: ${failures.join(', ')}`);
+  }
+  const blindPackets = buildBlindSemanticPackets(root, { recoveryRoot });
   fs.writeFileSync(packetPath, `${JSON.stringify(blindPackets, null, 2)}\n`);
   if (values['dry-run']) {
     console.log(`[semantic-judge] dry run: ${blindPackets.packets.length} dialogue packets; 0 model calls`);

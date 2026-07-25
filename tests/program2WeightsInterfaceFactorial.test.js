@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   buildWeightsInterfaceFactorialPlan,
   buildWeightsInterfaceFactorialSmokePlan,
+  selectProgram2JobsByOrdinal,
   validateWeightsInterfaceFactorialPlan,
   WEIGHTS_INTERFACE_FACTORIAL_SPEC,
 } from '../scripts/run-program2-live-pilot.js';
@@ -13,7 +14,11 @@ import {
   resolveCueBlindCommitteeDelivery,
   runCueBlindCommitteeBattery,
 } from '../services/program2CommitteeEngine.js';
-import { licensedWeightsInterfaceReading } from '../scripts/analyze-program2-weights-interface-factorial.mjs';
+import {
+  assertWeightsInterfaceRecoveryPlanCompatibility,
+  licensedWeightsInterfaceReading,
+  mergeWeightsInterfaceSelections,
+} from '../scripts/analyze-program2-weights-interface-factorial.mjs';
 
 function flagValue(command, flag) {
   const index = command.indexOf(flag);
@@ -132,6 +137,64 @@ test('paid smoke plan is exactly one excluded complete four-cell block', () => {
   assert.equal(plan.jobs.length, 4);
   assert.equal(new Set(plan.jobs.map((job) => job.blockKey)).size, 1);
   assert.deepEqual(new Set(plan.jobs.map((job) => job.condition)), new Set(WEIGHTS_INTERFACE_FACTORIAL_SPEC.conditions));
+});
+
+test('Amendment 1 ordinal selection freezes exactly original jobs 35 through 48', () => {
+  const plan = buildWeightsInterfaceFactorialPlan({ outputRoot: '/tmp/program2-weights-interface-recovery-a1' });
+  const selected = selectProgram2JobsByOrdinal(plan.jobs, { startOrdinal: 35, endOrdinal: 48 });
+  assert.equal(selected.length, 14);
+  assert.deepEqual(
+    selected.map((job) => job.ordinal),
+    Array.from({ length: 14 }, (_, index) => index + 35),
+  );
+  assert.equal(selected[0].id, 'p2wi-35-affective_resistant-trained_v1-r3');
+  assert.equal(selected.at(-1).id, 'p2wi-48-proof_skipper-untuned_v1-r3');
+  assert.throws(
+    () => selectProgram2JobsByOrdinal(plan.jobs, { startOrdinal: 48, endOrdinal: 35 }),
+    /invalid ordinal window/u,
+  );
+});
+
+test('Amendment 1 plans may differ only in their output-root paths', () => {
+  const original = buildWeightsInterfaceFactorialPlan({ outputRoot: '/tmp/program2-weights-interface-original' });
+  const recovery = buildWeightsInterfaceFactorialPlan({ outputRoot: '/tmp/program2-weights-interface-recovery-a1' });
+  assert.equal(assertWeightsInterfaceRecoveryPlanCompatibility(original, recovery), true);
+  const drifted = structuredClone(recovery);
+  const index = drifted.jobs[34].command.indexOf('--committee-span-interface');
+  drifted.jobs[34].command[index + 1] = 'v2';
+  assert.throws(
+    () => assertWeightsInterfaceRecoveryPlanCompatibility(original, drifted),
+    /recovery treatment command drift/u,
+  );
+});
+
+test('Amendment 1 merge preserves original precedence and admits only recovery jobs 35-48', () => {
+  const originalPlan = buildWeightsInterfaceFactorialPlan({ outputRoot: '/tmp/program2-weights-interface-original' });
+  const recoveryPlan = buildWeightsInterfaceFactorialPlan({ outputRoot: '/tmp/program2-weights-interface-recovery-a1' });
+  const selection = (plan, sealedOrdinals) => ({
+    plan,
+    launchState: { jobs: {} },
+    jobs: plan.jobs.map((job) => {
+      const authoritative = sealedOrdinals.includes(job.ordinal)
+        ? { classification: 'sealed', events: [], relative: `${job.id}/sealed.jsonl` }
+        : null;
+      return { job, state: {}, traces: authoritative ? [authoritative] : [], authoritative };
+    }),
+  });
+  const merged = mergeWeightsInterfaceSelections(selection(originalPlan, [1, 34]), selection(recoveryPlan, [35, 48]));
+  assert.deepEqual(merged.sources, { original: 2, recovery: 2 });
+  assert.equal(merged.jobs[0].source, 'original');
+  assert.equal(merged.jobs[34].source, 'recovery');
+  assert.equal(merged.jobs[47].source, 'recovery');
+
+  assert.throws(
+    () => mergeWeightsInterfaceSelections(selection(originalPlan, []), selection(recoveryPlan, [34])),
+    /outside ordinals 35-48/u,
+  );
+  assert.throws(
+    () => mergeWeightsInterfaceSelections(selection(originalPlan, [35]), selection(recoveryPlan, [35])),
+    /duplicates an original sealed trace/u,
+  );
 });
 
 test('factorial analyzer freezes the preregistered reading grammar', () => {

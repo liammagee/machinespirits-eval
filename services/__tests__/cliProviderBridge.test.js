@@ -23,11 +23,12 @@ import {
   isProviderConfigured,
   normalizeCliEffort,
   resolveCliEffort,
+  safeCliProviderErrorMetadata,
 } from '../cliProviderBridge.js';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-function fakeChild({ stdoutText = '', stderrText = '', onEnd = null } = {}) {
+function fakeChild({ stdoutText = '', stderrText = '', onEnd = null, exitCode = 0 } = {}) {
   const child = new EventEmitter();
   child.stdout = new PassThrough();
   child.stderr = new PassThrough();
@@ -41,7 +42,7 @@ function fakeChild({ stdoutText = '', stderrText = '', onEnd = null } = {}) {
         if (stderrText) child.stderr.write(stderrText);
         child.stdout.end();
         child.stderr.end();
-        child.emit('close', 0);
+        child.emit('close', exitCode);
       });
     },
   };
@@ -581,6 +582,65 @@ describe('cliProviderBridge', () => {
         return true;
       },
     );
+  });
+
+  it('classifies a terminal quota event as provider capacity without forwarding its payload', async () => {
+    const secretCanary = 'SECRET-QUOTA-CANARY';
+    const forwarded = [];
+    const spawnImpl = () =>
+      fakeChild({
+        stdoutText:
+          `${JSON.stringify({ type: 'thread.started' })}\n` +
+          `${JSON.stringify({
+            type: 'turn.failed',
+            error: { message: `You've hit your usage limit. ${secretCanary}` },
+          })}\n`,
+        exitCode: 1,
+      });
+
+    await assert.rejects(
+      () =>
+        callAIWithCliBridge({ provider: 'codex', model: 'gpt-test' }, 'system', 'user', 'learner', {
+          timeoutMs: 1000,
+          onEvent: (event) => forwarded.push(event),
+          spawnImpl,
+        }),
+      (error) => {
+        assert.equal(error?.code, 'CLI_PROVIDER_USAGE_LIMIT');
+        assert.equal(error?.failureCategory, 'usage_limit');
+        assert.equal(error?.provider, 'codex');
+        assert.equal(error?.audit.prohibited_event_count, 0);
+        assert.deepEqual(error?.audit.event_type_counts, { 'thread.started': 1, 'turn.failed': 1 });
+        assert.doesNotMatch(error.message, new RegExp(secretCanary, 'u'));
+        assert.doesNotMatch(JSON.stringify(safeCliProviderErrorMetadata(error)), new RegExp(secretCanary, 'u'));
+        return true;
+      },
+    );
+    assert.deepEqual(forwarded, [{ type: 'thread.started' }]);
+  });
+
+  it('persists only safe labels and counts for a no-tools policy error', () => {
+    const error = new CliProviderPolicyError('codex', {
+      event_type_counts: { unknown: 1 },
+      item_type_counts: { tool_call: 1 },
+      prohibited_event_count: 1,
+      prohibited_events: [{ index: 2, event_type: 'unknown', item_type: 'tool_call' }],
+      invalid_jsonl_line_count: 0,
+      policy: 'strict_no_tools_allowlist',
+      raw: 'SECRET-MUST-NOT-PERSIST',
+    });
+    assert.deepEqual(safeCliProviderErrorMetadata(error), {
+      errorCode: 'CLI_PROVIDER_POLICY_VIOLATION',
+      errorProvider: 'codex',
+      structuredEventAudit: {
+        event_type_counts: { unknown: 1 },
+        item_type_counts: { tool_call: 1 },
+        prohibited_event_count: 1,
+        prohibited_events: [{ index: 2, event_type: 'unknown', item_type: 'tool_call' }],
+        invalid_jsonl_line_count: 0,
+        policy: 'strict_no_tools_allowlist',
+      },
+    });
   });
 
   it('passes an opt-in JSON schema and isolation flags to Claude', async () => {

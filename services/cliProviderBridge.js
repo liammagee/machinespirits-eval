@@ -88,6 +88,41 @@ export class CliProviderPolicyError extends Error {
   }
 }
 
+function safeAuditCounts(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key, count]) => /^[a-z_.]+$/u.test(key) && Number.isFinite(Number(count)))
+      .map(([key, count]) => [key, Number(count)]),
+  );
+}
+
+export function safeCliProviderErrorMetadata(error) {
+  const metadata = {};
+  if (typeof error?.code === 'string') metadata.errorCode = error.code.slice(0, 80);
+  if (typeof error?.provider === 'string') metadata.errorProvider = error.provider.slice(0, 40);
+  if (typeof error?.failureCategory === 'string') metadata.providerFailureCategory = error.failureCategory.slice(0, 80);
+  const audit = error?.audit;
+  if (audit && typeof audit === 'object') {
+    metadata.structuredEventAudit = {
+      event_type_counts: safeAuditCounts(audit.event_type_counts),
+      item_type_counts: safeAuditCounts(audit.item_type_counts),
+      prohibited_event_count: Number(audit.prohibited_event_count || 0),
+      prohibited_events: Array.isArray(audit.prohibited_events)
+        ? audit.prohibited_events.map((entry) => ({
+            index: Number.isInteger(entry?.index) ? entry.index : null,
+            event_type: String(entry?.event_type || 'unknown').slice(0, 40),
+            item_type: entry?.item_type === null ? null : String(entry?.item_type || 'unknown').slice(0, 40),
+            ...(Number.isFinite(Number(entry?.count)) ? { count: Number(entry.count) } : {}),
+          }))
+        : [],
+      invalid_jsonl_line_count: Number(audit.invalid_jsonl_line_count || 0),
+      policy: String(audit.policy || '').slice(0, 80),
+    };
+  }
+  return metadata;
+}
+
 function positiveIntEnv(name, fallback) {
   const raw = process.env[name];
   if (!raw) return fallback;
@@ -386,7 +421,14 @@ const ALLOWED_CODEX_EVENT_TYPES = new Set([
   'item.updated',
   'item.completed',
   'turn.completed',
+  // These are terminal provider-status events, not tool activity. They are
+  // audited but never forwarded to trace/UI callbacks. A failed CLI process
+  // must expose quota/auth/transport state instead of being mislabeled as a
+  // no-tools violation merely because the stream ended unsuccessfully.
+  'turn.failed',
+  'error',
 ]);
+const CODEX_FAILURE_EVENT_TYPES = new Set(['turn.failed', 'error']);
 const ALLOWED_CODEX_ITEM_TYPES = new Set(['agent_message', 'reasoning']);
 const KNOWN_PROHIBITED_CODEX_TYPES = new Set([
   'command_execution',
@@ -434,6 +476,36 @@ function auditCodexStructuredEvents(events = [], { strict = true, invalidLines =
     invalid_jsonl_line_count: Number(invalidLines),
     policy: strict ? 'strict_no_tools_allowlist' : 'observational_only',
   };
+}
+
+function codexProviderFailureCategory(events = [], stderr = '') {
+  const safeFailureText = events
+    .filter((event) => CODEX_FAILURE_EVENT_TYPES.has(String(event?.type || '')))
+    .flatMap((event) => [event?.message, event?.error?.message, event?.error, event?.detail])
+    .filter((value) => typeof value === 'string')
+    .join(' ');
+  const text = `${safeFailureText} ${String(stderr || '')}`;
+  if (/usage limit|purchase more credits|credit balance|quota exhausted/iu.test(text)) return 'usage_limit';
+  if (/rate limit|too many requests|HTTP\s*429/iu.test(text)) return 'rate_limit';
+  if (/unauthori[sz]ed|authentication|invalid (?:api )?key|forbidden|HTTP\s*(?:401|403)/iu.test(text)) {
+    return 'authentication';
+  }
+  if (/context length|context window|maximum context|too many tokens/iu.test(text)) return 'context_limit';
+  if (/timed? out|ECONN|EAI_AGAIN|ENOTFOUND|network|socket|unreachable|HTTP\s*(?:502|503|504)/iu.test(text)) {
+    return 'transport';
+  }
+  return 'provider_error';
+}
+
+function codexProviderExitError({ code, stderr, events, audit }) {
+  const failureCategory = codexProviderFailureCategory(events, stderr);
+  const error = new Error(`codex CLI failed (${failureCategory})`);
+  error.code = failureCategory === 'usage_limit' ? 'CLI_PROVIDER_USAGE_LIMIT' : 'CLI_PROVIDER_EXIT_FAILED';
+  error.provider = 'codex';
+  error.failureCategory = failureCategory;
+  error.exitCode = code;
+  error.audit = audit;
+  return error;
 }
 
 async function callClaudeCli({
@@ -674,7 +746,12 @@ async function callCodexCli({
         // Prohibited events stay internal long enough to count and reject;
         // command payloads are never forwarded into UI/log callbacks.
         const singleEventAudit = auditCodexStructuredEvents([event]);
-        if (singleEventAudit.prohibited_event_count === 0) onEvent?.(event);
+        if (
+          singleEventAudit.prohibited_event_count === 0 &&
+          !CODEX_FAILURE_EVENT_TYPES.has(String(event?.type || ''))
+        ) {
+          onEvent?.(event);
+        }
       });
       const onAbort = () => {
         try {
@@ -737,10 +814,11 @@ async function callCodexCli({
           reject(new CliProviderPolicyError('codex', eventAudit));
           return;
         }
-        if (code !== 0) {
-          const exitError = new Error(`codex CLI exited with code ${code}`);
-          exitError.code = 'CLI_PROVIDER_EXIT_FAILED';
-          exitError.exitCode = code;
+        const hasFailureEvent = parsedStream.events.some((event) =>
+          CODEX_FAILURE_EVENT_TYPES.has(String(event?.type || '')),
+        );
+        if (code !== 0 || hasFailureEvent) {
+          const exitError = codexProviderExitError({ code, stderr: err, events: parsedStream.events, audit: eventAudit });
           exitError.stdoutBytes = Buffer.byteLength(stdout);
           exitError.stderrBytes = Buffer.byteLength(err);
           reject(exitError);

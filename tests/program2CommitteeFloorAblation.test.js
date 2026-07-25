@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
+  assertProgram2LaunchStateRunnable,
   buildCommitteeFloorAblationPlan,
   buildPhase5LivePilotPlan,
   buildPhase5bLivePilotPlan,
@@ -280,6 +281,55 @@ test('launcher distinguishes deterministic final audits from provider transport 
       aborts: infrastructureFailure.abortImmediately,
     },
     { kind: 'child_process', counts: false, aborts: true },
+  );
+
+  const policyFailure = classifyProgram2LaunchFailure({
+    error: new Error('child exited 1'),
+    traceEvent: {
+      turn: 5,
+      error: 'codex CLI response rejected by the no-tools policy',
+      errorCode: 'CLI_PROVIDER_POLICY_VIOLATION',
+    },
+  });
+  assert.deepEqual(
+    {
+      kind: policyFailure.kind,
+      counts: policyFailure.countsTowardTransportAbort,
+      aborts: policyFailure.abortImmediately,
+      errorCode: policyFailure.errorCode,
+    },
+    { kind: 'provider_policy', counts: false, aborts: true, errorCode: 'CLI_PROVIDER_POLICY_VIOLATION' },
+  );
+
+  const capacityFailure = classifyProgram2LaunchFailure({
+    error: new Error('child exited 1'),
+    traceEvent: {
+      turn: 1,
+      error: 'codex CLI failed (usage_limit)',
+      errorCode: 'CLI_PROVIDER_USAGE_LIMIT',
+      providerFailureCategory: 'usage_limit',
+    },
+  });
+  assert.deepEqual(
+    {
+      kind: capacityFailure.kind,
+      counts: capacityFailure.countsTowardTransportAbort,
+      aborts: capacityFailure.abortImmediately,
+      category: capacityFailure.providerFailureCategory,
+    },
+    { kind: 'provider_capacity', counts: false, aborts: true, category: 'usage_limit' },
+  );
+});
+
+test('a fatal launcher checkpoint cannot be bypassed by an external supervisor restart', () => {
+  assert.equal(assertProgram2LaunchStateRunnable({ jobs: {} }), true);
+  assert.throws(
+    () =>
+      assertProgram2LaunchStateRunnable({
+        halted: true,
+        abortReason: 'non-retryable provider_capacity failure before a sealed job',
+      }),
+    /launch state is halted: non-retryable provider_capacity/u,
   );
 });
 

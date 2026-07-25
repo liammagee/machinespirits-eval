@@ -907,6 +907,10 @@ export function classifyProgram2LaunchFailure({ error = null, traceEvent = null 
   const childError = String(error?.message || error || '').trim();
   const traceError = String(traceEvent?.error || '').trim();
   const detail = traceError || childError || 'unknown child-process failure';
+  const errorCode = String(traceEvent?.errorCode || error?.code || '').trim();
+  const providerFailureCategory = String(
+    traceEvent?.providerFailureCategory || error?.failureCategory || '',
+  ).trim();
   if (/^Tutor deterministic fallback failed final audit:/u.test(detail)) {
     return {
       kind: 'deterministic_final_audit',
@@ -931,6 +935,34 @@ export function classifyProgram2LaunchFailure({ error = null, traceEvent = null 
       traceFile: traceEvent?.traceFile || null,
     };
   }
+  if (
+    errorCode === 'CLI_PROVIDER_USAGE_LIMIT' ||
+    providerFailureCategory === 'usage_limit' ||
+    /usage limit|purchase more credits|credit balance|quota exhausted/iu.test(detail)
+  ) {
+    return {
+      kind: 'provider_capacity',
+      countsTowardTransportAbort: false,
+      abortImmediately: true,
+      detail,
+      errorCode: errorCode || null,
+      providerFailureCategory: providerFailureCategory || 'usage_limit',
+      turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
+      traceFile: traceEvent?.traceFile || null,
+    };
+  }
+  if (errorCode === 'CLI_PROVIDER_POLICY_VIOLATION' || /CLI response rejected by the no-tools policy/iu.test(detail)) {
+    return {
+      kind: 'provider_policy',
+      countsTowardTransportAbort: false,
+      abortImmediately: true,
+      detail,
+      errorCode: errorCode || 'CLI_PROVIDER_POLICY_VIOLATION',
+      providerFailureCategory: providerFailureCategory || null,
+      turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
+      traceFile: traceEvent?.traceFile || null,
+    };
+  }
   return {
     kind: error?.signal ? 'child_signal' : 'child_process',
     countsTowardTransportAbort: false,
@@ -939,6 +971,15 @@ export function classifyProgram2LaunchFailure({ error = null, traceEvent = null 
     turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
     traceFile: traceEvent?.traceFile || null,
   };
+}
+
+export function selectProgram2JobsByOrdinal(jobs, { startOrdinal = 1, endOrdinal = null } = {}) {
+  const start = Number(startOrdinal);
+  const end = endOrdinal === null || endOrdinal === undefined || endOrdinal === '' ? jobs.length : Number(endOrdinal);
+  if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end < start || end > jobs.length) {
+    throw new Error(`invalid ordinal window ${startOrdinal}..${endOrdinal ?? jobs.length} for ${jobs.length} jobs`);
+  }
+  return jobs.filter((job) => job.ordinal >= start && job.ordinal <= end);
 }
 
 export function reconcileProgram2RetryCheckpoint({ outputRoot, job, priorOutcome = null } = {}) {
@@ -957,6 +998,8 @@ export function reconcileProgram2RetryCheckpoint({ outputRoot, job, priorOutcome
       detail: failure.detail.slice(0, 500),
       turn: failure.turn,
       traceFile: failure.traceFile ? path.relative(ROOT, failure.traceFile) : null,
+      errorCode: failure.errorCode || null,
+      providerFailureCategory: failure.providerFailureCategory || null,
     };
   });
   const latest = failures.at(-1);
@@ -985,6 +1028,13 @@ export function program2ResumeAttemptState(priorOutcome = null) {
   return { nextAttempt: 1, failures: [] };
 }
 
+export function assertProgram2LaunchStateRunnable(launchState = {}) {
+  if (launchState.halted === true) {
+    throw new Error(`launch state is halted: ${launchState.abortReason || 'unspecified fatal failure'}`);
+  }
+  return true;
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -994,12 +1044,14 @@ async function main() {
       'output-dir': { type: 'string', default: '' },
       plan: { type: 'string', default: '5' },
       'limit-jobs': { type: 'string', default: '' },
+      'start-ordinal': { type: 'string', default: '1' },
+      'end-ordinal': { type: 'string', default: '' },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--plan 5|5b|5c|floor|weights-interface|weights-interface-smoke] [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--plan 5|5b|5c|floor|weights-interface|weights-interface-smoke] [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--start-ordinal N --end-ordinal N] [--limit-jobs N]',
     );
     return;
   }
@@ -1040,6 +1092,10 @@ async function main() {
   const defaultRoot = launch ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
   const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
   const plan = planTable[planKey].build({ outputRoot });
+  const selectedJobs = selectProgram2JobsByOrdinal(plan.jobs, {
+    startOrdinal: values['start-ordinal'],
+    endOrdinal: values['end-ordinal'],
+  });
   const validation = planTable[planKey].validate(plan);
   const fixtures = runPhase5ZeroModelFixtures();
   const artifact = {
@@ -1052,6 +1108,11 @@ async function main() {
     planSha256: sha256(plan),
     validation,
     fixtures,
+    executionWindow: {
+      startOrdinal: selectedJobs[0]?.ordinal ?? null,
+      endOrdinal: selectedJobs.at(-1)?.ordinal ?? null,
+      selectedJobIds: selectedJobs.map((job) => job.id),
+    },
     plan,
   };
   if (!artifact.ok) {
@@ -1063,7 +1124,9 @@ async function main() {
   const jsonPath = path.join(outputRoot, launch ? 'launch-plan.json' : 'zero-model-dry-run.json');
   fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
   if (!launch) {
-    console.log(`[phase5] zero-model gate PASS; 0 model calls; ${plan.jobs.length} jobs planned`);
+    console.log(
+      `[phase5] zero-model gate PASS; 0 model calls; ${plan.jobs.length} jobs planned; ${selectedJobs.length} selected`,
+    );
     console.log(`[phase5] ${path.relative(ROOT, jsonPath)}`);
     return;
   }
@@ -1083,11 +1146,12 @@ async function main() {
     ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
     : { schema: 'machinespirits.tutor-stub.program2-phase5-launch-state.v1', jobs: {} };
   const saveState = () => fs.writeFileSync(statePath, `${JSON.stringify(launchState, null, 2)}\n`);
+  assertProgram2LaunchStateRunnable(launchState);
   let consecutiveTransportFailures = Number.isInteger(launchState.consecutiveTransportFailures)
     ? launchState.consecutiveTransportFailures
     : 0;
   let executed = 0;
-  for (const job of plan.jobs) {
+  for (const job of selectedJobs) {
     if (executed >= limit) break;
     const priorOutcome = launchState.jobs[job.id] || null;
     const reconciledOutcome = reconcileProgram2RetryCheckpoint({ outputRoot, job, priorOutcome });
@@ -1145,6 +1209,8 @@ async function main() {
           detail: failure.detail.slice(0, 500),
           turn: failure.turn,
           traceFile: failure.traceFile ? path.relative(ROOT, failure.traceFile) : null,
+          errorCode: failure.errorCode || null,
+          providerFailureCategory: failure.providerFailureCategory || null,
         });
         consecutiveTransportFailures = failure.countsTowardTransportAbort
           ? consecutiveTransportFailures + 1
@@ -1167,6 +1233,7 @@ async function main() {
           launchState.jobs[job.id] = outcome;
           launchState.abortedAt = new Date().toISOString();
           launchState.abortReason = `non-retryable ${failure.kind} failure before a sealed job`;
+          launchState.halted = true;
           saveState();
           throw new Error(`aborting launch: non-retryable ${failure.kind} failure`);
         }
@@ -1174,6 +1241,7 @@ async function main() {
           launchState.jobs[job.id] = outcome;
           launchState.abortedAt = new Date().toISOString();
           launchState.abortReason = 'three consecutive transport failures (prereg §3)';
+          launchState.halted = true;
           saveState();
           throw new Error('aborting launch: three consecutive transport failures');
         }
