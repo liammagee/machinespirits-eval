@@ -53,6 +53,10 @@ export function credentialTemplate() {
   ].join('\n');
 }
 
+export function shouldLoadStoredCredentials({ headless = false } = {}) {
+  return !headless;
+}
+
 export function createCredentialStore({ safeStorage, dir, fs = fsDefault } = {}) {
   const encPath = path.join(dir, 'credentials.enc');
   const plainPath = path.join(dir, 'keys.env');

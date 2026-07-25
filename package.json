@@ -372,12 +372,20 @@
     "@types/node": "22.14.0",
     "@vitest/coverage-v8": "^4.1.10",
     "electron": "^43.2.0",
-    "electron-builder": "^26.15.3",
+    "electron-builder": "^26.15.7",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.3.0",
     "prettier": "^3.8.1",
+    "temp": "file:vendor/temp-safe",
     "vitest": "^4.0.0"
+  },
+  "overrides": {
+    "@electron/asar": "4.2.1",
+    "@electron/universal": "3.0.6",
+    "ejs": "6.0.1",
+    "electron-winstaller": "5.4.4",
+    "temp": "$temp"
   },
   "engines": {
     "node": ">=20.0.0"

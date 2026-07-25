@@ -23,7 +23,7 @@ import { resolvePaths, serverEnv } from './paths.js';
 import { buildMenuTemplate, parseNavHtml } from './menu.js';
 import { loadWindowState, saveWindowState } from './windowState.js';
 import { buildCSP, shouldOpenExternally, loopbackAuthHeaders, basicAuthHeader } from './security.js';
-import { createCredentialStore } from './credentials.js';
+import { createCredentialStore, shouldLoadStoredCredentials } from './credentials.js';
 
 app.setName('Scriptorium');
 
@@ -434,7 +434,11 @@ if (hasLock) {
     }
 
     const paths = resolvePaths(app, REPO_ROOT);
-    credStore = createCredentialStore({ safeStorage, dir: paths.userData });
+    // Headless validation is deliberately keyless: it must never decrypt real
+    // provider credentials or block on an interactive OS-keychain prompt.
+    credStore = shouldLoadStoredCredentials({ headless: HEADLESS })
+      ? createCredentialStore({ safeStorage, dir: paths.userData })
+      : null;
     const env = buildServerEnv(paths);
 
     if (HEADLESS) {
