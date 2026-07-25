@@ -63,6 +63,18 @@ export function loadTestManifest(
   return JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 }
 
+export function synchronizeTestManifest(manifest, projectRoot = DEFAULT_PROJECT_ROOT) {
+  if (manifest?.version !== 1) throw new Error('hermetic test manifest version must be 1');
+  if (!manifest?.suites?.root || !manifest?.suites?.core) {
+    throw new Error('hermetic test manifest must declare root and core suites');
+  }
+
+  const synchronized = JSON.parse(JSON.stringify(manifest));
+  synchronized.suites.root.requiredFiles = discoverRootTestFiles(projectRoot);
+  synchronized.suites.core.requiredFiles = discoverCoreTestFiles(projectRoot);
+  return synchronized;
+}
+
 function listDifference(left, right) {
   const rightSet = new Set(right);
   return left.filter((value) => !rightSet.has(value));

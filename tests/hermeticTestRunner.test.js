@@ -8,6 +8,7 @@ import {
   loadTestManifest,
   parseNodeTapSummary,
   parseVitestJsonSummary,
+  synchronizeTestManifest,
   validatePhaseSummary,
   validateTestManifest,
 } from '../scripts/hermetic-test-contract.js';
@@ -22,6 +23,7 @@ import {
   runPhase,
   selectTestShard,
 } from '../scripts/run-hermetic-tests.js';
+import { describeManifestChanges, runManifestSync } from '../scripts/sync-hermetic-test-manifest.js';
 
 test('default hermetic run selects root and in-housed core suites', () => {
   const options = parseRunnerArgs([]);
@@ -43,8 +45,9 @@ test('default hermetic run selects root and in-housed core suites', () => {
     ],
   );
   assert.equal(phases[1].args[0], path.join(projectRoot, 'node_modules/vitest/vitest.mjs'));
-  assert.equal(phases[0].selectedFiles.length, 461);
-  assert.equal(phases[1].selectedFiles.length, 11);
+  const manifestState = validateTestManifest(loadTestManifest(projectRoot), projectRoot);
+  assert.equal(phases[0].selectedFiles.length, manifestState.rootFiles.length);
+  assert.equal(phases[1].selectedFiles.length, manifestState.coreFiles.length);
   assert.equal(phases[1].reportPath, '/tmp/hermetic-reports/tutor-core-vitest-results.json');
 });
 
@@ -150,8 +153,34 @@ test('quiet phases wait for inherited stdout pipes to close before parsing the T
   });
 
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /# tests 1/u);
+  assert.match(result.stdout, /# tests 1/u, result.stderr);
   assert.match(result.stdout, /# fail 0/u);
+});
+
+test('quiet phase drain stays open while late TAP output is still arriving', async () => {
+  const childScript = `
+    const { spawn } = require('node:child_process');
+    const writer = spawn(process.execPath, ['-e', ${JSON.stringify(`
+      process.stdout.write('TAP version 13\\n');
+      setTimeout(() => process.stdout.write('1..1\\n'), 100);
+      setTimeout(() => process.stdout.write('# tests 1\\n# pass 1\\n# fail 0\\n'), 200);
+    `)}], { detached: true, stdio: ['ignore', 1, 2] });
+    writer.unref();
+  `;
+  const result = await runPhase({
+    phase: 'root',
+    forceExit: true,
+    args: ['-e', childScript],
+    env: process.env,
+    quiet: true,
+    projectRoot: path.resolve('.'),
+    stdioDrainIdleMs: 150,
+    stdioDrainMaxMs: 750,
+    onChild: () => {},
+  });
+
+  assert.match(result.stdout, /# tests 1/u, result.stderr);
+  assert.equal(parseNodeTapSummary(result.stdout).fail, 0);
 });
 
 test('quiet phases bound the drain wait when a detached descendant keeps stdout open', async () => {
@@ -171,11 +200,13 @@ test('quiet phases bound the drain wait when a detached descendant keeps stdout 
     env: process.env,
     quiet: true,
     projectRoot: path.resolve('.'),
+    stdioDrainIdleMs: 100,
+    stdioDrainMaxMs: 500,
     onChild: () => {},
   });
 
   assert.equal(result.code, 0);
-  assert.ok(Date.now() - startedAt < 2_500, 'stdio drain wait should be bounded');
+  assert.ok(Date.now() - startedAt < 1_000, 'stdio drain wait should be bounded');
 });
 
 test('captured failure replay waits for backpressured output to flush', async () => {
@@ -243,8 +274,8 @@ test('checked-in manifest exactly classifies root, core, and deliberate fixture 
   const projectRoot = path.resolve('.');
   const manifest = loadTestManifest(projectRoot);
   const state = validateTestManifest(manifest, projectRoot);
-  assert.equal(state.rootFiles.length, 461);
-  assert.equal(state.coreFiles.length, 11);
+  assert.ok(state.rootFiles.length > 0);
+  assert.ok(state.coreFiles.length > 0);
   assert.deepEqual(state.excludedFiles, [
     'tests/fixtures/tutor-stub-first-draft/captured-deterministic-failure.test.js',
   ]);
@@ -301,6 +332,67 @@ test('manifest validation reports missing, extra, and unclassified test files', 
       () => validateTestManifest(manifest, projectRoot),
       /classified test manifest drift; extra: routes\/unclassified\.test\.js/u,
     );
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('manifest synchronization registers ordinary suite files while preserving explicit classifications', () => {
+  const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-manifest-sync-'));
+  const writeTest = (relativePath) => {
+    fs.mkdirSync(path.dirname(path.join(projectRoot, relativePath)), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, relativePath), '// fixture\n');
+  };
+  const manifest = {
+    version: 1,
+    suites: {
+      root: { requiredFiles: ['tests/removed.test.js'] },
+      core: { requiredFiles: ['tutor-core/services/__tests__/core.test.js'] },
+    },
+    fixtureExclusions: [
+      { file: 'tests/fixtures/captured.test.js', owner: 'fixture-owner', reason: 'expected failure' },
+    ],
+    allowedSkips: [],
+  };
+
+  try {
+    for (const relativePath of [
+      'services/__tests__/service.test.js',
+      'tests/root.test.js',
+      'tutor-core/services/__tests__/core.test.js',
+      'tests/fixtures/captured.test.js',
+    ]) {
+      writeTest(relativePath);
+    }
+    fs.mkdirSync(path.join(projectRoot, 'config'), { recursive: true });
+    fs.writeFileSync(
+      path.join(projectRoot, 'config/hermetic-test-manifest.json'),
+      `${JSON.stringify(manifest, null, 2)}\n`,
+    );
+
+    const synchronized = synchronizeTestManifest(manifest, projectRoot);
+    assert.deepEqual(synchronized.suites.root.requiredFiles, [
+      'services/__tests__/service.test.js',
+      'tests/root.test.js',
+    ]);
+    assert.deepEqual(describeManifestChanges(manifest, synchronized), [
+      'root added: services/__tests__/service.test.js, tests/root.test.js',
+      'root removed: tests/removed.test.js',
+    ]);
+    assert.doesNotThrow(() => validateTestManifest(synchronized, projectRoot));
+
+    const originalLog = console.log;
+    const originalError = console.error;
+    console.log = () => {};
+    console.error = () => {};
+    try {
+      assert.equal(runManifestSync(['--check'], projectRoot), 1);
+      assert.equal(runManifestSync(['--write'], projectRoot), 0);
+      assert.equal(runManifestSync(['--check'], projectRoot), 0);
+    } finally {
+      console.log = originalLog;
+      console.error = originalError;
+    }
   } finally {
     fs.rmSync(projectRoot, { recursive: true, force: true });
   }
@@ -435,6 +527,10 @@ test('the concurrent PTY skip is discharged by a dedicated natural-teardown CI l
 test('CI shards both supported Node versions, caches npm downloads, and avoids unneeded LFS checkout', () => {
   const workflow = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
   assert.match(workflow, /^concurrency:\n {2}group: .*github\.workflow.*github\.ref/mu);
+  assert.match(workflow, /^ {2}test-contract:\n {4}name: Hermetic test contract$/mu);
+  assert.match(workflow, /^ {8}run: npm run test:manifest$/mu);
+  assert.match(workflow, /^ {2}test:\n {4}needs: test-contract$/mu);
+  assert.match(workflow, /^ {2}pty-concurrency:\n {4}name: PTY \/ loopback concurrency\n {4}needs: test-contract$/mu);
   assert.match(workflow, /^ {8}node-version: \[20, 22\]\n {8}shard: \[1, 2\]$/mu);
   assert.match(workflow, /npm run test:root -- --shard=\$\{\{ matrix\.shard \}\}\/2 --quiet/u);
   assert.match(workflow, /^ {8}if: matrix\.shard == 1\n {8}run: npm run test:core -- --quiet$/mu);

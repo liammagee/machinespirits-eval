@@ -20,7 +20,8 @@ import {
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const VALID_SUITES = new Set(['all', 'root', 'core']);
-const CHILD_STDIO_DRAIN_GRACE_MS = 1_000;
+const CHILD_STDIO_DRAIN_IDLE_MS = 2_000;
+const CHILD_STDIO_DRAIN_MAX_MS = 10_000;
 
 export { discoverCoreTestFiles, discoverRootTestFiles } from './hermetic-test-contract.js';
 
@@ -194,6 +195,8 @@ export function runPhase({
   projectRoot = PROJECT_ROOT,
   stdoutStream = process.stdout,
   stderrStream = process.stderr,
+  stdioDrainIdleMs = CHILD_STDIO_DRAIN_IDLE_MS,
+  stdioDrainMaxMs = CHILD_STDIO_DRAIN_MAX_MS,
   onChild,
 }) {
   console.log(`\n[test:hermetic] ${phaseLabel(phase, forceExit, shard)}`);
@@ -207,13 +210,15 @@ export function runPhase({
     const stdoutChunks = [];
     const stderrChunks = [];
     let childResult = null;
-    let drainTimer = null;
+    let drainIdleTimer = null;
+    let drainMaxTimer = null;
     let settled = false;
 
     const finish = () => {
       if (settled || !childResult) return;
       settled = true;
-      if (drainTimer) clearTimeout(drainTimer);
+      if (drainIdleTimer) clearTimeout(drainIdleTimer);
+      if (drainMaxTimer) clearTimeout(drainMaxTimer);
       // A detached descendant can keep inherited pipes open indefinitely after
       // the test runner exits. Stop waiting after the bounded drain window.
       child.stdout.destroy();
@@ -225,25 +230,36 @@ export function runPhase({
       });
     };
 
+    const scheduleDrain = () => {
+      if (!childResult || settled) return;
+      if (drainIdleTimer) clearTimeout(drainIdleTimer);
+      drainIdleTimer = setTimeout(finish, stdioDrainIdleMs);
+      drainMaxTimer ||= setTimeout(finish, stdioDrainMaxMs);
+    };
+
     child.stdout.on('data', (chunk) => {
       stdoutChunks.push(chunk);
       if (!quiet) stdoutStream.write(chunk);
+      scheduleDrain();
     });
     child.stderr.on('data', (chunk) => {
       stderrChunks.push(chunk);
       if (!quiet) stderrStream.write(chunk);
+      scheduleDrain();
     });
     onChild(child);
     child.once('error', (error) => {
       settled = true;
-      if (drainTimer) clearTimeout(drainTimer);
+      if (drainIdleTimer) clearTimeout(drainIdleTimer);
+      if (drainMaxTimer) clearTimeout(drainMaxTimer);
       reject(error);
     });
     child.once('exit', (code, signal) => {
       childResult = { code: code ?? 1, signal };
-      // Usually `close` follows immediately after stdout/stderr drain. Keep a
-      // grace period for late TAP bytes, but do not let inherited pipes hang CI.
-      drainTimer = setTimeout(finish, CHILD_STDIO_DRAIN_GRACE_MS);
+      // Usually `close` follows immediately after stdout/stderr drain. When a
+      // descendant still owns the pipe, keep extending the idle window while
+      // TAP bytes arrive, with a hard ceiling for genuinely leaked handles.
+      scheduleDrain();
     });
     child.once('close', (code, signal) => {
       childResult ||= { code: code ?? 1, signal };

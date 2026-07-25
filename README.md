@@ -274,6 +274,8 @@ Skills with a `description` field (`ms-analyze-run`, `ms-check-models`, `ms-quer
 npm test                   # root Node suites, then in-housed tutor-core Vitest suites
 npm run test:root          # root Node suites only
 npm run test:core          # in-housed tutor-core suites only
+npm run test:manifest      # verify the checked-in required-test inventory
+npm run test:manifest:update # register added/removed test files, then review and commit
 npm run test:root:handles  # root suites without forced exit, for handle-leak audits
 npm run test:coverage:risk # hermetic risk-group coverage with ratcheted floors (Node 22.10+)
 ```
@@ -285,6 +287,8 @@ down naturally. Risk coverage also uses natural teardown, writes LCOV, JSON,
 and Markdown under ignored `coverage/risk/`, and checks the versioned floors in
 `config/coverage-risk-floors.json` for store, admin/auth, evaluator provenance,
 browser labelling save-state, and tutor-core recognition/memory surfaces.
+When adding or removing a `*.test.js` file, run `npm run test:manifest:update`;
+CI checks that inventory once before starting the Node-version test matrix.
 
 ## Known Deferred Risks
 

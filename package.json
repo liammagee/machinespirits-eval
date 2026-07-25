@@ -292,6 +292,8 @@
     "probe:plan3-dag-sfs": "node scripts/run-plan3-dag-sfs-audit.js",
     "test": "node scripts/run-hermetic-tests.js",
     "test:hermetic": "node scripts/run-hermetic-tests.js",
+    "test:manifest": "node scripts/sync-hermetic-test-manifest.js --check",
+    "test:manifest:update": "node scripts/sync-hermetic-test-manifest.js --write",
     "test:root": "node scripts/run-hermetic-tests.js --suite root",
     "test:root:handles": "node scripts/run-hermetic-tests.js --suite root --no-force-exit",
     "test:pty:ci": "TUTOR_STUB_RUN_CONCURRENT_PTY_TEST=1 node scripts/run-hermetic-tests.js --suite root --no-force-exit tests/tutorStubInteractiveModes.test.js",
