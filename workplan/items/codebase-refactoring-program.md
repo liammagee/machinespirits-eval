@@ -42,6 +42,7 @@ links:
     - refactor-tutor-stub-learning-summary
     - refactor-tutor-stub-explanatory-debug
     - refactor-tutor-stub-response-details
+    - refactor-tutor-stub-field-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -253,3 +254,19 @@ Log:
   presentation service, exhaustive authored-label and byte-exact metadata
   fixtures, a 106-line CLI reduction, and focused/full hermetic parity green.
   Command handling and the remaining terminal/runtime seams stay out of scope.
+- 2026-07-26 — PR #240 merged the response-details child as `c4b3e7e5` with
+  every CI lane green. Activated `refactor-tutor-stub-field-presentation` from
+  rendered `origin/main` at `e7c86cb3` to move only bars, shift narratives,
+  chart geometry, and interactive SVG serialization; auto-eval visuals and all
+  terminal, filesystem, trace, command, model, and runtime behavior remain in
+  their current owners.
+- 2026-07-26 — The field-presentation child reached review with nine pure
+  helpers in one leaf, a 166-line CLI reduction, a byte-pinned accessible SVG,
+  and focused/full hermetic parity green. The deliberately different auto-eval
+  renderer and every application-behavior boundary remain unchanged.
+- 2026-07-26 — Rebased that child onto rendered `origin/main` at `4b69df9b`
+  after the independent concealed-answer guard merged; the overlapping
+  guard/replay set and complete hermetic suite remain green on the final base.
+- 2026-07-26 — Rebased the child again onto `origin/main` at `296550eb` after
+  the independent audience-pragmatics runtime merged. Its full overlap surface
+  is green at 129/129 and the bounded 166-line extraction remains unchanged.

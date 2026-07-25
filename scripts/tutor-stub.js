@@ -489,7 +489,6 @@ import {
   buildFieldRegisterScores,
   buildStateRegisterScores,
   buildTrajectoryRegisterScores,
-  clampField01,
   dagProgressFeatures,
   DYNAMICAL_SYSTEM_REGISTER_AFFINITY,
   DYNAMICAL_SYSTEM_TEMPERATURE,
@@ -512,6 +511,13 @@ import {
   buildTutorStubLightweightDialogueField as buildLightweightDialogueField,
   projectTutorStubLightweightFieldTurn as lightweightFieldTurn,
 } from '../services/tutorStubFieldTurnProjection.js';
+import {
+  describeTutorStubFieldShift as describeFieldShift,
+  renderTutorStubLightweightFieldSvg as renderLightweightFieldSvg,
+  summarizeTutorStubFieldShift as summarizeFieldShift,
+  tutorStubFieldBar as fieldBar,
+  tutorStubFieldDelta as fieldDelta,
+} from '../services/tutorStubFieldPresentation.js';
 import {
   applyTutorStubPointOfActionConstraint,
   auditTutorStubPointOfActionCompliance,
@@ -10557,82 +10563,6 @@ function printCurrentTurnTechnicalAnalysis(state) {
   console.log();
 }
 
-function fieldDelta(current, previous) {
-  return roundField((current || 0) - (previous || 0));
-}
-
-function fieldBar(value, { width = 12 } = {}) {
-  const filled = Math.round(clampField01(value) * width);
-  return `${'#'.repeat(filled)}${'.'.repeat(Math.max(0, width - filled))}`;
-}
-
-function escapeXml(value) {
-  return String(value ?? '')
-    .replace(/&/gu, '&amp;')
-    .replace(/</gu, '&lt;')
-    .replace(/>/gu, '&gt;')
-    .replace(/"/gu, '&quot;')
-    .replace(/'/gu, '&apos;');
-}
-
-function signedFieldDelta(current, previous) {
-  if (!previous) return 'baseline';
-  const delta = fieldDelta(current, previous);
-  return `${delta >= 0 ? '+' : ''}${delta}`;
-}
-
-function summarizeFieldShift(row, previous = null, first = null) {
-  const previousBits = previous
-    ? [
-        `prev M ${signedFieldDelta(row.learnerMastery, previous.learnerMastery)}`,
-        `R ${signedFieldDelta(row.learnerRisk, previous.learnerRisk)}`,
-        `A ${signedFieldDelta(row.tutorAlignment, previous.tutorAlignment)}`,
-        `P ${signedFieldDelta(row.jointMomentum, previous.jointMomentum)}`,
-      ]
-    : ['prev baseline'];
-  const totalBits =
-    first && first !== row
-      ? [
-          `total M ${signedFieldDelta(row.learnerMastery, first.learnerMastery)}`,
-          `R ${signedFieldDelta(row.learnerRisk, first.learnerRisk)}`,
-          `A ${signedFieldDelta(row.tutorAlignment, first.tutorAlignment)}`,
-          `P ${signedFieldDelta(row.jointMomentum, first.jointMomentum)}`,
-        ]
-      : ['total baseline'];
-  return `${previousBits.join(', ')}; ${totalBits.join(', ')}`;
-}
-
-function describeFieldShift(row, previous = null, summary = {}) {
-  const pace = row.learnerAdvance?.accelerated
-    ? `accelerating learner span (${row.learnerAdvance.supportedMoveCount} warranted moves); `
-    : '';
-  if (!previous) {
-    return `${pace}baseline field frame; bottleneck ${row.bottleneck || summary.final?.bottleneck || 'unknown'}`;
-  }
-  const masteryDelta = fieldDelta(row.learnerMastery, previous.learnerMastery);
-  const riskDelta = fieldDelta(row.learnerRisk, previous.learnerRisk);
-  const alignmentDelta = fieldDelta(row.tutorAlignment, previous.tutorAlignment);
-  const momentumDelta = fieldDelta(row.jointMomentum, previous.jointMomentum);
-  const tags = [];
-  if (masteryDelta >= 0.05) tags.push('learner mastery rising');
-  if (riskDelta <= -0.05) tags.push('risk easing');
-  if (riskDelta >= 0.05) tags.push('risk increasing');
-  if (alignmentDelta >= 0.05) tags.push('tutor alignment improving');
-  if (alignmentDelta <= -0.05) tags.push('tutor alignment weakening');
-  if (momentumDelta >= 0.05) tags.push('joint momentum gaining');
-  if (momentumDelta <= -0.05) tags.push('joint momentum slowing');
-  if (!tags.length) tags.push('field mostly flat');
-  const direction =
-    masteryDelta > 0 && riskDelta <= 0
-      ? 'productive'
-      : masteryDelta > 0 && riskDelta > 0
-        ? 'productive but strained'
-        : masteryDelta <= 0 && riskDelta > 0
-          ? 'stalled or risk-heavy'
-          : 'stabilizing';
-  return `${pace}${direction}: ${tags.join('; ')}; bottleneck ${row.bottleneck || summary.final?.bottleneck || 'unknown'}`;
-}
-
 function printLightweightDialogueField(state) {
   if (!state.turns.length) {
     console.log(`${C.cyan}field >${C.reset} no completed turns yet`);
@@ -10677,102 +10607,6 @@ function fieldVizBasePath(state) {
   state.fieldViz = viz;
   fs.mkdirSync(dir, { recursive: true });
   return path.join(dir, `${runId}-field`);
-}
-
-function fieldPolyline(rows, key, { width, height, padding }) {
-  if (!rows.length) return '';
-  const xSpan = Math.max(1, rows.length - 1);
-  return rows
-    .map((row, index) => {
-      const x = padding.left + (index / xSpan) * width;
-      const y = padding.top + (1 - clampField01(row[key])) * height;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(' ');
-}
-
-function fieldTurnMarkers(rows, { width, height, padding }) {
-  if (!rows.length) return '';
-  const xSpan = Math.max(1, rows.length - 1);
-  return rows
-    .map((row, index) => {
-      const x = padding.left + (index / xSpan) * width;
-      const label = escapeXml(`${row.turn}: ${row.learnerMove} / ${row.register || 'no-register'} / ${row.bottleneck}`);
-      return `<circle cx="${x.toFixed(1)}" cy="${(padding.top + height + 18).toFixed(
-        1,
-      )}" r="2.8" fill="#475569"><title>${label}</title></circle>`;
-    })
-    .join('\n');
-}
-
-function renderLightweightFieldSvg(field, { title = 'Tutor Stub Interaction Field' } = {}) {
-  const rows = field?.rows || [];
-  const padding = { top: 78, right: 42, bottom: 78, left: 74 };
-  const chartWidth = 780;
-  const chartHeight = 280;
-  const svgWidth = chartWidth + padding.left + padding.right;
-  const svgHeight = chartHeight + padding.top + padding.bottom;
-  const final = field?.summary?.final || {};
-  const delta = field?.summary?.fieldDelta || {};
-  const series = [
-    ['learnerMastery', 'mastery', '#2563eb'],
-    ['learnerRisk', 'risk', '#dc2626'],
-    ['tutorAlignment', 'alignment', '#059669'],
-    ['jointMomentum', 'momentum', '#7c3aed'],
-  ];
-  const gridLines = [0, 0.25, 0.5, 0.75, 1]
-    .map((value) => {
-      const y = padding.top + (1 - value) * chartHeight;
-      return [
-        `<line x1="${padding.left}" y1="${y.toFixed(1)}" x2="${(padding.left + chartWidth).toFixed(
-          1,
-        )}" y2="${y.toFixed(1)}" stroke="#e2e8f0" />`,
-        `<text x="${padding.left - 12}" y="${(y + 4).toFixed(1)}" text-anchor="end" font-size="11" fill="#64748b">${value.toFixed(
-          2,
-        )}</text>`,
-      ].join('\n');
-    })
-    .join('\n');
-  const lines = series
-    .map(
-      ([key, label, color]) =>
-        `<polyline points="${fieldPolyline(rows, key, {
-          width: chartWidth,
-          height: chartHeight,
-          padding,
-        })}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><title>${label}</title></polyline>`,
-    )
-    .join('\n');
-  const legend = series
-    .map(
-      ([key, label, color], index) =>
-        `<g transform="translate(${padding.left + index * 152}, ${svgHeight - 28})"><rect width="12" height="12" rx="2" fill="${color}" /><text x="18" y="11" font-size="12" fill="#334155">${label}: ${escapeXml(
-          final[key] ?? 'n/a',
-        )}</text></g>`,
-    )
-    .join('\n');
-  const deltaText = `delta M ${delta.learnerMastery >= 0 ? '+' : ''}${delta.learnerMastery ?? 'n/a'} | R ${
-    delta.learnerRisk >= 0 ? '+' : ''
-  }${delta.learnerRisk ?? 'n/a'} | A ${delta.tutorAlignment >= 0 ? '+' : ''}${
-    delta.tutorAlignment ?? 'n/a'
-  } | P ${delta.jointMomentum >= 0 ? '+' : ''}${delta.jointMomentum ?? 'n/a'}`;
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" role="img" aria-labelledby="title desc">
-  <title id="title">${escapeXml(title)}</title>
-  <desc id="desc">Lightweight tutor-stub field visualization across ${rows.length} completed turn(s).</desc>
-  <rect width="100%" height="100%" fill="#f8fafc" />
-  <text x="${padding.left}" y="32" font-size="22" font-weight="700" fill="#0f172a">${escapeXml(title)}</text>
-  <text x="${padding.left}" y="55" font-size="13" fill="#475569">turns ${field.turnCount}; mean speed ${escapeXml(
-    field.summary?.meanSpeed ?? 'n/a',
-  )}; ${escapeXml(deltaText)}; bottleneck ${escapeXml(final.bottleneck || 'unknown')}</text>
-  <rect x="${padding.left}" y="${padding.top}" width="${chartWidth}" height="${chartHeight}" fill="#ffffff" stroke="#cbd5e1" />
-  ${gridLines}
-  ${lines}
-  ${fieldTurnMarkers(rows, { width: chartWidth, height: chartHeight, padding })}
-  <text x="${padding.left}" y="${svgHeight - 47}" font-size="11" fill="#64748b">Each marker title lists turn / learner move / register / bottleneck.</text>
-  ${legend}
-</svg>
-`;
 }
 
 function writeFieldVisualization(state, { reason = 'field_viz', force = false } = {}) {
