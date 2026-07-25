@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-25T23:25:56.219Z",
+  "generated": "2026-07-25T23:27:48.461Z",
   "counts": {
-    "total": 195,
+    "total": 196,
     "byStatus": {
       "done": 173,
       "blocked": 4,
@@ -9,12 +9,12 @@
       "triaged": 6,
       "active": 4,
       "archived": 4,
-      "review": 1
+      "review": 2
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 42,
+      "infra": 43,
       "maintenance": 43,
       "content": 2,
       "paper": 6,
@@ -541,6 +541,31 @@
         "tutor-stub",
         "closeout",
         "guard-accounting"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "tutor-stub-resume-last-recipe",
+      "title": "Reconstruct the saved recipe before resuming the latest tutor-stub trace",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "A CLI regression proves --resume-last selects the newest completed trace, reconstructs its saved lab and structural options before drift comparison, resumes with drift.ok true, and retains fail-closed checks for explicit overrides and genuine prompt, tutor, model, world, or schema drift.",
+      "branch": "codex/fix-resume-last-recipe",
+      "links": {
+        "code": [
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLabsRecipeCli.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "resume",
+        "session-recipe"
       ],
       "milestone": "evaluation-infrastructure"
     },
