@@ -15,6 +15,7 @@ depends_on:
 links:
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/248
+    - https://github.com/liammagee/machinespirits-eval/pull/250
   notes:
     - docs/tutor-pr-benchmark.md
 tags:
