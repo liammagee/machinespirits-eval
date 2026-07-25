@@ -7,8 +7,9 @@ import {
   renderMachineSpiritsHouseStyleTag,
 } from './machineSpiritsHouseStyle.js';
 import { tutorStubLearnerResponseProvenanceLabel } from './tutorStubLearnerResponseProvenance.js';
+import { TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA } from './tutorStubLearningSummary.js';
 
-export const TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA = 'machinespirits.tutor-stub.learning-summary-html.v1';
+export { TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA } from './tutorStubLearningSummary.js';
 
 function escapeHtml(value) {
   return String(value ?? '')

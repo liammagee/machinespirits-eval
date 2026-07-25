@@ -39,6 +39,7 @@ links:
     - refactor-message-chain-fixtures
     - refactor-log-route-data-root
     - refactor-sse-lifecycle
+    - refactor-tutor-stub-learning-summary
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -233,3 +234,7 @@ Log:
   gates are green. This completes the plan's initial 18-row execution queue once
   merged; the next programme slice should begin from refreshed hotspot and
   coverage metrics rather than extending this branch.
+- 2026-07-25 — PR #235 merged row 18 as `e5d9f047`, completing the initial
+  queue. Refreshed line-count evidence still places `scripts/tutor-stub.js`
+  first at 27,555 lines; activated `refactor-tutor-stub-learning-summary` as a
+  data-only R3 extraction with no terminal, browser, model, or turn-loop change.
