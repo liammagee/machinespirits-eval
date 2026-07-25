@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-25T08:33:29.270Z",
+  "generated": "2026-07-25T08:35:32.556Z",
   "counts": {
-    "total": 187,
+    "total": 188,
     "byStatus": {
-      "done": 156,
+      "done": 157,
       "blocked": 3,
       "dropped": 2,
       "triaged": 13,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 41,
-      "maintenance": 36,
+      "maintenance": 37,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -453,6 +453,7 @@
           "refactor-paper-manifest-fixtures",
           "refactor-provenance-fixtures",
           "refactor-message-chain-fixtures",
+          "refactor-log-route-data-root",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -635,8 +636,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-message-chain-fixtures",
-      "title": "Extract and fixture the message-chain integrity boundary",
+      "id": "refactor-log-route-data-root",
+      "title": "Bind evaluation log routes to the redirected data root",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -644,31 +645,32 @@
       "source": "review",
       "created": "2026-07-25",
       "updated": "2026-07-25",
-      "verification": "A pure integrity core and synthetic SQLite/dialogue-log fixtures exercise the production message-chain CLI; valid tutor and learner chains pass, while malformed JSON or trace data, content-hash drift, and turn/message ordering failures return exact structured findings and non-zero strict-mode exits.",
-      "branch": "codex/refactor-message-chain-fixtures",
+      "verification": "Data-bearing HTTP fixtures place one exact dialogue and API log in EVAL_LOGS_DIR plus a decoy in the old tutor-core root; date, collection, id, index, and statistics routes return only the hermetic fixture, while focused route/core, desktop, manifest, and complete hermetic gates pass.",
+      "branch": "codex/refactor-log-route-data-root",
       "depends_on": [
-        "refactor-provenance-fixtures"
+        "refactor-dialogue-log-fixtures"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "scripts/audit-message-chain.js",
-          "services/messageChainAudit.js",
-          "tests/messageChainAuditCli.test.js",
-          "tests/messageChainAuditCore.test.js"
+          "tutor-core/services/dialogueLogDirectories.js",
+          "tutor-core/services/dialogueLogService.js",
+          "tutor-core/services/tutorDialogueEngine.js",
+          "scripts/run-rich-memory-arc-experiment.js",
+          "tests/evalLogRoutesDataRoot.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-provenance-fixtures"
+          "refactor-dialogue-log-fixtures"
         ]
       },
       "tags": [
         "refactoring",
         "testing",
-        "provenance",
-        "message-chain",
+        "routes",
+        "dialogue-logs",
         "hermetic"
       ],
       "milestone": "evaluation-infrastructure"
@@ -2146,6 +2148,48 @@
         "dramatic-derivation",
         "non-leak-audit",
         "duplication"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-message-chain-fixtures",
+      "title": "Extract and fixture the message-chain integrity boundary",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "A pure integrity core and synthetic SQLite/dialogue-log fixtures exercise the production message-chain CLI; valid tutor and learner chains pass, while malformed JSON or trace data, content-hash drift, and turn/message ordering failures return exact structured findings and non-zero strict-mode exits.",
+      "branch": "codex/refactor-message-chain-fixtures",
+      "depends_on": [
+        "refactor-provenance-fixtures"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/232"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/audit-message-chain.js",
+          "services/messageChainAudit.js",
+          "tests/messageChainAuditCli.test.js",
+          "tests/messageChainAuditCore.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-provenance-fixtures"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "testing",
+        "provenance",
+        "message-chain",
+        "hermetic"
       ],
       "milestone": "evaluation-infrastructure"
     },
