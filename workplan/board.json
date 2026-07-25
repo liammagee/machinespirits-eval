@@ -1,15 +1,14 @@
 {
-  "generated": "2026-07-25T22:50:27.593Z",
+  "generated": "2026-07-25T23:05:25.153Z",
   "counts": {
     "total": 194,
     "byStatus": {
-      "done": 165,
-      "blocked": 3,
-      "dropped": 2,
-      "triaged": 10,
-      "active": 3,
-      "archived": 4,
-      "review": 7
+      "done": 172,
+      "blocked": 4,
+      "dropped": 3,
+      "triaged": 6,
+      "active": 5,
+      "archived": 4
     },
     "byType": {
       "research": 46,
@@ -47,38 +46,6 @@
           "tutor-stub-unified-session-surface"
         ]
       }
-    },
-    {
-      "id": "adaptive-curriculum-memory-controller",
-      "title": "Evidence-anchored memory and curriculum adaptation controller",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-11",
-      "updated": "2026-07-11",
-      "verification": "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds.",
-      "claim_status": "planned",
-      "depends_on": [
-        "tutor-stub-multiworld-policy-replication",
-        "tutor-stub-transition-reward-model"
-      ],
-      "links": {
-        "notes": [
-          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
-        ],
-        "items": [
-          "layered-task-session-adaptation"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "memory",
-        "curriculum",
-        "transfer"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "decide-rich-learner-memory-service-retention",
@@ -153,36 +120,6 @@
         "effect-estimation",
         "stance-fidelity"
       ]
-    },
-    {
-      "id": "program-2-committee-floor-ablation",
-      "title": "Price the fine-tune: live committee with the untuned mini",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "The exact Phase 5b design with one variable changed — the untuned same-lineage floor model (program2-floor-instruct-q8) in the mini seat, fallback policy v2 — run under a small frozen prereg (12 committee-floor dialogues + stationarity-pooled controls, seeds and bars fixed before launch), yields a pooled warrant-compliance rate whose comparison against both the pooled control (0.150) and the trained-mini committee reference (0.386, 5b §8) cleanly attributes the live gain between harness and weights.",
-      "claim_status": "planned",
-      "links": {
-        "paper": "§6.21",
-        "notes": [
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
-          "notes/program-2/2026-07-20-phase5-live-pilot-results.md"
-        ],
-        "items": [
-          "program-2-context-vs-weights-finetune"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "committee",
-        "ablation"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "program-2-iterated-exhaust-retrain",
@@ -281,56 +218,6 @@
         "lambda"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "refusal-cross-stack-adaptive",
-      "title": "Exploration 5: cross-stack transfer — the refusal gate on the adaptive LangGraph runner",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Scoped implementation plan validated against services/adaptiveTutor/; a trap-suite smoke with strategy_shift_correctness as the native endpoint; reads pre-stated before any paid run.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "content-compulsion-promotion"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "langgraph",
-        "strategy-refusal",
-        "cross-stack"
-      ]
-    },
-    {
-      "id": "refusal-defense-adjudication",
-      "title": "Exploration 4: adjudicating the defense — does a hollow defense earn a second refusal?",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-05",
-      "branch": "worktree-strategy-ledger-followups",
-      "verification": "Design gated on the promotion verdict + defense base-rate; executes only if defends are frequent enough to matter (>= ~20% of refusals) and promotion confirms.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "content-compulsion-promotion",
-          "refusal-model-authored"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "derivation",
-        "strategy-refusal"
-      ]
     },
     {
       "id": "codebase-refactoring-program",
@@ -464,6 +351,62 @@
       ]
     },
     {
+      "id": "program-2-committee-floor-ablation",
+      "title": "Price the fine-tune: live committee with the untuned mini",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-26",
+      "verification": "The exact Phase 5b design with one variable changed — the untuned same-lineage floor model (program2-floor-instruct-q8) in the mini seat, fallback policy v2 — run under a small frozen prereg (12 committee-floor dialogues + stationarity-pooled controls, seeds and bars fixed before launch), yields a pooled warrant-compliance rate whose comparison against both the pooled control (0.150) and the trained-mini committee reference (0.386, 5b §8) cleanly attributes the live gain between harness and weights.",
+      "claim_status": "planned",
+      "links": {
+        "paper": "§6.21",
+        "notes": [
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
+          "notes/program-2/2026-07-20-phase5-live-pilot-results.md"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "committee",
+        "ablation"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "codex/program2-committee-floor-ablation"
+    },
+    {
+      "id": "refusal-cross-stack-adaptive",
+      "title": "Exploration 5: cross-stack transfer — the refusal gate on the adaptive LangGraph runner",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-26",
+      "branch": "codex/refusal-cross-stack-adaptive",
+      "verification": "Scoped implementation plan validated against services/adaptiveTutor/; a trap-suite smoke with strategy_shift_correctness as the native endpoint; reads pre-stated before any paid run.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "langgraph",
+        "strategy-refusal",
+        "cross-stack"
+      ]
+    },
+    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -554,174 +497,37 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-tutor-stub-field-presentation",
-      "title": "Refactor tutor-stub field presentation",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
+      "id": "adaptive-curriculum-memory-controller",
+      "title": "Evidence-anchored memory and curriculum adaptation controller",
+      "status": "blocked",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
       "source": "review",
-      "created": "2026-07-26",
+      "created": "2026-07-11",
       "updated": "2026-07-26",
-      "verification": "One pure field-presentation service preserves bars, shift narratives, chart geometry, and byte-stable accessible SVG output; focused, hermetic, static, and source-only gates pass without model calls.",
-      "branch": "codex/refactor-tutor-stub-field-presentation",
+      "verification": "A versioned evidence-anchored memory and task controller reuses the archived task/mastery scaffolds, passes stale/contradictory/irrelevant-memory controls, and improves independent work or transfer rather than assisted closure alone on held-out worlds.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-response-details"
+        "tutor-stub-multiworld-policy-replication",
+        "tutor-stub-transition-reward-model"
       ],
       "links": {
         "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
-        ],
-        "code": [
-          "services/tutorStubFieldPresentation.js",
-          "scripts/tutor-stub.js",
-          "tests/tutorStubFieldPresentation.test.js"
+          "PLAN_4_0/2026-07-11-adaptive-tutor-implementation-plan.md"
         ],
         "items": [
-          "codebase-refactoring-program",
-          "refactor-tutor-stub-response-details"
+          "layered-task-session-adaptation"
         ]
       },
       "tags": [
-        "refactoring",
-        "tutor-stub",
-        "presentation",
-        "interaction-field"
+        "adaptive-tutor",
+        "memory",
+        "curriculum",
+        "transfer"
       ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "tutor-stub-public-answer-component-guard",
-      "title": "Distinguish public answer components in tutor-stub leak checks",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-26",
-      "verification": "Live and frozen tutor-stub guards allow an already-public component of a compound answer name, still reject any actually matched concealed component, and pass focused guard/replay tests plus world quality, lint, and formatting.",
-      "branch": "codex/fix-concealed-answer-guard",
-      "links": {
-        "code": [
-          "services/tutorStubResponseGuard.js",
-          "services/tutorStubFrozenReplay.js",
-          "scripts/tutor-stub.js"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "reliability",
-        "public-evidence"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "upgrade-electron-and-rebuild-toolchain-past-audited-advisori",
-      "title": "Upgrade Electron and rebuild toolchain past audited advisories",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-24",
-      "updated": "2026-07-25",
-      "verification": "A clean install reports no high/critical Electron or rebuild-chain advisories, and npm run desktop:test plus npm test pass",
-      "branch": "codex/upgrade-electron-rebuild-toolchain"
-    },
-    {
-      "id": "lean-semantic-web-proof-dag-validation",
-      "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
-      "status": "review",
-      "type": "research",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-06-24",
-      "updated": "2026-07-25",
-      "branch": "codex/lean-semantic-web-proof-dag-validation",
-      "verification": "A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.",
-      "claim_status": "future",
-      "links": {
-        "notes": "notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md",
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/214"
-        ],
-        "code": [
-          "services/dramaticDerivation/semanticWebProofDag.js",
-          "services/dramaticDerivation/semanticWebValidation.js",
-          "scripts/export-proof-dag-semantic-web.js",
-          "scripts/tutor-stub.js",
-          "services/tutorStubCommandRegistry.js",
-          "tools/proof-dag-semantic-web/",
-          "docs/proof-dag-verification-and-inspection.md"
-        ]
-      },
-      "tags": [
-        "proof-dag",
-        "lean",
-        "semantic-web",
-        "provenance",
-        "shacl"
-      ],
-      "milestone": "poetics-followups"
-    },
-    {
-      "id": "migrate-adaptive-dag-runtime-to-langgraph-1-4-without-longit",
-      "title": "Migrate adaptive DAG runtime to LangGraph 1.4 without longitudinal drift",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-24",
-      "updated": "2026-07-24",
-      "verification": "LangGraph 1.4 or newer passes the DAG longitudinal contract, the full hermetic suite, and a production audit with no LangGraph/UUID advisory",
-      "branch": "codex/migrate-adaptive-dag-langgraph-1-4"
-    },
-    {
-      "id": "scenario-presentation-variety",
-      "title": "Scenario presentation variety — de-medievalize the derivation-world roster",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-12",
-      "updated": "2026-07-25",
-      "verification": "Generic tutor-stub prompts carry no unconditional assay vocabulary (period worlds opt in via presentation metadata); the world picker groups controlled variants by family; the featured set mixes period/contemporary/speculative; audit-world-variety reports family-normalized distributions; at least four non-period base worlds lint PASS.",
-      "claim_status": "methods",
-      "links": {
-        "items": [
-          "tutor-stub-headroom-contrast"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "derivation-worlds",
-        "presentation",
-        "authoring"
-      ],
-      "branch": "codex/scenario-presentation-variety"
-    },
-    {
-      "id": "upgrade-eslint-toolchain-past-minimatch-advisories",
-      "title": "Upgrade ESLint toolchain past minimatch advisories",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-25",
-      "updated": "2026-07-25",
-      "branch": "codex/upgrade-eslint-toolchain-past-minimatch-advisories",
-      "verification": "A clean full dependency audit reports no high or critical advisory rooted in the ESLint toolchain; any remaining minimatch, brace-expansion, glob, or rimraf findings are confined to the separately tracked Electron-builder packaging chain; repository lint and regression tests pass.",
-      "links": {
-        "items": [
-          "upgrade-electron-builder-packaging-chain-past-audited-adviso"
-        ]
-      }
+      "milestone": "adaptive-tutor-evidence-v1",
+      "blocked_by": "tutor-stub-transition-reward-model ended with a killed claim; no supported learned-ranking prerequisite"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -2524,6 +2330,44 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-field-presentation",
+      "title": "Refactor tutor-stub field presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "One pure field-presentation service preserves bars, shift narratives, chart geometry, and byte-stable accessible SVG output; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-field-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-response-details"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubFieldPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubFieldPresentation.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-response-details"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "interaction-field"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-learning-summary",
       "title": "Refactor tutor-stub learning summary",
       "status": "done",
@@ -3311,6 +3155,32 @@
       "milestone": "distribution"
     },
     {
+      "id": "tutor-stub-public-answer-component-guard",
+      "title": "Distinguish public answer components in tutor-stub leak checks",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live and frozen tutor-stub guards allow an already-public component of a compound answer name, still reject any actually matched concealed component, and pass focused guard/replay tests plus world quality, lint, and formatting.",
+      "branch": "codex/fix-concealed-answer-guard",
+      "links": {
+        "code": [
+          "services/tutorStubResponseGuard.js",
+          "services/tutorStubFrozenReplay.js",
+          "scripts/tutor-stub.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "reliability",
+        "public-evidence"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "tutor-stub-register-policy-extraction",
       "title": "Extract tutor-stub register-policy pipeline into a testable service",
       "status": "done",
@@ -3582,6 +3452,19 @@
       ],
       "milestone": "distribution",
       "branch": "codex/tutor-stub-super-app-slices"
+    },
+    {
+      "id": "upgrade-electron-and-rebuild-toolchain-past-audited-advisori",
+      "title": "Upgrade Electron and rebuild toolchain past audited advisories",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-26",
+      "verification": "A clean install reports no high/critical Electron or rebuild-chain advisories, and npm run desktop:test plus npm test pass",
+      "branch": "codex/upgrade-electron-rebuild-toolchain"
     },
     {
       "id": "version-symmetric-trace-transformation-pipeline",
@@ -4643,6 +4526,43 @@
       "milestone": "paper-2-evidence-cleanup"
     },
     {
+      "id": "lean-semantic-web-proof-dag-validation",
+      "title": "Evaluate Lean certificates and Semantic Web exports for proof DAGs",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-06-24",
+      "updated": "2026-07-26",
+      "branch": "codex/lean-semantic-web-proof-dag-validation",
+      "verification": "A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.",
+      "claim_status": "future",
+      "links": {
+        "notes": "notes/2026-06-24-lean-semantic-web-proof-dag-analysis.md",
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/214"
+        ],
+        "code": [
+          "services/dramaticDerivation/semanticWebProofDag.js",
+          "services/dramaticDerivation/semanticWebValidation.js",
+          "scripts/export-proof-dag-semantic-web.js",
+          "scripts/tutor-stub.js",
+          "services/tutorStubCommandRegistry.js",
+          "tools/proof-dag-semantic-web/",
+          "docs/proof-dag-verification-and-inspection.md"
+        ]
+      },
+      "tags": [
+        "proof-dag",
+        "lean",
+        "semantic-web",
+        "provenance",
+        "shacl"
+      ],
+      "milestone": "poetics-followups"
+    },
+    {
       "id": "lemma-bind-sonnet-smoke",
       "title": "Binding smoke on Sonnet at the calibrated dose — the first fair test of tutor-chosen binding",
       "status": "done",
@@ -4770,6 +4690,19 @@
       "milestone": "human-pilot-prep",
       "branch": "codex/workplan-board-triage",
       "claim_status": "methods"
+    },
+    {
+      "id": "migrate-adaptive-dag-runtime-to-langgraph-1-4-without-longit",
+      "title": "Migrate adaptive DAG runtime to LangGraph 1.4 without longitudinal drift",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-26",
+      "verification": "LangGraph 1.4 or newer passes the DAG longitudinal contract, the full hermetic suite, and a production audit with no LangGraph/UUID advisory",
+      "branch": "codex/migrate-adaptive-dag-langgraph-1-4"
     },
     {
       "id": "normalize-provenance-validator-data-paths",
@@ -5094,6 +5027,31 @@
         "mechanism-test"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "scenario-presentation-variety",
+      "title": "Scenario presentation variety — de-medievalize the derivation-world roster",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-12",
+      "updated": "2026-07-26",
+      "verification": "Generic tutor-stub prompts carry no unconditional assay vocabulary (period worlds opt in via presentation metadata); the world picker groups controlled variants by family; the featured set mixes period/contemporary/speculative; audit-world-variety reports family-normalized distributions; at least four non-period base worlds lint PASS.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "tutor-stub-headroom-contrast"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "derivation-worlds",
+        "presentation",
+        "authoring"
+      ],
+      "branch": "codex/scenario-presentation-variety"
     },
     {
       "id": "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
@@ -5468,6 +5426,24 @@
       "updated": "2026-07-25",
       "verification": "A clean full dependency audit reports no high or critical advisories through electron-builder, app-builder-lib, @electron/asar, or platform packagers, and signed packaged smoke checks pass",
       "branch": "codex/upgrade-electron-builder-packaging-chain-past-audited-adviso"
+    },
+    {
+      "id": "upgrade-eslint-toolchain-past-minimatch-advisories",
+      "title": "Upgrade ESLint toolchain past minimatch advisories",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-26",
+      "branch": "codex/upgrade-eslint-toolchain-past-minimatch-advisories",
+      "verification": "A clean full dependency audit reports no high or critical advisory rooted in the ESLint toolchain; any remaining minimatch, brace-expansion, glob, or rimraf findings are confined to the separately tracked Electron-builder packaging chain; repository lint and regression tests pass.",
+      "links": {
+        "items": [
+          "upgrade-electron-builder-packaging-chain-past-audited-adviso"
+        ]
+      }
     },
     {
       "id": "workplan-board-focus-policy",
@@ -5973,6 +5949,30 @@
         "dropped"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "refusal-defense-adjudication",
+      "title": "Exploration 4: adjudicating the defense — does a hollow defense earn a second refusal?",
+      "status": "dropped",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-26",
+      "verification": "Design gated on the promotion verdict + defense base-rate; executes only if defends are frequent enough to matter (>= ~20% of refusals) and promotion confirms.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion",
+          "refusal-model-authored"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "derivation",
+        "strategy-refusal"
+      ]
     }
   ]
 }
