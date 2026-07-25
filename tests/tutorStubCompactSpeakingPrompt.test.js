@@ -216,7 +216,10 @@ test('compact-no-source.v1 preserves declared audience context without enacting 
   const result = buildTutorStubCompactNoSourceRequest(bundle);
 
   assert.match(result.request.systemPrompt, /Non-speaking audience context: Silent assessors observe/iu);
-  assert.match(result.request.systemPrompt, /Never give this audience dialogue, a turn, agency, beliefs, or a cast role/iu);
+  assert.match(
+    result.request.systemPrompt,
+    /Never give this audience dialogue, a turn, agency, beliefs, or a cast role/iu,
+  );
   assert.ok(result.compilation.promptSize.authoredTotal.estimatedTokens <= 2500);
 });
 

@@ -1,17 +1,16 @@
 ---
 id: refactor-tutor-stub-response-details
 title: Refactor tutor-stub response details
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-26
 updated: 2026-07-26
-verification: >-
-  One pure response-details service preserves human-readable diagnostic,
-  setting, repair, and model-response metadata text; focused, hermetic, static,
-  and source-only gates pass without model calls.
+verification: One pure response-details service preserves human-readable
+  diagnostic, setting, repair, and model-response metadata text; focused,
+  hermetic, static, and source-only gates pass without model calls.
 branch: codex/refactor-tutor-stub-response-details
 claim_status: planned
 depends_on:
@@ -78,3 +77,6 @@ Log:
   137/137. Repository-wide lint and formatting, manifest, zero-cycle (363
   files), 192-item source-only workplan, syntax, and diff checks pass with no
   model calls.
+- 2026-07-26 — PR #240 merged as `c4b3e7e5` after every CI lane passed; the
+  serialized main-only renderer then refreshed the generated board views in
+  `e7c86cb3`. Closed this child before activating the next presentation slice.
