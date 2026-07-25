@@ -121,6 +121,7 @@ test('assigns every delivered response axis to exactly its intended host slot', 
 
   assert.deepEqual(contract.host_plan.ordered_slot_ids, ['uptake', 'part', 'tactic', 'handoff']);
   assert.deepEqual(contract.host_plan.axis_ownership, {
+    addressee_profile: ['uptake', 'part', 'tactic', 'handoff'],
     audience_register: ['uptake', 'part', 'tactic', 'handoff'],
     lexical_accessibility: ['uptake', 'part', 'tactic', 'handoff'],
     scene_immersion: ['part'],

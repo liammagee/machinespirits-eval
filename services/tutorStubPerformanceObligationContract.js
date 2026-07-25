@@ -65,6 +65,7 @@ function contentTokens(value) {
 }
 
 function sanitizePublicWorld(publicWorld) {
+  const audienceContext = publicWorld?.audience_context;
   return {
     title: oneLine(publicWorld?.title) || null,
     setting: oneLine(publicWorld?.setting) || null,
@@ -74,6 +75,15 @@ function sanitizePublicWorld(publicWorld) {
     narrative_diction: oneLine(publicWorld?.narrative_diction) || null,
     ledger_term: oneLine(publicWorld?.ledger_term) || null,
     public_objects: uniqueStrings(publicWorld?.public_objects || []),
+    audience_context:
+      audienceContext && typeof audienceContext === 'object' && !Array.isArray(audienceContext)
+        ? {
+            description: oneLine(audienceContext.description) || null,
+            relationToSpeaker: oneLine(audienceContext.relationToSpeaker) || null,
+            relationToHearer: oneLine(audienceContext.relationToHearer) || null,
+            knowledge: oneLine(audienceContext.knowledge) || null,
+          }
+        : null,
   };
 }
 

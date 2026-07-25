@@ -476,6 +476,7 @@ function buildHostPlan(contract) {
     host_sentence_count: 4,
     slots,
     axis_ownership: {
+      addressee_profile: [...HOST_SLOT_IDS],
       audience_register: [...HOST_SLOT_IDS],
       lexical_accessibility: [...HOST_SLOT_IDS],
       scene_immersion: ['part'],
@@ -508,6 +509,7 @@ function hostPlanIssues(contract) {
     }
   }
   const deliveredAxes = {
+    addressee_profile: contract?.language?.addressee_profile || contract?.language?.audience_register,
     audience_register: contract?.language?.audience_register,
     lexical_accessibility: contract?.language?.lexical_accessibility,
     scene_immersion: contract?.language?.scene_immersion,
@@ -579,7 +581,7 @@ export function buildTutorStubFirstDraftContract({
   const stance = configuration.engagement_stance || 'precise';
   const actionFamily = configuration.action_family || 'clarify_distinction';
   const part = configuration.actorial_part || 'scene_partner';
-  const audience = configuration.audience_register || 'domain_apprentice';
+  const addresseeProfile = configuration.addressee_profile || configuration.audience_register || 'domain_apprentice';
   const lexical = configuration.lexical_accessibility || 'standard';
   const scene = configuration.scene_immersion || 'grounded';
   const learnerMove = learnerMoveSurface({ learnerText, responseCompositionFrame });
@@ -764,8 +766,10 @@ export function buildTutorStubFirstDraftContract({
       closure_required: dialogueClosureFrame?.mandatory === true,
     },
     language: {
-      audience_register: audience,
-      audience_instruction: definitionContract(getAudienceRegisterDefinitions(), audience),
+      addressee_profile: addresseeProfile,
+      addressee_instruction: definitionContract(getAudienceRegisterDefinitions(), addresseeProfile),
+      audience_register: addresseeProfile,
+      audience_instruction: definitionContract(getAudienceRegisterDefinitions(), addresseeProfile),
       lexical_accessibility: lexical,
       lexical_instruction: definitionContract(getLexicalAccessibilityDefinitions(), lexical),
       scene_immersion: scene,
@@ -794,8 +798,9 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
   const liveCompensation =
     sourceAccessibility?.effective_mode === 'compensated' && sourceAccessibility?.owner === 'post_source_sentence';
   const writableUptake = contract.opening?.writable_entry_requested === true;
+  const addresseeProfile = contract.language?.addressee_profile || contract.language?.audience_register;
   const plainNovice =
-    ['adult_novice', 'child'].includes(contract.language?.audience_register) &&
+    ['adult_novice', 'child'].includes(addresseeProfile) &&
     ['plain', 'glossed_plain'].includes(contract.language?.lexical_accessibility);
   const instructionalMetaRepair = contract.progression?.discourse_plane?.plane === 'instructional_meta';
   if (instructionalMetaRepair) {
@@ -806,7 +811,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
       'RESTATE — Put the designated public restatement target into ordinary contemporary English. Preserve its meaning, add no fact or clue, and do not turn the wording request into evidence.',
       'CONTINUITY — You may end with one short declarative invitation to unpack another phrase. Do not ask a question, quote the public inquiry question, or output a question mark.',
       'REALIZATION — Use one direct, unadorned shared action beside an already-named public object only if it helps continuity; do not create a separate dramatic beat.',
-      `GLOBAL — Intelligent ${contract.language.audience_register.replace(/_/gu, ' ')}; ${contract.language.lexical_accessibility.replace(/_/gu, ' ')} common words; one relation per sentence. Keep scene contact minimal and add no fact.`,
+      `GLOBAL — Intelligent ${addresseeProfile.replace(/_/gu, ' ')}; ${contract.language.lexical_accessibility.replace(/_/gu, ' ')} common words; one relation per sentence. Keep scene contact minimal and add no fact.`,
       'Use one voice. Never announce roles, strategy, analysis, proof machinery, or hidden/future evidence.',
       '[End tutor-only host plan]',
     ].join('\n');
@@ -815,7 +820,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
     return [
       '[Tutor-only host plan]',
       `Four unlabeled host sentences, at most ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words each: UPTAKE > PART > SOURCE > TACTIC > HANDOFF. Keep SOURCE exact and separate.`,
-      `VOICE — ${contract.language.audience_register.replace(/_/gu, ' ')}, ${contract.language.lexical_accessibility.replace(/_/gu, ' ')} words, ${contract.language.scene_immersion.replace(/_/gu, ' ')} public objects; one relation each.`,
+      `VOICE — ${addresseeProfile.replace(/_/gu, ' ')}, ${contract.language.lexical_accessibility.replace(/_/gu, ' ')} words, ${contract.language.scene_immersion.replace(/_/gu, ' ')} public objects; one relation each.`,
       `UPTAKE — ${slotsById.get('uptake').instruction}`,
       `PART — ${slotsById.get('part').instruction}`,
       `SOURCE — ${source.cues.join(' ')}`,
@@ -828,7 +833,7 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
   return [
     '[Tutor-only host plan]',
     `Write one paragraph: four unlabeled${writableUptake ? ' host sentences (only Write: UPTAKE may quote)' : ', unquoted host sentences'}, each at most ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words. Follow UPTAKE > PART > ${source ? 'SOURCE > ' : ''}TACTIC > HANDOFF. SOURCE is a separate quotation. Never merge slots.`,
-    `GLOBAL — Intelligent ${contract.language.audience_register.replace(/_/gu, ' ')}; ${contract.language.lexical_accessibility.replace(/_/gu, ' ')} common words; one relation per host sentence.${plainNovice ? ' Gloss their specialist term in UPTAKE.' : ''} Keep ${contract.language.scene_immersion.replace(/_/gu, ' ')} scene contact with public objects. Add no fact.`,
+    `GLOBAL — Intelligent ${addresseeProfile.replace(/_/gu, ' ')}; ${contract.language.lexical_accessibility.replace(/_/gu, ' ')} common words; one relation per host sentence.${plainNovice ? ' Gloss their specialist term in UPTAKE.' : ''} Keep ${contract.language.scene_immersion.replace(/_/gu, ' ')} scene contact with public objects. Add no fact.`,
     `UPTAKE — ${slotsById.get('uptake').instruction}`,
     `PART — ${slotsById.get('part').instruction}`,
     source ? `SOURCE — ${source.cues.join(' ')}` : null,

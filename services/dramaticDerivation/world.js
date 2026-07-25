@@ -15,6 +15,7 @@
 
 import fs from 'node:fs';
 import yaml from 'yaml';
+import { normalizeDramaticAudience } from '../tutorStubRegisterPragmatics.js';
 import { closure, entails, factKey, matchPattern } from './chainer.js';
 
 const RELEASE_VIAS = new Set(['director', 'tutor']);
@@ -129,6 +130,8 @@ export function validateWorld(raw, source = '<inline>') {
     }
   }
 
+  const audience = normalizeDramaticAudience(raw.audience, { fail });
+
   return Object.freeze({
     id: raw.id,
     title: raw.title || raw.id,
@@ -164,6 +167,9 @@ export function validateWorld(raw, source = '<inline>') {
     learnerVoice: raw.learner_voice || null,
     learnerDrift: raw.learner_drift || null,
     ownershipTarget: raw.ownership_target || null,
+    // Audience is a public pragmatic position, never an enacted role. Only
+    // its authored context enters runtime; critic-panel configuration does not.
+    audience,
     cast: raw.cast || null,
     dramaturgy: raw.dramaturgy || null,
     motivation: raw.motivation || null, // CHARACTER-DESIRE.md: authored character desire (per-bearer)

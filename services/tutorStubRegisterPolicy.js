@@ -19,6 +19,7 @@
 
 import { getRegisterOntologyVersion, resolveEngagementStance } from './engagementRegisterRegistry.js';
 import { tutorStubComprehensionFeatures } from './tutorStubComprehensionState.js';
+import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
 import { dagProgressFeatures } from './tutorStubDagFeatures.js';
 import {
   classifyFieldStateRelation,
@@ -108,8 +109,13 @@ function normalizeStoredRegisterSelection(selection) {
   const selected = resolved?.register || rawRegister || null;
   const actionFamily = selection.action_family || resolved?.action_family || null;
   const requestType = selection.request_type || resolved?.request_type || selection.learner_signal || null;
+  const responseConfiguration = normalizeTutorStubResponseConfiguration(selection.response_configuration);
   return {
     ...selection,
+    schema:
+      selection.schema === 'machinespirits.tutor-stub.response-configuration-selection.v4'
+        ? 'machinespirits.tutor-stub.response-configuration-selection.v5'
+        : selection.schema,
     register_ontology_version: selection.register_ontology_version || getRegisterOntologyVersion(),
     engagement_stance: selected,
     selected_register: selected,
@@ -120,6 +126,12 @@ function normalizeStoredRegisterSelection(selection) {
       preferredLegacyRegister({ register: selected, requestType, actionFamily }),
     action_family: actionFamily,
     request_type: requestType,
+    addressee_profile:
+      responseConfiguration?.addressee_profile || selection.addressee_profile || selection.audience_register || null,
+    audience_register:
+      responseConfiguration?.audience_register || selection.audience_register || selection.addressee_profile || null,
+    register_pragmatics: responseConfiguration?.register_pragmatics || selection.register_pragmatics || null,
+    response_configuration: responseConfiguration,
     efficacy: normalizeStoredRegisterEfficacy(selection.efficacy),
   };
 }

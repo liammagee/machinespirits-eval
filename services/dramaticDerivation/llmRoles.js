@@ -38,6 +38,7 @@ import { deriveLearnerDriftState, learnerDriftLines } from './learnerDrift.js';
 import { deriveLearnerTransformationState, learnerTransformationLines } from './learnerTransformation.js';
 import { deriveDiscursiveCalibrationState } from './discursiveCalibration.js';
 import { deriveDidacticModeState, DIDACTIC_MODE_FAMILIES } from './didacticMode.js';
+import { dramaticAudiencePromptLines } from '../tutorStubRegisterPragmatics.js';
 import {
   auditLearnerSceneIntent,
   auditTutorSceneCommitment,
@@ -730,6 +731,7 @@ function directorCharter(
   return [
     `You are the DIRECTOR of a staged derivation drama: "${world.title}".`,
     `The public question of the drama: ${world.question}`,
+    ...dramaticAudiencePromptLines(world, { heading: 'PUBLIC NON-SPEAKING AUDIENCE' }),
     `The concealed truth (yours alone, never to be spoken): ${world.secret.surface}`,
     '',
     ...(mixedRegister
@@ -848,6 +850,7 @@ function directorPrologueCharter(world, publicRegister = 'default', castLayer = 
   return [
     `You are the DIRECTOR setting up a staged derivation drama: "${world.title}".`,
     `The public question: ${world.question}`,
+    ...dramaticAudiencePromptLines(world, { heading: 'PUBLIC NON-SPEAKING AUDIENCE' }),
     `The concealed truth (yours alone, never to be spoken): ${world.secret.surface}`,
     '',
     'Before turn 1, write a public prologue: an overall picture of the drama',
@@ -1136,6 +1139,7 @@ function tutorSystem(
     '# Harness appendix (fixed — the drama beneath the role)',
     '',
     `The public question: ${world.question}`,
+    ...dramaticAudiencePromptLines(world, { heading: 'PUBLIC NON-SPEAKING AUDIENCE' }),
     `The concealed truth you are staging toward (NEVER state, confirm, or deny it): ${world.secret.surface}`,
     '',
     'The rules of evidence the learner already knows:',

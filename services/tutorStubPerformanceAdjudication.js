@@ -223,7 +223,9 @@ export function applyTutorStubPerformanceAdjudication({ audits = null, adjudicat
     issues: [],
     semantic_adjudication: clone(adjudication),
   };
-  const visibleAxisCount = Object.values(responseAudit.axes).filter((axis) => axis.visible === true).length;
+  const visibleAxisCount = Object.values(responseAudit.axes).filter(
+    (axis) => axis.visible === true && !axis.compatibility_alias_of,
+  ).length;
   responseAudit.visible_axis_count = visibleAxisCount;
   responseAudit.realization_rate = Number(
     (visibleAxisCount / Math.max(1, responseAudit.axis_count || Object.keys(responseAudit.axes).length)).toFixed(3),

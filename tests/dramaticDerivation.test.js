@@ -128,6 +128,34 @@ test('validateWorld normalizes optional public opening authorship', () => {
   assert.throws(() => validateWorld(raw, 'non-string-opening-frame'), /opening_frame\.authored_text/u);
 });
 
+test('validateWorld carries only declarative non-speaking audience context', () => {
+  const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
+  raw.audience = {
+    context: {
+      description: 'A civic review panel observes in silence.',
+      relation_to_speaker: 'The tutor is accountable to the panel.',
+      relation_to_hearer: 'The learner is not a panel member.',
+      knowledge: 'The panel knows the public setup only.',
+    },
+    panel: [{ id: 'critic-model-that-must-not-enter-runtime' }],
+  };
+  const withAudience = validateWorld(raw, 'audience-context');
+
+  assert.deepEqual(withAudience.audience, {
+    context: {
+      description: 'A civic review panel observes in silence.',
+      relationToSpeaker: 'The tutor is accountable to the panel.',
+      relationToHearer: 'The learner is not a panel member.',
+      knowledge: 'The panel knows the public setup only.',
+    },
+  });
+  assert.equal('panel' in withAudience.audience, false);
+  assert.deepEqual(withAudience.cast, world.cast);
+
+  raw.audience.context.knowledge = '   ';
+  assert.throws(() => validateWorld(raw, 'bad-audience-context'), /audience\.context\.knowledge/u);
+});
+
 test('plotLint passes the smoke world and reports first entailment turn', () => {
   const lint = plotLint(world);
   assert.deepEqual(lint.errors, []);

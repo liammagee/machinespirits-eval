@@ -59,7 +59,7 @@ function issuesFromAudits(audits = null) {
     }
   }
   for (const [axis, audit] of Object.entries(source.responseConfigurationAudit?.axes || {})) {
-    if (audit?.visible === false) {
+    if (!audit?.compatibility_alias_of && audit?.visible === false) {
       addUniqueIssue(issues, {
         guard: 'response_configuration',
         type: 'axis_not_visible',

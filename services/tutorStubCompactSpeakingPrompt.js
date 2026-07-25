@@ -9,7 +9,7 @@ export const TUTOR_STUB_COMPACT_SPEAKING_PROMPT_MODE = 'compact-no-source.v1';
 const REQUIRED_AXES = Object.freeze([
   'engagement_stance',
   'action_family',
-  'audience_register',
+  'addressee_profile',
   'lexical_accessibility',
   'scene_immersion',
   'actorial_part',
@@ -51,7 +51,11 @@ function publicWorld(contract, systemPrompt) {
   if (!title || !question) {
     throw new Error('compact-no-source.v1 requires a public world title and question');
   }
-  return { title, question, diction, publicObjects };
+  const audienceContext =
+    world.audience_context && typeof world.audience_context === 'object'
+      ? Object.values(world.audience_context).map(oneLine).filter(Boolean).join(' ')
+      : '';
+  return { title, question, diction, publicObjects, audienceContext };
 }
 
 function currentPublicEvidence(contract) {
@@ -112,7 +116,11 @@ function selectedAxes(bundle, contract) {
   const axes = {
     engagement_stance: configuration.engagement_stance || contract?.performance?.engagement_stance,
     action_family: configuration.action_family || contract?.development?.action_family,
-    audience_register: configuration.audience_register || contract?.language?.audience_register,
+    addressee_profile:
+      configuration.addressee_profile ||
+      configuration.audience_register ||
+      contract?.language?.addressee_profile ||
+      contract?.language?.audience_register,
     lexical_accessibility: configuration.lexical_accessibility || contract?.language?.lexical_accessibility,
     scene_immersion: configuration.scene_immersion || contract?.language?.scene_immersion,
     actorial_part: configuration.actorial_part || contract?.performance?.actorial_part,
@@ -148,9 +156,9 @@ function axisDecisions(axes, contract, plan) {
       instruction: oneLine(contract?.development?.instruction || plan.slots.handoff.instruction),
     },
     {
-      axis: 'audience_register',
-      selected: axes.audience_register,
-      instruction: oneLine(contract?.language?.audience_instruction),
+      axis: 'addressee_profile',
+      selected: axes.addressee_profile,
+      instruction: oneLine(contract?.language?.addressee_instruction || contract?.language?.audience_instruction),
     },
     {
       axis: 'lexical_accessibility',
@@ -198,6 +206,9 @@ function compactSystemPrompt({ tutor, world }) {
     `World: ${world.title}`,
     `Public question: ${world.question}`,
     sceneCues ? `Diction and scene cues: ${sceneCues}.` : null,
+    world.audienceContext
+      ? `Non-speaking audience context: ${world.audienceContext} Never give this audience dialogue, a turn, agency, beliefs, or a cast role.`
+      : null,
     '# Speaking-tutor evidence contract',
     'Use only the public history and current public evidence supplied for this turn. Never invent or reveal future evidence, an answer key, a hidden path, or private bookkeeping.',
     'Preserve evidentiary actors, relation, and polarity. No selected part grants knowledge beyond that boundary.',

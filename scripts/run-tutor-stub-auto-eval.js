@@ -10854,11 +10854,11 @@ function autoEvalConfigForState({ traceDir, configOverride = null }) {
         visibility: 'conduct',
       },
       responseConfiguration: {
-        schema: 'machinespirits.tutor-stub.response-configuration.v2',
+        schema: 'machinespirits.tutor-stub.response-configuration.v3',
         independentAxes: [
           'engagement_stance',
           'action_family',
-          'audience_register',
+          'addressee_profile',
           'lexical_accessibility',
           'scene_immersion',
           'actorial_part',

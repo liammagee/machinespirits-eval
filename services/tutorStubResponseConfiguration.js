@@ -3,11 +3,15 @@ import { createHash } from 'node:crypto';
 import {
   getActorialPartDefinitions,
   getActionFamilyDefinitions,
-  getAudienceRegisterDefinitions,
+  getAddresseeProfileDefinitions,
   getEngagementStanceDefinition,
   getLexicalAccessibilityDefinitions,
   getSceneImmersionDefinitions,
 } from './engagementRegisterRegistry.js';
+import {
+  buildTutorStubRegisterPragmatics,
+  normalizeTutorStubResponseConfiguration,
+} from './tutorStubRegisterPragmatics.js';
 import { tutorStubFirstPersonRoleVoiceVisible, tutorStubRoleStageDirectionVisible } from './tutorStubRoleVisibility.js';
 import {
   tutorStubResponseSentences as responseSentences,
@@ -19,7 +23,7 @@ import { auditTutorStubEngagementOperation } from './tutorStubEngagementOperatio
 
 export { measureTutorStubSurfaceSentenceAccessibility } from './tutorStubSurfaceAccessibility.js';
 
-const RESPONSE_CONFIGURATION_SCHEMA = 'machinespirits.tutor-stub.response-configuration.v2';
+const RESPONSE_CONFIGURATION_SCHEMA = 'machinespirits.tutor-stub.response-configuration.v3';
 const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-configuration-audit.v2';
 const ACTORIAL_REALIZATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.actorial-realization-audit.v1';
 export const TUTOR_STUB_ACTORIAL_PERFORMANCE_REALIZATION_SCHEMA =
@@ -663,7 +667,7 @@ export function buildTutorStubResponseConfiguration({
   const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
   const unresolvedTerms = [...(comprehensionFeatures(comprehension).unresolvedTerms || [])];
   const audienceSentenceBudget = Number(
-    getAudienceRegisterDefinitions()[audience.audienceRegister]?.max_average_sentence_words || 30,
+    getAddresseeProfileDefinitions()[audience.audienceRegister]?.max_average_sentence_words || 30,
   );
   const lexicalSentenceBudget = Number(
     getLexicalAccessibilityDefinitions()[lexical.lexicalAccessibility]?.max_average_sentence_words || 32,
@@ -674,7 +678,13 @@ export function buildTutorStubResponseConfiguration({
     engagement_stance: effectiveEngagementStance,
     action_family: action.actionFamily,
     discourse_plane: discoursePlane ? structuredClone(discoursePlane) : null,
+    addressee_profile: audience.audienceRegister,
     audience_register: audience.audienceRegister,
+    register_pragmatics: buildTutorStubRegisterPragmatics({
+      engagementStance: effectiveEngagementStance,
+      addresseeProfile: audience.audienceRegister,
+      world,
+    }),
     lexical_accessibility: lexical.lexicalAccessibility,
     scene_immersion: scene.sceneImmersion,
     actorial_part: actorialPart.id,
@@ -702,6 +712,7 @@ export function buildTutorStubResponseConfiguration({
         ? 'Instructional repair uses a plain, unadorned stance before any return to the inquiry.'
         : null,
       action_family: action.reason,
+      addressee_profile: audience.reason,
       audience_register: audience.reason,
       lexical_accessibility: lexical.reason,
       scene_immersion: scene.reason,
@@ -712,6 +723,7 @@ export function buildTutorStubResponseConfiguration({
     },
     compatibility: {
       selected_register: effectiveEngagementStance,
+      audience_register: 'addressee_profile',
       legacy_selected_register: legacySelectedRegister,
       proposed_action_family: proposedActionFamily,
       pre_instructional_meta_engagement_stance:
@@ -728,8 +740,9 @@ function definitionContract(definitions, key, field = 'contract') {
 
 export function tutorStubResponseConfigurationPrompt(configuration, { stanceContractOverride = null } = {}) {
   if (!configuration) return '';
+  configuration = normalizeTutorStubResponseConfiguration(configuration);
   const actionDefinitions = getActionFamilyDefinitions();
-  const audienceDefinitions = getAudienceRegisterDefinitions();
+  const audienceDefinitions = getAddresseeProfileDefinitions();
   const lexicalDefinitions = getLexicalAccessibilityDefinitions();
   const sceneDefinitions = getSceneImmersionDefinitions();
   const actorialDefinitions = getActorialPartDefinitions();
@@ -752,10 +765,13 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
       configuration.action_family,
       'description',
     )}`,
-    `Audience register: ${configuration.audience_register}. ${definitionContract(
+    `Addressee profile: ${configuration.addressee_profile}. ${definitionContract(
       audienceDefinitions,
-      configuration.audience_register,
+      configuration.addressee_profile,
     )}`,
+    configuration.register_pragmatics?.audience?.context
+      ? `Audience context: ${Object.values(configuration.register_pragmatics.audience.context).join(' ')} This audience is non-speaking and must not be enacted.`
+      : null,
     `Lexical accessibility: ${configuration.lexical_accessibility}. ${definitionContract(
       lexicalDefinitions,
       configuration.lexical_accessibility,
@@ -2018,7 +2034,8 @@ export function auditTutorStubResponseConfiguration({
     averageSentenceWords: Number((performanceWords.length / Math.max(1, performanceSentences.length)).toFixed(2)),
     maxSentenceWords: Math.max(0, ...performanceSentences.map((sentence) => responseWords(sentence).length)),
   };
-  const audienceDefinition = getAudienceRegisterDefinitions()[configuration.audience_register] || {};
+  configuration = normalizeTutorStubResponseConfiguration(configuration, { world });
+  const audienceDefinition = getAddresseeProfileDefinitions()[configuration.addressee_profile] || {};
   const lexicalDefinition = getLexicalAccessibilityDefinitions()[configuration.lexical_accessibility] || {};
   const sceneDefinition = getSceneImmersionDefinitions()[configuration.scene_immersion] || {};
   const audienceMaximum = Number(audienceDefinition.max_average_sentence_words || 30);
@@ -2150,8 +2167,8 @@ export function auditTutorStubResponseConfiguration({
             ? 'development'
             : 'whole_response',
     },
-    audience_register: {
-      selected: configuration.audience_register,
+    addressee_profile: {
+      selected: configuration.addressee_profile,
       visible: audiencePass,
       max_average_sentence_words: audienceMaximum,
       measurement_tolerance: 0.1,
@@ -2175,7 +2192,19 @@ export function auditTutorStubResponseConfiguration({
       realization_scope: actorialPerformanceRealization.scope,
     },
   };
-  const visibleAxes = Object.values(axes).filter((axis) => axis.visible).length;
+  axes.audience_register = {
+    ...axes.addressee_profile,
+    compatibility_alias_of: 'addressee_profile',
+  };
+  const canonicalAxes = [
+    'engagement_stance',
+    'action_family',
+    'addressee_profile',
+    'lexical_accessibility',
+    'scene_immersion',
+    'actorial_part',
+  ];
+  const visibleAxes = canonicalAxes.filter((axis) => axes[axis].visible).length;
   const actorialIssues = [
     !axes.actorial_part.part_visible
       ? {
@@ -2193,7 +2222,7 @@ export function auditTutorStubResponseConfiguration({
   const configurationSignature = [
     configuration.engagement_stance,
     configuration.action_family,
-    configuration.audience_register,
+    configuration.addressee_profile,
     configuration.lexical_accessibility,
     configuration.scene_immersion,
     configuration.actorial_part,
@@ -2208,8 +2237,8 @@ export function auditTutorStubResponseConfiguration({
     axes,
     metrics,
     visible_axis_count: visibleAxes,
-    axis_count: Object.keys(axes).length,
-    realization_rate: Number((visibleAxes / Object.keys(axes).length).toFixed(3)),
+    axis_count: canonicalAxes.length,
+    realization_rate: Number((visibleAxes / canonicalAxes.length).toFixed(3)),
     actorial_realization: {
       schema: ACTORIAL_REALIZATION_AUDIT_SCHEMA,
       ok: actorialIssues.length === 0,
@@ -2231,7 +2260,7 @@ export function summarizeTutorStubResponseConfigurationAudits(audits = []) {
   const axes = [
     'engagement_stance',
     'action_family',
-    'audience_register',
+    'addressee_profile',
     'lexical_accessibility',
     'scene_immersion',
     'actorial_part',
