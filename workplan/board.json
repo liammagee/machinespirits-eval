@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-25T06:36:39.903Z",
+  "generated": "2026-07-25T07:28:32.011Z",
   "counts": {
-    "total": 184,
+    "total": 185,
     "byStatus": {
-      "done": 152,
+      "done": 153,
       "blocked": 3,
       "dropped": 2,
       "triaged": 14,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 40,
-      "maintenance": 34,
+      "maintenance": 35,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -463,6 +463,7 @@
           "refactor-field-turn-projection",
           "refactor-eval-profile-registry",
           "refactor-paper-manifest-fixtures",
+          "refactor-provenance-fixtures",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -645,8 +646,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-paper-manifest-fixtures",
-      "title": "Extract and fixture the paper-manifest validator core",
+      "id": "refactor-provenance-fixtures",
+      "title": "Fixture the provenance validator integrity boundary",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -654,27 +655,29 @@
       "source": "review",
       "created": "2026-07-25",
       "updated": "2026-07-25",
-      "verification": "An importable validator core returns exact exit 0/1 results against synthetic paper and SQLite fixtures; count drift, missing runs or required inputs, and broken deep references fail closed; CLI parity plus focused and hermetic gates pass without private evaluation data.",
-      "branch": "codex/refactor-paper-manifest-fixtures",
+      "verification": "Synthetic SQLite and dialogue-log fixtures exercise the production provenance CLI without private data; canonical and explicit log-root paths pass, while content-hash, turn-id, required-field, rubric-schema, and missing database or log cases return exact non-zero exits.",
+      "branch": "codex/refactor-provenance-fixtures",
       "depends_on": [
-        "refactor-eval-profile-registry"
+        "refactor-paper-manifest-fixtures",
+        "normalize-provenance-validator-data-paths"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "scripts/validate-paper-manifest.js",
-          "config/paper-manifest.json"
+          "scripts/validate-provenance.js",
+          "services/evaluationDataPaths.js",
+          "services/provableDiscourse.js"
         ],
         "items": [
-          "codebase-refactoring-program"
+          "codebase-refactoring-program",
+          "normalize-provenance-validator-data-paths"
         ]
       },
       "tags": [
         "refactoring",
         "testing",
-        "paper",
         "provenance",
         "hermetic"
       ],
@@ -2153,6 +2156,45 @@
         "dramatic-derivation",
         "non-leak-audit",
         "duplication"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-paper-manifest-fixtures",
+      "title": "Extract and fixture the paper-manifest validator core",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "An importable validator core returns exact exit 0/1 results against synthetic paper and SQLite fixtures; count drift, missing runs or required inputs, and broken deep references fail closed; CLI parity plus focused and hermetic gates pass without private evaluation data.",
+      "branch": "codex/refactor-paper-manifest-fixtures",
+      "depends_on": [
+        "refactor-eval-profile-registry"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/227"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/validate-paper-manifest.js",
+          "config/paper-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "testing",
+        "paper",
+        "provenance",
+        "hermetic"
       ],
       "milestone": "evaluation-infrastructure"
     },
