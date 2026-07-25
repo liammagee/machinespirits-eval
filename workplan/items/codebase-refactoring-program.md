@@ -33,6 +33,7 @@ links:
     - refactor-field-policy-helpers
     - refactor-forbidden-key-audit
     - refactor-field-turn-projection
+    - refactor-eval-profile-registry
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -176,3 +177,12 @@ Log:
   byte-stable frozen outputs. Focused and complete hermetic parity are green;
   the next queued slice is the canonical evaluation-profile registry on
   `codex/refactor-eval-profile-registry` after this branch lands.
+- 2026-07-25 — PR #211 merged and closed the field-turn projection child.
+  Activated R1.4 on `codex/refactor-eval-profile-registry` to derive the 204
+  canonical cells from YAML, separate the ten historical aliases, make config
+  validation two-way, and fail closed on missing cell or tutor-core targets.
+- 2026-07-25 — R1.4 reached review on `codex/refactor-eval-profile-registry`:
+  the 204-entry manual registry is gone, historical aliases are explicit, two
+  source-grepping report validators use the registry API, and focused plus full
+  hermetic parity are green. The next queued slice remains the paper-manifest
+  fixture extraction after this child lands.

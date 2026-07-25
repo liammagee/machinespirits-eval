@@ -181,7 +181,7 @@ The core factorial design crosses three factors:
 | B: Tutor architecture | Single-agent vs Ego+Superego |
 | C: Learner architecture | Single-agent vs Multi-agent |
 
-Additional cells test enhanced prompts, hardwired rules, placebo controls, memory isolation, dynamic prompt rewriting, dialectical superego modulation, self-reflective evolution, insight-action mechanisms, other-ego profiling, dynamic learner mechanisms, messages-mode variants, pedagogical-orientation density controls, id-director charisma variants, adaptive trap runners, and Plan 2.x state-policy / proof-debt variants. See `config/tutor-agents.yaml` for the canonical mapping; new cells should be cross-referenced with `services/evaluationRunner.js::EVAL_ONLY_PROFILES` and the `resolveEvalProfile` dispatch.
+Additional cells test enhanced prompts, hardwired rules, placebo controls, memory isolation, dynamic prompt rewriting, dialectical superego modulation, self-reflective evolution, insight-action mechanisms, other-ego profiling, dynamic learner mechanisms, messages-mode variants, pedagogical-orientation density controls, id-director charisma variants, adaptive trap runners, and Plan 2.x state-policy / proof-debt variants. See `config/tutor-agents.yaml` for the canonical mapping; `services/evalProfileRegistry.js` derives the runtime cell registry from it, while `resolveEvalProfile` retains the tested prompt-type dispatch.
 
 ## How to Build an AI Tutor
 

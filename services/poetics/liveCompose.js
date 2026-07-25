@@ -62,7 +62,7 @@ const CONCISE_MAX_TOKENS = 600;
 // registered cell — runTutorTurn just needs a tutor-agents profile object, and
 // cells ARE those profiles. Only the cell's TUTOR config is used here; its
 // learner side is irrelevant (the AI learner is built from the spec instead).
-// All four are registered in evaluationRunner.js EVAL_ONLY_PROFILES.
+// All four are canonical YAML cells exposed through the derived evaluation registry.
 const TUTOR_CELL = Object.freeze({
   'recognition|ego_superego': 'cell_7_recog_multi_unified',
   'recognition|ego_only': 'cell_5_recog_single_unified',

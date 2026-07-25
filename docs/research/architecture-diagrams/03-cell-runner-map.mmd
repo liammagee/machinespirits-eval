@@ -1,6 +1,6 @@
 flowchart LR
   config["config/tutor-agents.yaml"]:::source
-  registry["services/evaluationRunner.js EVAL_ONLY_PROFILES"]:::source
+  registry["services/evalProfileRegistry.js YAML-derived cells plus legacy aliases"]:::source
   config --> dispatch["Resolve cell profile and runner"]:::dispatch
   registry --> dispatch
 

@@ -4,13 +4,13 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
+import { createEvalProfileRegistry } from '../services/evalProfileRegistry.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
 const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-scenarios.yaml');
 const TUTOR_AGENTS_PATH = path.join(ROOT, 'config', 'tutor-agents.yaml');
-const EVALUATION_RUNNER_PATH = path.join(ROOT, 'services', 'evaluationRunner.js');
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-stage0-matrix-sanity.md');
 
 const PILOT_SCENARIOS = [
@@ -140,9 +140,9 @@ function main() {
   const errors = [];
   const scenarioData = readYaml(SCENARIO_PATH);
   const tutorAgents = readYaml(TUTOR_AGENTS_PATH);
-  const evaluationRunnerSource = fs.readFileSync(EVALUATION_RUNNER_PATH, 'utf8');
   const scenarioMap = scenarioData?.scenarios || {};
   const profileMap = tutorAgents?.profiles || {};
+  const registeredProfiles = new Set(createEvalProfileRegistry(profileMap).canonicalCellNames);
 
   for (const scenarioId of PILOT_SCENARIOS) {
     const scenario = scenarioMap[scenarioId];
@@ -163,8 +163,8 @@ function main() {
   for (const profileName of PILOT_PROFILES) {
     assert(Boolean(profileMap[profileName]), `Missing tutor profile ${profileName}`, errors);
     assert(
-      evaluationRunnerSource.includes(profileName),
-      `Profile ${profileName} is not registered in services/evaluationRunner.js`,
+      registeredProfiles.has(profileName),
+      `Profile ${profileName} is not registered in the canonical evaluation profile registry`,
       errors,
     );
   }

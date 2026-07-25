@@ -801,7 +801,7 @@ ${nav}
     <li><strong>Results memos</strong>: <code>a13-gate-b-results.md</code>, <code>a13-followup-N24-granular-results.md</code>, <code>p21-N24-results.md</code>.</li>
     <li><strong>Adaptive runner</strong>: <code>services/adaptiveTutor/</code>; entry <code>index.js</code>; dispatch logic <code>graph.js</code>.</li>
     <li><strong>Trap scenarios</strong>: <code>config/adaptive-trap-scenarios.yaml</code> (v1), <code>config/adaptive-trap-scenarios-v2.yaml</code> (v2, uncommitted).</li>
-    <li><strong>Cell registry</strong>: <code>config/tutor-agents.yaml</code> + <code>EVAL_ONLY_PROFILES</code> in <code>services/evaluationRunner.js</code> (~line 102).</li>
+    <li><strong>Cell registry</strong>: canonical cells in <code>config/tutor-agents.yaml</code>, derived by <code>services/evalProfileRegistry.js</code>, with explicit historical aliases.</li>
     <li><strong>Smokes</strong>: <code>scripts/run-adaptive-cell-smoke.js</code> with <code>ADAPTIVE_TUTOR_LLM=mock</code> — no paid API calls.</li>
   </ul>
 

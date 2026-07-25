@@ -13,24 +13,14 @@
  * from cell_1 outputs. See paper Appendix E v3.0.47 for the full incident.
  *
  * THIS TEST asserts on `resolveEvalProfile(cellName).dispatchedProfileName` —
- * the if/else-if chain's pick, captured *before* the published-package
- * existence-check fallback. For every cell in EVAL_ONLY_PROFILES:
+ * the if/else-if chain's pick. For every canonical YAML cell:
  *   - if `factors.prompt_type` is anything other than `'base'`,
  *   - then the dispatch chain must route it by name (not fall through to
  *     'budget' via the final `else`).
  *
- * Why `dispatchedProfileName` and not `resolvedProfileName`?
- * Two prompt_types — `matched_pedagogical` (cell_95) and `matched_behaviorist`
- * (cell_96), the A10/A10b prompt-density controls — DO have dispatch branches,
- * but they target tutor-core profiles that only exist in the dev build of
- * @machinespirits/tutor-core. Against a published install, the existence check
- * in resolveEvalProfile deliberately falls back to 'budget' (the density-control
- * experiments simply can't run there — see the branch comments in
- * resolveEvalProfile and the methodological note in paper-full-2.0.md ~§3492).
- * That graceful degradation is NOT the bug_007 pattern: the dispatch chain did
- * its job; the package just lacks the target. Asserting on `dispatchedProfileName`
- * catches a *forgotten branch* (the real bug_007 failure mode) without
- * false-flagging documented dev-only profiles.
+ * `dispatchedProfileName` remains a diagnostic compatibility field for this
+ * incident. Since tutor-core was in-housed, it must equal the profile that
+ * actually loads; a missing target now fails closed rather than degrading.
  *
  * Note: 'base' prompt_type is the *only* legitimate path to 'budget' in the
  * dispatch chain. Cells with `prompt_type: base` and `recognition_mode: false`
@@ -45,7 +35,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
-import { resolveEvalProfile, EVAL_ONLY_PROFILES } from '../services/evaluationRunner.js';
+import { CANONICAL_EVAL_PROFILES, resolveEvalProfile } from '../services/evaluationRunner.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const configDir = path.join(__dirname, '..', 'config');
@@ -53,17 +43,12 @@ const tutorConfig = yaml.parse(fs.readFileSync(path.join(configDir, 'tutor-agent
 const profiles = tutorConfig.profiles || {};
 
 describe('bug_007 regression: dispatch chain coverage for non-base prompt_types', () => {
-  it('every EVAL_ONLY_PROFILES cell with prompt_type ≠ base dispatches to a non-budget profile', () => {
+  it('every canonical cell with prompt_type ≠ base dispatches to a non-budget profile', () => {
     const failures = [];
     const skipped = [];
 
-    for (const cellName of EVAL_ONLY_PROFILES) {
+    for (const cellName of CANONICAL_EVAL_PROFILES) {
       const profile = profiles[cellName];
-      if (!profile) {
-        // Cell missing from YAML — separate concern, handled by validate-config.
-        skipped.push({ cellName, reason: 'not in YAML' });
-        continue;
-      }
 
       if (profile?.runner === 'adaptive') {
         // Adaptive cells bypass evaluationRunner.js and tutor-core's dialogue
@@ -85,12 +70,8 @@ describe('bug_007 regression: dispatch chain coverage for non-base prompt_types'
       }
 
       const resolved = resolveEvalProfile(cellName);
-      // dispatchedProfileName = the if/else-if chain's pick, BEFORE the
-      // published-package existence-check fallback. A non-base prompt_type
-      // landing here means there's no dispatch branch for it — bug_007.
-      // (Falling back to 'budget' afterwards because the named profile is
-      // absent from a published tutor-core install is documented behaviour and
-      // does NOT change dispatchedProfileName — see the next test.)
+      // A non-base prompt_type landing on budget means there is no dispatch
+      // branch for it — bug_007.
       if (resolved.dispatchedProfileName === 'budget') {
         failures.push({
           cell: cellName,
@@ -109,19 +90,14 @@ describe('bug_007 regression: dispatch chain coverage for non-base prompt_types'
     );
   });
 
-  it('every distinct non-base prompt_type used in EVAL_ONLY_PROFILES has a dispatch-chain branch', () => {
+  it('every distinct non-base prompt_type used in canonical cells has a dispatch-chain branch', () => {
     // Same invariant as test 1, restated at prompt_type granularity: collect
     // every *dispatch* name produced for each non-base prompt_type across the
     // cells that use it. If a prompt_type's only dispatch target is 'budget',
     // it has no branch of its own — bug_007.
     //
-    // We use dispatchedProfileName (pre-fallback) for the same reason test 1
-    // does: matched_pedagogical / matched_behaviorist dispatch correctly but
-    // fall back to 'budget' on a published tutor-core install — documented
-    // degradation, not a missing branch (pinned by the next test).
-
     const promptTypeDispatches = {};
-    for (const cellName of EVAL_ONLY_PROFILES) {
+    for (const cellName of CANONICAL_EVAL_PROFILES) {
       const profile = profiles[cellName];
       if (profile?.runner === 'adaptive') continue; // adaptive cells bypass dispatch
       const promptType = profile?.factors?.prompt_type;
@@ -151,20 +127,15 @@ describe('bug_007 regression: dispatch chain coverage for non-base prompt_types'
   });
 
   it('matched_pedagogical / matched_behaviorist dispatch by name (A10/A10b density controls)', () => {
-    // Positive pin for the documented dev-only case: cell_95 and cell_96 must
-    // *dispatch* to their density-control profiles. On a dev tutor-core that's
-    // also what loads; on a published install resolveEvalProfile falls back to
-    // 'budget' for the actual load (resolvedProfileName) — which is fine and
-    // expected — but the dispatch itself must never silently regress to 'budget'
-    // (that would be bug_007). See the resolveEvalProfile branch comments and
-    // paper-full-2.0.md ~§3492.
+    // Positive pin for the density-control case: both the dispatch diagnostic
+    // and actual in-housed target must retain the authored profile.
     const cases = [
       ['cell_95_base_matched_single_unified', 'matched_pedagogical'],
       ['cell_96_base_behaviorist_single_unified', 'matched_behaviorist'],
     ];
     for (const [cellName, expectedDispatch] of cases) {
       assert.ok(
-        EVAL_ONLY_PROFILES.includes(cellName) && profiles[cellName],
+        CANONICAL_EVAL_PROFILES.includes(cellName) && profiles[cellName],
         `${cellName} should be a registered cell with a YAML definition`,
       );
       const resolved = resolveEvalProfile(cellName);
@@ -173,6 +144,7 @@ describe('bug_007 regression: dispatch chain coverage for non-base prompt_types'
         expectedDispatch,
         `${cellName} must dispatch to '${expectedDispatch}'`,
       );
+      assert.strictEqual(resolved.resolvedProfileName, expectedDispatch);
     }
   });
 });

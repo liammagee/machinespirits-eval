@@ -5961,7 +5961,10 @@ async function main() {
         const scenarios = evalConfigLoader.listScenarios();
         const contentConfig = evalConfigLoader.getContentConfig();
 
-        console.log(`  Profiles:  ${profileNames.length} cells loaded from tutor-agents.yaml`);
+        const yamlCellCount = profileNames.filter((name) => name.startsWith('cell_')).length;
+        console.log(
+          `  Profiles:  ${profileNames.length} profiles loaded from tutor-agents.yaml (${yamlCellCount} canonical cells)`,
+        );
         console.log(`  Scenarios: ${scenarios.length} scenarios loaded`);
         console.log(`  Providers: ${providerNames.length} providers configured (${providerNames.join(', ')})`);
         console.log('');
@@ -5980,24 +5983,22 @@ async function main() {
 
         console.log('Checks:');
 
-        // ── 1. EVAL_ONLY_PROFILES coverage ────────────────────────────
-        const { EVAL_ONLY_PROFILES } = evaluationRunner;
-        // Legacy aliases (single_baseline, recognition, etc.) map to tutor-core profiles
-        // and are not expected to exist in tutor-agents.yaml — only check cell_* entries
-        const cellProfiles = EVAL_ONLY_PROFILES.filter((name) => name.startsWith('cell_'));
-        const missingInYaml = cellProfiles.filter((name) => !allProfiles[name]);
-        if (missingInYaml.length > 0) {
-          console.log(
-            `  \u2717 EVAL_ONLY_PROFILES: ${missingInYaml.length} cell entries missing from tutor-agents.yaml`,
-          );
-          for (const name of missingInYaml) {
-            console.log(`      - ${name}`);
+        // ── 1. Canonical evaluation-profile registry ──────────────────
+        const { CANONICAL_EVAL_PROFILES, LEGACY_EVAL_PROFILE_ALIASES, validateEvalProfileRegistry } = evaluationRunner;
+        const registryValidation = validateEvalProfileRegistry({
+          profiles: allProfiles,
+          canonicalCellNames: CANONICAL_EVAL_PROFILES,
+          legacyAliases: LEGACY_EVAL_PROFILE_ALIASES,
+        });
+        if (!registryValidation.valid) {
+          console.log(`  \u2717 Evaluation-profile registry: ${registryValidation.errors.length} error(s)`);
+          for (const registryError of registryValidation.errors) {
+            console.log(`      - ${registryError}`);
           }
-          errors += missingInYaml.length;
+          errors += registryValidation.errors.length;
         } else {
-          const legacyCount = EVAL_ONLY_PROFILES.length - cellProfiles.length;
           console.log(
-            `  \u2713 All ${cellProfiles.length} cell entries in EVAL_ONLY_PROFILES exist in YAML (${legacyCount} legacy aliases skipped)`,
+            `  \u2713 Canonical registry exactly matches all ${CANONICAL_EVAL_PROFILES.length} YAML cells (${Object.keys(LEGACY_EVAL_PROFILE_ALIASES).length} explicit legacy aliases)`,
           );
         }
 

@@ -1,7 +1,7 @@
 ---
 id: refactor-field-turn-projection
 title: Consolidate tutor-stub field-turn projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -25,6 +25,8 @@ links:
     - tests/tutorStubFieldTurnProjection.test.js
   items:
     - codebase-refactoring-program
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/211
 tags:
   - refactoring
   - tutor-stub
@@ -71,3 +73,4 @@ Log:
   zero skips) and all 11 tutor-core files (137/137), alongside lint, formatting,
   zero cycles across 348 files, the 179-item source-only workplan check, workplan
   tests, syntax, and diff checks. Ready for review without model or API calls.
+- 2026-07-25 — Merged through PR #211; verification remained green on `main`.
