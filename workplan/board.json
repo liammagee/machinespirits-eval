@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-25T07:28:32.011Z",
+  "generated": "2026-07-25T07:33:13.842Z",
   "counts": {
-    "total": 185,
+    "total": 186,
     "byStatus": {
-      "done": 153,
+      "done": 154,
       "blocked": 3,
       "dropped": 2,
       "triaged": 14,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 40,
+      "infra": 41,
       "maintenance": 35,
       "content": 2,
       "paper": 6,
@@ -5059,6 +5059,40 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "tutor-stub-remote-claude-code-driver",
+      "title": "Drive tutor-stub sessions from Claude Code remote sessions",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "A non-interactive host boots the server on demand, opens a tutor-stub session against the Claude Code CLI bridge with no API key present, exchanges learner turns, reads status and transcript, and finalizes; unit tests cover argument parsing, the model default, specification whitelisting, dialogue extraction and the session pointer.",
+      "branch": "claude/tudor-stub-cli-remote-afplmq",
+      "depends_on": [
+        "tutor-stub-headless-session-transport"
+      ],
+      "links": {
+        "code": [
+          "scripts/tutor-stub-remote.js",
+          ".claude/skills/ms-tutor-remote/SKILL.md",
+          "tests/tutorStubRemoteDriver.test.js"
+        ],
+        "items": [
+          "tutor-stub-headless-session-transport",
+          "tutor-stub-unified-session-surface"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "runtime",
+        "api",
+        "dx"
+      ],
+      "milestone": "distribution"
     },
     {
       "id": "tutor-stub-session-recipes-explicit-resume",
