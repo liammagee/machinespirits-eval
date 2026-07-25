@@ -43,6 +43,7 @@ links:
     - refactor-tutor-stub-explanatory-debug
     - refactor-tutor-stub-response-details
     - refactor-tutor-stub-field-presentation
+    - refactor-tutor-stub-closeout-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -270,3 +271,13 @@ Log:
 - 2026-07-26 — Rebased the child again onto `origin/main` at `296550eb` after
   the independent audience-pragmatics runtime merged. Its full overlap surface
   is green at 129/129 and the bounded 166-line extraction remains unchanged.
+- 2026-07-26 — PR #243 merged the field-presentation child as `83d101fc` with
+  every CI lane green; the serialized render followed as `b91e496b`. Closed
+  that child and activated `refactor-tutor-stub-closeout-projection` to move
+  only pure reason/status/count and guard-summary projection while retaining
+  report assembly, terminal output, traces, commands, and runtime state.
+- 2026-07-26 — The closeout-projection child reached review with five pure
+  helpers in one leaf, a 134-line CLI reduction, exact guard-summary fixtures,
+  32/32 focused tests, and complete zero-skip hermetic parity. Report assembly,
+  terminal output, traces, commands, and the distinct auto-eval summary remain
+  unchanged.
