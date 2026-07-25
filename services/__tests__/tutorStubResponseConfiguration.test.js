@@ -674,6 +674,30 @@ test('unresolved terms select a gloss action, novice audience, plain lexicon, an
   assert.match(tutorStubResponseConfigurationPrompt(configuration), /Unresolved terms: cupel/u);
 });
 
+test('response prompt makes register voice and tutor character action visibly independent', () => {
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'sarcastic',
+    actorialPartOverride: {
+      id: 'adversarial_teacher',
+      label: 'adversarial teacher',
+      contract:
+        'Challenge one learner idea with a counterexample, altered example, or competing solution native to the active subject.',
+      evidence_enactment: { active: false, mode: null, authored_role: null, entry_count: 0 },
+      locked: false,
+    },
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    learnerText: 'The assay proves the metal is pure.',
+    world: testWorld(),
+  });
+  const prompt = tutorStubResponseConfigurationPrompt(configuration);
+
+  assert.match(prompt, /Visible stance signature: Give the weak claim one unmistakable beat of dry mock praise/iu);
+  assert.match(prompt, /Actorial host part: adversarial teacher/iu);
+  assert.match(prompt, /Visible character signature: Introduces a subject-native counterexample or rival solution/iu);
+  assert.match(prompt, /counterexample, altered example, or competing solution native to the active subject/iu);
+});
+
 test('a completed public proof outranks accelerated release and requests the final sayback', () => {
   const dag = learnerDag({ bottleneck: 'assertion_gap', coverage: 1 });
   dag.model.assessment.finalSecretEntailed = true;

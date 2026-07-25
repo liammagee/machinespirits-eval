@@ -25,13 +25,14 @@ same interaction pattern.
 ## Current Method
 
 Built-in automated learner profiles are now structured as
-`machinespirits.tutor-stub.learner-profile-contract.v3` contracts. A contract
+`machinespirits.tutor-stub.learner-profile-contract.v4` contracts. A contract
 specifies:
 
 - the intended failure operator;
 - how it contrasts with nearby profiles;
 - when the stable failure must appear and how often it should recur;
 - public learner-turn rules;
+- a visible voice signature and varied representative moves;
 - expected compacted-trace signatures;
 - expected DAG/proof-path behavior;
 - repair behavior after correction;
@@ -41,10 +42,11 @@ The auto-eval runner renders these contracts into the learner prompt and stores
 a contract summary in the report config. This keeps the profile prompt, report,
 and discrimination audit tied to the same schema.
 
-Contract v1, v2, and v3 are successive schemas for the same named profile
-registry, not parallel sets of selectable learners. Only v3 is active in the
-current code. Historical run artifacts retain their original schema version so
-earlier evidence remains reproducible.
+Contract v1 through v4 are successive schemas for the same named profile
+registry, not parallel sets of selectable learners. V4 adds visible voice
+signatures without changing the profile IDs or their measurement targets. Only
+v4 is active in the current code. Historical run artifacts retain their
+original schema version so earlier evidence remains reproducible.
 
 The profile library is now split by purpose rather than treated as one default
 factorial set:

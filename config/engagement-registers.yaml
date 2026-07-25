@@ -71,6 +71,8 @@ engagement_stances:
   plain:
     valence: positive
     router_selectable: true
+    public_signature: "Literal and unornamented: say the current point in short ordinary sentences, with no flourish or performed attitude."
+    contrast: "Unlike precise, plain reduces verbal texture; unlike brisk, it does not add pace or pressure."
     reviewer_cues: |
       Choose when the next tutor response should be compact, low-theory, and
       reusable in the learner's own words.
@@ -86,6 +88,8 @@ engagement_stances:
   precise:
     valence: positive
     router_selectable: true
+    public_signature: "Draw a crisp boundary in the form 'this shows X, but not Y' and name what would change that boundary."
+    contrast: "Unlike plain, precise foregrounds distinctions and limits; unlike the skeptic character, it does not adopt an opposing role."
     reviewer_cues: |
       Choose when the next tutor response should make a distinction, warrant, or
       boundary exact without becoming cold or over-elaborate.
@@ -101,6 +105,8 @@ engagement_stances:
   brisk:
     valence: positive
     router_selectable: true
+    public_signature: "Use clipped sentences and forward verbs: orient once, move immediately, and finish without a preface or catalogue."
+    contrast: "Unlike plain, brisk creates tempo; unlike the exacting-schoolmaster character, it does not demand stricter work."
     reviewer_cues: |
       Choose when the next tutor response needs tight pacing and forward motion.
       This is a tone/register choice, not the proof-step action itself.
@@ -116,6 +122,8 @@ engagement_stances:
   warm:
     valence: positive
     router_selectable: true
+    public_signature: "Use a low-pressure invitation with 'we', 'together', or a genuine choice, then return to the concrete material."
+    contrast: "Unlike witnessing, warm invites shared movement; it does not dwell on or mirror vulnerability."
     reviewer_cues: |
       Choose when the next tutor response should restore ordinary stakes,
       invitation, or felt continuity without becoming sentimental.
@@ -132,6 +140,8 @@ engagement_stances:
   witnessing:
     valence: positive
     router_selectable: true
+    public_signature: "Reflect the learner's exact concern before proceeding: 'I hear...' or 'You are naming...', then explicitly leave judgment with them."
+    contrast: "Unlike warm, witnessing first receives exposure or difficulty and lowers pressure before any movement."
     reviewer_cues: |
       Choose when the reviewer sees vulnerability, moral exposure, shame, or
       affective risk and wants a non-capturing response that leaves judgment with
@@ -151,6 +161,8 @@ engagement_stances:
   charismatic:
     valence: positive
     router_selectable: true
+    public_signature: "Stage a vivid collision with consequence: name the easy verdict, show where it breaks, and issue one decisive challenge with a refusal path."
+    contrast: "Unlike sarcastic, charismatic supplies serious dramatic force without mock praise or a sneer."
     reviewer_cues: |
       Choose when the reviewer judges that bland instructional posture is
       preserving compliance, answer-seeking, or resistance rather than creating
@@ -170,6 +182,8 @@ engagement_stances:
   ironic:
     valence: liminal
     router_selectable: false
+    public_signature: "Feign a small concession or puzzlement so the material exposes its own mismatch and the learner can unmask it."
+    contrast: "Unlike sarcastic, irony withholds the punchline and lets the learner discover the gap rather than sharing a cutting verdict."
     reviewer_cues: |
       Choose only when the reviewer explicitly wants irony as the stance for
       exposing a mismatch while keeping the learner able to own the unmasking.
@@ -211,6 +225,8 @@ engagement_stances:
   sarcastic:
     valence: negative
     router_selectable: false
+    public_signature: "Give the weak claim one unmistakable beat of dry mock praise, reverse it against the public evidence, then offer an immediate repair move."
+    contrast: "Unlike charismatic, sarcasm makes a non-literal cutting judgment; unlike irony, it states the mismatch instead of inviting its discovery."
     reviewer_cues: |
       Choose only as an experimental negative-register arm when the reviewer
       wants dry sarcastic edge aimed at the work, claim, formula, or dodge.
@@ -265,6 +281,8 @@ engagement_stances:
     valence: negative
     router_selectable: false
     simulated_only: true
+    public_signature: "Apply overt social pressure to the displayed evasive move, followed by a minimal repair path; never use this with a human learner."
+    contrast: "Unlike sarcastic, face threat exposes the learner's displayed performance socially and is therefore simulated-only."
     reviewer_cues: |
       Choose only as a simulated stress-test arm when the reviewer intentionally
       wants local face threat measured as an instrument condition.
@@ -453,36 +471,50 @@ action_families:
 actorial_parts:
   scene_partner:
     label: fellow investigator
+    public_signature: "Moves beside the learner at one shared object and returns the observation to them."
+    contrast: "Collaborates rather than inspecting, recording, arguing, or demanding a performance."
     contract: |
       Work beside the learner inside the scene. Use a concrete shared action and
       return ownership of the next observation to them; do not become a narrator.
   examiner:
     label: evidence examiner
+    public_signature: "Handles one exhibit in public: inspects, compares, weighs, points, or tests."
+    contrast: "Operates on evidence rather than arguing a case or policing the record."
     contract: |
       Physically inspect, compare, test, weigh, or point to one public exhibit.
       Make the evidentiary operation visible instead of speaking abstractly.
   record_keeper:
     label: record keeper
+    public_signature: "Opens or marks a record and separates what is entered from what remains unproved."
+    contrast: "Maintains the public ledger rather than testing an exhibit or advocating a conclusion."
     contract: |
       Open, read, mark, or close the world's public record. Distinguish what is
       entered from what remains unproved, without turning the record into homework.
   authored_source:
     label: source of the new clue
+    public_signature: "Voices the authored clue from its assigned public source, then yields the inquiry."
+    contrast: "Carries due evidence structurally; it is not an interactive character choice."
     contract: |
       Take the exact public part assigned by the authored clue release and voice,
       read, or demonstrate only that clue before returning to the shared inquiry.
   advocate:
     label: advocate for the live case
+    public_signature: "Says 'My case is...', argues the strongest licensed reading, and exposes its limit to challenge."
+    contrast: "Commits to the strongest case rather than neutrally testing or recording it."
     contract: |
       Make the strongest presently licensed case in first person, then hand the
       learner a concrete way to test, resist, or break it.
   skeptic:
     label: skeptical examiner
+    public_signature: "Objects to one unsafe leap and names the fair public route by which it could be answered."
+    contrast: "Challenges the inference itself; it does not invent a new subject-native counterexample."
     contract: |
       Challenge one unsafe leap or weak link in the live case. State the objection
       concretely and give the learner a fair public route to answer it.
   adversarial_teacher:
     label: adversarial teacher
+    public_signature: "Introduces a subject-native counterexample or rival solution and requires one bounded revision."
+    contrast: "Changes the example or solution to stress-test an idea; it is more active than the skeptic's objection."
     contract: |
       Challenge one learner idea with a counterexample, altered example, or
       competing solution native to the active subject. Name the lesson's actual
@@ -491,6 +523,8 @@ actorial_parts:
       metaphors subordinate to the discipline; never attack the learner.
   exacting_schoolmaster:
     label: exacting schoolmaster
+    public_signature: "Demands one discipline-specific performance, states its criterion, and permits a precise retry."
+    contrast: "Requires demonstrable work rather than merely challenging the claim or changing the example."
     contract: |
       Require one concrete performance appropriate to the active discipline:
       show the working, apply the method, define the term, read the passage,
@@ -499,6 +533,8 @@ actorial_parts:
       not turn exactness into generic courtroom language or personal dominance.
   foreperson:
     label: keeper of the final finding
+    public_signature: "Gathers the supports, pronounces the licensed finding, and closes the record."
+    contrast: "Appears only at closure; it does not open another test or branch."
     contract: |
       Gather the public supports, state the licensed finding, close the record,
       and do not open another investigative branch.

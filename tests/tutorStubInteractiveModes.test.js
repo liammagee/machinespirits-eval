@@ -2566,6 +2566,106 @@ test(
   },
 );
 
+test(
+  'bare /register opens a voice-first selector and can choose explicit sarcasm',
+  { skip: process.platform === 'win32' },
+  async () => {
+    const terminal = pty.spawn(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--mixed-learner',
+        '--dag',
+        '--tutor-learner-dag',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-trace',
+        '--world',
+        'world_005_marrick',
+      ],
+      {
+        cwd: ROOT,
+        cols: 110,
+        rows: 28,
+        name: 'xterm-color',
+        env: { ...process.env, TERM: 'xterm-color', TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+      },
+    );
+    let terminalOutput = '';
+    let opened = false;
+    let selected = false;
+    let requestedExit = false;
+    try {
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          terminal.kill();
+          reject(new Error(`TTY register selector timed out\n${plainTerminalText(terminalOutput)}`));
+        }, 10_000);
+        terminal.onData((chunk) => {
+          terminalOutput += chunk;
+          const plain = plainTerminalText(terminalOutput);
+          if (!opened && plain.includes('A Diligent Learner >')) {
+            opened = true;
+            terminal.write('/register\r');
+          } else if (!selected && plain.includes('sounds > The conversation chooses how the tutor sounds')) {
+            selected = true;
+            terminal.write('\x1b[F\r');
+          } else if (!requestedExit && plain.includes('teaching style direction > sarcastic')) {
+            requestedExit = true;
+            terminal.write('/quit\r');
+          }
+        });
+        terminal.onExit(({ exitCode, signal }) => {
+          clearTimeout(timer);
+          if (exitCode === 0) resolve();
+          else reject(new Error(`TTY register selector exited ${exitCode} (${signal})\n${terminalOutput}`));
+        });
+      });
+
+      const plain = plainTerminalText(terminalOutput);
+      assert.match(plain, /Tutor register · choose how the voice sounds with ↑\/↓ and Enter/u);
+      assert.match(plain, /sarcastic.*explicit-only/u);
+      assert.match(plain, /sounds >/u);
+      assert.match(plain, /register changes voice; tutor character changes the repeated public action/u);
+      assert.match(plain, /teaching style direction > sarcastic/u);
+      assert.match(plain, /explicit-only negative register/u);
+    } finally {
+      terminal.kill();
+    }
+  },
+);
+
+test('interactive register control rejects the simulated-only face-threat condition', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--mixed-learner',
+      '--dag',
+      '--tutor-learner-dag',
+      '--no-opening',
+      '--no-closeout-report',
+      '--no-interim-animation',
+      '--no-stream',
+      '--no-trace',
+      '--world',
+      'world_005_marrick',
+    ],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+      input: '/register face_threat\n/quit\n',
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /face_threat is a simulated-only evaluation condition/iu);
+  assert.doesNotMatch(result.stdout, /teaching style direction > face_threat/iu);
+});
+
 test('--learner-character and --tutor-character set symmetric launch-time character controls', () => {
   const result = spawnSync(
     process.execPath,

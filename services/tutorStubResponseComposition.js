@@ -1516,7 +1516,8 @@ function configuredFallbackStance(stance) {
       witnessing: 'Let the point stand without asking it to bear more.',
       charismatic: 'The easy conclusion breaks at that limit.',
       ironic: 'Apparently the neat conclusion still has a gap.',
-      sarcastic: 'Conveniently, the easy conclusion skipped that gap.',
+      sarcastic:
+        'Wonderful—the easy conclusion has pulled the nice trick of skipping that gap. Put the missing warrant back in.',
       face_threat: 'Stop at the weak link; the conclusion has not earned the rest.',
     }[stance] || 'Keep only what the public evidence already shows.'
   );

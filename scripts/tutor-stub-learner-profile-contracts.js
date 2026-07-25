@@ -1,4 +1,4 @@
-const CONTRACT_SCHEMA = 'machinespirits.tutor-stub.learner-profile-contract.v3';
+const CONTRACT_SCHEMA = 'machinespirits.tutor-stub.learner-profile-contract.v4';
 
 const PUBLIC_TURN_RULES = [
   'Write only the learner public turn, not analysis.',
@@ -24,6 +24,137 @@ const LEARNER_PROFILE_SPEAKER_LABELS = Object.freeze({
   goalpost_shifter: 'A Goalpost-Shifting Learner',
   fast_learner: 'A Fast Learner',
   slow_learner: 'A Slow Learner',
+});
+
+const LEARNER_PROFILE_PUBLIC_VOICES = Object.freeze({
+  diligent: {
+    signature:
+      'Sound thoughtful and provisional: make a bounded claim, name uncertainty, and revise explicitly when the evidence warrants it.',
+    sampleMoves: [
+      'I think this shows...',
+      'That part follows, but I am not sure about...',
+      'Then I would revise it to...',
+    ],
+  },
+  answer_seeking: {
+    signature:
+      'Sound impatient for usable wording: ask what to write or say next and echo fragments the tutor has already supplied.',
+    sampleMoves: ['What exactly should I write?', 'Can you give me the next line?', 'So I put down that... right?'],
+  },
+  skeptical: {
+    signature:
+      'Sound cool and analytic: use short why-or-what-makes-that-follow questions and accept only an explicit public warrant.',
+    sampleMoves: [
+      'Why does that follow?',
+      'What makes that evidence enough?',
+      'All right—the rule connects those two.',
+    ],
+  },
+  overconfident: {
+    signature:
+      'Sound decisive and compressed: announce the verdict early, minimize uncertainty, and make correction feel like a reluctant narrowing.',
+    sampleMoves: ['So it has to be...', 'That settles it.', 'Fine—then I will narrow it to...'],
+  },
+  low_agency: {
+    signature:
+      'Sound hesitant and permission-seeking: ask what the tutor wants or whether a move is allowed instead of owning the judgment.',
+    sampleMoves: [
+      'Is it okay if I say...?',
+      'Do you want me to choose...?',
+      'I can write that if that is what you mean.',
+    ],
+  },
+  memory_limited: {
+    signature:
+      'Sound locally attentive but narrow: refer to the most recent clue, ask for reminders, and avoid confident summaries of older material.',
+    sampleMoves: [
+      'I have the last clue, but what came before it?',
+      'Can you remind me which record that was?',
+      'From this line alone...',
+    ],
+  },
+  premature_closure: {
+    signature:
+      'Sound closure-hungry: treat partial support as final and repeatedly try to end the inquiry in a compact verdict.',
+    sampleMoves: ['So we are done, then.', 'That settles who did it.', 'We have enough to close this.'],
+  },
+  proof_skipper: {
+    signature:
+      'Sound fluent and confident: jump from clue to conclusion in one polished sentence while leaving the connecting warrant unsaid.',
+    sampleMoves: [
+      'The record names them. They are responsible.',
+      'That clue proves the conclusion.',
+      'Clearly it was them.',
+    ],
+  },
+  false_memory: {
+    signature:
+      'Sound sincerely recollective: introduce a wrong detail as something already seen, read, heard, or recorded rather than as a new guess.',
+    sampleMoves: ["Didn't we already see that...?", 'I thought the record said...', 'We established earlier that...'],
+  },
+  contradiction_keeper: {
+    signature:
+      'Sound stubbornly consistent: restate the original claim after contrary evidence and reframe the mismatch as an exception.',
+    sampleMoves: [
+      'That can still fit my original view.',
+      'I still think the first answer holds.',
+      'That is an exception, not a reversal.',
+    ],
+  },
+  affective_resistant: {
+    signature:
+      'Sound guarded and interaction-aware: name pressure in the exchange, object to being pushed, and withdraw before offering more evidence work.',
+    sampleMoves: [
+      'That feels like a jump.',
+      'You are pushing me toward your answer.',
+      'I do not want to keep going in that tone.',
+    ],
+  },
+  low_trust_skeptic: {
+    signature:
+      'Sound adversarial toward authority: question the tutor, framing, or source before engaging the inference itself.',
+    sampleMoves: [
+      'Why should I trust that framing?',
+      'How do I know that source is reliable?',
+      'That sounds like your assumption, not evidence.',
+    ],
+  },
+  counterexample_hunter: {
+    signature:
+      'Sound inventive and testing: lead with a public what-if, rival reading, or edge case that could break the current rule.',
+    sampleMoves: [
+      'What if the same clue came from...?',
+      'Could there be another reading?',
+      'Try this counterexample against the rule.',
+    ],
+  },
+  goalpost_shifter: {
+    signature:
+      'Sound evasively rigorous: concede the current evidence, then introduce a new acceptance condition before allowing closure.',
+    sampleMoves: [
+      'Maybe, but that still does not show...',
+      'I would accept it only if...',
+      'Even then, we would also need...',
+    ],
+  },
+  fast_learner: {
+    signature:
+      'Sound energetic and compressed: synthesize multiple licensed steps quickly, then ask for the next clue or harder move.',
+    sampleMoves: [
+      'So A rules out B and leaves C—what is next?',
+      'Got it; move it along.',
+      'That gives us the warrant. Next clue?',
+    ],
+  },
+  slow_learner: {
+    signature:
+      'Sound careful and incremental: restate one clue, ask one local confirmation, and explicitly request a slower pace.',
+    sampleMoves: [
+      'One clue at a time, please.',
+      'Let me check just this part.',
+      'Slow down—does this line only show...?',
+    ],
+  },
 });
 
 function contract({
@@ -57,6 +188,7 @@ function contract({
       forbiddenNormalization,
       publicRules: [...PUBLIC_TURN_RULES, ...publicRules],
     },
+    publicVoice: LEARNER_PROFILE_PUBLIC_VOICES[id],
     traceSignatureTargets: signature,
     dagSignatureTargets: dag,
     observabilityContract: observability
@@ -1117,6 +1249,7 @@ export function learnerProfilePickerPresentation(id) {
     speakerLabel: learnerProfileSpeakerLabel(profile.id),
     group: profile.family === 'stress' ? 'stress probe' : profile.family === 'control' ? 'core control' : 'core',
     description: profile.behaviorContract.stableFailure.description,
+    voice: profile.publicVoice?.signature || '',
     nearestNeighbor,
     contrast: nearestContrast,
   };
@@ -1132,6 +1265,7 @@ export function learnerProfileContractSummary(id) {
     shortName: profile.intent.shortName,
     speakerLabel: learnerProfileSpeakerLabel(profile.id),
     failureOperator: profile.intent.failureOperator,
+    publicVoice: profile.publicVoice,
     stableFailure: profile.behaviorContract.stableFailure,
     traceSignatureTargets: profile.traceSignatureTargets,
     dagSignatureTargets: profile.dagSignatureTargets,
@@ -1159,6 +1293,10 @@ export function learnerProfilePrompt(id) {
     '',
     'Public-turn rules:',
     formatList(behaviorOnlyPublicRules(profile)),
+    '',
+    'Visible voice:',
+    `- ${profile.publicVoice.signature}`,
+    `- Vary language across turns. Representative moves, not scripts: ${profile.publicVoice.sampleMoves.join(' / ')}`,
     '',
     'Repair behavior:',
     `- After the first correction: ${behaviorPhrase(profile.repairModel.firstCorrection)}.`,

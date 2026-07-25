@@ -71,6 +71,10 @@ const PART_CUES = Object.freeze({
     'In one short unquoted host sentence beginning “My case is”, state the strongest licensed claim and its concrete limit. Do not append a semicolon-shaped test. Let the selected action supply a separate final handoff.',
   skeptic:
     'In the unquoted host voice, challenge one unsafe leap or weak link and give the learner a fair public route to answer it.',
+  adversarial_teacher:
+    'In the unquoted host voice, introduce one subject-native counterexample, altered example, or rival solution using a named lesson object, then require one bounded explanation or revision. Attack the idea, never the learner.',
+  exacting_schoolmaster:
+    'In the unquoted host voice, require one discipline-specific performance, state the criterion it must meet, and explicitly permit one precise retry without humiliation.',
   foreperson:
     'In the unquoted host voice, gather the public supports, state the licensed finding, and close the record without opening another branch.',
 });
@@ -82,6 +86,10 @@ const COMPACT_PART_CUES = Object.freeze({
   authored_source: 'enter the public source directly and voice only the supplied evidence',
   advocate: 'begin “My case is”, state the strongest licensed claim and its limit, and leave the test for HANDOFF',
   skeptic: 'challenge one unsafe leap and show one fair public route through it',
+  adversarial_teacher:
+    'introduce a subject-native counterexample, altered example, or rival solution at one named lesson object, then require one bounded revision',
+  exacting_schoolmaster:
+    'require one discipline-specific performance, state its criterion, and permit one precise retry',
   foreperson: 'gather the public supports, state the licensed finding, and close the record',
 });
 
@@ -106,8 +114,23 @@ const TACTIC_EXECUTION_CUES = Object.freeze({
 });
 
 const STANCE_EXECUTION_CUES = Object.freeze({
+  plain:
+    'Use literal ordinary words and short sentences. Remove flourishes, performed attitude, and broad framing; make the current public point reusable as-is.',
+  precise:
+    'State one crisp boundary in the form “this shows X, but not Y,” with X and Y replaced by named public claims. Name what would change the boundary.',
+  brisk:
+    'Use clipped sentences and forward verbs. Orient once, move immediately, and finish without a preface, recap, catalogue, or extra qualification.',
+  warm: 'Use one genuine low-pressure invitation with “we,” “together,” “may,” “could,” or “can,” then return immediately to the named public material. Do not praise or flatter.',
+  witnessing:
+    'First reflect the learner’s exact concern with “I hear,” “You are naming,” or an equally direct acknowledgment. Lower pressure and explicitly leave judgment with the learner.',
   charismatic:
     'Make the final handoff a named challenge to one public claim or object. Use a decisive public action compatible with the selected part. When the part already requires a visible action, intensify that same action rather than replacing it with a stance-only verb such as stop or refuse. Do not rely on boundary words such as only or not to carry the stance. If a requested pressure tactic was downgraded, sharpen the delivered boundary without inventing contrary evidence.',
+  ironic:
+    'Use one legible cue such as “apparently,” “as if,” or “not exactly” to feign a small concession while the named public material exposes the mismatch. Let the learner unmask it; never make the learner the joke.',
+  sarcastic:
+    'Give the weak claim one unmistakable beat of dry mock praise such as “wonderful” or “nice trick,” immediately reverse that praise against named public evidence, and leave one concrete repair move. Aim every cutting word at the claim, formula, or dodge—never the learner.',
+  face_threat:
+    'For the simulated-only stress condition, make the displayed evasive move socially exposed with one registered face-threat cue, then leave a minimal repair path. Never attack identity, intelligence, worth, capacity, sincerity, or character.',
 });
 
 function oneLine(value) {
@@ -322,10 +345,15 @@ function compactTacticInstruction(contract) {
 
 function compactStanceInstruction(stance) {
   const cues = {
-    brisk: 'Keep it short and forward-moving.',
-    charismatic: 'Make it a decisive named challenge.',
-    precise: 'Make it distinguish one concrete claim.',
-    warm: 'Keep it low-pressure and preserve choice.',
+    plain: 'Use literal words; no flourish.',
+    precise: 'Say “X, not Y”; name correction.',
+    brisk: 'Clip sentences; omit preface, recap, catalogue.',
+    warm: 'Invite with “we”; preserve genuine choice.',
+    witnessing: 'Reflect concern; lower pressure; leave judgment.',
+    charismatic: 'Stage collision; make a decisive named challenge.',
+    ironic: 'Feign concession; let material expose the mismatch.',
+    sarcastic: 'Mock-praise the claim; reverse it; offer repair.',
+    face_threat: 'Expose the move locally; leave minimal repair.',
   };
   return cues[stance] || `Make it visibly ${oneLine(stance) || 'precise'}.`;
 }
@@ -681,7 +709,12 @@ export function buildTutorStubFirstDraftContract({
     performance: {
       engagement_stance: stance,
       engagement_operation_contract: engagementOperation,
-      stance_instruction: oneLine(getEngagementStanceDefinition(stance)?.stance_contract),
+      stance_instruction: [
+        oneLine(getEngagementStanceDefinition(stance)?.stance_contract),
+        oneLine(getEngagementStanceDefinition(stance)?.public_signature),
+      ]
+        .filter(Boolean)
+        .join(' '),
       stance_execution: stanceExecution,
       actorial_part: part,
       actorial_part_label: configuration.actorial_part_label || part.replace(/_/gu, ' '),

@@ -143,10 +143,15 @@ function v1HostSlots(contract) {
 
 function stanceHandoffInstruction(stance) {
   const cues = {
-    brisk: 'Keep it short and forward-moving.',
-    charismatic: 'Make it a decisive named challenge.',
-    precise: 'Make it distinguish one concrete claim.',
-    warm: 'Keep it low-pressure and preserve choice.',
+    plain: 'Use literal words; no flourish.',
+    precise: 'Say “X, not Y”; name correction.',
+    brisk: 'Clip sentences; omit preface, recap, catalogue.',
+    warm: 'Invite with “we”; preserve genuine choice.',
+    witnessing: 'Reflect concern; lower pressure; leave judgment.',
+    charismatic: 'Stage collision; make a decisive named challenge.',
+    ironic: 'Feign concession; let material expose the mismatch.',
+    sarcastic: 'Mock-praise the claim; reverse it; offer repair.',
+    face_threat: 'Expose the move locally; leave minimal repair.',
   };
   return cues[stance] || `Make it visibly ${oneLine(stance) || 'precise'}.`;
 }
