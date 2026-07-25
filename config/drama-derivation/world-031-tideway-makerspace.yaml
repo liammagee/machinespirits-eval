@@ -1,0 +1,174 @@
+# WORLD-031 — a collaborative-construction inquiry in a community makerspace.
+# The learner must distinguish who assembled a joint from the material defect
+# that mechanically explains where the structure failed.
+
+id: world_031_tideway_makerspace
+title: The Twist in the Tideway Footbridge
+discipline: "Collaborative fabrication (a load-test review)"
+
+question: "What caused the Tideway model footbridge to twist during its load test?"
+question_pattern: [causedTwist, tidewayBridge, "?x"]
+
+opening_frame:
+  situation: >-
+    The makerspace team stands around its twisted model footbridge after the
+    public load test, with the shared build log projected on the wall.
+  authored_text: >-
+    The Tideway bridge twisted under the test weights, the team is already
+    blaming the newest builder, and the shared build log is open on the wall.
+    What caused the Tideway model footbridge to twist during its load test?
+    Choose the joint, the materials, or any unclear term to inspect first.
+
+setting: >-
+  Tideway Makerspace has spent six Saturdays building a lightweight model
+  footbridge for the river festival. Everyone cut parts, checked measurements,
+  and signed the same build log. During the final public load test the deck
+  twisted sharply at the north joint and the weights had to come off. The room
+  settles on Jules, the newest volunteer, who assembled that joint and once put
+  a brace in backwards during practice. You are the build coordinator, proud of
+  the team and embarrassed in front of the festival committee. The workshop's
+  rule is written above the tool cage: locate the first failure, identify what
+  was installed there, and repair the build rather than the reputation.
+
+learner_voice: >-
+  The build coordinator: collaborative in principle, defensive after a public
+  failure, and tempted to make the newest pair of hands carry the explanation.
+  Learning to let the load trace and material record identify a repairable
+  cause without turning the review into a trial of one volunteer.
+
+secret:
+  fact: [causedTwist, tidewayBridge, blueConnectorBatch]
+  surface: >-
+    The twist was caused by the blue connector batch. Its resin cure record is
+    below the specified strength; the batch was installed at the north joint;
+    and synchronized strain gauges show that joint losing stiffness before any
+    other member moved.
+
+mirror:
+  fact: [causedTwist, tidewayBridge, jules]
+
+rules:
+  - id: R1_weak
+    gloss: >-
+      A joint is structurally weak from a material batch when that batch tested
+      below the required strength and was installed at that joint.
+    if:
+      - [belowRequiredStrength, "?batch"]
+      - [installedAt, "?batch", "?joint"]
+    then:
+      - [weakFromBatch, "?joint", "?batch"]
+  - id: R2_twist
+    gloss: >-
+      A weak material batch caused the bridge twist when the load trace shows
+      failure beginning at the same joint before movement elsewhere.
+    if:
+      - [weakFromBatch, "?joint", "?batch"]
+      - [failureBeganAt, tidewayBridge, "?joint"]
+    then:
+      - [causedTwist, tidewayBridge, "?batch"]
+  - id: R3_builder
+    gloss: >-
+      A builder caused the twist only if that person assembled the failed joint
+      and the inspection records a specific assembly error there. Assembly
+      credit by itself does not identify an error.
+    if:
+      - [assembled, "?x", "?joint"]
+      - [assemblyErrorLoggedAt, "?x", "?joint"]
+    then:
+      - [causedTwist, tidewayBridge, "?x"]
+
+premises:
+  - id: p_builder
+    evidence_role: mirror
+    fact: [assembled, jules, northJoint]
+    surface: >-
+      The shared build log records Jules assembling the north joint, with two
+      teammates checking the alignment before it was closed.
+  - id: p_strength
+    fact: [belowRequiredStrength, blueConnectorBatch]
+    surface: >-
+      The materials test sheet shows one batch of blue printed connectors curing
+      at only sixty-eight percent of the specified strength. The other batches
+      all cleared the requirement.
+  - id: p_location
+    fact: [installedAt, blueConnectorBatch, northJoint]
+    surface: >-
+      The color-coded parts ledger places that blue connector batch at the north
+      joint and nowhere else in the bridge. The joint photograph shows the same
+      batch mark before the cover plate went on.
+  - id: p_trace
+    fact: [failureBeganAt, tidewayBridge, northJoint]
+    surface: >-
+      The synchronized strain-gauge trace shows the north joint losing stiffness
+      first. The deck begins to twist forty milliseconds later; every other
+      joint is still inside its expected range at that instant.
+
+background:
+  - [keepsRecord, team, sharedBuildLog]
+
+incompatible:
+  - [[causedTwist, tidewayBridge, blueConnectorBatch], [causedTwist, tidewayBridge, jules]]
+
+proof_paths:
+  - premises: [p_strength, p_location, p_trace]
+
+release_schedule:
+  - { turn: 2, premise: p_builder, via: tutor }
+  - turn: 3
+    premise: p_strength
+    via: director
+    presentation: { mode: enacted_role, role: materials tester reading the cure sheet }
+  - turn: 5
+    premise: p_location
+    via: director
+    presentation: { mode: presented_exhibit, cue: "The coordinator pins the color-coded parts ledger beside the joint photograph." }
+  - { turn: 7, premise: p_trace, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: Whose Hands
+      turns: [1, 4]
+      intent: >-
+        Jules's authorship of the joint makes a person easy to blame, then the
+        material test introduces a batch-level weakness that can be located.
+    - act: II
+      title: Where the Load Moved First
+      turns: [5, 8]
+      intent: >-
+        The parts ledger and strain trace connect the weak batch to the first
+        mechanical failure. The team should leave with a repair target and no
+        invented assembly error.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: jules
+      mirror_pull: high
+    second_order:
+      from: festivalCommittee
+      as: right
+      authority: public_reputation
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      The senior fabricator: protective of shared work, candid about a public
+      failure, and intent on turning embarrassment into a precise repair the
+      whole team can understand.
+
+presentation:
+  family: tideway-makerspace
+  temporal_frame: contemporary
+  scene_ecology: "collaborative fabrication workshop"
+  narrative_diction: "workshop problem-solving"
+  ledger_term: shared build log
+  summary: A collaborative makerspace review that traces a bridge-model twist to a weak connector batch rather than the newest volunteer who assembled the joint.

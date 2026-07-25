@@ -1,0 +1,173 @@
+# WORLD-030 — an everyday domestic inquiry about a ceiling leak. The proof is
+# intentionally shallow; the presentation test is whether the tutor can inhabit
+# ordinary household language without importing courtroom or assay diction.
+
+id: world_030_rowan_flat
+title: The Water Mark in Rowan Flat
+discipline: "Household repair reasoning (a shared-flat leak review)"
+
+question: "What caused the new water mark on Rowan Flat's kitchen ceiling?"
+question_pattern: [causedWaterMark, kitchenCeiling, "?x"]
+
+opening_frame:
+  situation: >-
+    A fresh brown ring has appeared above the kitchen table after the building's
+    morning pressure test, and the household repair notebook is still blank.
+  authored_text: >-
+    There is a new water mark above the kitchen table, Sam showered just before
+    it appeared, and the repair notebook has no finding yet. What caused the new
+    water mark on Rowan Flat's kitchen ceiling? Which observation should we put
+    beside that question first?
+
+setting: >-
+  Rowan Flat is a third-floor share house with one narrow kitchen, one bathroom
+  above the table end of the room, and a repair notebook held together with
+  tape. A new water mark blooms across the kitchen ceiling on Wednesday
+  morning. The household's verdict is instant: Sam took a long shower, left a
+  wet bathmat, and has ignored two requests to reseal the screen. You are the
+  tenant who reports repairs to the landlord and would like the argument over
+  before dinner. The oldest house rule is less convenient: write what was
+  observed, trace where the water travelled, and do not turn a messy bathroom
+  into a cause without a path.
+
+learner_voice: >-
+  The tenant keeping the repair notebook: tired of damp towels, already annoyed
+  with Sam, and inclined to treat bad habits as proof. Still capable of slowing
+  down when the physical route of the water points somewhere else.
+
+secret:
+  fact: [causedWaterMark, kitchenCeiling, basinFeedHose]
+  surface: >-
+    The mark was caused by the basin's flexible feed hose. Its split opens only
+    when mains pressure rises; the building pressure test raised it at 08:15,
+    and dye placed at the split followed the pipe chase to the exact edge of the
+    kitchen stain.
+
+mirror:
+  fact: [causedWaterMark, kitchenCeiling, samShower]
+
+rules:
+  - id: R1_release
+    gloss: >-
+      A fitting released water during the incident when it opens under raised
+      pressure and the building pressure rose during that same interval.
+    if:
+      - [opensUnderRaisedPressure, "?x"]
+      - [pressureRoseDuring, buildingSupply, incidentWindow]
+    then:
+      - [releasedWaterDuring, "?x", incidentWindow]
+  - id: R2_path
+    gloss: >-
+      A source that released water during the incident caused the ceiling mark
+      when a direct traced path connects that source to the mark.
+    if:
+      - [releasedWaterDuring, "?x", incidentWindow]
+      - [tracedPathTo, "?x", kitchenCeiling]
+    then:
+      - [causedWaterMark, kitchenCeiling, "?x"]
+  - id: R3_shower
+    gloss: >-
+      A shower caused the mark only if it ran during the incident and water from
+      its screen was traced to the ceiling mark. Timing without a path is not
+      enough.
+    if:
+      - [ranDuring, "?x", incidentWindow]
+      - [tracedPathTo, "?x", kitchenCeiling]
+    then:
+      - [causedWaterMark, kitchenCeiling, "?x"]
+
+premises:
+  - id: p_shower
+    evidence_role: mirror
+    fact: [ranDuring, samShower, incidentWindow]
+    surface: >-
+      Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen
+      needed wiping, which is why everyone began there.
+  - id: p_split
+    fact: [opensUnderRaisedPressure, basinFeedHose]
+    surface: >-
+      Under the basin, the flexible cold-water hose is dry at ordinary pressure
+      but opens along a hairline split when the gauge is raised. A paper strip
+      around the joint shows the first bead forming there.
+  - id: p_pressure
+    fact: [pressureRoseDuring, buildingSupply, incidentWindow]
+    surface: >-
+      The building notice records a mains-pressure test at 08:15. The kitchen
+      mark appeared at 08:18, while the test was still holding the supply above
+      its normal pressure.
+  - id: p_dye
+    fact: [tracedPathTo, basinFeedHose, kitchenCeiling]
+    surface: >-
+      Blue tracing dye placed at the hose split follows the basin pipe chase and
+      appears at the leading edge of the kitchen water mark. Dye poured along
+      the shower screen stays in the bathroom tray.
+
+background:
+  - [keepsRecord, tenant, repairNotebook]
+
+incompatible:
+  - [[causedWaterMark, kitchenCeiling, basinFeedHose], [causedWaterMark, kitchenCeiling, samShower]]
+
+proof_paths:
+  - premises: [p_split, p_pressure, p_dye]
+
+release_schedule:
+  - { turn: 2, premise: p_shower, via: tutor }
+  - turn: 3
+    premise: p_split
+    via: director
+    presentation: { mode: presented_exhibit, cue: "A paper strip is wrapped around the basin hose before the pressure is raised." }
+  - turn: 5
+    premise: p_pressure
+    via: director
+    presentation: { mode: enacted_role, role: building caretaker reading the pressure-test notice }
+  - { turn: 7, premise: p_dye, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Wet Bathmat
+      turns: [1, 4]
+      intent: >-
+        Sam's shower supplies a plausible coincidence, while the pressure-sensitive
+        hose split introduces a source whose behavior can be tested directly.
+    - act: II
+      title: Follow the Blue Line
+      turns: [5, 8]
+      intent: >-
+        The pressure-test timestamp and dye path turn a household argument into
+        a physical explanation. The learner should distinguish an untidy scene
+        from the source connected to the mark.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: samShower
+      mirror_pull: high
+    second_order:
+      from: landlord
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      The practical housemate who knows the plumbing: sympathetic to the
+      frustration, unwilling to referee personalities, and happiest when a
+      simple test lets the water show where it travelled.
+
+presentation:
+  family: rowan-flat
+  temporal_frame: contemporary
+  scene_ecology: "shared apartment kitchen and bathroom"
+  narrative_diction: "domestic plainspoken"
+  ledger_term: repair notebook
+  summary: An everyday shared-flat inquiry that traces a ceiling stain to a pressure-sensitive hose rather than the housemate everyone already blames.

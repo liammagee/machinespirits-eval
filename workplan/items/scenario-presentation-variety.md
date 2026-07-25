@@ -1,14 +1,18 @@
 ---
 id: scenario-presentation-variety
-title: "Scenario presentation variety — de-medievalize the derivation-world roster"
-status: triaged
+title: Scenario presentation variety — de-medievalize the derivation-world roster
+status: review
 type: infra
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-07-12
-updated: 2026-07-22
-verification: "Generic tutor-stub prompts carry no unconditional assay vocabulary (period worlds opt in via presentation metadata); the world picker groups controlled variants by family; the featured set mixes period/contemporary/speculative; audit-world-variety reports family-normalized distributions; at least four non-period base worlds lint PASS."
+updated: 2026-07-25
+verification: Generic tutor-stub prompts carry no unconditional assay vocabulary
+  (period worlds opt in via presentation metadata); the world picker groups
+  controlled variants by family; the featured set mixes
+  period/contemporary/speculative; audit-world-variety reports family-normalized
+  distributions; at least four non-period base worlds lint PASS.
 claim_status: methods
 links:
   items:
@@ -18,6 +22,7 @@ tags:
   - derivation-worlds
   - presentation
   - authoring
+branch: codex/scenario-presentation-variety
 ---
 
 The derivation-world roster read as uniformly mock-antiquated: tutor-stub
@@ -59,16 +64,27 @@ Landed:
 
 Remaining:
 
-- Live smoke the new worlds (zero have dialogue runs yet; lint-only).
-- Backfill scene_ecology/diction/summary for the untagged legacy families
-  (needs reading each fiction; conservative frame-only tags applied so far).
-  EXCLUDED: the marrick family — its costume is pinned by user directive
+- Run outcome-bearing live dialogues for worlds 029-031 only if a later
+  experiment needs them. Their current role is authoring and presentation
+  coverage, so deterministic tutor-stub dry-runs are the appropriate gate.
+- EXCLUDED: the marrick family — its costume remains pinned by user directive
   (2026-07-12): the assay language suits those scenarios; do not re-costume
   them or author diction variants of them.
-- Author 2-3 more non-period base worlds (clinic, domestic decision,
-  collaborative construction) once the first five have smoked clean.
 
 2026-07-22 Codex: Parked in triage. The presentation metadata, generic prompt
 parameterization, grouped picker, audit, and five lint-clean worlds have landed.
 Live smokes, legacy-metadata enrichment, and additional worlds are optional
 content expansion rather than an active implementation stream.
+
+2026-07-25 Codex: Re-audited current main before extending the roster. All 29
+existing worlds already carried `scene_ecology`, `narrative_diction`, and
+`summary`; worlds 023-027 also had live dialogue evidence, so the two remaining
+notes above were stale. Added three requested contemporary base worlds:
+world-029 Riverside Clinic (clinic process attribution), world-030 Rowan Flat
+(domestic repair decision), and world-031 Tideway Makerspace (collaborative
+construction review). Each has an independent three-premise proof path, lints
+clean, appears in the tutor-stub picker, and dry-runs through the public prompt
+boundary without legacy assay diction. Family-normalized variety now covers 32
+files / 24 families: 54% period, 38% contemporary, and 8% speculative, with no
+metadata backfill candidates. The new dry-runs are authoring/prompt-boundary
+verification, not claims about live learner outcomes.

@@ -1,0 +1,173 @@
+# WORLD-029 — a contemporary clinic scheduling inquiry. A shallow, fully
+# mechanical world about process attribution rather than clinical diagnosis.
+
+id: world_029_riverside_clinic
+title: The Missing Appointment at Riverside Clinic
+discipline: "Clinic operations (a scheduling incident review)"
+
+question: "What cancelled Noor's vaccination appointment at Riverside Clinic?"
+question_pattern: [cancelled, noorAppointment, "?x"]
+
+opening_frame:
+  situation: >-
+    Noor is at the Riverside Clinic desk with a confirmation message on her
+    phone, but the morning schedule no longer contains her appointment.
+  authored_text: >-
+    Noor has a confirmation message, the clinic has no appointment, and the
+    care log is open between us. What cancelled Noor's vaccination appointment
+    at Riverside Clinic? We can begin with the confirmation, the schedule, or
+    any term in that question that needs clarifying.
+
+setting: >-
+  Riverside is a busy community clinic with one reception desk, six consulting
+  rooms, and a scheduling system shared with the regional booking service.
+  Noor arrives for a vaccination appointment confirmed the previous afternoon,
+  but her name has vanished from the morning list. The waiting room settles on
+  its answer immediately: Mara at reception opened Noor's record just before
+  closing and must have deleted the booking. You are the duty coordinator,
+  responsible for the care log and eager to restore the appointment without
+  blaming a colleague by instinct. The operations lead insists on a procedural
+  review: timestamps before suspicions, system actions before reputations.
+
+learner_voice: >-
+  The duty coordinator: practical, protective of patients, and irritated that
+  Noor has been left waiting. Mara's name is the only human name in the access
+  log, so the coordinator wants a quick answer, but is learning to distinguish
+  opening a record from issuing the action that changed it.
+
+secret:
+  fact: [cancelled, noorAppointment, duplicateSweep]
+  surface: >-
+    The appointment was cancelled by the overnight duplicate sweep. The
+    regional service marked Noor's confirmed clinic booking as a duplicate of
+    an incomplete pharmacy request; the sweep ran during its normal window and
+    its action ledger records the cancellation under its own service identity.
+
+mirror:
+  fact: [cancelled, noorAppointment, mara]
+
+rules:
+  - id: R1_eligible
+    gloss: >-
+      An automated process was eligible to cancel an appointment only if the
+      appointment was marked as a duplicate and that process ran during the
+      clinic's cancellation window.
+    if:
+      - [markedDuplicateFor, noorAppointment, "?x"]
+      - [ranDuring, "?x", cancellationWindow]
+    then:
+      - [eligibleToCancel, noorAppointment, "?x"]
+  - id: R2_cancelled
+    gloss: >-
+      An eligible process cancelled the appointment when the action ledger
+      attributes the cancellation event to that same process identity.
+    if:
+      - [eligibleToCancel, noorAppointment, "?x"]
+      - [cancellationLoggedTo, noorAppointment, "?x"]
+    then:
+      - [cancelled, noorAppointment, "?x"]
+  - id: R3_reception
+    gloss: >-
+      Opening a patient record would support blaming a receptionist only if a
+      separate user-action entry records that receptionist issuing the
+      cancellation. Access alone is not a cancellation.
+    if:
+      - [openedRecord, "?x", noorRecord]
+      - [userCancellationLoggedTo, noorAppointment, "?x"]
+    then:
+      - [cancelled, noorAppointment, "?x"]
+
+premises:
+  - id: p_access
+    evidence_role: mirror
+    fact: [openedRecord, mara, noorRecord]
+    surface: >-
+      The access log does show Mara opening Noor's record at 17:42, while
+      checking the next morning's arrivals. It records a view and no edit.
+  - id: p_duplicate
+    fact: [markedDuplicateFor, noorAppointment, duplicateSweep]
+    surface: >-
+      At 01:58 the regional booking service marked Noor's clinic appointment as
+      a duplicate for the overnight sweep. It paired the confirmed booking with
+      an unfinished pharmacy request carrying the same patient number.
+  - id: p_window
+    fact: [ranDuring, duplicateSweep, cancellationWindow]
+    surface: >-
+      The system operations record shows the duplicate sweep starting at 02:00,
+      inside the only window in which automated cancellations are permitted.
+  - id: p_action
+    fact: [cancellationLoggedTo, noorAppointment, duplicateSweep]
+    surface: >-
+      The action ledger records Noor's cancellation at 02:03 under the service
+      identity DUP-SWEEP-04. No staff login is attached to the action.
+
+background:
+  - [holdsConfirmation, noor, noorAppointment]
+
+incompatible:
+  - [[cancelled, noorAppointment, duplicateSweep], [cancelled, noorAppointment, mara]]
+
+proof_paths:
+  - premises: [p_duplicate, p_window, p_action]
+
+release_schedule:
+  - { turn: 2, premise: p_access, via: tutor }
+  - turn: 3
+    premise: p_duplicate
+    via: director
+    presentation: { mode: presented_exhibit, cue: "The coordinator places the overnight matching report beside Noor's confirmation." }
+  - turn: 5
+    premise: p_window
+    via: director
+    presentation: { mode: enacted_role, role: systems officer reading the operations record }
+  - { turn: 7, premise: p_action, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Name in the Log
+      turns: [1, 4]
+      intent: >-
+        Mara's record access makes the easy accusation available, then the
+        overnight duplicate mark introduces a process that could have acted
+        without any receptionist changing the booking.
+    - act: II
+      title: The Service Identity
+      turns: [5, 8]
+      intent: >-
+        The permitted run window and action ledger join eligibility to the
+        exact cancellation. The learner should separate human access from the
+        system action that actually removed the appointment.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: mara
+      mirror_pull: high
+    second_order:
+      from: operationsLead
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      The operations lead: calm under waiting-room pressure, exact about the
+      difference between access and action, and committed to restoring care
+      without manufacturing blame.
+
+presentation:
+  family: riverside-clinic
+  temporal_frame: contemporary
+  scene_ecology: "community clinic scheduling desk"
+  narrative_diction: "plain clinical procedural"
+  ledger_term: care log
+  summary: A short clinic-operations inquiry into whether a receptionist or an overnight duplicate process cancelled a confirmed appointment.
