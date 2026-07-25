@@ -21,6 +21,15 @@ function plainTerminalText(value) {
     .replace(/\r/gu, '');
 }
 
+function readTutorStubTraceEvents(directory) {
+  return fs
+    .readdirSync(directory)
+    .filter((name) => name.endsWith('.jsonl'))
+    .flatMap((name) => fs.readFileSync(path.join(directory, name), 'utf8').trim().split('\n'))
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+}
+
 function installFakeCodex(tmp) {
   const fakeCodex = path.join(tmp, 'codex');
   fs.writeFileSync(
@@ -891,7 +900,7 @@ test('/reset cancels an in-flight tutor turn and reopens the same scenario witho
         'world_005_marrick',
       ],
       initialInput: 'I think this sequence has gone wrong.\n',
-      followupInputs: [{ delayMs: 150, text: '/reset\n' }],
+      followupInputs: [{ delayMs: 150, text: '/auto 1\n/reset\n' }],
       stopWhen: (plain) => plain.includes('dialogue reset > unfinished work cancelled; starting this scenario again'),
       timeoutMs: 12_000,
       env: {
@@ -904,6 +913,7 @@ test('/reset cancels an in-flight tutor turn and reopens the same scenario witho
     assert.match(result.plain, /dialogue reset > unfinished work cancelled; starting this scenario again/u);
     assert.match(result.plain, /previous turns discarded · learner profile, settings, and director request kept/u);
     assert.doesNotMatch(result.plain, /tutor > Take the crucible as a fingerprint/u);
+    assert.doesNotMatch(result.plain, /A Diligent Learner \(auto\) >/u);
     assert.doesNotMatch(result.plain, /error: learner turn attempt was superseded/u);
 
     const events = fs
@@ -930,6 +940,20 @@ test('/reset cancels an in-flight tutor turn and reopens the same scenario witho
     );
     assert.ok(
       events.some((event) => event.type === 'learner_turn_attempt_discarded' && event.reason === 'dialogue_reset'),
+    );
+    const queuedAuto = events.find((event) => event.type === 'interactive_auto_queued');
+    assert.equal(queuedAuto?.requestedTurns, 1);
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'interactive_auto_queue_discarded' &&
+          event.requestId === queuedAuto?.requestId &&
+          event.reason === 'dialogue_reset',
+      ),
+    );
+    assert.equal(
+      events.some((event) => event.type === 'interactive_auto_queue_started'),
+      false,
     );
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
@@ -2071,6 +2095,149 @@ test('auto mode plays both roles from the current transcript and returns after a
     assert.match(result.plain, /Verrell alone draws the mint-yard crucible/u);
     assert.match(result.plain, /automation paused > auto turn cap/u);
     assert.match(result.plain, /session status > LEARNER · turn 2/u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('mid-turn /auto queues a handoff and /mode auto replaces it before automation starts', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-deferred-auto-mode-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: 'I want to inspect the residue before deciding.\n',
+      followupInputs: [
+        { delayMs: 100, text: '/auto 3\n' },
+        { delayMs: 200, text: '/mode auto 1\n' },
+      ],
+      stopWhen: (plain) => plain.includes('automation paused > auto turn cap'),
+      timeoutMs: 12_000,
+      env: {
+        FAKE_CODEX_DELAY_MS: '700',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /auto queued > starts after tutor turn 1 · 3 turns/u);
+    assert.match(result.plain, /auto queued > starts after tutor turn 1 · 1 turn/u);
+    assert.match(result.plain, /replaced the earlier queued auto request/u);
+    assert.match(result.plain, /A Diligent Learner \(auto\) > I would compare the metal residues first\./u);
+    assert.match(result.plain, /automation paused > auto turn cap/u);
+
+    const queuedIndex = result.plain.indexOf('auto queued > starts after tutor turn 1 · 1 turn');
+    const firstTutorIndex = result.plain.indexOf('tutor >', queuedIndex);
+    const autoLearnerIndex = result.plain.indexOf('A Diligent Learner (auto) >', queuedIndex);
+    assert.ok(queuedIndex >= 0 && firstTutorIndex > queuedIndex, result.plain);
+    assert.ok(autoLearnerIndex > firstTutorIndex, result.plain);
+
+    const events = readTutorStubTraceEvents(tmp);
+    const queued = events.filter((event) => event.type === 'interactive_auto_queued');
+    assert.equal(queued.length, 2);
+    assert.equal(queued[0].requestedTurns, 3);
+    assert.equal(queued[0].replacedRequestId, null);
+    assert.equal(queued[1].requestedTurns, 1);
+    assert.equal(queued[1].source, '/mode');
+    assert.equal(queued[1].replacedRequestId, queued[0].requestId);
+    const started = events.find((event) => event.type === 'interactive_auto_queue_started');
+    assert.equal(started?.requestId, queued[1].requestId);
+    assert.equal(started?.afterTurn, 1);
+    const handoff = events.find((event) => event.type === 'interactive_auto_handoff');
+    assert.equal(handoff?.queuedRequestId, queued[1].requestId);
+    assert.equal(handoff?.maxTurns, 1);
+    assert.ok(started.seq < handoff.seq);
+    assert.equal(events.filter((event) => event.type === 'turn_complete').length, 2);
+    assert.equal(
+      events.some((event) => event.type === 'interactive_auto_queue_discarded'),
+      false,
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('other mid-turn slash commands execute or reject explicitly without entering learner speech', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-mid-turn-command-contracts-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+      ],
+      initialInput: 'Keep this as the only public learner message.\n',
+      followupInputs: [
+        { delayMs: 100, text: '/status\n' },
+        { delayMs: 200, text: '/demo 1\n' },
+        { delayMs: 300, text: '/scenario\n' },
+        { delayMs: 400, text: '/board\n' },
+        { delayMs: 500, text: '/settings dropout 0.2\n' },
+        { delayMs: 600, text: '/auto zero\n' },
+      ],
+      stopWhen: (plain) => plain.includes('tutor >') && plain.includes('auto mode error:'),
+      timeoutMs: 12_000,
+      env: {
+        FAKE_CODEX_DELAY_MS: '1000',
+        TUTOR_STUB_SUMMARY_OPEN: '0',
+        TUTOR_STUB_REMEMBER_SETTINGS: '0',
+      },
+    });
+
+    assert.match(result.plain, /session status > LEARNER · turn 1/u);
+    assert.match(result.plain, /auto handoff: none · \/auto/u);
+    assert.match(
+      result.plain,
+      /demonstration not started; run \/demo again after the current tutor response completes/u,
+    );
+    assert.match(
+      result.plain,
+      /scenario change not started; run \/scenario again after the current tutor response completes/u,
+    );
+    assert.match(
+      result.plain,
+      /board change not started; run \/board again after the current tutor response completes/u,
+    );
+    assert.match(result.plain, /dialogue settings cannot be changed while the tutor is responding/u);
+    assert.match(result.plain, /auto mode error: auto expects a positive turn count or until-grounded/u);
+
+    const events = readTutorStubTraceEvents(tmp);
+    const completed = events.filter((event) => event.type === 'turn_complete');
+    assert.equal(completed.length, 1);
+    assert.equal(completed[0].turnRecord.learner, 'Keep this as the only public learner message.');
+    assert.equal(
+      events.some((event) => event.type === 'interactive_auto_queued'),
+      false,
+    );
+    assert.equal(
+      events.some((event) => event.type === 'interactive_auto_handoff'),
+      false,
+    );
+    for (const commandId of ['status', 'demo', 'scenario', 'board', 'settings', 'auto']) {
+      assert.ok(
+        events.some((event) => event.runtimeEvent === 'command_started' && event.details?.commandId === commandId),
+        `missing command_started trace for ${commandId}`,
+      );
+    }
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
