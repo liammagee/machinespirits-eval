@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-07-25
+updated: 2026-07-26
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -41,6 +41,7 @@ links:
     - refactor-sse-lifecycle
     - refactor-tutor-stub-learning-summary
     - refactor-tutor-stub-explanatory-debug
+    - refactor-tutor-stub-response-details
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -243,3 +244,12 @@ Log:
   with every CI lane green. Activated `refactor-tutor-stub-explanatory-debug`
   to extract the next pure R3 frame/prompt/fallback seam while retaining debug
   commands, model calls, terminal rendering, and trace writes in the CLI.
+- 2026-07-26 — PR #238 merged the explanatory-debug projection as `0d962967`
+  with every CI lane green after one transient matrix rerun. Activated
+  `refactor-tutor-stub-response-details` to extract compact response metadata,
+  repair explanations, and shared human-readable presentation labels without
+  moving printing, timing, commands, model calls, state changes, or traces.
+- 2026-07-26 — The response-details child reached review with one pure
+  presentation service, exhaustive authored-label and byte-exact metadata
+  fixtures, a 106-line CLI reduction, and focused/full hermetic parity green.
+  Command handling and the remaining terminal/runtime seams stay out of scope.

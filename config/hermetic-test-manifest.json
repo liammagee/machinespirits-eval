@@ -443,6 +443,7 @@
         "tests/tutorStubRequestedEntryCausality.test.js",
         "tests/tutorStubResponseComposition.test.js",
         "tests/tutorStubResponseContractLeaves.test.js",
+        "tests/tutorStubResponseDetails.test.js",
         "tests/tutorStubResponseGuard.test.js",
         "tests/tutorStubRoleHistory.test.js",
         "tests/tutorStubSessionHttp.test.js",

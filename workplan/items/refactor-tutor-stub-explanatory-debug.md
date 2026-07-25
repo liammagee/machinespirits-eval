@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-explanatory-debug
 title: Refactor tutor-stub explanatory debug
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-25
-updated: 2026-07-25
+updated: 2026-07-26
 verification: One pure explanatory-debug service preserves frame, prompt,
   cleaning, and fallback contracts; focused, hermetic, static, and source-only
   gates pass without model calls.
@@ -74,3 +74,6 @@ Log:
   zero skips, and tutor-core 137/137. Repository-wide lint and formatting,
   manifest, zero-cycle (362 files), 191-item source-only workplan, syntax, and
   diff checks pass with no model calls.
+- 2026-07-26 — Closed after PR #238 merged to `main` at `0d962967`; activated
+  the next pure R3 presentation seam on
+  `codex/refactor-tutor-stub-response-details`.
