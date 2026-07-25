@@ -427,6 +427,7 @@
         "tests/tutorStubRegisterPolicyComposition.test.js",
         "tests/tutorStubRegisterPriors.test.js",
         "tests/tutorStubReleasePacing.test.js",
+        "tests/tutorStubRemoteDriver.test.js",
         "tests/tutorStubReportingUx.test.js",
         "tests/tutorStubRequestedEntryCausality.test.js",
         "tests/tutorStubResponseComposition.test.js",
