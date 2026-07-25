@@ -685,8 +685,7 @@ async function learnerTurn(state) {
       actionType,
     }));
   const triggerFired =
-    state.turn === state.hiddenLearnerState?.triggerTurn &&
-    Boolean(state.hiddenLearnerState?.triggerSignal);
+    state.turn === state.hiddenLearnerState?.triggerTurn && Boolean(state.hiddenLearnerState?.triggerSignal);
   return {
     dialogue: [{ role: 'learner', content: text }],
     turn: state.turn + 1,
@@ -1343,10 +1342,7 @@ export function buildGraph(options = {}) {
   } else if (includeStrategyRefusal) {
     g.addNode('strategyRefusalGate', strategyRefusalGate)
       .addEdge('tutorSuperegoReview', 'strategyRefusalGate')
-      .addConditionalEdges('strategyRefusalGate', routeAfterStrategyRefusal, [
-        'tutorEgoRevision',
-        'constraintCheck',
-      ]);
+      .addConditionalEdges('strategyRefusalGate', routeAfterStrategyRefusal, ['tutorEgoRevision', 'constraintCheck']);
   } else {
     g.addEdge('tutorSuperegoReview', 'constraintCheck');
   }
