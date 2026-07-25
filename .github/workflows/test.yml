@@ -11,6 +11,19 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  test-contract:
+    name: Hermetic test contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check the required test inventory
+        run: npm run test:manifest
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -39,6 +52,7 @@ jobs:
       - run: npm run format:check
 
   test:
+    needs: test-contract
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -64,6 +78,7 @@ jobs:
 
   pty-concurrency:
     name: PTY / loopback concurrency
+    needs: test-contract
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
