@@ -205,6 +205,21 @@ test('compact-no-source.v1 compiles the exact V33 request below 2500 estimated t
   );
 });
 
+test('compact-no-source.v1 preserves declared audience context without enacting it', () => {
+  const fixture = JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8'));
+  const bundle = v33Bundle(fixture.request);
+  bundle.firstDraftContract.performance.obligation_contract.public_context.world.audience_context = {
+    description: 'Silent assessors observe.',
+    relationToSpeaker: 'They review the explanation.',
+  };
+
+  const result = buildTutorStubCompactNoSourceRequest(bundle);
+
+  assert.match(result.request.systemPrompt, /Non-speaking audience context: Silent assessors observe/iu);
+  assert.match(result.request.systemPrompt, /Never give this audience dialogue, a turn, agency, beliefs, or a cast role/iu);
+  assert.ok(result.compilation.promptSize.authoredTotal.estimatedTokens <= 2500);
+});
+
 test('typed charismatic ownership stays in PERFORMANCE entry through compact compilation', () => {
   const fixture = JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8'));
   const bundle = v33Bundle(fixture.request);

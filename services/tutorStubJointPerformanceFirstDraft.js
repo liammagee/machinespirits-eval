@@ -1086,7 +1086,9 @@ function applyDeterministicCompositePartRecognition(audit, compositePartOwnershi
     issues: [],
     deterministic_composite_part_ownership: clone(compositePartOwnership),
   };
-  const visibleAxisCount = Object.values(responseAudit.axes).filter((axis) => axis.visible === true).length;
+  const visibleAxisCount = Object.values(responseAudit.axes).filter(
+    (axis) => axis.visible === true && !axis.compatibility_alias_of,
+  ).length;
   responseAudit.visible_axis_count = visibleAxisCount;
   responseAudit.realization_rate = Number(
     (visibleAxisCount / Math.max(1, responseAudit.axis_count || Object.keys(responseAudit.axes).length)).toFixed(3),
@@ -1138,7 +1140,7 @@ function applyTypedEngagementOperationRecognition(audit, jointAudit) {
     return { audit: source, applied: false, reason: 'typed_engagement_operation_not_satisfied' };
   }
   responseAudit.axes.engagement_stance = clone(jointAxis);
-  const axisRows = Object.values(responseAudit.axes || {});
+  const axisRows = Object.values(responseAudit.axes || {}).filter((axis) => !axis?.compatibility_alias_of);
   const visibleAxes = axisRows.filter((axis) => axis?.visible === true).length;
   responseAudit.visible_axis_count = visibleAxes;
   responseAudit.axis_count = axisRows.length;

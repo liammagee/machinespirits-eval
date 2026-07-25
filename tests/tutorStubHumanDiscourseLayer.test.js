@@ -987,7 +987,7 @@ test('tutor-stub dry run exposes independent response-configuration axes', () =>
   assert.deepEqual(config.responseConfiguration.independentAxes, [
     'engagement_stance',
     'action_family',
-    'audience_register',
+    'addressee_profile',
     'lexical_accessibility',
     'scene_immersion',
     'actorial_part',
@@ -1673,7 +1673,7 @@ test('auto-eval dry run forwards dialogue, style, memory, and clue pace settings
     assert.deepEqual(summary.config.responseConfiguration.independentAxes, [
       'engagement_stance',
       'action_family',
-      'audience_register',
+      'addressee_profile',
       'lexical_accessibility',
       'scene_immersion',
       'actorial_part',

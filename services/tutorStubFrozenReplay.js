@@ -45,6 +45,7 @@ import {
 } from './tutorStubPerformanceAdjudication.js';
 import { aggregateTokenUsage, tokenUsageFields } from './tokenUsage.js';
 import { summarizeTutorStubPromptSizeReports } from './tutorStubPromptSizeReport.js';
+import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
 
 export const TUTOR_STUB_FROZEN_REPLAY_SCHEMA = 'machinespirits.tutor-stub.frozen-replay.v1';
 export const TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA = 'machinespirits.tutor-stub.first-draft-regression-fixture.v1';
@@ -142,7 +143,9 @@ function auditConfigurationSlice(configuration = null) {
     policy: configuration.policy,
     engagement_stance: configuration.engagement_stance,
     action_family: configuration.action_family,
+    addressee_profile: configuration.addressee_profile || configuration.audience_register,
     audience_register: configuration.audience_register,
+    register_pragmatics: configuration.register_pragmatics,
     lexical_accessibility: configuration.lexical_accessibility,
     scene_immersion: configuration.scene_immersion,
     actorial_part: configuration.actorial_part,
@@ -395,7 +398,7 @@ export function extractTutorStubFrozenTurn({ tracePath, turn } = {}) {
   }
   const firstDraftContract = buildTutorStubFirstDraftContract({
     learnerText: record.learner,
-    responseConfiguration: record.responseConfiguration,
+    responseConfiguration: normalizeTutorStubResponseConfiguration(record.responseConfiguration),
     responseCompositionFrame: record.responseComposition?.frame,
     dramaticReleaseFrame: record.dramaticRelease?.frame,
     questionSupport: record.questionSupport,
@@ -425,7 +428,7 @@ export function extractTutorStubFrozenTurn({ tracePath, turn } = {}) {
     learnerText: record.learner || '',
     priorTurns,
     priorTutorTexts,
-    selectedResponseConfiguration: clone(record.responseConfiguration),
+    selectedResponseConfiguration: normalizeTutorStubResponseConfiguration(record.responseConfiguration),
     firstDraftContract,
     frames: {
       responseComposition: clone(record.responseComposition?.frame || null),
@@ -467,6 +470,10 @@ export function extractTutorStubFrozenTurn({ tracePath, turn } = {}) {
 export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world, sourceAccessibilityPolicy = null } = {}) {
   if (!bundle || !world) throw new Error('frozen request refresh requires bundle and world');
   const refreshed = clone(bundle);
+  refreshed.selectedResponseConfiguration = normalizeTutorStubResponseConfiguration(
+    refreshed.selectedResponseConfiguration,
+    { world },
+  );
   const messages = refreshed.request?.messages || [];
   const latestRequest = messages.at(-1);
   if (!latestRequest || latestRequest.role !== 'user' || !FIRST_DRAFT_BLOCK.test(latestRequest.content)) {
@@ -496,7 +503,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world, sourceA
     dueEvidence: bundle.duePremiseIds || [],
   });
   const performanceObligationContract = compileTutorStubPerformanceObligationContract({
-    responseConfiguration: bundle.selectedResponseConfiguration,
+    responseConfiguration: refreshed.selectedResponseConfiguration,
     publicWorld: {
       visibility: 'public',
       title: world.title,
@@ -507,6 +514,7 @@ export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world, sourceA
       narrative_diction: world.presentation?.narrative_diction,
       ledger_term: world.presentation?.ledger_term,
       public_objects: [world.presentation?.ledger_term].filter(Boolean),
+      audience_context: world.audience?.context || null,
     },
     publicTurn: {
       visibility: 'public',

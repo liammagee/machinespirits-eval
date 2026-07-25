@@ -419,7 +419,7 @@ export function tutorStubGuardIssueRows(audits = null) {
     ...auditIssueRows('dialogue_closure', source.closureAudit),
   ];
   for (const [axis, audit] of Object.entries(source.responseConfigurationAudit?.axes || {})) {
-    if (axis === 'actorial_part' || audit?.visible !== false) continue;
+    if (axis === 'actorial_part' || audit?.compatibility_alias_of || audit?.visible !== false) continue;
     rows.push({
       guard: 'response_configuration',
       type: 'axis_not_visible',

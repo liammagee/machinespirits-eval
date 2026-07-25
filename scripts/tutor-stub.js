@@ -211,6 +211,10 @@ import {
   tutorStubResponseConfigurationPrompt,
 } from '../services/tutorStubResponseConfiguration.js';
 import {
+  dramaticAudiencePromptLines,
+  normalizeTutorStubResponseConfiguration,
+} from '../services/tutorStubRegisterPragmatics.js';
+import {
   freezeTutorStubLearnerRecordUpdateForDiscoursePlane,
   resolveTutorStubDiscoursePlane,
 } from '../services/tutorStubDiscoursePlane.js';
@@ -3437,6 +3441,8 @@ function worldPublicPrompt(world) {
     'Learner role:',
     String(world.learnerVoice || '').trim(),
     '',
+    ...dramaticAudiencePromptLines(world),
+    '',
     'Your task in story mode:',
     '- Play the tutor/investigator guiding the learner through the case.',
     '- Treat the learner as the investigator; do not solve the case for them.',
@@ -3463,6 +3469,7 @@ function buildDirectorInitialContext(world) {
     learnerCharacter:
       String(world.learnerVoice || '').trim() ||
       'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
+    audienceContext: dramaticAudiencePromptLines(world).join('\n') || null,
     registerNote:
       "The tutor's voice should follow the public characters and scene pressure without adding hidden evidence or proof machinery.",
   };
@@ -3481,6 +3488,7 @@ function printDirectorInitialContext(context) {
   printField('stage', context.stageNotes);
   printField('tutor', context.tutorCharacter);
   printField('learner', context.learnerCharacter);
+  if (context.audienceContext) printField('audience', context.audienceContext);
   printField('voice', context.registerNote);
   console.log();
 }
@@ -8098,7 +8106,7 @@ function normalizeResponseConfigurationSelection(
       requestType,
   );
   const selection = {
-    schema: 'machinespirits.tutor-stub.response-configuration-selection.v4',
+    schema: 'machinespirits.tutor-stub.response-configuration-selection.v5',
     register_ontology_version: getRegisterOntologyVersion(),
     policy: policyStack,
     primary_policy: policy,
@@ -8121,7 +8129,9 @@ function normalizeResponseConfigurationSelection(
       preferredLegacyRegister({ register: selected, requestType, actionFamily }),
     action_family: actionFamily || null,
     discourse_plane: structuredClone(discoursePlane),
+    addressee_profile: responseConfiguration.addressee_profile,
     audience_register: responseConfiguration.audience_register,
+    register_pragmatics: responseConfiguration.register_pragmatics,
     lexical_accessibility: responseConfiguration.lexical_accessibility,
     scene_immersion: responseConfiguration.scene_immersion,
     actorial_part: responseConfiguration.actorial_part,
@@ -8861,23 +8871,27 @@ function responseConfigurationContext(
       ? 'This is a simulated-only register; do not use it unless the operator explicitly enabled it.'
       : null,
   ].filter(Boolean);
-  const responseConfiguration = selection.response_configuration || {
-    engagement_stance: engagementStance,
-    action_family: selection.action_family,
-    audience_register: selection.audience_register,
-    lexical_accessibility: selection.lexical_accessibility,
-    scene_immersion: selection.scene_immersion,
-    actorial_part: selection.actorial_part,
-    actorial_part_label: selection.actorial_part_label,
-    actorial_part_selection: selection.actorial_part_selection,
-    actorial_performance:
-      selection.actorial_performance ||
-      selectTutorStubActorialPerformance({
-        engagementStance,
-        actorialPart: selection.actorial_part,
-      }),
-    unresolved_terms: selection.unresolved_terms || [],
-  };
+  const responseConfiguration = normalizeTutorStubResponseConfiguration(
+    selection.response_configuration || {
+      engagement_stance: engagementStance,
+      action_family: selection.action_family,
+      addressee_profile: selection.addressee_profile || selection.audience_register,
+      audience_register: selection.audience_register,
+      lexical_accessibility: selection.lexical_accessibility,
+      scene_immersion: selection.scene_immersion,
+      actorial_part: selection.actorial_part,
+      actorial_part_label: selection.actorial_part_label,
+      actorial_part_selection: selection.actorial_part_selection,
+      actorial_performance:
+        selection.actorial_performance ||
+        selectTutorStubActorialPerformance({
+          engagementStance,
+          actorialPart: selection.actorial_part,
+        }),
+      unresolved_terms: selection.unresolved_terms || [],
+    },
+    { world },
+  );
   const typedAction = selection.typed_action_decision?.chosen_action || null;
   const typedActionContext = typedAction
     ? [
@@ -11274,6 +11288,7 @@ async function callTutor({
           narrative_diction: world?.presentation?.narrative_diction,
           ledger_term: world?.presentation?.ledger_term,
           public_objects: [world?.presentation?.ledger_term].filter(Boolean),
+          audience_context: world?.audience?.context || null,
         },
         publicTurn: {
           visibility: 'public',
@@ -13250,6 +13265,7 @@ function publicWorldSummary(world) {
     String(world.openingFrame?.situation || world.setting || world.opening || world.openingSituation || '').trim() ||
       '(none supplied)',
     world.learnerVoice ? `Learner voice: ${world.learnerVoice}` : null,
+    ...dramaticAudiencePromptLines(world),
   ]
     .filter(Boolean)
     .join('\n');
@@ -14059,7 +14075,7 @@ function typedActionRegisterSelection({
   const definition = getEngagementStanceDefinition(register) || {};
   const effective = {
     ...(registerSelection ? jsonClone(registerSelection) : {}),
-    schema: registerSelection?.schema || 'machinespirits.tutor-stub.response-configuration-selection.v4',
+    schema: registerSelection?.schema || 'machinespirits.tutor-stub.response-configuration-selection.v5',
     policy: registerSelection?.policy || state.register?.policy || 'typed_action',
     turn: registerSelection?.turn || state.turns.length + 1,
     engagement_stance: register,
@@ -14071,7 +14087,9 @@ function typedActionRegisterSelection({
     task_id: patch.task_id,
     knowledge_component: patch.knowledge_component,
     item_difficulty: patch.item_difficulty,
+    addressee_profile: responseConfiguration.addressee_profile,
     audience_register: responseConfiguration.audience_register,
+    register_pragmatics: responseConfiguration.register_pragmatics,
     lexical_accessibility: responseConfiguration.lexical_accessibility,
     scene_immersion: responseConfiguration.scene_immersion,
     actorial_part: responseConfiguration.actorial_part,
@@ -16610,12 +16628,12 @@ async function main() {
           experiment: experimentConfig,
           typedPedagogicalActions: typedActionConfig,
           responseConfiguration: {
-            schema: 'machinespirits.tutor-stub.response-configuration.v2',
+            schema: 'machinespirits.tutor-stub.response-configuration.v3',
             primaryStanceField: 'engagement_stance',
             independentAxes: [
               'engagement_stance',
               'action_family',
-              'audience_register',
+              'addressee_profile',
               'lexical_accessibility',
               'scene_immersion',
               'actorial_part',
@@ -16941,12 +16959,12 @@ async function main() {
       experiment: experimentConfig,
       typedPedagogicalActions: typedActionConfig,
       responseConfiguration: {
-        schema: 'machinespirits.tutor-stub.response-configuration.v2',
+        schema: 'machinespirits.tutor-stub.response-configuration.v3',
         primaryStanceField: 'engagement_stance',
         independentAxes: [
           'engagement_stance',
           'action_family',
-          'audience_register',
+          'addressee_profile',
           'lexical_accessibility',
           'scene_immersion',
           'actorial_part',
