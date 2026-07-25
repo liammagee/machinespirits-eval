@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-25T23:17:34.175Z",
+  "generated": "2026-07-25T23:25:56.219Z",
   "counts": {
     "total": 195,
     "byStatus": {
-      "done": 172,
+      "done": 173,
       "blocked": 4,
       "dropped": 3,
       "triaged": 6,
-      "active": 5,
+      "active": 4,
       "archived": 4,
       "review": 1
     },
@@ -382,31 +382,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "codex/program2-committee-floor-ablation"
-    },
-    {
-      "id": "refusal-cross-stack-adaptive",
-      "title": "Exploration 5: cross-stack transfer — the refusal gate on the adaptive LangGraph runner",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-05",
-      "updated": "2026-07-26",
-      "branch": "codex/refusal-cross-stack-adaptive",
-      "verification": "Scoped implementation plan validated against services/adaptiveTutor/; a trap-suite smoke with strategy_shift_correctness as the native endpoint; reads pre-stated before any paid run.",
-      "claim_status": "exploratory",
-      "links": {
-        "items": [
-          "content-compulsion-promotion"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "langgraph",
-        "strategy-refusal",
-        "cross-stack"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -4933,6 +4908,31 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "refusal-cross-stack-adaptive",
+      "title": "Exploration 5: cross-stack transfer — the refusal gate on the adaptive LangGraph runner",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-05",
+      "updated": "2026-07-26",
+      "branch": "codex/refusal-cross-stack-adaptive",
+      "verification": "Cell 201 passes validate-config and the hermetic adaptive-cell smoke; npm run adaptive:smoke-strategy-refusal runs the frozen three-scenario state_policy +/- refusal pair with one resolved switch, zero false activations, and no DB writes; npm test and npm run lint pass.",
+      "claim_status": "exploratory",
+      "links": {
+        "items": [
+          "content-compulsion-promotion"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "langgraph",
+        "strategy-refusal",
+        "cross-stack"
+      ]
     },
     {
       "id": "refusal-learner-mirror",
