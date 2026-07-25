@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-25T08:35:32.556Z",
+  "generated": "2026-07-25T12:43:10.905Z",
   "counts": {
-    "total": 188,
+    "total": 189,
     "byStatus": {
-      "done": 157,
+      "done": 158,
       "blocked": 3,
       "dropped": 2,
       "triaged": 13,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 41,
-      "maintenance": 37,
+      "maintenance": 38,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -454,6 +454,7 @@
           "refactor-provenance-fixtures",
           "refactor-message-chain-fixtures",
           "refactor-log-route-data-root",
+          "refactor-sse-lifecycle",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -636,8 +637,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-log-route-data-root",
-      "title": "Bind evaluation log routes to the redirected data root",
+      "id": "refactor-sse-lifecycle",
+      "title": "Wire evaluation SSE streams into graceful application shutdown",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -645,33 +646,36 @@
       "source": "review",
       "created": "2026-07-25",
       "updated": "2026-07-25",
-      "verification": "Data-bearing HTTP fixtures place one exact dialogue and API log in EVAL_LOGS_DIR plus a decoy in the old tutor-core root; date, collection, id, index, and statistics routes return only the hermetic fixture, while focused route/core, desktop, manifest, and complete hermetic gates pass.",
-      "branch": "codex/refactor-log-route-data-root",
+      "verification": "A production stream registry preserves the existing timeout, warning, and restart event contracts; the shared eval-surface lifecycle hook is invoked by standalone, Scriptorium, and desktop shutdown paths; focused tests prove all tracked streams close, timers release, and the process exits naturally.",
+      "claim_status": "planned",
+      "branch": "codex/refactor-sse-lifecycle",
       "depends_on": [
-        "refactor-dialogue-log-fixtures"
+        "refactor-log-route-data-root"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "tutor-core/services/dialogueLogDirectories.js",
-          "tutor-core/services/dialogueLogService.js",
-          "tutor-core/services/tutorDialogueEngine.js",
-          "scripts/run-rich-memory-arc-experiment.js",
-          "tests/evalLogRoutesDataRoot.test.js"
+          "services/evaluationStreamRegistry.js",
+          "routes/evalRoutes.js",
+          "services/evalSurfaces.js",
+          "services/applicationShutdown.js",
+          "desktop/server-entry.mjs",
+          "tests/evaluationStreamRegistry.test.js",
+          "tests/applicationShutdown.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-dialogue-log-fixtures"
+          "refactor-log-route-data-root"
         ]
       },
       "tags": [
         "refactoring",
         "testing",
         "routes",
-        "dialogue-logs",
-        "hermetic"
+        "sse",
+        "lifecycle"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2148,6 +2152,49 @@
         "dramatic-derivation",
         "non-leak-audit",
         "duplication"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-log-route-data-root",
+      "title": "Bind evaluation log routes to the redirected data root",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "Data-bearing HTTP fixtures place one exact dialogue and API log in EVAL_LOGS_DIR plus a decoy in the old tutor-core root; date, collection, id, index, and statistics routes return only the hermetic fixture, while focused route/core, desktop, manifest, and complete hermetic gates pass.",
+      "branch": "codex/refactor-log-route-data-root",
+      "depends_on": [
+        "refactor-dialogue-log-fixtures"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "github": [
+          "https://github.com/liammagee/machinespirits-eval/pull/233"
+        ],
+        "code": [
+          "tutor-core/services/dialogueLogDirectories.js",
+          "tutor-core/services/dialogueLogService.js",
+          "tutor-core/services/tutorDialogueEngine.js",
+          "scripts/run-rich-memory-arc-experiment.js",
+          "tests/evalLogRoutesDataRoot.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-dialogue-log-fixtures"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "testing",
+        "routes",
+        "dialogue-logs",
+        "hermetic"
       ],
       "milestone": "evaluation-infrastructure"
     },
