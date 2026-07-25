@@ -1,3 +1,6 @@
+import { tutorStubPrivateTokenAlreadyPublic } from './tutorStubEvidenceAssertion.js';
+import { splitTutorStubPublicWords } from './tutorStubPublicText.js';
+
 export const TUTOR_STUB_RESPONSE_GUARD_SCHEMA = 'machinespirits.tutor-stub.response-guard.v1';
 
 const TOKEN_STOPWORDS = new Set([
@@ -42,6 +45,14 @@ function words(value) {
     .filter((word) => word.length >= 3 && !TOKEN_STOPWORDS.has(word));
 }
 
+function answerWords(value) {
+  return words(String(value || '').replace(/([a-z0-9])([A-Z])/gu, '$1 $2'));
+}
+
+function wordSetContains(wordsSet, word) {
+  return wordsSet.has(word) || (word.endsWith('s') && wordsSet.has(word.slice(0, -1)));
+}
+
 function normalizedText(value) {
   return words(value).join(' ');
 }
@@ -68,12 +79,39 @@ export function tutorStubAnswerNameIsPublic({ answerTerm = '', publicText = '' }
   // World constants use compact symbolic spelling (for example
   // `larkinUnit`) while their public surfaces use ordinary words (`Larkin
   // unit`). Compare semantic tokens instead of authoring notation.
-  const answerWords = words(String(answerTerm || '').replace(/([a-z0-9])([A-Z])/gu, '$1 $2'));
+  const semanticAnswerWords = answerWords(answerTerm);
   const publicWords = new Set(words(publicText));
-  return (
-    answerWords.length > 0 &&
-    answerWords.every((word) => publicWords.has(word) || (word.endsWith('s') && publicWords.has(word.slice(0, -1))))
-  );
+  return semanticAnswerWords.length > 0 && semanticAnswerWords.every((word) => wordSetContains(publicWords, word));
+}
+
+/**
+ * Resolve whether a candidate actually refers to a concealed answer name.
+ *
+ * Compound world constants can share ordinary location or object words with
+ * staged public clues. Those public components remain legal to repeat; only a
+ * candidate component that is both part of the answer and still absent from
+ * the public record can expose the concealed name. Once the full name is
+ * public, any of its components can still anchor the downstream conclusion
+ * audits without being treated as a name leak.
+ */
+export function resolveTutorStubAnswerReference({ answerTerm = '', text = '', publicText = '' } = {}) {
+  const answerTokens = [...new Set(splitTutorStubPublicWords(answerTerm))];
+  const candidateTokens = new Set(splitTutorStubPublicWords(text));
+  const publicTokens = new Set(splitTutorStubPublicWords(publicText));
+  const matchedTokens = answerTokens.filter((token) => tutorStubPrivateTokenAlreadyPublic(token, candidateTokens));
+  const concealedTokens = answerTokens.filter((token) => !tutorStubPrivateTokenAlreadyPublic(token, publicTokens));
+  const concealedTokenSet = new Set(concealedTokens);
+  const concealedMatches = matchedTokens.filter((token) => concealedTokenSet.has(token));
+  const answerNamePublic = tutorStubAnswerNameIsPublic({ answerTerm, publicText });
+
+  return {
+    answerTokens,
+    matchedTokens,
+    concealedTokens,
+    concealedMatches,
+    answerNamePublic,
+    referencesAnswer: concealedMatches.length > 0 || (answerNamePublic && matchedTokens.length > 0),
+  };
 }
 
 function similarity(left, right) {

@@ -20,6 +20,7 @@ import {
 import { auditTutorStubPrompt } from '../services/tutorStubPromptAudit.js';
 import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
 import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from '../services/tutorStubFirstDraftContract.js';
+import { splitTutorStubPublicWords } from '../services/tutorStubPublicText.js';
 import { buildTutorStubResponseCompositionFrame } from '../services/tutorStubResponseComposition.js';
 import { TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA } from '../services/tutorStubTurnProgressionContract.js';
 import { replaceTutorStubFrozenRequestWithJointPerformancePrompt } from '../services/tutorStubJointPerformanceFirstDraft.js';
@@ -658,6 +659,39 @@ test('V22 public-prefix provenance clears the false handwriting leak but still c
   });
   assert.equal(unsafe.ok, false);
   assert.ok(unsafe.leaks.some((leak) => leak.type === 'unreleased_premise_content'));
+});
+
+test('Rowan Flat due evidence may use public answer components while the concealed component still fails closed', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-030-rowan-flat.yaml'));
+  const publicPremiseIds = ['p_shower', 'p_split'];
+  const dueSurface = world.premiseById.get('p_split').surface;
+  const publicCandidate = auditTutorStubFrozenLeak({
+    text: dueSurface,
+    world,
+    tutorTurn: 2,
+    publicPremiseIds,
+  });
+
+  assert.equal(publicCandidate.ok, true);
+  assert.equal(
+    publicCandidate.leaks.some((leak) => leak.type === 'concealed_answer_name'),
+    false,
+  );
+
+  const answerIndex = world.questionPattern.findIndex((part) => typeof part === 'string' && part.startsWith('?'));
+  const answerSurface = splitTutorStubPublicWords(world.secret.fact[answerIndex]).join(' ');
+  const concealedCandidate = auditTutorStubFrozenLeak({
+    text: `The remaining identity is ${answerSurface}.`,
+    world,
+    tutorTurn: 2,
+    publicPremiseIds,
+  });
+  const nameLeak = concealedCandidate.leaks.find((leak) => leak.type === 'concealed_answer_name');
+
+  assert.equal(concealedCandidate.ok, false);
+  assert.ok(nameLeak);
+  assert.equal(nameLeak.matches.length, 1);
+  assert.equal(dueSurface.toLowerCase().includes(nameLeak.matches[0]), false);
 });
 
 test('V19 provenance replay distinguishes a due strain match from the same match before release', () => {
