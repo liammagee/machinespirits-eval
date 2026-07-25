@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-25T07:33:13.842Z",
+  "generated": "2026-07-25T07:54:46.168Z",
   "counts": {
-    "total": 186,
+    "total": 187,
     "byStatus": {
-      "done": 154,
+      "done": 155,
       "blocked": 3,
       "dropped": 2,
       "triaged": 14,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 41,
-      "maintenance": 35,
+      "maintenance": 36,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -464,6 +464,7 @@
           "refactor-eval-profile-registry",
           "refactor-paper-manifest-fixtures",
           "refactor-provenance-fixtures",
+          "refactor-message-chain-fixtures",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -646,8 +647,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-provenance-fixtures",
-      "title": "Fixture the provenance validator integrity boundary",
+      "id": "refactor-message-chain-fixtures",
+      "title": "Extract and fixture the message-chain integrity boundary",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -655,30 +656,31 @@
       "source": "review",
       "created": "2026-07-25",
       "updated": "2026-07-25",
-      "verification": "Synthetic SQLite and dialogue-log fixtures exercise the production provenance CLI without private data; canonical and explicit log-root paths pass, while content-hash, turn-id, required-field, rubric-schema, and missing database or log cases return exact non-zero exits.",
-      "branch": "codex/refactor-provenance-fixtures",
+      "verification": "A pure integrity core and synthetic SQLite/dialogue-log fixtures exercise the production message-chain CLI; valid tutor and learner chains pass, while malformed JSON or trace data, content-hash drift, and turn/message ordering failures return exact structured findings and non-zero strict-mode exits.",
+      "branch": "codex/refactor-message-chain-fixtures",
       "depends_on": [
-        "refactor-paper-manifest-fixtures",
-        "normalize-provenance-validator-data-paths"
+        "refactor-provenance-fixtures"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "scripts/validate-provenance.js",
-          "services/evaluationDataPaths.js",
-          "services/provableDiscourse.js"
+          "scripts/audit-message-chain.js",
+          "services/messageChainAudit.js",
+          "tests/messageChainAuditCli.test.js",
+          "tests/messageChainAuditCore.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "normalize-provenance-validator-data-paths"
+          "refactor-provenance-fixtures"
         ]
       },
       "tags": [
         "refactoring",
         "testing",
         "provenance",
+        "message-chain",
         "hermetic"
       ],
       "milestone": "evaluation-infrastructure"
@@ -2193,6 +2195,47 @@
         "refactoring",
         "testing",
         "paper",
+        "provenance",
+        "hermetic"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-provenance-fixtures",
+      "title": "Fixture the provenance validator integrity boundary",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "Synthetic SQLite and dialogue-log fixtures exercise the production provenance CLI without private data; canonical and explicit log-root paths pass, while content-hash, turn-id, required-field, rubric-schema, and missing database or log cases return exact non-zero exits.",
+      "branch": "codex/refactor-provenance-fixtures",
+      "depends_on": [
+        "refactor-paper-manifest-fixtures",
+        "normalize-provenance-validator-data-paths"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/230"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/validate-provenance.js",
+          "services/evaluationDataPaths.js",
+          "services/provableDiscourse.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "normalize-provenance-validator-data-paths"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "testing",
         "provenance",
         "hermetic"
       ],
