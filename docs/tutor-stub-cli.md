@@ -150,6 +150,30 @@ Transcript HTML includes a **Relaunch** view with the exact copyable resume (or
 saved-recipe) command and the recipe hash. The command contains no credential;
 provider credentials remain local to the launching process.
 
+## Training-reuse status
+
+Owner-operated human and mixed-authorship sessions are training candidates by
+default, with an explicit opt-out:
+
+```bash
+npm run tutor:stub -- --training-reuse off
+npm run tutor:stub -- --no-training-reuse
+```
+
+During a session, use `/settings training-reuse on|off|status`; the keyboard
+settings panel exposes the same **Training reuse** toggle and remembers it for
+the next interactive session. Candidate status means the sealed trace may be
+reviewed for a future governed corpus. It does not approve, export, or train on
+the session automatically.
+
+Every resolved value records its source, effective status, and human-subject
+class in `--dry-run`, the session recipe, `run_start`, transcript settings,
+closeout output, learning-summary HTML, feedback-record provenance, and
+`run_end`. A live opt-out is reapplied when the trace is resumed. External or
+unknown human input always fails closed to `do_not_train`, even if reuse was
+requested; automated-only sessions mark this human-data control
+`not_applicable`.
+
 ## Learned warrant committee
 
 Human tutor-chat sessions start with the validated local Qwen warrant

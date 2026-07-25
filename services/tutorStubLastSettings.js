@@ -79,6 +79,7 @@ export function normalizeTutorStubLastSettings(value) {
     motion: normalizeTutorStubCliMotion(value.motion ?? 'auto', { strict: true }),
     committeeEnabled: booleanSetting(value.committeeEnabled, 'committee preference', true),
     lightAdaptationEnabled: booleanSetting(value.lightAdaptationEnabled, 'light adaptation preference', true),
+    trainingReuseEnabled: booleanSetting(value.trainingReuseEnabled, 'training reuse preference', true),
     engagementStanceTemperature: boundedNumber(value.engagementStanceTemperature, {
       label: 'teaching-style range',
       min: 0.05,

@@ -32,6 +32,8 @@ export const TUTOR_STUB_RECIPE_OPTION_KEYS = Object.freeze([
   'dag-fact-dropout',
   'dag-fact-dropout-seed',
   'release-speed',
+  'training-reuse',
+  'human-subject-class',
   'run-seed',
   'eval-repeat',
   'eval-job-id',
@@ -98,6 +100,10 @@ const IDENTITY_OPTION_KEYS = new Set([
   'prompt-book-context',
 ]);
 
+// These settings must be preserved in recipes and traces, but changing them
+// does not alter dialogue behavior and must never make an opt-out harder.
+const NON_BEHAVIORAL_PROVENANCE_OPTION_KEYS = new Set(['training-reuse']);
+
 function deepFreeze(value) {
   if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
   for (const nested of Object.values(value)) deepFreeze(nested);
@@ -147,6 +153,26 @@ export function buildTutorStubSessionRecipe({
     schema: TUTOR_STUB_SESSION_RECIPE_SCHEMA,
     version: TUTOR_STUB_SESSION_RECIPE_VERSION,
     createdAt,
+    config,
+    configHash: tutorStubRecipeConfigHash(config),
+  });
+}
+
+export function withTutorStubSessionRecipeOptions(recipe, optionOverrides = {}) {
+  const normalized = normalizeTutorStubSessionRecipe(recipe);
+  const options = {
+    ...(normalized.config.options || {}),
+    ...Object.fromEntries(
+      Object.entries(optionOverrides).filter(
+        ([key, value]) => TUTOR_STUB_RECIPE_OPTION_KEYS.includes(key) && value !== undefined,
+      ),
+    ),
+  };
+  const config = canonicalValue({ ...normalized.config, options });
+  return deepFreeze({
+    schema: normalized.schema,
+    version: normalized.version,
+    createdAt: normalized.createdAt,
     config,
     configHash: tutorStubRecipeConfigHash(config),
   });
@@ -259,6 +285,11 @@ function legacyRecipeFromMetadata(metadata = {}) {
   assign('classifier-model', metadata.classifier?.classifierModelRef || metadata.classifier?.modelRef);
   assign('learner-record-model', metadata.tutorLearnerDag?.modelRef);
   assign('auto-learner-model', metadata.autoLearner?.modelRef || metadata.mixedLearner?.modelRef);
+  assign('training-reuse', metadata.trainingReuse?.requested);
+  assign(
+    'human-subject-class',
+    metadata.trainingReuse?.declaredHumanSubjectClass || metadata.trainingReuse?.humanSubjectClass,
+  );
   const recipe = buildTutorStubSessionRecipe({
     args: options,
     lab: metadata.lab?.id || null,
@@ -290,6 +321,16 @@ function legacyRecipeFromMetadata(metadata = {}) {
   return recipe;
 }
 
+function finalTrainingReuseFromEvents(events = []) {
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index];
+    const trainingReuse =
+      event?.trainingReuse || event?.report?.trainingReuse || event?.report?.learning?.trainingReuse;
+    if (trainingReuse?.requested === 'on' || trainingReuse?.requested === 'off') return trainingReuse;
+  }
+  return null;
+}
+
 export function normalizeTutorStubResumeTrace(filePath) {
   const absolute = path.resolve(filePath);
   const events = parseTraceEvents(absolute);
@@ -300,9 +341,17 @@ export function normalizeTutorStubResumeTrace(filePath) {
   }
   const metadata = start?.metadata || {};
   const storedRecipe = metadata.sessionRecipe || metadata.recipe || null;
-  const recipe = storedRecipe
+  let recipe = storedRecipe
     ? normalizeTutorStubSessionRecipe(storedRecipe, { source: `${absolute} run_start` })
     : legacyRecipeFromMetadata(metadata);
+  const finalTrainingReuse = finalTrainingReuseFromEvents(events);
+  if (finalTrainingReuse) {
+    recipe = withTutorStubSessionRecipeOptions(recipe, {
+      'training-reuse': finalTrainingReuse.requested,
+      'human-subject-class':
+        finalTrainingReuse.declaredHumanSubjectClass || finalTrainingReuse.humanSubjectClass || undefined,
+    });
+  }
   return deepFreeze({
     schema: TUTOR_STUB_RESUME_SOURCE_SCHEMA,
     filePath: absolute,
@@ -459,7 +508,7 @@ export function compareTutorStubResumeRecipe(sourceRecipe, currentRecipe, { extr
     compareModel(`model.${role}`, expected.models?.[role], actual.models?.[role]);
   }
   for (const [key, value] of Object.entries(source.config.options || {})) {
-    if (IDENTITY_OPTION_KEYS.has(key)) continue;
+    if (IDENTITY_OPTION_KEYS.has(key) || NON_BEHAVIORAL_PROVENANCE_OPTION_KEYS.has(key)) continue;
     compareExact(`option.${key}`, value, current.config.options?.[key]);
   }
   return deepFreeze({

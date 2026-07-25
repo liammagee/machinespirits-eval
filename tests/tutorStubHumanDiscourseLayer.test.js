@@ -777,6 +777,7 @@ test(
     assert.match(plain, /Reasoning tracker\s+codex\.gpt-5\.6-sol/u);
     assert.match(plain, /Learner voice\s+codex\.gpt-5\.6-terra/u);
     assert.match(plain, /Difficulty shift\s+on/u);
+    assert.match(plain, /Training reuse\s+on · training candidate/u);
     assert.match(plain, /Turn-change override\s+off/u);
     assert.match(plain, /↑\/↓ move · Enter edit or toggle · Esc discard changes and return/u);
     assert.match(plain, /Done — apply and return\s+press Enter/u);

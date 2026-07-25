@@ -200,6 +200,9 @@ const NORMAL_SETTINGS_COMPLETIONS = [
   '/settings light on',
   '/settings light off',
   '/settings light status',
+  '/settings training-reuse on',
+  '/settings training-reuse off',
+  '/settings training-reuse status',
   '/settings release-speed ',
   '/settings forget',
   '/settings policy add state',
@@ -655,7 +658,7 @@ test('scene-return and passthrough views agree for every shared command and alia
   );
 });
 
-test('passthrough settings completions expose only speaker model, theme, and motion', () => {
+test('passthrough settings completions expose only speaker model, training reuse, theme, and motion', () => {
   assert.deepEqual(tutorStubStaticCommandCompletions('/settings', { mode: 'normal' }), NORMAL_SETTINGS_COMPLETIONS);
   const passthrough = tutorStubStaticCommandCompletions('/settings ', { mode: 'passthrough' });
   assert.deepEqual(passthrough, [
@@ -669,9 +672,12 @@ test('passthrough settings completions expose only speaker model, theme, and mot
     '/settings motion subtle',
     '/settings motion off',
     '/settings model ',
+    '/settings training-reuse on',
+    '/settings training-reuse off',
+    '/settings training-reuse status',
   ]);
   assert.equal(Object.isFrozen(passthrough), true);
-  assert.ok(passthrough.every((candidate) => /^\/settings (?:model |theme |motion )/u.test(candidate)));
+  assert.ok(passthrough.every((candidate) => /^\/settings (?:model |training-reuse |theme |motion )/u.test(candidate)));
   assert.ok(
     passthrough.every((candidate) => !/(?:models|temp|dropout|light|release-speed|forget|policy)/u.test(candidate)),
   );

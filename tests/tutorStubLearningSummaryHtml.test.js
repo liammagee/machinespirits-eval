@@ -48,6 +48,12 @@ function fixtureSummary() {
     learnerResponseProvenance: {
       counts: { human: 1, ai: 0, hybrid: 1, unknown: 0 },
     },
+    trainingReuse: {
+      status: 'do_not_train',
+      requested: 'off',
+      humanSubjectClass: 'owner_operator',
+      source: 'live_settings',
+    },
     journey: [
       {
         turn: 1,
@@ -126,6 +132,9 @@ test('learning summary HTML renders the learner arc, evidence, vocabulary, and j
   assert.match(html, /Human-authored learner response/u);
   assert.match(html, /Human-edited AI learner response/u);
   assert.match(html, /1 human-authored · 0 AI-authored · 1 human-edited AI/u);
+  assert.match(html, /data-training-reuse="do_not_train"/u);
+  assert.match(html, /Do not train/u);
+  assert.match(html, /derived descendants must remain outside training corpora/u);
   assert.doesNotMatch(html, /The residue matches the <mint crucible>/u);
   assert.doesNotMatch(html, /--paper:#f4efe4/u);
   assert.doesNotMatch(html, /font:16px\/1\.55 Georgia/u);

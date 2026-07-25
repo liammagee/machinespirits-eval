@@ -363,6 +363,12 @@ import {
   writeTutorStubLastSettings,
 } from '../services/tutorStubLastSettings.js';
 import {
+  normalizeTutorStubHumanSubjectClass,
+  normalizeTutorStubTrainingReuseSetting,
+  resolveTutorStubTrainingReuse,
+  tutorStubTrainingReuseLabel,
+} from '../services/tutorStubTrainingReuse.js';
+import {
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
   tutorStubCommandHelpRows,
@@ -588,6 +594,8 @@ const STUB = {
   lightAdaptation: process.env.TUTOR_STUB_LIGHT_ADAPTATION === '1',
   lightAdaptationThreshold:
     process.env.TUTOR_STUB_LIGHT_ADAPTATION_THRESHOLD || String(DEFAULT_TUTOR_STUB_LIGHT_ADAPTATION_THRESHOLD),
+  trainingReuse: process.env.TUTOR_STUB_TRAINING_REUSE || 'on',
+  humanSubjectClass: process.env.TUTOR_STUB_HUMAN_SUBJECT_CLASS || 'owner_operator',
   dagFactDropout: process.env.TUTOR_STUB_DAG_FACT_DROPOUT || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE),
   dagFactDropoutSeed: process.env.TUTOR_STUB_DAG_FACT_DROPOUT_SEED || String(DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED),
   releaseSpeed: process.env.TUTOR_STUB_RELEASE_SPEED || String(DEFAULT_TUTOR_STUB_RELEASE_SPEED),
@@ -725,6 +733,9 @@ const { values: args, positionals } = parseArgs({
     'light-adaptation': { type: 'boolean', default: STUB.lightAdaptation },
     'no-light-adaptation': { type: 'boolean', default: false },
     'light-adaptation-threshold': { type: 'string', default: STUB.lightAdaptationThreshold },
+    'training-reuse': { type: 'string', default: STUB.trainingReuse },
+    'no-training-reuse': { type: 'boolean', default: false },
+    'human-subject-class': { type: 'string', default: STUB.humanSubjectClass },
     'dag-fact-dropout': { type: 'string', default: STUB.dagFactDropout },
     'dag-fact-dropout-seed': { type: 'string', default: STUB.dagFactDropoutSeed },
     'release-speed': { type: 'string', default: STUB.releaseSpeed },
@@ -880,7 +891,7 @@ function prepareTutorStubLaunchConfiguration() {
   if (declaredLab) applyTutorStubLabDefaults(declaredLab);
   if (loadedSessionRecipe) {
     loadedRecipeApplication = applyTutorStubRecipeOptions(args, loadedSessionRecipe, {
-      optionProvided: rawCommandLineOptionProvided,
+      optionProvided: rawRecipeOptionProvided,
     });
     for (const key of loadedRecipeApplication.applied) resolvedLaunchOptionNames.add(key);
   }
@@ -894,7 +905,7 @@ function prepareTutorStubLaunchConfiguration() {
       const resumeLab = String(args.lab || explicitResumeSource.recipe?.config?.lab || '').trim();
       if (resumeLab && !declaredLab) applyTutorStubLabDefaults(resumeLab);
       resumeRecipeApplication = applyTutorStubRecipeOptions(args, explicitResumeSource.recipe, {
-        optionProvided: rawCommandLineOptionProvided,
+        optionProvided: rawRecipeOptionProvided,
       });
       for (const key of resumeRecipeApplication.applied) resolvedLaunchOptionNames.add(key);
     }
@@ -1028,6 +1039,14 @@ Options:
   --light-adaptation-threshold <n>
                          consecutive difficult learner turns required before
                          the light shift activates (default: ${STUB.lightAdaptationThreshold}; range: 2-8)
+  --training-reuse <on|off>
+                         allow or opt this owner-operated human/mixed session
+                         out of future governed training-corpus candidacy
+                         (default: ${STUB.trainingReuse})
+  --no-training-reuse   opt this session and its descendants out of training use
+  --human-subject-class <owner_operator|external_user|unknown>
+                         provenance class for human input; external and unknown
+                         always fail closed to do_not_train
   --dag-fact-dropout <n> probability in [0,1] that previously understood
                          evidence is temporarily forgotten after a learner turn
                          (default: ${STUB.dagFactDropout}; off at 0)
@@ -1255,6 +1274,8 @@ Interactive commands:
   /settings dropout [n]  adjust or set recoverable evidence-memory loss (0-1)
   /settings light [on|off|status]
                          configure difficulty-triggered style + character shifts
+  /settings training-reuse [on|off|status]
+                         inspect or change training-corpus candidacy for this session
   /settings release-speed [n]
                          adjust or set clue-release speed (0.5-2)
   /settings forget       stop using the saved defaults after this session
@@ -1518,8 +1539,35 @@ function rawCommandLineOptionProvided(name) {
   return process.argv.slice(2).some((argument) => argument === flag || argument.startsWith(`${flag}=`));
 }
 
+function rawRecipeOptionProvided(name) {
+  if (name === 'training-reuse') {
+    return rawCommandLineOptionProvided('training-reuse') || rawCommandLineOptionProvided('no-training-reuse');
+  }
+  return rawCommandLineOptionProvided(name);
+}
+
 function commandLineOptionProvided(name) {
   return rawCommandLineOptionProvided(name) || resolvedLaunchOptionNames.has(name);
+}
+
+function resolvedTrainingReuseSource(rememberedSettings) {
+  if (rawCommandLineOptionProvided('no-training-reuse')) return 'cli_opt_out';
+  if (rawCommandLineOptionProvided('training-reuse')) return 'cli';
+  if (process.env.TUTOR_STUB_TRAINING_REUSE !== undefined) return 'environment';
+  if (loadedRecipeApplication?.applied?.includes('training-reuse')) return 'session_recipe';
+  if (resumeRecipeApplication?.applied?.includes('training-reuse')) return 'resume_trace';
+  if (rememberedSettings?.appliedFields?.includes('training_reuse')) return 'remembered_settings';
+  if (resolvedLaunchOptionNames.has('training-reuse')) return 'resolved_launch_default';
+  return 'repository_default';
+}
+
+function resolvedHumanSubjectClassSource() {
+  if (rawCommandLineOptionProvided('human-subject-class')) return 'cli';
+  if (process.env.TUTOR_STUB_HUMAN_SUBJECT_CLASS !== undefined) return 'environment';
+  if (loadedRecipeApplication?.applied?.includes('human-subject-class')) return 'session_recipe';
+  if (resumeRecipeApplication?.applied?.includes('human-subject-class')) return 'resume_trace';
+  if (resolvedLaunchOptionNames.has('human-subject-class')) return 'resolved_launch_default';
+  return 'repository_default';
 }
 
 function rememberedSettingExplicitSources() {
@@ -1559,6 +1607,10 @@ function rememberedSettingExplicitSources() {
       commandLineOptionProvided('light-adaptation') ||
       commandLineOptionProvided('no-light-adaptation') ||
       process.env.TUTOR_STUB_LIGHT_ADAPTATION !== undefined,
+    trainingReuseEnabled:
+      commandLineOptionProvided('training-reuse') ||
+      commandLineOptionProvided('no-training-reuse') ||
+      process.env.TUTOR_STUB_TRAINING_REUSE !== undefined,
     dagFactDropoutRate:
       commandLineOptionProvided('dag-fact-dropout') || Boolean(process.env.TUTOR_STUB_DAG_FACT_DROPOUT),
     releaseSpeed: commandLineOptionProvided('release-speed') || Boolean(process.env.TUTOR_STUB_RELEASE_SPEED),
@@ -1756,6 +1808,13 @@ function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
     args['light-adaptation'] = saved.lightAdaptationEnabled;
     args['no-light-adaptation'] = !saved.lightAdaptationEnabled;
     config.appliedFields.push('light_adaptation');
+  }
+
+  if (explicit.trainingReuseEnabled) {
+    config.skippedExplicitFields.push('training_reuse');
+  } else {
+    args['training-reuse'] = saved.trainingReuseEnabled ? 'on' : 'off';
+    config.appliedFields.push('training_reuse');
   }
 
   if (explicit.dagFactDropoutRate) {
@@ -3664,6 +3723,8 @@ function plainSettingName(value) {
     dagFactDropoutRate: 'evidence-memory dropout',
     releaseSpeed: 'clue release speed',
     clue_release_speed: 'clue release speed',
+    trainingReuseEnabled: 'training reuse',
+    training_reuse: 'training reuse',
     registerPolicy: 'teaching approach',
     registerOverlays: 'turn/conversation overrides',
     registerOverlayThreshold: 'override sensitivity',
@@ -11098,6 +11159,7 @@ function buildDialogueLearningSummary(state, { reason = 'exit' } = {}) {
     },
     releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
     learnerResponseProvenance: summarizeTutorStubLearnerResponseProvenance(turns),
+    trainingReuse: jsonClone(state.trainingReuse),
     evidenceHeld,
     reasoningVoiced,
     comprehension: {
@@ -11299,6 +11361,7 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
     reason,
     turnCount: state.turns.length,
     trace: tracePath,
+    trainingReuse: jsonClone(state.trainingReuse),
     finalStatus: dialogueCaseStatus(last),
     finalAssessment: {
       bottleneck: assessment.bottleneck || null,
@@ -11357,6 +11420,11 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
     `${C.cyan}session summary >${C.reset} ${plainCloseoutReason(reason)}; ${state.turns.length} completed turn(s)`,
   );
   if (tracePath) console.log(`${C.dim}  technical trace: ${tracePath}${C.reset}`);
+  console.log(
+    `${C.dim}  training reuse: ${tutorStubTrainingReuseLabel(payload.trainingReuse)}; requested ${
+      payload.trainingReuse?.requested || 'off'
+    }; ${displayDiagnosticLabel(payload.trainingReuse?.humanSubjectClass || 'unknown')}${C.reset}`,
+  );
   console.log(`${C.dim}  outcome: ${plainCloseoutStatus(last)}${C.reset}`);
   const coveragePercent = Number.isFinite(Number(payload.finalAssessment.bestPathCoverage))
     ? `${Math.round(Number(payload.finalAssessment.bestPathCoverage) * 100)}%`
@@ -15070,6 +15138,7 @@ async function runOneTurn(
       learnerProfileId: state.learnerProfileId || null,
       interactionMode: state.interaction?.mode || 'learner',
       learnerResponseAuthorship: learnerResponseProvenance.authorship,
+      trainingReuse: jsonClone(state.trainingReuse),
     },
   });
 
@@ -16327,6 +16396,30 @@ async function main() {
   let learnerRecordResolved = tutorLearnerDagEnabled ? resolveModel(args['learner-record-model']) : null;
   let learnerRecordProviderConfig = learnerRecordResolved ? getProviderConfig(learnerRecordResolved.provider) : null;
   const firstMessage = args.once || positionals.join(' ').trim() || '';
+  if (
+    rawCommandLineOptionProvided('training-reuse') &&
+    rawCommandLineOptionProvided('no-training-reuse') &&
+    args['no-training-reuse']
+  ) {
+    throw new Error('--training-reuse cannot be combined with --no-training-reuse');
+  }
+  const requestedTrainingReuse = args['no-training-reuse']
+    ? 'off'
+    : normalizeTutorStubTrainingReuseSetting(args['training-reuse'], { label: '--training-reuse' });
+  const humanSubjectClass = normalizeTutorStubHumanSubjectClass(args['human-subject-class'], {
+    label: '--human-subject-class',
+  });
+  const trainingReuseConfig = resolveTutorStubTrainingReuse({
+    requested: requestedTrainingReuse,
+    source: resolvedTrainingReuseSource(rememberedSettings),
+    humanSubjectClass,
+    humanSubjectClassSource: resolvedHumanSubjectClassSource(),
+    humanInputExpected: Boolean(interactiveSessionIntent || firstMessage),
+  });
+  // Recipes store the canonical requested value. The effective status remains
+  // fail-closed for external/unknown users and is recorded separately.
+  args['training-reuse'] = trainingReuseConfig.requested;
+  args['human-subject-class'] = trainingReuseConfig.declaredHumanSubjectClass;
   let visibleModel = visibleResolvedModel(resolved, providerConfig);
   let visibleAutoLearnerModel = autoLearnerResolved
     ? visibleResolvedModel(autoLearnerResolved, autoLearnerProviderConfig)
@@ -16817,6 +16910,7 @@ async function main() {
             authority: 'existing_cli_analysis_dag_register_guard_pipeline',
           },
           rememberedSettings: rememberedSettingsConfig,
+          trainingReuse: trainingReuseConfig,
           lab: selectedLabMetadata,
           sessionRecipe,
           recipeFile: loadedSessionRecipePath ? path.relative(ROOT, loadedSessionRecipePath) : null,
@@ -17177,6 +17271,7 @@ async function main() {
       tuning: tutorStubTuningSnapshot(tuning),
       allModelsOverride,
       rememberedSettings: rememberedSettingsConfig,
+      trainingReuse: trainingReuseConfig,
       lab: selectedLabMetadata,
       sessionRecipe,
       recipeFile: loadedSessionRecipePath ? path.relative(ROOT, loadedSessionRecipePath) : null,
@@ -17475,6 +17570,7 @@ async function main() {
       filePath: rememberedSettings.filePath,
       savedAt: rememberedSettings.savedAt,
     },
+    trainingReuse: trainingReuseConfig,
     presentation: tutorStubCliPresentationSnapshot(cliPresentation),
     responseDetails: { ...responseDetailsConfig },
     capabilities: capabilitySnapshot,
@@ -17781,6 +17877,7 @@ async function main() {
       motion: cliPresentation.requestedMotion,
       committeeEnabled: state.committee?.enabled === true,
       lightAdaptationEnabled: state.lightAdaptation?.enabled === true,
+      trainingReuseEnabled: state.trainingReuse?.requested === 'on',
       engagementStanceTemperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
       dagFactDropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -20147,6 +20244,14 @@ async function main() {
   async function pickLiveSettingsActionWithKeyboard(defaultIndex = 0, draft = null) {
     const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
     const overlays = new Set(draft?.overlays || state.register?.overlays || []);
+    const draftTrainingReuseEnabled = draft?.trainingReuseEnabled ?? state.trainingReuse?.requested === 'on';
+    const draftTrainingReuse = resolveTutorStubTrainingReuse({
+      requested: draftTrainingReuseEnabled ? 'on' : 'off',
+      source: 'settings_panel_preview',
+      humanSubjectClass: state.trainingReuse?.declaredHumanSubjectClass,
+      humanSubjectClassSource: state.trainingReuse?.humanSubjectClassSource,
+      humanInputExpected: state.trainingReuse?.humanInputExpected,
+    });
     const entries = [
       {
         id: 'all_models',
@@ -20227,6 +20332,13 @@ async function main() {
         }`,
         description:
           'After repeated confusion or frustration, make a replayable shift in tutor style and host character.',
+      },
+      {
+        id: 'training_reuse',
+        label: 'Training reuse',
+        value: `${draftTrainingReuseEnabled ? 'on' : 'off'} · ${tutorStubTrainingReuseLabel(draftTrainingReuse)}`,
+        description:
+          'Allow owner-authored or mixed dialogue to be reviewed as a future training candidate, or opt it out.',
       },
       {
         id: 'state_overlay',
@@ -21263,6 +21375,7 @@ async function main() {
         : null,
       randomPerformance: jsonClone(state.randomPerformance),
       lightAdaptation: jsonClone(state.lightAdaptation),
+      trainingReuse: jsonClone(state.trainingReuse),
       performanceDirectives: jsonClone(state.performanceDirectives),
       dialogueClosure: state.dialogueClosure,
       comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: state.turns.length + 1 }),
@@ -21439,6 +21552,7 @@ async function main() {
           stopOnGrounded: autoStopOnGrounded,
         },
         learnerResponseProvenance: summarizeTutorStubLearnerResponseProvenance(state.turns),
+        trainingReuse: jsonClone(state.trainingReuse),
         dag: {
           tutorDagEnabled: Boolean(state.dag),
           learnerDagEnabled: tutorLearnerDagEnabled,
@@ -21605,6 +21719,7 @@ async function main() {
       filePath: displayPath,
       turns: summary.turnCount,
       learnerResponseProvenance: summary.learnerResponseProvenance,
+      trainingReuse: summary.trainingReuse,
       natural: summary.completion.natural,
       launched: Boolean(launchResult),
     });
@@ -21627,6 +21742,7 @@ async function main() {
       turns: state.turns.length,
       mixedLearnerCache: { ...mixedLearner.cacheStats },
       learnerResponseProvenance: summarizeTutorStubLearnerResponseProvenance(state.turns),
+      trainingReuse: jsonClone(state.trainingReuse),
     });
     appendTutorStubTurnFailureTraceRecords(state, { sealed: true });
     if (closeoutReportEnabled) {
@@ -23656,6 +23772,65 @@ async function main() {
     return sessionRuntime.reset({ reason: 'dialogue_reset', ...options });
   }
 
+  function printTrainingReuseStatus(prefix = 'training reuse') {
+    const reuse = state.trainingReuse;
+    console.log(
+      `${C.dim}  ${prefix}: ${tutorStubTrainingReuseLabel(reuse)}; requested ${reuse.requested}; ${displayDiagnosticLabel(
+        reuse.humanSubjectClass,
+      )}; source ${displayDiagnosticLabel(reuse.source)}${C.reset}`,
+    );
+    if (reuse.failClosed) {
+      console.log(`${C.dim}  external or unknown human data stays do not train even when reuse is requested${C.reset}`);
+    } else if (reuse.status === 'training_candidate') {
+      console.log(
+        `${C.dim}  candidate means eligible for later review, not automatically approved or exported for training${C.reset}`,
+      );
+    } else if (reuse.status === 'do_not_train') {
+      console.log(`${C.dim}  this source and derived descendants must remain outside training corpora${C.reset}`);
+    }
+  }
+
+  function handleTrainingReuseSetting(value = 'status', { source = 'live_settings' } = {}) {
+    const action = String(value || 'status')
+      .trim()
+      .toLowerCase();
+    if (action === 'status') {
+      console.log(`${C.cyan}training reuse >${C.reset}`);
+      printTrainingReuseStatus('current session');
+      console.log();
+      return true;
+    }
+    let requested;
+    try {
+      requested = normalizeTutorStubTrainingReuseSetting(action, { label: 'training reuse' });
+    } catch (error) {
+      console.log(`${C.red}settings error:${C.reset} ${error.message}; use on, off, or status\n`);
+      return false;
+    }
+    const previous = state.trainingReuse;
+    state.trainingReuse = resolveTutorStubTrainingReuse({
+      requested,
+      source,
+      humanSubjectClass: previous.declaredHumanSubjectClass,
+      humanSubjectClassSource: previous.humanSubjectClassSource,
+      humanInputExpected: previous.humanInputExpected,
+    });
+    args['training-reuse'] = state.trainingReuse.requested;
+    const remembered = persistCurrentInteractiveSettings('training_reuse_changed');
+    appendTraceEvent(state.trace, {
+      type: 'training_reuse_changed',
+      previous,
+      trainingReuse: state.trainingReuse,
+      rememberedAt: remembered?.updatedAt || null,
+      source,
+      publicTranscriptChanged: false,
+    });
+    console.log(`${C.cyan}training reuse >${C.reset} ${tutorStubTrainingReuseLabel(state.trainingReuse)}`);
+    printTrainingReuseStatus('current session');
+    console.log();
+    return true;
+  }
+
   function printDialogueSettings() {
     const explicitRegister = explicitPerformanceDirectiveValue(state, 'register');
     const explicitCharacter = explicitPerformanceDirectiveValue(state, 'character');
@@ -23754,11 +23929,12 @@ async function main() {
         state.rememberedSettings?.status || 'disabled'
       }${C.reset}`,
     );
+    printTrainingReuseStatus();
     console.log(
       `${C.dim}  advanced overrides: /settings policy add state|field · remove state|field · clear · threshold 0.7${C.reset}`,
     );
     console.log(
-      `${C.dim}  use /settings models, /settings models all <ref>, /settings model, /settings temp 1.0, /settings dropout 0.15, /settings light on|off, /settings release-speed 1.5, /settings theme nocturne, /settings motion subtle, or /settings forget${C.reset}\n`,
+      `${C.dim}  use /settings models, /settings models all <ref>, /settings model, /settings temp 1.0, /settings dropout 0.15, /settings light on|off, /settings training-reuse on|off, /settings release-speed 1.5, /settings theme nocturne, /settings motion subtle, or /settings forget${C.reset}\n`,
     );
   }
 
@@ -23881,6 +24057,7 @@ async function main() {
       dropoutRate: state.learnerDag?.dropout?.rate ?? DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
       releaseSpeed: state.releasePacing?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
       lightAdaptationEnabled: state.lightAdaptation?.enabled === true,
+      trainingReuseEnabled: state.trainingReuse?.requested === 'on',
       overlays: [...(state.register?.overlays || [])],
       overlayThreshold: state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
       forgetSavedSettings: false,
@@ -23915,6 +24092,9 @@ async function main() {
     }
     if (draft.lightAdaptationEnabled !== (state.lightAdaptation?.enabled === true)) {
       changes.push('light_adaptation');
+    }
+    if (draft.trainingReuseEnabled !== (state.trainingReuse?.requested === 'on')) {
+      changes.push('training_reuse');
     }
     if (
       currentOverlays.length !== draft.overlays.length ||
@@ -23952,6 +24132,9 @@ async function main() {
     if (changes.includes('release_speed')) await handleDialogueSettings(`release-speed ${draft.releaseSpeed}`);
     if (changes.includes('light_adaptation')) {
       await handleDialogueSettings(`light ${draft.lightAdaptationEnabled ? 'on' : 'off'}`);
+    }
+    if (changes.includes('training_reuse')) {
+      await handleDialogueSettings(`training-reuse ${draft.trainingReuseEnabled ? 'on' : 'off'}`);
     }
     if (changes.includes('overlays')) {
       const currentOverlays = [...(state.register?.overlays || [])];
@@ -24087,6 +24270,8 @@ async function main() {
           : [...draft.overlays, overlay];
       } else if (action.id === 'light_adaptation') {
         draft.lightAdaptationEnabled = !draft.lightAdaptationEnabled;
+      } else if (action.id === 'training_reuse') {
+        draft.trainingReuseEnabled = !draft.trainingReuseEnabled;
       } else if (action.id === 'forget') {
         draft.forgetSavedSettings = !draft.forgetSavedSettings;
       }
@@ -24127,6 +24312,7 @@ async function main() {
     const dropoutNames = ['dropout', 'dag-dropout', 'dag-fact-dropout'];
     const releaseSpeedNames = ['release-speed', 'release_speed', 'pace', 'speed'];
     const lightAdaptationNames = ['light', 'light-adaptation', 'difficulty-shift'];
+    const trainingReuseNames = ['training-reuse', 'training_reuse', 'data-reuse', 'data_use'];
     const modelNames = ['model', 'tutor-model'];
     const modelRoleAliases = {
       tutor: 'tutor',
@@ -24146,17 +24332,18 @@ async function main() {
       console.log(
         `${C.dim}  speaker model: ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}; effort ${state.cliEffort || 'provider default'}${C.reset}`,
       );
+      printTrainingReuseStatus();
       console.log(
-        `${C.dim}  use /settings model or /settings model <provider.alias>; all teaching-policy settings are bypassed${C.reset}\n`,
+        `${C.dim}  use /settings model, /settings training-reuse on|off, /theme, or /motion; teaching-policy settings are bypassed${C.reset}\n`,
       );
       return;
     }
     if (
       state.passthrough?.enabled &&
-      ![...modelNames, 'theme', 'motion'].includes(String(parts[0] || '').toLowerCase())
+      ![...modelNames, ...trainingReuseNames, 'theme', 'motion'].includes(String(parts[0] || '').toLowerCase())
     ) {
       console.log(
-        `${C.dim}only the speaker model and terminal appearance are adjustable in passthrough mode; use /settings model, /theme, or /motion${C.reset}\n`,
+        `${C.dim}only the speaker model, training reuse, and terminal appearance are adjustable in passthrough mode; use /settings model, /settings training-reuse, /theme, or /motion${C.reset}\n`,
       );
       return;
     }
@@ -24195,6 +24382,14 @@ async function main() {
       return;
     }
     const setting = parts[0].toLowerCase();
+    if (trainingReuseNames.includes(setting)) {
+      if (parts.length > 2) {
+        console.log(`${C.red}settings error:${C.reset} use /settings training-reuse on|off|status\n`);
+        return;
+      }
+      handleTrainingReuseSetting(parts[1] || 'status');
+      return;
+    }
     if (lightAdaptationNames.includes(setting)) {
       if (parts.length > 2) {
         console.log(`${C.red}settings error:${C.reset} use /settings light, or /settings light on|off|status\n`);
@@ -24894,6 +25089,7 @@ async function main() {
         learnerProfileId: state.learnerProfileId || null,
         interactionMode: state.interaction?.mode || 'learner',
         inputSource: source,
+        trainingReuse: jsonClone(state.trainingReuse),
       },
     });
     appendTraceEvent(state.trace, {

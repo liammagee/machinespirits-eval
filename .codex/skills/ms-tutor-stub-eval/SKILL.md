@@ -126,6 +126,16 @@ Key choices and defaults:
   Explicit CLI/environment values win; automated, one-shot, piped, and eval
   runs neither load nor write this file. Use `--no-remember-settings` for a
   clean interactive launch or `TUTOR_STUB_SETTINGS_FILE` to relocate it.
+- Training reuse is a separate remembered governance setting. Owner-operated
+  human and mixed-authorship sessions default to `training_candidate`; use
+  `--training-reuse off`, `--no-training-reuse`, or `/settings training-reuse
+  off` to mark the source and descendants `do_not_train`. `/settings
+  training-reuse on|off|status` and the keyboard **Training reuse** row expose
+  the live state. `--human-subject-class external_user|unknown` always fails
+  closed to `do_not_train`; automated-only sessions report `not_applicable`.
+  The resolved setting is recorded in session recipes, `run_start`, transcript
+  settings, feedback provenance, closeout, learning summaries, and `run_end`;
+  trace resume reapplies the latest live choice.
 - Model provenance: treat the observed tutor, analysis, and learner models in
   `profile-discrimination.md/json` as authoritative. A requested model in
   `qa-plan.json` is configuration intent only. Once a same-model profile gate

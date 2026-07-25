@@ -81,6 +81,11 @@ or the append-only ledger.
 
 ## Boundaries
 
+- Archive, reuse, consent, holdout, and fine-tuning decisions are governed by
+  [Transcript archive and training-data management](transcript-archive-and-training-data-management.md).
+  Tuning capture does not make a trace or candidate training-eligible. Use
+  `/settings training-reuse off` (or launch with `--no-training-reuse`) to opt
+  the owner-operated session and its descendants out independently of ratings.
 - Public-evidence, release, safety, response-composition, and closure checks
   continue to outrank learned preferences.
 - Raw learner comments never become instructions.
