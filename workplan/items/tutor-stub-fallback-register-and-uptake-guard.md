@@ -25,6 +25,9 @@ links:
     - tests/tutorStubSceneDiction.test.js
     - services/tutorStubConversationalCompletion.js
     - tests/tutorStubUptakeGuardLinkage.test.js
+    - services/tutorStubSelfCorrectionDisclosure.js
+    - services/tutorStubGuardDisposition.js
+    - tests/tutorStubSelfCorrectionDisclosure.test.js
 tags:
   - tutor-stub
   - presentation
@@ -109,3 +112,40 @@ Log:
   generally. Tutor-stub sweep 2114/2115, same single pre-existing MCP-SDK
   import failure. An earlier line in this item asked for stem-tolerant
   matching; that is redundant — `normalizeToken` already stems.
+- 2026-07-26 — Step 3 landed. A new rung sits between the source-voice repair
+  and the deterministic fallback. It opens on exactly one condition: every hard
+  finding on the current draft is one the terminal fallback would downgrade to a
+  conversational advisory. The predicate reads that from
+  `classifyTutorStubGuardIssue` rather than restating the catalog, so the rung
+  and the accommodation can never drift apart. Requiring *all* hard findings to
+  be waivable keeps a draft that also crossed an evidence boundary out of scope
+  — there the fallback is replacing something the tutor should not have said,
+  not absorbing an unanswered question.
+  The brief tells the model what it drafted, why that does not answer the
+  learner, and that the learner is present for the change of course; it states
+  that saying so is permitted and that answering well while saying nothing is
+  equally acceptable. No phrase is supplied. A test asserts the brief itself
+  contains no marker the detector recognises, so the outcome label cannot be
+  measuring the prompt.
+  Two failures the normal chain cannot see are guarded. A disclosure may not
+  quote a discarded line the tutor never drafted, and may not name the private
+  apparatus whose vocabulary the brief just handed it. Both are hard in both
+  dispositions and on the terminal fallback, for free: the disclosure audit
+  carries no catalog rule, and unregistered issues fail closed.
+  Two corrections came out of probing rather than unit tests. The
+  non-fabrication check first read every quoted span as a claim about the
+  discarded draft, but quotation marks in this harness carry the learner's own
+  words, Write entries and released evidence; only a quote inside the correcting
+  sentence is now checked. And a self-correction placed first was being scored
+  as the turn's uptake, so both uptake guards rejected the very move the rung
+  invites — `auditTutorStubResponseComposition` now peels a leading
+  self-correction preface and points the guards at the sentence that follows,
+  and only when that opening does not already answer the learner on its own.
+  End-to-end on the `--world none` path, where both drafts fail live progression
+  and nothing else: the rung fires, and a disclosed turn ships as
+  `guarded_self_correction_disclosed` with the preface excluded from the uptake
+  and live progression clean. A rejected disclosure falls through to the
+  byte-identical fallback the ladder always produced. Cost note: in the target
+  population this is one extra model call per fallback turn, which matters on
+  paid runs. Tutor-stub sweep 2114/2115 plus 14 new disclosure tests and a new
+  composition test, with the same pre-existing MCP-SDK import failure.

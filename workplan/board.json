@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-25T23:22:17.590Z",
+  "generated": "2026-07-25T23:55:54.428Z",
   "counts": {
     "total": 195,
     "byStatus": {
@@ -456,7 +456,10 @@
           "scripts/tutor-stub.js",
           "tests/tutorStubSceneDiction.test.js",
           "services/tutorStubConversationalCompletion.js",
-          "tests/tutorStubUptakeGuardLinkage.test.js"
+          "tests/tutorStubUptakeGuardLinkage.test.js",
+          "services/tutorStubSelfCorrectionDisclosure.js",
+          "services/tutorStubGuardDisposition.js",
+          "tests/tutorStubSelfCorrectionDisclosure.test.js"
         ]
       },
       "tags": [

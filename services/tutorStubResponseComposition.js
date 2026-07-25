@@ -1,6 +1,7 @@
 import { auditTutorStubConversationalCompletionResponse } from './tutorStubConversationalCompletion.js';
 import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from './tutorStubFirstDraftContract.js';
 import { auditTutorStubRepetitionResponse } from './tutorStubResponseGuard.js';
+import { detectTutorStubSelfCorrectionDisclosure } from './tutorStubSelfCorrectionDisclosure.js';
 import {
   deterministicTutorStubTurnProgressionHandoff,
   tutorStubLearnerRequestsWritableEntry,
@@ -829,6 +830,31 @@ export function auditTutorStubResponseComposition({
         uptake: fusedOpening,
         method: 'fused_opening',
         formatted: oneLine(text),
+      };
+    }
+  }
+  // A tutor that opens by saying it nearly went the wrong way has not taken up
+  // the learner yet — but it has not failed to, either. The preface is a
+  // preface; the uptake is the move that follows it. Peeling it keeps both
+  // uptake guards pointed at the sentence that is actually trying to answer.
+  // Only an opening that does not already answer on its own is peeled, so a
+  // self-correction folded into a real uptake still counts as the uptake.
+  if (
+    segments.uptake &&
+    segments.development &&
+    detectTutorStubSelfCorrectionDisclosure(segments.uptake).disclosed &&
+    !uptakeRespondsToLearner(segments.uptake, enrichedFrame)
+  ) {
+    const boundary = firstSentenceBoundary(segments.development);
+    const peeledUptake = boundary > 0 ? segments.development.slice(0, boundary).trim() : '';
+    const peeledDevelopment = boundary > 0 ? segments.development.slice(boundary).trim() : '';
+    if (peeledUptake && peeledDevelopment) {
+      segments = {
+        ...segments,
+        preface: segments.uptake,
+        uptake: peeledUptake,
+        development: peeledDevelopment,
+        method: 'self_correction_preface',
       };
     }
   }
