@@ -35,6 +35,7 @@ links:
     - refactor-field-turn-projection
     - refactor-eval-profile-registry
     - refactor-paper-manifest-fixtures
+    - refactor-provenance-fixtures
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -191,3 +192,12 @@ Log:
   Activated `refactor-paper-manifest-fixtures` to extract the validator core,
   add synthetic paper/SQLite fixtures, and make missing-data and drift cases
   return exact non-zero exit results without private evaluation data.
+- 2026-07-25 — PR #227 merged and closed the paper-manifest fixture child with
+  all CI checks green. Activated `refactor-provenance-fixtures` to exercise the
+  production provenance CLI against synthetic SQLite and dialogue-log fixtures
+  across hash, path, schema, missing-data, and exact exit-code boundaries.
+- 2026-07-25 — The provenance fixture child reached review without production
+  changes: its self-contained CLI harness covers both normalized path forms and
+  exact hash, turn-ID, required-field, rubric-schema, and missing-data failures.
+  Focused and complete hermetic parity are green; message-chain fixtures remain
+  the next queued slice after this child lands.

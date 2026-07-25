@@ -1,7 +1,7 @@
 ---
 id: refactor-paper-manifest-fixtures
 title: Extract and fixture the paper-manifest validator core
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -17,6 +17,8 @@ branch: codex/refactor-paper-manifest-fixtures
 depends_on:
   - refactor-eval-profile-registry
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/227
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -75,3 +77,5 @@ Acceptance:
   zero fail. Final gates pass: 6,730/6,730 root tests and 137/137 core tests with
   zero skips, plus lint, formatting, zero cycles, manifest, source-only
   workplan, and diff checks.
+- 2026-07-25 — Merged through PR #227 at `47f0e6ea` with every required CI
+  check green.

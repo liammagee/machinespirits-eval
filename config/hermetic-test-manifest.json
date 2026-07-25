@@ -322,6 +322,7 @@
         "tests/promptVersioning.test.js",
         "tests/provableDiscourse.test.js",
         "tests/provenance.test.js",
+        "tests/provenanceValidatorCli.test.js",
         "tests/qaOedipusArms.test.js",
         "tests/reasoningOntology.test.js",
         "tests/recognitionOriginSubtype.test.js",
