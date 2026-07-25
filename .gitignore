@@ -115,6 +115,7 @@ scratchpad/
 .tutor-stub-traces/
 .tutor-stub-auto-eval/
 .tutor-stub-tuning/
+.tutor-stub-remote/
 
 # Research working files (local only)
 liams-paper/

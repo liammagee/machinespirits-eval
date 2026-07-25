@@ -805,6 +805,34 @@ different, versioned artifact.
 Malformed JSONL is summarized by `--dry-run` but fails closed before SQL
 replacement. Use `--allow-malformed` only after inspecting the affected trace.
 
+## Hosts without a terminal
+
+`scripts/tutor-stub-remote.js` drives a real session from anywhere that cannot
+attach a TTY — a Claude Code web or mobile session, a CI job, a plain shell
+script. It is a client for the `/api/tutor-stub` transport, so the tutor is the
+same `--session-rpc` child process the web and Electron surfaces use; the script
+only tracks the server process and the current session id between commands.
+
+```bash
+node scripts/tutor-stub-remote.js worlds
+node scripts/tutor-stub-remote.js start --world world_001_nocturne
+node scripts/tutor-stub-remote.js say "I am ready to begin."
+node scripts/tutor-stub-remote.js end --stop-server
+```
+
+The first `start` boots the server if none is reachable. Sessions default to
+`claude-code.sonnet-5` rather than the catalog default: a cloud container has no
+`OPENROUTER_API_KEY`, but Claude Code ships an authenticated `claude` binary that
+`services/cliProviderBridge.js` already targets, so no credentials need to be
+configured. Pass `--model` for any ref that `worlds` lists.
+
+`/ms-tutor-remote` wraps the same loop for chat, with the user as the learner.
+
+This surface carries the dialogue only. Slash commands remain rejected with
+`command_transport_unavailable`, and the terminal presentation layer — ghost-text
+drafts, Tab completion, pickers, the masthead — belongs to the TUI this transport
+bypasses. Changing lab or world means ending the session and starting another.
+
 ## Terminal compatibility
 
 Color and motion activate only where the terminal supports them. Piped output,
