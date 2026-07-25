@@ -7,8 +7,8 @@ import {
 import { TUTOR_STUB_CURRICULUM_TRANSLATION_LEVELS } from './tutorStubCurriculumTranslation.js';
 import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 
-export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v7';
-export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 7;
+export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v8';
+export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 8;
 export const TUTOR_STUB_COMMAND_MODES = Object.freeze(['normal', 'passthrough']);
 export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
   'terminal_picker',
@@ -60,6 +60,7 @@ const COMMAND_EFFECT_DECLARATIONS = Object.freeze({
   status: [],
   features: [],
   release_notes: [],
+  repository_metrics: [],
   debug: ['modelCall', 'persistentMutation'],
   mode: ['modelCall', 'persistentMutation'],
   coach: ['modelCall', 'persistentMutation'],
@@ -129,6 +130,7 @@ const COMMAND_SUMMARIES = Object.freeze({
   status: 'show the current role, models, modes, and session state',
   features: 'show available and active tutor-stub capabilities',
   release_notes: 'show recent tutor-stub changes and their expected effects',
+  repository_metrics: 'show repository source, language, file, and Git metrics',
   debug: 'explain or expose the tutor machinery behind completed turns',
   mode: 'switch between public learner, private coach, and automated play',
   coach: 'send private guidance for the next tutor response',
@@ -213,10 +215,11 @@ const HELP_GROUPS = [
     commands: [
       { id: 'features' },
       { id: 'lab', arguments: '[list|id]' },
+      { id: 'repository_metrics' },
       { id: 'release_notes', arguments: '[hours]' },
       { id: 'help' },
     ],
-    summary: 'browse capabilities, safe labs, recent changes, and command hints',
+    summary: 'browse capabilities, repository metrics, safe labs, recent changes, and command hints',
   },
   {
     id: 'rate_tutor',
@@ -288,6 +291,7 @@ const HELP_GROUPS = [
       { id: 'status' },
       { id: 'features' },
       { id: 'lab', arguments: '[list|id]' },
+      { id: 'repository_metrics' },
       { id: 'release_notes', arguments: '[hours]' },
       { id: 'transcript', arguments: '[no-open]' },
       { id: 'voice' },
@@ -653,6 +657,12 @@ const COMMANDS = [
     token: '/release-notes',
     passthroughOrder: 6,
     sceneReturnOrder: 8,
+  }),
+  command({
+    id: 'repository_metrics',
+    token: '/metrics',
+    passthroughOrder: 16,
+    sceneReturnOrder: 30,
   }),
   command({
     id: 'debug',
