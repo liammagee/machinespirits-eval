@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-closeout-projection
 title: Refactor tutor-stub closeout projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -74,3 +74,6 @@ Log:
   tutor-core run exited cleanly with zero skips (core 137/137). Repository-wide
   ESLint and formatting, manifest, zero-cycle (366 files), 195-item source-only
   workplan, syntax, and diff checks pass without model calls.
+- 2026-07-26 — PR #247 merged as `57cba50c` with every CI lane green; the
+  serialized workplan render followed as `7a22b818`. Closed this child and
+  handed the next pure R3 seam to `refactor-tutor-stub-interim-presentation`.
