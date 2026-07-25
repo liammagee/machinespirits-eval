@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-25T12:43:10.905Z",
+  "generated": "2026-07-25T13:30:42.878Z",
   "counts": {
-    "total": 189,
+    "total": 190,
     "byStatus": {
-      "done": 158,
+      "done": 160,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 13,
+      "triaged": 12,
       "active": 3,
       "archived": 4,
       "review": 6
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 41,
-      "maintenance": 38,
+      "maintenance": 39,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -336,39 +336,6 @@
       ]
     },
     {
-      "id": "tutor-stub-curriculum-mastery-runtime",
-      "title": "Add curriculum authoring, progression, and mastery to tutor-stub",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "The existing curriculum builder and a tutor-stub/Scriptorium workbench author, lint, hash, preview without spend, and round-trip one multi-module course; /module, /next, and /progress drive diagnostic, scaffold, independent-check, and transfer phases for two non-detective curricula; public state cannot expose private verifier material; external workplan completion is never inferred from dialogue.",
-      "depends_on": [
-        "tutor-stub-capability-session-runtime"
-      ],
-      "links": {
-        "notes": [
-          "docs/tutor-stub-prompt-and-world-authoring.md",
-          "curriculum/CURRICULUM-FORMAT.md"
-        ],
-        "items": [
-          "adaptive-curriculum-memory-controller",
-          "scenario-presentation-variety",
-          "scriptorium-creation-flows"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "super-app",
-        "curriculum",
-        "mastery",
-        "authoring"
-      ]
-    },
-    {
       "id": "refusal-defense-adjudication",
       "title": "Exploration 4: adjudicating the defense — does a hollow defense earn a second refusal?",
       "status": "triaged",
@@ -455,6 +422,7 @@
           "refactor-message-chain-fixtures",
           "refactor-log-route-data-root",
           "refactor-sse-lifecycle",
+          "refactor-tutor-stub-learning-summary",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -637,8 +605,8 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-sse-lifecycle",
-      "title": "Wire evaluation SSE streams into graceful application shutdown",
+      "id": "refactor-tutor-stub-learning-summary",
+      "title": "Refactor tutor-stub learning summary",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -646,36 +614,33 @@
       "source": "review",
       "created": "2026-07-25",
       "updated": "2026-07-25",
-      "verification": "A production stream registry preserves the existing timeout, warning, and restart event contracts; the shared eval-surface lifecycle hook is invoked by standalone, Scriptorium, and desktop shutdown paths; focused tests prove all tracked streams close, timers release, and the process exits naturally.",
+      "verification": "A pure learning-summary projection preserves the CLI and HTML contracts on frozen public-state fixtures; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-learning-summary",
       "claim_status": "planned",
-      "branch": "codex/refactor-sse-lifecycle",
       "depends_on": [
-        "refactor-log-route-data-root"
+        "refactor-sse-lifecycle"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/evaluationStreamRegistry.js",
-          "routes/evalRoutes.js",
-          "services/evalSurfaces.js",
-          "services/applicationShutdown.js",
-          "desktop/server-entry.mjs",
-          "tests/evaluationStreamRegistry.test.js",
-          "tests/applicationShutdown.test.js"
+          "services/tutorStubLearningSummary.js",
+          "services/tutorStubLearningSummaryHtml.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLearningSummary.test.js",
+          "tests/tutorStubLearningSummaryHtml.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-log-route-data-root"
+          "refactor-sse-lifecycle"
         ]
       },
       "tags": [
         "refactoring",
-        "testing",
-        "routes",
-        "sse",
-        "lifecycle"
+        "tutor-stub",
+        "learning-summary",
+        "projection"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2426,6 +2391,52 @@
         "json",
         "hermetic",
         "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-sse-lifecycle",
+      "title": "Wire evaluation SSE streams into graceful application shutdown",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-25",
+      "verification": "A production stream registry preserves the existing timeout, warning, and restart event contracts; the shared eval-surface lifecycle hook is invoked by standalone, Scriptorium, and desktop shutdown paths; focused tests prove all tracked streams close, timers release, and the process exits naturally.",
+      "claim_status": "planned",
+      "branch": "codex/refactor-sse-lifecycle",
+      "depends_on": [
+        "refactor-log-route-data-root"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/evaluationStreamRegistry.js",
+          "routes/evalRoutes.js",
+          "services/evalSurfaces.js",
+          "services/applicationShutdown.js",
+          "desktop/server-entry.mjs",
+          "tests/evaluationStreamRegistry.test.js",
+          "tests/applicationShutdown.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-log-route-data-root"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/235"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "testing",
+        "routes",
+        "sse",
+        "lifecycle"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -5181,6 +5192,40 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "tutor-stub-curriculum-mastery-runtime",
+      "title": "Add curriculum authoring, progression, and mastery to tutor-stub",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-07-25",
+      "verification": "The existing curriculum builder and a tutor-stub/Scriptorium workbench author, lint, hash, preview without spend, and round-trip one multi-module course; /module, /next, and /progress drive diagnostic, scaffold, independent-check, and transfer phases for two non-detective curricula; public state cannot expose private verifier material; external workplan completion is never inferred from dialogue.",
+      "depends_on": [
+        "tutor-stub-capability-session-runtime"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-stub-prompt-and-world-authoring.md",
+          "curriculum/CURRICULUM-FORMAT.md"
+        ],
+        "items": [
+          "adaptive-curriculum-memory-controller",
+          "scenario-presentation-variety",
+          "scriptorium-creation-flows"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "super-app",
+        "curriculum",
+        "mastery",
+        "authoring"
+      ],
+      "branch": "codex/tutor-stub-curriculum-mastery-runtime"
     },
     {
       "id": "tutor-stub-remote-claude-code-driver",
