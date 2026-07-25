@@ -67,6 +67,12 @@ const tutorInternalSchema = z.object({
   superegoFeedback: z.string().default(''),
   egoRevision: z.string().default(''),
   policyAction: z.string().default(''),
+  // Closed-loop architectures distinguish the typed adaptive action from the
+  // legacy policy-action label. This must be schema-declared: LangGraph 1.4
+  // validates node updates at the state boundary and strips unknown keys.
+  // learnerTurn reads this value so staged follow-ups receive their dedicated
+  // scripted/generative response instead of falling back to the base action.
+  adaptationAction: z.string().default(''),
   idConstruction: idConstructionSchema.optional(),
   idAuthoredPrompt: z.string().default(''),
   // A16 (P2): the superego-authored ego system prompt for the

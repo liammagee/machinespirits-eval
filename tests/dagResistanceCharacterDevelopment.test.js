@@ -147,6 +147,18 @@ describe('DAG/resistance character-development harness', () => {
     assert.ok(combined.first_response_success_n > v2Only.first_response_success_n);
     assert.equal(combined.transfer_first_response_success_n, 1);
     assert.ok(combined.final_maturity > v2Only.final_maturity);
+    const stagedScenes = report.arms
+      .find((arm) => arm.arm === 'v2_policy_only')
+      .scenes.filter((scene) => scene.staged_followup);
+    assert.deepEqual(
+      stagedScenes.map((scene) => ({ scene_id: scene.scene_id, outcome: scene.outcome })),
+      [
+        { scene_id: 'scene_3_irrelevance', outcome: 'success' },
+        { scene_id: 'scene_4_question_flood', outcome: 'success' },
+      ],
+    );
+    assert.ok(stagedScenes[0].evidence_labels.includes('learner-owned relevance test'));
+    assert.ok(stagedScenes[1].evidence_labels.includes('collapsed question set'));
     assert.ok(fs.existsSync(artifacts.summaryPath));
     assert.ok(fs.existsSync(artifacts.reportPath));
     assert.ok(fs.existsSync(artifacts.fixturePath));
