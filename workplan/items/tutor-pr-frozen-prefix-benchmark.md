@@ -13,6 +13,8 @@ branch: codex/tutor-pr-benchmark
 depends_on:
   - tutor-stub-first-draft-series
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/248
   notes:
     - docs/tutor-pr-benchmark.md
 tags:
