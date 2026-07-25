@@ -26,7 +26,7 @@ import { auditTutorStubLiveSourceActionAlignmentV1 } from './tutorStubLiveFirstD
 import {
   auditTutorStubReleaseDelivery,
   auditTutorStubRepetitionResponse,
-  tutorStubAnswerNameIsPublic,
+  resolveTutorStubAnswerReference,
 } from './tutorStubResponseGuard.js';
 import { auditTutorStubLiveTurnProgressionV1 } from './tutorStubTurnProgressionContract.js';
 import {
@@ -272,8 +272,6 @@ export function auditTutorStubFrozenLeak({
   const available = candidatePublicPremiseIds(world, tutorTurn, publicPremiseIds);
   const leaks = [];
   const answerTerm = answerTermForWorld(world);
-  const answerTokens = splitTutorStubPublicWords(answerTerm);
-  const mentionsAnswer = answerTokens.some((token) => tokenRegex(token).test(text));
   const publicText = publicTextForTurn({
     world,
     tutorTurn,
@@ -281,14 +279,15 @@ export function auditTutorStubFrozenLeak({
     priorTurns,
     publicPremiseIds: available,
   });
-  const answerNamePublic = tutorStubAnswerNameIsPublic({ answerTerm, publicText });
+  const answerReference = resolveTutorStubAnswerReference({ answerTerm, text, publicText });
+  const mentionsAnswer = answerReference.referencesAnswer;
   const finalEntailed = entailsFactAtTurn(world, tutorTurn, world.secret.fact, available);
 
-  if (mentionsAnswer && !finalEntailed && !answerNamePublic) {
+  if (answerReference.concealedMatches.length && !finalEntailed && !answerReference.answerNamePublic) {
     leaks.push({
       type: 'concealed_answer_name',
       reason: `mentions ${answerTerm} before the public record entails the answer`,
-      matches: answerTokens,
+      matches: answerReference.concealedMatches,
     });
   }
 
@@ -358,7 +357,7 @@ export function auditTutorStubFrozenLeak({
     ok: leaks.length === 0,
     leaks,
     finalEntailed,
-    answerNamePublic,
+    answerNamePublic: answerReference.answerNamePublic,
     publicPremiseIds: [...available],
   };
 }

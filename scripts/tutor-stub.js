@@ -102,8 +102,8 @@ import {
   auditTutorStubReleaseDelivery,
   auditTutorStubRepetitionResponse,
   deterministicTutorStubContextualFallback,
+  resolveTutorStubAnswerReference,
   snapshotTutorStubPublicPremiseIds,
-  tutorStubAnswerNameIsPublic,
 } from '../services/tutorStubResponseGuard.js';
 import { splitTutorStubPublicWords } from '../services/tutorStubPublicText.js';
 import { tutorStubPublicProvenanceText } from '../services/tutorStubPublicProvenance.js';
@@ -2147,17 +2147,16 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = n
   const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
   const leaks = [];
   const answerTerm = answerTermForWorld(world);
-  const answerTokens = splitSymbolWords(answerTerm);
-  const mentionsAnswer = answerTokens.some((token) => textContainsToken(text, token));
   const publicText = publicTextForTurn(world, tutorTurn, learnerText, state, available);
-  const answerNamePublic = tutorStubAnswerNameIsPublic({ answerTerm, publicText });
+  const answerReference = resolveTutorStubAnswerReference({ answerTerm, text, publicText });
+  const mentionsAnswer = answerReference.referencesAnswer;
   const finalEntailed = entailsFactAtTurn(world, tutorTurn, world.secret.fact, state, available);
 
-  if (mentionsAnswer && !finalEntailed && !answerNamePublic) {
+  if (answerReference.concealedMatches.length && !finalEntailed && !answerReference.answerNamePublic) {
     leaks.push({
       type: 'concealed_answer_name',
       reason: `mentions ${answerTerm} before the public record entails the answer`,
-      matches: answerTokens,
+      matches: answerReference.concealedMatches,
     });
   }
 
@@ -2245,7 +2244,7 @@ function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = n
     ok: leaks.length === 0,
     leaks,
     finalEntailed,
-    answerNamePublic,
+    answerNamePublic: answerReference.answerNamePublic,
     publicPremiseIds: [...available],
   };
 }

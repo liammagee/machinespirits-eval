@@ -9,6 +9,7 @@ import {
   auditTutorStubReleaseDelivery,
   auditTutorStubRepetitionResponse,
   deterministicTutorStubContextualFallback,
+  resolveTutorStubAnswerReference,
   snapshotTutorStubPublicPremiseIds,
   tutorStubAnswerNameIsPublic,
 } from '../services/tutorStubResponseGuard.js';
@@ -16,6 +17,7 @@ import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-028-larkspur-fridge.yaml'));
+const rowanWorld = loadWorld(path.join(ROOT, 'config/drama-derivation/world-030-rowan-flat.yaml'));
 
 test('the Larkspur clearance clue may name Wrenfold without asserting the concealed answer', () => {
   const permit = world.premiseById.get('p_permit');
@@ -50,6 +52,34 @@ test('a released multiword answer name is public when its world constant uses ca
     }),
     false,
   );
+});
+
+test('public components of a compound concealed answer do not count as the concealed name', () => {
+  const answerIndex = rowanWorld.questionPattern.findIndex((part) => typeof part === 'string' && part.startsWith('?'));
+  const answerTerm = rowanWorld.secret.fact[answerIndex];
+  const shower = rowanWorld.premiseById.get('p_shower');
+  const split = rowanWorld.premiseById.get('p_split');
+  const publicText = [rowanWorld.question, rowanWorld.setting, shower.surface, split.surface].join('\n');
+  const publicReference = resolveTutorStubAnswerReference({
+    answerTerm,
+    text: split.surface,
+    publicText,
+  });
+
+  assert.equal(publicReference.answerTokens.length, 3);
+  assert.equal(publicReference.matchedTokens.length, 2);
+  assert.equal(publicReference.concealedTokens.length, 1);
+  assert.deepEqual(publicReference.concealedMatches, []);
+  assert.equal(publicReference.referencesAnswer, false);
+
+  const [concealedToken] = publicReference.concealedTokens;
+  const concealedReference = resolveTutorStubAnswerReference({
+    answerTerm,
+    text: `The remaining identity is ${concealedToken}.`,
+    publicText,
+  });
+  assert.deepEqual(concealedReference.concealedMatches, [concealedToken]);
+  assert.equal(concealedReference.referencesAnswer, true);
 });
 
 test('a released possessive answer name matches a symbolic trailing-s constant', () => {
