@@ -2,12 +2,7 @@ import { createHash } from 'node:crypto';
 
 export const TUTOR_STUB_CURRICULUM_RUNTIME_SCHEMA = 'machinespirits.tutor-stub.curriculum-runtime.v1';
 export const TUTOR_STUB_CURRICULUM_PUBLIC_SCHEMA = 'machinespirits.tutor-stub.curriculum-progress.v1';
-export const TUTOR_STUB_CURRICULUM_PHASES = Object.freeze([
-  'diagnostic',
-  'scaffold',
-  'independent_check',
-  'transfer',
-]);
+export const TUTOR_STUB_CURRICULUM_PHASES = Object.freeze(['diagnostic', 'scaffold', 'independent_check', 'transfer']);
 
 function compact(value, max = 360) {
   const text = String(value || '')
@@ -96,7 +91,8 @@ export function createTutorStubCurriculumRuntime(bundle, { moduleId = null, now 
     currentPhase: 'diagnostic',
     createdAt,
     updatedAt: createdAt,
-    completionAuthority: bundle.sourceRef === 'workplan:live' ? 'external_workplan_verification_only' : 'session_mastery_only',
+    completionAuthority:
+      bundle.sourceRef === 'workplan:live' ? 'external_workplan_verification_only' : 'session_mastery_only',
     modules: Object.fromEntries(
       modules.map((module) => [
         module.id,
@@ -108,7 +104,11 @@ export function createTutorStubCurriculumRuntime(bundle, { moduleId = null, now 
           phases: Object.fromEntries(
             TUTOR_STUB_CURRICULUM_PHASES.map((phase) => [
               phase,
-              { status: phase === 'diagnostic' && module.id === selected ? 'active' : 'not_started', evidence: [], decision: null },
+              {
+                status: phase === 'diagnostic' && module.id === selected ? 'active' : 'not_started',
+                evidence: [],
+                decision: null,
+              },
             ]),
           ),
         },
@@ -117,7 +117,10 @@ export function createTutorStubCurriculumRuntime(bundle, { moduleId = null, now 
   };
 }
 
-export function recordTutorStubCurriculumEvidence(runtime, { text, turnId = null, at = new Date().toISOString() } = {}) {
+export function recordTutorStubCurriculumEvidence(
+  runtime,
+  { text, turnId = null, at = new Date().toISOString() } = {},
+) {
   assertRuntime(runtime);
   const normalized = String(text || '').trim();
   if (!normalized) return runtime;
@@ -192,7 +195,8 @@ export function selectTutorStubCurriculumRuntimeModule(
   if (!modules.has(moduleId)) throw new Error(`unknown curriculum module ${moduleId}`);
   const prerequisites = prerequisiteMap(curriculum).get(moduleId) || new Set();
   const missing = [...prerequisites].filter((id) => runtime.modules[id]?.status !== 'mastered');
-  if (missing.length && !allowDirectEntry) return { selected: false, reason: 'prerequisites_incomplete', missing, runtime };
+  if (missing.length && !allowDirectEntry)
+    return { selected: false, reason: 'prerequisites_incomplete', missing, runtime };
   runtime.currentModuleId = moduleId;
   const record = currentRecord(runtime);
   record.directEntry = record.directEntry || missing.length > 0;
@@ -215,7 +219,9 @@ export function tutorStubCurriculumPrivatePrompt(bundle, runtime) {
     `Private verifier contract: ${(module.verifiers || []).map((value) => compact(value)).join(' | ') || 'No verifier supplied.'}`,
     `Private misconception probes: ${(module.misconception_signatures || []).map((value) => compact(value)).join(' | ') || 'None supplied.'}`,
     module.mastery_gate ? `Private mastery gate: ${compact(module.mastery_gate, 900)}` : null,
-    module.transfer_challenge ? `Public transfer challenge when the transfer phase begins: ${compact(module.transfer_challenge, 900)}` : null,
+    module.transfer_challenge
+      ? `Public transfer challenge when the transfer phase begins: ${compact(module.transfer_challenge, 900)}`
+      : null,
     'Never reveal verifier internals, misconception identifiers, answer keys, or a pass decision. Only an explicit operator or trusted evaluation adapter records pass or revise.',
   ]
     .filter(Boolean)
@@ -227,7 +233,9 @@ export function tutorStubCurriculumPublicProjection(bundle, runtime) {
   const prerequisites = prerequisiteMap(bundle.curriculum);
   const modules = orderedModules(bundle.curriculum).map((module) => {
     const record = runtime.modules[module.id];
-    const missing = [...(prerequisites.get(module.id) || [])].filter((id) => runtime.modules[id]?.status !== 'mastered');
+    const missing = [...(prerequisites.get(module.id) || [])].filter(
+      (id) => runtime.modules[id]?.status !== 'mastered',
+    );
     return {
       id: module.id,
       sequence: module.sequence ?? null,

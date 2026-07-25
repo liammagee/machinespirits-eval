@@ -213,7 +213,7 @@ export function compileTutorStubPerformanceObligationContract({
             'evidence_tactic_inapplicable_before_public_evidence',
             { hasPublicEvidence: false },
           )
-      : requestedConfiguration;
+        : requestedConfiguration;
   const tactic = configuration.actorial_performance.id || 'unadorned_report';
   const terminal = configuration.action_family === 'close_inquiry' || configuration.actorial_part === 'foreperson';
   const allEvidenceSurfaces = uniqueStrings([

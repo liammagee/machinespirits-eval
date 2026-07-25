@@ -88,10 +88,7 @@ test('process curriculum resolution stays inside canonical curriculum artifacts'
   ]) {
     assert.throws(
       () => resolveTutorStubProcessCurriculumPath(curriculum, { root: ROOT }),
-      (error) =>
-        error.code === 'invalid_curriculum_source' &&
-        error.status === 400 &&
-        !error.message.includes(ROOT),
+      (error) => error.code === 'invalid_curriculum_source' && error.status === 400 && !error.message.includes(ROOT),
     );
   }
 });

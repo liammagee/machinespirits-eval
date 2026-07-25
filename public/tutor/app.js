@@ -280,7 +280,10 @@ function renderCatalog(catalog) {
       curriculumId: curriculum.id,
     });
   }
-  if (catalog.defaults?.curriculum && [...elements.curriculum.options].some((row) => row.value === catalog.defaults.curriculum)) {
+  if (
+    catalog.defaults?.curriculum &&
+    [...elements.curriculum.options].some((row) => row.value === catalog.defaults.curriculum)
+  ) {
     elements.curriculum.value = catalog.defaults.curriculum;
   }
   updateCurriculumModules(catalog.defaults?.module);

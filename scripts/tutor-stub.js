@@ -22233,7 +22233,9 @@ async function main() {
       const marker = module.id === progress.currentModule.id ? '◆' : module.status === 'mastered' ? '✓' : '◇';
       const evidence = Object.values(module.phaseEvidenceCounts).reduce((sum, count) => sum + count, 0);
       const lock = module.available ? '' : ` · waiting for ${module.missingPrerequisiteModuleIds.join(', ')}`;
-      console.log(`  ${marker} ${module.id} · ${module.title} · ${module.status} · ${evidence} evidence turn${evidence === 1 ? '' : 's'}${lock}`);
+      console.log(
+        `  ${marker} ${module.id} · ${module.title} · ${module.status} · ${evidence} evidence turn${evidence === 1 ? '' : 's'}${lock}`,
+      );
     }
     console.log(
       `${C.dim}  current phase: ${progress.currentPhase.replaceAll('_', ' ')} · ${progress.currentPhaseEvidenceCount} evidence turn${progress.currentPhaseEvidenceCount === 1 ? '' : 's'}${C.reset}`,
@@ -22286,7 +22288,9 @@ async function main() {
       return true;
     }
     if (duringTurn || processingTurn) {
-      console.log(`${C.dim}module change not started; run /module again after the current tutor response completes${C.reset}\n`);
+      console.log(
+        `${C.dim}module change not started; run /module again after the current tutor response completes${C.reset}\n`,
+      );
       return false;
     }
     try {
@@ -22298,7 +22302,9 @@ async function main() {
         return false;
       }
       console.log(`${C.brightGreen}${C.bold}module >${C.reset} ${outcome.module.id} — ${outcome.module.title}`);
-      console.log(`${C.dim}  ${state.curriculum.runtime.currentPhase.replaceAll('_', ' ')} phase · public history retained${C.reset}\n`);
+      console.log(
+        `${C.dim}  ${state.curriculum.runtime.currentPhase.replaceAll('_', ' ')} phase · public history retained${C.reset}\n`,
+      );
       return true;
     } catch (error) {
       console.log(`${C.red}module error:${C.reset} ${error.message}\n`);
@@ -22312,7 +22318,10 @@ async function main() {
       console.log(`${C.dim}curriculum progression waits for the current tutor response to complete${C.reset}\n`);
       return false;
     }
-    const decision = String(argument || '').trim().toLowerCase() || null;
+    const decision =
+      String(argument || '')
+        .trim()
+        .toLowerCase() || null;
     let outcome;
     try {
       outcome = advanceTutorStubCurriculumRuntime(state.curriculum.runtime, {
@@ -22353,14 +22362,20 @@ async function main() {
         console.log(`${C.cyan}next module >${C.reset} ${selected.module.id} — ${selected.module.title}\n`);
       } else {
         refreshCurriculumPrompt();
-        console.log(`${C.brightGreen}${C.bold}course complete >${C.reset} all available modules have explicit transfer passes\n`);
+        console.log(
+          `${C.brightGreen}${C.bold}course complete >${C.reset} all available modules have explicit transfer passes\n`,
+        );
       }
       return true;
     }
     refreshCurriculumPrompt();
-    console.log(`${C.brightGreen}${C.bold}next phase >${C.reset} ${state.curriculum.runtime.currentPhase.replaceAll('_', ' ')}`);
+    console.log(
+      `${C.brightGreen}${C.bold}next phase >${C.reset} ${state.curriculum.runtime.currentPhase.replaceAll('_', ' ')}`,
+    );
     if (outcome.outcome === 'revision_requested') {
-      console.log(`${C.dim}  the existing public evidence is retained; the tutor returns to a bounded scaffold${C.reset}`);
+      console.log(
+        `${C.dim}  the existing public evidence is retained; the tutor returns to a bounded scaffold${C.reset}`,
+      );
     }
     console.log('');
     return true;

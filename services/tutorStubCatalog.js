@@ -7,10 +7,7 @@ import { loadProviders } from './evalConfigLoader.js';
 import { loadWorld } from './dramaticDerivation/world.js';
 import { listTutorStubLabs } from './tutorStubLabs.js';
 import { listTutorStubTutorInstances } from './tutorStubTutorInstance.js';
-import {
-  listTutorStubCurriculumModules,
-  loadTutorStubCurriculum,
-} from './curriculum/tutorStubCurriculum.js';
+import { listTutorStubCurriculumModules, loadTutorStubCurriculum } from './curriculum/tutorStubCurriculum.js';
 
 const DEFAULT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 

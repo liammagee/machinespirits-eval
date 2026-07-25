@@ -222,10 +222,7 @@ const HELP_GROUPS = [
     id: 'course_progress',
     mode: 'normal',
     label: 'course progress',
-    commands: [
-      { id: 'progress' },
-      { id: 'next', arguments: '[pass|revise]' },
-    ],
+    commands: [{ id: 'progress' }, { id: 'next', arguments: '[pass|revise]' }],
     summary: 'inspect evidence and advance the diagnostic, scaffold, independent-check, and transfer phases',
   },
   {
