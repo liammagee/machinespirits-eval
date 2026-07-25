@@ -429,6 +429,7 @@
         "tests/tutorStubPassthrough.test.js",
         "tests/tutorStubPointOfActionCoaching.test.js",
         "tests/tutorStubPointOfActionGate.test.js",
+        "tests/tutorStubPrBenchmark.test.js",
         "tests/tutorStubProcessSessionHttp.test.js",
         "tests/tutorStubProfileDiscrimination.test.js",
         "tests/tutorStubPromptAudit.test.js",
