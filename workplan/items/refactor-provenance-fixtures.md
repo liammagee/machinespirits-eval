@@ -1,7 +1,7 @@
 ---
 id: refactor-provenance-fixtures
 title: Fixture the provenance validator integrity boundary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -18,6 +18,8 @@ depends_on:
   - refactor-paper-manifest-fixtures
   - normalize-provenance-validator-data-paths
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/230
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -78,3 +80,4 @@ Acceptance:
   logs, and missing databases. Final rebased gates pass: 6,736/6,736 root tests and
   137/137 core tests with zero skips, plus lint, formatting, zero cycles,
   manifest, source-only workplan, and diff checks.
+- 2026-07-25 — Merged through PR #230 at `8bd18198`.

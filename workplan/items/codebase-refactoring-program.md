@@ -36,6 +36,7 @@ links:
     - refactor-eval-profile-registry
     - refactor-paper-manifest-fixtures
     - refactor-provenance-fixtures
+    - refactor-message-chain-fixtures
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -201,3 +202,12 @@ Log:
   exact hash, turn-ID, required-field, rubric-schema, and missing-data failures.
   Focused and complete hermetic parity are green; message-chain fixtures remain
   the next queued slice after this child lands.
+- 2026-07-25 — PR #230 merged and closed the provenance fixture child.
+  Activated `refactor-message-chain-fixtures` to extract a pure integrity core
+  and exercise malformed logs, stored hashes, turn/message ordering, and exact
+  strict-mode exits without changing the auditor's legacy display exit.
+- 2026-07-25 — The message-chain fixture child reached review with symmetric
+  tutor/learner validation, exact strict-mode findings and exits, legacy
+  zero-exit compatibility, 47/47 focused tests, and full hermetic parity green.
+  The next queued slice is row 17, `refactor-log-route-data-root`, after this
+  child lands.
