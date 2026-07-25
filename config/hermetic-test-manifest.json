@@ -176,6 +176,7 @@
         "tests/derivationWorldQuality.test.js",
         "tests/desktopCredentials.test.js",
         "tests/desktopMenu.test.js",
+        "tests/desktopPackagingToolchain.test.js",
         "tests/desktopPaths.test.js",
         "tests/desktopRouteParity.test.js",
         "tests/desktopSecurity.test.js",

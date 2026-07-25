@@ -41,6 +41,7 @@ files:
   - "!exports/**"
   - "!docs/research/**"
   - "!notes/**"
+  - "!vendor/temp-safe/**"
   - "!**/.git/**"
   - "!**/*.map"
   - "!**/*.test.js"

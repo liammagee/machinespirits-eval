@@ -1,0 +1,10 @@
+{
+  "name": "temp",
+  "version": "0.9.5-machinespirits.1",
+  "description": "Node-native compatibility fork of temp for Electron packaging",
+  "main": "lib/temp.cjs",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

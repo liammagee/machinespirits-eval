@@ -4,7 +4,12 @@ import assert from 'node:assert/strict';
 import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
-import { createCredentialStore, parseEnvFile, credentialTemplate } from '../desktop/credentials.js';
+import {
+  createCredentialStore,
+  parseEnvFile,
+  credentialTemplate,
+  shouldLoadStoredCredentials,
+} from '../desktop/credentials.js';
 
 // Fake keychain: reversible, but base64-of-ciphertext hides the plaintext.
 const fakeSafe = {
@@ -61,4 +66,10 @@ test('falls back to obfuscated storage when keychain is unavailable', () => {
 
 test('credentialTemplate lists recognized providers', () => {
   assert.match(credentialTemplate(), /ANTHROPIC_API_KEY/);
+});
+
+test('headless validation never loads stored provider credentials', () => {
+  assert.equal(shouldLoadStoredCredentials({ headless: true }), false);
+  assert.equal(shouldLoadStoredCredentials({ headless: false }), true);
+  assert.equal(shouldLoadStoredCredentials(), true);
 });

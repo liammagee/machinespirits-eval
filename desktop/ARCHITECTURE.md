@@ -58,7 +58,10 @@ npm test                 # the desktop tests run on the Node ABI
    equal the web app's, and no `/__smoke` probe route may ship. Guard:
    `tests/desktopRouteParity.test.js`.
 4. **One dependency set.** Native + server deps are declared once at the repo root.
-   The desktop adds only `electron` + `electron-builder` (+ `@electron/rebuild`).
+   The desktop adds only `electron` + `electron-builder` (+ `@electron/rebuild`)
+   and packaging-only compatibility dependencies. `vendor/temp-safe` is currently
+   the sole exception: it replaces `electron-winstaller`'s retired glob-based
+   temporary-file cleanup chain and is explicitly excluded from the app bundle.
 
 If a change legitimately needs the desktop to diverge (rare), update the guard test
 in the same commit, with a comment explaining why — never silently.

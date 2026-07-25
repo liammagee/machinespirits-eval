@@ -35,6 +35,11 @@ The desktop build toolchain requires **Node.js 22.12 or newer**. Electron 43
 embeds Node.js 24 for the running app; the repository's non-desktop runtime can
 still use the broader Node range declared in `package.json`.
 
+The packaging lock is deliberately ratcheted to the reviewed `electron-builder`
+26 maintenance chain. `tests/desktopPackagingToolchain.test.js` prevents older
+`asar`, universal-packaging, template, Windows-installer, temporary-file, or
+brace-expansion implementations from silently returning during lockfile updates.
+
 ```bash
 # 1. install deps (includes electron + electron-builder)
 npm install
