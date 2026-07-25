@@ -16,8 +16,6 @@ function closeHttpServer(server) {
       if (error) reject(error);
       else resolve();
     });
-    // Do not let an idle keep-alive socket hold a graceful shutdown open.
-    server.closeIdleConnections?.();
   });
 }
 
@@ -42,10 +40,20 @@ export async function shutdownApplication({
 
   const cleanup = (async () => {
     const host = app?.locals?.tutorStubSessionHost;
-    const results = await Promise.allSettled([
-      closeHttpServer(server),
-      typeof host?.closeAll === 'function' ? Promise.resolve().then(() => host.closeAll(reason)) : Promise.resolve(),
+    const cleanupEvaluationStreams = app?.locals?.cleanupEvaluationStreams;
+    // close() synchronously stops new connections. Drain tracked SSE responses
+    // before reaping idle connections: a stream socket becomes idle only after
+    // its response ends, so calling closeIdleConnections() earlier can miss it.
+    const serverClose = closeHttpServer(server);
+    const hostClose =
+      typeof host?.closeAll === 'function' ? Promise.resolve().then(() => host.closeAll(reason)) : Promise.resolve();
+    const streamResults = await Promise.allSettled([
+      typeof cleanupEvaluationStreams === 'function'
+        ? Promise.resolve().then(() => cleanupEvaluationStreams())
+        : Promise.resolve(),
     ]);
+    server?.closeIdleConnections?.();
+    const results = await Promise.allSettled([serverClose, hostClose]);
 
     let databaseError = null;
     try {
@@ -54,7 +62,9 @@ export async function shutdownApplication({
       databaseError = error;
     }
 
-    const errors = results.filter((result) => result.status === 'rejected').map((result) => result.reason);
+    const errors = [...streamResults, ...results]
+      .filter((result) => result.status === 'rejected')
+      .map((result) => result.reason);
     if (databaseError) errors.push(databaseError);
     if (errors.length) throw new AggregateError(errors, 'application shutdown failed');
     return { reason, closed: true };
@@ -92,7 +102,7 @@ export function installApplicationShutdownHandlers({
 
   const beginShutdown = (signal = 'application_shutdown') => {
     if (shutdownPromise) return shutdownPromise;
-    logger.log?.(`[shutdown] ${signal}: closing HTTP server and tutor sessions`);
+    logger.log?.(`[shutdown] ${signal}: closing HTTP server, evaluation streams, and tutor sessions`);
     shutdownPromise = shutdownApplication({ app, server, reason: signal, timeoutMs }).then(
       () => {
         dispose();

@@ -27,7 +27,7 @@
 import express from 'express';
 import path from 'node:path';
 import { existsSync } from 'node:fs';
-import evalRoutes from '../routes/evalRoutes.js';
+import evalRoutes, { cleanupAllStreams } from '../routes/evalRoutes.js';
 import chatRoutes from '../routes/chatRoutes.js';
 import pilotRoutes from '../routes/pilotRoutes.js';
 import a19AdjudicationRoutes from '../routes/a19AdjudicationRoutes.js';
@@ -70,6 +70,7 @@ const STATIC_SURFACES = [
 export function mountEvalSurfaces(app, { root, tutorStubSessionHost, tutorStubCatalogProvider } = {}) {
   if (!app) throw new Error('mountEvalSurfaces: an Express app is required');
   if (!root) throw new Error('mountEvalSurfaces: { root } is required');
+  app.locals.cleanupEvaluationStreams = cleanupAllStreams;
   for (const [mount, router] of API_ROUTERS) {
     app.use(mount, router);
   }

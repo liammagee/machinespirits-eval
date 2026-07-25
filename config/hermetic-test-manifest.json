@@ -266,6 +266,7 @@
         "tests/evaluationScoring.test.js",
         "tests/evaluationStore.test.js",
         "tests/evaluationStoreRoundtripIntegrity.test.js",
+        "tests/evaluationStreamRegistry.test.js",
         "tests/factorial-design.test.js",
         "tests/generatePedagogicalDramas.test.js",
         "tests/githubInfo.test.js",

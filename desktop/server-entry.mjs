@@ -11,6 +11,7 @@
 // we report a fatal — exactly the signal Phase 0 existed to surface.
 
 import { buildDesktopApp } from './appFactory.mjs';
+import { shutdownApplication } from '../services/applicationShutdown.js';
 
 const HOST = '127.0.0.1';
 const SMOKE = process.env.MS_DESKTOP_SMOKE === '1';
@@ -55,9 +56,10 @@ server.on('error', (err) => {
   process.exit(1);
 });
 
-// Graceful shutdown on request from main: close the SQLite handle (which lives
-// on the poetics app's locals, whether or not we wrapped it for smoke), stop the
-// server, then exit.
+// Graceful shutdown on request from main: drain tracked evaluation streams,
+// close the SQLite handle and tutor subprocesses (which live on the poetics
+// app's locals, whether or not we wrapped it for smoke), stop the server, then
+// exit.
 process.parentPort?.on('message', async (e) => {
   const data = e?.data ?? e;
   if (data?.type !== 'shutdown') return;
@@ -78,16 +80,19 @@ process.parentPort?.on('message', async (e) => {
     /* jobRunner not loaded — nothing to stop */
   }
 
+  const forcedExit = setTimeout(() => process.exit(0), 1500);
+  forcedExit.unref?.();
   try {
-    (app.locals.poeticsApp || app).locals?.db?.close?.();
+    await shutdownApplication({
+      app: app.locals.poeticsApp || app,
+      server,
+      reason: 'desktop_shutdown',
+      timeoutMs: 1400,
+    });
   } catch {
-    /* ignore */
+    /* shutdown remains best-effort before the existing bounded desktop exit */
+  } finally {
+    clearTimeout(forcedExit);
+    process.exit(0);
   }
-  try {
-    await (app.locals.poeticsApp || app).locals?.tutorStubSessionHost?.closeAll?.('desktop_shutdown');
-  } catch {
-    /* session child cleanup is best-effort during app shutdown */
-  }
-  server.close(() => process.exit(0));
-  setTimeout(() => process.exit(0), 1500).unref?.();
 });
