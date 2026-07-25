@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-25T14:07:08.325Z",
+  "generated": "2026-07-25T22:22:27.527Z",
   "counts": {
-    "total": 191,
+    "total": 192,
     "byStatus": {
-      "done": 162,
+      "done": 163,
       "blocked": 3,
       "dropped": 2,
       "triaged": 11,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 41,
-      "maintenance": 40,
+      "maintenance": 41,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -369,7 +369,7 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-24",
-      "updated": "2026-07-25",
+      "updated": "2026-07-26",
       "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
       "claim_status": "planned",
       "depends_on": [],
@@ -398,6 +398,7 @@
           "refactor-sse-lifecycle",
           "refactor-tutor-stub-learning-summary",
           "refactor-tutor-stub-explanatory-debug",
+          "refactor-tutor-stub-response-details",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -580,40 +581,40 @@
       "milestone": "human-pilot-prep"
     },
     {
-      "id": "refactor-tutor-stub-explanatory-debug",
-      "title": "Refactor tutor-stub explanatory debug",
+      "id": "refactor-tutor-stub-response-details",
+      "title": "Refactor tutor-stub response details",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
-      "created": "2026-07-25",
-      "updated": "2026-07-25",
-      "verification": "One pure explanatory-debug service preserves frame, prompt, cleaning, and fallback contracts; focused, hermetic, static, and source-only gates pass without model calls.",
-      "branch": "codex/refactor-tutor-stub-explanatory-debug",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "One pure response-details service preserves human-readable diagnostic, setting, repair, and model-response metadata text; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-response-details",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-learning-summary"
+        "refactor-tutor-stub-explanatory-debug"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubExplanatoryDebug.js",
+          "services/tutorStubResponseDetails.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubExplanatoryDebug.test.js"
+          "tests/tutorStubResponseDetails.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-learning-summary"
+          "refactor-tutor-stub-explanatory-debug"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
-        "debug",
-        "projection"
+        "presentation",
+        "response-details"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2482,6 +2483,44 @@
         "cycles",
         "accessibility",
         "contracts"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-explanatory-debug",
+      "title": "Refactor tutor-stub explanatory debug",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-26",
+      "verification": "One pure explanatory-debug service preserves frame, prompt, cleaning, and fallback contracts; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-explanatory-debug",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-learning-summary"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubExplanatoryDebug.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubExplanatoryDebug.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-learning-summary"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "debug",
+        "projection"
       ],
       "milestone": "evaluation-infrastructure"
     },
