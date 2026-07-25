@@ -64,6 +64,18 @@
               <small>Only production-ready worlds appear here.</small>
             </label>
 
+            <label id="curriculum-field" hidden>
+              <span>Curriculum</span>
+              <select id="curriculum-select" name="curriculum"></select>
+              <small>Canonical course files are linted before appearing here.</small>
+            </label>
+
+            <label id="module-field" hidden>
+              <span>Starting module</span>
+              <select id="module-select" name="module"></select>
+              <small>Later modules unlock from explicit transfer passes; direct starts remain possible.</small>
+            </label>
+
             <label>
               <span>Tutor profile</span>
               <select id="tutor-select" name="tutor"></select>
@@ -196,6 +208,25 @@
             Stops the local tutor process, cancels the current wait, and closes this session. You can then start or
             resume another session.
           </p>
+
+          <aside id="curriculum-progress" class="curriculum-progress" aria-labelledby="curriculum-progress-title" hidden>
+            <div>
+              <p class="eyebrow">course runner</p>
+              <h3 id="curriculum-progress-title">Curriculum progress</h3>
+              <p id="curriculum-progress-summary"></p>
+            </div>
+            <label>
+              <span>Module</span>
+              <select id="active-module-select"></select>
+            </label>
+            <div class="curriculum-actions">
+              <button id="show-progress-button" class="quiet-button" type="button">Show progress</button>
+              <button id="next-phase-button" class="quiet-button" type="button">Next phase</button>
+              <button id="pass-phase-button" class="primary-button" type="button">Pass check</button>
+              <button id="revise-phase-button" class="quiet-button" type="button">Revise</button>
+            </div>
+            <p class="privacy-note">Pass and revise are explicit operator decisions. Dialogue never completes a workplan card.</p>
+          </aside>
 
           <ol
             id="transcript"

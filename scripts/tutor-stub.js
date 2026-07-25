@@ -50,8 +50,18 @@ import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
+  renderTutorStubCurriculumModule,
+  selectTutorStubCurriculumModule,
   tutorStubCurriculumBundle,
 } from '../services/curriculum/tutorStubCurriculum.js';
+import {
+  advanceTutorStubCurriculumRuntime,
+  createTutorStubCurriculumRuntime,
+  recordTutorStubCurriculumEvidence,
+  selectTutorStubCurriculumRuntimeModule,
+  tutorStubCurriculumPrivatePrompt,
+  tutorStubCurriculumPublicProjection,
+} from '../services/curriculum/tutorStubCurriculumRuntime.js';
 import {
   TUTOR_STUB_CURRICULUM_TRANSLATOR_SYSTEM_PROMPT,
   TUTOR_STUB_TUTOR_OUTPUT_TRANSLATOR_SYSTEM_PROMPT,
@@ -3565,6 +3575,22 @@ function responseChoiceModeRules({ multipleChoice, world = null }) {
       ];
 }
 
+const CURRICULUM_MODULE_PROMPT_START = '[Curriculum module source — private tutor context]';
+const CURRICULUM_MODULE_PROMPT_END = '[End curriculum module source]';
+const CURRICULUM_PHASE_PROMPT_START = '[Curriculum phase controller — private tutor context]';
+const CURRICULUM_PHASE_PROMPT_END = '[End curriculum phase controller]';
+
+function delimitedPrompt(start, content, end) {
+  return [start, content, end].filter(Boolean).join('\n');
+}
+
+function replaceDelimitedPrompt(text, start, content, end) {
+  const from = text.indexOf(start);
+  const to = text.indexOf(end, from + start.length);
+  if (from < 0 || to < 0) return `${text}\n\n${delimitedPrompt(start, content, end)}`;
+  return `${text.slice(0, from)}${delimitedPrompt(start, content, end)}${text.slice(to + end.length)}`;
+}
+
 function buildSystemPrompt({
   topic,
   learner,
@@ -3583,7 +3609,9 @@ function buildSystemPrompt({
     `Learner: ${learner}`,
     `Goal: ${goal}`,
     `Style: ${style}`,
-    curriculumBundle?.prompt || null,
+    curriculumBundle
+      ? delimitedPrompt(CURRICULUM_MODULE_PROMPT_START, curriculumBundle.prompt, CURRICULUM_MODULE_PROMPT_END)
+      : null,
     '',
     'Rules:',
     '- Treat tutoring here as acting in a shared inquiry. Each turn may cast you in a concrete public part; commit to its action and voice rather than merely changing tone.',
@@ -16052,6 +16080,7 @@ async function main() {
     throw new Error('--module requires --curriculum <workplan|path>');
   }
   let curriculumBundle = null;
+  let curriculumRuntime = null;
   if (args.curriculum) {
     if (args.system) throw new Error('--curriculum cannot be combined with --system because --system replaces it');
     if (args.dag || args['tutor-learner-dag']) {
@@ -16065,6 +16094,7 @@ async function main() {
       );
     }
     curriculumBundle = tutorStubCurriculumBundle(args.curriculum, args.module, { root: ROOT });
+    curriculumRuntime = createTutorStubCurriculumRuntime(curriculumBundle, { moduleId: curriculumBundle.module.id });
     // A remembered scenario must not silently costume or constrain reflective
     // curriculum work. The curriculum source is complete public context and
     // intentionally runs without a scenario proof DAG.
@@ -16322,6 +16352,13 @@ async function main() {
     const standingBook = tutorStubPointOfActionStandingBook();
     systemPrompt = `${systemPrompt}\n\n${standingBook}`;
     console.log(`[step4] standing point-of-action book injected: ${standingBook.length} chars`);
+  }
+  if (curriculumBundle && curriculumRuntime) {
+    systemPrompt = `${systemPrompt}\n\n${delimitedPrompt(
+      CURRICULUM_PHASE_PROMPT_START,
+      tutorStubCurriculumPrivatePrompt(curriculumBundle, curriculumRuntime),
+      CURRICULUM_PHASE_PROMPT_END,
+    )}`;
   }
   const promptArchitecture = tutorStubPromptArchitecture({
     dagEnabled: Boolean(args.dag && worldBundle),
@@ -16992,7 +17029,7 @@ async function main() {
                 moduleId: curriculumBundle.module.id,
                 moduleTitle: curriculumBundle.module.title,
                 mode: 'public_reflective_non_dag',
-                completionAuthority: 'external_workplan_verification_only',
+                completionAuthority: curriculumRuntime.completionAuthority,
               }
             : null,
           world: worldBundle
@@ -17574,7 +17611,7 @@ async function main() {
             moduleId: curriculumBundle.module.id,
             moduleTitle: curriculumBundle.module.title,
             mode: 'public_reflective_non_dag',
-            completionAuthority: 'external_workplan_verification_only',
+            completionAuthority: curriculumRuntime.completionAuthority,
           }
         : null,
       firstMessage: firstMessage || null,
@@ -17660,6 +17697,7 @@ async function main() {
           sourceHash: curriculumBundle.curriculum.source?.source_hash || null,
           module: curriculumBundle.module,
           mode: 'public_reflective_non_dag',
+          runtime: curriculumRuntime,
         }
       : null,
     world: worldBundle?.world || null,
@@ -17825,6 +17863,12 @@ async function main() {
       capabilityMode: state.capabilities.mode,
       worldId: state.world?.id || null,
       curriculumModuleId: state.curriculum?.module?.id || null,
+      curriculumModuleTitle: state.curriculum?.module?.title || null,
+      topic: state.curriculum?.module?.title || state.world?.title || state.topic,
+      curriculumProgress:
+        curriculumBundle && state.curriculum?.runtime
+          ? tutorStubCurriculumPublicProjection(curriculumBundle, state.curriculum.runtime)
+          : null,
       interactionMode: state.interaction?.mode || null,
       turnCount: state.turns.length,
       publicMessageCount: state.history.length,
@@ -22152,6 +22196,188 @@ async function main() {
       return false;
     }
     relaunchWithWorkplanModule(selection, reason);
+    return true;
+  }
+
+  function refreshCurriculumPrompt() {
+    if (!curriculumBundle || !state.curriculum?.runtime) return;
+    curriculumBundle.prompt = renderTutorStubCurriculumModule(curriculumBundle, curriculumBundle.module);
+    state.systemPrompt = replaceDelimitedPrompt(
+      state.systemPrompt,
+      CURRICULUM_MODULE_PROMPT_START,
+      curriculumBundle.prompt,
+      CURRICULUM_MODULE_PROMPT_END,
+    );
+    state.systemPrompt = replaceDelimitedPrompt(
+      state.systemPrompt,
+      CURRICULUM_PHASE_PROMPT_START,
+      tutorStubCurriculumPrivatePrompt(curriculumBundle, state.curriculum.runtime),
+      CURRICULUM_PHASE_PROMPT_END,
+    );
+  }
+
+  function curriculumProgressSnapshot() {
+    return curriculumBundle && state.curriculum?.runtime
+      ? tutorStubCurriculumPublicProjection(curriculumBundle, state.curriculum.runtime)
+      : null;
+  }
+
+  function printCurriculumProgress() {
+    const progress = curriculumProgressSnapshot();
+    if (!progress) {
+      console.log(`${C.dim}curriculum progress is available only in a curriculum session${C.reset}\n`);
+      return null;
+    }
+    console.log(`${C.brightCyan}${C.bold}course progress >${C.reset} ${progress.curriculum.title}`);
+    for (const module of progress.modules) {
+      const marker = module.id === progress.currentModule.id ? '◆' : module.status === 'mastered' ? '✓' : '◇';
+      const evidence = Object.values(module.phaseEvidenceCounts).reduce((sum, count) => sum + count, 0);
+      const lock = module.available ? '' : ` · waiting for ${module.missingPrerequisiteModuleIds.join(', ')}`;
+      console.log(
+        `  ${marker} ${module.id} · ${module.title} · ${module.status} · ${evidence} evidence turn${evidence === 1 ? '' : 's'}${lock}`,
+      );
+    }
+    console.log(
+      `${C.dim}  current phase: ${progress.currentPhase.replaceAll('_', ' ')} · ${progress.currentPhaseEvidenceCount} evidence turn${progress.currentPhaseEvidenceCount === 1 ? '' : 's'}${C.reset}`,
+    );
+    console.log(
+      `${C.dim}  /next advances attempted diagnostic/scaffold work; independent check and transfer require /next pass or /next revise${C.reset}`,
+    );
+    if (progress.completionAuthority === 'external_workplan_verification_only') {
+      console.log(`${C.dim}  dialogue progress never completes or closes the external workplan item${C.reset}`);
+    }
+    console.log('');
+    return progress;
+  }
+
+  function activateCurriculumModule(moduleId, { allowDirectEntry = false, source = '/module' } = {}) {
+    if (!curriculumBundle || !state.curriculum?.runtime) return { selected: false, reason: 'no_curriculum' };
+    const module = selectTutorStubCurriculumModule(curriculumBundle, moduleId);
+    const outcome = selectTutorStubCurriculumRuntimeModule(
+      state.curriculum.runtime,
+      curriculumBundle.curriculum,
+      module.id,
+      { allowDirectEntry },
+    );
+    if (!outcome.selected) return outcome;
+    const previousModuleId = state.curriculum.module?.id || null;
+    curriculumBundle.module = module;
+    state.curriculum.module = module;
+    state.topic = module.title;
+    refreshCurriculumPrompt();
+    appendTraceEvent(state.trace, {
+      type: 'curriculum_module_activated',
+      schema: 'machinespirits.tutor-stub.curriculum-progression.v1',
+      source,
+      previousModuleId,
+      moduleId: module.id,
+      phase: state.curriculum.runtime.currentPhase,
+      directEntry: outcome.directEntry,
+      publicTranscriptChanged: false,
+      externalCompletionInferred: false,
+    });
+    return { ...outcome, module };
+  }
+
+  function handleCurriculumModuleCommand(argument = '', { duringTurn = false } = {}) {
+    clearStatusLine();
+    const requested = String(argument || '').trim();
+    if (!requested) {
+      printCurriculumProgress();
+      console.log(`${C.dim}  choose an available module with /module <id>${C.reset}\n`);
+      return true;
+    }
+    if (duringTurn || processingTurn) {
+      console.log(
+        `${C.dim}module change not started; run /module again after the current tutor response completes${C.reset}\n`,
+      );
+      return false;
+    }
+    try {
+      const outcome = activateCurriculumModule(requested);
+      if (!outcome.selected) {
+        console.log(
+          `${C.yellow}module locked:${C.reset} complete ${outcome.missing.join(', ')} in this session, or start that module directly in a fresh session\n`,
+        );
+        return false;
+      }
+      console.log(`${C.brightGreen}${C.bold}module >${C.reset} ${outcome.module.id} — ${outcome.module.title}`);
+      console.log(
+        `${C.dim}  ${state.curriculum.runtime.currentPhase.replaceAll('_', ' ')} phase · public history retained${C.reset}\n`,
+      );
+      return true;
+    } catch (error) {
+      console.log(`${C.red}module error:${C.reset} ${error.message}\n`);
+      return false;
+    }
+  }
+
+  function handleCurriculumNextCommand(argument = '', { duringTurn = false } = {}) {
+    clearStatusLine();
+    if (duringTurn || processingTurn) {
+      console.log(`${C.dim}curriculum progression waits for the current tutor response to complete${C.reset}\n`);
+      return false;
+    }
+    const decision =
+      String(argument || '')
+        .trim()
+        .toLowerCase() || null;
+    let outcome;
+    try {
+      outcome = advanceTutorStubCurriculumRuntime(state.curriculum.runtime, {
+        decision,
+        actor: 'human_operator',
+      });
+    } catch (error) {
+      console.log(`${C.red}next error:${C.reset} ${error.message}; use /next, /next pass, or /next revise\n`);
+      return false;
+    }
+    if (!outcome.advanced) {
+      const message =
+        outcome.reason === 'evidence_required'
+          ? 'respond to the current course task before advancing'
+          : 'record an explicit decision with /next pass or /next revise';
+      console.log(`${C.yellow}next >${C.reset} ${message}\n`);
+      return false;
+    }
+    appendTraceEvent(state.trace, {
+      type: 'curriculum_phase_advanced',
+      schema: 'machinespirits.tutor-stub.curriculum-progression.v1',
+      moduleId: outcome.moduleId || state.curriculum.module.id,
+      outcome: outcome.outcome,
+      phase: outcome.phase,
+      decision,
+      decisionActor: decision ? 'human_operator' : null,
+      publicTranscriptChanged: false,
+      externalCompletionInferred: false,
+    });
+    if (outcome.outcome === 'module_mastered') {
+      const progress = curriculumProgressSnapshot();
+      const next = progress.modules.find(
+        (module) => module.id !== outcome.moduleId && module.available && module.status !== 'mastered',
+      );
+      if (next) {
+        const selected = activateCurriculumModule(next.id, { source: '/next' });
+        console.log(`${C.brightGreen}${C.bold}module mastered >${C.reset} ${outcome.moduleId}`);
+        console.log(`${C.cyan}next module >${C.reset} ${selected.module.id} — ${selected.module.title}\n`);
+      } else {
+        refreshCurriculumPrompt();
+        console.log(
+          `${C.brightGreen}${C.bold}course complete >${C.reset} all available modules have explicit transfer passes\n`,
+        );
+      }
+      return true;
+    }
+    refreshCurriculumPrompt();
+    console.log(
+      `${C.brightGreen}${C.bold}next phase >${C.reset} ${state.curriculum.runtime.currentPhase.replaceAll('_', ' ')}`,
+    );
+    if (outcome.outcome === 'revision_requested') {
+      console.log(
+        `${C.dim}  the existing public evidence is retained; the tutor returns to a bounded scaffold${C.reset}`,
+      );
+    }
+    console.log('');
     return true;
   }
 
@@ -26560,6 +26786,31 @@ async function main() {
       promise.tutorStubBlocksPrompt = true;
       return promise;
     }
+    if (command === '/module') {
+      const result = handleCurriculumModuleCommand(commandArg, { duringTurn });
+      finishSlashCommand({ reprise: false });
+      return result;
+    }
+    if (command === '/next') {
+      const result = handleCurriculumNextCommand(commandArg, { duringTurn });
+      finishSlashCommand({ reprise: false });
+      return result;
+    }
+    if (command === '/progress') {
+      clearStatusLine();
+      const progress = printCurriculumProgress();
+      appendTraceEvent(state.trace, {
+        type: 'curriculum_progress_popup',
+        schema: 'machinespirits.tutor-stub.curriculum-progression.v1',
+        moduleId: progress?.currentModule?.id || null,
+        phase: progress?.currentPhase || null,
+        duringTurn,
+        publicTranscriptChanged: false,
+        externalCompletionInferred: false,
+      });
+      finishSlashCommand({ reprise: false });
+      return true;
+    }
     if (command === '/proof') {
       const promise = handleProofDagCommand(commandArg, { duringTurn }).finally(finishSlashCommand);
       promise.tutorStubBlocksPrompt = !duringTurn;
@@ -27143,6 +27394,23 @@ async function main() {
             tutorFeedback: learnerInput.tutorFeedback,
             learnerResponseProvenance: learnerInput.provenance,
           });
+          if (state.curriculum?.runtime) {
+            recordTutorStubCurriculumEvidence(state.curriculum.runtime, {
+              text: learnerInput.combinedText,
+              turnId,
+            });
+            appendTraceEvent(state.trace, {
+              type: 'curriculum_phase_evidence_recorded',
+              schema: 'machinespirits.tutor-stub.curriculum-progression.v1',
+              moduleId: state.curriculum.runtime.currentModuleId,
+              phase: state.curriculum.runtime.currentPhase,
+              turn: tutorTurn,
+              turnId,
+              source: 'public_learner_turn',
+              publicTranscriptChanged: false,
+              externalCompletionInferred: false,
+            });
+          }
           appendTraceEvent(state.trace, {
             type: 'learner_turn_tutor_feedback_committed',
             turn: tutorTurn,

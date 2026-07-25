@@ -43,7 +43,7 @@ test('public tutor catalog is an explicit learner-safe projection', () => {
     assert.ok(catalog.labs.every((lab) => lab.launch.engine === 'tutor_stub'));
     assert.deepEqual(
       catalog.labs.filter((lab) => lab.launch.available).map((lab) => lab.id),
-      ['pure_chat', 'human_scaffold'],
+      ['pure_chat', 'human_scaffold', 'curriculum'],
     );
     assert.ok(!catalog.labs.some((lab) => ['feedback_tuning', 'automated_eval', 'research_controls'].includes(lab.id)));
 
@@ -67,6 +67,10 @@ test('public tutor catalog is an explicit learner-safe projection', () => {
     );
     assert.ok(catalog.models.some((model) => model.ref === 'codex.gpt-5.6-terra'));
     assert.ok(catalog.models.every((model) => /^[a-z0-9-]+\..+/u.test(model.ref)));
+    assert.ok(catalog.curricula.some((curriculum) => curriculum.id === 'ai_foundations_v1'));
+    assert.ok(catalog.curricula.every((curriculum) => /^sha256:[a-f0-9]{64}$/u.test(curriculum.artifactHash)));
+    assert.ok(catalog.curricula.every((curriculum) => curriculum.modules.length > 1));
+    assert.equal(catalog.curriculumWorkbench.modelCallsForLintHashPreview, 0);
 
     const json = JSON.stringify(catalog);
     for (const forbidden of [
@@ -77,6 +81,9 @@ test('public tutor catalog is an explicit learner-safe projection', () => {
       'policy_pack',
       'OPENAI_API_KEY',
       'OPENROUTER_API_KEY',
+      'misconception_signatures',
+      'verifiers',
+      'mastery_gate',
     ]) {
       assert.doesNotMatch(json, new RegExp(forbidden, 'u'));
     }
@@ -143,6 +150,8 @@ test('tutor shell keeps text, keyboard, consent, caption, and visual fallback co
   assert.match(html, /Research metadata only; the human learner remains in control/u);
   assert.match(html, /id="assistant-input"[\s\S]*id="resolve-cell-button"/u);
   assert.match(html, /id="research-summary"[\s\S]*id="research-turns"/u);
+  assert.match(html, /id="curriculum-select"[\s\S]*id="module-select"/u);
+  assert.match(html, /id="curriculum-progress"[\s\S]*id="next-phase-button"/u);
 
   assert.match(script, /new AbortController\(\)/u);
   assert.match(script, /engine: lab\.launch\?\.engine \|\| 'tutor_stub'/u);
@@ -164,6 +173,8 @@ test('tutor shell keeps text, keyboard, consent, caption, and visual fallback co
   assert.match(script, /chatApi\('\/assist'/u);
   assert.match(script, /cell\.runner !== 'adaptive'/u);
   assert.match(script, /engine: 'cell_lab'[\s\S]*mode: 'cell_lab'/u);
+  assert.match(script, /executeSessionCommand\('\/next pass'\)/u);
+  assert.match(script, /snapshot\?\.state\?\.curriculumProgress/u);
   assert.match(script, /state\.surfaceMode !== 'research' \|\| !isResearchSession\(\)/u);
   assert.match(script, /content\.textContent = safeText\(entry\.content/u);
   assert.match(script, /machinespirits\.cell-lab\.research-export\.v1/u);

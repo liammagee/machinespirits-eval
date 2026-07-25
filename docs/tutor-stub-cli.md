@@ -281,8 +281,10 @@ The factory disables terminal-only presentation effects, keeps trace writes in
 `TUTOR_STUB_TRACE_DIR`, and closes child sessions with the host. The Electron
 path resolver relocates this trace directory below `userData`. Slash commands
 remain rejected by default on the HTTP transport: several registered commands
-open terminal pickers, browsers, voice devices, or relaunch the CLI. A host may
-opt into commands only by supplying an explicit admission function; the Codex
+open terminal pickers, browsers, voice devices, or relaunch the CLI. The shared
+host admits only the structured `/module`, `/next`, and `/progress` adapters;
+all other commands remain closed unless a host supplies an explicit admission
+function. The Codex
 bridge below does this with a fail-closed allowlist and captured plain-text
 command output. Learner turns, launch-time resume, reset, and finalize already
 traverse the real tutor engine; deterministic fake executables cover that full
@@ -375,6 +377,48 @@ silently attach to the wrong sidecar. The same packets
 are available in the browser at `http://localhost:8081/human-coding-admin`
 after `npm start`. Taxonomy judgments retain the analyzer-compatible rater CSV;
 impasse judgments are stored as structured per-rater JSON sidecars.
+
+## Curriculum workbench and course runner
+
+Canonical multi-module curricula can run in both the terminal and the shared
+browser/Electron tutor studio. The studio catalogue exposes only the course
+title, artifact hash, module titles, essential questions, and public progress;
+private verifier text, misconception probes, mastery gates, learner-turn text,
+and answer material remain in the server process.
+
+Author, lint, hash, and preview a course without model spend:
+
+```bash
+npm run curriculum:build -- --brief curriculum/examples/evidence-reasoning.brief.yaml --dry-run
+npm run curriculum:build -- --brief curriculum/examples/evidence-reasoning.brief.yaml --check
+npm run curriculum:build -- --brief curriculum/examples/evidence-reasoning.brief.yaml --out curriculum/evidence-reasoning.curriculum.yaml
+```
+
+`--dry-run` validates and compiles the prerequisite DAG, worlds, and dramas in
+memory without writing or calling a model. `--check` validates an existing
+canonical course without writing. A normal deterministic build writes the
+canonical YAML plus compiled artifacts and hashed world contracts. Open
+`/tutor/`, choose **Curriculum inquiry**, then select a course and starting
+module to round-trip that artifact through the live tutor runtime.
+
+Inside a curriculum session:
+
+```text
+/module
+/module ER2
+/progress
+/next
+/next pass
+/next revise
+```
+
+Every public learner turn is retained as evidence for the active phase.
+`/next` advances diagnostic and scaffold phases only after such evidence
+exists. Independent check and transfer require the explicit operator decision
+`/next pass` or `/next revise`; the tutor never awards its own pass. A transfer
+pass marks only current-session mastery and unlocks the next prerequisite-safe
+module. It never updates longitudinal learner memory or an external workplan
+card.
 
 ## Reflecting on the workplan through the tutor
 

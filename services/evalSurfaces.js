@@ -36,6 +36,7 @@ import { createTutorStubSessionRouter } from '../routes/tutorStubSessionRoutes.j
 import { mountSubjectExplorer } from './subjectExplorer.js';
 import { createTutorStubProcessSessionHost } from './tutorStubProcessSessionFactory.js';
 import { buildTutorStubPublicCatalog } from './tutorStubCatalog.js';
+import { tutorStubCommandTransportAdmission } from './tutorStubCommandRegistry.js';
 
 // API routers, in mount order. [mountPath, router].
 const API_ROUTERS = [
@@ -75,7 +76,24 @@ export function mountEvalSurfaces(app, { root, tutorStubSessionHost, tutorStubCa
     app.use(mount, router);
   }
   const sessionHost =
-    tutorStubSessionHost === undefined ? createTutorStubProcessSessionHost({ root }) : tutorStubSessionHost;
+    tutorStubSessionHost === undefined
+      ? createTutorStubProcessSessionHost({
+          root,
+          commandAdmission(input) {
+            const admission = tutorStubCommandTransportAdmission(input, {
+              allowedEffects: ['persistentMutation'],
+            });
+            return admission.allowed
+              ? { allowed: true, commandId: admission.commandId }
+              : {
+                  allowed: false,
+                  code: 'command_transport_unavailable',
+                  message: `/${admission.commandId || 'unknown'} is not available through the browser session transport (${admission.reason})`,
+                  status: 409,
+                };
+          },
+        })
+      : tutorStubSessionHost;
   if (sessionHost) {
     app.locals.tutorStubSessionHost = sessionHost;
     const catalogProvider =

@@ -389,6 +389,7 @@
         "tests/tutorStubCompactSpeakingPrompt.test.js",
         "tests/tutorStubConcurrentTerminal.test.js",
         "tests/tutorStubContinuousRegister.test.js",
+        "tests/tutorStubCurriculumRuntime.test.js",
         "tests/tutorStubCurriculumTranslation.test.js",
         "tests/tutorStubDevelopmentSpeakerTransport.test.js",
         "tests/tutorStubDiscoursePlane.test.js",

@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -6,11 +7,12 @@ import { loadProviders } from './evalConfigLoader.js';
 import { loadWorld } from './dramaticDerivation/world.js';
 import { listTutorStubLabs } from './tutorStubLabs.js';
 import { listTutorStubTutorInstances } from './tutorStubTutorInstance.js';
+import { listTutorStubCurriculumModules, loadTutorStubCurriculum } from './curriculum/tutorStubCurriculum.js';
 
 const DEFAULT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-export const TUTOR_STUB_PUBLIC_CATALOG_SCHEMA = 'machinespirits.tutor-stub.public-catalog.v1';
-export const TUTOR_STUB_PUBLIC_CATALOG_VERSION = 1;
+export const TUTOR_STUB_PUBLIC_CATALOG_SCHEMA = 'machinespirits.tutor-stub.public-catalog.v2';
+export const TUTOR_STUB_PUBLIC_CATALOG_VERSION = 2;
 
 const WEB_LAUNCH = Object.freeze({
   pure_chat: Object.freeze({ engine: 'tutor_stub', mode: 'passthrough', available: true, requiresWorld: false }),
@@ -40,12 +42,39 @@ const WEB_LAUNCH = Object.freeze({
   curriculum: Object.freeze({
     engine: 'tutor_stub',
     mode: 'curriculum',
-    available: false,
+    available: true,
     requiresWorld: false,
-    unavailableReason:
-      'Choose a curriculum and module in the terminal until browser curriculum controls are available.',
   }),
 });
+
+function sha256(text) {
+  return `sha256:${createHash('sha256').update(text).digest('hex')}`;
+}
+
+function listPublicCurricula(root) {
+  const directory = path.join(root, 'curriculum');
+  return fs
+    .readdirSync(directory)
+    .filter((file) => file.endsWith('.curriculum.yaml'))
+    .sort((left, right) => left.localeCompare(right))
+    .map((file) => {
+      const ref = path.posix.join('curriculum', file);
+      const bundle = loadTutorStubCurriculum(ref, { root });
+      return {
+        ref,
+        id: bundle.curriculum.id,
+        title: bundle.curriculum.title,
+        version: bundle.curriculum.version || null,
+        artifactHash: sha256(fs.readFileSync(path.join(directory, file))),
+        modules: listTutorStubCurriculumModules(bundle).map((module) => ({
+          id: module.id,
+          sequence: module.sequence,
+          title: module.title,
+          essentialQuestion: module.essentialQuestion,
+        })),
+      };
+    });
+}
 
 function providerLabel(providerId) {
   return String(providerId)
@@ -117,6 +146,7 @@ export function buildTutorStubPublicCatalog({ root = DEFAULT_ROOT } = {}) {
   const worlds = listProductionWorlds(root);
   const tutors = listPublicTutorInstances(root);
   const models = listPublicModelAliases();
+  const curricula = listPublicCurricula(root);
   const defaultModel = models.some((model) => model.ref === 'codex.gpt-5.6-terra')
     ? 'codex.gpt-5.6-terra'
     : models[0]?.ref || null;
@@ -130,11 +160,21 @@ export function buildTutorStubPublicCatalog({ root = DEFAULT_ROOT } = {}) {
       world: worlds[0]?.id || 'none',
       tutor: tutors[0]?.ref || null,
       model: defaultModel,
+      curriculum: curricula[0]?.ref || null,
+      module: curricula[0]?.modules[0]?.id || null,
     },
     labs,
     worlds,
     tutors,
     models,
+    curricula,
+    curriculumWorkbench: {
+      schema: 'machinespirits.tutor-stub.curriculum-workbench.v1',
+      authorCommand: 'npm run curriculum:build',
+      lintCommand: 'npm run curriculum:build -- --brief <path> --check',
+      previewCommand: 'npm run curriculum:build -- --brief <path> --dry-run',
+      modelCallsForLintHashPreview: 0,
+    },
   };
 }
 

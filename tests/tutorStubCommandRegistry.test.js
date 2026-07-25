@@ -94,6 +94,9 @@ const NORMAL_COMMANDS = [
   '/profile',
   '/scenario',
   '/board',
+  '/module',
+  '/next',
+  '/progress',
   '/use',
   '/accept',
   '/regen',
@@ -176,6 +179,9 @@ const SCENE_RETURN_COMMANDS = [
   '/details',
   '/proof',
   '/metrics',
+  '/module',
+  '/next',
+  '/progress',
 ];
 
 const NORMAL_SETTINGS_COMPLETIONS = [
@@ -240,14 +246,14 @@ test('director guidance is a bounded private control with turn-aware and concurr
   assert.equal(merged.history.at(-1).action, 'clear');
 });
 
-test('v8 command registry freezes the slash-token and execution-effect surfaces', () => {
+test('v9 command registry freezes the slash-token and execution-effect surfaces', () => {
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 8);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 45);
-  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 62);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 9);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 48);
+  assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 65);
   assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 23);
-  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 44);
+  assert.equal(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS.length, 47);
   assert.deepEqual(TUTOR_STUB_NORMAL_SLASH_COMMANDS, NORMAL_COMMANDS);
   assert.deepEqual(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS, PASSTHROUGH_COMMANDS);
   assert.deepEqual(TUTOR_STUB_SCENE_RETURN_SLASH_COMMANDS, SCENE_RETURN_COMMANDS);
@@ -278,8 +284,8 @@ test('v8 command registry freezes the slash-token and execution-effect surfaces'
     handlers.add(definition.handler);
     traceEvents.add(definition.traceEvent);
   }
-  assert.equal(handlers.size, 45);
-  assert.equal(traceEvents.size, 45);
+  assert.equal(handlers.size, 48);
+  assert.equal(traceEvents.size, 48);
   assert.equal(Object.isFrozen(TUTOR_STUB_COMMAND_REGISTRY.helpGroups), true);
   assert.equal(assertTutorStubCommandRegistryInvariants(), true);
 });
@@ -303,6 +309,9 @@ test('canonical ids and aliases resolve uniquely', () => {
   assert.equal(tutorStubCanonicalCommandToken('/html no-open'), '/transcript');
   assert.equal(resolveTutorStubCommandId('visualization'), 'visualization');
   assert.equal(resolveTutorStubCommandId('/board'), 'board');
+  assert.equal(resolveTutorStubCommandId('/module'), 'module');
+  assert.equal(resolveTutorStubCommandId('/next'), 'next');
+  assert.equal(resolveTutorStubCommandId('/progress'), 'progress');
   assert.equal(resolveTutorStubCommandId('/committee'), 'committee');
   assert.equal(resolveTutorStubCommandId('/tutor'), 'character');
   assert.equal(resolveTutorStubCommandId('/learner'), 'character');
@@ -315,6 +324,7 @@ test('canonical ids and aliases resolve uniquely', () => {
     '/committee off',
     '/committee status',
   ]);
+  assert.deepEqual(tutorStubStaticCommandCompletions('/next'), ['/next pass', '/next revise']);
   assert.deepEqual(tutorStubStaticCommandCompletions('/light'), ['/light on', '/light off', '/light status']);
   assert.deepEqual(tutorStubStaticCommandCompletions('/proof'), [
     '/proof check',
@@ -448,6 +458,9 @@ test('transport metadata classifies picker, browser, voice, and relaunch side ef
   assert.deepEqual(tutorStubCommandTransportMetadata('/voice').effects, ['browser_open', 'voice_device']);
   assert.deepEqual(tutorStubCommandTransportMetadata('/scenario').effects, ['terminal_picker', 'process_relaunch']);
   assert.deepEqual(tutorStubCommandTransportMetadata('/board').effects, ['terminal_picker', 'process_relaunch']);
+  assert.equal(tutorStubCommandTransportMetadata('/module').processHttp, 'adapter_available');
+  assert.equal(tutorStubCommandTransportMetadata('/next').processHttp, 'adapter_available');
+  assert.equal(tutorStubCommandTransportMetadata('/progress').processHttp, 'adapter_available');
   assert.deepEqual(tutorStubCommandTransportMetadata('/proof').effects, []);
   assert.deepEqual(tutorStubCommandTransportMetadata('/lab').effects, ['relaunch_instruction']);
   assert.equal(tutorStubCommandTransportMetadata('/status').processHttp, 'blocked_pending_adapter');
@@ -528,6 +541,8 @@ test('execution effects conservatively classify every command before transport e
     'profile',
     'scenario',
     'board',
+    'module',
+    'next',
     'use',
     'regen',
     'reset',
@@ -743,6 +758,9 @@ test('resolved capabilities filter commands, completions, and generated help wit
     responseChecks: true,
   });
   assert.equal(tutorStubCommandAvailable('/translate', { capabilities: curriculum }), true);
+  assert.equal(tutorStubCommandAvailable('/module', { capabilities: curriculum }), true);
+  assert.equal(tutorStubCommandAvailable('/next', { capabilities: curriculum }), true);
+  assert.equal(tutorStubCommandAvailable('/progress', { capabilities: curriculum }), true);
   assert.ok(tutorStubCommandTokens({ capabilities: curriculum }).includes('/translate'));
   assert.ok(
     tutorStubCommandHelpRows({ capabilities: curriculum }).some((row) => row.commands.includes('/translate [level]')),
