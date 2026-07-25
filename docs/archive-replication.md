@@ -1,5 +1,10 @@
 # Archive replication — option 1 (Syncthing + DB snapshots)
 
+This document governs byte replication and recovery. Classification, consent,
+holdout, retention, and fine-tuning reuse are governed separately by
+[Transcript archive and training-data management](transcript-archive-and-training-data-management.md).
+Replication never implies permission to train on an asset.
+
 The canonical data archive `~/.machinespirits-data` (the evaluations DB plus ~7 GB of
 immutable dialogue logs) is machine-local by decision (A) of the workplan item
 `consolidate-logs-db-private-archive`. This note is how it is replicated across machines.

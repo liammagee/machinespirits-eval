@@ -76,6 +76,27 @@ function tuningSummary(summary) {
   </article>`;
 }
 
+function trainingReuseSummary(summary) {
+  const reuse = summary.trainingReuse;
+  if (!reuse) return '';
+  const label =
+    reuse.status === 'training_candidate'
+      ? 'Training candidate'
+      : reuse.status === 'do_not_train'
+        ? 'Do not train'
+        : 'Not applicable';
+  const explanation =
+    reuse.status === 'training_candidate'
+      ? 'This owner-operated session may be reviewed for a future governed corpus. Candidate status is not training approval.'
+      : reuse.status === 'do_not_train'
+        ? 'This source and any derived descendants must remain outside training corpora.'
+        : 'No human or mixed-authorship input was expected in this session.';
+  return `<article class="card wide ms-panel" data-training-reuse="${escapeHtml(reuse.status || 'unknown')}"><h2>Training reuse</h2>
+    <p><b>${escapeHtml(label)}.</b> ${escapeHtml(explanation)}</p>
+    <p>Requested ${escapeHtml(reuse.requested || 'off')} · ${escapeHtml(String(reuse.humanSubjectClass || 'unknown').replaceAll('_', ' '))} · source ${escapeHtml(String(reuse.source || 'unknown').replaceAll('_', ' '))}.</p>
+  </article>`;
+}
+
 export function renderTutorStubLearningSummaryHtml(summary = {}) {
   const title = summary.world?.title || summary.topic || 'Learning summary';
   const question = summary.world?.question || summary.question || '';
@@ -184,6 +205,7 @@ ${renderMachineSpiritsHouseBackdrop()}
   <article class="card wide ms-panel"><h2>Language and clarification</h2>${vocabulary(summary)}</article>
   <article class="card wide ms-panel"><h2>Still open</h2>${list(summary.openQuestions, 'Nothing remains open in the recorded inquiry.')}</article>
   <article class="card wide ms-panel"><h2>Learner response authorship</h2><p>${escapeHtml(learnerProvenance.human || 0)} human-authored · ${escapeHtml(learnerProvenance.ai || 0)} AI-authored · ${escapeHtml(learnerProvenance.hybrid || 0)} human-edited AI · ${escapeHtml(learnerProvenance.unknown || 0)} legacy or unknown.</p></article>
+  ${trainingReuseSummary(summary)}
   ${tuningSummary(summary)}
 </section>
 <section class="journey-section"><h2>How the reasoning developed</h2>${journey(summary)}</section>

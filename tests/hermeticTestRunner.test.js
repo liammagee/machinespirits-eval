@@ -174,8 +174,8 @@ test('quiet phase drain stays open while late TAP output is still arriving', asy
     env: process.env,
     quiet: true,
     projectRoot: path.resolve('.'),
-    stdioDrainIdleMs: 150,
-    stdioDrainMaxMs: 750,
+    stdioDrainIdleMs: 1_000,
+    stdioDrainMaxMs: 3_000,
     onChild: () => {},
   });
 

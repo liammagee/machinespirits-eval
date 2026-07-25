@@ -29,6 +29,7 @@ function sampleSettings(overrides = {}) {
     motion: 'full',
     committeeEnabled: true,
     lightAdaptationEnabled: true,
+    trainingReuseEnabled: true,
     engagementStanceTemperature: 0.4,
     dagFactDropoutRate: 0.15,
     releaseSpeed: 1.4,
@@ -111,14 +112,16 @@ test('invalid remembered settings fail closed without throwing from the reader',
   }
 });
 
-test('legacy settings default the interactive learned committee and light adaptation on', () => {
+test('legacy settings default the interactive learned committee, light adaptation, and training reuse on', () => {
   const legacy = sampleSettings();
   delete legacy.committeeEnabled;
   delete legacy.lightAdaptationEnabled;
+  delete legacy.trainingReuseEnabled;
   const legacyPath = path.join(os.tmpdir(), `tutor-stub-settings-${process.pid}.json`);
   const normalized = writeTutorStubLastSettings(legacyPath, legacy);
   assert.equal(normalized.committeeEnabled, true);
   assert.equal(normalized.lightAdaptationEnabled, true);
+  assert.equal(normalized.trainingReuseEnabled, true);
   assert.throws(
     () =>
       writeTutorStubLastSettings(
@@ -135,9 +138,20 @@ test('legacy settings default the interactive learned committee and light adapta
       ),
     /light adaptation preference must be true or false/u,
   );
+  assert.throws(
+    () =>
+      writeTutorStubLastSettings(
+        path.join(os.tmpdir(), `tutor-stub-settings-invalid-training-reuse-${process.pid}.json`),
+        sampleSettings({ trainingReuseEnabled: 'yes' }),
+      ),
+    /training reuse preference must be true or false/u,
+  );
   fs.rmSync(legacyPath, { force: true });
   fs.rmSync(path.join(os.tmpdir(), `tutor-stub-settings-invalid-${process.pid}.json`), { force: true });
   fs.rmSync(path.join(os.tmpdir(), `tutor-stub-settings-invalid-light-${process.pid}.json`), { force: true });
+  fs.rmSync(path.join(os.tmpdir(), `tutor-stub-settings-invalid-training-reuse-${process.pid}.json`), {
+    force: true,
+  });
 });
 
 test('human chat defaults to the learned committee without changing automated experiment defaults', () => {
@@ -167,6 +181,40 @@ test('human chat defaults to the learned committee without changing automated ex
   }
 });
 
+test('training reuse defaults on for the owner, opts out explicitly, and fails closed for external users', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-training-reuse-default-'));
+  const filePath = path.join(directory, 'last-settings.json');
+  try {
+    const owner = tutorStubDryRun(filePath, ['--no-remember-settings']);
+    assert.equal(owner.trainingReuse.status, 'training_candidate');
+    assert.equal(owner.trainingReuse.source, 'repository_default');
+    assert.equal(owner.sessionRecipe.config.options['training-reuse'], 'on');
+    assert.equal(owner.sessionRecipe.config.options['human-subject-class'], 'owner_operator');
+
+    const optedOut = tutorStubDryRun(filePath, ['--no-remember-settings', '--no-training-reuse']);
+    assert.equal(optedOut.trainingReuse.status, 'do_not_train');
+    assert.equal(optedOut.trainingReuse.source, 'cli_opt_out');
+    assert.equal(optedOut.sessionRecipe.config.options['training-reuse'], 'off');
+
+    const external = tutorStubDryRun(filePath, [
+      '--no-remember-settings',
+      '--human-subject-class',
+      'external_user',
+      '--training-reuse',
+      'on',
+    ]);
+    assert.equal(external.trainingReuse.requested, 'on');
+    assert.equal(external.trainingReuse.effective, 'off');
+    assert.equal(external.trainingReuse.status, 'do_not_train');
+    assert.equal(external.trainingReuse.failClosed, true);
+
+    const automated = tutorStubDryRun(filePath, ['--auto-learner']);
+    assert.equal(automated.trainingReuse.status, 'not_applicable');
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test('interactive defaults restore the last settings while explicit launch flags win', () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-default-settings-'));
   const filePath = path.join(directory, 'last-settings.json');
@@ -190,6 +238,7 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(restored.presentation.motion, 'full');
     assert.equal(restored.pointOfAction.arm, 'committee');
     assert.equal(restored.lightAdaptation.enabled, true);
+    assert.equal(restored.trainingReuse.status, 'training_candidate');
     assert.equal(restored.pointOfAction.committee.fallbackPolicy, 'v2');
     assert.equal(restored.opening.realization, 'remembered_scenario_instant_opening');
     assert.equal(restored.opening.speakingModelRef, null);
@@ -214,6 +263,7 @@ test('interactive defaults restore the last settings while explicit launch flags
       'committee_mode',
       'engagement_stance_temperature',
       'light_adaptation',
+      'training_reuse',
       'dag_fact_dropout',
       'clue_release_speed',
       'register_policy',
@@ -236,6 +286,7 @@ test('interactive defaults restore the last settings while explicit launch flags
       '--register-temperature',
       '1.2',
       '--no-light-adaptation',
+      '--no-training-reuse',
       '--dag-fact-dropout',
       '0.3',
       '--release-speed',
@@ -257,6 +308,7 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.equal(explicit.world.id, 'world_005_marrick');
     assert.equal(explicit.registerSelection.temperature, 1.2);
     assert.equal(explicit.lightAdaptation.enabled, false);
+    assert.equal(explicit.trainingReuse.status, 'do_not_train');
     assert.equal(explicit.dagFactDropout.rate, 0.3);
     assert.equal(explicit.releasePacing.baseSpeed, 1.2);
     assert.equal(explicit.registerSelection.policy, 'field');
@@ -278,6 +330,7 @@ test('interactive defaults restore the last settings while explicit launch flags
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('terminal_theme'));
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('terminal_motion'));
     assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('light_adaptation'));
+    assert.ok(explicit.rememberedSettings.skippedExplicitFields.includes('training_reuse'));
 
     const committeeOff = tutorStubDryRun(filePath, ['--no-committee']);
     assert.equal(committeeOff.pointOfAction.enabled, false);
@@ -402,7 +455,7 @@ test('live settings changes are written for the next interactive session', () =>
         cwd: ROOT,
         encoding: 'utf8',
         input:
-          '/settings model codex.gpt-5.6-luna\n/voice model gpt-realtime-2.1\n/voice speaker cedar\n/theme ember\n/motion full\n/settings temp 0.55\n/settings dropout 0.2\n/settings light off\n/settings release-speed 1.6\n/settings policy add state\n/settings policy threshold 0.75\n/quit\n',
+          '/settings model codex.gpt-5.6-luna\n/voice model gpt-realtime-2.1\n/voice speaker cedar\n/theme ember\n/motion full\n/settings temp 0.55\n/settings dropout 0.2\n/settings light off\n/settings training-reuse off\n/settings release-speed 1.6\n/settings policy add state\n/settings policy threshold 0.75\n/quit\n',
         env: {
           ...process.env,
           TUTOR_STUB_REMEMBER_SETTINGS: '1',
@@ -412,6 +465,7 @@ test('live settings changes are written for the next interactive session', () =>
     );
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /light adaptation >[^\n]*off/u);
+    assert.match(result.stdout, /training reuse >[^\n]*do not train/u);
     const loaded = readTutorStubLastSettings(filePath);
     assert.equal(loaded.status, 'loaded');
     assert.deepEqual(
@@ -427,6 +481,7 @@ test('live settings changes are written for the next interactive session', () =>
         motion: loaded.settings.motion,
         committeeEnabled: loaded.settings.committeeEnabled,
         lightAdaptationEnabled: loaded.settings.lightAdaptationEnabled,
+        trainingReuseEnabled: loaded.settings.trainingReuseEnabled,
         engagementStanceTemperature: loaded.settings.engagementStanceTemperature,
         dagFactDropoutRate: loaded.settings.dagFactDropoutRate,
         releaseSpeed: loaded.settings.releaseSpeed,
@@ -437,12 +492,65 @@ test('live settings changes are written for the next interactive session', () =>
       sampleSettings({
         engagementStanceTemperature: 0.55,
         lightAdaptationEnabled: false,
+        trainingReuseEnabled: false,
         dagFactDropoutRate: 0.2,
         releaseSpeed: 1.6,
         registerPolicy: 'dynamic',
         registerOverlayThreshold: 0.75,
       }),
     );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('live training-reuse opt-out is durable in trace start, change, and closeout provenance', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-training-reuse-trace-'));
+  const settingsFile = path.join(directory, 'last-settings.json');
+  const traceDir = path.join(directory, 'traces');
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--no-opening',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--trace-dir',
+        traceDir,
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        input: '/settings training-reuse off\n/settings training-reuse status\n/quit\n',
+        env: {
+          ...process.env,
+          TUTOR_STUB_REMEMBER_SETTINGS: '1',
+          TUTOR_STUB_SETTINGS_FILE: settingsFile,
+          TUTOR_STUB_SUMMARY_OPEN: '0',
+        },
+      },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /training reuse > do not train/u);
+    const traceFile = fs
+      .readdirSync(traceDir)
+      .filter((name) => name.endsWith('.jsonl'))
+      .map((name) => path.join(traceDir, name))[0];
+    const events = fs
+      .readFileSync(traceFile, 'utf8')
+      .trim()
+      .split(/\r?\n/u)
+      .map((line) => JSON.parse(line));
+    const start = events.find((event) => event.type === 'run_start');
+    const changed = events.find((event) => event.type === 'training_reuse_changed');
+    const end = events.find((event) => event.type === 'run_end');
+    assert.equal(start.metadata.trainingReuse.status, 'training_candidate');
+    assert.equal(changed.trainingReuse.status, 'do_not_train');
+    assert.equal(changed.publicTranscriptChanged, false);
+    assert.equal(end.trainingReuse.status, 'do_not_train');
+    assert.equal(readTutorStubLastSettings(settingsFile).settings.trainingReuseEnabled, false);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

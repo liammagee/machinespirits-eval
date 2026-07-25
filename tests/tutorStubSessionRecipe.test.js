@@ -105,6 +105,8 @@ test('recipe captures semantic committee, pressure, light-adaptation, and evalua
     'pressure-turns': '3,6',
     'light-adaptation': true,
     'light-adaptation-threshold': '3',
+    'training-reuse': 'off',
+    'human-subject-class': 'owner_operator',
     'eval-repeat': '4',
     'eval-job-id': 'job-17',
     'model-call-budget': '12',
@@ -121,6 +123,19 @@ test('recipe captures semantic committee, pressure, light-adaptation, and evalua
   assert.deepEqual(
     report.drift.map((entry) => entry.axis),
     ['option.pressure-turns'],
+  );
+});
+
+test('training-reuse opt-out is recipe provenance but never a behavioral drift blocker', () => {
+  const source = recipe({ args: { 'training-reuse': 'on', 'human-subject-class': 'owner_operator' } });
+  const optedOut = recipe({ args: { 'training-reuse': 'off', 'human-subject-class': 'owner_operator' } });
+  const reclassified = recipe({ args: { 'training-reuse': 'off', 'human-subject-class': 'external_user' } });
+
+  assert.notEqual(source.configHash, optedOut.configHash);
+  assert.equal(compareTutorStubResumeRecipe(source, optedOut).ok, true);
+  assert.deepEqual(
+    compareTutorStubResumeRecipe(source, reclassified).drift.map((entry) => entry.axis),
+    ['option.human-subject-class'],
   );
 });
 
@@ -172,6 +187,38 @@ test('explicit resume selectors beat mtime ordering and preserve trace input rea
   assert.equal(resolveTutorStubResumeSource('run-old', { traceDir: tmp }).runId, 'run-old');
   assert.equal(resolveTutorStubResumeSource(oldFile, { traceDir: tmp }).turns[0].learner, 'explicit');
   assert.equal(fs.readFileSync(oldFile, 'utf8'), before);
+});
+
+test('resume recipes inherit the final live training-reuse decision without rewriting the trace', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-training-reuse-resume-'));
+  const filePath = path.join(tmp, 'run.jsonl');
+  const sourceRecipe = recipe({
+    args: { 'training-reuse': 'on', 'human-subject-class': 'owner_operator' },
+  });
+  fs.writeFileSync(
+    filePath,
+    [
+      JSON.stringify({ type: 'run_start', runId: 'reuse-run', metadata: { sessionRecipe: sourceRecipe } }),
+      JSON.stringify({
+        type: 'training_reuse_changed',
+        runId: 'reuse-run',
+        trainingReuse: {
+          requested: 'off',
+          status: 'do_not_train',
+          declaredHumanSubjectClass: 'owner_operator',
+        },
+      }),
+      JSON.stringify({ type: 'turn_complete', runId: 'reuse-run', turnRecord: { turn: 1, learner: 'L', tutor: 'T' } }),
+      '',
+    ].join('\n'),
+  );
+  const before = fs.readFileSync(filePath, 'utf8');
+  const source = normalizeTutorStubResumeTrace(filePath);
+
+  assert.equal(source.recipe.config.options['training-reuse'], 'off');
+  assert.equal(source.recipe.config.options['human-subject-class'], 'owner_operator');
+  assert.notEqual(source.recipe.configHash, sourceRecipe.configHash);
+  assert.equal(fs.readFileSync(filePath, 'utf8'), before);
 });
 
 test('resume normalization applies traced tutor-character restatements without rewriting the source', () => {
