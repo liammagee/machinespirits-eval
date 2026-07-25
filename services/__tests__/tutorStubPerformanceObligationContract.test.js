@@ -162,6 +162,41 @@ test('an irony tactic remains usable before any evidence is public by falling ba
   );
 });
 
+test('an evidence tactic falls back to learner-grounded action when a curriculum turn has no world evidence ledger', () => {
+  const contract = compileTutorStubPerformanceObligationContract({
+    responseConfiguration: counterpressureConfiguration({
+      engagement_stance: 'precise',
+      actorial_part: 'examiner',
+      actorial_part_label: 'careful examiner',
+      actorial_performance: {
+        id: 'evidentiary_boundary',
+        label: 'evidentiary boundary',
+        contract: 'State the exact support and its limit.',
+      },
+    }),
+    publicWorld: { visibility: 'public' },
+    publicTurn: {
+      visibility: 'public',
+      learner_move: 'I would test a seeded function and distinguish repeatability from representativeness.',
+      pressure_target: null,
+      contrary_evidence: [],
+      public_evidence: [],
+      due_evidence: [],
+    },
+  });
+
+  assert.equal(contract.complete, true);
+  assert.equal(contract.tactic_applicability.applicable, false);
+  assert.equal(contract.tactic_applicability.reason, 'missing_public_evidence');
+  assert.equal(contract.selection.actorial_part, 'examiner');
+  assert.equal(contract.selection.actorial_performance.id, 'unadorned_report');
+  assert.equal(contract.selection.speaking_transition.retained_actorial_part, 'examiner');
+  assert.deepEqual(
+    contract.obligations.map((entry) => entry.id),
+    ['visible_action', 'learner_handoff'],
+  );
+});
+
 test('prior tutor prose and merely due evidence cannot manufacture a counterpressure pair', () => {
   const contract = compileTutorStubPerformanceObligationContract({
     responseConfiguration: counterpressureConfiguration(),

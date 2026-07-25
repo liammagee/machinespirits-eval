@@ -207,6 +207,12 @@ export function compileTutorStubPerformanceObligationContract({
             : 'counterpressure_inapplicable_before_public_evidence',
           { hasPublicEvidence },
         )
+      : EVIDENCE_TACTICS.has(requestedTactic) && !hasPublicEvidence
+        ? counterpressureFallbackConfiguration(
+            requestedConfiguration,
+            'evidence_tactic_inapplicable_before_public_evidence',
+            { hasPublicEvidence: false },
+          )
       : requestedConfiguration;
   const tactic = configuration.actorial_performance.id || 'unadorned_report';
   const terminal = configuration.action_family === 'close_inquiry' || configuration.actorial_part === 'foreperson';
@@ -327,9 +333,17 @@ export function compileTutorStubPerformanceObligationContract({
     tactic_applicability: {
       requested_tactic: requestedTactic,
       applied_tactic: tactic,
-      applicable: !PRESSURE_TACTICS.has(requestedTactic) || Boolean(pressurePair),
+      applicable: PRESSURE_TACTICS.has(requestedTactic)
+        ? Boolean(pressurePair)
+        : EVIDENCE_TACTICS.has(requestedTactic)
+          ? hasPublicEvidence
+          : true,
       reason:
-        PRESSURE_TACTICS.has(requestedTactic) && !pressurePair ? 'missing_exact_public_counterpressure_pair' : null,
+        PRESSURE_TACTICS.has(requestedTactic) && !pressurePair
+          ? 'missing_exact_public_counterpressure_pair'
+          : EVIDENCE_TACTICS.has(requestedTactic) && !hasPublicEvidence
+            ? 'missing_public_evidence'
+            : null,
     },
     pressure_pair: pressurePair,
     delivery_configuration: configuration,

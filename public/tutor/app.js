@@ -31,6 +31,10 @@ const elements = {
   lab: $('#lab-select'),
   labHelp: $('#lab-help'),
   world: $('#world-select'),
+  curriculumField: $('#curriculum-field'),
+  curriculum: $('#curriculum-select'),
+  moduleField: $('#module-field'),
+  module: $('#module-select'),
   tutor: $('#tutor-select'),
   model: $('#model-select'),
   resume: $('#resume-input'),
@@ -60,6 +64,13 @@ const elements = {
   sessionTitle: $('#session-title'),
   sessionKicker: $('#session-kicker'),
   sessionMeta: $('#session-meta'),
+  curriculumProgress: $('#curriculum-progress'),
+  curriculumProgressSummary: $('#curriculum-progress-summary'),
+  activeModule: $('#active-module-select'),
+  showProgress: $('#show-progress-button'),
+  nextPhase: $('#next-phase-button'),
+  passPhase: $('#pass-phase-button'),
+  revisePhase: $('#revise-phase-button'),
   transcript: $('#transcript'),
   messageForm: $('#message-form'),
   message: $('#message-input'),
@@ -215,6 +226,7 @@ function fallbackCatalog() {
     worlds: [{ id: 'none', title: 'Open topic (no authored world)' }],
     tutors: [{ id: 'dramatic-detective', ref: 'dramatic-detective@v1', title: 'Dramatic detective' }],
     models: [{ ref: 'codex.gpt-5.6-terra', label: 'Codex · GPT-5.6 Terra' }],
+    curricula: [],
   };
 }
 
@@ -262,6 +274,17 @@ function renderCatalog(catalog) {
     elements.world.value = defaultWorld;
   }
 
+  replaceOptions(elements.curriculum);
+  for (const curriculum of catalog.curricula || []) {
+    option(elements.curriculum, curriculum.ref, `${curriculum.title} · ${curriculum.id}`, {
+      curriculumId: curriculum.id,
+    });
+  }
+  if (catalog.defaults?.curriculum && [...elements.curriculum.options].some((row) => row.value === catalog.defaults.curriculum)) {
+    elements.curriculum.value = catalog.defaults.curriculum;
+  }
+  updateCurriculumModules(catalog.defaults?.module);
+
   replaceOptions(elements.tutor);
   for (const tutor of catalog.tutors || []) option(elements.tutor, tutor.ref || tutor.id, tutor.title || tutor.id);
   if (!elements.tutor.options.length) option(elements.tutor, 'dramatic-detective@v1', 'Dramatic detective');
@@ -277,6 +300,16 @@ function renderCatalog(catalog) {
   }
   elements.start.disabled = ![...elements.lab.options].some((row) => !row.disabled);
   updateLabHelp();
+}
+
+function updateCurriculumModules(preferred = null) {
+  const curriculum = (state.catalog?.curricula || []).find((entry) => entry.ref === elements.curriculum.value);
+  replaceOptions(elements.module);
+  for (const module of curriculum?.modules || []) {
+    option(elements.module, module.id, `${module.id} · ${module.title}`);
+  }
+  const selected = preferred || curriculum?.modules?.[0]?.id;
+  if (selected && [...elements.module.options].some((row) => row.value === selected)) elements.module.value = selected;
 }
 
 function humanize(value) {
@@ -539,6 +572,11 @@ function updateLabHelp() {
   const maturity = safeText(lab.maturity || lab.maturityTier, 'versioned');
   const cost = safeText(lab.costClass, 'declared cost');
   const launch = lab.launch || {};
+  const curriculumMode = launch.mode === 'curriculum';
+  elements.curriculumField.hidden = !curriculumMode;
+  elements.moduleField.hidden = !curriculumMode;
+  elements.curriculum.required = curriculumMode;
+  elements.module.required = curriculumMode;
   const none = [...elements.world.options].find((row) => row.value === 'none');
   if (none) none.disabled = Boolean(launch.requiresWorld);
   elements.world.required = Boolean(launch.requiresWorld);
@@ -717,6 +755,31 @@ function renderMessages(messages) {
   }
 }
 
+function renderCurriculumProgress(progress) {
+  elements.curriculumProgress.hidden = !progress;
+  if (!progress) return;
+  const current = progress.currentModule || {};
+  const phase = safeText(progress.currentPhase, 'diagnostic').replaceAll('_', ' ');
+  elements.curriculumProgressSummary.textContent = `${current.id || 'module'} · ${current.title || ''} · ${phase} · ${progress.currentPhaseEvidenceCount || 0} evidence turn${progress.currentPhaseEvidenceCount === 1 ? '' : 's'}`;
+  replaceOptions(elements.activeModule);
+  for (const module of progress.modules || []) {
+    const row = option(
+      elements.activeModule,
+      module.id,
+      `${module.status === 'mastered' ? '✓ ' : ''}${module.id} · ${module.title}`,
+    );
+    row.disabled = !module.available;
+  }
+  if ([...elements.activeModule.options].some((row) => row.value === current.id)) {
+    elements.activeModule.value = current.id;
+  }
+  const evidenceReady = Number(progress.currentPhaseEvidenceCount || 0) > 0;
+  const explicitDecision = ['independent_check', 'transfer'].includes(progress.currentPhase);
+  elements.nextPhase.disabled = !evidenceReady || explicitDecision;
+  elements.passPhase.disabled = !evidenceReady || !explicitDecision;
+  elements.revisePhase.disabled = !evidenceReady || !explicitDecision;
+}
+
 function updateSession(snapshot, { replaceTranscript = false } = {}) {
   state.session = snapshot;
   const id = sessionId(snapshot);
@@ -729,6 +792,7 @@ function updateSession(snapshot, { replaceTranscript = false } = {}) {
   const mode = snapshot?.capabilitySnapshot?.mode || snapshot?.state?.mode || 'tutor';
   const revision = Number.isFinite(snapshot?.revision) ? `revision ${snapshot.revision}` : 'versioned runtime';
   elements.sessionMeta.textContent = `${id} · ${mode} · ${revision}`;
+  renderCurriculumProgress(snapshot?.state?.curriculumProgress || null);
   const messages = existingMessages(snapshot);
   if (replaceTranscript || (messages.length && messages.length !== state.publicMessages.length))
     renderMessages(messages);
@@ -802,6 +866,11 @@ async function startSession(event) {
       tutor: elements.tutor.value,
       world: elements.world.value || 'none',
     };
+    if (mode === 'curriculum') {
+      body.curriculum = elements.curriculum.value;
+      body.module = elements.module.value;
+      body.world = 'none';
+    }
     if (elements.resume.value.trim()) body.resume = elements.resume.value.trim();
   }
   try {
@@ -840,11 +909,49 @@ async function canonicalSession(payload, id) {
   return latest.session;
 }
 
+async function executeSessionCommand(input) {
+  const id = sessionId();
+  if (!id || state.request) return false;
+  const controller = new AbortController();
+  state.request = controller;
+  elements.message.disabled = true;
+  elements.send.disabled = true;
+  setStatus(`Running ${input.split(/\s+/u)[0]}…`);
+  try {
+    const payload = await api(`/sessions/${encodeURIComponent(id)}/steps`, {
+      method: 'POST',
+      signal: controller.signal,
+      body: JSON.stringify({ input, kind: 'command', context: { source: 'tutor_web' } }),
+    });
+    updateSession(await canonicalSession(payload, id), { replaceTranscript: true });
+    const output = safeText(payload?.result?.command?.output).trim();
+    if (output) addMessage('system', output, { record: false });
+    setStatus(`${input.split(/\s+/u)[0]} complete.`);
+    return true;
+  } catch (error) {
+    addMessage('system', `Command failed: ${error.message}`, { record: false });
+    setStatus(`Command failed: ${error.message}`, 'error');
+    return false;
+  } finally {
+    if (state.request === controller) state.request = null;
+    if (sessionId() === id) {
+      elements.message.disabled = false;
+      elements.send.disabled = false;
+      elements.message.focus();
+    }
+  }
+}
+
 async function sendMessage(event) {
   event.preventDefault();
   const input = elements.message.value.trim();
   const id = sessionId();
   if (!input || !id || state.request) return;
+  if (input.startsWith('/')) {
+    elements.message.value = '';
+    await executeSessionCommand(input);
+    return;
+  }
   // This row is deliberately visual-only. The server's public projection is
   // the export authority, and replaces the transcript when the step commits.
   addMessage('learner', input, { record: false });
@@ -1150,6 +1257,17 @@ elements.message.addEventListener('keydown', (event) => {
 });
 elements.refresh.addEventListener('click', refreshAllCatalogs);
 elements.lab.addEventListener('change', updateLabHelp);
+elements.curriculum.addEventListener('change', () => updateCurriculumModules());
+elements.activeModule.addEventListener('change', () => {
+  const current = state.session?.state?.curriculumProgress?.currentModule?.id;
+  if (elements.activeModule.value && elements.activeModule.value !== current) {
+    void executeSessionCommand(`/module ${elements.activeModule.value}`);
+  }
+});
+elements.showProgress.addEventListener('click', () => executeSessionCommand('/progress'));
+elements.nextPhase.addEventListener('click', () => executeSessionCommand('/next'));
+elements.passPhase.addEventListener('click', () => executeSessionCommand('/next pass'));
+elements.revisePhase.addEventListener('click', () => executeSessionCommand('/next revise'));
 elements.safeMode.addEventListener('change', syncSurfaceMode);
 elements.researchMode.addEventListener('change', syncSurfaceMode);
 elements.researchApproach.addEventListener('change', syncResearchFeatureVisibility);

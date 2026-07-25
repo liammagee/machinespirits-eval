@@ -15,6 +15,7 @@ import { CELL_LAB_RESEARCH_TRACE_SCHEMA } from '../services/legacyChatSessionAda
 import {
   createTutorStubProcessSessionFactory,
   createTutorStubProcessSessionHost,
+  resolveTutorStubProcessCurriculumPath,
   resolveTutorStubProcessResumePath,
   tutorStubProcessCommandLine,
   tutorStubProcessEnvironment,
@@ -22,6 +23,7 @@ import {
   tutorStubProcessWorkingDirectory,
 } from '../services/tutorStubProcessSessionFactory.js';
 import { TUTOR_STUB_SESSION_RPC_SCHEMA, TUTOR_STUB_SESSION_RPC_VERSION } from '../services/tutorStubSessionRpc.js';
+import { tutorStubCommandTransportAdmission } from '../services/tutorStubCommandRegistry.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -71,6 +73,27 @@ test('process sessions use collision-safe trace namespaces and the full scaffold
   assert.equal(args[args.indexOf('--resume') + 1], 'run-2026-07-23');
   assert.equal(args.filter((entry) => entry === '--resume').length, 1);
   assert.equal(args.includes('--resume-last'), false);
+});
+
+test('process curriculum resolution stays inside canonical curriculum artifacts', () => {
+  assert.equal(
+    resolveTutorStubProcessCurriculumPath('curriculum/ai-foundations.curriculum.yaml', { root: ROOT }),
+    fs.realpathSync(path.join(ROOT, 'curriculum/ai-foundations.curriculum.yaml')),
+  );
+  for (const curriculum of [
+    'package.json',
+    '../outside.curriculum.yaml',
+    'curriculum/../config/tutor-agents.curriculum.yaml',
+    'curriculum/missing.curriculum.yaml',
+  ]) {
+    assert.throws(
+      () => resolveTutorStubProcessCurriculumPath(curriculum, { root: ROOT }),
+      (error) =>
+        error.code === 'invalid_curriculum_source' &&
+        error.status === 400 &&
+        !error.message.includes(ROOT),
+    );
+  }
 });
 
 function writeResumeTrace(traceRoot, namespace, runId, { mtimeMs = Date.now() } = {}) {
@@ -378,7 +401,9 @@ process.stdin.on('end', () => {
         },
         learner_record: { human_discourse: { proof_status: 'unclear' }, notes: 'No proof update.' }
       })
-    : 'Take the assay as a fingerprint: which public mark differs between the two coins?';
+    : input.includes('Current course phase: diagnostic')
+      ? 'Your seeded-function proposal gives us a concrete public anchor. Which property would you test to separate repeatability from representativeness?'
+      : 'Take the assay as a fingerprint: which public mark differs between the two coins?';
   if (process.env.FAKE_CODEX_LOG) fs.appendFileSync(process.env.FAKE_CODEX_LOG, input + '\\n---request---\\n');
   if (outputPath) fs.writeFileSync(outputPath, response);
   process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');
@@ -571,6 +596,12 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
     maxSessions: 2,
     startupTimeoutMs: 15_000,
     requestTimeoutMs: 15_000,
+    commandAdmission(input) {
+      const admission = tutorStubCommandTransportAdmission(input, { allowedEffects: ['persistentMutation'] });
+      return admission.allowed
+        ? { allowed: true, commandId: admission.commandId }
+        : { allowed: false, code: 'command_transport_unavailable', message: admission.reason, status: 409 };
+    },
     env: {
       ...process.env,
       PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
@@ -783,4 +814,56 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
     body: { reason: 'lab_mapping_verified' },
   });
   assert.equal(labFinalized.status, 200, JSON.stringify(labFinalized.body));
+
+  const curriculumSession = await request(base, '/sessions', {
+    method: 'POST',
+    body: {
+      id: 'curriculum-http-session',
+      lab: 'curriculum',
+      mode: 'curriculum',
+      model: 'codex.gpt-5.6-terra',
+      curriculum: 'curriculum/ai-foundations.curriculum.yaml',
+      module: 'AF0',
+      world: 'none',
+    },
+  });
+  assert.equal(curriculumSession.status, 201, JSON.stringify(curriculumSession.body));
+  assert.equal(curriculumSession.body.session.state.curriculumProgress.currentModule.id, 'AF0');
+  assert.equal(curriculumSession.body.session.state.curriculumProgress.currentPhase, 'diagnostic');
+  assert.equal(curriculumSession.body.session.state.curriculumProgress.externalCompletionInferred, false);
+  assert.doesNotMatch(
+    JSON.stringify(curriculumSession.body.session.state.curriculumProgress),
+    /misconception|verifier|mastery_gate|answer key/iu,
+  );
+
+  const curriculumTurn = await request(base, '/sessions/curriculum-http-session/steps', {
+    method: 'POST',
+    body: { input: 'I would test a seeded function and explain which property stays repeatable.', kind: 'learner' },
+  });
+  assert.equal(curriculumTurn.status, 200, JSON.stringify(curriculumTurn.body));
+  assert.equal(curriculumTurn.body.session.state.curriculumProgress.currentPhaseEvidenceCount, 1);
+
+  const curriculumNext = await request(base, '/sessions/curriculum-http-session/steps', {
+    method: 'POST',
+    body: { input: '/next', kind: 'command' },
+  });
+  assert.equal(curriculumNext.status, 200, JSON.stringify(curriculumNext.body));
+  assert.equal(curriculumNext.body.result.command.id, 'next');
+  assert.match(curriculumNext.body.result.command.output, /next phase > scaffold/u);
+  assert.equal(curriculumNext.body.session.state.curriculumProgress.currentPhase, 'scaffold');
+
+  const curriculumProgress = await request(base, '/sessions/curriculum-http-session/steps', {
+    method: 'POST',
+    body: { input: '/progress', kind: 'command' },
+  });
+  assert.equal(curriculumProgress.status, 200, JSON.stringify(curriculumProgress.body));
+  assert.equal(curriculumProgress.body.result.command.id, 'progress');
+  assert.match(curriculumProgress.body.result.command.output, /course progress/u);
+  assert.doesNotMatch(JSON.stringify(curriculumProgress.body), /misconception_signatures|verifiers|mastery_gate/u);
+
+  const curriculumFinalized = await request(base, '/sessions/curriculum-http-session/finalize', {
+    method: 'POST',
+    body: { reason: 'curriculum_runtime_verified' },
+  });
+  assert.equal(curriculumFinalized.status, 200, JSON.stringify(curriculumFinalized.body));
 });

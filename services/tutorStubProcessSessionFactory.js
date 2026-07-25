@@ -22,6 +22,7 @@ const SHARED_SESSION_ENGINES = new Set(['tutor_stub', LEGACY_CHAT_ENGINE_ID]);
 const PROCESS_SESSION_LAB_MODES = new Map([
   ['pure_chat', 'passthrough'],
   ['human_scaffold', 'scaffold'],
+  ['curriculum', 'curriculum'],
 ]);
 const SESSION_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u;
 const RESUME_TRACE_EXTENSION = '.jsonl';
@@ -292,6 +293,42 @@ function isPathWithin(root, candidate) {
   return relative !== '' && !relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative);
 }
 
+/** Resolve an HTTP-selected curriculum without permitting host-file probing. */
+export function resolveTutorStubProcessCurriculumPath(curriculum, { root }) {
+  if (!curriculum) return null;
+  const curriculumRoot = path.resolve(root, 'curriculum');
+  const candidate = path.resolve(root, curriculum);
+  if (!candidate.endsWith('.curriculum.yaml') || !isPathWithin(curriculumRoot, candidate)) {
+    throw new TutorStubSessionHostError(
+      'invalid_curriculum_source',
+      'curriculum must name a registered curriculum artifact',
+      400,
+    );
+  }
+
+  try {
+    const rootStats = fs.statSync(curriculumRoot);
+    const candidateStats = fs.lstatSync(candidate);
+    const realCurriculumRoot = fs.realpathSync(curriculumRoot);
+    const realCandidate = fs.realpathSync(candidate);
+    if (
+      !rootStats.isDirectory() ||
+      candidateStats.isSymbolicLink() ||
+      !candidateStats.isFile() ||
+      !isPathWithin(realCurriculumRoot, realCandidate)
+    ) {
+      throw new Error('unsafe curriculum source');
+    }
+    return realCandidate;
+  } catch {
+    throw new TutorStubSessionHostError(
+      'invalid_curriculum_source',
+      'curriculum must name a registered curriculum artifact',
+      400,
+    );
+  }
+}
+
 function traceRootForFactory(root, traceDir) {
   return path.isAbsolute(traceDir) ? path.resolve(traceDir) : path.resolve(root, traceDir);
 }
@@ -486,6 +523,9 @@ export function createTutorStubProcessSessionFactory({
 
   return async function createProcessSession(rawSpecification = {}) {
     const normalized = normalizeSpecification(rawSpecification);
+    if (normalized.curriculum) {
+      normalized.curriculum = resolveTutorStubProcessCurriculumPath(normalized.curriculum, { root });
+    }
     const resumePath = resolveTutorStubProcessResumePath(normalized, { root, traceDir: traceRoot });
     const specification = resumePath ? { ...normalized, resume: resumePath, resumeLast: false } : normalized;
     let snapshot = provisionalSnapshot(specification);

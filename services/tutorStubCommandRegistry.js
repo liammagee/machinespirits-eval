@@ -7,8 +7,8 @@ import {
 import { TUTOR_STUB_CURRICULUM_TRANSLATION_LEVELS } from './tutorStubCurriculumTranslation.js';
 import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 
-export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v8';
-export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 8;
+export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v9';
+export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 9;
 export const TUTOR_STUB_COMMAND_MODES = Object.freeze(['normal', 'passthrough']);
 export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
   'terminal_picker',
@@ -71,6 +71,9 @@ const COMMAND_EFFECT_DECLARATIONS = Object.freeze({
   profile: ['modelCall', 'fileWrite', 'persistentMutation'],
   scenario: ['fileWrite', 'persistentMutation', 'sessionClear', 'processExit'],
   board: ['persistentMutation', 'sessionClear', 'processExit'],
+  module: ['persistentMutation'],
+  next: ['persistentMutation'],
+  progress: [],
   use: ['modelCall', 'persistentMutation'],
   regen: ['modelCall', 'persistentMutation'],
   reset: ['modelCall', 'persistentMutation', 'sessionClear'],
@@ -99,6 +102,9 @@ const COMMAND_CAPABILITY_REQUIREMENTS = {
   use: { active: ['mixed_drafting'] },
   regen: { active: ['mixed_drafting'] },
   board: { available: ['curriculum'] },
+  module: { active: ['curriculum'] },
+  next: { active: ['curriculum'] },
+  progress: { active: ['curriculum'] },
 };
 
 const COMMAND_SUMMARIES = Object.freeze({
@@ -141,6 +147,9 @@ const COMMAND_SUMMARIES = Object.freeze({
   profile: 'inspect or change the mixed learner behavior profile',
   scenario: 'close this inquiry and start a selected scenario',
   board: 'close this inquiry and open a live workplan card as curriculum',
+  module: 'list course modules or move to an available module without leaving the session',
+  next: 'advance curriculum work using public evidence and explicit pass or revise decisions',
+  progress: 'show learner-safe module, phase, evidence, and mastery progress',
   use: 'submit the current drafted learner reply',
   regen: 'rebuild the learner clue, draft, analysis, and tutor prefetch',
   reset: 'cancel unfinished work and restart the same inquiry',
@@ -205,8 +214,19 @@ const HELP_GROUPS = [
     commands: [
       { id: 'scenario', arguments: '[id]' },
       { id: 'board', arguments: '[item-id]' },
+      { id: 'module', arguments: '[id]' },
     ],
-    summary: 'start a fresh inquiry from a scenario or live workplan card',
+    summary: 'choose a scenario, live workplan card, or available course module',
+  },
+  {
+    id: 'course_progress',
+    mode: 'normal',
+    label: 'course progress',
+    commands: [
+      { id: 'progress' },
+      { id: 'next', arguments: '[pass|revise]' },
+    ],
+    summary: 'inspect evidence and advance the diagnostic, scaffold, independent-check, and transfer phases',
   },
   {
     id: 'discover',
@@ -721,6 +741,26 @@ const COMMANDS = [
     sceneReturnOrder: 24,
     completion: { normal: { dynamicProviders: ['workplan_module_ids'] } },
     transportEffects: ['terminal_picker', 'process_relaunch'],
+  }),
+  command({
+    id: 'module',
+    token: '/module',
+    sceneReturnOrder: 31,
+    completion: { normal: { dynamicProviders: ['curriculum_module_ids'] } },
+    noninteractiveAdapter: 'structured',
+  }),
+  command({
+    id: 'next',
+    token: '/next',
+    sceneReturnOrder: 32,
+    completion: { normal: { suffixes: ['pass', 'revise'] } },
+    noninteractiveAdapter: 'structured',
+  }),
+  command({
+    id: 'progress',
+    token: '/progress',
+    sceneReturnOrder: 33,
+    noninteractiveAdapter: 'structured',
   }),
   command({ id: 'use', token: '/use', aliases: ['/accept'] }),
   command({ id: 'regen', token: '/regen' }),

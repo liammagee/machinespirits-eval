@@ -429,6 +429,33 @@ button:disabled {
   justify-content: flex-end;
 }
 
+.curriculum-progress {
+  display: grid;
+  grid-template-columns: minmax(13rem, 1fr) minmax(12rem, 0.8fr);
+  gap: 0.75rem 1rem;
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border: 1px solid var(--tutor-rule);
+  border-left: 4px solid var(--tutor-accent);
+  background: var(--tutor-paper);
+}
+
+.curriculum-progress h3,
+.curriculum-progress p {
+  margin: 0.2rem 0 0;
+}
+
+.curriculum-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.curriculum-progress .privacy-note {
+  grid-column: 1 / -1;
+}
+
 .transcript {
   display: grid;
   gap: 0.85rem;

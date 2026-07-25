@@ -1,14 +1,19 @@
 ---
 id: tutor-stub-curriculum-mastery-runtime
 title: Add curriculum authoring, progression, and mastery to tutor-stub
-status: triaged
+status: done
 type: infra
 priority: P2
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-22
-updated: 2026-07-22
-verification: "The existing curriculum builder and a tutor-stub/Scriptorium workbench author, lint, hash, preview without spend, and round-trip one multi-module course; /module, /next, and /progress drive diagnostic, scaffold, independent-check, and transfer phases for two non-detective curricula; public state cannot expose private verifier material; external workplan completion is never inferred from dialogue."
+updated: 2026-07-25
+verification: The existing curriculum builder and a tutor-stub/Scriptorium
+  workbench author, lint, hash, preview without spend, and round-trip one
+  multi-module course; /module, /next, and /progress drive diagnostic, scaffold,
+  independent-check, and transfer phases for two non-detective curricula; public
+  state cannot expose private verifier material; external workplan completion is
+  never inferred from dialogue.
 depends_on:
   - tutor-stub-capability-session-runtime
 links:
@@ -25,6 +30,7 @@ tags:
   - curriculum
   - mastery
   - authoring
+branch: codex/tutor-stub-curriculum-mastery-runtime
 ---
 
 Tutor-stub can reflect on one canonical curriculum module, and the repository

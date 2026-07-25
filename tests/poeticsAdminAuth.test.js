@@ -124,7 +124,7 @@ test('shared tutor shell and process API require the administrator role', async 
   assert.equal(catalogParticipant.status, 403);
   const catalogAdmin = await request('/api/tutor-stub/catalog', { user: 'admin', pass: 'secret' });
   assert.equal(catalogAdmin.status, 200);
-  assert.equal(JSON.parse(catalogAdmin.body).catalog.schema, 'machinespirits.tutor-stub.public-catalog.v1');
+  assert.equal(JSON.parse(catalogAdmin.body).catalog.schema, 'machinespirits.tutor-stub.public-catalog.v2');
 
   const cellLabParticipant = await request('/api/tutor-stub/sessions', {
     method: 'POST',
