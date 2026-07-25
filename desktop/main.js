@@ -311,7 +311,7 @@ async function checkRenderAndCsp(base) {
     show: false,
     webPreferences: { contextIsolation: true, nodeIntegration: false },
   });
-  win.webContents.on('console-message', (_e, _level, message) => {
+  win.webContents.on('console-message', ({ message }) => {
     if (/content security policy|refused to (load|execute|apply|connect|run)/i.test(message)) violations.push(message);
   });
   let lastTitle = '';

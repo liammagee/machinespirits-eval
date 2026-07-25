@@ -31,6 +31,10 @@ in place rather than silently leaving you on stale code).
 
 **First-time setup** (run these once, inside the `ms-electron` worktree):
 
+The desktop build toolchain requires **Node.js 22.12 or newer**. Electron 43
+embeds Node.js 24 for the running app; the repository's non-desktop runtime can
+still use the broader Node range declared in `package.json`.
+
 ```bash
 # 1. install deps (includes electron + electron-builder)
 npm install
