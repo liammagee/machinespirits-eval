@@ -25,7 +25,7 @@ import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import { collectGitActivity, collectSourceMetrics, renderReport } from './repository-metrics.js';
+import { collectGitActivity, collectGitHubMetrics, collectSourceMetrics, renderReport } from './repository-metrics.js';
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
 import { getProviderConfig, loadProviders, resolveModel } from '../services/evalConfigLoader.js';
@@ -1260,7 +1260,7 @@ Interactive commands:
   /settings forget       stop using the saved defaults after this session
   /release-notes [hours]
                          show recent tutor-stub changes and their expected effects
-  /metrics               show repository source, language, file, and Git metrics
+  /metrics               show repository source, Git, and available GitHub metrics
   /features              show the capability map, quick starts, and active mode
   /lab [list|id]         show the active lab or a safe lab's relaunch command
   /id                    show and copy the current debug id and trace path
@@ -26130,7 +26130,8 @@ async function main() {
         if (commandArg) throw new Error('/metrics takes no arguments');
         const source = collectSourceMetrics();
         const gitActivity = collectGitActivity();
-        console.log(`${renderReport({ source, gitActivity })}\n`);
+        const github = process.env.REPOSITORY_METRICS_GITHUB === '0' ? null : collectGitHubMetrics();
+        console.log(`${renderReport({ source, gitActivity, github })}\n`);
         appendTraceEvent(state.trace, {
           type: 'repository_metrics_popup',
           duringTurn,
@@ -26143,10 +26144,13 @@ async function main() {
             commitCount: gitActivity.commitCount,
             latestCommit: gitActivity.latest.sha,
           },
+          github,
           publicTranscriptChanged: false,
         });
         if (duringTurn) {
-          console.log(`${C.dim}tutor is still thinking; metrics reflect the current working tree${C.reset}\n`);
+          console.log(
+            `${C.dim}tutor is still thinking; metrics reflect the current working tree and available GitHub state${C.reset}\n`,
+          );
         }
       } catch (error) {
         console.log(`${C.red}metrics error:${C.reset} ${error.message}\n`);

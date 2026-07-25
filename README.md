@@ -240,7 +240,7 @@ To re-run evaluations from scratch (rather than reproducing from saved data), ex
 
 | Script | Description |
 |--------|-------------|
-| `repository-metrics.js` | Dependency-free source lines, file/language counts, and concise local Git activity (`npm run metrics`) |
+| `repository-metrics.js` | Dependency-free source lines, file/language counts, local Git activity, and optional GitHub metrics (`npm run metrics`) |
 | `test-rate-limit.js [model]` | Probe OpenRouter rate limits (default: nemotron) |
 | `test-latency.js` | Latency test across all configured models |
 | `seed-db.js` | Initialize/seed the SQLite database |
@@ -251,8 +251,12 @@ Run `npm run metrics` for a quick repository summary. It counts tracked and
 untracked non-ignored working-tree files, while excluding generated artifacts,
 datasets, dependency trees, and vendored code from source totals. Comment-line
 counts are language-aware heuristics, so they are useful for orientation rather
-than a substitute for a language parser. The same report is available as
-`/metrics` inside an interactive tutor-stub session.
+than a substitute for a language parser. When the `gh` CLI is installed and
+authenticated, the report also includes pull-request and issue counts, stars,
+forks, watchers, and release activity. GitHub lookup failures are reported
+without suppressing the local metrics; use `npm run metrics -- --no-github` to
+skip the lookup. The same report is available as `/metrics` inside an
+interactive tutor-stub session.
 
 ## Claude Code Skills
 
