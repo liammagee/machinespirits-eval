@@ -25,6 +25,7 @@
  *   --show-raw-api         Include raw API request/response payload excerpts
  *   --raw-api-max-chars <n> Excerpt length for raw API payload blocks (default: 220)
  *   --no-color             Disable ANSI colors in text output
+ *   --strict               Exit non-zero when log, hash, or ordering integrity checks fail
  *   --json                 Emit JSON instead of human-readable text
  *   --out <path>           Write output to a file
  */
@@ -36,13 +37,15 @@ import Database from 'better-sqlite3';
 import chalk from 'chalk';
 import YAML from 'yaml';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import { buildMessageChain } from '../services/evaluationRunner.js';
 import * as evaluationStore from '../services/evaluationStore.js';
+import { failedDialogueLogIntegrity, validateDialogueLogIntegrity } from '../services/messageChainAudit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT, 'data', 'evaluations.db');
-const _DIALOGUE_LOGS_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
+const DIALOGUE_LOGS_DIR = resolveTutorDialoguesDir(ROOT);
 const LOCAL_PROMPTS_DIR = path.join(ROOT, 'prompts');
 const LEARNER_CONFIG_PATH = path.join(ROOT, 'config', 'learner-agents.yaml');
 
@@ -68,10 +71,10 @@ function usageAndExit(message = null, code = 1) {
   if (message) console.error(`Error: ${message}\n`);
   console.error('Usage:');
   console.error(
-    '  node scripts/audit-message-chain.js --result-id <id> [--json] [--line-mode] [--show-raw-api] [--raw-api-max-chars <n>] [--no-color] [--system-prompt-max-chars <n>] [--out <path>]',
+    '  node scripts/audit-message-chain.js --result-id <id> [--json] [--strict] [--line-mode] [--show-raw-api] [--raw-api-max-chars <n>] [--no-color] [--system-prompt-max-chars <n>] [--out <path>]',
   );
   console.error(
-    '  node scripts/audit-message-chain.js --run-id <runId> [--scenario <id>] [--profile <name>] [--limit <n>] [--include-learner] [--json] [--line-mode] [--show-raw-api] [--raw-api-max-chars <n>] [--no-color] [--system-prompt-max-chars <n>] [--out <path>]',
+    '  node scripts/audit-message-chain.js --run-id <runId> [--scenario <id>] [--profile <name>] [--limit <n>] [--include-learner] [--json] [--strict] [--line-mode] [--show-raw-api] [--raw-api-max-chars <n>] [--no-color] [--system-prompt-max-chars <n>] [--out <path>]',
   );
   process.exit(code);
 }
@@ -86,6 +89,7 @@ const fullPrompts = getFlag('full-prompts');
 const lineMode = getFlag('line-mode');
 const showRawApi = getFlag('show-raw-api') || lineMode;
 const jsonMode = getFlag('json');
+const strictMode = getFlag('strict');
 const outPath = getOption('out');
 const maxChars = parseInteger(getOption('max-chars'), 1200);
 const systemPromptMaxChars = parseInteger(getOption('system-prompt-max-chars'), 240);
@@ -590,9 +594,18 @@ function classifyDialogueChannel(entry) {
 }
 
 function loadDialogueLog(dialogueId) {
+  const directPath = path.join(DIALOGUE_LOGS_DIR, `${dialogueId}.json`);
+  if (fs.existsSync(directPath)) {
+    try {
+      return { path: `${dialogueId}.json`, json: JSON.parse(fs.readFileSync(directPath, 'utf8')), error: null };
+    } catch {
+      return { path: `${dialogueId}.json`, json: null, error: 'parse_error' };
+    }
+  }
+
   const json = evaluationStore.loadDialogueLog(dialogueId);
-  if (!json) return null;
-  return { path: `${dialogueId}.json`, json };
+  if (!json) return { path: null, json: null, error: 'log_file_missing' };
+  return { path: `${dialogueId}.json`, json, error: null };
 }
 
 function buildExchangesForResult(resultRow, dialogueLog, options = {}) {
@@ -777,6 +790,9 @@ function formatTextReport(
   lines.push(
     `${C.key('Exchanges')} ${audit.exchange_count} | trace=${audit.trace_count} | includeLearner=${audit.include_learner_calls ? C.ok('yes') : C.meta('no')}`,
   );
+  lines.push(
+    `${C.key('Integrity')} ${audit.integrity?.status === 'pass' ? C.ok('pass') : C.bad('fail')} (${audit.integrity?.failure_count || 0} finding(s))`,
+  );
   const channelSummary = Object.entries(audit.dialogue_channel_counts || {})
     .map(([k, v]) => `${colorChannel(k)}=${v}`)
     .join(', ');
@@ -863,6 +879,9 @@ function formatLineModeReport(
   lines.push(
     `${C.key('Exchanges')} ${audit.exchange_count} | trace=${audit.trace_count} | includeLearner=${audit.include_learner_calls ? C.ok('yes') : C.meta('no')}`,
   );
+  lines.push(
+    `${C.key('Integrity')} ${audit.integrity?.status === 'pass' ? C.ok('pass') : C.bad('fail')} (${audit.integrity?.failure_count || 0} finding(s))`,
+  );
   if (audit.conversation_history) {
     lines.push(`${C.key('Conversation History')} ${audit.conversation_history.length} turn(s) stored`);
   }
@@ -946,7 +965,7 @@ function queryResults(db) {
     const row = db
       .prepare(
         `
-        SELECT id, run_id, scenario_id, profile_name, dialogue_id, provider, model,
+        SELECT id, run_id, scenario_id, profile_name, dialogue_id, dialogue_content_hash, provider, model,
                ego_model, superego_model, learner_architecture, conversation_mode, created_at
         FROM evaluation_results
         WHERE id = ?
@@ -968,7 +987,7 @@ function queryResults(db) {
     params.push(profileFilter);
   }
   let sql = `
-    SELECT id, run_id, scenario_id, profile_name, dialogue_id, provider, model,
+    SELECT id, run_id, scenario_id, profile_name, dialogue_id, dialogue_content_hash, provider, model,
            ego_model, superego_model, learner_architecture, conversation_mode, created_at
     FROM evaluation_results
     WHERE ${where.join(' AND ')}
@@ -988,20 +1007,26 @@ db.close();
 
 const audits = rows.map((row) => {
   const log = loadDialogueLog(row.dialogue_id);
-  if (!log) {
+  if (!log.json) {
     return {
       result: row,
       include_learner_calls: includeLearner,
-      log_path: null,
+      log_path: log.path,
       trace_count: 0,
       exchange_count: 0,
+      dialogue_channel_counts: {},
       exchanges: [],
-      gaps: ['Dialogue log file not found.'],
+      gaps: [log.error === 'parse_error' ? 'Dialogue log JSON could not be parsed.' : 'Dialogue log file not found.'],
       prompt_dirs_checked: promptDirs,
+      integrity: failedDialogueLogIntegrity(log.error, {
+        dialogue_id: row.dialogue_id,
+        expected_hash: row.dialogue_content_hash || null,
+      }),
     };
   }
 
   const built = buildExchangesForResult(row, log.json, { includeLearnerCalls: includeLearner });
+  const integrity = validateDialogueLogIntegrity(row, log.json);
 
   // Extract conversation mode and history from dialogue log or DB row
   const conversationMode = log.json.conversationMode || row.conversation_mode || null;
@@ -1016,9 +1041,12 @@ const audits = rows.map((row) => {
     conversation_mode: conversationMode,
     conversation_history: conversationHistory,
     tutor_message_chain: tutorMessageChain,
+    integrity,
     ...built,
   };
 });
+
+const failedAudits = audits.filter((audit) => audit.integrity?.status === 'fail');
 
 const outputPayload = {
   generated_at: new Date().toISOString(),
@@ -1030,10 +1058,17 @@ const outputPayload = {
     profile: profileFilter || null,
     limit: Number.isFinite(limit) ? limit : null,
     include_learner: includeLearner,
+    strict: strictMode,
     line_mode: lineMode,
     show_raw_api: showRawApi,
     system_prompt_max_chars: systemPromptMaxChars,
     raw_api_max_chars: rawApiMaxChars,
+  },
+  summary: {
+    status: failedAudits.length === 0 ? 'pass' : 'fail',
+    audit_count: audits.length,
+    passed: audits.length - failedAudits.length,
+    failed: failedAudits.length,
   },
   audits: audits.map((a) => compactForJson(a, maxChars, fullPrompts, systemPromptMaxChars)),
 };
@@ -1046,6 +1081,10 @@ if (jsonMode) {
   blocks.push(C.title('API Message Chain Audit'));
   blocks.push(`${C.key('Generated')} ${outputPayload.generated_at}`);
   blocks.push(`${C.key('Rows')} ${audits.length}`);
+  blocks.push(
+    `${C.key('Integrity')} ${outputPayload.summary.status === 'pass' ? C.ok('pass') : C.bad('fail')} (${outputPayload.summary.failed} failed)`,
+  );
+  blocks.push(`${C.key('Strict exits')} ${strictMode ? C.ok('on') : C.meta('off')}`);
   blocks.push(`${C.key('Mode')} ${lineMode ? 'line-mode' : 'detailed'}`);
   blocks.push(`${C.key('Raw API')} ${showRawApi ? `on (${rawApiMaxChars} chars)` : 'off'}`);
   blocks.push(`${C.key('Prompt dirs')} ${promptDirs.length > 0 ? promptDirs.join(', ') : '(none found)'}`);
@@ -1071,4 +1110,8 @@ if (outPath) {
 
 if (!outPath || !jsonMode) {
   console.log(rendered);
+}
+
+if (strictMode && failedAudits.length > 0) {
+  process.exitCode = 1;
 }

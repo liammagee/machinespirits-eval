@@ -292,6 +292,8 @@
         "tests/machineSpiritsHouseStyle.test.js",
         "tests/memoryArchitectureSeam.test.js",
         "tests/messageChainAudit.test.js",
+        "tests/messageChainAuditCli.test.js",
+        "tests/messageChainAuditCore.test.js",
         "tests/miniDramaMachines.test.js",
         "tests/navParity.test.js",
         "tests/negativeRegisterExemplarFixture.test.js",
