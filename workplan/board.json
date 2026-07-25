@@ -1,15 +1,15 @@
 {
-  "generated": "2026-07-24T23:45:46.982Z",
+  "generated": "2026-07-25T00:07:37.142Z",
   "counts": {
     "total": 179,
     "byStatus": {
       "done": 150,
       "blocked": 3,
       "dropped": 2,
-      "triaged": 16,
+      "triaged": 15,
       "active": 2,
       "archived": 4,
-      "review": 2
+      "review": 3
     },
     "byType": {
       "research": 46,
@@ -148,18 +148,6 @@
         "testing"
       ],
       "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "migrate-adaptive-dag-runtime-to-langgraph-1-4-without-longit",
-      "title": "Migrate adaptive DAG runtime to LangGraph 1.4 without longitudinal drift",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-24",
-      "updated": "2026-07-24",
-      "verification": "LangGraph 1.4 or newer passes the DAG longitudinal contract, the full hermetic suite, and a production audit with no LangGraph/UUID advisory"
     },
     {
       "id": "negative-register-effect-estimation-grid",
@@ -715,6 +703,19 @@
         "shacl"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "migrate-adaptive-dag-runtime-to-langgraph-1-4-without-longit",
+      "title": "Migrate adaptive DAG runtime to LangGraph 1.4 without longitudinal drift",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-24",
+      "updated": "2026-07-24",
+      "verification": "LangGraph 1.4 or newer passes the DAG longitudinal contract, the full hermetic suite, and a production audit with no LangGraph/UUID advisory",
+      "branch": "codex/migrate-adaptive-dag-langgraph-1-4"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
