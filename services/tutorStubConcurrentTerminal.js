@@ -57,9 +57,10 @@ export function createTutorStubConcurrentTerminal({ rl, output, decorateLine = n
     },
     setPalette(lines) {
       const next = Array.isArray(lines) ? lines.map((line) => String(line)) : [];
-      if (next.length === palette.length && next.every((line, index) => line === palette[index])) return;
+      if (next.length === palette.length && next.every((line, index) => line === palette[index])) return false;
       palette = next;
       if (surfaceVisible) render();
+      return true;
     },
     clearPalette() {
       if (!palette.length) return;

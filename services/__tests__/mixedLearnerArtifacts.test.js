@@ -6,11 +6,14 @@ import {
   consumeMixedLearnerReadyAnnouncement,
   invalidateMixedLearnerCache,
   mixedLearnerAnalysisCacheKey,
+  mixedLearnerGhostText,
   mixedLearnerSuggestionMove,
   mixedLearnerTutorPrefetchDecision,
   parseMixedLearnerArtifacts,
   profileSignalSafelyDescribesAnswer,
   refreshMixedLearnerPrompt,
+  renderMixedLearnerGhostText,
+  truncateMixedLearnerGhostText,
 } from '../mixedLearnerArtifacts.js';
 
 describe('mixed learner artifacts', () => {
@@ -116,6 +119,51 @@ describe('mixed learner artifacts', () => {
       cursor: 4,
     });
     assert.deepEqual(promptCalls, [true]);
+  });
+
+  it('offers the automated draft as ghost text only on an empty mixed learner prompt', () => {
+    const suggestion = { text: '  I would test the public mark first.  ' };
+    assert.equal(
+      mixedLearnerGhostText({ enabled: true, suggestion, line: '', interactionMode: 'learner' }),
+      'I would test the public mark first.',
+    );
+    assert.equal(mixedLearnerGhostText({ enabled: true, suggestion, line: 'I', interactionMode: 'learner' }), null);
+    assert.equal(mixedLearnerGhostText({ enabled: true, suggestion, line: '', interactionMode: 'coach' }), null);
+    assert.equal(
+      mixedLearnerGhostText({ enabled: true, suggestion, line: '', processingTurn: true, interactionMode: 'learner' }),
+      null,
+    );
+    assert.equal(
+      mixedLearnerGhostText({
+        enabled: true,
+        suggestion,
+        line: '',
+        interfaceBlocked: true,
+        interactionMode: 'learner',
+      }),
+      null,
+    );
+  });
+
+  it('clips ghost text to the remaining terminal row and restores the input cursor', () => {
+    let written = '';
+    const result = renderMixedLearnerGhostText({
+      rl: { getCursorPos: () => ({ cols: 10, rows: 0 }) },
+      output: {
+        isTTY: true,
+        columns: 28,
+        write(value) {
+          written += String(value);
+        },
+      },
+      text: 'The complete automated learner suggestion',
+      style: (value) => `<dim>${value}</dim>`,
+    });
+
+    assert.deepEqual(result, { rendered: true, text: 'The complete aut…' });
+    assert.equal(written, '\x1b7<dim>The complete aut…</dim>\x1b8');
+    assert.equal(truncateMixedLearnerGhostText('short', 10), 'short');
+    assert.equal(truncateMixedLearnerGhostText('longer', 1), '…');
   });
 
   it('invalidates a cached suggestion, analysis, and prefetched tutor response together', () => {

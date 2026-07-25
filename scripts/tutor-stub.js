@@ -67,10 +67,12 @@ import {
   consumeMixedLearnerReadyAnnouncement,
   invalidateMixedLearnerCache,
   mixedLearnerAnalysisCacheKey,
+  mixedLearnerGhostText,
   mixedLearnerSuggestionMove,
   mixedLearnerTutorPrefetchDecision,
   parseMixedLearnerArtifacts,
   refreshMixedLearnerPrompt,
+  renderMixedLearnerGhostText,
 } from '../services/mixedLearnerArtifacts.js';
 import { cleanTutorStubClarificationSpeech, cleanTutorStubStageSpeech } from '../services/tutorStubStageSpeech.js';
 import {
@@ -18372,7 +18374,27 @@ async function main() {
   const concurrentTerminal = createTutorStubConcurrentTerminal({
     rl,
     output,
-    decorateLine: () => lineSelection.decorateLine(),
+    decorateLine: () => {
+      lineSelection.decorateLine();
+      renderMixedLearnerGhostText({
+        rl,
+        output,
+        text: mixedLearnerGhostText({
+          enabled: mixedLearner.enabled,
+          suggestion: mixedLearner.suggestion,
+          line: rl.line,
+          processingTurn,
+          interactionMode: state.interaction?.mode,
+          interfaceBlocked:
+            exiting ||
+            initialSetupStage !== 'off' ||
+            scenarioPickerActive ||
+            awaitingAnotherScenario ||
+            interactiveDemoRunning,
+        }),
+        style: (text) => `${C.dim}${text}${C.reset}`,
+      });
+    },
   });
   state.concurrentTerminal = concurrentTerminal;
   state.interim.concurrentTerminal = concurrentTerminal;
@@ -19542,7 +19564,7 @@ async function main() {
                 `${C.brightGreen}learner suggestion ready >${C.reset} ${move === 'ask_question' ? 'ask a question' : 'respond'}${technicalSuffix}`,
               );
               console.log(
-                `${C.dim}  Tab inserts it for editing · /clue gives direction · /suggest previews it · /use sends it${C.reset}`,
+                `${C.dim}  dark text is a preview · Tab inserts it for editing · /clue guides · /suggest shows · /use sends${C.reset}`,
               );
               printMixedLearnerProfilePresentation(mixedLearner.suggestion);
               appendTraceEvent(state.trace, {
@@ -26790,7 +26812,8 @@ async function main() {
       slashPaletteRefreshHandle = setImmediate(() => {
         slashPaletteRefreshHandle = null;
         if (exiting || initialSetupStage !== 'off') return;
-        concurrentTerminal.setPalette(slashCommandPaletteForLine(rl.line));
+        const paletteChanged = concurrentTerminal.setPalette(slashCommandPaletteForLine(rl.line));
+        if (!paletteChanged) concurrentTerminal.show();
       });
     };
     input.on('keypress', onInteractiveKeypress);
