@@ -217,3 +217,52 @@ Log:
   refusing a declared exhibit, and the contemporary path. Full suite 7042/7044;
   both failures are this worktree's symlinked `node_modules` missing
   `@modelcontextprotocol/sdk` and `rdf-validate-shacl`, unrelated to the edit.
+- 2026-07-26 — Residual C closed; the item's three residuals are now all closed.
+  `sourceReportingLead` in `services/tutorStubDueSourceRenderer.js` is
+  diction-aware, so a world that declares a contemporary costume opens a due
+  source with "Here's what I'm reading" rather than "I read from the record".
+  The signature obstacle recorded above was dissolved rather than solved. Three
+  of the six call sites reach the renderer through a bare
+  `.map(renderTutorStubDueSource)`, where a third positional argument collides
+  with the array index. Instead of changing any signature, the world's resolved
+  costume is stamped onto each entry once at the single producer,
+  `buildTutorStubDramaticReleaseFrame`, exactly as that builder already hangs
+  `action_referents` on the entry. Zero call sites change. An entry that never
+  passed through the builder — a recorded frozen-replay bundle, a hand-built
+  fixture — carries no stamp and reads as period, so default-preservation needs
+  no migration and no version gate. The stamp helper is
+  `tutorStubSceneStamp` in `services/tutorStubSceneDiction.js`.
+  Measured across all 32 authored worlds by rendering every authored
+  `presentation.role` twice, once stamped with its own world and once unstamped
+  (the unstamped render is exactly what the old world-blind code produced):
+  10 of 32 roles change, all of them in worlds 027-031, all contemporary, all
+  in the `record_reading` branch. No period world moves. The other five branches
+  are reachable but no authored world currently exercises them.
+  Two document-naming designs were tried and rejected on evidence. Substituting
+  the world's declared `ledger_term` into the reading lead never fired on any of
+  the 32 roles, because the roles name the actual document instead ("the visitor
+  badge log", "the lift notice", "the cure sheet"). Extracting the document from
+  the role text fired, but produced "I read from the doubled pilcrow" for
+  world-027's `revision-log analyst showing the doubled pilcrow`, and more
+  decisively it makes the tutor say the same noun twice in one breath, because
+  the host entrance immediately before the lead already names it: "I open the
+  visitor ledger beside you. 'I read from the visitor ledger: ...'". The generic
+  "the record" was doing that work, and the contemporary variant does it with a
+  pronoun instead. The change is register-only.
+  One constraint was found the hard way and is now pinned by a test. The lead is
+  not decorative: `quotedRoleSpeech` in `services/tutorStubDramaticRelease.js`
+  counts a quotation as role speech only when it contains i/my/our/we, and the
+  authored surface it introduces usually contains none, so the lead is what
+  makes the guard see an enacted role at all. A first draft used "Here's what it
+  says", which has no pronoun; the whole quote was discarded and the turn failed
+  with `dramatic_release:missing_in_scene_enactment`. Every variant now carries
+  a pronoun, and a test renders all six branches under both registers and
+  asserts both the pronoun and `tutorStubFirstPersonRoleVoiceVisible` on the
+  rendered text, so the class of break cannot recur silently.
+  Four new tests in `tests/tutorStubDueSourceRenderer.test.js` (10 in the file,
+  all passing) pin the unstamped period default across all six branches, the
+  period and contemporary stamps through the real frame builder, the authored
+  surface surviving byte-for-byte in both registers, and the pronoun contract.
+  Full suite 6842/6844; both failures are this worktree's symlinked
+  `node_modules` missing `@modelcontextprotocol/sdk` and `rdf-validate-shacl`,
+  unrelated to the edit.

@@ -119,6 +119,23 @@ export function tutorStubDeclaredSceneObject(text, world = null) {
 }
 
 /**
+ * Freeze a world's costume into a plain value that can be stamped onto a
+ * built frame entry and travel with it.
+ *
+ * Some consumers of a due-source entry are several exported signatures away
+ * from the world — three of them receive the entry through a bare
+ * `.map(renderTutorStubDueSource)`, where a third argument would collide with
+ * the array index. Resolving the costume once at frame-build time and hanging
+ * it on the entry, the way the frame already hangs `action_referents` there,
+ * reaches all of them without touching a single signature. An entry that never
+ * passed through the builder — a recorded bundle, a hand-built fixture — simply
+ * carries no stamp and the reader's period defaults apply.
+ */
+export function tutorStubSceneStamp(world = null) {
+  return { diction: resolveTutorStubSceneDiction(world) };
+}
+
+/**
  * Choose between a period phrasing and its contemporary variant. Callers pass
  * the resolved diction so a single world lookup covers a whole fallback build.
  */

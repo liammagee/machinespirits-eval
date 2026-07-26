@@ -1,3 +1,5 @@
+import { TUTOR_STUB_SCENE_DICTION_PERIOD, tutorStubDictionPhrase } from './tutorStubSceneDiction.js';
+
 export const TUTOR_STUB_DUE_SOURCE_RENDER_SCHEMA = 'machinespirits.tutor-stub.due-source-render.v1';
 export const TUTOR_STUB_DUE_SOURCE_ACTION_REFERENTS_SCHEMA = 'machinespirits.tutor-stub.due-source-action-referents.v1';
 export const TUTOR_STUB_DUE_SOURCE_ACTION_ALIGNMENT_SCHEMA = 'machinespirits.tutor-stub.due-source-action-alignment.v1';
@@ -147,24 +149,48 @@ export function compileTutorStubDueSourceActionReferents(entry = null) {
   };
 }
 
+/**
+ * The first-person reporting act a due source opens with, before the colon that
+ * carries its authored surface through byte-for-byte.
+ *
+ * This text is published to the learner, not merely handed to the model, so a
+ * world that declares a contemporary costume needs a lead that is not spoken in
+ * a guild hall. Each entry carries a plainspoken variant beside the frozen
+ * period wording; a world that declares nothing, an entry built before the
+ * scene stamp existed, and every period world keep the period lead.
+ *
+ * None of the variants names the document being read. The host entrance
+ * immediately before this lead already names it — "I open the visitor ledger
+ * beside you" — so a lead that named it again would make the tutor say the same
+ * noun twice in one breath. That is what the generic "the record" was buying,
+ * and the contemporary variant buys it instead with a pronoun.
+ *
+ * Every variant must carry a first-person pronoun. This lead is not decorative:
+ * `quotedRoleSpeech` in the dramatic-release guard only counts a quotation as
+ * role speech when it contains i/my/our/we, and the authored surface it
+ * introduces usually contains none. Drop the pronoun and the guard stops seeing
+ * an enacted role at all, failing the turn with `missing_in_scene_enactment`.
+ */
 function sourceReportingLead(entry) {
+  const diction = entry?.scene?.diction || TUTOR_STUB_SCENE_DICTION_PERIOD;
+  const phrase = (periodText, contemporaryText) => tutorStubDictionPhrase(diction, periodText, contemporaryText);
   const role = oneLine(entry?.role).toLowerCase();
   if (/\b(?:book|clerk|inventory|keeper|ledger|log|reading|record)\b/u.test(role)) {
-    return { kind: 'record_reading', text: 'I read from the record' };
+    return { kind: 'record_reading', text: phrase('I read from the record', 'Here’s what I’m reading') };
   }
   if (/\b(?:watch|watchman|witness|account|testif)\b/u.test(role)) {
-    return { kind: 'witness_account', text: 'I give this account' };
+    return { kind: 'witness_account', text: phrase('I give this account', 'Here’s what I saw') };
   }
   if (/\b(?:identifying|knows?|recognis(?:e|ing)|recogniz(?:e|ing))\b/u.test(role)) {
-    return { kind: 'identification', text: 'I identify this' };
+    return { kind: 'identification', text: phrase('I identify this', 'I can tell you what this is') };
   }
   if (/\b(?:describing|reporting|showing)\b/u.test(role)) {
-    return { kind: 'report', text: 'I report this' };
+    return { kind: 'report', text: phrase('I report this', 'Here’s what I found') };
   }
   if (/\b(?:verdict|voicing)\b/u.test(role)) {
-    return { kind: 'verdict', text: 'I state the verdict' };
+    return { kind: 'verdict', text: phrase('I state the verdict', 'Here’s my call') };
   }
-  return { kind: 'attestation', text: 'I attest' };
+  return { kind: 'attestation', text: phrase('I attest', 'I can confirm this') };
 }
 
 /**

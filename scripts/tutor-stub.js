@@ -10419,6 +10419,7 @@ async function callTutor({
     ? { active: false, entries: [] }
     : buildTutorStubDramaticReleaseFrame({
         dueEvidence: instructionalMetaRepair ? [] : currentReleaseRows(state, tutorTurn),
+        world: state.world,
       });
   const responseConfiguration = registerSelection?.response_configuration || registerSelection || null;
   const committedPublicEvidence = passthrough ? [] : committedReleaseRows(state, tutorTurn);
@@ -13977,7 +13978,10 @@ async function runOneTurn(
   }
 
   const dueReleaseRows = instructionalMetaRepair ? [] : currentReleaseRows(state, tutorTurn);
-  const dramaticReleaseFrame = buildTutorStubDramaticReleaseFrame({ dueEvidence: dueReleaseRows });
+  const dramaticReleaseFrame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: dueReleaseRows,
+    world: state.world,
+  });
   const duePremiseIds = dueReleaseRows.map((row) => row?.premise).filter(Boolean);
   const releaseDeliveryAudit =
     response.releaseDeliveryAudit ||

@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  buildTutorStubDramaticReleaseFrame,
+  tutorStubFirstPersonRoleVoiceVisible,
+} from '../services/tutorStubDramaticRelease.js';
+import {
   auditTutorStubDueSourceActionAlignment,
   compileTutorStubDueSourceActionReferents,
   renderTutorStubDueSource,
@@ -155,4 +159,87 @@ test('role pronouns resolve to a stable carrier label', () => {
     role: 'watchman giving his account',
   });
   assert.equal(referents.primary.label, 'watchman’s account');
+});
+
+test('an entry with no scene stamp keeps the period reporting lead', () => {
+  // Recorded frozen-replay bundles and hand-built fixtures predate the stamp,
+  // so the absent-stamp path is the one that keeps their published text stable.
+  for (const [role, lead] of [
+    ['leat-keeper reading the charcoal book', 'I read from the record'],
+    ['watchman giving his account', 'I give this account'],
+    ['assay-master identifying the alloy', 'I identify this'],
+    ['guild officer describing the bench', 'I report this'],
+    ['warden voicing the verdict', 'I state the verdict'],
+    ['sworn hand', 'I attest'],
+  ]) {
+    const rendered = renderTutorStubDueSource({ mode: 'enacted_role', role, surface: 'A public fact stands.' }, 0);
+    assert.equal(rendered.reporting.text, lead);
+  }
+});
+
+test('a period world stamps the period reporting lead and a contemporary world the plainspoken one', () => {
+  const build = (world) =>
+    buildTutorStubDramaticReleaseFrame({
+      dueEvidence: [
+        {
+          surface: 'The visitor badge log records one entry after six.',
+          presentation: { mode: 'enacted_role', role: 'front-desk clerk reading the badge log' },
+        },
+      ],
+      world,
+    }).entries[0];
+
+  const periodEntry = build({ presentation: { narrative_diction: 'medieval guild-hall' } });
+  assert.equal(periodEntry.scene.diction, 'period');
+  assert.equal(renderTutorStubDueSource(periodEntry, 0).reporting.text, 'I read from the record');
+
+  const contemporaryEntry = build({ presentation: { narrative_diction: 'domestic plainspoken' } });
+  assert.equal(contemporaryEntry.scene.diction, 'contemporary');
+  const contemporary = renderTutorStubDueSource(contemporaryEntry, 0);
+  assert.equal(contemporary.reporting.text, 'Here’s what I’m reading');
+  assert.match(contemporary.text, /^“Here’s what I’m reading: The visitor badge log records one entry after six\.”$/u);
+});
+
+test('the reporting lead is the only part of a contemporary source that moves', () => {
+  // The colon join carries the authored surface through byte-for-byte in both
+  // registers; only the first-person act ahead of it is re-costumed.
+  const surface = 'And the cure sheet gives a four-hour set.';
+  const entry = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [{ surface, presentation: { mode: 'enacted_role', role: 'materials tester reading the cure sheet' } }],
+    world: { presentation: { narrative_diction: 'workshop plainspoken' } },
+  }).entries[0];
+  const rendered = renderTutorStubDueSource(entry, 0);
+  assert.equal(rendered.surface, surface);
+  assert.equal(rendered.text, `“${rendered.reporting.text}: ${surface}”`);
+  assert.equal(rendered.reporting.kind, 'record_reading');
+  assert.equal(rendered.reporting.separator, 'colon');
+});
+
+test('every reporting lead keeps a first-person pronoun in both registers', () => {
+  // The lead is load-bearing, not decorative: the dramatic-release guard counts
+  // a quotation as role speech only when it contains i/my/our/we, and the
+  // authored surface it introduces usually carries none. A pronoun-free variant
+  // makes the whole turn fail with missing_in_scene_enactment.
+  const roles = [
+    'front-desk clerk reading the badge log',
+    'watchman giving his account',
+    'assay-master identifying the alloy',
+    'guild officer describing the bench',
+    'warden voicing the verdict',
+    'sworn hand',
+  ];
+  const kinds = new Set();
+  for (const diction of ['medieval guild-hall', 'domestic plainspoken']) {
+    for (const role of roles) {
+      const entry = buildTutorStubDramaticReleaseFrame({
+        dueEvidence: [{ surface: 'A public fact stands.', presentation: { mode: 'enacted_role', role } }],
+        world: { presentation: { narrative_diction: diction } },
+      }).entries[0];
+      const { reporting, text } = renderTutorStubDueSource(entry, 0);
+      kinds.add(reporting.kind);
+      assert.match(reporting.text, /\b(?:I|I’m|my|our|we)\b/iu, `${diction} / ${role}: ${reporting.text}`);
+      assert.ok(tutorStubFirstPersonRoleVoiceVisible(text), `${diction} / ${role}: ${text}`);
+    }
+  }
+  assert.equal(kinds.size, 6);
 });
