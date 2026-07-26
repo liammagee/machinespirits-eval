@@ -105,6 +105,7 @@ import {
   resolveTutorStubAnswerReference,
   snapshotTutorStubPublicPremiseIds,
 } from '../services/tutorStubResponseGuard.js';
+import { buildTutorStubObservedAudits } from '../services/tutorStubObservedAudits.js';
 import { splitTutorStubPublicWords } from '../services/tutorStubPublicText.js';
 import { tutorStubPublicProvenanceText } from '../services/tutorStubPublicProvenance.js';
 import {
@@ -524,6 +525,7 @@ import {
   restoreTutorStubReleasePacingFromTurns,
   setTutorStubReleaseSpeed,
   tutorStubReleasePacingSnapshot,
+  tutorStubReleaseScheduleExhausted,
 } from '../services/tutorStubReleasePacing.js';
 import {
   buildDynamicalSystemRegisterScores,
@@ -789,6 +791,10 @@ const { values: args, positionals } = parseArgs({
     'classifier-model': { type: 'string', default: STUB.classifierModel },
     'no-classifier': { type: 'boolean', default: false },
     passthrough: { type: 'boolean', default: false },
+    // Evaluate a bare turn, gate nothing. Passthrough fuses evaluation and
+    // enforcement by returning the first draft untouched; this splits them, so
+    // a baseline arm records the two contract-free audits and stays bare.
+    'observe-audits': { type: 'boolean', default: false },
     'tutor-learner-dag': { type: 'boolean', default: false },
     'learner-record-model': { type: 'string', default: STUB.learnerRecordModel },
     'learner-analysis-prompt-profile': { type: 'string', default: STUB.learnerAnalysisPromptProfile },
@@ -7988,8 +7994,14 @@ function resolveConversationalCompletionForLearnerTurn({ learnerText, state, cla
   return conversationalCompletion;
 }
 
+function tutorStubNewEvidenceAvailable(state) {
+  return !tutorStubReleaseScheduleExhausted(tutorStubReleasePacingSnapshot(state?.releasePacing, state?.world));
+}
+
 function applyConversationalCompletionForLearnerTurn(state, registerSelection, conversationalCompletion) {
-  const application = applyTutorStubConversationalCompletionSelection(registerSelection, conversationalCompletion);
+  const application = applyTutorStubConversationalCompletionSelection(registerSelection, conversationalCompletion, {
+    newEvidenceAvailable: tutorStubNewEvidenceAvailable(state),
+  });
   if (state.register?.enabled && application.selection) {
     if (state.register.history.at(-1)?.turn === application.selection.turn) {
       state.register.history[state.register.history.length - 1] = application.selection;
@@ -12355,7 +12367,7 @@ async function callTutor({
         fallbackDraftAudits.responseConfigurationAudit,
       ),
       advisoryReason:
-        'the deterministic fallback is the terminal safety text — known conversational-integrity and optional actorial-realization findings on it are recorded as advisories instead of killing the dialogue; evidence boundaries remain hard',
+        'the deterministic fallback is the terminal safety text — known conversational-integrity, dramatic-form, and optional actorial-realization findings on it are recorded as advisories instead of killing the dialogue; evidence, clue-transaction and closure boundaries remain hard',
       role: `${roleBase}_fallback`,
       attempt: fallbackAttempt,
       terminalFallback: true,
@@ -13514,6 +13526,43 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
     timingContext: runtimeOptions.turnTiming,
   });
 
+  // Observed audits, if asked for. They run here rather than inside `callTutor`
+  // for a reason: by this point the draft is already the delivered line, so
+  // there is no code path by which a result could send it back. The audits are
+  // read-only witnesses to a turn that has already happened.
+  //
+  // Both are computed on exactly the inputs the guarded arm gives them — the
+  // world, the turn index, the draft, the learner message, and the replayed
+  // public assistant messages — and `recentTutorTexts` is read *before* this
+  // turn is pushed onto the history, so the tutor is never compared with
+  // itself.
+  const observedAuditsRequested = Boolean(state.passthrough?.observedAudits);
+  const observedLeakAudit =
+    observedAuditsRequested && state.world
+      ? auditTutorResponseLeak({
+          text: response.text,
+          world: state.world,
+          tutorTurn,
+          learnerText,
+          state,
+        })
+      : null;
+  const observedRepetitionAudit = observedAuditsRequested
+    ? auditTutorStubRepetitionResponse({
+        text: response.text,
+        recentTutorTexts: tutorMessageContext(state, state.history)
+          .messages.filter((message) => message.role === 'assistant')
+          .map((message) => message.content),
+      })
+    : null;
+  const observedAudits = observedAuditsRequested
+    ? buildTutorStubObservedAudits({
+        leakAudit: observedLeakAudit,
+        repetitionAudit: observedRepetitionAudit,
+        response,
+      })
+    : null;
+
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
   const turnRecord = {
@@ -13529,6 +13578,19 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
         }
       : {}),
     passthrough: true,
+    observedAudits,
+    tutorLeakAudit: observedLeakAudit,
+    tutorRepetitionAudit: observedRepetitionAudit,
+    // Named and left null on purpose. Each of these scores a draft against a
+    // per-turn contract the bare arm never builds, so an absent value here
+    // means "no referent", not "passed".
+    tutorQuestionSupportAudit: null,
+    tutorDramaticReleaseAudit: null,
+    tutorHumanScaffoldAudit: null,
+    tutorDialogueClosureAudit: null,
+    tutorLiveSourceActionAlignmentAudit: null,
+    tutorResponseRepaired: false,
+    tutorDeterministicFallback: false,
     classification: null,
     tutorLearnerDagModel: null,
     registerSelection: null,
@@ -13558,7 +13620,16 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
     turn: tutorTurn,
     modelCallCount: 1,
     requestSurface: ['system_setup', 'full_public_history', 'latest_learner_message'],
+    observedAudits: Boolean(observedAudits),
   });
+  if (observedAudits) {
+    appendTraceEvent(state.trace, {
+      type: 'passthrough_observed_audits',
+      turnId,
+      turn: tutorTurn,
+      ...observedAudits,
+    });
+  }
   appendTraceEvent(state.trace, {
     type: 'turn_complete',
     turnId,
@@ -13569,6 +13640,7 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
   return {
     ...response,
     passthrough: true,
+    observedAudits,
     dagSnapshot: null,
     registerSelection: null,
     releasePacing: null,
@@ -13715,6 +13787,7 @@ async function runOneTurn(
   const completionSelection = applyTutorStubConversationalCompletionSelection(
     registerSelection,
     humanDiscourseFrame.conversationalCompletion,
+    { newEvidenceAvailable: tutorStubNewEvidenceAvailable(state) },
   );
   registerSelection = completionSelection.selection;
   if (humanDiscourseFrame.conversationalCompletion?.resolved) {
@@ -14776,6 +14849,16 @@ async function main() {
   if (args['no-committee']) args['point-of-action-arm'] = '';
 
   const passthroughEnabled = Boolean(args.passthrough);
+  const observedAuditsEnabled = Boolean(args['observe-audits']);
+  if (observedAuditsEnabled && !passthroughEnabled) {
+    // A guarded run already evaluates all seven audits and records them as
+    // guard results. Accepting the flag there would write a second, weaker copy
+    // of two of them under a name that promises no enforcement, which is a
+    // reading hazard rather than a feature.
+    throw new Error(
+      '--observe-audits requires --passthrough: a guarded run already records these audits as enforced guard results',
+    );
+  }
   if (passthroughEnabled) {
     args.dag = false;
     args['tutor-learner-dag'] = false;
@@ -14783,7 +14866,13 @@ async function main() {
     args['no-register-selection'] = true;
     args['typed-actions'] = false;
     args['point-of-action-arm'] = '';
-    args['auto-learner'] = false;
+    // Passthrough defaults to pure human chat, but an evaluation harness needs a
+    // genuinely bare arm that still talks to itself: passthrough is the only
+    // mode that bypasses the guard suite, first-draft recovery and the closure
+    // lifecycle, and a bare arm is useless as a comparison if nobody answers it.
+    // An explicit --auto-learner therefore survives; everything else passthrough
+    // strips stays stripped, and the automated-learner labs still gate the flag.
+    if (!commandLineOptionProvided('auto-learner')) args['auto-learner'] = false;
     args['mixed-learner'] = false;
     args['mixed-mode'] = false;
     args['no-memory-summary'] = true;
@@ -15045,6 +15134,12 @@ async function main() {
   const learnerSuggestionEnabled = Boolean(
     !passthroughEnabled && (autoLearnerEnabled || mixedLearnerEnabled || interactiveSessionEnabled),
   );
+  // Suggesting learner turns to a human is a harness feature and stays off under
+  // passthrough. Resolving a learner model is not the same question: if the
+  // automated learner is going to speak, it needs a model whatever the tutor is
+  // running. Keeping these separate is what lets an evaluation harness point a
+  // learner at a bare tutor.
+  const learnerModelRequired = Boolean(learnerSuggestionEnabled || autoLearnerEnabled);
   const autoTurns = parseAutoTurns(args['auto-turns']);
   const autoSafetyTurns = parsePositiveInt(args['auto-safety-turns'], '--auto-safety-turns');
   const autoStopOnGrounded = !args['no-auto-stop-on-grounded'];
@@ -15177,7 +15272,7 @@ async function main() {
   const tutorDag = args.dag && worldBundle ? buildTutorDesireDag(worldBundle.world) : null;
   const resolved = resolveModel(args.model);
   const providerConfig = getProviderConfig(resolved.provider);
-  let autoLearnerResolved = learnerSuggestionEnabled ? resolveModel(args['auto-learner-model']) : null;
+  let autoLearnerResolved = learnerModelRequired ? resolveModel(args['auto-learner-model']) : null;
   let autoLearnerProviderConfig = autoLearnerResolved ? getProviderConfig(autoLearnerResolved.provider) : null;
   const classifierEnabled = !args['no-classifier'];
   const tutorLearnerDagEnabled = Boolean(args['tutor-learner-dag'] && worldBundle);
@@ -15639,6 +15734,10 @@ async function main() {
     enabled: passthroughEnabled,
     modelCallsPerTurn: passthroughEnabled ? 1 : null,
     requestSurface: passthroughEnabled ? ['system_setup', 'full_public_history', 'latest_learner_message'] : null,
+    // Observation is not a bypass reversal: every entry in `bypassed` below
+    // stays bypassed with this on. The audits run after the draft is final and
+    // cannot send it back, so the call count and request surface are unchanged.
+    observedAudits: observedAuditsEnabled,
     bypassed: passthroughEnabled
       ? [
           'learner_classifier',
@@ -16116,7 +16215,7 @@ async function main() {
       `${args['learner-record-model']} is not configured. Set ${envName} or choose a CLI-backed learner-record model.`,
     );
   }
-  if (learnerSuggestionEnabled && !autoLearnerResolved.isConfigured && !isCliProvider(autoLearnerResolved.provider)) {
+  if (learnerModelRequired && !autoLearnerResolved.isConfigured && !isCliProvider(autoLearnerResolved.provider)) {
     const envName = autoLearnerProviderConfig.api_key_env || 'provider API key';
     throw new Error(
       `${args['auto-learner-model']} is not configured. Set ${envName} or choose a CLI-backed automated learner model.`,
@@ -16887,6 +16986,11 @@ async function main() {
   if (passthroughEnabled) {
     console.log(`${C.brightCyan}${C.bold}passthrough >${C.reset} pure speaker chat · one model call per turn`);
     console.log(`${C.dim}request: unchanged system setup + full public history + latest learner message${C.reset}`);
+    if (observedAuditsEnabled) {
+      console.log(
+        `${C.dim}observed audits: leak and repetition are evaluated and recorded after each turn; nothing is gated, repaired or replaced${C.reset}`,
+      );
+    }
     console.log(
       `${C.dim}setup: ${worldBundle ? `${worldBundle.world.id} — ${worldBundle.world.title}` : effectiveTopic}${C.reset}`,
     );

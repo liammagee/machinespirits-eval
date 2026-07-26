@@ -183,3 +183,175 @@ test('passthrough makes exactly one speaker call with raw learner text and no ha
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test('--observe-audits is rejected without --passthrough', () => {
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/tutor-stub.js', '--observe-audits', '--dry-run', '--no-trace', '--world', 'world_005_marrick'],
+    {
+      cwd: ROOT,
+      env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+      encoding: 'utf8',
+      timeout: 10_000,
+    },
+  );
+
+  assert.notEqual(result.status, 0, 'a guarded run must not accept the observed-audit flag');
+  assert.match(plainTerminalText(result.stderr), /--observe-audits requires --passthrough/u);
+});
+
+test('--observe-audits records the two contract-free audits and still bypasses every stage', () => {
+  const result = spawnSync(
+    process.execPath,
+    [
+      'scripts/tutor-stub.js',
+      '--passthrough',
+      '--observe-audits',
+      '--dry-run',
+      '--no-trace',
+      '--world',
+      'world_005_marrick',
+    ],
+    {
+      cwd: ROOT,
+      env: { ...process.env, TUTOR_STUB_REMEMBER_SETTINGS: '0' },
+      encoding: 'utf8',
+      timeout: 10_000,
+    },
+  );
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const config = JSON.parse(result.stdout);
+  assert.equal(config.passthrough.enabled, true);
+  assert.equal(config.passthrough.observedAudits, true);
+  // Observation must not reverse a single bypass, or the baseline stops being a
+  // baseline.
+  assert.equal(config.passthrough.modelCallsPerTurn, 1);
+  assert.ok(config.passthrough.bypassed.includes('response_checks_and_repair'));
+  assert.ok(config.passthrough.bypassed.includes('dialogue_closure'));
+  assert.equal(config.classifier.enabled, false);
+  assert.equal(config.tutorLearnerDag.enabled, false);
+  assert.equal(config.registerSelection.enabled, false);
+});
+
+test('an observed passthrough turn evaluates audits, gates nothing, and emits no guard accounting', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-observed-audits-'));
+  try {
+    installFakeCodex(tmp);
+    const result = spawnSync(
+      process.execPath,
+      [
+        'scripts/tutor-stub.js',
+        '--passthrough',
+        '--observe-audits',
+        '--once',
+        'Can we inspect the coins directly?',
+        '--no-stream',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'world_005_marrick',
+        '--no-remember-settings',
+      ],
+      {
+        cwd: ROOT,
+        env: {
+          ...process.env,
+          PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
+          CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+          TUTOR_STUB_SUMMARY_OPEN: '0',
+        },
+        encoding: 'utf8',
+        timeout: 10_000,
+      },
+    );
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    const events = traceEvents(tmp);
+
+    // Evaluation costs nothing extra: still one speaker call, still no guard row.
+    assert.equal(events.filter((event) => event.type === 'model_call').length, 1);
+    assert.equal(
+      events.filter((event) => event.type === 'tutor_response_guard_accounting').length,
+      0,
+      'an observed arm must emit no guard accounting, so its coverage stays 0%',
+    );
+
+    const observed = events.find((event) => event.type === 'passthrough_observed_audits');
+    assert.ok(observed, 'the observed-audit pass must be traced');
+    assert.equal(observed.enforced, false);
+    assert.deepEqual(observed.evaluated, ['tutorLeakAudit', 'tutorRepetitionAudit']);
+    assert.equal(observed.auditsRecorded, 2);
+    assert.deepEqual(
+      observed.unavailable.map((row) => row.key),
+      [
+        'tutorQuestionSupportAudit',
+        'tutorDramaticReleaseAudit',
+        'tutorHumanScaffoldAudit',
+        'tutorDialogueClosureAudit',
+        'tutorLiveSourceActionAlignmentAudit',
+      ],
+    );
+
+    const turnRecord = events.find((event) => event.type === 'turn_complete').turnRecord;
+    assert.ok(turnRecord.tutorLeakAudit, 'the leak audit must reach the turn record');
+    assert.ok(turnRecord.tutorRepetitionAudit, 'the repetition audit must reach the turn record');
+    // Null, not absent and not `{ok: true}`: these have no referent on a bare
+    // turn and must never read as a clean sheet.
+    for (const key of [
+      'tutorQuestionSupportAudit',
+      'tutorDramaticReleaseAudit',
+      'tutorHumanScaffoldAudit',
+      'tutorDialogueClosureAudit',
+      'tutorLiveSourceActionAlignmentAudit',
+    ]) {
+      assert.equal(turnRecord[key], null, `${key} must be null on an observed bare turn`);
+    }
+    assert.equal(turnRecord.tutorResponseRepaired, false);
+    assert.equal(turnRecord.tutorDeterministicFallback, false);
+    assert.equal(turnRecord.observedAudits.enforced, false);
+
+    const stdout = plainTerminalText(result.stdout);
+    assert.match(stdout, /observed audits: leak and repetition are evaluated and recorded/u);
+    assert.match(stdout, /tutor > Pure speaker reply\./u);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('observed audits refuse to describe an enforced response as unenforced', async () => {
+  const { buildTutorStubObservedAudits } = await import('../services/tutorStubObservedAudits.js');
+
+  const clean = buildTutorStubObservedAudits({
+    leakAudit: { ok: true, leaks: [] },
+    repetitionAudit: { ok: false, issues: [{ type: 'repeat' }] },
+    response: { text: 'reply' },
+  });
+  assert.equal(clean.enforced, false);
+  assert.equal(clean.auditsRecorded, 2);
+  assert.deepEqual(clean.failed, ['tutorRepetitionAudit']);
+
+  // A failing observed audit is recorded and the draft still stands. That is the
+  // whole contract, so it must be impossible to build this envelope for a
+  // response the guard path has already acted on.
+  for (const marker of ['repaired', 'deterministicFallback', 'guardAccounting']) {
+    assert.throws(
+      () =>
+        buildTutorStubObservedAudits({
+          leakAudit: { ok: true, leaks: [] },
+          repetitionAudit: { ok: true, issues: [] },
+          response: { text: 'reply', [marker]: true },
+        }),
+      /observed audits must not enforce/u,
+      `${marker} must be rejected`,
+    );
+  }
+
+  const worldless = buildTutorStubObservedAudits({
+    leakAudit: null,
+    repetitionAudit: { ok: true, issues: [] },
+    response: { text: 'reply' },
+  });
+  assert.deepEqual(worldless.evaluated, ['tutorRepetitionAudit']);
+  assert.equal(worldless.auditsRecorded, 1);
+});

@@ -125,3 +125,43 @@ test('completion makes forward pressure authoritative without changing closure o
   assert.match(staged.selection.expected_dag_move, /genuinely new public evidence/iu);
   assert.equal(closure.selection.action_family, 'close_inquiry');
 });
+
+test('forward pressure asks for the conclusion once no public evidence is left to stage', () => {
+  const completion = {
+    resolved: true,
+    requiresNewPressure: true,
+    status: 'accepted',
+  };
+  const spent = applyTutorStubConversationalCompletionSelection(
+    {
+      action_family: 'compress_sayback',
+      expected_dag_move: 'Invite the one compact assertion still needed for closure.',
+      response_configuration: { action_family: 'compress_sayback', compatibility: {} },
+    },
+    completion,
+    { newEvidenceAvailable: false },
+  );
+
+  assert.equal(spent.selection.action_family, 'compress_sayback');
+  assert.equal(spent.changed, false);
+  assert.match(spent.selection.expected_dag_move, /every authored clue is already public/iu);
+  assert.equal(
+    spent.selection.response_configuration.compatibility.conversational_completion_new_evidence_available,
+    false,
+  );
+});
+
+test('a spent schedule does not convert a warranted action into a staging promise', () => {
+  const completion = { resolved: true, requiresNewPressure: true, status: 'accepted' };
+  const spent = applyTutorStubConversationalCompletionSelection(
+    {
+      action_family: 'answer_accountably',
+      response_configuration: { action_family: 'answer_accountably', compatibility: {} },
+    },
+    completion,
+    { newEvidenceAvailable: false },
+  );
+
+  assert.equal(spent.selection.action_family, 'compress_sayback');
+  assert.equal(spent.changed, true);
+});

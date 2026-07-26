@@ -1,0 +1,101 @@
+schema: machinespirits.tutor-stub.showcase-config.v1
+
+# Free-running showcase: two tutors, two separate conversations, run to
+# whatever end each one reaches. Unlike the frozen A/B in tutor-stub-ab.yaml,
+# nothing is held constant downstream of the first learner turn, because each
+# arm's learner is answering that arm's tutor. Read it as two demonstrations
+# side by side, not as a controlled contrast.
+
+models:
+  codex_medium:
+    provider: codex
+    model: gpt-5.6-terra
+    effort: medium
+  claude_medium:
+    provider: claude-code
+    model: claude-sonnet-5
+    effort: medium
+
+# An arm is a set of tutor-side flags. Everything else — world, learner model,
+# learner profile, turn cap, streaming — is fixed by the plan builder and is
+# identical across arms; `assertTutorStubShowcaseLearnerParity` fails the plan
+# if an arm's flags reach outside `TUTOR_STUB_SHOWCASE_ARM_FLAGS`.
+arms:
+  # `--passthrough` is the only genuinely bare mode the stub has. Dropping the
+  # DAG and classifier flags is not enough: the guard suite, first-draft
+  # recovery and the closure lifecycle all run unconditionally otherwise, so an
+  # arm built that way is instrumented in every respect that matters and the
+  # comparison shows almost nothing. Passthrough bypasses learner_classifier,
+  # learner_dag, register_selection, human_discourse_scaffold,
+  # response_composition, response_checks_and_repair, release_planner,
+  # dialogue_closure, tutor_feedback and the learning summary, leaving one model
+  # call per turn over system setup + public history + latest learner message.
+  #
+  # `--observe-audits` is what makes the baseline scoreable. Passthrough on its
+  # own records no audits at all, so the merit column for this arm was empty and
+  # the two arms could not be compared on the same gate. The flag splits
+  # evaluation from enforcement: the two contract-free audits (leak, repetition)
+  # run after the draft is final, are written to the turn record, and cannot
+  # send anything back. Model calls, request surface and guard coverage are
+  # unchanged — the arm stays bare and now reports what a bare arm actually does.
+  bare:
+    label: Bare tutor
+    baseline: true
+    summary: One model, one call per turn over the public history. No DAG, no scaffold, no guard that can send a draft back. Audits are evaluated and recorded, never enforced.
+    flags:
+      - --passthrough
+      - --observe-audits
+      - --no-classifier
+      - --no-memory-summary
+    model_call_budget: 60
+
+  instrumented:
+    label: Instrumented tutor
+    summary: Learner proof-DAG, human discourse scaffold, per-turn guards with first-draft recovery.
+    flags:
+      - --dag
+      - --dag-mode
+      - defeasible_human_scaffold
+      - --tutor-learner-dag
+    model_call_budget: 90
+
+scenarios:
+  campus_faq:
+    label: Campus FAQ triage
+    world: world_016_ai_syllabus_af1
+    summary: A team choosing the baseline a campus FAQ triage tool should be measured against.
+    max_turns: 10
+    safety_turns: 14
+
+  riverside_clinic:
+    label: Riverside Clinic scheduling
+    world: world_029_riverside_clinic
+    summary: A contemporary clinic scheduling inquiry with a short authored chain.
+    max_turns: 8
+    safety_turns: 12
+
+learner:
+  profile: diligent
+  model: codex_medium
+
+presets:
+  smoke:
+    models: [codex_medium]
+    arms: [bare, instrumented]
+    scenarios: [riverside_clinic]
+  default:
+    models: [codex_medium]
+    arms: [bare, instrumented]
+    scenarios: [campus_faq, riverside_clinic]
+  cross_model:
+    models: [codex_medium, claude_medium]
+    arms: [bare, instrumented]
+    scenarios: [riverside_clinic]
+
+budgets:
+  # Ceiling on total spawned dialogues, not on model calls; per-arm call
+  # budgets live on the arms and are passed through to the stub.
+  max_dialogues: 8
+  retries_per_job: 0
+  concurrency: 1
+  turn_timeout_ms: 1800000

@@ -15,6 +15,7 @@ import {
   detectTutorStubReleasePacingSignal,
   setTutorStubReleaseSpeed,
   tutorStubReleasePacingSnapshot,
+  tutorStubReleaseScheduleExhausted,
 } from '../services/tutorStubReleasePacing.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -405,4 +406,56 @@ process.stdin.on('end', () => {
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test('schedule exhaustion is reported only when every authored clue is out and nothing is due', () => {
+  assert.equal(tutorStubReleaseScheduleExhausted(null), false);
+  assert.equal(tutorStubReleaseScheduleExhausted({ schedule: [], dueNow: [], nextRelease: null }), false);
+  assert.equal(
+    tutorStubReleaseScheduleExhausted({
+      schedule: [{ premise: 'p_open', releasedTurn: 1 }],
+      dueNow: [],
+      nextRelease: null,
+    }),
+    true,
+  );
+  assert.equal(
+    tutorStubReleaseScheduleExhausted({
+      schedule: [
+        { premise: 'p_open', releasedTurn: 1 },
+        { premise: 'p_late', releasedTurn: null },
+      ],
+      dueNow: [],
+      nextRelease: { premise: 'p_late', releasedTurn: null },
+    }),
+    false,
+  );
+  assert.equal(
+    tutorStubReleaseScheduleExhausted({
+      schedule: [{ premise: 'p_open', releasedTurn: 1 }],
+      dueNow: [{ premise: 'p_open' }],
+      nextRelease: null,
+    }),
+    false,
+  );
+});
+
+test('a live pacing snapshot reports exhaustion only after the last clue is committed', () => {
+  const world = sampleWorld();
+  const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
+  assert.equal(tutorStubReleaseScheduleExhausted(tutorStubReleasePacingSnapshot(pacing, world)), false);
+
+  for (let turn = 1; turn <= 9; turn += 1) {
+    const update = advanceTutorStubReleasePacing({ pacing, world, turn, learnerText: 'Continue.' });
+    commitTutorStubReleasePacing({ pacing, world, turn, deliveredPremises: update.dueNow });
+    if (turn < 9) {
+      assert.equal(
+        tutorStubReleaseScheduleExhausted(tutorStubReleasePacingSnapshot(pacing, world)),
+        false,
+        `schedule should not read as spent at turn ${turn}`,
+      );
+    }
+  }
+
+  assert.equal(tutorStubReleaseScheduleExhausted(tutorStubReleasePacingSnapshot(pacing, world)), true);
 });

@@ -73,6 +73,9 @@ export function tutorStubDialogueCaseStatus(turn) {
   if (closure?.phase === 'awaiting_checkin') {
     return 'The conclusion has been stated; one optional final check-in remains.';
   }
+  if (assessment.finalSecretEntailed && assessment.secretStatedVia === 'voiced_derivation') {
+    return 'The learner reached the conclusion and said it in passing, but never claimed it as the answer.';
+  }
   if (assessment.finalSecretEntailed) {
     return 'The evidence supports the conclusion, but the learner has not fully stated it.';
   }
