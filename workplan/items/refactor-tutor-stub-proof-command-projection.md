@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-proof-command-projection
 title: Refactor tutor-stub proof-command projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -15,6 +15,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-dag-snapshot-projection
 links:
+  prs:
+    - 271
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -88,3 +90,7 @@ Log:
   The final-base overlap set passes 57/57; the complete contract passes root
   7,001/7,001 across 501 files and tutor-core 137/137 with zero skips. Static,
   manifest, and 212-item source-only gates remain green.
+- 2026-07-26 — PR #271 merged as `65e7b91f` with every CI lane green; the
+  serialized workplan render followed as `839ec636`. Closed this child and
+  handed the next bounded presentation seam to
+  `refactor-tutor-stub-interaction-mode-presentation`.
