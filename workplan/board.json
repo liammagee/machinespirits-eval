@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-26T03:36:05.454Z",
+  "generated": "2026-07-26T04:51:10.358Z",
   "counts": {
-    "total": 204,
+    "total": 205,
     "byStatus": {
       "done": 179,
       "blocked": 5,
@@ -9,13 +9,13 @@
       "triaged": 4,
       "active": 6,
       "archived": 4,
-      "review": 3
+      "review": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
       "infra": 46,
-      "maintenance": 48,
+      "maintenance": 49,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -556,6 +556,34 @@
         "lambda"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "hermetic-tap-summary-on-forced-exit",
+      "title": "Read the hermetic root verdict from a channel that survives forced exit",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "A backpressured-pipe reproduction fails on stdout three times out of three and succeeds on the file channel three times out of three; eight new tests in tests/hermeticTestRunner.test.js cover the completeness marker, the per-channel error text, the argument shape, both read paths, and a real forced-exit child; the full hermetic suite reads its verdict through the new file channel over 494 files and 6926 tests, with the only four failures traced to this worktree's symlinked node_modules and its directory name; lint, formatting, and workplan validation pass.",
+      "branch": "claude/hermetic-tap-summary",
+      "depends_on": [
+        "optimize-hermetic-test-suite"
+      ],
+      "links": {
+        "prs": [],
+        "notes": [],
+        "items": [
+          "optimize-hermetic-test-suite"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "hermetic"
+      ]
     },
     {
       "id": "refactor-tutor-stub-cli-help-projection",
