@@ -476,6 +476,7 @@
         "tests/tutorStubSessionHttp.test.js",
         "tests/tutorStubSessionRecipe.test.js",
         "tests/tutorStubSessionRuntime.test.js",
+        "tests/tutorStubSessionStatusPresentation.test.js",
         "tests/tutorStubSourceAccessibilityContract.test.js",
         "tests/tutorStubSpeakerPublicPremise.test.js",
         "tests/tutorStubStructuredFirstDraft.test.js",

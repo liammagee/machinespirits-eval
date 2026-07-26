@@ -508,6 +508,7 @@ import {
   projectTutorStubInteractionModeBannerLines,
   projectTutorStubInteractionModeLabel,
 } from '../services/tutorStubInteractionModePresentation.js';
+import { projectTutorStubSessionStatusLines } from '../services/tutorStubSessionStatusPresentation.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   MAX_TUTOR_STUB_RELEASE_SPEED,
@@ -21223,22 +21224,19 @@ async function main() {
 
   function printInteractiveStatus() {
     if (state.passthrough?.enabled) {
-      console.log(`${C.brightCyan}${C.bold}session status >${C.reset} passthrough · turn ${state.turns.length + 1}`);
-      console.log(
-        `${C.dim}  speaker model: ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  setup: ${state.world ? `${state.world.id} — ${state.world.title}` : state.topic}; public messages replayed next turn: ${state.history.length}${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  appearance: ${cliPresentation.themeLabel} · ${cliPresentation.motion} motion · ${cliPresentation.colorMode}${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  voice: ${state.voice?.enabled ? 'on' : 'off'} · ${state.voice?.model} · ${state.voice?.voice} · /voice${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  one speaker call per turn · classifier, DAG, register, response checks, releases, feedback, and summaries off${C.reset}\n`,
-      );
+      for (const line of projectTutorStubSessionStatusLines({
+        status: {
+          surface: 'passthrough',
+          turn: state.turns.length + 1,
+          model: { ref: state.modelRef, provider: state.resolved.provider, model: state.resolved.model },
+          setup: state.world ? `${state.world.id} — ${state.world.title}` : state.topic,
+          publicMessageCount: state.history.length,
+          appearance: cliPresentation,
+          voice: state.voice,
+        },
+        colors: C,
+      }))
+        console.log(line);
       return;
     }
     const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
@@ -21260,94 +21258,67 @@ async function main() {
           ? 'warming'
           : 'idle'
       : 'off';
-    console.log(
-      `${C.brightCyan}${C.bold}session status >${C.reset} ${interactionModeLabel()} · turn ${state.turns.length + 1}`,
-    );
-    console.log(`${C.dim}  learner: ${profile.id} — ${profile.name}; suggested reply ${suggestion}${C.reset}`);
-    console.log(
-      `${C.dim}  tutor: ${state.tuning?.activeRef || state.tutorInstance?.ref || 'unpartitioned'} · model ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  model routing: ${
-        state.modelRouting?.allRolesOverrideRef
-          ? `one model for all roles (${state.modelRouting.allRolesOverrideRef})`
-          : `interpretation ${liveModelRoleRef('classifier')} · reasoning ${liveModelRoleRef('reasoning')} · learner voice ${liveModelRoleRef('learner')}`
-      }${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  learned committee: ${
-        state.committee?.enabled
-          ? `on · ${state.committee.miniModel} · warrant-gap trigger · fallback ${state.committee.fallbackPolicy}`
-          : 'off · frontier-only responses'
-      } · /committee${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  voice: ${state.voice?.enabled ? 'on' : 'off'} · ${state.voice?.model} · ${state.voice?.voice} · separate renderer; /voice${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  teaching approach: ${plainPolicyLabel(state.register?.policy)} (${policy}); style range ${state.register?.temperature}; evidence-memory dropout ${dropout.rate}; clue pace ${releasePacing?.baseSpeed ?? 1}x base / ${releasePacing?.effectiveSpeed ?? 1}x now${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  random performance: ${
-        state.randomPerformance?.enabled
-          ? randomPerformanceAxes.length
-            ? `on — assessment-independent ${randomPerformanceAxes.join(' + ')}`
-            : 'on — armed; both axes explicitly directed'
-          : 'off'
-      } · /random${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  light adaptation: ${
-        state.lightAdaptation?.enabled
-          ? `on — seeded style + character shift after ${state.lightAdaptation.threshold} consecutive confused/frustrated turns`
-          : 'off'
-      } · /light${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  directed performance: style ${directedRegister || 'auto'} · character ${directedCharacter || 'auto'} · /register · /character${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  director request: ${
-        directorDirection
-          ? `${oneLine(directorDirection.text, { max: 120 })} · from tutor turn ${directorDirection.effectiveFromTurn}`
-          : 'none'
-      } · /meta · /director${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  conversation: ${displayDiagnosticLabel(closure)}; private coaching: ${coachPending} waiting, ${state.coach?.history?.length || 0} used${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  auto handoff: ${
-        pendingAutoRequest
-          ? `queued after tutor turn ${pendingAutoRequest.afterTurn} · ${
-              pendingAutoRequest.requestedTurns === null
-                ? 'until grounded'
-                : `${pendingAutoRequest.requestedTurns} turn${pendingAutoRequest.requestedTurns === 1 ? '' : 's'}`
-            }`
-          : state.interaction?.autoRunning
-            ? 'running'
-            : 'none'
-      } · /auto${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  tutor ratings: ${state.turnFeedback?.enabled ? `on · ${tutorStubTurnFeedbackLabel(tutorStubTurnFeedbackEnvelope(state.turnFeedback))}` : 'off'} · optional and private${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  response details: ${state.responseDetails?.enabled ? 'on · model plus foreground timing shown before tutor speech' : 'off'} · /details${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  tuning: ${state.tuning?.mode || 'off'} · stable v${state.tuning?.manifest?.stableVersion ?? state.tutorInstance?.sourceVersion ?? 1}${state.tuning?.manifest?.canaryVersion ? ` · canary v${state.tuning.manifest.canaryVersion}` : ''} · ${state.tuning?.sessionCandidateIds?.length || 0} session candidates${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  appearance: ${cliPresentation.themeLabel} · ${cliPresentation.motion} motion${
-        cliPresentation.requestedMotion === cliPresentation.motion
-          ? ''
-          : ` (${cliPresentation.requestedMotion} selected)`
-      } · ${cliPresentation.colorMode}${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  explanations: ${state.explanatoryDebug?.enabled ? `on (${state.explanatoryDebug.format === 'technical' ? 'technical details' : 'plain'})` : 'off'} · commands remain live while models work · /analysis · /transcript · /help${C.reset}\n`,
-    );
+    const modelRouting = state.modelRouting?.allRolesOverrideRef
+      ? { allRolesOverrideRef: state.modelRouting.allRolesOverrideRef }
+      : {
+          allRolesOverrideRef: null,
+          classifierRef: liveModelRoleRef('classifier'),
+          reasoningRef: liveModelRoleRef('reasoning'),
+          learnerRef: liveModelRoleRef('learner'),
+        };
+    for (const line of projectTutorStubSessionStatusLines({
+      status: {
+        surface: 'normal',
+        modeLabel: interactionModeLabel(),
+        turn: state.turns.length + 1,
+        learner: { id: profile.id, name: profile.name, suggestion },
+        tutor: { ref: state.tuning?.activeRef || state.tutorInstance?.ref || 'unpartitioned' },
+        model: { ref: state.modelRef, provider: state.resolved.provider, model: state.resolved.model },
+        modelRouting,
+        committee: state.committee,
+        voice: state.voice,
+        teaching: {
+          approachLabel: plainPolicyLabel(state.register?.policy),
+          policyId: policy,
+          styleRange: state.register?.temperature,
+          dropoutRate: dropout.rate,
+          baseSpeed: releasePacing?.baseSpeed ?? 1,
+          effectiveSpeed: releasePacing?.effectiveSpeed ?? 1,
+        },
+        randomPerformance: { enabled: state.randomPerformance?.enabled, axes: randomPerformanceAxes },
+        lightAdaptation: state.lightAdaptation,
+        directedPerformance: { register: directedRegister, character: directedCharacter },
+        directorRequest: directorDirection
+          ? {
+              text: oneLine(directorDirection.text, { max: 120 }),
+              effectiveFromTurn: directorDirection.effectiveFromTurn,
+            }
+          : null,
+        conversation: {
+          closureLabel: displayDiagnosticLabel(closure),
+          coachPending,
+          coachUsed: state.coach?.history?.length || 0,
+        },
+        autoHandoff: { pending: pendingAutoRequest, running: state.interaction?.autoRunning },
+        turnFeedback: {
+          enabled: state.turnFeedback?.enabled,
+          label: state.turnFeedback?.enabled
+            ? tutorStubTurnFeedbackLabel(tutorStubTurnFeedbackEnvelope(state.turnFeedback))
+            : null,
+        },
+        responseDetails: state.responseDetails,
+        tuning: {
+          mode: state.tuning?.mode,
+          stableVersion: state.tuning?.manifest?.stableVersion ?? state.tutorInstance?.sourceVersion ?? 1,
+          canaryVersion: state.tuning?.manifest?.canaryVersion,
+          sessionCandidateCount: state.tuning?.sessionCandidateIds?.length || 0,
+        },
+        appearance: cliPresentation,
+        explanatoryDebug: state.explanatoryDebug,
+      },
+      colors: C,
+    }))
+      console.log(line);
   }
 
   function cliDirectorApplicationContext() {

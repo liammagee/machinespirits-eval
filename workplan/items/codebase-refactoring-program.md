@@ -53,6 +53,7 @@ links:
     - refactor-tutor-stub-dag-snapshot-projection
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
+    - refactor-tutor-stub-session-status-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -411,3 +412,14 @@ Log:
   and mode-switch output, 30/30 focused tests, and complete root 7,008-test
   plus tutor-core 137-test zero-skip parity. Mode state, prompts, traces,
   terminal writes, commands, and automation remain CLI-owned.
+- 2026-07-26 — PR #273 merged the interaction-mode child as `c074469c` with
+  every CI lane green; the serialized render followed as `740a0981`. Closed
+  that child and activated `refactor-tutor-stub-session-status-presentation`
+  to move only normal and passthrough `/status` serialization while retaining
+  state derivation, helper calls, slash dispatch, and terminal writes in the
+  CLI.
+- 2026-07-26 — The session-status child reached review with one pure normal and
+  passthrough projector, a 29-line CLI reduction, byte-identical live `/status`
+  output, 39/39 focused tests, and complete root 7,022-test plus tutor-core
+  137-test zero-skip parity. State derivation, helper calls, slash dispatch,
+  terminal writes, and runtime behavior remain CLI-owned.
