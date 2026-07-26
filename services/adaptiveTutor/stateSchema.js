@@ -83,6 +83,33 @@ const tutorInternalSchema = z.object({
   superegoAuthoredPrompt: z.string().default(''),
 });
 
+// Cross-stack strategy-refusal instrumentation. The learner node emits a
+// public trap event when it plays the configured trigger signal; tutorEmit
+// records the actually delivered policy action. The refusal arm can therefore
+// detect a repeated post-trigger strategy without reading the scenario's
+// expected_strategy_shift answer key.
+const trapEventSchema = z.object({
+  turn: z.number().int(),
+  type: z.literal('configured_learner_trigger'),
+  signal: z.string().default(''),
+});
+
+const policyActionHistoryEntrySchema = z.object({
+  turn: z.number().int(),
+  action: z.string(),
+});
+
+const strategyRefusalSchema = z.object({
+  trapTurn: z.number().int(),
+  decisionTurn: z.number().int(),
+  previousAction: z.string(),
+  proposedAction: z.string(),
+  status: z.enum(['not_required', 'pending', 'resolved']),
+  resolution: z.enum(['none', 'switch', 'defend']).default('none'),
+  resolvedAction: z.string().default(''),
+  reason: z.string().default(''),
+});
+
 // A14 evidence-bound adaptive controller — Stage 1 schema.
 //
 // Two new top-level state fields the existing nodes do not yet populate:
@@ -194,6 +221,9 @@ export {
   hypothesisSchema,
   revisionLedgerEntrySchema,
   adaptationPolicyModeSchema,
+  trapEventSchema,
+  policyActionHistoryEntrySchema,
+  strategyRefusalSchema,
 };
 
 export const initialLearnerProfile = () => learnerProfileSchema.parse({});
@@ -278,6 +308,19 @@ export const AdaptiveTutorState = new StateSchema({
     z.array(revisionLedgerEntrySchema).default(() => []),
     { reducer: evidenceLogReducer },
   ),
+
+  // Research-visible event/action channels for the bounded strategy-refusal
+  // architecture. Other architectures populate the two histories but never
+  // read them; strategyRefusal remains null outside the experimental arm.
+  trapEvents: new ReducedValue(
+    z.array(trapEventSchema).default(() => []),
+    { reducer: evidenceLogReducer },
+  ),
+  policyActionHistory: new ReducedValue(
+    z.array(policyActionHistoryEntrySchema).default(() => []),
+    { reducer: evidenceLogReducer },
+  ),
+  strategyRefusal: strategyRefusalSchema.nullable().default(null),
 
   // Plan 2.0 closed-loop adaptation contract channels. These are not read by
   // legacy architectures; the `state_policy_closed_loop` graph writes them.

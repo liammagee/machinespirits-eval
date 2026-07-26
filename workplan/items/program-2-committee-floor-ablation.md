@@ -1,13 +1,13 @@
 ---
 id: program-2-committee-floor-ablation
 title: "Price the fine-tune: live committee with the untuned mini"
-status: triaged
+status: active
 type: experiment
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-07-22
-updated: 2026-07-22
+updated: 2026-07-26
 verification: "The exact Phase 5b design with one variable changed — the untuned same-lineage floor model (program2-floor-instruct-q8) in the mini seat, fallback policy v2 — run under a small frozen prereg (12 committee-floor dialogues + stationarity-pooled controls, seeds and bars fixed before launch), yields a pooled warrant-compliance rate whose comparison against both the pooled control (0.150) and the trained-mini committee reference (0.386, 5b §8) cleanly attributes the live gain between harness and weights."
 claim_status: planned
 links:
@@ -23,6 +23,7 @@ tags:
   - committee
   - ablation
 milestone: adaptive-tutor-evidence-v1
+branch: codex/program2-committee-floor-ablation
 ---
 
 The one factorial cell the live program never ran: every live committee

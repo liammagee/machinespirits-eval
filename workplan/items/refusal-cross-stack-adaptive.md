@@ -1,15 +1,15 @@
 ---
 id: refusal-cross-stack-adaptive
 title: "Exploration 5: cross-stack transfer — the refusal gate on the adaptive LangGraph runner"
-status: triaged
+status: done
 type: experiment
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-07-05
-updated: 2026-07-05
-branch: worktree-strategy-ledger-followups
-verification: "Scoped implementation plan validated against services/adaptiveTutor/; a trap-suite smoke with strategy_shift_correctness as the native endpoint; reads pre-stated before any paid run."
+updated: 2026-07-26
+branch: codex/refusal-cross-stack-adaptive
+verification: "Cell 201 passes validate-config and the hermetic adaptive-cell smoke; npm run adaptive:smoke-strategy-refusal runs the frozen three-scenario state_policy +/- refusal pair with one resolved switch, zero false activations, and no DB writes; npm test and npm run lint pass."
 claim_status: exploratory
 links:
   items: [content-compulsion-promotion]
@@ -44,3 +44,14 @@ with ADAPTIVE_TUTOR_LLM=mock for zero-DB validation (eval-cli --dry-run
 WRITES the prod DB), and expect the refusal analogue to need the
 runner's own trap-fire events as its criterial signal, not the
 derivation stack's regressions.
+
+2026-07-26 Codex: Activated after explicit operator confirmation in a fresh
+current-main worktree. Implementation is restricted to the adaptive runner's
+native trap signals and deterministic mock-mode verification; no paid run is
+licensed by this activation.
+
+2026-07-26 Codex: Implemented `cell_201_adaptive_strategy_refusal` and the
+bounded refusal gate. The deterministic paired v1 smoke produced 0/3 strict
+matches for the baseline and 1/3 for the refusal arm, with exactly one resolved
+switch and zero false activations. This verifies the mechanism path only; it is
+not an efficacy claim and no paid run was performed.

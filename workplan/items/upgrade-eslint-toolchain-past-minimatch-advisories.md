@@ -1,13 +1,13 @@
 ---
 id: upgrade-eslint-toolchain-past-minimatch-advisories
 title: Upgrade ESLint toolchain past minimatch advisories
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: codex
 source: review
 created: 2026-07-25
-updated: 2026-07-25
+updated: 2026-07-26
 branch: codex/upgrade-eslint-toolchain-past-minimatch-advisories
 verification: >-
   A clean full dependency audit reports no high or critical advisory rooted in

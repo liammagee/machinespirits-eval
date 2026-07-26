@@ -1,14 +1,13 @@
 ---
 id: refusal-defense-adjudication
 title: "Exploration 4: adjudicating the defense — does a hollow defense earn a second refusal?"
-status: triaged
+status: dropped
 type: experiment
 priority: P3
 owner: unassigned
 source: manual
 created: 2026-07-05
-updated: 2026-07-05
-branch: worktree-strategy-ledger-followups
+updated: 2026-07-26
 verification: "Design gated on the promotion verdict + defense base-rate; executes only if defends are frequent enough to matter (>= ~20% of refusals) and promotion confirms."
 claim_status: exploratory
 links:

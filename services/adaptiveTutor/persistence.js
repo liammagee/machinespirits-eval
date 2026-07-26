@@ -63,6 +63,9 @@ function extractTurnTrace(history) {
       hypotheses: [],
       evidenceLog: [],
       revisionLedger: [],
+      trapEvents: [],
+      policyActionHistory: [],
+      strategyRefusal: null,
       adaptationPolicyMode: null,
       learnerStateBelief: null,
       selectedPedagogicalAction: null,
@@ -118,6 +121,15 @@ function extractTurnTrace(history) {
     // the per-turn ledger length stays 0 (the analysable S0/S1 contrast).
     if (Array.isArray(v.revisionLedger)) {
       existing.revisionLedger = v.revisionLedger;
+    }
+    if (Array.isArray(v.trapEvents)) {
+      existing.trapEvents = v.trapEvents;
+    }
+    if (Array.isArray(v.policyActionHistory)) {
+      existing.policyActionHistory = v.policyActionHistory;
+    }
+    if (v.strategyRefusal?.decisionTurn === turn) {
+      existing.strategyRefusal = v.strategyRefusal;
     }
     if (v.adaptationPolicyMode) {
       existing.adaptationPolicyMode = v.adaptationPolicyMode;
@@ -185,7 +197,9 @@ function buildTraceJson({
     // schemaVersion 6 (Plan 2.4) adds locked curriculum/world adaptation spec
     // identity and hash. The spec can constrain policy; it is not a success
     // evaluator.
-    schemaVersion: 6,
+    // schemaVersion 7 adds the public trigger-event and delivered-policy
+    // histories plus the bounded strategy-refusal decision/resolution.
+    schemaVersion: 7,
     profileName,
     scenario: {
       id: scenario.id,
@@ -204,6 +218,9 @@ function buildTraceJson({
       finalEvidenceLog: runResult.final.evidenceLog ?? [],
       finalHypotheses: runResult.final.hypotheses ?? [],
       finalRevisionLedger: runResult.final.revisionLedger ?? [],
+      finalTrapEvents: runResult.final.trapEvents ?? [],
+      finalPolicyActionHistory: runResult.final.policyActionHistory ?? [],
+      finalStrategyRefusal: runResult.final.strategyRefusal ?? null,
       adaptationPolicyMode: runResult.final.adaptationPolicyMode ?? 'legacy',
       finalLearnerStateBelief: runResult.final.learnerStateBelief ?? null,
       finalSelectedPedagogicalAction: runResult.final.selectedPedagogicalAction ?? null,
@@ -231,6 +248,9 @@ function buildTraceJson({
       finalEvidenceLog: counterfactualResult.final.evidenceLog ?? [],
       finalHypotheses: counterfactualResult.final.hypotheses ?? [],
       finalRevisionLedger: counterfactualResult.final.revisionLedger ?? [],
+      finalTrapEvents: counterfactualResult.final.trapEvents ?? [],
+      finalPolicyActionHistory: counterfactualResult.final.policyActionHistory ?? [],
+      finalStrategyRefusal: counterfactualResult.final.strategyRefusal ?? null,
       adaptationPolicyMode: counterfactualResult.final.adaptationPolicyMode ?? 'legacy',
       finalLearnerStateBelief: counterfactualResult.final.learnerStateBelief ?? null,
       finalSelectedPedagogicalAction: counterfactualResult.final.selectedPedagogicalAction ?? null,
@@ -292,6 +312,7 @@ function buildResultRow({
     adaptationPolicyMode: runResult.final.adaptationPolicyMode ?? 'legacy',
     adaptationContracts: (traceJson.original.perTurn || []).map((t) => t.adaptationContract).filter(Boolean),
     interventionLedger: runResult.final.interventionLedger ?? [],
+    strategyRefusal: runResult.final.strategyRefusal ?? null,
     constraintViolations: runResult.final.constraintViolations,
     counterfactual: traceJson.counterfactual
       ? {

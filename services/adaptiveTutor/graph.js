@@ -101,6 +101,11 @@ const SUPPORTED_ARCHITECTURES = Object.freeze([
   'recognition_named_patterns',
   'ego_superego',
   'state_policy',
+  // Exploration 5: state_policy plus one bounded post-trigger refusal when
+  // the tutor proposes the same policy action it used immediately before the
+  // configured learner trigger. The gate sees runtime events/actions only;
+  // it never receives expected_strategy_shift.
+  'state_policy_with_strategy_refusal',
   'state_policy_closed_loop',
   'state_policy_with_validator',
   'state_policy_minimal_profile',
@@ -452,18 +457,36 @@ async function tutorEgoRevision(state) {
     tutorInternal: state.tutorInternal,
     learnerProfile: state.learnerProfile,
   });
+  const pendingRefusal =
+    state.strategyRefusal?.status === 'pending' && state.strategyRefusal.decisionTurn === state.turn
+      ? state.strategyRefusal
+      : null;
   return {
     tutorInternal: {
       ...state.tutorInternal,
       egoRevision: out.text,
       policyAction: out.policyAction,
     },
+    ...(pendingRefusal
+      ? {
+          strategyRefusal: {
+            ...pendingRefusal,
+            status: 'resolved',
+            resolution: out.policyAction === pendingRefusal.proposedAction ? 'defend' : 'switch',
+            resolvedAction: out.policyAction,
+          },
+        }
+      : {}),
   };
 }
 
 async function tutorEmit(state) {
   const finalText = state.tutorInternal.egoRevision || state.tutorInternal.egoDraft;
-  return { dialogue: [{ role: 'tutor', content: finalText }] };
+  const action = state.tutorInternal.policyAction || '';
+  return {
+    dialogue: [{ role: 'tutor', content: finalText }],
+    ...(action ? { policyActionHistory: [{ turn: state.turn, action }] } : {}),
+  };
 }
 
 // A14 Stage 2a: evidence extractor node. Reads the most recent learner
@@ -661,8 +684,82 @@ async function learnerTurn(state) {
       turn: state.turn,
       actionType,
     }));
-  return { dialogue: [{ role: 'learner', content: text }], turn: state.turn + 1 };
+  const triggerFired =
+    state.turn === state.hiddenLearnerState?.triggerTurn && Boolean(state.hiddenLearnerState?.triggerSignal);
+  return {
+    dialogue: [{ role: 'learner', content: text }],
+    turn: state.turn + 1,
+    ...(triggerFired
+      ? {
+          trapEvents: [
+            {
+              turn: state.turn,
+              type: 'configured_learner_trigger',
+              signal: String(text || ''),
+            },
+          ],
+        }
+      : {}),
+  };
 }
+
+// A bounded refusal of policy repetition, not an answer-key oracle. The gate
+// fires only on the tutor decision immediately following a recorded learner
+// trigger, compares the proposed action with the action delivered immediately
+// before that trigger, and asks the normal ego revision pass to either switch
+// or explicitly defend the repetition. It never rechecks the resolution, so
+// at most one refusal occurs for a trigger.
+async function strategyRefusalGate(state) {
+  const trap = [...(state.trapEvents || [])].reverse().find((event) => event.turn === state.turn - 1);
+  if (!trap) return {};
+
+  if (state.strategyRefusal?.trapTurn === trap.turn) return {};
+
+  const incumbent = [...(state.policyActionHistory || [])].reverse().find((entry) => entry.turn === trap.turn);
+  const proposedAction = state.tutorInternal?.policyAction || '';
+  if (!incumbent?.action || !proposedAction) return {};
+
+  if (incumbent.action !== proposedAction) {
+    return {
+      strategyRefusal: {
+        trapTurn: trap.turn,
+        decisionTurn: state.turn,
+        previousAction: incumbent.action,
+        proposedAction,
+        status: 'not_required',
+        resolution: 'none',
+        resolvedAction: proposedAction,
+        reason: 'policy_changed_after_trigger',
+      },
+    };
+  }
+
+  const refusal = [
+    `[strategy-refusal] The proposed policy repeats ${proposedAction} after the learner trigger at turn ${trap.turn}.`,
+    'Do not repeat it by inertia: either switch to a materially different policy action, or retain it only with an explicit, evidence-based defense tied to the learner signal.',
+  ].join(' ');
+  return {
+    tutorInternal: {
+      ...state.tutorInternal,
+      superegoFeedback: [state.tutorInternal?.superegoFeedback, refusal].filter(Boolean).join('\n'),
+    },
+    strategyRefusal: {
+      trapTurn: trap.turn,
+      decisionTurn: state.turn,
+      previousAction: incumbent.action,
+      proposedAction,
+      status: 'pending',
+      resolution: 'none',
+      resolvedAction: '',
+      reason: 'policy_repeated_after_trigger',
+    },
+  };
+}
+
+const routeAfterStrategyRefusal = (state) =>
+  state.strategyRefusal?.status === 'pending' && state.strategyRefusal.decisionTurn === state.turn
+    ? 'tutorEgoRevision'
+    : 'constraintCheck';
 
 const routeAfterConstraint = (state) => {
   const violationsThisTurn = state.constraintViolations.length > 0 && state.tutorInternal.egoRevision === '';
@@ -1156,7 +1253,8 @@ export function buildGraph(options = {}) {
       ]);
   }
 
-  // state_policy, state_policy_with_validator, bilateral_tom,
+  // state_policy, state_policy_with_validator,
+  // state_policy_with_strategy_refusal, bilateral_tom,
   // bilateral_tom_named_patterns, and the three state_policy_*_profile
   // ablations share the bulk of the graph. Conditional slots: validator
   // inserts between superego and constraint check (post-policy stricter
@@ -1167,6 +1265,7 @@ export function buildGraph(options = {}) {
   // the state_policy topology unchanged but project the LLM-emitted
   // profile to a subset of fields via PROFILE_PROJECTIONS.
   const includeValidator = architecture === 'state_policy_with_validator';
+  const includeStrategyRefusal = architecture === 'state_policy_with_strategy_refusal';
   const includeTomTracker =
     architecture === 'bilateral_tom' ||
     architecture === 'bilateral_tom_named_patterns' ||
@@ -1240,6 +1339,10 @@ export function buildGraph(options = {}) {
     g.addNode('tutorValidator', tutorValidator)
       .addEdge('tutorSuperegoReview', 'tutorValidator')
       .addEdge('tutorValidator', 'constraintCheck');
+  } else if (includeStrategyRefusal) {
+    g.addNode('strategyRefusalGate', strategyRefusalGate)
+      .addEdge('tutorSuperegoReview', 'strategyRefusalGate')
+      .addConditionalEdges('strategyRefusalGate', routeAfterStrategyRefusal, ['tutorEgoRevision', 'constraintCheck']);
   } else {
     g.addEdge('tutorSuperegoReview', 'constraintCheck');
   }

@@ -17,3 +17,9 @@ Ref impact: <N/A | repository release | paper checkpoint | experiment checkpoint
 - [ ] Any managed tag will be created only after merge on the validated `main` commit
 
 ## Verification
+
+Tutor PR benchmark (required when tutor generation or deterministic tutor audits can change):
+
+- [ ] N/A — this PR cannot affect tutor generation or its audits
+- [ ] Ran `npm run tutor:stub:pr-benchmark` on the final commit
+- Terminal status / local report path: <N/A or status + path>

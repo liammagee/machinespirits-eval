@@ -156,7 +156,7 @@ Cells with `runner: adaptive` in `tutor-agents.yaml` bypass `evaluationRunner.js
 - **Scenarios**: `config/adaptive-trap-scenarios.yaml` (NOT `suggestion-scenarios.yaml`); `config/cross-suite-trap-scenarios.yaml` for the §6.8.7 cross-suite cells (124-125). Both runners + both scorers (`analyze-strategy-shift.js`, `grade-adaptive-dialogue.js`) read either file unchanged — same scenario schema.
 - **Mock vs real LLM**: `ADAPTIVE_TUTOR_LLM=mock` (default, deterministic — no paid API calls) or `ADAPTIVE_TUTOR_LLM=real` (uses normal provider env vars, e.g. `OPENROUTER_API_KEY`)
 - **Smoke scripts**: `scripts/run-adaptive-cell-smoke.js`, `scripts/run-adaptive-persistence-smoke.js`, `scripts/run-langgraph-smoke.js`
-- **Active cells**: 110 (langgraph_adaptive), 111-113 (A13 conditions C1/C2/C4), 124 (cross-suite, §6.8.7). NOTE cells 114 and 125 use `runner: standard` (tutor-core dialogue engine) on the trap suites — their own adapter script (`run-dialogue-engine-trap-baseline.js`), not this runner.
+- **Active cells**: 110 (langgraph_adaptive), 111-113 (A13 conditions C1/C2/C4), 124 (cross-suite, §6.8.7), and 201 (bounded post-trigger strategy-refusal arm). NOTE cells 114 and 125 use `runner: standard` (tutor-core dialogue engine) on the trap suites — their own adapter script (`run-dialogue-engine-trap-baseline.js`), not this runner.
 
 ### Id-Director Architecture (cells 101-109)
 

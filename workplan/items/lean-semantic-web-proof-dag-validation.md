@@ -1,13 +1,13 @@
 ---
 id: lean-semantic-web-proof-dag-validation
 title: Evaluate Lean certificates and Semantic Web exports for proof DAGs
-status: review
+status: done
 type: research
 priority: P2
 owner: codex
 source: manual
 created: 2026-06-24
-updated: 2026-07-25
+updated: 2026-07-26
 branch: codex/lean-semantic-web-proof-dag-validation
 verification: A small Lantern or Nocturne slice exports an authored Lean proof check and RDF/PROV graphs that pass SHACL validation without changing the live JS proof gate.
 claim_status: future
