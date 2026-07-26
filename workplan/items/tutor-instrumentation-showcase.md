@@ -26,7 +26,7 @@ tags:
   - tutor-stub
   - instrument
   - demo
-branch: claude/tutor-instrumentation-ab
+branch: claude/tutor-closure-drive
 ---
 
 The frozen A/B answers what a given advisory block buys on one recorded turn.
@@ -99,6 +99,21 @@ Design decisions worth keeping:
   spine, so the A/B's renderer does not apply. Each arm gets a full-height
   column and the columns align by turn index; a cell past the end of a shorter
   dialogue says so rather than shifting rows out of alignment.
+- **The first showcase run resolved nothing, for two reasons that had nothing to
+  do with the harness.** Both instrumented dialogues ran to the turn cap with
+  `assertedSecret: false` and bottleneck `assertion_gap`. The learner had in fact
+  stated the concealed conclusion, through the DAG's `derive` channel, but
+  `assessLearnerDag` computed `assertedSecret` only from the `assertAnswer` slot,
+  so a conclusion voiced in plain words scored as never voiced. Separately, both
+  arms kept selecting `stage_next_step` after the release schedule was spent,
+  sending the composer after a clue that no longer exists — and in Campus FAQ the
+  culprit was not the action-family selector (which chose `compress_sayback`
+  correctly on turn 9) but `applyTutorStubConversationalCompletionSelection`
+  overwriting it with an instruction to introduce new public evidence. Both are
+  fixed on `claude/tutor-closure-drive`: the snapshot now records
+  `voicedSecretDerivation` and the assessment reports `secretStatedVia`, and
+  `tutorStubReleaseScheduleExhausted` redirects both override sites to
+  `compress_sayback`.
 
 Standing limitation, stated in the config, the service header, `report.md`, and
 on the rendered page: **this is not a controlled comparison.** Each arm has its
