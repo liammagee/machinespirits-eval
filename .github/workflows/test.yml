@@ -55,6 +55,7 @@ jobs:
     needs: test-contract
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         node-version: [20, 22]
         shard: [1, 2]
@@ -94,6 +95,9 @@ jobs:
 
       - name: Run the concurrent terminal lane without forced exit
         run: npm run test:pty:ci
+
+      - name: Run the focused lifecycle lane without forced exit
+        run: npm run test:lifecycle:ci
 
   risk-coverage:
     runs-on: ubuntu-latest

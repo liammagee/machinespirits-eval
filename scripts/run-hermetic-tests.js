@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -22,6 +23,14 @@ const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 
 const VALID_SUITES = new Set(['all', 'root', 'core']);
 const CHILD_STDIO_DRAIN_IDLE_MS = 2_000;
 const CHILD_STDIO_DRAIN_MAX_MS = 10_000;
+const TEST_SHARD_SEED = 'hermetic-v1:1491';
+const SLOW_FILE_LIMIT = 8;
+const TWO_WAY_SHARD_OVERRIDES = new Map([
+  // The timing reporter identifies this model-free subprocess suite as the
+  // dominant shard-2 worker. This measured correction reduces the critical
+  // path while every other path retains stable hash membership.
+  ['tests/tutorStubFirstDraftOuterLoop.test.js', 0],
+]);
 
 export { discoverCoreTestFiles, discoverRootTestFiles } from './hermetic-test-contract.js';
 
@@ -38,7 +47,13 @@ function parseShard(value) {
 
 export function selectTestShard(files, shard) {
   if (!shard) return [...files];
-  return files.filter((_, fileIndex) => fileIndex % shard.total === shard.index - 1);
+  return files.filter((file) => {
+    const normalizedFile = file.replaceAll('\\', '/');
+    const overrideIndex = shard.total === 2 ? TWO_WAY_SHARD_OVERRIDES.get(normalizedFile) : undefined;
+    if (overrideIndex !== undefined) return overrideIndex === shard.index - 1;
+    const digest = createHash('sha256').update(`${TEST_SHARD_SEED}:${normalizedFile}`).digest();
+    return digest.readUInt32BE(0) % shard.total === shard.index - 1;
+  });
 }
 
 export function parseRunnerArgs(argv = []) {
@@ -109,9 +124,23 @@ export function createIsolatedPaths(root) {
   };
 }
 
-export function buildRootTestArgs({ projectRoot = PROJECT_ROOT, forceExit = true, forwarded = [], testFiles } = {}) {
+export function buildRootTestArgs({
+  projectRoot = PROJECT_ROOT,
+  forceExit = true,
+  forwarded = [],
+  testFiles,
+  timingPath,
+} = {}) {
   const selectedFiles = testFiles || (forwarded.length ? forwarded : discoverRootTestFiles(projectRoot));
-  return ['--test', '--test-reporter=tap', ...(forceExit ? ['--test-force-exit'] : []), ...selectedFiles];
+  const reporters = timingPath
+    ? [
+        '--test-reporter=tap',
+        '--test-reporter-destination=stdout',
+        `--test-reporter=${path.join(projectRoot, 'scripts/hermetic-timing-reporter.js')}`,
+        `--test-reporter-destination=${timingPath}`,
+      ]
+    : ['--test-reporter=tap'];
+  return ['--test', ...reporters, ...(forceExit ? ['--test-force-exit'] : []), ...selectedFiles];
 }
 
 export function buildCoreTestArgs({ projectRoot = PROJECT_ROOT, forwarded = [], reportPath } = {}) {
@@ -138,11 +167,13 @@ export function buildTestPhases(options, projectRoot = PROJECT_ROOT, reportRoot 
       forceExit: options.forceExit,
       shard: options.shard,
       selectedFiles,
+      reportPath: path.join(reportRoot, 'root-node-test-timings.jsonl'),
       args: buildRootTestArgs({
         projectRoot,
         forceExit: options.forceExit,
         forwarded: options.forwarded,
         testFiles: options.shard ? selectedFiles : undefined,
+        timingPath: path.join(reportRoot, 'root-node-test-timings.jsonl'),
       }),
     });
   }
@@ -274,6 +305,33 @@ function readPhaseSummary(phase, result, projectRoot) {
   return parseVitestJsonSummary(fs.readFileSync(phase.reportPath, 'utf8'), projectRoot);
 }
 
+export function parseRootTimingReport(reportText) {
+  return String(reportText)
+    .split(/\r?\n/u)
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .sort((left, right) => right.durationMs - left.durationMs || left.file.localeCompare(right.file));
+}
+
+function printRootTimingSummary(phase) {
+  if (phase.phase !== 'root' || !fs.existsSync(phase.reportPath)) return;
+  const timings = parseRootTimingReport(fs.readFileSync(phase.reportPath, 'utf8'));
+  if (timings.length === 0) return;
+  const slowest = timings
+    .slice(0, SLOW_FILE_LIMIT)
+    .map(({ file, durationMs, failures }) => `${file}=${durationMs.toFixed(0)}ms${failures ? `/${failures}fail` : ''}`)
+    .join(', ');
+  console.log(`[test:hermetic] root slow files: ${slowest}`);
+}
+
+export function formatPhaseFailureDiagnostic(phase, result) {
+  const exit = result.signal ? `signal=${result.signal}` : `code=${result.code}`;
+  return [
+    `[test:hermetic] ${phase.phase} failed ${exit}; selected_files=${phase.selectedFiles.length}`,
+    ...phase.selectedFiles.map((file) => `[test:hermetic] selected: ${file}`),
+  ].join('\n');
+}
+
 export async function runHermeticTests(argv = process.argv.slice(2)) {
   const options = parseRunnerArgs(argv);
   const manifest = loadTestManifest(PROJECT_ROOT);
@@ -315,12 +373,17 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
         onChild: (child) => (currentChild = child),
       });
       currentChild = null;
+      printRootTimingSummary(phase);
       if (result.signal) {
         if (options.quiet) await replayCapturedOutput(result);
+        console.error(formatPhaseFailureDiagnostic(phase, result));
         interruptedSignal = result.signal;
         return 1;
       }
-      if (options.quiet && result.code !== 0) await replayCapturedOutput(result);
+      if (result.code !== 0) {
+        if (options.quiet) await replayCapturedOutput(result);
+        console.error(formatPhaseFailureDiagnostic(phase, result));
+      }
       let phaseSummary;
       try {
         phaseSummary = validatePhaseSummary({

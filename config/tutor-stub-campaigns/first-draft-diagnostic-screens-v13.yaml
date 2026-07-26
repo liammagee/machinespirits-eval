@@ -46,7 +46,11 @@ preflight:
     tests/tutorStubSourceAccessibilityContract.test.js
     tests/tutorStubLiveFirstDraftAudit.test.js
     tests/tutorStubTurnProgressionContract.test.js
-    tests/tutorStubInteractiveModes.test.js
+    tests/tutorStubInteractiveDirection.test.js
+    tests/tutorStubInteractivePerformance.test.js
+    tests/tutorStubInteractiveTerminal.test.js
+    tests/tutorStubInteractiveTurns.test.js
+    tests/tutorStubInteractiveVoice.test.js
     tests/adaptiveRunEvidencePackage.test.js
     tests/tutorStubWorldScaffold.test.js
     tests/tutorStubV27ConfirmationRegression.test.js
@@ -84,7 +88,11 @@ preflight:
         - services/__tests__/tutorStubCounterpressure.test.js
     - id: interactive_modes
       test_files:
-        - tests/tutorStubInteractiveModes.test.js
+        - tests/tutorStubInteractiveDirection.test.js
+        - tests/tutorStubInteractivePerformance.test.js
+        - tests/tutorStubInteractiveTerminal.test.js
+        - tests/tutorStubInteractiveTurns.test.js
+        - tests/tutorStubInteractiveVoice.test.js
     - id: adaptive_evidence
       test_files:
         - tests/adaptiveRunEvidencePackage.test.js

@@ -3607,7 +3607,11 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     for (const requiredTest of [
       'tests/tutorStubSourceAccessibilityContract.test.js',
       'tests/tutorStubTurnProgressionContract.test.js',
-      'tests/tutorStubInteractiveModes.test.js',
+      'tests/tutorStubInteractiveDirection.test.js',
+      'tests/tutorStubInteractivePerformance.test.js',
+      'tests/tutorStubInteractiveTerminal.test.js',
+      'tests/tutorStubInteractiveTurns.test.js',
+      'tests/tutorStubInteractiveVoice.test.js',
       'tests/adaptiveRunEvidencePackage.test.js',
       'tests/tutorStubFirstDraftCampaign.test.js',
     ]) {
@@ -3842,7 +3846,16 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
             'services/__tests__/tutorStubCounterpressure.test.js',
           ],
         },
-        { id: 'interactive_modes', test_files: ['tests/tutorStubInteractiveModes.test.js'] },
+        {
+          id: 'interactive_modes',
+          test_files: [
+            'tests/tutorStubInteractiveDirection.test.js',
+            'tests/tutorStubInteractivePerformance.test.js',
+            'tests/tutorStubInteractiveTerminal.test.js',
+            'tests/tutorStubInteractiveTurns.test.js',
+            'tests/tutorStubInteractiveVoice.test.js',
+          ],
+        },
         { id: 'adaptive_evidence', test_files: ['tests/adaptiveRunEvidencePackage.test.js'] },
         {
           id: 'campaign_orchestration',
@@ -4123,7 +4136,16 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
             'services/__tests__/tutorStubCounterpressure.test.js',
           ],
         },
-        { id: 'interactive_modes', test_files: ['tests/tutorStubInteractiveModes.test.js'] },
+        {
+          id: 'interactive_modes',
+          test_files: [
+            'tests/tutorStubInteractiveDirection.test.js',
+            'tests/tutorStubInteractivePerformance.test.js',
+            'tests/tutorStubInteractiveTerminal.test.js',
+            'tests/tutorStubInteractiveTurns.test.js',
+            'tests/tutorStubInteractiveVoice.test.js',
+          ],
+        },
         { id: 'adaptive_evidence', test_files: ['tests/adaptiveRunEvidencePackage.test.js'] },
         {
           id: 'campaign_orchestration',
