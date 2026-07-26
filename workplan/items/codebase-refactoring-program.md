@@ -45,6 +45,7 @@ links:
     - refactor-tutor-stub-field-presentation
     - refactor-tutor-stub-closeout-projection
     - refactor-tutor-stub-interim-presentation
+    - refactor-tutor-stub-interim-frame-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -301,3 +302,15 @@ Log:
   passes 30/30 plus the real PTY scenario, and the complete hermetic suite is
   zero-skip green again (core 137/137); static, manifest, and 198-item
   source-only gates also pass.
+- 2026-07-26 — PR #249 merged the interim-presentation child as `2e8f0708`
+  with every CI lane green; the serialized render followed as `315cbaed`.
+  Closed that child and activated
+  `refactor-tutor-stub-interim-frame-projection` to move only pure panel
+  ordering and frame serialization while retaining live summary calculation,
+  animation state, timers, TTY writes, commands, traces, and model/runtime
+  behavior in the CLI.
+- 2026-07-26 — The interim-frame child reached review with pure panel ordering
+  and byte-exact frame serialization in the existing presentation leaf, a
+  further 29-line CLI reduction, 19/19 focused tests, the real PTY loading
+  scenario, and complete zero-skip hermetic parity green. Live summary
+  calculation and every animation/runtime effect remain CLI-owned.

@@ -1,7 +1,7 @@
 /**
  * Pure presentation primitives for the tutor-stub interim/loading surface.
- * Timers, animation state, TTY detection, terminal writes, and panel data
- * assembly remain in the CLI.
+ * Timers, animation state, TTY detection, terminal writes, and live panel data
+ * computation remain in the CLI.
  */
 
 export function formatTutorStubSignedInterimNumber(value, { decimals = 2 } = {}) {
@@ -86,4 +86,82 @@ export function tutorStubInterimCliHintPanels(active) {
   }
 
   return hints;
+}
+
+export function projectTutorStubInterimPanels({
+  hints = [],
+  tutorFocus,
+  dialogueOutlook,
+  reasoningChange,
+  learnerReasoning,
+  evidencePacing,
+  learnerReading,
+  reasoningState,
+  tutorStyle,
+  clueProgress,
+  dialogueSoFar,
+  fallback,
+}) {
+  const panels = [
+    ...hints,
+    { label: 'Tutor focus', tone: 'focus', text: tutorFocus },
+    { label: 'Dialogue outlook', tone: 'progress', text: dialogueOutlook },
+    { label: 'Reasoning change', tone: 'progress', text: reasoningChange },
+    { label: 'Learner reasoning', tone: 'learner', text: learnerReasoning },
+    { label: 'Evidence pacing', tone: 'evidence', text: evidencePacing },
+    { label: 'Learner reading', tone: 'learner', text: learnerReading },
+    { label: 'Reasoning state', tone: 'progress', text: reasoningState },
+    { label: 'Tutor style', tone: 'focus', text: tutorStyle },
+    { label: 'Clue progress', tone: 'evidence', text: clueProgress },
+    { label: 'Dialogue so far', tone: 'progress', text: dialogueSoFar },
+  ].filter((panel) => panel.text);
+  return panels.length ? panels : [{ label: 'Active checks', tone: 'neutral', text: fallback }];
+}
+
+function oneLine(value, { max = 220 } = {}) {
+  const text = String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (text.length <= max) return text;
+  return `${text.slice(0, Math.max(0, max - 3))}...`;
+}
+
+function interimToneColor(tone, colors) {
+  if (tone === 'progress') return colors.green;
+  if (tone === 'evidence') return colors.yellow;
+  if (tone === 'learner') return colors.cyan;
+  if (tone === 'focus') return colors.magenta;
+  return colors.dim;
+}
+
+export function renderTutorStubInterimFrame({ tick, startedAt, now, columns, phase, panels, frames, colors }) {
+  const frame = frames[tick % frames.length];
+  const elapsed = ((now - startedAt) / 1000).toFixed(1).padStart(4);
+  const width = Math.max(60, Math.min(columns || 140, 180) - 1);
+  const panelIndex = Math.floor(tick / 4) % panels.length;
+  const panel = panels[panelIndex];
+  const compactPhase = oneLine(phase, { max: 28 });
+  const prefix = `${frame} ${compactPhase} · ${elapsed}s · view ${panelIndex + 1}/${panels.length} | ${panel.label}: `;
+  const panelText = oneLine(panel.text, { max: Math.max(12, width - prefix.length) });
+  return [
+    colors.accent2,
+    frame,
+    ' ',
+    colors.bold,
+    compactPhase,
+    colors.reset,
+    colors.dim,
+    ` · ${elapsed}s · `,
+    colors.reset,
+    colors.yellow,
+    `view ${panelIndex + 1}/${panels.length}`,
+    colors.reset,
+    colors.dim,
+    ' | ',
+    colors.reset,
+    interimToneColor(panel.tone, colors),
+    panel.label,
+    colors.reset,
+    `: ${panelText}`,
+  ].join('');
 }
