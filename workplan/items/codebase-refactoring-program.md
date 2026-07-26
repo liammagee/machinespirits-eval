@@ -47,6 +47,15 @@ links:
     - refactor-tutor-stub-interim-presentation
     - refactor-tutor-stub-interim-frame-projection
     - refactor-tutor-stub-cli-help-projection
+    - refactor-tutor-stub-interactive-help-projection
+    - refactor-tutor-stub-feature-map-projection
+    - refactor-tutor-stub-release-notes-projection
+    - refactor-tutor-stub-dag-snapshot-projection
+    - refactor-tutor-stub-proof-command-projection
+    - refactor-tutor-stub-interaction-mode-presentation
+    - refactor-tutor-stub-session-status-presentation
+    - refactor-tutor-stub-training-reuse-presentation
+    - refactor-tutor-stub-dialogue-settings-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -325,3 +334,118 @@ Log:
   28,938-byte pre/post output parity, 30/30 final-base launch-path tests, and
   complete zero-skip hermetic parity. The CLI still owns terminal output,
   argument parsing, defaults, commands, and every runtime effect.
+- 2026-07-26 — PR #262 merged the CLI-help child as `cb1ab520` with every CI
+  lane green; the serialized render followed as `85ccfb7a`. Closed that child
+  and activated `refactor-tutor-stub-interactive-help-projection` to move only
+  pure `/help` line projection while retaining capability/availability
+  resolution, terminal writes, completion, command dispatch, and runtime state.
+- 2026-07-26 — The interactive-help child reached review with normal and
+  passthrough terminal bytes unchanged, every conditional section pinned, a
+  55-line CLI reduction, 66 focused tests, and complete zero-skip hermetic
+  parity. Registry availability, terminal writes, completion, command dispatch,
+  traces, models, and runtime state remain CLI-owned.
+- 2026-07-26 — Refreshed the interactive-help child onto rendered
+  `origin/main` at `69c0ee37`; the independent due-source CLI overlap composed
+  cleanly. Final-base help/registry/terminal coverage passes 60/60, and the
+  complete hermetic root 6,907-test plus tutor-core 137-test contracts remain
+  zero-skip green.
+- 2026-07-26 — PR #265 merged the interactive-help child as `4030d09f` with
+  every required CI lane green; the serialized render followed as `130efa09`.
+  Closed that child and activated `refactor-tutor-stub-feature-map-projection`
+  to move only pure capability-map and quick-start line projection while
+  retaining capability/state resolution, terminal writes, slash dispatch, and
+  runtime behavior in the CLI.
+- 2026-07-26 — The feature-map child reached review with launch and live-session
+  bytes unchanged, exact active-context fixtures, a 20-line CLI reduction,
+  64/64 focused tests, and complete zero-skip hermetic parity. Capability/state
+  resolution, terminal writes, slash dispatch, traces, models, and runtime
+  behavior remain CLI-owned.
+- 2026-07-26 — PR #266 merged the feature-map child as `d21da873` with every
+  required CI lane green; the serialized render followed as `fb809c05`. Closed
+  that child and activated `refactor-tutor-stub-release-notes-projection` to
+  move only pure release-note line serialization while retaining time-window
+  validation, Git loading, terminal writes, slash dispatch, and runtime behavior
+  in the CLI.
+- 2026-07-26 — The release-notes child reached review with live terminal bytes
+  unchanged, exact empty/grouped and visibility-limit fixtures, a 24-line CLI
+  reduction, 54/54 focused tests, and complete zero-skip hermetic parity. Git
+  loading, time-window validation, terminal writes, slash dispatch, traces,
+  models, and runtime behavior remain CLI-owned.
+- 2026-07-26 — PR #268 merged the release-notes child as `5bbd115c`; the
+  serialized render followed as `040222c6`. Closed that child and activated
+  `refactor-tutor-stub-dag-snapshot-projection` to move only deterministic
+  proof-DAG snapshot lines while retaining snapshot construction, state access,
+  terminal writes, runtime callers, commands, traces, and tutor behavior in the
+  CLI. The next child must also rerun the complete local hermetic contract
+  because one pre-merge Node 20 shard on #268 reported a failure.
+- 2026-07-26 — The DAG-snapshot child reached review with one dependency-free
+  pure projector, a 27-line CLI reduction, exact live and synthetic terminal
+  fixtures, and complete root 6,961-test plus tutor-core 137-test zero-skip
+  parity. Snapshot construction, state access, terminal writes, every runtime
+  caller, commands, traces, and tutor behavior remain CLI-owned.
+- 2026-07-26 — Rebased the DAG-snapshot child onto rendered `origin/main` at
+  `4cebdde1` after PR #267 changed the hermetic-runner lifecycle. Final-base
+  focused 6/6, root 6,976/6,976, and tutor-core 137/137 zero-skip contracts are
+  green through the new natural-teardown runner.
+- 2026-07-26 — PR #269 merged the DAG-snapshot child as `482f97f3` with every
+  CI lane green; the serialized render followed as `cce01690`. Closed that
+  child and activated `refactor-tutor-stub-proof-command-projection` for the
+  fixed artifact-path table and authored/learner/tutor semantic summaries while
+  retaining formal checks, command handling, terminal writes, and traces in
+  the CLI.
+- 2026-07-26 — The proof-command child reached review with one dependency-free
+  artifact/semantic projector, a 41-line CLI reduction, byte-identical real
+  `/proof paths` and learner-inspection processes, 15/15 focused tests, and
+  complete root 6,982-test plus tutor-core 137-test zero-skip parity. Formal
+  proof execution, audits, dynamic imports, commands, terminal writes, and
+  traces remain CLI-owned.
+- 2026-07-26 — Rebased the proof-command child onto rendered `origin/main` at
+  `689468b4` after PR #270's evidence-use rubric change. The separate tutor-stub
+  edits compose cleanly: the overlap set passes 57/57 and final root 7,001 plus
+  tutor-core 137 zero-skip contracts are green.
+- 2026-07-26 — PR #271 merged the proof-command child as `65e7b91f` with every
+  CI lane green; the serialized render followed as `839ec636`. Closed that
+  child and activated `refactor-tutor-stub-interaction-mode-presentation` to
+  move only pure mode-label and banner serialization while retaining state
+  mutation, prompt changes, trace events, terminal writes, and automation in
+  the CLI.
+- 2026-07-26 — The interaction-mode child reached review with one pure shared
+  label/banner projector, a 6-line CLI reduction, byte-identical real startup
+  and mode-switch output, 30/30 focused tests, and complete root 7,008-test
+  plus tutor-core 137-test zero-skip parity. Mode state, prompts, traces,
+  terminal writes, commands, and automation remain CLI-owned.
+- 2026-07-26 — PR #273 merged the interaction-mode child as `c074469c` with
+  every CI lane green; the serialized render followed as `740a0981`. Closed
+  that child and activated `refactor-tutor-stub-session-status-presentation`
+  to move only normal and passthrough `/status` serialization while retaining
+  state derivation, helper calls, slash dispatch, and terminal writes in the
+  CLI.
+- 2026-07-26 — The session-status child reached review with one pure normal and
+  passthrough projector, a 29-line CLI reduction, byte-identical live `/status`
+  output, 39/39 focused tests, and complete root 7,022-test plus tutor-core
+  137-test zero-skip parity. State derivation, helper calls, slash dispatch,
+  terminal writes, and runtime behavior remain CLI-owned.
+- 2026-07-26 — PR #275 merged the session-status child as `7ffbf1b8` with all
+  ten final CI lanes green; the serialized render followed as `9480bd7d`.
+  Closed that child and activated
+  `refactor-tutor-stub-training-reuse-presentation` to move only the reusable
+  policy-status lines while retaining policy resolution, live state changes,
+  persistence, trace events, terminal writes, and command handling in the CLI.
+- 2026-07-26 — The training-reuse presentation child reached review with one
+  dependency-free projector, exact candidate/opt-out/fail-closed process
+  parity, 39/39 focused tests, and complete root 7,040-test plus tutor-core
+  137-test zero-skip parity. Policy resolution, state, persistence, trace,
+  commands, and terminal writes remain CLI-owned; the larger dialogue-settings
+  projector is the logical next child after merge.
+- 2026-07-26 — PR #276 merged the training-reuse child as `ccdf944e` after all
+  ten CI lanes passed; the serialized render followed as `c6cb954f`. Closed
+  that child and activated `refactor-tutor-stub-dialogue-settings-presentation`
+  to move the complete deterministic `/settings` serialization while retaining
+  every state/helper lookup, setting mutation, command, picker, persistence,
+  trace, model, and terminal effect in the CLI.
+- 2026-07-26 — The dialogue-settings presentation child reached review with one
+  dependency-free projector, a 26-line CLI reduction, byte-identical default
+  and configured `/settings` processes, 44/44 focused tests, and complete root
+  7,048-test plus tutor-core 137-test final-base zero-skip parity. State/helper lookup,
+  settings mutation, commands, pickers, persistence, traces, models, and
+  terminal writes remain CLI-owned.

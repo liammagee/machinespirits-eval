@@ -282,7 +282,7 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 
 - `tests/` — Integration and functional tests for the evaluation system (CLI, runners, stores, analyzers)
 - `services/__tests__/` — Unit tests co-located with their service files (evalConfigLoader, learnerRubricEvaluator, learnerTutorInteractionEngine)
-- Both directories are included in `npm test` via: `node --test --test-force-exit services/__tests__/*.test.js tests/*.test.js`
+- Both directories are included in `npm test`, which runs them through `scripts/run-hermetic-tests.js` with natural teardown (no `--test-force-exit`) and requires every selected file to report a result
 
 ### Resuming Incomplete Runs
 

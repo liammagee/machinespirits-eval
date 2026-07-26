@@ -20,20 +20,24 @@ import {
   createIsolatedPaths,
   discoverRootTestFiles,
   formatPhaseFailureDiagnostic,
+  formatStallDiagnostic,
+  NODE_REPORTS_FILES_AS_THEY_FINISH,
   parseRootTimingReport,
   parseRunnerArgs,
+  readRootExecutedFiles,
   readRootTapSummary,
   replayCapturedOutput,
   runPhase,
   selectTestShard,
 } from '../scripts/run-hermetic-tests.js';
+import hermeticTimingReporter from '../scripts/hermetic-timing-reporter.js';
 import { describeManifestChanges, runManifestSync } from '../scripts/sync-hermetic-test-manifest.js';
 
 test('default hermetic run selects root and in-housed core suites', () => {
   const options = parseRunnerArgs([]);
   assert.deepEqual(options, {
     suite: 'all',
-    forceExit: true,
+    forceExit: false,
     printEnv: false,
     quiet: false,
     shard: null,
@@ -44,7 +48,7 @@ test('default hermetic run selects root and in-housed core suites', () => {
   assert.deepEqual(
     phases.map(({ phase, forceExit }) => ({ phase, forceExit })),
     [
-      { phase: 'root', forceExit: true },
+      { phase: 'root', forceExit: false },
       { phase: 'core', forceExit: false },
     ],
   );
@@ -58,7 +62,7 @@ test('default hermetic run selects root and in-housed core suites', () => {
 test('explicit historical test paths remain scoped to the root suite', () => {
   assert.deepEqual(parseRunnerArgs(['tests/workplan.test.js']), {
     suite: 'root',
-    forceExit: true,
+    forceExit: false,
     printEnv: false,
     quiet: false,
     shard: null,
@@ -66,7 +70,7 @@ test('explicit historical test paths remain scoped to the root suite', () => {
   });
 });
 
-test('suite and no-force-exit controls are parsed without leaking into child args', () => {
+test('suite and force-exit controls are parsed without leaking into child args', () => {
   assert.deepEqual(parseRunnerArgs(['--suite', 'root', '--no-force-exit']), {
     suite: 'root',
     forceExit: false,
@@ -75,6 +79,10 @@ test('suite and no-force-exit controls are parsed without leaking into child arg
     shard: null,
     forwarded: [],
   });
+  // The forced exit is now opt-in, and the flag that used to disable it stays
+  // accepted so the standing handle-audit commands keep working unchanged.
+  assert.equal(parseRunnerArgs(['--force-exit']).forceExit, true);
+  assert.equal(parseRunnerArgs(['--force-exit', '--no-force-exit']).forceExit, false);
   assert.throws(() => parseRunnerArgs(['--suite', 'unknown']), /Invalid test suite/);
   assert.throws(() => parseRunnerArgs(['--test-reporter=spec']), /reserve --test-reporter/);
   assert.throws(() => parseRunnerArgs(['--suite', 'core', '--reporter=dot']), /reserve --reporter/);
@@ -106,7 +114,7 @@ test('root sharding is deterministic, exhaustive, and isolated from forwarded ru
   const options = parseRunnerArgs(['--suite', 'root', '--shard=1/2', '--quiet']);
   assert.deepEqual(options, {
     suite: 'root',
-    forceExit: true,
+    forceExit: false,
     printEnv: false,
     quiet: true,
     shard: { index: 1, total: 2 },
@@ -281,13 +289,8 @@ test('root discovery stays explicit while the core phase targets all in-housed V
   );
 
   const rootArgs = buildRootTestArgs({ forwarded: ['tests/hermeticTestRunner.test.js'] });
-  assert.deepEqual(rootArgs, [
-    '--test',
-    '--test-reporter=tap',
-    '--test-force-exit',
-    'tests/hermeticTestRunner.test.js',
-  ]);
-  assert.equal(buildRootTestArgs({ forceExit: false }).includes('--test-force-exit'), false);
+  assert.deepEqual(rootArgs, ['--test', '--test-reporter=tap', 'tests/hermeticTestRunner.test.js']);
+  assert.equal(buildRootTestArgs({ forceExit: true }).includes('--test-force-exit'), true);
 
   const coreArgs = buildCoreTestArgs({
     projectRoot: '/repo',
@@ -664,7 +667,6 @@ test('root test args add a file TAP destination beside the piped one', () => {
   assert.deepEqual(buildRootTestArgs({ testFiles: ['tests/example.test.js'] }), [
     '--test',
     '--test-reporter=tap',
-    '--test-force-exit',
     'tests/example.test.js',
   ]);
 });
@@ -723,8 +725,13 @@ test('a force-exited child leaves its TAP tail on at least one channel', async (
   // load-bearing rather than a courtesy to old callers.
   //
   // Hence the union. This fails only when both channels lose the tail at once,
-  // which is the outcome actually worth guarding, and the workplan item records
-  // the durable fix: wait for the tail instead of racing it.
+  // which is the outcome actually worth guarding.
+  //
+  // The durable fix is not to wait for the tail. A child with a leaked handle
+  // never emits one — the plan line and counters are not buffered somewhere
+  // behind the leak, they are never produced at all — so there is nothing to
+  // wait for. It is to stop forcing the exit, which is what the default now
+  // does; this test keeps the old behaviour covered for `--force-exit`.
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-tap-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const testFile = path.join(root, 'padding.test.js');
@@ -745,7 +752,7 @@ test('a force-exited child leaves its TAP tail on at least one channel', async (
   const result = await runPhase({
     phase: 'root',
     forceExit: true,
-    args: buildRootTestArgs({ testFiles: [testFile], tapPath }),
+    args: buildRootTestArgs({ testFiles: [testFile], tapPath, forceExit: true }),
     env,
     quiet: true,
     projectRoot: root,
@@ -766,8 +773,161 @@ test('a force-exited child leaves its TAP tail on at least one channel', async (
   // before the last cases are recorded, and it does so quietly: the plan line,
   // the counters, and the `ok` lines all agree with each other at whatever
   // count the run reached. This test asserted the full 60 on its first CI run
-  // and got 54 on both Node 20 and 22 — a separate defect from the lost tail,
-  // recorded in the workplan item and not addressed here.
+  // and got 54 on both Node 20 and 22. That undercount is the second reason the
+  // flag is no longer the default; the next test is the same fixture without it.
   assert.ok(summary.tests > 0 && summary.tests <= 60, `tests=${summary.tests}`);
   assert.equal(summary.plan, summary.tests);
+});
+
+test('natural teardown reports every case and names the files that ran', async (t) => {
+  // Realpath, not the raw mkdtemp path: on macOS the temp directory is reached
+  // through a symlink, the spawned child's cwd resolves through it, and the
+  // reporter's file names would come back relative to the resolved form.
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-natural-')));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const first = path.join(root, 'alpha.test.js');
+  const second = path.join(root, 'beta.test.js');
+  const tapPath = path.join(root, 'out.tap');
+  const reportPath = path.join(root, 'timing.jsonl');
+  fs.writeFileSync(
+    first,
+    ['import test from "node:test";', 'for (let i = 0; i < 40; i += 1) test(`alpha ${i}`, () => {});'].join('\n'),
+  );
+  fs.writeFileSync(
+    second,
+    ['import test from "node:test";', 'for (let i = 0; i < 20; i += 1) test(`beta ${i}`, () => {});'].join('\n'),
+  );
+
+  const { NODE_TEST_CONTEXT: _recursionMarker, ...env } = process.env;
+  const result = await runPhase({
+    phase: 'root',
+    forceExit: false,
+    args: buildRootTestArgs({ testFiles: [first, second], tapPath, timingPath: reportPath }),
+    env,
+    quiet: true,
+    projectRoot: root,
+    onChild: () => {},
+  });
+
+  assert.equal(result.stalled, false, result.stderr);
+  const summary = readRootTapSummary({ phase: 'root', tapPath, reportPath }, result);
+  // The exact count the forced-exit test above cannot assert.
+  assert.equal(summary.tests, 60);
+  assert.equal(summary.fail, 0);
+
+  // TAP hoists every case to the top level and names a file only when it fails
+  // to load, so this list cannot come from TAP. It comes from the per-file
+  // `test:summary` events, and it is what lets the root phase enforce the same
+  // exact-file check the Vitest phase has always had.
+  assert.deepEqual(summary.files, ['alpha.test.js', 'beta.test.js']);
+});
+
+test('a stalled run is ended and names the file that never reported', async (t) => {
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-stall-')));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const clean = path.join(root, 'clean.test.js');
+  const leaky = path.join(root, 'leaky.test.js');
+  const reportPath = path.join(root, 'timing.jsonl');
+  fs.writeFileSync(clean, ['import test from "node:test";', 'test("clean case", () => {});'].join('\n'));
+  fs.writeFileSync(
+    leaky,
+    [
+      'import test from "node:test";',
+      // Finishes its tests, then holds the runner open forever.
+      'setInterval(() => {}, 100000);',
+      'test("leaky case", () => {});',
+    ].join('\n'),
+  );
+
+  const { NODE_TEST_CONTEXT: _recursionMarker, ...env } = process.env;
+  const result = await runPhase({
+    phase: 'root',
+    forceExit: false,
+    args: buildRootTestArgs({ testFiles: [clean, leaky], timingPath: reportPath }),
+    env,
+    quiet: true,
+    projectRoot: root,
+    stallTimeoutMs: 4_000,
+    stallKillGraceMs: 500,
+    onChild: () => {},
+  });
+
+  assert.equal(result.stalled, true, `stdout ${result.stdout.length}B stderr ${result.stderr}`);
+
+  // Both files ran their tests; only the leaky one is still holding a handle.
+  // On Node 22 the file-scoped summary arrives for the file that finished and
+  // never for the one that did not, so the report separates them without extra
+  // instrumentation and the diagnostic can name the culprit rather than the
+  // run. Node 20 has no such event, and the reporter's end-of-stream flush is
+  // no help here because a stalled run never reaches the end of its stream —
+  // so there the account is empty. What holds on both is that the run is ended
+  // and the file that did report is never the one blamed.
+  const executed = readRootExecutedFiles({ reportPath });
+  assert.deepEqual(executed, NODE_REPORTS_FILES_AS_THEY_FINISH ? ['clean.test.js'] : []);
+  const diagnostic = formatStallDiagnostic(
+    { phase: 'root', selectedFiles: ['clean.test.js', 'leaky.test.js'] },
+    executed,
+    4_000,
+  );
+  assert.doesNotMatch(diagnostic, /unreported: clean\.test\.js/u);
+  assert.match(diagnostic, /--force-exit/u);
+  if (NODE_REPORTS_FILES_AS_THEY_FINISH) assert.match(diagnostic, /unreported: leaky\.test\.js/u);
+  else assert.match(diagnostic, /no file reported before the stall/u);
+});
+
+test('the executed-file account is absent, not empty, when no report was written', () => {
+  assert.equal(readRootExecutedFiles({ reportPath: null }), null);
+  assert.equal(readRootExecutedFiles({ reportPath: path.join(os.tmpdir(), 'hermetic-missing-report.jsonl') }), null);
+});
+
+test('the timing reporter emits a line per file as that file finishes', async () => {
+  const cwd = process.cwd();
+  const event = (type, file, extra = {}) => ({ type, data: { file: path.join(cwd, file), ...extra } });
+  async function* events() {
+    yield event('test:pass', 'alpha.test.js', { details: { duration_ms: 4 } });
+    yield event('test:pass', 'alpha.test.js', { details: { duration_ms: 6 } });
+    yield event('test:summary', 'alpha.test.js');
+    yield event('test:fail', 'beta.test.js', { details: { duration_ms: 3 } });
+    yield event('test:summary', 'beta.test.js');
+    // The whole-run summary carries no file and must not add a line.
+    yield { type: 'test:summary', data: { file: null } };
+  }
+
+  const lines = [];
+  for await (const line of hermeticTimingReporter(events())) lines.push(JSON.parse(line));
+  assert.deepEqual(lines, [
+    { file: 'alpha.test.js', durationMs: 10, tests: 2, failures: 0 },
+    { file: 'beta.test.js', durationMs: 3, tests: 1, failures: 1 },
+  ]);
+});
+
+test('the timing reporter still accounts for every file where Node emits no per-file summary', async () => {
+  // Node 20 has no `test:summary`, so nothing can be written until the stream
+  // ends. CI caught this the hard way: gating the report on that event alone
+  // made both Node 20 shards report no executed files at all, and the new
+  // exact-file check then failed a run in which every test had passed.
+  const cwd = process.cwd();
+  const event = (type, file, extra = {}) => ({ type, data: { file: path.join(cwd, file), ...extra } });
+  async function* node20Events() {
+    yield event('test:pass', 'alpha.test.js', { details: { duration_ms: 4 } });
+    yield event('test:fail', 'beta.test.js', { details: { duration_ms: 3 } });
+    yield event('test:pass', 'alpha.test.js', { details: { duration_ms: 6 } });
+  }
+
+  const lines = [];
+  for await (const line of hermeticTimingReporter(node20Events())) lines.push(JSON.parse(line));
+  assert.deepEqual(lines, [
+    { file: 'alpha.test.js', durationMs: 10, tests: 2, failures: 0 },
+    { file: 'beta.test.js', durationMs: 3, tests: 1, failures: 1 },
+  ]);
+});
+
+test('a stall with nothing reported says so instead of blaming every file', () => {
+  const diagnostic = formatStallDiagnostic({ phase: 'root', selectedFiles: ['alpha.test.js', 'beta.test.js'] }, []);
+  assert.match(diagnostic, /no file reported before the stall/u);
+  assert.doesNotMatch(diagnostic, /unreported:/u);
+  // On Node 20 the report cannot arrive before the end of the stream, so the
+  // message says which version would narrow it rather than implying the
+  // runner failed to look.
+  assert.equal(/Node 22 narrows this/u.test(diagnostic), !NODE_REPORTS_FILES_AS_THEY_FINISH);
 });

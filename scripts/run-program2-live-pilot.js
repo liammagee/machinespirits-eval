@@ -5,11 +5,13 @@
 // Two arms (committee | silent_control) × 2 learner profiles × 6 repeats on
 // the Step 4 operational spec, single tutor family claude-code.sonnet-5.
 // Mirrors scripts/run-step4-point-of-action-gate.js: a zero-model dry run
-// writes the sha-pinned plan artifact; the paid launch requires
-// --launch-approved --expected-sha <clean HEAD>. Additions: sealed-trace
-// resume (jobs whose trace already contains run_end are skipped), a local
-// ollama preflight for the committee mini, one same-seed retry per failed
-// job, and an abort after three consecutive failed attempts (prereg §4).
+// writes the sha-pinned plan artifact. --prepare-certificate writes the exact
+// paid plan without model calls and prints the certificate workflow. A paid
+// launch requires --launch-approved, --expected-sha <clean HEAD>, and a fresh
+// --launch-certificate. Additions: sealed-trace resume (jobs whose trace
+// already contains run_end are skipped), a local Ollama preflight for the
+// committee mini, one same-seed retry per failed job, and an abort after three
+// consecutive failed attempts (prereg §4).
 
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
@@ -25,12 +27,70 @@ import {
   TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
   buildTutorStubPointOfActionTurn,
 } from '../services/tutorStubPointOfActionCoaching.js';
+import {
+  TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+  TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY,
+  normalizeTutorStubEvidenceUseRubric,
+} from '../services/tutorStubPublicLearnerAnalysis.js';
 import { PROGRAM2_COMMITTEE_DEFAULTS, runCommitteeBattery } from '../services/program2CommitteeEngine.js';
+import {
+  evaluateProgram2LiveFutility,
+  validateProgram2CertificateEvidenceBindings,
+  validateProgram2LaunchCertificate,
+} from '../services/program2ExperimentSafety.js';
 import { STEP4_POINT_OF_ACTION_SPEC } from './run-step4-point-of-action-gate.js';
 import { learnerProfilePrompt } from './tutor-stub-learner-profile-contracts.js';
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
+
+export const PROGRAM2_LAUNCH_CERTIFICATE_GUIDE = 'docs/program2-launch-certificates.md';
+
+function displayRootPath(file) {
+  const relative = path.relative(ROOT, file);
+  return relative && !relative.startsWith('..') ? relative : file;
+}
+
+function program2WorldFile(plan) {
+  const candidate = path.resolve(
+    ROOT,
+    'config',
+    'drama-derivation',
+    `${String(plan?.world || '<world-id>').replaceAll('_', '-')}.yaml`,
+  );
+  return fs.existsSync(candidate) ? displayRootPath(candidate) : `<world-yaml-for-${plan?.world || 'plan'}>`;
+}
+
+export function formatProgram2LaunchCertificateReminder({
+  planKey,
+  phase,
+  plan,
+  planFile,
+  certificateFile,
+  outputRoot,
+  sourceSha,
+} = {}) {
+  const cohortArgs =
+    phase === 'cohort'
+      ? ['  --pilot-bundle <audited-exact-pipeline-pilot-bundle.json> \\', '  --gate-spec-file <frozen-gates.json> \\']
+      : [];
+  return [
+    'A fresh launch certificate is required before every paid Program 2 launch.',
+    'Prepare the exact plan without model/provider calls:',
+    `  node scripts/run-program2-live-pilot.js --prepare-certificate --plan ${planKey} --output-dir ${displayRootPath(outputRoot)}`,
+    `Exact plan: ${displayRootPath(planFile)}`,
+    'Generate and review the certificate:',
+    '  npm run program2:certify-launch -- \\',
+    `  --plan-file ${displayRootPath(planFile)} \\`,
+    `  --world-file ${program2WorldFile(plan)} \\`,
+    `  --phase ${phase} \\`,
+    ...cohortArgs,
+    `  --source-sha ${sourceSha || '<clean-40-character-sha>'} \\`,
+    `  --report ${displayRootPath(certificateFile)}`,
+    `Then rerun the paid launcher with --launch-certificate ${displayRootPath(certificateFile)}.`,
+    `Regenerate after any source, plan, world, gate, or pilot-evidence change. Guide: ${PROGRAM2_LAUNCH_CERTIFICATE_GUIDE}`,
+  ].join('\n');
+}
 
 export const PHASE5_LIVE_PILOT_SPEC = Object.freeze({
   schema: 'machinespirits.tutor-stub.program2-phase5-live-pilot-plan.v1',
@@ -105,9 +165,21 @@ function deterministicShuffle(rows, seed) {
 function commandForJob(
   job,
   outputRoot,
-  { runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed, fallbackPolicy = null, world = PHASE5_LIVE_PILOT_SPEC.world } = {},
+  {
+    runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed,
+    fallbackPolicy = null,
+    world = PHASE5_LIVE_PILOT_SPEC.world,
+    evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+  } = {},
 ) {
   const traceDir = path.join(outputRoot, 'traces', job.id);
+  // Emitted only when the run departs from the default, so default plans keep
+  // byte-identical commands to every plan generated before the rubric was
+  // versioned.
+  const evidenceUseRubricArgs =
+    evidenceUseRubric === TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT
+      ? []
+      : ['--learner-analysis-evidence-use-rubric', evidenceUseRubric];
   return [
     process.execPath,
     'scripts/tutor-stub.js',
@@ -164,6 +236,7 @@ function commandForJob(
     '--committee-ollama-url',
     PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl,
     ...(fallbackPolicy ? ['--committee-fallback-policy', fallbackPolicy] : []),
+    ...evidenceUseRubricArgs,
     '--dag',
     '--no-stream',
     '--no-interim-animation',
@@ -172,7 +245,11 @@ function commandForJob(
   ];
 }
 
-export function buildPhase5LivePilotPlan({ outputRoot = 'exports/program2-live-pilot' } = {}) {
+export function buildPhase5LivePilotPlan({
+  outputRoot = 'exports/program2-live-pilot',
+  evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+} = {}) {
+  const rubric = normalizeTutorStubEvidenceUseRubric(evidenceUseRubric);
   const cells = [];
   for (let repeat = 1; repeat <= PHASE5_LIVE_PILOT_SPEC.repeats; repeat += 1) {
     for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
@@ -184,11 +261,12 @@ export function buildPhase5LivePilotPlan({ outputRoot = 'exports/program2-live-p
   const jobs = deterministicShuffle(cells, PHASE5_LIVE_PILOT_SPEC.runSeed).map((cell, index) => {
     const id = [`p5-${String(index + 1).padStart(2, '0')}`, cell.profile, cell.arm, `r${cell.repeat}`].join('-');
     const job = { ordinal: index + 1, id, tutorFamily: PHASE5_LIVE_PILOT_SPEC.tutorFamily, ...cell };
-    return { ...job, command: commandForJob(job, outputRoot) };
+    return { ...job, command: commandForJob(job, outputRoot, { evidenceUseRubric: rubric }) };
   });
   return {
     ...PHASE5_LIVE_PILOT_SPEC,
     detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    evidenceUseRubric: rubric,
     outputRoot,
     ordering: 'seeded Fisher-Yates over the complete balanced 2 x 2 x 6 matrix',
     jobs,
@@ -207,7 +285,11 @@ export const PHASE5B_SPEC = Object.freeze({
   fallbackPolicy: 'v2',
 });
 
-export function buildPhase5bLivePilotPlan({ outputRoot = 'exports/program2-live-pilot-5b' } = {}) {
+export function buildPhase5bLivePilotPlan({
+  outputRoot = 'exports/program2-live-pilot-5b',
+  evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+} = {}) {
+  const rubric = normalizeTutorStubEvidenceUseRubric(evidenceUseRubric);
   const cells = [];
   for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
     for (let repeat = 1; repeat <= PHASE5B_SPEC.committeeRepeats; repeat += 1) {
@@ -225,6 +307,7 @@ export function buildPhase5bLivePilotPlan({ outputRoot = 'exports/program2-live-
       command: commandForJob(job, outputRoot, {
         runSeed: PHASE5B_SPEC.runSeed,
         fallbackPolicy: cell.arm === 'committee' ? PHASE5B_SPEC.fallbackPolicy : null,
+        evidenceUseRubric: rubric,
       }),
     };
   });
@@ -232,6 +315,7 @@ export function buildPhase5bLivePilotPlan({ outputRoot = 'exports/program2-live-
     ...PHASE5_LIVE_PILOT_SPEC,
     ...PHASE5B_SPEC,
     detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    evidenceUseRubric: rubric,
     outputRoot,
     ordering: 'seeded Fisher-Yates over 12 committee-v2 + 6 silent_control cells',
     jobs,
@@ -253,7 +337,11 @@ export const PHASE5C_SPEC = Object.freeze({
   fallbackPolicy: 'v2',
 });
 
-export function buildPhase5cLivePilotPlan({ outputRoot = 'exports/program2-live-pilot-5c' } = {}) {
+export function buildPhase5cLivePilotPlan({
+  outputRoot = 'exports/program2-live-pilot-5c',
+  evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+} = {}) {
+  const rubric = normalizeTutorStubEvidenceUseRubric(evidenceUseRubric);
   const cells = [];
   for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
     for (let repeat = 1; repeat <= PHASE5C_SPEC.committeeRepeats; repeat += 1) {
@@ -272,6 +360,7 @@ export function buildPhase5cLivePilotPlan({ outputRoot = 'exports/program2-live-
         runSeed: PHASE5C_SPEC.runSeed,
         fallbackPolicy: cell.arm === 'committee' ? PHASE5C_SPEC.fallbackPolicy : null,
         world: PHASE5C_SPEC.world,
+        evidenceUseRubric: rubric,
       }),
     };
   });
@@ -279,6 +368,7 @@ export function buildPhase5cLivePilotPlan({ outputRoot = 'exports/program2-live-
     ...PHASE5_LIVE_PILOT_SPEC,
     ...PHASE5C_SPEC,
     detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    evidenceUseRubric: rubric,
     outputRoot,
     ordering: 'seeded Fisher-Yates over 10 committee-v2 + 8 silent_control cells',
     jobs,
@@ -312,6 +402,7 @@ export function validatePhase5cLivePilotPlan(plan) {
     if (cellCounts.get(`${profile}|silent_control`) !== PHASE5C_SPEC.controlRepeats)
       errors.push(`${profile} control cell count mismatch`);
   }
+  errors.push(...evidenceUseRubricErrors(plan));
   return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
 }
 
@@ -336,12 +427,39 @@ export function validatePhase5bLivePilotPlan(plan) {
     if (cellCounts.get(`${profile}|silent_control`) !== PHASE5B_SPEC.controlRepeats)
       errors.push(`${profile} control cell count mismatch`);
   }
+  errors.push(...evidenceUseRubricErrors(plan));
   return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
 }
 
 function flagValue(command, flag) {
   const index = command.indexOf(flag);
   return index >= 0 ? command[index + 1] : null;
+}
+
+// A plan header that stamps one evidence_use rubric while its jobs run another
+// is the failure this stamp exists to prevent, so every validator checks it.
+function evidenceUseRubricErrors(plan) {
+  const errors = [];
+  // A plan file written before the rubric was versioned carries no stamp, and
+  // every run from that era used v1. Resolving an absent stamp against the
+  // *current* default would silently reinterpret those files now that the
+  // default is v2, so unstamped plans pin to v1 and then fail the check below on
+  // purpose: re-running one has to name its rubric explicitly.
+  const stamped = plan.evidenceUseRubric ?? TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY;
+  // A job omits the flag exactly when its rubric is the generation-time default,
+  // so the expected token is derived from the stamp rather than compared against
+  // a constant.
+  const expected = stamped === TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT ? null : stamped;
+  for (const job of plan.jobs) {
+    const flagged = flagValue(job.command, '--learner-analysis-evidence-use-rubric');
+    if (flagged === expected) continue;
+    errors.push(
+      plan.evidenceUseRubric
+        ? `${job.id} evidence_use rubric ${flagged ?? '(default)'} does not match plan stamp ${stamped}`
+        : `${job.id} plan predates evidence_use rubric versioning and carries no stamp; name --learner-analysis-evidence-use-rubric ${TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY} to reproduce it`,
+    );
+  }
+  return errors;
 }
 
 export function validatePhase5LivePilotPlan(plan) {
@@ -375,6 +493,7 @@ export function validatePhase5LivePilotPlan(plan) {
       }
     }
   }
+  errors.push(...evidenceUseRubricErrors(plan));
   return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
 }
 
@@ -458,10 +577,17 @@ function ollamaPreflight(url, model) {
   });
 }
 
-async function runCommand(command, ordinal, total) {
+async function runCommand(command, ordinal, total, { budget = null } = {}) {
   console.log(`[phase5] ${ordinal}/${total} ${command[command.indexOf('--eval-job-id') + 1] || ''}`);
   await new Promise((resolve, reject) => {
-    const child = spawn(command[0], command.slice(1), { cwd: ROOT, env: process.env, stdio: 'inherit' });
+    const env = budget
+      ? {
+          ...process.env,
+          PROGRAM2_PROVIDER_CALL_LIMIT_PER_ATTEMPT: String(budget.maxProviderCallsPerAttempt),
+          PROGRAM2_PROVIDER_OUTPUT_TOKEN_LIMIT_PER_ATTEMPT: String(budget.maxReservedOutputTokensPerAttempt),
+        }
+      : process.env;
+    const child = spawn(command[0], command.slice(1), { cwd: ROOT, env, stdio: 'inherit' });
     child.on('error', reject);
     child.on('exit', (code, signal) => {
       if (signal) reject(new Error(`child stopped by ${signal}`));
@@ -475,8 +601,10 @@ async function main() {
   const { values } = parseArgs({
     options: {
       'dry-run': { type: 'boolean', default: false },
+      'prepare-certificate': { type: 'boolean', default: false },
       'launch-approved': { type: 'boolean', default: false },
       'expected-sha': { type: 'string', default: '' },
+      'launch-certificate': { type: 'string', default: '' },
       'output-dir': { type: 'string', default: '' },
       plan: { type: 'string', default: '5' },
       'limit-jobs': { type: 'string', default: '' },
@@ -485,28 +613,43 @@ async function main() {
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--dry-run | --prepare-certificate | --launch-approved --expected-sha <sha> --launch-certificate <file>] [--plan 5|5b|5c] [--output-dir <dir>] [--limit-jobs N]',
+    );
+    console.log('\nPaid launch prerequisite: generate a fresh certificate with npm run program2:certify-launch.');
+    console.log(
+      `Run --prepare-certificate first for an exact zero-model plan. Guide: ${PROGRAM2_LAUNCH_CERTIFICATE_GUIDE}`,
     );
     return;
   }
-  if (values['dry-run'] && values['launch-approved']) throw new Error('choose either --dry-run or --launch-approved');
+  const prepareCertificate = Boolean(values['prepare-certificate']);
+  const selectedModes = [values['dry-run'], prepareCertificate, values['launch-approved']].filter(Boolean).length;
+  if (selectedModes > 1) {
+    throw new Error('choose exactly one of --dry-run, --prepare-certificate, or --launch-approved');
+  }
   const launch = Boolean(values['launch-approved']);
   const planKey = values.plan || '5';
   const planTable = {
-    5: { root: 'exports/program2-live-pilot', build: buildPhase5LivePilotPlan, validate: validatePhase5LivePilotPlan },
+    5: {
+      root: 'exports/program2-live-pilot',
+      build: buildPhase5LivePilotPlan,
+      validate: validatePhase5LivePilotPlan,
+      certificatePhase: 'pilot',
+    },
     '5b': {
       root: 'exports/program2-live-pilot-5b',
       build: buildPhase5bLivePilotPlan,
       validate: validatePhase5bLivePilotPlan,
+      certificatePhase: 'cohort',
     },
     '5c': {
       root: 'exports/program2-live-pilot-5c',
       build: buildPhase5cLivePilotPlan,
       validate: validatePhase5cLivePilotPlan,
+      certificatePhase: 'cohort',
     },
   };
   if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, or 5c)`);
-  const defaultRoot = launch ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
+  const defaultRoot = launch || prepareCertificate ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
   const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
   const plan = planTable[planKey].build({ outputRoot });
   const validation = planTable[planKey].validate(plan);
@@ -514,7 +657,7 @@ async function main() {
   const artifact = {
     schema: 'machinespirits.tutor-stub.program2-phase5-zero-model-gate.v1',
     generatedAt: new Date().toISOString(),
-    mode: launch ? 'paid_launch' : 'zero_model_dry_run',
+    mode: launch ? 'paid_launch' : prepareCertificate ? 'certificate_preparation' : 'zero_model_dry_run',
     modelCallsBeforeArtifact: 0,
     launchAuthorized: launch,
     ok: validation.ok && fixtures.ok,
@@ -529,13 +672,69 @@ async function main() {
     );
   }
   fs.mkdirSync(outputRoot, { recursive: true });
-  const jsonPath = path.join(outputRoot, launch ? 'launch-plan.json' : 'zero-model-dry-run.json');
+  const jsonPath = path.join(outputRoot, launch || prepareCertificate ? 'launch-plan.json' : 'zero-model-dry-run.json');
   fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
+  const certificatePath = path.join(outputRoot, 'launch-certificate.json');
+  if (prepareCertificate) {
+    console.log(`[phase5] certificate plan PASS; 0 model calls; ${plan.jobs.length} jobs planned`);
+    console.log(
+      formatProgram2LaunchCertificateReminder({
+        planKey,
+        phase: planTable[planKey].certificatePhase,
+        plan,
+        planFile: jsonPath,
+        certificateFile: certificatePath,
+        outputRoot,
+        sourceSha: gitOutput(['rev-parse', 'HEAD']),
+      }),
+    );
+    return;
+  }
   if (!launch) {
     console.log(`[phase5] zero-model gate PASS; 0 model calls; ${plan.jobs.length} jobs planned`);
     console.log(`[phase5] ${path.relative(ROOT, jsonPath)}`);
     return;
   }
+  const certificateValue = String(values['launch-certificate'] || '').trim();
+  if (!certificateValue) {
+    throw new Error(
+      `${planKey} paid launch requires --launch-certificate.\n${formatProgram2LaunchCertificateReminder({
+        planKey,
+        phase: planTable[planKey].certificatePhase,
+        plan,
+        planFile: jsonPath,
+        certificateFile: certificatePath,
+        outputRoot,
+        sourceSha: values['expected-sha'],
+      })}`,
+    );
+  }
+  const suppliedCertificatePath = path.resolve(ROOT, certificateValue);
+  if (!fs.existsSync(suppliedCertificatePath)) {
+    throw new Error(
+      `launch certificate not found: ${suppliedCertificatePath}\nGuide: ${PROGRAM2_LAUNCH_CERTIFICATE_GUIDE}`,
+    );
+  }
+  const certificateBytes = fs.readFileSync(suppliedCertificatePath);
+  const launchCertificate = JSON.parse(certificateBytes.toString('utf8'));
+  const certificateValidation = validateProgram2LaunchCertificate(launchCertificate, {
+    plan,
+    sourceSha: values['expected-sha'],
+    phase: planTable[planKey].certificatePhase,
+  });
+  if (!certificateValidation.pass) {
+    throw new Error(`launch certificate rejected: ${certificateValidation.errors.join('; ')}`);
+  }
+  const bindingValidation = validateProgram2CertificateEvidenceBindings(launchCertificate, { root: ROOT });
+  if (!bindingValidation.pass) {
+    throw new Error(`launch certificate evidence rejected: ${bindingValidation.errors.join('; ')}`);
+  }
+  artifact.launchCertificate = {
+    file: path.relative(ROOT, suppliedCertificatePath),
+    sha256: createHash('sha256').update(certificateBytes).digest('hex'),
+    phase: launchCertificate.phase,
+  };
+  fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
   const launchSha = assertLaunchAuthorization(values['expected-sha']);
   artifact.launchSha = launchSha;
   fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
@@ -548,6 +747,25 @@ async function main() {
     ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
     : { schema: 'machinespirits.tutor-stub.program2-phase5-launch-state.v1', jobs: {} };
   const saveState = () => fs.writeFileSync(statePath, `${JSON.stringify(launchState, null, 2)}\n`);
+  const enforceLiveFutility = (stage) => {
+    const check = evaluateProgram2LiveFutility({
+      plan,
+      launchState,
+      rows: [],
+      contract: launchCertificate.liveFutility,
+    });
+    launchState.futilityChecks = Array.isArray(launchState.futilityChecks) ? launchState.futilityChecks : [];
+    launchState.futilityChecks.push({ stage, ...check });
+    if (launchState.futilityChecks.length > plan.jobs.length + 2) launchState.futilityChecks.shift();
+    if (!check.pass) {
+      launchState.abortedAt = new Date().toISOString();
+      launchState.abortReason = `futility stop: ${check.reasons.join('; ')}`;
+      saveState();
+      throw new Error(launchState.abortReason);
+    }
+    saveState();
+  };
+  enforceLiveFutility('before_first_paid_job');
   let consecutiveFailures = 0;
   let executed = 0;
   for (const job of plan.jobs) {
@@ -562,7 +780,7 @@ async function main() {
     let outcome = null;
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       try {
-        await runCommand(job.command, job.ordinal, plan.jobs.length);
+        await runCommand(job.command, job.ordinal, plan.jobs.length, { budget: launchCertificate.budget });
         outcome = { status: 'sealed', attempts: attempt };
         consecutiveFailures = 0;
         break;
@@ -582,6 +800,7 @@ async function main() {
     if (outcome.status === 'failed') outcome.attrition = true;
     launchState.jobs[job.id] = outcome;
     saveState();
+    enforceLiveFutility(`after_${job.id}`);
   }
   const sealedCount = Object.values(launchState.jobs).filter((entry) => entry.status === 'sealed').length;
   console.log(`[phase5] launch pass complete: ${sealedCount}/${plan.jobs.length} sealed`);

@@ -142,12 +142,14 @@ import { buildTutorStubResumeHandoff } from '../services/tutorStubResumeHandoff.
 import { buildTutorStubProofDebtState } from '../services/tutorStubProofDebt.js';
 import {
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
+  TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES,
   TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   applyTutorStubPublicLearnerRecordUpdate as applyLearnerRecordUpdate,
   buildTutorStubLearnerDagPreflight,
   buildTutorStubPublicLearnerAnalysisPrompt,
   extractTutorStubPublicLearnerAnalysis,
+  normalizeTutorStubEvidenceUseRubric,
   normalizeTutorStubPublicLearnerAnalysisPromptProfile,
   normalizeTutorStubHumanDiscourseExtraction as normalizeHumanDiscourseExtraction,
   normalizeTutorStubHumanDiscourseRows as normalizeDiscourseRows,
@@ -423,6 +425,8 @@ import {
   resolveTutorStubTrainingReuse,
   tutorStubTrainingReuseLabel,
 } from '../services/tutorStubTrainingReuse.js';
+import { projectTutorStubTrainingReuseStatusLines } from '../services/tutorStubTrainingReusePresentation.js';
+import { projectTutorStubDialogueSettingsLines } from '../services/tutorStubDialogueSettingsPresentation.js';
 import {
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
@@ -495,6 +499,19 @@ import {
   tutorStubCliThemePreview,
 } from '../services/tutorStubCliTheme.js';
 import { renderTutorStubCliHelp } from '../services/tutorStubCliHelp.js';
+import { projectTutorStubFeatureMapLines } from '../services/tutorStubFeatureMap.js';
+import { projectTutorStubInteractiveHelpLines } from '../services/tutorStubInteractiveHelp.js';
+import { projectTutorStubReleaseNotesLines } from '../services/tutorStubReleaseNotesPresentation.js';
+import { projectTutorStubDagSnapshotLines } from '../services/tutorStubDagSnapshotPresentation.js';
+import {
+  projectTutorStubProofDagArtifactPaths,
+  projectTutorStubProofDagSemanticLayerLines,
+} from '../services/tutorStubProofCommandPresentation.js';
+import {
+  projectTutorStubInteractionModeBannerLines,
+  projectTutorStubInteractionModeLabel,
+} from '../services/tutorStubInteractionModePresentation.js';
+import { projectTutorStubSessionStatusLines } from '../services/tutorStubSessionStatusPresentation.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   MAX_TUTOR_STUB_RELEASE_SPEED,
@@ -563,6 +580,7 @@ import {
   runCommitteeBattery,
   trimCommitteeFallback,
 } from '../services/program2CommitteeEngine.js';
+import { createProgram2ProviderBudgetFromEnvironment } from '../services/program2ExperimentSafety.js';
 import {
   DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
   TUTOR_STUB_REGISTER_OVERLAY_POLICIES,
@@ -630,6 +648,8 @@ const STUB = {
   learnerAnalysisPromptProfile:
     process.env.TUTOR_STUB_LEARNER_ANALYSIS_PROMPT_PROFILE ||
     TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
+  learnerAnalysisEvidenceUseRubric:
+    process.env.TUTOR_STUB_LEARNER_ANALYSIS_EVIDENCE_USE_RUBRIC || TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   mixedTutorPrefetchPolicy: process.env.TUTOR_STUB_MIXED_TUTOR_PREFETCH_POLICY || 'always',
   topic: process.env.TUTOR_STUB_TOPIC || 'fractions',
   world: process.env.TUTOR_STUB_WORLD || 'world_005_marrick',
@@ -777,6 +797,7 @@ const { values: args, positionals } = parseArgs({
     'tutor-learner-dag': { type: 'boolean', default: false },
     'learner-record-model': { type: 'string', default: STUB.learnerRecordModel },
     'learner-analysis-prompt-profile': { type: 'string', default: STUB.learnerAnalysisPromptProfile },
+    'learner-analysis-evidence-use-rubric': { type: 'string', default: STUB.learnerAnalysisEvidenceUseRubric },
     'no-register-selection': { type: 'boolean', default: false },
     'register-palette': { type: 'string', default: 'all' },
     'register-policy': { type: 'string', default: STUB.registerPolicy },
@@ -901,6 +922,7 @@ const { values: args, positionals } = parseArgs({
 let selectedLabResolution = null;
 let selectedLabAdmission = null;
 let selectedLabModelCallBudget = null;
+const program2ProviderBudget = createProgram2ProviderBudgetFromEnvironment();
 let loadedSessionRecipe = null;
 let loadedSessionRecipePath = null;
 let resolvedResumeSource = null;
@@ -3855,6 +3877,7 @@ async function callPromptModel({
       `Prompt audit failed for ${role}: ${promptAudit.violations.map((violation) => violation.code).join(', ')}`,
     );
   }
+  reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });
   reserveTutorStubMeteredModelCall({ trace, role, turn });
   try {
     let response;
@@ -4769,6 +4792,24 @@ function reserveTutorStubMeteredModelCall({ trace = null, role = 'unknown', turn
       role,
       turn,
       admission: selectedLabModelCallBudget.snapshot(),
+    });
+    throw error;
+  }
+}
+
+function reserveProgram2ProviderBudget({ maxTokens, trace = null, role = 'unknown', turn = null } = {}) {
+  if (!program2ProviderBudget) return null;
+  try {
+    const reservation = program2ProviderBudget.reserve({ maxTokens });
+    appendTraceEvent(trace, { type: 'program2_provider_budget_reserved', role, turn, ...reservation });
+    return reservation;
+  } catch (error) {
+    appendTraceEvent(trace, {
+      type: 'program2_provider_budget_denied',
+      role,
+      turn,
+      requestedOutputTokens: Math.max(0, Number(maxTokens || 0)),
+      ...program2ProviderBudget.snapshot(),
     });
     throw error;
   }
@@ -5744,6 +5785,7 @@ function buildCombinedLearnerAnalysisPrompt({
     publicStagedEvidence,
     dagPreflight,
     promptProfile: state.learnerAnalysisPromptProfile,
+    evidenceUseRubric: state.learnerAnalysisEvidenceUseRubric,
   });
 }
 async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn, dagPreflight = null, signal = null }) {
@@ -8853,35 +8895,7 @@ function buildTutorDagSnapshot(state, tutorTurn) {
 }
 
 function printTutorDagSnapshot(snapshot) {
-  if (!snapshot) return;
-  console.log(
-    `${C.cyan}tutor DAG >${C.reset} turn ${snapshot.turn}: ${snapshot.leavesReleased}/${snapshot.leavesTotal} proof leaves released`,
-  );
-  if (!snapshot.derivable) {
-    console.log(`${C.dim}  not derivable from this world's authored proof data${C.reset}\n`);
-    return;
-  }
-  console.log(`${C.dim}  root: ${snapshot.rootLabel}${C.reset}`);
-  if (snapshot.nextRelease) {
-    console.log(
-      `${C.dim}  next release: ${snapshot.nextRelease.premise} at turn ${snapshot.nextRelease.turn} via ${snapshot.nextRelease.via}${C.reset}`,
-    );
-  } else {
-    console.log(`${C.dim}  next release: none${C.reset}`);
-  }
-
-  console.log(`${C.dim}  edges:${C.reset}`);
-  for (const edge of snapshot.edges) {
-    console.log(`${C.dim}    ${edge.fromLabel} -> ${edge.toLabel}${edge.rule ? ` (${edge.rule})` : ''}${C.reset}`);
-  }
-
-  console.log(`${C.dim}  leaves:${C.reset}`);
-  for (const leaf of snapshot.leaves) {
-    const status = leaf.released ? 'x' : ' ';
-    const schedule = leaf.scheduledTurn ? `t${leaf.scheduledTurn}/${leaf.via}` : 'unscheduled';
-    console.log(`${C.dim}    [${status}] ${leaf.premise} ${schedule}: ${leaf.fact}${C.reset}`);
-  }
-  console.log();
+  for (const line of projectTutorStubDagSnapshotLines({ snapshot, colors: C })) console.log(line);
 }
 
 function oneLine(value, { max = 220 } = {}) {
@@ -8919,24 +8933,7 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printTutorStubFeatureMap(state = null) {
   const featureRows = tutorStubCapabilityFeatureRows(state?.capabilities || null);
-
-  console.log(`${C.brightCyan}${C.bold}tutor-stub capability map${C.reset}`);
-  for (const row of featureRows) {
-    console.log(`${C.cyan}  ${row.label.padEnd(11)}${C.reset} ${row.description}`);
-  }
-
-  console.log(`\n${C.brightCyan}${C.bold}quick starts${C.reset}`);
-  console.log(`${C.cyan}  full tutor ${C.reset} npm run tutor:stub`);
-  console.log(`${C.cyan}  guided tour${C.reset} npm run tutor:stub:demo`);
-  console.log(
-    `${C.cyan}  course     ${C.reset} npm run tutor:stub -- --curriculum curriculum/ai-foundations.curriculum.yaml --module AF1`,
-  );
-  console.log(`${C.cyan}  curriculum ${C.reset} npm run tutor:stub:workplan -- --module <id>`);
-  console.log(`${C.cyan}  board      ${C.reset} /board inside any normal tutor-stub session`);
-  console.log(`${C.cyan}  proof DAG  ${C.reset} /proof inside any normal tutor-stub session`);
-  console.log(`${C.cyan}  pure chat  ${C.reset} npm run tutor:stub:passthrough`);
-  console.log(`${C.cyan}  QA preview ${C.reset} npm run tutor:stub:qa -- --suite core --runs 1 --dry-run`);
-
+  let activeContext = null;
   if (state) {
     const mode = state.passthrough?.enabled ? 'passthrough' : state.interaction?.mode || 'learner';
     const content = state.curriculum?.module?.title
@@ -8949,126 +8946,41 @@ function printTutorStubFeatureMap(state = null) {
       .filter((id) => !hiddenAlwaysOnCapabilities.has(id))
       .map((id) => state.capabilities.capabilities[id]?.label)
       .filter(Boolean);
-    console.log(
-      `\n${C.brightGreen}${C.bold}active now >${C.reset} ${mode} · ${content}${activeMechanisms.length ? ` · ${activeMechanisms.join(' · ')}` : ''}`,
-    );
+    activeContext = { mode, content, mechanisms: activeMechanisms };
   }
-
-  console.log(
-    `${C.dim}  use --help for launch flags; inside a session, type / to filter commands or /help for groups${C.reset}\n`,
-  );
+  const lines = projectTutorStubFeatureMapLines({ featureRows, activeContext, colors: C });
+  for (const line of lines) console.log(line);
 }
 
 function printInteractiveHelp(state = null) {
   const mode = state?.passthrough?.enabled ? 'passthrough' : 'normal';
   const commandOptions = { mode, capabilities: state?.capabilities || null };
-  const commandAvailable = (value) => tutorStubCommandAvailable(value, commandOptions);
-  if (mode === 'passthrough') {
-    console.log(`${C.brightCyan}${C.bold}passthrough commands${C.reset}`);
-    console.log(`${C.cyan}  chat${C.reset}       type any ordinary line`);
-    for (const row of tutorStubCommandHelpRows({ mode, capabilities: state?.capabilities || null })) {
-      console.log(`${C.cyan}  ${row.label.padEnd(11)}${C.reset} ${row.commands.join(' · ')} — ${row.summary}`);
-    }
-    console.log(
-      `${C.dim}  Each learner line goes directly to the speaker with the unchanged system setup and complete public message history. No classifier, reasoning tracker, register selection, response check, release planner, or auxiliary model call runs.${C.reset}\n`,
-    );
-    return;
-  }
-  console.log(
-    `${C.brightCyan}${C.bold}commands${C.reset}${C.dim} · type / to browse; keep typing to filter; Tab completes${C.reset}`,
-  );
-  for (const row of tutorStubCommandHelpRows({ mode, capabilities: state?.capabilities || null })) {
-    console.log(`${C.cyan}  ${row.label.padEnd(12)}${C.reset} ${row.commands.join(' · ')} — ${row.summary}`);
-  }
-  console.log(
-    `${C.dim}  Your ordinary lines are learner speech. /coach keeps your suggestion private. /auto lets the models continue the existing conversation; add a number to limit the turns.${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  If you add another learner line before the tutor replies, both lines become one learner turn and the tutor restarts from the complete message.${C.reset}`,
-  );
-  if (commandAvailable('/feedback')) {
-    console.log(
-      `${C.dim}  Tutor ratings are optional. On an empty prompt press ← for not helpful or → for helpful—no Enter needed. Add a typed reason with commands such as /down too_abstract or /up helpful_pacing.${C.reset}`,
-    );
-  }
-  console.log(
-    `${C.dim}  If the exchange goes off the rails, /reset cancels unfinished work and restarts the same scenario while keeping your learner profile and settings. /clear is an alias.${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  /debug off shows only the dialogue and compact response line. /debug on adds a short plain explanation. /debug technical shows the full diagnostic evidence once.${C.reset}`,
-  );
-  if (commandAvailable('/committee')) {
-    console.log(
-      `${C.dim}  The learned Qwen warrant committee is on by default in human chat. /committee toggles it; /committee status shows its model and fallback policy.${C.reset}`,
-    );
-  }
-  if (commandAvailable('/random')) {
-    console.log(
-      `${C.dim}  /random toggles a session-only performance experiment: style and host character change randomly, independently of learner assessment; evidence, action choice, closure, and safety still work normally.${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  /tutor and /learner open the two character selectors directly; /character tutor and /character learner remain the full forms. A changed tutor character says “Let me rephrase that” and restates the latest intent in the new part. Use auto to clear a tutor-axis lock.${C.reset}`,
-    );
-  }
-  if (commandAvailable('/suggest')) {
-    console.log(
-      `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
-    );
-  } else {
-    console.log(
-      `${C.dim}  /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
-    );
-  }
-  console.log(
-    `${C.dim}  /voice opens a local microphone companion. Speech enters this same learner-turn path; only accepted tutor text is voiced. /voice status and /voice off inspect or stop it.${C.reset}`,
-  );
-  if (commandAvailable('/board')) {
-    console.log(
-      `${C.dim}  /board reads workplan/items live and starts the selected card as a fresh reflective inquiry; /board <item-id> selects directly.${C.reset}`,
-    );
-  }
-  if (commandAvailable('/proof')) {
-    console.log(
-      `${C.dim}  /proof checks the deterministic Nocturne certificate fixture; /proof inspect learner or tutor shows the public projections. Use /analysis technical for this session's live DAG state.${C.reset}`,
-    );
-  }
-  if (state?.capabilities?.capabilities?.learning_summary?.active) {
-    console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
-  } else {
-    console.log();
+  const commandAvailability =
+    mode === 'normal'
+      ? Object.fromEntries(
+          ['/feedback', '/committee', '/random', '/suggest', '/board', '/proof'].map((token) => [
+            token,
+            tutorStubCommandAvailable(token, commandOptions),
+          ]),
+        )
+      : {};
+  const lines = projectTutorStubInteractiveHelpLines({
+    mode,
+    helpRows: tutorStubCommandHelpRows(commandOptions),
+    commandAvailability,
+    learningSummaryActive: Boolean(state?.capabilities?.capabilities?.learning_summary?.active),
+    colors: C,
+  });
+  for (const line of lines) {
+    console.log(line);
   }
 }
 
 function printTutorStubReleaseNotes(hoursArg = '') {
   const hours = normalizeTutorStubReleaseNotesHours(hoursArg);
   const notes = loadTutorStubReleaseNotes({ cwd: ROOT, hours });
-  const through = notes.through?.shortHash ? ` · through ${notes.through.shortHash}` : '';
-  console.log(
-    `${C.brightCyan}${C.bold}release notes >${C.reset} last ${notes.hours} hours${through} · ${notes.relevantCommitCount} relevant ${notes.relevantCommitCount === 1 ? 'commit' : 'commits'}`,
-  );
-
-  if (!notes.groups.length) {
-    console.log(`${C.dim}  no tutor-stub commits landed in this window${C.reset}\n`);
-    return notes;
-  }
-
-  for (const group of notes.groups) {
-    console.log(
-      `\n${C.accent}${C.bold}${group.title}${C.reset}${C.dim} · ${group.commits.length} ${group.commits.length === 1 ? 'commit' : 'commits'}${C.reset}`,
-    );
-    console.log(`${C.dim}  effect >${C.reset} ${group.effect}`);
-    console.log(`${C.dim}  look for >${C.reset} ${group.lookFor}`);
-    const visibleLimit = group.id === 'validation' ? 4 : 6;
-    for (const commit of group.commits.slice(0, visibleLimit)) {
-      console.log(`${C.dim}    ${commit.shortHash} ·${C.reset} ${commit.subject}`);
-    }
-    if (group.commits.length > visibleLimit) {
-      console.log(`${C.dim}    + ${group.commits.length - visibleLimit} earlier commits in this window${C.reset}`);
-    }
-  }
-  console.log(
-    `\n${C.dim}  This view is rebuilt from Git each time, so newly committed changes enter automatically. Verification commits are separated from changes that directly affect an exchange.${C.reset}\n`,
-  );
+  const lines = projectTutorStubReleaseNotesLines({ notes, colors: C });
+  for (const line of lines) console.log(line);
   return notes;
 }
 
@@ -10820,6 +10732,7 @@ async function callTutor({
     };
     if (cliEffort) request.config.cliEffort = cliEffort;
     const useStreamingApi = streamMode === 'live' || streamMode === 'buffered';
+    reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });
     reserveTutorStubMeteredModelCall({ trace, role, turn: tutorTurn });
     let response;
     if (isCliProvider(resolved.provider)) {
@@ -15526,6 +15439,9 @@ async function main() {
   const learnerAnalysisPromptProfile = normalizeTutorStubPublicLearnerAnalysisPromptProfile(
     args['learner-analysis-prompt-profile'],
   );
+  const learnerAnalysisEvidenceUseRubric = normalizeTutorStubEvidenceUseRubric(
+    args['learner-analysis-evidence-use-rubric'],
+  );
   const mixedTutorPrefetchPolicy = String(args['mixed-tutor-prefetch-policy'] || 'always')
     .trim()
     .toLowerCase();
@@ -16081,6 +15997,7 @@ async function main() {
           },
           promptArchitecture,
           learnerAnalysisPromptProfile,
+          learnerAnalysisEvidenceUseRubric,
           directorContext,
           temperature: effectiveTemperature,
           requestedTemperature: temperature,
@@ -16509,6 +16426,7 @@ async function main() {
         : { enabled: false },
       cliEffort: cliEffort || null,
       learnerAnalysisPromptProfile,
+      learnerAnalysisEvidenceUseRubric,
       mixedTutorPrefetchPolicy,
       stream: {
         enabled: streamEnabled,
@@ -16646,6 +16564,7 @@ async function main() {
     maxTokens,
     historyTurns,
     learnerAnalysisPromptProfile,
+    learnerAnalysisEvidenceUseRubric,
     mixedTutorPrefetchPolicy,
     tutorContext: {
       schema: 'machinespirits.tutor-stub.tutor-context-policy.v2',
@@ -21372,31 +21291,21 @@ async function main() {
   }
 
   function interactionModeLabel() {
-    const mode = state.interaction?.mode || 'learner';
-    if (mode === 'coach') return `${C.brightYellow}${C.bold}COACH${C.reset}`;
-    if (mode === 'auto') return `${C.brightBlue}${C.bold}AUTO${C.reset}`;
-    if (mixedLearner.enabled) return `${C.brightGreen}${C.bold}MIXED${C.reset}`;
-    return `${C.brightGreen}${C.bold}LEARNER${C.reset}`;
+    return projectTutorStubInteractionModeLabel({
+      mode: state.interaction?.mode || 'learner',
+      mixedEnabled: mixedLearner.enabled,
+      colors: C,
+    });
   }
 
   function printInteractionModeBanner({ detail = true } = {}) {
-    const mode = state.interaction?.mode || 'learner';
-    const description =
-      mode === 'coach'
-        ? 'your lines are private suggestions for the next tutor response'
-        : mode === 'auto'
-          ? 'the automated learner and tutor now play without intervention'
-          : mixedLearner.enabled
-            ? 'your lines become public learner speech; AI drafts, clues, and /use are available'
-            : 'your lines become public learner speech';
-    console.log(`${C.dim}╭─${C.reset} ${interactionModeLabel()} ${C.dim}mode · ${description}${C.reset}`);
-    if (detail && mode === 'coach') {
-      console.log(
-        `${C.dim}╰─ guidance stays out of the public transcript; switch with /mode learner, or use /use in mixed mode${C.reset}\n`,
-      );
-    } else if (detail && mode === 'learner') {
-      console.log(`${C.dim}╰─ switch with /coach or hand off with /auto [turns]${C.reset}\n`);
-    }
+    for (const line of projectTutorStubInteractionModeBannerLines({
+      mode: state.interaction?.mode || 'learner',
+      mixedEnabled: mixedLearner.enabled,
+      detail,
+      colors: C,
+    }))
+      console.log(line);
   }
 
   function setInteractionMode(mode, { announce = true } = {}) {
@@ -21421,22 +21330,19 @@ async function main() {
 
   function printInteractiveStatus() {
     if (state.passthrough?.enabled) {
-      console.log(`${C.brightCyan}${C.bold}session status >${C.reset} passthrough · turn ${state.turns.length + 1}`);
-      console.log(
-        `${C.dim}  speaker model: ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  setup: ${state.world ? `${state.world.id} — ${state.world.title}` : state.topic}; public messages replayed next turn: ${state.history.length}${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  appearance: ${cliPresentation.themeLabel} · ${cliPresentation.motion} motion · ${cliPresentation.colorMode}${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  voice: ${state.voice?.enabled ? 'on' : 'off'} · ${state.voice?.model} · ${state.voice?.voice} · /voice${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  one speaker call per turn · classifier, DAG, register, response checks, releases, feedback, and summaries off${C.reset}\n`,
-      );
+      for (const line of projectTutorStubSessionStatusLines({
+        status: {
+          surface: 'passthrough',
+          turn: state.turns.length + 1,
+          model: { ref: state.modelRef, provider: state.resolved.provider, model: state.resolved.model },
+          setup: state.world ? `${state.world.id} — ${state.world.title}` : state.topic,
+          publicMessageCount: state.history.length,
+          appearance: cliPresentation,
+          voice: state.voice,
+        },
+        colors: C,
+      }))
+        console.log(line);
       return;
     }
     const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
@@ -21458,94 +21364,67 @@ async function main() {
           ? 'warming'
           : 'idle'
       : 'off';
-    console.log(
-      `${C.brightCyan}${C.bold}session status >${C.reset} ${interactionModeLabel()} · turn ${state.turns.length + 1}`,
-    );
-    console.log(`${C.dim}  learner: ${profile.id} — ${profile.name}; suggested reply ${suggestion}${C.reset}`);
-    console.log(
-      `${C.dim}  tutor: ${state.tuning?.activeRef || state.tutorInstance?.ref || 'unpartitioned'} · model ${state.modelRef} → ${state.resolved.provider}/${state.resolved.model}${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  model routing: ${
-        state.modelRouting?.allRolesOverrideRef
-          ? `one model for all roles (${state.modelRouting.allRolesOverrideRef})`
-          : `interpretation ${liveModelRoleRef('classifier')} · reasoning ${liveModelRoleRef('reasoning')} · learner voice ${liveModelRoleRef('learner')}`
-      }${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  learned committee: ${
-        state.committee?.enabled
-          ? `on · ${state.committee.miniModel} · warrant-gap trigger · fallback ${state.committee.fallbackPolicy}`
-          : 'off · frontier-only responses'
-      } · /committee${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  voice: ${state.voice?.enabled ? 'on' : 'off'} · ${state.voice?.model} · ${state.voice?.voice} · separate renderer; /voice${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  teaching approach: ${plainPolicyLabel(state.register?.policy)} (${policy}); style range ${state.register?.temperature}; evidence-memory dropout ${dropout.rate}; clue pace ${releasePacing?.baseSpeed ?? 1}x base / ${releasePacing?.effectiveSpeed ?? 1}x now${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  random performance: ${
-        state.randomPerformance?.enabled
-          ? randomPerformanceAxes.length
-            ? `on — assessment-independent ${randomPerformanceAxes.join(' + ')}`
-            : 'on — armed; both axes explicitly directed'
-          : 'off'
-      } · /random${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  light adaptation: ${
-        state.lightAdaptation?.enabled
-          ? `on — seeded style + character shift after ${state.lightAdaptation.threshold} consecutive confused/frustrated turns`
-          : 'off'
-      } · /light${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  directed performance: style ${directedRegister || 'auto'} · character ${directedCharacter || 'auto'} · /register · /character${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  director request: ${
-        directorDirection
-          ? `${oneLine(directorDirection.text, { max: 120 })} · from tutor turn ${directorDirection.effectiveFromTurn}`
-          : 'none'
-      } · /meta · /director${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  conversation: ${displayDiagnosticLabel(closure)}; private coaching: ${coachPending} waiting, ${state.coach?.history?.length || 0} used${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  auto handoff: ${
-        pendingAutoRequest
-          ? `queued after tutor turn ${pendingAutoRequest.afterTurn} · ${
-              pendingAutoRequest.requestedTurns === null
-                ? 'until grounded'
-                : `${pendingAutoRequest.requestedTurns} turn${pendingAutoRequest.requestedTurns === 1 ? '' : 's'}`
-            }`
-          : state.interaction?.autoRunning
-            ? 'running'
-            : 'none'
-      } · /auto${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  tutor ratings: ${state.turnFeedback?.enabled ? `on · ${tutorStubTurnFeedbackLabel(tutorStubTurnFeedbackEnvelope(state.turnFeedback))}` : 'off'} · optional and private${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  response details: ${state.responseDetails?.enabled ? 'on · model plus foreground timing shown before tutor speech' : 'off'} · /details${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  tuning: ${state.tuning?.mode || 'off'} · stable v${state.tuning?.manifest?.stableVersion ?? state.tutorInstance?.sourceVersion ?? 1}${state.tuning?.manifest?.canaryVersion ? ` · canary v${state.tuning.manifest.canaryVersion}` : ''} · ${state.tuning?.sessionCandidateIds?.length || 0} session candidates${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  appearance: ${cliPresentation.themeLabel} · ${cliPresentation.motion} motion${
-        cliPresentation.requestedMotion === cliPresentation.motion
-          ? ''
-          : ` (${cliPresentation.requestedMotion} selected)`
-      } · ${cliPresentation.colorMode}${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  explanations: ${state.explanatoryDebug?.enabled ? `on (${state.explanatoryDebug.format === 'technical' ? 'technical details' : 'plain'})` : 'off'} · commands remain live while models work · /analysis · /transcript · /help${C.reset}\n`,
-    );
+    const modelRouting = state.modelRouting?.allRolesOverrideRef
+      ? { allRolesOverrideRef: state.modelRouting.allRolesOverrideRef }
+      : {
+          allRolesOverrideRef: null,
+          classifierRef: liveModelRoleRef('classifier'),
+          reasoningRef: liveModelRoleRef('reasoning'),
+          learnerRef: liveModelRoleRef('learner'),
+        };
+    for (const line of projectTutorStubSessionStatusLines({
+      status: {
+        surface: 'normal',
+        modeLabel: interactionModeLabel(),
+        turn: state.turns.length + 1,
+        learner: { id: profile.id, name: profile.name, suggestion },
+        tutor: { ref: state.tuning?.activeRef || state.tutorInstance?.ref || 'unpartitioned' },
+        model: { ref: state.modelRef, provider: state.resolved.provider, model: state.resolved.model },
+        modelRouting,
+        committee: state.committee,
+        voice: state.voice,
+        teaching: {
+          approachLabel: plainPolicyLabel(state.register?.policy),
+          policyId: policy,
+          styleRange: state.register?.temperature,
+          dropoutRate: dropout.rate,
+          baseSpeed: releasePacing?.baseSpeed ?? 1,
+          effectiveSpeed: releasePacing?.effectiveSpeed ?? 1,
+        },
+        randomPerformance: { enabled: state.randomPerformance?.enabled, axes: randomPerformanceAxes },
+        lightAdaptation: state.lightAdaptation,
+        directedPerformance: { register: directedRegister, character: directedCharacter },
+        directorRequest: directorDirection
+          ? {
+              text: oneLine(directorDirection.text, { max: 120 }),
+              effectiveFromTurn: directorDirection.effectiveFromTurn,
+            }
+          : null,
+        conversation: {
+          closureLabel: displayDiagnosticLabel(closure),
+          coachPending,
+          coachUsed: state.coach?.history?.length || 0,
+        },
+        autoHandoff: { pending: pendingAutoRequest, running: state.interaction?.autoRunning },
+        turnFeedback: {
+          enabled: state.turnFeedback?.enabled,
+          label: state.turnFeedback?.enabled
+            ? tutorStubTurnFeedbackLabel(tutorStubTurnFeedbackEnvelope(state.turnFeedback))
+            : null,
+        },
+        responseDetails: state.responseDetails,
+        tuning: {
+          mode: state.tuning?.mode,
+          stableVersion: state.tuning?.manifest?.stableVersion ?? state.tutorInstance?.sourceVersion ?? 1,
+          canaryVersion: state.tuning?.manifest?.canaryVersion,
+          sessionCandidateCount: state.tuning?.sessionCandidateIds?.length || 0,
+        },
+        appearance: cliPresentation,
+        explanatoryDebug: state.explanatoryDebug,
+      },
+      colors: C,
+    }))
+      console.log(line);
   }
 
   function cliDirectorApplicationContext() {
@@ -21705,21 +21584,9 @@ async function main() {
   }
 
   function printProofDagArtifactPaths() {
-    const rows = [
-      ['operator guide', 'docs/proof-dag-verification-and-inspection.md'],
-      ['Lean certificate', 'tools/proof-dag-lean/ProofDag/Generated/World001Nocturne.lean'],
-      ['authored graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/authored.ttl'],
-      ['learner graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/learner-proxy.ttl'],
-      ['tutor graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/tutor-model.ttl'],
-      ['combined graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/proof-dags.trig'],
-      ['SHACL report', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/validation-report.json'],
-    ];
-    console.log(`${C.brightCyan}${C.bold}proof-DAG artifacts >${C.reset} deterministic Nocturne fixture`);
-    for (const [label, file] of rows) console.log(`${C.dim}  ${label}: ${file}${C.reset}`);
-    console.log(
-      `${C.dim}  authored files contain private world truth; learner and tutor files must remain public-only${C.reset}\n`,
-    );
-    return rows;
+    const projection = projectTutorStubProofDagArtifactPaths({ colors: C });
+    for (const line of projection.lines) console.log(line);
+    return projection.rows;
   }
 
   function runProofDagLeanCheck() {
@@ -21745,40 +21612,7 @@ async function main() {
   }
 
   function printProofDagSemanticLayer(result, layer) {
-    const graph = result.validation.graphs[layer];
-    if (layer === 'authored') {
-      console.log(`${C.brightMagenta}${C.bold}authored >${C.reset} private authority graph`);
-      console.log(
-        `${C.dim}  ${graph.quadCount} quads · SHACL ${graph.conforms ? 'conforms' : 'fails'} · ${result.world.premises.length} premises · ${result.world.rules.length} rules · ${result.world.proofPaths.length} positive proof paths${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  raw: tools/proof-dag-semantic-web/Generated/World001Nocturne/authored.ttl (contains the secret and authored identifiers)${C.reset}`,
-      );
-      return;
-    }
-    if (layer === 'learner') {
-      const projection = result.projections.learnerProxyDag;
-      const metrics = projection.metrics || {};
-      console.log(`${C.cyan}${C.bold}learner >${C.reset} public-only proxy graph at fixture turn ${projection.turn}`);
-      console.log(
-        `${C.dim}  ${graph.quadCount} quads · SHACL ${graph.conforms ? 'conforms' : 'fails'} · ${metrics.groundedCount || 0} grounded · ${metrics.voicedDerivedCount || 0} voiced · ${metrics.hypothesisCount || 0} hypotheses · ${metrics.answerCandidateCount || 0} answers${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  source redaction audit passed · raw: tools/proof-dag-semantic-web/Generated/World001Nocturne/learner-proxy.ttl${C.reset}`,
-      );
-      return;
-    }
-    const projection = result.projections.tutorLearnerDagModel;
-    const assessment = projection.assessment || {};
-    console.log(
-      `${C.brightBlue}${C.bold}tutor >${C.reset} public-only advisory model at fixture turn ${projection.turn}`,
-    );
-    console.log(
-      `${C.dim}  ${graph.quadCount} quads · SHACL ${graph.conforms ? 'conforms' : 'fails'} · best-path coverage ${assessment.bestPathCoverage ?? 0} · bottleneck ${assessment.bottleneck || 'none'} · ${assessment.missingPremiseCount || 0} missing premises (counts only)${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  source redaction audit passed · raw: tools/proof-dag-semantic-web/Generated/World001Nocturne/tutor-model.ttl${C.reset}`,
-    );
+    for (const line of projectTutorStubProofDagSemanticLayerLines({ result, layer, colors: C })) console.log(line);
   }
 
   async function handleProofDagCommand(argument = '', { duringTurn = false } = {}) {
@@ -23038,21 +22872,24 @@ async function main() {
     return sessionRuntime.reset({ reason: 'dialogue_reset', ...options });
   }
 
-  function printTrainingReuseStatus(prefix = 'training reuse') {
+  function trainingReuseStatusLines(prefix = 'training reuse') {
     const reuse = state.trainingReuse;
-    console.log(
-      `${C.dim}  ${prefix}: ${tutorStubTrainingReuseLabel(reuse)}; requested ${reuse.requested}; ${displayDiagnosticLabel(
-        reuse.humanSubjectClass,
-      )}; source ${displayDiagnosticLabel(reuse.source)}${C.reset}`,
-    );
-    if (reuse.failClosed) {
-      console.log(`${C.dim}  external or unknown human data stays do not train even when reuse is requested${C.reset}`);
-    } else if (reuse.status === 'training_candidate') {
-      console.log(
-        `${C.dim}  candidate means eligible for later review, not automatically approved or exported for training${C.reset}`,
-      );
-    } else if (reuse.status === 'do_not_train') {
-      console.log(`${C.dim}  this source and derived descendants must remain outside training corpora${C.reset}`);
+    return projectTutorStubTrainingReuseStatusLines({
+      prefix,
+      label: tutorStubTrainingReuseLabel(reuse),
+      requested: reuse.requested,
+      humanSubjectLabel: displayDiagnosticLabel(reuse.humanSubjectClass),
+      sourceLabel: displayDiagnosticLabel(reuse.source),
+      failClosed: reuse.failClosed,
+      status: reuse.status,
+      colors: C,
+    });
+  }
+
+  function printTrainingReuseStatus(prefix = 'training reuse') {
+    const lines = trainingReuseStatusLines(prefix);
+    for (const line of lines) {
+      console.log(line);
     }
   }
 
@@ -23111,97 +22948,66 @@ async function main() {
       Boolean,
     );
     const modelRoles = Object.keys(liveModelRoleDefinitions).map(liveModelRoleSnapshot);
-    console.log(`${C.cyan}settings >${C.reset}`);
-    console.log(
-      `${C.dim}  one model for all roles: ${state.modelRouting?.allRolesOverrideRef || 'off — roles selected separately'}${C.reset}`,
-    );
-    for (const role of modelRoles) {
-      const mode = role.combinedOwner
-        ? 'active; also performs learner interpretation'
-        : role.active
-          ? 'active'
-          : role.role === 'classifier' && state.classifier?.combined
-            ? 'inactive; combined into reasoning tracker'
-            : 'inactive in this mode';
-      console.log(
-        `${C.dim}  ${role.label.toLowerCase()}: ${role.modelRef} → ${role.resolved.provider}/${role.resolved.model}; ${mode}${C.reset}`,
-      );
-    }
-    console.log(`${C.dim}  tutor effort: ${state.cliEffort || 'provider default'}${C.reset}`);
-    console.log(
-      `${C.dim}  appearance: ${cliPresentation.themeLabel} theme; ${cliPresentation.requestedMotion} motion (${cliPresentation.motion} here); change with /theme or /motion${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  learned committee: ${
-        state.committee?.enabled
-          ? `on — ${state.committee.miniModel} supplies warrant-gap questions; fallback ${state.committee.fallbackPolicy}`
-          : 'off — frontier-only responses'
-      }; change with /committee${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  conversation memory: tutor and learner replay all ${
-        tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length
-      } public messages with speaker-relative user/assistant roles${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  teaching approach: ${plainPolicyLabel(state.register?.policy)} (${tutorStubRegisterPolicyStackId(
-        state.register?.policy,
-        state.register?.overlays,
-      )}); turn/conversation overrides ${state.register?.overlays?.join(', ') || 'off'}; sensitivity ${
-        state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD
-      }${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  teaching-style range: ${state.register?.temperature ?? registerTemperature} — lower concentrates the strongest style and part; higher mixes in more alternatives${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  style range is ${
-        temperatureSelection.applied
-          ? `active for ${displayDiagnosticLabel(temperatureSelection.scope)}`
-          : temperatureSelection.scope === 'saved_but_not_used_by_policy'
-            ? 'saved but not used by this approach'
-            : 'bypassed on axes controlled by /random, /register, or /character'
-      }${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  random performance: ${
-        state.randomPerformance?.enabled
-          ? randomPerformanceAxes.length
-            ? `on — ${randomPerformanceAxes.join(' and ')} ignore assessment`
-            : 'on — armed; both axes explicitly directed'
-          : 'off'
-      }; session only; /random toggles${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  light adaptation: ${
-        state.lightAdaptation?.enabled
-          ? `on — after ${state.lightAdaptation.threshold} consecutive confusion/frustration turns, seeded-random style and character replace the prior pair when possible`
-          : 'off'
-      }; remembered setting; /settings light or /light changes it${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  directed performance: style ${explicitPerformanceDirectiveValue(state, 'register') || 'auto'}; character ${explicitPerformanceDirectiveValue(state, 'character') || 'auto'}; session only; /register and /character${C.reset}`,
-    );
     const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
-    console.log(
-      `${C.dim}  evidence-memory dropout: ${dropout.rate} (${dropout.rate > 0 ? 'on' : 'off'}); currently forgotten ${dropout.activeCount}; understood items tracked ${dropout.adoptedCount}${C.reset}`,
-    );
     const pace = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
-    console.log(
-      `${C.dim}  clue release speed: ${pace?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED}x base; ${pace?.effectiveSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED}x now (${pace?.direction || 'steady'}); adapts to explicit learner requests${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  reuse these settings next time: ${state.rememberedSettings?.enabled ? 'yes' : 'no'}; ${
-        state.rememberedSettings?.status || 'disabled'
-      }${C.reset}`,
-    );
-    printTrainingReuseStatus();
-    console.log(
-      `${C.dim}  advanced overrides: /settings policy add state|field · remove state|field · clear · threshold 0.7${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  use /settings models, /settings models all <ref>, /settings model, /settings temp 1.0, /settings dropout 0.15, /settings light on|off, /settings training-reuse on|off, /settings release-speed 1.5, /settings theme nocturne, /settings motion subtle, or /settings forget${C.reset}\n`,
-    );
+    const lines = projectTutorStubDialogueSettingsLines({
+      settings: {
+        allRolesOverrideRef: state.modelRouting?.allRolesOverrideRef,
+        modelRoles,
+        classifierCombined: state.classifier?.combined,
+        tutorEffort: state.cliEffort,
+        appearance: {
+          themeLabel: cliPresentation.themeLabel,
+          requestedMotion: cliPresentation.requestedMotion,
+          motion: cliPresentation.motion,
+        },
+        committee: {
+          enabled: state.committee?.enabled,
+          miniModel: state.committee?.miniModel,
+          fallbackPolicy: state.committee?.fallbackPolicy,
+        },
+        publicMessageCount: tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length,
+        teaching: {
+          policyLabel: plainPolicyLabel(state.register?.policy),
+          policyStackId: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
+          overlays: state.register?.overlays,
+          overlayThreshold: state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+          styleRange: state.register?.temperature ?? registerTemperature,
+          temperatureSelection: {
+            applied: temperatureSelection.applied,
+            scope: temperatureSelection.scope,
+            scopeLabel: displayDiagnosticLabel(temperatureSelection.scope),
+          },
+          randomPerformance: {
+            enabled: state.randomPerformance?.enabled,
+            axes: randomPerformanceAxes,
+          },
+          lightAdaptation: {
+            enabled: state.lightAdaptation?.enabled,
+            threshold: state.lightAdaptation?.threshold,
+          },
+          directedPerformance: {
+            register: explicitRegister,
+            character: explicitCharacter,
+          },
+        },
+        dropout,
+        releasePacing: {
+          baseSpeed: pace?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+          effectiveSpeed: pace?.effectiveSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+          direction: pace?.direction || 'steady',
+        },
+        rememberedSettings: {
+          enabled: state.rememberedSettings?.enabled,
+          status: state.rememberedSettings?.status || 'disabled',
+        },
+      },
+      trainingReuseLines: trainingReuseStatusLines(),
+      colors: C,
+    });
+    for (const line of lines) {
+      console.log(line);
+    }
   }
 
   function printModelChoices(role = 'tutor') {

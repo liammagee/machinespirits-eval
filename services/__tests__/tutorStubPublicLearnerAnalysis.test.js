@@ -4,7 +4,11 @@ import { fileURLToPath } from 'node:url';
 import { describe, it } from 'node:test';
 
 import { loadWorld } from '../dramaticDerivation/world.js';
+import { tutorStubLearnerDagGrounded } from '../tutorStubDialogueClosure.js';
 import {
+  TUTOR_STUB_EVIDENCE_USE_RUBRICS,
+  TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+  TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY,
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
   TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   TutorStubPublicLearnerAnalysisError,
@@ -18,6 +22,7 @@ import {
   createTutorStubPublicLearnerRecord,
   extractTutorStubPublicLearnerAnalysis,
   normalizeTutorStubClassificationAgainstLearnerSurface,
+  normalizeTutorStubEvidenceUseRubric,
   parseTutorStubPublicLearnerAnalysisInteractive,
   parseTutorStubPublicLearnerAnalysisStrict,
   postprocessTutorStubPublicLearnerAnalysis,
@@ -293,6 +298,85 @@ function modelResponse(value, overrides = {}) {
     ...overrides,
   };
 }
+
+describe('evidence_use rubric versioning', () => {
+  const promptFor = (evidenceUseRubric) =>
+    buildTutorStubPublicLearnerAnalysisPrompt({
+      learnerText: 'I enter the verdict: Edony struck the false shillings.',
+      topic: 'evidence reasoning',
+      world: buildTutorStubPublicLearnerAnalysisWorld(smokeWorld()),
+      tutorTurn: 1,
+      publicStagedEvidence: [],
+      ...(evidenceUseRubric === undefined ? {} : { evidenceUseRubric }),
+    });
+
+  // New runs measure the construct we can state, so the default is v2. An
+  // omitted argument and an explicit v2 must agree.
+  it('defaults to v2_bridge_voiced', () => {
+    assert.equal(TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT, TUTOR_STUB_EVIDENCE_USE_RUBRICS.V2_BRIDGE_VOICED);
+    const omitted = promptFor(undefined);
+    assert.equal(omitted, promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V2_BRIDGE_VOICED));
+    assert.match(omitted, /a bridge is voiced when/u);
+  });
+
+  // Flipping the default is only safe if the old instrument stays exactly
+  // reproducible, since the published Phase 5/5b/5c figures were measured under
+  // it. This pins v1's single precedence line byte-for-byte: the archive's 2,363
+  // stored prompts each contain this exact string once, and the relabel tool
+  // finds them by matching it.
+  it('keeps v1 exactly reproducible by name', () => {
+    const v1 = promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1);
+    assert.equal(TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY, TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1);
+    assert.ok(
+      v1.includes(
+        '- evidence precedence: distorted/misattributed public clue => distorts_public_evidence; correct clue plus conclusion but no bridge => omits_warrant; conclusion beyond available evidence => overleaps_evidence; explicit bridge => links_evidence_to_rule.',
+      ),
+      'v1 precedence line drifted; the archive relabel tool matches it verbatim',
+    );
+    assert.doesNotMatch(v1, /a bridge is voiced when/u);
+  });
+
+  it('v2 defines the bridge in both directions', () => {
+    const v2 = promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V2_BRIDGE_VOICED);
+    // Direction 1: a bare conclusion is omits_warrant even when the record supports it.
+    assert.match(v2, /conclusion whose bridge is not voiced in this turn => omits_warrant/u);
+    assert.match(v2, /judge the bridge from this turn's words alone/u);
+    // Direction 2: an acknowledged gap does not cancel a voiced bridge.
+    assert.match(v2, /voicing a bridge and also naming what is still unproven is links_evidence_to_rule/u);
+    assert.match(v2, /a bridge is voiced when this turn names the specific public evidence/u);
+    assert.doesNotMatch(v2, /correct clue plus conclusion but no bridge => omits_warrant/u);
+  });
+
+  // The two neighbouring labels are byte-identical across versions, which bounds
+  // the edit to the clause it claims to touch. Only `distorts_public_evidence` is
+  // a clean control, though: `overleaps_evidence` is the second label that fires
+  // `warrant_skip` (see tutorStubPointOfActionCoaching.js), and because the labels
+  // are one mutually-exclusive choice, redefining the `omits_warrant` boundary can
+  // move mass across it. Byte-identity says the wording did not change; it does
+  // not say the label's rate cannot.
+  it('leaves the neighbouring evidence labels byte-identical across versions', () => {
+    for (const clause of [
+      'distorted/misattributed public clue => distorts_public_evidence',
+      'conclusion beyond available evidence => overleaps_evidence',
+    ]) {
+      assert.ok(promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1).includes(clause), `v1 missing: ${clause}`);
+      assert.ok(promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V2_BRIDGE_VOICED).includes(clause), `v2 missing: ${clause}`);
+    }
+  });
+
+  it('rejects an unknown rubric version instead of silently falling back', () => {
+    assert.equal(normalizeTutorStubEvidenceUseRubric(), TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT);
+    assert.equal(normalizeTutorStubEvidenceUseRubric(' V2_Bridge_Voiced '), 'v2_bridge_voiced');
+    for (const bad of ['v3', 'bridge', 'v2-bridge-voiced']) {
+      assert.throws(
+        () => normalizeTutorStubEvidenceUseRubric(bad),
+        (error) => error instanceof TutorStubPublicLearnerAnalysisError && error.code === 'invalid_evidence_use_rubric',
+        `expected ${bad} to be rejected`,
+      );
+    }
+    assert.throws(() => promptFor('v3'), TutorStubPublicLearnerAnalysisError);
+  });
+});
 
 describe('strict public learner analysis', () => {
   it('uses a separate recursively complete Codex-compatible provider schema', () => {
@@ -733,6 +817,116 @@ describe('public evidence boundary and exact DAG postprocessor', () => {
     assert.equal(result.model.assessment.finalSecretEntailed, true);
     assert.equal(result.model.assessment.assertedSecret, true);
     assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret');
+  });
+
+  it('recognises a possessive-form answer as the asserted secret', () => {
+    // Regression: every dialogue in the phase-5e pilot ran to its 40-turn
+    // safety cap on this world. Learners named the answer plainly and
+    // repeatedly, but `pipersGullet` normalised to "pipers gullet" while
+    // "Piper's Gullet" normalised to "piper s gullet", so no assertion ever
+    // registered, assertedSecret stayed false, and the closure frame never
+    // became mandatory. Both apostrophe glyphs below appear in the sealed
+    // traces, as does the double genitive.
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 9,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+
+    for (const phrase of [
+      "Piper's Gullet",
+      'Piper’s Gullet',
+      "Piper's Gullet's bolted shutter causes the cold loaves.",
+      'Piper’s Gullet’s shutter caused the loaves to arrive cold, not Tibbin.',
+    ]) {
+      const result = applyTutorStubPublicLearnerRecordUpdate({
+        update: {
+          adopt: world.proofPaths[0].premises,
+          derive: [world.secret.fact],
+          assert_answer: phrase,
+        },
+        world,
+        record: createTutorStubPublicLearnerRecord(world),
+        tutorTurn: 9,
+        learnerText: phrase,
+        publicStagedEvidence: publicEvidence,
+        publicReleaseLedger: publicEvidence,
+      });
+
+      assert.equal(result.model.assessment.finalSecretEntailed, true, phrase);
+      assert.equal(result.model.assessment.assertedSecret, true, phrase);
+      assert.equal(result.model.assessment.unsupportedAssertionCount, 0, phrase);
+      assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret', phrase);
+      assert.equal(tutorStubLearnerDagGrounded(result.model), true, phrase);
+    }
+  });
+
+  it('records a bare wrong name as a mirror assertion rather than a grounded close', () => {
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 9,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+    const result = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: world.proofPaths[0].premises,
+        derive: [world.secret.fact],
+        assert_answer: 'Tibbin',
+      },
+      world,
+      record: createTutorStubPublicLearnerRecord(world),
+      tutorTurn: 9,
+      learnerText: 'Tibbin',
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+
+    assert.equal(result.model.assessment.assertedSecret, false);
+    assert.equal(result.model.assessment.assertedMirror, true);
+    assert.equal(result.model.assessment.unsupportedAssertionCount, 1);
+    assert.equal(tutorStubLearnerDagGrounded(result.model), false);
+  });
+
+  it('rejects an unresolvable answer claim instead of minting a phantom fact', () => {
+    // Minting a constant from a whole sentence invented a fact no rule could
+    // support, which was then counted as an unsupported assertion and could
+    // push the dialogue to a false premature_assertion verdict.
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 9,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+    const claim = 'The loaves cool after launch, not in Tibbin’s baking.';
+    const result = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: world.proofPaths[0].premises,
+        derive: [world.secret.fact],
+        assert_answer: claim,
+      },
+      world,
+      record: createTutorStubPublicLearnerRecord(world),
+      tutorTurn: 9,
+      learnerText: claim,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+
+    assert.equal(result.model.assessment.assertedSecret, false);
+    assert.equal(result.model.assessment.unsupportedAssertionCount, 0);
+    assert.equal(result.accepted.assertAnswer, null);
+    assert.ok(
+      (result.rejected || []).some((entry) => entry.type === 'assert' && /names no candidate/u.test(entry.reason)),
+      'the unresolved claim should be visible in the rejected list',
+    );
   });
 
   it('computes a public constraint preflight before analysis without committing progress', async () => {

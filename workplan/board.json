@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-26T07:16:07.192Z",
+  "generated": "2026-07-26T13:52:26.684Z",
   "counts": {
-    "total": 207,
+    "total": 219,
     "byStatus": {
-      "done": 179,
+      "done": 192,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
-      "active": 8,
-      "archived": 4,
-      "review": 4
+      "active": 6,
+      "review": 5,
+      "archived": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 48,
-      "maintenance": 49,
+      "infra": 50,
+      "maintenance": 59,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -186,6 +186,15 @@
           "refactor-tutor-stub-interim-presentation",
           "refactor-tutor-stub-interim-frame-projection",
           "refactor-tutor-stub-cli-help-projection",
+          "refactor-tutor-stub-interactive-help-projection",
+          "refactor-tutor-stub-feature-map-projection",
+          "refactor-tutor-stub-release-notes-projection",
+          "refactor-tutor-stub-dag-snapshot-projection",
+          "refactor-tutor-stub-proof-command-projection",
+          "refactor-tutor-stub-interaction-mode-presentation",
+          "refactor-tutor-stub-session-status-presentation",
+          "refactor-tutor-stub-training-reuse-presentation",
+          "refactor-tutor-stub-dialogue-settings-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -391,60 +400,6 @@
       "branch": "codex/program2-committee-floor-ablation"
     },
     {
-      "id": "tutor-instrumentation-ab-harness",
-      "title": "Instrumentation A/B — bare tutor vs instrumented tutor on one frozen dialogue",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-26",
-      "verification": "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call plan; the baseline arm's projected request is exactly the learner utterance with zero advisory chars; every arm is audited with the recorded run's guard set and pinning is an identity on the fixtures; a paid run writes report.json, report.md, and a swimlane diff whose failure-cluster deltas separate the arms.",
-      "claim_status": "methods",
-      "links": {
-        "notes": [
-          "docs/tutor-instrumentation-ab.md"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "instrument",
-        "frozen-replay"
-      ],
-      "branch": "claude/tutor-instrumentation-ab"
-    },
-    {
-      "id": "tutor-instrumentation-showcase",
-      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-26",
-      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-instrumentation-ab-harness"
-      ],
-      "links": {
-        "notes": [
-          "docs/tutor-instrumentation-showcase.md"
-        ],
-        "items": [
-          "tutor-instrumentation-ab-harness"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "instrument",
-        "demo"
-      ],
-      "branch": "claude/tutor-instrumentation-ab"
-    },
-    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -612,36 +567,33 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "hermetic-tap-summary-on-forced-exit",
-      "title": "Read the hermetic root verdict from a channel that survives forced exit",
+      "id": "dialogue-conclusion-answer-recognition",
+      "title": "Dialogues never conclude: the answer matcher cannot see natural English",
       "status": "review",
-      "type": "maintenance",
+      "type": "infra",
       "priority": "P1",
       "owner": "claude",
-      "source": "review",
+      "source": "manual",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "A backpressured-pipe reproduction fails on stdout three times out of three and succeeds on the file channel three times out of three; eight new tests in tests/hermeticTestRunner.test.js cover the completeness marker, the per-channel error text, the argument shape, both read paths, and a real forced-exit child; the full hermetic suite reads its verdict through the new file channel over 494 files and 6926 tests, with the only four failures traced to this worktree's symlinked node_modules and its directory name; lint, formatting, and workplan validation pass.",
-      "branch": "claude/hermetic-tap-summary",
-      "depends_on": [
-        "optimize-hermetic-test-suite"
-      ],
+      "verification": "Every orthography of an authored answer constant that appears in the sealed phase-5e traces resolves to assertedSecret, closure fires through tutorStubLearnerDagGrounded, no phantom unsupported assertion is minted from a sentence-shaped claim, and a corpus lint prevents any new world shipping an answer its own prose cannot state.",
+      "claim_status": "planned",
       "links": {
-        "prs": [],
-        "notes": [],
-        "items": [
-          "optimize-hermetic-test-suite"
+        "notes": [
+          "DRAMATIC-RECOGNITION-PLAN.md"
         ]
       },
       "tags": [
-        "testing",
-        "ci",
-        "hermetic"
-      ]
+        "drama-derivation",
+        "instrument",
+        "tutor-stub"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "claude/dialogue-conclusion-recognition"
     },
     {
-      "id": "refactor-tutor-stub-cli-help-projection",
-      "title": "Refactor tutor-stub CLI help projection",
+      "id": "refactor-tutor-stub-dialogue-settings-presentation",
+      "title": "Refactor tutor-stub dialogue-settings presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -649,26 +601,29 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "The pre/post-refactor --help processes exit zero with byte-identical output; a frozen synthetic-default hash pins the full projection and every supplied runtime value, while focused, hermetic, manifest, static, and source-only gates pass without model calls.",
-      "branch": "codex/refactor-tutor-stub-cli-help-projection",
+      "verification": "Live default and configured /settings bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-dialogue-settings-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-interim-frame-projection"
+        "refactor-tutor-stub-training-reuse-presentation"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubCliHelp.js",
+          "services/tutorStubDialogueSettingsPresentation.js",
+          "services/tutorStubTrainingReusePresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubCliHelp.test.js",
-          "tests/tutorStubLabsRecipeCli.test.js",
+          "tests/tutorStubDialogueSettingsPresentation.test.js",
+          "tests/tutorStubTrainingReusePresentation.test.js",
+          "tests/tutorStubLastSettings.test.js",
+          "tests/tutorStubCommandRegistry.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-interim-frame-projection"
+          "refactor-tutor-stub-training-reuse-presentation"
         ]
       },
       "tags": [
@@ -676,7 +631,7 @@
         "tutor-stub",
         "presentation",
         "cli",
-        "help"
+        "settings"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -737,6 +692,37 @@
         "session-recipe"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "evidence-use-bridge-rubric-v2",
+      "title": "Version the evidence_use rubric so the bridge definition can change without mixing instruments",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-26",
+      "verification": "The default classifier prompt and all 60 default Program 2 plan commands are byte-identical to the pre-change checkout; opting in to v2_bridge_voiced changes only the rubric clauses and adds only the rubric flag; each plan validator fails closed when its header stamp disagrees with its jobs.",
+      "claim_status": "exploratory",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/tutorStubPublicLearnerAnalysis.js",
+          "scripts/run-program2-live-pilot.js",
+          "scripts/tutor-stub.js",
+          "tests/program2LivePilotEvidenceUseRubric.test.js"
+        ],
+        "items": [
+          "program-2-phase5d-second-transfer-world"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "classifier",
+        "program-2",
+        "instrument"
+      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -1497,6 +1483,68 @@
       "milestone": "impasse-program-v1"
     },
     {
+      "id": "hermetic-drop-test-force-exit",
+      "title": "Drop --test-force-exit from the hermetic root phase",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "The root suite completes on its own without the flag in 65 seconds over 495 files, emitting a complete TAP tail and 6947 tests where the forced-exit run on the same commit reported 6940; the new exact-file check names the only two files that did not report, both of them import failures from this worktree's symlinked node_modules; seven new tests in tests/hermeticTestRunner.test.js cover natural teardown reporting every case and every file, a stalled run being ended and naming the file that never reported, the absent-report case, the timing reporter under both the Node 22 and Node 20 event shapes, and the stall message when nothing reported at all; the runner exits 0 on a real Node 20 child with the exact-file check on; the pre-existing forced-exit test still passes behind --force-exit; lint, formatting, and workplan validation pass.",
+      "branch": "claude/hermetic-drop-force-exit",
+      "depends_on": [
+        "hermetic-tap-summary-on-forced-exit"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/267"
+        ],
+        "notes": [],
+        "items": [
+          "hermetic-tap-summary-on-forced-exit",
+          "make-inhoused-tests-and-coverage-first-class"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "hermetic"
+      ]
+    },
+    {
+      "id": "hermetic-tap-summary-on-forced-exit",
+      "title": "Read the hermetic root verdict from a channel that survives forced exit",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "A backpressured-pipe reproduction fails on stdout three times out of three and succeeds on the file channel three times out of three; eight new tests in tests/hermeticTestRunner.test.js cover the completeness marker, the per-channel error text, the argument shape, both read paths, and a real forced-exit child; the full hermetic suite reads its verdict through the new file channel over 494 files and 6926 tests, with the only four failures traced to this worktree's symlinked node_modules and its directory name; lint, formatting, and workplan validation pass.",
+      "branch": "claude/hermetic-tap-summary",
+      "depends_on": [
+        "optimize-hermetic-test-suite"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/264"
+        ],
+        "notes": [],
+        "items": [
+          "optimize-hermetic-test-suite",
+          "hermetic-drop-test-force-exit"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "hermetic"
+      ]
+    },
+    {
       "id": "isolate-legacy-and-script-model-subprocesses",
       "title": "Classify and isolate legacy and research-script model subprocesses",
       "status": "done",
@@ -1881,6 +1929,43 @@
         "fine-tune",
         "insight-action-gap",
         "form-carrier"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "program-2-launch-certificates-stop-losses",
+      "title": "Require feasibility certificates and stop-losses for Program 2 launches",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Paid Program 2 live-pilot launches fail before provider preflight without a SHA/plan/evidence-bound zero-model certificate; cohort certificates require profile-complete audited pilot evidence; per-attempt provider budgets fail closed; live checks stop only when frozen completion gates become unreachable.",
+      "links": {
+        "code": [
+          "services/program2ExperimentSafety.js",
+          "scripts/certify-program2-launch.mjs",
+          "scripts/run-program2-live-pilot.js",
+          "scripts/tutor-stub.js",
+          "tests/program2ExperimentSafety.test.js"
+        ],
+        "notes": [
+          "notes/program-2/2026-07-26-launch-safety-contract.md",
+          "docs/program2-launch-certificates.md"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/274",
+          "https://github.com/liammagee/machinespirits-eval/pull/277"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "program-2",
+        "provenance",
+        "budget",
+        "stop-loss"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
     },
@@ -2540,6 +2625,47 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-cli-help-projection",
+      "title": "Refactor tutor-stub CLI help projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "The pre/post-refactor --help processes exit zero with byte-identical output; a frozen synthetic-default hash pins the full projection and every supplied runtime value, while focused, hermetic, manifest, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-cli-help-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-interim-frame-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubCliHelp.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubCliHelp.test.js",
+          "tests/tutorStubLabsRecipeCli.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-interim-frame-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "help"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-closeout-projection",
       "title": "Refactor tutor-stub closeout projection",
       "status": "done",
@@ -2574,6 +2700,50 @@
         "tutor-stub",
         "closeout",
         "guard-accounting"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-dag-snapshot-projection",
+      "title": "Refactor tutor-stub proof-DAG snapshot projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live technical tutor-DAG bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-dag-snapshot-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-release-notes-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDagSnapshotPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDagSnapshotPresentation.test.js",
+          "tests/tutorStubInteractivePerformance.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "prs": [
+          269
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-release-notes-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "proof-dag"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2616,6 +2786,51 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-feature-map-projection",
+      "title": "Refactor tutor-stub feature-map projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Launch and live /features bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-feature-map-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-interactive-help-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubFeatureMap.js",
+          "services/tutorStubCapabilities.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubFeatureMap.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "prs": [
+          266
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-interactive-help-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "capabilities"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-field-presentation",
       "title": "Refactor tutor-stub field presentation",
       "status": "done",
@@ -2650,6 +2865,94 @@
         "tutor-stub",
         "presentation",
         "interaction-field"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-interaction-mode-presentation",
+      "title": "Refactor tutor-stub interaction-mode presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live startup and mode-switch bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-interaction-mode-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-proof-command-projection"
+      ],
+      "links": {
+        "prs": [
+          273
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInteractionModePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInteractionModePresentation.test.js",
+          "tests/tutorStubInteractiveDirection.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-proof-command-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "interaction-mode"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-interactive-help-projection",
+      "title": "Refactor tutor-stub interactive help projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Normal and passthrough /help output remains byte-identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-interactive-help-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-cli-help-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInteractiveHelp.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInteractiveHelp.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "prs": [
+          265
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-cli-help-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "help"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2779,6 +3082,97 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-proof-command-projection",
+      "title": "Refactor tutor-stub proof-command projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live /proof paths and inspect bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-proof-command-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-dag-snapshot-projection"
+      ],
+      "links": {
+        "prs": [
+          271
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubProofCommandPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubProofCommandPresentation.test.js",
+          "tests/dramaticDerivationProxyDagMemory.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-dag-snapshot-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "proof-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-release-notes-projection",
+      "title": "Refactor tutor-stub release-notes projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live /release-notes output remains byte-identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-release-notes-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-feature-map-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubReleaseNotes.js",
+          "services/tutorStubReleaseNotesPresentation.js",
+          "scripts/tutor-stub.js",
+          "services/__tests__/tutorStubReleaseNotes.test.js",
+          "tests/tutorStubReleaseNotesPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "tests/tutorStubPassthrough.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "prs": [
+          268
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-feature-map-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "release-notes"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-response-details",
       "title": "Refactor tutor-stub response details",
       "status": "done",
@@ -2813,6 +3207,96 @@
         "tutor-stub",
         "presentation",
         "response-details"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-session-status-presentation",
+      "title": "Refactor tutor-stub session-status presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live normal and passthrough /status bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-session-status-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-interaction-mode-presentation"
+      ],
+      "links": {
+        "prs": [
+          275
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubSessionStatusPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubSessionStatusPresentation.test.js",
+          "tests/tutorStubInteractiveDirection.test.js",
+          "tests/tutorStubPassthrough.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-interaction-mode-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "status"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-training-reuse-presentation",
+      "title": "Refactor tutor-stub training-reuse presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live candidate, owner opt-out, and external fail-closed training reuse status bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-training-reuse-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-session-status-presentation"
+      ],
+      "links": {
+        "prs": [
+          276
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubTrainingReusePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubTrainingReusePresentation.test.js",
+          "tests/tutorStubTrainingReuse.test.js",
+          "tests/tutorStubLastSettings.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-session-status-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "data-governance"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -4785,6 +5269,44 @@
       "milestone": "literature-triage",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "evidence-use-v2-default-and-archive-relabel",
+      "title": "Make v2_bridge_voiced the default evidence_use rubric and relabel the archive under it",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "New Program 2 plans stamp v2_bridge_voiced and carry no rubric flag; naming v1 recovers the pre-change command set token-for-token and the pre-change classifier prompt byte-for-byte; a plan file with no stamp fails validation rather than being resolved against the current default; the relabel pass proves exactly one v1 precedence line per archived prompt before substituting, holds provider/model/history identical, and reports the label-migration matrix against the stored v1 labels.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "evidence-use-bridge-rubric-v2"
+      ],
+      "links": {
+        "code": [
+          "services/tutorStubPublicLearnerAnalysis.js",
+          "services/tutorStubPointOfActionCoaching.js",
+          "scripts/run-program2-live-pilot.js"
+        ],
+        "items": [
+          "evidence-use-bridge-rubric-v2",
+          "program-2-context-vs-weights-finetune"
+        ],
+        "notes": [
+          "notes/program-2/2026-07-26-v2-relabel-distill-path.md",
+          "notes/program-2/2026-07-26-relabel-sample-result.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "classifier",
+        "program-2",
+        "instrument",
+        "fine-tune"
+      ]
     },
     {
       "id": "exploratory-confirmatory-shrinkage-audit",

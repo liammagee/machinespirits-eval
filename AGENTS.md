@@ -166,7 +166,7 @@ Cells with `factors.id_director: true` use `services/idDirectorEngine.js`. Per t
 
 `EVAL_DB_PATH` and `EVAL_LOGS_DIR` override the default DB / logs locations (`services/evaluationStore.js`, `services/adaptiveTutor/persistence.js`). Used by:
 - `npm run test:hermetic` — runs the root Node suites and in-housed `tutor-core` Vitest suites against one `mktemp -d` environment so production DBs and logs are never touched
-- `npm run test:root:handles` — runs the root suite without Node's legacy forced-exit flag to expose open-handle debt; the normal root phase remains explicitly force-exited until that debt is closed
+- `npm run test:root:handles` — an explicit alias for what the root suite now does by default: natural teardown, no `--test-force-exit`. `--force-exit` restores the legacy behaviour for a caller who would rather have a truncated report than wait out a leaked handle
 - `npm run test:coverage:risk` — on Node 22.10+, runs the configured store, admin/auth, evaluator-provenance, labelling-save-state, and tutor-core recognition/memory groups without forced exit; emits LCOV plus JSON/Markdown under ignored `coverage/risk/` and fails below `config/coverage-risk-floors.json`
 - Adaptive smoke scripts (combined with `ADAPTIVE_TUTOR_LLM=mock` for fully self-contained, no-cost runs)
 - Any test that needs full DB+logs isolation
@@ -245,7 +245,7 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 - `tests/` — Integration and functional tests for the evaluation system (CLI, runners, stores, analyzers)
 - `services/__tests__/` — Unit tests co-located with their service files (evalConfigLoader, learnerRubricEvaluator, learnerTutorInteractionEngine)
 - `tutor-core/services/__tests__/` — In-housed core Vitest suites, run with natural teardown
-- `npm test` runs the two root directories through the explicitly scoped legacy `--test-force-exit` phase, then runs all in-housed core suites as a separate Vitest phase
+- `npm test` runs the two root directories as one natural-teardown Node phase, then runs all in-housed core suites as a separate Vitest phase. Both phases are held to the same check: every selected file must report a result, so a file that never runs fails the suite instead of passing silently
 
 ### Resuming Incomplete Runs
 
@@ -417,7 +417,7 @@ npm run test:hermetic
 # In-housed tutor-core tests only (Vitest, natural teardown)
 npm run test:core
 
-# Root handle-leak audit (no forced exit)
+# Root suite alone (natural teardown, same as test:root)
 npm run test:root:handles
 
 # Risk-based coverage gate and LCOV/JSON/Markdown report (Node 22.10+)
