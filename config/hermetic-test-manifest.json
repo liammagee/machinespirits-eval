@@ -322,6 +322,8 @@
         "tests/poeticsTutorAdaptationAnalyzer.test.js",
         "tests/processUtils.test.js",
         "tests/program2CommitteeEngine.test.js",
+        "tests/program2Phase5eLivePilot.test.js",
+        "tests/program2Phase5eWorldSelection.test.js",
         "tests/program2StallAudit.test.js",
         "tests/program2StallDataset.test.js",
         "tests/progress.test.js",

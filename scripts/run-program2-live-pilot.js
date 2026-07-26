@@ -315,6 +315,89 @@ export function validatePhase5cLivePilotPlan(plan) {
   return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
 }
 
+// Phase 5e (PROGRAM-2-PHASE5E-SECOND-TRANSFER-PREREGISTRATION.md): the
+// Phase 5b/5c-validated committee moved unchanged to the mechanically selected
+// letter-hostile world_026_skyway_bakery — 10 committee-v2 + 8 fresh silent
+// controls, seed 20260726. No pooling with controls from any earlier world.
+export const PHASE5E_SPEC = Object.freeze({
+  schema: 'machinespirits.tutor-stub.program2-phase5e-plan.v1',
+  preregistration: 'PROGRAM-2-PHASE5E-SECOND-TRANSFER-PREREGISTRATION.md',
+  worldSelectionEvidence: 'config/adaptive-tutor-evidence/program-2-phase5e-world-selection.json',
+  runSeed: 20260726,
+  world: 'world_026_skyway_bakery',
+  committeeRepeats: 5,
+  controlRepeats: 4,
+  fallbackPolicy: 'v2',
+});
+
+export function buildPhase5eLivePilotPlan({ outputRoot = 'exports/program2-live-pilot-5e' } = {}) {
+  const cells = [];
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    for (let repeat = 1; repeat <= PHASE5E_SPEC.committeeRepeats; repeat += 1) {
+      cells.push({ repeat, profile, arm: 'committee' });
+    }
+    for (let repeat = 1; repeat <= PHASE5E_SPEC.controlRepeats; repeat += 1) {
+      cells.push({ repeat, profile, arm: 'silent_control' });
+    }
+  }
+  const jobs = deterministicShuffle(cells, PHASE5E_SPEC.runSeed).map((cell, index) => {
+    const id = [`p5e-${String(index + 1).padStart(2, '0')}`, cell.profile, cell.arm, `r${cell.repeat}`].join('-');
+    const job = { ordinal: index + 1, id, tutorFamily: PHASE5_LIVE_PILOT_SPEC.tutorFamily, ...cell };
+    return {
+      ...job,
+      command: commandForJob(job, outputRoot, {
+        runSeed: PHASE5E_SPEC.runSeed,
+        fallbackPolicy: cell.arm === 'committee' ? PHASE5E_SPEC.fallbackPolicy : null,
+        world: PHASE5E_SPEC.world,
+      }),
+    };
+  });
+  return {
+    ...PHASE5_LIVE_PILOT_SPEC,
+    ...PHASE5E_SPEC,
+    detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    outputRoot,
+    ordering: 'seeded Fisher-Yates over 10 committee-v2 + 8 silent_control cells',
+    jobs,
+  };
+}
+
+export function validatePhase5eLivePilotPlan(plan) {
+  const errors = [];
+  if (plan.jobs.length !== 18) errors.push(`expected 18 jobs, found ${plan.jobs.length}`);
+  const cellCounts = new Map();
+  for (const job of plan.jobs) {
+    const key = [job.profile, job.arm].join('|');
+    cellCounts.set(key, (cellCounts.get(key) || 0) + 1);
+    const policy = flagValue(job.command, '--committee-fallback-policy');
+    if (job.arm === 'committee' && policy !== PHASE5E_SPEC.fallbackPolicy) {
+      errors.push(`${job.id} missing fallback policy ${PHASE5E_SPEC.fallbackPolicy}`);
+    }
+    if (job.arm === 'silent_control' && policy !== null) errors.push(`${job.id} control carries fallback policy`);
+    if (flagValue(job.command, '--world') !== PHASE5E_SPEC.world) errors.push(`${job.id} world mismatch`);
+    if (flagValue(job.command, '--run-seed') !== String(PHASE5E_SPEC.runSeed)) {
+      errors.push(`${job.id} run-seed mismatch`);
+    }
+    if (flagValue(job.command, '--model') !== PHASE5_LIVE_PILOT_SPEC.tutorFamily) {
+      errors.push(`${job.id} tutor-family mismatch`);
+    }
+    for (const flag of ['--classifier-model', '--learner-record-model', '--auto-learner-model']) {
+      if (flagValue(job.command, flag) !== PHASE5_LIVE_PILOT_SPEC.supportingModel) {
+        errors.push(`${job.id} changed fixed supporting seam ${flag}`);
+      }
+    }
+  }
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    if (cellCounts.get(`${profile}|committee`) !== PHASE5E_SPEC.committeeRepeats) {
+      errors.push(`${profile} committee cell count mismatch`);
+    }
+    if (cellCounts.get(`${profile}|silent_control`) !== PHASE5E_SPEC.controlRepeats) {
+      errors.push(`${profile} control cell count mismatch`);
+    }
+  }
+  return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
+}
+
 export function validatePhase5bLivePilotPlan(plan) {
   const errors = [];
   if (plan.jobs.length !== 18) errors.push(`expected 18 jobs, found ${plan.jobs.length}`);
@@ -485,7 +568,7 @@ async function main() {
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--plan 5|5b|5c|5e] [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--limit-jobs N]',
     );
     return;
   }
@@ -504,8 +587,13 @@ async function main() {
       build: buildPhase5cLivePilotPlan,
       validate: validatePhase5cLivePilotPlan,
     },
+    '5e': {
+      root: 'exports/program2-live-pilot-5e',
+      build: buildPhase5eLivePilotPlan,
+      validate: validatePhase5eLivePilotPlan,
+    },
   };
-  if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, or 5c)`);
+  if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, 5c, or 5e)`);
   const defaultRoot = launch ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
   const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
   const plan = planTable[planKey].build({ outputRoot });
