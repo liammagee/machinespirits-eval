@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T05:11:25.139Z",
+  "generated": "2026-07-26T06:22:03.319Z",
   "counts": {
-    "total": 206,
+    "total": 207,
     "byStatus": {
-      "done": 180,
+      "done": 181,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 46,
-      "maintenance": 50,
+      "maintenance": 51,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -187,6 +187,7 @@
           "refactor-tutor-stub-interim-frame-projection",
           "refactor-tutor-stub-cli-help-projection",
           "refactor-tutor-stub-interactive-help-projection",
+          "refactor-tutor-stub-feature-map-projection",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -587,8 +588,8 @@
       ]
     },
     {
-      "id": "refactor-tutor-stub-interactive-help-projection",
-      "title": "Refactor tutor-stub interactive help projection",
+      "id": "refactor-tutor-stub-feature-map-projection",
+      "title": "Refactor tutor-stub feature-map projection",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -596,26 +597,27 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "Normal and passthrough /help output remains byte-identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-interactive-help-projection",
+      "verification": "Launch and live /features bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-feature-map-projection",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-cli-help-projection"
+        "refactor-tutor-stub-interactive-help-projection"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubInteractiveHelp.js",
+          "services/tutorStubFeatureMap.js",
+          "services/tutorStubCapabilities.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubInteractiveHelp.test.js",
+          "tests/tutorStubFeatureMap.test.js",
           "tests/tutorStubHumanDiscourseLayer.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-cli-help-projection"
+          "refactor-tutor-stub-interactive-help-projection"
         ]
       },
       "tags": [
@@ -623,7 +625,7 @@
         "tutor-stub",
         "presentation",
         "cli",
-        "help"
+        "capabilities"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2638,6 +2640,50 @@
         "tutor-stub",
         "presentation",
         "interaction-field"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-interactive-help-projection",
+      "title": "Refactor tutor-stub interactive help projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Normal and passthrough /help output remains byte-identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-interactive-help-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-cli-help-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInteractiveHelp.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInteractiveHelp.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "prs": [
+          265
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-cli-help-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "help"
       ],
       "milestone": "evaluation-infrastructure"
     },
