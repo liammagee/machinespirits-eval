@@ -95,7 +95,14 @@ Score each pass / warn / fail with one line of evidence.
   An engineering blocker hiding in the blocked lane, or a blocked card untouched
   for >30 days with no note: warn.
 - **R5 — Green and fresh.** Latest main CI runs green; `BOARD.md` generated
-  timestamp within ~48h of the last merge; renders happen on main only.
+  timestamp within ~48h of the last merge; renders happen on main only. Before
+  blaming a red lane on the PR under it, check whether main's own latest run is
+  red the same way — some checks compare a committed generated file against live
+  repo state, so an action taken outside any PR turns every open PR red at once.
+  `docs/ref-status.md` is the known instance: pushing a tag by hand makes
+  `npm run refs:check` fail on every branch until someone runs
+  `npm run refs:render` and commits. Report a repo-wide red as one finding with
+  one owner, not as a fault in each PR that inherits it.
 - **R6 — WIP is bounded.** triaged+active+review ≤ ~25; review lane ≤ ~8; no review
   card whose PR already merged (spot-check card ids against the recent merge log) —
   merged-but-still-in-review cards: warn, list them.

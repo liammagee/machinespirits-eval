@@ -69,3 +69,15 @@ Durable options for closing the gap, in preference order:
    board publishing.
 
 Neither is implemented here — the choice is the maintainer's.
+
+**Inherited CI red, 2026-07-27.** This PR's `lint` lane failed on
+`npm run refs:check` (`docs/ref-status.md is stale`) while its other nine lanes
+passed. The cause is outside this branch: the `paper/v3.0.230` tag was pushed at
+09:11 after `ba36d4aa` had already rendered `docs/ref-status.md`, so the
+committed table still read `declared version is not tagged`. Every open branch
+fails the same way; [PR #292](https://github.com/liammagee/machinespirits-eval/pull/292)
+carries the one-line re-render and this PR goes green once that lands. R5 in the
+skill now tells the reader to check main before attributing a red lane to the PR
+under it, because this class of check compares a committed generated file
+against live repo state and so breaks repo-wide from an action taken in no PR at
+all.
