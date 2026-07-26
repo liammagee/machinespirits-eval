@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T13:52:26.684Z",
+  "generated": "2026-07-26T14:06:12.194Z",
   "counts": {
-    "total": 219,
+    "total": 220,
     "byStatus": {
-      "done": 192,
+      "done": 193,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 50,
+      "infra": 51,
       "maintenance": 59,
       "content": 2,
       "paper": 6,
@@ -3650,6 +3650,39 @@
       "branch": "codex/test-canonical-posthoc-analysis-pipeline"
     },
     {
+      "id": "tutor-pr-benchmark-calibration-harness",
+      "title": "Refresh and calibrate the tutor PR benchmark rubric",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Passed: node --test tests/tutorPrBenchmarkRubric.test.js tests/tutorPrBenchmarkCalibration.test.js tests/tutorStubPrBenchmark.test.js tests/tutorStubPrBenchmarkComparison.test.js tests/tutorStubPrBenchmarkHook.test.js (25/25); npm run lint; npm run format:check; npm run lint:cycles; npm run test:manifest; npm run wp:source-check; node scripts/eval-cli.js validate-config; npm run tutor:stub:pr-benchmark -- --print-plan --json. The final code-bearing commit 2c8845c6 completed the live strong screen (6/6 calls, 0 pass, 6 fail, 0 blocked, 0 safety failures); human development coding and held-out acceptance remain intentionally unrun.",
+      "branch": "codex/tutor-pr-benchmark-calibration-harness",
+      "depends_on": [
+        "tutor-pr-benchmark-delta-harness"
+      ],
+      "links": {
+        "items": [
+          "consolidated-labelling-game-harness",
+          "harden-consolidated-labelling-integrity"
+        ],
+        "notes": [
+          "docs/tutor-pr-benchmark.md",
+          "docs/tutor-pr-benchmark-calibration.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "regression",
+        "calibration",
+        "human-labelling"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
       "id": "tutor-pr-benchmark-delta-harness",
       "title": "Add persistent base-head delta QA to tutor PR benchmarks",
       "status": "done",
@@ -3693,6 +3726,9 @@
         "tutor-stub-first-draft-series"
       ],
       "links": {
+        "items": [
+          "tutor-pr-benchmark-calibration-harness"
+        ],
         "prs": [
           "https://github.com/liammagee/machinespirits-eval/pull/248",
           "https://github.com/liammagee/machinespirits-eval/pull/250"
