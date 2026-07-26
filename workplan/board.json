@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-26T23:48:03.106Z",
+  "generated": "2026-07-26T23:54:33.808Z",
   "counts": {
-    "total": 227,
+    "total": 228,
     "byStatus": {
-      "done": 198,
+      "done": 202,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
+      "review": 2,
       "active": 8,
-      "review": 5,
       "archived": 4
     },
     "byType": {
@@ -17,8 +17,8 @@
       "infra": 54,
       "maintenance": 63,
       "content": 2,
-      "paper": 6,
-      "ops": 7
+      "ops": 8,
+      "paper": 6
     }
   },
   "items": [
@@ -625,31 +625,6 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "dialogue-conclusion-answer-recognition",
-      "title": "Dialogues never conclude: the answer matcher cannot see natural English",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-26",
-      "verification": "Every orthography of an authored answer constant that appears in the sealed phase-5e traces resolves to assertedSecret, closure fires through tutorStubLearnerDagGrounded, no phantom unsupported assertion is minted from a sentence-shaped claim, and a corpus lint prevents any new world shipping an answer its own prose cannot state.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "DRAMATIC-RECOGNITION-PLAN.md"
-        ]
-      },
-      "tags": [
-        "drama-derivation",
-        "instrument",
-        "tutor-stub"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "claude/dialogue-conclusion-recognition"
-    },
-    {
       "id": "refactor-tutor-stub-learner-classification-presentation",
       "title": "Refactor tutor-stub learner-classifier presentation",
       "status": "review",
@@ -695,92 +670,27 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "tutor-stub-resume-handoff",
-      "title": "Give resumed tutor-stub sessions a dialogue handoff",
+      "id": "big-picture-state-of-the-nation-skill-and-board-traceability",
+      "title": "Big-picture state-of-the-nation skill and board traceability",
       "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-26",
-      "verification": "Unit, interactive CLI, and process-session HTTP regressions prove a resumed dialogue publicly recaps its question and last learner contribution, reprises the last tutor question or point, informs the next turn, and does not advance completed turns, proof state, DAG state, or evidence release.",
-      "branch": "codex/proper-tutor-resumption",
-      "depends_on": [
-        "tutor-stub-session-recipes-explicit-resume"
-      ],
-      "links": {
-        "items": [
-          "tutor-stub-session-recipes-explicit-resume",
-          "tutor-stub-resume-last-recipe"
-        ],
-        "code": [
-          "services/tutorStubResumeHandoff.js",
-          "scripts/tutor-stub.js"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "resume",
-        "dialogue",
-        "session-runtime"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "tutor-stub-resume-last-recipe",
-      "title": "Reconstruct the saved recipe before resuming the latest tutor-stub trace",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-26",
-      "verification": "A CLI regression proves --resume-last selects the newest completed trace, reconstructs its saved lab and structural options before drift comparison, resumes with drift.ok true, and retains fail-closed checks for explicit overrides and genuine prompt, tutor, model, world, or schema drift.",
-      "branch": "codex/fix-resume-last-recipe",
-      "links": {
-        "code": [
-          "scripts/tutor-stub.js",
-          "tests/tutorStubLabsRecipeCli.test.js"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "resume",
-        "session-recipe"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "evidence-use-bridge-rubric-v2",
-      "title": "Version the evidence_use rubric so the bridge definition can change without mixing instruments",
-      "status": "review",
-      "type": "infra",
+      "type": "ops",
       "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-25",
-      "updated": "2026-07-26",
-      "verification": "The default classifier prompt and all 60 default Program 2 plan commands are byte-identical to the pre-change checkout; opting in to v2_bridge_voiced changes only the rubric clauses and adds only the rubric flag; each plan validator fails closed when its header stamp disagrees with its jobs.",
-      "claim_status": "exploratory",
-      "depends_on": [],
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-27",
+      "verification": "`/ms-big-picture` runs read-only and free (no eval runs, no paid API calls, no test suite), reports the fixed six-part shape against live board, git, gh and paper-changelog sources, and its R1 check distinguishes a commit with no card behind it (governance gap) from a commit whose card exists but never records it (traceability gap); the five stale review-lane cards it surfaced are closed against their merged PRs; the direct-to-main audit it produced is recorded here.",
+      "claim_status": "planned",
+      "branch": "claude/big-picture-skill-and-board-hygiene",
       "links": {
         "code": [
-          "services/tutorStubPublicLearnerAnalysis.js",
-          "scripts/run-program2-live-pilot.js",
-          "scripts/tutor-stub.js",
-          "tests/program2LivePilotEvidenceUseRubric.test.js"
-        ],
-        "items": [
-          "program-2-phase5d-second-transfer-world"
+          ".claude/skills/ms-big-picture/SKILL.md"
         ]
       },
       "tags": [
-        "tutor-stub",
-        "classifier",
-        "program-2",
-        "instrument"
+        "workplan",
+        "governance",
+        "skill"
       ]
     },
     {
@@ -1365,6 +1275,31 @@
         "evaluation"
       ],
       "branch": "worktree-blueprint-composition"
+    },
+    {
+      "id": "dialogue-conclusion-answer-recognition",
+      "title": "Dialogues never conclude: the answer matcher cannot see natural English",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Every orthography of an authored answer constant that appears in the sealed phase-5e traces resolves to assertedSecret, closure fires through tutorStubLearnerDagGrounded, no phantom unsupported assertion is minted from a sentence-shaped claim, and a corpus lint prevents any new world shipping an answer its own prose cannot state.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "DRAMATIC-RECOGNITION-PLAN.md"
+        ]
+      },
+      "tags": [
+        "drama-derivation",
+        "instrument",
+        "tutor-stub"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "claude/dialogue-conclusion-recognition"
     },
     {
       "id": "enforce-explicit-budgets-and-acknowledgements-for-metered-tu",
@@ -3287,7 +3222,7 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-26",
-      "updated": "2026-07-27",
+      "updated": "2026-07-26",
       "verification": "Live tutor and classifier model-choice bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
       "branch": "codex/refactor-tutor-stub-model-choice-presentation",
       "claim_status": "planned",
@@ -4398,6 +4333,64 @@
         "refactor",
         "tests"
       ]
+    },
+    {
+      "id": "tutor-stub-resume-handoff",
+      "title": "Give resumed tutor-stub sessions a dialogue handoff",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Unit, interactive CLI, and process-session HTTP regressions prove a resumed dialogue publicly recaps its question and last learner contribution, reprises the last tutor question or point, informs the next turn, and does not advance completed turns, proof state, DAG state, or evidence release.",
+      "branch": "codex/proper-tutor-resumption",
+      "depends_on": [
+        "tutor-stub-session-recipes-explicit-resume"
+      ],
+      "links": {
+        "items": [
+          "tutor-stub-session-recipes-explicit-resume",
+          "tutor-stub-resume-last-recipe"
+        ],
+        "code": [
+          "services/tutorStubResumeHandoff.js",
+          "scripts/tutor-stub.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "resume",
+        "dialogue",
+        "session-runtime"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "tutor-stub-resume-last-recipe",
+      "title": "Reconstruct the saved recipe before resuming the latest tutor-stub trace",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "A CLI regression proves --resume-last selects the newest completed trace, reconstructs its saved lab and structural options before drift comparison, resumes with drift.ok true, and retains fail-closed checks for explicit overrides and genuine prompt, tutor, model, world, or schema drift.",
+      "branch": "codex/fix-resume-last-recipe",
+      "links": {
+        "code": [
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLabsRecipeCli.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "resume",
+        "session-recipe"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "tutor-stub-safe-capability-labs",
@@ -5548,6 +5541,37 @@
       "milestone": "literature-triage",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "evidence-use-bridge-rubric-v2",
+      "title": "Version the evidence_use rubric so the bridge definition can change without mixing instruments",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-26",
+      "verification": "The default classifier prompt and all 60 default Program 2 plan commands are byte-identical to the pre-change checkout; opting in to v2_bridge_voiced changes only the rubric clauses and adds only the rubric flag; each plan validator fails closed when its header stamp disagrees with its jobs.",
+      "claim_status": "exploratory",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/tutorStubPublicLearnerAnalysis.js",
+          "scripts/run-program2-live-pilot.js",
+          "scripts/tutor-stub.js",
+          "tests/program2LivePilotEvidenceUseRubric.test.js"
+        ],
+        "items": [
+          "program-2-phase5d-second-transfer-world"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "classifier",
+        "program-2",
+        "instrument"
+      ]
     },
     {
       "id": "evidence-use-v2-default-and-archive-relabel",
