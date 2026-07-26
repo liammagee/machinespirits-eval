@@ -41,6 +41,10 @@ generated candidates and full deterministic audits for diagnosis. Do not paste
 rejected candidate text into a public PR unless it has been reviewed for
 leakage.
 
+To compare these model-free audit decisions with independent human labels at a
+later time, use the zero-call, resumable pathway in
+[`docs/tutor-pr-benchmark-calibration.md`](tutor-pr-benchmark-calibration.md).
+
 ## Comparison lanes
 
 Use a saved report to separate audit changes from model-generation variance:
