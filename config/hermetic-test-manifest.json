@@ -490,6 +490,7 @@
         "tests/tutorStubSessionRuntime.test.js",
         "tests/tutorStubSessionStatusPresentation.test.js",
         "tests/tutorStubShowcase.test.js",
+        "tests/tutorStubShowcaseScoreOverlay.test.js",
         "tests/tutorStubSourceAccessibilityContract.test.js",
         "tests/tutorStubSpeakerPublicPremise.test.js",
         "tests/tutorStubStructuredFirstDraft.test.js",
