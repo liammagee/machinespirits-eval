@@ -501,7 +501,12 @@ export function parseTutorStubShowcaseTrace(rows) {
     openingText: String(opening?.text || ''),
     turns,
     turnCount: turns.length,
-    repairs: turns.filter((turn) => turn.tutor.repaired).length,
+    // Recovery *attempts*, not successful repairs: the stub sets
+    // `tutorResponseRepaired` when it regenerates, whether or not the second
+    // draft then passed. Read `guardOutcomes` for what actually reached the
+    // learner — a turn can be counted here and still have gone out as a
+    // deterministic fallback.
+    recoveryAttempts: turns.filter((turn) => turn.tutor.repaired).length,
     auditsRecorded,
     auditsFailed,
     guardedTurns,
@@ -516,7 +521,17 @@ export function parseTutorStubShowcaseTrace(rows) {
     modelCalls: modelCalls.length,
     callsByRole: Object.fromEntries([...callsByRole.entries()].sort(([left], [right]) => left.localeCompare(right))),
     usage: usageTotals,
-    stopReason: String(runEnd?.reason || closeout?.reason || 'unknown'),
+    // A dialogue that dies mid-turn never writes `run_end`. Guard exhaustion is
+    // the one failure that leaves the tutor with nothing it is permitted to say
+    // — every candidate rejected, including the deterministic fallback — and
+    // reporting that as `unknown` hides the most consequential outcome the
+    // instrumented arm can produce.
+    stopReason: String(
+      runEnd?.reason ||
+        closeout?.reason ||
+        (byType('tutor_response_guard_exhausted').length ? 'guard_exhausted' : '') ||
+        'unknown',
+    ),
     // `grounded` is the stub's own lifecycle verdict, not a reading of the
     // text: the dialogue reached its authored answer and closed on it. It is
     // `null`, not `false`, when the lifecycle never ran.
@@ -685,7 +700,7 @@ export function summarizeTutorStubShowcase({ plan, results }) {
           )
         : null,
       totalTokens: rows.reduce((total, row) => total + row.dialogue.usage.totalTokens, 0),
-      repairs: rows.reduce((total, row) => total + row.dialogue.repairs, 0),
+      recoveryAttempts: rows.reduce((total, row) => total + row.dialogue.recoveryAttempts, 0),
       auditsFailed: rows.reduce((total, row) => total + row.dialogue.auditsFailed, 0),
       guardedTurns: rows.reduce((total, row) => total + row.dialogue.guardedTurns, 0),
       guardsEnabled: rows.reduce((total, row) => total + row.dialogue.guardsEnabled, 0),
@@ -776,8 +791,24 @@ export function renderTutorStubShowcaseMarkdown(report) {
         : row.dialogue.closure.grounded
           ? `resolved at turn ${row.dialogue.closure.completedAtTurn}`
           : `did not resolve (stopped: ${row.dialogue.stopReason})`;
+      // Report the two guard outcomes that cost something, separately. Writing a
+      // single "N repairs" figure here (from the recovery-attempt flag) let three
+      // deterministic fallbacks read as three successful repairs — a loss
+      // presented as the architectural win the showcase exists to show.
+      const outcomes = row.dialogue.guardOutcomes;
+      const guardTail = [
+        outcomes.repaired ? `${outcomes.repaired} first-draft repair(s)` : '',
+        outcomes.fallback ? `${outcomes.fallback} deterministic fallback(s)` : '',
+      ]
+        .filter(Boolean)
+        .join(', ');
+      // An arm whose child exited non-zero has to say so here. Otherwise a run
+      // that aborted mid-turn reads as an ordinary dialogue that merely failed
+      // to resolve, and the difference between "ran out of turns" and "the
+      // architecture stopped it from speaking" is the whole point.
+      const failure = row.status === 'complete' ? '' : ` — **arm ${cell(row.status)}** (exit ${row.exitCode})`;
       lines.push(
-        `- **${cell(row.armLabel)}** — ${row.dialogue.turnCount} turns, ${row.dialogue.modelCalls} calls, ${Math.round(row.wallClockMs / 1000)}s, ${closure}${row.dialogue.repairs ? `, ${row.dialogue.repairs} first-draft repair(s)` : ''}`,
+        `- **${cell(row.armLabel)}** — ${row.dialogue.turnCount} turns, ${row.dialogue.modelCalls} calls, ${Math.round(row.wallClockMs / 1000)}s, ${closure}${guardTail ? `, ${guardTail}` : ''}${failure}`,
       );
     }
     lines.push('');

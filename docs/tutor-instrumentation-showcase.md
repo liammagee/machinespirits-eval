@@ -87,6 +87,17 @@ that matters, and the comparison showed almost nothing.
 `mixed_prefetch`, `tutor_feedback` and the learning summary, leaving one model
 call per turn over system setup + public history + latest learner message.
 
+Passthrough could not originally be driven by `--auto-learner`, and three
+separate layers dropped the learner independently: the arg-forcing block in
+`scripts/tutor-stub.js` set `auto-learner: false`, the `passthrough_isolation`
+capability rule listed `autoLearner` among its conflicts, and
+`learnerSuggestionEnabled` gated both the harness suggestion feature and whether
+a learner model was resolved at all. The first failure was silent — the child
+fell into the interactive REPL, hit EOF and exited 0 with a plausible-looking
+transcript of nothing. All three are fixed; the learner-safe surface is
+unaffected, because `pure_chat` rejects `--auto-learner` through a separate
+research-only audience gate rather than through the isolation rule.
+
 ## Guard coverage is read from the accounting rows, not the audit records
 
 **The turn record carries an audit object whether or not the guard ran.**
@@ -211,18 +222,40 @@ that model for the rest of the run.
 
 ## Cost
 
-Fill this table from a real run, not from a single-turn probe. The first attempt
-at it was probe-derived and wrong in both the coverage row and the shape of the
-baseline; the numbers below come from whichever showcase run the section cites,
-and the run stamp belongs beside them.
+From `showcase-2026-07-26T07-39-43-946Z`, preset `smoke`, one Riverside dialogue
+per arm, tutor and learner both `codex.gpt-5.6-terra`, commit `3322f5af`. One
+dialogue per arm is an illustration, not an estimate.
 
 | | Bare (passthrough) | Instrumented |
 | --- | ---: | ---: |
-| Wall clock per turn | | |
-| Model calls per turn | | |
-| Tutor calls per turn | | |
-| Guard coverage | 0% (bypassed) | |
-| Accepted / repaired / fallback | | |
+| Turns reached | 8 (turn cap) | 4 (aborted) |
+| Wall clock per turn | 11.2s | 58.6s |
+| Model calls per turn | 2 | 5 |
+| Guard coverage | 0% (bypassed) | 63% |
+| Accepted / repaired / fallback | n/a | 1 / 0 / 3 |
+| Recovery attempts | n/a | 3 |
+| Resolved | n/a (no lifecycle) | 0/1 |
+
+Read the middle rows together. The instrumented arm cost about **5× the wall
+clock per turn** and produced **half the turns**, and of its four turns one went
+out as written, three went out as deterministic fallbacks, and the fifth turn
+killed the run: every candidate was rejected, including the deterministic
+fallback, and the child exited 1 with
+`guard_exhausted_without_public_delivery`. The blocking guard was
+`dramatic_release` (`opaque_clue_release`, `missing_exhibit_action`), which
+requires a clue to be released through a visible scene action — something the
+canned fallback line cannot satisfy by construction. The safety net has a hole
+in it at exactly the point it is meant to catch things.
+
+Note also **repaired = 0 against recovery attempts = 3**. The tutor regenerated
+three times and no second draft passed. A report that counted regenerations
+would have shown three repairs, i.e. the architectural win this surface exists
+to demonstrate, for a run in which the mechanism never once succeeded.
+
+Neither arm resolved. The bare arm has no verdict to give; the instrumented arm
+was stopped before it could reach one. Nothing here says the guards are wrong to
+reject those drafts — an ungrounded release is a real fault — only that on this
+world, this stack and this scenario the stack rejects more than it can repair.
 
 Token cost is recorded but the CLI bridges are subscription-quota, so `cost`
 comes back as `0`; express cost in calls and wall clock, not dollars.

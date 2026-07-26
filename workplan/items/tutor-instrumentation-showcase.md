@@ -56,7 +56,12 @@ Design decisions worth keeping:
   all run unconditionally in `scripts/tutor-stub.js`. On a real Riverside
   dialogue that "bare" arm made 4 calls per turn, had 5 drafts sent back, and
   closed on `strict_learner_dag_grounded_and_asserted`. `--passthrough` is the
-  only mode that actually bypasses them.
+  only mode that actually bypasses them. Driving it with `--auto-learner` took
+  unblocking three independent layers — the stub's arg-forcing block, the
+  `passthrough_isolation` capability rule, and `learnerSuggestionEnabled`
+  doubling as the learner-model gate. The first of the three failed silently:
+  the child dropped into the interactive REPL, hit EOF, and exited 0 having done
+  nothing, which the harness recorded as a 0-turn dialogue rather than an error.
 - **Guard coverage comes from `tutor_response_guard_accounting`, not from the
   audit records.** The turn record carries an audit object whether or not the
   guard ran, so counting records measures "did the turn happen". An early version

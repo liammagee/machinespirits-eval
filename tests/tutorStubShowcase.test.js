@@ -246,12 +246,12 @@ test('a plan over budget is refused before anything spawns', async () => {
   assert.deepEqual(result.results, []);
 });
 
-test('the trace parser recovers the dialogue, the guards, and the repairs', () => {
+test('the trace parser recovers the dialogue, the guards, and the recovery attempts', () => {
   const parsed = parseTutorStubShowcaseTrace(traceRows({ turns: 3, repairedTurn: 2, closedAt: 3 }));
   assert.equal(parsed.turnCount, 3);
   assert.equal(parsed.openingText, 'The morning list is short one name.');
   assert.equal(parsed.turns[1].tutor.repaired, true);
-  assert.equal(parsed.repairs, 1);
+  assert.equal(parsed.recoveryAttempts, 1);
   assert.equal(parsed.auditsRecorded, 3 * TUTOR_STUB_SHOWCASE_AUDIT_KEYS.length);
   assert.equal(parsed.auditsFailed, 1);
   assert.equal(parsed.guardedTurns, 3);
@@ -294,6 +294,27 @@ test('a deterministic fallback is not counted as a repair', () => {
 
   const parsed = parseTutorStubShowcaseTrace(traceRows({ turns: 3, repairedTurn: 2, fallbackTurn: 3 }));
   assert.deepEqual(parsed.guardOutcomes, { accepted: 1, repaired: 1, fallback: 1 });
+
+  // The recovery-attempt flag counts regenerations, including ones whose second
+  // draft also failed. Observed on a real Riverside run: three turns went out as
+  // deterministic fallbacks and the per-dialogue line called them three repairs.
+  assert.equal(parsed.recoveryAttempts, 1);
+});
+
+test('a run killed by guard exhaustion says so instead of reporting an unknown stop', () => {
+  // Every candidate rejected including the deterministic fallback: the tutor is
+  // left with nothing it is allowed to say and the child dies mid-turn, so no
+  // `run_end` is ever written. Falling back to `unknown` would present the most
+  // consequential failure the instrumented arm has as a missing field.
+  const ended = new Set(['auto_learner_run_end', 'closeout_report']);
+  const rows = traceRows({ turns: 2 }).filter((row) => !ended.has(row.type));
+  assert.equal(parseTutorStubShowcaseTrace(rows).stopReason, 'unknown');
+
+  rows.push({
+    type: 'tutor_response_guard_exhausted',
+    accounting: { outcome: 'guard_exhausted_without_public_delivery' },
+  });
+  assert.equal(parseTutorStubShowcaseTrace(rows).stopReason, 'guard_exhausted');
 });
 
 test('closure is read from the stub lifecycle, not from the transcript text', () => {
@@ -334,7 +355,7 @@ test('a full run summarises both arms without spawning anything', async () => {
   assert.equal(bare.baseline, true);
   assert.equal(bare.grounded, 0);
   assert.equal(instrumented.grounded, 1);
-  assert.equal(instrumented.repairs, 1);
+  assert.equal(instrumented.recoveryAttempts, 1);
   assert.equal(instrumented.meanTurns, 4);
 });
 
