@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-interim-frame-projection
 title: Refactor tutor-stub interim frame projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -95,3 +95,7 @@ Log:
   `0eeff71a` after independent PR #252 added the negative-register effect grid.
   It does not overlap this slice; the 19/19 focused set, 200-item source-only
   workplan, and diff gate remain green after that rebase.
+- 2026-07-26 — PR #254 merged as `95139c0d` with every CI lane green; the
+  serialized workplan render followed as `16deb64b`. Closed this child and
+  activated `refactor-tutor-stub-cli-help-projection` for the next pure
+  launch-time presentation seam.

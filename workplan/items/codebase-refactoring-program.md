@@ -46,6 +46,7 @@ links:
     - refactor-tutor-stub-closeout-projection
     - refactor-tutor-stub-interim-presentation
     - refactor-tutor-stub-interim-frame-projection
+    - refactor-tutor-stub-cli-help-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -314,3 +315,13 @@ Log:
   further 29-line CLI reduction, 19/19 focused tests, the real PTY loading
   scenario, and complete zero-skip hermetic parity green. Live summary
   calculation and every animation/runtime effect remain CLI-owned.
+- 2026-07-26 — PR #254 merged the interim-frame child as `95139c0d` with every
+  CI lane green; the serialized render followed as `16deb64b`. Closed that
+  child and activated `refactor-tutor-stub-cli-help-projection` to move only
+  the 469-line pure launch help string while retaining terminal output,
+  argument parsing, defaults, commands, and runtime behavior in the CLI.
+- 2026-07-26 — The CLI-help child reached review with the complete launch help
+  projection in one dependency-free leaf, a 450-line CLI reduction, exact
+  28,938-byte pre/post output parity, 30/30 final-base launch-path tests, and
+  complete zero-skip hermetic parity. The CLI still owns terminal output,
+  argument parsing, defaults, commands, and every runtime effect.
