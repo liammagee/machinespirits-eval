@@ -11,6 +11,7 @@ import { routeEngagementMode } from '../services/engagementModeRouter.js';
 import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
 import { evaluateRegisterStanceFidelity } from '../services/registerStanceFidelity.js';
+import { summarizeNegativeRegisterEffects } from '../services/negativeRegisterEffectGrid.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -400,11 +401,14 @@ function getResistanceStrategy(row, turnIndex) {
   return traceTurn?.engagementState?.resistance_strategy || '';
 }
 
-function getRegisterRubricScore(row, registerName, turnIndex) {
+function getRegisterRubricResult(row, registerName, turnIndex) {
   const scores = parseJson(row.tutor_register_scores, {});
   const legacy = legacyRegisterKey(registerName);
-  const slice = scores?.[registerName]?.[`turn_${turnIndex}`] || scores?.[legacy]?.[`turn_${turnIndex}`];
-  return slice?.overall ?? null;
+  return scores?.[registerName]?.[`turn_${turnIndex}`] || scores?.[legacy]?.[`turn_${turnIndex}`] || null;
+}
+
+function getRegisterRubricScore(row, registerName, turnIndex) {
+  return getRegisterRubricResult(row, registerName, turnIndex)?.overall ?? null;
 }
 
 function getRegisterRubricDimensionScore(row, registerName, turnIndex, dimensionKey) {
@@ -559,6 +563,12 @@ function loadRows(runIds = []) {
   const registerScoresSelect = databaseHasColumn(db, 'evaluation_results', 'tutor_register_scores')
     ? 'r.tutor_register_scores'
     : 'NULL AS tutor_register_scores';
+  const tutorV22Select = databaseHasColumn(db, 'evaluation_results', 'tutor_first_turn_score')
+    ? 'r.tutor_first_turn_score'
+    : 'NULL AS tutor_first_turn_score';
+  const tutorRubricVersionSelect = databaseHasColumn(db, 'evaluation_results', 'tutor_rubric_version')
+    ? 'r.tutor_rubric_version'
+    : 'NULL AS tutor_rubric_version';
   const params = [...CONTROLLED_SCENARIOS];
   const clauses = [`r.scenario_id IN (${CONTROLLED_SCENARIOS.map(() => '?').join(',')})`, 'r.success = 1'];
   clauses.push(`NOT (
@@ -590,8 +600,11 @@ function loadRows(runIds = []) {
          r.suggestions,
          r.id_construction_trace,
          ${registerScoresSelect},
+         ${tutorV22Select},
+         ${tutorRubricVersionSelect},
          r.tutor_scores,
          r.dialogue_content_hash,
+         r.judge_model,
          r.success
        FROM evaluation_results r
        WHERE ${clauses.join(' AND ')}
@@ -670,6 +683,7 @@ function analyzeRows(rows, scenarios) {
     const routerStrategy = getResistanceStrategy(row, resistanceTurn);
     const routeHit = routerSelectedRegister === 'charismatic';
     const registerRubricScore = getRegisterRubricScore(row, tutorRegister, resistanceTurn);
+    const registerRubricResult = getRegisterRubricResult(row, tutorRegister, resistanceTurn);
     const stanceFidelity = evaluateRegisterStanceFidelity({
       registerName: tutorRegister,
       learnerMessage: preLearner,
@@ -736,6 +750,10 @@ function analyzeRows(rows, scenarios) {
       assignedRegisterArm,
       routeHit,
       registerRubricScore,
+      registerJudgeModel: registerRubricResult?.judge_model || null,
+      tutorV22Score: row.tutor_first_turn_score,
+      tutorRubricVersion: row.tutor_rubric_version,
+      tutorJudgeModel: row.judge_model,
       stanceFidelity,
       registerRecognitionCostScore: getRegisterRubricDimensionScore(
         row,
@@ -1143,7 +1161,95 @@ function fraction(n, d) {
   return d ? `${n}/${d}` : '-';
 }
 
-function buildReport({ generatedAt, errors, analyses }) {
+function formatMean(value) {
+  return value == null ? '-' : Number(value).toFixed(1);
+}
+
+function buildEffectGridSection(effectGrid) {
+  const lines = ['## Negative-Register Effect Grid', ''];
+  lines.push(`Status: \`${effectGrid.status}\``);
+  lines.push('');
+  lines.push(`- Coverage: ${effectGrid.observedRows}/${effectGrid.expectedRows} assigned rows.`);
+  lines.push(
+    '- Assigned-arm estimands include every assigned row; faithful-arm estimands include only stance-gate evidence rows.',
+  );
+  lines.push('- Treatment noncompliance and invalid person-attack violations remain separate failure categories.');
+  if (effectGrid.errors.length) {
+    lines.push(...effectGrid.errors.map((error) => `- Incomplete: ${error}`));
+  }
+  lines.push('');
+  if (effectGrid.byArm.length) {
+    lines.push(
+      markdownTable(
+        [
+          'Arm',
+          'Assigned',
+          'Assigned positive',
+          'Assigned v2.2',
+          'Assigned register',
+          'Faithful',
+          'Faithful positive',
+          'Faithful v2.2',
+          'Faithful register',
+          'Excluded',
+          'Invalid',
+        ],
+        effectGrid.byArm.map((row) => [
+          row.key,
+          String(row.assignedRows),
+          `${row.assignedPositiveOutcomes}/${row.assignedRows}`,
+          formatMean(row.assignedTutorV22Mean),
+          formatMean(row.assignedRegisterMean),
+          String(row.faithfulRows),
+          `${row.faithfulPositiveOutcomes}/${row.faithfulRows || 0}`,
+          formatMean(row.faithfulTutorV22Mean),
+          formatMean(row.faithfulRegisterMean),
+          String(row.excludedNoncompliance),
+          String(row.invalidViolations),
+        ]),
+      ),
+    );
+    lines.push('');
+  }
+  if (effectGrid.byTargetArm.length) {
+    lines.push('### Target x arm');
+    lines.push('');
+    lines.push(
+      markdownTable(
+        [
+          'Target/arm',
+          'Assigned',
+          'Assigned positive',
+          'Assigned v2.2',
+          'Assigned register',
+          'Faithful',
+          'Faithful positive',
+          'Faithful v2.2',
+          'Faithful register',
+          'Excluded',
+          'Invalid',
+        ],
+        effectGrid.byTargetArm.map((row) => [
+          row.key,
+          String(row.assignedRows),
+          `${row.assignedPositiveOutcomes}/${row.assignedRows}`,
+          formatMean(row.assignedTutorV22Mean),
+          formatMean(row.assignedRegisterMean),
+          String(row.faithfulRows),
+          `${row.faithfulPositiveOutcomes}/${row.faithfulRows || 0}`,
+          formatMean(row.faithfulTutorV22Mean),
+          formatMean(row.faithfulRegisterMean),
+          String(row.excludedNoncompliance),
+          String(row.invalidViolations),
+        ]),
+      ),
+    );
+    lines.push('');
+  }
+  return lines;
+}
+
+function buildReport({ generatedAt, errors, analyses, effectGrid = null }) {
   const status = errors.length ? 'FAIL' : analyses.length ? 'ANALYZED_ROWS' : 'READY_NO_ROWS';
   const summary = summarize(analyses);
   const stanceGate = summarizeStanceGate(analyses);
@@ -1183,6 +1289,7 @@ function buildReport({ generatedAt, errors, analyses }) {
       : '- Controlled scenarios and target gates validate.',
   );
   lines.push('');
+  if (effectGrid) lines.push(...buildEffectGridSection(effectGrid));
   if (stanceGate.rows) {
     lines.push('## Negative-Register Stance Gate');
     lines.push('');
@@ -1472,6 +1579,7 @@ function buildReport({ generatedAt, errors, analyses }) {
           'Assigned',
           'Router selected',
           'Register score',
+          'Tutor v2.2',
           'Reg recog',
           'Reg uptake',
           'Reg repair',
@@ -1500,6 +1608,7 @@ function buildReport({ generatedAt, errors, analyses }) {
           row.assignedRegisterArm,
           row.routerSelectedRegister,
           row.registerRubricScore == null ? '' : Number(row.registerRubricScore).toFixed(1),
+          row.tutorV22Score == null ? '' : Number(row.tutorV22Score).toFixed(1),
           row.registerRecognitionCostScore == null ? '' : Number(row.registerRecognitionCostScore).toFixed(1),
           row.registerUptakeFreedomScore == null ? '' : Number(row.registerUptakeFreedomScore).toFixed(1),
           row.registerFaceRepairScore == null ? '' : Number(row.registerFaceRepairScore).toFixed(1),
@@ -1530,9 +1639,10 @@ function buildReport({ generatedAt, errors, analyses }) {
   return lines.join('\n');
 }
 
-function main() {
+export function main() {
   const flags = parseArgs(process.argv);
   const checkOnly = flags.check === true;
+  const effectGridRequested = flags['effect-grid'] === true;
   const runIds =
     typeof (flags.runs || flags['run-id']) === 'string'
       ? (flags.runs || flags['run-id'])
@@ -1556,6 +1666,7 @@ function main() {
     };
   });
   const roleIsolationSummary = summarizeRoleIsolation(analyses);
+  const effectGrid = effectGridRequested ? summarizeNegativeRegisterEffects(analyses) : null;
   const data = {
     generatedAt: new Date().toISOString(),
     scenarioIds: CONTROLLED_SCENARIOS,
@@ -1580,12 +1691,17 @@ function main() {
     stanceGate: summarizeStanceGate(analyses),
     roleIsolation: roleIsolationSummary,
     questionFloodGate: questionFloodGate(analyses),
+    effectGrid,
   };
 
   if (!checkOnly) {
-    fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });
-    fs.writeFileSync(JSON_PATH, `${JSON.stringify(data, null, 2)}\n`);
-    fs.writeFileSync(REPORT_PATH, buildReport({ generatedAt: data.generatedAt, errors, analyses }));
+    const jsonPath = path.resolve(ROOT, typeof flags['output-json'] === 'string' ? flags['output-json'] : JSON_PATH);
+    const reportPath = path.resolve(ROOT, typeof flags['output-md'] === 'string' ? flags['output-md'] : REPORT_PATH);
+    fs.mkdirSync(path.dirname(jsonPath), { recursive: true });
+    fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+    fs.writeFileSync(jsonPath, `${JSON.stringify(data, null, 2)}\n`);
+    fs.writeFileSync(reportPath, buildReport({ generatedAt: data.generatedAt, errors, analyses, effectGrid }));
+    console.log(`Report: ${path.relative(ROOT, reportPath)}`);
   }
 
   const candidates = analyses.filter((row) => row.verdict.includes('candidate'));
@@ -1609,11 +1725,13 @@ function main() {
     console.log(`Role-isolation diagnosis: ${roleIsolationSummary.diagnosis.status}`);
   }
   console.log(`Question-flood gate: ${data.questionFloodGate.status}`);
-  if (!checkOnly) console.log(`Report: ${path.relative(ROOT, REPORT_PATH)}`);
-  if (errors.length) {
-    for (const error of errors) console.error(`- ${error}`);
+  if (effectGrid)
+    console.log(`Effect grid: ${effectGrid.status} (${effectGrid.observedRows}/${effectGrid.expectedRows})`);
+  const reportErrors = [...errors, ...(effectGrid?.errors || [])];
+  if (reportErrors.length) {
+    for (const error of reportErrors) console.error(`- ${error}`);
     process.exitCode = 1;
   }
 }
 
-main();
+if (path.resolve(process.argv[1] || '') === fileURLToPath(import.meta.url)) main();

@@ -300,6 +300,7 @@
         "tests/messageChainAuditCore.test.js",
         "tests/miniDramaMachines.test.js",
         "tests/navParity.test.js",
+        "tests/negativeRegisterEffectGrid.test.js",
         "tests/negativeRegisterExemplarFixture.test.js",
         "tests/negotiationThreading.test.js",
         "tests/ontologyTomHarness.test.js",
