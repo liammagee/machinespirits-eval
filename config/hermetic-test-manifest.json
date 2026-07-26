@@ -323,6 +323,7 @@
         "tests/processUtils.test.js",
         "tests/program2CommitteeEngine.test.js",
         "tests/program2EvidenceUseRelabel.test.js",
+        "tests/program2ExperimentSafety.test.js",
         "tests/program2LivePilotEvidenceUseRubric.test.js",
         "tests/program2StallAudit.test.js",
         "tests/program2StallDataset.test.js",

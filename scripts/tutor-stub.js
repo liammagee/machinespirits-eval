@@ -575,6 +575,7 @@ import {
   runCommitteeBattery,
   trimCommitteeFallback,
 } from '../services/program2CommitteeEngine.js';
+import { createProgram2ProviderBudgetFromEnvironment } from '../services/program2ExperimentSafety.js';
 import {
   DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
   TUTOR_STUB_REGISTER_OVERLAY_POLICIES,
@@ -912,6 +913,7 @@ const { values: args, positionals } = parseArgs({
 let selectedLabResolution = null;
 let selectedLabAdmission = null;
 let selectedLabModelCallBudget = null;
+const program2ProviderBudget = createProgram2ProviderBudgetFromEnvironment();
 let loadedSessionRecipe = null;
 let loadedSessionRecipePath = null;
 let resolvedResumeSource = null;
@@ -3866,6 +3868,7 @@ async function callPromptModel({
       `Prompt audit failed for ${role}: ${promptAudit.violations.map((violation) => violation.code).join(', ')}`,
     );
   }
+  reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });
   reserveTutorStubMeteredModelCall({ trace, role, turn });
   try {
     let response;
@@ -4780,6 +4783,24 @@ function reserveTutorStubMeteredModelCall({ trace = null, role = 'unknown', turn
       role,
       turn,
       admission: selectedLabModelCallBudget.snapshot(),
+    });
+    throw error;
+  }
+}
+
+function reserveProgram2ProviderBudget({ maxTokens, trace = null, role = 'unknown', turn = null } = {}) {
+  if (!program2ProviderBudget) return null;
+  try {
+    const reservation = program2ProviderBudget.reserve({ maxTokens });
+    appendTraceEvent(trace, { type: 'program2_provider_budget_reserved', role, turn, ...reservation });
+    return reservation;
+  } catch (error) {
+    appendTraceEvent(trace, {
+      type: 'program2_provider_budget_denied',
+      role,
+      turn,
+      requestedOutputTokens: Math.max(0, Number(maxTokens || 0)),
+      ...program2ProviderBudget.snapshot(),
     });
     throw error;
   }
@@ -10696,6 +10717,7 @@ async function callTutor({
     };
     if (cliEffort) request.config.cliEffort = cliEffort;
     const useStreamingApi = streamMode === 'live' || streamMode === 'buffered';
+    reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });
     reserveTutorStubMeteredModelCall({ trace, role, turn: tutorTurn });
     let response;
     if (isCliProvider(resolved.provider)) {

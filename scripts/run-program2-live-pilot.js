@@ -31,6 +31,11 @@ import {
   normalizeTutorStubEvidenceUseRubric,
 } from '../services/tutorStubPublicLearnerAnalysis.js';
 import { PROGRAM2_COMMITTEE_DEFAULTS, runCommitteeBattery } from '../services/program2CommitteeEngine.js';
+import {
+  evaluateProgram2LiveFutility,
+  validateProgram2CertificateEvidenceBindings,
+  validateProgram2LaunchCertificate,
+} from '../services/program2ExperimentSafety.js';
 import { STEP4_POINT_OF_ACTION_SPEC } from './run-step4-point-of-action-gate.js';
 import { learnerProfilePrompt } from './tutor-stub-learner-profile-contracts.js';
 
@@ -522,10 +527,17 @@ function ollamaPreflight(url, model) {
   });
 }
 
-async function runCommand(command, ordinal, total) {
+async function runCommand(command, ordinal, total, { budget = null } = {}) {
   console.log(`[phase5] ${ordinal}/${total} ${command[command.indexOf('--eval-job-id') + 1] || ''}`);
   await new Promise((resolve, reject) => {
-    const child = spawn(command[0], command.slice(1), { cwd: ROOT, env: process.env, stdio: 'inherit' });
+    const env = budget
+      ? {
+          ...process.env,
+          PROGRAM2_PROVIDER_CALL_LIMIT_PER_ATTEMPT: String(budget.maxProviderCallsPerAttempt),
+          PROGRAM2_PROVIDER_OUTPUT_TOKEN_LIMIT_PER_ATTEMPT: String(budget.maxReservedOutputTokensPerAttempt),
+        }
+      : process.env;
+    const child = spawn(command[0], command.slice(1), { cwd: ROOT, env, stdio: 'inherit' });
     child.on('error', reject);
     child.on('exit', (code, signal) => {
       if (signal) reject(new Error(`child stopped by ${signal}`));
@@ -541,6 +553,7 @@ async function main() {
       'dry-run': { type: 'boolean', default: false },
       'launch-approved': { type: 'boolean', default: false },
       'expected-sha': { type: 'string', default: '' },
+      'launch-certificate': { type: 'string', default: '' },
       'output-dir': { type: 'string', default: '' },
       plan: { type: 'string', default: '5' },
       'limit-jobs': { type: 'string', default: '' },
@@ -549,7 +562,7 @@ async function main() {
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--dry-run] [--launch-approved --expected-sha <sha> --launch-certificate <file>] [--output-dir <dir>] [--limit-jobs N]',
     );
     return;
   }
@@ -557,16 +570,23 @@ async function main() {
   const launch = Boolean(values['launch-approved']);
   const planKey = values.plan || '5';
   const planTable = {
-    5: { root: 'exports/program2-live-pilot', build: buildPhase5LivePilotPlan, validate: validatePhase5LivePilotPlan },
+    5: {
+      root: 'exports/program2-live-pilot',
+      build: buildPhase5LivePilotPlan,
+      validate: validatePhase5LivePilotPlan,
+      certificatePhase: 'pilot',
+    },
     '5b': {
       root: 'exports/program2-live-pilot-5b',
       build: buildPhase5bLivePilotPlan,
       validate: validatePhase5bLivePilotPlan,
+      certificatePhase: 'cohort',
     },
     '5c': {
       root: 'exports/program2-live-pilot-5c',
       build: buildPhase5cLivePilotPlan,
       validate: validatePhase5cLivePilotPlan,
+      certificatePhase: 'cohort',
     },
   };
   if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, or 5c)`);
@@ -600,6 +620,32 @@ async function main() {
     console.log(`[phase5] ${path.relative(ROOT, jsonPath)}`);
     return;
   }
+  const certificateValue = String(values['launch-certificate'] || '').trim();
+  if (!certificateValue) {
+    throw new Error(`${planKey} paid launch requires --launch-certificate from scripts/certify-program2-launch.mjs`);
+  }
+  const certificatePath = path.resolve(ROOT, certificateValue);
+  if (!fs.existsSync(certificatePath)) throw new Error(`launch certificate not found: ${certificatePath}`);
+  const certificateBytes = fs.readFileSync(certificatePath);
+  const launchCertificate = JSON.parse(certificateBytes.toString('utf8'));
+  const certificateValidation = validateProgram2LaunchCertificate(launchCertificate, {
+    plan,
+    sourceSha: values['expected-sha'],
+    phase: planTable[planKey].certificatePhase,
+  });
+  if (!certificateValidation.pass) {
+    throw new Error(`launch certificate rejected: ${certificateValidation.errors.join('; ')}`);
+  }
+  const bindingValidation = validateProgram2CertificateEvidenceBindings(launchCertificate, { root: ROOT });
+  if (!bindingValidation.pass) {
+    throw new Error(`launch certificate evidence rejected: ${bindingValidation.errors.join('; ')}`);
+  }
+  artifact.launchCertificate = {
+    file: path.relative(ROOT, certificatePath),
+    sha256: createHash('sha256').update(certificateBytes).digest('hex'),
+    phase: launchCertificate.phase,
+  };
+  fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
   const launchSha = assertLaunchAuthorization(values['expected-sha']);
   artifact.launchSha = launchSha;
   fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
@@ -612,6 +658,25 @@ async function main() {
     ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
     : { schema: 'machinespirits.tutor-stub.program2-phase5-launch-state.v1', jobs: {} };
   const saveState = () => fs.writeFileSync(statePath, `${JSON.stringify(launchState, null, 2)}\n`);
+  const enforceLiveFutility = (stage) => {
+    const check = evaluateProgram2LiveFutility({
+      plan,
+      launchState,
+      rows: [],
+      contract: launchCertificate.liveFutility,
+    });
+    launchState.futilityChecks = Array.isArray(launchState.futilityChecks) ? launchState.futilityChecks : [];
+    launchState.futilityChecks.push({ stage, ...check });
+    if (launchState.futilityChecks.length > plan.jobs.length + 2) launchState.futilityChecks.shift();
+    if (!check.pass) {
+      launchState.abortedAt = new Date().toISOString();
+      launchState.abortReason = `futility stop: ${check.reasons.join('; ')}`;
+      saveState();
+      throw new Error(launchState.abortReason);
+    }
+    saveState();
+  };
+  enforceLiveFutility('before_first_paid_job');
   let consecutiveFailures = 0;
   let executed = 0;
   for (const job of plan.jobs) {
@@ -626,7 +691,7 @@ async function main() {
     let outcome = null;
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       try {
-        await runCommand(job.command, job.ordinal, plan.jobs.length);
+        await runCommand(job.command, job.ordinal, plan.jobs.length, { budget: launchCertificate.budget });
         outcome = { status: 'sealed', attempts: attempt };
         consecutiveFailures = 0;
         break;
@@ -646,6 +711,7 @@ async function main() {
     if (outcome.status === 'failed') outcome.attrition = true;
     launchState.jobs[job.id] = outcome;
     saveState();
+    enforceLiveFutility(`after_${job.id}`);
   }
   const sealedCount = Object.values(launchState.jobs).filter((entry) => entry.status === 'sealed').length;
   console.log(`[phase5] launch pass complete: ${sealedCount}/${plan.jobs.length} sealed`);
