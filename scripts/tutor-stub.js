@@ -501,6 +501,10 @@ import { projectTutorStubInteractiveHelpLines } from '../services/tutorStubInter
 import { projectTutorStubReleaseNotesLines } from '../services/tutorStubReleaseNotesPresentation.js';
 import { projectTutorStubDagSnapshotLines } from '../services/tutorStubDagSnapshotPresentation.js';
 import {
+  projectTutorStubProofDagArtifactPaths,
+  projectTutorStubProofDagSemanticLayerLines,
+} from '../services/tutorStubProofCommandPresentation.js';
+import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   MAX_TUTOR_STUB_RELEASE_SPEED,
   MIN_TUTOR_STUB_RELEASE_SPEED,
@@ -21487,21 +21491,9 @@ async function main() {
   }
 
   function printProofDagArtifactPaths() {
-    const rows = [
-      ['operator guide', 'docs/proof-dag-verification-and-inspection.md'],
-      ['Lean certificate', 'tools/proof-dag-lean/ProofDag/Generated/World001Nocturne.lean'],
-      ['authored graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/authored.ttl'],
-      ['learner graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/learner-proxy.ttl'],
-      ['tutor graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/tutor-model.ttl'],
-      ['combined graph', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/proof-dags.trig'],
-      ['SHACL report', 'tools/proof-dag-semantic-web/Generated/World001Nocturne/validation-report.json'],
-    ];
-    console.log(`${C.brightCyan}${C.bold}proof-DAG artifacts >${C.reset} deterministic Nocturne fixture`);
-    for (const [label, file] of rows) console.log(`${C.dim}  ${label}: ${file}${C.reset}`);
-    console.log(
-      `${C.dim}  authored files contain private world truth; learner and tutor files must remain public-only${C.reset}\n`,
-    );
-    return rows;
+    const projection = projectTutorStubProofDagArtifactPaths({ colors: C });
+    for (const line of projection.lines) console.log(line);
+    return projection.rows;
   }
 
   function runProofDagLeanCheck() {
@@ -21527,40 +21519,7 @@ async function main() {
   }
 
   function printProofDagSemanticLayer(result, layer) {
-    const graph = result.validation.graphs[layer];
-    if (layer === 'authored') {
-      console.log(`${C.brightMagenta}${C.bold}authored >${C.reset} private authority graph`);
-      console.log(
-        `${C.dim}  ${graph.quadCount} quads · SHACL ${graph.conforms ? 'conforms' : 'fails'} · ${result.world.premises.length} premises · ${result.world.rules.length} rules · ${result.world.proofPaths.length} positive proof paths${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  raw: tools/proof-dag-semantic-web/Generated/World001Nocturne/authored.ttl (contains the secret and authored identifiers)${C.reset}`,
-      );
-      return;
-    }
-    if (layer === 'learner') {
-      const projection = result.projections.learnerProxyDag;
-      const metrics = projection.metrics || {};
-      console.log(`${C.cyan}${C.bold}learner >${C.reset} public-only proxy graph at fixture turn ${projection.turn}`);
-      console.log(
-        `${C.dim}  ${graph.quadCount} quads · SHACL ${graph.conforms ? 'conforms' : 'fails'} · ${metrics.groundedCount || 0} grounded · ${metrics.voicedDerivedCount || 0} voiced · ${metrics.hypothesisCount || 0} hypotheses · ${metrics.answerCandidateCount || 0} answers${C.reset}`,
-      );
-      console.log(
-        `${C.dim}  source redaction audit passed · raw: tools/proof-dag-semantic-web/Generated/World001Nocturne/learner-proxy.ttl${C.reset}`,
-      );
-      return;
-    }
-    const projection = result.projections.tutorLearnerDagModel;
-    const assessment = projection.assessment || {};
-    console.log(
-      `${C.brightBlue}${C.bold}tutor >${C.reset} public-only advisory model at fixture turn ${projection.turn}`,
-    );
-    console.log(
-      `${C.dim}  ${graph.quadCount} quads · SHACL ${graph.conforms ? 'conforms' : 'fails'} · best-path coverage ${assessment.bestPathCoverage ?? 0} · bottleneck ${assessment.bottleneck || 'none'} · ${assessment.missingPremiseCount || 0} missing premises (counts only)${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  source redaction audit passed · raw: tools/proof-dag-semantic-web/Generated/World001Nocturne/tutor-model.ttl${C.reset}`,
-    );
+    for (const line of projectTutorStubProofDagSemanticLayerLines({ result, layer, colors: C })) console.log(line);
   }
 
   async function handleProofDagCommand(argument = '', { duringTurn = false } = {}) {

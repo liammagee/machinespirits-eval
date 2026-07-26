@@ -450,6 +450,7 @@
         "tests/tutorStubPromptAudit.test.js",
         "tests/tutorStubPromptBehavior.test.js",
         "tests/tutorStubPromptSizeReport.test.js",
+        "tests/tutorStubProofCommandPresentation.test.js",
         "tests/tutorStubProofDebt.test.js",
         "tests/tutorStubQaMatrix.test.js",
         "tests/tutorStubQuestionSupport.test.js",
