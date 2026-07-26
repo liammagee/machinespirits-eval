@@ -429,6 +429,10 @@ import { projectTutorStubTrainingReuseStatusLines } from '../services/tutorStubT
 import { projectTutorStubDialogueSettingsLines } from '../services/tutorStubDialogueSettingsPresentation.js';
 import { projectTutorStubModelChoiceLines } from '../services/tutorStubModelChoicePresentation.js';
 import {
+  projectTutorStubDirectorContextLines,
+  projectTutorStubDirectorNotesLines,
+} from '../services/tutorStubDirectorPresentation.js';
+import {
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
   tutorStubCommandHelpRows,
@@ -3088,21 +3092,7 @@ function buildDirectorInitialContext(world) {
 }
 
 function printDirectorInitialContext(context) {
-  if (!context) return;
-  const printField = (label, text) => {
-    const lines = String(text || '').split('\n');
-    console.log(`${C.dim}  ${label}:${C.reset} ${lines[0] || ''}`);
-    for (const line of lines.slice(1)) {
-      console.log(`    ${line}`);
-    }
-  };
-  console.log(`${C.cyan}director context >${C.reset}`);
-  printField('stage', context.stageNotes);
-  printField('tutor', context.tutorCharacter);
-  printField('learner', context.learnerCharacter);
-  if (context.audienceContext) printField('audience', context.audienceContext);
-  printField('voice', context.registerNote);
-  console.log();
+  for (const line of projectTutorStubDirectorContextLines(context, { colors: C })) console.log(line);
 }
 
 function printDirectorPreludeBeforeFirstTutor(state, { reason = 'first_tutor_message' } = {}) {
@@ -3140,32 +3130,7 @@ function directorNotesIssuedSoFar(state) {
 
 function printDirectorNotesIssuedSoFar(state) {
   const notes = directorNotesIssuedSoFar(state);
-  const printField = (label, text) => {
-    const lines = String(text || '').split('\n');
-    console.log(`${C.dim}  ${label}:${C.reset} ${lines[0] || ''}`);
-    for (const line of lines.slice(1)) console.log(`    ${line}`);
-  };
-  console.log(`${C.cyan}director notes so far >${C.reset}`);
-  if (!notes.opening && !notes.releases.length) {
-    console.log(`${C.dim}  none have been issued yet${C.reset}\n`);
-    return notes;
-  }
-  if (notes.opening) {
-    console.log(`${C.dim}  opening directions${C.reset}`);
-    printField('stage', notes.opening.stageNotes);
-    printField('tutor', notes.opening.tutorCharacter);
-    printField('learner', notes.opening.learnerCharacter);
-    printField('voice', notes.opening.registerNote);
-  }
-  for (const release of notes.releases) {
-    console.log(`${C.dim}  turn ${release.turn} · scene note${C.reset}`);
-    for (const line of String(release.surface || '').split('\n')) console.log(`    ${line}`);
-  }
-  console.log(
-    `${C.dim}  through ${
-      notes.throughTurn > 0 ? `completed turn ${notes.throughTurn}` : 'the opening'
-    }; future notes remain withheld${C.reset}\n`,
-  );
+  for (const line of projectTutorStubDirectorNotesLines(notes, { colors: C })) console.log(line);
   return notes;
 }
 

@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-07-26
+updated: 2026-07-27
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -57,6 +57,7 @@ links:
     - refactor-tutor-stub-training-reuse-presentation
     - refactor-tutor-stub-dialogue-settings-presentation
     - refactor-tutor-stub-model-choice-presentation
+    - refactor-tutor-stub-director-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -466,3 +467,15 @@ Log:
   at `c7f5d5cd` after PR #282. Its sole manifest overlap composes cleanly with
   the tutor-benchmark additions: 48/48 overlap tests, 7,112/7,112 root tests,
   and 137/137 tutor-core tests pass on the final base with zero skips.
+- 2026-07-27 — PR #285 merged the model-choice child as `b2bb02a3` with all ten
+  CI lanes green; the serialized render followed as `46fd7e0e`. Closed that
+  child and activated `refactor-tutor-stub-director-presentation` to move only
+  director-context and issued-note serialization while retaining note
+  derivation, future-note withholding, trace/state effects, slash dispatch,
+  and terminal writes in the CLI.
+- 2026-07-27 — The director-presentation child reached review with one
+  dependency-free projector, a 35-line net CLI reduction, byte-identical live
+  context and reprise blocks, 67/67 focused tests, 281/281 final-base overlap
+  tests, and complete root 7,193-test plus tutor-core 137-test zero-skip parity.
+  Note derivation, withholding, trace/state effects, command dispatch, and
+  terminal writes remain CLI-owned.
