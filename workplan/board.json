@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-26T23:06:25.381Z",
+  "generated": "2026-07-26T23:07:12.787Z",
   "counts": {
     "total": 226,
     "byStatus": {
@@ -435,7 +435,7 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-07-26",
-      "updated": "2026-07-26",
+      "updated": "2026-07-27",
       "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way.",
       "claim_status": "methods",
       "depends_on": [
