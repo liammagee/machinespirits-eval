@@ -105,6 +105,7 @@ import {
   resolveTutorStubAnswerReference,
   snapshotTutorStubPublicPremiseIds,
 } from '../services/tutorStubResponseGuard.js';
+import { buildTutorStubObservedAudits } from '../services/tutorStubObservedAudits.js';
 import { splitTutorStubPublicWords } from '../services/tutorStubPublicText.js';
 import { tutorStubPublicProvenanceText } from '../services/tutorStubPublicProvenance.js';
 import {
@@ -769,6 +770,10 @@ const { values: args, positionals } = parseArgs({
     'classifier-model': { type: 'string', default: STUB.classifierModel },
     'no-classifier': { type: 'boolean', default: false },
     passthrough: { type: 'boolean', default: false },
+    // Evaluate a bare turn, gate nothing. Passthrough fuses evaluation and
+    // enforcement by returning the first draft untouched; this splits them, so
+    // a baseline arm records the two contract-free audits and stays bare.
+    'observe-audits': { type: 'boolean', default: false },
     'tutor-learner-dag': { type: 'boolean', default: false },
     'learner-record-model': { type: 'string', default: STUB.learnerRecordModel },
     'learner-analysis-prompt-profile': { type: 'string', default: STUB.learnerAnalysisPromptProfile },
@@ -13607,6 +13612,43 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
     timingContext: runtimeOptions.turnTiming,
   });
 
+  // Observed audits, if asked for. They run here rather than inside `callTutor`
+  // for a reason: by this point the draft is already the delivered line, so
+  // there is no code path by which a result could send it back. The audits are
+  // read-only witnesses to a turn that has already happened.
+  //
+  // Both are computed on exactly the inputs the guarded arm gives them — the
+  // world, the turn index, the draft, the learner message, and the replayed
+  // public assistant messages — and `recentTutorTexts` is read *before* this
+  // turn is pushed onto the history, so the tutor is never compared with
+  // itself.
+  const observedAuditsRequested = Boolean(state.passthrough?.observedAudits);
+  const observedLeakAudit =
+    observedAuditsRequested && state.world
+      ? auditTutorResponseLeak({
+          text: response.text,
+          world: state.world,
+          tutorTurn,
+          learnerText,
+          state,
+        })
+      : null;
+  const observedRepetitionAudit = observedAuditsRequested
+    ? auditTutorStubRepetitionResponse({
+        text: response.text,
+        recentTutorTexts: tutorMessageContext(state, state.history)
+          .messages.filter((message) => message.role === 'assistant')
+          .map((message) => message.content),
+      })
+    : null;
+  const observedAudits = observedAuditsRequested
+    ? buildTutorStubObservedAudits({
+        leakAudit: observedLeakAudit,
+        repetitionAudit: observedRepetitionAudit,
+        response,
+      })
+    : null;
+
   state.history.push({ role: 'user', content: learnerText });
   state.history.push({ role: 'assistant', content: response.text });
   const turnRecord = {
@@ -13622,6 +13664,19 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
         }
       : {}),
     passthrough: true,
+    observedAudits,
+    tutorLeakAudit: observedLeakAudit,
+    tutorRepetitionAudit: observedRepetitionAudit,
+    // Named and left null on purpose. Each of these scores a draft against a
+    // per-turn contract the bare arm never builds, so an absent value here
+    // means "no referent", not "passed".
+    tutorQuestionSupportAudit: null,
+    tutorDramaticReleaseAudit: null,
+    tutorHumanScaffoldAudit: null,
+    tutorDialogueClosureAudit: null,
+    tutorLiveSourceActionAlignmentAudit: null,
+    tutorResponseRepaired: false,
+    tutorDeterministicFallback: false,
     classification: null,
     tutorLearnerDagModel: null,
     registerSelection: null,
@@ -13651,7 +13706,16 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
     turn: tutorTurn,
     modelCallCount: 1,
     requestSurface: ['system_setup', 'full_public_history', 'latest_learner_message'],
+    observedAudits: Boolean(observedAudits),
   });
+  if (observedAudits) {
+    appendTraceEvent(state.trace, {
+      type: 'passthrough_observed_audits',
+      turnId,
+      turn: tutorTurn,
+      ...observedAudits,
+    });
+  }
   appendTraceEvent(state.trace, {
     type: 'turn_complete',
     turnId,
@@ -13662,6 +13726,7 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
   return {
     ...response,
     passthrough: true,
+    observedAudits,
     dagSnapshot: null,
     registerSelection: null,
     releasePacing: null,
@@ -14870,6 +14935,16 @@ async function main() {
   if (args['no-committee']) args['point-of-action-arm'] = '';
 
   const passthroughEnabled = Boolean(args.passthrough);
+  const observedAuditsEnabled = Boolean(args['observe-audits']);
+  if (observedAuditsEnabled && !passthroughEnabled) {
+    // A guarded run already evaluates all seven audits and records them as
+    // guard results. Accepting the flag there would write a second, weaker copy
+    // of two of them under a name that promises no enforcement, which is a
+    // reading hazard rather than a feature.
+    throw new Error(
+      '--observe-audits requires --passthrough: a guarded run already records these audits as enforced guard results',
+    );
+  }
   if (passthroughEnabled) {
     args.dag = false;
     args['tutor-learner-dag'] = false;
@@ -15742,6 +15817,10 @@ async function main() {
     enabled: passthroughEnabled,
     modelCallsPerTurn: passthroughEnabled ? 1 : null,
     requestSurface: passthroughEnabled ? ['system_setup', 'full_public_history', 'latest_learner_message'] : null,
+    // Observation is not a bypass reversal: every entry in `bypassed` below
+    // stays bypassed with this on. The audits run after the draft is final and
+    // cannot send it back, so the call count and request surface are unchanged.
+    observedAudits: observedAuditsEnabled,
     bypassed: passthroughEnabled
       ? [
           'learner_classifier',
@@ -16987,6 +17066,11 @@ async function main() {
   if (passthroughEnabled) {
     console.log(`${C.brightCyan}${C.bold}passthrough >${C.reset} pure speaker chat · one model call per turn`);
     console.log(`${C.dim}request: unchanged system setup + full public history + latest learner message${C.reset}`);
+    if (observedAuditsEnabled) {
+      console.log(
+        `${C.dim}observed audits: leak and repetition are evaluated and recorded after each turn; nothing is gated, repaired or replaced${C.reset}`,
+      );
+    }
     console.log(
       `${C.dim}setup: ${worldBundle ? `${worldBundle.world.id} — ${worldBundle.world.title}` : effectiveTopic}${C.reset}`,
     );

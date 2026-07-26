@@ -30,12 +30,21 @@ arms:
   # response_composition, response_checks_and_repair, release_planner,
   # dialogue_closure, tutor_feedback and the learning summary, leaving one model
   # call per turn over system setup + public history + latest learner message.
+  #
+  # `--observe-audits` is what makes the baseline scoreable. Passthrough on its
+  # own records no audits at all, so the merit column for this arm was empty and
+  # the two arms could not be compared on the same gate. The flag splits
+  # evaluation from enforcement: the two contract-free audits (leak, repetition)
+  # run after the draft is final, are written to the turn record, and cannot
+  # send anything back. Model calls, request surface and guard coverage are
+  # unchanged — the arm stays bare and now reports what a bare arm actually does.
   bare:
     label: Bare tutor
     baseline: true
-    summary: One model, one call per turn over the public history. No DAG, no scaffold, no guard that can send a draft back.
+    summary: One model, one call per turn over the public history. No DAG, no scaffold, no guard that can send a draft back. Audits are evaluated and recorded, never enforced.
     flags:
       - --passthrough
+      - --observe-audits
       - --no-classifier
       - --no-memory-summary
     model_call_budget: 60

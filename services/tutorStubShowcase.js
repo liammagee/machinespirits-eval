@@ -46,6 +46,7 @@ const MODEL_PROVIDERS = new Set(['codex', 'claude-code']);
  */
 export const TUTOR_STUB_SHOWCASE_ARM_FLAGS = Object.freeze([
   '--passthrough',
+  '--observe-audits',
   '--dag',
   '--no-dag',
   '--dag-mode',
@@ -71,6 +72,12 @@ const VALUED_ARM_FLAGS = new Set(['--dag-mode', '--model-call-budget']);
  * them reports the same number for every arm. Coverage comes from
  * `tutor_response_guard_accounting` below; these keys are kept because their
  * `ok` flags are still the per-turn pass/fail signal shown on the transcript.
+ *
+ * A `--passthrough --observe-audits` arm fills the first and fifth of these and
+ * leaves the other five null, because those five score a draft against a
+ * per-turn contract a bare arm never builds. `auditRows` skips null keys, so
+ * such an arm reports two audits per turn against the guarded arm's seven —
+ * which is the shape of the comparison, not a defect in it.
  */
 export const TUTOR_STUB_SHOWCASE_AUDIT_KEYS = Object.freeze([
   'tutorLeakAudit',

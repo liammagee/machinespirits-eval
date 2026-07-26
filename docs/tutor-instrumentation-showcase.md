@@ -41,7 +41,7 @@ everything *except* a declared set of tutor-side flags:
 
 ```js
 TUTOR_STUB_SHOWCASE_ARM_FLAGS = [
-  '--passthrough',
+  '--passthrough', '--observe-audits',
   '--dag', '--no-dag', '--dag-mode',
   '--tutor-learner-dag', '--no-tutor-learner-dag',
   '--classifier', '--no-classifier',
@@ -97,6 +97,53 @@ fell into the interactive REPL, hit EOF and exited 0 with a plausible-looking
 transcript of nothing. All three are fixed; the learner-safe surface is
 unaffected, because `pure_chat` rejects `--auto-learner` through a separate
 research-only audience gate rather than through the isolation rule.
+
+## Evaluating the baseline without gating it: `--observe-audits`
+
+Passthrough fuses two things that are not the same: *evaluating* a turn and
+*enforcing* the result. Bypassing the guard suite bypassed the audits with it,
+so the bare arm recorded nothing and its merit column was empty — the two arms
+ran side by side but could not be scored on the same gate.
+
+`--observe-audits` splits them. On each bare turn, after the draft is final, the
+stub runs the two audits that need no per-turn contract and writes them to the
+turn record:
+
+| Audit | Needs |
+|---|---|
+| `tutorLeakAudit` | world, turn index, draft text, learner message |
+| `tutorRepetitionAudit` | draft text, replayed prior tutor messages |
+
+The other five (`questionSupport`, `dramaticRelease`, `humanScaffold`,
+`dialogueClosure`, `liveSourceActionAlignment`) score a draft against a contract
+the instrumented pipeline builds *before* it speaks — a question-support frame,
+a release plan, a discourse scaffold, a closure frame, a live source/action
+pairing. A bare arm never builds one, so those checks have no referent on its
+turns. They are written as `null` and reported as unavailable, never as passed:
+an absent contract must not read as a clean sheet.
+
+Three properties hold by construction:
+
+- **No extra model calls.** The audits are pure computation over the finished
+  turn. `modelCallsPerTurn` stays 1.
+- **No enforcement.** They run in `runPassthroughTurn` after `callTutor` has
+  returned, so there is no path by which a result could reach the repair loop.
+  `buildTutorStubObservedAudits` asserts the response carries none of
+  `repaired`, `deterministicFallback` or a guard-accounting row, and throws if a
+  future edit changes that.
+- **No coverage inflation.** Guard coverage still reads
+  `tutor_response_guard_accounting`, which a passthrough arm never emits, so the
+  arm stays at 0% coverage while reporting its audits. Merit and coverage remain
+  separate columns.
+
+The flag requires `--passthrough`. In a guarded run all seven audits already run
+as enforced guard results, and accepting the flag there would write a second,
+weaker copy of two of them under a name that promises no enforcement.
+
+One caveat for reading the numbers: a clean leak sheet on the bare arm is easily
+earned. That arm never stages evidence, and an audit asking "did you say more
+than the record warrants" is passed by saying nothing evidential. These audits
+are ceilings on misconduct, not floors on usefulness.
 
 ## Guard coverage is read from the accounting rows, not the audit records
 
