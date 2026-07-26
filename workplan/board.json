@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T03:15:07.506Z",
+  "generated": "2026-07-26T03:16:32.957Z",
   "counts": {
-    "total": 202,
+    "total": 203,
     "byStatus": {
-      "done": 176,
+      "done": 177,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 45,
+      "infra": 46,
       "maintenance": 47,
       "content": 2,
       "paper": 6,
@@ -522,8 +522,8 @@
       "source": "manual",
       "created": "2026-07-22",
       "updated": "2026-07-26",
-      "branch": "codex/program-2-second-trigger-family-stall",
-      "blocked_by": "Strict stagnant-repeat corpus floor is 49/100 audit-passing moments; future sealed runs must grow and re-audit the corpus before dataset construction or training.",
+      "branch": "codex/program-2-stall-phase2-exploratory",
+      "blocked_by": "Exploratory Phase 2 leaves only six accepted-original train rows and zero dev rows; future sealed runs must grow and re-audit the source corpus before training.",
       "verification": "A stall-move specialist, SFT-trained on audit-labeled stagnant_repeat exhaust from the sealed archives under a fresh frozen prereg (own run licenses — the Program-2 ledger is spent), clears its frozen offline bars (floor+0.15 pattern on held-out stall moments under a deterministic stall-audit designed and frozen BEFORE training) and then a live committee-stall pilot passes E1s (CI > 0 vs silent controls) at the frozen guardrails, with the stall-density precondition met by a stall-enriched design.",
       "claim_status": "exploratory",
       "links": {
@@ -532,10 +532,15 @@
           "PROGRAM-2-FINETUNE-PLAN.md",
           "PROGRAM-2-PHASE2-PREREGISTRATION.md",
           "notes/program-2/2026-07-18-cloud-finetune-runbook.md",
-          "notes/program-2/2026-07-26-stall-corpus-audit.md"
+          "notes/program-2/2026-07-26-stall-corpus-audit.md",
+          "notes/program-2/2026-07-26-stall-phase2-exploratory.md"
         ],
         "exports": [
-          "config/adaptive-tutor-evidence/program-2-stall-phase0-1.manifest.json"
+          "config/adaptive-tutor-evidence/program-2-stall-phase0-1.manifest.json",
+          "config/adaptive-tutor-evidence/program-2-stall-phase2-exploratory.manifest.json"
+        ],
+        "prs": [
+          256
         ],
         "items": [
           "program-2-context-vs-weights-finetune",
@@ -3032,6 +3037,34 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/test-canonical-posthoc-analysis-pipeline"
+    },
+    {
+      "id": "tutor-pr-benchmark-delta-harness",
+      "title": "Add persistent base-head delta QA to tutor PR benchmarks",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Added zero-call saved-candidate re-audits with pass, safety, and cluster deltas; added a clean detached-worktree base/head runner that hashes equivalent plans, alternates pair order, makes no retries, and preflights a 12-call strong budget; moved private reports under the Git common directory; replaced the broad tutorStub prefix with static import reachability plus explicit inputs. Verified by 44 focused benchmark and recent tutor-guard tests, full ESLint and Prettier checks, static import-cycle and hermetic-manifest checks, workplan source validation, diff hygiene, a real six-candidate zero-call re-audit, and a clean 12-call zero-call base/head preflight.",
+      "branch": "codex/tutor-pr-benchmark-delta-harness",
+      "depends_on": [
+        "tutor-pr-frozen-prefix-benchmark"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-pr-benchmark.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "regression",
+        "pr-gate",
+        "calibration"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "tutor-pr-frozen-prefix-benchmark",
