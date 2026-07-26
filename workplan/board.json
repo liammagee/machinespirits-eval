@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-26T02:09:11.603Z",
+  "generated": "2026-07-26T02:11:03.537Z",
   "counts": {
-    "total": 200,
+    "total": 201,
     "byStatus": {
       "done": 176,
       "blocked": 4,
@@ -9,12 +9,12 @@
       "triaged": 5,
       "active": 6,
       "archived": 4,
-      "review": 2
+      "review": 3
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 44,
+      "infra": 45,
       "maintenance": 46,
       "content": 2,
       "paper": 6,
@@ -583,6 +583,39 @@
         "presentation",
         "terminal",
         "loading-indicator"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "tutor-stub-resume-handoff",
+      "title": "Give resumed tutor-stub sessions a dialogue handoff",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Unit, interactive CLI, and process-session HTTP regressions prove a resumed dialogue publicly recaps its question and last learner contribution, reprises the last tutor question or point, informs the next turn, and does not advance completed turns, proof state, DAG state, or evidence release.",
+      "branch": "codex/proper-tutor-resumption",
+      "depends_on": [
+        "tutor-stub-session-recipes-explicit-resume"
+      ],
+      "links": {
+        "items": [
+          "tutor-stub-session-recipes-explicit-resume",
+          "tutor-stub-resume-last-recipe"
+        ],
+        "code": [
+          "services/tutorStubResumeHandoff.js",
+          "scripts/tutor-stub.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "resume",
+        "dialogue",
+        "session-runtime"
       ],
       "milestone": "evaluation-infrastructure"
     },
