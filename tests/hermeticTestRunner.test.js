@@ -6,6 +6,7 @@ import test from 'node:test';
 
 import {
   loadTestManifest,
+  nodeTapOutputIsComplete,
   parseNodeTapSummary,
   parseVitestJsonSummary,
   synchronizeTestManifest,
@@ -21,6 +22,7 @@ import {
   formatPhaseFailureDiagnostic,
   parseRootTimingReport,
   parseRunnerArgs,
+  readRootTapSummary,
   replayCapturedOutput,
   runPhase,
   selectTestShard,
@@ -612,4 +614,160 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
     assert.match(companionWorkflow, /^concurrency:\n {2}group: .*github\.workflow.*github\.ref/mu);
     assert.match(companionWorkflow, /cache: npm/u);
   }
+});
+
+const COMPLETE_TAP = `TAP version 13
+ok 1 - first case
+ok 2 - second case
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+`;
+
+test('a TAP stream is complete only when it carries both the plan line and the counters', () => {
+  assert.equal(nodeTapOutputIsComplete(COMPLETE_TAP), true);
+  // What a force-exited child leaves on a backpressured pipe: green test lines,
+  // no tail. Every one of these reads as an all-green run to a line-counting eye.
+  assert.equal(nodeTapOutputIsComplete('TAP version 13\nok 1 - first case\nok 2 - second case\n'), false);
+  assert.equal(nodeTapOutputIsComplete(COMPLETE_TAP.split('# tests 2')[0]), false, 'plan without counters');
+  assert.equal(nodeTapOutputIsComplete(COMPLETE_TAP.replace('1..2\n', '')), false, 'counters without plan');
+  assert.equal(nodeTapOutputIsComplete(''), false);
+});
+
+test('a truncated TAP summary names the channel it came from', () => {
+  assert.throws(() => parseNodeTapSummary('TAP version 13\nok 1 - only case\n', { source: 'root TAP stdout' }), {
+    message: 'root TAP stdout omitted the TAP plan line',
+  });
+  assert.equal(parseNodeTapSummary(COMPLETE_TAP).plan, 2);
+});
+
+test('root test args add a file TAP destination beside the piped one', () => {
+  const withTap = buildRootTestArgs({ testFiles: ['tests/example.test.js'], tapPath: '/tmp/out.tap' });
+  assert.deepEqual(
+    withTap.slice(0, 5),
+    [
+      '--test',
+      '--test-reporter=tap',
+      '--test-reporter-destination=stdout',
+      '--test-reporter=tap',
+      '--test-reporter-destination=/tmp/out.tap',
+    ],
+    withTap.join(' '),
+  );
+  // Omitting tapPath keeps the historical single-reporter form, so a caller
+  // building args by hand is unaffected.
+  assert.deepEqual(buildRootTestArgs({ testFiles: ['tests/example.test.js'] }), [
+    '--test',
+    '--test-reporter=tap',
+    '--test-force-exit',
+    'tests/example.test.js',
+  ]);
+});
+
+test('the root verdict is read from the TAP file when the pipe was truncated', (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-tap-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const tapPath = path.join(root, 'root-node-test-output.tap');
+  fs.writeFileSync(tapPath, COMPLETE_TAP);
+
+  // This is the reported CI failure exactly: a green but tailless pipe.
+  const truncated = { stdout: 'TAP version 13\nok 1 - first case\nok 2 - second case\n' };
+  const summary = readRootTapSummary({ phase: 'root', tapPath }, truncated);
+  assert.equal(summary.tests, 2);
+  assert.equal(summary.fail, 0);
+  assert.equal(summary.plan, 2);
+});
+
+test('the root verdict falls back to the pipe when no TAP file was written', () => {
+  const summary = readRootTapSummary({ phase: 'root', tapPath: null }, { stdout: COMPLETE_TAP });
+  assert.equal(summary.tests, 2);
+});
+
+test('a root verdict missing from every channel names them all', (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-tap-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const tapPath = path.join(root, 'root-node-test-output.tap');
+  fs.writeFileSync(tapPath, 'TAP version 13\nok 1 - first case\n');
+
+  assert.throws(
+    () => readRootTapSummary({ phase: 'root', tapPath }, { stdout: 'TAP version 13\n' }),
+    (error) => {
+      assert.match(error.message, /omitted the TAP test summary on every channel/u);
+      assert.match(error.message, /root-node-test-output\.tap \(\d+ bytes, no complete tail\)/u);
+      assert.match(error.message, /stdout \(\d+ bytes, no complete tail\)/u);
+      return true;
+    },
+  );
+});
+
+test('a force-exited child leaves its TAP tail on at least one channel', async (t) => {
+  // `--test-force-exit` calls process.exit(), and neither destination is safe
+  // from it. Two stronger claims were tried here and CI refuted both: that the
+  // file channel is always complete (Node 20 lost it in a child that starts and
+  // exits inside a quarter of a second), and then that the file is never the
+  // poorer of the two (Node 20 produced a run where the pipe had the tail and
+  // the file did not).
+  //
+  // The two channels fail under different conditions. The pipe loses the tail
+  // when the parent reads slowly, which is the CI flake this change exists for;
+  // the file loses it when the child exits almost immediately, which the real
+  // root phase — minutes of output, not milliseconds — has never done across
+  // eight shard jobs on both Node versions. So what the change buys is not a
+  // safe channel but two independent ones and a reader that takes whichever
+  // survived. That is why the stdout fallback in readRootTapSummary is
+  // load-bearing rather than a courtesy to old callers.
+  //
+  // Hence the union. This fails only when both channels lose the tail at once,
+  // which is the outcome actually worth guarding, and the workplan item records
+  // the durable fix: wait for the tail instead of racing it.
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-tap-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const testFile = path.join(root, 'padding.test.js');
+  const tapPath = path.join(root, 'out.tap');
+  fs.writeFileSync(
+    testFile,
+    [
+      'import test from "node:test";',
+      'setInterval(() => {}, 100000);',
+      'for (let i = 0; i < 60; i += 1) test(`padding case ${i}`, () => {});',
+    ].join('\n'),
+  );
+
+  // The real runner starts from a plain node process. This test is itself
+  // inside `node --test`, so the recursion marker has to be cleared or the
+  // spawned runner declines to run any files at all.
+  const { NODE_TEST_CONTEXT: _recursionMarker, ...env } = process.env;
+  const result = await runPhase({
+    phase: 'root',
+    forceExit: true,
+    args: buildRootTestArgs({ testFiles: [testFile], tapPath }),
+    env,
+    quiet: true,
+    projectRoot: root,
+    onChild: () => {},
+  });
+
+  assert.equal(fs.existsSync(tapPath), true, result.stderr);
+  const fileTap = fs.readFileSync(tapPath, 'utf8');
+  assert.ok(
+    nodeTapOutputIsComplete(fileTap) || nodeTapOutputIsComplete(result.stdout),
+    `both channels lost the tail: file ${fileTap.length} bytes, stdout ${result.stdout.length} bytes`,
+  );
+
+  const summary = readRootTapSummary({ phase: 'root', tapPath }, result);
+  assert.equal(summary.fail, 0);
+
+  // Deliberately not `summary.tests === 60`. A forced exit can also end the run
+  // before the last cases are recorded, and it does so quietly: the plan line,
+  // the counters, and the `ok` lines all agree with each other at whatever
+  // count the run reached. This test asserted the full 60 on its first CI run
+  // and got 54 on both Node 20 and 22 — a separate defect from the lost tail,
+  // recorded in the workplan item and not addressed here.
+  assert.ok(summary.tests > 0 && summary.tests <= 60, `tests=${summary.tests}`);
+  assert.equal(summary.plan, summary.tests);
 });
