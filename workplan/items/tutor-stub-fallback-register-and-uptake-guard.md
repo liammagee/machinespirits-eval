@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: review
 created: 2026-07-26
-updated: 2026-07-26
+updated: 2026-07-27
 verification: A contemporary-diction world speaks its own props in its own
   register while every period and undeclared world keeps byte-identical
   deterministic text; the learner-uptake guard admits a genuinely responsive
@@ -266,3 +266,53 @@ Log:
   Full suite 6842/6844; both failures are this worktree's symlinked
   `node_modules` missing `@modelcontextprotocol/sdk` and `rdf-validate-shacl`,
   unrelated to the edit.
+- 2026-07-27 — A fourth residual, found by re-reading the confirmation trace
+  rather than by any test. Residuals A-C were *register* defects: the right prop
+  named in the wrong century's voice. This one is a *content* defect. Roughly a
+  quarter of `deterministicTutorStubLearnerUptake`'s branches were authored for
+  the marrick coin-assay worlds and name that furniture outright — crucible,
+  touchstone, trial-book, shilling, graver. Every one of them keyed on the
+  learner's wording alone. So a learner in a contemporary flat who writes "the
+  water mark on the ceiling" or "check the metal" satisfies a branch written
+  about a die-flaw on a coin, and the tutor answers by importing an exhibit the
+  scene never contained. The register machinery cannot catch this, because the
+  sentence is not in the wrong register — it is about the wrong world.
+  The fix adds one orthogonal condition. `ASSAY_SCENE_PATTERN` is matched against
+  the *world's* own text, never the learner's, and gates 24 branches plus one
+  candidate inside a mixed branch and the `publicObject` echo whitelist. It is
+  default-open (`!world || ...`), so the many fixtures that pass only
+  `learnerText` keep every branch reachable, while both production call sites in
+  `scripts/tutor-stub.js` pass `world` and are therefore gated.
+  Two things were learned the hard way. The pattern must be applied to
+  punctuation-normalised text: `\bmarrick\b` does not match inside
+  `world_005_marrick`, because `_` is a word character and offers no boundary, so
+  the first draft silently closed the assay branches in the assay worlds and
+  broke seven marrick tests. And a fuzz sweep found one leak the branch audit had
+  missed, in the `publicObject` noun-echo whitelist, which was offering "coin"
+  back to any learner who said it.
+  Verified by fuzzing rather than by reading: 35 coin-flavoured learner lines
+  across request types and discourse moves, run against all 32 authored worlds.
+  Assay vocabulary now reaches exactly `world-005-marrick`,
+  `world-019-marrick-resistant` and `world-020-marrick-confront`, 25 distinct
+  replies each, and no other world; world-030 goes from 25 to 0. One new test in
+  `tests/tutorStubResponseComposition.test.js` pins all three directions — no
+  assay wording in a contemporary world, assay wording still present in a
+  marrick world so the bank cannot be deleted to pass, and the no-world caller
+  unchanged. Composition suite 118/118.
+  Paid re-run of the motivating world on post-fix code: world-030,
+  codex/gpt-5.6-sol throughout, `goalpost_shifter`, 8 turns, `--run-seed 1`;
+  trace `.tutor-stub-traces/confirm-world030-postfix/`. Zero coin or assay
+  vocabulary in the transcript, and the reporting lead reads "Here's what I'm
+  reading" where the pre-fix trace read "I read from the record". Outcome
+  ("inquiry remains open") and strict proof progress (0%) are unchanged in both
+  runs. Two other counters moved, and they should not be read as effects of this
+  change: these are two single samples from a non-deterministic model, and only
+  the register and vocabulary differences are attributable.
+  One leak is left open deliberately and is a different defect.
+  `configuredFallbackObject` concatenates `learnerText` ahead of the world's own
+  prose and then takes the first whitelist hit anywhere in that string, so it
+  echoes an assay noun back out of the learner's own line rather than importing
+  one. The sharpest case is metaphor read as exhibit: "the touchstone for me is
+  whether the water travelled" returns "I put the touchstone in front of us". The
+  register there is already correct, so this is an object-selection defect, not a
+  costume one, and it wants its own fix.
