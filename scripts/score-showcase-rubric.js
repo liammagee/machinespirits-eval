@@ -41,6 +41,7 @@ import { parseArgs } from 'node:util';
 
 import { evaluateSuggestion } from '../services/rubricEvaluator.js';
 import evalConfigLoader from '../services/evalConfigLoader.js';
+import { refreshTutorStubShowcaseHtml } from '../services/tutorStubShowcaseHtml.js';
 
 const { values: args, positionals } = parseArgs({
   allowPositionals: true,
@@ -264,6 +265,14 @@ async function main() {
   console.log('');
   console.log(`scores: ${path.relative(process.cwd(), `${outBase}.md`)}`);
   console.log(`details: ${path.relative(process.cwd(), `${outBase}.json`)}`);
+
+  // Same reasoning as the PR-benchmark pass: the page predates the scoring, so
+  // it is re-rendered here against whichever artefacts are now beside it.
+  const refreshed = refreshTutorStubShowcaseHtml({ report, runDir });
+  if (!refreshed) console.log('transcripts.html: not present, nothing to refresh');
+  else if (outBase !== path.join(runDir, 'rubric-v2.2')) {
+    console.log('transcripts.html: refreshed, but --out is outside the run dir so this pass is not on the page');
+  } else console.log(`transcripts: ${path.relative(process.cwd(), refreshed)}`);
 }
 
 main().catch((error) => {

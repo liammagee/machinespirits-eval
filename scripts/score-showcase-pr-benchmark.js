@@ -41,6 +41,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { callClaudeCodeJudge, getAvailableJudge } from '../services/rubricEvaluator.js';
+import { refreshTutorStubShowcaseHtml } from '../services/tutorStubShowcaseHtml.js';
 import { loadTutorPrBenchmarkRubric } from '../services/tutorPrBenchmarkRubric.js';
 import {
   SHOWCASE_PR_BENCHMARK_SCHEMA,
@@ -290,6 +291,17 @@ async function main() {
   console.log('');
   console.log(`labels: ${path.relative(process.cwd(), `${outBase}.md`)}`);
   console.log(`details: ${path.relative(process.cwd(), `${outBase}.json`)}`);
+
+  // The transcript page is rendered when the run finishes, long before anyone
+  // pays for a judge, so it is re-rendered here against whatever score artefacts
+  // now sit beside it. Under `--out` the artefact lands somewhere the overlay
+  // does not look, so say the page will not carry this pass rather than leaving
+  // a stale page looking current.
+  const refreshed = refreshTutorStubShowcaseHtml({ report, runDir });
+  if (!refreshed) console.log('transcripts.html: not present, nothing to refresh');
+  else if (outBase !== path.join(runDir, 'rubric-pr-benchmark-1.0')) {
+    console.log(`transcripts.html: refreshed, but --out is outside the run dir so this pass is not on the page`);
+  } else console.log(`transcripts: ${path.relative(process.cwd(), refreshed)}`);
 }
 
 main().catch((error) => {

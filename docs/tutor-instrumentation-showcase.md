@@ -413,6 +413,49 @@ count), and a closure chip on the turn where the lifecycle completed. One toggle
 shows or hides the guard chips. The column head carries the arm's closure verdict
 in the same three states as the table: resolved, unresolved, or no verdict.
 
+## Scores on the page
+
+Scoring is a later pass than rendering: `transcripts.html` is written when the
+run finishes, and the two score artifacts land beside it whenever someone pays a
+judge. So the renderer takes an optional overlay built from whichever artifacts
+exist, a run that was never scored renders exactly the page it always did, and
+each scoring script re-renders the page on its way out. Scoring only one of the
+two instruments is a supported state, not a broken one.
+
+Scores appear in three places, at three grains:
+
+- the **benchmark table** gains `Rubric first`, `Rubric last` and `Labels`
+  columns beside `Resolved`, so the headline comparison carries quality next to
+  cost rather than making a reader scroll to find out whether the extra calls
+  bought anything;
+- each scenario's **column heads** carry that arm's scores *for that scenario*,
+  under the closure chips;
+- each **turn** carries its own chips for both instruments, with the judge's
+  reasoning behind a disclosure. A second toggle hides all of it.
+
+The per-scenario grain is not decoration. On the first scored run the pooled
+means read `bare 54.4 → 22.5` and `instrumented 42.5 → 42.5`, which invites the
+reading that the instrumented arm holds steady where the baseline collapses. Per
+scenario it is two opposite trajectories that happen to average flat: on Campus
+FAQ the instrumented arm climbs 23.7 → 67.5 while the baseline falls 41.3 → 16.3,
+and on Riverside Clinic both fall, the instrumented arm hardest of all
+(61.3 → 17.5). With two scored turns per arm per scenario neither pattern is
+evidence of anything; the point is that the pooled number concealed the split,
+so the page shows both.
+
+**Nothing on the page averages the two instruments.** They ask different
+questions on different scales — v2.2 is 0–100 over eight dimensions on one turn,
+the PR-benchmark is pass/fail/unsure over three axes on every turn — and the
+`Labels` column is a verdict over the axes in force, deliberately not the
+rubric's own `overall_delivery`. Where an instrument has no result the page says
+which of the three absences applies: *not asked* (the axis was withheld), *not
+scored* (the instrument ran but not on this turn), or *failed* (the judge was
+asked and produced nothing). A blank would let all three read as a pass.
+
+Both instruments see the public transcript only. The proof DAG, release plan,
+scaffold and guard verdicts are withheld from the judge, so the instrumented arm
+is never scored on its own internal artifacts.
+
 ## Artifacts
 
 Each run writes to `exports/tutor-stub-showcase/showcase-<stamp>/` (honouring

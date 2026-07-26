@@ -22,6 +22,7 @@ import {
   validateTutorStubShowcaseConfig,
 } from '../services/tutorStubShowcase.js';
 import { renderTutorStubShowcaseHtml } from '../services/tutorStubShowcaseHtml.js';
+import { buildShowcaseScoreOverlay } from '../services/tutorStubShowcaseScoreOverlay.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG_PATH = path.join(ROOT, 'config', 'tutor-stub-showcase.yaml');
@@ -398,6 +399,71 @@ test('the html surface renders both arms, the repair, and the standing caveat', 
   assert.match(html, /resolved at turn 4/u);
   assert.match(html, /not evidence about human learning/u);
   assert.ok(!/<script src=/u.test(html), 'the surface must stay self-contained');
+});
+
+/**
+ * Scoring is a later pass than rendering, so the page must be complete without
+ * it. These two tests pin both halves of that: no overlay renders exactly the
+ * cost-and-conduct page, and an overlay adds scores in both places a reader
+ * looks — the headline table and each scenario's column heads.
+ */
+test('an unscored page carries no score columns and claims nothing about quality', async () => {
+  // The stylesheet always names the score classes; only the markup is conditional.
+  const html = renderTutorStubShowcaseHtml(await report());
+  assert.ok(!/<th class="sc-num sc-th-score">/u.test(html), 'the benchmark table gains score columns only with data');
+  assert.ok(!/class="sc-head-scores"/u.test(html), 'a column head gains scores only with data');
+  assert.ok(!/Rubric scoring/u.test(html), 'the scoring section is absent, not empty');
+});
+
+test('a scored page carries per-arm scores in the benchmark table and in every column head', async () => {
+  const built = await report();
+  const rows = built.results.filter((result) => result.dialogue);
+  const overlay = buildShowcaseScoreOverlay({
+    prBenchmark: {
+      rubric: { version: '1.0' },
+      judge: 'claude-code.sonnet',
+      axesAsked: [{ axisId: 'safety' }],
+      axesUnavailable: [{ axisId: 'overall_delivery', reason: 'no case criterion in a free-running dialogue' }],
+      rows: rows.map((result) => ({
+        dialogueId: result.id,
+        scenarioId: result.scenarioId,
+        armId: result.armId,
+        baseline: Boolean(result.baseline),
+        turnIndex: 1,
+        success: true,
+        axes: { safety: { label: 'pass' } },
+        transferableVerdict: 'pass',
+      })),
+    },
+    tutorV22: {
+      rubricVersion: '2.2',
+      judge: 'claude-code.sonnet',
+      turns: 'first-last',
+      rows: rows.map((result, index) => ({
+        dialogueId: result.id,
+        scenarioId: result.scenarioId,
+        armId: result.armId,
+        baseline: Boolean(result.baseline),
+        turnIndex: 1,
+        turnLabel: 'first',
+        success: true,
+        overallScore: 40 + index,
+      })),
+    },
+  });
+
+  const html = renderTutorStubShowcaseHtml(built, { overlay });
+  assert.match(html, /<th class="sc-num sc-th-score">Rubric first<\/th>/u);
+  assert.match(html, /<th class="sc-num sc-th-score">Labels<\/th>/u);
+  // Nothing was scored as a last turn, so the last-turn cell must say so rather
+  // than fall back to the first-turn number or to zero.
+  assert.match(html, /Rubric last/u);
+  assert.equal(
+    (html.match(/class="sc-head-scores"/gu) || []).length,
+    rows.length,
+    'every arm column in every scenario carries its own scores',
+  );
+  assert.match(html, /nothing here averages across them/u);
 });
 
 test('the cli prints a finite plan and spends nothing', () => {

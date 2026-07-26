@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-07-26
-updated: 2026-07-26
+updated: 2026-07-27
 verification: "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call
   plan whose arms hold learner parity in every preset; a paid run writes report.json,
   report.md, and a turn-aligned two-column transcripts.html; each arm's resolution
@@ -168,6 +168,28 @@ Design decisions worth keeping:
   channel is included because it is the symmetric one: `tutorLeakAudit` runs on
   both arms under `--observe-audits`, and it is reported beside the judge label
   rather than merged into it.
+- **Both scoring passes are shown on the transcript page**
+  (`services/tutorStubShowcaseScoreOverlay.js`). Scoring post-dates rendering, so
+  the renderer takes an *optional* overlay built from whichever artefacts sit
+  beside `report.json`, an unscored run renders exactly the page it always did,
+  and each scoring script re-renders on its way out. Scores land at three grains:
+  score columns in the benchmark table, per-scenario scores in each arm's column
+  head, and per-turn chips with the judge's reasoning behind a disclosure.
+  Nothing averages across the two instruments — different scales, different
+  units, different questions — and the composite keeps the name
+  `transferableVerdict`. The three absences stay distinct on the page (*not
+  asked* / *not scored* / *failed*), because a blank cell lets all three read as
+  a pass. Per-arm aggregates are derived from the turn rows rather than read off
+  the artefact's own `summary`, so the page and the markdown report cannot
+  disagree, and the same accessor serves the whole-run and per-scenario grains.
+- **The per-scenario grain caught a pooling artifact in the first scored run.**
+  Pooled, the arms read `bare 54.4 → 22.5` against `instrumented 42.5 → 42.5`,
+  which invites "the instrumented arm holds steady". Split by scenario it is two
+  opposite trajectories averaging flat: Campus FAQ instrumented climbs
+  23.7 → 67.5 while bare falls 41.3 → 16.3; Riverside Clinic has both falling,
+  instrumented hardest (61.3 → 17.5). At two scored turns per arm per scenario
+  neither pattern is evidence — the point is that the pooled number concealed the
+  split.
 
 Standing limitation, stated in the config, the service header, `report.md`, and
 on the rendered page: **this is not a controlled comparison.** Each arm has its
