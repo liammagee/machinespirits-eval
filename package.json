@@ -55,6 +55,7 @@
     "tutor:stub:trajectory-shadow": "node scripts/build-tutor-stub-trajectory-shadow.js",
     "tutor:stub:step4": "node scripts/run-step4-point-of-action-gate.js",
     "program2:certify-launch": "node scripts/certify-program2-launch.mjs",
+    "program2:phase5e:pilot-bundle": "node scripts/build-program2-phase5e-pilot-bundle.mjs",
     "tutor:stub:remote": "node scripts/tutor-stub-remote.js",
     "tutor:stub:qa": "node scripts/run-tutor-stub-qa-matrix.js",
     "tutor:stub:abm-panel": "node scripts/run-tutor-stub-abm-panel.js",

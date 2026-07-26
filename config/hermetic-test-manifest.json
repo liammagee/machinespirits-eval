@@ -329,6 +329,8 @@
         "tests/program2EvidenceUseUniformSample.test.js",
         "tests/program2ExperimentSafety.test.js",
         "tests/program2LivePilotEvidenceUseRubric.test.js",
+        "tests/program2Phase5eLivePilot.test.js",
+        "tests/program2Phase5eWorldSelection.test.js",
         "tests/program2StallAudit.test.js",
         "tests/program2StallDataset.test.js",
         "tests/progress.test.js",

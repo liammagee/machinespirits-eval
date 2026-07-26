@@ -572,6 +572,7 @@ import {
   auditTutorStubPointOfActionCompliance,
   buildTutorStubPointOfActionTurn,
   normalizeTutorStubPointOfActionArm,
+  reconcileTutorStubPointOfActionHandoffEligibility,
   tutorStubPointOfActionPrompt,
   tutorStubPointOfActionStandingBook,
   tutorStubPointOfActionTargetText,
@@ -10364,6 +10365,20 @@ async function callTutor({
         sourceAccessibilityPolicy: speakingResponseConfiguration?.source_accessibility_policy || 'direct_only',
         sourceAccessibilityOwner: 'post_source_sentence',
       });
+  const assignedPointOfAction = state?.pointOfAction?.current || null;
+  const eligiblePointOfAction = reconcileTutorStubPointOfActionHandoffEligibility(
+    assignedPointOfAction,
+    firstDraftContract?.progression || null,
+  );
+  if (eligiblePointOfAction !== assignedPointOfAction) {
+    state.pointOfAction.current = eligiblePointOfAction;
+    appendTraceEvent(trace, {
+      type: 'point_of_action_handoff_suppression',
+      turn: tutorTurn,
+      pointOfAction: eligiblePointOfAction,
+      publicTranscriptChanged: false,
+    });
+  }
   const firstDraftContractAdvisory = passthrough ? null : tutorStubFirstDraftContractPrompt(firstDraftContract);
   const comprehensionAdvisory = passthrough
     ? null
@@ -13656,7 +13671,7 @@ async function runOneTurn(
   const dynamicalState = state.pointOfAction?.enabled
     ? buildDynamicalSystemState({ state, classification, tutorLearnerDag })
     : null;
-  const pointOfAction = state.pointOfAction?.enabled
+  let pointOfAction = state.pointOfAction?.enabled
     ? buildTutorStubPointOfActionTurn({
         arm: state.pointOfAction.arm,
         turn: tutorTurn,
@@ -13808,6 +13823,7 @@ async function runOneTurn(
       deferStreamOutput: Boolean(runtimeOptions.isCurrent),
       signal: runtimeOptions.signal || null,
     }));
+  pointOfAction = state.pointOfAction?.current || pointOfAction;
   response.tutorRef = state.tuning?.activeRef || state.tutorInstance?.ref || null;
   assertTutorStubTurnAttemptCurrent(runtimeOptions);
   const priorDialogueClosure = state.dialogueClosure;

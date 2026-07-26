@@ -14,6 +14,8 @@ export const TUTOR_STUB_POINT_OF_ACTION_ARMS = Object.freeze([
 // injects text at trigger time — `committee` intervenes at the generation
 // layer inside the speaking call, `silent_control` observes only.
 export const TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS = Object.freeze(['committee', 'silent_control']);
+export const TUTOR_STUB_POINT_OF_ACTION_HANDOFF_ELIGIBILITY_VERSION =
+  'program2-phase5e-r2-handoff-eligibility-2026-07-27.v1';
 const ALL_POINT_OF_ACTION_ARMS = Object.freeze([
   ...TUTOR_STUB_POINT_OF_ACTION_ARMS,
   ...TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS,
@@ -242,6 +244,44 @@ export function buildTutorStubPointOfActionTurn({
 export function tutorStubPointOfActionPrompt(turn) {
   if (!turn?.assigned_trigger || !turn?.interruption?.text) return '';
   return turn.interruption.text;
+}
+
+/**
+ * Intersect the frozen point-of-action detector with the final public handoff
+ * contract for the Phase 5 experimental arms. The detector runs first, so it
+ * can nominate a warrant_skip on a turn where a higher-priority conversational
+ * contract requires a declarative answer. R1 counted those impossible moments
+ * even though the normal delivery guard was required to remove the question.
+ *
+ * This correction suppresses the candidate symmetrically for committee and
+ * silent control. It does not weaken the handoff contract and does not alter
+ * any standing-book, placebo, side-coach, or compiled-constraint arm.
+ */
+export function reconcileTutorStubPointOfActionHandoffEligibility(turn, progressionContract = null) {
+  if (
+    !turn ||
+    turn.assigned_trigger !== 'warrant_skip' ||
+    !TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS.includes(turn.arm) ||
+    progressionContract?.handoff_contract?.question_allowed !== false
+  ) {
+    return turn;
+  }
+  return {
+    ...turn,
+    assigned_trigger: null,
+    assignment_priority: null,
+    suppressed_trigger: 'warrant_skip',
+    suppression: {
+      ...(turn.suppression || {}),
+      handoff_contract_question_forbidden: true,
+    },
+    handoff_eligibility: {
+      version: TUTOR_STUB_POINT_OF_ACTION_HANDOFF_ELIGIBILITY_VERSION,
+      eligible: false,
+      handoff_mode: progressionContract?.handoff_contract?.mode || null,
+      reason: 'question_forbidden_by_handoff_contract',
+    },
+  };
 }
 
 export function applyTutorStubPointOfActionConstraint(selection, turn) {

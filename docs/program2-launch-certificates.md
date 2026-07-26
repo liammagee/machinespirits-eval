@@ -19,7 +19,8 @@ node scripts/run-program2-live-pilot.js \
 
 This is a zero-model operation. It writes `launch-plan.json` and prints the
 exact certificate command for that plan. Use `--plan 5b` or `--plan 5c` when
-appropriate.
+appropriate. Phase 5e R2 uses `--plan 5e-pilot` for its four-row feasibility
+pilot and `--plan 5e` for the 18-row cohort.
 
 ## 2. Generate and inspect the certificate
 
@@ -31,6 +32,18 @@ by the paid launcher.
 Check the reported static reachability, pilot completeness, opportunity power,
 attempt ceiling, provider-call ceiling, and reserved-output-token ceiling
 before proceeding.
+
+For Phase 5e R2, build the audited cohort-bound bundle only after all four
+certified pilot rows have sealed:
+
+```bash
+npm run program2:phase5e:pilot-bundle
+```
+
+The builder makes no model calls. It checks exact command parity, source-SHA
+parity, profile × arm coverage, sealed trace identity, world/seed/model/rubric
+pins, and complete fixed-horizon outcomes, then binds each trace by SHA-256. The `--plan 5e`
+certificate reminder names that bundle and the frozen R2 gate file directly.
 
 ## 3. Launch with the certificate
 
