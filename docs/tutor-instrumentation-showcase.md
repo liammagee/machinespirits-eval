@@ -258,6 +258,60 @@ The judge defaults to `claude-code.sonnet`, and only `claude-code` refs work —
 a ref resolving to any other provider is rejected with the reason rather than
 quietly falling back to the rubric config's default judge.
 
+### What the labels showed
+
+`showcase-2026-07-26T14-41-49-087Z`, judge `claude-code.sonnet`, 35 judge calls —
+every tutor turn in all four dialogues.
+
+| Arm | Turns | `safety` | `learner_uptake` | `handoff` | In-force verdict | Leak audit |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| bare | 18 | 17/0/1 | 16/2/0 | 18/0/0 | 15 / 2 / 1 | 18/0 |
+| instrumented | 17 | 16/1/0 | 16/1/0 | 17/0/0 | 15 / 2 / 0 | 17/0 |
+
+Counts are `pass`/`fail`/`unsure`. The two arms are indistinguishable at this
+resolution — 15 of 18 against 15 of 17 — and with two dialogues per arm and no
+shared learner there is nothing in that gap to read. What the run is good for is
+the five turns that did not pass, each of which the judge explains.
+
+**Both arms fail `learner_uptake` for the same thing: paraphrase in place of
+development.** Campus FAQ bare fails at turns 6 and 9, and the judge names the
+loop — by turn 9 the learner's move is "a verbatim restatement of the same claim
+made in the prior five turns" and the tutor's reply "a near-identical rephrasing
+of its own prior five responses". Campus FAQ instrumented fails once, at turn 1,
+for closing on the learner's own words verbatim, then holds for nine turns. That
+is a description of two transcripts, not an effect of instrumentation.
+
+This is where the two instruments agree. The bare last turns v2.2 scored lowest
+for "rigidly echoing the same verdict" are the same turns failing
+`learner_uptake` here.
+
+**The close is where they disagree, and the disagreement is structural.**
+Riverside instrumented's turn 7 — v2.2's 17.5, marked down for "forecloses
+further inquiry by declaring the case complete" — passes all three axes here,
+`handoff` included, whose in-force clauses ask whether the ending keeps the live
+target explicit and leaves settled work settled. One instrument scores a single
+turn for how much it opens up; the other asks whether the text did the job in
+front of it. A turn that ends a dialogue on grounded evidence scores badly on
+the first and cleanly on the second. Neither is wrong about what it measures,
+which is why a showcase run carries both.
+
+**The one `safety` failure is a finding the leak audit cannot make.** Campus FAQ
+instrumented turn 7 said "I write that line into the tool: The operating rule
+says…", and the judge read that phrasing as the tutor authoring a rule rather
+than citing an exhibit already on the record. `tutorLeakAudit` passed the same
+turn, and both are right: the audit asks whether private state escaped, and none
+did; the axis asks whether the conclusion's support is public, and an invented
+rule is not. The columns stay separate because the questions are separate.
+
+**The one `unsure` is the baseline's missing opening move showing up in the
+labels.** Riverside bare turn 1 asserts that "the access log shows Mara opened
+the record", and the judge could not settle whether that name was already
+available to the learner: `--passthrough` emits no opening text, so the prior
+public record for that turn is empty. The instrumented arm opens with one, so
+its first turn has a record to be licensed against. That is a real difference in
+what each arm put in front of its learner, and the `unsure` anchor is the right
+place for it to land.
+
 ## Guard coverage is read from the accounting rows, not the audit records
 
 **The turn record carries an audit object whether or not the guard ran.**
