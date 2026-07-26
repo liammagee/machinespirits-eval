@@ -121,7 +121,12 @@ export const TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY = TUTOR_STUB_EVIDENCE_USE_RUB
  * byte-identical wording still argues against a *global* prompt effect; it does
  * not stand in for an untouched measure.
  */
-const EVIDENCE_USE_RUBRIC_CLAUSES = Object.freeze({
+// Exported so the archive relabel tool substitutes the same bytes the prompt
+// builder would have emitted, rather than carrying its own copy of the clause and
+// drifting from it. The clauses are spliced into a line array that is joined with
+// '\n', so replacing V1's single line with V2's five reproduces a native V2 build
+// exactly — proven in tests/program2EvidenceUseRelabel.test.js.
+export const EVIDENCE_USE_RUBRIC_CLAUSES = Object.freeze({
   [TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1]: Object.freeze([
     '- evidence precedence: distorted/misattributed public clue => distorts_public_evidence; correct clue plus conclusion but no bridge => omits_warrant; conclusion beyond available evidence => overleaps_evidence; explicit bridge => links_evidence_to_rule.',
   ]),
