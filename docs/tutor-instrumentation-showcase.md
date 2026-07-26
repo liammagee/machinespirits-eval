@@ -222,76 +222,69 @@ that model for the rest of the run.
 
 ## Cost
 
-From `showcase-2026-07-26T07-39-43-946Z`, preset `smoke`, one Riverside dialogue
-per arm, tutor and learner both `codex.gpt-5.6-terra`, commit `3322f5af`. One
-dialogue per arm is an illustration, not an estimate.
+From `showcase-2026-07-26T12-19-33-018Z`, preset `default`, one dialogue per arm
+per scenario, tutor and learner both `codex.gpt-5.6-terra`, commit `9c70ab67`.
+One dialogue per cell is an illustration, not an estimate.
 
-| | Bare (passthrough) | Instrumented |
-| --- | ---: | ---: |
-| Turns reached | 8 (turn cap) | 4 (aborted) |
-| Wall clock per turn | 11.2s | 58.6s |
-| Model calls per turn | 2 | 5 |
-| Guard coverage | 0% (bypassed) | 63% |
-| Accepted / repaired / fallback | n/a | 1 / 0 / 3 |
-| Recovery attempts | n/a | 3 |
-| Resolved | n/a (no lifecycle) | 0/1 |
+| | Campus FAQ bare | Campus FAQ instrumented | Riverside bare | Riverside instrumented |
+| --- | ---: | ---: | ---: | ---: |
+| Turns reached | 10 (turn cap) | 10 (turn cap) | 8 (turn cap) | 8 (turn cap) |
+| Wall clock per turn | 11.0s | 48.0s | 10.7s | 52.9s |
+| Model calls per turn | 2.0 | 4.2 | 2.0 | 3.8 |
+| Guard coverage | 0% (bypassed) | 63% | 0% (bypassed) | 56% |
+| Accepted / repaired / fallback | n/a | 3 / 1 / 6 | n/a | 3 / 2 / 3 |
+| Resolved | n/a (no lifecycle) | no | n/a (no lifecycle) | no |
 
-Read the middle rows together. The instrumented arm cost about **5× the wall
-clock per turn** and produced **half the turns**, and of its four turns one went
-out as written, three went out as deterministic fallbacks, and the fifth turn
-killed the run: every candidate was rejected, including the deterministic
-fallback, and the child exited 1 with
-`guard_exhausted_without_public_delivery`. The blocking guard was
-`dramatic_release` (`opaque_clue_release`, `missing_exhibit_action`), which
-requires a clue to be released through a visible scene action — something the
-canned fallback line cannot satisfy by construction. The safety net has a hole
-in it at exactly the point it is meant to catch things.
+The instrumented arm costs roughly **4–5× the wall clock per turn** and about
+**twice the model calls**, and reaches the same turn cap. Neither arm resolved:
+the bare arm has no verdict to give, and both instrumented arms ran their
+closure lifecycle and finished with `grounded: false` at phase `open`.
 
-Note also **repaired = 0 against recovery attempts = 3**. The tutor regenerated
-three times and no second draft passed. A report that counted regenerations
-would have shown three repairs, i.e. the architectural win this surface exists
-to demonstrate, for a run in which the mechanism never once succeeded.
+The row to read closely is accepted/repaired/fallback. Across the two
+instrumented dialogues, 6 turns went out as first drafts, 3 were repaired and 9
+went out as deterministic fallback text. Repair is the architectural moment this
+surface exists to show, and on these two worlds the stack rejects three times
+more drafts than it repairs. Nothing here says the guards are wrong to reject
+them — an ungrounded release is a real fault — only that on this stack the
+rejection rate is not matched by a recovery rate.
 
-Neither arm resolved. The bare arm has no verdict to give; the instrumented arm
-was stopped before it could reach one. Nothing here says the guards are wrong to
-reject those drafts — an ungrounded release is a real fault — only that on this
-world, this stack and this scenario the stack rejects more than it can repair.
+### The last resort has to be unrejectable
 
-### Guard exhaustion replicates across worlds
-
-Campus FAQ (`showcase-2026-07-26T11-27-25-251Z`, same commit and models) failed
-the same way and sooner:
-
-| | Bare (passthrough) | Instrumented |
-| --- | ---: | ---: |
-| Turns reached | 10 (turn cap) | 2 (aborted) |
-| Wall clock per turn | 9.1s | 68.8s |
-| Model calls per turn | 2 | 7 |
-| Guard coverage | 0% (bypassed) | 63% |
-| Accepted / repaired / fallback | n/a | 0 / 1 / 1 |
-
-Both worlds died on `dramatic_release` with the same pair of issues,
-`opaque_clue_release` and `missing_exhibit_action`, so this is not a property of
+The first free-running runs never reached the turn cap. Both died mid-dialogue
+on `guard_exhausted_without_public_delivery` — Riverside at turn 5
+(`showcase-2026-07-26T07-39-43-946Z`), Campus FAQ at turn 3
+(`showcase-2026-07-26T11-27-25-251Z`) — with every candidate rejected, the
+deterministic fallback included, leaving the tutor nothing it was permitted to
+say. Both were blocked by `dramatic_release` on the same pair of findings,
+`opaque_clue_release` and `missing_exhibit_action`, so it was not a property of
 one scenario's authored chain.
 
-The mechanism is narrower than "the fallback always fails". `opaque_clue_release`
-fires on `!entranceVisible`; `missing_exhibit_action` fires only when the clue's
-own frame sets `requiresExhibitHandoff` and no handoff is visible
-(`services/tutorStubDramaticRelease.js`). The deterministic fallback wraps the
-authored clue in a fixed "I write the live line down where we can both see it:"
-frame, which supplies **neither** an entrance nor an exhibit action of its own.
-Whether it passes therefore depends entirely on whether the authored clue text
-happens to supply them: Riverside turn 3 used that exact template and was
+The mechanism was narrower than "the fallback always fails".
+`opaque_clue_release` fires on `!entranceVisible`; `missing_exhibit_action` only
+when the clue's own frame sets `requiresExhibitHandoff` and no handoff is
+visible (`services/tutorStubDramaticRelease.js`). The deterministic fallback
+wraps the authored clue in a fixed "I write the live line down where we can both
+see it:" frame, which supplies **neither** an entrance nor an exhibit action of
+its own. Whether it passed depended entirely on whether the authored clue
+happened to supply them: a Riverside turn used that exact template and was
 accepted, because its clue named a person performing an act ("Mara opening
 Noor's record at 17:42"). The clues that killed both runs were impersonal — an
 action ledger entry, an artifact inventory count — and the fallback had nothing
 to add.
 
-So the floor is conditional. The last resort is gated by a guard it does not
-reliably satisfy, and when it fails there is nothing behind it: the tutor has
-nothing it is permitted to say and the process exits. Two worlds, one dialogue
-each, one stack — enough to show the failure is not scenario-specific, not
-enough to quantify how often it happens.
+So the floor was conditional, and a last resort that can be rejected is not a
+floor. `services/tutorStubGuardDisposition.js` already downgraded
+conversational-integrity and optional actorial-realization findings to recorded
+advisories on the terminal-fallback attempt only; dramatic *form* now joins
+them, keyed on the shadow column already reading advisory. That key is what
+keeps `live_source_action_alignment_v1` and the two public-state
+`dramatic_release` types — `duplicate_clue_delivery`, `source_perspective_drift`
+— fatal there. Evidence, clue-transaction, semantic-closure and
+pedagogical-support boundaries are untouched, and unknown findings still fail
+closed: a fallback that leaks still kills the dialogue. Whether the clue's
+*content* was delivered stays hard under `release_delivery`. Catalog version 3.
+
+After the fix all four dialogues ran to their turn cap and the run exited 0.
 
 Token cost is recorded but the CLI bridges are subscription-quota, so `cost`
 comes back as `0`; express cost in calls and wall clock, not dollars.

@@ -62,6 +62,18 @@ Design decisions worth keeping:
   doubling as the learner-model gate. The first of the three failed silently:
   the child dropped into the interactive REPL, hit EOF, and exited 0 having done
   nothing, which the harness recorded as a 0-turn dialogue rather than an error.
+- **The last resort has to be unrejectable.** The first free-running runs died
+  mid-turn on `guard_exhausted_without_public_delivery` in both worlds: every
+  candidate rejected, the deterministic fallback included, so the tutor reached
+  a turn with nothing it was permitted to say. Both were blocked on dramatic
+  *form* (`opaque_clue_release`, `missing_exhibit_action`) — properties of the
+  authored clue text, which fixed harness wrapper text cannot supply. The
+  terminal-fallback accommodation in `services/tutorStubGuardDisposition.js` now
+  covers dramatic form alongside conversational integrity and optional actorial
+  realization, keyed on the shadow column already reading advisory so that
+  `live_source_action_alignment_v1` and the two public-state `dramatic_release`
+  types stay fatal there. Evidence, clue-transaction and closure boundaries are
+  unchanged: a fallback that leaks still kills the dialogue, as it should.
 - **Guard coverage comes from `tutor_response_guard_accounting`, not from the
   audit records.** The turn record carries an audit object whether or not the
   guard ran, so counting records measures "did the turn happen". An early version
