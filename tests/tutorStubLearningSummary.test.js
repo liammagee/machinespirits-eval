@@ -194,6 +194,26 @@ test('learning summary status and end-reason helpers cover grounded, check-in, a
     }),
     '2 evidence steps remain. Next need: the learner needs a clearer reasoning link.',
   );
+  // An assertion gap reads two ways, and the summary is the one place a person
+  // sees it. `secretStatedVia` is what separates them: the learner who derived
+  // the conclusion aloud and never claimed it is not the learner who never got
+  // there, and reporting both as "has not fully stated it" loses that.
+  assert.equal(
+    tutorStubDialogueCaseStatus({
+      tutorLearnerDagModel: {
+        assessment: { finalSecretEntailed: true, assertedSecret: false, secretStatedVia: 'voiced_derivation' },
+      },
+    }),
+    'The learner reached the conclusion and said it in passing, but never claimed it as the answer.',
+  );
+  assert.equal(
+    tutorStubDialogueCaseStatus({
+      tutorLearnerDagModel: {
+        assessment: { finalSecretEntailed: true, assertedSecret: false, secretStatedVia: null },
+      },
+    }),
+    'The evidence supports the conclusion, but the learner has not fully stated it.',
+  );
   assert.equal(tutorStubLearningSummaryEndReason('custom_pause', false), 'The session ended at custom pause.');
   assert.equal(
     tutorStubLearningSummaryEndReason('exit', true),
