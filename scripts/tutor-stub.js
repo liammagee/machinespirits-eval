@@ -494,6 +494,7 @@ import {
   tutorStubCliThemePreview,
 } from '../services/tutorStubCliTheme.js';
 import { renderTutorStubCliHelp } from '../services/tutorStubCliHelp.js';
+import { projectTutorStubInteractiveHelpLines } from '../services/tutorStubInteractiveHelp.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   MAX_TUTOR_STUB_RELEASE_SPEED,
@@ -8950,80 +8951,24 @@ function printTutorStubFeatureMap(state = null) {
 function printInteractiveHelp(state = null) {
   const mode = state?.passthrough?.enabled ? 'passthrough' : 'normal';
   const commandOptions = { mode, capabilities: state?.capabilities || null };
-  const commandAvailable = (value) => tutorStubCommandAvailable(value, commandOptions);
-  if (mode === 'passthrough') {
-    console.log(`${C.brightCyan}${C.bold}passthrough commands${C.reset}`);
-    console.log(`${C.cyan}  chat${C.reset}       type any ordinary line`);
-    for (const row of tutorStubCommandHelpRows({ mode, capabilities: state?.capabilities || null })) {
-      console.log(`${C.cyan}  ${row.label.padEnd(11)}${C.reset} ${row.commands.join(' · ')} — ${row.summary}`);
-    }
-    console.log(
-      `${C.dim}  Each learner line goes directly to the speaker with the unchanged system setup and complete public message history. No classifier, reasoning tracker, register selection, response check, release planner, or auxiliary model call runs.${C.reset}\n`,
-    );
-    return;
-  }
-  console.log(
-    `${C.brightCyan}${C.bold}commands${C.reset}${C.dim} · type / to browse; keep typing to filter; Tab completes${C.reset}`,
-  );
-  for (const row of tutorStubCommandHelpRows({ mode, capabilities: state?.capabilities || null })) {
-    console.log(`${C.cyan}  ${row.label.padEnd(12)}${C.reset} ${row.commands.join(' · ')} — ${row.summary}`);
-  }
-  console.log(
-    `${C.dim}  Your ordinary lines are learner speech. /coach keeps your suggestion private. /auto lets the models continue the existing conversation; add a number to limit the turns.${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  If you add another learner line before the tutor replies, both lines become one learner turn and the tutor restarts from the complete message.${C.reset}`,
-  );
-  if (commandAvailable('/feedback')) {
-    console.log(
-      `${C.dim}  Tutor ratings are optional. On an empty prompt press ← for not helpful or → for helpful—no Enter needed. Add a typed reason with commands such as /down too_abstract or /up helpful_pacing.${C.reset}`,
-    );
-  }
-  console.log(
-    `${C.dim}  If the exchange goes off the rails, /reset cancels unfinished work and restarts the same scenario while keeping your learner profile and settings. /clear is an alias.${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  /debug off shows only the dialogue and compact response line. /debug on adds a short plain explanation. /debug technical shows the full diagnostic evidence once.${C.reset}`,
-  );
-  if (commandAvailable('/committee')) {
-    console.log(
-      `${C.dim}  The learned Qwen warrant committee is on by default in human chat. /committee toggles it; /committee status shows its model and fallback policy.${C.reset}`,
-    );
-  }
-  if (commandAvailable('/random')) {
-    console.log(
-      `${C.dim}  /random toggles a session-only performance experiment: style and host character change randomly, independently of learner assessment; evidence, action choice, closure, and safety still work normally.${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  /tutor and /learner open the two character selectors directly; /character tutor and /character learner remain the full forms. A changed tutor character says “Let me rephrase that” and restates the latest intent in the new part. Use auto to clear a tutor-axis lock.${C.reset}`,
-    );
-  }
-  if (commandAvailable('/suggest')) {
-    console.log(
-      `${C.dim}  /suggest previews the reply and profile expression; /use repeats the profile expression and sends it. /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
-    );
-  } else {
-    console.log(
-      `${C.dim}  /transcript opens raw, script, swimlane, analysis, prompt, settings, and Replay JS views.${C.reset}`,
-    );
-  }
-  console.log(
-    `${C.dim}  /voice opens a local microphone companion. Speech enters this same learner-turn path; only accepted tutor text is voiced. /voice status and /voice off inspect or stop it.${C.reset}`,
-  );
-  if (commandAvailable('/board')) {
-    console.log(
-      `${C.dim}  /board reads workplan/items live and starts the selected card as a fresh reflective inquiry; /board <item-id> selects directly.${C.reset}`,
-    );
-  }
-  if (commandAvailable('/proof')) {
-    console.log(
-      `${C.dim}  /proof checks the deterministic Nocturne certificate fixture; /proof inspect learner or tutor shows the public projections. Use /analysis technical for this session's live DAG state.${C.reset}`,
-    );
-  }
-  if (state?.capabilities?.capabilities?.learning_summary?.active) {
-    console.log(`${C.dim}  A learner-centred summary is written when the conversation ends.${C.reset}\n`);
-  } else {
-    console.log();
+  const commandAvailability =
+    mode === 'normal'
+      ? Object.fromEntries(
+          ['/feedback', '/committee', '/random', '/suggest', '/board', '/proof'].map((token) => [
+            token,
+            tutorStubCommandAvailable(token, commandOptions),
+          ]),
+        )
+      : {};
+  const lines = projectTutorStubInteractiveHelpLines({
+    mode,
+    helpRows: tutorStubCommandHelpRows(commandOptions),
+    commandAvailability,
+    learningSummaryActive: Boolean(state?.capabilities?.capabilities?.learning_summary?.active),
+    colors: C,
+  });
+  for (const line of lines) {
+    console.log(line);
   }
 }
 

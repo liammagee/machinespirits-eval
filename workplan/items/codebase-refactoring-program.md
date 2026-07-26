@@ -47,6 +47,7 @@ links:
     - refactor-tutor-stub-interim-presentation
     - refactor-tutor-stub-interim-frame-projection
     - refactor-tutor-stub-cli-help-projection
+    - refactor-tutor-stub-interactive-help-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -325,3 +326,18 @@ Log:
   28,938-byte pre/post output parity, 30/30 final-base launch-path tests, and
   complete zero-skip hermetic parity. The CLI still owns terminal output,
   argument parsing, defaults, commands, and every runtime effect.
+- 2026-07-26 — PR #262 merged the CLI-help child as `cb1ab520` with every CI
+  lane green; the serialized render followed as `85ccfb7a`. Closed that child
+  and activated `refactor-tutor-stub-interactive-help-projection` to move only
+  pure `/help` line projection while retaining capability/availability
+  resolution, terminal writes, completion, command dispatch, and runtime state.
+- 2026-07-26 — The interactive-help child reached review with normal and
+  passthrough terminal bytes unchanged, every conditional section pinned, a
+  55-line CLI reduction, 66 focused tests, and complete zero-skip hermetic
+  parity. Registry availability, terminal writes, completion, command dispatch,
+  traces, models, and runtime state remain CLI-owned.
+- 2026-07-26 — Refreshed the interactive-help child onto rendered
+  `origin/main` at `69c0ee37`; the independent due-source CLI overlap composed
+  cleanly. Final-base help/registry/terminal coverage passes 60/60, and the
+  complete hermetic root 6,907-test plus tutor-core 137-test contracts remain
+  zero-skip green.

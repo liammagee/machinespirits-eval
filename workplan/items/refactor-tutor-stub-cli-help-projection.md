@@ -1,18 +1,17 @@
 ---
 id: refactor-tutor-stub-cli-help-projection
 title: Refactor tutor-stub CLI help projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-26
 updated: 2026-07-26
-verification: >-
-  The pre/post-refactor --help processes exit zero with byte-identical output;
-  a frozen synthetic-default hash pins the full projection and every supplied
-  runtime value, while focused, hermetic, manifest, static, and source-only
-  gates pass without model calls.
+verification: The pre/post-refactor --help processes exit zero with
+  byte-identical output; a frozen synthetic-default hash pins the full
+  projection and every supplied runtime value, while focused, hermetic,
+  manifest, static, and source-only gates pass without model calls.
 branch: codex/refactor-tutor-stub-cli-help-projection
 claim_status: planned
 depends_on:
@@ -92,3 +91,7 @@ Log:
   focused 30/30, hermetic root 6,940/6,940, and tutor-core 137/137, all with zero
   skips; lint, formatting, zero-cycle, manifest, source, syntax, and diff gates
   also pass.
+- 2026-07-26 — PR #262 merged as `cb1ab520` with every CI lane green; the
+  serialized workplan render followed as `85ccfb7a`. Closed this child and
+  activated `refactor-tutor-stub-interactive-help-projection` for the remaining
+  pure in-session `/help` presentation seam.
