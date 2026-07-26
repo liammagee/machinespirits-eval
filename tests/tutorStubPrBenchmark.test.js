@@ -56,6 +56,9 @@ test('strong and smoke plans pin the dual-CLI medium-effort call budgets', () =>
     ['nocturne_counterpressure_write', 'nocturne_period_source', 'nocturne_boundary_handoff'],
   );
   assert.ok(strong.cases.every((benchmarkCase) => /^[a-f0-9]{64}$/u.test(benchmarkCase.fixtureSha256)));
+  assert.equal(strong.rubric.version, '1.0');
+  assert.equal(strong.rubric.status, 'calibration');
+  assert.match(strong.rubric.sha256, /^[a-f0-9]{64}$/u);
 
   const smoke = publicTutorPrBenchmarkPlan(plan('smoke'));
   assert.equal(smoke.plannedCalls, 2);
@@ -89,6 +92,7 @@ test('actorial advisory remains measured without overriding the canonical delive
   assert.equal(report.status, 'pass');
   assert.ok(report.jobs.every((job) => job.gate.actorialRealization));
   assert.equal(report.plan.gate.require_actorial_realization, false);
+  assert.equal(report.plan.rubric.version, '1.0');
 });
 
 test('preparing a job refreshes only the current contract and preserves the public prefix', () => {

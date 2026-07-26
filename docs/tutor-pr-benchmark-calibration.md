@@ -18,43 +18,41 @@ As of 2026-07-26:
 - PR [#261](https://github.com/liammagee/machinespirits-eval/pull/261)
   merged the persistent base/head benchmark comparison at merge commit
   `77f99dbfb0f87de4e40db2868e08c160353d95f8`; every GitHub check passed.
-- This calibration harness is locally committed as
-  `9b99c2b178bc7bfc515c07362aedc6ed02c34542` on
-  `codex/tutor-pr-benchmark-calibration-harness`. It has not yet been pushed or
-  opened as a follow-up PR.
-- The focused benchmark and calibration suites passed 22/22 tests. Repository
-  lint, formatting, import-cycle, test-manifest, and workplan source checks
-  passed.
-- The broad local `npm test` run exercised the new tests successfully but was
-  not a green validation signal: unrelated existing tests encountered a
-  missing `rdf-validate-shacl` dependency and sandbox-denied localhost voice
-  and web listeners.
+- The follow-up branch `codex/tutor-pr-benchmark-calibration-harness` refreshes
+  the previously implicit PR-turn criteria into an explicit versioned rubric
+  and makes that rubric the single source for benchmark and human-calibration
+  provenance.
 - No live Codex or Claude calibration calls have been made. Only synthetic and
   artifact-only paths have run.
 
 ## Rubric and codebook locations
 
-The new PR-benchmark calibration criteria are stored in
-[`config/tutor-pr-benchmark-calibration.yaml`](../config/tutor-pr-benchmark-calibration.yaml).
-This versioned file is a **turn-level calibration codebook**, not a replacement
-for the main tutor evaluation rubric. It defines:
+The refreshed rubric is stored in
+[`config/tutor-pr-benchmark-rubric.yaml`](../config/tutor-pr-benchmark-rubric.yaml).
+Version 1.0 is a **turn-level acceptance rubric** under calibration. It
+supersedes the benchmark's implicit deterministic-audit criteria and defines:
 
 - the human labels `pass`, `fail`, and `unsure`;
-- two required independent coders;
 - six axes: overall delivery, safety, learner uptake, evidence discipline,
   handoff, and actorial realization;
-- the deterministic machine rule mapped to each axis; and
-- report-only, currently unapproved threshold fields.
+- hard, advisory, and composite severity;
+- pass, fail, and unsure anchors plus exclusions for every axis;
+- the overall decision policy; and
+- the deterministic machine rule mapped to every human axis.
+
+[`config/tutor-pr-benchmark-calibration.yaml`](../config/tutor-pr-benchmark-calibration.yaml)
+contains only calibration operations: the rubric reference, two-coder
+requirement, notes limit, report-only enforcement, and unapproved threshold
+fields. Keeping definitions out of this operational file prevents a second
+codebook from drifting away from the benchmark rubric.
 
 The canonical eight-dimension tutor rubric remains
-[`config/evaluation-rubric.yaml`](../config/evaluation-rubric.yaml), currently
-version 2.2. It scores perception quality, pedagogical craft, elicitation
-quality, adaptive responsiveness, recognition quality, productive difficulty,
-epistemic integrity, and content accuracy on the established 1–5 scale. The PR
-benchmark codebook answers the narrower question “should this exact candidate
-pass this frozen turn contract?”; rubric v2.2 evaluates broader pedagogical
-quality. Do not treat their scores as interchangeable or rescore historical
-v2.2 data under the PR codebook.
+[`config/evaluation-rubric.yaml`](../config/evaluation-rubric.yaml), with its
+own active `version` field and historical copies under `config/rubrics/`. It
+scores broader pedagogical quality on the established 1–5 scale. The refreshed
+PR rubric answers the narrower question “should this exact candidate pass this
+frozen turn contract?” Do not treat their scores as interchangeable or rescore
+historical evaluation data under the PR rubric.
 
 ## End-to-end pathway
 
@@ -85,9 +83,9 @@ npm run tutor:stub:pr-benchmark:calibrate -- prepare \
 
 | Artifact | Visibility and purpose |
 | --- | --- |
-| `packet.json` | Give to coders. Contains only the frozen public context, exact candidate, criterion, and codebook. |
+| `packet.json` | Give to coders. Contains only the frozen public context, exact candidate, criterion, and complete anchored rubric. |
 | `machine-key.json` | Keep from coders. Contains model identity, deterministic audit labels, failures, and source provenance. |
-| `manifest.json` | Hashes the packet, machine key, config, source report, and item count. |
+| `manifest.json` | Hashes the packet, machine key, rubric, config, source report, and item count. |
 | `labels/rater-*.json` | One atomic, resumable sidecar per coder; created by `label`. |
 | `adjudication.json` | Gold decisions only for disagreements or `unsure` labels. |
 | `analysis.json` / `analysis.md` | Confusion metrics and inter-rater agreement; created by `analyze`. |
@@ -170,10 +168,11 @@ This is diagnostic evidence, not a pass/fail gate. Version 1 deliberately has
 
 ## Calibration discipline
 
-Use development packets to revise case wording, label definitions, and audit
+Use development packets to revise case wording, rubric definitions, and audit
 guards. Because those labels influenced the revision, they cannot validate the
-result. Keep a short decision log for every guard or codebook change, including
-which false positive or missed failure motivated it.
+result. Keep a short decision log for every guard or rubric change, including
+which false positive or missed failure motivated it. A workspace fails its
+provenance checks if the rubric file changes after preparation.
 
 After the definitions are stable:
 
@@ -184,7 +183,8 @@ After the definitions are stable:
    development packet.
 3. Prepare it with `--purpose acceptance` before opening any labels.
 4. Run the same two-coder and adjudication process without changing the audits,
-   codebook, or thresholds.
+   rubric, audits, or thresholds. Acceptance preparation also requires the
+   source benchmark report to record the same rubric version and hash.
 5. Review per-axis counts as well as rates. Six strong-preset candidates are a
    useful qualitative screen but too few to justify a stable automated
    threshold by themselves.
@@ -208,7 +208,7 @@ a new acceptance packet after the next frozen revision.
    counts behind apparently precise rates.
 4. Predeclare reviewed thresholds only after the development pool is stable.
 5. Freeze a fresh clean-commit acceptance packet, then label it without
-   changing the codebook, audits, or thresholds.
+   changing the rubric, audits, or thresholds.
 6. Keep the local PR hook in report-only mode until that held-out acceptance
    run passes and its failure policy is separately approved.
 

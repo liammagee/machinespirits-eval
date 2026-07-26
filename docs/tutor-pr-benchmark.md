@@ -155,7 +155,7 @@ report while in report-only calibration mode, only when its recorded SHA
 matches.
 
 The hook currently runs with `hook.enforcement: report_only` while the
-prospective rubric is calibrated. It fails closed when a relevant push is not
+versioned PR-turn rubric is calibrated. It fails closed when a relevant push is not
 the checked-out `HEAD`, when relevant tracked or untracked paths are dirty,
 when either CLI is unavailable, or when no complete verdict is produced. A
 completed quality `fail` is cached by exact SHA, printed as a prominent warning,
@@ -187,17 +187,25 @@ hermetic validation layer.
 
 ## Rubric boundary
 
-This gate does not change or reinterpret evaluation rubric v2.2. It is a
-prospective acceptance contract at the utterance grain, chosen to catch tutor
-behavior regressions cheaply. Its three turns come from one frozen Nocturne
-transcript and were selected because their recorded original drafts remain
-accepted by the current model-free audit; they vary engagement stance,
-actorial part, performance tactic, accessibility, and evidentiary handoff. The
-gate tests conformance to deterministic speaking, evidence, progression,
-repetition, closure, and safety constraints. It is not a full-dialogue outcome
-measure, an estimate of human learning, coverage of learner-profile diversity,
-or evidence that one model family is generally better than another.
+The gate's refreshed source of truth is
+[`config/tutor-pr-benchmark-rubric.yaml`](../config/tutor-pr-benchmark-rubric.yaml).
+Version 1.0 is a prospective acceptance rubric at the utterance grain, with
+six anchored axes, explicit exclusions, hard/advisory severity, a decision
+policy, and a machine mapping for calibration. Its version and source hash are
+recorded in every plan and report. It does not change or reinterpret the
+separately versioned full evaluation rubric.
+
+The three benchmark turns come from one frozen Nocturne transcript and were
+selected because their recorded original drafts remain accepted by the current
+model-free audit; they vary engagement stance, actorial part, performance
+tactic, accessibility, and evidentiary handoff. The rubric tests overall
+delivery, safety, learner uptake, evidence discipline, handoff, and actorial
+realization. It is not a full-dialogue outcome measure, an estimate of human
+learning, coverage of learner-profile diversity, or evidence that one model
+family is generally better than another.
 
 Edit [`config/tutor-pr-benchmark.yaml`](../config/tutor-pr-benchmark.yaml) to
-change cases, presets, models, or criteria. Any expansion must raise the
-explicit call budget in the same review and preserve zero retries.
+change cases, presets, or models. Edit the rubric file to change criteria or
+decision policy. Any matrix expansion must raise the explicit call budget in
+the same review and preserve zero retries; any rubric change must bump its
+version and be recalibrated.

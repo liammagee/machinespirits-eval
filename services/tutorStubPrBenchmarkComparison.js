@@ -164,6 +164,7 @@ function planFingerprint(plan) {
   return {
     preset: plan.preset,
     configSha256: plan.configSha256,
+    rubric: plan.rubric,
     models: plan.models,
     cases: plan.cases.map((row) => ({
       id: row.id,
@@ -182,7 +183,7 @@ export function assertEquivalentTutorPrBenchmarkPlans(basePlan, headPlan) {
   const head = planFingerprint(headPlan);
   if (JSON.stringify(base) !== JSON.stringify(head)) {
     throw new Error(
-      'base and head benchmark plans differ; comparison requires identical config, models, cases, and fixtures',
+      'base and head benchmark plans differ; comparison requires identical config, rubric, models, cases, and fixtures',
     );
   }
   return { fingerprint: sha256(JSON.stringify(base)), plan: base };

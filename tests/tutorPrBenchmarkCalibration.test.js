@@ -30,6 +30,7 @@ function passingAudit() {
     safetyFailure: false,
     failureClusters: [],
     hardFailureClusters: [],
+    audits: { actorialRealizationAudit: { ok: true, active: true, issues: [] } },
     deliveryDecision: { hardIssues: [] },
   };
 }
@@ -106,9 +107,14 @@ test('prepare, independent coding, adjudication, and analysis are resumable and 
   const { workspace, prepared } = await prepare(t);
   assert.equal(prepared.packet.items.length, 2);
   assert.equal(prepared.manifest.required_coders, 2);
+  assert.equal(prepared.packet.codebook.rubric.version, '1.0');
+  assert.equal(prepared.packet.codebook.rubric.sha256, prepared.manifest.rubric_sha256);
+  assert.match(prepared.packet.codebook.axes[0].pass_anchor, /criterion/u);
+  assert.equal(prepared.packet.codebook.axes.find((axis) => axis.id === 'safety').severity, 'hard');
   const visible = JSON.stringify(prepared.packet);
   assert.doesNotMatch(visible, /codex_medium|claude_medium|gpt-5\.6|claude-sonnet/u);
   assert.match(JSON.stringify(prepared.machineKey), /codex_medium/u);
+  assert.equal(prepared.machineKey.rubric_sha256, prepared.manifest.rubric_sha256);
 
   let status = getTutorPrCalibrationStatus({ workspaceDir: workspace, configPath: CALIBRATION_CONFIG });
   assert.equal(status.state, 'awaiting_labels');
@@ -221,6 +227,20 @@ test('acceptance preparation requires a complete report from a clean recorded co
     purpose: 'acceptance',
   });
   assert.equal(prepared.manifest.purpose, 'acceptance');
+
+  delete report.plan.rubric;
+  fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+  assert.throws(
+    () =>
+      prepareTutorPrCalibrationWorkspace({
+        root: ROOT,
+        reportPath,
+        configPath: CALIBRATION_CONFIG,
+        outDir: path.join(temporary, 'unversioned-workspace'),
+        purpose: 'acceptance',
+      }),
+    /under the same rubric/u,
+  );
 });
 
 test('workspace loading rejects a modified machine key', async (t) => {
@@ -233,6 +253,27 @@ test('workspace loading rejects a modified machine key', async (t) => {
     () => getTutorPrCalibrationStatus({ workspaceDir: workspace, configPath: CALIBRATION_CONFIG }),
     /workspace provenance mismatch/u,
   );
+});
+
+test('machine labels preserve actorial realization as an advisory axis', async (t) => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-pr-calibration-actorial-test-'));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  const report = await syntheticReport();
+  report.jobs[0].audit.audits = {
+    actorialRealizationAudit: { ok: false, active: true, issues: [{ type: 'missing_selected_performance_tactic' }] },
+  };
+  const reportPath = path.join(temporary, 'report.json');
+  fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+  const prepared = prepareTutorPrCalibrationWorkspace({
+    root: ROOT,
+    reportPath,
+    configPath: CALIBRATION_CONFIG,
+    outDir: path.join(temporary, 'workspace'),
+    purpose: 'development',
+  });
+  const keyed = prepared.machineKey.items.find((item) => item.source_job_id === report.jobs[0].id);
+  assert.equal(keyed.machine_labels.actorial_realization, 'fail');
+  assert.equal(keyed.machine_labels.overall_delivery, 'pass');
 });
 
 test('calibration CLI advertises the zero-call resumable workflow', () => {

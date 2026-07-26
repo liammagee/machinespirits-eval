@@ -6,6 +6,11 @@ import yaml from 'yaml';
 
 import { coderArtifactToken } from './labellingCoderIdentity.js';
 import { safeCoderId } from './humanCodingStore.js';
+import {
+  loadTutorPrBenchmarkRubric,
+  TUTOR_PR_BENCHMARK_RUBRIC_LABELS,
+  TUTOR_PR_BENCHMARK_RUBRIC_SCHEMA,
+} from './tutorPrBenchmarkRubric.js';
 import { TUTOR_PR_BENCHMARK_REPORT_SCHEMA } from './tutorStubPrBenchmark.js';
 
 export const TUTOR_PR_CALIBRATION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.pr-benchmark-calibration-config.v1';
@@ -18,7 +23,7 @@ export const TUTOR_PR_CALIBRATION_ADJUDICATION_SCHEMA =
   'machinespirits.tutor-stub.pr-benchmark-calibration-adjudication.v1';
 export const TUTOR_PR_CALIBRATION_ANALYSIS_SCHEMA = 'machinespirits.tutor-stub.pr-benchmark-calibration-analysis.v1';
 
-const LABEL_VALUES = new Set(['pass', 'fail', 'unsure']);
+const LABEL_VALUES = new Set(TUTOR_PR_BENCHMARK_RUBRIC_LABELS);
 const GOLD_VALUES = new Set(['pass', 'fail']);
 const PURPOSES = new Set(['development', 'acceptance']);
 const RATER_PREFIX = 'rater-';
@@ -81,42 +86,18 @@ function validateConfig(config) {
     throw new Error('calibration config purposes must contain only development and acceptance');
   }
   if (
-    !Array.isArray(config.labels?.values) ||
-    config.labels.values.length !== LABEL_VALUES.size ||
-    config.labels.values.some((value) => !LABEL_VALUES.has(value))
+    !String(config.rubric?.path || '').trim() ||
+    path.isAbsolute(config.rubric.path) ||
+    config.rubric.schema !== TUTOR_PR_BENCHMARK_RUBRIC_SCHEMA ||
+    !String(config.rubric.version || '').trim()
   ) {
-    throw new Error('calibration config labels.values must be pass, fail, and unsure');
+    throw new Error('calibration config requires a config-relative versioned PR benchmark rubric');
   }
   if (!Number.isInteger(config.labels?.required_coders) || config.labels.required_coders < 2) {
     throw new Error('calibration config requires at least two independent coders');
   }
   if (!Number.isInteger(config.labels?.notes_max_chars) || config.labels.notes_max_chars < 1) {
     throw new Error('calibration config labels.notes_max_chars must be positive');
-  }
-  const axes = Object.entries(config.labels?.axes || {});
-  if (!axes.length) throw new Error('calibration config requires label axes');
-  for (const [axisId, axis] of axes) {
-    if (!/^[a-z][a-z0-9_]*$/u.test(axisId)) throw new Error(`calibration axis ${axisId} has an invalid id`);
-    if (!String(axis.title || '').trim() || !String(axis.question || '').trim()) {
-      throw new Error(`calibration axis ${axisId} requires title and question`);
-    }
-    if (
-      !['job_status', 'safety_failure', 'hard_issue_types', 'hard_guard_prefixes'].includes(axis.machine_rule?.kind)
-    ) {
-      throw new Error(`calibration axis ${axisId} has an unsupported machine rule`);
-    }
-    const ruleList =
-      axis.machine_rule.kind === 'hard_issue_types'
-        ? axis.machine_rule.issue_types
-        : axis.machine_rule.kind === 'hard_guard_prefixes'
-          ? axis.machine_rule.guard_prefixes
-          : null;
-    if (
-      ruleList !== null &&
-      (!Array.isArray(ruleList) || !ruleList.length || ruleList.some((value) => !String(value).trim()))
-    ) {
-      throw new Error(`calibration axis ${axisId} requires a non-empty machine rule list`);
-    }
   }
   if (config.analysis?.enforcement !== 'report_only') {
     throw new Error('calibration analysis must remain report_only until thresholds are approved');
@@ -129,10 +110,17 @@ function validateConfig(config) {
 
 export function loadTutorPrCalibrationConfig(configPath) {
   const source = fs.readFileSync(configPath, 'utf8');
+  const config = validateConfig(yaml.parse(source));
+  const rubricPath = path.resolve(path.dirname(configPath), config.rubric.path);
+  const loadedRubric = loadTutorPrBenchmarkRubric(rubricPath, config.rubric);
   return {
-    config: validateConfig(yaml.parse(source)),
+    config,
     source,
     configPath: path.resolve(configPath),
+    rubric: loadedRubric.rubric,
+    rubricSource: loadedRubric.source,
+    rubricPath: loadedRubric.rubricPath,
+    rubricSha256: loadedRubric.sha256,
   };
 }
 
@@ -176,6 +164,7 @@ function machineLabelForAxis(axis, job) {
   const rule = axis.machine_rule;
   if (rule.kind === 'job_status') return job.status === 'pass' ? 'pass' : 'fail';
   if (rule.kind === 'safety_failure') return job.audit?.safetyFailure === true ? 'fail' : 'pass';
+  if (rule.kind === 'audit_result') return job.audit?.audits?.[rule.audit]?.ok === true ? 'pass' : 'fail';
   const issues = hardIssues(job);
   if (rule.kind === 'hard_issue_types') {
     const types = new Set(rule.issue_types || []);
@@ -209,6 +198,15 @@ export function prepareTutorPrCalibrationWorkspace({
   if (report?.schema !== TUTOR_PR_BENCHMARK_REPORT_SCHEMA) {
     throw new Error(`source report schema must be ${TUTOR_PR_BENCHMARK_REPORT_SCHEMA}`);
   }
+  const sourceRubric = report.plan?.rubric;
+  if (
+    sourceRubric &&
+    (sourceRubric.schema !== loaded.rubric.schema ||
+      sourceRubric.version !== loaded.rubric.version ||
+      sourceRubric.sha256 !== loaded.rubricSha256)
+  ) {
+    throw new Error('source report rubric does not match the calibration rubric');
+  }
   if (purpose === 'acceptance') {
     const completed = (report.jobs || []).every((job) => ['pass', 'fail'].includes(job.status));
     const expected = report.plan?.jobs?.length;
@@ -217,16 +215,25 @@ export function prepareTutorPrCalibrationWorkspace({
       !completed ||
       report.jobs?.length !== expected ||
       report.metadata?.gitTreeState !== 'clean' ||
-      !String(report.metadata?.gitSha || '').trim()
+      !String(report.metadata?.gitSha || '').trim() ||
+      !sourceRubric
     ) {
-      throw new Error('acceptance calibration requires a complete benchmark report from a clean recorded commit');
+      throw new Error(
+        'acceptance calibration requires a complete benchmark report from a clean recorded commit under the same rubric',
+      );
     }
   }
   const cases = new Map((report.plan?.cases || []).map((entry) => [entry.id, entry]));
-  const axes = Object.entries(loaded.config.labels.axes).map(([id, axis]) => ({
+  const axes = Object.entries(loaded.rubric.axes).map(([id, axis]) => ({
     id,
     title: axis.title,
+    construct: axis.construct,
     question: axis.question,
+    severity: axis.severity,
+    pass_anchor: axis.pass_anchor,
+    fail_anchor: axis.fail_anchor,
+    unsure_anchor: axis.unsure_anchor,
+    exclusions: clone(axis.exclusions),
     values: [...LABEL_VALUES],
   }));
   const reportSha256 = sha256(reportSource);
@@ -257,7 +264,7 @@ export function prepareTutorPrCalibrationWorkspace({
       source_model: job.model || null,
       candidate_sha256: sha256(job.candidate),
       machine_labels: Object.fromEntries(
-        Object.entries(loaded.config.labels.axes).map(([axisId, axis]) => [axisId, machineLabelForAxis(axis, job)]),
+        Object.entries(loaded.rubric.axes).map(([axisId, axis]) => [axisId, machineLabelForAxis(axis, job)]),
       ),
       safety_failure: job.audit?.safetyFailure === true,
       failure_clusters: job.failureClusters || job.audit?.failureClusters || [],
@@ -277,12 +284,17 @@ export function prepareTutorPrCalibrationWorkspace({
       machine_failures_hidden: true,
     },
     codebook: {
-      task: 'Judge only the frozen public context and exact candidate. Do not infer hidden story facts or model identity.',
-      values: {
-        pass: 'The candidate satisfies this axis.',
-        fail: 'The candidate violates this axis.',
-        unsure: 'The visible record is insufficient for a confident judgment; explain briefly in notes.',
+      rubric: {
+        id: loaded.rubric.id,
+        schema: loaded.rubric.schema,
+        version: loaded.rubric.version,
+        status: loaded.rubric.status,
+        sha256: loaded.rubricSha256,
       },
+      task: loaded.rubric.unit,
+      scope: clone(loaded.rubric.scope),
+      decision_policy: clone(loaded.rubric.decision_policy),
+      values: clone(loaded.rubric.labels),
       axes,
     },
     items: ordered.map((entry) => entry.item),
@@ -297,6 +309,9 @@ export function prepareTutorPrCalibrationWorkspace({
     source_git_sha: report.metadata?.gitSha || null,
     source_git_tree_state: report.metadata?.gitTreeState || null,
     source_benchmark_config_sha256: report.plan?.configSha256 || null,
+    rubric_schema: loaded.rubric.schema,
+    rubric_version: loaded.rubric.version,
+    rubric_sha256: loaded.rubricSha256,
     items: ordered.map((entry) => entry.key),
   };
   const machineKeySha256 = jsonHash(machineKey);
@@ -309,6 +324,9 @@ export function prepareTutorPrCalibrationWorkspace({
     packet_sha256: packetSha256,
     machine_key_sha256: machineKeySha256,
     config_sha256: sha256(loaded.source),
+    rubric_schema: loaded.rubric.schema,
+    rubric_version: loaded.rubric.version,
+    rubric_sha256: loaded.rubricSha256,
     source_report_sha256: reportSha256,
     item_count: packet.items.length,
     required_coders: loaded.config.labels.required_coders,
@@ -346,7 +364,14 @@ function loadWorkspace(workspaceDir, configPath) {
     manifest.packet_sha256 !== packet.packet_sha256 ||
     machineKey.packet_sha256 !== packet.packet_sha256 ||
     manifest.machine_key_sha256 !== jsonHash(machineKey) ||
-    manifest.config_sha256 !== sha256(loadedConfig.source)
+    manifest.config_sha256 !== sha256(loadedConfig.source) ||
+    manifest.rubric_schema !== loadedConfig.rubric.schema ||
+    manifest.rubric_version !== loadedConfig.rubric.version ||
+    manifest.rubric_sha256 !== loadedConfig.rubricSha256 ||
+    machineKey.rubric_schema !== loadedConfig.rubric.schema ||
+    machineKey.rubric_version !== loadedConfig.rubric.version ||
+    machineKey.rubric_sha256 !== loadedConfig.rubricSha256 ||
+    packet.codebook?.rubric?.sha256 !== loadedConfig.rubricSha256
   ) {
     throw new Error('calibration workspace provenance mismatch');
   }

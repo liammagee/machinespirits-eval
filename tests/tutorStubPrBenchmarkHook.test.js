@@ -45,6 +45,8 @@ test('hook config selects the strong preset and scopes tutor-affecting paths', (
   }
   assert.equal(isTutorPrBenchmarkHookRelevantPath('services/tutorStubInterimPresentation.js', hook), false);
   assert.equal(isTutorPrBenchmarkHookRelevantPath('config/drama-derivation/world-nocturne.yaml', hook), true);
+  assert.equal(isTutorPrBenchmarkHookRelevantPath('config/tutor-pr-benchmark-rubric.yaml', hook), true);
+  assert.equal(isTutorPrBenchmarkHookRelevantPath('services/tutorPrBenchmarkRubric.js', hook), true);
   assert.equal(isTutorPrBenchmarkHookRelevantPath('docs/tutor-pr-benchmark.md', hook), false);
   assert.equal(isTutorPrBenchmarkHookRelevantPath('workplan/items/example.md', hook), false);
 });

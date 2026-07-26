@@ -432,6 +432,7 @@
         "tests/tutorStubInterimPresentation.test.js",
         "tests/tutorStubJointPerformanceFirstDraft.test.js",
         "tests/tutorPrBenchmarkCalibration.test.js",
+        "tests/tutorPrBenchmarkRubric.test.js",
         "tests/tutorStubLabs.test.js",
         "tests/tutorStubLabsRecipeCli.test.js",
         "tests/tutorStubLastSettings.test.js",

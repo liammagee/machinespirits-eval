@@ -13,6 +13,8 @@ branch: codex/tutor-pr-benchmark
 depends_on:
   - tutor-stub-first-draft-series
 links:
+  items:
+    - tutor-pr-benchmark-calibration-harness
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/248
     - https://github.com/liammagee/machinespirits-eval/pull/250
@@ -64,3 +66,6 @@ support a human-learning claim.
   where the generated answer was substantively on-task. Set local enforcement
   to report-only calibration: complete quality failures warn and cache, while
   missing CLI verdicts and unsafe repository state still block.
+- 2026-07-26: Follow-up work moved the prospective criteria into the versioned
+  PR-turn rubric tracked by `tutor-pr-benchmark-calibration-harness`; the
+  separate full evaluation rubric remains outside this gate's scope.
