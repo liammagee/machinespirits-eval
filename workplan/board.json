@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T22:01:16.563Z",
+  "generated": "2026-07-26T22:23:44.282Z",
   "counts": {
-    "total": 224,
+    "total": 225,
     "byStatus": {
-      "done": 195,
+      "done": 196,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 54,
-      "maintenance": 60,
+      "maintenance": 61,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -151,7 +151,7 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-24",
-      "updated": "2026-07-26",
+      "updated": "2026-07-27",
       "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
       "claim_status": "planned",
       "depends_on": [],
@@ -196,6 +196,7 @@
           "refactor-tutor-stub-training-reuse-presentation",
           "refactor-tutor-stub-dialogue-settings-presentation",
           "refactor-tutor-stub-model-choice-presentation",
+          "refactor-tutor-stub-director-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -647,36 +648,36 @@
       "branch": "claude/dialogue-conclusion-recognition"
     },
     {
-      "id": "refactor-tutor-stub-model-choice-presentation",
-      "title": "Refactor tutor-stub model-choice presentation",
+      "id": "refactor-tutor-stub-director-presentation",
+      "title": "Refactor tutor-stub director presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
-      "created": "2026-07-26",
+      "created": "2026-07-27",
       "updated": "2026-07-27",
-      "verification": "Live tutor and classifier model-choice bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-model-choice-presentation",
+      "verification": "Live director-context and issued-note bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-director-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-dialogue-settings-presentation"
+        "refactor-tutor-stub-model-choice-presentation"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubModelChoicePresentation.js",
+          "services/tutorStubDirectorPresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubModelChoicePresentation.test.js",
+          "tests/tutorStubDirectorPresentation.test.js",
           "tests/tutorStubHumanDiscourseLayer.test.js",
-          "tests/tutorStubCommandRegistry.test.js",
+          "tests/tutorStubTranscriptHtml.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-dialogue-settings-presentation"
+          "refactor-tutor-stub-model-choice-presentation"
         ]
       },
       "tags": [
@@ -684,8 +685,7 @@
         "tutor-stub",
         "presentation",
         "cli",
-        "settings",
-        "models"
+        "director"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -3179,6 +3179,52 @@
         "tutor-stub",
         "learning-summary",
         "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-model-choice-presentation",
+      "title": "Refactor tutor-stub model-choice presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-27",
+      "verification": "Live tutor and classifier model-choice bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-model-choice-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-dialogue-settings-presentation"
+      ],
+      "links": {
+        "prs": [
+          285
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubModelChoicePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubModelChoicePresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "tests/tutorStubCommandRegistry.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-dialogue-settings-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "settings",
+        "models"
       ],
       "milestone": "evaluation-infrastructure"
     },
