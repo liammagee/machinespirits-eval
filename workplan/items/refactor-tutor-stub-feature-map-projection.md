@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-feature-map-projection
 title: Refactor tutor-stub feature-map projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -24,6 +24,8 @@ links:
     - tests/tutorStubFeatureMap.test.js
     - tests/tutorStubHumanDiscourseLayer.test.js
     - config/hermetic-test-manifest.json
+  prs:
+    - 266
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-interactive-help-projection
@@ -83,3 +85,7 @@ Log:
   skips. ESLint, Prettier, the zero-cycle ratchet across 379 files, synchronized
   test manifest, 207-item source-only workplan, syntax, and diff gates pass;
   generated workplan views remain untouched.
+- 2026-07-26 — PR #266 merged as `d21da873` with every required CI lane
+  green; the serialized workplan render followed as `fb809c05`. Closed this
+  child and handed the next pure R3 presentation seam to
+  `refactor-tutor-stub-release-notes-projection`.

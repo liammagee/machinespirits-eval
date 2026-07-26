@@ -49,6 +49,7 @@ links:
     - refactor-tutor-stub-cli-help-projection
     - refactor-tutor-stub-interactive-help-projection
     - refactor-tutor-stub-feature-map-projection
+    - refactor-tutor-stub-release-notes-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -353,3 +354,14 @@ Log:
   64/64 focused tests, and complete zero-skip hermetic parity. Capability/state
   resolution, terminal writes, slash dispatch, traces, models, and runtime
   behavior remain CLI-owned.
+- 2026-07-26 — PR #266 merged the feature-map child as `d21da873` with every
+  required CI lane green; the serialized render followed as `fb809c05`. Closed
+  that child and activated `refactor-tutor-stub-release-notes-projection` to
+  move only pure release-note line serialization while retaining time-window
+  validation, Git loading, terminal writes, slash dispatch, and runtime behavior
+  in the CLI.
+- 2026-07-26 — The release-notes child reached review with live terminal bytes
+  unchanged, exact empty/grouped and visibility-limit fixtures, a 24-line CLI
+  reduction, 54/54 focused tests, and complete zero-skip hermetic parity. Git
+  loading, time-window validation, terminal writes, slash dispatch, traces,
+  models, and runtime behavior remain CLI-owned.

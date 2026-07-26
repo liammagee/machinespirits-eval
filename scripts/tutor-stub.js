@@ -496,6 +496,7 @@ import {
 import { renderTutorStubCliHelp } from '../services/tutorStubCliHelp.js';
 import { projectTutorStubFeatureMapLines } from '../services/tutorStubFeatureMap.js';
 import { projectTutorStubInteractiveHelpLines } from '../services/tutorStubInteractiveHelp.js';
+import { projectTutorStubReleaseNotesLines } from '../services/tutorStubReleaseNotesPresentation.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   MAX_TUTOR_STUB_RELEASE_SPEED,
@@ -8955,33 +8956,8 @@ function printInteractiveHelp(state = null) {
 function printTutorStubReleaseNotes(hoursArg = '') {
   const hours = normalizeTutorStubReleaseNotesHours(hoursArg);
   const notes = loadTutorStubReleaseNotes({ cwd: ROOT, hours });
-  const through = notes.through?.shortHash ? ` · through ${notes.through.shortHash}` : '';
-  console.log(
-    `${C.brightCyan}${C.bold}release notes >${C.reset} last ${notes.hours} hours${through} · ${notes.relevantCommitCount} relevant ${notes.relevantCommitCount === 1 ? 'commit' : 'commits'}`,
-  );
-
-  if (!notes.groups.length) {
-    console.log(`${C.dim}  no tutor-stub commits landed in this window${C.reset}\n`);
-    return notes;
-  }
-
-  for (const group of notes.groups) {
-    console.log(
-      `\n${C.accent}${C.bold}${group.title}${C.reset}${C.dim} · ${group.commits.length} ${group.commits.length === 1 ? 'commit' : 'commits'}${C.reset}`,
-    );
-    console.log(`${C.dim}  effect >${C.reset} ${group.effect}`);
-    console.log(`${C.dim}  look for >${C.reset} ${group.lookFor}`);
-    const visibleLimit = group.id === 'validation' ? 4 : 6;
-    for (const commit of group.commits.slice(0, visibleLimit)) {
-      console.log(`${C.dim}    ${commit.shortHash} ·${C.reset} ${commit.subject}`);
-    }
-    if (group.commits.length > visibleLimit) {
-      console.log(`${C.dim}    + ${group.commits.length - visibleLimit} earlier commits in this window${C.reset}`);
-    }
-  }
-  console.log(
-    `\n${C.dim}  This view is rebuilt from Git each time, so newly committed changes enter automatically. Verification commits are separated from changes that directly affect an exchange.${C.reset}\n`,
-  );
+  const lines = projectTutorStubReleaseNotesLines({ notes, colors: C });
+  for (const line of lines) console.log(line);
   return notes;
 }
 
