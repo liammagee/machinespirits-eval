@@ -2639,3 +2639,112 @@ test('the deterministic uptake keeps coin-assay vocabulary out of a world that h
     ASSAY_VOCABULARY,
   );
 });
+
+// The fallback's public object is chosen from the learner's own line as well as
+// the scene's prose. The learner may pick among what the scene has; a whitelist
+// noun the scene never names is not an object, and the tests below pin the three
+// directions that distinction has to hold in.
+const OBJECT_SELECTION_WORLD = Object.freeze({
+  id: 'world_030_rowan_flat',
+  title: 'The Water Mark in Rowan Flat',
+  setting: 'The kitchen of a shared flat in Rowan Flat, with the repair notebook open on the counter.',
+  question: "What caused the new water mark on Rowan Flat's kitchen ceiling?",
+  presentation: Object.freeze({ narrative_diction: 'contemporary', ledger_term: 'repair notebook' }),
+});
+
+const OBJECT_SELECTION_PARTS = Object.freeze([
+  'scene_partner',
+  'examiner',
+  'record_keeper',
+  'advocate',
+  'skeptic',
+  'satirist',
+  'adversarial_teacher',
+  'exacting_schoolmaster',
+  'foreperson',
+]);
+
+function fallbackFor(world, part, learnerText) {
+  return deterministicTutorStubConfiguredContinuationFallback({
+    uptake: 'You are pressing on that point.',
+    responseConfiguration: { actorial_host_part: part, engagement_stance: 'plain' },
+    world,
+    learnerText,
+  });
+}
+
+test('the configured fallback never holds up an object the scene does not contain', () => {
+  // Two families. The first names an absent object figuratively or in passing;
+  // the second uses a whitelist entry as an ordinary English verb, which is how
+  // most of these reached the tutor's hands.
+  const learnerLines = [
+    'The touchstone for me is whether the water travelled.',
+    'That is like a crucible of evidence.',
+    'Is the coin relevant here?',
+    'That is the shilling question, is it not.',
+    'Can you report what you found?',
+    'I want to sample the options before deciding.',
+    'Register my objection to that step.',
+    'Can we file that away and move on?',
+    'We should balance the two accounts.',
+    'That is just a tool for thinking.',
+  ];
+  const absentObjects =
+    /\b(?:balance|coin|crucible|cupel|file|photograph|register|report|sample|shilling|tool|touchstone)\b/iu;
+
+  for (const part of OBJECT_SELECTION_PARTS) {
+    // The unprompted turn for this part is the reference: nothing the learner
+    // says about an object this scene lacks may move it.
+    const unprompted = fallbackFor(OBJECT_SELECTION_WORLD, part, '');
+    assert.equal(
+      absentObjects.test(unprompted),
+      false,
+      `the unprompted turn already named an absent object: ${unprompted}`,
+    );
+    for (const learnerText of learnerLines) {
+      assert.equal(
+        fallbackFor(OBJECT_SELECTION_WORLD, part, learnerText),
+        unprompted,
+        `"${learnerText}" moved the public object at ${part}`,
+      );
+    }
+  }
+});
+
+test('a learner naming part of a declared prop gets the world’s own wording for it', () => {
+  // The world declares an "inquiry log" but its prose never says the word, so
+  // the whitelist alone cannot reach it. A learner using "log" as a verb used to
+  // return the bare fragment; the declared prop now wins in full.
+  const lanternWorld = {
+    id: 'world_002_lantern',
+    title: 'The Lantern Inquiry',
+    setting: 'The court of inquiry sits in the harbour sail-loft, and the town has settled its verdict already.',
+    question: 'Did the brig Mara steer for a false light?',
+    presentation: { ledger_term: 'inquiry log' },
+  };
+  const text = fallbackFor(lanternWorld, 'record_keeper', 'Let me log that thought for later.');
+  assert.match(text, /inquiry log/iu);
+  assert.equal(/\b(?:in|against) the log\b/iu.test(text), false, `the declared prop was truncated: ${text}`);
+});
+
+test('a learner may still choose among the objects the scene does contain', () => {
+  // Ownership is the added condition, not a replacement for the learner's
+  // choice: both nouns below are the scene's own, and the learner selects.
+  const world = {
+    id: 'world_test_two_objects',
+    title: 'Two Public Objects',
+    setting: 'The hall, with the notice pinned beside the photograph of the works.',
+    question: 'Which of the two accounts of the works is right?',
+  };
+  const unprompted = fallbackFor(world, 'scene_partner', '');
+  assert.match(unprompted, /\bnotice\b/iu);
+  assert.match(fallbackFor(world, 'scene_partner', 'What does the photograph show?'), /\bphotograph\b/iu);
+});
+
+test('the configured fallback keeps its frozen wording where no world is supplied', () => {
+  assert.equal(
+    fallbackFor(null, 'scene_partner', 'The touchstone for me is whether the water travelled.'),
+    fallbackFor(null, 'scene_partner', ''),
+  );
+  assert.match(fallbackFor(null, 'scene_partner', ''), /I set the public record between us/u);
+});

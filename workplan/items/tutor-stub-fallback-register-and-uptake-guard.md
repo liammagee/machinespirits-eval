@@ -316,3 +316,51 @@ Log:
   whether the water travelled" returns "I put the touchstone in front of us". The
   register there is already correct, so this is an object-selection defect, not a
   costume one, and it wants its own fix.
+- 2026-07-27 — That leak measured and closed. It is far wider than the single
+  sighting suggested, and the sighting was the smaller half of it.
+  `configuredFallbackObject` matched both whitelists against the learner's line
+  and the scene concatenated, first hit anywhere, so any whitelist noun the
+  learner uttered became the object the tutor then held up. Six of the entries
+  are ordinary English verbs, so "can you report what you found", "let me log
+  that thought", "register my objection", "can we file that away" and "we should
+  balance the two accounts" each hand the tutor a prop; metaphor supplies the
+  rest. Measured across 32 worlds x 11 host parts x 17 learner lines, the learner
+  chose the object in 3,622 of 5,984 cases, and in 3,539 of those the noun
+  appears nowhere in the world — not in its prose, not among its declared props.
+  All 32 worlds are reachable, so this is not a marrick-adjacent defect.
+  The channel cannot simply be cut. With the learner's line removed entirely, 18
+  of the 32 worlds fall back to the abstract "public record": they declare no
+  props and their prose names no whitelist noun. So the learner keeps the choice
+  and the scene supplies a second condition — ownership. A noun the world
+  declares returns in the world's own full wording (a learner in the lantern
+  world saying "log" now gets "inquiry log", not the bare fragment); a noun the
+  scene's prose names returns as the learner said it; anything else falls back to
+  the scene's own first object. Written as a match on the learner's text gated on
+  ownership, rather than a match on the concatenation filtered afterwards, the
+  no-learner case reduces to `scene.match(pattern)` textually, so every world's
+  unprompted wording is byte-identical by construction rather than by
+  measurement.
+  Verified by dumping all 6,336 cases under both revisions and diffing: 3,682
+  change, 0 of the 352 blank-learner cases change, learner-introduced absent
+  objects go from 3,539 to 0, the 83 cases where the learner picks among objects
+  the world does have are all preserved, and no case that previously named a
+  present object now names an absent one.
+  One existing test failed on the first pass and turned out to be the defect
+  testing itself. Its fixture learner says "what conclusion we should record" — a
+  verb — and its assertion reads `press the (?:record|minute-book)`, so the
+  author had already seen both were possible and written the alternation
+  permissively. The world it models, world-025-tallow-street, names its
+  minute-book in prose but never declares it, and `minute-book` was missing from
+  the record whitelist, so that world could only ever reach its own noun by a
+  learner accidentally saying "record". Adding the noun moves world-025's 11
+  parts from "public record" to "minute-book", moves no other world, and the test
+  passes on the branch it preferred.
+  Four new tests in `tests/tutorStubResponseComposition.test.js`; three fail on
+  the pre-change code, and the fourth passes on both by design, pinning that the
+  tightening did not close the legitimate route by which a learner selects among
+  the scene's own objects. Composition suite 122/122, adjacent scene-diction /
+  due-source / response-guard suites 35/35, wider tutor-stub sweep 1,176/1,178
+  with both failures pre-existing on clean main.
+  A gap is left open and is an authoring matter rather than a code one: 18 of the
+  32 worlds declare no public object at all, so they now say "public record"
+  whatever the learner says. That absence is what the leak was covering for.
