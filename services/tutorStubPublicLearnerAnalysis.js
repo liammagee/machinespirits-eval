@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 
+import { answerSurfaceMentioned, mintAnswerConstant } from './dramaticDerivation/answerSurface.js';
 import { closure, factKey, matchPattern } from './dramaticDerivation/chainer.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from './dramaticDerivation/learnerDag.js';
 import { buildLearnerProxyDagMemory, buildTutorLearnerDagModel } from './dramaticDerivation/proxyDagMemory.js';
@@ -1040,36 +1041,26 @@ export function tutorStubPublicFactSurface(world, fact) {
   return factText(fact);
 }
 
-function normalizedAnswerSurface(value) {
-  return String(value || '')
-    .replace(/([a-z\d])([A-Z])/gu, '$1 $2')
-    .replace(/[_:-]+/gu, ' ')
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .replace(/\s+/gu, ' ')
-    .trim()
-    .toLowerCase();
-}
-
 function factFromQuestionAnswer(world, answer, candidateFacts = []) {
   const matchingCandidates = matchingQuestionAnswerFacts(world, answer, candidateFacts);
   if (matchingCandidates.length === 1) return [...matchingCandidates[0]];
 
-  const cleaned = String(answer || '')
-    .trim()
-    .replace(/\s+/g, '_')
-    .replace(/[^A-Za-z0-9_:-]/g, '')
-    .toLowerCase();
-  if (!world || !cleaned) return null;
-  return world.questionPattern.map((part) => (typeof part === 'string' && part.startsWith('?') ? cleaned : part));
+  // Nothing the record entails was named, so the learner named something else:
+  // the mirror suspect, or a guess from outside the world. That is still an
+  // assertion and has to be recorded as a wrong one. Mint it in the same
+  // orthography as authored constants so the same phrase always yields the same
+  // token. Sentence-shaped phrases mint nothing - see mintAnswerConstant.
+  const minted = mintAnswerConstant(answer);
+  if (!world || !minted) return null;
+  return world.questionPattern.map((part) => (typeof part === 'string' && part.startsWith('?') ? minted : part));
 }
 
 function matchingQuestionAnswerFacts(world, answer, candidateFacts = []) {
-  const answerSurface = normalizedAnswerSurface(answer);
   return (candidateFacts || []).filter((fact) => {
     const bindings = matchPattern(world?.questionPattern, fact);
     if (!bindings) return false;
-    const values = Object.values(bindings).map(normalizedAnswerSurface).filter(Boolean);
-    return values.length > 0 && values.every((value) => ` ${answerSurface} `.includes(` ${value} `));
+    const values = Object.values(bindings).filter((value) => String(value ?? '').trim());
+    return values.length > 0 && values.every((value) => answerSurfaceMentioned(answer, value));
   });
 }
 
@@ -2460,7 +2451,19 @@ export function applyTutorStubPublicLearnerRecordUpdate({
       matchPattern(world.questionPattern, fact),
     );
     assertion = factFromQuestionAnswer(world, update.assert_answer, answerCandidates);
-    accepted.assertAnswer = update.assert_answer.trim();
+    if (assertion) {
+      accepted.assertAnswer = update.assert_answer.trim();
+    } else {
+      // The learner claimed an answer and we could not tell which one. Say so
+      // rather than recording nothing: a silent drop is indistinguishable from
+      // a learner who never asserted, and that ambiguity is what lets a
+      // recognition failure masquerade as a failure to conclude.
+      rejected.push({
+        type: 'assert',
+        value: update.assert_answer.trim(),
+        reason: 'answer phrase names no candidate the public record entails and is too long to read as a name',
+      });
+    }
   } else if (validFactArray(update?.asserts)) {
     assertion = update.asserts;
   } else {

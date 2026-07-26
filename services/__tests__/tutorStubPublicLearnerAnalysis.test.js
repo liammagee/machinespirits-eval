@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, it } from 'node:test';
 
 import { loadWorld } from '../dramaticDerivation/world.js';
+import { tutorStubLearnerDagGrounded } from '../tutorStubDialogueClosure.js';
 import {
   TUTOR_STUB_EVIDENCE_USE_RUBRICS,
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
@@ -816,6 +817,116 @@ describe('public evidence boundary and exact DAG postprocessor', () => {
     assert.equal(result.model.assessment.finalSecretEntailed, true);
     assert.equal(result.model.assessment.assertedSecret, true);
     assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret');
+  });
+
+  it('recognises a possessive-form answer as the asserted secret', () => {
+    // Regression: every dialogue in the phase-5e pilot ran to its 40-turn
+    // safety cap on this world. Learners named the answer plainly and
+    // repeatedly, but `pipersGullet` normalised to "pipers gullet" while
+    // "Piper's Gullet" normalised to "piper s gullet", so no assertion ever
+    // registered, assertedSecret stayed false, and the closure frame never
+    // became mandatory. Both apostrophe glyphs below appear in the sealed
+    // traces, as does the double genitive.
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 9,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+
+    for (const phrase of [
+      "Piper's Gullet",
+      'Piper’s Gullet',
+      "Piper's Gullet's bolted shutter causes the cold loaves.",
+      'Piper’s Gullet’s shutter caused the loaves to arrive cold, not Tibbin.',
+    ]) {
+      const result = applyTutorStubPublicLearnerRecordUpdate({
+        update: {
+          adopt: world.proofPaths[0].premises,
+          derive: [world.secret.fact],
+          assert_answer: phrase,
+        },
+        world,
+        record: createTutorStubPublicLearnerRecord(world),
+        tutorTurn: 9,
+        learnerText: phrase,
+        publicStagedEvidence: publicEvidence,
+        publicReleaseLedger: publicEvidence,
+      });
+
+      assert.equal(result.model.assessment.finalSecretEntailed, true, phrase);
+      assert.equal(result.model.assessment.assertedSecret, true, phrase);
+      assert.equal(result.model.assessment.unsupportedAssertionCount, 0, phrase);
+      assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret', phrase);
+      assert.equal(tutorStubLearnerDagGrounded(result.model), true, phrase);
+    }
+  });
+
+  it('records a bare wrong name as a mirror assertion rather than a grounded close', () => {
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 9,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+    const result = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: world.proofPaths[0].premises,
+        derive: [world.secret.fact],
+        assert_answer: 'Tibbin',
+      },
+      world,
+      record: createTutorStubPublicLearnerRecord(world),
+      tutorTurn: 9,
+      learnerText: 'Tibbin',
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+
+    assert.equal(result.model.assessment.assertedSecret, false);
+    assert.equal(result.model.assessment.assertedMirror, true);
+    assert.equal(result.model.assessment.unsupportedAssertionCount, 1);
+    assert.equal(tutorStubLearnerDagGrounded(result.model), false);
+  });
+
+  it('rejects an unresolvable answer claim instead of minting a phantom fact', () => {
+    // Minting a constant from a whole sentence invented a fact no rule could
+    // support, which was then counted as an unsupported assertion and could
+    // push the dialogue to a false premature_assertion verdict.
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 9,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+    const claim = 'The loaves cool after launch, not in Tibbin’s baking.';
+    const result = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: world.proofPaths[0].premises,
+        derive: [world.secret.fact],
+        assert_answer: claim,
+      },
+      world,
+      record: createTutorStubPublicLearnerRecord(world),
+      tutorTurn: 9,
+      learnerText: claim,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+
+    assert.equal(result.model.assessment.assertedSecret, false);
+    assert.equal(result.model.assessment.unsupportedAssertionCount, 0);
+    assert.equal(result.accepted.assertAnswer, null);
+    assert.ok(
+      (result.rejected || []).some((entry) => entry.type === 'assert' && /names no candidate/u.test(entry.reason)),
+      'the unresolved claim should be visible in the rejected list',
+    );
   });
 
   it('computes a public constraint preflight before analysis without committing progress', async () => {
