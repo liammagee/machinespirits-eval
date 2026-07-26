@@ -23,14 +23,64 @@
 // Usage:
 //   node scripts/program2-extract-dataset.mjs --step4 <archive-root> \
 //     [--out <dir>] [--manifest <file>] [--split-seed 20260718]
+//   node scripts/program2-extract-dataset.mjs --trigger stagnant_repeat \
+//     --allow-under-floor [--archive-root <label=path>...] [--out <dir>]
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 const args = process.argv.slice(2);
 function argValue(flag, fallback = null) {
   const i = args.indexOf(flag);
   return i > -1 ? args[i + 1] : fallback;
+}
+function argValues(flag) {
+  return args.flatMap((value, index) => (value === flag && args[index + 1] ? [args[index + 1]] : []));
+}
+const TRIGGER = argValue('--trigger', 'warrant_skip');
+if (!['warrant_skip', 'stagnant_repeat'].includes(TRIGGER)) {
+  throw new Error(`--trigger must be warrant_skip or stagnant_repeat, got ${TRIGGER}`);
+}
+if (TRIGGER === 'stagnant_repeat') {
+  const dataHome = process.env.MS_DATA_HOME || path.join(os.homedir(), '.machinespirits-data');
+  const providedRoots = argValues('--archive-root');
+  const rootSpecs = providedRoots.length
+    ? providedRoots.map((entry) => {
+        const separator = entry.indexOf('=');
+        if (separator <= 0) throw new Error(`--archive-root must be label=path, got ${entry}`);
+        return { label: entry.slice(0, separator), root: entry.slice(separator + 1) };
+      })
+    : [
+        { label: 'step4', root: path.join(dataHome, 'step4-claim-runs-2026-07') },
+        { label: 'phase5', root: path.join(dataHome, 'program-2', 'phase5-live-pilot') },
+        { label: 'phase5b', root: path.join(dataHome, 'program-2', 'phase5b-live') },
+        { label: 'phase5c', root: path.join(dataHome, 'program-2', 'phase5c-live') },
+      ];
+  const outputDir = argValue('--out', path.join(dataHome, 'program-2', 'datasets', 'stall-phase2-exploratory-v1'));
+  const { buildProgram2StallDataset } = await import('../services/program2StallDataset.js');
+  const result = buildProgram2StallDataset({
+    rootSpecs,
+    outputDir,
+    splitSeed: Number(argValue('--split-seed', '20260726')),
+    allowUnderFloor: args.includes('--allow-under-floor'),
+  });
+  console.log(
+    JSON.stringify(
+      {
+        outputDir: result.outputDir,
+        rawMoments: result.report.rawMoments,
+        strictAuditPassing: result.report.strictAuditPassing,
+        sourceEligible: result.report.sourceEligible,
+        splits: result.report.splits,
+        freshTextAuditability: result.report.freshTextAuditability,
+        licensedForTraining: result.report.licensedForTraining,
+      },
+      null,
+      2,
+    ),
+  );
+  process.exit(0);
 }
 const STEP4_ROOT = argValue('--step4');
 if (!STEP4_ROOT) {
