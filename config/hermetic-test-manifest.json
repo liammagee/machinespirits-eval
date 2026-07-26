@@ -445,6 +445,7 @@
         "tests/tutorStubLastSettings.test.js",
         "tests/tutorStubLatencyBenchmark.test.js",
         "tests/tutorStubLearnerAdvance.test.js",
+        "tests/tutorStubLearnerDagPresentation.test.js",
         "tests/tutorStubLearnerResponseProvenance.test.js",
         "tests/tutorStubLearningSummary.test.js",
         "tests/tutorStubLearningSummaryHtml.test.js",
