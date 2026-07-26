@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T07:18:55.778Z",
+  "generated": "2026-07-26T08:31:10.823Z",
   "counts": {
-    "total": 209,
+    "total": 210,
     "byStatus": {
-      "done": 182,
+      "done": 183,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 46,
-      "maintenance": 53,
+      "maintenance": 54,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -189,6 +189,7 @@
           "refactor-tutor-stub-interactive-help-projection",
           "refactor-tutor-stub-feature-map-projection",
           "refactor-tutor-stub-release-notes-projection",
+          "refactor-tutor-stub-dag-snapshot-projection",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -618,8 +619,8 @@
       ]
     },
     {
-      "id": "refactor-tutor-stub-release-notes-projection",
-      "title": "Refactor tutor-stub release-notes projection",
+      "id": "refactor-tutor-stub-dag-snapshot-projection",
+      "title": "Refactor tutor-stub proof-DAG snapshot projection",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -627,29 +628,26 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "Live /release-notes output remains byte-identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-release-notes-projection",
+      "verification": "Live technical tutor-DAG bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-dag-snapshot-projection",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-feature-map-projection"
+        "refactor-tutor-stub-release-notes-projection"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubReleaseNotes.js",
-          "services/tutorStubReleaseNotesPresentation.js",
+          "services/tutorStubDagSnapshotPresentation.js",
           "scripts/tutor-stub.js",
-          "services/__tests__/tutorStubReleaseNotes.test.js",
-          "tests/tutorStubReleaseNotesPresentation.test.js",
-          "tests/tutorStubHumanDiscourseLayer.test.js",
-          "tests/tutorStubPassthrough.test.js",
+          "tests/tutorStubDagSnapshotPresentation.test.js",
+          "tests/tutorStubInteractivePerformance.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-feature-map-projection"
+          "refactor-tutor-stub-release-notes-projection"
         ]
       },
       "tags": [
@@ -657,7 +655,7 @@
         "tutor-stub",
         "presentation",
         "cli",
-        "release-notes"
+        "proof-dag"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2886,6 +2884,53 @@
         "tutor-stub",
         "learning-summary",
         "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-release-notes-projection",
+      "title": "Refactor tutor-stub release-notes projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live /release-notes output remains byte-identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-release-notes-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-feature-map-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubReleaseNotes.js",
+          "services/tutorStubReleaseNotesPresentation.js",
+          "scripts/tutor-stub.js",
+          "services/__tests__/tutorStubReleaseNotes.test.js",
+          "tests/tutorStubReleaseNotesPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "tests/tutorStubPassthrough.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "prs": [
+          268
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-feature-map-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "release-notes"
       ],
       "milestone": "evaluation-infrastructure"
     },
