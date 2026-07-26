@@ -54,6 +54,7 @@ links:
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
+    - refactor-tutor-stub-training-reuse-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -423,3 +424,15 @@ Log:
   output, 39/39 focused tests, and complete root 7,022-test plus tutor-core
   137-test zero-skip parity. State derivation, helper calls, slash dispatch,
   terminal writes, and runtime behavior remain CLI-owned.
+- 2026-07-26 — PR #275 merged the session-status child as `7ffbf1b8` with all
+  ten final CI lanes green; the serialized render followed as `9480bd7d`.
+  Closed that child and activated
+  `refactor-tutor-stub-training-reuse-presentation` to move only the reusable
+  policy-status lines while retaining policy resolution, live state changes,
+  persistence, trace events, terminal writes, and command handling in the CLI.
+- 2026-07-26 — The training-reuse presentation child reached review with one
+  dependency-free projector, exact candidate/opt-out/fail-closed process
+  parity, 39/39 focused tests, and complete root 7,040-test plus tutor-core
+  137-test zero-skip parity. Policy resolution, state, persistence, trace,
+  commands, and terminal writes remain CLI-owned; the larger dialogue-settings
+  projector is the logical next child after merge.

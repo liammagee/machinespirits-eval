@@ -481,6 +481,7 @@
         "tests/tutorStubSpeakerPublicPremise.test.js",
         "tests/tutorStubStructuredFirstDraft.test.js",
         "tests/tutorStubTrainingReuse.test.js",
+        "tests/tutorStubTrainingReusePresentation.test.js",
         "tests/tutorStubTrajectoryShadow.test.js",
         "tests/tutorStubTranscriptHtml.test.js",
         "tests/tutorStubTurnFailureBackfill.test.js",

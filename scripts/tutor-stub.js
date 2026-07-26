@@ -424,6 +424,7 @@ import {
   resolveTutorStubTrainingReuse,
   tutorStubTrainingReuseLabel,
 } from '../services/tutorStubTrainingReuse.js';
+import { projectTutorStubTrainingReuseStatusLines } from '../services/tutorStubTrainingReusePresentation.js';
 import {
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
@@ -22768,19 +22769,18 @@ async function main() {
 
   function printTrainingReuseStatus(prefix = 'training reuse') {
     const reuse = state.trainingReuse;
-    console.log(
-      `${C.dim}  ${prefix}: ${tutorStubTrainingReuseLabel(reuse)}; requested ${reuse.requested}; ${displayDiagnosticLabel(
-        reuse.humanSubjectClass,
-      )}; source ${displayDiagnosticLabel(reuse.source)}${C.reset}`,
-    );
-    if (reuse.failClosed) {
-      console.log(`${C.dim}  external or unknown human data stays do not train even when reuse is requested${C.reset}`);
-    } else if (reuse.status === 'training_candidate') {
-      console.log(
-        `${C.dim}  candidate means eligible for later review, not automatically approved or exported for training${C.reset}`,
-      );
-    } else if (reuse.status === 'do_not_train') {
-      console.log(`${C.dim}  this source and derived descendants must remain outside training corpora${C.reset}`);
+    const lines = projectTutorStubTrainingReuseStatusLines({
+      prefix,
+      label: tutorStubTrainingReuseLabel(reuse),
+      requested: reuse.requested,
+      humanSubjectLabel: displayDiagnosticLabel(reuse.humanSubjectClass),
+      sourceLabel: displayDiagnosticLabel(reuse.source),
+      failClosed: reuse.failClosed,
+      status: reuse.status,
+      colors: C,
+    });
+    for (const line of lines) {
+      console.log(line);
     }
   }
 
