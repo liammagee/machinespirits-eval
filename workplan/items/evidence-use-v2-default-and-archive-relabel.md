@@ -26,6 +26,8 @@ links:
   items:
     - evidence-use-bridge-rubric-v2
     - program-2-context-vs-weights-finetune
+  notes:
+    - notes/program-2/2026-07-26-v2-relabel-distill-path.md
 tags:
   - tutor-stub
   - classifier
@@ -98,7 +100,36 @@ under a false premise.
 Runs on shared Max-plan quota, so: stratified slice with real calls first,
 measured per-call latency, then a resumable full sweep with checkpointing.
 
+## What the relabel does to the distillation pipeline
+
+Worked through in `notes/program-2/2026-07-26-v2-relabel-distill-path.md`. Three
+findings that constrain the next step:
+
+- The frozen corpora survive. `general-sft.jsonl` (865 rows) and `kto.jsonl`
+  (1,676 rows) key on deterministic guard accounting with no classifier in the
+  path, so they do not move. Only `taskA-sft.jsonl` and `eval-moments.jsonl`
+  change, and only in membership. Re-deriving that membership is a zero-call
+  recomputation, since `assignedTrigger()` is pure and `poa.inputs` stores its
+  arguments verbatim.
+- Turns that were silent under v1 and fire under v2 are a counterfactual
+  population: the recorded reply was produced without the side-coach block, so
+  they cannot be Task A positives and their historical compliance is not a
+  like-for-like baseline. Excluding them is the defensible default.
+- The pilot slice was stratified uniform (12.5% per label against an archive
+  that runs 26.2%/22.2% on the firing pair), so its gate-firing share is 25.0%
+  against the archive's 48.4%. Its rate went *up*, the denominator analysis
+  predicts *down*. The pilot cannot settle the direction and must not be cited
+  as confirming or refuting the ~1.1 point figure — only the full sweep can.
+
+Two ideas were checked and dropped: collapsing the target to the binary the gate
+consumes does not absorb the label noise (5 of 6 pilot changes crossed the
+boundary, 0 stayed inside the firing pair — 31.3% vs 37.5%), and
+`distorts_public_evidence` is a textual control only (byte-identical clause, both
+pilot cases still moved into the firing pair).
+
 Deliberately not in scope: distilling the local writer model against a
 two-family consensus target. The archive is single-family, so a consensus target
 requires a second judge pass (4,726 calls plus adjudication on disagreements)
-and that is a separate decision about what the labels are for.
+and that is a separate decision about what the labels are for. Within-model
+majority voting on the disagreeing subset answers the label-stability question
+at roughly a third of the price.
