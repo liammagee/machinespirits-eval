@@ -2559,3 +2559,83 @@ test('a self-correction preface is not scored as the tutor’s uptake of the lea
     JSON.stringify(bare.issues),
   );
 });
+
+test('the deterministic uptake keeps coin-assay vocabulary out of a world that has no coin', () => {
+  // Most of the uptake bank was authored for the Marrick assay worlds and names
+  // their furniture outright. Each of those branches keys on the learner's
+  // wording alone, so a learner in a contemporary flat who says "mark" or
+  // "metal" used to be answered about a shilling their scene never contained.
+  const contemporaryWorld = {
+    id: 'world_030_rowan_flat',
+    title: 'The Damp Ceiling',
+    discipline: 'tenancy dispute',
+    question: 'Which flat is the water coming from?',
+    setting: 'A shared apartment kitchen and bathroom, with a damp patch on the ceiling.',
+    presentation: { narrative_diction: 'domestic plainspoken' },
+  };
+  const assayWorld = {
+    id: 'world_005_marrick',
+    title: 'The Light Shillings',
+    discipline: "moneyer's assay",
+    question: 'Whose hand struck the false shillings passed at the Marrick fair?',
+    setting: 'The guild hall, with the trial-book open beside a crucible and a balance.',
+  };
+  const ASSAY_VOCABULARY =
+    /\b(?:alloy|assay|blanks?|coins?|crucible|cupel\w*|dross|graver|leavings|marrick|mint|shillings?|silver|touchstone|trial-book)\b/iu;
+
+  // Learner lines built from the exact tokens those branches key on. Each one
+  // is a plausible thing to say about a leaking ceiling.
+  const learnerLines = [
+    'The mark is light in weight and the metal looks clipped.',
+    'Can we leave the old clipping aside and keep the die mark and the metal?',
+    'The water mark and the damp patch — which one links them?',
+    'What mark would tie these together?',
+    'Can we compare the tool-mark before anything is cast?',
+    'We cannot say the metal came from there yet.',
+    'The residue matches the trace metal.',
+    'Who had custody of it?',
+    'Can I examine the metal pipe?',
+    'There is no proof and the test shows nothing.',
+  ];
+  const requestTypes = [null, 'stepwise_support_request', 'conceptual_clarity_request'];
+  const discourseMoves = [null, 'evidence_adoption', 'inference', 'question'];
+
+  let assayRepliesInAssayWorld = 0;
+  for (const learnerText of learnerLines) {
+    for (const requestType of requestTypes) {
+      for (const discourseMove of discourseMoves) {
+        const classification = {
+          turn: { request_type: requestType, discourse_move: discourseMove, summary: '', pedagogical_need: '' },
+        };
+        const contemporaryReply = deterministicTutorStubLearnerUptake({
+          learnerText,
+          classification,
+          world: contemporaryWorld,
+        });
+        assert.equal(
+          ASSAY_VOCABULARY.test(contemporaryReply),
+          false,
+          `assay vocabulary reached a contemporary world: "${contemporaryReply}" <- "${learnerText}"`,
+        );
+        if (
+          ASSAY_VOCABULARY.test(deterministicTutorStubLearnerUptake({ learnerText, classification, world: assayWorld }))
+        ) {
+          assayRepliesInAssayWorld += 1;
+        }
+      }
+    }
+  }
+
+  // The gate must not have simply deleted the bank: the same corpus still
+  // reaches the assay wording in the world those branches were written for.
+  assert.ok(assayRepliesInAssayWorld > 0, 'the assay branches became unreachable in their own world');
+
+  // Callers that supply no world at all keep every branch, which is what the
+  // learner-text-only fixtures throughout this file already rely on.
+  assert.match(
+    deterministicTutorStubLearnerUptake({
+      learnerText: 'The coin is light in weight and the metal looks clipped — is that right?',
+    }),
+    ASSAY_VOCABULARY,
+  );
+});

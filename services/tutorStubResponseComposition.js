@@ -60,6 +60,17 @@ const CONDITIONAL_DISMISSAL_UPTAKE_PATTERN =
 const CONDITIONAL_ACKNOWLEDGEMENT_PATTERN =
   /\b(?:if|assuming|on that condition|under that condition|given that condition)\b/iu;
 const TOOL_MARK_PATH_PATTERN = /\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b/iu;
+// Matched against the WORLD's own text, never the learner's. A large block of
+// the deterministic uptake bank was authored for the Marrick coin-assay worlds
+// and names their furniture outright — crucible, touchstone, trial-book,
+// shilling. Those branches key on the learner's wording alone, so a learner in
+// a contemporary world who happens to say "metal" or "mark" can be answered in
+// guild-hall vocabulary about a coin their scene never contained. Across all
+// authored worlds this pattern selects exactly the three marrick worlds.
+// Applied to punctuation-normalised text, since a world id like
+// `world_005_marrick` offers no word boundary before its own scene noun.
+const ASSAY_SCENE_PATTERN =
+  /\b(?:alloys?|assays?|coins?|coining|crucibles?|cupel\w*|gravers?|marrick|mints?|shillings?|silver|touchstones?|trial books?)\b/iu;
 const TOOL_MARK_SELECTION_PATTERN =
   /\b(?:assay|compare|examine|find|inspect|look for|match|seek|test|watch for)\b[^.!?]{0,110}\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b|\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b[^.!?]{0,110}\b(?:assay|compare|examine|find|inspect|match(?:ed|es|ing)?|need(?:ed|s)?|seek|test|watch)\b|\b(?:before|first|until)\b[^.!?]{0,110}\b(?:maker[’']s mark|maker mark|die[- ]?mark|die[- ]?flaw|graver|tool[- ]?mark)\b/iu;
 const TOOL_MARK_ACKNOWLEDGEMENT_PATTERN =
@@ -1002,6 +1013,10 @@ export function deterministicTutorStubLearnerUptake({
   // world (including any world that declares nothing) keeps the frozen wording.
   const diction = resolveTutorStubSceneDiction(world);
   const dictionPhrase = (periodText, contemporaryText) => tutorStubDictionPhrase(diction, periodText, contemporaryText);
+  // Whether this scene actually contains the coin-assay furniture the branches
+  // below name outright. With no world supplied every branch stays reachable,
+  // which is how the fixtures that pass only `learnerText` already behave.
+  const assayScene = !world || ASSAY_SCENE_PATTERN.test(worldText.replace(/[^\p{L}\p{N}]+/gu, ' '));
   const requestedEntry = oneLine(learnerText).match(
     /\bwhat should i (?:write|record|enter|say) next(?:\s+about\s+(.+?))?[?!.]*$/iu,
   );
@@ -1021,6 +1036,7 @@ export function deterministicTutorStubLearnerUptake({
       text,
     );
   if (
+    assayScene &&
     /\?/u.test(learnerText) &&
     /\b(?:light|lightness|weight)\b/iu.test(text) &&
     /\b(?:clip(?:ped|ping)?|metal)\b/iu.test(text)
@@ -1031,6 +1047,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\b(?:leave|set|put)\b[^.!?]{0,45}\b(?:old\s+)?clipping\b[^.!?]{0,35}\b(?:aside|behind|out)\b/iu.test(text) &&
     /\b(?:die|mark|metal)\b/iu.test(text)
   ) {
@@ -1039,13 +1056,18 @@ export function deterministicTutorStubLearnerUptake({
       'Old clipping stays out of the trial-book; the metal and die marks must provide the specific link instead.',
     );
   }
-  if (TOOL_MARK_PATH_PATTERN.test(text) && /\b(?:graver|tool)\b[^.!?]{0,45}\b(?:struck|strike)\b/iu.test(text)) {
+  if (
+    assayScene &&
+    TOOL_MARK_PATH_PATTERN.test(text) &&
+    /\b(?:graver|tool)\b[^.!?]{0,45}\b(?:struck|strike)\b/iu.test(text)
+  ) {
     return fresh(
       'You have chosen a useful die-mark, but the graver cuts the die; it does not strike the shilling itself.',
       'Keep the repeated die-mark as your test, with one correction: it can identify a die-cutting tool, not the striking hand by itself.',
     );
   }
   if (
+    assayScene &&
     TOOL_MARK_PATH_PATTERN.test(text) &&
     /\b(?:but|does not|doesn[’']t|not yet|unproved)\b/iu.test(text) &&
     /\b(?:hand|strike|striking|struck)\b/iu.test(text)
@@ -1056,6 +1078,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     proposesToolMarkTest &&
     /\b(?:before|could|must|need(?:ed|s)?|should|would)\b/iu.test(text) &&
     /\b(?:blank|crucible)\b/iu.test(`${text} ${classificationText}`)
@@ -1076,12 +1099,15 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (/\b(?:access|licen[cs]e|means|ownership)\b/iu.test(text) && /\b(?:mistak(?:e|ing)|proof|prove)\b/iu.test(text)) {
+    // Only the first candidate names the coin; the second states the same
+    // distinction in scene-neutral terms and stays available everywhere.
     return fresh(
-      'You have separated access from proof that this hand made the coin.',
+      ...(assayScene ? ['You have separated access from proof that this hand made the coin.'] : []),
       'That correctly keeps possession or access from becoming proof of making.',
     );
   }
   if (
+    assayScene &&
     /\b(?:access|control(?:led)?|drew|drawing|signed)\b/iu.test(text) &&
     /\bcrucible\b/iu.test(text) &&
     /\b(?:does not|doesn[’']t|not yet)\b[^.!?]{0,70}\b(?:show|prove)?\b[^.!?]{0,35}\b(?:struck|striking)\b/iu.test(text)
@@ -1094,6 +1120,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\b(?:light|false) shillings?\b/iu.test(text) &&
     /\b(?:true|genuine) (?:coin|shillings?)\b/iu.test(text) &&
     /\b(?:balance|compare|differ|examin(?:e|ed|ing)?|touchstone|weigh)\b/iu.test(text)
@@ -1104,6 +1131,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\b(?:blank|coin|shilling)\b/iu.test(text) &&
     /\bcast\b/iu.test(text) &&
     /\bstruck\b/iu.test(text) &&
@@ -1115,6 +1143,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\bblank\b/iu.test(text) &&
     /\bcast\b[^.!?]{0,55}\b(?:from|at)\b[^.!?]{0,45}\bcrucible\b|\bcrucible\b[^.!?]{0,55}\bcast\b/iu.test(text) &&
     /\b(?:does not|doesn[’']t|not yet|without)\b[^.!?]{0,75}\b(?:hand|strike|striking|struck)\b/iu.test(text)
@@ -1125,6 +1154,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\bcrucible\b/iu.test(text) &&
     /\b(?:die|graver|tool)\b/iu.test(text) &&
     /\b(?:graver|tool)\b[^.!?]{0,55}\band\b[^.!?]{0,55}\bcrucible\b[^.!?]{0,55}\b(?:assay|compare|examin(?:ation|e|ed|ing)?|inspect(?:ion|ed|ing)?|mark)\b|\bcrucible\b[^.!?]{0,55}\band\b[^.!?]{0,55}\b(?:die|graver|tool)\b[^.!?]{0,55}\b(?:assay|compare|examin(?:ation|e|ed|ing)?|inspect(?:ion|ed|ing)?|mark)\b/iu.test(
@@ -1137,6 +1167,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\b(?:remain(?:s|ed)? unshown|not (?:yet )?shown|still unshown)\b/iu.test(text) &&
     /\b(?:coins?|shillings?)\b/iu.test(text) &&
     /\b(?:cast|crucible|marrick)\b/iu.test(text) &&
@@ -1148,6 +1179,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\bblank\b/iu.test(text) &&
     /\bdie\b/iu.test(text) &&
     /\b(?:source|names?|trace(?:s|d)?|crucible|forge)\b/iu.test(text) &&
@@ -1159,6 +1191,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     LEARNER_CONDITIONAL_INFERENCE_PATTERN.test(text) &&
     /\b(?:blank|coin|shilling)\b/iu.test(text) &&
     /\bcrucible\b/iu.test(text) &&
@@ -1195,6 +1228,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\b(?:alloy|metal|touchstone|weigh|weight)\b/iu.test(text) &&
     /\b(?:die|graver|tools?)\b/iu.test(text) &&
     /\b(?:assay|compare|examine|inspect|test)\b/iu.test(text)
@@ -1209,7 +1243,7 @@ export function deterministicTutorStubLearnerUptake({
     (/\bwhat public matter\b/iu.test(text) ||
       /\bwhat\b[^?]{0,70}\b(?:enter|examine|inspect|test)\b[^?]{0,20}\bfirst\b/iu.test(text))
   ) {
-    if (/\b(?:marrick|shilling|assay)\b/iu.test(worldText)) {
+    if (world && assayScene) {
       return fresh(
         'Begin with the shillings themselves: record their weight, ring, and touchstone mark before any person’s name.',
         'First enter what the coins themselves show—their weight, ring, and metal—without naming a hand.',
@@ -1226,8 +1260,14 @@ export function deterministicTutorStubLearnerUptake({
       text,
     )
   ) {
+    // This echoes a noun back out of the learner's own line, so the assay
+    // nouns are only offered where such a thing could be on the bench. In any
+    // other scene the branch falls through to its object-free phrasing rather
+    // than confirming an exhibit the world does not contain.
     const publicObject = text.match(
-      /\b(?:visitor badge log|badge log|call log|incident log|visitor log|trial-book|book|ledger|log|record|register|notice|report|file|photograph|photo|crucible|coin|shilling|tool|sample|lunchbox)\b/iu,
+      assayScene
+        ? /\b(?:visitor badge log|badge log|call log|incident log|visitor log|trial-book|book|ledger|log|record|register|notice|report|file|photograph|photo|crucible|coin|shilling|tool|sample|lunchbox)\b/iu
+        : /\b(?:visitor badge log|badge log|call log|incident log|visitor log|book|ledger|log|record|register|notice|report|file|photograph|photo|tool|sample|lunchbox)\b/iu,
     )?.[0];
     return fresh(
       publicObject
@@ -1248,6 +1288,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\bclip(?:ped|ping)?\b/iu.test(text) &&
     /\b(?:debased|dross|made anew|newly|struck|true (?:coin|shillings?))\b/iu.test(text)
   ) {
@@ -1257,6 +1298,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\bcrucible\b/iu.test(text) &&
     (/\b(?:custody|control(?:led)?|holder|keeper)\b/iu.test(text) ||
       /\bwho\b[^.!?]{0,45}\b(?:drew|held|signed|used)\b/iu.test(text))
@@ -1267,6 +1309,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\?/u.test(learnerText) &&
     /\bcupell?(?:ed|ing)?\b/iu.test(text) &&
     /\b(?:alloy|composition|crucible|leavings|metal|residue|streak)\b/iu.test(text)
@@ -1277,6 +1320,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\?/u.test(learnerText) &&
     /\b(?:alloy|crucible|leavings|metal|residue|streak)\b/iu.test(text) &&
     /\b(?:link(?:s|ed)?|match(?:es|ed)?|same|show(?:s|ed)?|tie(?:s|d)?|trace(?:s|d)?|what|which)\b/iu.test(text)
@@ -1287,6 +1331,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\?/u.test(learnerText) &&
     /\b(?:die|flaw|graver|mark|tool)\b/iu.test(text) &&
     /\b(?:compare(?:s|d)?|link(?:s|ed)?|match(?:es|ed)?|show(?:s|ed)?|tie(?:s|d)?|trace(?:s|d)?|what|which)\b/iu.test(
@@ -1298,13 +1343,14 @@ export function deterministicTutorStubLearnerUptake({
       'We would look for the same distinctive flaw across the struck faces, then test whether one graver could have cut it.',
     );
   }
-  if (requestType === 'stepwise_support_request' && proposesToolMarkTest) {
+  if (assayScene && requestType === 'stepwise_support_request' && proposesToolMarkTest) {
     return fresh(
       'That is the right tool-mark test; keep the shared flaw before us.',
       'Your proposed die test stays open on the trial-table.',
     );
   }
   if (
+    assayScene &&
     /\b(?:die|graver|tool)\b/iu.test(text) &&
     /\bfail(?:s|ed|ing)?\b[^.!?]{0,55}\b(?:connect|link|mark|match|tie)\b[^.!?]{0,55}\b(?:coin|shilling)s?\b/iu.test(
       text,
@@ -1327,6 +1373,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     /\b(?:blanks?|coins?|shillings?)\b/iu.test(text) &&
     /\b(?:leave|leaves|left|keep|keeps|kept|remain|remains|remained)\b[^.!?]{0,65}\b(?:open|unassigned|unplaced|unproved|untraced)\b|\b(?:open|unassigned|unplaced|unproved|untraced)\b[^.!?]{0,65}\b(?:blanks?|coins?|shillings?)\b/iu.test(
       text,
@@ -1339,13 +1386,13 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (/\b(?:but|cannot|can[’']t|missing|must|no|not|only|until|yet)\b/iu.test(text)) {
-    if (/\b(?:die|flaw|graver|tool-mark|tool mark)\b/iu.test(text)) {
+    if (assayScene && /\b(?:die|flaw|graver|tool-mark|tool mark)\b/iu.test(text)) {
       return fresh(
         'You have kept the graver tied to its owner without pretending it has marked this coin.',
         'That leaves the tool publicly owned but its work on these shillings still unproved.',
       );
     }
-    if (/\b(?:alloy|crucible|leavings|metal|residue|streak)\b/iu.test(text)) {
+    if (assayScene && /\b(?:alloy|crucible|leavings|metal|residue|streak)\b/iu.test(text)) {
       return fresh(
         'You have kept the alloy link provisional until one crucible’s leavings answer it.',
         'That leaves the metal observed but its source crucible still unproved.',
@@ -1355,6 +1402,7 @@ export function deterministicTutorStubLearnerUptake({
     }
   }
   if (
+    assayScene &&
     LEARNER_PROPOSES_EXAMINATION_PATTERN.test(text) &&
     /\b(?:alloy|crucible|leavings|metal|residue|streak)\b/iu.test(text)
   ) {
@@ -1364,6 +1412,7 @@ export function deterministicTutorStubLearnerUptake({
     );
   }
   if (
+    assayScene &&
     !/\?/u.test(learnerText) &&
     /\b(?:alloy|crucible|leavings|metal|residue|streak)\b/iu.test(text) &&
     /\b(?:match(?:es|ed|ing)?|same|tie(?:s|d)?|trace-metal|trace metal)\b/iu.test(text)
@@ -1374,13 +1423,13 @@ export function deterministicTutorStubLearnerUptake({
       'The test is now concrete: the blank and the crucible must share a metal signature not found in the other melts.',
     );
   }
-  if (/\blook about (?:the )?hall\b/iu.test(text) && /\b(?:coins?|trial-book|witness)\b/iu.test(text)) {
+  if (assayScene && /\blook about (?:the )?hall\b/iu.test(text) && /\b(?:coins?|trial-book|witness)\b/iu.test(text)) {
     return fresh(
       'We will begin with the first public coin or witness the hall can supply.',
       'Your search starts with what the hall can place openly before the trial-book.',
     );
   }
-  if (/\bno proof\b/iu.test(text) && /\bassay\b/iu.test(text)) {
+  if (assayScene && /\bno proof\b/iu.test(text) && /\bassay\b/iu.test(text)) {
     return fresh(
       'Agreed—no name enters the trial-book before the assay has something to show.',
       'The trial-book stays nameless until the assay gives us a public mark.',
@@ -1410,20 +1459,20 @@ export function deterministicTutorStubLearnerUptake({
     }
   }
   if (requestType === 'stepwise_support_request') {
-    if (proposesToolMarkTest) {
+    if (assayScene && proposesToolMarkTest) {
       return fresh(
         'That is the right tool-mark test; keep the shared flaw before us.',
         'Your proposed die test stays open on the trial-table.',
       );
     }
     if (/\b(?:but|cannot|can[’']t|missing|must|no|not|only|until|yet)\b/iu.test(text)) {
-      if (/\b(?:die|flaw|graver|tool-mark|tool mark)\b/iu.test(text)) {
+      if (assayScene && /\b(?:die|flaw|graver|tool-mark|tool mark)\b/iu.test(text)) {
         return fresh(
           'You have kept the graver tied to its owner without pretending it has marked this coin.',
           'That leaves the tool publicly owned but its work on these shillings still unproved.',
         );
       }
-      if (/\b(?:alloy|crucible|leavings|metal|residue|streak)\b/iu.test(text)) {
+      if (assayScene && /\b(?:alloy|crucible|leavings|metal|residue|streak)\b/iu.test(text)) {
         return fresh(
           'You have kept the alloy link provisional until one crucible’s leavings answer it.',
           'That leaves the metal observed but its source crucible still unproved.',
