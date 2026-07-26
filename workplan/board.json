@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-26T08:31:10.823Z",
+  "generated": "2026-07-26T11:20:47.154Z",
   "counts": {
-    "total": 210,
+    "total": 211,
     "byStatus": {
       "done": 183,
       "blocked": 5,
@@ -9,12 +9,12 @@
       "triaged": 4,
       "active": 6,
       "archived": 4,
-      "review": 5
+      "review": 6
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 46,
+      "infra": 47,
       "maintenance": 54,
       "content": 2,
       "paper": 6,
@@ -716,6 +716,37 @@
         "session-recipe"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "evidence-use-bridge-rubric-v2",
+      "title": "Version the evidence_use rubric so the bridge definition can change without mixing instruments",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-25",
+      "updated": "2026-07-26",
+      "verification": "The default classifier prompt and all 60 default Program 2 plan commands are byte-identical to the pre-change checkout; opting in to v2_bridge_voiced changes only the rubric clauses and adds only the rubric flag; each plan validator fails closed when its header stamp disagrees with its jobs.",
+      "claim_status": "exploratory",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/tutorStubPublicLearnerAnalysis.js",
+          "scripts/run-program2-live-pilot.js",
+          "scripts/tutor-stub.js",
+          "tests/program2LivePilotEvidenceUseRubric.test.js"
+        ],
+        "items": [
+          "program-2-phase5d-second-transfer-world"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "classifier",
+        "program-2",
+        "instrument"
+      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
