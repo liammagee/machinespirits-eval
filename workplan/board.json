@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-26T13:13:04.768Z",
+  "generated": "2026-07-26T13:39:08.833Z",
   "counts": {
     "total": 217,
     "byStatus": {
-      "done": 189,
+      "done": 190,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
-      "active": 7,
+      "active": 6,
       "archived": 4,
       "review": 5
     },
@@ -318,43 +318,6 @@
         "model-routing",
         "discourse-plane",
         "mixed-mode"
-      ]
-    },
-    {
-      "id": "evidence-use-v2-default-and-archive-relabel",
-      "title": "Make v2_bridge_voiced the default evidence_use rubric and relabel the archive under it",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-26",
-      "verification": "New Program 2 plans stamp v2_bridge_voiced and carry no rubric flag; naming v1 recovers the pre-change command set token-for-token and the pre-change classifier prompt byte-for-byte; a plan file with no stamp fails validation rather than being resolved against the current default; the relabel pass proves exactly one v1 precedence line per archived prompt before substituting, holds provider/model/history identical, and reports the label-migration matrix against the stored v1 labels.",
-      "claim_status": "exploratory",
-      "depends_on": [
-        "evidence-use-bridge-rubric-v2"
-      ],
-      "links": {
-        "code": [
-          "services/tutorStubPublicLearnerAnalysis.js",
-          "services/tutorStubPointOfActionCoaching.js",
-          "scripts/run-program2-live-pilot.js"
-        ],
-        "items": [
-          "evidence-use-bridge-rubric-v2",
-          "program-2-context-vs-weights-finetune"
-        ],
-        "notes": [
-          "notes/program-2/2026-07-26-v2-relabel-distill-path.md"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "classifier",
-        "program-2",
-        "instrument",
-        "fine-tune"
       ]
     },
     {
@@ -5229,6 +5192,44 @@
       "milestone": "literature-triage",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "evidence-use-v2-default-and-archive-relabel",
+      "title": "Make v2_bridge_voiced the default evidence_use rubric and relabel the archive under it",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "New Program 2 plans stamp v2_bridge_voiced and carry no rubric flag; naming v1 recovers the pre-change command set token-for-token and the pre-change classifier prompt byte-for-byte; a plan file with no stamp fails validation rather than being resolved against the current default; the relabel pass proves exactly one v1 precedence line per archived prompt before substituting, holds provider/model/history identical, and reports the label-migration matrix against the stored v1 labels.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "evidence-use-bridge-rubric-v2"
+      ],
+      "links": {
+        "code": [
+          "services/tutorStubPublicLearnerAnalysis.js",
+          "services/tutorStubPointOfActionCoaching.js",
+          "scripts/run-program2-live-pilot.js"
+        ],
+        "items": [
+          "evidence-use-bridge-rubric-v2",
+          "program-2-context-vs-weights-finetune"
+        ],
+        "notes": [
+          "notes/program-2/2026-07-26-v2-relabel-distill-path.md",
+          "notes/program-2/2026-07-26-relabel-sample-result.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "classifier",
+        "program-2",
+        "instrument",
+        "fine-tune"
+      ]
     },
     {
       "id": "exploratory-confirmatory-shrinkage-audit",
