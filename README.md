@@ -280,14 +280,16 @@ npm run test:root          # root Node suites only
 npm run test:core          # in-housed tutor-core suites only
 npm run test:manifest      # verify the checked-in required-test inventory
 npm run test:manifest:update # register added/removed test files, then review and commit
-npm run test:root:handles  # root suites without forced exit, for handle-leak audits
+npm run test:root:handles  # explicit alias for the default natural teardown
 npm run test:coverage:risk # hermetic risk-group coverage with ratcheted floors (Node 22.10+)
 ```
 
 These commands use isolated temporary database, log, export, writing-pad,
-and tutor-stub paths. The legacy root suite still uses Node's forced-exit mode
-while its open-handle debt is audited; the in-housed core suite always tears
-down naturally. Risk coverage also uses natural teardown, writes LCOV, JSON,
+and tutor-stub paths. Every suite now tears down naturally: Node's
+`--test-force-exit` calls `process.exit()`, which truncates the report and can
+end a run before its last files are recorded, so it is opt-in behind
+`--force-exit`. A run that stops producing output for five minutes is ended and
+names the files that never reported. Risk coverage writes LCOV, JSON,
 and Markdown under ignored `coverage/risk/`, and checks the versioned floors in
 `config/coverage-risk-floors.json` for store, admin/auth, evaluator provenance,
 browser labelling save-state, and tutor-core recognition/memory surfaces.

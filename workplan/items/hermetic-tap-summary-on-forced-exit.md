@@ -107,10 +107,16 @@ build phases without a `tapPath`. The integration test asserts the union: it
 fails only when both channels lose the tail at once.
 
 The durable fix is to stop racing the reporter at all — run the root phase
-without `--test-force-exit`, wait for the TAP file to show a complete tail, and
-only then kill the child. That removes both this race and the short run below,
-because nothing cuts the run off. It also changes how every root phase
-terminates, which is why it is not folded in here.
+without `--test-force-exit`. That removes both this race and the short run
+below, because nothing cuts the run off. It changes how every root phase
+terminates, which is why it is not folded in here; it was done separately in
+`hermetic-drop-test-force-exit`.
+
+Correction: this section first proposed waiting for the TAP file to show a
+complete tail and only then killing the child. That cannot work. A file with a
+leaked handle never produces a tail at all — no plan line, no counters — so
+there is nothing to wait for and the wait can only time out. The follow-up item
+records the probe and the design that replaced it.
 
 ## A second defect, observed and not fixed here
 
@@ -133,12 +139,10 @@ not populate that field, so the root phase has no per-file execution check at
 all. The consequence is that a green hermetic run is not by itself evidence that
 every selected file ran.
 
-Follow-up, deliberately not folded in: determine whether the missing cases fail
-to run or only fail to be recorded, then either populate `files` from the
-complete TAP file so the exact-file check applies to the root phase, or drop
-`--test-force-exit` in favour of waiting for the tail and killing the child
-afterwards. The second option is the one that also closes the race above, and it
-is the larger change of the two.
+Follow-up, deliberately not folded in and since closed by
+`hermetic-drop-test-force-exit`: the flag was dropped, the per-file account came
+from the timing reporter rather than from TAP (TAP hoists cases to the top level
+and names no files), and the exact-file check now covers the root phase.
 
 ## Log
 
