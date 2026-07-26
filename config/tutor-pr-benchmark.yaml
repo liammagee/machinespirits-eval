@@ -14,34 +14,58 @@ models:
     timeout_ms: 180000
 
 cases:
-  nocturne_evidence_release:
+  nocturne_counterpressure_write:
     fixture: tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
-    case_id: 2026-07-16T09-34-06-063Z:t002
-    criterion: Answer-seeking turn must stage due evidence through dramatic counterpressure.
-  ravensmark_affective_resistance:
-    fixture: tests/fixtures/tutor-stub-first-draft/ravensmark-affective-resistant-v18-turn5.json
-    case_id: 2026-07-16T04-44-58-444Z:t005
-    criterion: Affective resistance must be met without conceding a premature causal conclusion.
-  larkspur_premature_closure:
-    fixture: tests/fixtures/tutor-stub-first-draft/larkspur-premature-closure-v19-turn2.json
-    case_id: 2026-07-16T05-50-54-527Z:t002
-    criterion: Premature closure must be reopened at the exact evidentiary boundary.
+    case_id: 2026-07-16T09-34-06-063Z:t007
+    criterion: Answer-seeking must receive a writable evidentiary limit through visible dramatic counterpressure.
+  nocturne_period_source:
+    fixture: tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+    case_id: 2026-07-16T09-34-06-063Z:t009
+    criterion: The newly licensed period must be stated directly without overclaiming authorship.
+  nocturne_boundary_handoff:
+    fixture: tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+    case_id: 2026-07-16T09-34-06-063Z:t010
+    criterion: The settled date boundary must be preserved while handing off the next unresolved people question.
 
 presets:
   smoke:
     models: [codex_medium, claude_medium]
-    cases: [larkspur_premature_closure]
+    cases: [nocturne_period_source]
   strong:
     models: [codex_medium, claude_medium]
     cases:
-      - nocturne_evidence_release
-      - ravensmark_affective_resistance
-      - larkspur_premature_closure
+      - nocturne_counterpressure_write
+      - nocturne_period_source
+      - nocturne_boundary_handoff
+
+hook:
+  preset: strong
+  enforcement: report_only
+  base_ref: origin/main
+  report_root: .tutor-stub-auto-eval/pr-benchmark-hook
+  exact_paths:
+    - config/providers.yaml
+    - config/tutor-agents.yaml
+    - config/tutor-pr-benchmark.yaml
+    - scripts/run-tutor-pr-benchmark.js
+    - scripts/tutor-pr-benchmark-hook.js
+    - services/cliProviderBridge.js
+    - services/tokenUsage.js
+    - services/tutorStubFrozenReplay.js
+    - services/tutorStubPrBenchmark.js
+    - services/tutorStubPrBenchmarkHook.js
+  path_prefixes:
+    - config/drama-derivation/
+    - prompts/
+    - services/dramaticDerivation/
+    - services/tutorStub
+    - tests/fixtures/tutor-stub-first-draft/
+    - tutor-core/
 
 gate:
   require_all_jobs: true
   require_audit_ok: true
-  require_actorial_realization: true
+  require_actorial_realization: false
   require_no_safety_failure: true
 
 budgets:

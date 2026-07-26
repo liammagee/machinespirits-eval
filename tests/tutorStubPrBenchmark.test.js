@@ -53,7 +53,7 @@ test('strong and smoke plans pin the dual-CLI medium-effort call budgets', () =>
   );
   assert.deepEqual(
     strong.cases.map((benchmarkCase) => benchmarkCase.id),
-    ['nocturne_evidence_release', 'ravensmark_affective_resistance', 'larkspur_premature_closure'],
+    ['nocturne_counterpressure_write', 'nocturne_period_source', 'nocturne_boundary_handoff'],
   );
   assert.ok(strong.cases.every((benchmarkCase) => /^[a-f0-9]{64}$/u.test(benchmarkCase.fixtureSha256)));
 
@@ -61,8 +61,34 @@ test('strong and smoke plans pin the dual-CLI medium-effort call budgets', () =>
   assert.equal(smoke.plannedCalls, 2);
   assert.deepEqual(
     smoke.cases.map((benchmarkCase) => benchmarkCase.id),
-    ['larkspur_premature_closure'],
+    ['nocturne_period_source'],
   );
+});
+
+test('actorial advisory remains measured without overriding the canonical delivery decision', async () => {
+  const benchmarkPlan = plan('smoke');
+  const report = await runTutorPrBenchmark({
+    plan: benchmarkPlan,
+    root: ROOT,
+    generateCandidate: async ({ job }) => ({
+      text: `candidate ${job.modelId}`,
+      provider: job.model.provider,
+      model: job.model.model,
+    }),
+    auditCandidate: () => ({
+      ...passingAudit(),
+      audits: {
+        actorialRealizationAudit: {
+          ok: false,
+          active: true,
+          issues: [{ type: 'missing_selected_performance_tactic' }],
+        },
+      },
+    }),
+  });
+  assert.equal(report.status, 'pass');
+  assert.ok(report.jobs.every((job) => job.gate.actorialRealization));
+  assert.equal(report.plan.gate.require_actorial_realization, false);
 });
 
 test('preparing a job refreshes only the current contract and preserves the public prefix', () => {
