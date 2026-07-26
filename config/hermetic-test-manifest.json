@@ -387,6 +387,7 @@
         "tests/tutorStubCanonicalActorialRealization.test.js",
         "tests/tutorStubCapabilities.test.js",
         "tests/tutorStubCharacterAdaptationLoop.test.js",
+        "tests/tutorStubCliHelp.test.js",
         "tests/tutorStubCliTheme.test.js",
         "tests/tutorStubCloseoutProjection.test.js",
         "tests/tutorStubCodexRemoteBridge.test.js",
