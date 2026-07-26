@@ -42,6 +42,7 @@
     "tutor:stub:character-loop": "node scripts/run-tutor-stub-character-adaptation-loop.js",
     "tutor:stub:first-draft-replay": "node scripts/replay-tutor-stub-frozen-turns.js",
     "tutor:stub:ab": "node scripts/run-tutor-stub-ab.js",
+    "tutor:stub:showcase": "node scripts/run-tutor-stub-showcase.js",
     "tutor:stub:pr-benchmark": "node scripts/run-tutor-pr-benchmark.js",
     "tutor:stub:pr-benchmark:compare": "node scripts/compare-tutor-pr-benchmark.js",
     "tutor:stub:pr-hook:install": "node scripts/tutor-pr-benchmark-hook.js install",

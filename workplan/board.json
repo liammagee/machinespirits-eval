@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-26T05:37:57.592Z",
+  "generated": "2026-07-26T06:51:02.808Z",
   "counts": {
-    "total": 206,
+    "total": 207,
     "byStatus": {
       "done": 179,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
-      "active": 7,
+      "active": 8,
       "archived": 4,
       "review": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 47,
+      "infra": 48,
       "maintenance": 49,
       "content": 2,
       "paper": 6,
@@ -411,6 +411,36 @@
         "tutor-stub",
         "instrument",
         "frozen-replay"
+      ],
+      "branch": "claude/tutor-instrumentation-ab"
+    },
+    {
+      "id": "tutor-instrumentation-showcase",
+      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is reported separately from guard failures.",
+      "claim_status": "methods",
+      "depends_on": [
+        "tutor-instrumentation-ab-harness"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-instrumentation-showcase.md"
+        ],
+        "items": [
+          "tutor-instrumentation-ab-harness"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "instrument",
+        "demo"
       ],
       "branch": "claude/tutor-instrumentation-ab"
     },

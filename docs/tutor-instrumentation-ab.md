@@ -206,6 +206,18 @@ would stop being one. Config validation rejects a run otherwise, and also
 rejects a baseline arm with any features, more than one baseline, concurrency
 above 1, and any retry budget.
 
+## Relation to the free-running showcase
+
+`tutor:stub:showcase` (`docs/tutor-instrumentation-showcase.md`) runs the same
+two architectures as two *free-running* dialogues, each with its own automated
+learner, each allowed to close. It produces the transcripts a reader can follow
+end to end, plus per-arm cost and guard-coverage numbers.
+
+It cannot carry a causal claim: with two learners the transcripts diverge after
+the first exchange. The division of labour is the point — the showcase shows
+what the system does, the A/B says what caused a difference. Read them together
+and the showcase's numbers stay descriptive.
+
 ## Relation to the PR benchmark
 
 `tutor:stub:pr-benchmark` asks whether *this commit* regressed the tutor, on one
