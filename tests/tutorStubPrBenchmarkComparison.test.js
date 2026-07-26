@@ -96,7 +96,7 @@ test('base/head plan fails closed on non-equivalent inputs and alternates order 
   equivalent.cases[0].fixtureSha256 = 'changed';
   assert.throws(
     () => assertEquivalentTutorPrBenchmarkPlans(publicPlan, equivalent),
-    /comparison requires identical config, models, cases, and fixtures/u,
+    /comparison requires identical config, rubric, models, cases, and fixtures/u,
   );
 
   const comparison = buildTutorPrBenchmarkBaseHeadPlan({ benchmarkPlan: publicPlan, draws: 2 });

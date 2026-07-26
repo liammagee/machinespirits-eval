@@ -1,6 +1,11 @@
 schema: machinespirits.tutor-stub.pr-benchmark-config.v1
 version: "1.0"
 
+rubric:
+  path: config/tutor-pr-benchmark-rubric.yaml
+  schema: machinespirits.tutor-stub.pr-benchmark-rubric.v1
+  version: "1.0"
+
 models:
   codex_medium:
     provider: codex
@@ -50,6 +55,8 @@ hook:
     - config/providers.yaml
     - config/tutor-agents.yaml
     - config/tutor-pr-benchmark.yaml
+    - config/tutor-pr-benchmark-rubric.yaml
+    - config/tutor-pr-benchmark-calibration.yaml
     - scripts/run-tutor-pr-benchmark.js
     - scripts/tutor-pr-benchmark-hook.js
     - services/cliProviderBridge.js

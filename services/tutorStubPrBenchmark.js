@@ -12,6 +12,7 @@ import {
   TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA,
 } from './tutorStubFrozenReplay.js';
 import { normalizeTokenUsage } from './tokenUsage.js';
+import { resolveTutorPrBenchmarkRubric, TUTOR_PR_BENCHMARK_RUBRIC_SCHEMA } from './tutorPrBenchmarkRubric.js';
 
 export const TUTOR_PR_BENCHMARK_CONFIG_SCHEMA = 'machinespirits.tutor-stub.pr-benchmark-config.v1';
 export const TUTOR_PR_BENCHMARK_REPORT_SCHEMA = 'machinespirits.tutor-stub.pr-benchmark-report.v1';
@@ -69,6 +70,13 @@ export function validateTutorPrBenchmarkConfig(config) {
   }
   if (!config.models || !config.cases || !config.presets)
     throw new Error('benchmark config requires models, cases, and presets');
+  if (
+    !String(config.rubric?.path || '').trim() ||
+    config.rubric?.schema !== TUTOR_PR_BENCHMARK_RUBRIC_SCHEMA ||
+    !String(config.rubric?.version || '').trim()
+  ) {
+    throw new Error('benchmark config requires a versioned PR benchmark rubric');
+  }
   for (const [id, model] of Object.entries(config.models)) {
     if (!MODEL_PROVIDERS.has(model?.provider)) throw new Error(`model ${id} must use codex or claude-code`);
     if (!String(model.model || '').trim()) throw new Error(`model ${id} requires model`);
@@ -137,6 +145,7 @@ export function buildTutorPrBenchmarkPlan({
   configSha256 = null,
 } = {}) {
   validateTutorPrBenchmarkConfig(config);
+  const loadedRubric = resolveTutorPrBenchmarkRubric({ root, definition: config.rubric });
   const selectedPreset = config.presets[preset];
   if (!selectedPreset) throw new Error(`unknown benchmark preset ${preset}`);
   const modelIds = stringList(models || selectedPreset.models, 'selected models');
@@ -166,6 +175,14 @@ export function buildTutorPrBenchmarkPlan({
     maxCalls: callBudget,
     status: jobs.length > callBudget ? 'budget_exhausted' : 'ready',
     configSha256,
+    rubric: {
+      id: loadedRubric.rubric.id,
+      path: config.rubric.path,
+      schema: loadedRubric.rubric.schema,
+      version: loadedRubric.rubric.version,
+      status: loadedRubric.rubric.status,
+      sha256: loadedRubric.sha256,
+    },
     gate: clone(config.gate),
     invariants: clone(config.invariants),
   };
@@ -179,6 +196,7 @@ export function publicTutorPrBenchmarkPlan(plan) {
     plannedCalls: plan.plannedCalls,
     maxCalls: plan.maxCalls,
     configSha256: plan.configSha256,
+    rubric: clone(plan.rubric),
     gate: clone(plan.gate),
     invariants: clone(plan.invariants),
     models: plan.modelIds.map((id) => {

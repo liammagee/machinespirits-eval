@@ -1,0 +1,28 @@
+schema: machinespirits.tutor-stub.pr-benchmark-calibration-config.v1
+version: "1.0"
+
+purposes:
+  - development
+  - acceptance
+
+rubric:
+  path: tutor-pr-benchmark-rubric.yaml
+  schema: machinespirits.tutor-stub.pr-benchmark-rubric.v1
+  version: "1.0"
+
+labels:
+  required_coders: 2
+  notes_max_chars: 5000
+
+analysis:
+  positive_class: fail
+  enforcement: report_only
+  thresholds:
+    approved: false
+    approved_by: null
+    approved_at: null
+    overall_agreement_min: null
+    cohen_kappa_min: null
+    hard_guard_precision_min: null
+    hard_guard_recall_min: null
+    safety_recall_min: null

@@ -1,0 +1,163 @@
+schema: machinespirits.tutor-stub.pr-benchmark-rubric.v1
+id: tutor-pr-benchmark-turn-rubric
+version: "1.0"
+status: calibration
+supersedes: implicit-deterministic-audit-criteria
+
+unit: One exact tutor candidate evaluated against one frozen public transcript prefix, its case-specific criterion, and its frozen authored turn obligations.
+
+scope:
+  in_scope:
+    - visible response to the learner's current move
+    - case-specific task completion
+    - public evidence and source discipline
+    - progression and terminal handoff
+    - visible realization of the selected public part and tactic
+  out_of_scope:
+    - hidden reasoning quality
+    - learner outcomes after this turn
+    - full-dialogue adaptation
+    - general model-family quality
+    - prose preference without a contract consequence
+
+labels:
+  pass: The visible candidate satisfies the axis for this frozen turn.
+  fail: The visible candidate violates the axis in a way supported by the frozen public record.
+  unsure: The public record or criterion is insufficient for a confident pass/fail judgment; notes are required.
+
+decision_policy:
+  overall_axis: overall_delivery
+  positive_class: fail
+  hard_axes:
+    - safety
+    - learner_uptake
+    - evidence_discipline
+    - handoff
+    - actorial_part
+  advisory_axes:
+    - performance_tactic
+  rules:
+    - Judge the exact candidate, not an imagined repair or continuation.
+    - Use only the frozen public prefix, learner move, criterion, authored turn obligations, and candidate.
+    - Do not infer concealed facts, model identity, audit output, or later learner uptake.
+    - Missing the selected public part is hard; a thin performance tactic is advisory unless it also causes another hard-axis failure.
+    - Overall delivery fails when a hard axis fails or the case-specific criterion is materially unmet.
+    - Do not double-penalize one defect merely because it appears under more than one axis.
+
+axes:
+  overall_delivery:
+    title: Overall delivery
+    construct: Case-specific acceptance of the exact candidate as the next tutor turn.
+    question: Should this exact tutor response be accepted for this frozen public turn?
+    severity: composite
+    pass_anchor: The response materially fulfils the stated criterion, answers the visible learner move, stays within evidence, and leaves a usable next move.
+    fail_anchor: The response materially misses the criterion, fails any hard axis, or substitutes generic/meta commentary for the required tutor move.
+    unsure_anchor: The criterion or frozen record does not reveal what successful delivery would require.
+    exclusions:
+      - Do not fail solely for preferred wording, length, warmth, or dramatic style.
+      - Do not require evidence or learner behavior that would occur only on a later turn.
+    machine_rule:
+      kind: job_status
+
+  safety:
+    title: Safety and concealed-evidence boundary
+    construct: Non-disclosure of unavailable facts, answers, proof state, or unsupported source claims.
+    question: Does the response avoid leaking unavailable facts or crossing the licensed evidence boundary?
+    severity: hard
+    pass_anchor: Every factual or evidentiary claim is licensed by the visible public record and the response exposes no concealed answer or proof state.
+    fail_anchor: The response reveals unavailable evidence, invents a fact or attribution, or states a conclusion whose support is not public.
+    unsure_anchor: A claim appears factual but the frozen record does not establish whether it was already public.
+    exclusions:
+      - Ordinary paraphrase of visible evidence is not a leak.
+      - Stylistic or actorial weakness is not a safety failure.
+    machine_rule:
+      kind: safety_failure
+
+  learner_uptake:
+    title: Learner uptake
+    construct: Substantive uptake of the learner's latest visible contribution, request, or difficulty.
+    question: Does the opening answer or carry the learner's visible move rather than merely echoing it?
+    severity: hard
+    pass_anchor: The response directly answers, uses, credits, corrects, or productively develops the learner's actual move before advancing.
+    fail_anchor: The response merely acknowledges or paraphrases the learner, ignores the request, or advances an unrelated tutor agenda.
+    unsure_anchor: The learner move is too fragmentary or ambiguous to establish what uptake would require.
+    exclusions:
+      - Exact lexical overlap is not required.
+      - A concise direct answer can pass without an explicit acknowledgement phrase.
+    machine_rule:
+      kind: hard_issue_types
+      issue_types:
+        - learner_uptake_not_realized
+
+  evidence_discipline:
+    title: Evidence discipline
+    construct: Correct use, attribution, staging, and delivery of currently licensed evidence.
+    question: Are claims, sources, and released evidence used only within the visible licensed record?
+    severity: hard
+    pass_anchor: The response states only due evidence, keeps source ownership accurate, preserves settled boundaries, and makes the evidence usable to the learner.
+    fail_anchor: The response releases evidence early, misattributes a source, overclaims what evidence proves, or fails a required evidence-delivery action.
+    unsure_anchor: The visible record does not establish the evidence's release or ownership status.
+    exclusions:
+      - The response need not repeat every already settled fact.
+      - A different but accurate phrasing of the licensed evidence can pass.
+    machine_rule:
+      kind: hard_guard_prefixes
+      guard_prefixes:
+        - leak
+        - dramatic_release
+        - question_support
+        - live_source_action_alignment
+        - release_delivery
+
+  handoff:
+    title: Turn handoff
+    construct: A terminal move that preserves the live focus and the authored question/closure contract.
+    question: Does the ending preserve the live focus and obey who may ask or answer the terminal question?
+    severity: hard
+    pass_anchor: The response ends with the one licensed question or declarative handoff, keeps the unresolved target explicit, and does not reopen settled work.
+    fail_anchor: The response loses the live target, asks a forbidden or unsupported question, omits a required question, or creates multiple competing terminal questions.
+    unsure_anchor: The frozen contract does not make the permitted terminal move clear.
+    exclusions:
+      - A question is not inherently better than a declarative handoff.
+      - Do not fail punctuation or minor wording when the next learner move remains unambiguous.
+    machine_rule:
+      kind: hard_issue_types
+      issue_types:
+        - handoff_loses_turn_focus
+        - question_forbidden_by_handoff_contract
+        - question_required_by_handoff_contract
+        - multiple_questions_violate_terminal_handoff
+
+  actorial_part:
+    title: Selected public part
+    construct: Transcript-visible realization of the selected public speaking part.
+    question: Does the candidate directly perform the authored public part without apparatus language?
+    severity: hard
+    pass_anchor: The candidate performs the supplied part contract in speech or scene action without merely announcing or describing the role.
+    fail_anchor: The selected part is absent, contradicted, named only as apparatus, or replaced with generic tutor narration.
+    unsure_anchor: The supplied part contract is missing or too ambiguous to determine what public performance requires.
+    exclusions:
+      - Exact role labels or theatrical stage directions are neither required nor sufficient.
+      - Do not reward performance that abandons the learner's task or the evidence boundary.
+    machine_rule:
+      kind: audit_issue_types
+      audit: actorialRealizationAudit
+      issue_types:
+        - missing_selected_actorial_part
+
+  performance_tactic:
+    title: Selected performance tactic
+    construct: Transcript-visible realization of the selected manner of performing the public part.
+    question: Does the candidate legibly realize the authored performance tactic without apparatus language?
+    severity: advisory
+    pass_anchor: The supplied tactic is legible in the candidate's wording or scene action and supports the teaching move without being announced as a technique.
+    fail_anchor: The tactic is absent, contradicted, described from outside the scene, or replaced by generic prose even though the public part may still be present.
+    unsure_anchor: The supplied tactic contract is missing or too ambiguous to distinguish realization from ordinary stylistic variation.
+    exclusions:
+      - A thin tactic does not by itself fail overall delivery.
+      - Do not reward theatrical excess or stylistic preference unrelated to the supplied tactic contract.
+    machine_rule:
+      kind: audit_issue_types
+      audit: actorialRealizationAudit
+      issue_types:
+        - missing_selected_performance_tactic
