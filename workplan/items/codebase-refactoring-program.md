@@ -51,6 +51,7 @@ links:
     - refactor-tutor-stub-feature-map-projection
     - refactor-tutor-stub-release-notes-projection
     - refactor-tutor-stub-dag-snapshot-projection
+    - refactor-tutor-stub-proof-command-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -382,3 +383,19 @@ Log:
   `4cebdde1` after PR #267 changed the hermetic-runner lifecycle. Final-base
   focused 6/6, root 6,976/6,976, and tutor-core 137/137 zero-skip contracts are
   green through the new natural-teardown runner.
+- 2026-07-26 — PR #269 merged the DAG-snapshot child as `482f97f3` with every
+  CI lane green; the serialized render followed as `cce01690`. Closed that
+  child and activated `refactor-tutor-stub-proof-command-projection` for the
+  fixed artifact-path table and authored/learner/tutor semantic summaries while
+  retaining formal checks, command handling, terminal writes, and traces in
+  the CLI.
+- 2026-07-26 — The proof-command child reached review with one dependency-free
+  artifact/semantic projector, a 41-line CLI reduction, byte-identical real
+  `/proof paths` and learner-inspection processes, 15/15 focused tests, and
+  complete root 6,982-test plus tutor-core 137-test zero-skip parity. Formal
+  proof execution, audits, dynamic imports, commands, terminal writes, and
+  traces remain CLI-owned.
+- 2026-07-26 — Rebased the proof-command child onto rendered `origin/main` at
+  `689468b4` after PR #270's evidence-use rubric change. The separate tutor-stub
+  edits compose cleanly: the overlap set passes 57/57 and final root 7,001 plus
+  tutor-core 137 zero-skip contracts are green.

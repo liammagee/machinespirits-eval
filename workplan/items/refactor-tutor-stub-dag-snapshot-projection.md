@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-dag-snapshot-projection
 title: Refactor tutor-stub proof-DAG snapshot projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -23,6 +23,8 @@ links:
     - tests/tutorStubDagSnapshotPresentation.test.js
     - tests/tutorStubInteractivePerformance.test.js
     - config/hermetic-test-manifest.json
+  prs:
+    - 269
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-release-notes-projection
@@ -87,3 +89,7 @@ Log:
   final-base focused suite passes 6/6; the new complete contract passes root
   6,976/6,976 across 499 files and tutor-core 137/137 with zero skips. Static,
   manifest, and 210-item source-only gates remain green.
+- 2026-07-26 — PR #269 merged as `482f97f3` with every CI lane green; the
+  serialized workplan render followed as `cce01690`. Closed this child and
+  handed the adjacent deterministic fixture-command presentation seam to
+  `refactor-tutor-stub-proof-command-projection`.
