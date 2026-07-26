@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-session-status-presentation
 title: Refactor tutor-stub session-status presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-interaction-mode-presentation
 links:
+  prs:
+    - 275
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -86,3 +88,6 @@ Log:
   ratchet across 384 files, synchronized manifest, 215-item source-only
   workplan, syntax, and diff gates pass; generated workplan views remain
   untouched.
+- 2026-07-26 — PR #275 merged as `7ffbf1b8`; the serialized workplan render
+  followed as `9480bd7d`. All ten final CI lanes are green, so this child is
+  closed and the bounded training-reuse presentation child is active.
