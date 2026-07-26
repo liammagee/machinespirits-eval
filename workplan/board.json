@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T01:05:47.398Z",
+  "generated": "2026-07-26T02:03:24.743Z",
   "counts": {
-    "total": 199,
+    "total": 200,
     "byStatus": {
-      "done": 175,
+      "done": 176,
       "blocked": 4,
       "dropped": 3,
       "triaged": 5,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 44,
-      "maintenance": 45,
+      "maintenance": 46,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -217,6 +217,7 @@
           "refactor-tutor-stub-field-presentation",
           "refactor-tutor-stub-closeout-projection",
           "refactor-tutor-stub-interim-presentation",
+          "refactor-tutor-stub-interim-frame-projection",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -545,8 +546,8 @@
       "blocked_by": "tutor-stub-transition-reward-model ended with a killed claim; no supported learned-ranking prerequisite"
     },
     {
-      "id": "refactor-tutor-stub-interim-presentation",
-      "title": "Refactor tutor-stub interim presentation",
+      "id": "refactor-tutor-stub-interim-frame-projection",
+      "title": "Refactor tutor-stub interim frame projection",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -554,11 +555,11 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "One pure interim-presentation service preserves signed deltas, capability and strength labels, bottleneck copy, and every contextual CLI hint; focused, PTY, hermetic, static, and source-only gates pass without model calls.",
-      "branch": "codex/refactor-tutor-stub-interim-presentation",
+      "verification": "Frozen fixtures pin panel ordering, empty filtering, fallback behavior, rotation boundaries, spinner selection, elapsed formatting, every tone, phase compaction, terminal-width bounds, and exact ANSI composition; the real PTY loading scenario and full hermetic/static/source gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-interim-frame-projection",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-closeout-projection"
+        "refactor-tutor-stub-interim-presentation"
       ],
       "links": {
         "notes": [
@@ -566,14 +567,14 @@
         ],
         "code": [
           "services/tutorStubInterimPresentation.js",
-          "services/tutorStubLearningSummary.js",
           "scripts/tutor-stub.js",
           "tests/tutorStubInterimPresentation.test.js",
-          "tests/tutorStubHumanDiscourseLayer.test.js"
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "tests/tutorStubConcurrentTerminal.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-closeout-projection"
+          "refactor-tutor-stub-interim-presentation"
         ]
       },
       "tags": [
@@ -2483,6 +2484,47 @@
         "tutor-stub",
         "presentation",
         "interaction-field"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-interim-presentation",
+      "title": "Refactor tutor-stub interim presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "One pure interim-presentation service preserves signed deltas, capability and strength labels, bottleneck copy, and every contextual CLI hint; focused, PTY, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-interim-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-closeout-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInterimPresentation.js",
+          "services/tutorStubLearningSummary.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInterimPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-closeout-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "terminal",
+        "loading-indicator"
       ],
       "milestone": "evaluation-infrastructure"
     },
