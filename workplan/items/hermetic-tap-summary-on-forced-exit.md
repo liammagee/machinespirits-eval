@@ -1,7 +1,7 @@
 ---
 id: hermetic-tap-summary-on-forced-exit
 title: Read the hermetic root verdict from a channel that survives forced exit
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: claude
@@ -21,10 +21,12 @@ branch: claude/hermetic-tap-summary
 depends_on:
   - optimize-hermetic-test-suite
 links:
-  prs: []
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/264
   notes: []
   items:
     - optimize-hermetic-test-suite
+    - hermetic-drop-test-force-exit
 tags:
   - testing
   - ci
@@ -153,3 +155,11 @@ and names no files), and the exact-file check now covers the root phase.
   carries the tail. That test clears `NODE_TEST_CONTEXT` from the child's
   environment, because the test is itself inside `node --test` and the
   recursion marker otherwise makes the spawned runner decline to run any files.
+- 2026-07-26 — Merged as #264 and closed. The two-channel read stays as the
+  fallback it was built to be, but the race it works around is gone:
+  `hermetic-drop-test-force-exit` removed the flag, so nothing cuts the run off
+  and the tail is produced normally. The second defect recorded here — a forced
+  exit ending the run short, invisibly — was measured in CI once that item
+  landed: the last forced-exit run of main reported 3943 tests on one Node
+  version and 3898 on the other for the identical shard. It is the same defect
+  this item observed and declined to fix.

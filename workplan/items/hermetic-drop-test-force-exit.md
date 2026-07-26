@@ -1,7 +1,7 @@
 ---
 id: hermetic-drop-test-force-exit
 title: Drop --test-force-exit from the hermetic root phase
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: claude
@@ -24,7 +24,8 @@ branch: claude/hermetic-drop-force-exit
 depends_on:
   - hermetic-tap-summary-on-forced-exit
 links:
-  prs: []
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/267
   notes: []
   items:
     - hermetic-tap-summary-on-forced-exit
@@ -160,3 +161,14 @@ used to cost accuracy. If a file starts leaking, the message says which one and
   reporter writes 0 lines there and 2 on 22 for the same fixture, the new one
   writes 2 on both, and the full runner exits 0 under a Node 20 parent and child
   with the exact-file check active.
+- 2026-07-26 — Merged as #267 and closed. Main's first run without the flag
+  passed all eight jobs, so there was no Linux-only handle debt the local suite
+  had been hiding. CI also gave better evidence of the original defect than the
+  local comparison did. On the last forced-exit run of main, the same shard
+  reported different totals on the two Node versions — shard 1 gave 3943 on Node
+  20 and 3898 on Node 22, shard 2 gave 3006 on 20 and 3021 on 22 — and which
+  version lost cases flipped between shards. After the merge all four jobs agree
+  at 3943 and 3027, the latter being the previous high plus this change's six
+  new tests. Shard 1 is the like-for-like number, since nothing was added there:
+  45 cases that CI had not been accounting for, while reporting green. Whether
+  they ran and went unrecorded or never ran is not distinguishable from the log.
