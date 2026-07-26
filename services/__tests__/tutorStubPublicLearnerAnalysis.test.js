@@ -5,6 +5,8 @@ import { describe, it } from 'node:test';
 
 import { loadWorld } from '../dramaticDerivation/world.js';
 import {
+  TUTOR_STUB_EVIDENCE_USE_RUBRICS,
+  TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
   TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   TutorStubPublicLearnerAnalysisError,
@@ -18,6 +20,7 @@ import {
   createTutorStubPublicLearnerRecord,
   extractTutorStubPublicLearnerAnalysis,
   normalizeTutorStubClassificationAgainstLearnerSurface,
+  normalizeTutorStubEvidenceUseRubric,
   parseTutorStubPublicLearnerAnalysisInteractive,
   parseTutorStubPublicLearnerAnalysisStrict,
   postprocessTutorStubPublicLearnerAnalysis,
@@ -293,6 +296,67 @@ function modelResponse(value, overrides = {}) {
     ...overrides,
   };
 }
+
+describe('evidence_use rubric versioning', () => {
+  const promptFor = (evidenceUseRubric) =>
+    buildTutorStubPublicLearnerAnalysisPrompt({
+      learnerText: 'I enter the verdict: Edony struck the false shillings.',
+      topic: 'evidence reasoning',
+      world: buildTutorStubPublicLearnerAnalysisWorld(smokeWorld()),
+      tutorTurn: 1,
+      publicStagedEvidence: [],
+      ...(evidenceUseRubric === undefined ? {} : { evidenceUseRubric }),
+    });
+
+  // The point of versioning rather than editing in place: runs that do not opt
+  // in must be bit-for-bit unaffected, so in-flight arcs cannot silently change
+  // instrument. An omitted argument and an explicit V1 must agree, and both must
+  // carry V1's wording.
+  it('defaults to v1 and leaves the default prompt untouched', () => {
+    assert.equal(TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT, TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1);
+    const omitted = promptFor(undefined);
+    assert.equal(omitted, promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1));
+    assert.match(omitted, /correct clue plus conclusion but no bridge => omits_warrant/u);
+    assert.doesNotMatch(omitted, /a bridge is voiced when/u);
+  });
+
+  it('v2 defines the bridge in both directions', () => {
+    const v2 = promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V2_BRIDGE_VOICED);
+    // Direction 1: a bare conclusion is omits_warrant even when the record supports it.
+    assert.match(v2, /conclusion whose bridge is not voiced in this turn => omits_warrant/u);
+    assert.match(v2, /judge the bridge from this turn's words alone/u);
+    // Direction 2: an acknowledged gap does not cancel a voiced bridge.
+    assert.match(v2, /voicing a bridge and also naming what is still unproven is links_evidence_to_rule/u);
+    assert.match(v2, /a bridge is voiced when this turn names the specific public evidence/u);
+    assert.doesNotMatch(v2, /correct clue plus conclusion but no bridge => omits_warrant/u);
+  });
+
+  // The two neighbouring labels are deliberately byte-identical across versions.
+  // That is what lets `overleaps_evidence` serve as a within-prompt control when
+  // the versions are compared: a global prompt effect would move it too.
+  it('leaves the neighbouring evidence labels byte-identical across versions', () => {
+    for (const clause of [
+      'distorted/misattributed public clue => distorts_public_evidence',
+      'conclusion beyond available evidence => overleaps_evidence',
+    ]) {
+      assert.ok(promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1).includes(clause), `v1 missing: ${clause}`);
+      assert.ok(promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V2_BRIDGE_VOICED).includes(clause), `v2 missing: ${clause}`);
+    }
+  });
+
+  it('rejects an unknown rubric version instead of silently falling back', () => {
+    assert.equal(normalizeTutorStubEvidenceUseRubric(), TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT);
+    assert.equal(normalizeTutorStubEvidenceUseRubric(' V2_Bridge_Voiced '), 'v2_bridge_voiced');
+    for (const bad of ['v3', 'bridge', 'v2-bridge-voiced']) {
+      assert.throws(
+        () => normalizeTutorStubEvidenceUseRubric(bad),
+        (error) => error instanceof TutorStubPublicLearnerAnalysisError && error.code === 'invalid_evidence_use_rubric',
+        `expected ${bad} to be rejected`,
+      );
+    }
+    assert.throws(() => promptFor('v3'), TutorStubPublicLearnerAnalysisError);
+  });
+});
 
 describe('strict public learner analysis', () => {
   it('uses a separate recursively complete Codex-compatible provider schema', () => {

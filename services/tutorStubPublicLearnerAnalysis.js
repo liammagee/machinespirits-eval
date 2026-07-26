@@ -44,6 +44,84 @@ export function normalizeTutorStubPublicLearnerAnalysisPromptProfile(value = 'ba
   return profile;
 }
 
+/**
+ * Versions of the `evidence_use` precedence rubric.
+ *
+ * `evidence_use` is the sole input to the `warrant_skip` point-of-action
+ * trigger, so a change to its wording changes which turns get graded and
+ * therefore the denominator of every compliance rate computed from it. The
+ * versions are kept side by side, and the version in force is stamped onto each
+ * turn record, for the same reason the tutor rubric carries
+ * `tutor_rubric_version`: rows scored under different wordings must never be
+ * pooled into one average.
+ *
+ * V1 leaves "bridge" undefined. Measured consequence: two frontier judge
+ * families (codex/gpt-5.6-terra and claude-sonnet-5, 3 draws each over 150
+ * archived turns) agree on the fire decision for only 26.2% of the turns
+ * labelled `omits_warrant` — the ambiguity is whether the bridge must be voiced
+ * in the current turn or may be inherited from the public record. Both readings
+ * are defensible under V1's words.
+ *
+ * V2_BRIDGE_VOICED resolves it in both directions: the bridge must be voiced in
+ * the current turn, and acknowledging a remaining gap does not cancel a voiced
+ * bridge. Cross-family agreement on those turns rises to 78.6% (kappa 0.583),
+ * and over all 150 turns to 82.7% (kappa 0.642). Ruled out by design rather
+ * than assumed: gate collapse (pooled fire rate rose 37.3% -> 39.6%, so the
+ * families converged toward each other and not toward silence), a global prompt
+ * effect (the `overleaps_evidence` clause is byte-identical between versions and
+ * its agreement moved +3.0 points), and prompt length (agreement is flat across
+ * the 16k boundary the insert pushes 33 of 150 prompts over).
+ *
+ * V2 also fires on fewer turns, because it stops firing where the learner has
+ * already voiced a bridge and named its limit. Those turns had the highest
+ * compliance in the archive (34.4% against 27.3% for bare conclusions), so
+ * identical tutor behaviour scores about 1.1 points lower under V2 (28.4% ->
+ * 27.3% over the 1,281 graded `warrant_skip` turns). That shift is a property of
+ * the rubric, not of the tutor. Between-arm contrasts are unaffected, since both
+ * arms lose the same turns.
+ */
+export const TUTOR_STUB_EVIDENCE_USE_RUBRICS = Object.freeze({
+  V1: 'v1',
+  V2_BRIDGE_VOICED: 'v2_bridge_voiced',
+});
+
+/**
+ * V1 remains the default: flipping it would silently change the instrument
+ * mid-arc for in-flight Program 2 pilots. Opting in is a deliberate per-run act.
+ */
+export const TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT = TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1;
+
+/**
+ * Prompt lines per version. Only the `omits_warrant` / `links_evidence_to_rule`
+ * boundary differs; the `distorts_public_evidence` and `overleaps_evidence`
+ * clauses are byte-identical across versions, which is what makes them usable
+ * as a within-prompt control when comparing the two.
+ */
+const EVIDENCE_USE_RUBRIC_CLAUSES = Object.freeze({
+  [TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1]: Object.freeze([
+    '- evidence precedence: distorted/misattributed public clue => distorts_public_evidence; correct clue plus conclusion but no bridge => omits_warrant; conclusion beyond available evidence => overleaps_evidence; explicit bridge => links_evidence_to_rule.',
+  ]),
+  [TUTOR_STUB_EVIDENCE_USE_RUBRICS.V2_BRIDGE_VOICED]: Object.freeze([
+    '- evidence precedence: distorted/misattributed public clue => distorts_public_evidence; conclusion whose bridge is not voiced in this turn => omits_warrant; conclusion beyond available evidence => overleaps_evidence; conclusion whose bridge is voiced in this turn => links_evidence_to_rule.',
+    '- a bridge is voiced when this turn names the specific public evidence relied on and says what it licenses or rules out; citing a numbered rule is not required.',
+    "- judge the bridge from this turn's words alone: support present in the record but not voiced here does not count, so a bare conclusion is omits_warrant even when the record would support it.",
+    '- voicing a bridge and also naming what is still unproven is links_evidence_to_rule, not omits_warrant; log the acknowledged gap under missing warrant instead.',
+    '- e.g. "I enter the verdict: Edony struck the false shillings." => omits_warrant. "It shows Edony alone cast the blank at the weir-forge crucible, though it does not show she cut the die." => links_evidence_to_rule.',
+  ]),
+});
+
+export function normalizeTutorStubEvidenceUseRubric(value = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT) {
+  const rubric = String(value || TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT)
+    .trim()
+    .toLowerCase();
+  if (!Object.values(TUTOR_STUB_EVIDENCE_USE_RUBRICS).includes(rubric)) {
+    throw new TutorStubPublicLearnerAnalysisError(`unknown evidence_use rubric version: ${value}`, {
+      code: 'invalid_evidence_use_rubric',
+    });
+  }
+  return rubric;
+}
+
 export const TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA = 'machinespirits.tutor-stub.learner-dag-preflight.v1';
 
 export const TUTOR_STUB_PUBLIC_STAGED_EVIDENCE_SCHEMA = Object.freeze({
@@ -1095,6 +1173,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   includeBenchmarkTransitionEvent = false,
   strictProviderEnvelope = false,
   promptProfile = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
+  evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
 } = {}) {
   if (!world) throw new TutorStubPublicLearnerAnalysisError('public learner analysis requires a world');
   if (!Number.isInteger(Number(tutorTurn)) || Number(tutorTurn) < 1) {
@@ -1103,6 +1182,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
   const staged = resolvedPublicStagedEvidence(world, Number(tutorTurn), publicStagedEvidence);
   const policy = String(registerPolicy || '').trim();
   const normalizedPromptProfile = normalizeTutorStubPublicLearnerAnalysisPromptProfile(promptProfile);
+  const normalizedEvidenceUseRubric = normalizeTutorStubEvidenceUseRubric(evidenceUseRubric);
   const compactPrompt = normalizedPromptProfile === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.COMPACT_V1;
   const includeRegisterSelection = Boolean(
     registerEnabled && !LOCAL_REGISTER_POLICIES.has(policy) && Array.isArray(registerPalette) && registerPalette.length,
@@ -1201,7 +1281,7 @@ export function buildTutorStubPublicLearnerAnalysisPrompt({
     '- Do not use answer_seeking_or_overreach for a supported, bounded evidence conclusion that stays within the public clue and its rule.',
     '- discourse_move: question, claim, hypothesis, inference, evidence_adoption, challenge, repair_request, affective_signal, answer_seeking, metacognitive_reflection, off_task',
     '- evidence_use: none, repeats_setup, cites_public_evidence, omits_warrant, links_evidence_to_rule, overleaps_evidence, distorts_public_evidence, revises_from_evidence',
-    '- evidence precedence: distorted/misattributed public clue => distorts_public_evidence; correct clue plus conclusion but no bridge => omits_warrant; conclusion beyond available evidence => overleaps_evidence; explicit bridge => links_evidence_to_rule.',
+    ...EVIDENCE_USE_RUBRIC_CLAUSES[normalizedEvidenceUseRubric],
     '- Resolve short answers, pronouns, and ellipsis against the immediately preceding tutor question before assigning these labels. A reply such as "it will be the same" can fully answer a local single-referent question without repeating the noun.',
     '- Do not call a contextually complete short answer confused, passive, or evidence-free merely because the preceding question supplies its referent. Record any genuinely omitted warrant separately for strict audit.',
     '- epistemic_stance: receptive, confused, exploratory, overconfident, resistant, answer_seeking, reflective, grounded',
@@ -1858,6 +1938,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
   maxTokens = 2500,
   prompt = null,
   promptProfile = TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
+  evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   modelCallOptions = {},
 } = {}) {
   const strict = parseMode === TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES.STRICT_BENCHMARK;
@@ -1930,6 +2011,7 @@ export async function extractTutorStubPublicLearnerAnalysis({
         includeBenchmarkTransitionEvent,
         strictProviderEnvelope: strict,
         promptProfile,
+        evidenceUseRubric,
       });
   } catch (error) {
     throw attachCallFailure(error, {
@@ -2656,6 +2738,7 @@ export async function analyzeTutorStubPublicLearnerTurn({
     registerPalette: Array.isArray(promptContext.registerPalette) ? promptContext.registerPalette : [],
     role: promptContext.role || 'tutor_stub_public_learner_analysis',
     maxTokens: Number.isFinite(Number(promptContext.maxTokens)) ? Number(promptContext.maxTokens) : 2500,
+    evidenceUseRubric: promptContext.evidenceUseRubric ?? TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   });
   return postprocessTutorStubPublicLearnerAnalysis({
     rawAnalysis,

@@ -141,12 +141,14 @@ import { buildTutorStubResumeHandoff } from '../services/tutorStubResumeHandoff.
 import { buildTutorStubProofDebtState } from '../services/tutorStubProofDebt.js';
 import {
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
+  TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES,
   TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   applyTutorStubPublicLearnerRecordUpdate as applyLearnerRecordUpdate,
   buildTutorStubLearnerDagPreflight,
   buildTutorStubPublicLearnerAnalysisPrompt,
   extractTutorStubPublicLearnerAnalysis,
+  normalizeTutorStubEvidenceUseRubric,
   normalizeTutorStubPublicLearnerAnalysisPromptProfile,
   normalizeTutorStubHumanDiscourseExtraction as normalizeHumanDiscourseExtraction,
   normalizeTutorStubHumanDiscourseRows as normalizeDiscourseRows,
@@ -632,6 +634,8 @@ const STUB = {
   learnerAnalysisPromptProfile:
     process.env.TUTOR_STUB_LEARNER_ANALYSIS_PROMPT_PROFILE ||
     TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PROMPT_PROFILES.BASELINE,
+  learnerAnalysisEvidenceUseRubric:
+    process.env.TUTOR_STUB_LEARNER_ANALYSIS_EVIDENCE_USE_RUBRIC || TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
   mixedTutorPrefetchPolicy: process.env.TUTOR_STUB_MIXED_TUTOR_PREFETCH_POLICY || 'always',
   topic: process.env.TUTOR_STUB_TOPIC || 'fractions',
   world: process.env.TUTOR_STUB_WORLD || 'world_005_marrick',
@@ -775,6 +779,7 @@ const { values: args, positionals } = parseArgs({
     'tutor-learner-dag': { type: 'boolean', default: false },
     'learner-record-model': { type: 'string', default: STUB.learnerRecordModel },
     'learner-analysis-prompt-profile': { type: 'string', default: STUB.learnerAnalysisPromptProfile },
+    'learner-analysis-evidence-use-rubric': { type: 'string', default: STUB.learnerAnalysisEvidenceUseRubric },
     'no-register-selection': { type: 'boolean', default: false },
     'register-palette': { type: 'string', default: 'all' },
     'register-policy': { type: 'string', default: STUB.registerPolicy },
@@ -5742,6 +5747,7 @@ function buildCombinedLearnerAnalysisPrompt({
     publicStagedEvidence,
     dagPreflight,
     promptProfile: state.learnerAnalysisPromptProfile,
+    evidenceUseRubric: state.learnerAnalysisEvidenceUseRubric,
   });
 }
 async function extractLearnerRecordUpdate({ learnerText, state, tutorTurn, dagPreflight = null, signal = null }) {
@@ -15305,6 +15311,9 @@ async function main() {
   const learnerAnalysisPromptProfile = normalizeTutorStubPublicLearnerAnalysisPromptProfile(
     args['learner-analysis-prompt-profile'],
   );
+  const learnerAnalysisEvidenceUseRubric = normalizeTutorStubEvidenceUseRubric(
+    args['learner-analysis-evidence-use-rubric'],
+  );
   const mixedTutorPrefetchPolicy = String(args['mixed-tutor-prefetch-policy'] || 'always')
     .trim()
     .toLowerCase();
@@ -15856,6 +15865,7 @@ async function main() {
           },
           promptArchitecture,
           learnerAnalysisPromptProfile,
+          learnerAnalysisEvidenceUseRubric,
           directorContext,
           temperature: effectiveTemperature,
           requestedTemperature: temperature,
@@ -16284,6 +16294,7 @@ async function main() {
         : { enabled: false },
       cliEffort: cliEffort || null,
       learnerAnalysisPromptProfile,
+      learnerAnalysisEvidenceUseRubric,
       mixedTutorPrefetchPolicy,
       stream: {
         enabled: streamEnabled,
@@ -16421,6 +16432,7 @@ async function main() {
     maxTokens,
     historyTurns,
     learnerAnalysisPromptProfile,
+    learnerAnalysisEvidenceUseRubric,
     mixedTutorPrefetchPolicy,
     tutorContext: {
       schema: 'machinespirits.tutor-stub.tutor-context-policy.v2',
