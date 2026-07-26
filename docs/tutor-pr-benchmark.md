@@ -33,10 +33,55 @@ For a two-call local smoke screen:
 npm run tutor:stub:pr-benchmark -- --preset smoke
 ```
 
-Reports land under the ignored `.tutor-stub-auto-eval/` tree by default. The
-Markdown report is compact and PR-friendly; `report.json` retains the generated
-candidates and full deterministic audits for diagnosis. Do not paste rejected
-candidate text into a public PR unless it has been reviewed for leakage.
+Reports land under Git's common directory at
+`.git/machinespirits-reports/tutor-pr-benchmark/` by default. That private path
+is shared by linked worktrees and survives removal of a disposable worktree.
+The Markdown report is compact and PR-friendly; `report.json` retains the
+generated candidates and full deterministic audits for diagnosis. Do not paste
+rejected candidate text into a public PR unless it has been reviewed for
+leakage.
+
+## Comparison lanes
+
+Use a saved report to separate audit changes from model-generation variance:
+
+```bash
+npm run tutor:stub:pr-benchmark -- \
+  --reaudit-report /absolute/path/to/report.json
+```
+
+This makes zero model calls. It feeds the exact saved candidate strings through
+the current checked-out deterministic audits and reports pass flips, safety
+changes, and failure-cluster deltas in `reaudit.json` and `reaudit.md`. A
+regression or newly introduced safety failure makes the re-audit fail; existing
+failures that remain failures are reported without being mislabelled as new
+regressions. Reports record both the current commit and whether the evaluated
+worktree was clean or dirty, including its porcelain status entries.
+
+For generation plus audit changes, inspect a base/head comparison plan before
+spending the call budget:
+
+```bash
+npm run tutor:stub:pr-benchmark:compare -- \
+  --base origin/main --head HEAD --print-plan
+```
+
+Then run one paired draw per case/model job:
+
+```bash
+npm run tutor:stub:pr-benchmark:compare -- \
+  --base origin/main --head HEAD --draws 1 --max-calls 12
+```
+
+The comparison creates clean detached temporary worktrees, resolves both refs
+to exact commits, and refuses to run unless their benchmark config hash, model
+and effort pins, cases, fixture hashes, and job manifest are identical. It
+alternates whether base or head runs first within each pair, makes no retries,
+and terminates before generation when the declared total budget is too small.
+Its paired result is diagnostic: the CLIs are not seeded, so interleaving
+reduces order bias but does not turn different generations into exact
+counterfactuals. Use `--draws 2` or more only as an attended, pre-budgeted
+confirmation run (the strong matrix costs 12 calls per draw).
 
 ## Gate and stopping rule
 
@@ -94,12 +139,16 @@ continues after the preserved hook without trying to benchmark.
 
 On a branch push, the gate diffs each pushed range against its remote revision,
 or against the merge base with `origin/main` for a new branch. It runs the
-`strong` preset only when that range changes a configured tutor-generation,
-audit, world, prompt, fixture, or benchmark path. Unrelated documentation and
+`strong` preset only when that range changes an explicit world, prompt,
+fixture, configuration, or benchmark input, or a JavaScript module statically
+reachable from the benchmark runner. This includes the tutor generation and
+audit dependencies without treating every presentation-only `tutorStub*`
+module as relevant. Unrelated documentation, presentation extraction, and
 workplan-only pushes skip it. A completed report is cached by exact commit at
-`.tutor-stub-auto-eval/pr-benchmark-hook/<commit>/report.json`; pushing the same
-commit again reuses a valid `pass` report, or a valid `fail` report while in
-report-only calibration mode, only when its recorded SHA matches.
+`.git/machinespirits-reports/tutor-pr-benchmark/hook/<commit>/report.json`;
+pushing the same commit again reuses a valid `pass` report, or a valid `fail`
+report while in report-only calibration mode, only when its recorded SHA
+matches.
 
 The hook currently runs with `hook.enforcement: report_only` while the
 prospective rubric is calibrated. It fails closed when a relevant push is not

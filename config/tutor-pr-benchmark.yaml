@@ -42,7 +42,10 @@ hook:
   preset: strong
   enforcement: report_only
   base_ref: origin/main
-  report_root: .tutor-stub-auto-eval/pr-benchmark-hook
+  report_scope: git_common
+  report_root: machinespirits-reports/tutor-pr-benchmark
+  import_roots:
+    - scripts/run-tutor-pr-benchmark.js
   exact_paths:
     - config/providers.yaml
     - config/tutor-agents.yaml
@@ -57,10 +60,7 @@ hook:
   path_prefixes:
     - config/drama-derivation/
     - prompts/
-    - services/dramaticDerivation/
-    - services/tutorStub
     - tests/fixtures/tutor-stub-first-draft/
-    - tutor-core/
 
 gate:
   require_all_jobs: true
