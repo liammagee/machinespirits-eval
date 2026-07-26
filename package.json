@@ -44,6 +44,7 @@
     "tutor:stub:ab": "node scripts/run-tutor-stub-ab.js",
     "tutor:stub:showcase": "node scripts/run-tutor-stub-showcase.js",
     "tutor:stub:showcase:rubric": "node scripts/score-showcase-rubric.js",
+    "tutor:stub:showcase:pr-benchmark": "node scripts/score-showcase-pr-benchmark.js",
     "tutor:stub:pr-benchmark": "node scripts/run-tutor-pr-benchmark.js",
     "tutor:stub:pr-benchmark:compare": "node scripts/compare-tutor-pr-benchmark.js",
     "tutor:stub:pr-benchmark:calibrate": "node scripts/tutor-pr-benchmark-calibration.js",

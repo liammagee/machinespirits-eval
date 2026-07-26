@@ -207,6 +207,57 @@ stalled dialogue, not a closed one. `stopReason` tells the two apart where the
 score cannot — which is why the caveat says to read the number beside the
 closure verdict rather than on its own.
 
+## Scoring a run against the PR-benchmark turn rubric
+
+`config/tutor-pr-benchmark-rubric.yaml` is a **different instrument** from v2.2,
+not a newer version of it. Seven axes, labels `pass`/`fail`/`unsure` instead of
+0–100, and a unit it states in its own header: "One exact tutor candidate
+evaluated against one frozen public transcript prefix, its case-specific
+criterion, and its frozen authored turn obligations."
+
+A showcase turn has none of those three. It came out of a dialogue nobody
+scripted, so there is no case criterion, no authored part or tactic contract, and
+no frozen question/closure contract. Four of the seven axes are questions about
+those contracts and cannot be asked here.
+
+```bash
+npm run tutor:stub:showcase:pr-benchmark -- exports/tutor-stub-showcase/<run> --dry-run
+```
+
+Every tutor turn in every dialogue is scored, not just first and last: the value
+of a pass/fail instrument is the rate across a dialogue.
+
+| Axis | Here | Why |
+| --- | --- | --- |
+| `safety` | asked in full | The visible transcript **is** the complete public record, so whether a claim is licensed by it is readable from the text. The axis carries its own `unsure` anchor for the case where the record does not settle whether a fact was already public. |
+| `learner_uptake` | asked in full | The learner's prior move and the tutor's reply to it are both in the transcript. |
+| `handoff` | asked with clauses withheld | Half the axis reads text — keeps the unresolved target explicit, does not reopen settled work, does not create competing terminal questions. Half reads a contract: whether a question was *licensed*, *forbidden*, or *required*. The second half is void here and the judge is told to answer `pass`, not `fail` or `unsure`, if that is its only concern. |
+| `overall_delivery` | not asked | Acceptance against a case criterion that does not exist. Its decision rule also fails on any hard-axis failure, and two of the five hard axes are themselves unavailable. |
+| `evidence_discipline` | not asked | Asks whether evidence was released on time and in order — a question about the private release schedule, not about the text. Handing that schedule to the judge would also break arm symmetry, since the bare arm never builds one. |
+| `actorial_part` | not asked | No authored part contract to check realization against. |
+| `performance_tactic` | not asked | No authored tactic contract. |
+
+**An unavailable axis is reported as unavailable, never as passed.** The
+distinction is the whole point: four axes clear on every turn would read as a
+clean sheet, when in fact nobody asked. `showcasePrBenchmarkAxes` requires every
+axis in the YAML to carry an explicit transfer decision, so an axis added
+upstream fails loudly here rather than being silently dropped.
+
+The output also carries a **verdict over the axes in force** — fail if any fails,
+unsure if any is unsure, pass otherwise. That is deliberately *not* called
+`overall_delivery`, so a showcase number cannot be read against a benchmark-lane
+one.
+
+`safety` is the one transferable axis with a machine channel, and it is symmetric:
+`tutorLeakAudit` is one of the two contract-free audits `--observe-audits` runs on
+the bare arm, so both arms carry it. It is reported beside the judge label as an
+independent column, never merged into it.
+
+The judge defaults to `claude-code.sonnet`, and only `claude-code` refs work —
+`callClaudeCodeJudge` is the one raw-prompt path `rubricEvaluator.js` exports, and
+a ref resolving to any other provider is rejected with the reason rather than
+quietly falling back to the rubric config's default judge.
+
 ## Guard coverage is read from the accounting rows, not the audit records
 
 **The turn record carries an audit object whether or not the guard ran.**
@@ -316,6 +367,12 @@ Each run writes to `exports/tutor-stub-showcase/showcase-<stamp>/` (honouring
 - `transcripts.html` — the reading surface, self-contained,
 - `report.md` — arm benchmark table plus a per-scenario dialogue list,
 - `report.json` — the plan, every turn, every audit, trace paths, git metadata.
+
+The two scoring passes write beside it, each only when run:
+
+- `rubric-v2.2.{json,md}` — v2.2 tutor-rubric scores,
+- `rubric-pr-benchmark-1.0.{json,md}` — PR-benchmark labels, with the withheld
+  axes and the `handoff` clause split named in both files.
 
 Re-render both from a saved report with zero calls:
 
