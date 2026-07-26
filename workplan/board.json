@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-26T22:48:40.046Z",
+  "generated": "2026-07-26T23:06:25.381Z",
   "counts": {
     "total": 226,
     "byStatus": {
@@ -5994,7 +5994,7 @@
       "owner": "unassigned",
       "source": "manual",
       "created": "2026-07-26",
-      "updated": "2026-07-26",
+      "updated": "2026-07-27",
       "verification": "Discrimination is computed only on arms whose fired turns carry no injection, derived per run from the traces rather than from a hardcoded arm list, so a new arm or a changed injection path reports armClassificationMismatch instead of silently entering the baseline; the outcome comes from validated proof-DAG advancement that the gate has no channel to author; components the warrant_skip constraint mechanically suppresses are labelled tutorGated and kept out of the headline; turns are excluded on the delivered-text leak audit only, with the first-draft audit reported as a covariate; the treatment contrast phase-matches its baseline so passing two archives cannot pool them; zero API calls.",
       "claim_status": "exploratory",
       "depends_on": [
