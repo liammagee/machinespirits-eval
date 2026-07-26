@@ -375,6 +375,7 @@
         "tests/scorePoeticsMissingSonnet.test.js",
         "tests/scorePoeticsPhase2.test.js",
         "tests/screenSUnderivability.test.js",
+        "tests/showcasePrBenchmarkScoring.test.js",
         "tests/skillSync.test.js",
         "tests/staticImportCycles.test.js",
         "tests/streamingReporter.test.js",

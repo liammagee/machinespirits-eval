@@ -146,6 +146,28 @@ Design decisions worth keeping:
   artefacts. Two caveats belong with any number it produces: v2.2 scores a
   single turn and penalises a proper close on `elicitation_quality` and
   `productive_difficulty`, and the arms have different transcripts.
+- **The PR-benchmark rubric transfers in part, and the part is stated**
+  (`scripts/score-showcase-pr-benchmark.js`,
+  `npm run tutor:stub:showcase:pr-benchmark`).
+  `config/tutor-pr-benchmark-rubric.yaml` is a different instrument from v2.2,
+  not a newer one, and it names its own unit: a frozen candidate against a case
+  criterion and a set of authored turn obligations. A free-running showcase turn
+  has none of the three. Four axes are questions about those contracts —
+  `overall_delivery` (acceptance against a criterion), `evidence_discipline`
+  (release timing, which lives in the private schedule the bare arm never
+  builds), `actorial_part` and `performance_tactic` (authored contracts) — and
+  are **reported as unavailable, never as passed**: four axes clearing on every
+  turn would read as a clean sheet when nobody asked. `safety` and
+  `learner_uptake` transfer whole; `handoff` is asked with its two
+  contract-dependent fail clauses void and the judge told to answer `pass` if
+  that is its only concern, with the split carried into the artefact rather than
+  applied silently. `showcasePrBenchmarkAxes` requires an explicit transfer
+  decision for every axis in the YAML, so an axis added upstream fails loudly.
+  The composite is named `transferableVerdict`, not `overall_delivery`, so a
+  showcase label cannot be read against a benchmark-lane one. `safety`'s machine
+  channel is included because it is the symmetric one: `tutorLeakAudit` runs on
+  both arms under `--observe-audits`, and it is reported beside the judge label
+  rather than merged into it.
 
 Standing limitation, stated in the config, the service header, `report.md`, and
 on the rendered page: **this is not a controlled comparison.** Each arm has its
