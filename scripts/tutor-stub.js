@@ -137,6 +137,7 @@ import {
   deterministicTutorStubDramaticReleaseFallback,
 } from '../services/tutorStubDramaticRelease.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
+import { buildTutorStubResumeHandoff } from '../services/tutorStubResumeHandoff.js';
 import { buildTutorStubProofDebtState } from '../services/tutorStubProofDebt.js';
 import {
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
@@ -17016,6 +17017,7 @@ async function main() {
       : null,
     world: worldBundle?.world || null,
     openingRealization: null,
+    resumeHandoff: null,
     openingRealizer,
     directorContext,
     directorOpeningPresented: false,
@@ -17169,8 +17171,9 @@ async function main() {
       role: message.role,
       content: String(message.content || ''),
     }));
+    const expectedOpeningMessageCount = state.turns.length * 2 + (state.resumeHandoff ? 2 : 1);
     const opening =
-      publicMessages.length === state.turns.length * 2 + 1 && publicMessages[0]?.role === 'assistant'
+      publicMessages.length === expectedOpeningMessageCount && publicMessages[0]?.role === 'assistant'
         ? jsonClone(publicMessages[0])
         : null;
     return {
@@ -17187,6 +17190,7 @@ async function main() {
       turnCount: state.turns.length,
       publicMessageCount: state.history.length,
       opening,
+      resumeHandoff: state.resumeHandoff ? jsonClone(state.resumeHandoff) : null,
       publicMessages,
       dialogueClosurePhase: state.dialogueClosure?.phase || null,
       learnerProfileId: state.learnerProfileId || null,
@@ -23170,6 +23174,23 @@ async function main() {
     return true;
   }
 
+  function emitResumeHandoff(reason = 'start', { display = true } = {}) {
+    if (!resumedDialogue || state.resumeHandoff || !state.turns.length) return state.resumeHandoff?.text || null;
+    const handoff = buildTutorStubResumeHandoff({ world: state.world, turns: state.turns });
+    if (!handoff) return null;
+    state.resumeHandoff = handoff;
+    state.history.push({ role: 'assistant', content: handoff.text });
+    appendTraceEvent(state.trace, {
+      type: 'tutor_resume_handoff',
+      reason,
+      ...handoff,
+    });
+    if (display && !exiting) {
+      console.log(`${C.magenta}tutor >${C.reset} ${handoff.text}\n`);
+    }
+    return handoff.text;
+  }
+
   async function emitOpeningPrompt(
     reason = 'start',
     { display = true, signal = null, realizer = null, deterministicSource = null } = {},
@@ -23207,6 +23228,7 @@ async function main() {
     state.history = [];
     state.turns = [];
     state.openingRealization = null;
+    state.resumeHandoff = null;
     state.coach = { pending: [], history: [] };
     state.turnFeedback = createTutorStubTurnFeedbackState({ enabled: state.turnFeedback?.enabled !== false });
     mixedLearner.promptHistory = [];
@@ -26937,7 +26959,10 @@ async function main() {
         realizer: 'deterministic',
         deterministicSource: 'session_rpc',
       });
-      if (opening && sessionRuntime.status === 'active') sessionRuntime.sync('opening_committed');
+      const resumeHandoff = opening ? null : emitResumeHandoff('session_rpc_start', { display: false });
+      if ((opening || resumeHandoff) && sessionRuntime.status === 'active') {
+        sessionRuntime.sync(opening ? 'opening_committed' : 'resume_handoff_committed');
+      }
       await runTutorStubSessionRpc({ input: rpcInput, output: rpcOutput, runtime: sessionRuntime });
     } finally {
       if (sessionRuntime.status === 'active') await sessionRuntime.finalize('session_rpc_closed');
@@ -27116,7 +27141,8 @@ async function main() {
       printInteractiveTutorOpening(opening);
     }
   } else if (resumedDialogue) {
-    printTutorFeedbackRequest(latestTutorFeedbackTarget());
+    const resumeHandoff = emitResumeHandoff('interactive_start');
+    if (resumeHandoff) startMixedLearnerPrefetch('resume_handoff');
   }
 
   if (voiceLaunchRequested && !exiting) {

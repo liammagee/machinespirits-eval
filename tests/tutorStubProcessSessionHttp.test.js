@@ -737,7 +737,14 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
   assert.equal(resumedLast.status, 201, JSON.stringify(resumedLast.body));
   assert.equal(resumedLast.body.session.sessionId, 'resume-last-http-session');
   assert.equal(resumedLast.body.session.state.turnCount, 2);
-  assert.equal(resumedLast.body.session.state.publicMessageCount, 5);
+  assert.equal(resumedLast.body.session.state.publicMessageCount, 6);
+  assert.equal(resumedLast.body.session.state.resumeHandoff.schema, 'machinespirits.tutor-stub.resume-handoff.v1');
+  assert.match(resumedLast.body.session.state.resumeHandoff.text, /^Welcome back\./u);
+  assert.equal(resumedLast.body.session.state.publicMessages.at(-1).role, 'assistant');
+  assert.equal(
+    resumedLast.body.session.state.publicMessages.at(-1).content,
+    resumedLast.body.session.state.resumeHandoff.text,
+  );
   const resumeLastFinalized = await request(base, '/sessions/resume-last-http-session/finalize', {
     method: 'POST',
     body: { reason: 'resume_last_verified' },
@@ -758,8 +765,9 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
   assert.equal(resumed.status, 201, JSON.stringify(resumed.body));
   assert.equal(resumed.body.session.sessionId, 'named-resume-http-session');
   assert.equal(resumed.body.session.state.turnCount, 2);
-  assert.equal(resumed.body.session.state.publicMessageCount, 5);
+  assert.equal(resumed.body.session.state.publicMessageCount, 6);
   assert.equal(resumed.body.session.state.opening.role, 'assistant');
+  assert.match(resumed.body.session.state.resumeHandoff.text, /We paused at this question:/u);
 
   const reset = await request(base, '/sessions/named-resume-http-session/reset', {
     method: 'POST',

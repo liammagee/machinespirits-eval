@@ -1877,6 +1877,19 @@ test('/meta directs a persistent tutor change without creating a public learner 
       .map((name) => path.join(tmp, name))
       .find((filePath) => fs.readFileSync(filePath, 'utf8').includes('director_guidance_set'));
     assert.ok(sourceTrace);
+    const sourceTutorText = fs
+      .readFileSync(sourceTrace, 'utf8')
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => JSON.parse(line))
+      .find((event) => event.type === 'turn_complete')?.turnRecord?.tutor;
+    const expectedResumeQuestion = sourceTutorText
+      ?.match(/[^.!?]+(?:[.!?]+["'’”)]*|$)/gu)
+      ?.map((sentence) => sentence.trim())
+      .filter((sentence) => sentence.includes('?'))
+      .at(-1);
+    assert.ok(expectedResumeQuestion);
     const resumed = await runInteractive({
       tmp,
       args: [
@@ -1893,11 +1906,31 @@ test('/meta directs a persistent tutor change without creating a public learner 
         '--world',
         'world_005_marrick',
       ],
-      initialInput: '/status\n',
-      stopWhen: (plain) => plain.includes(`director request: ${direction}`),
+      initialInput: '',
+      followupInputs: [
+        {
+          afterPlainIncludes: 'Welcome back.',
+          text: 'I still need to connect the assay mark to one crucible.\n',
+        },
+      ],
+      stopWhen: (plain) => (plain.match(/tutor >/gu) || []).length >= 2,
     });
     assert.match(resumed.plain, /resume: loaded 1 turn/u);
     assert.match(resumed.plain, /director request: Use shorter replies with less world-specific jargon\./u);
+    assert.match(resumed.plain, /tutor > Welcome back\./u);
+    assert.match(resumed.plain, /We were working on this question:/u);
+    assert.match(resumed.plain, /You had just put this on the table: “The assay still confuses me\.”/u);
+    assert.ok(resumed.plain.includes(`We paused at this question: ${expectedResumeQuestion}`));
+    const resumedModelInput = fs.readFileSync(resumed.logPath, 'utf8');
+    assert.match(resumedModelInput, /Welcome back\./u);
+    assert.match(resumedModelInput, /I still need to connect the assay mark to one crucible\./u);
+    const resumedEvents = readTutorStubTraceEvents(tmp).filter((event) => event.type === 'tutor_resume_handoff');
+    assert.equal(resumedEvents.length, 1);
+    assert.equal(resumedEvents[0].sourceTurn, 1);
+    assert.equal(resumedEvents[0].repriseKind, 'question');
+    assert.equal(resumedEvents[0].repriseText, expectedResumeQuestion);
+    assert.equal(resumedEvents[0].publicTranscriptChanged, true);
+    assert.equal(resumedEvents[0].proofStateChanged, false);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }

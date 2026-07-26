@@ -452,6 +452,7 @@
         "tests/tutorStubResponseContractLeaves.test.js",
         "tests/tutorStubResponseDetails.test.js",
         "tests/tutorStubResponseGuard.test.js",
+        "tests/tutorStubResumeHandoff.test.js",
         "tests/tutorStubRoleHistory.test.js",
         "tests/tutorStubSceneDiction.test.js",
         "tests/tutorStubSelfCorrectionDisclosure.test.js",
