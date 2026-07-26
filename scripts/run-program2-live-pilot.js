@@ -25,6 +25,10 @@ import {
   TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
   buildTutorStubPointOfActionTurn,
 } from '../services/tutorStubPointOfActionCoaching.js';
+import {
+  TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+  normalizeTutorStubEvidenceUseRubric,
+} from '../services/tutorStubPublicLearnerAnalysis.js';
 import { PROGRAM2_COMMITTEE_DEFAULTS, runCommitteeBattery } from '../services/program2CommitteeEngine.js';
 import { STEP4_POINT_OF_ACTION_SPEC } from './run-step4-point-of-action-gate.js';
 import { learnerProfilePrompt } from './tutor-stub-learner-profile-contracts.js';
@@ -105,9 +109,21 @@ function deterministicShuffle(rows, seed) {
 function commandForJob(
   job,
   outputRoot,
-  { runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed, fallbackPolicy = null, world = PHASE5_LIVE_PILOT_SPEC.world } = {},
+  {
+    runSeed = PHASE5_LIVE_PILOT_SPEC.runSeed,
+    fallbackPolicy = null,
+    world = PHASE5_LIVE_PILOT_SPEC.world,
+    evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+  } = {},
 ) {
   const traceDir = path.join(outputRoot, 'traces', job.id);
+  // Emitted only when the run departs from the default, so default plans keep
+  // byte-identical commands to every plan generated before the rubric was
+  // versioned.
+  const evidenceUseRubricArgs =
+    evidenceUseRubric === TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT
+      ? []
+      : ['--learner-analysis-evidence-use-rubric', evidenceUseRubric];
   return [
     process.execPath,
     'scripts/tutor-stub.js',
@@ -164,6 +180,7 @@ function commandForJob(
     '--committee-ollama-url',
     PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl,
     ...(fallbackPolicy ? ['--committee-fallback-policy', fallbackPolicy] : []),
+    ...evidenceUseRubricArgs,
     '--dag',
     '--no-stream',
     '--no-interim-animation',
@@ -172,7 +189,11 @@ function commandForJob(
   ];
 }
 
-export function buildPhase5LivePilotPlan({ outputRoot = 'exports/program2-live-pilot' } = {}) {
+export function buildPhase5LivePilotPlan({
+  outputRoot = 'exports/program2-live-pilot',
+  evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+} = {}) {
+  const rubric = normalizeTutorStubEvidenceUseRubric(evidenceUseRubric);
   const cells = [];
   for (let repeat = 1; repeat <= PHASE5_LIVE_PILOT_SPEC.repeats; repeat += 1) {
     for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
@@ -184,11 +205,12 @@ export function buildPhase5LivePilotPlan({ outputRoot = 'exports/program2-live-p
   const jobs = deterministicShuffle(cells, PHASE5_LIVE_PILOT_SPEC.runSeed).map((cell, index) => {
     const id = [`p5-${String(index + 1).padStart(2, '0')}`, cell.profile, cell.arm, `r${cell.repeat}`].join('-');
     const job = { ordinal: index + 1, id, tutorFamily: PHASE5_LIVE_PILOT_SPEC.tutorFamily, ...cell };
-    return { ...job, command: commandForJob(job, outputRoot) };
+    return { ...job, command: commandForJob(job, outputRoot, { evidenceUseRubric: rubric }) };
   });
   return {
     ...PHASE5_LIVE_PILOT_SPEC,
     detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    evidenceUseRubric: rubric,
     outputRoot,
     ordering: 'seeded Fisher-Yates over the complete balanced 2 x 2 x 6 matrix',
     jobs,
@@ -207,7 +229,11 @@ export const PHASE5B_SPEC = Object.freeze({
   fallbackPolicy: 'v2',
 });
 
-export function buildPhase5bLivePilotPlan({ outputRoot = 'exports/program2-live-pilot-5b' } = {}) {
+export function buildPhase5bLivePilotPlan({
+  outputRoot = 'exports/program2-live-pilot-5b',
+  evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+} = {}) {
+  const rubric = normalizeTutorStubEvidenceUseRubric(evidenceUseRubric);
   const cells = [];
   for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
     for (let repeat = 1; repeat <= PHASE5B_SPEC.committeeRepeats; repeat += 1) {
@@ -225,6 +251,7 @@ export function buildPhase5bLivePilotPlan({ outputRoot = 'exports/program2-live-
       command: commandForJob(job, outputRoot, {
         runSeed: PHASE5B_SPEC.runSeed,
         fallbackPolicy: cell.arm === 'committee' ? PHASE5B_SPEC.fallbackPolicy : null,
+        evidenceUseRubric: rubric,
       }),
     };
   });
@@ -232,6 +259,7 @@ export function buildPhase5bLivePilotPlan({ outputRoot = 'exports/program2-live-
     ...PHASE5_LIVE_PILOT_SPEC,
     ...PHASE5B_SPEC,
     detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    evidenceUseRubric: rubric,
     outputRoot,
     ordering: 'seeded Fisher-Yates over 12 committee-v2 + 6 silent_control cells',
     jobs,
@@ -253,7 +281,11 @@ export const PHASE5C_SPEC = Object.freeze({
   fallbackPolicy: 'v2',
 });
 
-export function buildPhase5cLivePilotPlan({ outputRoot = 'exports/program2-live-pilot-5c' } = {}) {
+export function buildPhase5cLivePilotPlan({
+  outputRoot = 'exports/program2-live-pilot-5c',
+  evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+} = {}) {
+  const rubric = normalizeTutorStubEvidenceUseRubric(evidenceUseRubric);
   const cells = [];
   for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
     for (let repeat = 1; repeat <= PHASE5C_SPEC.committeeRepeats; repeat += 1) {
@@ -272,6 +304,7 @@ export function buildPhase5cLivePilotPlan({ outputRoot = 'exports/program2-live-
         runSeed: PHASE5C_SPEC.runSeed,
         fallbackPolicy: cell.arm === 'committee' ? PHASE5C_SPEC.fallbackPolicy : null,
         world: PHASE5C_SPEC.world,
+        evidenceUseRubric: rubric,
       }),
     };
   });
@@ -279,6 +312,7 @@ export function buildPhase5cLivePilotPlan({ outputRoot = 'exports/program2-live-
     ...PHASE5_LIVE_PILOT_SPEC,
     ...PHASE5C_SPEC,
     detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    evidenceUseRubric: rubric,
     outputRoot,
     ordering: 'seeded Fisher-Yates over 10 committee-v2 + 8 silent_control cells',
     jobs,
@@ -312,6 +346,7 @@ export function validatePhase5cLivePilotPlan(plan) {
     if (cellCounts.get(`${profile}|silent_control`) !== PHASE5C_SPEC.controlRepeats)
       errors.push(`${profile} control cell count mismatch`);
   }
+  errors.push(...evidenceUseRubricErrors(plan));
   return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
 }
 
@@ -336,12 +371,29 @@ export function validatePhase5bLivePilotPlan(plan) {
     if (cellCounts.get(`${profile}|silent_control`) !== PHASE5B_SPEC.controlRepeats)
       errors.push(`${profile} control cell count mismatch`);
   }
+  errors.push(...evidenceUseRubricErrors(plan));
   return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
 }
 
 function flagValue(command, flag) {
   const index = command.indexOf(flag);
   return index >= 0 ? command[index + 1] : null;
+}
+
+// A plan header that stamps one evidence_use rubric while its jobs run another
+// is the failure this stamp exists to prevent, so every validator checks it.
+// Absent flag means the default, which is how pre-versioning plans read.
+function evidenceUseRubricErrors(plan) {
+  const errors = [];
+  const stamped = plan.evidenceUseRubric ?? TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT;
+  for (const job of plan.jobs) {
+    const flagged =
+      flagValue(job.command, '--learner-analysis-evidence-use-rubric') ?? TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT;
+    if (flagged !== stamped) {
+      errors.push(`${job.id} evidence_use rubric ${flagged} does not match plan stamp ${stamped}`);
+    }
+  }
+  return errors;
 }
 
 export function validatePhase5LivePilotPlan(plan) {
@@ -375,6 +427,7 @@ export function validatePhase5LivePilotPlan(plan) {
       }
     }
   }
+  errors.push(...evidenceUseRubricErrors(plan));
   return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
 }
 
