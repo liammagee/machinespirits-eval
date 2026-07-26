@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-26T13:50:57.710Z",
+  "generated": "2026-07-26T13:52:26.684Z",
   "counts": {
     "total": 219,
     "byStatus": {
-      "done": 191,
+      "done": 192,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
       "active": 6,
-      "review": 6,
+      "review": 5,
       "archived": 4
     },
     "byType": {
@@ -590,39 +590,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "claude/dialogue-conclusion-recognition"
-    },
-    {
-      "id": "program-2-launch-certificates-stop-losses",
-      "title": "Require feasibility certificates and stop-losses for Program 2 launches",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-26",
-      "updated": "2026-07-26",
-      "verification": "Paid Program 2 live-pilot launches fail before provider preflight without a SHA/plan/evidence-bound zero-model certificate; cohort certificates require profile-complete audited pilot evidence; per-attempt provider budgets fail closed; live checks stop only when frozen completion gates become unreachable.",
-      "branch": "codex/program2-launch-safety",
-      "links": {
-        "code": [
-          "services/program2ExperimentSafety.js",
-          "scripts/certify-program2-launch.mjs",
-          "scripts/run-program2-live-pilot.js",
-          "scripts/tutor-stub.js",
-          "tests/program2ExperimentSafety.test.js"
-        ],
-        "notes": [
-          "notes/program-2/2026-07-26-launch-safety-contract.md"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "program-2",
-        "provenance",
-        "budget",
-        "stop-loss"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "refactor-tutor-stub-dialogue-settings-presentation",
@@ -1962,6 +1929,43 @@
         "fine-tune",
         "insight-action-gap",
         "form-carrier"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "program-2-launch-certificates-stop-losses",
+      "title": "Require feasibility certificates and stop-losses for Program 2 launches",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Paid Program 2 live-pilot launches fail before provider preflight without a SHA/plan/evidence-bound zero-model certificate; cohort certificates require profile-complete audited pilot evidence; per-attempt provider budgets fail closed; live checks stop only when frozen completion gates become unreachable.",
+      "links": {
+        "code": [
+          "services/program2ExperimentSafety.js",
+          "scripts/certify-program2-launch.mjs",
+          "scripts/run-program2-live-pilot.js",
+          "scripts/tutor-stub.js",
+          "tests/program2ExperimentSafety.test.js"
+        ],
+        "notes": [
+          "notes/program-2/2026-07-26-launch-safety-contract.md",
+          "docs/program2-launch-certificates.md"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/274",
+          "https://github.com/liammagee/machinespirits-eval/pull/277"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "program-2",
+        "provenance",
+        "budget",
+        "stop-loss"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
     },
