@@ -52,6 +52,7 @@ links:
     - refactor-tutor-stub-release-notes-projection
     - refactor-tutor-stub-dag-snapshot-projection
     - refactor-tutor-stub-proof-command-projection
+    - refactor-tutor-stub-interaction-mode-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -399,3 +400,14 @@ Log:
   `689468b4` after PR #270's evidence-use rubric change. The separate tutor-stub
   edits compose cleanly: the overlap set passes 57/57 and final root 7,001 plus
   tutor-core 137 zero-skip contracts are green.
+- 2026-07-26 — PR #271 merged the proof-command child as `65e7b91f` with every
+  CI lane green; the serialized render followed as `839ec636`. Closed that
+  child and activated `refactor-tutor-stub-interaction-mode-presentation` to
+  move only pure mode-label and banner serialization while retaining state
+  mutation, prompt changes, trace events, terminal writes, and automation in
+  the CLI.
+- 2026-07-26 — The interaction-mode child reached review with one pure shared
+  label/banner projector, a 6-line CLI reduction, byte-identical real startup
+  and mode-switch output, 30/30 focused tests, and complete root 7,008-test
+  plus tutor-core 137-test zero-skip parity. Mode state, prompts, traces,
+  terminal writes, commands, and automation remain CLI-owned.

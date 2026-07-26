@@ -419,6 +419,7 @@
         "tests/tutorStubGuardDisposition.test.js",
         "tests/tutorStubHumanDiscourseLayer.test.js",
         "tests/tutorStubIngest.test.js",
+        "tests/tutorStubInteractionModePresentation.test.js",
         "tests/tutorStubInteractiveDirection.test.js",
         "tests/tutorStubInteractiveHelp.test.js",
         "tests/tutorStubInteractivePerformance.test.js",

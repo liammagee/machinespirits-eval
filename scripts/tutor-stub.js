@@ -505,6 +505,10 @@ import {
   projectTutorStubProofDagSemanticLayerLines,
 } from '../services/tutorStubProofCommandPresentation.js';
 import {
+  projectTutorStubInteractionModeBannerLines,
+  projectTutorStubInteractionModeLabel,
+} from '../services/tutorStubInteractionModePresentation.js';
+import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   MAX_TUTOR_STUB_RELEASE_SPEED,
   MIN_TUTOR_STUB_RELEASE_SPEED,
@@ -21158,31 +21162,21 @@ async function main() {
   }
 
   function interactionModeLabel() {
-    const mode = state.interaction?.mode || 'learner';
-    if (mode === 'coach') return `${C.brightYellow}${C.bold}COACH${C.reset}`;
-    if (mode === 'auto') return `${C.brightBlue}${C.bold}AUTO${C.reset}`;
-    if (mixedLearner.enabled) return `${C.brightGreen}${C.bold}MIXED${C.reset}`;
-    return `${C.brightGreen}${C.bold}LEARNER${C.reset}`;
+    return projectTutorStubInteractionModeLabel({
+      mode: state.interaction?.mode || 'learner',
+      mixedEnabled: mixedLearner.enabled,
+      colors: C,
+    });
   }
 
   function printInteractionModeBanner({ detail = true } = {}) {
-    const mode = state.interaction?.mode || 'learner';
-    const description =
-      mode === 'coach'
-        ? 'your lines are private suggestions for the next tutor response'
-        : mode === 'auto'
-          ? 'the automated learner and tutor now play without intervention'
-          : mixedLearner.enabled
-            ? 'your lines become public learner speech; AI drafts, clues, and /use are available'
-            : 'your lines become public learner speech';
-    console.log(`${C.dim}╭─${C.reset} ${interactionModeLabel()} ${C.dim}mode · ${description}${C.reset}`);
-    if (detail && mode === 'coach') {
-      console.log(
-        `${C.dim}╰─ guidance stays out of the public transcript; switch with /mode learner, or use /use in mixed mode${C.reset}\n`,
-      );
-    } else if (detail && mode === 'learner') {
-      console.log(`${C.dim}╰─ switch with /coach or hand off with /auto [turns]${C.reset}\n`);
-    }
+    for (const line of projectTutorStubInteractionModeBannerLines({
+      mode: state.interaction?.mode || 'learner',
+      mixedEnabled: mixedLearner.enabled,
+      detail,
+      colors: C,
+    }))
+      console.log(line);
   }
 
   function setInteractionMode(mode, { announce = true } = {}) {
