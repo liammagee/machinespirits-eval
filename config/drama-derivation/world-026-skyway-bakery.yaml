@@ -190,7 +190,15 @@ release_schedule:
   - { turn: 3, premise: p_bolt, via: director }
   - { turn: 5, premise: p_soleLift, via: director }
   - { turn: 7, premise: p_spiral, via: tutor }
-  - { turn: 9, premise: p_warm, via: tutor }
+  - turn: 9
+    premise: p_warm
+    via: tutor
+    presentation:
+      mode: enacted_role
+      role: loftmistress opening and reading the ovenloft launch log
+      cue: >-
+        She lays the launch log open between you, taps the dawn initials, and
+        reads its line aloud.
 
 dramaturgy:
   acts:

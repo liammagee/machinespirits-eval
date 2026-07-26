@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -10,6 +11,12 @@ import {
   buildPhase5eLivePilotPlan,
   validatePhase5eLivePilotPlan,
 } from '../scripts/run-program2-live-pilot.js';
+import { loadWorld } from '../services/dramaticDerivation/world.js';
+import {
+  auditTutorStubDramaticReleaseResponse,
+  buildTutorStubDramaticReleaseFrame,
+  deterministicTutorStubDramaticReleaseFallback,
+} from '../services/tutorStubDramaticRelease.js';
 
 function canonicalJson(value) {
   if (Array.isArray(value)) return value.map(canonicalJson);
@@ -71,5 +78,54 @@ describe('Program-2 Phase 5e live-pilot plan', () => {
       planSha256(buildPhase5cLivePilotPlan({ outputRoot })),
       '91748dcfcafc27e1e3cf3ae59c416f0a234226709dba89dd929696b64b3bd823',
     );
+  });
+
+  it('enacts the Skyway launch log when the turn-9 p_warm release falls back deterministically', () => {
+    const world = loadWorld(
+      fileURLToPath(new URL('../config/drama-derivation/world-026-skyway-bakery.yaml', import.meta.url)),
+    );
+    const release = world.releaseSchedule.find((entry) => entry.premise === 'p_warm');
+    const premise = world.premiseById.get('p_warm');
+
+    assert.deepEqual(release, {
+      turn: 9,
+      premise: 'p_warm',
+      via: 'tutor',
+      presentation: {
+        mode: 'enacted_role',
+        role: 'loftmistress opening and reading the ovenloft launch log',
+        cue: 'She lays the launch log open between you, taps the dawn initials, and reads its line aloud.',
+      },
+    });
+
+    const frame = buildTutorStubDramaticReleaseFrame({
+      dueEvidence: [
+        {
+          ...premise,
+          premise: 'p_warm',
+          turn: release.turn,
+          via: release.via,
+          presentation: release.presentation,
+        },
+      ],
+      world,
+    });
+    const text = deterministicTutorStubDramaticReleaseFallback({
+      frame,
+      support: {},
+      responseConfiguration: {
+        engagement_stance: 'plain',
+        actorial_part: 'record_keeper',
+      },
+      variationKey: 'program2-phase5e-p-warm',
+      world,
+    });
+    const audit = auditTutorStubDramaticReleaseResponse({ frame, text });
+
+    assert.equal(frame.requiresEnactment, true);
+    assert.equal(frame.requiresExhibitHandoff, false);
+    assert.match(text, /launch log|ovenloft/iu);
+    assert.equal(audit.enactmentVisible, true, text);
+    assert.equal(audit.ok, true, `${text}\n${JSON.stringify(audit.issues)}`);
   });
 });

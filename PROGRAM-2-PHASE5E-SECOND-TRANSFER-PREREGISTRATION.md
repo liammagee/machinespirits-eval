@@ -152,6 +152,69 @@ beyond §7's one retry.
 
 ## 9. Results
 
-Not run. This implementation stops at the zero-model launch gate. Paid smoke,
-live dialogues, seam review, archival, manifest creation, and paper claims
-remain future explicitly authorized steps.
+No Phase 5e empirical result exists. The authorized eight-turn paid smoke
+passed its serving gate, but the first live launch aborted before sealing any
+of the 18 planned dialogues. The failure and its pre-result repair are recorded
+in Amendment 1 below. Seam review, archival, manifest creation, and paper
+claims remain future explicitly authorized steps.
+
+## 10. Amendment 1 — pre-result Skyway launch-log presentation repair (2026-07-26)
+
+This amendment was written after the first live launch aborted and before any
+Phase 5e dialogue sealed or any endpoint was inspected. It changes the
+presentation of one already-authored clue; it does not change the experiment's
+facts, contrast, sample, scoring, or reading grammar.
+
+### 10.1 Diagnostic event and exclusion
+
+The authorized eight-turn committee smoke passed: two committee moments each
+had non-empty mini text and an extractable question span, both frozen
+batteries passed, and there were zero serving or model errors. The subsequent
+18-dialogue launch then stopped at the configured three-consecutive-failure
+gate: the first silent-control job failed twice and was marked attrition, and
+the first committee job failed once. All three attempts reached the turn-9
+`p_warm` release and failed the same deterministic terminal-response check
+with `opaque_clue_release` and `missing_exhibit_action`. The fallback said it
+would “write the live line down” and then stated the launch-log surface, but it
+did not visibly open/read the exhibit under the strict dramatic-release audit.
+
+The runner reported these child exits as transport failures, although the
+trace evidence identifies a deterministic presentation-guard rejection. No
+dialogue sealed: realized n = 0/18. Therefore this launch supplies no Phase 5e
+outcome, no endpoint estimate, and no seam result. Its three unsealed traces
+and `exports/program2-live-pilot-5e/launch-state.json` remain diagnostic only
+and are excluded from every future analysis.
+
+### 10.2 Minimal repair
+
+Only the authored presentation metadata for the existing `p_warm` release at
+turn 9 changes. The release remains tutor-owned at turn 9 and retains the same
+premise surface and formal fact. It now uses `mode: enacted_role`, with the
+loftmistress opening and reading the ovenloft launch log and an entrance cue
+that places the log between tutor and learner, taps the dawn initials, and
+reads the line aloud. The cue introduces no new evidence.
+
+An exact zero-model regression loads the production Skyway world, selects
+`p_warm`, exercises the same plain `record_keeper` deterministic fallback, and
+requires an in-scene enactment with a passing dramatic-release audit. The
+mechanical world-selection evidence was regenerated without overwriting the
+original freeze evidence. Selection is unchanged at 2/894 frozen-six matches
+(2.24/1k), five rules, and source SHA-256
+`73f7d89b147b50c31afce736b1369fd0a15b961f2945147cce5952d46684baf9`.
+
+### 10.3 Frozen invariants and restart gate
+
+Everything else remains frozen: `program2-sft-instruct-v2`, local native chat,
+fallback v2, span extraction, both batteries, committee/control counts,
+profiles, repeats, interleaving, seed 20260726, detector, trigger window,
+frontier model families, horizons, endpoints, guardrails, bootstrap, costume
+leak rule, world facts, premise surfaces, public rules, proof DAG, release
+timing, and release ownership. This is a presentation-only repair, not an
+artifact or measurement change.
+
+Any restart must use a fresh root,
+`exports/program2-live-pilot-5e-r1/`, so no failed diagnostic attempt can be
+mistaken for a planned unit. It must be pinned to the new post-amendment commit
+and pass the ordinary zero-model quality and 18-job dry-run gates. Paid quota
+probes and the live restart require fresh explicit operator authorization; the
+authorization for the aborted launch does not carry forward.

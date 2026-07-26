@@ -18,9 +18,12 @@ links:
     - PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md
     - PROGRAM-2-PHASE5E-SECOND-TRANSFER-PREREGISTRATION.md
     - notes/program-2/2026-07-26-phase5e-world-selection.md
+    - notes/program-2/2026-07-26-phase5e-world-selection-amendment1.md
     - notes/program-2/2026-07-26-phase5e-analyzer-validation.md
+    - notes/program-2/2026-07-26-phase5e-presentation-amendment.md
     - config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection.json
+    - config/adaptive-tutor-evidence/program-2-phase5e-world-selection-amendment1.json
   items:
     - program-2-context-vs-weights-finetune
 tags:
@@ -204,6 +207,20 @@ component rates; its CI differs only because the preregistered seed changed).
 The zero-model gate passed with 18 jobs, seed 20260726, Skyway on every command,
 fallback v2 on committee only, and zero model calls. This is prelaunch
 machinery, not a Phase 5e empirical result; every paid gate remains closed.
+
+2026-07-26 Codex: The authorized eight-turn smoke passed, but the live launch
+aborted at the configured three-consecutive-failure gate before any dialogue
+sealed (0/18): the first control failed twice and the first committee unit
+failed once. All three attempts reached Skyway's turn-9 `p_warm` launch-log
+release and hit the same deterministic dramatic-release rejection
+(`opaque_clue_release`, `missing_exhibit_action`). This is a technical abort,
+not an empirical result; the unsealed traces are diagnostic and excluded. A
+pre-result Amendment 1 changes only that release's presentation metadata to an
+in-scene loftmistress reading, adds an exact zero-model fallback regression,
+and preserves refreshed world-selection evidence separately. All design,
+artifact, surface, proof, timing, and endpoint invariants remain frozen. A
+restart must use `exports/program2-live-pilot-5e-r1/`, a new commit pin, and
+fresh explicit paid authorization.
 
 Cost: one evening of Max-plan sonnet + codex terra quota; local mini
 free; NO Lambda, NO training. Both outcomes land in the paper.
