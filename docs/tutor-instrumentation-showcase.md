@@ -178,6 +178,35 @@ Two reading caveats:
 - **Still not a controlled comparison.** The arms have different transcripts, so
   a rubric gap between them is a difference between two dialogues.
 
+### What the first scored run showed
+
+`showcase-2026-07-26T14-41-49-087Z`, judge `claude-code.sonnet`, 8 judge calls.
+
+| Arm | First turn | Last turn | All scored |
+| --- | ---: | ---: | ---: |
+| bare | 54.4 | 22.5 | 38.4 |
+| instrumented | 42.5 | 42.5 | 42.5 |
+
+Both arms open higher than they end, and the bare arm falls furthest. Do not
+read the flat instrumented mean as stability — it averages the highest and
+lowest single scores in the set, 67.5 and 17.5.
+
+The first caveat above stops being hypothetical here. The 17.5 is Riverside
+instrumented's turn 7, the one turn in the run that closes a dialogue on
+grounded evidence, and the judge scored `productive_difficulty` 1 on it with the
+reasoning that the tutor "forecloses further inquiry by declaring the case
+complete". The 67.5 is Campus FAQ instrumented's turn 10, which scores 4 on both
+`elicitation_quality` and `productive_difficulty` for keeping the conclusion
+open — on the dialogue that never resolved. Under a single-turn instrument,
+finishing costs you and failing to finish pays.
+
+The two bare last turns are low for an unrelated reason, and the judge names it:
+Campus FAQ is "rigidly echoing the same verdict it first announced in turn 3",
+Riverside "merely re-logs a conclusion already reached at turn 4". That is a
+stalled dialogue, not a closed one. `stopReason` tells the two apart where the
+score cannot — which is why the caveat says to read the number beside the
+closure verdict rather than on its own.
+
 ## Guard coverage is read from the accounting rows, not the audit records
 
 **The turn record carries an audit object whether or not the guard ran.**
@@ -302,31 +331,40 @@ that model for the rest of the run.
 
 ## Cost
 
-From `showcase-2026-07-26T12-19-33-018Z`, preset `default`, one dialogue per arm
-per scenario, tutor and learner both `codex.gpt-5.6-terra`, commit `9c70ab67`.
+From `showcase-2026-07-26T14-41-49-087Z`, preset `default`, one dialogue per arm
+per scenario, tutor and learner both `codex.gpt-5.6-terra`, commit `16dab103`.
 One dialogue per cell is an illustration, not an estimate.
 
 | | Campus FAQ bare | Campus FAQ instrumented | Riverside bare | Riverside instrumented |
 | --- | ---: | ---: | ---: | ---: |
-| Turns reached | 10 (turn cap) | 10 (turn cap) | 8 (turn cap) | 8 (turn cap) |
-| Wall clock per turn | 11.0s | 48.0s | 10.7s | 52.9s |
-| Model calls per turn | 2.0 | 4.2 | 2.0 | 3.8 |
-| Guard coverage | 0% (bypassed) | 63% | 0% (bypassed) | 56% |
-| Accepted / repaired / fallback | n/a | 3 / 1 / 6 | n/a | 3 / 2 / 3 |
-| Resolved | n/a (no lifecycle) | no | n/a (no lifecycle) | no |
+| Turns reached | 10 (turn cap) | 10 (turn cap) | 8 (turn cap) | 7 (closed) |
+| Wall clock per turn | 9.1s | 56.5s | 9.5s | 42.7s |
+| Model calls per turn | 2.0 | 4.4 | 2.0 | 3.6 |
+| Guard coverage | 0% (bypassed) | 63% | 0% (bypassed) | 59% |
+| Accepted / repaired / fallback | n/a | 2 / 3 / 5 | n/a | 4 / 2 / 1 |
+| Resolved | n/a (no lifecycle) | no | n/a (no lifecycle) | yes, turn 7 |
 
-The instrumented arm costs roughly **4–5× the wall clock per turn** and about
-**twice the model calls**, and reaches the same turn cap. Neither arm resolved:
-the bare arm has no verdict to give, and both instrumented arms ran their
-closure lifecycle and finished with `grounded: false` at phase `open`.
+The instrumented arm costs roughly **4–6× the wall clock per turn** and about
+**twice the model calls**. Riverside instrumented is the one dialogue in the set
+that ends: it closes at turn 7 on
+`strict_learner_dag_grounded_and_asserted`, having covered 100% of the
+strongest proof path with no evidence steps outstanding. The three arms that do
+not close all run to the turn cap, and the bare arms cannot close at all —
+`--passthrough` bypasses the lifecycle, so they have no verdict to give.
+
+Campus FAQ instrumented reaches the cap with the same 100% path coverage and
+zero missing steps, stopped at `assertion_gap`: the learner has what it needs
+and never claims it as the answer. That is the state the session summary now
+names rather than reporting as if the learner had not got there.
 
 The row to read closely is accepted/repaired/fallback. Across the two
-instrumented dialogues, 6 turns went out as first drafts, 3 were repaired and 9
+instrumented dialogues, 6 turns went out as first drafts, 5 were repaired and 6
 went out as deterministic fallback text. Repair is the architectural moment this
-surface exists to show, and on these two worlds the stack rejects three times
-more drafts than it repairs. Nothing here says the guards are wrong to reject
-them — an ungrounded release is a real fault — only that on this stack the
-rejection rate is not matched by a recovery rate.
+surface exists to show, and on these two worlds the stack still sends back more
+drafts than it repairs. Nothing here says the guards are wrong to reject them —
+an ungrounded release is a real fault — only that the rejection rate is not
+matched by a recovery rate. The gap is narrower on the dialogue that closes
+(4 / 2 / 1) than on the one that does not (2 / 3 / 5).
 
 ### The last resort has to be unrejectable
 
