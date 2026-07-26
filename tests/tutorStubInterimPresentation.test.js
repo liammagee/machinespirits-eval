@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 
 import {
   formatTutorStubSignedInterimNumber,
+  projectTutorStubInterimPanels,
+  renderTutorStubInterimFrame,
   summarizeTutorStubInterimCapabilities,
   tutorStubInterimCliHintPanels,
   tutorStubInterimLevel,
@@ -13,6 +15,17 @@ import {
 } from '../services/tutorStubInterimPresentation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+const COLORS = Object.freeze({
+  accent2: '<accent2>',
+  bold: '<bold>',
+  reset: '<reset>',
+  dim: '<dim>',
+  yellow: '<yellow>',
+  green: '<green>',
+  cyan: '<cyan>',
+  magenta: '<magenta>',
+});
 
 test('interim signed numbers preserve null, sign, rounding, and precision behavior', () => {
   assert.equal(formatTutorStubSignedInterimNumber(undefined), null);
@@ -139,6 +152,115 @@ test('interim CLI hints preserve passthrough, setup, coach, auto, and learner co
   }
 });
 
+test('interim panel projection preserves authored order, filters empty values, and does not mutate inputs', () => {
+  const input = {
+    hints: [{ label: 'CLI hint', tone: 'neutral', text: 'Browse commands' }],
+    tutorFocus: 'Clarify the warrant',
+    dialogueOutlook: null,
+    reasoningChange: 'One premise resolved',
+    learnerReasoning: '',
+    evidencePacing: 'Next clue at turn 3',
+    learnerReading: undefined,
+    reasoningState: 'Conclusion remains open',
+    tutorStyle: 'Use a concrete example',
+    clueProgress: '2 of 4 clues revealed',
+    dialogueSoFar: 'Momentum developing',
+    fallback: 'plain tutor response',
+  };
+  const before = structuredClone(input);
+
+  assert.deepEqual(projectTutorStubInterimPanels(input), [
+    input.hints[0],
+    { label: 'Tutor focus', tone: 'focus', text: 'Clarify the warrant' },
+    { label: 'Reasoning change', tone: 'progress', text: 'One premise resolved' },
+    { label: 'Evidence pacing', tone: 'evidence', text: 'Next clue at turn 3' },
+    { label: 'Reasoning state', tone: 'progress', text: 'Conclusion remains open' },
+    { label: 'Tutor style', tone: 'focus', text: 'Use a concrete example' },
+    { label: 'Clue progress', tone: 'evidence', text: '2 of 4 clues revealed' },
+    { label: 'Dialogue so far', tone: 'progress', text: 'Momentum developing' },
+  ]);
+  assert.deepEqual(input, before);
+});
+
+test('interim panel projection preserves the active-checks fallback', () => {
+  assert.deepEqual(projectTutorStubInterimPanels({ fallback: 'plain tutor response' }), [
+    { label: 'Active checks', tone: 'neutral', text: 'plain tutor response' },
+  ]);
+});
+
+test('interim frame rendering pins spinner, elapsed time, rotation, color, and exact ANSI composition', () => {
+  const output = renderTutorStubInterimFrame({
+    tick: 4,
+    startedAt: 1_000,
+    now: 3_250,
+    columns: 90,
+    phase: 'Writing answer',
+    panels: [
+      { label: 'Tutor focus', tone: 'focus', text: 'Clarify the warrant' },
+      { label: 'Evidence pacing', tone: 'evidence', text: 'Next clue' },
+    ],
+    frames: ['a', 'b'],
+    colors: COLORS,
+  });
+
+  assert.equal(
+    output,
+    '<accent2>a <bold>Writing answer<reset><dim> ·  2.3s · <reset><yellow>view 2/2<reset><dim> | <reset><yellow>Evidence pacing<reset>: Next clue',
+  );
+});
+
+test('interim frame rendering preserves every panel tone color and neutral fallback', () => {
+  const expectations = {
+    progress: '<green>',
+    evidence: '<yellow>',
+    learner: '<cyan>',
+    focus: '<magenta>',
+    neutral: '<dim>',
+    unknown: '<dim>',
+  };
+  for (const [tone, color] of Object.entries(expectations)) {
+    const output = renderTutorStubInterimFrame({
+      tick: 0,
+      startedAt: 0,
+      now: 0,
+      columns: 80,
+      phase: 'Thinking',
+      panels: [{ label: 'Panel', tone, text: 'Detail' }],
+      frames: ['-'],
+      colors: COLORS,
+    });
+    assert.ok(output.includes(`${color}Panel<reset>: Detail`));
+  }
+});
+
+test('interim frame rendering preserves phase compaction and terminal width bounds', () => {
+  const noColors = Object.fromEntries(Object.keys(COLORS).map((key) => [key, '']));
+  const narrow = renderTutorStubInterimFrame({
+    tick: 0,
+    startedAt: 0,
+    now: 0,
+    columns: 40,
+    phase: '123456789012345678901234567890',
+    panels: [{ label: 'A', tone: 'neutral', text: 'abcdefghijklmnopqrstuvwxyz' }],
+    frames: ['-'],
+    colors: noColors,
+  });
+  assert.equal(narrow, '- 1234567890123456789012345... ·  0.0s · view 1/1 | A: abcdefghi...');
+
+  const wide = renderTutorStubInterimFrame({
+    tick: 0,
+    startedAt: 0,
+    now: 0,
+    columns: 400,
+    phase: 'Thinking',
+    panels: [{ label: 'A', tone: 'neutral', text: 'x'.repeat(400) }],
+    frames: ['-'],
+    colors: noColors,
+  });
+  assert.equal(wide.length, 179);
+  assert.match(wide, /\.\.\.$/u);
+});
+
 test('the CLI and learning summary share pure interim copy while retaining runtime and report ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const learningSummarySource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearningSummary.js'), 'utf8');
@@ -154,5 +276,8 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);
   assert.match(cliSource, /function startInterimAnimation\s*\(/u);
   assert.match(cliSource, /function stopInterimAnimation\s*\(/u);
-  assert.doesNotMatch(serviceSource, /\b(?:fs|console|process|fetch|setInterval|clearInterval)\s*[.(]/u);
+  assert.doesNotMatch(cliSource, /function interimToneColor\s*\(/u);
+  assert.match(cliSource, /projectTutorStubInterimPanels\s*\(\{/u);
+  assert.match(cliSource, /renderTutorStubInterimFrame\s*\(\{/u);
+  assert.doesNotMatch(serviceSource, /\b(?:fs|console|process|fetch|setInterval|clearInterval|Date\.now)\s*[.(]/u);
 });

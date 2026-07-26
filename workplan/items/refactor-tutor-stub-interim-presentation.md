@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-interim-presentation
 title: Refactor tutor-stub interim presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -89,3 +89,7 @@ Log:
   loading scenario; the complete hermetic suite is green again with zero skips
   and tutor-core 137/137. ESLint, formatting, zero-cycle (368 files), manifest,
   198-item source-only workplan, syntax, and diff gates pass on the final base.
+- 2026-07-26 — PR #249 merged as `2e8f0708` with every CI lane green; the
+  serialized workplan render followed as `315cbaed`. Closed this child and
+  carried the still-pure panel ordering and frame serialization seam into
+  `refactor-tutor-stub-interim-frame-projection`.

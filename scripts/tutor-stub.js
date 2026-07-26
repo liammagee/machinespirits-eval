@@ -328,6 +328,8 @@ import {
 } from '../services/tutorStubCloseoutProjection.js';
 import {
   formatTutorStubSignedInterimNumber as formatSignedInterimNumber,
+  projectTutorStubInterimPanels,
+  renderTutorStubInterimFrame,
   summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
   tutorStubInterimLevel as interimLevel,
@@ -4966,65 +4968,34 @@ function compactPendingFieldSummary(state, context) {
 
 function compactInterimPanels(active) {
   const context = active.context || {};
-  const panels = [
-    ...compactInterimCliHintPanels(active),
-    { label: 'Tutor focus', tone: 'focus', text: compactPendingObjectiveSummary(active.state, context) },
-    { label: 'Dialogue outlook', tone: 'progress', text: compactPendingFieldSummary(active.state, context) },
-    { label: 'Reasoning change', tone: 'progress', text: compactPendingDagMovementSummary(active.state, context) },
-    { label: 'Learner reasoning', tone: 'learner', text: compactLearnerRecordUpdateSummary(active.state, context) },
-    { label: 'Evidence pacing', tone: 'evidence', text: compactEvidenceTimingSummary(active.state, context) },
-    { label: 'Learner reading', tone: 'learner', text: compactPendingLearnerSummary(context) },
-    { label: 'Reasoning state', tone: 'progress', text: compactPendingLearnerDagSummary(context) },
-    { label: 'Tutor style', tone: 'focus', text: compactPendingRegisterSummary(context) },
-    { label: 'Clue progress', tone: 'evidence', text: compactPendingTutorDagSummary(active.state, context) },
-    { label: 'Dialogue so far', tone: 'progress', text: compactInterimFieldSummary(active.state) },
-  ].filter((panel) => panel.text);
-  return panels.length
-    ? panels
-    : [{ label: 'Active checks', tone: 'neutral', text: compactInterimStateSummary(active.state) }];
-}
-
-function interimToneColor(tone) {
-  if (tone === 'progress') return C.green;
-  if (tone === 'evidence') return C.yellow;
-  if (tone === 'learner') return C.cyan;
-  if (tone === 'focus') return C.magenta;
-  return C.dim;
+  return projectTutorStubInterimPanels({
+    hints: compactInterimCliHintPanels(active),
+    tutorFocus: compactPendingObjectiveSummary(active.state, context),
+    dialogueOutlook: compactPendingFieldSummary(active.state, context),
+    reasoningChange: compactPendingDagMovementSummary(active.state, context),
+    learnerReasoning: compactLearnerRecordUpdateSummary(active.state, context),
+    evidencePacing: compactEvidenceTimingSummary(active.state, context),
+    learnerReading: compactPendingLearnerSummary(context),
+    reasoningState: compactPendingLearnerDagSummary(context),
+    tutorStyle: compactPendingRegisterSummary(context),
+    clueProgress: compactPendingTutorDagSummary(active.state, context),
+    dialogueSoFar: compactInterimFieldSummary(active.state),
+    fallback: compactInterimStateSummary(active.state),
+  });
 }
 
 function renderInterimStatus(active) {
   active.tick += 1;
-  const frames = tutorStubCliSpinnerFrames(cliPresentation);
-  const frame = frames[active.tick % frames.length];
-  const elapsed = ((Date.now() - active.startedAt) / 1000).toFixed(1).padStart(4);
-  const width = Math.max(60, Math.min(output.columns || 140, 180) - 1);
-  const panels = compactInterimPanels(active);
-  const panelIndex = Math.floor(active.tick / 4) % panels.length;
-  const panel = panels[panelIndex];
-  const phase = oneLine(active.basePhase || active.phase, { max: 28 });
-  const prefix = `${frame} ${phase} · ${elapsed}s · view ${panelIndex + 1}/${panels.length} | ${panel.label}: `;
-  const panelText = oneLine(panel.text, { max: Math.max(12, width - prefix.length) });
-  return [
-    C.accent2,
-    frame,
-    ' ',
-    C.bold,
-    phase,
-    C.reset,
-    C.dim,
-    ` · ${elapsed}s · `,
-    C.reset,
-    C.yellow,
-    `view ${panelIndex + 1}/${panels.length}`,
-    C.reset,
-    C.dim,
-    ' | ',
-    C.reset,
-    interimToneColor(panel.tone),
-    panel.label,
-    C.reset,
-    `: ${panelText}`,
-  ].join('');
+  return renderTutorStubInterimFrame({
+    tick: active.tick,
+    startedAt: active.startedAt,
+    now: Date.now(),
+    columns: output.columns,
+    phase: active.basePhase || active.phase,
+    panels: compactInterimPanels(active),
+    frames: tutorStubCliSpinnerFrames(cliPresentation),
+    colors: C,
+  });
 }
 
 function interimConcurrentTerminalIsVisible(active) {
