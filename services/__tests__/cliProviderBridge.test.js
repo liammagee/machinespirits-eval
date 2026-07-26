@@ -715,6 +715,43 @@ describe('cliProviderBridge', () => {
     assert.equal(result.structuredEventAudit.enforcement, 'claude_tools_disabled');
   });
 
+  it('classifies Claude CLI exits without persisting raw stderr', async () => {
+    const secretCanary = 'SECRET-CLAUDE-STDERR-CANARY';
+    const stderrText = `network socket unreachable ${secretCanary}`;
+    const spawnImpl = () => fakeChild({ stderrText, exitCode: 1 });
+
+    await assert.rejects(
+      () =>
+        callAIWithCliBridge(
+          { provider: 'claude-code', model: 'claude-test' },
+          'system',
+          'user',
+          'tutor',
+          { timeoutMs: 1000, spawnImpl },
+        ),
+      (error) => {
+        assert.equal(error?.code, 'CLI_PROVIDER_EXIT_FAILED');
+        assert.equal(error?.provider, 'claude-code');
+        assert.equal(error?.failureCategory, 'transport');
+        assert.equal(error?.exitCode, 1);
+        assert.equal(error?.stdoutBytes, 0);
+        assert.equal(error?.stderrBytes, Buffer.byteLength(stderrText));
+        assert.doesNotMatch(error.message, new RegExp(secretCanary, 'u'));
+        const safe = safeCliProviderErrorMetadata(error);
+        assert.deepEqual(safe, {
+          errorCode: 'CLI_PROVIDER_EXIT_FAILED',
+          errorProvider: 'claude-code',
+          providerFailureCategory: 'transport',
+          exitCode: 1,
+          stdoutBytes: 0,
+          stderrBytes: Buffer.byteLength(stderrText),
+        });
+        assert.doesNotMatch(JSON.stringify(safe), new RegExp(secretCanary, 'u'));
+        return true;
+      },
+    );
+  });
+
   it('keeps every services/ claude spawn site on the shared isolation exports', () => {
     const walkJsFiles = (dir) => {
       const out = [];

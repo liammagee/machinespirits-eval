@@ -102,6 +102,9 @@ export function safeCliProviderErrorMetadata(error) {
   if (typeof error?.code === 'string') metadata.errorCode = error.code.slice(0, 80);
   if (typeof error?.provider === 'string') metadata.errorProvider = error.provider.slice(0, 40);
   if (typeof error?.failureCategory === 'string') metadata.providerFailureCategory = error.failureCategory.slice(0, 80);
+  for (const key of ['exitCode', 'stdoutBytes', 'stderrBytes']) {
+    if (Number.isInteger(error?.[key]) && error[key] >= 0) metadata[key] = error[key];
+  }
   const audit = error?.audit;
   if (audit && typeof audit === 'object') {
     metadata.structuredEventAudit = {
@@ -508,6 +511,32 @@ function codexProviderExitError({ code, stderr, events, audit }) {
   return error;
 }
 
+function claudeProviderFailureCategory(stderr = '') {
+  const text = String(stderr || '');
+  if (/usage limit|purchase more credits|credit balance|quota exhausted/iu.test(text)) return 'usage_limit';
+  if (/rate limit|too many requests|HTTP\s*429/iu.test(text)) return 'rate_limit';
+  if (/unauthori[sz]ed|authentication|invalid (?:api )?key|forbidden|login required|HTTP\s*(?:401|403)/iu.test(text)) {
+    return 'authentication';
+  }
+  if (/context length|context window|maximum context|too many tokens/iu.test(text)) return 'context_limit';
+  if (/timed? out|ECONN|EAI_AGAIN|ENOTFOUND|network|socket|unreachable|overloaded|HTTP\s*(?:502|503|504)/iu.test(text)) {
+    return 'transport';
+  }
+  return 'unclassified_cli_exit';
+}
+
+function claudeProviderExitError({ code, stderr, stdout }) {
+  const failureCategory = claudeProviderFailureCategory(stderr);
+  const error = new Error(`claude CLI failed (${failureCategory})`);
+  error.code = failureCategory === 'usage_limit' ? 'CLI_PROVIDER_USAGE_LIMIT' : 'CLI_PROVIDER_EXIT_FAILED';
+  error.provider = 'claude-code';
+  error.failureCategory = failureCategory;
+  error.exitCode = code;
+  error.stdoutBytes = Buffer.byteLength(stdout || '');
+  error.stderrBytes = Buffer.byteLength(stderr || '');
+  return error;
+}
+
 async function callClaudeCli({
   systemPrompt,
   userPrompt,
@@ -602,12 +631,7 @@ async function callClaudeCli({
         signal?.removeEventListener('abort', onAbort);
         if (outputExceeded) return;
         if (code !== 0) {
-          const exitError = new Error(`claude CLI exited with code ${code}`);
-          exitError.code = 'CLI_PROVIDER_EXIT_FAILED';
-          exitError.exitCode = code;
-          exitError.stdoutBytes = Buffer.byteLength(out);
-          exitError.stderrBytes = Buffer.byteLength(err);
-          reject(exitError);
+          reject(claudeProviderExitError({ code, stderr: err, stdout: out }));
         } else {
           resolve({
             text: out.trim(),

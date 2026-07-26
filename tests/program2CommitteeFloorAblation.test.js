@@ -6,6 +6,7 @@ import test from 'node:test';
 
 import {
   assertProgram2LaunchStateRunnable,
+  authorizeProgram2HaltedCheckpointResume,
   buildCommitteeFloorAblationPlan,
   buildPhase5LivePilotPlan,
   buildPhase5bLivePilotPlan,
@@ -283,6 +284,25 @@ test('launcher distinguishes deterministic final audits from provider transport 
     { kind: 'child_process', counts: false, aborts: true },
   );
 
+  const unclassifiedCliExit = classifyProgram2LaunchFailure({
+    error: new Error('child exited 1'),
+    traceEvent: {
+      turn: 14,
+      error: 'claude CLI failed (unclassified_cli_exit)',
+      errorCode: 'CLI_PROVIDER_EXIT_FAILED',
+      providerFailureCategory: 'unclassified_cli_exit',
+    },
+  });
+  assert.deepEqual(
+    {
+      kind: unclassifiedCliExit.kind,
+      counts: unclassifiedCliExit.countsTowardTransportAbort,
+      aborts: unclassifiedCliExit.abortImmediately,
+      category: unclassifiedCliExit.providerFailureCategory,
+    },
+    { kind: 'provider_transport', counts: true, aborts: false, category: 'unclassified_cli_exit' },
+  );
+
   const policyFailure = classifyProgram2LaunchFailure({
     error: new Error('child exited 1'),
     traceEvent: {
@@ -330,6 +350,99 @@ test('a fatal launcher checkpoint cannot be bypassed by an external supervisor r
         abortReason: 'non-retryable provider_capacity failure before a sealed job',
       }),
     /launch state is halted: non-retryable provider_capacity/u,
+  );
+});
+
+test('an exact one-attempt child-process checkpoint can be explicitly resumed without resetting attempts', () => {
+  const checkpointSha = '9'.repeat(64);
+  const jobId = 'p2wi-36-affective_resistant-trained_v2-r3';
+  const launchState = {
+    jobs: {
+      [jobId]: {
+        status: 'failed',
+        attempts: 1,
+        failureKind: 'child_process',
+        error: 'claude CLI exited with code 1',
+        failures: [{ attempt: 1, kind: 'child_process', turn: 14 }],
+        attrition: false,
+      },
+    },
+    consecutiveTransportFailures: 0,
+    halted: true,
+    abortedAt: '2026-07-25T13:52:46.903Z',
+    abortReason: 'non-retryable child_process failure before a sealed job',
+  };
+
+  assert.equal(
+    authorizeProgram2HaltedCheckpointResume(launchState, {
+      expectedCheckpointSha: checkpointSha,
+      actualCheckpointSha: checkpointSha,
+      jobId,
+      authorizedAt: '2026-07-26T00:00:00.000Z',
+    }),
+    true,
+  );
+  assert.equal(launchState.halted, undefined);
+  assert.equal(launchState.abortReason, undefined);
+  assert.equal(launchState.jobs[jobId].attempts, 1);
+  assert.equal(launchState.consecutiveTransportFailures, 1);
+  assert.deepEqual(program2ResumeAttemptState(launchState.jobs[jobId]), {
+    nextAttempt: 2,
+    failures: launchState.jobs[jobId].failures,
+  });
+  assert.deepEqual(launchState.resumeAuthorizations, [
+    {
+      schema: 'machinespirits.tutor-stub.program2-halted-resume-authorization.v1',
+      authorizedAt: '2026-07-26T00:00:00.000Z',
+      checkpointSha256: checkpointSha,
+      jobId,
+      nextLogicalAttempt: 2,
+      priorAbortReason: 'non-retryable child_process failure before a sealed job',
+    },
+  ]);
+});
+
+test('halted-checkpoint resume rejects a changed hash, a different job, and non-child-process aborts', () => {
+  const checkpointSha = 'a'.repeat(64);
+  const jobId = 'p2wi-36-affective_resistant-trained_v2-r3';
+  const makeState = () => ({
+    jobs: {
+      [jobId]: {
+        status: 'failed',
+        attempts: 1,
+        failureKind: 'child_process',
+        failures: [{ attempt: 1, kind: 'child_process' }],
+        attrition: false,
+      },
+    },
+    halted: true,
+    abortReason: 'non-retryable child_process failure before a sealed job',
+  });
+  assert.throws(
+    () => authorizeProgram2HaltedCheckpointResume(makeState(), {
+      expectedCheckpointSha: checkpointSha,
+      actualCheckpointSha: 'b'.repeat(64),
+      jobId,
+    }),
+    /halted checkpoint SHA mismatch/u,
+  );
+  assert.throws(
+    () => authorizeProgram2HaltedCheckpointResume(makeState(), {
+      expectedCheckpointSha: checkpointSha,
+      actualCheckpointSha: checkpointSha,
+      jobId: 'p2wi-37-affective_resistant-trained_v2-r1',
+    }),
+    /not a one-attempt child-process failure/u,
+  );
+  const policyState = makeState();
+  policyState.abortReason = 'non-retryable provider_policy failure before a sealed job';
+  assert.throws(
+    () => authorizeProgram2HaltedCheckpointResume(policyState, {
+      expectedCheckpointSha: checkpointSha,
+      actualCheckpointSha: checkpointSha,
+      jobId,
+    }),
+    /abort reason is not resumable/u,
   );
 });
 

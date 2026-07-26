@@ -963,6 +963,36 @@ export function classifyProgram2LaunchFailure({ error = null, traceEvent = null 
       traceFile: traceEvent?.traceFile || null,
     };
   }
+  if (
+    providerFailureCategory === 'authentication' ||
+    errorCode === 'CLI_PROVIDER_AUTH_FAILED'
+  ) {
+    return {
+      kind: 'provider_authentication',
+      countsTowardTransportAbort: false,
+      abortImmediately: true,
+      detail,
+      errorCode: errorCode || 'CLI_PROVIDER_AUTH_FAILED',
+      providerFailureCategory: providerFailureCategory || 'authentication',
+      turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
+      traceFile: traceEvent?.traceFile || null,
+    };
+  }
+  if (
+    errorCode === 'CLI_PROVIDER_EXIT_FAILED' ||
+    ['rate_limit', 'transport', 'provider_error', 'unclassified_cli_exit'].includes(providerFailureCategory)
+  ) {
+    return {
+      kind: 'provider_transport',
+      countsTowardTransportAbort: true,
+      abortImmediately: false,
+      detail,
+      errorCode: errorCode || 'CLI_PROVIDER_EXIT_FAILED',
+      providerFailureCategory: providerFailureCategory || 'unclassified_cli_exit',
+      turn: Number.isInteger(traceEvent?.turn) ? traceEvent.turn : null,
+      traceFile: traceEvent?.traceFile || null,
+    };
+  }
   return {
     kind: error?.signal ? 'child_signal' : 'child_process',
     countsTowardTransportAbort: false,
@@ -1035,6 +1065,64 @@ export function assertProgram2LaunchStateRunnable(launchState = {}) {
   return true;
 }
 
+export function authorizeProgram2HaltedCheckpointResume(
+  launchState = {},
+  {
+    expectedCheckpointSha = '',
+    actualCheckpointSha = '',
+    jobId = '',
+    authorizedAt = new Date().toISOString(),
+  } = {},
+) {
+  const requested = Boolean(expectedCheckpointSha || jobId);
+  if (launchState.halted !== true) {
+    if (requested) throw new Error('halted-checkpoint resume was requested for a runnable launch state');
+    return false;
+  }
+  if (!requested) assertProgram2LaunchStateRunnable(launchState);
+  if (!/^[0-9a-f]{64}$/u.test(expectedCheckpointSha)) {
+    throw new Error('--resume-halted-checkpoint-sha requires the exact 64-character launch-state SHA-256');
+  }
+  if (actualCheckpointSha !== expectedCheckpointSha) {
+    throw new Error(`halted checkpoint SHA mismatch: expected ${expectedCheckpointSha}, found ${actualCheckpointSha}`);
+  }
+  if (launchState.abortReason !== 'non-retryable child_process failure before a sealed job') {
+    throw new Error(`halted checkpoint abort reason is not resumable: ${launchState.abortReason || 'missing'}`);
+  }
+  const outcome = launchState.jobs?.[jobId];
+  if (
+    !outcome ||
+    outcome.status !== 'failed' ||
+    outcome.attempts !== 1 ||
+    outcome.attrition === true ||
+    outcome.failureKind !== 'child_process'
+  ) {
+    throw new Error(`halted checkpoint job is not a one-attempt child-process failure: ${jobId || 'missing job id'}`);
+  }
+  const priorAbortReason = launchState.abortReason;
+  launchState.resumeAuthorizations = Array.isArray(launchState.resumeAuthorizations)
+    ? launchState.resumeAuthorizations
+    : [];
+  launchState.resumeAuthorizations.push({
+    schema: 'machinespirits.tutor-stub.program2-halted-resume-authorization.v1',
+    authorizedAt,
+    checkpointSha256: actualCheckpointSha,
+    jobId,
+    nextLogicalAttempt: 2,
+    priorAbortReason,
+  });
+  launchState.consecutiveTransportFailures = Math.max(
+    1,
+    Number.isInteger(launchState.consecutiveTransportFailures)
+      ? launchState.consecutiveTransportFailures
+      : 0,
+  );
+  delete launchState.abortedAt;
+  delete launchState.abortReason;
+  delete launchState.halted;
+  return true;
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -1046,12 +1134,14 @@ async function main() {
       'limit-jobs': { type: 'string', default: '' },
       'start-ordinal': { type: 'string', default: '1' },
       'end-ordinal': { type: 'string', default: '' },
+      'resume-halted-checkpoint-sha': { type: 'string', default: '' },
+      'resume-halted-job': { type: 'string', default: '' },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--plan 5|5b|5c|floor|weights-interface|weights-interface-smoke] [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--start-ordinal N --end-ordinal N] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--plan 5|5b|5c|floor|weights-interface|weights-interface-smoke] [--dry-run] [--launch-approved --expected-sha <sha>] [--output-dir <dir>] [--start-ordinal N --end-ordinal N] [--resume-halted-checkpoint-sha <sha256> --resume-halted-job <id>] [--limit-jobs N]',
     );
     return;
   }
@@ -1142,11 +1232,19 @@ async function main() {
 
   const limit = values['limit-jobs'] ? Number(values['limit-jobs']) : plan.jobs.length;
   const statePath = path.join(outputRoot, 'launch-state.json');
-  const launchState = fs.existsSync(statePath)
-    ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
+  const stateText = fs.existsSync(statePath) ? fs.readFileSync(statePath, 'utf8') : '';
+  const launchState = stateText
+    ? JSON.parse(stateText)
     : { schema: 'machinespirits.tutor-stub.program2-phase5-launch-state.v1', jobs: {} };
   const saveState = () => fs.writeFileSync(statePath, `${JSON.stringify(launchState, null, 2)}\n`);
-  assertProgram2LaunchStateRunnable(launchState);
+  const checkpointSha = stateText ? createHash('sha256').update(stateText).digest('hex') : '';
+  const resumeAuthorized = authorizeProgram2HaltedCheckpointResume(launchState, {
+    expectedCheckpointSha: values['resume-halted-checkpoint-sha'],
+    actualCheckpointSha: checkpointSha,
+    jobId: values['resume-halted-job'],
+  });
+  if (resumeAuthorized) saveState();
+  else assertProgram2LaunchStateRunnable(launchState);
   let consecutiveTransportFailures = Number.isInteger(launchState.consecutiveTransportFailures)
     ? launchState.consecutiveTransportFailures
     : 0;
