@@ -24,6 +24,17 @@ const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 
 const VALID_SUITES = new Set(['all', 'root', 'core']);
 const CHILD_STDIO_DRAIN_IDLE_MS = 2_000;
 const CHILD_STDIO_DRAIN_MAX_MS = 10_000;
+// Without `--test-force-exit` a single leaked handle keeps the runner alive
+// forever, so the parent has to end the wait itself. The bound is total silence
+// across every file running concurrently, not per file: the longest single test
+// in this suite runs about 28 seconds locally, and a whole run producing nothing
+// for five minutes has stopped making progress rather than gone quiet.
+const CHILD_OUTPUT_STALL_MS = 300_000;
+const CHILD_STALL_KILL_GRACE_MS = 5_000;
+// `test:summary` per test file arrived in Node 22. On Node 20 the timing report
+// can only be written when the stream ends, which changes what a stalled run
+// can be told about — see formatStallDiagnostic.
+export const NODE_REPORTS_FILES_AS_THEY_FINISH = Number(process.versions.node.split('.')[0]) >= 22;
 const TEST_SHARD_SEED = 'hermetic-v1:1491';
 const SLOW_FILE_LIMIT = 8;
 const TWO_WAY_SHARD_OVERRIDES = new Map([
@@ -59,7 +70,11 @@ export function selectTestShard(files, shard) {
 
 export function parseRunnerArgs(argv = []) {
   let suite = 'all';
-  let forceExit = true;
+  // Natural teardown is the default. `--test-force-exit` calls `process.exit()`
+  // at the end of a run, which truncates the report and can cut the run itself
+  // short; `--force-exit` restores it for a caller that would rather have that
+  // than wait out a leaked handle.
+  let forceExit = false;
   let printEnv = false;
   let quiet = false;
   let shard = null;
@@ -74,6 +89,8 @@ export function parseRunnerArgs(argv = []) {
       suite = argument.slice('--suite='.length);
     } else if (argument === '--no-force-exit') {
       forceExit = false;
+    } else if (argument === '--force-exit') {
+      forceExit = true;
     } else if (argument === '--print-env') {
       printEnv = true;
     } else if (argument === '--quiet') {
@@ -127,7 +144,10 @@ export function createIsolatedPaths(root) {
 
 export function buildRootTestArgs({
   projectRoot = PROJECT_ROOT,
-  forceExit = true,
+  // Matches parseRunnerArgs. A separate default here would mean a caller that
+  // asks runPhase for natural teardown still gets a child that forces its own
+  // exit, which is the harder of the two mistakes to notice.
+  forceExit = false,
   forwarded = [],
   testFiles,
   timingPath,
@@ -170,13 +190,23 @@ export function buildCoreTestArgs({ projectRoot = PROJECT_ROOT, forwarded = [], 
   ];
 }
 
+// The executed-file account comes back from the child as a path relative to the
+// project root, so the selected list has to be expressed the same way for the
+// two to be comparable — `npm test -- /absolute/path.test.js` otherwise reads as
+// one missing file and one unexpected one.
+function repoRelativeTestFile(projectRoot, file) {
+  return path.relative(projectRoot, path.resolve(projectRoot, file)).split(path.sep).join('/');
+}
+
 export function buildTestPhases(options, projectRoot = PROJECT_ROOT, reportRoot = projectRoot) {
   const phases = [];
   if (options.suite === 'all' || options.suite === 'root') {
     const discoveredFiles = discoverRootTestFiles(projectRoot);
-    const selectedFiles = options.forwarded.length
-      ? options.forwarded.filter((argument) => argument.endsWith('.test.js'))
-      : selectTestShard(discoveredFiles, options.shard);
+    const selectedFiles = (
+      options.forwarded.length
+        ? options.forwarded.filter((argument) => argument.endsWith('.test.js'))
+        : selectTestShard(discoveredFiles, options.shard)
+    ).map((file) => repoRelativeTestFile(projectRoot, file));
     phases.push({
       phase: 'root',
       forceExit: options.forceExit,
@@ -216,7 +246,7 @@ export function buildTestPhases(options, projectRoot = PROJECT_ROOT, reportRoot 
 function phaseLabel(phase, forceExit, shard) {
   if (phase === 'core') return 'in-housed tutor-core (Vitest, natural teardown)';
   const shardLabel = shard ? `, shard ${shard.index}/${shard.total}` : '';
-  return `root Node tests (${forceExit ? 'legacy forced exit' : 'natural teardown handle audit'}${shardLabel})`;
+  return `root Node tests (${forceExit ? 'legacy forced exit' : 'natural teardown'}${shardLabel})`;
 }
 
 function writeCapturedOutput(stream, output) {
@@ -245,6 +275,8 @@ export function runPhase({
   stderrStream = process.stderr,
   stdioDrainIdleMs = CHILD_STDIO_DRAIN_IDLE_MS,
   stdioDrainMaxMs = CHILD_STDIO_DRAIN_MAX_MS,
+  stallTimeoutMs = CHILD_OUTPUT_STALL_MS,
+  stallKillGraceMs = CHILD_STALL_KILL_GRACE_MS,
   onChild,
 }) {
   console.log(`\n[test:hermetic] ${phaseLabel(phase, forceExit, shard)}`);
@@ -260,11 +292,36 @@ export function runPhase({
     let childResult = null;
     let drainIdleTimer = null;
     let drainMaxTimer = null;
+    let stallTimer = null;
+    let stallKillTimer = null;
+    let stalled = false;
     let settled = false;
+
+    const clearStallWatch = () => {
+      if (stallTimer) clearTimeout(stallTimer);
+      if (stallKillTimer) clearTimeout(stallKillTimer);
+      stallTimer = null;
+      stallKillTimer = null;
+    };
+
+    // A run that has stopped emitting has stopped progressing: either a test is
+    // hung or a finished file is holding the runner open. Both used to be
+    // invisible behind the forced exit. End the wait, and let the caller name
+    // the files that never reported.
+    const watchForStall = () => {
+      if (forceExit || childResult || settled || !stallTimeoutMs) return;
+      if (stallTimer) clearTimeout(stallTimer);
+      stallTimer = setTimeout(() => {
+        stalled = true;
+        child.kill('SIGTERM');
+        stallKillTimer = setTimeout(() => child.kill('SIGKILL'), stallKillGraceMs);
+      }, stallTimeoutMs);
+    };
 
     const finish = () => {
       if (settled || !childResult) return;
       settled = true;
+      clearStallWatch();
       if (drainIdleTimer) clearTimeout(drainIdleTimer);
       if (drainMaxTimer) clearTimeout(drainMaxTimer);
       // A detached descendant can keep inherited pipes open indefinitely after
@@ -273,6 +330,7 @@ export function runPhase({
       child.stderr.destroy();
       resolve({
         ...childResult,
+        stalled,
         stdout: Buffer.concat(stdoutChunks).toString('utf8'),
         stderr: Buffer.concat(stderrChunks).toString('utf8'),
       });
@@ -288,22 +346,27 @@ export function runPhase({
     child.stdout.on('data', (chunk) => {
       stdoutChunks.push(chunk);
       if (!quiet) stdoutStream.write(chunk);
+      watchForStall();
       scheduleDrain();
     });
     child.stderr.on('data', (chunk) => {
       stderrChunks.push(chunk);
       if (!quiet) stderrStream.write(chunk);
+      watchForStall();
       scheduleDrain();
     });
     onChild(child);
+    watchForStall();
     child.once('error', (error) => {
       settled = true;
+      clearStallWatch();
       if (drainIdleTimer) clearTimeout(drainIdleTimer);
       if (drainMaxTimer) clearTimeout(drainMaxTimer);
       reject(error);
     });
     child.once('exit', (code, signal) => {
       childResult = { code: code ?? 1, signal };
+      clearStallWatch();
       // Usually `close` follows immediately after stdout/stderr drain. When a
       // descendant still owns the pipe, keep extending the idle window while
       // TAP bytes arrive, with a hard ceiling for genuinely leaked handles.
@@ -332,11 +395,35 @@ export function runPhase({
  * counts, because "the summary is missing" and "the tests failed" look
  * identical otherwise.
  */
+/**
+ * The selected files that reported a result, taken from the streamed timing
+ * report rather than from TAP.
+ *
+ * TAP carries no per-file record when a file loads successfully — its tests are
+ * hoisted to the top level and the file name appears nowhere — so this is the
+ * only account of which files ran, and it is what lets the root phase enforce
+ * the same exact-file check the Vitest phase has always had.
+ */
+export function readRootExecutedFiles(phase) {
+  if (!phase.reportPath || !fs.existsSync(phase.reportPath)) return null;
+  return parseRootTimingReport(fs.readFileSync(phase.reportPath, 'utf8'))
+    .map((timing) => timing.file)
+    .sort();
+}
+
 export function readRootTapSummary(phase, result) {
+  const withFiles = (summary) => {
+    const files = readRootExecutedFiles(phase);
+    return files ? { ...summary, files } : summary;
+  };
   const tapPath = phase.tapPath;
   const fileText = tapPath && fs.existsSync(tapPath) ? fs.readFileSync(tapPath, 'utf8') : '';
-  if (nodeTapOutputIsComplete(fileText)) return parseNodeTapSummary(fileText, { source: `root TAP report ${tapPath}` });
-  if (nodeTapOutputIsComplete(result.stdout)) return parseNodeTapSummary(result.stdout, { source: 'root TAP stdout' });
+  if (nodeTapOutputIsComplete(fileText)) {
+    return withFiles(parseNodeTapSummary(fileText, { source: `root TAP report ${tapPath}` }));
+  }
+  if (nodeTapOutputIsComplete(result.stdout)) {
+    return withFiles(parseNodeTapSummary(result.stdout, { source: 'root TAP stdout' }));
+  }
   const channels = [
     tapPath
       ? `${tapPath} (${fileText ? `${fileText.length} bytes, no complete tail` : 'absent'})`
@@ -369,6 +456,31 @@ function printRootTimingSummary(phase) {
     .map(({ file, durationMs, failures }) => `${file}=${durationMs.toFixed(0)}ms${failures ? `/${failures}fail` : ''}`)
     .join(', ');
   console.log(`[test:hermetic] root slow files: ${slowest}`);
+}
+
+export function formatStallDiagnostic(phase, executedFiles, stallTimeoutMs = CHILD_OUTPUT_STALL_MS) {
+  const executed = new Set(executedFiles || []);
+  const unreported = phase.selectedFiles.filter((file) => !executed.has(file));
+  const cause = executed.size
+    ? unreported.length
+      ? unreported.map((file) => `[test:hermetic] unreported: ${file}`)
+      : ['[test:hermetic] every selected file reported; a hung test outside the selected files is the remaining cause']
+    : [
+        // Node reports per file as the file finishes only from v22. On v20 the
+        // whole account arrives at the end of the stream, which a stalled run
+        // never reaches, so there is nothing here to narrow down.
+        `[test:hermetic] no file reported before the stall, so none can be singled out${
+          NODE_REPORTS_FILES_AS_THEY_FINISH
+            ? ''
+            : `; Node ${process.versions.node} reports per file only at the end of a run, and Node 22 narrows this`
+        }`,
+      ];
+  return [
+    `[test:hermetic] ${phase.phase} stalled: no output for ${Math.round(stallTimeoutMs / 1000)}s, so the run was ended`,
+    '[test:hermetic] a file that keeps a handle open after its tests finish holds the whole run open and never reports',
+    ...cause,
+    '[test:hermetic] --force-exit restores the old behaviour of exiting on completion, at the cost of a truncated report',
+  ].join('\n');
 }
 
 export function formatPhaseFailureDiagnostic(phase, result) {
@@ -421,6 +533,11 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
       });
       currentChild = null;
       printRootTimingSummary(phase);
+      if (result.stalled) {
+        if (options.quiet) await replayCapturedOutput(result);
+        console.error(formatStallDiagnostic(phase, readRootExecutedFiles(phase)));
+        return 1;
+      }
       if (result.signal) {
         if (options.quiet) await replayCapturedOutput(result);
         console.error(formatPhaseFailureDiagnostic(phase, result));
@@ -439,10 +556,22 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
           selectedFiles: phase.selectedFiles,
           allowedSkips: manifestState.allowedSkips,
           env,
-          requireExactFiles: phase.selectedFiles.length > 0,
+          // The legacy forced exit can end a run before its last files report,
+          // so a caller who asks for it is asking for an unverifiable account
+          // and gets one. Natural teardown is held to the exact-file check.
+          requireExactFiles: phase.selectedFiles.length > 0 && !phase.forceExit,
         });
       } catch (error) {
         if (options.quiet && result.code === 0) await replayCapturedOutput(result);
+        // A file that fails to import never emits a file-scoped summary, so it
+        // reads here as a file that did not run — which it did not. Say so, or
+        // the reader goes looking for a missing file that is sitting right
+        // there with an import error a few thousand TAP lines above.
+        if (phase.phase === 'root' && /missing:/u.test(error.message)) {
+          console.error(
+            '[test:hermetic] a listed file reports nothing when it fails to load; check the TAP output above for its import error',
+          );
+        }
         throw error;
       }
       printPhaseSummary(phase.phase, phaseSummary);
