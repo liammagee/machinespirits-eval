@@ -50,14 +50,20 @@ Design decisions worth keeping:
   they are one feature, else an arm could claim it dropped the contract while
   the contract was still present.
 
-Open, and pre-existing on `main`, not caused by this work: every recorded fixture
-turn fails `liveTurnProgressionAudit:learner_uptake_not_realized`, because
-`auditTutorStubFrozenCandidate` skips the live turn-progression and
-source-alignment audits only when handed a valid `jointPerformanceComposition`,
-which a text-only frozen replay never has. Pass rate therefore reads 0/N for
-every arm, and the reports lead with failure-cluster counts instead. The same
-condition means `tutor:stub:pr-benchmark --preset strong` would currently fail
-on `main`; that needs its own item.
+Why the reports lead with cluster counts rather than pass rate: every recorded
+fixture turn fails `liveTurnProgressionAudit:learner_uptake_not_realized`, so
+pass rate reads 0/N for every arm. That is the known *live-parity
+reclassification* the frozen-replay corpus already tracks, not a defect this
+work introduced — `auditTutorStubFrozenCandidate` skips the live
+turn-progression and source-alignment audits only when handed a valid
+`jointPerformanceComposition`, which a text-only replay never has. Nocturne
+t007/t009/t010 carry `recordedAuditOk: true` yet recompute to `ok: false` on
+exactly those two cluster families, and `tests/tutorStubFrozenReplay.test.js`
+asserts that reclassifications never land outside them.
+
+Not established, and deliberately not claimed anywhere: whether
+`tutor:stub:pr-benchmark` now gates harder than it used to. It grades freshly
+generated text, not recorded text, and has not been run against this.
 
 Standing limitation: turns after the first are counterfactual for every arm
 except the one that produced the recording, since the frozen learner utterances

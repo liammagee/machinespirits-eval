@@ -87,12 +87,35 @@ baseline; the per-cluster delta table sums to that headline so the top-line
 number is always auditable against the rows.
 
 At time of writing every recorded fixture turn fails
-`liveTurnProgressionAudit:learner_uptake_not_realized` on both arms. This is
-pre-existing and not an artifact of the A/B: `auditTutorStubFrozenCandidate`
-skips the live turn-progression and source-alignment audits only when it is
-handed a valid `jointPerformanceComposition`, and a text-only frozen replay
-never has one. Pass rate consequently reads 0/N everywhere. The cluster deltas
-remain informative and are what the reports lead with.
+`liveTurnProgressionAudit:learner_uptake_not_realized` on both arms, so pass
+rate reads 0/N everywhere. This is not an artifact of the A/B — it is the
+known *live-parity reclassification* the frozen-replay corpus already tracks.
+`auditTutorStubFrozenCandidate` skips the live turn-progression and
+source-alignment audits only when handed a valid `jointPerformanceComposition`,
+and a text-only replay never has one, so those audits re-derive the composition
+from raw text and hold it to a stricter standard than the recording met.
+
+The effect is directly observable in the corpus. Re-auditing the *recorded*
+text of nocturne t007, t009, and t010 — all three of which carry
+`recordedAuditOk: true` and no recorded clusters — yields `ok: false` today,
+failing only on `live_turn_progression_v1:` / `live_source_action_alignment_v1:`
+clusters. `tests/tutorStubFrozenReplay.test.js` asserts exactly this pattern
+and fails loudly if a reclassification ever lands outside those two families,
+so the strictness is deliberate and bounded rather than drift.
+
+What this does *not* establish: whether `tutor:stub:pr-benchmark` now gates
+harder than it used to. That benchmark grades freshly generated text through
+the same text-only path with `require_audit_ok: true`, and a fresh candidate
+may well realize its uptake in a way the recorded ones do not. Nothing here has
+been run against it.
+
+For the A/B itself the consequence is only that pass rate is uninformative.
+The cluster deltas still separate the arms, and they are what the reports lead
+with.
+
+Cluster names come in two conventions on the same audit: `failureClusters` uses
+`liveTurnProgressionAudit:…`, `hardFailureClusters` uses
+`live_turn_progression_v1:…`. They are the same checks.
 
 ## Running it
 
