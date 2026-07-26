@@ -86,16 +86,40 @@ export const TUTOR_STUB_EVIDENCE_USE_RUBRICS = Object.freeze({
 });
 
 /**
- * V1 remains the default: flipping it would silently change the instrument
- * mid-arc for in-flight Program 2 pilots. Opting in is a deliberate per-run act.
+ * V2_BRIDGE_VOICED is the default: a label two judge families agree on 26.2% of
+ * the time is not worth defending, and every new run should measure the
+ * construct we can actually state. V1 stays reachable by name so any run can be
+ * reproduced exactly, and `TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY` below records
+ * which version the unstamped past ran under.
+ *
+ * The cost of the flip, stated plainly: absolute compliance rates computed after
+ * it are about 1.1 points lower than the published Phase 5/5b/5c figures for
+ * identical tutor behaviour, so the two must never be pooled. The stamp on every
+ * turn record is what makes that enforceable rather than remembered.
  */
-export const TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT = TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1;
+export const TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT = TUTOR_STUB_EVIDENCE_USE_RUBRICS.V2_BRIDGE_VOICED;
+
+/**
+ * Every call recorded before the rubric was versioned ran V1's wording. Records
+ * and plan files from that era carry no version stamp, so anything reading them
+ * must resolve the absent stamp to this constant and not to whatever the default
+ * happens to be now — otherwise moving the default silently relabels history.
+ */
+export const TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY = TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1;
 
 /**
  * Prompt lines per version. Only the `omits_warrant` / `links_evidence_to_rule`
- * boundary differs; the `distorts_public_evidence` and `overleaps_evidence`
- * clauses are byte-identical across versions, which is what makes them usable
- * as a within-prompt control when comparing the two.
+ * boundary differs, and the `distorts_public_evidence` and `overleaps_evidence`
+ * clauses are byte-identical across versions.
+ *
+ * Only `distorts_public_evidence` is a clean control, though. `overleaps_evidence`
+ * is the second label that fires the `warrant_skip` gate
+ * (`tutorStubPointOfActionCoaching.js`: `['omits_warrant', 'overleaps_evidence']`),
+ * so it sits inside the causal path, not outside it: because the labels are one
+ * mutually-exclusive choice, redefining the `omits_warrant` boundary can move
+ * mass into or out of `overleaps_evidence` and change the gate directly. Its
+ * byte-identical wording still argues against a *global* prompt effect; it does
+ * not stand in for an untouched measure.
  */
 const EVIDENCE_USE_RUBRIC_CLAUSES = Object.freeze({
   [TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1]: Object.freeze([

@@ -7,6 +7,7 @@ import { loadWorld } from '../dramaticDerivation/world.js';
 import {
   TUTOR_STUB_EVIDENCE_USE_RUBRICS,
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+  TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY,
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
   TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
   TutorStubPublicLearnerAnalysisError,
@@ -308,16 +309,30 @@ describe('evidence_use rubric versioning', () => {
       ...(evidenceUseRubric === undefined ? {} : { evidenceUseRubric }),
     });
 
-  // The point of versioning rather than editing in place: runs that do not opt
-  // in must be bit-for-bit unaffected, so in-flight arcs cannot silently change
-  // instrument. An omitted argument and an explicit V1 must agree, and both must
-  // carry V1's wording.
-  it('defaults to v1 and leaves the default prompt untouched', () => {
-    assert.equal(TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT, TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1);
+  // New runs measure the construct we can state, so the default is v2. An
+  // omitted argument and an explicit v2 must agree.
+  it('defaults to v2_bridge_voiced', () => {
+    assert.equal(TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT, TUTOR_STUB_EVIDENCE_USE_RUBRICS.V2_BRIDGE_VOICED);
     const omitted = promptFor(undefined);
-    assert.equal(omitted, promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1));
-    assert.match(omitted, /correct clue plus conclusion but no bridge => omits_warrant/u);
-    assert.doesNotMatch(omitted, /a bridge is voiced when/u);
+    assert.equal(omitted, promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V2_BRIDGE_VOICED));
+    assert.match(omitted, /a bridge is voiced when/u);
+  });
+
+  // Flipping the default is only safe if the old instrument stays exactly
+  // reproducible, since the published Phase 5/5b/5c figures were measured under
+  // it. This pins v1's single precedence line byte-for-byte: the archive's 2,363
+  // stored prompts each contain this exact string once, and the relabel tool
+  // finds them by matching it.
+  it('keeps v1 exactly reproducible by name', () => {
+    const v1 = promptFor(TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1);
+    assert.equal(TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY, TUTOR_STUB_EVIDENCE_USE_RUBRICS.V1);
+    assert.ok(
+      v1.includes(
+        '- evidence precedence: distorted/misattributed public clue => distorts_public_evidence; correct clue plus conclusion but no bridge => omits_warrant; conclusion beyond available evidence => overleaps_evidence; explicit bridge => links_evidence_to_rule.',
+      ),
+      'v1 precedence line drifted; the archive relabel tool matches it verbatim',
+    );
+    assert.doesNotMatch(v1, /a bridge is voiced when/u);
   });
 
   it('v2 defines the bridge in both directions', () => {
@@ -331,9 +346,13 @@ describe('evidence_use rubric versioning', () => {
     assert.doesNotMatch(v2, /correct clue plus conclusion but no bridge => omits_warrant/u);
   });
 
-  // The two neighbouring labels are deliberately byte-identical across versions.
-  // That is what lets `overleaps_evidence` serve as a within-prompt control when
-  // the versions are compared: a global prompt effect would move it too.
+  // The two neighbouring labels are byte-identical across versions, which bounds
+  // the edit to the clause it claims to touch. Only `distorts_public_evidence` is
+  // a clean control, though: `overleaps_evidence` is the second label that fires
+  // `warrant_skip` (see tutorStubPointOfActionCoaching.js), and because the labels
+  // are one mutually-exclusive choice, redefining the `omits_warrant` boundary can
+  // move mass across it. Byte-identity says the wording did not change; it does
+  // not say the label's rate cannot.
   it('leaves the neighbouring evidence labels byte-identical across versions', () => {
     for (const clause of [
       'distorted/misattributed public clue => distorts_public_evidence',
