@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-07-26
 updated: 2026-07-26
-verification: "Passed: node --test tests/tutorPrBenchmarkRubric.test.js tests/tutorPrBenchmarkCalibration.test.js tests/tutorStubPrBenchmark.test.js tests/tutorStubPrBenchmarkComparison.test.js tests/tutorStubPrBenchmarkHook.test.js (25/25); npm run lint; npm run format:check; npm run lint:cycles; npm run test:manifest; npm run wp:source-check; node scripts/eval-cli.js validate-config; npm run tutor:stub:pr-benchmark -- --print-plan --json. No live model or human-calibration run was performed."
+verification: "Passed: node --test tests/tutorPrBenchmarkRubric.test.js tests/tutorPrBenchmarkCalibration.test.js tests/tutorStubPrBenchmark.test.js tests/tutorStubPrBenchmarkComparison.test.js tests/tutorStubPrBenchmarkHook.test.js (25/25); npm run lint; npm run format:check; npm run lint:cycles; npm run test:manifest; npm run wp:source-check; node scripts/eval-cli.js validate-config; npm run tutor:stub:pr-benchmark -- --print-plan --json. The final code-bearing commit 2c8845c6 completed the live strong screen (6/6 calls, 0 pass, 6 fail, 0 blocked, 0 safety failures); human development coding and held-out acceptance remain intentionally unrun."
 branch: codex/tutor-pr-benchmark-calibration-harness
 depends_on:
   - tutor-pr-benchmark-delta-harness

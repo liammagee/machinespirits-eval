@@ -22,8 +22,11 @@ As of 2026-07-26:
   the previously implicit PR-turn criteria into an explicit versioned rubric
   and makes that rubric the single source for benchmark and human-calibration
   provenance.
-- No live Codex or Claude calibration calls have been made. Only synthetic and
-  artifact-only paths have run.
+- The final code-bearing commit completed the attended six-call strong screen:
+  0/6 candidates passed, all six failed learner-uptake recognition, and no
+  candidate triggered a safety failure. That report is valid input for a
+  development packet under rubric 1.0; no human coding or acceptance cycle has
+  yet been performed.
 
 ## Rubric and codebook locations
 
