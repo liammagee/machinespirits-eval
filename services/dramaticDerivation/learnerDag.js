@@ -258,10 +258,12 @@ export function buildLearnerDagSnapshot(
 
   const heldPremiseIds = [...new Set(nodes.map((node) => node.premiseId).filter(Boolean))].sort();
   const secretEntailed = entails(valid, world.rules, world.secret.fact);
-  // A learner can state the concealed conclusion through either channel: the
-  // explicit assertion slot, or a voiced derivation. Only the first used to be
-  // recorded, so a dialogue could end on the learner saying the answer in plain
-  // words and still be assessed as never having said it.
+  // A learner can reach the concealed conclusion and voice it as a derivation
+  // without ever filling the assertion slot. That is not an assertion and does
+  // not close the dialogue, but it is a different state from having said
+  // nothing, and `assertedSecret: false` cannot tell the two apart. Recorded
+  // here so the difference is legible; `answerSurface.js` owns the question of
+  // whether an answer the learner *did* claim was recognised.
   const secretKey = factKey(world.secret.fact);
   const voicedSecret = voicedRows.find((entry) => factKey(entry.fact) === secretKey) || null;
   const voicedSecretDerivation = Boolean(voicedSecret && secretEntailed);
@@ -326,11 +328,16 @@ export function assessLearnerDag(world, learnerDag = {}) {
   const secretKey = factKey(world.secret.fact);
   const mirrorKey = world.mirror ? factKey(world.mirror.fact) : null;
   const assertedKey = final.asserted ? factKey(final.asserted) : null;
-  const assertedSecretByAssertion = assertedKey === secretKey;
+  // The assertion slot is the only channel that closes a dialogue. A voiced
+  // derivation is reported beside it, never folded into it: a learner who
+  // derives the concealed fact and then names the mirror suspect has made a
+  // wrong assertion, and reading the derivation as the assertion would erase
+  // that. What the extra field buys is the distinction the bare boolean cannot
+  // carry — never concluded, versus concluded and never claimed it.
+  const assertedSecret = assertedKey === secretKey;
   const voicedSecretDerivation = Boolean(final.voicedSecretDerivation);
-  const assertedSecret = assertedSecretByAssertion || voicedSecretDerivation;
-  const secretStatedVia = assertedSecretByAssertion ? 'assertion' : voicedSecretDerivation ? 'voiced_derivation' : null;
-  const assertedMirror = Boolean(mirrorKey && assertedKey === mirrorKey) && !assertedSecret;
+  const secretStatedVia = assertedSecret ? 'assertion' : voicedSecretDerivation ? 'voiced_derivation' : null;
+  const assertedMirror = Boolean(mirrorKey && assertedKey === mirrorKey);
   const finalSecretEntailed = Boolean(final.secretEntailed);
   const missingPremises = bestPath.missingPremiseIds.map((premiseId) =>
     classifyMissingPremise({ premiseId, releases: releaseByPremise(world), finalTurn: final.turn }),
@@ -355,7 +362,6 @@ export function assessLearnerDag(world, learnerDag = {}) {
     firstSecretEntailedTurn,
     finalSecretEntailed,
     assertedSecret,
-    assertedSecretByAssertion,
     voicedSecretDerivation,
     secretStatedVia,
     assertedMirror,

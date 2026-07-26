@@ -102,9 +102,9 @@ Design decisions worth keeping:
 - **The first showcase run resolved nothing, for two reasons that had nothing to
   do with the harness.** Both instrumented dialogues ran to the turn cap with
   `assertedSecret: false` and bottleneck `assertion_gap`. The learner had in fact
-  stated the concealed conclusion, through the DAG's `derive` channel, but
-  `assessLearnerDag` computed `assertedSecret` only from the `assertAnswer` slot,
-  so a conclusion voiced in plain words scored as never voiced. Separately, both
+  reached the concealed conclusion and voiced it through the DAG's `derive`
+  channel, which the assessment did not record at all, so the gap read the same
+  as never having got there. Separately, both
   arms kept selecting `stage_next_step` after the release schedule was spent,
   sending the composer after a clue that no longer exists — and in Campus FAQ the
   culprit was not the action-family selector (which chose `compress_sayback`
@@ -114,6 +114,18 @@ Design decisions worth keeping:
   `voicedSecretDerivation` and the assessment reports `secretStatedVia`, and
   `tutorStubReleaseScheduleExhausted` redirects both override sites to
   `compress_sayback`.
+- **The voiced channel reports, it does not close.** The first version of that
+  fix folded a voiced derivation into `assertedSecret`. Meanwhile `main` landed
+  `services/dramaticDerivation/answerSurface.js` — a text-to-constant bridge
+  repairing the same symptom at its root, since the matcher had been treating an
+  apostrophe as a word boundary and so could not see an answer the learner had
+  claimed. The two fixes collided on merge: `main`'s tests pin that a learner who
+  derives the concealed fact and then names the mirror suspect has made a wrong
+  assertion, which folding the channels would erase. `assertedSecret` is now the
+  assertion slot alone, `answerSurface` owns recognising a claimed answer, and
+  `voicedSecretDerivation` / `secretStatedVia` sit beside them — which is what
+  makes "reached it and never claimed it" distinguishable from "never reached
+  it", the ambiguity `main`'s own commit message names.
 
 - **The baseline is evaluated but not gated (`--observe-audits`).** Passthrough
   fused evaluation with enforcement: bypassing the guard suite bypassed the

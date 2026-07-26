@@ -125,7 +125,7 @@ test('buildLearnerDag reports incomplete learner graphs as partial path coverage
   assert.equal(dag.assessment.finalSecretEntailed, false);
 });
 
-test('a warranted conclusion voiced as a derivation counts as stating the secret', () => {
+test('a warranted conclusion voiced as a derivation is recorded without closing the dialogue', () => {
   const world = smokeWorld();
   const p1 = world.premiseById.get('p1').fact;
   const p2 = world.premiseById.get('p2').fact;
@@ -145,12 +145,39 @@ test('a warranted conclusion voiced as a derivation counts as stating the secret
   });
   const dag = buildLearnerDag([snapshot], world);
 
+  // Closure hangs off the assertion slot alone, so this stays an assertion gap.
+  // The point of the extra field is that the gap is now legible as "reached it
+  // and never claimed it" rather than reading the same as "never reached it".
   assert.equal(snapshot.voicedSecretDerivation, true);
   assert.equal(snapshot.voicedSecretDerivationTurn, 9);
-  assert.equal(dag.assessment.assertedSecret, true);
-  assert.equal(dag.assessment.assertedSecretByAssertion, false);
+  assert.equal(dag.assessment.assertedSecret, false);
   assert.equal(dag.assessment.secretStatedVia, 'voiced_derivation');
-  assert.equal(dag.assessment.bottleneck, 'grounded_asserted_secret');
+  assert.equal(dag.assessment.bottleneck, 'assertion_gap');
+});
+
+test('a voiced derivation does not overwrite a wrong assertion', () => {
+  const world = smokeWorld();
+  const p1 = world.premiseById.get('p1').fact;
+  const p2 = world.premiseById.get('p2').fact;
+  const p3 = world.premiseById.get('p3').fact;
+  const snapshot = buildLearnerDagSnapshot(world, {
+    turn: 9,
+    boardFacts: [p1, p2, p3],
+    validFacts: [p1, p2, p3],
+    voiced: [{ turn: 9, fact: world.secret.fact }],
+    assertion: world.mirror.fact,
+    ledger: [
+      { turn: 2, premiseId: 'p1', via: 'director' },
+      { turn: 5, premiseId: 'p2', via: 'tutor' },
+      { turn: 8, premiseId: 'p3', via: 'tutor' },
+    ],
+  });
+  const dag = buildLearnerDag([snapshot], world);
+
+  assert.equal(dag.assessment.assertedSecret, false);
+  assert.equal(dag.assessment.assertedMirror, true);
+  assert.equal(dag.assessment.voicedSecretDerivation, true);
+  assert.equal(dag.assessment.bottleneck, 'mirror_assertion_after_entailment');
 });
 
 test('the assertion channel is still reported as its own channel', () => {
@@ -176,8 +203,8 @@ test('the assertion channel is still reported as its own channel', () => {
   );
 
   assert.equal(dag.assessment.assertedSecret, true);
-  assert.equal(dag.assessment.assertedSecretByAssertion, true);
   assert.equal(dag.assessment.secretStatedVia, 'assertion');
+  assert.equal(dag.assessment.bottleneck, 'grounded_asserted_secret');
 });
 
 test('voicing the secret without the evidence to entail it does not count as stating it', () => {
