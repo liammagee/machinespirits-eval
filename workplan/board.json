@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-26T13:39:08.833Z",
+  "generated": "2026-07-26T13:46:57.334Z",
   "counts": {
-    "total": 217,
+    "total": 218,
     "byStatus": {
       "done": 190,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
       "active": 6,
-      "archived": 4,
-      "review": 5
+      "review": 6,
+      "archived": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 49,
+      "infra": 50,
       "maintenance": 58,
       "content": 2,
       "paper": 6,
@@ -564,6 +564,31 @@
         "lambda"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "dialogue-conclusion-answer-recognition",
+      "title": "Dialogues never conclude: the answer matcher cannot see natural English",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Every orthography of an authored answer constant that appears in the sealed phase-5e traces resolves to assertedSecret, closure fires through tutorStubLearnerDagGrounded, no phantom unsupported assertion is minted from a sentence-shaped claim, and a corpus lint prevents any new world shipping an answer its own prose cannot state.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "DRAMATIC-RECOGNITION-PLAN.md"
+        ]
+      },
+      "tags": [
+        "drama-derivation",
+        "instrument",
+        "tutor-stub"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "claude/dialogue-conclusion-recognition"
     },
     {
       "id": "program-2-launch-certificates-stop-losses",
