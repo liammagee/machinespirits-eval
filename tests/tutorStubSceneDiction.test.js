@@ -2,11 +2,16 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { deterministicTutorStubDramaticReleaseFallback } from '../services/tutorStubDramaticRelease.js';
-import { deterministicTutorStubLearnerUptake } from '../services/tutorStubResponseComposition.js';
+import {
+  deterministicTutorStubConfiguredContinuationFallback,
+  deterministicTutorStubLearnerUptake,
+} from '../services/tutorStubResponseComposition.js';
 import {
   TUTOR_STUB_SCENE_DICTION_CONTEMPORARY,
   TUTOR_STUB_SCENE_DICTION_PERIOD,
   resolveTutorStubSceneDiction,
+  tutorStubDeclaredSceneObject,
+  tutorStubNamedSceneProp,
   tutorStubSceneLedgerTerm,
   tutorStubScenePublicObjects,
 } from '../services/tutorStubSceneDiction.js';
@@ -98,4 +103,99 @@ test('the generic learner uptake tail follows the declared diction', () => {
   assert.equal(uptakeFor(null), 'I hear the point; the next public fact must answer it.');
   assert.equal(uptakeFor(PERIOD_WORLD), 'I hear the point; the next public fact must answer it.');
   assert.equal(uptakeFor(DOMESTIC_WORLD), 'Fair point—the next thing we check has to answer it.');
+});
+
+test('a declared prop beats the whitelist fragment nested inside it', () => {
+  assert.equal(
+    tutorStubNamedSceneProp('I open the repair notebook.', ['notebook', 'repair notebook']),
+    'repair notebook',
+  );
+  assert.equal(tutorStubDeclaredSceneObject('I open the repair notebook.', DOMESTIC_WORLD), 'repair notebook');
+  assert.equal(tutorStubDeclaredSceneObject('I open the repair notebook.', null), '');
+  assert.equal(tutorStubDeclaredSceneObject('Nothing here names a prop.', DOMESTIC_WORLD), '');
+});
+
+// The authored worlds name their declared props in their own scene prose, which
+// is where the fallback looks for a concrete object. These fixtures do the same.
+const DOMESTIC_SCENE = {
+  ...DOMESTIC_WORLD,
+  setting: 'A shared flat; the repair notebook sits on the shelf by the bathroom door.',
+};
+
+function continuationFor(world, part = 'examiner') {
+  return deterministicTutorStubConfiguredContinuationFallback({
+    uptake: 'I hear the point.',
+    responseConfiguration: { engagement_stance: 'plain', actorial_host_part: part },
+    world,
+    learnerText: 'Where does this room get its water?',
+  });
+}
+
+test('the configured continuation fallback is unchanged for a world that declares nothing', () => {
+  assert.equal(
+    continuationFor(null),
+    'I hear the point. I set the public record under examination and mark the claim’s limit. Keep only what the public evidence already shows. What does that let us carry forward?',
+  );
+  assert.equal(
+    continuationFor(null, 'record_keeper'),
+    'I hear the point. I enter that distinction in the record. Keep only what the public evidence already shows. What does that let us carry forward?',
+  );
+});
+
+test('a period world keeps the frozen staging and its exhibit', () => {
+  // The exhibit whitelist still outranks the declared ledger term for the parts
+  // written to hold up physical evidence: marrick's examiner reaches for the
+  // coin under assay, not for the trial-book it also declares.
+  const world = {
+    ...PERIOD_WORLD,
+    setting: 'A guild assay hall; a clipped coin lies on the bench beside the open trial-book.',
+  };
+  assert.equal(
+    continuationFor(world),
+    'I hear the point. I set the coin under examination and mark the claim’s limit. Keep only what the public evidence already shows. What does that let us carry forward?',
+  );
+  assert.equal(
+    continuationFor(world, 'record_keeper'),
+    'I hear the point. I enter that distinction in the trial-book. Keep only what the public evidence already shows. What does that let us carry forward?',
+  );
+});
+
+test('a period world with no exhibit named speaks its own record noun, still in period staging', () => {
+  const world = {
+    presentation: { narrative_diction: 'maritime archival', ledger_term: 'custody roll' },
+    setting: 'The seal house; the custody roll is chained to the desk.',
+  };
+  assert.equal(
+    continuationFor(world),
+    'I hear the point. I set the custody roll under examination and mark the claim’s limit. Keep only what the public evidence already shows. What does that let us carry forward?',
+  );
+});
+
+test('a contemporary world speaks its whole declared prop in the plainspoken register', () => {
+  assert.equal(
+    continuationFor(DOMESTIC_SCENE),
+    'I hear the point. I put the repair notebook in front of us and mark where the claim stops holding. Keep only what the public evidence already shows. What does that let us carry forward?',
+  );
+  assert.equal(
+    continuationFor(DOMESTIC_SCENE, 'record_keeper'),
+    'I hear the point. I write that difference down in the repair notebook. Keep only what the public evidence already shows. What does that let us carry forward?',
+  );
+  for (const part of ['scene_partner', 'advocate', 'skeptic', 'satirist', 'foreperson']) {
+    const spoken = continuationFor(DOMESTIC_SCENE, part);
+    assert.match(spoken, /repair notebook/u, spoken);
+    assert.ok(!/notebook under examination|as written|provisional/u.test(spoken), `${part}: ${spoken}`);
+  }
+});
+
+test('the record slot never takes an exhibit the world declares beside its ledger', () => {
+  const world = {
+    presentation: {
+      narrative_diction: 'domestic plainspoken',
+      ledger_term: 'repair notebook',
+      public_objects: ['shower hose'],
+    },
+    setting: 'A shared flat; the shower hose is coiled by the bath and the repair notebook sits on the shelf.',
+  };
+  assert.match(continuationFor(world, 'record_keeper'), /I write that difference down in the repair notebook\./u);
+  assert.match(continuationFor(world), /I put the shower hose in front of us/u);
 });

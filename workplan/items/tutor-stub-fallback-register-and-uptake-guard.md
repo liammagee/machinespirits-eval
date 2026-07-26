@@ -186,3 +186,34 @@ Log:
   first two is small; the third is called positionally from six sites, several
   via bare `.map(renderTutorStubDueSource)`, so it needs a signature that a map
   index cannot occupy.
+- 2026-07-26 — Residuals A and B closed; C (the due-source lead) is deliberately
+  left open. `configuredFallbackObject` now consults the world's own declared
+  props before either period whitelist, and `configuredFallbackHost` /
+  `configuredFallbackPerformance` take the resolved diction and carry a
+  plainspoken variant beside eight of the nine host entries and two of the
+  performance lines. The prop matcher that step 1 wrote inside
+  `tutorStubDramaticRelease.js` moved to `tutorStubSceneDiction.js` as
+  `tutorStubNamedSceneProp` / `tutorStubDeclaredSceneObject` and is now shared,
+  so the two fallback banks cannot drift on which nouns a world owns.
+  Two orderings are deliberate and both were chosen by measurement. A declared
+  prop has to be named in the scene's own prose rather than taken on declaration
+  alone: taking it on declaration alone moved 203 of 224 measured lines and
+  re-nouned every frozen world. And the exhibit whitelist keeps its precedence
+  for the parts written to hold up physical evidence, or marrick's examiner
+  reaches for the trial-book instead of the coin under assay.
+  Measured across all 32 authored worlds × 7 host parts, 14 worlds change. The
+  12 contemporary worlds change prop and register together — world-030's
+  examiner goes from "I set the notebook under examination and mark the claim's
+  limit" to "I put the repair notebook in front of us and mark where the claim
+  stops holding". Two period worlds change prop only, with the staging
+  untouched: sealhouse and ravensmark say "custody roll" and "warrant book"
+  where they said "public record". That is a narrow exception to the
+  byte-identity line in this item's acceptance, and it is the point of the
+  change rather than a side effect — those are the worlds' own period nouns
+  replacing an abstract generic. The other 18 worlds and the no-world default
+  are byte-identical.
+  Five new tests in `tests/tutorStubSceneDiction.test.js` (11 in the file, all
+  passing) pin the frozen default, the exhibit precedence, the record slot
+  refusing a declared exhibit, and the contemporary path. Full suite 7042/7044;
+  both failures are this worktree's symlinked `node_modules` missing
+  `@modelcontextprotocol/sdk` and `rdf-validate-shacl`, unrelated to the edit.
