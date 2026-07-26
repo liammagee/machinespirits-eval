@@ -15,6 +15,7 @@
 appId: org.machinespirits.scriptorium
 productName: Scriptorium
 copyright: © Machine Spirits
+electronVersion: 43.2.0
 
 # Override the Electron entry point in the packaged app only.
 extraMetadata:

@@ -304,7 +304,8 @@
     "test:manifest:update": "node scripts/sync-hermetic-test-manifest.js --write",
     "test:root": "node scripts/run-hermetic-tests.js --suite root",
     "test:root:handles": "node scripts/run-hermetic-tests.js --suite root --no-force-exit",
-    "test:pty:ci": "TUTOR_STUB_RUN_CONCURRENT_PTY_TEST=1 node scripts/run-hermetic-tests.js --suite root --no-force-exit tests/tutorStubInteractiveModes.test.js",
+    "test:pty:ci": "TUTOR_STUB_RUN_CONCURRENT_PTY_TEST=1 node scripts/run-hermetic-tests.js --suite root --no-force-exit tests/tutorStubInteractiveDirection.test.js tests/tutorStubInteractivePerformance.test.js tests/tutorStubInteractiveTerminal.test.js tests/tutorStubInteractiveTurns.test.js tests/tutorStubInteractiveVoice.test.js",
+    "test:lifecycle:ci": "node scripts/run-hermetic-tests.js --suite root --no-force-exit tests/applicationShutdown.test.js tests/evalLogRoutesDataRoot.test.js tests/evalRequestAdmissionRoutes.test.js tests/processUtils.test.js tests/tutorStubProcessSessionHttp.test.js",
     "test:core": "node scripts/run-hermetic-tests.js --suite core",
     "test:coverage:risk": "node scripts/run-risk-coverage.js",
     "test:posthoc-pipeline": "node --test tests/canonicalPosthocPipeline.test.js",
@@ -324,13 +325,14 @@
     "a19r:qa": "node scripts/a19r-mini-drama.js qa",
     "a19r:report": "node scripts/a19r-mini-drama.js report",
     "desktop:latest": "node scripts/desktop-latest.js",
-    "desktop:dev": "electron desktop/main.js",
-    "desktop:smoke": "MS_DESKTOP_SMOKE=1 electron desktop/main.js",
-    "desktop:rebuild": "electron-rebuild -f",
-    "desktop:test": "EVAL_DB_PATH=$(mktemp -d)/t.db EVAL_LOGS_DIR=$(mktemp -d) EVAL_EXPORTS_DIR=$(mktemp -d) ELECTRON_RUN_AS_NODE=1 electron --test --test-force-exit tests/desktop*.test.js",
-    "desktop:pack": "electron-builder --dir",
-    "desktop:dist": "electron-builder --mac dmg",
-    "desktop:brand-dev": "plutil -replace CFBundleName -string Scriptorium node_modules/electron/dist/Electron.app/Contents/Info.plist && plutil -replace CFBundleDisplayName -string Scriptorium node_modules/electron/dist/Electron.app/Contents/Info.plist && echo 'Dev Electron binary renamed to Scriptorium (macOS only; reverts on npm install — re-run as needed).'",
+    "desktop:install": "npm ci --prefix desktop",
+    "desktop:dev": "desktop/node_modules/.bin/electron desktop/main.js",
+    "desktop:smoke": "MS_DESKTOP_SMOKE=1 desktop/node_modules/.bin/electron desktop/main.js",
+    "desktop:rebuild": "desktop/node_modules/.bin/electron-rebuild -f",
+    "desktop:test": "EVAL_DB_PATH=$(mktemp -d)/t.db EVAL_LOGS_DIR=$(mktemp -d) EVAL_EXPORTS_DIR=$(mktemp -d) ELECTRON_RUN_AS_NODE=1 desktop/node_modules/.bin/electron --test --test-force-exit tests/desktop*.test.js",
+    "desktop:pack": "desktop/node_modules/.bin/electron-builder --dir",
+    "desktop:dist": "desktop/node_modules/.bin/electron-builder --mac dmg",
+    "desktop:brand-dev": "plutil -replace CFBundleName -string Scriptorium desktop/node_modules/electron/dist/Electron.app/Contents/Info.plist && plutil -replace CFBundleDisplayName -string Scriptorium desktop/node_modules/electron/dist/Electron.app/Contents/Info.plist && echo 'Dev Electron binary renamed to Scriptorium (macOS only; reverts on desktop:install — re-run as needed).'",
     "agon:run": "node scripts/agon-run.js",
     "agon:report": "node scripts/agon-report.js",
     "agon:test": "node --test tests/agonReferee.test.js tests/agonEpisode.test.js"
@@ -373,25 +375,14 @@
     "zod": "^4.4.1"
   },
   "devDependencies": {
-    "@electron/rebuild": "^4.2.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "22.14.0",
     "@vitest/coverage-v8": "^4.1.10",
-    "electron": "^43.2.0",
-    "electron-builder": "^26.15.7",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.3.0",
     "prettier": "^3.8.1",
-    "temp": "file:vendor/temp-safe",
     "vitest": "^4.0.0"
-  },
-  "overrides": {
-    "@electron/asar": "4.2.1",
-    "@electron/universal": "3.0.6",
-    "ejs": "6.0.1",
-    "electron-winstaller": "5.4.4",
-    "temp": "$temp"
   },
   "engines": {
     "node": ">=20.0.0"

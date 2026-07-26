@@ -18,6 +18,8 @@ import {
   buildTestPhases,
   createIsolatedPaths,
   discoverRootTestFiles,
+  formatPhaseFailureDiagnostic,
+  parseRootTimingReport,
   parseRunnerArgs,
   replayCapturedOutput,
   runPhase,
@@ -80,12 +82,23 @@ test('root sharding is deterministic, exhaustive, and isolated from forwarded ru
   const files = ['a.test.js', 'b.test.js', 'c.test.js', 'd.test.js', 'e.test.js'];
   const first = selectTestShard(files, { index: 1, total: 2 });
   const second = selectTestShard(files, { index: 2, total: 2 });
-  assert.deepEqual(first, ['a.test.js', 'c.test.js', 'e.test.js']);
-  assert.deepEqual(second, ['b.test.js', 'd.test.js']);
   assert.deepEqual([...first, ...second].sort(), files);
   assert.equal(
     first.some((file) => second.includes(file)),
     false,
+  );
+  assert.deepEqual(
+    selectTestShard([...files].reverse(), { index: 1, total: 2 }).sort(),
+    [...first].sort(),
+    'file ordering must not change stable shard membership',
+  );
+  const withInsertedFile = ['000-new.test.js', ...files];
+  assert.deepEqual(
+    selectTestShard(withInsertedFile, { index: 1, total: 2 })
+      .filter((file) => files.includes(file))
+      .sort(),
+    [...first].sort(),
+    'adding a file must not move existing files between shards',
   );
 
   const options = parseRunnerArgs(['--suite', 'root', '--shard=1/2', '--quiet']);
@@ -99,10 +112,11 @@ test('root sharding is deterministic, exhaustive, and isolated from forwarded ru
   });
   const phase = buildTestPhases(options, path.resolve('.'), '/tmp/hermetic-reports')[0];
   const rootFiles = discoverRootTestFiles();
-  assert.equal(phase.selectedFiles.length, Math.ceil(rootFiles.length / 2));
-  assert.deepEqual(
-    phase.selectedFiles,
-    rootFiles.filter((_, index) => index % 2 === 0),
+  assert.deepEqual(phase.selectedFiles, selectTestShard(rootFiles, { index: 1, total: 2 }));
+  assert.ok(phase.selectedFiles.includes('tests/tutorStubFirstDraftOuterLoop.test.js'));
+  assert.ok(
+    Math.abs(phase.selectedFiles.length - rootFiles.length / 2) <= rootFiles.length * 0.1,
+    'checked-in shard seed should retain a useful file-count balance',
   );
   assert.deepEqual(phase.args.slice(-phase.selectedFiles.length), phase.selectedFiles);
 
@@ -228,6 +242,32 @@ test('captured failure replay waits for backpressured output to flush', async ()
 
   assert.equal(flushed, true);
   assert.equal(replayed, 'complete TAP output');
+});
+
+test('root timing reports rank slow files and failure diagnostics identify the complete shard', () => {
+  assert.deepEqual(
+    parseRootTimingReport(
+      [
+        JSON.stringify({ file: 'tests/fast.test.js', durationMs: 5, tests: 1, failures: 0 }),
+        JSON.stringify({ file: 'tests/slow.test.js', durationMs: 50, tests: 2, failures: 1 }),
+      ].join('\n'),
+    ),
+    [
+      { file: 'tests/slow.test.js', durationMs: 50, tests: 2, failures: 1 },
+      { file: 'tests/fast.test.js', durationMs: 5, tests: 1, failures: 0 },
+    ],
+  );
+  assert.equal(
+    formatPhaseFailureDiagnostic(
+      { phase: 'root', selectedFiles: ['tests/a.test.js', 'tests/b.test.js'] },
+      { code: 1, signal: null },
+    ),
+    [
+      '[test:hermetic] root failed code=1; selected_files=2',
+      '[test:hermetic] selected: tests/a.test.js',
+      '[test:hermetic] selected: tests/b.test.js',
+    ].join('\n'),
+  );
 });
 
 test('root discovery stays explicit while the core phase targets all in-housed Vitest files', () => {
@@ -510,18 +550,24 @@ test('checked-in skip ledger matches the declared clean Linux CI skip shapes', (
 
 test('the concurrent PTY skip is discharged by a dedicated natural-teardown CI lane', () => {
   const packageManifest = JSON.parse(fs.readFileSync(path.resolve('package.json'), 'utf8'));
-  assert.equal(
-    packageManifest.scripts['test:pty:ci'],
-    'TUTOR_STUB_RUN_CONCURRENT_PTY_TEST=1 node scripts/run-hermetic-tests.js --suite root --no-force-exit tests/tutorStubInteractiveModes.test.js',
-  );
+  assert.match(packageManifest.scripts['test:pty:ci'], /^TUTOR_STUB_RUN_CONCURRENT_PTY_TEST=1 /u);
+  assert.match(packageManifest.scripts['test:pty:ci'], /--no-force-exit/u);
+  for (const group of ['Direction', 'Performance', 'Terminal', 'Turns', 'Voice']) {
+    assert.match(packageManifest.scripts['test:pty:ci'], new RegExp(`tutorStubInteractive${group}\\.test\\.js`, 'u'));
+  }
+  assert.match(packageManifest.scripts['test:lifecycle:ci'], /--no-force-exit/u);
+  assert.match(packageManifest.scripts['test:lifecycle:ci'], /applicationShutdown\.test\.js/u);
+  assert.match(packageManifest.scripts['test:lifecycle:ci'], /tutorStubProcessSessionHttp\.test\.js/u);
 
   const workflow = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
   assert.match(workflow, /^ {2}pty-concurrency:\n {4}name: PTY \/ loopback concurrency$/mu);
   assert.match(workflow, /^ {8}run: npm run test:pty:ci$/mu);
+  assert.match(workflow, /^ {8}run: npm run test:lifecycle:ci$/mu);
 
-  const interactiveSuite = fs.readFileSync(path.resolve('tests/tutorStubInteractiveModes.test.js'), 'utf8');
-  assert.match(interactiveSuite, /process\.env\.TUTOR_STUB_RUN_CONCURRENT_PTY_TEST === '1'/u);
-  assert.match(interactiveSuite, /Boolean\(process\.env\.CI\) && !RUN_CONCURRENT_PTY_IN_CI/u);
+  const interactiveHarness = fs.readFileSync(path.resolve('tests/helpers/tutorStubInteractiveHarness.js'), 'utf8');
+  const terminalSuite = fs.readFileSync(path.resolve('tests/tutorStubInteractiveTerminal.test.js'), 'utf8');
+  assert.match(interactiveHarness, /process\.env\.TUTOR_STUB_RUN_CONCURRENT_PTY_TEST === '1'/u);
+  assert.match(terminalSuite, /Boolean\(process\.env\.CI\) && !RUN_CONCURRENT_PTY_IN_CI/u);
 });
 
 test('CI shards both supported Node versions, caches npm downloads, and avoids unneeded LFS checkout', () => {
@@ -531,11 +577,35 @@ test('CI shards both supported Node versions, caches npm downloads, and avoids u
   assert.match(workflow, /^ {8}run: npm run test:manifest$/mu);
   assert.match(workflow, /^ {2}test:\n {4}needs: test-contract$/mu);
   assert.match(workflow, /^ {2}pty-concurrency:\n {4}name: PTY \/ loopback concurrency\n {4}needs: test-contract$/mu);
+  assert.match(workflow, /^ {6}fail-fast: false$/mu);
   assert.match(workflow, /^ {8}node-version: \[20, 22\]\n {8}shard: \[1, 2\]$/mu);
   assert.match(workflow, /npm run test:root -- --shard=\$\{\{ matrix\.shard \}\}\/2 --quiet/u);
   assert.match(workflow, /^ {8}if: matrix\.shard == 1\n {8}run: npm run test:core -- --quiet$/mu);
   assert.equal(workflow.match(/cache: npm/gu)?.length, 4);
+  assert.equal(workflow.match(/^ {6}- run: npm ci$/gmu)?.length, 4);
+  assert.doesNotMatch(workflow, /npm ci --omit=optional/u);
   assert.doesNotMatch(workflow, /lfs: true/u);
+
+  const packageManifest = JSON.parse(fs.readFileSync(path.resolve('package.json'), 'utf8'));
+  const desktopManifest = JSON.parse(fs.readFileSync(path.resolve('desktop/package.json'), 'utf8'));
+  assert.equal(packageManifest.engines.node, '>=20.0.0');
+  assert.equal(packageManifest.devDependencies.electron, undefined);
+  assert.equal(packageManifest.optionalDependencies, undefined);
+  assert.equal(desktopManifest.engines.node, '>=22.12.0');
+  assert.equal(desktopManifest.devDependencies.electron, '^43.2.0');
+  assert.equal(desktopManifest.devDependencies['@electron/rebuild'], '^4.2.0');
+  assert.equal(packageManifest.scripts['desktop:install'], 'npm ci --prefix desktop');
+  assert.match(packageManifest.scripts['desktop:dev'], /^desktop\/node_modules\/\.bin\/electron /u);
+  const rootLock = JSON.parse(fs.readFileSync(path.resolve('package-lock.json'), 'utf8'));
+  for (const desktopOnlyPackage of ['electron', '@electron/rebuild', 'electron-builder', 'temp']) {
+    assert.equal(rootLock.packages[`node_modules/${desktopOnlyPackage}`], undefined);
+  }
+
+  const validationWorkflow = fs.readFileSync(path.resolve('.github/workflows/validate.yml'), 'utf8');
+  assert.match(validationWorkflow, /npm run content:validate/u);
+  assert.match(validationWorkflow, /npm run paper:provable-discourse:smoke/u);
+  assert.doesNotMatch(validationWorkflow, /npm run paper:provable-discourse:test/u);
+  assert.doesNotMatch(validationWorkflow, /npm run ontology:test/u);
 
   for (const workflowPath of ['.github/workflows/validate.yml', '.github/workflows/workplan-validate.yml']) {
     const companionWorkflow = fs.readFileSync(path.resolve(workflowPath), 'utf8');

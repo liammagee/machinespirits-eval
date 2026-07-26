@@ -41,13 +41,16 @@ The packaging lock is deliberately ratcheted to the reviewed `electron-builder`
 brace-expansion implementations from silently returning during lockfile updates.
 
 ```bash
-# 1. install deps (includes electron + electron-builder)
+# 1. install the shared Node/server dependencies
 npm install
 
-# 2. compile the native modules for Electron's ABI (one-time, after install)
+# 2. install the separately locked Node 22 desktop toolchain
+npm run desktop:install
+
+# 3. compile the native modules for Electron's ABI (one-time, after install)
 npm run desktop:rebuild
 
-# 3. launch the app
+# 4. launch the app
 npm run desktop:dev
 ```
 
@@ -61,6 +64,7 @@ background process on an ephemeral loopback port; you never manage a port.
 | Command | What it does |
 |---|---|
 | `npm run desktop:latest` | Fast-forward the `desktop-dev` worktree to `main`, then launch. Run from anywhere in the repo. |
+| `npm run desktop:install` | Install the Node 22-only Electron toolchain from `desktop/package-lock.json`. |
 | `npm run desktop:dev` | Launch the app window. |
 | `npm run desktop:smoke` | Headless self-test: boots the app, hits every surface + SSE + CSP, prints PASS/FAIL, exits. No window. |
 | `npm run desktop:test` | Run the desktop test suite (route-parity, sync-contract, paths, security, menu, window-state, credentials). |
@@ -154,8 +158,9 @@ background process on an ephemeral loopback port; you never manage a port.
 
 The app is named **Scriptorium** (`productName` in `electron-builder.yml`,
 `app.setName` in `desktop/main.js`). The icon source is `desktop/icon.svg`; regenerate
-the raster + `.icns` with `./node_modules/.bin/electron desktop/make-icon.mjs` followed
-by the `sips`/`iconutil` steps (the dev dock icon is set live via `app.dock.setIcon`).
+the raster + `.icns` with `desktop/node_modules/.bin/electron desktop/make-icon.mjs`
+followed by the `sips`/`iconutil` steps (the dev dock icon is set live via
+`app.dock.setIcon`).
 
 ---
 

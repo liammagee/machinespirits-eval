@@ -1,0 +1,22 @@
+{
+  "name": "@machinespirits/desktop-toolchain",
+  "private": true,
+  "version": "0.6.0",
+  "description": "Node 22-only Electron build toolchain for Scriptorium",
+  "devDependencies": {
+    "@electron/rebuild": "^4.2.0",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.7",
+    "temp": "file:../vendor/temp-safe"
+  },
+  "overrides": {
+    "@electron/asar": "4.2.1",
+    "@electron/universal": "3.0.6",
+    "ejs": "6.0.1",
+    "electron-winstaller": "5.4.4",
+    "temp": "$temp"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
