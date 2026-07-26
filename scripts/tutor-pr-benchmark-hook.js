@@ -8,10 +8,12 @@ import { fileURLToPath } from 'node:url';
 import { loadTutorPrBenchmarkConfig } from '../services/tutorStubPrBenchmark.js';
 import {
   classifyTutorPrBenchmarkHookReport,
+  collectTutorPrBenchmarkReachablePaths,
   installTutorPrBenchmarkPrePushHook,
   isTutorPrBenchmarkHookRelevantPath,
   loadCachedTutorPrBenchmarkReport,
   parseTutorPrBenchmarkPrePushInput,
+  resolveTutorPrBenchmarkReportRoot,
   uninstallTutorPrBenchmarkPrePushHook,
   validateTutorPrBenchmarkHookConfig,
 } from '../services/tutorStubPrBenchmarkHook.js';
@@ -95,6 +97,10 @@ function prePush() {
   if (bypassRequested()) return;
   const loaded = loadTutorPrBenchmarkConfig(CONFIG_PATH);
   const hookConfig = validateTutorPrBenchmarkHookConfig(loaded.config);
+  hookConfig.reachablePaths = collectTutorPrBenchmarkReachablePaths({
+    root: ROOT,
+    entryPaths: hookConfig.importRoots,
+  });
   const input = fs.readFileSync(0, 'utf8');
   const updates = parseTutorPrBenchmarkPrePushInput(input);
   const relevant = pushedRelevantChanges(updates, hookConfig);
@@ -110,7 +116,16 @@ function prePush() {
   if (dirty.length > 0) {
     throw new Error(`benchmark-relevant worktree paths are dirty: ${dirty.join(', ')}`);
   }
-  const reportDir = path.resolve(ROOT, hookConfig.reportRoot, headOid);
+  const reportDir = path.join(
+    resolveTutorPrBenchmarkReportRoot({
+      root: ROOT,
+      reportRoot: hookConfig.reportRoot,
+      reportScope: hookConfig.reportScope,
+      gitCommonDir: runGit(['rev-parse', '--git-common-dir']),
+    }),
+    'hook',
+    headOid,
+  );
   const reportPath = path.join(reportDir, 'report.json');
   const cached = loadCachedTutorPrBenchmarkReport(reportPath, headOid);
   const cachedDisposition = classifyTutorPrBenchmarkHookReport(cached, hookConfig.enforcement);

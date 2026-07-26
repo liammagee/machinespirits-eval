@@ -242,7 +242,7 @@ async function defaultGenerateCandidate({ job, prepared }) {
   );
 }
 
-function defaultAuditCandidate({ prepared, text }) {
+export function auditTutorPrBenchmarkCandidate({ prepared, text }) {
   return auditTutorStubFrozenCandidate({
     bundle: prepared.bundle,
     world: prepared.world,
@@ -278,7 +278,7 @@ export async function runTutorPrBenchmark({
   plan,
   root,
   generateCandidate = defaultGenerateCandidate,
-  auditCandidate = defaultAuditCandidate,
+  auditCandidate = auditTutorPrBenchmarkCandidate,
   loadWorldForId = worldForId,
   metadata = {},
   now = () => new Date(),

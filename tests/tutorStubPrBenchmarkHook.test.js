@@ -8,11 +8,13 @@ import { fileURLToPath } from 'node:url';
 
 import {
   classifyTutorPrBenchmarkHookReport,
+  collectTutorPrBenchmarkReachablePaths,
   installTutorPrBenchmarkPrePushHook,
   isCachedTutorPrBenchmarkPass,
   isTutorPrBenchmarkHookRelevantPath,
   loadCachedTutorPrBenchmarkReport,
   parseTutorPrBenchmarkPrePushInput,
+  resolveTutorPrBenchmarkReportRoot,
   TUTOR_PR_BENCHMARK_HOOK_MARKER,
   TUTOR_PR_BENCHMARK_HOOK_SIDECAR,
   uninstallTutorPrBenchmarkPrePushHook,
@@ -29,11 +31,43 @@ test('hook config selects the strong preset and scopes tutor-affecting paths', (
   assert.equal(hook.preset, 'strong');
   assert.equal(hook.enforcement, 'report_only');
   assert.equal(hook.baseRef, 'origin/main');
-  assert.equal(hook.reportRoot, '.tutor-stub-auto-eval/pr-benchmark-hook');
-  assert.equal(isTutorPrBenchmarkHookRelevantPath('services/tutorStubFirstDraftContract.js', hook), true);
+  assert.equal(hook.reportScope, 'git_common');
+  assert.equal(hook.reportRoot, 'machinespirits-reports/tutor-pr-benchmark');
+  hook.reachablePaths = collectTutorPrBenchmarkReachablePaths({ root: ROOT, entryPaths: hook.importRoots });
+  for (const relevantPath of [
+    'services/tutorStubFirstDraftContract.js',
+    'services/tutorStubConversationalCompletion.js',
+    'services/tutorStubResponseComposition.js',
+    'services/tutorStubTurnProgressionContract.js',
+    'services/tutorStubGuardDisposition.js',
+  ]) {
+    assert.equal(isTutorPrBenchmarkHookRelevantPath(relevantPath, hook), true, relevantPath);
+  }
+  assert.equal(isTutorPrBenchmarkHookRelevantPath('services/tutorStubInterimPresentation.js', hook), false);
   assert.equal(isTutorPrBenchmarkHookRelevantPath('config/drama-derivation/world-nocturne.yaml', hook), true);
   assert.equal(isTutorPrBenchmarkHookRelevantPath('docs/tutor-pr-benchmark.md', hook), false);
   assert.equal(isTutorPrBenchmarkHookRelevantPath('workplan/items/example.md', hook), false);
+});
+
+test('Git-common report roots survive the lifecycle of any one linked worktree', () => {
+  const root = path.join(path.sep, 'repo', 'linked-worktree');
+  assert.equal(
+    resolveTutorPrBenchmarkReportRoot({
+      root,
+      reportRoot: 'machinespirits-reports/tutor-pr-benchmark',
+      reportScope: 'git_common',
+      gitCommonDir: '/repo/main/.git',
+    }),
+    path.join(path.sep, 'repo', 'main', '.git', 'machinespirits-reports', 'tutor-pr-benchmark'),
+  );
+  assert.equal(
+    resolveTutorPrBenchmarkReportRoot({
+      root,
+      reportRoot: '.tutor-stub-auto-eval/pr-benchmark',
+      reportScope: 'worktree',
+    }),
+    path.join(root, '.tutor-stub-auto-eval', 'pr-benchmark'),
+  );
 });
 
 test('pre-push input parser retains branch creation, update, and deletion records', () => {

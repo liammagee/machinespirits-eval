@@ -6,7 +6,9 @@ import { TUTOR_PR_BENCHMARK_REPORT_SCHEMA } from './tutorStubPrBenchmark.js';
 export const TUTOR_PR_BENCHMARK_HOOK_MARKER = '# machinespirits:tutor-pr-benchmark-hook:v1';
 export const TUTOR_PR_BENCHMARK_HOOK_SIDECAR = 'pre-push.machinespirits-before-tutor-pr-benchmark';
 const HOOK_ENFORCEMENT = new Set(['report_only', 'blocking']);
+const HOOK_REPORT_SCOPES = new Set(['git_common', 'worktree']);
 const CACHEABLE_REPORT_STATUSES = new Set(['pass', 'fail', 'blocked', 'budget_exhausted']);
+const JAVASCRIPT_EXTENSIONS = new Set(['.js', '.mjs']);
 
 function stringList(value, label) {
   if (!Array.isArray(value) || value.length === 0 || value.some((item) => !String(item || '').trim())) {
@@ -33,6 +35,9 @@ export function validateTutorPrBenchmarkHookConfig(config) {
     throw new Error('hook.enforcement must be report_only or blocking');
   }
   if (!String(hook.base_ref || '').trim()) throw new Error('hook.base_ref is required');
+  if (!HOOK_REPORT_SCOPES.has(hook.report_scope)) {
+    throw new Error('hook.report_scope must be git_common or worktree');
+  }
   const reportRoot = repositoryRelative(hook.report_root, 'hook.report_root');
   const exactPaths = stringList(hook.exact_paths, 'hook.exact_paths').map((item, index) =>
     repositoryRelative(item, `hook.exact_paths[${index}]`),
@@ -40,13 +45,18 @@ export function validateTutorPrBenchmarkHookConfig(config) {
   const pathPrefixes = stringList(hook.path_prefixes, 'hook.path_prefixes').map((item, index) =>
     repositoryRelative(item, `hook.path_prefixes[${index}]`),
   );
+  const importRoots = stringList(hook.import_roots, 'hook.import_roots').map((item, index) =>
+    repositoryRelative(item, `hook.import_roots[${index}]`),
+  );
   return {
     preset: hook.preset,
     enforcement: hook.enforcement,
     baseRef: String(hook.base_ref).trim(),
+    reportScope: hook.report_scope,
     reportRoot,
     exactPaths,
     pathPrefixes,
+    importRoots,
   };
 }
 
@@ -54,8 +64,79 @@ export function isTutorPrBenchmarkHookRelevantPath(filePath, hookConfig) {
   const normalized = repositoryRelative(filePath, 'changed path');
   return (
     hookConfig.exactPaths.includes(normalized) ||
-    hookConfig.pathPrefixes.some((prefix) => normalized.startsWith(prefix))
+    hookConfig.pathPrefixes.some((prefix) => normalized.startsWith(prefix)) ||
+    hookConfig.reachablePaths?.has(normalized) === true
   );
+}
+
+function extractStaticRelativeSpecifiers(source) {
+  const specifiers = [];
+  let statement = '';
+  const capture = (candidate) => {
+    const fromMatch = candidate.match(/\bfrom\s*(['"])(\.[^'"]+)\1/u);
+    const sideEffectMatch = candidate.match(/^\s*import\s*(['"])(\.[^'"]+)\1/u);
+    const match = fromMatch || sideEffectMatch;
+    if (match) specifiers.push(match[2]);
+  };
+  for (const line of String(source || '').split(/\r?\n/gu)) {
+    if (!statement) {
+      if (!/^\s*(?:import\b|export\s+(?:\*|\{))/u.test(line)) continue;
+      statement = line;
+    } else {
+      statement += `\n${line}`;
+    }
+    if (statement.includes(';')) {
+      capture(statement.slice(0, statement.indexOf(';') + 1));
+      statement = '';
+    }
+  }
+  if (statement) capture(statement);
+  return [...new Set(specifiers)];
+}
+
+function resolveStaticRelativeModule(importer, specifier) {
+  const clean = specifier.split(/[?#]/u, 1)[0];
+  const base = path.resolve(path.dirname(importer), clean);
+  const candidates = path.extname(base)
+    ? [base]
+    : [`${base}.js`, `${base}.mjs`, path.join(base, 'index.js'), path.join(base, 'index.mjs')];
+  return candidates.find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile()) || null;
+}
+
+export function collectTutorPrBenchmarkReachablePaths({ root, entryPaths }) {
+  const repoRoot = path.resolve(root);
+  const pending = entryPaths.map((entryPath, index) =>
+    path.resolve(repoRoot, repositoryRelative(entryPath, `entryPaths[${index}]`)),
+  );
+  const visited = new Set();
+  while (pending.length > 0) {
+    const file = pending.pop();
+    if (visited.has(file)) continue;
+    const relative = path.relative(repoRoot, file);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      throw new Error(`benchmark import escapes repository root: ${file}`);
+    }
+    if (!fs.existsSync(file) || !fs.statSync(file).isFile()) {
+      throw new Error(`benchmark import root or dependency is missing: ${relative}`);
+    }
+    visited.add(file);
+    if (!JAVASCRIPT_EXTENSIONS.has(path.extname(file))) continue;
+    const source = fs.readFileSync(file, 'utf8');
+    for (const specifier of extractStaticRelativeSpecifiers(source)) {
+      const target = resolveStaticRelativeModule(file, specifier);
+      if (target) pending.push(target);
+    }
+  }
+  return new Set([...visited].map((file) => path.relative(repoRoot, file).split(path.sep).join('/')).sort());
+}
+
+export function resolveTutorPrBenchmarkReportRoot({ root, reportRoot, reportScope, gitCommonDir = null }) {
+  const relative = repositoryRelative(reportRoot, 'report root');
+  if (reportScope === 'worktree') return path.resolve(root, relative);
+  if (reportScope !== 'git_common') throw new Error(`unsupported report scope ${reportScope}`);
+  if (!String(gitCommonDir || '').trim()) throw new Error('git common directory is required for git_common reports');
+  const common = path.isAbsolute(gitCommonDir) ? gitCommonDir : path.resolve(root, gitCommonDir);
+  return path.resolve(common, relative);
 }
 
 export function parseTutorPrBenchmarkPrePushInput(source) {

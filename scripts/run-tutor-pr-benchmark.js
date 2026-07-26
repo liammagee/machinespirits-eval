@@ -13,6 +13,14 @@ import {
   renderTutorPrBenchmarkMarkdown,
   runTutorPrBenchmark,
 } from '../services/tutorStubPrBenchmark.js';
+import {
+  reauditTutorPrBenchmarkReport,
+  renderTutorPrBenchmarkComparisonMarkdown,
+} from '../services/tutorStubPrBenchmarkComparison.js';
+import {
+  resolveTutorPrBenchmarkReportRoot,
+  validateTutorPrBenchmarkHookConfig,
+} from '../services/tutorStubPrBenchmarkHook.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_CONFIG = path.join(ROOT, 'config', 'tutor-pr-benchmark.yaml');
@@ -26,7 +34,8 @@ Options:
   --cases <id,id>         Override the preset case list
   --max-calls <n>         Lower or explicitly raise the finite call budget
   --config <path>         Benchmark YAML (default: config/tutor-pr-benchmark.yaml)
-  --out <directory>       Report directory (default: ignored timestamped directory)
+  --out <directory>       Report directory (default: shared Git-local timestamped directory)
+  --reaudit-report <json> Re-audit exact saved candidates under current code (zero calls)
   --print-plan            Validate and print the zero-call plan
   --json                  Print JSON instead of the compact human summary
   --help                  Show this help
@@ -72,6 +81,17 @@ function stamp(date = new Date()) {
   return date.toISOString().replace(/[:.]/gu, '-');
 }
 
+function currentGitMetadata() {
+  const status = gitValue(['status', '--porcelain=v1', '--untracked-files=all']);
+  const gitStatus = status ? status.split(/\r?\n/gu).filter(Boolean) : [];
+  return {
+    gitSha: gitValue(['rev-parse', 'HEAD']),
+    gitBranch: gitValue(['branch', '--show-current']),
+    gitTreeState: gitStatus.length > 0 ? 'dirty' : 'clean',
+    gitStatus,
+  };
+}
+
 function writeReport(outDir, report) {
   const target = path.resolve(outDir);
   fs.mkdirSync(target, { recursive: true });
@@ -82,6 +102,26 @@ function writeReport(outDir, report) {
   return { jsonPath, markdownPath };
 }
 
+function writeReaudit(outDir, report) {
+  const target = path.resolve(outDir);
+  fs.mkdirSync(target, { recursive: true });
+  const jsonPath = path.join(target, 'reaudit.json');
+  const markdownPath = path.join(target, 'reaudit.md');
+  fs.writeFileSync(jsonPath, `${JSON.stringify(report, null, 2)}\n`);
+  fs.writeFileSync(markdownPath, renderTutorPrBenchmarkComparisonMarkdown(report));
+  return { jsonPath, markdownPath };
+}
+
+function sharedReportRoot(config) {
+  const hook = validateTutorPrBenchmarkHookConfig(config);
+  return resolveTutorPrBenchmarkReportRoot({
+    root: ROOT,
+    reportRoot: hook.reportRoot,
+    reportScope: hook.reportScope,
+    gitCommonDir: gitValue(['rev-parse', '--git-common-dir']),
+  });
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) {
@@ -90,14 +130,20 @@ async function main() {
   }
   const configPath = path.resolve(ROOT, args.config || DEFAULT_CONFIG);
   const loaded = loadTutorPrBenchmarkConfig(configPath);
+  const sourcePath = args['reaudit-report'] ? path.resolve(args['reaudit-report']) : null;
+  const sourceText = sourcePath ? fs.readFileSync(sourcePath, 'utf8') : null;
+  const sourceReport = sourceText ? JSON.parse(sourceText) : null;
+  if (sourceReport && args['max-calls'] !== undefined) {
+    throw new Error('--max-calls does not apply to zero-call same-response re-audits');
+  }
   const maxCalls = args['max-calls'] === undefined ? null : Number.parseInt(args['max-calls'], 10);
   const plan = buildTutorPrBenchmarkPlan({
     config: loaded.config,
     root: ROOT,
-    preset: args.preset || 'strong',
-    models: csv(args.models),
-    cases: csv(args.cases),
-    maxCalls,
+    preset: args.preset || sourceReport?.plan?.preset || 'strong',
+    models: csv(args.models) || sourceReport?.plan?.models?.map((model) => model.id) || null,
+    cases: csv(args.cases) || sourceReport?.plan?.cases?.map((benchmarkCase) => benchmarkCase.id) || null,
+    maxCalls: sourceReport?.plan?.plannedCalls ?? maxCalls,
     configSha256: crypto.createHash('sha256').update(loaded.source).digest('hex'),
   });
   if (args['print-plan']) {
@@ -114,17 +160,42 @@ async function main() {
     if (printable.status === 'budget_exhausted') process.exitCode = 2;
     return;
   }
+  if (sourceReport) {
+    const report = await reauditTutorPrBenchmarkReport({
+      sourceReport,
+      plan,
+      root: ROOT,
+      sourcePath,
+      sourceSha256: crypto.createHash('sha256').update(sourceText).digest('hex'),
+      metadata: {
+        ...currentGitMetadata(),
+        configPath: path.relative(ROOT, configPath),
+        command: process.argv.slice(2),
+      },
+    });
+    const outDir = args.out || path.join(sharedReportRoot(loaded.config), 'reaudits', `reaudit-${stamp()}`);
+    const paths = writeReaudit(outDir, report);
+    if (args.json) console.log(JSON.stringify(report, null, 2));
+    else {
+      console.log(
+        `tutor PR benchmark re-audit: ${report.status} (${report.summary.improved} improved, ${report.summary.regressed} regressed; zero model calls)`,
+      );
+      console.log(`report: ${paths.markdownPath}`);
+      console.log(`details: ${paths.jsonPath}`);
+    }
+    process.exitCode = report.status === 'pass' ? 0 : 1;
+    return;
+  }
   const report = await runTutorPrBenchmark({
     plan,
     root: ROOT,
     metadata: {
-      gitSha: gitValue(['rev-parse', 'HEAD']),
-      gitBranch: gitValue(['branch', '--show-current']),
+      ...currentGitMetadata(),
       configPath: path.relative(ROOT, configPath),
       command: process.argv.slice(2),
     },
   });
-  const outDir = args.out || path.join(ROOT, '.tutor-stub-auto-eval', `pr-benchmark-${stamp()}`);
+  const outDir = args.out || path.join(sharedReportRoot(loaded.config), 'runs', `pr-benchmark-${stamp()}`);
   const paths = writeReport(outDir, report);
   if (args.json) console.log(JSON.stringify(report, null, 2));
   else {
