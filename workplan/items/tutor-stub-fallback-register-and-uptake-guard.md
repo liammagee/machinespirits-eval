@@ -14,7 +14,7 @@ verification: A contemporary-diction world speaks its own props in its own
   uptake that shares no tokens with the accepted meaning; targeted and hermetic
   suites pass without model calls.
 branch: claude/tutor-stub-uptake-guard
-claim_status: planned
+claim_status: scope-bound
 links:
   code:
     - services/tutorStubSceneDiction.js
@@ -149,3 +149,40 @@ Log:
   population this is one extra model call per fallback turn, which matters on
   paid runs. Tutor-stub sweep 2114/2115 plus 14 new disclosure tests and a new
   composition test, with the same pre-existing MCP-SDK import failure.
+- 2026-07-26 — Paid confirmation run on the motivating world. World-030 with
+  `--dag`, tutor and classifier and automated learner all on codex/gpt-5.6-sol,
+  `goalpost_shifter`, 8 turns, 25 model calls; trace
+  `.tutor-stub-traces/confirm-world030/2026-07-26T01-11-37-775Z.jsonl`.
+  The motivating line is gone: `I examine the record` occurs 124 times in the
+  original trace and 0 times here, replaced by `I look at the repair notebook`
+  (74) built from the world's declared `ledger_term`. Turn outcomes were
+  fallback, accepted, fallback, accepted, accepted, fallback, plain recovery,
+  accepted — 4 of 8 first drafts accepted, 3 safe fallbacks, no final check
+  failures.
+  Step 3 fired on a real model for the first time. On turn 6 both drafts failed
+  only on waivable conversational findings, the rung opened, and the model took
+  the option the brief also offers: it wrote a clean answer and did not disclose
+  (`disclosed: false`, no disclosure issues), then lost turn focus and fell
+  through to the byte-identical fallback. Both the open condition and the
+  fall-through are now observed outside fixtures; a live *disclosed* turn is
+  still only fixture-proven.
+  Step 3's population is smaller than the original diagnosis suggested, because
+  step 4 removed the bug that generated most waivable conversational findings.
+  Turns 1 and 3 fell back on a leak and a source-alignment finding, which the
+  rung is designed not to touch.
+  Three residual period-diction sources remain, none of them in the two files
+  steps 1-2 touched, and none of them present in the original trace — this run
+  had register selection off (it needs `--tutor-learner-dag`, which the original
+  session had and this one omitted), so host-part resolution differed and
+  reached branches the original never did. They are not regressions, but they
+  are diction-blind: `configuredFallbackObject` in
+  `services/tutorStubResponseComposition.js` still matches a hardcoded noun
+  whitelist rather than reading `presentation.ledger_term`, so it yields
+  "notebook" where the world says "repair notebook"; `configuredFallbackHost` in
+  the same file is a fixed phrase table whose `examiner` entry publishes "I set
+  the notebook under examination"; and `sourceReportingLead` in
+  `services/tutorStubDueSourceRenderer.js` hands the model "I read from the
+  record", which it then echoes into its own prose. Threading diction into the
+  first two is small; the third is called positionally from six sites, several
+  via bare `.map(renderTutorStubDueSource)`, so it needs a signature that a map
+  index cannot occupy.
