@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-interaction-mode-presentation
 title: Refactor tutor-stub interaction-mode presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -15,6 +15,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-proof-command-projection
 links:
+  prs:
+    - 273
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -85,3 +87,7 @@ Log:
   213-item source-only workplan, syntax, and diff gates pass; generated
   workplan views remain untouched. The restricted-sandbox precursor failed
   only where existing loopback suites received `listen EPERM`.
+- 2026-07-26 — PR #273 merged as `c074469c` with every CI lane green; the
+  serialized workplan render followed as `740a0981`. Closed this child and
+  handed the adjacent `/status` serializer to
+  `refactor-tutor-stub-session-status-presentation`.
