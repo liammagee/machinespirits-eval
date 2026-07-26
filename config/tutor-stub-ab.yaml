@@ -1,0 +1,116 @@
+schema: machinespirits.tutor-stub.ab-config.v1
+version: '1.0'
+
+# Instrumentation A/B: run one frozen dialogue past a bare tutor and a fully
+# instrumented tutor, grade both with the same pinned deterministic rubric, and
+# render the two transcripts as a swimlane diff.
+#
+# Every arm replays the same recorded turns. The public prefix, the automated
+# learner's utterances, the world, and the evidence state are frozen. Only the
+# private planner context delivered to the speaking tutor varies.
+
+models:
+  codex_medium:
+    provider: codex
+    model: gpt-5.6-terra
+    effort: medium
+    timeout_ms: 300000
+  claude_medium:
+    provider: claude-code
+    model: claude-sonnet-5
+    effort: medium
+    timeout_ms: 180000
+
+# Feature ids come from the registry in services/tutorStubAbArms.js:
+#   context_continuity, evidence_window, learner_classifier, learner_dag,
+#   human_scaffold, first_draft_contract
+arms:
+  baseline:
+    label: Bare tutor
+    summary: One model call, the session system prompt, and the learner's words. No advisories, no DAG, no contract.
+    baseline: true
+    features: none
+    learner_framing: false
+  instrumented:
+    label: Fully instrumented
+    summary: Every advisory the recorded run produced — evidence window, classifier, learner DAG, scaffold, first-draft contract.
+    features: all
+  no_dag:
+    label: No learner DAG
+    summary: Full instrumentation minus the redacted learner proof-DAG model.
+    features: all
+    drop: [learner_dag]
+  no_scaffold:
+    label: No human scaffold
+    summary: Full instrumentation minus the defeasible human discourse scaffold.
+    features: all
+    drop: [human_scaffold]
+  no_contract:
+    label: No first-draft contract
+    summary: Full instrumentation minus the per-turn performance contract.
+    features: all
+    drop: [first_draft_contract]
+  evidence_only:
+    label: Evidence window only
+    summary: The committed/due evidence boundary and nothing else.
+    features: [evidence_window]
+
+scenarios:
+  tallow_short:
+    label: Tallow Street, answer-seeking learner
+    criterion: hold the evidentiary line across three turns of a learner asking to be told the answer
+    fixture: tests/fixtures/tutor-stub-first-draft/tallow-answer-seeking-v20.json
+    turns: all
+  nocturne_full:
+    label: Nocturne, answer-seeking learner
+    criterion: seven-turn arc from opening pressure to a licensed period and an unresolved handoff
+    fixture: tests/fixtures/tutor-stub-first-draft/nocturne-answer-seeking-v22.json
+    turns: all
+  greyfen_short:
+    label: Greyfen lab, answer-seeking learner
+    criterion: four turns under an active question-support guard
+    fixture: tests/fixtures/tutor-stub-first-draft/greyfen-answer-seeking-v19.json
+    turns: all
+
+presets:
+  smoke:
+    models: [codex_medium]
+    arms: [baseline, instrumented]
+    scenarios: [tallow_short]
+  default:
+    models: [codex_medium]
+    arms: [baseline, instrumented]
+    scenarios: [tallow_short]
+  strong:
+    models: [codex_medium]
+    arms: [baseline, instrumented]
+    scenarios: [nocturne_full]
+  ablation:
+    models: [codex_medium]
+    arms: [baseline, no_dag, no_scaffold, instrumented]
+    scenarios: [tallow_short]
+  cross_model:
+    models: [codex_medium, claude_medium]
+    arms: [baseline, instrumented]
+    scenarios: [tallow_short]
+
+# The rubric is the deterministic frozen-turn audit. Pinning the guard set to
+# the recorded run is what makes the arms comparable: a bare arm is still judged
+# on leakage, dramatic release, composition, and actorial realization.
+rubric:
+  audit: tutor_stub_frozen_candidate
+  pin_guards_to_reference: true
+
+budgets:
+  max_calls: 16
+  retries_per_job: 0
+  concurrency: 1
+
+# Frozen-replay invariants. Turning any of these on would mean the arms no
+# longer share a public prefix, and the comparison would stop being one.
+invariants:
+  regenerate_prior_dialogue: false
+  generate_learner: false
+  classify_learner: false
+  update_learner_dag: false
+  continue_dialogue: false
