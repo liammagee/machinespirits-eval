@@ -322,6 +322,7 @@
         "tests/poeticsTutorAdaptationAnalyzer.test.js",
         "tests/processUtils.test.js",
         "tests/program2CommitteeEngine.test.js",
+        "tests/program2StallAudit.test.js",
         "tests/progress.test.js",
         "tests/progressLogger.test.js",
         "tests/prompt-lab-recovery.test.js",
