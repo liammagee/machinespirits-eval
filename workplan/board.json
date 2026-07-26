@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-26T01:04:49.544Z",
+  "generated": "2026-07-26T01:05:47.398Z",
   "counts": {
     "total": 199,
     "byStatus": {
       "done": 175,
       "blocked": 4,
       "dropped": 3,
-      "triaged": 6,
-      "active": 5,
+      "triaged": 5,
+      "active": 6,
       "archived": 4,
       "review": 2
     },
@@ -76,51 +76,6 @@
         "testing"
       ],
       "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "negative-register-effect-estimation-grid",
-      "title": "Estimate negative-register effects with stance-fidelity gating",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-03",
-      "updated": "2026-07-03",
-      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
-      "claim_status": "future",
-      "links": {
-        "notes": [
-          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
-          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
-        ],
-        "paper": [
-          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
-          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
-        ],
-        "exports": [
-          "exports/charisma-desire-breakthrough-matrix-summary.md",
-          "exports/charisma-desire-breakthrough-matrix.json",
-          "exports/negative-register-corrosive-exemplar-results.md"
-        ],
-        "runs": [
-          "eval-2026-07-02-e7b15809",
-          "eval-2026-07-02-7e461a5c",
-          "eval-2026-07-02-5c4d52e6"
-        ],
-        "items": [
-          "register-taxonomy-negative-registers"
-        ]
-      },
-      "depends_on": [
-        "register-taxonomy-negative-registers"
-      ],
-      "tags": [
-        "registers",
-        "negative-registers",
-        "effect-estimation",
-        "stance-fidelity"
-      ]
     },
     {
       "id": "program-2-iterated-exhaust-retrain",
@@ -386,6 +341,53 @@
         "model-routing",
         "discourse-plane",
         "mixed-mode"
+      ]
+    },
+    {
+      "id": "negative-register-effect-estimation-grid",
+      "title": "Estimate negative-register effects with stance-fidelity gating",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-26",
+      "branch": "codex/negative-register-effect-estimation-grid",
+      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
+          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md",
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
+          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
+        ],
+        "exports": [
+          "exports/charisma-desire-breakthrough-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-matrix.json",
+          "exports/negative-register-corrosive-exemplar-results.md"
+        ],
+        "runs": [
+          "eval-2026-07-02-e7b15809",
+          "eval-2026-07-02-7e461a5c",
+          "eval-2026-07-02-5c4d52e6"
+        ],
+        "items": [
+          "register-taxonomy-negative-registers"
+        ]
+      },
+      "depends_on": [
+        "register-taxonomy-negative-registers"
+      ],
+      "tags": [
+        "registers",
+        "negative-registers",
+        "effect-estimation",
+        "stance-fidelity"
       ]
     },
     {
@@ -2924,14 +2926,15 @@
       "source": "manual",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "The strong zero-call plan pins three committed transcript turns across Codex gpt-5.6-terra and Claude Code claude-sonnet-5 at medium effort (six calls maximum); hermetic tests prove frozen-prefix preservation, pass/fail/blocked/budget terminal states, and no retries; npm run tutor:stub:pr-benchmark -- --print-plan validates the attended PR command.",
+      "verification": "The strong zero-call plan pins three currently accepted Nocturne transcript turns across Codex gpt-5.6-terra and Claude Code claude-sonnet-5 at medium effort (six calls maximum); hermetic tests prove frozen-prefix preservation, canonical advisory severity, pass/fail/blocked/budget terminal states, no retries, scoped hook triggering, exact-SHA terminal-report caching, and stdin-preserving composition with the existing pre-push hook; npm run tutor:stub:pr-benchmark -- --print-plan validates the attended PR command.",
       "branch": "codex/tutor-pr-benchmark",
       "depends_on": [
         "tutor-stub-first-draft-series"
       ],
       "links": {
         "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/248"
+          "https://github.com/liammagee/machinespirits-eval/pull/248",
+          "https://github.com/liammagee/machinespirits-eval/pull/250"
         ],
         "notes": [
           "docs/tutor-pr-benchmark.md"
