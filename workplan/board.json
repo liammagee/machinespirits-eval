@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T03:22:38.863Z",
+  "generated": "2026-07-26T03:36:05.454Z",
   "counts": {
-    "total": 203,
+    "total": 204,
     "byStatus": {
-      "done": 178,
+      "done": 179,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 46,
-      "maintenance": 47,
+      "maintenance": 48,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -185,6 +185,7 @@
           "refactor-tutor-stub-closeout-projection",
           "refactor-tutor-stub-interim-presentation",
           "refactor-tutor-stub-interim-frame-projection",
+          "refactor-tutor-stub-cli-help-projection",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -557,8 +558,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-interim-frame-projection",
-      "title": "Refactor tutor-stub interim frame projection",
+      "id": "refactor-tutor-stub-cli-help-projection",
+      "title": "Refactor tutor-stub CLI help projection",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -566,34 +567,34 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "Frozen fixtures pin panel ordering, empty filtering, fallback behavior, rotation boundaries, spinner selection, elapsed formatting, every tone, phase compaction, terminal-width bounds, and exact ANSI composition; the real PTY loading scenario and full hermetic/static/source gates pass without model calls.",
-      "branch": "codex/refactor-tutor-stub-interim-frame-projection",
+      "verification": "The pre/post-refactor --help processes exit zero with byte-identical output; a frozen synthetic-default hash pins the full projection and every supplied runtime value, while focused, hermetic, manifest, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-cli-help-projection",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-interim-presentation"
+        "refactor-tutor-stub-interim-frame-projection"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubInterimPresentation.js",
+          "services/tutorStubCliHelp.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubInterimPresentation.test.js",
-          "tests/tutorStubHumanDiscourseLayer.test.js",
-          "tests/tutorStubConcurrentTerminal.test.js"
+          "tests/tutorStubCliHelp.test.js",
+          "tests/tutorStubLabsRecipeCli.test.js",
+          "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-interim-presentation"
+          "refactor-tutor-stub-interim-frame-projection"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
         "presentation",
-        "terminal",
-        "loading-indicator"
+        "cli",
+        "help"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2567,6 +2568,47 @@
         "tutor-stub",
         "presentation",
         "interaction-field"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-interim-frame-projection",
+      "title": "Refactor tutor-stub interim frame projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Frozen fixtures pin panel ordering, empty filtering, fallback behavior, rotation boundaries, spinner selection, elapsed formatting, every tone, phase compaction, terminal-width bounds, and exact ANSI composition; the real PTY loading scenario and full hermetic/static/source gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-interim-frame-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-interim-presentation"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInterimPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInterimPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "tests/tutorStubConcurrentTerminal.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-interim-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "terminal",
+        "loading-indicator"
       ],
       "milestone": "evaluation-infrastructure"
     },
