@@ -8,8 +8,12 @@ Thanks for your interest in contributing to `@machinespirits/eval`.
 git clone https://github.com/liammagee/machinespirits-eval.git
 cd machinespirits-eval
 npm install
-npm install @machinespirits/tutor-core
 ```
+
+The tutor engine formerly published as `@machinespirits/tutor-core` is
+in-housed under [`tutor-core/`](tutor-core/); do not install it separately.
+Tutor-engine changes are made and tested in this repository alongside the
+evaluation system.
 
 Seed sample data and verify tests pass:
 
@@ -22,6 +26,7 @@ npm test
 
 - `scripts/eval-cli.js` — main CLI entry point
 - `services/` — core evaluation engine, rubric evaluator, learner simulation
+- `tutor-core/` — in-housed ego/superego tutor engine, base configuration, prompts, and Vitest suites
 - `config/` — YAML configuration for tutor agent cells, scenarios, rubrics, and providers
 - `prompts/` — LLM prompt templates
 - `tests/` — test suites (Node.js built-in test runner)
@@ -55,7 +60,11 @@ Scenarios live in `config/suggestion-scenarios.yaml`. Single-turn scenarios have
 npm test
 ```
 
-Tests use `node --test` with files in `services/__tests__/` and `tests/`. Add new test files following the `*.test.js` naming convention.
+The full test command runs the root `node:test` suites in `services/__tests__/`
+and `tests/`, then the in-housed tutor-core Vitest suites. Use
+`npm run test:core` to run only the tutor-core phase. Add tests beside the
+implementation using the conventions already established in the relevant
+suite.
 
 ## Submitting changes
 
