@@ -111,6 +111,22 @@ test('compatibility rules fail with actionable machine-readable issues', () => {
     /passthrough_isolation: Passthrough is speaker-only/u,
   );
 
+  // A bare arm still has to be answered. `passthrough_isolation` covers tutor-side
+  // machinery — curriculum, analysis, adaptation, feedback, reports — and the
+  // automated learner is none of those: it decides who types. The learner-safe
+  // surface stays fenced off by the research-only audience gate on --auto-learner.
+  const passthroughAutoLearner = resolveTutorStubCapabilities({
+    passthrough: true,
+    harness: true,
+    autoLearner: true,
+  });
+  assert.equal(passthroughAutoLearner.compatibility.valid, true);
+  // `mode` names the tutor runtime, so passthrough wins the ladder over `auto`.
+  // The automated learner still runs: its dispatch keys off the flag, not this label.
+  assert.equal(passthroughAutoLearner.mode, 'passthrough');
+  assert.equal(passthroughAutoLearner.capabilities.automated_learner.active, true);
+  assert.doesNotThrow(() => assertTutorStubCapabilityCompatibility(passthroughAutoLearner));
+
   const learnerDagWithoutWorld = resolveTutorStubCapabilities({ learnerDag: true });
   assert.deepEqual(
     learnerDagWithoutWorld.compatibility.issues.find((issue) => issue.id === 'learner_dag_requires_world').missing,

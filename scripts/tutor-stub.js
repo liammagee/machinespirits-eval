@@ -14869,7 +14869,13 @@ async function main() {
     args['no-register-selection'] = true;
     args['typed-actions'] = false;
     args['point-of-action-arm'] = '';
-    args['auto-learner'] = false;
+    // Passthrough defaults to pure human chat, but an evaluation harness needs a
+    // genuinely bare arm that still talks to itself: passthrough is the only
+    // mode that bypasses the guard suite, first-draft recovery and the closure
+    // lifecycle, and a bare arm is useless as a comparison if nobody answers it.
+    // An explicit --auto-learner therefore survives; everything else passthrough
+    // strips stays stripped, and the automated-learner labs still gate the flag.
+    if (!commandLineOptionProvided('auto-learner')) args['auto-learner'] = false;
     args['mixed-learner'] = false;
     args['mixed-mode'] = false;
     args['no-memory-summary'] = true;
@@ -15131,6 +15137,12 @@ async function main() {
   const learnerSuggestionEnabled = Boolean(
     !passthroughEnabled && (autoLearnerEnabled || mixedLearnerEnabled || interactiveSessionEnabled),
   );
+  // Suggesting learner turns to a human is a harness feature and stays off under
+  // passthrough. Resolving a learner model is not the same question: if the
+  // automated learner is going to speak, it needs a model whatever the tutor is
+  // running. Keeping these separate is what lets an evaluation harness point a
+  // learner at a bare tutor.
+  const learnerModelRequired = Boolean(learnerSuggestionEnabled || autoLearnerEnabled);
   const autoTurns = parseAutoTurns(args['auto-turns']);
   const autoSafetyTurns = parsePositiveInt(args['auto-safety-turns'], '--auto-safety-turns');
   const autoStopOnGrounded = !args['no-auto-stop-on-grounded'];
@@ -15263,7 +15275,7 @@ async function main() {
   const tutorDag = args.dag && worldBundle ? buildTutorDesireDag(worldBundle.world) : null;
   const resolved = resolveModel(args.model);
   const providerConfig = getProviderConfig(resolved.provider);
-  let autoLearnerResolved = learnerSuggestionEnabled ? resolveModel(args['auto-learner-model']) : null;
+  let autoLearnerResolved = learnerModelRequired ? resolveModel(args['auto-learner-model']) : null;
   let autoLearnerProviderConfig = autoLearnerResolved ? getProviderConfig(autoLearnerResolved.provider) : null;
   const classifierEnabled = !args['no-classifier'];
   const tutorLearnerDagEnabled = Boolean(args['tutor-learner-dag'] && worldBundle);
@@ -16198,7 +16210,7 @@ async function main() {
       `${args['learner-record-model']} is not configured. Set ${envName} or choose a CLI-backed learner-record model.`,
     );
   }
-  if (learnerSuggestionEnabled && !autoLearnerResolved.isConfigured && !isCliProvider(autoLearnerResolved.provider)) {
+  if (learnerModelRequired && !autoLearnerResolved.isConfigured && !isCliProvider(autoLearnerResolved.provider)) {
     const envName = autoLearnerProviderConfig.api_key_env || 'provider API key';
     throw new Error(
       `${args['auto-learner-model']} is not configured. Set ${envName} or choose a CLI-backed automated learner model.`,

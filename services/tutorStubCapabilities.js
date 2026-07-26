@@ -283,7 +283,13 @@ const COMPATIBILITY_RULES = [
       'classifier',
       'registerSelection',
       'mixedLearner',
-      'autoLearner',
+      // `autoLearner` is deliberately absent. Every other entry here is tutor-side
+      // machinery — the curriculum, analysis, adaptation, feedback and report
+      // mechanisms this rule's message names. The automated learner is none of
+      // those; it decides *who types*, not what the tutor runs, and an evaluation
+      // harness needs a genuinely bare arm that still gets answered. The
+      // learner-safe surface stays fenced off by the separate research-only
+      // audience gate on `--auto-learner`, which `pure_chat` fails.
       'turnFeedback',
       'tuning',
       'fieldVisualization',
