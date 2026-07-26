@@ -10,6 +10,7 @@ import {
   resolveTutorStubSceneDiction,
   tutorStubDeclaredSceneObject,
   tutorStubDictionPhrase,
+  tutorStubSceneStamp,
   tutorStubSceneLedgerTerm,
 } from './tutorStubSceneDiction.js';
 
@@ -203,7 +204,14 @@ function defaultRoleForSurface(surface = '') {
   return 'source of the clue';
 }
 
-export function buildTutorStubDramaticReleaseFrame({ dueEvidence = [] } = {}) {
+export function buildTutorStubDramaticReleaseFrame({ dueEvidence = [], world = null } = {}) {
+  // Resolved once per frame and stamped onto every entry, so consumers several
+  // exported signatures downstream — including the three that receive an entry
+  // through a bare `.map(renderTutorStubDueSource)` — can speak this world's
+  // costume without a signature change. Omitting `world` yields the period
+  // stamp, which is what every pre-existing caller and every recorded bundle
+  // already behaves as.
+  const scene = tutorStubSceneStamp(world);
   const entries = (Array.isArray(dueEvidence) ? dueEvidence : [dueEvidence])
     .filter((row) => oneLine(row?.surface))
     .map((row) => {
@@ -216,6 +224,7 @@ export function buildTutorStubDramaticReleaseFrame({ dueEvidence = [] } = {}) {
         mode: presentation.mode,
         role: presentation.role || defaultRoleForSurface(row.surface),
         cue: presentation.cue,
+        scene,
         action_referents: row.action_referents ?? row.presentation?.action_referents ?? null,
       };
       entry.action_referents = compileTutorStubDueSourceActionReferents(entry);
