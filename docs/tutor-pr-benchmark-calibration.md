@@ -11,6 +11,51 @@ others. A calibration workspace contains a blinded packet, a separately hashed
 machine key, one resumable sidecar per coder, optional adjudication, and a
 report-only analysis.
 
+## Current implementation status
+
+As of 2026-07-26:
+
+- PR [#261](https://github.com/liammagee/machinespirits-eval/pull/261)
+  merged the persistent base/head benchmark comparison at merge commit
+  `77f99dbfb0f87de4e40db2868e08c160353d95f8`; every GitHub check passed.
+- This calibration harness is locally committed as
+  `9b99c2b178bc7bfc515c07362aedc6ed02c34542` on
+  `codex/tutor-pr-benchmark-calibration-harness`. It has not yet been pushed or
+  opened as a follow-up PR.
+- The focused benchmark and calibration suites passed 22/22 tests. Repository
+  lint, formatting, import-cycle, test-manifest, and workplan source checks
+  passed.
+- The broad local `npm test` run exercised the new tests successfully but was
+  not a green validation signal: unrelated existing tests encountered a
+  missing `rdf-validate-shacl` dependency and sandbox-denied localhost voice
+  and web listeners.
+- No live Codex or Claude calibration calls have been made. Only synthetic and
+  artifact-only paths have run.
+
+## Rubric and codebook locations
+
+The new PR-benchmark calibration criteria are stored in
+[`config/tutor-pr-benchmark-calibration.yaml`](../config/tutor-pr-benchmark-calibration.yaml).
+This versioned file is a **turn-level calibration codebook**, not a replacement
+for the main tutor evaluation rubric. It defines:
+
+- the human labels `pass`, `fail`, and `unsure`;
+- two required independent coders;
+- six axes: overall delivery, safety, learner uptake, evidence discipline,
+  handoff, and actorial realization;
+- the deterministic machine rule mapped to each axis; and
+- report-only, currently unapproved threshold fields.
+
+The canonical eight-dimension tutor rubric remains
+[`config/evaluation-rubric.yaml`](../config/evaluation-rubric.yaml), currently
+version 2.2. It scores perception quality, pedagogical craft, elicitation
+quality, adaptive responsiveness, recognition quality, productive difficulty,
+epistemic integrity, and content accuracy on the established 1–5 scale. The PR
+benchmark codebook answers the narrower question “should this exact candidate
+pass this frozen turn contract?”; rubric v2.2 evaluates broader pedagogical
+quality. Do not treat their scores as interchangeable or rescore historical
+v2.2 data under the PR codebook.
+
 ## End-to-end pathway
 
 ### 1. Produce or locate a completed benchmark report
@@ -150,6 +195,22 @@ After the definitions are stable:
 If acceptance exposes a problem, record the result and return to development;
 do not tune on the acceptance packet and continue calling it held out. Prepare
 a new acceptance packet after the next frozen revision.
+
+### Recommended first calibration cycle
+
+1. Begin with development packets and two independent coders plus an
+   independent adjudicator.
+2. Accumulate both human failures and human passes for every axis. A single
+   six-candidate strong run is useful qualitative evidence but cannot support
+   stable automated thresholds.
+3. Prioritize safety recall and hard-guard precision while also reviewing
+   overall agreement, per-axis base rates, and Cohen's kappa. Do not hide small
+   counts behind apparently precise rates.
+4. Predeclare reviewed thresholds only after the development pool is stable.
+5. Freeze a fresh clean-commit acceptance packet, then label it without
+   changing the codebook, audits, or thresholds.
+6. Keep the local PR hook in report-only mode until that held-out acceptance
+   run passes and its failure policy is separately approved.
 
 ## Privacy and recovery
 
