@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-26T23:07:12.787Z",
+  "generated": "2026-07-26T23:08:12.464Z",
   "counts": {
     "total": 226,
     "byStatus": {
@@ -269,7 +269,7 @@
       "owner": "claude",
       "source": "review",
       "created": "2026-07-26",
-      "updated": "2026-07-26",
+      "updated": "2026-07-27",
       "verification": "A contemporary-diction world speaks its own props in its own register while every period and undeclared world keeps byte-identical deterministic text; the learner-uptake guard admits a genuinely responsive uptake that shares no tokens with the accepted meaning; targeted and hermetic suites pass without model calls.",
       "branch": "claude/tutor-stub-uptake-guard",
       "claim_status": "scope-bound",
