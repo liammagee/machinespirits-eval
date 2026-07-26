@@ -55,6 +55,7 @@ links:
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
     - refactor-tutor-stub-training-reuse-presentation
+    - refactor-tutor-stub-dialogue-settings-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -436,3 +437,15 @@ Log:
   137-test zero-skip parity. Policy resolution, state, persistence, trace,
   commands, and terminal writes remain CLI-owned; the larger dialogue-settings
   projector is the logical next child after merge.
+- 2026-07-26 — PR #276 merged the training-reuse child as `ccdf944e` after all
+  ten CI lanes passed; the serialized render followed as `c6cb954f`. Closed
+  that child and activated `refactor-tutor-stub-dialogue-settings-presentation`
+  to move the complete deterministic `/settings` serialization while retaining
+  every state/helper lookup, setting mutation, command, picker, persistence,
+  trace, model, and terminal effect in the CLI.
+- 2026-07-26 — The dialogue-settings presentation child reached review with one
+  dependency-free projector, a 26-line CLI reduction, byte-identical default
+  and configured `/settings` processes, 44/44 focused tests, and complete root
+  7,048-test plus tutor-core 137-test final-base zero-skip parity. State/helper lookup,
+  settings mutation, commands, pickers, persistence, traces, models, and
+  terminal writes remain CLI-owned.

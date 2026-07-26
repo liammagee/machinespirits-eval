@@ -425,6 +425,7 @@ import {
   tutorStubTrainingReuseLabel,
 } from '../services/tutorStubTrainingReuse.js';
 import { projectTutorStubTrainingReuseStatusLines } from '../services/tutorStubTrainingReusePresentation.js';
+import { projectTutorStubDialogueSettingsLines } from '../services/tutorStubDialogueSettingsPresentation.js';
 import {
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
@@ -22767,9 +22768,9 @@ async function main() {
     return sessionRuntime.reset({ reason: 'dialogue_reset', ...options });
   }
 
-  function printTrainingReuseStatus(prefix = 'training reuse') {
+  function trainingReuseStatusLines(prefix = 'training reuse') {
     const reuse = state.trainingReuse;
-    const lines = projectTutorStubTrainingReuseStatusLines({
+    return projectTutorStubTrainingReuseStatusLines({
       prefix,
       label: tutorStubTrainingReuseLabel(reuse),
       requested: reuse.requested,
@@ -22779,6 +22780,10 @@ async function main() {
       status: reuse.status,
       colors: C,
     });
+  }
+
+  function printTrainingReuseStatus(prefix = 'training reuse') {
+    const lines = trainingReuseStatusLines(prefix);
     for (const line of lines) {
       console.log(line);
     }
@@ -22839,97 +22844,66 @@ async function main() {
       Boolean,
     );
     const modelRoles = Object.keys(liveModelRoleDefinitions).map(liveModelRoleSnapshot);
-    console.log(`${C.cyan}settings >${C.reset}`);
-    console.log(
-      `${C.dim}  one model for all roles: ${state.modelRouting?.allRolesOverrideRef || 'off — roles selected separately'}${C.reset}`,
-    );
-    for (const role of modelRoles) {
-      const mode = role.combinedOwner
-        ? 'active; also performs learner interpretation'
-        : role.active
-          ? 'active'
-          : role.role === 'classifier' && state.classifier?.combined
-            ? 'inactive; combined into reasoning tracker'
-            : 'inactive in this mode';
-      console.log(
-        `${C.dim}  ${role.label.toLowerCase()}: ${role.modelRef} → ${role.resolved.provider}/${role.resolved.model}; ${mode}${C.reset}`,
-      );
-    }
-    console.log(`${C.dim}  tutor effort: ${state.cliEffort || 'provider default'}${C.reset}`);
-    console.log(
-      `${C.dim}  appearance: ${cliPresentation.themeLabel} theme; ${cliPresentation.requestedMotion} motion (${cliPresentation.motion} here); change with /theme or /motion${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  learned committee: ${
-        state.committee?.enabled
-          ? `on — ${state.committee.miniModel} supplies warrant-gap questions; fallback ${state.committee.fallbackPolicy}`
-          : 'off — frontier-only responses'
-      }; change with /committee${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  conversation memory: tutor and learner replay all ${
-        tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length
-      } public messages with speaker-relative user/assistant roles${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  teaching approach: ${plainPolicyLabel(state.register?.policy)} (${tutorStubRegisterPolicyStackId(
-        state.register?.policy,
-        state.register?.overlays,
-      )}); turn/conversation overrides ${state.register?.overlays?.join(', ') || 'off'}; sensitivity ${
-        state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD
-      }${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  teaching-style range: ${state.register?.temperature ?? registerTemperature} — lower concentrates the strongest style and part; higher mixes in more alternatives${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  style range is ${
-        temperatureSelection.applied
-          ? `active for ${displayDiagnosticLabel(temperatureSelection.scope)}`
-          : temperatureSelection.scope === 'saved_but_not_used_by_policy'
-            ? 'saved but not used by this approach'
-            : 'bypassed on axes controlled by /random, /register, or /character'
-      }${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  random performance: ${
-        state.randomPerformance?.enabled
-          ? randomPerformanceAxes.length
-            ? `on — ${randomPerformanceAxes.join(' and ')} ignore assessment`
-            : 'on — armed; both axes explicitly directed'
-          : 'off'
-      }; session only; /random toggles${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  light adaptation: ${
-        state.lightAdaptation?.enabled
-          ? `on — after ${state.lightAdaptation.threshold} consecutive confusion/frustration turns, seeded-random style and character replace the prior pair when possible`
-          : 'off'
-      }; remembered setting; /settings light or /light changes it${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  directed performance: style ${explicitPerformanceDirectiveValue(state, 'register') || 'auto'}; character ${explicitPerformanceDirectiveValue(state, 'character') || 'auto'}; session only; /register and /character${C.reset}`,
-    );
     const dropout = tutorStubDagFactDropoutSnapshot(state.learnerDag?.dropout);
-    console.log(
-      `${C.dim}  evidence-memory dropout: ${dropout.rate} (${dropout.rate > 0 ? 'on' : 'off'}); currently forgotten ${dropout.activeCount}; understood items tracked ${dropout.adoptedCount}${C.reset}`,
-    );
     const pace = tutorStubReleasePacingSnapshot(state.releasePacing, state.world);
-    console.log(
-      `${C.dim}  clue release speed: ${pace?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED}x base; ${pace?.effectiveSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED}x now (${pace?.direction || 'steady'}); adapts to explicit learner requests${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  reuse these settings next time: ${state.rememberedSettings?.enabled ? 'yes' : 'no'}; ${
-        state.rememberedSettings?.status || 'disabled'
-      }${C.reset}`,
-    );
-    printTrainingReuseStatus();
-    console.log(
-      `${C.dim}  advanced overrides: /settings policy add state|field · remove state|field · clear · threshold 0.7${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  use /settings models, /settings models all <ref>, /settings model, /settings temp 1.0, /settings dropout 0.15, /settings light on|off, /settings training-reuse on|off, /settings release-speed 1.5, /settings theme nocturne, /settings motion subtle, or /settings forget${C.reset}\n`,
-    );
+    const lines = projectTutorStubDialogueSettingsLines({
+      settings: {
+        allRolesOverrideRef: state.modelRouting?.allRolesOverrideRef,
+        modelRoles,
+        classifierCombined: state.classifier?.combined,
+        tutorEffort: state.cliEffort,
+        appearance: {
+          themeLabel: cliPresentation.themeLabel,
+          requestedMotion: cliPresentation.requestedMotion,
+          motion: cliPresentation.motion,
+        },
+        committee: {
+          enabled: state.committee?.enabled,
+          miniModel: state.committee?.miniModel,
+          fallbackPolicy: state.committee?.fallbackPolicy,
+        },
+        publicMessageCount: tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length,
+        teaching: {
+          policyLabel: plainPolicyLabel(state.register?.policy),
+          policyStackId: tutorStubRegisterPolicyStackId(state.register?.policy, state.register?.overlays),
+          overlays: state.register?.overlays,
+          overlayThreshold: state.register?.overlayThreshold ?? DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD,
+          styleRange: state.register?.temperature ?? registerTemperature,
+          temperatureSelection: {
+            applied: temperatureSelection.applied,
+            scope: temperatureSelection.scope,
+            scopeLabel: displayDiagnosticLabel(temperatureSelection.scope),
+          },
+          randomPerformance: {
+            enabled: state.randomPerformance?.enabled,
+            axes: randomPerformanceAxes,
+          },
+          lightAdaptation: {
+            enabled: state.lightAdaptation?.enabled,
+            threshold: state.lightAdaptation?.threshold,
+          },
+          directedPerformance: {
+            register: explicitRegister,
+            character: explicitCharacter,
+          },
+        },
+        dropout,
+        releasePacing: {
+          baseSpeed: pace?.baseSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+          effectiveSpeed: pace?.effectiveSpeed ?? DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+          direction: pace?.direction || 'steady',
+        },
+        rememberedSettings: {
+          enabled: state.rememberedSettings?.enabled,
+          status: state.rememberedSettings?.status || 'disabled',
+        },
+      },
+      trainingReuseLines: trainingReuseStatusLines(),
+      colors: C,
+    });
+    for (const line of lines) {
+      console.log(line);
+    }
   }
 
   function printModelChoices(role = 'tutor') {
