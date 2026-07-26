@@ -18,6 +18,7 @@ import {
   tutorStubDictionPhrase,
   tutorStubNamedSceneProp,
   tutorStubSceneLedgerTerm,
+  tutorStubScenePublicObjects,
 } from './tutorStubSceneDiction.js';
 
 export const TUTOR_STUB_RESPONSE_COMPOSITION_SCHEMA = 'machinespirits.tutor-stub.response-composition.v1';
@@ -1582,11 +1583,37 @@ export function deterministicTutorStubLearnerUptake({
 }
 
 function configuredFallbackObject({ world = null, learnerText = '', part = '' } = {}) {
-  const source = oneLine(
-    `${learnerText} ${world?.setting || ''} ${world?.openingFrame?.situation || ''} ${world?.question || ''}`,
-  );
+  const scene = oneLine(`${world?.setting || ''} ${world?.openingFrame?.situation || ''} ${world?.question || ''}`);
+  const source = oneLine(`${learnerText} ${scene}`);
+  // The learner may choose among the objects this scene has; it may not add one.
+  //
+  // Both whitelists were previously matched against the learner's line and the
+  // scene concatenated, first hit anywhere, so any whitelist noun the learner
+  // uttered became the object the tutor then held up. That misreads two kinds of
+  // sentence. A figure of speech becomes an exhibit — "the touchstone for me is
+  // whether the water travelled" returns "I put the touchstone in front of us" —
+  // and six whitelist entries are ordinary English verbs, so "can you report
+  // what you found", "let me log that", "register my objection" all name a prop.
+  //
+  // The rule below keeps the learner's choice and adds the scene's ownership as
+  // a second condition: a noun the world declares as its own prop wins in the
+  // world's full wording, a noun the scene's prose names is taken as the learner
+  // said it, and anything else falls back to the scene's own first object. With
+  // no learner text this reduces to `scene.match(pattern)`, which is what the
+  // concatenated source already produced, so every world's unprompted wording is
+  // byte-identical by construction rather than by measurement.
+  const declaredProps = tutorStubScenePublicObjects(world);
+  const sceneObject = (pattern) => {
+    const chosen = oneLine(learnerText).match(pattern)?.[0];
+    if (chosen) {
+      const owned = declaredProps.find((prop) => new RegExp(`\\b${chosen}\\b`, 'iu').test(prop));
+      if (owned) return owned;
+      if (new RegExp(`\\b${chosen}\\b`, 'iu').test(scene)) return chosen;
+    }
+    return scene.match(pattern)?.[0] || '';
+  };
   const recordPattern =
-    /\b(?:proposal card|formulation card|trial-book|visitor badge log|badge log|lost-property ledger|ledger|log|record|register|notebook|file|card)\b/iu;
+    /\b(?:proposal card|formulation card|minute-book|trial-book|visitor badge log|badge log|lost-property ledger|ledger|log|record|register|notebook|file|card)\b/iu;
   const exhibitPattern =
     /\b(?:shilling|coin|crucible|cupel|touchstone|balance|tool|sample|notice|report|photograph|photo|lunchbox)\b/iu;
   // Both whitelists are period nouns matched against the scene's own prose, and
@@ -1605,12 +1632,12 @@ function configuredFallbackObject({ world = null, learnerText = '', part = '' } 
     // The record slot takes the declared ledger term only, never an exhibit the
     // world happens to declare beside it.
     const declaredRecord = tutorStubNamedSceneProp(source, [tutorStubSceneLedgerTerm(world)]);
-    return declaredRecord || source.match(recordPattern)?.[0] || 'record';
+    return declaredRecord || sceneObject(recordPattern) || 'record';
   }
   return (
-    source.match(exhibitPattern)?.[0] ||
+    sceneObject(exhibitPattern) ||
     tutorStubDeclaredSceneObject(source, world) ||
-    source.match(recordPattern)?.[0] ||
+    sceneObject(recordPattern) ||
     'public record'
   );
 }
