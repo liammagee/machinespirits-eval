@@ -494,6 +494,7 @@ import {
   tutorStubCliThemePreview,
 } from '../services/tutorStubCliTheme.js';
 import { renderTutorStubCliHelp } from '../services/tutorStubCliHelp.js';
+import { projectTutorStubFeatureMapLines } from '../services/tutorStubFeatureMap.js';
 import { projectTutorStubInteractiveHelpLines } from '../services/tutorStubInteractiveHelp.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -8908,24 +8909,7 @@ function printAnalysisList(label, rows, { limit = 5 } = {}) {
 
 function printTutorStubFeatureMap(state = null) {
   const featureRows = tutorStubCapabilityFeatureRows(state?.capabilities || null);
-
-  console.log(`${C.brightCyan}${C.bold}tutor-stub capability map${C.reset}`);
-  for (const row of featureRows) {
-    console.log(`${C.cyan}  ${row.label.padEnd(11)}${C.reset} ${row.description}`);
-  }
-
-  console.log(`\n${C.brightCyan}${C.bold}quick starts${C.reset}`);
-  console.log(`${C.cyan}  full tutor ${C.reset} npm run tutor:stub`);
-  console.log(`${C.cyan}  guided tour${C.reset} npm run tutor:stub:demo`);
-  console.log(
-    `${C.cyan}  course     ${C.reset} npm run tutor:stub -- --curriculum curriculum/ai-foundations.curriculum.yaml --module AF1`,
-  );
-  console.log(`${C.cyan}  curriculum ${C.reset} npm run tutor:stub:workplan -- --module <id>`);
-  console.log(`${C.cyan}  board      ${C.reset} /board inside any normal tutor-stub session`);
-  console.log(`${C.cyan}  proof DAG  ${C.reset} /proof inside any normal tutor-stub session`);
-  console.log(`${C.cyan}  pure chat  ${C.reset} npm run tutor:stub:passthrough`);
-  console.log(`${C.cyan}  QA preview ${C.reset} npm run tutor:stub:qa -- --suite core --runs 1 --dry-run`);
-
+  let activeContext = null;
   if (state) {
     const mode = state.passthrough?.enabled ? 'passthrough' : state.interaction?.mode || 'learner';
     const content = state.curriculum?.module?.title
@@ -8938,14 +8922,10 @@ function printTutorStubFeatureMap(state = null) {
       .filter((id) => !hiddenAlwaysOnCapabilities.has(id))
       .map((id) => state.capabilities.capabilities[id]?.label)
       .filter(Boolean);
-    console.log(
-      `\n${C.brightGreen}${C.bold}active now >${C.reset} ${mode} · ${content}${activeMechanisms.length ? ` · ${activeMechanisms.join(' · ')}` : ''}`,
-    );
+    activeContext = { mode, content, mechanisms: activeMechanisms };
   }
-
-  console.log(
-    `${C.dim}  use --help for launch flags; inside a session, type / to filter commands or /help for groups${C.reset}\n`,
-  );
+  const lines = projectTutorStubFeatureMapLines({ featureRows, activeContext, colors: C });
+  for (const line of lines) console.log(line);
 }
 
 function printInteractiveHelp(state = null) {
