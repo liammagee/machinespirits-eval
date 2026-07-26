@@ -1,13 +1,15 @@
 ---
 id: program-2-second-trigger-family-stall
 title: "Program-2: second trigger family — stall-breaking specialist (stagnant_repeat)"
-status: triaged
+status: blocked
 type: experiment
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-07-22
-updated: 2026-07-22
+updated: 2026-07-26
+branch: codex/program-2-second-trigger-family-stall
+blocked_by: Strict stagnant-repeat corpus floor is 49/100 audit-passing moments; future sealed runs must grow and re-audit the corpus before dataset construction or training.
 verification: "A stall-move specialist, SFT-trained on audit-labeled stagnant_repeat exhaust from the sealed archives under a fresh frozen prereg (own run licenses — the Program-2 ledger is spent), clears its frozen offline bars (floor+0.15 pattern on held-out stall moments under a deterministic stall-audit designed and frozen BEFORE training) and then a live committee-stall pilot passes E1s (CI > 0 vs silent controls) at the frozen guardrails, with the stall-density precondition met by a stall-enriched design."
 claim_status: exploratory
 links:
@@ -16,6 +18,9 @@ links:
     - PROGRAM-2-FINETUNE-PLAN.md
     - PROGRAM-2-PHASE2-PREREGISTRATION.md
     - notes/program-2/2026-07-18-cloud-finetune-runbook.md
+    - notes/program-2/2026-07-26-stall-corpus-audit.md
+  exports:
+    - config/adaptive-tutor-evidence/program-2-stall-phase0-1.manifest.json
   items:
     - program-2-context-vs-weights-finetune
     - program-2-phase5d-second-transfer-world
@@ -198,3 +203,15 @@ permanent.
 triaged, separately licensed research program; if activated, it starts from a
 fresh isolated current-main worktree and freezes that experiment's SHA. Archive
 tags remain evidence provenance, not a maintained runtime.
+
+2026-07-26 Codex: Activated after explicit operator confirmation in a fresh
+current-main worktree. This branch is limited to the zero-call Phase 0 corpus
+inventory and Phase 1 deterministic-audit gate; no training, paid judge calls,
+or live committee run is licensed by activation.
+
+2026-07-26 Codex: Phase 0/1 replayed 139/140 sealed dialogues and found 101 raw
+`stagnant_repeat` moments but only 49/100 strict audit-passing source turns (48
+due releases, one public reanchor). The card is blocked at its frozen corpus
+floor; dataset construction, Lambda training, and the live pilot remain
+unlicensed. The reusable audit and trigger-selectable extractor are covered by
+focused hermetic fixtures.

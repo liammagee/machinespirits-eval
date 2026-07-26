@@ -91,6 +91,7 @@
     "analyze:recognition-definitions": "node scripts/analyze-recognition-definitions.js",
     "analyze:effects": "node scripts/analyze-eval-results.js",
     "negative-register:grid": "node scripts/run-negative-register-effect-estimation-grid.js",
+    "program2:stall-audit": "node scripts/audit-program2-stall-corpus.mjs",
     "analyze:costs": "node scripts/analyze-eval-costs.js",
     "analyze:traces": "node scripts/analyze-mechanism-traces.js",
     "analyze:tutor-stub-fields": "node scripts/analyze-tutor-stub-field-traces.js",

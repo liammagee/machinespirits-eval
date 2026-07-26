@@ -1,0 +1,55 @@
+{
+  "schema": "machinespirits.program2.stall-phase0-1-evidence.v1",
+  "date": "2026-07-26",
+  "status": "no_go_corpus_floor",
+  "claimScope": "zero-call operational feasibility gate; no training or live-run claim",
+  "command": "npm run program2:stall-audit",
+  "modelCalls": 0,
+  "trigger": "stagnant_repeat",
+  "detectorVersion": "step4-frozen-2026-07-14.v1",
+  "auditImplementation": "services/program2StallAudit.js",
+  "corpusFloor": 100,
+  "plannedDialogues": 140,
+  "sealedDialogues": 139,
+  "rawMoments": 101,
+  "auditPassing": 49,
+  "questionCompatible": 90,
+  "dueReleasePassing": 48,
+  "reanchorPassing": 1,
+  "failures": {
+    "correct_break_path": 50,
+    "exactly_one_question": 11,
+    "final_delivery_guards_passed": 1
+  },
+  "archives": [
+    {
+      "label": "step4",
+      "plannedJobs": 80,
+      "sealedJobs": 80,
+      "launchPlanSha256": "0db392f6d592acb596f03a3a6caf374e1e596e680e6585d6fb3bf70380c5d4b6",
+      "selectedTraceSetSha256": "a9789600754e14412e81251642fe3736623f0d2fb84f35b4daa79a547b1fd6a1"
+    },
+    {
+      "label": "phase5",
+      "plannedJobs": 24,
+      "sealedJobs": 24,
+      "launchPlanSha256": "ad424b22a565f3fe3f97b8bb551d5aa9faa49dd8ef734cb14217204cdf119cb3",
+      "selectedTraceSetSha256": "61e0697a0a24d986c375b02890c41a7f3fe1f58cb83bf1b08bd124d8709673be"
+    },
+    {
+      "label": "phase5b",
+      "plannedJobs": 18,
+      "sealedJobs": 18,
+      "launchPlanSha256": "6133c0ad62a708cc3eacf8218fbd7b814dd6e29144e536892a226a23520722da",
+      "selectedTraceSetSha256": "948969aa7a0e43268d3011f42dc5bf1e25ee9acd547ebc89ebcd295cb76645bc"
+    },
+    {
+      "label": "phase5c",
+      "plannedJobs": 18,
+      "sealedJobs": 17,
+      "missingJobIds": ["p5c-14-proof_skipper-committee-r5"],
+      "launchPlanSha256": "118c4a7fe861d86a6c4da3eb0af95257af63538200d8df0420df0add3c208991",
+      "selectedTraceSetSha256": "6c0697a395aa1b83ae336d72fadfd8af7766063080d1f05bb1f695dbdd20a096"
+    }
+  ]
+}
