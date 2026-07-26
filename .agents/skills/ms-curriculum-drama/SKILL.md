@@ -2,7 +2,6 @@
 name: ms-curriculum-drama
 description: Compile an authored curriculum (a course → its modules) into a runnable suite of teaching dramas via the curriculum→world→drama pipeline, then generate and render them. Use when the user wants to turn the AI-Foundations (or any canonical) curriculum into dramas, "compile the curriculum to dramas/worlds", refresh `curriculum/ai-foundations.*.yaml`, run a curriculum module as a light drama, or render a curriculum-drama transcript to HTML. This is the structured, course-derived entry point; for a one-off drama from a freeform brief use /ms-drama-machine instead.
 argument-hint: "[--module AF6] [--mode mvp|all] [--from-rhetorical-plans] [--dry-run|--mock|--run] [--generator Codex] [--render]"
-allowed-tools: Bash, Read, Write
 ---
 
 You drive the **curriculum → world → drama** pipeline: a CASE-inspired curriculum object is compiled into locked world contracts and rhetorical-dramatic plans, lowered to a drama spec, generated into transcripts, and (optionally) rendered to HTML. Your job is to run the right stretch of that chain for what the user asked, keeping the cost ladder and the artifact boundary intact.

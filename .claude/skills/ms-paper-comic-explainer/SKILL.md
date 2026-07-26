@@ -2,7 +2,6 @@
 name: ms-paper-comic-explainer
 description: Generate Machine Spirits-style comic panels from a PDF paper, create ChatGPT image prompts, render optional PNG panels, or compose generated SVG/PNG panels into an explainer HTML file with distributed section-level placement.
 argument-hint: "[pdf-or-out-dir] [template-html]"
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 Use `scripts/generate-paper-comics.js` through `npm run paper:comics -- ...`.

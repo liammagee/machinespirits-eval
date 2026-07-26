@@ -2,7 +2,6 @@
 name: ms-analyze-data
 description: Route analysis questions to the correct script with exact invocation syntax
 argument-hint: <analysis-type-or-question>
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 Route the user's analysis request (`$ARGUMENTS`) to the correct script.

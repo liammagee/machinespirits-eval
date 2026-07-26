@@ -2,7 +2,6 @@
 name: ms-check-models
 description: Check rate limits and availability of OpenRouter models
 argument-hint: "[model-alias] (default: nemotron)"
-allowed-tools: Bash, Read
 ---
 
 Check model availability and rate limits.

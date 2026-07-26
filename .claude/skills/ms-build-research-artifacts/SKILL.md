@@ -1,7 +1,6 @@
 ---
 name: ms-build-research-artifacts
 description: Build the current Paper 2.0 PDF, research atlas, and dramatic-recognition arc artifacts through the consolidated npm build scripts. Use when asked to build or refresh the latest pdf, paper, atlas, arc, standalone arc, or all research publication artifacts on main.
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 Build the publication artifacts from the repo root using the consolidated npm

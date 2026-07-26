@@ -2,7 +2,6 @@
 name: ms-deep-dive
 description: Deep multi-layer analysis of evaluation runs — scores, trajectories, transcripts, and qualitative assessment
 argument-hint: "[run-id|cell-pattern|--coverage] [--level quick|standard|full]"
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 Deep analysis of evaluation run(s) `$ARGUMENTS`.

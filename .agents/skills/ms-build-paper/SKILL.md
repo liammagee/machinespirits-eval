@@ -1,7 +1,6 @@
 ---
 name: ms-build-paper
 description: Build the research paper PDF and check for issues
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 Build the research paper PDF and validate.

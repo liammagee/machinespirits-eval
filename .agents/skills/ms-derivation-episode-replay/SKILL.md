@@ -1,7 +1,6 @@
 ---
 name: ms-derivation-episode-replay
 description: Use dramatic derivation episode replay to resume a saved `run-derivation-loop.js` result from a frozen transcript prefix. Trigger when debugging selector/pacing/guard failures, trying a small policy/script change from a failure turn, preserving turns before an unexpected aporia/disengagement/overreach/lucky-leap, or accelerating current dramatic derivation runs without paying to regenerate the whole prefix.
-allowed-tools: Bash, Read, Grep
 ---
 
 Use `scripts/run-derivation-episode.js` to replay a saved dramatic derivation prefix exactly and resume live at a chosen turn. This is for local mechanism triage, not final evidence. It answers: "if everything through turn N-1 is identical, does this policy/script change repair the failure?"

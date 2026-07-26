@@ -2,7 +2,6 @@
 name: ms-query-db
 description: Query the evaluation database for results, run metadata, or cross-run comparisons
 argument-hint: "<natural language question about evaluation data>"
-allowed-tools: Bash, Read
 ---
 
 Answer questions about evaluation data by querying `data/evaluations.db`.

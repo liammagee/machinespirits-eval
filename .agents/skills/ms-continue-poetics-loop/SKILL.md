@@ -3,7 +3,6 @@ name: ms-continue-poetics-loop
 description: Run exactly one bounded poetics adaptation-recognition loop (D42/D50/D53, three iterations, two required passes) following the canonical handoff workflow. Use when continuing the poetics arc from a prior session.
 argument-hint: "[--targets D42,D50,D53] [--iterations 3] [--passes 2]"
 disable-model-invocation: true
-allowed-tools: Bash, Read
 ---
 
 Run one bounded gated adaptation-recognition loop, following the literal handoff in `notes/poetics/2026-05-27-handoff-adaptation-recognition-loop.md`. This skill has side effects (paid OpenRouter API calls and writes to the live poetics sidecar DB), so it is user-only.

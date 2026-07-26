@@ -2,7 +2,6 @@
 name: ms-add-cell
 description: Add a new cell to config/tutor-agents.yaml following the cell-discipline rules in AGENTS.md. Walks through ID allocation, YAML registration, EVAL_ONLY_PROFILES registration, naming-rule check, and smoke verification. Use when the user wants to add a new factorial cell.
 argument-hint: "<cell-name-suffix> <architecture-knobs>"
-allowed-tools: Read, Edit, Grep, Glob, Bash
 ---
 
 Add a new cell to the factorial in `config/tutor-agents.yaml` without falling into the silent-default-profile-fallback trap. Every step below maps to a rule documented in AGENTS.md's "How to Read a Cell's Architecture" and "Adding New Cells" sections.
