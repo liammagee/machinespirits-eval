@@ -56,6 +56,7 @@ links:
     - refactor-tutor-stub-session-status-presentation
     - refactor-tutor-stub-training-reuse-presentation
     - refactor-tutor-stub-dialogue-settings-presentation
+    - refactor-tutor-stub-model-choice-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -449,3 +450,19 @@ Log:
   7,048-test plus tutor-core 137-test final-base zero-skip parity. State/helper lookup,
   settings mutation, commands, pickers, persistence, traces, models, and
   terminal writes remain CLI-owned.
+- 2026-07-26 — PR #280 merged the dialogue-settings child as `955a4ec1` with
+  all ten CI lanes green; the serialized render followed as `911de566`.
+  Closed that child and activated `refactor-tutor-stub-model-choice-presentation`
+  to move only shared role-model choice-list serialization while retaining
+  role/current-model resolution, catalog loading, slash dispatch, keyboard
+  pickers, selection changes, and terminal writes in the CLI.
+- 2026-07-26 — The model-choice presentation child reached review with one
+  dependency-free projector, a 10-line CLI reduction, byte-identical tutor and
+  classifier lists, 66/66 focused tests, and complete root 7,105-test plus
+  tutor-core 137-test zero-skip parity. Role/current-model resolution, catalog
+  loading, commands, keyboard pickers, mutations, and terminal writes remain
+  CLI-owned.
+- 2026-07-27 — Rebased the model-choice presentation child onto `origin/main`
+  at `c7f5d5cd` after PR #282. Its sole manifest overlap composes cleanly with
+  the tutor-benchmark additions: 48/48 overlap tests, 7,112/7,112 root tests,
+  and 137/137 tutor-core tests pass on the final base with zero skips.

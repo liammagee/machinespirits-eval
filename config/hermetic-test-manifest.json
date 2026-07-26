@@ -447,6 +447,7 @@
         "tests/tutorStubLightAdaptation.test.js",
         "tests/tutorStubLineSelection.test.js",
         "tests/tutorStubLiveFirstDraftAudit.test.js",
+        "tests/tutorStubModelChoicePresentation.test.js",
         "tests/tutorStubMultiPremiseAdvance.test.js",
         "tests/tutorStubPassthrough.test.js",
         "tests/tutorStubPointOfActionCoaching.test.js",

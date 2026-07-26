@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-dialogue-settings-presentation
 title: Refactor tutor-stub dialogue-settings presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-training-reuse-presentation
 links:
+  prs:
+    - 280
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -100,3 +102,6 @@ Log:
   set does not overlap this slice; its tests plus the presentation/policy set
   pass 59/59, and final-base hermetic parity passes 7,048/7,048 root tests plus
   137/137 tutor-core tests with zero skips.
+- 2026-07-26 — PR #280 merged as `955a4ec1` with all ten CI lanes green; the
+  serialized workplan render followed as `911de566`. This child is closed and
+  the model-choice presentation child is active.

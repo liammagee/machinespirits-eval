@@ -426,6 +426,7 @@ import {
 } from '../services/tutorStubTrainingReuse.js';
 import { projectTutorStubTrainingReuseStatusLines } from '../services/tutorStubTrainingReusePresentation.js';
 import { projectTutorStubDialogueSettingsLines } from '../services/tutorStubDialogueSettingsPresentation.js';
+import { projectTutorStubModelChoiceLines } from '../services/tutorStubModelChoicePresentation.js';
 import {
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
@@ -22910,21 +22911,10 @@ async function main() {
     const definition = liveModelRoleDefinitions[role];
     const currentRef = liveModelRoleRef(role);
     const entries = tutorModelChoiceEntries(currentRef);
-    const visible = entries.slice(0, 16);
-    console.log(`${C.cyan}${definition.label.toLowerCase()} models >${C.reset} current ${currentRef}`);
-    for (const entry of visible) {
-      console.log(
-        `${entry.current ? C.brightCyan : C.dim}${entry.current ? '›' : ' '} ${entry.ref.padEnd(34)} ${entry.model} · ${entry.access}${C.reset}`,
-      );
+    const lines = projectTutorStubModelChoiceLines({ definition, currentRef, entries, colors: C });
+    for (const line of lines) {
+      console.log(line);
     }
-    if (entries.length > visible.length) {
-      console.log(
-        `${C.dim}  … ${entries.length - visible.length} more configured aliases; type /settings model and a prefix, then use Tab${C.reset}`,
-      );
-    }
-    console.log(
-      `${C.dim}  choose with /settings models ${definition.setting} <provider.alias>; default restores ${definition.defaultRef}${C.reset}\n`,
-    );
   }
 
   function printTutorModelChoices() {
