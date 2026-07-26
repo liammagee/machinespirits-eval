@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-26T02:11:03.537Z",
+  "generated": "2026-07-26T02:14:12.220Z",
   "counts": {
     "total": 201,
     "byStatus": {
       "done": 176,
-      "blocked": 4,
+      "blocked": 5,
       "dropped": 3,
-      "triaged": 5,
+      "triaged": 4,
       "active": 6,
       "archived": 4,
       "review": 3
@@ -139,39 +139,6 @@
         "fine-tune",
         "move-library",
         "cross-world-transfer"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "program-2-second-trigger-family-stall",
-      "title": "Program-2: second trigger family — stall-breaking specialist (stagnant_repeat)",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "A stall-move specialist, SFT-trained on audit-labeled stagnant_repeat exhaust from the sealed archives under a fresh frozen prereg (own run licenses — the Program-2 ledger is spent), clears its frozen offline bars (floor+0.15 pattern on held-out stall moments under a deterministic stall-audit designed and frozen BEFORE training) and then a live committee-stall pilot passes E1s (CI > 0 vs silent controls) at the frozen guardrails, with the stall-density precondition met by a stall-enriched design.",
-      "claim_status": "exploratory",
-      "links": {
-        "paper": "§6.21, §6.22, §7.12",
-        "notes": [
-          "PROGRAM-2-FINETUNE-PLAN.md",
-          "PROGRAM-2-PHASE2-PREREGISTRATION.md",
-          "notes/program-2/2026-07-18-cloud-finetune-runbook.md"
-        ],
-        "items": [
-          "program-2-context-vs-weights-finetune",
-          "program-2-phase5d-second-transfer-world"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "move-library",
-        "stagnant-repeat",
-        "lambda"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
     },
@@ -544,6 +511,45 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "blocked_by": "tutor-stub-transition-reward-model ended with a killed claim; no supported learned-ranking prerequisite"
+    },
+    {
+      "id": "program-2-second-trigger-family-stall",
+      "title": "Program-2: second trigger family — stall-breaking specialist (stagnant_repeat)",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-26",
+      "branch": "codex/program-2-second-trigger-family-stall",
+      "blocked_by": "Strict stagnant-repeat corpus floor is 49/100 audit-passing moments; future sealed runs must grow and re-audit the corpus before dataset construction or training.",
+      "verification": "A stall-move specialist, SFT-trained on audit-labeled stagnant_repeat exhaust from the sealed archives under a fresh frozen prereg (own run licenses — the Program-2 ledger is spent), clears its frozen offline bars (floor+0.15 pattern on held-out stall moments under a deterministic stall-audit designed and frozen BEFORE training) and then a live committee-stall pilot passes E1s (CI > 0 vs silent controls) at the frozen guardrails, with the stall-density precondition met by a stall-enriched design.",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": "§6.21, §6.22, §7.12",
+        "notes": [
+          "PROGRAM-2-FINETUNE-PLAN.md",
+          "PROGRAM-2-PHASE2-PREREGISTRATION.md",
+          "notes/program-2/2026-07-18-cloud-finetune-runbook.md",
+          "notes/program-2/2026-07-26-stall-corpus-audit.md"
+        ],
+        "exports": [
+          "config/adaptive-tutor-evidence/program-2-stall-phase0-1.manifest.json"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune",
+          "program-2-phase5d-second-transfer-world"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "move-library",
+        "stagnant-repeat",
+        "lambda"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "refactor-tutor-stub-interim-frame-projection",
