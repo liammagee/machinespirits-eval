@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T13:46:57.334Z",
+  "generated": "2026-07-26T13:50:57.710Z",
   "counts": {
-    "total": 218,
+    "total": 219,
     "byStatus": {
-      "done": 190,
+      "done": 191,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 50,
-      "maintenance": 58,
+      "maintenance": 59,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -194,6 +194,7 @@
           "refactor-tutor-stub-interaction-mode-presentation",
           "refactor-tutor-stub-session-status-presentation",
           "refactor-tutor-stub-training-reuse-presentation",
+          "refactor-tutor-stub-dialogue-settings-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -624,8 +625,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-training-reuse-presentation",
-      "title": "Refactor tutor-stub training-reuse presentation",
+      "id": "refactor-tutor-stub-dialogue-settings-presentation",
+      "title": "Refactor tutor-stub dialogue-settings presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -633,27 +634,29 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "Live candidate, owner opt-out, and external fail-closed training reuse status bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-training-reuse-presentation",
+      "verification": "Live default and configured /settings bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-dialogue-settings-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-session-status-presentation"
+        "refactor-tutor-stub-training-reuse-presentation"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
+          "services/tutorStubDialogueSettingsPresentation.js",
           "services/tutorStubTrainingReusePresentation.js",
           "scripts/tutor-stub.js",
+          "tests/tutorStubDialogueSettingsPresentation.test.js",
           "tests/tutorStubTrainingReusePresentation.test.js",
-          "tests/tutorStubTrainingReuse.test.js",
           "tests/tutorStubLastSettings.test.js",
+          "tests/tutorStubCommandRegistry.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-session-status-presentation"
+          "refactor-tutor-stub-training-reuse-presentation"
         ]
       },
       "tags": [
@@ -661,7 +664,7 @@
         "tutor-stub",
         "presentation",
         "cli",
-        "data-governance"
+        "settings"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -3245,6 +3248,51 @@
         "presentation",
         "cli",
         "status"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-training-reuse-presentation",
+      "title": "Refactor tutor-stub training-reuse presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live candidate, owner opt-out, and external fail-closed training reuse status bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-training-reuse-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-session-status-presentation"
+      ],
+      "links": {
+        "prs": [
+          276
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubTrainingReusePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubTrainingReusePresentation.test.js",
+          "tests/tutorStubTrainingReuse.test.js",
+          "tests/tutorStubLastSettings.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-session-status-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "data-governance"
       ],
       "milestone": "evaluation-infrastructure"
     },
