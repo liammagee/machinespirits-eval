@@ -497,6 +497,7 @@ import { renderTutorStubCliHelp } from '../services/tutorStubCliHelp.js';
 import { projectTutorStubFeatureMapLines } from '../services/tutorStubFeatureMap.js';
 import { projectTutorStubInteractiveHelpLines } from '../services/tutorStubInteractiveHelp.js';
 import { projectTutorStubReleaseNotesLines } from '../services/tutorStubReleaseNotesPresentation.js';
+import { projectTutorStubDagSnapshotLines } from '../services/tutorStubDagSnapshotPresentation.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
   MAX_TUTOR_STUB_RELEASE_SPEED,
@@ -8844,35 +8845,7 @@ function buildTutorDagSnapshot(state, tutorTurn) {
 }
 
 function printTutorDagSnapshot(snapshot) {
-  if (!snapshot) return;
-  console.log(
-    `${C.cyan}tutor DAG >${C.reset} turn ${snapshot.turn}: ${snapshot.leavesReleased}/${snapshot.leavesTotal} proof leaves released`,
-  );
-  if (!snapshot.derivable) {
-    console.log(`${C.dim}  not derivable from this world's authored proof data${C.reset}\n`);
-    return;
-  }
-  console.log(`${C.dim}  root: ${snapshot.rootLabel}${C.reset}`);
-  if (snapshot.nextRelease) {
-    console.log(
-      `${C.dim}  next release: ${snapshot.nextRelease.premise} at turn ${snapshot.nextRelease.turn} via ${snapshot.nextRelease.via}${C.reset}`,
-    );
-  } else {
-    console.log(`${C.dim}  next release: none${C.reset}`);
-  }
-
-  console.log(`${C.dim}  edges:${C.reset}`);
-  for (const edge of snapshot.edges) {
-    console.log(`${C.dim}    ${edge.fromLabel} -> ${edge.toLabel}${edge.rule ? ` (${edge.rule})` : ''}${C.reset}`);
-  }
-
-  console.log(`${C.dim}  leaves:${C.reset}`);
-  for (const leaf of snapshot.leaves) {
-    const status = leaf.released ? 'x' : ' ';
-    const schedule = leaf.scheduledTurn ? `t${leaf.scheduledTurn}/${leaf.via}` : 'unscheduled';
-    console.log(`${C.dim}    [${status}] ${leaf.premise} ${schedule}: ${leaf.fact}${C.reset}`);
-  }
-  console.log();
+  for (const line of projectTutorStubDagSnapshotLines({ snapshot, colors: C })) console.log(line);
 }
 
 function oneLine(value, { max = 220 } = {}) {

@@ -50,6 +50,7 @@ links:
     - refactor-tutor-stub-interactive-help-projection
     - refactor-tutor-stub-feature-map-projection
     - refactor-tutor-stub-release-notes-projection
+    - refactor-tutor-stub-dag-snapshot-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -365,3 +366,19 @@ Log:
   reduction, 54/54 focused tests, and complete zero-skip hermetic parity. Git
   loading, time-window validation, terminal writes, slash dispatch, traces,
   models, and runtime behavior remain CLI-owned.
+- 2026-07-26 — PR #268 merged the release-notes child as `5bbd115c`; the
+  serialized render followed as `040222c6`. Closed that child and activated
+  `refactor-tutor-stub-dag-snapshot-projection` to move only deterministic
+  proof-DAG snapshot lines while retaining snapshot construction, state access,
+  terminal writes, runtime callers, commands, traces, and tutor behavior in the
+  CLI. The next child must also rerun the complete local hermetic contract
+  because one pre-merge Node 20 shard on #268 reported a failure.
+- 2026-07-26 — The DAG-snapshot child reached review with one dependency-free
+  pure projector, a 27-line CLI reduction, exact live and synthetic terminal
+  fixtures, and complete root 6,961-test plus tutor-core 137-test zero-skip
+  parity. Snapshot construction, state access, terminal writes, every runtime
+  caller, commands, traces, and tutor behavior remain CLI-owned.
+- 2026-07-26 — Rebased the DAG-snapshot child onto rendered `origin/main` at
+  `4cebdde1` after PR #267 changed the hermetic-runner lifecycle. Final-base
+  focused 6/6, root 6,976/6,976, and tutor-core 137/137 zero-skip contracts are
+  green through the new natural-teardown runner.

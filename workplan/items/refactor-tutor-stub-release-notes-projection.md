@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-release-notes-projection
 title: Refactor tutor-stub release-notes projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -26,6 +26,8 @@ links:
     - tests/tutorStubHumanDiscourseLayer.test.js
     - tests/tutorStubPassthrough.test.js
     - config/hermetic-test-manifest.json
+  prs:
+    - 268
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-feature-map-projection
@@ -84,3 +86,8 @@ Log:
   skips. ESLint, Prettier, the zero-cycle ratchet across 380 files, synchronized
   test manifest, 208-item source-only workplan, syntax, and diff gates pass;
   generated workplan views remain untouched.
+- 2026-07-26 — PR #268 merged as `5bbd115c`; the serialized workplan render
+  followed as `040222c6`. Closed this child and handed the next pure R3
+  presentation seam to `refactor-tutor-stub-dag-snapshot-projection`. One
+  pre-merge Node 20 shard reported a failure, so the next child retains the
+  complete local hermetic contract as an explicit regression gate.
