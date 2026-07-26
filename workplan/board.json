@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T12:43:11.917Z",
+  "generated": "2026-07-26T12:44:22.898Z",
   "counts": {
-    "total": 215,
+    "total": 216,
     "byStatus": {
-      "done": 187,
+      "done": 188,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 49,
-      "maintenance": 56,
+      "maintenance": 57,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -192,6 +192,7 @@
           "refactor-tutor-stub-dag-snapshot-projection",
           "refactor-tutor-stub-proof-command-projection",
           "refactor-tutor-stub-interaction-mode-presentation",
+          "refactor-tutor-stub-session-status-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -634,8 +635,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-interaction-mode-presentation",
-      "title": "Refactor tutor-stub interaction-mode presentation",
+      "id": "refactor-tutor-stub-session-status-presentation",
+      "title": "Refactor tutor-stub session-status presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -643,26 +644,27 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "Live startup and mode-switch bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-interaction-mode-presentation",
+      "verification": "Live normal and passthrough /status bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-session-status-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-proof-command-projection"
+        "refactor-tutor-stub-interaction-mode-presentation"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubInteractionModePresentation.js",
+          "services/tutorStubSessionStatusPresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubInteractionModePresentation.test.js",
+          "tests/tutorStubSessionStatusPresentation.test.js",
           "tests/tutorStubInteractiveDirection.test.js",
+          "tests/tutorStubPassthrough.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-proof-command-projection"
+          "refactor-tutor-stub-interaction-mode-presentation"
         ]
       },
       "tags": [
@@ -670,7 +672,7 @@
         "tutor-stub",
         "presentation",
         "cli",
-        "interaction-mode"
+        "status"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2867,6 +2869,50 @@
         "tutor-stub",
         "presentation",
         "interaction-field"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-interaction-mode-presentation",
+      "title": "Refactor tutor-stub interaction-mode presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live startup and mode-switch bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-interaction-mode-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-proof-command-projection"
+      ],
+      "links": {
+        "prs": [
+          273
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInteractionModePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInteractionModePresentation.test.js",
+          "tests/tutorStubInteractiveDirection.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-proof-command-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "interaction-mode"
       ],
       "milestone": "evaluation-infrastructure"
     },
