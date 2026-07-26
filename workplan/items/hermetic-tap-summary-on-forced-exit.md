@@ -85,6 +85,26 @@ loads that need packages absent from this worktree's symlinked `node_modules`
 builds from `path.basename(root)`; this worktree is called `ms-hermetic-tap`. CI
 checks out into a directory named for the repository, so both pass there.
 
+## An improvement, not a guarantee
+
+A file destination is not immune to `process.exit()`. It is a far wider race
+than a pipe, and CI proved it is still a race: on Node 20 the forced-exit
+integration test lost the tail on the file channel too, in a child that starts
+and exits inside a quarter of a second. Node 22 kept it.
+
+The real root phase writes for minutes rather than milliseconds, and across
+eight shard jobs on both Node versions it carried a complete tail every time,
+including in the job where the synthetic child failed. But "much less likely" is
+not "reliable". The claim this change can support is comparative: the file is
+never the poorer channel. The integration test asserts that, and nothing
+stronger.
+
+The durable fix is to stop racing the reporter at all — run the root phase
+without `--test-force-exit`, wait for the TAP file to show a complete tail, and
+only then kill the child. That removes both this race and the short run below,
+because nothing cuts the run off. It also changes how every root phase
+terminates, which is why it is not folded in here.
+
 ## A second defect, observed and not fixed here
 
 A forced exit can also end the run short, not just lose its output, and the
@@ -108,9 +128,10 @@ every selected file ran.
 
 Follow-up, deliberately not folded in: determine whether the missing cases fail
 to run or only fail to be recorded, then either populate `files` from the
-now-available complete TAP file so the exact-file check applies to the root
-phase, or reconsider `--test-force-exit` itself. Both are their own decisions
-with their own risk.
+complete TAP file so the exact-file check applies to the root phase, or drop
+`--test-force-exit` in favour of waiting for the tail and killing the child
+afterwards. The second option is the one that also closes the race above, and it
+is the larger change of the two.
 
 ## Log
 
