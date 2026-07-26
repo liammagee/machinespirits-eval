@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-26T00:14:45.477Z",
+  "generated": "2026-07-26T01:04:49.544Z",
   "counts": {
-    "total": 198,
+    "total": 199,
     "byStatus": {
       "done": 175,
       "blocked": 4,
       "dropped": 3,
       "triaged": 6,
-      "active": 4,
+      "active": 5,
       "archived": 4,
       "review": 2
     },
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 44,
-      "maintenance": 44,
+      "maintenance": 45,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -323,6 +323,41 @@
         "provenance",
         "privacy"
       ]
+    },
+    {
+      "id": "tutor-stub-fallback-register-and-uptake-guard",
+      "title": "Tutor-stub fallback register and learner-uptake guard",
+      "status": "active",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "A contemporary-diction world speaks its own props in its own register while every period and undeclared world keeps byte-identical deterministic text; the learner-uptake guard admits a genuinely responsive uptake that shares no tokens with the accepted meaning; targeted and hermetic suites pass without model calls.",
+      "branch": "claude/tutor-stub-uptake-guard",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "services/tutorStubSceneDiction.js",
+          "services/tutorStubDramaticRelease.js",
+          "services/tutorStubResponseComposition.js",
+          "services/tutorStubTurnProgressionContract.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubSceneDiction.test.js",
+          "services/tutorStubConversationalCompletion.js",
+          "tests/tutorStubUptakeGuardLinkage.test.js",
+          "services/tutorStubSelfCorrectionDisclosure.js",
+          "services/tutorStubGuardDisposition.js",
+          "tests/tutorStubSelfCorrectionDisclosure.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "presentation",
+        "guards"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "tutor-stub-latency-routing-optimization",
