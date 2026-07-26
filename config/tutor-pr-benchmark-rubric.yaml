@@ -4,7 +4,7 @@ version: "1.0"
 status: calibration
 supersedes: implicit-deterministic-audit-criteria
 
-unit: One exact tutor candidate evaluated against one frozen public transcript prefix and its case-specific criterion.
+unit: One exact tutor candidate evaluated against one frozen public transcript prefix, its case-specific criterion, and its frozen authored turn obligations.
 
 scope:
   in_scope:
@@ -33,13 +33,14 @@ decision_policy:
     - learner_uptake
     - evidence_discipline
     - handoff
+    - actorial_part
   advisory_axes:
-    - actorial_realization
+    - performance_tactic
   rules:
     - Judge the exact candidate, not an imagined repair or continuation.
-    - Use only the frozen public prefix, learner move, criterion, and candidate.
+    - Use only the frozen public prefix, learner move, criterion, authored turn obligations, and candidate.
     - Do not infer concealed facts, model identity, audit output, or later learner uptake.
-    - A stylistically thin actorial realization does not by itself force overall failure.
+    - Missing the selected public part is hard; a thin performance tactic is advisory unless it also causes another hard-axis failure.
     - Overall delivery fails when a hard axis fails or the case-specific criterion is materially unmet.
     - Do not double-penalize one defect merely because it appears under more than one axis.
 
@@ -127,17 +128,36 @@ axes:
         - question_required_by_handoff_contract
         - multiple_questions_violate_terminal_handoff
 
-  actorial_realization:
-    title: Actorial realization
-    construct: Transcript-visible realization of the selected public part and performance tactic.
-    question: Is the selected public part and its performance tactic visibly realized without apparatus language?
-    severity: advisory
-    pass_anchor: When an actorial obligation applies, the candidate enacts the part and tactic in speech or scene action without announcing the apparatus; when none applies, the axis passes.
-    fail_anchor: A required part or tactic is merely named, described from outside the scene, contradicted, or absent from the visible candidate.
-    unsure_anchor: The frozen record does not expose whether an actorial obligation applies or what it requires.
+  actorial_part:
+    title: Selected public part
+    construct: Transcript-visible realization of the selected public speaking part.
+    question: Does the candidate directly perform the authored public part without apparatus language?
+    severity: hard
+    pass_anchor: The candidate performs the supplied part contract in speech or scene action without merely announcing or describing the role.
+    fail_anchor: The selected part is absent, contradicted, named only as apparatus, or replaced with generic tutor narration.
+    unsure_anchor: The supplied part contract is missing or too ambiguous to determine what public performance requires.
     exclusions:
-      - A thin performance does not automatically fail overall delivery.
-      - The coder should not reward theatrical excess unrelated to the teaching move.
+      - Exact role labels or theatrical stage directions are neither required nor sufficient.
+      - Do not reward performance that abandons the learner's task or the evidence boundary.
     machine_rule:
-      kind: audit_result
+      kind: audit_issue_types
       audit: actorialRealizationAudit
+      issue_types:
+        - missing_selected_actorial_part
+
+  performance_tactic:
+    title: Selected performance tactic
+    construct: Transcript-visible realization of the selected manner of performing the public part.
+    question: Does the candidate legibly realize the authored performance tactic without apparatus language?
+    severity: advisory
+    pass_anchor: The supplied tactic is legible in the candidate's wording or scene action and supports the teaching move without being announced as a technique.
+    fail_anchor: The tactic is absent, contradicted, described from outside the scene, or replaced by generic prose even though the public part may still be present.
+    unsure_anchor: The supplied tactic contract is missing or too ambiguous to distinguish realization from ordinary stylistic variation.
+    exclusions:
+      - A thin tactic does not by itself fail overall delivery.
+      - Do not reward theatrical excess or stylistic preference unrelated to the supplied tactic contract.
+    machine_rule:
+      kind: audit_issue_types
+      audit: actorialRealizationAudit
+      issue_types:
+        - missing_selected_performance_tactic

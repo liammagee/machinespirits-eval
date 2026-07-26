@@ -190,7 +190,7 @@ hermetic validation layer.
 The gate's refreshed source of truth is
 [`config/tutor-pr-benchmark-rubric.yaml`](../config/tutor-pr-benchmark-rubric.yaml).
 Version 1.0 is a prospective acceptance rubric at the utterance grain, with
-six anchored axes, explicit exclusions, hard/advisory severity, a decision
+seven anchored axes, explicit exclusions, hard/advisory severity, a decision
 policy, and a machine mapping for calibration. Its version and source hash are
 recorded in every plan and report. It does not change or reinterpret the
 separately versioned full evaluation rubric.
@@ -199,8 +199,10 @@ The three benchmark turns come from one frozen Nocturne transcript and were
 selected because their recorded original drafts remain accepted by the current
 model-free audit; they vary engagement stance, actorial part, performance
 tactic, accessibility, and evidentiary handoff. The rubric tests overall
-delivery, safety, learner uptake, evidence discipline, handoff, and actorial
-realization. It is not a full-dialogue outcome measure, an estimate of human
+delivery, safety, learner uptake, evidence discipline, handoff, the selected
+public part, and its performance tactic. The public part is hard; a tactic-only
+miss is advisory unless it also causes a separate hard failure. It is not a
+full-dialogue outcome measure, an estimate of human
 learning, coverage of learner-profile diversity, or evidence that one model
 family is generally better than another.
 

@@ -68,7 +68,7 @@ test('strong and smoke plans pin the dual-CLI medium-effort call budgets', () =>
   );
 });
 
-test('actorial advisory remains measured without overriding the canonical delivery decision', async () => {
+test('performance-tactic advisory remains measured without overriding the canonical delivery decision', async () => {
   const benchmarkPlan = plan('smoke');
   const report = await runTutorPrBenchmark({
     plan: benchmarkPlan,

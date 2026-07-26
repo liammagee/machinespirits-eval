@@ -51,9 +51,13 @@ development packet used to revise guards as held-out evidence.
   adjudication invalidation; report-only metrics; synthetic end-to-end tests;
   and the development-to-held-out-acceptance operator guide.
 - 2026-07-26: Corrected the scope from calibration plumbing alone to the rubric
-  refresh itself. Externalized six criteria into
+  refresh itself. Externalized seven criteria into
   `config/tutor-pr-benchmark-rubric.yaml` with construct definitions, anchored
   labels, exclusions, severity, decision policy, and machine mappings. Wired
   the rubric version and hash through benchmark reports and every calibration
   artifact; held-out acceptance now requires a report generated under the same
   rubric.
+- 2026-07-26: Used the first live six-call report to correct an over-broad
+  actorial axis before review: missing the selected public part remains hard,
+  while a tactic-only miss is advisory. Split those labels and added the frozen
+  authored part/tactic contracts to blinded coder packets.

@@ -111,6 +111,8 @@ test('prepare, independent coding, adjudication, and analysis are resumable and 
   assert.equal(prepared.packet.codebook.rubric.sha256, prepared.manifest.rubric_sha256);
   assert.match(prepared.packet.codebook.axes[0].pass_anchor, /criterion/u);
   assert.equal(prepared.packet.codebook.axes.find((axis) => axis.id === 'safety').severity, 'hard');
+  assert.match(prepared.packet.items[0].authored_obligations.public_part.contract, /public|learner|eviden/u);
+  assert.ok(prepared.packet.items[0].authored_obligations.performance_tactic.contract);
   const visible = JSON.stringify(prepared.packet);
   assert.doesNotMatch(visible, /codex_medium|claude_medium|gpt-5\.6|claude-sonnet/u);
   assert.match(JSON.stringify(prepared.machineKey), /codex_medium/u);
@@ -255,12 +257,15 @@ test('workspace loading rejects a modified machine key', async (t) => {
   );
 });
 
-test('machine labels preserve actorial realization as an advisory axis', async (t) => {
+test('machine labels separate the hard public part from the advisory performance tactic', async (t) => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-pr-calibration-actorial-test-'));
   t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
   const report = await syntheticReport();
   report.jobs[0].audit.audits = {
     actorialRealizationAudit: { ok: false, active: true, issues: [{ type: 'missing_selected_performance_tactic' }] },
+  };
+  report.jobs[1].audit.audits = {
+    actorialRealizationAudit: { ok: false, active: true, issues: [{ type: 'missing_selected_actorial_part' }] },
   };
   const reportPath = path.join(temporary, 'report.json');
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
@@ -271,9 +276,13 @@ test('machine labels preserve actorial realization as an advisory axis', async (
     outDir: path.join(temporary, 'workspace'),
     purpose: 'development',
   });
-  const keyed = prepared.machineKey.items.find((item) => item.source_job_id === report.jobs[0].id);
-  assert.equal(keyed.machine_labels.actorial_realization, 'fail');
-  assert.equal(keyed.machine_labels.overall_delivery, 'pass');
+  const tacticKey = prepared.machineKey.items.find((item) => item.source_job_id === report.jobs[0].id);
+  assert.equal(tacticKey.machine_labels.actorial_part, 'pass');
+  assert.equal(tacticKey.machine_labels.performance_tactic, 'fail');
+  assert.equal(tacticKey.machine_labels.overall_delivery, 'pass');
+  const partKey = prepared.machineKey.items.find((item) => item.source_job_id === report.jobs[1].id);
+  assert.equal(partKey.machine_labels.actorial_part, 'fail');
+  assert.equal(partKey.machine_labels.performance_tactic, 'pass');
 });
 
 test('calibration CLI advertises the zero-call resumable workflow', () => {

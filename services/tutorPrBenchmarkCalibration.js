@@ -150,6 +150,21 @@ function visibleCaseContext({ root, benchmarkCase }) {
   return {
     prior_turns: clone(bundle.priorTurns || []),
     learner_text: String(bundle.learnerText || benchmarkCase.learnerText || ''),
+    authored_obligations: {
+      public_part: {
+        id: bundle.selectedResponseConfiguration?.actorial_part || null,
+        label: bundle.selectedResponseConfiguration?.actorial_part_label || null,
+        contract: bundle.selectedResponseConfiguration?.actorial_part_selection?.contract || null,
+      },
+      performance_tactic: {
+        id: bundle.selectedResponseConfiguration?.actorial_performance?.id || null,
+        label: bundle.selectedResponseConfiguration?.actorial_performance?.label || null,
+        contract: bundle.selectedResponseConfiguration?.actorial_performance?.contract || null,
+        forbidden_meta_frames: clone(
+          bundle.selectedResponseConfiguration?.actorial_performance?.forbidden_meta_frames || [],
+        ),
+      },
+    },
   };
 }
 
@@ -164,7 +179,11 @@ function machineLabelForAxis(axis, job) {
   const rule = axis.machine_rule;
   if (rule.kind === 'job_status') return job.status === 'pass' ? 'pass' : 'fail';
   if (rule.kind === 'safety_failure') return job.audit?.safetyFailure === true ? 'fail' : 'pass';
-  if (rule.kind === 'audit_result') return job.audit?.audits?.[rule.audit]?.ok === true ? 'pass' : 'fail';
+  if (rule.kind === 'audit_issue_types') {
+    const types = new Set(rule.issue_types || []);
+    const issues = job.audit?.audits?.[rule.audit]?.issues || [];
+    return issues.some((issue) => types.has(issue.type)) ? 'fail' : 'pass';
+  }
   const issues = hardIssues(job);
   if (rule.kind === 'hard_issue_types') {
     const types = new Set(rule.issue_types || []);
@@ -249,6 +268,7 @@ export function prepareTutorPrCalibrationWorkspace({
       criterion: benchmarkCase.criterion || null,
       prior_turns: context.prior_turns,
       learner_text: context.learner_text,
+      authored_obligations: context.authored_obligations,
       candidate: job.candidate,
     };
     const itemSha256 = jsonHash(visible);

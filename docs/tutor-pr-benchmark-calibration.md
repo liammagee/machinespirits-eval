@@ -33,8 +33,8 @@ Version 1.0 is a **turn-level acceptance rubric** under calibration. It
 supersedes the benchmark's implicit deterministic-audit criteria and defines:
 
 - the human labels `pass`, `fail`, and `unsure`;
-- six axes: overall delivery, safety, learner uptake, evidence discipline,
-  handoff, and actorial realization;
+- seven axes: overall delivery, safety, learner uptake, evidence discipline,
+  handoff, selected public part, and selected performance tactic;
 - hard, advisory, and composite severity;
 - pass, fail, and unsure anchors plus exclusions for every axis;
 - the overall decision policy; and
@@ -83,7 +83,7 @@ npm run tutor:stub:pr-benchmark:calibrate -- prepare \
 
 | Artifact | Visibility and purpose |
 | --- | --- |
-| `packet.json` | Give to coders. Contains only the frozen public context, exact candidate, criterion, and complete anchored rubric. |
+| `packet.json` | Give to coders. Contains the frozen public context, exact candidate, criterion, authored public-part/tactic obligations, and complete anchored rubric. |
 | `machine-key.json` | Keep from coders. Contains model identity, deterministic audit labels, failures, and source provenance. |
 | `manifest.json` | Hashes the packet, machine key, rubric, config, source report, and item count. |
 | `labels/rater-*.json` | One atomic, resumable sidecar per coder; created by `label`. |

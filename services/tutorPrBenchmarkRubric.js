@@ -10,7 +10,7 @@ export const TUTOR_PR_BENCHMARK_RUBRIC_LABELS = Object.freeze(['pass', 'fail', '
 const MACHINE_RULES = new Set([
   'job_status',
   'safety_failure',
-  'audit_result',
+  'audit_issue_types',
   'hard_issue_types',
   'hard_guard_prefixes',
 ]);
@@ -63,15 +63,14 @@ export function validateTutorPrBenchmarkRubric(rubric) {
     if (!MACHINE_RULES.has(axis.machine_rule?.kind)) {
       throw new Error(`rubric axis ${axisId} has an unsupported machine rule`);
     }
-    if (axis.machine_rule.kind === 'audit_result') {
+    if (axis.machine_rule.kind === 'audit_issue_types') {
       nonEmptyString(axis.machine_rule.audit, `rubric axis ${axisId}.machine_rule.audit`);
     }
-    const ruleList =
-      axis.machine_rule.kind === 'hard_issue_types'
-        ? axis.machine_rule.issue_types
-        : axis.machine_rule.kind === 'hard_guard_prefixes'
-          ? axis.machine_rule.guard_prefixes
-          : null;
+    const ruleList = ['hard_issue_types', 'audit_issue_types'].includes(axis.machine_rule.kind)
+      ? axis.machine_rule.issue_types
+      : axis.machine_rule.kind === 'hard_guard_prefixes'
+        ? axis.machine_rule.guard_prefixes
+        : null;
     if (ruleList !== null) stringList(ruleList, `rubric axis ${axisId}.machine_rule`);
   }
   const axisIds = new Set(axes.map(([axisId]) => axisId));

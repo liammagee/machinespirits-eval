@@ -24,8 +24,9 @@ test('versioned PR benchmark rubric defines anchored hard, advisory, and composi
     'learner_uptake',
     'evidence_discipline',
     'handoff',
+    'actorial_part',
   ]);
-  assert.deepEqual(loaded.rubric.decision_policy.advisory_axes, ['actorial_realization']);
+  assert.deepEqual(loaded.rubric.decision_policy.advisory_axes, ['performance_tactic']);
   assert.equal(loaded.rubric.axes.overall_delivery.severity, 'composite');
   for (const axis of Object.values(loaded.rubric.axes)) {
     assert.ok(axis.pass_anchor);
