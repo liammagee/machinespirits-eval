@@ -1,5 +1,8 @@
 export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.guard-disposition.v1';
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 2;
+// 3 (2026-07-26): the terminal-fallback boundary now also downgrades
+// dramatic-form findings, so a trace's disposition rows are not comparable
+// with a version-2 trace without accounting for that.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 3;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -235,12 +238,12 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
   const actorialOverride = allowActorialAdvisory && resolved.known && normalized.guard === 'actorial_realization';
   // Terminal-fallback accommodation (committee-runtime-main-reconciliation,
   // 2026-07-22): the deterministic fallback is the harness's last-resort
-  // safety text. When it fails a conversational-integrity or optional
-  // actorial-realization check there is no further candidate — rejecting it
-  // kills the whole dialogue. On the terminal-fallback attempt only, those
-  // known surface findings are delivered as recorded advisories instead of
-  // fatals. Evidence, clue-transaction, semantic-closure, pedagogical-support,
-  // and all unknown issues remain hard everywhere.
+  // safety text. When it fails a conversational-integrity, dramatic-form or
+  // optional actorial-realization check there is no further candidate —
+  // rejecting it kills the whole dialogue. On the terminal-fallback attempt
+  // only, those known surface findings are delivered as recorded advisories
+  // instead of fatals. Evidence, clue-transaction, semantic-closure,
+  // pedagogical-support, and all unknown issues remain hard everywhere.
   const terminalFallbackConversationalOverride =
     terminalFallback &&
     resolved.known &&
@@ -248,7 +251,26 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
     resolved.rule.strict === HARD;
   const terminalFallbackActorialOverride =
     terminalFallback && resolved.known && normalized.guard === 'actorial_realization' && resolved.rule.strict === HARD;
-  const terminalFallbackOverride = terminalFallbackConversationalOverride || terminalFallbackActorialOverride;
+  // Dramatic *form* on the last resort (2026-07-26). The fallback is fixed
+  // harness text wrapped around per-world clue prose, so whether a released
+  // clue arrives with a visible entrance or exhibit action is decided by the
+  // authored clue, not by anything the fallback can supply. Free-running
+  // dialogues died here twice — every candidate rejected, the fallback
+  // included, leaving the tutor with nothing it was permitted to say. The
+  // shadow column already reads these as realization rather than public-state
+  // integrity, and requiring the shadow disposition to be advisory is what
+  // keeps `live_source_action_alignment_v1` (hard in both columns) and the two
+  // hard `dramatic_release` types — duplicate delivery, source-perspective
+  // drift — fatal here. Whether the clue's *content* was delivered stays
+  // separately and hardly audited by `release_delivery`.
+  const terminalFallbackDramaticFormOverride =
+    terminalFallback &&
+    resolved.known &&
+    resolved.rule.category === 'dramatic_realization' &&
+    resolved.rule.strict === HARD &&
+    resolved.rule.shadow === ADVISORY;
+  const terminalFallbackOverride =
+    terminalFallbackConversationalOverride || terminalFallbackActorialOverride || terminalFallbackDramaticFormOverride;
   const strictDisposition = actorialOverride || terminalFallbackOverride ? ADVISORY : resolved.rule.strict;
   return {
     issue: normalized,
@@ -265,7 +287,9 @@ export function classifyTutorStubGuardIssue(issue, { allowActorialAdvisory = fal
         ? 'terminal_fallback_conversational_advisory'
         : terminalFallbackActorialOverride
           ? 'terminal_fallback_actorial_advisory'
-          : null,
+          : terminalFallbackDramaticFormOverride
+            ? 'terminal_fallback_dramatic_form_advisory'
+            : null,
   };
 }
 

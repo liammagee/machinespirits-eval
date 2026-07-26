@@ -12441,7 +12441,7 @@ async function callTutor({
         fallbackDraftAudits.responseConfigurationAudit,
       ),
       advisoryReason:
-        'the deterministic fallback is the terminal safety text — known conversational-integrity and optional actorial-realization findings on it are recorded as advisories instead of killing the dialogue; evidence boundaries remain hard',
+        'the deterministic fallback is the terminal safety text — known conversational-integrity, dramatic-form, and optional actorial-realization findings on it are recorded as advisories instead of killing the dialogue; evidence, clue-transaction and closure boundaries remain hard',
       role: `${roleBase}_fallback`,
       attempt: fallbackAttempt,
       terminalFallback: true,
