@@ -79,38 +79,60 @@ it does not bound the behavioural one.
 
 ## Relabelling the archive
 
-Measured directly, not estimated: the archive at `~/.machinespirits-data/program-2/`
-holds **2,363** classifier calls (`type === 'model_call'`,
-`role === 'tutor_stub_learner_analysis'`) across four phases, from a **single**
-judge family (`codex/gpt-5.6-terra`, one draw each), covering **1,135** turns
-where `warrant_skip` fired. Stored v1 label distribution: `omits_warrant` 614,
-`overleaps_evidence` 521, `cites_public_evidence` 454, `links_evidence_to_rule`
-452, `none` 131, `revises_from_evidence` 70, `distorts_public_evidence` 62,
-`repeats_setup` 41.
+**Two archives, and the training one is the sibling.** Checked against
+`datasets/v1/extraction-report.json` rather than assumed: the entire v1 training
+corpus was extracted from `~/.machinespirits-data/step4-claim-runs-2026-07/` (80
+dialogues, 2,076 turns, 645 trigger moments, all 141 Task A rows).
+`~/.machinespirits-data/program-2/` holds the live-phase archive (5, 5b, 5c, 5d),
+which is eval and monitoring data. Relabelling only the second would hand
+monitoring a v2 denominator while leaving the training corpus at v1 — the exact
+cross-version mixing this item exists to prevent. Measured directly:
+
+| archive | classifier calls | relabellable | role |
+|---|---|---|---|
+| `step4-claim-runs-2026-07/` | 2,585 | 2,555 | the training corpus |
+| `program-2/` (phases 5–5d) | 2,363 | 2,345 | live-phase eval and monitoring |
+| total | 4,948 | 4,900 | |
+
+Both are `type === 'model_call'`, `role === 'tutor_stub_learner_analysis'`, from a
+**single** judge family (`codex/gpt-5.6-terra`, one draw each). The live-phase
+archive covers **1,135** turns where `warrant_skip` fired; stored v1 label
+distribution there: `omits_warrant` 614, `overleaps_evidence` 521,
+`cites_public_evidence` 454, `links_evidence_to_rule` 452, `none` 131,
+`revises_from_evidence` 70, `distorts_public_evidence` 62, `repeats_setup` 41.
 
 The relabel is single-substitution surgery, not state re-derivation. The v1
-precedence line appears in `request.prompt` exactly once in all 2,363 records
-(zero in `systemPrompt`, zero absent, zero duplicated — checked). Swap that one
-line for v2's five, re-issue to the same provider and model, and everything else
-is held identical by construction because it is replayed from the stored record.
-The tool asserts exactly-one-occurrence before substituting and refuses the
-record otherwise, so a drifted prompt fails loudly instead of being relabelled
-under a false premise.
+precedence line appears in `request.prompt` exactly once in every relabellable
+record in both archives (zero in `systemPrompt`, zero duplicated — checked via
+`--plan`). Swap that one line for v2's five, re-issue to the same provider and
+model, and everything else is held identical by construction because it is
+replayed from the stored record. The tool asserts exactly-one-occurrence before
+substituting and refuses the record otherwise, so a drifted prompt fails loudly
+instead of being relabelled under a false premise. It reaches the step4 archive
+with `--archive`, no code change.
 
 Runs on shared Max-plan quota, so: stratified slice with real calls first,
-measured per-call latency, then a resumable full sweep with checkpointing.
+measured per-call latency, then a resumable full sweep with checkpointing. The
+16-record pilot ran 16/16 with zero failures at 7.0s/call, concurrency 2, which
+puts the two full sweeps at ≈149 minutes (step4) and ≈136 minutes (live phase).
+Run step4 first — it is the corpus that feeds training.
 
 ## What the relabel does to the distillation pipeline
 
-Worked through in `notes/program-2/2026-07-26-v2-relabel-distill-path.md`. Three
+Worked through in `notes/program-2/2026-07-26-v2-relabel-distill-path.md`. Four
 findings that constrain the next step:
 
+- The relabel has to cover both archives, and the one that matters for training
+  is the step4 sibling, not `program-2/` (see above). This is the finding that
+  changes the plan; everything else is downstream of it.
 - The frozen corpora survive. `general-sft.jsonl` (865 rows) and `kto.jsonl`
   (1,676 rows) key on deterministic guard accounting with no classifier in the
   path, so they do not move. Only `taskA-sft.jsonl` and `eval-moments.jsonl`
   change, and only in membership. Re-deriving that membership is a zero-call
   recomputation, since `assignedTrigger()` is pure and `poa.inputs` stores its
-  arguments verbatim.
+  arguments verbatim. Task A is small — 141 rows split 105/21/15, with 61
+  held-out eval moments — so a membership shift that would round to nothing on
+  the general corpus is not negligible there.
 - Turns that were silent under v1 and fire under v2 are a counterfactual
   population: the recorded reply was produced without the side-coach block, so
   they cannot be Task A positives and their historical compliance is not a
@@ -128,8 +150,17 @@ boundary, 0 stayed inside the firing pair — 31.3% vs 37.5%), and
 pilot cases still moved into the firing pair).
 
 Deliberately not in scope: distilling the local writer model against a
-two-family consensus target. The archive is single-family, so a consensus target
-requires a second judge pass (4,726 calls plus adjudication on disagreements)
-and that is a separate decision about what the labels are for. Within-model
-majority voting on the disagreeing subset answers the label-stability question
-at roughly a third of the price.
+two-family consensus target. Both archives are single-family, so a consensus
+target requires a second judge pass over all 4,900 records (9,800 calls before
+any training, plus adjudication on disagreements) and that is a separate
+decision about what the labels are for. Cross-family agreement measures the
+instrument; within-model majority voting on the disagreeing subset measures the
+label, and buys the second question at a fraction of the price.
+
+Also not in scope here: choosing which of the two seats gets trained. The
+relabelled corpus is training data for the classifier seat (which decides *when*
+the tutor speaks) and only a denominator change for the writer seat (which
+decides *what it says*, and owns the +0.236/+0.202 Phase 5b/5c gaps). The
+existing `PROGRAM-2-FINETUNE-PLAN.md` Tasks A and B are entirely writer-seat, so
+a local classifier is a new task rather than a continuation of that plan. Both
+options need the full sweep's numbers before either can be pre-registered.

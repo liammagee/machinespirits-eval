@@ -23,7 +23,37 @@ The relabelled corpus is *training data* for the classifier seat and only a
 existing plan (`PROGRAM-2-FINETUNE-PLAN.md`, Tasks A and B) is entirely
 writer-seat. Distilling a local classifier is a new task, not a continuation.
 
-## 2. What the relabel changes in the existing datasets
+## 2. The sweep must cover two archives, and the training one is the sibling
+
+Checked against `datasets/v1/extraction-report.json` rather than assumed: the
+**entire** v1 training corpus came from `~/.machinespirits-data/step4-claim-runs-2026-07/`
+— 80 dialogues, 2,076 turns, 645 trigger moments, all 141 Task A rows, all 1,096
+general positives. `~/.machinespirits-data/program-2/` holds the *live-phase*
+archive (5, 5b, 5c, 5d), which is eval and monitoring data.
+
+| archive | classifier calls | relabellable | role |
+|---|---|---|---|
+| `step4-claim-runs-2026-07/` | 2,585 | 2,555 | **the training corpus** |
+| `program-2/` (phases 5–5d) | 2,363 | 2,345 | live-phase eval and monitoring |
+| total | 4,948 | 4,900 | |
+
+Relabelling only `program-2/` would have handed the monitoring data a v2
+denominator while leaving the training corpus at v1 — exactly the cross-version
+mixing this whole exercise exists to prevent. The tool needs no change to reach
+it; `--plan` against the step4 root reports 2,555/2,555 records carrying exactly
+one v1 clause, same single model family, so it is a scope argument:
+
+```bash
+node scripts/relabel-program2-evidence-use.js \
+  --archive ~/.machinespirits-data/step4-claim-runs-2026-07 \
+  --out exports/evidence-use-v2-relabel/step4.jsonl \
+  --checkpoint-every 200 --concurrency 2
+```
+
+Run step4 **first**. It is the corpus that feeds training; the live-phase archive
+only moves a denominator.
+
+## 3. What the relabel changes in the existing datasets
 
 `scripts/program2-extract-dataset.mjs` gates each output on a different field,
 so the relabel does not touch them uniformly.
@@ -38,7 +68,7 @@ so the relabel does not touch them uniformly.
 So the frozen SFT and KTO corpora survive the flip intact. What moves is the
 Task A population — which turns count as trigger moments at all.
 
-## 3. Re-deriving trigger membership costs nothing
+## 4. Re-deriving trigger membership costs nothing
 
 `assignedTrigger()` in `services/tutorStubPointOfActionCoaching.js` is a pure
 function, and `poa.inputs` in every sealed `turn_complete` record stores exactly
@@ -67,7 +97,7 @@ throws away the turns the repair was meant to catch) or admit it as eval-only
 with the missing-side-coach asymmetry stated. Excluding is the defensible
 default; admitting needs its own justification in a prereg.
 
-## 4. The label noise is the binding problem
+## 5. The label noise is the binding problem
 
 The 16-record pilot re-issues the whole classification, so the four sibling
 categorical fields whose clauses are byte-unchanged give a same-model re-draw
@@ -100,7 +130,7 @@ Two things were checked and did not pan out:
   the gate-firing pair. Byte-identity means the wording did not change; it does
   not mean the label's rate cannot.
 
-## 5. The pilot cannot estimate the archive's gate rate
+## 6. The pilot cannot estimate the archive's gate rate
 
 The slice was stratified to two records per stored label, so it is uniform by
 construction and the archive is not:
@@ -125,64 +155,88 @@ deliberately non-representative and cannot settle the direction. **Do not treat
 the pilot as confirming or refuting the ~1.1 point prediction.** The full sweep
 can; nothing before it can.
 
-## 6. Sequence
+## 7. Sequence
 
 Each step is attended and stops cleanly. Costs are measured, not estimated —
 7.0s/call at concurrency 2 on the pilot.
 
-**Step 1 — full single-draw sweep.** 2,329 records remaining, ≈137 minutes.
+**Step 1 — sweep the training archive.** 2,555 records, ≈149 minutes. This is the
+one that gates everything downstream.
+
+```bash
+node scripts/relabel-program2-evidence-use.js \
+  --archive ~/.machinespirits-data/step4-claim-runs-2026-07 \
+  --out exports/evidence-use-v2-relabel/step4.jsonl \
+  --checkpoint-every 200 --concurrency 2
+```
+
+**Step 2 — sweep the live-phase archive.** 2,329 records remaining (16 done in
+the pilot), ≈136 minutes.
 
 ```bash
 node scripts/relabel-program2-evidence-use.js --checkpoint-every 200 --concurrency 2
 ```
 
-Re-run the same command to continue; it resumes from whatever is on disk. Then:
+Either command resumes from whatever is on disk when re-run, so both steps can be
+split across as many sittings as convenient. Then, per archive:
 
 ```bash
 node scripts/relabel-program2-evidence-use.js --report
 ```
 
-This issues no calls. Read the noise floor next to the migration, and read the
-archive's real gate rate — this is the first number that can speak to the ~1.1
-point prediction.
+```bash
+node scripts/relabel-program2-evidence-use.js \
+  --archive ~/.machinespirits-data/step4-claim-runs-2026-07 \
+  --out exports/evidence-use-v2-relabel/step4.jsonl --report
+```
 
-**Step 2 — k-draw only where it matters.** The turns where v1 and v2 agree are
-already stable; re-drawing them is waste. Re-draw the disagreeing subset at
-k=3 and take the majority. If the pilot's 37.5% holds, that is ~875 turns × 2
-extra draws ≈ 1,750 calls ≈ 100 minutes. This is cheaper than a second judge
-family (2× the whole archive plus adjudication) and it answers a different
-question: within-model stability, not cross-family reliability. Stability is what
-a training target needs.
+Both issue no calls. Read the noise floor next to the migration, and read each
+archive's real gate rate — the step4 number is the first one that can speak to the
+~1.1 point prediction, because it is the population the prediction was computed
+on.
 
-**Step 3 — re-derive membership.** Zero calls, per §3. Report the four classes
-and decide class 3 explicitly.
+**Step 3 — k-draw only where it matters.** The turns where v1 and v2 agree are
+already stable; re-drawing them is waste. Re-draw the disagreeing subset at k=3
+and take the majority. If the pilot's 37.5% held across both archives that would
+be ~1,840 turns × 2 extra draws ≈ 3,680 calls ≈ 215 minutes — but the pilot
+over-samples rare labels, so budget from the rate measured in Steps 1–2, not from
+37.5%. Either way it is cheaper than a second judge family (2× everything plus
+adjudication) and it answers a different question: within-model stability rather
+than cross-family reliability. Stability is what a training target needs.
 
-**Step 4 — rebuild the Task A corpus.** Re-run the extractor with the v2
-membership, and re-hash. `general-sft.jsonl` and `kto.jsonl` do not change, so
-their SHA-256s in `datasets/trl-v1/manifest.json` must come out identical — that
-is a free check that the relabel stayed in its lane.
+**Step 4 — re-derive membership.** Zero calls, per §4. Report the four classes and
+decide class 3 explicitly.
 
-**Step 5 — decide which seat is being trained**, and freeze a prereg for it
-before any GPU time. The two options are genuinely different programs:
+**Step 5 — rebuild the corpus.** Re-run the extractor with the v2 membership, and
+re-hash. `general-sft.jsonl` and `kto.jsonl` do not change, so their SHA-256s in
+`datasets/trl-v1/manifest.json` must come out identical — a free check that the
+relabel stayed in its lane. `taskA-sft.jsonl` will move, and it is small: 141 rows
+split 105/21/15. A membership shift that would be a rounding error on the general
+corpus is not one here, and the Phase 4 verdict grades 61 held-out eval moments.
+Report the new split counts beside the old ones.
+
+**Step 6 — decide which seat is being trained**, and freeze a prereg for it before
+any GPU time. The two options are genuinely different programs:
 
 - *Writer seat, re-frozen.* The existing plan with a corrected denominator. The
-  Phase 5b/5c gaps are the thing being defended; the risk is that re-freezing
-  the population re-opens a closed verdict for a ~1 point instrument shift.
-- *Classifier seat, new.* Input is the stored `request.systemPrompt` +
-  substituted `request.prompt`; target is the v2 envelope; n ≈ 2,345 from a
-  single judge family. This is the seat that decides whether the tutor speaks,
-  so a local model here removes a frontier call per learner turn. It is also
-  where §4's noise bites hardest: ~2.3k examples with a ~15% noisy target is
-  thin, and Step 2's majority vote is a precondition rather than a refinement.
+  Phase 5b/5c gaps are the thing being defended; the risk is that re-freezing a
+  141-row corpus and a 61-moment held-out set re-opens a closed verdict for a ~1
+  point instrument shift.
+- *Classifier seat, new.* Input is the stored `request.systemPrompt` + substituted
+  `request.prompt`; target is the v2 envelope; n ≈ 4,900 across both archives from
+  a single judge family. This is the seat that decides whether the tutor speaks,
+  so a local model here removes a frontier call per learner turn. It is also where
+  §5's noise bites hardest: a ~15% noisy target makes Step 3's majority vote a
+  precondition rather than a refinement.
 
-Nothing licenses picking one from this note. Both need §4's numbers on the full
+Nothing licenses picking one from this note. Both need §5's numbers on the full
 sweep first.
 
-## 7. Not in scope
+## 8. Not in scope
 
-A two-family consensus target. The archive is single-family
+A two-family consensus target. Both archives are single-family
 (`codex/gpt-5.6-terra`, one draw each), so consensus needs a second judge pass
-over all 2,345 records plus adjudication on disagreements — 4,726 calls before
-any training. That is a separate decision about what the labels are *for*:
-cross-family agreement measures the instrument, within-model majority measures
-the label. Step 2 buys the second one at a third of the price.
+over all 4,900 records plus adjudication on disagreements — 9,800 calls before any
+training. That is a separate decision about what the labels are *for*: cross-family
+agreement measures the instrument, within-model majority measures the label.
+Step 3 buys the second one at a fraction of the price.
