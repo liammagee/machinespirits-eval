@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-26T02:14:12.220Z",
+  "generated": "2026-07-26T03:15:07.506Z",
   "counts": {
-    "total": 201,
+    "total": 202,
     "byStatus": {
       "done": 176,
       "blocked": 5,
@@ -9,13 +9,13 @@
       "triaged": 4,
       "active": 6,
       "archived": 4,
-      "review": 3
+      "review": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
       "infra": 45,
-      "maintenance": 46,
+      "maintenance": 47,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -550,6 +550,42 @@
         "lambda"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "optimize-hermetic-test-suite",
+      "title": "Stabilize and accelerate the hermetic test suite",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Stable exhaustive shards, split tutor-stub interactive coverage, diagnostic and natural-teardown gates, Node 20-compatible CI installation, and unique validation steps pass focused contracts plus the complete hermetic, lint, formatting, and source-only workplan checks.",
+      "branch": "codex/test-suite-optimizations",
+      "depends_on": [
+        "make-inhoused-tests-and-coverage-first-class",
+        "refactor-pty-ci-lane"
+      ],
+      "links": {
+        "code": [
+          "scripts/run-hermetic-tests.js",
+          "tests/helpers/tutorStubInteractiveHarness.js",
+          ".github/workflows/test.yml",
+          ".github/workflows/validate.yml"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "hermetic",
+        "performance",
+        "tutor-stub"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "refactor-tutor-stub-interim-frame-projection",
