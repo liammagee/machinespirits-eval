@@ -12,6 +12,7 @@ import {
   discoverCoreTestFiles,
   discoverRootTestFiles,
   loadTestManifest,
+  nodeTapOutputIsComplete,
   parseNodeTapSummary,
   parseVitestJsonSummary,
   printPhaseSummary,
@@ -130,16 +131,30 @@ export function buildRootTestArgs({
   forwarded = [],
   testFiles,
   timingPath,
+  tapPath,
 } = {}) {
   const selectedFiles = testFiles || (forwarded.length ? forwarded : discoverRootTestFiles(projectRoot));
-  const reporters = timingPath
-    ? [
-        '--test-reporter=tap',
-        '--test-reporter-destination=stdout',
-        `--test-reporter=${path.join(projectRoot, 'scripts/hermetic-timing-reporter.js')}`,
-        `--test-reporter-destination=${timingPath}`,
-      ]
-    : ['--test-reporter=tap'];
+  // The piped TAP stream stays the live CI log, but it is not a reliable place
+  // to read the run's verdict from. `--test-force-exit` calls `process.exit()`,
+  // which does not flush a pipe, so under a loaded runner the trailing plan and
+  // counter lines are simply never written — the symptom being an all-green log
+  // that fails with "omitted the TAP test summary". A second TAP reporter
+  // writing to a file survives the same exit, so the summary is read from there.
+  const fileTap = tapPath ? ['--test-reporter=tap', `--test-reporter-destination=${tapPath}`] : [];
+  const reporters =
+    timingPath || tapPath
+      ? [
+          '--test-reporter=tap',
+          '--test-reporter-destination=stdout',
+          ...fileTap,
+          ...(timingPath
+            ? [
+                `--test-reporter=${path.join(projectRoot, 'scripts/hermetic-timing-reporter.js')}`,
+                `--test-reporter-destination=${timingPath}`,
+              ]
+            : []),
+        ]
+      : ['--test-reporter=tap'];
   return ['--test', ...reporters, ...(forceExit ? ['--test-force-exit'] : []), ...selectedFiles];
 }
 
@@ -168,12 +183,14 @@ export function buildTestPhases(options, projectRoot = PROJECT_ROOT, reportRoot 
       shard: options.shard,
       selectedFiles,
       reportPath: path.join(reportRoot, 'root-node-test-timings.jsonl'),
+      tapPath: path.join(reportRoot, 'root-node-test-output.tap'),
       args: buildRootTestArgs({
         projectRoot,
         forceExit: options.forceExit,
         forwarded: options.forwarded,
         testFiles: options.shard ? selectedFiles : undefined,
         timingPath: path.join(reportRoot, 'root-node-test-timings.jsonl'),
+        tapPath: path.join(reportRoot, 'root-node-test-output.tap'),
       }),
     });
   }
@@ -299,8 +316,31 @@ export function runPhase({
   });
 }
 
+/**
+ * Read the root phase's verdict, preferring the file-backed TAP channel.
+ *
+ * The piped stream is kept as a fallback so a run without `tapPath` — a caller
+ * building phases by hand, an older invocation — still works, and so a file
+ * that somehow arrives incomplete does not mask a stdout stream that is fine.
+ * When neither channel carries a complete tail the error names both, because
+ * "the summary is missing" and "the tests failed" look identical otherwise.
+ */
+export function readRootTapSummary(phase, result) {
+  const tapPath = phase.tapPath;
+  const fileText = tapPath && fs.existsSync(tapPath) ? fs.readFileSync(tapPath, 'utf8') : '';
+  if (nodeTapOutputIsComplete(fileText)) return parseNodeTapSummary(fileText, { source: `root TAP report ${tapPath}` });
+  if (nodeTapOutputIsComplete(result.stdout)) return parseNodeTapSummary(result.stdout, { source: 'root TAP stdout' });
+  const channels = [
+    tapPath
+      ? `${tapPath} (${fileText ? `${fileText.length} bytes, no complete tail` : 'absent'})`
+      : 'no TAP file configured',
+    `stdout (${result.stdout.length} bytes, no complete tail)`,
+  ];
+  throw new Error(`root Node test output omitted the TAP test summary on every channel: ${channels.join('; ')}`);
+}
+
 function readPhaseSummary(phase, result, projectRoot) {
-  if (phase.phase === 'root') return parseNodeTapSummary(result.stdout);
+  if (phase.phase === 'root') return readRootTapSummary(phase, result);
   if (!fs.existsSync(phase.reportPath)) throw new Error('core Vitest phase omitted its JSON report');
   return parseVitestJsonSummary(fs.readFileSync(phase.reportPath, 'utf8'), projectRoot);
 }

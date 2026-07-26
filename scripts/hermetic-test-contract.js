@@ -153,7 +153,19 @@ export function validateTestManifest(manifest, projectRoot) {
   return { rootFiles, coreFiles, excludedFiles, allowedSkips };
 }
 
-export function parseNodeTapSummary(output) {
+/**
+ * Whether a TAP stream carries the tail Node emits only once a run has
+ * finished: the `1..N` plan line, then the `# tests N` counter.
+ *
+ * Checked separately from the counters so a stream truncated between the two
+ * fails loudly rather than reporting a plausible-looking undercount.
+ */
+export function nodeTapOutputIsComplete(output) {
+  const text = String(output || '');
+  return /^\s*1\.\.\d+\s*$/mu.test(text) && /^\s*# tests \d+\s*$/mu.test(text);
+}
+
+export function parseNodeTapSummary(output, { source = 'root Node test output' } = {}) {
   const summary = {
     tests: null,
     suites: null,
@@ -162,15 +174,19 @@ export function parseNodeTapSummary(output) {
     cancelled: null,
     skipped: null,
     todo: null,
+    plan: null,
     skipEvents: [],
   };
   for (const line of String(output).split(/\r?\n/u)) {
     const countMatch = line.trim().match(/^# (tests|suites|pass|fail|cancelled|skipped|todo) (\d+)$/u);
     if (countMatch) summary[countMatch[1]] = Number(countMatch[2]);
+    const planMatch = line.trim().match(/^1\.\.(\d+)$/u);
+    if (planMatch) summary.plan = Number(planMatch[1]);
     const skipMatch = line.match(/^\s*ok\s+\d+\s+-\s+(.+?)\s+# SKIP(?:\s+(.*?))?\s*$/u);
     if (skipMatch) summary.skipEvents.push({ test: skipMatch[1].trim(), reason: (skipMatch[2] || '').trim() });
   }
-  if (!Number.isInteger(summary.tests)) throw new Error('root Node test output omitted the TAP test summary');
+  if (!Number.isInteger(summary.plan)) throw new Error(`${source} omitted the TAP plan line`);
+  if (!Number.isInteger(summary.tests)) throw new Error(`${source} omitted the TAP test summary`);
   return summary;
 }
 
