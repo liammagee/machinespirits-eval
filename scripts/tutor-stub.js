@@ -432,6 +432,7 @@ import {
   projectTutorStubDirectorContextLines,
   projectTutorStubDirectorNotesLines,
 } from '../services/tutorStubDirectorPresentation.js';
+import { projectTutorStubLearnerClassificationLines } from '../services/tutorStubLearnerClassificationPresentation.js';
 import { projectTutorStubLearnerDagLines } from '../services/tutorStubLearnerDagPresentation.js';
 import {
   tutorStubCanonicalCommandToken,
@@ -4090,30 +4091,22 @@ async function classifyLearnerInput({ learnerText, state, signal = null }) {
 
 function printClassification(classification) {
   if (!classification) return;
-  const conceptual = scoreValue(classification.turn?.scores?.conceptual_engagement);
-  const readiness = scoreValue(classification.turn?.scores?.epistemic_readiness);
-  const requestType = classification.turn?.request_type || 'unknown_request';
-  const move = classification.turn?.discourse_move || 'unknown';
-  const stance = classification.turn?.epistemic_stance || 'unknown';
-  const need = classification.turn?.pedagogical_need || classification.overall?.next_best_tutor_move || '';
-  const errorPrefix =
-    classification.error || classification.parseError ? `${C.red} learner-classifier warning${C.reset}` : '';
-
-  console.log(`${C.cyan}learner classifier >${C.reset} ${classification.turn?.summary || 'No turn summary.'}`);
-  console.log(
-    `${C.dim}  request: ${requestType}; move: ${move}; stance: ${stance}; conceptual ${conceptual}/5, readiness ${readiness}/5${C.reset}`,
-  );
-  if (classification.turn?.learning_pace || classification.turn?.reasoning_span) {
-    console.log(
-      `${C.dim}  pace: ${classification.turn?.learning_pace || 'steady'}; reasoning span: ${
-        classification.turn?.reasoning_span || 'unknown'
-      }${C.reset}`,
-    );
-  }
-  console.log(`${C.dim}  overall: ${classification.overall?.summary || 'No overall summary.'}${C.reset}`);
-  if (need) console.log(`${C.dim}  tutor cue: ${need}${C.reset}`);
-  if (errorPrefix)
-    console.log(`${errorPrefix}${C.dim}: ${classification.error || classification.parseError}${C.reset}`);
+  const turn = classification.turn || {};
+  const overall = classification.overall || {};
+  const presentation = {
+    summary: turn.summary || 'No turn summary.',
+    requestType: turn.request_type || 'unknown_request',
+    discourseMove: turn.discourse_move || 'unknown',
+    epistemicStance: turn.epistemic_stance || 'unknown',
+    conceptual: scoreValue(turn.scores?.conceptual_engagement),
+    readiness: scoreValue(turn.scores?.epistemic_readiness),
+    learningPace: turn.learning_pace || '',
+    reasoningSpan: turn.reasoning_span || '',
+    overallSummary: overall.summary || 'No overall summary.',
+    pedagogicalNeed: turn.pedagogical_need || overall.next_best_tutor_move || '',
+    warning: classification.error || classification.parseError || '',
+  };
+  for (const line of projectTutorStubLearnerClassificationLines(presentation, { colors: C })) console.log(line);
 }
 
 function floorClassifierScore(score, minimum, reason) {

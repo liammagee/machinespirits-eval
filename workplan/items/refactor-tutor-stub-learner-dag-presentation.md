@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-learner-dag-presentation
 title: Refactor tutor-stub learner-DAG presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-director-presentation
 links:
+  prs:
+    - 289
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -85,3 +87,5 @@ Log:
   tutor-core tests, both with zero skips. The synchronized manifest, 226-item
   source-only workplan, ESLint, Prettier, zero-cycle ratchet across 401 files,
   syntax, and diff gates pass.
+- 2026-07-27 — PR #289 merged as `26503b06` with all ten CI lanes green; the
+  serialized generated-workplan refresh followed as `e2a7cd75`.

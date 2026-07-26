@@ -59,6 +59,7 @@ links:
     - refactor-tutor-stub-model-choice-presentation
     - refactor-tutor-stub-director-presentation
     - refactor-tutor-stub-learner-dag-presentation
+    - refactor-tutor-stub-learner-classification-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -492,3 +493,19 @@ Log:
   complete root 7,206-test plus tutor-core 137-test zero-skip parity. DAG
   construction, assessment state, debug gating, warning provenance, traces,
   call sites, and terminal writes remain CLI-owned.
+- 2026-07-27 — PR #289 merged the learner-DAG child as `26503b06` with all ten
+  CI lanes green; the serialized render followed as `e2a7cd75`. Closed that
+  child and activated `refactor-tutor-stub-learner-classification-presentation`
+  to move only normalized classifier diagnostic line serialization while
+  retaining classification, score normalization, warning resolution, debug
+  gating, callers, traces, and terminal writes in the CLI.
+- 2026-07-27 — The learner-classifier presentation child reached review with
+  one dependency-free projector, a seven-line net CLI reduction,
+  byte-identical live technical output, 118/118 focused assertions, and
+  initial-base root 7,210-test plus tutor-core 137-test zero-skip parity.
+  Classification, score and warning semantics, debug gating, call sites,
+  traces, and terminal writes remain CLI-owned.
+- 2026-07-27 — Rebased the learner-classifier presentation child onto
+  `origin/main` at `f32ffbb7` after PRs #288, #290, and #291. The manifest-only
+  overlap composes cleanly: 295/295 overlap assertions, 7,229/7,229 root tests
+  across 521 files, and 137/137 tutor-core tests pass with zero skips.
