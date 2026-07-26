@@ -1,6 +1,7 @@
 import { auditTutorStubConversationalCompletionResponse } from './tutorStubConversationalCompletion.js';
 import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from './tutorStubFirstDraftContract.js';
 import { auditTutorStubRepetitionResponse } from './tutorStubResponseGuard.js';
+import { detectTutorStubSelfCorrectionDisclosure } from './tutorStubSelfCorrectionDisclosure.js';
 import {
   deterministicTutorStubTurnProgressionHandoff,
   tutorStubLearnerRequestsWritableEntry,
@@ -10,6 +11,7 @@ import {
   tutorStubRequestedEntryCausalClaimVisible,
   tutorStubRequestedEntryNegativeCausalVisible,
 } from './tutorStubRequestedEntryCausality.js';
+import { resolveTutorStubSceneDiction, tutorStubDictionPhrase } from './tutorStubSceneDiction.js';
 
 export const TUTOR_STUB_RESPONSE_COMPOSITION_SCHEMA = 'machinespirits.tutor-stub.response-composition.v1';
 export const TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-composition-audit.v1';
@@ -831,6 +833,31 @@ export function auditTutorStubResponseComposition({
       };
     }
   }
+  // A tutor that opens by saying it nearly went the wrong way has not taken up
+  // the learner yet — but it has not failed to, either. The preface is a
+  // preface; the uptake is the move that follows it. Peeling it keeps both
+  // uptake guards pointed at the sentence that is actually trying to answer.
+  // Only an opening that does not already answer on its own is peeled, so a
+  // self-correction folded into a real uptake still counts as the uptake.
+  if (
+    segments.uptake &&
+    segments.development &&
+    detectTutorStubSelfCorrectionDisclosure(segments.uptake).disclosed &&
+    !uptakeRespondsToLearner(segments.uptake, enrichedFrame)
+  ) {
+    const boundary = firstSentenceBoundary(segments.development);
+    const peeledUptake = boundary > 0 ? segments.development.slice(0, boundary).trim() : '';
+    const peeledDevelopment = boundary > 0 ? segments.development.slice(boundary).trim() : '';
+    if (peeledUptake && peeledDevelopment) {
+      segments = {
+        ...segments,
+        preface: segments.uptake,
+        uptake: peeledUptake,
+        development: peeledDevelopment,
+        method: 'self_correction_preface',
+      };
+    }
+  }
   const requestedEntryAnswerRecognition = auditRequestedEntryAnswerRecognition({
     uptake: segments.uptake,
     learnerText,
@@ -963,6 +990,11 @@ export function deterministicTutorStubLearnerUptake({
   const fresh = (...candidates) =>
     candidates.find((candidate) => !recent.some((previous) => previous.startsWith(oneLine(candidate).toLowerCase()))) ||
     candidates[0];
+  // The generic tails below were authored for the period worlds. A world that
+  // declares a contemporary diction gets the plainspoken variant; every other
+  // world (including any world that declares nothing) keeps the frozen wording.
+  const diction = resolveTutorStubSceneDiction(world);
+  const dictionPhrase = (periodText, contemporaryText) => tutorStubDictionPhrase(diction, periodText, contemporaryText);
   const requestedEntry = oneLine(learnerText).match(
     /\bwhat should i (?:write|record|enter|say) next(?:\s+about\s+(.+?))?[?!.]*$/iu,
   );
@@ -1393,10 +1425,22 @@ export function deterministicTutorStubLearnerUptake({
         );
       }
       return fresh(
-        'I hear the limit; we will not claim more than you have shown.',
-        'I’ll keep that restraint in the record and ask the next clue to earn more.',
-        'I enter only that much; the next public fact must earn any stronger claim.',
-        'We can carry that much forward without turning it into a verdict.',
+        dictionPhrase(
+          'I hear the limit; we will not claim more than you have shown.',
+          'Fair limit—we won’t claim more than you’ve shown.',
+        ),
+        dictionPhrase(
+          'I’ll keep that restraint in the record and ask the next clue to earn more.',
+          'I’ll hold it there and let the next thing we find earn more.',
+        ),
+        dictionPhrase(
+          'I enter only that much; the next public fact must earn any stronger claim.',
+          'I’ll write down just that much; anything stronger has to be earned.',
+        ),
+        dictionPhrase(
+          'We can carry that much forward without turning it into a verdict.',
+          'We can take that much forward without treating it as settled.',
+        ),
       );
     }
     if (/\b(?:assay|compare|examine|inspect|test|touchstone|weigh)\b/iu.test(text)) {
@@ -1412,8 +1456,11 @@ export function deterministicTutorStubLearnerUptake({
       );
     }
     return fresh(
-      'Your proposed move sets our next public check.',
-      'We will test what you proposed against the next public evidence.',
+      dictionPhrase('Your proposed move sets our next public check.', 'What you proposed sets up our next check.'),
+      dictionPhrase(
+        'We will test what you proposed against the next public evidence.',
+        'We’ll try what you proposed against whatever we find next.',
+      ),
     );
   }
   if (
@@ -1423,14 +1470,23 @@ export function deterministicTutorStubLearnerUptake({
     ['evidence_adoption', 'inference', 'metacognitive_reflection'].includes(discourseMove)
   ) {
     return fresh(
-      'That conclusion now follows from the public evidence; I will carry only that supported finding.',
-      'The public record now supports that finding, with no stronger claim added.',
+      dictionPhrase(
+        'That conclusion now follows from the public evidence; I will carry only that supported finding.',
+        'That follows from what we can see; I’ll carry just that much.',
+      ),
+      dictionPhrase(
+        'The public record now supports that finding, with no stronger claim added.',
+        'What we have supports that, and nothing stronger.',
+      ),
     );
   }
   if (requestType === 'authority_refusal_or_status_challenge' || actionFamily === 'answer_accountably') {
     return fresh(
       'You’re right to ask what the evidence actually licenses.',
-      'The record must answer that challenge, not my authority.',
+      dictionPhrase(
+        'The record must answer that challenge, not my authority.',
+        'That should be settled by what we can check, not by me saying so.',
+      ),
     );
   }
   if (requestType === 'vulnerability_or_moral_exposure' || actionFamily === 'receive_vulnerability') {
@@ -1447,13 +1503,25 @@ export function deterministicTutorStubLearnerUptake({
   }
   if (requestType === 'answer_seeking_or_overreach') {
     return fresh(
-      'That is a possible conclusion, but the public evidence does not settle it yet.',
-      'The conclusion is possible; the public record has not earned it yet.',
+      dictionPhrase(
+        'That is a possible conclusion, but the public evidence does not settle it yet.',
+        'That could be the answer, but what we have does not settle it yet.',
+      ),
+      dictionPhrase(
+        'The conclusion is possible; the public record has not earned it yet.',
+        'It’s possible; we just haven’t got enough to say it yet.',
+      ),
     );
   }
   return fresh(
-    'I hear the point; the next public fact must answer it.',
-    'I will carry that point forward without changing what you claimed.',
+    dictionPhrase(
+      'I hear the point; the next public fact must answer it.',
+      'Fair point—the next thing we check has to answer it.',
+    ),
+    dictionPhrase(
+      'I will carry that point forward without changing what you claimed.',
+      'I’ll take that point as you put it and carry it forward.',
+    ),
   );
 }
 

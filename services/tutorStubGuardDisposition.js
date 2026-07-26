@@ -417,6 +417,10 @@ export function tutorStubGuardIssueRows(audits = null) {
     ...auditIssueRows('live_source_action_alignment_v1', source.liveSourceActionAlignmentAudit),
     ...auditIssueRows('repetition', source.repetitionAudit),
     ...auditIssueRows('dialogue_closure', source.closureAudit),
+    // Only populated on the self-correction pass. It carries no catalog rule,
+    // so the unknown-issue default makes its findings hard in both dispositions
+    // — a fabricated near-miss or a mention of the apparatus can never ship.
+    ...auditIssueRows('self_correction_disclosure', source.selfCorrectionDisclosureAudit),
   ];
   for (const [axis, audit] of Object.entries(source.responseConfigurationAudit?.axes || {})) {
     if (axis === 'actorial_part' || audit?.compatibility_alias_of || audit?.visible !== false) continue;

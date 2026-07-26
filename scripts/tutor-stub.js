@@ -249,6 +249,12 @@ import {
   tutorStubTerminalFallbackFailureMessage,
 } from '../services/tutorStubGuardDisposition.js';
 import {
+  auditTutorStubSelfCorrectionDisclosure,
+  detectTutorStubSelfCorrectionDisclosure,
+  tutorStubDisclosableGuardCorrection,
+  tutorStubSelfCorrectionDisclosurePrompt,
+} from '../services/tutorStubSelfCorrectionDisclosure.js';
+import {
   buildTutorStubSimplifiedRecoveryConfiguration,
   composeTutorStubGuardUptakeDevelopment,
   repairTutorStubMissingClarificationInvitation,
@@ -12630,6 +12636,152 @@ async function callTutor({
       }
     }
 
+    // Self-correction pass — the last rung before the terminal safety text.
+    //
+    // The deterministic fallback is allowed to publish while the disposition
+    // catalog downgrades a conversational-integrity finding to an advisory. The
+    // finding is the same one that killed every model draft on this turn, so the
+    // learner receives a turn that quietly changed course and is never told. One
+    // more attempt is offered here, with a brief whose addressee is the learner
+    // rather than the guard. Nothing about it is templated: the model may
+    // disclose the near-miss in the register of the scene, or simply answer
+    // well and say nothing. Only two things are checked that no other guard
+    // covers — that a disclosed near-miss corresponds to a draft the tutor
+    // actually produced, and that the apparatus is never named.
+    const priorDisclosure = detectTutorStubSelfCorrectionDisclosure(recentTutorTexts.at(-1) || '');
+    const disclosableCorrection = priorDisclosure.disclosed
+      ? { disclosable: false, reason: 'the previous published turn already disclosed a self-correction' }
+      : tutorStubDisclosableGuardCorrection({ audits, attempts });
+    if (disclosableCorrection.disclosable) {
+      const disclosureAttempt = attempts.length;
+      const priorDisclosureAttempt = attempts.at(-1);
+      const disclosureBrief = tutorStubSelfCorrectionDisclosurePrompt({
+        correction: disclosableCorrection,
+        learnerText,
+        turnProgressionContract: firstDraftContract?.progression || null,
+        minimalRecoveryPrompt,
+      });
+      const disclosureUserPrompt = [
+        tutorResponseRecoveryPrompt({
+          publicPacket: publicRecoveryPacket,
+          hardIssues: audits.deliveryDecision?.hardIssues || [],
+          leakAudit: audits.leakAudit,
+          scaffoldAudit: audits.scaffoldAudit,
+          questionSupportAudit: audits.questionSupportAudit,
+          dramaticReleaseAudit: audits.dramaticReleaseAudit,
+          actorialRealizationAudit: audits.actorialRealizationAudit,
+          responseConfigurationAudit: audits.responseConfigurationAudit,
+          responseConfiguration: simplifiedRecoveryConfiguration,
+          responseCompositionAudit: audits.responseCompositionAudit,
+          liveTurnProgressionAudit: audits.liveTurnProgressionAudit,
+          liveSourceActionAlignmentAudit: audits.liveSourceActionAlignmentAudit,
+          repetitionAudit: audits.repetitionAudit,
+          closureAudit: audits.closureAudit,
+          dialogueClosureFrame,
+          minimalRecoveryPrompt,
+        }),
+        disclosureBrief,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
+      let disclosureModelResponse = null;
+      try {
+        disclosureModelResponse = await invokeTutorAttempt({
+          attemptUserPrompt: disclosureUserPrompt,
+          role: `${roleBase}_self_correction`,
+          streamMode: canStreamTutor ? 'buffered' : 'none',
+          repairAttempt: disclosureAttempt,
+          systemPromptOverride: systemPrompt,
+          instructionTextsOverride: [systemPrompt, ...publicRecoveryMachinePacket],
+          privilegeAdvisoryOverride: recoveryPrivilegeAdvisory,
+        });
+      } catch (disclosureError) {
+        // The safety text below is still reachable. A failed extra call must
+        // never cost the turn that would otherwise have shipped.
+        appendTraceEvent(trace, {
+          type: 'tutor_response_self_correction_pass_unavailable',
+          role: `${roleBase}_self_correction`,
+          turn: tutorTurn,
+          attempt: disclosureAttempt,
+          error: disclosureError?.message || String(disclosureError),
+        });
+      }
+      const disclosureText = String(disclosureModelResponse?.text || '').trim();
+      if (disclosureText) {
+        const disclosureResponse = tutorResponseFromSimplifiedRecovery(
+          disclosureModelResponse,
+          disclosureText,
+          'self_correction_candidate',
+        );
+        const disclosureDraftAudits = auditTutorDraft(disclosureResponse, {
+          role: `${roleBase}_self_correction`,
+          attempt: disclosureAttempt,
+          auditConfiguration: simplifiedRecoveryConfiguration,
+        });
+        disclosureDraftAudits.selfCorrectionDisclosureAudit = auditTutorStubSelfCorrectionDisclosure({
+          text: disclosureText,
+          priorAttemptTexts: attempts.map((entry) => entry?.candidate?.text || '').filter(Boolean),
+        });
+        const disclosureAudits = withTutorDeliveryDecision(disclosureDraftAudits, {
+          role: `${roleBase}_self_correction`,
+          attempt: disclosureAttempt,
+        });
+        const disclosed = disclosureDraftAudits.selfCorrectionDisclosureAudit.disclosed;
+        const disclosureRepairSpans = exactTutorRepairSpans(priorDisclosureAttempt.candidate.text, disclosureText);
+        attempts.push(
+          tutorGuardAttemptEnvelope({
+            kind: 'self_correction_candidate',
+            attempt: disclosureAttempt,
+            response: disclosureResponse,
+            audits: disclosureAudits,
+            repairedSpans: disclosureRepairSpans,
+          }),
+        );
+        repairsApplied.push({
+          kind: 'model_self_correction_pass',
+          fromAttempt: priorDisclosureAttempt.attempt,
+          toAttempt: disclosureAttempt,
+          triggeredBy: disclosableCorrection.findings,
+          guardedSpans: priorDisclosureAttempt.guardedSpans,
+          repairedSpans: disclosureRepairSpans,
+          disclosedNearMiss: disclosed,
+        });
+        appendTraceEvent(trace, {
+          type: 'tutor_response_self_correction_pass',
+          role: `${roleBase}_self_correction`,
+          turn: tutorTurn,
+          attempt: disclosureAttempt,
+          waivedFindings: disclosableCorrection.findings,
+          nearMiss: disclosableCorrection.nearMiss,
+          disclosed,
+          marker: disclosureDraftAudits.selfCorrectionDisclosureAudit.marker,
+          disclosureIssues: disclosureDraftAudits.selfCorrectionDisclosureAudit.issues,
+          accepted: disclosureAudits.deliveryOk,
+          text: disclosureText,
+        });
+        if (disclosureAudits.deliveryOk) {
+          attachTutorDraftAudits(disclosureResponse, disclosureAudits);
+          disclosureResponse.repaired = true;
+          disclosureResponse.selfCorrectionPass = true;
+          disclosureResponse.disclosedSelfCorrection = disclosed;
+          if (disclosureResponse.bufferedStream) disclosureResponse.guardedStreamReplay = true;
+          return attachTutorGuardAccounting({
+            response: disclosureResponse,
+            state,
+            trace,
+            tutorTurn,
+            role: roleBase,
+            guards,
+            attempts,
+            repairsApplied,
+            finalSource: 'self_correction_candidate',
+            outcome: disclosed ? 'guarded_self_correction_disclosed' : 'guarded_self_correction_pass_accepted',
+            finalAudits: disclosureAudits,
+          });
+        }
+      }
+    }
+
     const closureFallbackSelected = Boolean(
       closureGuardEnabled && (dialogueClosureFrame.mandatory || audits.closureAudit.closesDialogue),
     );
@@ -12699,6 +12851,7 @@ async function callTutor({
               avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
               turnProgressionContract: firstDraftContract?.progression || null,
               sourceAccessibilityContract: firstDraftContract?.evidence?.source_accessibility || null,
+              world,
             })
           : configuredContinuationFallbackRequired
             ? deterministicTutorStubConfiguredContinuationFallback({
