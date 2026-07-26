@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-26T21:55:07.245Z",
+  "generated": "2026-07-26T22:01:16.563Z",
   "counts": {
-    "total": 221,
+    "total": 224,
     "byStatus": {
-      "done": 194,
+      "done": 195,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
-      "active": 6,
+      "active": 8,
       "review": 5,
       "archived": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 51,
+      "infra": 54,
       "maintenance": 60,
       "content": 2,
       "paper": 6,
@@ -399,6 +399,60 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "codex/program2-committee-floor-ablation"
+    },
+    {
+      "id": "tutor-instrumentation-ab-harness",
+      "title": "Instrumentation A/B — bare tutor vs instrumented tutor on one frozen dialogue",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call plan; the baseline arm's projected request is exactly the learner utterance with zero advisory chars; every arm is audited with the recorded run's guard set and pinning is an identity on the fixtures; a paid run writes report.json, report.md, and a swimlane diff whose failure-cluster deltas separate the arms.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "docs/tutor-instrumentation-ab.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "instrument",
+        "frozen-replay"
+      ],
+      "branch": "claude/tutor-instrumentation-ab"
+    },
+    {
+      "id": "tutor-instrumentation-showcase",
+      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way.",
+      "claim_status": "methods",
+      "depends_on": [
+        "tutor-instrumentation-ab-harness"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-instrumentation-showcase.md"
+        ],
+        "items": [
+          "tutor-instrumentation-ab-harness"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "instrument",
+        "demo"
+      ],
+      "branch": "claude/tutor-closure-drive"
     },
     {
       "id": "a1-human-learner-validation",
@@ -5837,6 +5891,45 @@
       "milestone": "literature-triage",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "point-of-action-gate-grader",
+      "title": "Grade the point-of-action gate's decisions, not just the tutor's wording",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Discrimination is computed only on arms whose fired turns carry no injection, derived per run from the traces rather than from a hardcoded arm list, so a new arm or a changed injection path reports armClassificationMismatch instead of silently entering the baseline; the outcome comes from validated proof-DAG advancement that the gate has no channel to author; components the warrant_skip constraint mechanically suppresses are labelled tutorGated and kept out of the headline; turns are excluded on the delivered-text leak audit only, with the first-draft audit reported as a covariate; the treatment contrast phase-matches its baseline so passing two archives cannot pool them; zero API calls.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "evidence-use-v2-default-and-archive-relabel"
+      ],
+      "links": {
+        "code": [
+          "services/pointOfActionGateGrader.js",
+          "scripts/grade-point-of-action-gate.js",
+          "services/tutorStubPointOfActionCoaching.js"
+        ],
+        "items": [
+          "evidence-use-v2-default-and-archive-relabel",
+          "evidence-use-bridge-rubric-v2",
+          "program-2-context-vs-weights-finetune"
+        ],
+        "notes": [
+          "notes/program-2/2026-07-26-gate-grader-result.md",
+          "notes/program-2/2026-07-26-relabel-sample-result.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "classifier",
+        "program-2",
+        "instrument",
+        "fine-tune"
+      ]
     },
     {
       "id": "proof-dag-dramatic-derivation-assessment",
