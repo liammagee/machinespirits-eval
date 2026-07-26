@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-model-choice-presentation
 title: Refactor tutor-stub model-choice presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-dialogue-settings-presentation
 links:
+  prs:
+    - 285
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -98,3 +100,5 @@ Log:
   root tests across 513 files plus 137/137 tutor-core tests, both with zero
   skips. The synchronized manifest, 221-item source-only workplan, ESLint,
   Prettier, zero-cycle ratchet across 391 files, syntax, and diff gates pass.
+- 2026-07-27 — PR #285 merged as `b2bb02a3` with all ten CI lanes green; the
+  serialized generated-workplan refresh followed as `46fd7e0e`.
