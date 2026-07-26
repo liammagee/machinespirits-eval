@@ -1,23 +1,24 @@
 ---
 id: optimize-hermetic-test-suite
 title: Stabilize and accelerate the hermetic test suite
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-26
 updated: 2026-07-26
-verification: >-
-  Stable exhaustive shards, split tutor-stub interactive coverage, diagnostic
-  and natural-teardown gates, Node 20-compatible CI installation, and unique
-  validation steps pass focused contracts plus the complete hermetic, lint,
-  formatting, and source-only workplan checks.
+verification: Stable exhaustive shards, split tutor-stub interactive coverage,
+  diagnostic and natural-teardown gates, Node 20-compatible CI installation, and
+  unique validation steps pass focused contracts plus the complete hermetic,
+  lint, formatting, and source-only workplan checks.
 branch: codex/test-suite-optimizations
 depends_on:
   - make-inhoused-tests-and-coverage-first-class
   - refactor-pty-ci-lane
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/258
   code:
     - scripts/run-hermetic-tests.js
     - tests/helpers/tutorStubInteractiveHarness.js
@@ -71,3 +72,8 @@ Log:
   content and paper smoke validators, lint, cycle lint, formatting, diff checks,
   clean root and desktop lockfile installs, and source-only workplan validation.
   Moved to review for the pushed branch's hosted Node 20/22 CI confirmation.
+- 2026-07-26 — Closed after PR #258 merged to `main` as `30e9db81`.
+  Hosted Node 20/22 shard jobs, PTY/loopback concurrency, lint, risk coverage,
+  validation-framework, hermetic-contract, and workplan checks all passed. The
+  matched local comparison reduced the mean CI-critical shard from 71.49s to
+  46.60s while preserving all named interactive tests.
