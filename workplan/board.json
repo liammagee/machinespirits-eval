@@ -1,7 +1,7 @@
 {
-  "generated": "2026-07-26T06:46:59.471Z",
+  "generated": "2026-07-26T07:18:55.778Z",
   "counts": {
-    "total": 208,
+    "total": 209,
     "byStatus": {
       "done": 182,
       "blocked": 5,
@@ -9,13 +9,13 @@
       "triaged": 4,
       "active": 6,
       "archived": 4,
-      "review": 4
+      "review": 5
     },
     "byType": {
       "research": 46,
       "experiment": 49,
       "infra": 46,
-      "maintenance": 52,
+      "maintenance": 53,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -559,6 +559,35 @@
         "lambda"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "hermetic-drop-test-force-exit",
+      "title": "Drop --test-force-exit from the hermetic root phase",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "The root suite completes on its own without the flag in 65 seconds over 495 files, emitting a complete TAP tail and 6947 tests where the forced-exit run on the same commit reported 6940; the new exact-file check names the only two files that did not report, both of them import failures from this worktree's symlinked node_modules; seven new tests in tests/hermeticTestRunner.test.js cover natural teardown reporting every case and every file, a stalled run being ended and naming the file that never reported, the absent-report case, the timing reporter under both the Node 22 and Node 20 event shapes, and the stall message when nothing reported at all; the runner exits 0 on a real Node 20 child with the exact-file check on; the pre-existing forced-exit test still passes behind --force-exit; lint, formatting, and workplan validation pass.",
+      "branch": "claude/hermetic-drop-force-exit",
+      "depends_on": [
+        "hermetic-tap-summary-on-forced-exit"
+      ],
+      "links": {
+        "prs": [],
+        "notes": [],
+        "items": [
+          "hermetic-tap-summary-on-forced-exit",
+          "make-inhoused-tests-and-coverage-first-class"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "hermetic"
+      ]
     },
     {
       "id": "hermetic-tap-summary-on-forced-exit",
