@@ -506,6 +506,7 @@ import {
   restoreTutorStubReleasePacingFromTurns,
   setTutorStubReleaseSpeed,
   tutorStubReleasePacingSnapshot,
+  tutorStubReleaseScheduleExhausted,
 } from '../services/tutorStubReleasePacing.js';
 import {
   buildDynamicalSystemRegisterScores,
@@ -7945,8 +7946,14 @@ function resolveConversationalCompletionForLearnerTurn({ learnerText, state, cla
   return conversationalCompletion;
 }
 
+function tutorStubNewEvidenceAvailable(state) {
+  return !tutorStubReleaseScheduleExhausted(tutorStubReleasePacingSnapshot(state?.releasePacing, state?.world));
+}
+
 function applyConversationalCompletionForLearnerTurn(state, registerSelection, conversationalCompletion) {
-  const application = applyTutorStubConversationalCompletionSelection(registerSelection, conversationalCompletion);
+  const application = applyTutorStubConversationalCompletionSelection(registerSelection, conversationalCompletion, {
+    newEvidenceAvailable: tutorStubNewEvidenceAvailable(state),
+  });
   if (state.register?.enabled && application.selection) {
     if (state.register.history.at(-1)?.turn === application.selection.turn) {
       state.register.history[state.register.history.length - 1] = application.selection;
@@ -13801,6 +13808,7 @@ async function runOneTurn(
   const completionSelection = applyTutorStubConversationalCompletionSelection(
     registerSelection,
     humanDiscourseFrame.conversationalCompletion,
+    { newEvidenceAvailable: tutorStubNewEvidenceAvailable(state) },
   );
   registerSelection = completionSelection.selection;
   if (humanDiscourseFrame.conversationalCompletion?.resolved) {

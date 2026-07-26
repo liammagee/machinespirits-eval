@@ -427,3 +427,14 @@ export function tutorStubReleasePacingSnapshot(pacing, world, current = null) {
     schedule,
   };
 }
+
+// True once every authored clue has been released and nothing is due: there is
+// no further public evidence the tutor could stage. Selecting a staging action
+// past this point sends the composer after evidence that does not exist.
+export function tutorStubReleaseScheduleExhausted(snapshot) {
+  const schedule = Array.isArray(snapshot?.schedule) ? snapshot.schedule : [];
+  if (!schedule.length) return false;
+  if (Array.isArray(snapshot.dueNow) && snapshot.dueNow.length) return false;
+  if (snapshot.nextRelease) return false;
+  return schedule.every((entry) => entry?.releasedTurn !== null && entry?.releasedTurn !== undefined);
+}

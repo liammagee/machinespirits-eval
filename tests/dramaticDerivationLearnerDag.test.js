@@ -124,3 +124,76 @@ test('buildLearnerDag reports incomplete learner graphs as partial path coverage
   assert.equal(dag.assessment.bottleneck, 'release_or_pacing_gap');
   assert.equal(dag.assessment.finalSecretEntailed, false);
 });
+
+test('a warranted conclusion voiced as a derivation counts as stating the secret', () => {
+  const world = smokeWorld();
+  const p1 = world.premiseById.get('p1').fact;
+  const p2 = world.premiseById.get('p2').fact;
+  const p3 = world.premiseById.get('p3').fact;
+  const ledger = [
+    { turn: 2, premiseId: 'p1', via: 'director' },
+    { turn: 5, premiseId: 'p2', via: 'tutor' },
+    { turn: 8, premiseId: 'p3', via: 'tutor' },
+  ];
+  const snapshot = buildLearnerDagSnapshot(world, {
+    turn: 9,
+    boardFacts: [p1, p2, p3],
+    validFacts: [p1, p2, p3],
+    voiced: [{ turn: 9, fact: world.secret.fact }],
+    assertion: null,
+    ledger,
+  });
+  const dag = buildLearnerDag([snapshot], world);
+
+  assert.equal(snapshot.voicedSecretDerivation, true);
+  assert.equal(snapshot.voicedSecretDerivationTurn, 9);
+  assert.equal(dag.assessment.assertedSecret, true);
+  assert.equal(dag.assessment.assertedSecretByAssertion, false);
+  assert.equal(dag.assessment.secretStatedVia, 'voiced_derivation');
+  assert.equal(dag.assessment.bottleneck, 'grounded_asserted_secret');
+});
+
+test('the assertion channel is still reported as its own channel', () => {
+  const world = smokeWorld();
+  const p1 = world.premiseById.get('p1').fact;
+  const p2 = world.premiseById.get('p2').fact;
+  const p3 = world.premiseById.get('p3').fact;
+  const dag = buildLearnerDag(
+    [
+      buildLearnerDagSnapshot(world, {
+        turn: 9,
+        boardFacts: [p1, p2, p3],
+        validFacts: [p1, p2, p3],
+        assertion: world.secret.fact,
+        ledger: [
+          { turn: 2, premiseId: 'p1', via: 'director' },
+          { turn: 5, premiseId: 'p2', via: 'tutor' },
+          { turn: 8, premiseId: 'p3', via: 'tutor' },
+        ],
+      }),
+    ],
+    world,
+  );
+
+  assert.equal(dag.assessment.assertedSecret, true);
+  assert.equal(dag.assessment.assertedSecretByAssertion, true);
+  assert.equal(dag.assessment.secretStatedVia, 'assertion');
+});
+
+test('voicing the secret without the evidence to entail it does not count as stating it', () => {
+  const world = smokeWorld();
+  const p1 = world.premiseById.get('p1').fact;
+  const snapshot = buildLearnerDagSnapshot(world, {
+    turn: 3,
+    boardFacts: [p1],
+    validFacts: [p1],
+    voiced: [{ turn: 3, fact: world.secret.fact }],
+    ledger: [{ turn: 2, premiseId: 'p1', via: 'director' }],
+  });
+  const dag = buildLearnerDag([snapshot], world);
+
+  assert.equal(snapshot.voicedSecretDerivation, false);
+  assert.equal(dag.assessment.assertedSecret, false);
+  assert.equal(dag.assessment.secretStatedVia, null);
+  assert.notEqual(dag.assessment.bottleneck, 'grounded_asserted_secret');
+});

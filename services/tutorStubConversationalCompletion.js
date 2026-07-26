@@ -246,7 +246,11 @@ export function auditTutorStubConversationalCompletionResponse({
   };
 }
 
-export function applyTutorStubConversationalCompletionSelection(selection = null, completion = null) {
+export function applyTutorStubConversationalCompletionSelection(
+  selection = null,
+  completion = null,
+  { newEvidenceAvailable = true } = {},
+) {
   if (!selection || !completion?.resolved || !completion?.requiresNewPressure) {
     return { selection, changed: false, previousActionFamily: null };
   }
@@ -269,25 +273,33 @@ export function applyTutorStubConversationalCompletionSelection(selection = null
   ) {
     return { selection, changed: false, previousActionFamily };
   }
+  // "New pressure" normally means new public evidence. Once the release
+  // schedule is spent there is none left, and forcing a staging action there
+  // makes the tutor promise a next clue it cannot produce. The forward move is
+  // then the learner's own conclusion.
+  const forwardActionFamily = newEvidenceAvailable ? 'stage_next_step' : 'compress_sayback';
   const updated = {
     ...selection,
-    action_family: 'stage_next_step',
-    expected_dag_move:
-      'The previous local question is conversationally complete. Introduce or work with genuinely new public evidence; do not ask for the same distinction again.',
-    expected_field_move:
-      'Credit the learner once, then create forward movement through a new public pressure rather than another formulation check.',
+    action_family: forwardActionFamily,
+    expected_dag_move: newEvidenceAvailable
+      ? 'The previous local question is conversationally complete. Introduce or work with genuinely new public evidence; do not ask for the same distinction again.'
+      : 'The previous local question is conversationally complete and every authored clue is already public. Ask the learner to state one concluding claim rather than another distinction or a clue that does not exist.',
+    expected_field_move: newEvidenceAvailable
+      ? 'Credit the learner once, then create forward movement through a new public pressure rather than another formulation check.'
+      : 'Credit the learner once, then hand over the concluding statement instead of another formulation check.',
     conversational_completion: completion,
     response_configuration: selection.response_configuration
       ? {
           ...selection.response_configuration,
-          action_family: 'stage_next_step',
+          action_family: forwardActionFamily,
           conversational_completion: completion,
           compatibility: {
             ...(selection.response_configuration.compatibility || {}),
             pre_conversational_completion_action_family: previousActionFamily,
+            conversational_completion_new_evidence_available: newEvidenceAvailable,
           },
         }
       : selection.response_configuration,
   };
-  return { selection: updated, changed: previousActionFamily !== 'stage_next_step', previousActionFamily };
+  return { selection: updated, changed: previousActionFamily !== forwardActionFamily, previousActionFamily };
 }

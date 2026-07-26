@@ -12,6 +12,7 @@ import {
   buildTutorStubRegisterPragmatics,
   normalizeTutorStubResponseConfiguration,
 } from './tutorStubRegisterPragmatics.js';
+import { tutorStubReleaseScheduleExhausted } from './tutorStubReleasePacing.js';
 import { tutorStubFirstPersonRoleVoiceVisible, tutorStubRoleStageDirectionVisible } from './tutorStubRoleVisibility.js';
 import {
   tutorStubResponseSentences as responseSentences,
@@ -91,6 +92,7 @@ export function selectTutorStubActionFamily({
   const assessment = model.assessment || {};
   const memoryReliability = model.memoryReliability || {};
   const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
+  const releaseExhausted = tutorStubReleaseScheduleExhausted(releasePacing);
   let actionFamily = 'clarify_distinction';
   let reason = 'Default to one inspectable distinction or check.';
 
@@ -112,7 +114,7 @@ export function selectTutorStubActionFamily({
     actionFamily = 'reanchor_public_evidence';
     reason =
       'Previously accumulated public evidence has slipped from the active record, so restage one clue without making memory itself the test.';
-  } else if (releasePacing?.direction === 'accelerate' || releasePacing?.dueNow?.length) {
+  } else if (!releaseExhausted && (releasePacing?.direction === 'accelerate' || releasePacing?.dueNow?.length)) {
     actionFamily = 'stage_next_step';
     reason = releasePacing?.dueNow?.length
       ? 'The learner requested more momentum and the next public clue is now due, so stage it directly.'
@@ -132,6 +134,10 @@ export function selectTutorStubActionFamily({
   } else if (learnerAdvance?.accelerated) {
     actionFamily = 'clarify_distinction';
     reason = `The learner supplied ${learnerAdvance.supportedMoveCount} warranted proof moves, so credit the whole chain and test only its next unresolved edge.`;
+  } else if (releaseExhausted) {
+    actionFamily = 'compress_sayback';
+    reason =
+      'Every authored public clue has already been released, so the remaining action is a compact learner-stated conclusion rather than another staged step.';
   } else if (
     requestType === 'stepwise_support_request' ||
     /release_or_pacing_gap|inference_gap/iu.test(assessment.bottleneck)

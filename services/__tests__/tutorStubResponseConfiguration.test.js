@@ -3768,3 +3768,59 @@ test('fairly limiting a standing record visibly performs measured testimony', ()
   assert.equal(audit.axes.actorial_part.part_visible, true);
   assert.equal(audit.axes.actorial_part.performance_visible, true);
 });
+
+test('an exhausted release schedule asks for the conclusion instead of staging a clue that does not exist', () => {
+  const exhausted = {
+    direction: 'steady',
+    dueNow: [],
+    nextRelease: null,
+    schedule: [
+      { premise: 'p_first', releasedTurn: 2 },
+      { premise: 'p_last', releasedTurn: 6 },
+    ],
+  };
+  const selected = selectTutorStubActionFamily({
+    classification: classification({ requestType: 'stepwise_support_request' }),
+    tutorLearnerDag: learnerDag({ bottleneck: 'inference_gap', coverage: 0.8 }),
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    releasePacing: exhausted,
+  });
+
+  assert.equal(selected.actionFamily, 'compress_sayback');
+  assert.match(selected.reason, /already been released/iu);
+});
+
+test('an exhausted schedule also blocks an acceleration request from staging a missing clue', () => {
+  const selected = selectTutorStubActionFamily({
+    classification: classification({ requestType: 'stepwise_support_request' }),
+    tutorLearnerDag: learnerDag({ bottleneck: 'inference_gap', coverage: 0.8 }),
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    releasePacing: {
+      direction: 'accelerate',
+      dueNow: [],
+      nextRelease: null,
+      schedule: [{ premise: 'p_only', releasedTurn: 3 }],
+    },
+  });
+
+  assert.equal(selected.actionFamily, 'compress_sayback');
+});
+
+test('an unspent release schedule still stages the next public step', () => {
+  const selected = selectTutorStubActionFamily({
+    classification: classification({ requestType: 'stepwise_support_request' }),
+    tutorLearnerDag: learnerDag({ bottleneck: 'inference_gap', coverage: 0.4 }),
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    releasePacing: {
+      direction: 'steady',
+      dueNow: [],
+      nextRelease: { premise: 'p_next', releasedTurn: null },
+      schedule: [
+        { premise: 'p_first', releasedTurn: 2 },
+        { premise: 'p_next', releasedTurn: null },
+      ],
+    },
+  });
+
+  assert.equal(selected.actionFamily, 'stage_next_step');
+});
