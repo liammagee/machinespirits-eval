@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-26T12:20:22.562Z",
+  "generated": "2026-07-26T13:13:04.768Z",
   "counts": {
-    "total": 214,
+    "total": 217,
     "byStatus": {
-      "done": 187,
+      "done": 189,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
       "active": 7,
       "archived": 4,
-      "review": 4
+      "review": 5
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 48,
-      "maintenance": 56,
+      "infra": 49,
+      "maintenance": 58,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -192,6 +192,8 @@
           "refactor-tutor-stub-dag-snapshot-projection",
           "refactor-tutor-stub-proof-command-projection",
           "refactor-tutor-stub-interaction-mode-presentation",
+          "refactor-tutor-stub-session-status-presentation",
+          "refactor-tutor-stub-training-reuse-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -601,8 +603,41 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-interaction-mode-presentation",
-      "title": "Refactor tutor-stub interaction-mode presentation",
+      "id": "program-2-launch-certificates-stop-losses",
+      "title": "Require feasibility certificates and stop-losses for Program 2 launches",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Paid Program 2 live-pilot launches fail before provider preflight without a SHA/plan/evidence-bound zero-model certificate; cohort certificates require profile-complete audited pilot evidence; per-attempt provider budgets fail closed; live checks stop only when frozen completion gates become unreachable.",
+      "branch": "codex/program2-launch-safety",
+      "links": {
+        "code": [
+          "services/program2ExperimentSafety.js",
+          "scripts/certify-program2-launch.mjs",
+          "scripts/run-program2-live-pilot.js",
+          "scripts/tutor-stub.js",
+          "tests/program2ExperimentSafety.test.js"
+        ],
+        "notes": [
+          "notes/program-2/2026-07-26-launch-safety-contract.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "program-2",
+        "provenance",
+        "budget",
+        "stop-loss"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "refactor-tutor-stub-training-reuse-presentation",
+      "title": "Refactor tutor-stub training-reuse presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -610,26 +645,27 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "Live startup and mode-switch bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-interaction-mode-presentation",
+      "verification": "Live candidate, owner opt-out, and external fail-closed training reuse status bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-training-reuse-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-proof-command-projection"
+        "refactor-tutor-stub-session-status-presentation"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubInteractionModePresentation.js",
+          "services/tutorStubTrainingReusePresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubInteractionModePresentation.test.js",
-          "tests/tutorStubInteractiveDirection.test.js",
+          "tests/tutorStubTrainingReusePresentation.test.js",
+          "tests/tutorStubTrainingReuse.test.js",
+          "tests/tutorStubLastSettings.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-proof-command-projection"
+          "refactor-tutor-stub-session-status-presentation"
         ]
       },
       "tags": [
@@ -637,7 +673,7 @@
         "tutor-stub",
         "presentation",
         "cli",
-        "interaction-mode"
+        "data-governance"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2838,6 +2874,50 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-interaction-mode-presentation",
+      "title": "Refactor tutor-stub interaction-mode presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live startup and mode-switch bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-interaction-mode-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-proof-command-projection"
+      ],
+      "links": {
+        "prs": [
+          273
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInteractionModePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInteractionModePresentation.test.js",
+          "tests/tutorStubInteractiveDirection.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-proof-command-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "interaction-mode"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-interactive-help-projection",
       "title": "Refactor tutor-stub interactive help projection",
       "status": "done",
@@ -3132,6 +3212,51 @@
         "tutor-stub",
         "presentation",
         "response-details"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-session-status-presentation",
+      "title": "Refactor tutor-stub session-status presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live normal and passthrough /status bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-session-status-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-interaction-mode-presentation"
+      ],
+      "links": {
+        "prs": [
+          275
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubSessionStatusPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubSessionStatusPresentation.test.js",
+          "tests/tutorStubInteractiveDirection.test.js",
+          "tests/tutorStubPassthrough.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-interaction-mode-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "status"
       ],
       "milestone": "evaluation-infrastructure"
     },
