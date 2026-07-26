@@ -84,6 +84,40 @@ export function tutorStubScenePublicObjects(world = null) {
   return [...new Set(declared)].sort((left, right) => right.length - left.length);
 }
 
+function escapeForPattern(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+}
+
+/**
+ * Find the first of `props` named in a piece of scene text. Props are matched
+ * longest-first so a compound prop wins over any shorter prop nested inside it
+ * ("repair notebook" rather than the bare "notebook"). Returns '' when nothing
+ * matches, which leaves the caller's own whitelist chain in charge.
+ */
+export function tutorStubNamedSceneProp(text, props = []) {
+  const candidates = (Array.isArray(props) ? props : [props])
+    .map((value) => oneLine(value))
+    .filter(Boolean)
+    .sort((left, right) => right.length - left.length);
+  const haystack = oneLine(text);
+  if (!candidates.length || !haystack) return '';
+  const pattern = new RegExp(`\\b(?:${candidates.map(escapeForPattern).join('|')})\\b`, 'iu');
+  return haystack.match(pattern)?.[0] || '';
+}
+
+/**
+ * Find the world's own name for a prop inside a piece of scene text.
+ *
+ * The static whitelists in the fallback banks were drawn from the assay/guild
+ * worlds, so a world whose props are absent from them silently degrades to an
+ * abstract default, and a world whose prop merely *contains* a whitelist noun
+ * gets truncated to that fragment. Consulting the author's own nouns first
+ * fixes both.
+ */
+export function tutorStubDeclaredSceneObject(text, world = null) {
+  return tutorStubNamedSceneProp(text, tutorStubScenePublicObjects(world));
+}
+
 /**
  * Choose between a period phrasing and its contemporary variant. Callers pass
  * the resolved diction so a single world lookup covers a whole fallback build.

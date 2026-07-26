@@ -11,7 +11,14 @@ import {
   tutorStubRequestedEntryCausalClaimVisible,
   tutorStubRequestedEntryNegativeCausalVisible,
 } from './tutorStubRequestedEntryCausality.js';
-import { resolveTutorStubSceneDiction, tutorStubDictionPhrase } from './tutorStubSceneDiction.js';
+import {
+  TUTOR_STUB_SCENE_DICTION_PERIOD,
+  resolveTutorStubSceneDiction,
+  tutorStubDeclaredSceneObject,
+  tutorStubDictionPhrase,
+  tutorStubNamedSceneProp,
+  tutorStubSceneLedgerTerm,
+} from './tutorStubSceneDiction.js';
 
 export const TUTOR_STUB_RESPONSE_COMPOSITION_SCHEMA = 'machinespirits.tutor-stub.response-composition.v1';
 export const TUTOR_STUB_RESPONSE_COMPOSITION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-composition-audit.v1';
@@ -1533,38 +1540,94 @@ function configuredFallbackObject({ world = null, learnerText = '', part = '' } 
     /\b(?:proposal card|formulation card|trial-book|visitor badge log|badge log|lost-property ledger|ledger|log|record|register|notebook|file|card)\b/iu;
   const exhibitPattern =
     /\b(?:shilling|coin|crucible|cupel|touchstone|balance|tool|sample|notice|report|photograph|photo|lunchbox)\b/iu;
-  if (part === 'record_keeper') return source.match(recordPattern)?.[0] || 'record';
-  return source.match(exhibitPattern)?.[0] || source.match(recordPattern)?.[0] || 'public record';
+  // Both whitelists are period nouns matched against the scene's own prose, and
+  // the record list truncates a compound prop to whichever fragment it happens
+  // to contain: a world that says "repair notebook" gets "notebook". Where the
+  // scene names a prop the world itself declared, that whole prop wins.
+  //
+  // Two orderings are deliberate. The declared prop is required to appear in the
+  // scene text rather than being taken on declaration alone, which keeps every
+  // world whose prose never names its ledger exactly where it was. And the
+  // exhibit whitelist keeps its precedence for the non-record parts: those parts
+  // are written to hold up a piece of physical evidence, and a declared ledger
+  // term is a record, not an exhibit — promoting it would have marrick's
+  // examiner reach for the trial-book rather than the coin under assay.
+  if (part === 'record_keeper') {
+    // The record slot takes the declared ledger term only, never an exhibit the
+    // world happens to declare beside it.
+    const declaredRecord = tutorStubNamedSceneProp(source, [tutorStubSceneLedgerTerm(world)]);
+    return declaredRecord || source.match(recordPattern)?.[0] || 'record';
+  }
+  return (
+    source.match(exhibitPattern)?.[0] ||
+    tutorStubDeclaredSceneObject(source, world) ||
+    source.match(recordPattern)?.[0] ||
+    'public record'
+  );
 }
 
-function configuredFallbackHost({ part, object }) {
+// The host bank below was authored for the period worlds; every entry that
+// reads as courtroom or guild-hall staging carries a plainspoken variant beside
+// it. A world that declares nothing, or declares a period diction, keeps the
+// frozen wording byte-for-byte.
+function configuredFallbackHost({ part, object, diction = TUTOR_STUB_SCENE_DICTION_PERIOD }) {
+  const phrase = (periodText, contemporaryText) => tutorStubDictionPhrase(diction, periodText, contemporaryText);
   const normalizedPart =
     {
       cross_examiner: 'adversarial_teacher',
       opposing_counsel: 'exacting_schoolmaster',
     }[part] || part;
+  const examiner = phrase(
+    `I set the ${object} under examination and mark the claim’s limit.`,
+    `I put the ${object} in front of us and mark where the claim stops holding.`,
+  );
   return (
     {
-      scene_partner: `I set the ${object} between us so we can test the distinction together.`,
-      examiner: `I set the ${object} under examination and mark the claim’s limit.`,
-      record_keeper: `I enter that distinction in the ${object}.`,
-      advocate: `I lay the ${object} against the easy case; your limit is where it fails.`,
-      skeptic: `Not so fast—I hold that claim against the ${object}.`,
-      satirist: `I set the ${object} beside the polished claim and let its contradiction show.`,
-      adversarial_teacher: `Let us test your idea with the ${object} as a counterexample: what changes, and how would you revise the idea?`,
+      scene_partner: phrase(
+        `I set the ${object} between us so we can test the distinction together.`,
+        `I put the ${object} between us so we can check that difference together.`,
+      ),
+      examiner,
+      record_keeper: phrase(
+        `I enter that distinction in the ${object}.`,
+        `I write that difference down in the ${object}.`,
+      ),
+      advocate: phrase(
+        `I lay the ${object} against the easy case; your limit is where it fails.`,
+        `I hold the ${object} up against the easy answer; your limit is where it breaks.`,
+      ),
+      skeptic: phrase(
+        `Not so fast—I hold that claim against the ${object}.`,
+        `Not so fast—I check that claim against the ${object}.`,
+      ),
+      satirist: phrase(
+        `I set the ${object} beside the polished claim and let its contradiction show.`,
+        `I put the ${object} next to the tidy claim and let the mismatch show.`,
+      ),
+      adversarial_teacher: phrase(
+        `Let us test your idea with the ${object} as a counterexample: what changes, and how would you revise the idea?`,
+        `Let's test your idea against the ${object} as a counterexample: what changes, and how would you revise the idea?`,
+      ),
       exacting_schoolmaster: `Show the working with the ${object}: apply the method one step at a time, name what that step teaches us, then revise precisely.`,
-      foreperson: `I keep that finding provisional in the ${object}.`,
-    }[normalizedPart] || `I set the ${object} under examination and mark the claim’s limit.`
+      foreperson: phrase(
+        `I keep that finding provisional in the ${object}.`,
+        `I keep that finding open in the ${object} for now.`,
+      ),
+    }[normalizedPart] || examiner
   );
 }
 
-function configuredFallbackPerformance({ part, object, tactic }) {
-  const host = configuredFallbackHost({ part, object });
+function configuredFallbackPerformance({ part, object, tactic, diction = TUTOR_STUB_SCENE_DICTION_PERIOD }) {
+  const phrase = (periodText, contemporaryText) => tutorStubDictionPhrase(diction, periodText, contemporaryText);
+  const host = configuredFallbackHost({ part, object, diction });
   if (tactic === 'dramatic_counterpressure' && part === 'advocate') {
-    return `I press the ${object} against the room’s easy verdict; but it cannot carry the charge past the limit you found.`;
+    return phrase(
+      `I press the ${object} against the room’s easy verdict; but it cannot carry the charge past the limit you found.`,
+      `I press the ${object} against the easy answer in the room; it cannot carry past the limit you found.`,
+    );
   }
   if (tactic === 'measured_testimony') {
-    return `${host} Let the ${object} stand as written, no further.`;
+    return `${host} ${phrase(`Let the ${object} stand as written, no further.`, `Let the ${object} stand as it is, no further.`)}`;
   }
   if (tactic === 'shared_scene_invitation' && part !== 'scene_partner') {
     return `${host} I make room beside the ${object} for you.`;
@@ -1708,6 +1771,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
   const actionFamily = oneLine(responseConfiguration?.action_family || '');
   const tactic = oneLine(responseConfiguration?.actorial_performance?.id || '');
   const object = configuredFallbackObject({ world, learnerText, part });
+  const diction = resolveTutorStubSceneDiction(world);
   const uptakeAlreadyPerformsRecordKeeper =
     part === 'record_keeper' &&
     (/(?:\b(?:i|we)\b[^.!?]{0,45}\b(?:enter|hold|keep|mark|note|record|write)\b[^.!?]{0,45}\b(?:book|ledger|log|record|trial-book)\b)/iu.test(
@@ -1718,7 +1782,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
     [
       oneLine(uptake),
       configuredFallbackVariationBridge(variant),
-      uptakeAlreadyPerformsRecordKeeper ? null : configuredFallbackPerformance({ part, object, tactic }),
+      uptakeAlreadyPerformsRecordKeeper ? null : configuredFallbackPerformance({ part, object, tactic, diction }),
       configuredFallbackStance(stance),
       deterministicTutorStubTurnProgressionHandoff({
         contract: turnProgressionContract,

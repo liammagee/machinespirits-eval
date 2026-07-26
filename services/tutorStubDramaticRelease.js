@@ -8,9 +8,9 @@ import { tutorStubFirstPersonRoleVoiceVisible, tutorStubRoleStageDirectionVisibl
 import {
   TUTOR_STUB_SCENE_DICTION_PERIOD,
   resolveTutorStubSceneDiction,
+  tutorStubDeclaredSceneObject,
   tutorStubDictionPhrase,
   tutorStubSceneLedgerTerm,
-  tutorStubScenePublicObjects,
 } from './tutorStubSceneDiction.js';
 
 export { TUTOR_STUB_DRAMATIC_RELEASE_SCHEMA } from './tutorStubResponseContractSchemas.js';
@@ -534,28 +534,10 @@ function fallbackQuestion({ stance, variationKey, avoidQuestion = '' }) {
   return rotated.find((candidate) => questionOverlap(candidate, avoidQuestion) < 0.55) || rotated[0];
 }
 
-function escapeForPattern(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-}
-
-/**
- * Match a prop the world itself declares. The static whitelists below were
- * drawn from the assay/guild worlds, so a world whose props are absent from
- * them silently degrades to the generic default. Consulting the author's own
- * nouns first keeps a domestic scene speaking of its "repair notebook" rather
- * than an abstract "record".
- */
-function declaredSceneObject(text, world) {
-  const declared = tutorStubScenePublicObjects(world);
-  if (!declared.length || !text) return '';
-  const pattern = new RegExp(`\\b(?:${declared.map(escapeForPattern).join('|')})\\b`, 'iu');
-  return text.match(pattern)?.[0] || '';
-}
-
 function sceneObject(entry, fallback = 'record', world = null) {
   const text = oneLine(entry.surface);
   const role = oneLine(entry.role);
-  const declaredSurfaceObject = declaredSceneObject(text, world);
+  const declaredSurfaceObject = tutorStubDeclaredSceneObject(text, world);
   if (declaredSurfaceObject) return declaredSurfaceObject;
   const surfaceObject = text.match(
     /\b(?:visitor badge log|badge log|lost-property ledger|trial-book|book|ledger|notice|register|notebook|call log|record|report|file|photograph|photo|crucible|coin|shilling|burin|cupel|die|graver|tool|sample|touchstone)\b/iu,
@@ -564,7 +546,7 @@ function sceneObject(entry, fallback = 'record', world = null) {
   // Authored roles often name a physical record that their paraphrased clue
   // omits. Recover only those concrete record nouns here; broad role words
   // such as "assayer" must not turn into a fictitious object named "assay".
-  const declaredRoleObject = declaredSceneObject(role, world);
+  const declaredRoleObject = tutorStubDeclaredSceneObject(role, world);
   if (declaredRoleObject) return declaredRoleObject;
   const roleObject = role.match(
     /\b(?:visitor badge log|badge log|lost-property ledger|trial-book|book|ledger|notice|register|notebook|call log|record|report|file)\b/iu,
