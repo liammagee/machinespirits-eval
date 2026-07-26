@@ -39,7 +39,10 @@ function seconds(ms) {
 function benchmarkTable(report) {
   const rows = report.summary.arms
     .map((arm) => {
-      const resolved = `${arm.grounded}/${arm.dialogues}`;
+      const resolved = arm.closureMeasurable
+        ? `${arm.grounded}/${arm.closureMeasurable}`
+        : '<span class="sc-na" title="closure lifecycle bypassed on this arm">n/a</span>';
+      const coverage = arm.meanGuardCoverage === null ? '—' : `${Math.round(arm.meanGuardCoverage * 100)}%`;
       return `<tr${arm.baseline ? ' class="sc-baseline-row"' : ''}>
         <td>${escapeHtml(arm.label)}${arm.baseline ? ' <span class="sc-tag">baseline</span>' : ''}</td>
         <td class="sc-num">${resolved}</td>
@@ -47,20 +50,28 @@ function benchmarkTable(report) {
         <td class="sc-num">${arm.meanModelCalls ?? '—'}</td>
         <td class="sc-num">${arm.meanSecondsPerTurn ?? '—'}s</td>
         <td class="sc-num">${arm.totalTokens ? arm.totalTokens.toLocaleString('en-US') : '—'}</td>
-        <td class="sc-num">${arm.auditsRun}</td>
-        <td class="sc-num">${arm.auditsFailed}</td>
-        <td class="sc-num">${arm.repairs}</td>
+        <td class="sc-num">${coverage}</td>
+        <td class="sc-num">${arm.guardOutcomes.accepted}</td>
+        <td class="sc-num">${arm.guardOutcomes.repaired}</td>
+        <td class="sc-num">${arm.guardOutcomes.fallback}</td>
       </tr>`;
     })
     .join('');
   return `<table class="sc-table">
     <thead><tr>
       <th>Arm</th><th class="sc-num">Resolved</th><th class="sc-num">Turns</th><th class="sc-num">Calls</th>
-      <th class="sc-num">Per turn</th><th class="sc-num">Tokens</th><th class="sc-num">Guards run</th>
-      <th class="sc-num">Guard fails</th><th class="sc-num">Repairs</th>
+      <th class="sc-num">Per turn</th><th class="sc-num">Tokens</th><th class="sc-num">Guard coverage</th>
+      <th class="sc-num">Accepted</th><th class="sc-num">Repaired</th><th class="sc-num">Fallback</th>
     </tr></thead>
     <tbody>${rows}</tbody>
-  </table>`;
+  </table>
+  <p class="sc-note">Guard coverage is the share of the eight per-turn guards the stub itself
+  reports as enabled. The last three columns are what those guards did with each first
+  draft: <strong>accepted</strong> nothing to fix; <strong>repaired</strong> the draft failed
+  and the tutor spoke again, with the learner seeing only the second draft;
+  <strong>fallback</strong> the draft failed and a deterministic line went out instead — a cost
+  of the guard stack, not a win. <strong>Resolved</strong> is <em>n/a</em> where the closure
+  lifecycle was bypassed: that arm has no resolution verdict rather than a negative one.</p>`;
 }
 
 function armLegend(report) {
@@ -84,15 +95,23 @@ function armLegend(report) {
 
 function auditChips(turn) {
   const failed = turn.tutor.audits.filter((audit) => !audit.ok);
+  const guards = turn.tutor.guards;
   const chips = [];
-  if (turn.tutor.repaired) chips.push('<span class="sc-chip sc-chip--repair">first draft repaired</span>');
+  if (guards.outcomeClass === 'repaired') {
+    chips.push('<span class="sc-chip sc-chip--repair">first draft repaired</span>');
+  } else if (guards.outcomeClass === 'fallback') {
+    chips.push('<span class="sc-chip sc-chip--fallback">draft rejected · fallback line</span>');
+  }
   for (const audit of failed) {
     chips.push(`<span class="sc-chip sc-chip--fail">${escapeHtml(audit.key.replace(/^tutor/u, ''))}</span>`);
   }
-  if (!failed.length && turn.tutor.audits.length) {
-    chips.push(`<span class="sc-chip sc-chip--pass">${turn.tutor.audits.length} guards ok</span>`);
+  // Guard chips report what the stub says was *enabled* this turn, not how many
+  // audit records exist — an audit record is written either way, so counting
+  // records would show the same number on an arm that runs no guards at all.
+  if (!guards.recorded) chips.push('<span class="sc-chip sc-chip--none">no guards ran</span>');
+  else if (!failed.length && guards.outcomeClass === 'accepted') {
+    chips.push(`<span class="sc-chip sc-chip--pass">${guards.enabled.length} guards ok</span>`);
   }
-  if (!turn.tutor.audits.length) chips.push('<span class="sc-chip sc-chip--none">no guards ran</span>');
   if (turn.closure.deterministic) chips.push('<span class="sc-chip sc-chip--closed">closed</span>');
   return `<div class="sc-card-foot">${chips.join('')}</div>`;
 }
@@ -123,13 +142,25 @@ function scenarioSection(report, scenarioId) {
   const maxTurns = Math.max(...ordered.map((row) => row.dialogue.turnCount));
   const head = ordered
     .map((row) => {
-      const closure = row.dialogue.closure.grounded
-        ? `<span class="sc-chip sc-chip--pass">resolved at turn ${row.dialogue.closure.completedAtTurn}</span>`
-        : `<span class="sc-chip sc-chip--none">unresolved · ${escapeHtml(row.dialogue.stopReason)}</span>`;
+      // Three-way, not two: an arm that never ran the closure lifecycle has no
+      // verdict to report, and rendering it as "unresolved" would read as a
+      // failure on a mechanism the arm does not carry.
+      const closure = !row.dialogue.closure.available
+        ? `<span class="sc-chip sc-chip--none" title="closure lifecycle bypassed on this arm">no closure verdict · ${escapeHtml(row.dialogue.stopReason)}</span>`
+        : row.dialogue.closure.grounded
+          ? `<span class="sc-chip sc-chip--pass">resolved at turn ${row.dialogue.closure.completedAtTurn}</span>`
+          : `<span class="sc-chip sc-chip--none">unresolved · ${escapeHtml(row.dialogue.stopReason)}</span>`;
+      const outcomes = row.dialogue.guardOutcomes;
+      const repairChip = outcomes.repaired
+        ? `<span class="sc-chip sc-chip--repair">${outcomes.repaired} repair(s)</span>`
+        : '';
+      const fallbackChip = outcomes.fallback
+        ? `<span class="sc-chip sc-chip--fallback">${outcomes.fallback} fallback(s)</span>`
+        : '';
       return `<div class="sc-column-head">
         <h3>${escapeHtml(row.armLabel)}</h3>
         <p class="sc-meta">${row.dialogue.turnCount} turns · ${row.dialogue.modelCalls} calls · ${seconds(row.wallClockMs)} · <code>${escapeHtml(row.provider)}.${escapeHtml(row.model)}</code></p>
-        <div class="sc-card-foot">${closure}${row.dialogue.repairs ? `<span class="sc-chip sc-chip--repair">${row.dialogue.repairs} repair(s)</span>` : ''}</div>
+        <div class="sc-card-foot">${closure}${repairChip}${fallbackChip}</div>
       </div>`;
     })
     .join('');
@@ -228,6 +259,8 @@ ${renderMachineSpiritsHouseStyleTag()}
   .sc-chip--repair { background: var(--ms-ochre); color: var(--ms-black); border-color: var(--ms-ochre); }
   .sc-chip--closed { background: var(--ms-ink); color: var(--ms-white); border-color: var(--ms-ink); }
   .sc-chip--none { background: var(--ms-paper-3); color: var(--ms-text-muted); }
+  .sc-chip--fallback { background: var(--ms-brick); color: var(--ms-white); border-color: var(--ms-brick-dark); }
+  .sc-na { color: var(--ms-text-muted); font-style: italic; }
   body[data-sc-guards='off'] .sc-card-foot { display: none; }
   @media (max-width: 960px) {
     .sc-columns { grid-template-columns: 1fr; }

@@ -21,11 +21,21 @@ models:
 # identical across arms; `assertTutorStubShowcaseLearnerParity` fails the plan
 # if an arm's flags reach outside `TUTOR_STUB_SHOWCASE_ARM_FLAGS`.
 arms:
+  # `--passthrough` is the only genuinely bare mode the stub has. Dropping the
+  # DAG and classifier flags is not enough: the guard suite, first-draft
+  # recovery and the closure lifecycle all run unconditionally otherwise, so an
+  # arm built that way is instrumented in every respect that matters and the
+  # comparison shows almost nothing. Passthrough bypasses learner_classifier,
+  # learner_dag, register_selection, human_discourse_scaffold,
+  # response_composition, response_checks_and_repair, release_planner,
+  # dialogue_closure, tutor_feedback and the learning summary, leaving one model
+  # call per turn over system setup + public history + latest learner message.
   bare:
     label: Bare tutor
     baseline: true
-    summary: One model, one call per turn. No DAG, no committee, no guards that can send a draft back.
+    summary: One model, one call per turn over the public history. No DAG, no scaffold, no guard that can send a draft back.
     flags:
+      - --passthrough
       - --no-classifier
       - --no-memory-summary
     model_call_budget: 60

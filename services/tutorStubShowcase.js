@@ -45,6 +45,7 @@ const MODEL_PROVIDERS = new Set(['codex', 'claude-code']);
  * a truncated dialogue can never be mistaken for a finished one.
  */
 export const TUTOR_STUB_SHOWCASE_ARM_FLAGS = Object.freeze([
+  '--passthrough',
   '--dag',
   '--no-dag',
   '--dag-mode',
@@ -63,10 +64,13 @@ const ARM_FLAG_SET = new Set(TUTOR_STUB_SHOWCASE_ARM_FLAGS);
 const VALUED_ARM_FLAGS = new Set(['--dag-mode', '--model-call-budget']);
 
 /**
- * Per-turn audits the stub emits on its turn record. Presence means the audit
- * ran; absence means nothing checked that dimension on that turn. A bare arm
- * passes some of these by never being asked, which is why the report counts
- * coverage separately from pass rate.
+ * Per-turn audits the stub attaches to its turn record.
+ *
+ * These are *not* a coverage measure. An audit object is present on the record
+ * whether or not the corresponding guard was enabled for that turn, so counting
+ * them reports the same number for every arm. Coverage comes from
+ * `tutor_response_guard_accounting` below; these keys are kept because their
+ * `ok` flags are still the per-turn pass/fail signal shown on the transcript.
  */
 export const TUTOR_STUB_SHOWCASE_AUDIT_KEYS = Object.freeze([
   'tutorLeakAudit',
@@ -77,6 +81,46 @@ export const TUTOR_STUB_SHOWCASE_AUDIT_KEYS = Object.freeze([
   'tutorDialogueClosureAudit',
   'tutorLiveSourceActionAlignmentAudit',
 ]);
+
+/**
+ * The guards the stub reports as enabled or disabled per turn, on its
+ * `tutor_response_guard_accounting` row. This is the authoritative coverage
+ * signal: a passthrough arm emits no such row at all, and a guarded arm records
+ * exactly which checks were live on that turn.
+ */
+export const TUTOR_STUB_SHOWCASE_GUARD_KEYS = Object.freeze([
+  'leak',
+  'humanScaffold',
+  'questionSupport',
+  'dramaticRelease',
+  'actorialRealization',
+  'responseComposition',
+  'repetition',
+  'dialogueClosure',
+]);
+
+const GUARD_OUTCOME_ACCEPTED = new Set([
+  'guarded_original_accepted',
+  'guarded_original_accepted_with_advisory',
+  'unguarded_original',
+]);
+const GUARD_OUTCOME_FALLBACK = new Set(['guarded_deterministic_fallback']);
+
+/**
+ * Three buckets, because they mean different things to a reader. An accepted
+ * first draft is the guards finding nothing to fix. A repair is the tutor
+ * speaking again and the second draft passing — the architectural moment. A
+ * deterministic fallback is the guards rejecting the model and a canned line
+ * going out instead, which is a *cost* of the guard stack, not a win, and must
+ * never be summed into the same column as a repair.
+ */
+export function classifyGuardOutcome(outcome) {
+  const value = String(outcome || '');
+  if (!value) return null;
+  if (GUARD_OUTCOME_ACCEPTED.has(value)) return 'accepted';
+  if (GUARD_OUTCOME_FALLBACK.has(value)) return 'fallback';
+  return 'repaired';
+}
 
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
@@ -373,11 +417,22 @@ export function parseTutorStubShowcaseTrace(rows) {
   const runEnd = byType('auto_learner_run_end')[0] || null;
   const closeout = byType('closeout_report')[0] || null;
 
+  const guardByTurn = new Map();
+  for (const row of byType('tutor_response_guard_accounting')) {
+    const accounting = row.accounting || {};
+    guardByTurn.set(Number(accounting.turn ?? row.turn), accounting);
+  }
+
   const turns = completions.map((row, index) => {
     const record = row.turnRecord || {};
     const learnerRow = learnerTurns[index] || null;
+    const turnIndex = Number(record.turn ?? index + 1);
+    const accounting = guardByTurn.get(turnIndex) || null;
+    const enabledGuards = accounting
+      ? TUTOR_STUB_SHOWCASE_GUARD_KEYS.filter((key) => accounting.guards?.[key] === true)
+      : [];
     return {
-      index: Number(record.turn ?? index + 1),
+      index: turnIndex,
       learner: {
         text: String(learnerRow?.text || record.learnerInput || ''),
         latencyMs: Number(learnerRow?.latencyMs || 0) || null,
@@ -391,6 +446,12 @@ export function parseTutorStubShowcaseTrace(rows) {
         repaired: record.tutorResponseRepaired === true,
         usage: record.usage || null,
         audits: auditRows(record),
+        guards: {
+          recorded: Boolean(accounting),
+          enabled: enabledGuards,
+          outcome: accounting?.outcome || null,
+          outcomeClass: classifyGuardOutcome(accounting?.outcome),
+        },
       },
       closure: {
         phase: record.dialogueClosure?.lifecycle?.phase || record.dialogueClosure?.frame?.phase || null,
@@ -419,19 +480,37 @@ export function parseTutorStubShowcaseTrace(rows) {
     { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
   );
 
-  const auditsRun = turns.reduce((total, turn) => total + turn.tutor.audits.length, 0);
+  const auditsRecorded = turns.reduce((total, turn) => total + turn.tutor.audits.length, 0);
   const auditsFailed = turns.reduce((total, turn) => total + turn.tutor.audits.filter((audit) => !audit.ok).length, 0);
+
+  const guardedTurns = turns.filter((turn) => turn.tutor.guards.recorded).length;
+  const guardsEnabled = turns.reduce((total, turn) => total + turn.tutor.guards.enabled.length, 0);
+  const guardOutcomes = { accepted: 0, repaired: 0, fallback: 0 };
+  for (const turn of turns) {
+    const bucket = turn.tutor.guards.outcomeClass;
+    if (bucket) guardOutcomes[bucket] += 1;
+  }
+
+  // A dialogue whose closure machinery was bypassed has no closure verdict —
+  // not a negative one. `dialogue_closure` is one of the things `--passthrough`
+  // turns off, so scoring such an arm 0/N on resolution would be scoring it on
+  // an instrument it does not carry.
+  const closureMechanismRan = Boolean(lastClosure) || rows.some((row) => row.type === 'dialogue_closure_transition');
 
   return {
     openingText: String(opening?.text || ''),
     turns,
     turnCount: turns.length,
     repairs: turns.filter((turn) => turn.tutor.repaired).length,
-    auditsRun,
+    auditsRecorded,
     auditsFailed,
-    auditCoverage: turns.length
-      ? Number((auditsRun / (turns.length * TUTOR_STUB_SHOWCASE_AUDIT_KEYS.length)).toFixed(3))
+    guardedTurns,
+    guardsEnabled,
+    guardSlots: turns.length * TUTOR_STUB_SHOWCASE_GUARD_KEYS.length,
+    guardCoverage: turns.length
+      ? Number((guardsEnabled / (turns.length * TUTOR_STUB_SHOWCASE_GUARD_KEYS.length)).toFixed(3))
       : null,
+    guardOutcomes,
     turnFailuresRecorded: byType('turn_failure_recorded').length,
     recoveryCandidates: byType('tutor_response_recovery_candidate').length,
     modelCalls: modelCalls.length,
@@ -439,13 +518,17 @@ export function parseTutorStubShowcaseTrace(rows) {
     usage: usageTotals,
     stopReason: String(runEnd?.reason || closeout?.reason || 'unknown'),
     // `grounded` is the stub's own lifecycle verdict, not a reading of the
-    // text: the dialogue reached its authored answer and closed on it.
+    // text: the dialogue reached its authored answer and closed on it. It is
+    // `null`, not `false`, when the lifecycle never ran.
     closure: {
+      available: closureMechanismRan,
       phase: lastClosure?.phase || null,
       reachedAtTurn: lastClosure?.reachedAtTurn ?? null,
       completedAtTurn: lastClosure?.completedAtTurn ?? null,
       basis: lastClosure?.basis || null,
-      grounded: lastClosure?.completedAtTurn !== null && lastClosure?.completedAtTurn !== undefined,
+      grounded: closureMechanismRan
+        ? lastClosure?.completedAtTurn !== null && lastClosure?.completedAtTurn !== undefined
+        : null,
     },
     budgetBinding: rows.some((row) => row.type === 'model_call_budget_exhausted'),
   };
@@ -572,7 +655,8 @@ export function summarizeTutorStubShowcase({ plan, results }) {
   const arms = plan.armIds.map((armId) => {
     const rows = results.filter((row) => row.armId === armId && row.dialogue);
     const armPlan = plan.arms.find((entry) => entry.id === armId);
-    const grounded = rows.filter((row) => row.dialogue.closure.grounded).length;
+    const measurable = rows.filter((row) => row.dialogue.closure.available);
+    const grounded = measurable.filter((row) => row.dialogue.closure.grounded === true).length;
     return {
       id: armId,
       label: armPlan?.label || armId,
@@ -581,9 +665,12 @@ export function summarizeTutorStubShowcase({ plan, results }) {
       dialogues: rows.length,
       blocked: results.filter((row) => row.armId === armId && row.status === 'blocked').length,
       // Did it resolve? This is the stub's own closure lifecycle, not a reading
-      // of the transcript, so it is the same question asked of both arms.
+      // of the transcript. It is only asked of arms that carry the lifecycle:
+      // `closureMeasurable` is the denominator, and an arm that bypasses
+      // closure reports 0 measurable dialogues rather than 0 resolutions.
       grounded,
-      groundedRate: rows.length ? Number((grounded / rows.length).toFixed(2)) : null,
+      closureMeasurable: measurable.length,
+      groundedRate: measurable.length ? Number((grounded / measurable.length).toFixed(2)) : null,
       meanTurns: mean(rows.map((row) => row.dialogue.turnCount)),
       totalModelCalls: rows.reduce((total, row) => total + row.dialogue.modelCalls, 0),
       meanModelCalls: mean(rows.map((row) => row.dialogue.modelCalls)),
@@ -599,11 +686,20 @@ export function summarizeTutorStubShowcase({ plan, results }) {
         : null,
       totalTokens: rows.reduce((total, row) => total + row.dialogue.usage.totalTokens, 0),
       repairs: rows.reduce((total, row) => total + row.dialogue.repairs, 0),
-      auditsRun: rows.reduce((total, row) => total + row.dialogue.auditsRun, 0),
       auditsFailed: rows.reduce((total, row) => total + row.dialogue.auditsFailed, 0),
-      meanAuditCoverage: rows.length
-        ? Number((rows.reduce((total, row) => total + (row.dialogue.auditCoverage || 0), 0) / rows.length).toFixed(2))
+      guardedTurns: rows.reduce((total, row) => total + row.dialogue.guardedTurns, 0),
+      guardsEnabled: rows.reduce((total, row) => total + row.dialogue.guardsEnabled, 0),
+      guardSlots: rows.reduce((total, row) => total + row.dialogue.guardSlots, 0),
+      meanGuardCoverage: rows.length
+        ? Number((rows.reduce((total, row) => total + (row.dialogue.guardCoverage || 0), 0) / rows.length).toFixed(2))
         : null,
+      guardOutcomes: rows.reduce(
+        (totals, row) => {
+          for (const key of Object.keys(totals)) totals[key] += row.dialogue.guardOutcomes[key] || 0;
+          return totals;
+        },
+        { accepted: 0, repaired: 0, fallback: 0 },
+      ),
       budgetBinding: rows.filter((row) => row.dialogue.budgetBinding).length,
       stopReasons: [...new Set(rows.map((row) => row.dialogue.stopReason))],
     };
@@ -638,19 +734,31 @@ export function renderTutorStubShowcaseMarkdown(report) {
     '',
     '## Arms',
     '',
-    '| Arm | Dialogues | Resolved | Turns | Calls | s/turn | Tokens | Guards run | Guard fails | Repairs |',
-    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+    '| Arm | Dialogues | Resolved | Turns | Calls | s/turn | Tokens | Guarded turns | Guard coverage | Accepted | Repaired | Fallback |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ];
   for (const arm of report.summary.arms) {
+    const resolved = arm.closureMeasurable ? `${arm.grounded}/${arm.closureMeasurable}` : 'n/a';
     lines.push(
-      `| ${cell(arm.label)}${arm.baseline ? ' _(baseline)_' : ''} | ${arm.dialogues} | ${arm.grounded}/${arm.dialogues} | ${arm.meanTurns ?? '—'} | ${arm.meanModelCalls ?? '—'} | ${arm.meanSecondsPerTurn ?? '—'} | ${arm.totalTokens || '—'} | ${arm.auditsRun} | ${arm.auditsFailed} | ${arm.repairs} |`,
+      `| ${cell(arm.label)}${arm.baseline ? ' _(baseline)_' : ''} | ${arm.dialogues} | ${resolved} | ${arm.meanTurns ?? '—'} | ${arm.meanModelCalls ?? '—'} | ${arm.meanSecondsPerTurn ?? '—'} | ${arm.totalTokens || '—'} | ${arm.guardedTurns} | ${arm.meanGuardCoverage ?? '—'} | ${arm.guardOutcomes.accepted} | ${arm.guardOutcomes.repaired} | ${arm.guardOutcomes.fallback} |`,
     );
   }
   lines.push(
     '',
-    '"Guards run" is coverage, not merit: a dialogue with no guards configured cannot',
-    'fail one. Read it alongside "guard fails" and "repairs" — a repair is a first',
-    'draft that failed its guards and was regenerated before the learner saw it.',
+    'Guard coverage is the share of the eight per-turn guards the stub reports as',
+    'enabled, read off its own `tutor_response_guard_accounting` rows. An arm that',
+    'runs no guards scores 0 rather than a clean sheet.',
+    '',
+    'The last three columns are what the guards did with each first draft.',
+    '**Accepted**: nothing to fix. **Repaired**: the draft failed and the tutor spoke',
+    'again, with the learner seeing only the second draft — the architectural moment.',
+    '**Fallback**: the draft failed and a deterministic line went out instead, which',
+    'is a cost of the guard stack, not a win. They are separate columns because',
+    'summing them would let a fallback read as a repair.',
+    '',
+    '"Resolved" reads `n/a` for an arm whose closure lifecycle was bypassed. Such an',
+    'arm has no resolution verdict rather than a negative one, and scoring it 0/N',
+    'would be scoring it on an instrument it does not carry.',
     '',
     '## Dialogues',
     '',
@@ -663,9 +771,11 @@ export function renderTutorStubShowcaseMarkdown(report) {
     lines.push(`### ${cell(rows[0].scenarioLabel)} (\`${rows[0].world}\`)`, '');
     if (rows[0].scenarioSummary) lines.push(cell(rows[0].scenarioSummary), '');
     for (const row of rows) {
-      const closure = row.dialogue.closure.grounded
-        ? `resolved at turn ${row.dialogue.closure.completedAtTurn}`
-        : `did not resolve (stopped: ${row.dialogue.stopReason})`;
+      const closure = !row.dialogue.closure.available
+        ? `no closure verdict — lifecycle bypassed (stopped: ${row.dialogue.stopReason})`
+        : row.dialogue.closure.grounded
+          ? `resolved at turn ${row.dialogue.closure.completedAtTurn}`
+          : `did not resolve (stopped: ${row.dialogue.stopReason})`;
       lines.push(
         `- **${cell(row.armLabel)}** — ${row.dialogue.turnCount} turns, ${row.dialogue.modelCalls} calls, ${Math.round(row.wallClockMs / 1000)}s, ${closure}${row.dialogue.repairs ? `, ${row.dialogue.repairs} first-draft repair(s)` : ''}`,
       );

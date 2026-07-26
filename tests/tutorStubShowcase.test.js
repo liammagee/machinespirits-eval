@@ -17,6 +17,8 @@ import {
   TUTOR_STUB_SHOWCASE_ARM_FLAGS,
   TUTOR_STUB_SHOWCASE_AUDIT_KEYS,
   TUTOR_STUB_SHOWCASE_CONFIG_SCHEMA,
+  TUTOR_STUB_SHOWCASE_GUARD_KEYS,
+  classifyGuardOutcome,
   validateTutorStubShowcaseConfig,
 } from '../services/tutorStubShowcase.js';
 import { renderTutorStubShowcaseHtml } from '../services/tutorStubShowcaseHtml.js';
@@ -34,8 +36,23 @@ function plan(preset = 'smoke', overrides = {}) {
   });
 }
 
-/** A minimal but structurally faithful trace: opening, N turns, an ending. */
-function traceRows({ turns = 2, repairedTurn = null, audits = TUTOR_STUB_SHOWCASE_AUDIT_KEYS, closedAt = null } = {}) {
+/**
+ * A minimal but structurally faithful trace: opening, N turns, an ending.
+ *
+ * `guards: null` and `closureLifecycle: false` together model a passthrough
+ * arm — the stub still writes audit objects onto the turn record, but emits no
+ * guard accounting and never runs the closure lifecycle. That combination is
+ * what the coverage and resolution columns have to survive.
+ */
+function traceRows({
+  turns = 2,
+  repairedTurn = null,
+  audits = TUTOR_STUB_SHOWCASE_AUDIT_KEYS,
+  closedAt = null,
+  guards = TUTOR_STUB_SHOWCASE_GUARD_KEYS,
+  fallbackTurn = null,
+  closureLifecycle = true,
+} = {}) {
   const rows = [
     { type: 'run_start' },
     { type: 'model_call', role: 'tutor_stub_opening' },
@@ -52,6 +69,22 @@ function traceRows({ turns = 2, repairedTurn = null, audits = TUTOR_STUB_SHOWCAS
     });
     if (repairedTurn === index)
       rows.push({ type: 'tutor_response_recovery_candidate' }, { type: 'turn_failure_recorded' });
+    if (guards) {
+      const outcome =
+        fallbackTurn === index
+          ? 'guarded_deterministic_fallback'
+          : repairedTurn === index
+            ? 'guarded_recovery_accepted'
+            : 'guarded_original_accepted';
+      rows.push({
+        type: 'tutor_response_guard_accounting',
+        accounting: {
+          turn: index,
+          outcome,
+          guards: Object.fromEntries(guards.map((key) => [key, true])),
+        },
+      });
+    }
     rows.push({
       type: 'turn_complete',
       turnRecord: {
@@ -65,14 +98,18 @@ function traceRows({ turns = 2, repairedTurn = null, audits = TUTOR_STUB_SHOWCAS
         usage: { inputTokens: 2000, outputTokens: 300, totalTokens: 2300 },
         tutorDeterministicClosure: closedAt === index,
         closureCheckIn: false,
-        dialogueClosure: {
-          lifecycle: {
-            phase: closedAt === index ? 'closed' : 'open',
-            reachedAtTurn: closedAt === index ? index : null,
-            completedAtTurn: closedAt === index ? index : null,
-            basis: closedAt === index ? 'authored_dag' : null,
-          },
-        },
+        ...(closureLifecycle
+          ? {
+              dialogueClosure: {
+                lifecycle: {
+                  phase: closedAt === index ? 'closed' : 'open',
+                  reachedAtTurn: closedAt === index ? index : null,
+                  completedAtTurn: closedAt === index ? index : null,
+                  basis: closedAt === index ? 'authored_dag' : null,
+                },
+              },
+            }
+          : {}),
         ...Object.fromEntries(
           audits.map((key) => [key, { ok: !(repairedTurn === index && key === 'tutorLeakAudit'), issues: [] }]),
         ),
@@ -111,6 +148,19 @@ test('the shipped showcase config validates', () => {
   const { arms } = validateTutorStubShowcaseConfig(loaded.config);
   assert.equal(arms.filter((arm) => arm.baseline).length, 1);
   assert.ok(arms.length >= 2);
+});
+
+test('the baseline arm is passthrough, which is the only genuinely bare mode', () => {
+  // Dropping --dag/--classifier is not enough: the guard suite, first-draft
+  // recovery and the closure lifecycle all run unconditionally otherwise, so a
+  // baseline built that way is instrumented in every respect that matters.
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  const { arms } = validateTutorStubShowcaseConfig(loaded.config);
+  const baseline = arms.find((arm) => arm.baseline);
+  assert.ok(baseline.flags.includes('--passthrough'), 'baseline arm must run the stub in passthrough mode');
+  for (const arm of arms.filter((candidate) => !candidate.baseline)) {
+    assert.ok(!arm.flags.includes('--passthrough'));
+  }
 });
 
 test('a config with the wrong schema is rejected', () => {
@@ -202,16 +252,53 @@ test('the trace parser recovers the dialogue, the guards, and the repairs', () =
   assert.equal(parsed.openingText, 'The morning list is short one name.');
   assert.equal(parsed.turns[1].tutor.repaired, true);
   assert.equal(parsed.repairs, 1);
-  assert.equal(parsed.auditsRun, 3 * TUTOR_STUB_SHOWCASE_AUDIT_KEYS.length);
+  assert.equal(parsed.auditsRecorded, 3 * TUTOR_STUB_SHOWCASE_AUDIT_KEYS.length);
   assert.equal(parsed.auditsFailed, 1);
-  assert.equal(parsed.auditCoverage, 1);
+  assert.equal(parsed.guardedTurns, 3);
+  assert.equal(parsed.guardCoverage, 1);
   assert.equal(parsed.modelCalls, 7);
   assert.equal(parsed.callsByRole.tutor_stub_tutor, 3);
   assert.equal(parsed.usage.totalTokens, 3 * (120 + 2300));
 });
 
+test('guard coverage is read from the accounting rows, not from the audit records', () => {
+  // The stub attaches an audit object to the turn record whether or not the
+  // guard was enabled, so counting records would report full coverage for an
+  // arm that ran no guards at all. Coverage has to come from the accounting.
+  const parsed = parseTutorStubShowcaseTrace(traceRows({ turns: 2, guards: null }));
+  assert.equal(parsed.auditsRecorded, 2 * TUTOR_STUB_SHOWCASE_AUDIT_KEYS.length);
+  assert.equal(parsed.guardedTurns, 0);
+  assert.equal(parsed.guardsEnabled, 0);
+  assert.equal(parsed.guardCoverage, 0);
+  assert.deepEqual(parsed.guardOutcomes, { accepted: 0, repaired: 0, fallback: 0 });
+});
+
+test('partial guard coverage is reported as a fraction of the guard slots', () => {
+  const half = TUTOR_STUB_SHOWCASE_GUARD_KEYS.slice(0, 4);
+  const parsed = parseTutorStubShowcaseTrace(traceRows({ turns: 2, guards: half }));
+  assert.equal(parsed.guardedTurns, 2);
+  assert.equal(parsed.guardsEnabled, 8);
+  assert.equal(parsed.guardSlots, 2 * TUTOR_STUB_SHOWCASE_GUARD_KEYS.length);
+  assert.equal(parsed.guardCoverage, Number((8 / parsed.guardSlots).toFixed(3)));
+});
+
+test('a deterministic fallback is not counted as a repair', () => {
+  // A fallback means the guard rejected the draft and a canned line went out —
+  // a cost of the guard stack. Summing it into repairs would show a loss as a
+  // win.
+  assert.equal(classifyGuardOutcome('guarded_deterministic_fallback'), 'fallback');
+  assert.equal(classifyGuardOutcome('guarded_original_accepted'), 'accepted');
+  assert.equal(classifyGuardOutcome('unguarded_original'), 'accepted');
+  assert.equal(classifyGuardOutcome('guarded_recovery_accepted'), 'repaired');
+  assert.equal(classifyGuardOutcome(''), null);
+
+  const parsed = parseTutorStubShowcaseTrace(traceRows({ turns: 3, repairedTurn: 2, fallbackTurn: 3 }));
+  assert.deepEqual(parsed.guardOutcomes, { accepted: 1, repaired: 1, fallback: 1 });
+});
+
 test('closure is read from the stub lifecycle, not from the transcript text', () => {
   const open = parseTutorStubShowcaseTrace(traceRows({ turns: 2 }));
+  assert.equal(open.closure.available, true);
   assert.equal(open.closure.grounded, false);
   assert.equal(open.stopReason, 'auto_turn_cap');
   const closed = parseTutorStubShowcaseTrace(traceRows({ turns: 2, closedAt: 2 }));
@@ -220,11 +307,22 @@ test('closure is read from the stub lifecycle, not from the transcript text', ()
   assert.equal(closed.stopReason, 'grounded_closure');
 });
 
-test('an arm that ran no guards reports zero coverage rather than a clean sheet', () => {
-  const parsed = parseTutorStubShowcaseTrace(traceRows({ turns: 2, audits: [] }));
-  assert.equal(parsed.auditsRun, 0);
-  assert.equal(parsed.auditsFailed, 0);
-  assert.equal(parsed.auditCoverage, 0);
+test('an arm that bypasses the closure lifecycle has no verdict rather than a negative one', () => {
+  const parsed = parseTutorStubShowcaseTrace(traceRows({ turns: 2, guards: null, closureLifecycle: false }));
+  assert.equal(parsed.closure.available, false);
+  assert.equal(parsed.closure.grounded, null);
+  assert.equal(parsed.closure.completedAtTurn, null);
+});
+
+test('a bypassed arm is excluded from the resolution denominator, not scored zero', async () => {
+  const built = await report({ bare: { guards: null, closureLifecycle: false } });
+  const bare = built.summary.arms.find((arm) => arm.id === 'bare');
+  const instrumented = built.summary.arms.find((arm) => arm.id === 'instrumented');
+  assert.equal(bare.dialogues, 1);
+  assert.equal(bare.closureMeasurable, 0);
+  assert.equal(bare.groundedRate, null);
+  assert.equal(instrumented.closureMeasurable, 1);
+  assert.equal(instrumented.groundedRate, 1);
 });
 
 test('a full run summarises both arms without spawning anything', async () => {
@@ -265,7 +363,8 @@ test('the summary of an empty run is well formed', () => {
 test('the markdown report states that the arms are not a controlled contrast', async () => {
   const markdown = renderTutorStubShowcaseMarkdown(await report());
   assert.match(markdown, /attributable to\s+instrumentation alone/u);
-  assert.match(markdown, /coverage, not merit/u);
+  assert.match(markdown, /Guard coverage is the share of the eight per-turn guards/u);
+  assert.match(markdown, /summing them would let a fallback read as a repair/u);
   assert.match(markdown, /Instrumented tutor/u);
 });
 

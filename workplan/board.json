@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-26T06:51:02.808Z",
+  "generated": "2026-07-26T07:16:07.192Z",
   "counts": {
     "total": 207,
     "byStatus": {
@@ -424,7 +424,7 @@
       "source": "manual",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is reported separately from guard failures.",
+      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way.",
       "claim_status": "methods",
       "depends_on": [
         "tutor-instrumentation-ab-harness"

@@ -11,8 +11,9 @@ updated: 2026-07-26
 verification: "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call
   plan whose arms hold learner parity in every preset; a paid run writes report.json,
   report.md, and a turn-aligned two-column transcripts.html; each arm's resolution
-  verdict comes from the stub's own closure lifecycle, and guard coverage is reported
-  separately from guard failures."
+  verdict comes from the stub's own closure lifecycle, and guard coverage is read
+  from the stub's `tutor_response_guard_accounting` rows rather than from the audit
+  records the turn carries either way."
 claim_status: methods
 depends_on:
   - tutor-instrumentation-ab-harness
@@ -49,16 +50,30 @@ Design decisions worth keeping:
   requires a byte-identical residue per (scenario, model) cell. Without it a
   "bare" arm could quietly get an easier learner and the demo would be showing
   the learner. A flag outside the declared set is rejected at config load.
-- **Guard coverage is reported separately from guard merit.** On the probe runs
-  the bare arm ran 4 of the 7 `tutor*Audit` checks and the instrumented arm ran
-  all 7. A bare arm's clean sheet is partly a bare arm not being checked, so
-  `auditsRun` and `auditsFailed` are distinct columns and the prose above the
-  table says why.
+- **The baseline has to be `--passthrough`.** The first version built it by
+  dropping flags (`--no-classifier --no-memory-summary`, no `--dag`) and that arm
+  was not bare: the guard suite, first-draft recovery and the closure lifecycle
+  all run unconditionally in `scripts/tutor-stub.js`. On a real Riverside
+  dialogue that "bare" arm made 4 calls per turn, had 5 drafts sent back, and
+  closed on `strict_learner_dag_grounded_and_asserted`. `--passthrough` is the
+  only mode that actually bypasses them.
+- **Guard coverage comes from `tutor_response_guard_accounting`, not from the
+  audit records.** The turn record carries an audit object whether or not the
+  guard ran, so counting records measures "did the turn happen". An early version
+  did exactly that and reported identical 56/56 coverage on both arms — a
+  parser artifact, not a result. Coverage now reads
+  `accounting.guards.*` booleans; `auditsFailed` (merit) stays a separate column.
+- **Accepted, repaired and fallback are three columns.** A
+  `guarded_deterministic_fallback` means the draft was rejected and a canned line
+  went out — a cost of the guard stack. Summing it into repairs would let a loss
+  read as a win.
 - **Resolution is the stub's own verdict**, read off
   `dialogueClosure.lifecycle.completedAtTurn`, not off the transcript text — the
-  same mechanism asked of both arms. `stopReason` records why an unresolved
-  dialogue stopped, and `budgetBinding` prevents a truncated dialogue being read
-  as a finished one.
+  same mechanism asked of both arms. It is tri-state: `--passthrough` bypasses
+  the closure lifecycle, so such an arm reports `null` (no verdict, `n/a` in the
+  table) rather than `false`, and `closureMeasurable` is the denominator.
+  `stopReason` records why an unresolved dialogue stopped, and `budgetBinding`
+  prevents a truncated dialogue being read as a finished one.
 - **First-draft repair is the architectural moment.**
   `turnRecord.tutorResponseRepaired: true` marks a draft that failed its guards
   and was regenerated before the learner saw it. Machine-recorded, so the demo
@@ -76,8 +91,8 @@ alone. The frozen A/B stays the causal instrument; the two are meant to be read
 together. Nothing here is an empirical claim about learning, human or
 simulated, and none of it belongs in the paper as one.
 
-Cost measured on the probe turns (codex CLI, medium effort): bare 28.5s wall and
-4 model calls per turn, instrumented 47.2s and 5, the extra call being the
-first-draft repair. Tokens are recorded but the CLI bridges are
-subscription-quota, so cost is expressed in calls and wall clock rather than
-dollars.
+Cost is expressed in calls and wall clock, not dollars — tokens are recorded but
+the CLI bridges are subscription-quota and report `cost: 0`. The per-arm cost
+table in `docs/tutor-instrumentation-showcase.md` is filled from a real showcase
+run with the run stamp beside it; the first attempt filled it from a single-turn
+probe and was wrong in both the coverage row and the shape of the baseline.

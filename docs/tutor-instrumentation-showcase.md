@@ -41,6 +41,7 @@ everything *except* a declared set of tutor-side flags:
 
 ```js
 TUTOR_STUB_SHOWCASE_ARM_FLAGS = [
+  '--passthrough',
   '--dag', '--no-dag', '--dag-mode',
   '--tutor-learner-dag', '--no-tutor-learner-dag',
   '--classifier', '--no-classifier',
@@ -67,15 +68,41 @@ needs a higher ceiling. Every run records whether either arm's budget actually
 bound (`budgetBinding`), so a truncated dialogue can never be read as a finished
 one.
 
-## Guard coverage is not guard merit
+## Why the baseline is `--passthrough`
 
-A bare arm passes some audits by never being asked. Measured on the probe runs:
-the bare arm ran 4 of the 7 `tutor*Audit` checks; the instrumented arm ran all 7.
-So the report counts `auditsRun` (coverage) separately from `auditsFailed`
-(merit) and says so in prose above the table. A "0 guard failures" line on an arm
-with low coverage means almost nothing.
+The first version of this config built the bare arm by dropping flags:
+`--no-classifier --no-memory-summary`, no `--dag`. That arm was not bare. The
+guard suite, first-draft recovery and the closure lifecycle all run
+**unconditionally** in `scripts/tutor-stub.js` — they are not behind
+`--dag`/`--committee`, which default to false anyway. Measured on a real
+Riverside dialogue, that "bare" arm made four model calls per turn, had five
+drafts sent back, and closed on
+`strict_learner_dag_grounded_and_asserted`. It was instrumented in every respect
+that matters, and the comparison showed almost nothing.
 
-The seven audits:
+`--passthrough` is the only genuinely bare mode the stub has. It bypasses
+`learner_classifier`, `learner_dag`, `register_selection`,
+`human_discourse_scaffold`, `response_composition`,
+`response_checks_and_repair`, `release_planner`, `dialogue_closure`,
+`mixed_prefetch`, `tutor_feedback` and the learning summary, leaving one model
+call per turn over system setup + public history + latest learner message.
+
+## Guard coverage is read from the accounting rows, not the audit records
+
+**The turn record carries an audit object whether or not the guard ran.**
+Counting `turnRecord.tutor*Audit` keys therefore measures "did the turn happen",
+not "was the guard enabled" — an early version of this report did exactly that
+and showed identical 56/56 coverage on both arms.
+
+Coverage comes from the stub's own `tutor_response_guard_accounting` trace row,
+which carries `accounting.guards.{leak, humanScaffold, questionSupport,
+dramaticRelease, actorialRealization, responseComposition, repetition,
+dialogueClosure}` as booleans plus an `accounting.outcome`. An arm that emits no
+such row (passthrough) scores 0 coverage rather than a clean sheet, and
+`auditsFailed` (merit) stays a separate column from coverage. A "0 guard
+failures" line on an arm with low coverage means almost nothing.
+
+The seven per-turn audits the record carries:
 
 | Audit key | What it checks |
 | --- | --- |
@@ -86,6 +113,32 @@ The seven audits:
 | `tutorRepetitionAudit` | The turn is not a restatement of the last one |
 | `tutorDialogueClosureAudit` | Closure moves are consistent with the lifecycle |
 | `tutorLiveSourceActionAlignmentAudit` | Cited sources match the action taken |
+
+## Accepted, repaired, fallback are three columns, not two
+
+`accounting.outcome` falls into three buckets and the report keeps them apart:
+
+- **accepted** — `guarded_original_accepted`,
+  `guarded_original_accepted_with_advisory`, `unguarded_original`. The first
+  draft went out.
+- **repaired** — the draft failed and the tutor spoke again; the learner saw
+  only the second draft. This is the architectural moment the showcase exists to
+  show.
+- **fallback** — `guarded_deterministic_fallback`. The draft failed and a canned
+  deterministic line went out instead. That is a **cost** of the guard stack,
+  not a win.
+
+Summing fallbacks into repairs would let a loss read as a gain, which is why
+`classifyGuardOutcome` exists and why the table has three columns.
+
+## Resolution is tri-state
+
+`--passthrough` bypasses `dialogue_closure`, so a passthrough arm has no
+resolution verdict — not a negative one. `closure.grounded` is therefore
+`true | false | null`, `closure.available` says whether the lifecycle ran at all,
+and `closureMeasurable` is the denominator for the Resolved column. An arm with
+no lifecycle reads `n/a`, because scoring it 0/N would be scoring it on an
+instrument it does not carry.
 
 ## First-draft repair
 
@@ -128,10 +181,12 @@ gets a full-height column and the columns are aligned by **turn index**, with a
 gutter carrying the index. Turn 0 is the tutor opening. A cell past the end of a
 shorter dialogue says so rather than shifting the rows out of alignment.
 
-Chips on a turn: `first draft repaired` (ochre), one per failed audit (red),
-`N guards ok` (green), `no guards ran` (grey — the coverage case), and a closure
-chip on the turn where the lifecycle completed. One toggle shows or hides the
-guard chips.
+Chips on a turn: `first draft repaired` (ochre), `draft rejected · fallback line`
+(brick), one per failed audit (red), `N guards ok` (green), `no guards ran` (grey
+— the passthrough case, keyed off the accounting row rather than the audit
+count), and a closure chip on the turn where the lifecycle completed. One toggle
+shows or hides the guard chips. The column head carries the arm's closure verdict
+in the same three states as the table: resolved, unresolved, or no verdict.
 
 ## Artifacts
 
@@ -156,15 +211,18 @@ that model for the rest of the run.
 
 ## Cost
 
-Measured on the probe turns (codex CLI, medium effort, one turn of each arm):
+Fill this table from a real run, not from a single-turn probe. The first attempt
+at it was probe-derived and wrong in both the coverage row and the shape of the
+baseline; the numbers below come from whichever showcase run the section cites,
+and the run stamp belongs beside them.
 
-| | Bare | Instrumented |
+| | Bare (passthrough) | Instrumented |
 | --- | ---: | ---: |
-| Wall clock per turn | 28.5s | 47.2s |
-| Model calls per turn | 4 | 5 |
-| Tutor calls | 1 | 2 (original + repair) |
-| Audits run | 4 of 7 | 7 of 7 |
+| Wall clock per turn | | |
+| Model calls per turn | | |
+| Tutor calls per turn | | |
+| Guard coverage | 0% (bypassed) | |
+| Accepted / repaired / fallback | | |
 
-The extra call is the first-draft regeneration. Token cost is recorded but the
-CLI bridges are subscription-quota, so `cost` comes back as `0`; express cost in
-calls and wall clock, not dollars.
+Token cost is recorded but the CLI bridges are subscription-quota, so `cost`
+comes back as `0`; express cost in calls and wall clock, not dollars.

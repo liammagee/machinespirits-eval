@@ -167,17 +167,27 @@ function openPath(target) {
   spawn(opener, [target], { detached: true, stdio: 'ignore' }).unref();
 }
 
+function dialogueEnding(dialogue) {
+  if (!dialogue.closure.available) return `no closure verdict (${dialogue.stopReason})`;
+  return dialogue.closure.grounded ? 'resolved' : dialogue.stopReason;
+}
+
 function printSummary(report, paths) {
   console.log(`tutor instrumentation showcase: ${report.status} (${report.plan.preset})`);
   for (const arm of report.summary.arms) {
+    // `resolved` is over the dialogues that carried a closure lifecycle at all,
+    // not over every dialogue: a passthrough arm bypasses closure and has no
+    // verdict either way.
+    const resolved = arm.closureMeasurable ? `${arm.grounded}/${arm.closureMeasurable}` : 'n/a';
+    const coverage = arm.meanGuardCoverage === null ? '-' : `${Math.round(arm.meanGuardCoverage * 100)}%`;
     console.log(
       `  ${arm.baseline ? '*' : ' '} ${arm.id.padEnd(14)}` +
-        ` resolved ${arm.grounded}/${arm.dialogues}` +
+        ` resolved ${resolved.padStart(4)}` +
         `  turns ${String(arm.meanTurns ?? '-').padStart(3)}` +
         `  calls ${String(arm.meanModelCalls ?? '-').padStart(3)}` +
         `  ${String(arm.meanSecondsPerTurn ?? '-').padStart(5)}s/turn` +
-        `  guards ${arm.auditsRun - arm.auditsFailed}/${arm.auditsRun} ok` +
-        `  repairs ${arm.repairs}` +
+        `  guards ${coverage.padStart(4)}` +
+        `  accepted ${arm.guardOutcomes.accepted} repaired ${arm.guardOutcomes.repaired} fallback ${arm.guardOutcomes.fallback}` +
         (arm.blocked ? `  (${arm.blocked} blocked)` : ''),
     );
     if (arm.budgetBinding) console.log(`      warning: ${arm.budgetBinding} dialogue(s) hit the model-call budget`);
@@ -258,7 +268,7 @@ async function main() {
       console.error(
         `  ${result.id}: ${result.status}` +
           (result.dialogue
-            ? ` — ${result.dialogue.turnCount} turns, ${result.dialogue.modelCalls} calls, ${Math.round(result.wallClockMs / 1000)}s, ${result.dialogue.closure.grounded ? 'resolved' : result.dialogue.stopReason}`
+            ? ` — ${result.dialogue.turnCount} turns, ${result.dialogue.modelCalls} calls, ${Math.round(result.wallClockMs / 1000)}s, ${dialogueEnding(result.dialogue)}`
             : result.error
               ? ` (${result.error.message})`
               : ''),
