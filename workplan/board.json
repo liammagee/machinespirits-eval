@@ -1,15 +1,15 @@
 {
-  "generated": "2026-07-26T03:16:32.957Z",
+  "generated": "2026-07-26T03:22:38.863Z",
   "counts": {
     "total": 203,
     "byStatus": {
-      "done": 177,
+      "done": 178,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
       "active": 6,
       "archived": 4,
-      "review": 4
+      "review": 3
     },
     "byType": {
       "research": 46,
@@ -555,42 +555,6 @@
         "lambda"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "optimize-hermetic-test-suite",
-      "title": "Stabilize and accelerate the hermetic test suite",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-26",
-      "updated": "2026-07-26",
-      "verification": "Stable exhaustive shards, split tutor-stub interactive coverage, diagnostic and natural-teardown gates, Node 20-compatible CI installation, and unique validation steps pass focused contracts plus the complete hermetic, lint, formatting, and source-only workplan checks.",
-      "branch": "codex/test-suite-optimizations",
-      "depends_on": [
-        "make-inhoused-tests-and-coverage-first-class",
-        "refactor-pty-ci-lane"
-      ],
-      "links": {
-        "code": [
-          "scripts/run-hermetic-tests.js",
-          "tests/helpers/tutorStubInteractiveHarness.js",
-          ".github/workflows/test.yml",
-          ".github/workflows/validate.yml"
-        ],
-        "items": [
-          "codebase-refactoring-program"
-        ]
-      },
-      "tags": [
-        "testing",
-        "ci",
-        "hermetic",
-        "performance",
-        "tutor-stub"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "refactor-tutor-stub-interim-frame-projection",
@@ -1701,6 +1665,45 @@
       ],
       "milestone": "human-pilot-prep",
       "branch": "codex/make-pilot-state-writes-atomic"
+    },
+    {
+      "id": "optimize-hermetic-test-suite",
+      "title": "Stabilize and accelerate the hermetic test suite",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Stable exhaustive shards, split tutor-stub interactive coverage, diagnostic and natural-teardown gates, Node 20-compatible CI installation, and unique validation steps pass focused contracts plus the complete hermetic, lint, formatting, and source-only workplan checks.",
+      "branch": "codex/test-suite-optimizations",
+      "depends_on": [
+        "make-inhoused-tests-and-coverage-first-class",
+        "refactor-pty-ci-lane"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/258"
+        ],
+        "code": [
+          "scripts/run-hermetic-tests.js",
+          "tests/helpers/tutorStubInteractiveHarness.js",
+          ".github/workflows/test.yml",
+          ".github/workflows/validate.yml"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "hermetic",
+        "performance",
+        "tutor-stub"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "paper2-priority1-closeout",
