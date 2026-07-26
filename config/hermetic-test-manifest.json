@@ -413,6 +413,7 @@
         "tests/tutorStubHumanDiscourseLayer.test.js",
         "tests/tutorStubIngest.test.js",
         "tests/tutorStubInteractiveModes.test.js",
+        "tests/tutorStubInterimPresentation.test.js",
         "tests/tutorStubJointPerformanceFirstDraft.test.js",
         "tests/tutorStubLabs.test.js",
         "tests/tutorStubLabsRecipeCli.test.js",
