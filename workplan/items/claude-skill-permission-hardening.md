@@ -18,6 +18,8 @@ links:
     - config/agent-skill-sync.json
     - .github/workflows/test.yml
   notes: https://github.com/liammagee/machinespirits-eval/issues/74
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/297
 tags:
   - agent-skills
   - permissions
