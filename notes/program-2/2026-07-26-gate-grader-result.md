@@ -99,6 +99,70 @@ phase-matched observational baseline, flagged moments only, `voiced_derived`:
 `compiled_constraint` −8.9 (z −2.55). All negative, only the confounded one
 separable from zero — see below.
 
+## The discrimination is in the position flag, not the model call
+
+The live gate is a conjunction, not a single vote:
+
+```
+fired ≡ !outsideWindow && !nearClosure && !closeInquiry && (warrantSkip || stagnantRepeat)
+```
+
+`warrantSkip` is the model's `evidence_use` label. `nearClosure` and `closeInquiry`
+are deterministic, computed from the same turn's DAG state. Splitting the
+conjunction says which half is doing the work.
+
+Denominator: `outsideWindow` (`turn >= 3 && turn <= 24`) is a harness constant every
+candidate policy inherits, so it belongs in the denominator. `nearClosure` and
+`closeInquiry` are the deterministic layer's *judgement* and belong in the policy
+under test. On the 2,339 window-eligible observational moments:
+
+| policy | fires | stall precision |
+|---|---|---|
+| live rule (model vote AND position layer) | 844 (36%) | 85.1% (718/844) |
+| model vote alone (ignore position layer) | 1,162 (50%) | 80.9% (940/1,162) |
+| **position layer alone (no model call)** | **1,736 (74%)** | **86.6% (1,504/1,736)** |
+| `omits_warrant` only | 577 (25%) | 80.2% |
+| `overleaps_evidence` only | 525 (22%) | 82.9% |
+| always fire | 2,339 (100%) | 82.4% (1,928/2,339) |
+
+`near_closure` read as a whole-population state feature is +16.3 points (z 8.03),
+replicated per archive. The paid call has no positive incremental value in any
+stratum. The position flag beats fire-on-everything by +4.2 (SE 1.1, z 3.71) — and
+does **not** beat the incumbent: position minus live rule is +1.6 (SE 1.5, z 1.06).
+The two agree on 1,447 of 2,339 eligible turns (61.9%).
+
+What the flag reads is worth stating precisely, because it is not mind-reading.
+`grounded` moves −18.9 on the very rows `near_closure` selects. It reads *position
+on the path*, not a stalled learner. "Do not interrupt someone four-fifths of the
+way through a derivation" is a sound operating rule about where the learner is, not
+a claim about what they are thinking.
+
+## Decision: no live A/B on the cheaper policy
+
+The obvious follow-up — delete the per-turn model call, keep the position flag —
+is recorded here as **not licensed**, so it is not re-proposed. Three reasons, and
+the first was expected to point the other way:
+
+1. **No cost saving.** `evidence_use` rides inside `extractCombinedLearnerAnalysis`
+   (`scripts/tutor-stub.js`), one call that also produces the DAG state and the
+   register analysis. `nearClosure` derives from *that same call's*
+   `currentDag.bestPathCoverage`. Both gate signals are downstream of one
+   unavoidable call. Dropping the label from the gate saves zero calls and zero
+   latency.
+2. **No margin over the incumbent** to detect: +1.6 points, z 1.06.
+3. **The fire rate moves 36% → 74%.** That is a different intervention regime, not
+   a drop-in swap, and it cannot be rate-matched without a tuning knob the record
+   does not license — a cooldown sweep oscillates 81.1 → 89.3 → 85.7 → 92.3 → 85.4
+   → 80.6% over ≤376 fired moments, which is fishing, not calibration.
+
+What survives is a robustness argument, weaker than a cost one and worth having:
+the position flag is deterministic and judge-invariant, whereas `evidence_use`
+reaches 78.6% cross-family agreement (weighted κ 0.583) even after the v2 repair
+and reproduces itself on ~60% of re-asks. Removing the label from the gate would
+remove the standing caveat that the intervention rate is partly a property of the
+chosen judge and the sampled draw. That is a reason to prefer the flag if the gate
+is ever rebuilt for other reasons. It is not a reason to spend quota proving it.
+
 ## Two traps in the measurement, both live and both avoidable
 
 **`compiled_constraint` cannot be read as a gate result.** Its fired-turn advance
@@ -153,8 +217,11 @@ Does not settle: whether a *better* gate exists. The off-policy channel ranks ho
 well a rule predicts stalls in recorded dialogue and can score any candidate — a
 different label set, a threshold, a local model's stored predictions — at zero cost.
 It cannot say what a rule would *cause*, because the outcomes are the ones that
-followed the gate that actually ran. A rule that beat 84.8% by a real margin would
-be worth a live run; nothing tested here does.
+followed the gate that actually ran. One candidate does clear the fire-on-everything
+baseline by a real margin — the deterministic position flag, +4.2 points — but it
+does not clear the *incumbent*, and the three reasons above are why it is not going
+to a live run. Any future candidate has to beat 85.1% at a comparable fire rate, not
+82.4% at double it.
 
 Does not settle: whether `voiced_derived` at a 15.2% base rate is the right target.
 It is sparse but not degenerate, and the tutor-gated components — which are 2–3×
@@ -164,10 +231,23 @@ on the choice.
 ## Reproduce
 
 ```bash
-node scripts/grade-point-of-action-gate.js --json exports/point-of-action-gate-grade.json
+npm run program2:gate-grade -- --json exports/point-of-action-gate-grade.json
 ```
 
 `--archive DIR` (repeatable) to scope it, `--per-persona` for the persona
-breakdown, `--min-turns N` to raise the dialogue-length floor. Related:
+breakdown, `--min-turns N` to raise the dialogue-length floor.
+
+`npm run program2:gate-grade:check` is the structural integrity gate: it fails
+(exit 1) on an unknown arm, an arm-classification mismatch, a missing archive, an
+archive that stopped recording the suppression block, or no scorable decisions. It
+never fails on a *number* — a small discrimination or a low advance rate is a
+finding, and a check that failed on those would be a check demanding a particular
+result. `scripts/run-program2-live-pilot.js` calls the same loader in-process after
+every launch pass and records the verdict into `launch-state.json`, so the grading
+gap this note was written to close cannot silently reopen on the next gate. That
+step never throws: by the time it runs the jobs are sealed and the tokens are spent,
+and failing there would break resume without saving anything.
+
+Related:
 [`2026-07-26-relabel-sample-result.md`](2026-07-26-relabel-sample-result.md) for the
 label-side half of the same question.

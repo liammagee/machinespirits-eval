@@ -7,7 +7,7 @@ priority: P2
 owner: unassigned
 source: manual
 created: 2026-07-26
-updated: 2026-07-26
+updated: 2026-07-27
 verification: Discrimination is computed only on arms whose fired turns carry no
   injection, derived per run from the traces rather than from a hardcoded arm
   list, so a new arm or a changed injection path reports
@@ -136,8 +136,43 @@ Also open: whether a better gate exists. The off-policy channel ranks any
 candidate rule against recorded dialogue at zero cost — a different label set, a
 threshold, a local model's stored predictions. It cannot say what a rule would
 *cause*, since the recorded outcomes followed the gate that actually ran, so it
-screens candidates rather than settling them. A rule beating 84.8% by a real
-margin would justify a live run. Nothing tested here does.
+screens candidates rather than settling them. The bar is 85.1% at a comparable
+fire rate, not 82.4% at double it.
+
+## Follow-up (2026-07-26): the discrimination is in the position flag, and the cheaper policy is not going to a live run
+
+Splitting the live conjunction into its halves on the 2,339 window-eligible
+observational moments puts the discrimination entirely on the deterministic side:
+position layer alone 86.6% at a 74% fire rate, model vote alone 80.9% at 50%, the
+live conjunction 85.1% at 36%, always-fire 82.4%. `near_closure` as a
+whole-population state feature is +16.3 points (z 8.03), replicated per archive.
+The paid call has no positive incremental value in any stratum.
+
+The obvious follow-up — delete the per-turn model call, keep the position flag — is
+recorded as **not licensed**, so it is not re-proposed:
+
+1. **No cost saving.** `evidence_use` rides inside `extractCombinedLearnerAnalysis`,
+   one call that also produces the DAG state and the register analysis, and
+   `nearClosure` derives from that same call's `currentDag.bestPathCoverage`.
+   Dropping the label from the gate saves zero calls and zero latency.
+2. **No margin over the incumbent**: position minus live rule is +1.6, SE 1.5,
+   z 1.06.
+3. **The fire rate moves 36% → 74%** — a different intervention regime, not a
+   drop-in swap, and not rate-matchable without a cooldown knob that oscillates
+   81.1–92.3% over ≤376 fired moments.
+
+What survives is a robustness argument, not a cost one: the flag is deterministic
+and judge-invariant where the label reaches 78.6% cross-family agreement
+(κ 0.583) and ~60% self-reproduction. Worth preferring if the gate is rebuilt for
+other reasons; not worth quota to prove. The flag also reads *position on the path*
+rather than an interior — `grounded` moves −18.9 on the rows it selects.
+
+Wired in so the gap cannot reopen: `npm run program2:gate-grade` /
+`program2:gate-grade:check` (structural failures only — unknown arm, arm mismatch,
+missing archive, suppression block not recorded, no scorable decisions; never a
+failure on a number), and `scripts/run-program2-live-pilot.js` runs the same loader
+in-process after each launch pass, recording the verdict into `launch-state.json`
+without throwing. Folded into the paper as the §6.22 addendum (v3.0.230).
 
 Not in scope: re-running the live phases under the relabelled gate. The reason is
 in the parent item — turns silent under v1 that fire under v2 are a
