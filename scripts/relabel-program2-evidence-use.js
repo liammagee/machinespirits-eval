@@ -85,6 +85,7 @@ function parseArgs(argv) {
     checkpointEvery: 100,
     concurrency: 2,
     stratify: 0,
+    sample: 0,
     seed: 1,
     plan: false,
     report: false,
@@ -103,15 +104,22 @@ function parseArgs(argv) {
     else if (argument === '--checkpoint-every') options.checkpointEvery = Number.parseInt(next(), 10);
     else if (argument === '--concurrency') options.concurrency = Number.parseInt(next(), 10);
     else if (argument === '--stratify') options.stratify = Number.parseInt(next(), 10);
+    else if (argument === '--sample') options.sample = Number.parseInt(next(), 10);
     else if (argument === '--seed') options.seed = Number.parseInt(next(), 10);
     else if (argument === '--plan') options.plan = true;
     else if (argument === '--report') options.report = true;
     else throw new Error(`Unknown argument: ${argument}`);
   }
-  for (const key of ['limit', 'checkpointEvery', 'concurrency', 'stratify', 'seed']) {
+  for (const key of ['limit', 'checkpointEvery', 'concurrency', 'stratify', 'sample', 'seed']) {
     if (!Number.isFinite(options[key]) || options[key] < 0) throw new Error(`--${key} must be a non-negative integer`);
   }
   if (options.concurrency < 1) options.concurrency = 1;
+  // Two selectors with opposite intents would silently compose into a third.
+  if (options.stratify && options.sample) {
+    throw new Error(
+      '--stratify and --sample are mutually exclusive: one balances the rare labels, the other stands for the archive',
+    );
+  }
   return options;
 }
 
@@ -249,6 +257,29 @@ function stratifiedSlice(records, count, seed) {
     cursor += 1;
   }
   return picked;
+}
+
+// The other selector, and the one to use when the output has to stand for the
+// archive. `--limit` takes records in directory order, which is one phase and
+// its earliest dialogues; `--stratify` balances the rare labels on purpose. Both
+// are the wrong shape for estimating a rate, because the estimate inherits the
+// selector's bias and no amount of sampling removes it.
+//
+// Fisher-Yates over a name-sorted list, not `sort(() => random() - 0.5)`: a
+// comparator that ignores its arguments is not a shuffle. It biases toward the
+// input order and the result depends on the engine's sort algorithm, so it would
+// neither be uniform nor reproducible across Node versions.
+export function uniformSample(records, count, seed) {
+  const pool = [...records].sort((a, b) => a.key.localeCompare(b.key));
+  if (count >= pool.length) return pool;
+  const random = mulberry32(seed);
+  for (let index = pool.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(random() * (index + 1));
+    [pool[index], pool[swap]] = [pool[swap], pool[index]];
+  }
+  // Re-sort the drawn subset so the sweep still runs in a stable order and a
+  // resumed run picks up where it left off.
+  return pool.slice(0, count).sort((a, b) => a.key.localeCompare(b.key));
 }
 
 function tally(values) {
@@ -396,6 +427,7 @@ async function main() {
   const done = loadDone(outFile);
   let pending = records.filter((record) => !done.has(record.key));
   if (options.stratify) pending = stratifiedSlice(pending, options.stratify, options.seed);
+  if (options.sample) pending = uniformSample(pending, options.sample, options.seed);
   if (options.limit) pending = pending.slice(0, options.limit);
 
   console.log(`archive:        ${options.archive}`);
@@ -412,7 +444,12 @@ async function main() {
     console.log(`  REFUSED (prompt drift): ${unsubstitutable.length} — these will not be relabelled`);
   }
   console.log(`already done:   ${done.size}`);
-  console.log(`this run:       ${pending.length}${options.stratify ? ` (stratified, seed ${options.seed})` : ''}`);
+  const selector = options.stratify
+    ? ` (stratified, seed ${options.seed})`
+    : options.sample
+      ? ` (uniform sample, seed ${options.seed})`
+      : '';
+  console.log(`this run:       ${pending.length}${selector}`);
   console.log(
     `stored v1 labels: ${tally(records.map((record) => record.storedTurn.evidence_use))
       .map(([label, count]) => `${label}=${count}`)
