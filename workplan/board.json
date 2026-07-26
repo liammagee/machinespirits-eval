@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-25T23:29:54.334Z",
+  "generated": "2026-07-26T00:14:45.477Z",
   "counts": {
-    "total": 197,
+    "total": 198,
     "byStatus": {
-      "done": 174,
+      "done": 175,
       "blocked": 4,
       "dropped": 3,
       "triaged": 6,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 44,
-      "maintenance": 43,
+      "maintenance": 44,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -261,6 +261,7 @@
           "refactor-tutor-stub-response-details",
           "refactor-tutor-stub-field-presentation",
           "refactor-tutor-stub-closeout-projection",
+          "refactor-tutor-stub-interim-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -507,8 +508,8 @@
       "blocked_by": "tutor-stub-transition-reward-model ended with a killed claim; no supported learned-ranking prerequisite"
     },
     {
-      "id": "refactor-tutor-stub-closeout-projection",
-      "title": "Refactor tutor-stub closeout projection",
+      "id": "refactor-tutor-stub-interim-presentation",
+      "title": "Refactor tutor-stub interim presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -516,31 +517,34 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "Pure closeout labels, status, count formatting, and guard-accounting aggregation preserve the established report schema and values; focused, hermetic, static, and source-only gates pass without model calls.",
-      "branch": "codex/refactor-tutor-stub-closeout-projection",
+      "verification": "One pure interim-presentation service preserves signed deltas, capability and strength labels, bottleneck copy, and every contextual CLI hint; focused, PTY, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-interim-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-field-presentation"
+        "refactor-tutor-stub-closeout-projection"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubCloseoutProjection.js",
+          "services/tutorStubInterimPresentation.js",
+          "services/tutorStubLearningSummary.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubCloseoutProjection.test.js"
+          "tests/tutorStubInterimPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-field-presentation"
+          "refactor-tutor-stub-closeout-projection"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
-        "closeout",
-        "guard-accounting"
+        "presentation",
+        "terminal",
+        "loading-indicator"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2328,6 +2332,44 @@
         "cycles",
         "accessibility",
         "contracts"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-closeout-projection",
+      "title": "Refactor tutor-stub closeout projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Pure closeout labels, status, count formatting, and guard-accounting aggregation preserve the established report schema and values; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-closeout-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-field-presentation"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubCloseoutProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubCloseoutProjection.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-field-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "closeout",
+        "guard-accounting"
       ],
       "milestone": "evaluation-infrastructure"
     },
