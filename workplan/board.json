@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T14:06:12.194Z",
+  "generated": "2026-07-26T21:55:07.245Z",
   "counts": {
-    "total": 220,
+    "total": 221,
     "byStatus": {
-      "done": 193,
+      "done": 194,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 51,
-      "maintenance": 59,
+      "maintenance": 60,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -195,6 +195,7 @@
           "refactor-tutor-stub-session-status-presentation",
           "refactor-tutor-stub-training-reuse-presentation",
           "refactor-tutor-stub-dialogue-settings-presentation",
+          "refactor-tutor-stub-model-choice-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -592,38 +593,36 @@
       "branch": "claude/dialogue-conclusion-recognition"
     },
     {
-      "id": "refactor-tutor-stub-dialogue-settings-presentation",
-      "title": "Refactor tutor-stub dialogue-settings presentation",
+      "id": "refactor-tutor-stub-model-choice-presentation",
+      "title": "Refactor tutor-stub model-choice presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
       "created": "2026-07-26",
-      "updated": "2026-07-26",
-      "verification": "Live default and configured /settings bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-dialogue-settings-presentation",
+      "updated": "2026-07-27",
+      "verification": "Live tutor and classifier model-choice bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-model-choice-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-training-reuse-presentation"
+        "refactor-tutor-stub-dialogue-settings-presentation"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubDialogueSettingsPresentation.js",
-          "services/tutorStubTrainingReusePresentation.js",
+          "services/tutorStubModelChoicePresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubDialogueSettingsPresentation.test.js",
-          "tests/tutorStubTrainingReusePresentation.test.js",
-          "tests/tutorStubLastSettings.test.js",
+          "tests/tutorStubModelChoicePresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
           "tests/tutorStubCommandRegistry.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-training-reuse-presentation"
+          "refactor-tutor-stub-dialogue-settings-presentation"
         ]
       },
       "tags": [
@@ -631,7 +630,8 @@
         "tutor-stub",
         "presentation",
         "cli",
-        "settings"
+        "settings",
+        "models"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2744,6 +2744,53 @@
         "presentation",
         "cli",
         "proof-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-dialogue-settings-presentation",
+      "title": "Refactor tutor-stub dialogue-settings presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live default and configured /settings bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-dialogue-settings-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-training-reuse-presentation"
+      ],
+      "links": {
+        "prs": [
+          280
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDialogueSettingsPresentation.js",
+          "services/tutorStubTrainingReusePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDialogueSettingsPresentation.test.js",
+          "tests/tutorStubTrainingReusePresentation.test.js",
+          "tests/tutorStubLastSettings.test.js",
+          "tests/tutorStubCommandRegistry.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-training-reuse-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "settings"
       ],
       "milestone": "evaluation-infrastructure"
     },
