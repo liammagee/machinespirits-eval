@@ -157,7 +157,7 @@ test('the CLI retains reuse resolution, state, persistence, trace, and terminal 
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTrainingReusePresentation.js'), 'utf8');
   const reuseSlice = cliSource.slice(
-    cliSource.indexOf('function printTrainingReuseStatus'),
+    cliSource.indexOf('function trainingReuseStatusLines'),
     cliSource.indexOf('function printDialogueSettings'),
   );
 

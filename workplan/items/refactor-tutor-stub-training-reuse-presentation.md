@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-training-reuse-presentation
 title: Refactor tutor-stub training-reuse presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-session-status-presentation
 links:
+  prs:
+    - 276
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -91,3 +93,6 @@ Log:
   workplan, syntax, and diff gates pass; generated workplan views remain
   untouched. The larger dialogue-settings projector is the logical next child
   after this slice merges.
+- 2026-07-26 — PR #276 merged as `ccdf944e` after all ten CI lanes passed; the
+  serialized workplan render followed as `c6cb954f`. This child is closed and
+  the full dialogue-settings presentation child is active.

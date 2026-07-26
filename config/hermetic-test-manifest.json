@@ -402,6 +402,7 @@
         "tests/tutorStubCurriculumTranslation.test.js",
         "tests/tutorStubDagSnapshotPresentation.test.js",
         "tests/tutorStubDevelopmentSpeakerTransport.test.js",
+        "tests/tutorStubDialogueSettingsPresentation.test.js",
         "tests/tutorStubDiscoursePlane.test.js",
         "tests/tutorStubDramaticRelease.test.js",
         "tests/tutorStubDueSourceRenderer.test.js",
