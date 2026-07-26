@@ -70,8 +70,39 @@ worlds pass; world-021 and world-030 are listed as known-unreachable authoring
 defects (each interposes a word inside the name) and need an author decision,
 not a normaliser change.
 
-Remaining. Re-score the 18 sealed phase-5e traces with the fixed matcher to
-count how many would have concluded — the traces are not on disk in any
-reachable worktree, so this needs whoever ran the pilot. Until that is done the
-phase-5e committee-vs-control closure comparison stays uninterpretable, since
-both arms carry the same defect.
+Re-score. All 18 sealed traces replayed against the patched matcher
+(`exports/program2-live-pilot-5e-r1/traces`; several directories hold an
+aborted first attempt beside the real run, so take the transcript with the most
+`turn_complete` records, not the first file). 17 of 18 entailed the answer,
+median turn 10. None closed. Under the old matcher none would have closed —
+0 of 150 `assert_answer` turns resolved to any candidate. Under the patched
+matcher 86 of 150 resolve: 62 name the secret, 24 name the mirror. The
+remaining 64 are causal-mechanism sentences ("the bolted shutter forces the
+doubled spiral"), and 0 of 64 are mintable as a name, so every one of them is
+now an explicit rejection where previously it fabricated a fact. That
+fabrication is the whole of the inflated `unsupportedAssertionCount`. p5e-04's
+`premature_assertion` verdict survives on its own evidence — it never entailed
+and named the secret 6 times before entailment — but its magnitude was
+inflated by minting.
+
+Closure counterfactual, both fixes. This defect never acted alone. Counting a
+dialogue as closed when either channel fires — the assertion slot (this item)
+or a voiced derivation of the secret (`aff7d6ed`, `claude/tutor-closure-drive`)
+— 16 of 18 close, median turn 10, 459 of 720 turns saved. Committee 9/10,
+control 7/8; proof-skipper 8/9, affective-resistant 8/9. The two arms fail
+identically, so the pilot's committee-vs-control closure comparison was
+measuring the instrument, not the arms.
+
+Attribution, stated plainly. The voiced-derivation channel alone reaches 16 of
+18; the assertion channel alone reaches 9. On this run the fix in this item
+adds no dialogue the other does not already close, and closes one dialogue
+(p5e-03) one turn earlier. Its distinct value is the second harm — 64
+fabricated facts and 24 misrecorded mirror assertions — plus the corpus lint,
+not the closure count.
+
+Remaining. Two dialogues still do not close and both are real. p5e-04 never
+entailed. p5e-18 entailed at turn 10 but neither asserted nor voiced the
+secret; it is the one case where the learner reached the answer and never
+stated it in either channel. Re-running the pilot on the fixed stack is what
+would replace this counterfactual with a measurement — the replay cannot model
+how the tutor would have behaved after closing.
