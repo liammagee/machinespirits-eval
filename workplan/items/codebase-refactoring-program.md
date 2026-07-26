@@ -48,6 +48,7 @@ links:
     - refactor-tutor-stub-interim-frame-projection
     - refactor-tutor-stub-cli-help-projection
     - refactor-tutor-stub-interactive-help-projection
+    - refactor-tutor-stub-feature-map-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -341,3 +342,14 @@ Log:
   cleanly. Final-base help/registry/terminal coverage passes 60/60, and the
   complete hermetic root 6,907-test plus tutor-core 137-test contracts remain
   zero-skip green.
+- 2026-07-26 — PR #265 merged the interactive-help child as `4030d09f` with
+  every required CI lane green; the serialized render followed as `130efa09`.
+  Closed that child and activated `refactor-tutor-stub-feature-map-projection`
+  to move only pure capability-map and quick-start line projection while
+  retaining capability/state resolution, terminal writes, slash dispatch, and
+  runtime behavior in the CLI.
+- 2026-07-26 — The feature-map child reached review with launch and live-session
+  bytes unchanged, exact active-context fixtures, a 20-line CLI reduction,
+  64/64 focused tests, and complete zero-skip hermetic parity. Capability/state
+  resolution, terminal writes, slash dispatch, traces, models, and runtime
+  behavior remain CLI-owned.

@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-interactive-help-projection
 title: Refactor tutor-stub interactive help projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -24,6 +24,8 @@ links:
     - tests/tutorStubInteractiveHelp.test.js
     - tests/tutorStubHumanDiscourseLayer.test.js
     - config/hermetic-test-manifest.json
+  prs:
+    - 265
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-cli-help-projection
@@ -84,3 +86,7 @@ Log:
   composed cleanly. The final-base help/registry/terminal surface passes 60/60;
   the complete hermetic root contract passes all 6,907 tests with zero skips
   and tutor-core passes 137/137 with zero skips.
+- 2026-07-26 — PR #265 merged as `4030d09f` with every required CI lane
+  green; the serialized workplan render followed as `130efa09`. Closed this
+  child and handed the next pure R3 presentation seam to
+  `refactor-tutor-stub-feature-map-projection`.
