@@ -1,7 +1,7 @@
 ---
 id: evidence-use-v2-default-and-archive-relabel
 title: Make v2_bridge_voiced the default evidence_use rubric and relabel the archive under it
-status: active
+status: done
 type: infra
 priority: P2
 owner: unassigned
@@ -28,6 +28,7 @@ links:
     - program-2-context-vs-weights-finetune
   notes:
     - notes/program-2/2026-07-26-v2-relabel-distill-path.md
+    - notes/program-2/2026-07-26-relabel-sample-result.md
 tags:
   - tutor-stub
   - classifier
@@ -164,3 +165,41 @@ decides *what it says*, and owns the +0.236/+0.202 Phase 5b/5c gaps). The
 existing `PROGRAM-2-FINETUNE-PLAN.md` Tasks A and B are entirely writer-seat, so
 a local classifier is a new task rather than a continuation of that plan. Both
 options need the full sweep's numbers before either can be pre-registered.
+
+## Outcome: the flip landed, the full sweep is declined
+
+The default flip shipped in PR #272. The archive relabel was then run as a
+proportionate slice instead of a full sweep, and the slice closed the question
+against it. Full numbers in
+`notes/program-2/2026-07-26-relabel-sample-result.md`; 400 records drawn
+uniformly from the step4 training archive with the new `--sample`, 398 usable,
+23 minutes.
+
+The result is that the instrument's own re-draw variance swamps the edit. Records
+whose stored label was *not* `omits_warrant` — where the v2 clause cannot apply —
+changed 39.4% of the time (111/282), against 45.7% (53/116) where it does apply.
+41 records moved *into* `omits_warrant` from byte-identical clauses, a direction a
+tightening edit cannot produce, against 53 moving out. `cites_public_evidence`
+retains 32.9% of itself. The gate-level shift was −3.27 points, SE 2.42, 1.35 SE
+from zero: right direction, not separable from nothing at this n.
+
+So the earlier bullet above — "only the full sweep can" settle the direction — is
+retired rather than satisfied. The full sweep at n=4,900 would reach SE ≈ 0.9 and
+could resolve a 3-point shift, but that number is denominator bookkeeping, and the
+corpus is unusable as labels either way: a per-turn target that is roughly 60%
+stable to a re-ask cannot be trained against, and majority-of-k over three draws
+that noisy is not the repair it looks like.
+
+This closes the classifier seat on this instrument. It does not touch the v2 flip,
+which rests on a different measurement (cross-family agreement on a defined
+held-out set, 26.2% → 78.6%, weighted κ 0.583) asking a different question. It
+does not touch the writer seat. The next piece of work for a local *when to
+intervene* model is not labels at all — nothing currently grades the gate's
+decisions, so a local gate could not be scored against the frontier one even with
+a perfect corpus.
+
+Reusable residue: `--sample` in `scripts/relabel-program2-evidence-use.js`. The
+tool shipped with two selectors that are both deliberately biased (`--limit` takes
+directory order, which is one phase and its earliest dialogues; `--stratify`
+balances the rare labels on purpose), so neither can produce a rate that stands
+for the archive.
