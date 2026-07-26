@@ -1,18 +1,17 @@
 ---
 id: tutor-stub-resume-handoff
 title: Give resumed tutor-stub sessions a dialogue handoff
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-26
 updated: 2026-07-26
-verification: >-
-  Unit, interactive CLI, and process-session HTTP regressions prove a resumed
-  dialogue publicly recaps its question and last learner contribution, reprises
-  the last tutor question or point, informs the next turn, and does not advance
-  completed turns, proof state, DAG state, or evidence release.
+verification: Unit, interactive CLI, and process-session HTTP regressions prove
+  a resumed dialogue publicly recaps its question and last learner contribution,
+  reprises the last tutor question or point, informs the next turn, and does not
+  advance completed turns, proof state, DAG state, or evidence release.
 branch: codex/proper-tutor-resumption
 depends_on:
   - tutor-stub-session-recipes-explicit-resume
@@ -52,3 +51,7 @@ Log:
   record. Focused affected suites passed 109/109; the full hermetic suite,
   tutor-core 137/137, ESLint, Prettier, manifest synchronization, and diff
   checks passed.
+- 2026-07-27 — Closed. [PR #253](https://github.com/liammagee/machinespirits-eval/pull/253)
+  merged 2026-07-26 with all six CI lanes green. The PR body omitted its
+  `Workplan item:` line, so the card-link check never associated the two; the
+  association is recorded here instead.

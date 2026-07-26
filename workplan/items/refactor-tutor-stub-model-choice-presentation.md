@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-26
-updated: 2026-07-27
+updated: 2026-07-26
 verification: Live tutor and classifier model-choice bytes remain identical
   while pure projection, focused, hermetic, manifest, static, and source-only
   gates pass.
