@@ -27,6 +27,7 @@ import {
 } from '../services/tutorStubPointOfActionCoaching.js';
 import {
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+  TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY,
   normalizeTutorStubEvidenceUseRubric,
 } from '../services/tutorStubPublicLearnerAnalysis.js';
 import { PROGRAM2_COMMITTEE_DEFAULTS, runCommitteeBattery } from '../services/program2CommitteeEngine.js';
@@ -382,16 +383,26 @@ function flagValue(command, flag) {
 
 // A plan header that stamps one evidence_use rubric while its jobs run another
 // is the failure this stamp exists to prevent, so every validator checks it.
-// Absent flag means the default, which is how pre-versioning plans read.
 function evidenceUseRubricErrors(plan) {
   const errors = [];
-  const stamped = plan.evidenceUseRubric ?? TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT;
+  // A plan file written before the rubric was versioned carries no stamp, and
+  // every run from that era used v1. Resolving an absent stamp against the
+  // *current* default would silently reinterpret those files now that the
+  // default is v2, so unstamped plans pin to v1 and then fail the check below on
+  // purpose: re-running one has to name its rubric explicitly.
+  const stamped = plan.evidenceUseRubric ?? TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY;
+  // A job omits the flag exactly when its rubric is the generation-time default,
+  // so the expected token is derived from the stamp rather than compared against
+  // a constant.
+  const expected = stamped === TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT ? null : stamped;
   for (const job of plan.jobs) {
-    const flagged =
-      flagValue(job.command, '--learner-analysis-evidence-use-rubric') ?? TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT;
-    if (flagged !== stamped) {
-      errors.push(`${job.id} evidence_use rubric ${flagged} does not match plan stamp ${stamped}`);
-    }
+    const flagged = flagValue(job.command, '--learner-analysis-evidence-use-rubric');
+    if (flagged === expected) continue;
+    errors.push(
+      plan.evidenceUseRubric
+        ? `${job.id} evidence_use rubric ${flagged ?? '(default)'} does not match plan stamp ${stamped}`
+        : `${job.id} plan predates evidence_use rubric versioning and carries no stamp; name --learner-analysis-evidence-use-rubric ${TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY} to reproduce it`,
+    );
   }
   return errors;
 }

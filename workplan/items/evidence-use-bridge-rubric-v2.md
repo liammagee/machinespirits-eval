@@ -69,15 +69,21 @@ stamps the compliance *grader*, so before this change a classifier-prompt swap
 would have passed every guard silently; each plan validator now fails closed
 when its header disagrees with its jobs.
 
-Within-prompt control: the `distorts_public_evidence` and `overleaps_evidence`
-clauses are byte-identical across versions and test-enforced to stay that way,
-so a global prompt effect would move them too.
+The `distorts_public_evidence` and `overleaps_evidence` clauses are
+byte-identical across versions and test-enforced to stay that way, which bounds
+the edit to the clause it claims to touch. Only `distorts_public_evidence` is a
+*control*, though: `warrant_skip` fires on two labels, `omits_warrant` and
+`overleaps_evidence`, so the latter sits inside the causal path under study, and
+redefining the `omits_warrant` boundary can move mass across it. Byte-identity is
+a textual guarantee, not a behavioural one.
 
-Open and deliberately not done here:
+Open and deliberately not done here (see
+[[evidence-use-v2-default-and-archive-relabel]]):
 
 - Flipping the default to `V2_BRIDGE_VOICED`. That is a decision about which
   construct Program 2 measures going forward, and it forfeits comparability with
   the Phase 5/5b/5c absolute levels.
-- Relabelling the archive (~27,000 calls) so it can serve as distillation labels
-  under the repaired construct.
-- Distilling the local model against a two-family consensus target.
+- Relabelling the archive's 2,363 stored classifier calls so they can serve as
+  distillation labels under the repaired construct.
+- Distilling the local model against a two-family consensus target. The archive
+  is single-family, so this needs a second judge pass first.
