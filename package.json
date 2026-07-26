@@ -90,6 +90,7 @@
     "shootout:model": "node scripts/model-shootout.js",
     "analyze:recognition-definitions": "node scripts/analyze-recognition-definitions.js",
     "analyze:effects": "node scripts/analyze-eval-results.js",
+    "negative-register:grid": "node scripts/run-negative-register-effect-estimation-grid.js",
     "analyze:costs": "node scripts/analyze-eval-costs.js",
     "analyze:traces": "node scripts/analyze-mechanism-traces.js",
     "analyze:tutor-stub-fields": "node scripts/analyze-tutor-stub-field-traces.js",
