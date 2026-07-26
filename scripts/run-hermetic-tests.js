@@ -31,6 +31,10 @@ const CHILD_STDIO_DRAIN_MAX_MS = 10_000;
 // for five minutes has stopped making progress rather than gone quiet.
 const CHILD_OUTPUT_STALL_MS = 300_000;
 const CHILD_STALL_KILL_GRACE_MS = 5_000;
+// `test:summary` per test file arrived in Node 22. On Node 20 the timing report
+// can only be written when the stream ends, which changes what a stalled run
+// can be told about — see formatStallDiagnostic.
+const NODE_REPORTS_FILES_AS_THEY_FINISH = Number(process.versions.node.split('.')[0]) >= 22;
 const TEST_SHARD_SEED = 'hermetic-v1:1491';
 const SLOW_FILE_LIMIT = 8;
 const TWO_WAY_SHARD_OVERRIDES = new Map([
@@ -457,14 +461,24 @@ function printRootTimingSummary(phase) {
 export function formatStallDiagnostic(phase, executedFiles, stallTimeoutMs = CHILD_OUTPUT_STALL_MS) {
   const executed = new Set(executedFiles || []);
   const unreported = phase.selectedFiles.filter((file) => !executed.has(file));
+  const cause = executed.size
+    ? unreported.length
+      ? unreported.map((file) => `[test:hermetic] unreported: ${file}`)
+      : ['[test:hermetic] every selected file reported; a hung test outside the selected files is the remaining cause']
+    : [
+        // Node reports per file as the file finishes only from v22. On v20 the
+        // whole account arrives at the end of the stream, which a stalled run
+        // never reaches, so there is nothing here to narrow down.
+        `[test:hermetic] no file reported before the stall, so none can be singled out${
+          NODE_REPORTS_FILES_AS_THEY_FINISH
+            ? ''
+            : `; Node ${process.versions.node} reports per file only at the end of a run, and Node 22 narrows this`
+        }`,
+      ];
   return [
     `[test:hermetic] ${phase.phase} stalled: no output for ${Math.round(stallTimeoutMs / 1000)}s, so the run was ended`,
     '[test:hermetic] a file that keeps a handle open after its tests finish holds the whole run open and never reports',
-    ...(unreported.length
-      ? unreported.map((file) => `[test:hermetic] unreported: ${file}`)
-      : [
-          '[test:hermetic] every selected file reported; a hung test outside the selected files is the remaining cause',
-        ]),
+    ...cause,
     '[test:hermetic] --force-exit restores the old behaviour of exiting on completion, at the cost of a truncated report',
   ].join('\n');
 }

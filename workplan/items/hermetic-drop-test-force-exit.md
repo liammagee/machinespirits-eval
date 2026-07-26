@@ -13,11 +13,13 @@ verification: >-
   files, emitting a complete TAP tail and 6947 tests where the forced-exit run on
   the same commit reported 6940; the new exact-file check names the only two
   files that did not report, both of them import failures from this worktree's
-  symlinked node_modules; four new tests in tests/hermeticTestRunner.test.js
+  symlinked node_modules; seven new tests in tests/hermeticTestRunner.test.js
   cover natural teardown reporting every case and every file, a stalled run being
-  ended and naming the file that never reported, the absent-report case, and the
-  streaming timing reporter; the pre-existing forced-exit test still passes
-  behind --force-exit; lint, formatting, and workplan validation pass.
+  ended and naming the file that never reported, the absent-report case, the
+  timing reporter under both the Node 22 and Node 20 event shapes, and the stall
+  message when nothing reported at all; the runner exits 0 on a real Node 20
+  child with the exact-file check on; the pre-existing forced-exit test still
+  passes behind --force-exit; lint, formatting, and workplan validation pass.
 branch: claude/hermetic-drop-force-exit
 depends_on:
   - hermetic-tap-summary-on-forced-exit
@@ -88,12 +90,22 @@ signal on itself.
 **A per-file account.** TAP cannot supply one: with multiple files Node hoists
 every case to the top level, and a file name appears only when the file fails to
 load. The account comes instead from the timing reporter, which now writes its
-JSONL line as each file finishes rather than accumulating and yielding at
+JSONL line as each file finishes rather than only accumulating and yielding at
 end-of-stream. Node emits a file-scoped `test:summary` when a file is done and
 nothing at all for a file whose subprocess never exits, so the set of selected
 files with no line in that report is exactly the set holding the runner open.
-The end-of-stream version could not have said this, because a stalled run never
+The end-of-stream flush could not have said this, because a stalled run never
 reaches the end of its stream.
+
+That per-file `test:summary` is a Node 22 event, which CI found the hard way:
+both Node 20 shards failed with every file in the shard reported missing, on a
+run where nothing had failed. So the reporter streams where Node lets it and
+flushes whatever is left when the stream ends. On Node 20 the whole account
+arrives at the end, which is exact for a run that finishes and empty for one
+that stalls; the stall message says so rather than implying the runner did not
+look. Verified directly on both runtimes with a two-file fixture: the
+summary-only reporter writes two lines on 22 and none on 20, and the flushing
+one writes both lines on both.
 
 **The exact-file check, extended to the root phase.** `readRootTapSummary` now
 attaches `files` from that report, which is what turns on the check the Vitest
@@ -140,3 +152,11 @@ used to cost accuracy. If a file starts leaking, the message says which one and
   handle means the tail is never produced, not that it is late. Verified on the
   full suite; the four failures are the same environmental pair as #264 (two
   missing packages, two assertions on the worktree's directory name).
+- 2026-07-26 — First CI run failed both Node 20 shards and passed both Node 22
+  shards: the per-file `test:summary` the reporter had been keyed to is a Node
+  22 event, so on 20 the report was empty and the new exact-file check read that
+  as every file missing. Fixed by flushing any unreported file at end of stream.
+  Checked against a downloaded Node 20.19.0 rather than inferred: the old
+  reporter writes 0 lines there and 2 on 22 for the same fixture, the new one
+  writes 2 on both, and the full runner exits 0 under a Node 20 parent and child
+  with the exact-file check active.

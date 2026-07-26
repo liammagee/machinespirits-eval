@@ -7,17 +7,25 @@ function relativeTestFile(file) {
   return path.relative(process.cwd(), file).split(path.sep).join('/');
 }
 
+function timingLine(file, timing) {
+  timing.reported = true;
+  return JSON.stringify({ file, durationMs: timing.durationMs, tests: timing.tests, failures: timing.failures }) + '\n';
+}
+
 /**
- * One JSONL line per test file, written as that file finishes rather than
- * accumulated and flushed at the end of the run.
+ * One JSONL line per test file, written as that file finishes where Node can say
+ * when that is, and at the end of the stream otherwise.
  *
  * The streaming matters more than the timings. Node emits a file-scoped
  * `test:summary` when a file is done and nothing at all for a file whose
- * subprocess never exits, so this report doubles as the record of which
- * selected files actually ran — and, when a run stalls, the set of files with
- * no line here is exactly the set still holding the runner open. A report
- * yielded at the end of the stream could say neither, because a stalled run
- * never reaches the end of the stream.
+ * subprocess never exits, so this report doubles as the record of which selected
+ * files actually ran — and, when a run stalls, the set of files with no line here
+ * is exactly the set still holding the runner open. The end-of-stream flush
+ * cannot say that second thing, because a stalled run never reaches the end of
+ * its stream; it is here because `test:summary` arrived in Node 22 and this
+ * project still supports Node 20, where the whole report necessarily comes at
+ * the end. On Node 20 a completed run is still accounted for exactly; a stalled
+ * one just cannot be narrowed to a file.
  */
 export default async function* hermeticTimingReporter(source) {
   const files = new Map();
@@ -37,8 +45,9 @@ export default async function* hermeticTimingReporter(source) {
     const timing = files.get(file) || { durationMs: 0, tests: 0, failures: 0, reported: false };
     files.set(file, timing);
     if (timing.reported) continue;
-    timing.reported = true;
-    yield JSON.stringify({ file, durationMs: timing.durationMs, tests: timing.tests, failures: timing.failures }) +
-      '\n';
+    yield timingLine(file, timing);
+  }
+  for (const [file, timing] of files) {
+    if (!timing.reported) yield timingLine(file, timing);
   }
 }

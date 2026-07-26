@@ -894,3 +894,35 @@ test('the timing reporter emits a line per file as that file finishes', async ()
     { file: 'beta.test.js', durationMs: 3, tests: 1, failures: 1 },
   ]);
 });
+
+test('the timing reporter still accounts for every file where Node emits no per-file summary', async () => {
+  // Node 20 has no `test:summary`, so nothing can be written until the stream
+  // ends. CI caught this the hard way: gating the report on that event alone
+  // made both Node 20 shards report no executed files at all, and the new
+  // exact-file check then failed a run in which every test had passed.
+  const cwd = process.cwd();
+  const event = (type, file, extra = {}) => ({ type, data: { file: path.join(cwd, file), ...extra } });
+  async function* node20Events() {
+    yield event('test:pass', 'alpha.test.js', { details: { duration_ms: 4 } });
+    yield event('test:fail', 'beta.test.js', { details: { duration_ms: 3 } });
+    yield event('test:pass', 'alpha.test.js', { details: { duration_ms: 6 } });
+  }
+
+  const lines = [];
+  for await (const line of hermeticTimingReporter(node20Events())) lines.push(JSON.parse(line));
+  assert.deepEqual(lines, [
+    { file: 'alpha.test.js', durationMs: 10, tests: 2, failures: 0 },
+    { file: 'beta.test.js', durationMs: 3, tests: 1, failures: 1 },
+  ]);
+});
+
+test('a stall with nothing reported says so instead of blaming every file', () => {
+  const diagnostic = formatStallDiagnostic({ phase: 'root', selectedFiles: ['alpha.test.js', 'beta.test.js'] }, []);
+  assert.match(diagnostic, /no file reported before the stall/u);
+  assert.doesNotMatch(diagnostic, /unreported:/u);
+  // On Node 20 the report cannot arrive before the end of the stream, so the
+  // message says which version would narrow it rather than implying the
+  // runner failed to look.
+  const narrows = Number(process.versions.node.split('.')[0]) >= 22;
+  assert.equal(/Node 22 narrows this/u.test(diagnostic), !narrows);
+});
