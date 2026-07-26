@@ -21,6 +21,7 @@ import {
   discoverRootTestFiles,
   formatPhaseFailureDiagnostic,
   formatStallDiagnostic,
+  NODE_REPORTS_FILES_AS_THEY_FINISH,
   parseRootTimingReport,
   parseRunnerArgs,
   readRootExecutedFiles,
@@ -854,19 +855,24 @@ test('a stalled run is ended and names the file that never reported', async (t) 
   assert.equal(result.stalled, true, `stdout ${result.stdout.length}B stderr ${result.stderr}`);
 
   // Both files ran their tests; only the leaky one is still holding a handle.
-  // Node emits a file-scoped summary for the file that finished and nothing for
-  // the one that did not, so the report separates them without any extra
-  // instrumentation — the diagnostic can name the culprit rather than the run.
+  // On Node 22 the file-scoped summary arrives for the file that finished and
+  // never for the one that did not, so the report separates them without extra
+  // instrumentation and the diagnostic can name the culprit rather than the
+  // run. Node 20 has no such event, and the reporter's end-of-stream flush is
+  // no help here because a stalled run never reaches the end of its stream —
+  // so there the account is empty. What holds on both is that the run is ended
+  // and the file that did report is never the one blamed.
   const executed = readRootExecutedFiles({ reportPath });
-  assert.deepEqual(executed, ['clean.test.js']);
+  assert.deepEqual(executed, NODE_REPORTS_FILES_AS_THEY_FINISH ? ['clean.test.js'] : []);
   const diagnostic = formatStallDiagnostic(
     { phase: 'root', selectedFiles: ['clean.test.js', 'leaky.test.js'] },
     executed,
     4_000,
   );
-  assert.match(diagnostic, /unreported: leaky\.test\.js/u);
   assert.doesNotMatch(diagnostic, /unreported: clean\.test\.js/u);
   assert.match(diagnostic, /--force-exit/u);
+  if (NODE_REPORTS_FILES_AS_THEY_FINISH) assert.match(diagnostic, /unreported: leaky\.test\.js/u);
+  else assert.match(diagnostic, /no file reported before the stall/u);
 });
 
 test('the executed-file account is absent, not empty, when no report was written', () => {
@@ -923,6 +929,5 @@ test('a stall with nothing reported says so instead of blaming every file', () =
   // On Node 20 the report cannot arrive before the end of the stream, so the
   // message says which version would narrow it rather than implying the
   // runner failed to look.
-  const narrows = Number(process.versions.node.split('.')[0]) >= 22;
-  assert.equal(/Node 22 narrows this/u.test(diagnostic), !narrows);
+  assert.equal(/Node 22 narrows this/u.test(diagnostic), !NODE_REPORTS_FILES_AS_THEY_FINISH);
 });

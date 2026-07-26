@@ -34,7 +34,7 @@ const CHILD_STALL_KILL_GRACE_MS = 5_000;
 // `test:summary` per test file arrived in Node 22. On Node 20 the timing report
 // can only be written when the stream ends, which changes what a stalled run
 // can be told about — see formatStallDiagnostic.
-const NODE_REPORTS_FILES_AS_THEY_FINISH = Number(process.versions.node.split('.')[0]) >= 22;
+export const NODE_REPORTS_FILES_AS_THEY_FINISH = Number(process.versions.node.split('.')[0]) >= 22;
 const TEST_SHARD_SEED = 'hermetic-v1:1491';
 const SLOW_FILE_LIMIT = 8;
 const TWO_WAY_SHARD_OVERRIDES = new Map([
