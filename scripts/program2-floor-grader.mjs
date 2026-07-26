@@ -34,6 +34,7 @@ import process from 'node:process';
 import { parseArgs } from 'node:util';
 
 import { loadWorld } from '../services/dramaticDerivation/world.js';
+import { auditProgram2StallCandidate, PROGRAM2_STALL_TRIGGER } from '../services/program2StallAudit.js';
 import { auditTutorStubFrozenCandidate } from '../services/tutorStubFrozenReplay.js';
 import { auditTutorStubPointOfActionCompliance } from '../services/tutorStubPointOfActionCoaching.js';
 
@@ -49,6 +50,9 @@ const { values: args } = parseArgs({
       type: 'string',
       default: path.join(os.homedir(), '.machinespirits-data/step4-claim-runs-2026-07'),
     },
+    'archive-root': { type: 'string', multiple: true, default: [] },
+    'moments-file': { type: 'string', default: 'eval-moments.jsonl' },
+    trigger: { type: 'string', default: 'warrant_skip' },
     'base-url': { type: 'string', default: 'http://localhost:11434/v1' },
     api: { type: 'string', default: 'ollama' },
     'num-ctx': { type: 'string', default: '16384' },
@@ -67,20 +71,35 @@ if (!args.validate && !args.generate && !args['grade-file']) {
 
 const DATASET = args.dataset;
 const STEP4 = args.step4;
+if (!['warrant_skip', PROGRAM2_STALL_TRIGGER].includes(args.trigger)) {
+  throw new Error(`--trigger must be warrant_skip or ${PROGRAM2_STALL_TRIGGER}`);
+}
+const archiveRoots = new Map(
+  args['archive-root'].map((entry) => {
+    const separator = entry.indexOf('=');
+    if (separator <= 0) throw new Error(`--archive-root must be label=path, got ${entry}`);
+    return [entry.slice(0, separator), path.resolve(entry.slice(separator + 1))];
+  }),
+);
+if (!archiveRoots.has('step4')) archiveRoots.set('step4', path.resolve(STEP4));
 const moments = fs
-  .readFileSync(path.join(DATASET, 'eval-moments.jsonl'), 'utf8')
+  .readFileSync(path.join(DATASET, args['moments-file']), 'utf8')
   .split('\n')
   .filter(Boolean)
   .map((line) => JSON.parse(line));
 
 // ---- per-trace caches ----
 const traceLinesCache = new Map();
-function traceLines(file) {
+function traceLines(moment) {
+  const archive = moment.trace?.archive || moment.source || 'step4';
+  const root = archiveRoots.get(archive);
+  if (!root) throw new Error(`no --archive-root configured for ${archive}`);
+  const file = path.join(root, moment.trace.file);
   if (!traceLinesCache.has(file)) {
     traceLinesCache.set(
       file,
       fs
-        .readFileSync(path.join(STEP4, file), 'utf8')
+        .readFileSync(file, 'utf8')
         .split('\n')
         .filter(Boolean)
         .map((line) => JSON.parse(line)),
@@ -166,7 +185,7 @@ function buildStep4Bundle(events, turn) {
 }
 
 function momentContext(moment) {
-  const events = traceLines(moment.trace.file);
+  const events = traceLines(moment);
   const assignment = events.find(
     (ev) => ev.type === 'point_of_action_assignment' && ev.turnId === moment.trace.turnId,
   )?.pointOfAction;
@@ -202,13 +221,21 @@ function gradeText({ context, text, realizedActionFamily = null }) {
     audits.dramaticReleaseAudit?.ok !== false &&
     audits.repetitionAudit?.ok !== false &&
     audits.closureAudit?.ok !== false;
-  const compliance = auditTutorStubPointOfActionCompliance({
-    turn: assignment,
-    tutorText: candidate.auditedText,
-    releasedPremiseCount,
-    realizedActionFamily,
-    guardsPassed,
-  });
+  const compliance =
+    args.trigger === PROGRAM2_STALL_TRIGGER && assignment.assigned_trigger === PROGRAM2_STALL_TRIGGER
+      ? auditProgram2StallCandidate({
+          assignment,
+          tutorText: candidate.auditedText,
+          releasedPremiseCount,
+          guardsPassed,
+        })
+      : auditTutorStubPointOfActionCompliance({
+          turn: assignment,
+          tutorText: candidate.auditedText,
+          releasedPremiseCount,
+          realizedActionFamily,
+          guardsPassed,
+        });
   return { candidate, compliance, releasedPremiseCount, guardsPassed };
 }
 
@@ -386,7 +413,13 @@ async function callEndpoint({ request, temperature }) {
 async function runGenerate() {
   if (!args.model) throw new Error('--generate requires --model');
   const splits = new Set(args.splits.split(','));
-  let targets = moments.filter((m) => splits.has(m.split) && m.trigger === 'warrant_skip' && m.request);
+  let targets = moments.filter(
+    (moment) =>
+      splits.has(moment.split) &&
+      moment.trigger === args.trigger &&
+      moment.request &&
+      (args.trigger !== PROGRAM2_STALL_TRIGGER || moment.freshTextAuditability === 'deterministic_due_release'),
+  );
   if (args.limit) targets = targets.slice(0, Number(args.limit));
   const decodings = [
     { name: 'greedy', temperature: 0 },
@@ -434,23 +467,34 @@ async function runGenerate() {
         errors: rows.filter((r) => r.decoding === decoding.name && r.split === split && r.error).length,
         complianceRate: subset.length ? subset.filter((r) => r.compliant).length / subset.length : null,
         guardOkRate: subset.length ? subset.filter((r) => r.guardOk).length / subset.length : null,
-        componentFailures: ['exactly_one_question', 'warrant_cue', 'no_new_premise', 'guards_passed'].map(
-          (component) => ({
-            component,
-            failures: subset.filter((r) => r.components && r.components[component] === false).length,
-          }),
-        ),
+        componentFailures: (args.trigger === PROGRAM2_STALL_TRIGGER
+          ? ['release_increased', 'final_delivery_guards_passed', 'exactly_one_question']
+          : ['exactly_one_question', 'warrant_cue', 'no_new_premise', 'guards_passed']
+        ).map((component) => ({
+          component,
+          failures: subset.filter((r) => r.components && r.components[component] === false).length,
+        })),
       };
     }
   }
   const report = {
     schema: 'machinespirits.program2.floor-report.v1',
     mode: 'generate',
+    trigger: args.trigger,
     model: args.model,
     baseUrl: args['base-url'],
     requestShape: args['request-shape'],
     baseShapeTemplate: args['request-shape'] === 'base' ? BASE_SHAPE_TEMPLATE_VERSION : null,
     momentCount: targets.length,
+    excludedAsNotTextAuditable:
+      args.trigger === PROGRAM2_STALL_TRIGGER
+        ? moments.filter(
+            (moment) =>
+              splits.has(moment.split) &&
+              moment.trigger === args.trigger &&
+              moment.freshTextAuditability !== 'deterministic_due_release',
+          ).length
+        : 0,
     summary,
     rows,
   };
@@ -490,7 +534,10 @@ async function runGradeFile() {
     n,
     complianceRate: n ? rows.filter((r) => r.compliant).length / n : null,
     guardOkRate: n ? rows.filter((r) => r.guardOk).length / n : null,
-    componentFailures: ['exactly_one_question', 'warrant_cue', 'no_new_premise', 'guards_passed'].map((component) => ({
+    componentFailures: (args.trigger === PROGRAM2_STALL_TRIGGER
+      ? ['release_increased', 'final_delivery_guards_passed', 'exactly_one_question']
+      : ['exactly_one_question', 'warrant_cue', 'no_new_premise', 'guards_passed']
+    ).map((component) => ({
       component,
       failures: rows.filter((r) => r.components && r.components[component] === false).length,
     })),

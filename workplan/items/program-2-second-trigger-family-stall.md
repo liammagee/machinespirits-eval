@@ -8,8 +8,8 @@ owner: codex
 source: manual
 created: 2026-07-22
 updated: 2026-07-26
-branch: codex/program-2-second-trigger-family-stall
-blocked_by: Strict stagnant-repeat corpus floor is 49/100 audit-passing moments; future sealed runs must grow and re-audit the corpus before dataset construction or training.
+branch: codex/program-2-stall-phase2-exploratory
+blocked_by: Exploratory Phase 2 leaves only six accepted-original train rows and zero dev rows; future sealed runs must grow and re-audit the source corpus before training.
 verification: "A stall-move specialist, SFT-trained on audit-labeled stagnant_repeat exhaust from the sealed archives under a fresh frozen prereg (own run licenses — the Program-2 ledger is spent), clears its frozen offline bars (floor+0.15 pattern on held-out stall moments under a deterministic stall-audit designed and frozen BEFORE training) and then a live committee-stall pilot passes E1s (CI > 0 vs silent controls) at the frozen guardrails, with the stall-density precondition met by a stall-enriched design."
 claim_status: exploratory
 links:
@@ -19,8 +19,12 @@ links:
     - PROGRAM-2-PHASE2-PREREGISTRATION.md
     - notes/program-2/2026-07-18-cloud-finetune-runbook.md
     - notes/program-2/2026-07-26-stall-corpus-audit.md
+    - notes/program-2/2026-07-26-stall-phase2-exploratory.md
   exports:
     - config/adaptive-tutor-evidence/program-2-stall-phase0-1.manifest.json
+    - config/adaptive-tutor-evidence/program-2-stall-phase2-exploratory.manifest.json
+  prs:
+    - 256
   items:
     - program-2-context-vs-weights-finetune
     - program-2-phase5d-second-transfer-world
@@ -215,3 +219,10 @@ due releases, one public reanchor). The card is blocked at its frozen corpus
 floor; dataset construction, Lambda training, and the live pilot remain
 unlicensed. The reusable audit and trigger-selectable extractor are covered by
 focused hermetic fixtures.
+
+2026-07-26 Codex: After PR #256 merged, the operator explicitly requested an
+under-floor Phase 2 attempt. The deterministic split yielded seven
+accepted-original, strict-audit source examples: six train, zero dev, one
+held-out. A local same-lineage floor on the nine text-auditable dev/held-out
+moments found mixed descriptive cells and no stable warrant-to-stall benefit.
+Phase 3 remains closed; no training or external model call was made.

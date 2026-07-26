@@ -1,0 +1,90 @@
+{
+  "schema": "machinespirits.program2.stall-phase2-exploratory-evidence.v1",
+  "date": "2026-07-26",
+  "status": "no_go_source_corpus",
+  "claimScope": "under-floor exploratory dataset and local floor only; no training or confirmatory claim licensed",
+  "artifactRoot": "~/.machinespirits-data/program-2/datasets/stall-phase2-exploratory-v1",
+  "externalModelCalls": 0,
+  "localModelCalls": 36,
+  "sourceAudit": {
+    "file": "config/adaptive-tutor-evidence/program-2-stall-phase0-1.manifest.json",
+    "sha256": "12b96a4c4504c7c6d5769515d318a88c10e2e470d893442cf56658b17612510d",
+    "rawMoments": 101,
+    "strictAuditPassing": 49,
+    "corpusFloor": 100
+  },
+  "dataset": {
+    "sourceEligible": 7,
+    "trainRows": 6,
+    "devRows": 0,
+    "heldoutEligibleRows": 1,
+    "heldoutMoments": 10,
+    "deterministicFreshTextMoments": 50,
+    "semanticActionFamilyRequired": 51,
+    "devDeterministicMoments": 4,
+    "heldoutDeterministicMoments": 5,
+    "licensedForTraining": false,
+    "trainingProhibitedReason": "six train rows and zero dev rows after the accepted-original and strict-audit filters"
+  },
+  "servingPins": [
+    {
+      "role": "untuned_instruct",
+      "model": "program2-floor-instruct-q8:latest",
+      "ollamaId": "70d5e812d5a5",
+      "blobSha256": "95dc83b47dd858c155781c1d7547d788e97d68f31c860d9a4e8991da62ed180b"
+    },
+    {
+      "role": "warrant_specialist",
+      "model": "program2-sft-instruct-v2:latest",
+      "ollamaId": "a0697193f141",
+      "blobSha256": "6a7f2d1971b6f56186d700b4385e35c01ae6ed2d41cdecea51727047b93a299d"
+    }
+  ],
+  "floor": {
+    "momentScope": "due-premise stagnant_repeat moments only; no-due action-family realization is not text-auditable",
+    "untunedInstruct": {
+      "greedyDev": { "passes": 2, "n": 4 },
+      "greedyHeldout": { "passes": 0, "n": 5 },
+      "sampledDev": { "passes": 1, "n": 4 },
+      "sampledHeldout": { "passes": 2, "n": 5 }
+    },
+    "warrantSpecialist": {
+      "greedyDev": { "passes": 2, "n": 4 },
+      "greedyHeldout": { "passes": 1, "n": 5 },
+      "sampledDev": { "passes": 0, "n": 4 },
+      "sampledHeldout": { "passes": 2, "n": 5 }
+    },
+    "endpointErrors": 0,
+    "interpretation": "tiny mixed cells show no stable cross-move benefit; all rates are descriptive"
+  },
+  "files": [
+    {
+      "name": "stall-dataset-manifest.json",
+      "sha256": "e18e055d0e15edb22e424a0a9167d58b32d10f0bd60ce724f6fc107a3eb7add2"
+    },
+    {
+      "name": "taskB-stall-sft.jsonl",
+      "sha256": "c84084906411430090b01777e45292781b9b5df831ed319a469f04b85cf2e8ba"
+    },
+    {
+      "name": "taskB-stall-dev.jsonl",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "eval-moments-stall.jsonl",
+      "sha256": "7c8a632b71aca6d01ce7858ffd32f4de7552cd3324884bdab6c88a109ec8b4ea"
+    },
+    {
+      "name": "splits-stall.json",
+      "sha256": "017dfcec05bfa544f4ecaf4c6a99dfa44eb09491ff532132ef1e588de0ee3204"
+    },
+    {
+      "name": "floor-untuned-instruct.json",
+      "sha256": "071061d800b50b9c0d44daa84aa5729d1b39eb3075d0ae7744af5cc7efe12d7e"
+    },
+    {
+      "name": "floor-warrant-specialist.json",
+      "sha256": "fca0a338cab87d8b72fa9c8ae9c22377c5a73dff38751a4980de1be76145b17a"
+    }
+  ]
+}

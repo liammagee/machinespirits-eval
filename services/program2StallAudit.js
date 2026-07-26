@@ -3,12 +3,38 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export const PROGRAM2_STALL_AUDIT_SCHEMA = 'machinespirits.program2.stall-audit.v1';
+export const PROGRAM2_STALL_CANDIDATE_AUDIT_SCHEMA = 'machinespirits.program2.stall-candidate-audit.v1';
 export const PROGRAM2_STALL_INVENTORY_SCHEMA = 'machinespirits.program2.stall-inventory.v1';
 export const PROGRAM2_STALL_TRIGGER = 'stagnant_repeat';
 export const PROGRAM2_STALL_DETECTOR_VERSION = 'step4-frozen-2026-07-14.v1';
 export const PROGRAM2_STALL_CORPUS_FLOOR = 100;
 
 const REANCHOR_FAMILIES = new Set(['reanchor_public_evidence', 'ground_in_material']);
+
+export function auditProgram2StallCandidate({ assignment, tutorText, releasedPremiseCount = 0, guardsPassed } = {}) {
+  const duePremiseCount = Array.isArray(assignment?.inputs?.due_premises) ? assignment.inputs.due_premises.length : 0;
+  const questionCount = (String(tutorText || '').match(/\?/gu) || []).length;
+  const released = Number(releasedPremiseCount || 0);
+  const evaluable = duePremiseCount > 0;
+  const components = {
+    due_premise_path_observable: evaluable,
+    release_increased: evaluable ? released > 0 : null,
+    final_delivery_guards_passed: guardsPassed === true,
+    exactly_one_question: questionCount === 1,
+  };
+  return {
+    schema: PROGRAM2_STALL_CANDIDATE_AUDIT_SCHEMA,
+    evaluable,
+    unevaluableReason: evaluable ? null : 'semantic action-family realization is not observable from text alone',
+    compliant: evaluable
+      ? components.release_increased && components.final_delivery_guards_passed && components.exactly_one_question
+      : null,
+    components,
+    duePremiseCount,
+    releasedPremiseCount: released,
+    questionCount,
+  };
+}
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
