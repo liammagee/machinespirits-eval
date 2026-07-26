@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T11:27:20.279Z",
+  "generated": "2026-07-26T11:49:51.328Z",
   "counts": {
-    "total": 211,
+    "total": 212,
     "byStatus": {
-      "done": 185,
+      "done": 186,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 47,
-      "maintenance": 54,
+      "maintenance": 55,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -190,6 +190,7 @@
           "refactor-tutor-stub-feature-map-projection",
           "refactor-tutor-stub-release-notes-projection",
           "refactor-tutor-stub-dag-snapshot-projection",
+          "refactor-tutor-stub-proof-command-projection",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -562,8 +563,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-dag-snapshot-projection",
-      "title": "Refactor tutor-stub proof-DAG snapshot projection",
+      "id": "refactor-tutor-stub-proof-command-projection",
+      "title": "Refactor tutor-stub proof-command projection",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -571,26 +572,26 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "Live technical tutor-DAG bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-dag-snapshot-projection",
+      "verification": "Live /proof paths and inspect bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-proof-command-projection",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-release-notes-projection"
+        "refactor-tutor-stub-dag-snapshot-projection"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubDagSnapshotPresentation.js",
+          "services/tutorStubProofCommandPresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubDagSnapshotPresentation.test.js",
-          "tests/tutorStubInteractivePerformance.test.js",
+          "tests/tutorStubProofCommandPresentation.test.js",
+          "tests/dramaticDerivationProxyDagMemory.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-release-notes-projection"
+          "refactor-tutor-stub-dag-snapshot-projection"
         ]
       },
       "tags": [
@@ -2630,6 +2631,50 @@
         "tutor-stub",
         "closeout",
         "guard-accounting"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-dag-snapshot-projection",
+      "title": "Refactor tutor-stub proof-DAG snapshot projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Live technical tutor-DAG bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-dag-snapshot-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-release-notes-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDagSnapshotPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDagSnapshotPresentation.test.js",
+          "tests/tutorStubInteractivePerformance.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "prs": [
+          269
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-release-notes-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "proof-dag"
       ],
       "milestone": "evaluation-infrastructure"
     },
