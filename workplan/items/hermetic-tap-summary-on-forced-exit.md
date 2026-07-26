@@ -85,19 +85,32 @@ loads that need packages absent from this worktree's symlinked `node_modules`
 builds from `path.basename(root)`; this worktree is called `ms-hermetic-tap`. CI
 checks out into a directory named for the repository, so both pass there.
 
-## Open, not established
+## A second defect, observed and not fixed here
 
-Under that same artificial backpressure the reported test count varied between
-runs (400, 396, 394), which would mean `--test-force-exit` sometimes cuts the
-run short rather than only its output. This has not been shown to happen in CI,
-where the parent reads the pipe promptly, and the polling rate used to force the
-reproduction is far more severe than any real runner. It is recorded because
-nothing would currently catch it: `validatePhaseSummary` only enforces its
+A forced exit can also end the run short, not just lose its output, and the
+short run is invisible from the tail: the plan line, the counters, and the `ok`
+lines all agree with each other at whatever count the run reached.
+
+Under the artificial backpressure the reported count varied between runs (400,
+396, 394), with the `ok` lines numbered `1..394` and no gaps — the last cases
+simply never appeared. That could be dismissed as an artefact of a reader far
+slower than any real runner. It is not. The forced-exit integration test in this
+change asserted its fixture's full 60 cases on its first CI run and got 54, on
+GitHub's runners, on both Node 20 and 22. The assertion was loosened to internal
+consistency, because a short run is a different defect from a lost tail and this
+change does not address it.
+
+Nothing currently catches it. `validatePhaseSummary` only enforces its
 exact-file check when `summary.files` is present, and `parseNodeTapSummary` does
 not populate that field, so the root phase has no per-file execution check at
-all. Establishing whether short runs are real, and populating `files` from the
-now-available complete TAP file if so, is follow-up work and deliberately not
-folded into this change.
+all. The consequence is that a green hermetic run is not by itself evidence that
+every selected file ran.
+
+Follow-up, deliberately not folded in: determine whether the missing cases fail
+to run or only fail to be recorded, then either populate `files` from the
+now-available complete TAP file so the exact-file check applies to the root
+phase, or reconsider `--test-force-exit` itself. Both are their own decisions
+with their own risk.
 
 ## Log
 
