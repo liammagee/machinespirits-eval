@@ -293,7 +293,60 @@ test('paid Program 2 launches fail before provider preflight when the certificat
   );
   assert.notEqual(result.status, 0);
   assert.match(`${result.stdout}\n${result.stderr}`, /requires --launch-certificate/u);
+  assert.match(`${result.stdout}\n${result.stderr}`, /fresh launch certificate is required/u);
+  assert.match(`${result.stdout}\n${result.stderr}`, /--prepare-certificate --plan 5/u);
+  assert.match(`${result.stdout}\n${result.stderr}`, /npm run program2:certify-launch/u);
+  assert.match(`${result.stdout}\n${result.stderr}`, /docs\/program2-launch-certificates\.md/u);
   assert.equal(fs.existsSync(path.join(outputRoot, 'launch-state.json')), false);
+});
+
+test('certificate preparation is an explicit zero-model workflow with an actionable reminder', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'program2-certificate-prepare-'));
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/run-program2-live-pilot.js', '--prepare-certificate', '--plan', '5', '--output-dir', outputRoot],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  const output = `${result.stdout}\n${result.stderr}`;
+  const planPath = path.join(outputRoot, 'launch-plan.json');
+  assert.equal(result.status, 0, output);
+  assert.equal(fs.existsSync(planPath), true);
+  assert.equal(fs.existsSync(path.join(outputRoot, 'launch-state.json')), false);
+  const artifact = JSON.parse(fs.readFileSync(planPath, 'utf8'));
+  assert.equal(artifact.mode, 'certificate_preparation');
+  assert.equal(artifact.modelCallsBeforeArtifact, 0);
+  assert.equal(artifact.launchAuthorized, false);
+  assert.match(output, /certificate plan PASS; 0 model calls/u);
+  assert.match(output, /--world-file config\/drama-derivation\/world-005-marrick\.yaml/u);
+  assert.match(output, /--phase pilot/u);
+  assert.match(output, /--source-sha [0-9a-f]{40}/u);
+  assert.match(output, /--launch-certificate .*launch-certificate\.json/u);
+  assert.match(output, /Regenerate after any source, plan, world, gate, or pilot-evidence change/u);
+});
+
+test('cohort certificate preparation names the required audited pilot inputs', () => {
+  const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'program2-cohort-certificate-prepare-'));
+  const result = spawnSync(
+    process.execPath,
+    ['scripts/run-program2-live-pilot.js', '--prepare-certificate', '--plan', '5b', '--output-dir', outputRoot],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  assert.match(result.stdout, /--phase cohort/u);
+  assert.match(result.stdout, /--pilot-bundle <audited-exact-pipeline-pilot-bundle\.json>/u);
+  assert.match(result.stdout, /--gate-spec-file <frozen-gates\.json>/u);
+});
+
+test('launcher help makes the fresh-certificate prerequisite discoverable', () => {
+  const result = spawnSync(process.execPath, ['scripts/run-program2-live-pilot.js', '--help'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /--prepare-certificate/u);
+  assert.match(result.stdout, /fresh certificate/u);
+  assert.match(result.stdout, /npm run program2:certify-launch/u);
+  assert.match(result.stdout, /docs\/program2-launch-certificates\.md/u);
 });
 
 test('paid launch rejects a passing-looking certificate whose evidence is missing', () => {

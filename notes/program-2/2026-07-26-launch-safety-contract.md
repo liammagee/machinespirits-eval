@@ -35,7 +35,13 @@ bound to:
 `cohort` certificates cannot skip it. A failed certificate can be written with
 `--report-only` for diagnosis, but the launcher accepts only `status: pass`.
 
-The generic command is:
+The operator-facing checklist is
+[`docs/program2-launch-certificates.md`](../../docs/program2-launch-certificates.md).
+The launcher also exposes `--prepare-certificate`, which writes the exact plan
+without model or provider calls and prints the next certificate command. Its
+`--help` output and every missing-certificate failure point back to that guide.
+
+The underlying generic command is:
 
 ```bash
 npm run program2:certify-launch -- \

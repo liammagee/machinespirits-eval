@@ -5,11 +5,13 @@
 // Two arms (committee | silent_control) × 2 learner profiles × 6 repeats on
 // the Step 4 operational spec, single tutor family claude-code.sonnet-5.
 // Mirrors scripts/run-step4-point-of-action-gate.js: a zero-model dry run
-// writes the sha-pinned plan artifact; the paid launch requires
-// --launch-approved --expected-sha <clean HEAD>. Additions: sealed-trace
-// resume (jobs whose trace already contains run_end are skipped), a local
-// ollama preflight for the committee mini, one same-seed retry per failed
-// job, and an abort after three consecutive failed attempts (prereg §4).
+// writes the sha-pinned plan artifact. --prepare-certificate writes the exact
+// paid plan without model calls and prints the certificate workflow. A paid
+// launch requires --launch-approved, --expected-sha <clean HEAD>, and a fresh
+// --launch-certificate. Additions: sealed-trace resume (jobs whose trace
+// already contains run_end are skipped), a local Ollama preflight for the
+// committee mini, one same-seed retry per failed job, and an abort after three
+// consecutive failed attempts (prereg §4).
 
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
@@ -41,6 +43,54 @@ import { learnerProfilePrompt } from './tutor-stub-learner-profile-contracts.js'
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..');
+
+export const PROGRAM2_LAUNCH_CERTIFICATE_GUIDE = 'docs/program2-launch-certificates.md';
+
+function displayRootPath(file) {
+  const relative = path.relative(ROOT, file);
+  return relative && !relative.startsWith('..') ? relative : file;
+}
+
+function program2WorldFile(plan) {
+  const candidate = path.resolve(
+    ROOT,
+    'config',
+    'drama-derivation',
+    `${String(plan?.world || '<world-id>').replaceAll('_', '-')}.yaml`,
+  );
+  return fs.existsSync(candidate) ? displayRootPath(candidate) : `<world-yaml-for-${plan?.world || 'plan'}>`;
+}
+
+export function formatProgram2LaunchCertificateReminder({
+  planKey,
+  phase,
+  plan,
+  planFile,
+  certificateFile,
+  outputRoot,
+  sourceSha,
+} = {}) {
+  const cohortArgs =
+    phase === 'cohort'
+      ? ['  --pilot-bundle <audited-exact-pipeline-pilot-bundle.json> \\', '  --gate-spec-file <frozen-gates.json> \\']
+      : [];
+  return [
+    'A fresh launch certificate is required before every paid Program 2 launch.',
+    'Prepare the exact plan without model/provider calls:',
+    `  node scripts/run-program2-live-pilot.js --prepare-certificate --plan ${planKey} --output-dir ${displayRootPath(outputRoot)}`,
+    `Exact plan: ${displayRootPath(planFile)}`,
+    'Generate and review the certificate:',
+    '  npm run program2:certify-launch -- \\',
+    `  --plan-file ${displayRootPath(planFile)} \\`,
+    `  --world-file ${program2WorldFile(plan)} \\`,
+    `  --phase ${phase} \\`,
+    ...cohortArgs,
+    `  --source-sha ${sourceSha || '<clean-40-character-sha>'} \\`,
+    `  --report ${displayRootPath(certificateFile)}`,
+    `Then rerun the paid launcher with --launch-certificate ${displayRootPath(certificateFile)}.`,
+    `Regenerate after any source, plan, world, gate, or pilot-evidence change. Guide: ${PROGRAM2_LAUNCH_CERTIFICATE_GUIDE}`,
+  ].join('\n');
+}
 
 export const PHASE5_LIVE_PILOT_SPEC = Object.freeze({
   schema: 'machinespirits.tutor-stub.program2-phase5-live-pilot-plan.v1',
@@ -551,6 +601,7 @@ async function main() {
   const { values } = parseArgs({
     options: {
       'dry-run': { type: 'boolean', default: false },
+      'prepare-certificate': { type: 'boolean', default: false },
       'launch-approved': { type: 'boolean', default: false },
       'expected-sha': { type: 'string', default: '' },
       'launch-certificate': { type: 'string', default: '' },
@@ -562,11 +613,19 @@ async function main() {
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--dry-run] [--launch-approved --expected-sha <sha> --launch-certificate <file>] [--output-dir <dir>] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--dry-run | --prepare-certificate | --launch-approved --expected-sha <sha> --launch-certificate <file>] [--plan 5|5b|5c] [--output-dir <dir>] [--limit-jobs N]',
+    );
+    console.log('\nPaid launch prerequisite: generate a fresh certificate with npm run program2:certify-launch.');
+    console.log(
+      `Run --prepare-certificate first for an exact zero-model plan. Guide: ${PROGRAM2_LAUNCH_CERTIFICATE_GUIDE}`,
     );
     return;
   }
-  if (values['dry-run'] && values['launch-approved']) throw new Error('choose either --dry-run or --launch-approved');
+  const prepareCertificate = Boolean(values['prepare-certificate']);
+  const selectedModes = [values['dry-run'], prepareCertificate, values['launch-approved']].filter(Boolean).length;
+  if (selectedModes > 1) {
+    throw new Error('choose exactly one of --dry-run, --prepare-certificate, or --launch-approved');
+  }
   const launch = Boolean(values['launch-approved']);
   const planKey = values.plan || '5';
   const planTable = {
@@ -590,7 +649,7 @@ async function main() {
     },
   };
   if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, or 5c)`);
-  const defaultRoot = launch ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
+  const defaultRoot = launch || prepareCertificate ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
   const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
   const plan = planTable[planKey].build({ outputRoot });
   const validation = planTable[planKey].validate(plan);
@@ -598,7 +657,7 @@ async function main() {
   const artifact = {
     schema: 'machinespirits.tutor-stub.program2-phase5-zero-model-gate.v1',
     generatedAt: new Date().toISOString(),
-    mode: launch ? 'paid_launch' : 'zero_model_dry_run',
+    mode: launch ? 'paid_launch' : prepareCertificate ? 'certificate_preparation' : 'zero_model_dry_run',
     modelCallsBeforeArtifact: 0,
     launchAuthorized: launch,
     ok: validation.ok && fixtures.ok,
@@ -613,8 +672,24 @@ async function main() {
     );
   }
   fs.mkdirSync(outputRoot, { recursive: true });
-  const jsonPath = path.join(outputRoot, launch ? 'launch-plan.json' : 'zero-model-dry-run.json');
+  const jsonPath = path.join(outputRoot, launch || prepareCertificate ? 'launch-plan.json' : 'zero-model-dry-run.json');
   fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
+  const certificatePath = path.join(outputRoot, 'launch-certificate.json');
+  if (prepareCertificate) {
+    console.log(`[phase5] certificate plan PASS; 0 model calls; ${plan.jobs.length} jobs planned`);
+    console.log(
+      formatProgram2LaunchCertificateReminder({
+        planKey,
+        phase: planTable[planKey].certificatePhase,
+        plan,
+        planFile: jsonPath,
+        certificateFile: certificatePath,
+        outputRoot,
+        sourceSha: gitOutput(['rev-parse', 'HEAD']),
+      }),
+    );
+    return;
+  }
   if (!launch) {
     console.log(`[phase5] zero-model gate PASS; 0 model calls; ${plan.jobs.length} jobs planned`);
     console.log(`[phase5] ${path.relative(ROOT, jsonPath)}`);
@@ -622,11 +697,25 @@ async function main() {
   }
   const certificateValue = String(values['launch-certificate'] || '').trim();
   if (!certificateValue) {
-    throw new Error(`${planKey} paid launch requires --launch-certificate from scripts/certify-program2-launch.mjs`);
+    throw new Error(
+      `${planKey} paid launch requires --launch-certificate.\n${formatProgram2LaunchCertificateReminder({
+        planKey,
+        phase: planTable[planKey].certificatePhase,
+        plan,
+        planFile: jsonPath,
+        certificateFile: certificatePath,
+        outputRoot,
+        sourceSha: values['expected-sha'],
+      })}`,
+    );
   }
-  const certificatePath = path.resolve(ROOT, certificateValue);
-  if (!fs.existsSync(certificatePath)) throw new Error(`launch certificate not found: ${certificatePath}`);
-  const certificateBytes = fs.readFileSync(certificatePath);
+  const suppliedCertificatePath = path.resolve(ROOT, certificateValue);
+  if (!fs.existsSync(suppliedCertificatePath)) {
+    throw new Error(
+      `launch certificate not found: ${suppliedCertificatePath}\nGuide: ${PROGRAM2_LAUNCH_CERTIFICATE_GUIDE}`,
+    );
+  }
+  const certificateBytes = fs.readFileSync(suppliedCertificatePath);
   const launchCertificate = JSON.parse(certificateBytes.toString('utf8'));
   const certificateValidation = validateProgram2LaunchCertificate(launchCertificate, {
     plan,
@@ -641,7 +730,7 @@ async function main() {
     throw new Error(`launch certificate evidence rejected: ${bindingValidation.errors.join('; ')}`);
   }
   artifact.launchCertificate = {
-    file: path.relative(ROOT, certificatePath),
+    file: path.relative(ROOT, suppliedCertificatePath),
     sha256: createHash('sha256').update(certificateBytes).digest('hex'),
     phase: launchCertificate.phase,
   };
