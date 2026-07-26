@@ -115,6 +115,26 @@ Design decisions worth keeping:
   `tutorStubReleaseScheduleExhausted` redirects both override sites to
   `compress_sayback`.
 
+- **The baseline is evaluated but not gated (`--observe-audits`).** Passthrough
+  fused evaluation with enforcement: bypassing the guard suite bypassed the
+  audits with it, so the bare arm recorded nothing and could not be scored on
+  the same gate as the instrumented arm. The flag splits them. On each bare
+  turn, after the draft is final, the stub runs the two audits that need no
+  per-turn contract — leak and repetition — and writes them to the turn record.
+  They run in `runPassthroughTurn` after `callTutor` has returned, so nothing
+  can reach the repair loop, and `buildTutorStubObservedAudits` throws if the
+  response carries `repaired`, `deterministicFallback` or a guard-accounting
+  row. The other five audits score a draft against a contract the bare arm never
+  builds; they are written as `null` and reported as unavailable, never as
+  passed. Calls, request surface, bypass list and guard coverage are unchanged.
+- **Rubric scoring is a separate, later pass** (`scripts/score-showcase-rubric.js`,
+  `npm run tutor:stub:showcase:rubric`). It sends only the public transcript to
+  the judge — the proof DAG, release plan, scaffold and guard verdicts are all
+  withheld, so the instrumented arm is never scored on its own internal
+  artefacts. Two caveats belong with any number it produces: v2.2 scores a
+  single turn and penalises a proper close on `elicitation_quality` and
+  `productive_difficulty`, and the arms have different transcripts.
+
 Standing limitation, stated in the config, the service header, `report.md`, and
 on the rendered page: **this is not a controlled comparison.** Each arm has its
 own learner answering its own tutor, so the transcripts diverge after the first

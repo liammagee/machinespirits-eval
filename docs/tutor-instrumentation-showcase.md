@@ -145,6 +145,39 @@ earned. That arm never stages evidence, and an audit asking "did you say more
 than the record warrants" is passed by saying nothing evidential. These audits
 are ceilings on misconduct, not floors on usefulness.
 
+## Scoring a run against the v2.2 tutor rubric
+
+The showcase reports cost (calls, wall clock, tokens) and conduct (audits,
+coverage, repairs, fallbacks). Neither says whether the tutoring was any good.
+`config/evaluation-rubric.yaml` — the live v2.2 instrument the eval pipeline uses
+on cells — answers that, and it reaches a showcase transcript with no database
+round trip: `evaluateSuggestion`'s `context.prebuiltTranscript` takes a plain
+public-transcript string.
+
+```bash
+npm run tutor:stub:showcase:rubric -- exports/tutor-stub-showcase/<run> --dry-run
+```
+
+Drop `--dry-run` to score. Two turns per dialogue by default, mirroring the DB's
+canonical pair (`tutor_first_turn_score`, `tutor_last_turn_score`), each judged
+with the whole public transcript as context. Only the public transcript is sent:
+the proof DAG, the release plan, the scaffold and the guard verdicts are all
+withheld, so both arms are judged on what a learner actually saw. Scoring the
+instrumented arm on its own internal artefacts would be a closed loop.
+
+The judge defaults to `claude-code.sonnet`. A sonnet-class judge is required —
+gpt-mini-class judges are not reliable on this instrument.
+
+Two reading caveats:
+
+- **A closing turn is structurally penalised.** v2.2 scores a single tutor turn,
+  and `elicitation_quality` and `productive_difficulty` reward opening something
+  up. A dialogue that ends properly closes on a turn that asks nothing, and
+  scores accordingly. Compare last turns with last turns, and read the close
+  alongside `stopReason` and the closure verdict.
+- **Still not a controlled comparison.** The arms have different transcripts, so
+  a rubric gap between them is a difference between two dialogues.
+
 ## Guard coverage is read from the accounting rows, not the audit records
 
 **The turn record carries an audit object whether or not the guard ran.**
