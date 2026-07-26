@@ -58,6 +58,7 @@ links:
     - refactor-tutor-stub-dialogue-settings-presentation
     - refactor-tutor-stub-model-choice-presentation
     - refactor-tutor-stub-director-presentation
+    - refactor-tutor-stub-learner-dag-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -479,3 +480,15 @@ Log:
   tests, and complete root 7,193-test plus tutor-core 137-test zero-skip parity.
   Note derivation, withholding, trace/state effects, command dispatch, and
   terminal writes remain CLI-owned.
+- 2026-07-27 — PR #286 merged the director child as `c05444f6` with all ten CI
+  lanes green; the serialized render followed as `f628fe85`. Closed that child
+  and activated `refactor-tutor-stub-learner-dag-presentation` to move only the
+  technical learner-DAG line serialization while retaining DAG construction,
+  debug gating, state, warnings, traces, callers, and terminal writes in the
+  CLI.
+- 2026-07-27 — The learner-DAG presentation child reached review with one
+  dependency-free projector, a 38-line net CLI reduction, byte-identical live
+  technical output, 94/94 focused tests, 103/103 final-base overlap tests, and
+  complete root 7,206-test plus tutor-core 137-test zero-skip parity. DAG
+  construction, assessment state, debug gating, warning provenance, traces,
+  call sites, and terminal writes remain CLI-owned.

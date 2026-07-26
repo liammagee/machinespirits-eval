@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-director-presentation
 title: Refactor tutor-stub director presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-model-choice-presentation
 links:
+  prs:
+    - 286
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -89,3 +91,5 @@ Log:
   517 files plus 137/137 tutor-core tests, both with zero skips. The synchronized
   manifest, 225-item source-only workplan, ESLint, Prettier, zero-cycle ratchet
   across 399 files, syntax, and diff gates pass.
+- 2026-07-27 — PR #286 merged as `c05444f6` with all ten CI lanes green; the
+  serialized generated-workplan refresh followed as `f628fe85`.
