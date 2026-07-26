@@ -2,15 +2,18 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  CANDIDATE_GATE_POLICIES,
   OBSERVATIONAL_ARMS,
   POINT_OF_ACTION_GATE_GRADE_SCHEMA,
   WARRANT_ALIGNED_FIELD,
   advanceOutcome,
   buildGateDecisions,
+  checkGateGradeIntegrity,
   dagProgressState,
   isCleanDecision,
   isObservationalArm,
   isTreatmentEligible,
+  isWindowEligible,
   proportionDifference,
   scoreAlternativeGate,
   summarizeGateArm,
@@ -370,4 +373,142 @@ test('scoreAlternativeGate benchmarks a rule against always-firing and flags its
 
 test('the grade schema is stamped so a report can be traced to this instrument', () => {
   assert.equal(POINT_OF_ACTION_GATE_GRADE_SCHEMA, 'machinespirits.tutor-stub.point-of-action-gate-grade.v1');
+});
+
+test('buildGateDecisions carries the deterministic layer flags separately from the model vote', () => {
+  const turnStates = new Map(
+    [state(0), state(1), state(2), state(3)].map((record) => [record.turn, dagProgressState(record)]),
+  );
+  const decisions = buildGateDecisions({
+    assignments: [
+      assignment(0, {
+        arm: 'standing_book',
+        evidenceUse: 'omits_warrant',
+        suppression: { outside_window: true, near_closure: false, close_inquiry: false, unresolved_glossary: false },
+      }),
+      assignment(1, {
+        arm: 'standing_book',
+        evidenceUse: 'omits_warrant',
+        suppression: { outside_window: false, near_closure: true, close_inquiry: false, unresolved_glossary: false },
+      }),
+      assignment(2, {
+        arm: 'standing_book',
+        trigger: 'warrant_skip',
+        evidenceUse: 'omits_warrant',
+        suppression: { outside_window: false, near_closure: false, close_inquiry: false, unresolved_glossary: false },
+      }),
+    ],
+    turnStates,
+  });
+  assert.deepEqual(
+    decisions.map((row) => [row.turn, row.outsideWindow, row.nearClosure, row.suppressionRecorded]),
+    [
+      [0, true, false, true],
+      [1, false, true, true],
+      [2, false, false, true],
+    ],
+  );
+
+  // The window is a harness constant every candidate policy inherits, so a turn
+  // outside it is not a moment any rule could be scored on.
+  assert.equal(isWindowEligible(decisions[0]), false);
+  assert.equal(isWindowEligible(decisions[1]), true, 'near_closure is a policy choice, not a structural exclusion');
+  assert.equal(isWindowEligible({ ...decisions[2], deliveryLeaked: true }), false);
+});
+
+test('the live rule is the conjunction of the model vote and the position layer', () => {
+  // Turn 1 is the row that separates the two halves: the model voted to fire and
+  // the position layer held it back, so it is in `model vote alone` and not in the
+  // live rule. Scoring the halves apart is what says which one carries the gate.
+  const rows = [
+    { fired: true, suppressed: false, nearClosure: false, closeInquiry: false, evidenceUse: 'omits_warrant' },
+    { fired: false, suppressed: true, nearClosure: true, closeInquiry: false, evidenceUse: 'omits_warrant' },
+    { fired: false, suppressed: false, nearClosure: false, closeInquiry: false, evidenceUse: 'links_evidence_to_rule' },
+  ];
+  const fires = (label) => rows.filter((row) => CANDIDATE_GATE_POLICIES[label](row)).length;
+  assert.equal(fires('live rule (model vote AND position layer)'), 1);
+  assert.equal(fires('model vote alone (ignore position layer)'), 2);
+  assert.equal(fires('position layer alone (no model call)'), 2, 'fires without asking the model on turns 0 and 2');
+  assert.equal(fires('always fire'), 3);
+  assert.equal(fires('never fire'), 0);
+
+  // The position-layer policy must not read an absent flag as permission to fire —
+  // that is the failure `suppression_not_recorded` exists to catch.
+  assert.equal(CANDIDATE_GATE_POLICIES['position layer alone (no model call)']({ nearClosure: true }), false);
+});
+
+test('checkGateGradeIntegrity passes a well-formed pass and fails on structure, never on a number', () => {
+  const armSummary = (arm, overrides = {}) => ({
+    arm,
+    observational: OBSERVATIONAL_ARMS.includes(arm),
+    declaredObservational: OBSERVATIONAL_ARMS.includes(arm),
+    armClassificationMismatch: false,
+    injectedOnFired: 0,
+    clean: 10,
+    covariates: { fireRate: { rate: 0.3 } },
+    ...overrides,
+  });
+  const rows = [
+    { deliveryLeaked: false, suppressionRecorded: true, outsideWindow: false },
+    { deliveryLeaked: false, suppressionRecorded: true, outsideWindow: true },
+  ];
+
+  const clean = checkGateGradeIntegrity({
+    decisions: rows,
+    armSummaries: [armSummary('standing_book'), armSummary('side_coach')],
+  });
+  assert.equal(clean.ok, true);
+  assert.deepEqual(clean.failures, []);
+
+  // A null result is the easy thing to keep reporting once the records drift, so an
+  // empty pass is a failure rather than a clean bill of health.
+  assert.equal(checkGateGradeIntegrity({ decisions: [], armSummaries: [] }).ok, false);
+  assert.equal(checkGateGradeIntegrity({ decisions: [], armSummaries: [] }).failures[0].code, 'no_scorable_decisions');
+
+  const codes = (result) => result.failures.map((failure) => failure.code);
+  assert.deepEqual(
+    codes(checkGateGradeIntegrity({ decisions: rows, armSummaries: [armSummary('some_new_arm')] })),
+    ['unknown_arm', 'no_observational_arm'],
+    'an arm nobody has classified must not quietly enter a pooled baseline',
+  );
+  assert.deepEqual(
+    codes(
+      checkGateGradeIntegrity({
+        decisions: rows,
+        armSummaries: [armSummary('standing_book', { armClassificationMismatch: true, injectedOnFired: 4 })],
+      }),
+    ),
+    ['arm_classification_mismatch'],
+  );
+  assert.deepEqual(
+    codes(
+      checkGateGradeIntegrity({
+        decisions: [{ deliveryLeaked: false, suppressionRecorded: false, outsideWindow: false }],
+        armSummaries: [armSummary('standing_book')],
+      }),
+    ),
+    ['suppression_not_recorded'],
+  );
+  assert.deepEqual(
+    codes(
+      checkGateGradeIntegrity({
+        decisions: [{ deliveryLeaked: false, suppressionRecorded: true, outsideWindow: true }],
+        armSummaries: [armSummary('standing_book')],
+      }),
+    ),
+    ['no_window_eligible_decisions'],
+  );
+
+  // Nothing here fails on a result. A gate with no discrimination and a zero advance
+  // rate is a finding; a check that failed on it would be a check demanding an
+  // outcome.
+  const nullResult = checkGateGradeIntegrity({
+    decisions: rows,
+    armSummaries: [armSummary('standing_book', { covariates: { fireRate: { rate: 0 } } })],
+  });
+  assert.equal(nullResult.ok, true);
+  assert.deepEqual(
+    nullResult.warnings.map((warning) => warning.code),
+    ['arm_never_fired'],
+  );
 });

@@ -206,6 +206,11 @@ export function buildGateDecisions({ assignments = [], turnStates = new Map(), t
     const hygiene = turnHygiene.get(turn) || {};
     const evidenceUse = poa.inputs?.evidence_use ?? null;
     const suppression = poa.suppression || {};
+    // Whether any suppression key was recorded at all, kept separately from the
+    // individual flags. An archive that stopped logging the block would otherwise
+    // read as "nothing was ever suppressed", which is indistinguishable from a
+    // gate that never held back — see `checkGateGradeIntegrity`.
+    const suppressionRecorded = Object.keys(suppression).length > 0;
     // A moment the gate would have fired on but held back. Worth its own label:
     // these are decisions too, and a grader that ignored them would credit the
     // suppression rules to the trigger logic or vice versa.
@@ -222,6 +227,17 @@ export function buildGateDecisions({ assignments = [], turnStates = new Map(), t
       cofire: Boolean(poa.cofire),
       evidenceUse,
       suppressed,
+      // The deterministic layer's own flags, carried per row so a policy can be
+      // scored with and without the model's vote. `outsideWindow` is a fixed
+      // harness constraint every candidate policy shares (turn 3..24), so it
+      // belongs in the denominator; `nearClosure` and `closeInquiry` are the
+      // layer's judgement and belong in the policy under test. `unresolvedGlossary`
+      // gates only `stagnant_repeat`, never `warrant_skip`.
+      suppressionRecorded,
+      outsideWindow: Boolean(suppression.outside_window),
+      nearClosure: Boolean(suppression.near_closure),
+      closeInquiry: Boolean(suppression.close_inquiry),
+      unresolvedGlossary: Boolean(suppression.unresolved_glossary),
       injected: Boolean(poa.interruption?.text),
       advanced: outcome.advanced,
       regressed: outcome.regressed,
@@ -469,4 +485,137 @@ export function scoreAlternativeGate(decisions, policy, field = WARRANT_ALIGNED_
     silenceAccuracy: { ...wilsonInterval(silentAdvanced, silentTotal), advanced: silentAdvanced, total: silentTotal },
     discrimination: proportionDifference(silentAdvanced, silentTotal, firedTotal - firedStalled, firedTotal),
   };
+}
+
+/**
+ * Could any gate have fired here at all?
+ *
+ * The [3, 24] trigger window is a harness constant, not a policy choice: every
+ * candidate rule inherits it, and turns outside it are structurally dead for the
+ * gate. Scoring a candidate on the whole population lets it "win" by firing on
+ * turns no deployable gate could touch, which is a way of scoring the window
+ * rather than the rule.
+ */
+export function isWindowEligible(decision) {
+  return isCleanDecision(decision) && !decision.outsideWindow;
+}
+
+/**
+ * Candidate gate policies worth carrying in every report, so the comparison the
+ * gate has to beat is standing rather than re-derived by hand each time.
+ *
+ * The one that matters is `position layer alone`. The live rule is the model's
+ * `evidence_use` vote AND the deterministic layer's assent; splitting them says
+ * which half is carrying the decision. The position layer costs nothing — it is
+ * read off the DAG state the tutor already computes — and is judge-invariant,
+ * whereas the vote has ~68% cross-family agreement.
+ *
+ * Note what this does NOT establish. These are off-policy scores (see
+ * `scoreAlternativeGate`): they rank how well a rule predicts stalls in recorded
+ * dialogue, and a rule that fires on twice as many turns is a different
+ * intervention regime, not a drop-in swap.
+ */
+export const CANDIDATE_GATE_POLICIES = Object.freeze({
+  'live rule (model vote AND position layer)': (row) => row.fired,
+  'model vote alone (ignore position layer)': (row) => row.fired || row.suppressed,
+  'position layer alone (no model call)': (row) => !row.nearClosure && !row.closeInquiry,
+  'omits_warrant only': (row) => row.evidenceUse === 'omits_warrant',
+  'overleaps_evidence only': (row) => row.evidenceUse === 'overleaps_evidence',
+  'always fire': () => true,
+  'never fire': () => false,
+});
+
+/**
+ * Structural integrity of a grading pass, for use as a post-run gate.
+ *
+ * This exists because the result the grader produced is a null, and a null is the
+ * easy thing to keep producing after the archive's record shape has drifted. Every
+ * failure below is a way for a future run to report "no signal" when the truth is
+ * "the grader stopped seeing the data".
+ *
+ * Failures are structural only. Nothing here fails on a *number* — a small
+ * discrimination, a low advance rate and a narrow margin are findings, and a check
+ * that failed on them would be a check that demands a particular result.
+ */
+export function checkGateGradeIntegrity({ decisions = [], armSummaries = [] } = {}) {
+  const failures = [];
+  const warnings = [];
+  const clean = decisions.filter(isCleanDecision);
+
+  if (decisions.length === 0) {
+    failures.push({
+      code: 'no_scorable_decisions',
+      detail:
+        'no gate decision had both a point_of_action_assignment and a next-turn stateObservation.dag — ' +
+        'the archive layout or the record shape has changed',
+    });
+  }
+
+  const declared = new Set([...OBSERVATIONAL_ARMS, ...INJECTING_ARMS]);
+  for (const summary of armSummaries) {
+    if (!declared.has(summary.arm)) {
+      failures.push({
+        code: 'unknown_arm',
+        detail:
+          `arm ${JSON.stringify(summary.arm)} is in neither OBSERVATIONAL_ARMS nor INJECTING_ARMS, so whether ` +
+          'its fired turns carry an injection is unverified and it must not enter a pooled baseline',
+      });
+    }
+    if (summary.armClassificationMismatch) {
+      failures.push({
+        code: 'arm_classification_mismatch',
+        detail:
+          `arm ${summary.arm} was declared ${summary.declaredObservational ? 'observational' : 'injecting'} but ` +
+          `${summary.injectedOnFired} of its fired turns carried injected text — the identifying assumption ` +
+          'behind the flagged-vs-passed-over comparison does not hold on this archive',
+      });
+    }
+  }
+
+  const observational = armSummaries.filter((summary) => summary.observational);
+  if (armSummaries.length > 0 && observational.length === 0) {
+    failures.push({
+      code: 'no_observational_arm',
+      detail:
+        'no arm logged the gate assignment without injecting on it, so gate discrimination is not identified ' +
+        'in this archive (every flagged moment was also treated)',
+    });
+  }
+
+  if (clean.length > 0 && !clean.some((row) => row.suppressionRecorded)) {
+    failures.push({
+      code: 'suppression_not_recorded',
+      detail:
+        'no decision carries a suppression block, so the deterministic layer reads as "never held anything back" ' +
+        'and any policy split on nearClosure/closeInquiry would silently collapse to always-fire',
+    });
+  }
+
+  const eligible = clean.filter((row) => !row.outsideWindow);
+  if (clean.length > 0 && eligible.length === 0) {
+    failures.push({
+      code: 'no_window_eligible_decisions',
+      detail: 'every decision fell outside the [3, 24] trigger window, so no candidate policy is comparable here',
+    });
+  }
+
+  const leaked = decisions.filter((row) => row.deliveryLeaked).length;
+  if (decisions.length > 0 && leaked / decisions.length > 0.25) {
+    warnings.push({
+      code: 'high_delivery_leak_rate',
+      detail:
+        `${leaked}/${decisions.length} turns delivered text that failed the leak audit; the outcome channel is ` +
+        'thin on the remainder',
+    });
+  }
+  for (const summary of armSummaries) {
+    if (summary.clean > 0 && summary.covariates.fireRate.rate === 0) {
+      warnings.push({
+        code: 'arm_never_fired',
+        detail: `arm ${summary.arm} never fired, so its observational status falls back to the declared list`,
+      });
+    }
+  }
+
+  return { ok: failures.length === 0, failures, warnings };
 }

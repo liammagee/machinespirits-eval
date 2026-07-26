@@ -39,6 +39,7 @@ import {
   validateProgram2LaunchCertificate,
 } from '../services/program2ExperimentSafety.js';
 import { STEP4_POINT_OF_ACTION_SPEC } from './run-step4-point-of-action-gate.js';
+import { loadGateDecisions } from './grade-point-of-action-gate.js';
 import { learnerProfilePrompt } from './tutor-stub-learner-profile-contracts.js';
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
@@ -804,6 +805,52 @@ async function main() {
   }
   const sealedCount = Object.values(launchState.jobs).filter((entry) => entry.status === 'sealed').length;
   console.log(`[phase5] launch pass complete: ${sealedCount}/${plan.jobs.length} sealed`);
+  gradeGateOnOutputRoot(outputRoot, launchState, saveState);
+}
+
+/**
+ * Post-run gate check on the run's own traces. Zero API calls.
+ *
+ * Two things it protects. The gate result on the existing archives is a null, and a
+ * null is the easy thing to keep reporting once the record shape has drifted — so
+ * `checkGateGradeIntegrity` fails loudly on structural drift rather than on a
+ * number. And a new arm added to a later phase would otherwise enter the pooled
+ * observational baseline unchecked, which is the assumption the whole
+ * flagged-versus-passed-over comparison rests on.
+ *
+ * Deliberately does NOT throw. The jobs are sealed and the tokens are spent by the
+ * time this runs; failing the process here would break resume without saving
+ * anything. The verdict goes into the persisted launch state so it survives the
+ * console.
+ */
+function gradeGateOnOutputRoot(outputRoot, launchState, saveState) {
+  let graded;
+  try {
+    graded = loadGateDecisions({ archives: [outputRoot] });
+  } catch (error) {
+    console.error(`[phase5] gate grade skipped: ${String(error.message || error)}`);
+    return;
+  }
+  const { integrity, decisions, armSummaries } = graded;
+  launchState.gateGrade = {
+    decisions: decisions.length,
+    arms: armSummaries.map((summary) => summary.arm),
+    ok: integrity.ok,
+    failures: integrity.failures,
+    warnings: integrity.warnings,
+  };
+  if (saveState) saveState();
+  console.log(`[phase5] gate grade: ${decisions.length} scorable decisions across ${armSummaries.length} arm(s)`);
+  for (const warning of integrity.warnings) console.log(`[phase5] gate grade NOTE [${warning.code}] ${warning.detail}`);
+  for (const failure of integrity.failures) {
+    console.error(`[phase5] gate grade FAIL [${failure.code}] ${failure.detail}`);
+  }
+  if (!integrity.ok) {
+    console.error('[phase5] the gate grader cannot read this run. Fix before quoting any gate number from it:');
+    console.error(`[phase5]   npm run program2:gate-grade:check -- --archive ${outputRoot}`);
+    return;
+  }
+  console.log(`[phase5] full report: npm run program2:gate-grade -- --archive ${outputRoot}`);
 }
 
 if (path.resolve(process.argv[1] || '') === SCRIPT_PATH) {

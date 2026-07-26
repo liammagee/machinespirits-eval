@@ -20,19 +20,25 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   POINT_OF_ACTION_GATE_GRADE_SCHEMA,
   OBSERVATIONAL_ARMS,
   INJECTING_ARMS,
   WARRANT_ALIGNED_FIELD,
+  CANDIDATE_GATE_POLICIES,
   buildGateDecisions,
+  checkGateGradeIntegrity,
   dagProgressState,
   isCleanDecision,
+  isWindowEligible,
   scoreAlternativeGate,
   summarizeGateArm,
   summarizeTreatment,
 } from '../services/pointOfActionGateGrader.js';
+
+const SCRIPT_PATH = fileURLToPath(import.meta.url);
 
 const DEFAULT_ARCHIVES = [
   path.join(os.homedir(), '.machinespirits-data', 'step4-claim-runs-2026-07'),
@@ -47,7 +53,7 @@ function expandHome(value) {
 }
 
 function parseArgs(argv) {
-  const options = { archives: [], json: null, perPersona: false, minTurns: 3 };
+  const options = { archives: [], json: null, perPersona: false, minTurns: 3, check: false };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     const next = () => {
@@ -59,6 +65,7 @@ function parseArgs(argv) {
     if (argument === '--archive') options.archives.push(expandHome(next()));
     else if (argument === '--json') options.json = expandHome(next());
     else if (argument === '--per-persona') options.perPersona = true;
+    else if (argument === '--check') options.check = true;
     else if (argument === '--min-turns') options.minTurns = Number.parseInt(next(), 10);
     else if (argument === '--help' || argument === '-h') options.help = true;
     else throw new Error(`Unknown argument ${JSON.stringify(argument)}`);
@@ -215,19 +222,44 @@ function formatDifference(difference) {
   return `${points >= 0 ? '+' : ''}${points} pts  (SE ${(difference.se * 100).toFixed(1)}, z ${z})`;
 }
 
-function report(options) {
+/**
+ * Load and grade an archive without printing anything.
+ *
+ * Exported so a post-run pipeline can check its own output root in-process rather
+ * than reimplementing this walk — which is easy to get subtly wrong (the trace
+ * filter, the restart dedupe and the hygiene record shape are all load-bearing) and
+ * silently returns zero rows when it is.
+ */
+export function loadGateDecisions({ archives = [], minTurns = 3 } = {}) {
   const dialogues = [];
-  for (const archive of options.archives) {
-    const files = findTraceFiles(archive);
-    for (const file of files) {
+  for (const archive of archives) {
+    for (const file of findTraceFiles(archive)) {
       const dialogue = buildDialogue(file, archive);
-      if (dialogue && dialogue.turns >= options.minTurns) dialogues.push(dialogue);
+      if (dialogue && dialogue.turns >= minTurns) dialogues.push(dialogue);
     }
   }
   const { kept, dropped } = dedupeDialogues(dialogues);
   const decisions = kept.flatMap((dialogue) =>
     dialogue.decisions.map((decision) => ({ ...decision, phase: dialogue.phase, persona: dialogue.persona })),
   );
+  const arms = [...new Set(decisions.map((row) => row.arm).filter(Boolean))].sort();
+  const armSummaries = arms.map((arm) =>
+    summarizeGateArm(
+      arm,
+      decisions.filter((row) => row.arm === arm),
+    ),
+  );
+  return {
+    kept,
+    dropped,
+    decisions,
+    armSummaries,
+    integrity: checkGateGradeIntegrity({ decisions, armSummaries }),
+  };
+}
+
+function report(options) {
+  const { kept, dropped, decisions, armSummaries, integrity } = loadGateDecisions(options);
 
   console.log(`archives: ${options.archives.join(', ')}`);
   console.log(`dialogues: ${kept.length}${dropped.length ? ` (${dropped.length} superseded restart(s) dropped)` : ''}`);
@@ -241,13 +273,7 @@ function report(options) {
       `caught by the guard, ${clean.filter((row) => row.fallback).length} deterministic fallback`,
   );
 
-  const arms = [...new Set(decisions.map((row) => row.arm).filter(Boolean))].sort();
-  const armSummaries = arms.map((arm) =>
-    summarizeGateArm(
-      arm,
-      decisions.filter((row) => row.arm === arm),
-    ),
-  );
+  const arms = armSummaries.map((summary) => summary.arm);
 
   console.log('');
   console.log(`Advance rate after each gate decision, on the warrant-aligned outcome (${WARRANT_ALIGNED_FIELD})`);
@@ -386,6 +412,29 @@ function report(options) {
     console.log('  silence accuracy = of the moments it passes over, the share that did advance.');
     console.log('  Off-policy: the outcomes are the ones that followed the gate that actually ran, so');
     console.log('  this ranks how well a rule PREDICTS stalls. It cannot say what a rule would CAUSE.');
+
+    // Same channel, restricted to turns a gate could actually fire on, and split so
+    // the model's vote and the deterministic position layer are scored apart. The
+    // table above keeps its whole-population denominator because its numbers are
+    // cited; this one is the deployable comparison.
+    const eligible = observationalDecisions.filter(isWindowEligible);
+    console.log('');
+    console.log('Same channel, restricted to the [3, 24] trigger window, with the gate split into its halves');
+    console.log(`  ${'policy'.padEnd(46)} ${'fires'.padEnd(12)} ${'stall precision'.padEnd(17)} silence accuracy`);
+    for (const [label, policy] of Object.entries(CANDIDATE_GATE_POLICIES)) {
+      const score = scoreAlternativeGate(eligible, policy);
+      const share = score.n ? ((100 * score.firesOn) / score.n).toFixed(0) : '0';
+      console.log(
+        `  ${label.padEnd(46)} ${`${score.firesOn} (${share}%)`.padEnd(12)} ` +
+          `${formatCell(score.stallPrecision).padEnd(17)} ${formatCell(score.silenceAccuracy)}`,
+      );
+    }
+    console.log('');
+    console.log(`  n = ${eligible.length} window-eligible observational moments.`);
+    console.log('  The live rule is the conjunction of the two rows above it. Splitting them says which');
+    console.log('  half carries the decision — the paid per-turn vote, or the position flag the tutor');
+    console.log('  already computes. A policy firing on a much larger share of turns is a different');
+    console.log('  intervention regime and not a drop-in swap, whatever its precision.');
   }
 
   if (options.perPersona) {
@@ -404,6 +453,7 @@ function report(options) {
   }
 
   if (options.json) {
+    const eligible = observationalDecisions.filter(isWindowEligible);
     const payload = {
       schema: POINT_OF_ACTION_GATE_GRADE_SCHEMA,
       archives: options.archives,
@@ -416,6 +466,13 @@ function report(options) {
       observationalArms: observationalArmNames,
       declaredObservationalArms: OBSERVATIONAL_ARMS,
       declaredInjectingArms: INJECTING_ARMS,
+      windowEligiblePolicies: Object.fromEntries(
+        Object.entries(CANDIDATE_GATE_POLICIES).map(([label, policy]) => [
+          label,
+          scoreAlternativeGate(eligible, policy),
+        ]),
+      ),
+      integrity,
     };
     fs.mkdirSync(path.dirname(path.resolve(options.json)), { recursive: true });
     fs.writeFileSync(path.resolve(options.json), `${JSON.stringify(payload, null, 2)}\n`);
@@ -423,7 +480,7 @@ function report(options) {
     console.log(`wrote ${options.json}`);
   }
 
-  return decisions.length;
+  return { count: decisions.length, integrity };
 }
 
 function main() {
@@ -435,22 +492,51 @@ function main() {
     process.exit(1);
   }
   if (options.help) {
-    console.log('Usage: node scripts/grade-point-of-action-gate.js [--archive DIR]... [--json FILE] [--per-persona]');
+    console.log(
+      'Usage: node scripts/grade-point-of-action-gate.js [--archive DIR]... [--json FILE] [--per-persona] [--check]',
+    );
     console.log('');
     console.log("Scores the point-of-action gate's decisions (when to intervene) against proof-DAG");
     console.log('advancement on the following turn. Reads archived traces only; no API calls.');
+    console.log('');
+    console.log('  --check   exit non-zero on a structural failure (record shape drift, an unrecognised');
+    console.log('            arm, an arm that injects where it was declared observational, no scorable');
+    console.log('            decisions). Fails on structure only, never on a number.');
     return;
   }
   if (options.archives.length === 0) {
-    console.log('No archive found. Pass --archive DIR pointing at a run archive containing traces/.');
+    // Under --check this is a failure: a post-run gate that silently passes when it
+    // was pointed at nothing is worse than no gate.
+    const message = 'No archive found. Pass --archive DIR pointing at a run archive containing traces/.';
+    if (options.check) {
+      console.error(message);
+      process.exit(1);
+    }
+    console.log(message);
     return;
   }
-  const count = report(options);
+  const { count, integrity } = report(options);
   if (count === 0) {
     console.log('');
     console.log('No scorable gate decisions found. The archive needs point_of_action_assignment records');
     console.log('and turn_complete records carrying a stateObservation.dag block.');
   }
+  for (const warning of integrity.warnings) {
+    console.log('');
+    console.log(`NOTE [${warning.code}] ${warning.detail}`);
+  }
+  if (!options.check) return;
+  console.log('');
+  if (integrity.ok) {
+    console.log(`--check PASS: ${count} scorable decisions, arm classification matches the declared design.`);
+    return;
+  }
+  for (const failure of integrity.failures) {
+    console.error(`--check FAIL [${failure.code}] ${failure.detail}`);
+  }
+  process.exit(1);
 }
 
-main();
+// Guarded so `loadGateDecisions` can be imported by a post-run check without the
+// import running the CLI.
+if (path.resolve(process.argv[1] || '') === SCRIPT_PATH) main();
