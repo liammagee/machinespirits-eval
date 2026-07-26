@@ -257,5 +257,41 @@ was stopped before it could reach one. Nothing here says the guards are wrong to
 reject those drafts — an ungrounded release is a real fault — only that on this
 world, this stack and this scenario the stack rejects more than it can repair.
 
+### Guard exhaustion replicates across worlds
+
+Campus FAQ (`showcase-2026-07-26T11-27-25-251Z`, same commit and models) failed
+the same way and sooner:
+
+| | Bare (passthrough) | Instrumented |
+| --- | ---: | ---: |
+| Turns reached | 10 (turn cap) | 2 (aborted) |
+| Wall clock per turn | 9.1s | 68.8s |
+| Model calls per turn | 2 | 7 |
+| Guard coverage | 0% (bypassed) | 63% |
+| Accepted / repaired / fallback | n/a | 0 / 1 / 1 |
+
+Both worlds died on `dramatic_release` with the same pair of issues,
+`opaque_clue_release` and `missing_exhibit_action`, so this is not a property of
+one scenario's authored chain.
+
+The mechanism is narrower than "the fallback always fails". `opaque_clue_release`
+fires on `!entranceVisible`; `missing_exhibit_action` fires only when the clue's
+own frame sets `requiresExhibitHandoff` and no handoff is visible
+(`services/tutorStubDramaticRelease.js`). The deterministic fallback wraps the
+authored clue in a fixed "I write the live line down where we can both see it:"
+frame, which supplies **neither** an entrance nor an exhibit action of its own.
+Whether it passes therefore depends entirely on whether the authored clue text
+happens to supply them: Riverside turn 3 used that exact template and was
+accepted, because its clue named a person performing an act ("Mara opening
+Noor's record at 17:42"). The clues that killed both runs were impersonal — an
+action ledger entry, an artifact inventory count — and the fallback had nothing
+to add.
+
+So the floor is conditional. The last resort is gated by a guard it does not
+reliably satisfy, and when it fails there is nothing behind it: the tutor has
+nothing it is permitted to say and the process exits. Two worlds, one dialogue
+each, one stack — enough to show the failure is not scenario-specific, not
+enough to quantify how often it happens.
+
 Token cost is recorded but the CLI bridges are subscription-quota, so `cost`
 comes back as `0`; express cost in calls and wall clock, not dollars.
