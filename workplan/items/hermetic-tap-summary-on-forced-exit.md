@@ -85,19 +85,26 @@ loads that need packages absent from this worktree's symlinked `node_modules`
 builds from `path.basename(root)`; this worktree is called `ms-hermetic-tap`. CI
 checks out into a directory named for the repository, so both pass there.
 
-## An improvement, not a guarantee
+## Two channels, not a safe one
 
-A file destination is not immune to `process.exit()`. It is a far wider race
-than a pipe, and CI proved it is still a race: on Node 20 the forced-exit
-integration test lost the tail on the file channel too, in a child that starts
-and exits inside a quarter of a second. Node 22 kept it.
+A file destination is not immune to `process.exit()`, and CI refuted two
+successively weaker claims about it. First, that the file is always complete:
+Node 20 lost the tail on the file in a child that starts and exits inside a
+quarter of a second. Then, that the file is at least never the poorer of the
+two: Node 20 produced a run where the pipe carried the tail and the file did
+not.
 
-The real root phase writes for minutes rather than milliseconds, and across
-eight shard jobs on both Node versions it carried a complete tail every time,
-including in the job where the synthetic child failed. But "much less likely" is
-not "reliable". The claim this change can support is comparative: the file is
-never the poorer channel. The integration test asserts that, and nothing
-stronger.
+The two channels fail under different conditions. The pipe loses the tail when
+the parent reads slowly, which is the flake this change exists for. The file
+loses it when the child exits almost immediately, which the real root phase —
+minutes of output rather than milliseconds — has not done across eight shard
+jobs on both Node versions.
+
+So the change does not buy a safe channel. It buys two independent ones and a
+reader that takes whichever survived, and the stdout fallback in
+`readRootTapSummary` is load-bearing rather than a courtesy to callers that
+build phases without a `tapPath`. The integration test asserts the union: it
+fails only when both channels lose the tail at once.
 
 The durable fix is to stop racing the reporter at all — run the root phase
 without `--test-force-exit`, wait for the TAP file to show a complete tail, and

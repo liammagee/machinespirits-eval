@@ -705,22 +705,26 @@ test('a root verdict missing from every channel names them all', (t) => {
   );
 });
 
-test('a force-exited child never leaves the file channel behind the pipe', async (t) => {
-  // The regression this guards: `--test-force-exit` calls process.exit(), which
-  // does not flush a pipe, so under a slow reader the trailing plan and counters
-  // never reach stdout at all.
+test('a force-exited child leaves its TAP tail on at least one channel', async (t) => {
+  // `--test-force-exit` calls process.exit(), and neither destination is safe
+  // from it. Two stronger claims were tried here and CI refuted both: that the
+  // file channel is always complete (Node 20 lost it in a child that starts and
+  // exits inside a quarter of a second), and then that the file is never the
+  // poorer of the two (Node 20 produced a run where the pipe had the tail and
+  // the file did not).
   //
-  // The claim asserted here is comparative, and deliberately so. A file
-  // destination is not immune to process.exit() either — it is a far wider race
-  // than a pipe, not a guarantee. This test first asserted the file channel was
-  // unconditionally complete and CI refuted it on Node 20, where a child that
-  // starts and exits inside a quarter of a second lost the tail on both
-  // channels. The real root phase writes for minutes and has never lost it, but
-  // "much less likely" is not "reliable", and the workplan item records the
-  // durable fix as waiting for the tail rather than racing it.
+  // The two channels fail under different conditions. The pipe loses the tail
+  // when the parent reads slowly, which is the CI flake this change exists for;
+  // the file loses it when the child exits almost immediately, which the real
+  // root phase — minutes of output, not milliseconds — has never done across
+  // eight shard jobs on both Node versions. So what the change buys is not a
+  // safe channel but two independent ones and a reader that takes whichever
+  // survived. That is why the stdout fallback in readRootTapSummary is
+  // load-bearing rather than a courtesy to old callers.
   //
-  // What holds on every version, and what the change is actually worth, is that
-  // the file is never the poorer channel. If that ever inverts, this fails.
+  // Hence the union. This fails only when both channels lose the tail at once,
+  // which is the outcome actually worth guarding, and the workplan item records
+  // the durable fix: wait for the tail instead of racing it.
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-tap-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const testFile = path.join(root, 'padding.test.js');
@@ -749,10 +753,11 @@ test('a force-exited child never leaves the file channel behind the pipe', async
   });
 
   assert.equal(fs.existsSync(tapPath), true, result.stderr);
-  const fileComplete = nodeTapOutputIsComplete(fs.readFileSync(tapPath, 'utf8'));
-  const stdoutComplete = nodeTapOutputIsComplete(result.stdout);
-  assert.ok(fileComplete || !stdoutComplete, 'the pipe carried a tail the file did not');
-  if (!fileComplete) return;
+  const fileTap = fs.readFileSync(tapPath, 'utf8');
+  assert.ok(
+    nodeTapOutputIsComplete(fileTap) || nodeTapOutputIsComplete(result.stdout),
+    `both channels lost the tail: file ${fileTap.length} bytes, stdout ${result.stdout.length} bytes`,
+  );
 
   const summary = readRootTapSummary({ phase: 'root', tapPath }, result);
   assert.equal(summary.fail, 0);

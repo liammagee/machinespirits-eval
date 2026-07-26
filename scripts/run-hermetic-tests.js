@@ -317,13 +317,20 @@ export function runPhase({
 }
 
 /**
- * Read the root phase's verdict, preferring the file-backed TAP channel.
+ * Read the root phase's verdict from whichever TAP channel survived the exit,
+ * preferring the file.
  *
- * The piped stream is kept as a fallback so a run without `tapPath` — a caller
- * building phases by hand, an older invocation — still works, and so a file
- * that somehow arrives incomplete does not mask a stdout stream that is fine.
- * When neither channel carries a complete tail the error names both, because
- * "the summary is missing" and "the tests failed" look identical otherwise.
+ * Neither channel is safe from `process.exit()`, and they fail under different
+ * conditions: the pipe loses its tail when this parent reads slowly, which is
+ * the flake this exists for, and the file loses it when the child exits almost
+ * immediately, which CI has shown on Node 20 in a quarter-second run. So the
+ * stdout branch is not only there for a caller that builds phases without a
+ * `tapPath` — it is the second of two independent chances at the tail, and it
+ * has already been the one that had it.
+ *
+ * When neither carries a complete tail the error names both with their byte
+ * counts, because "the summary is missing" and "the tests failed" look
+ * identical otherwise.
  */
 export function readRootTapSummary(phase, result) {
   const tapPath = phase.tapPath;
