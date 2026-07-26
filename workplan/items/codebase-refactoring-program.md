@@ -44,6 +44,8 @@ links:
     - refactor-tutor-stub-response-details
     - refactor-tutor-stub-field-presentation
     - refactor-tutor-stub-closeout-projection
+    - refactor-tutor-stub-interim-presentation
+    - refactor-tutor-stub-interim-frame-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -281,3 +283,34 @@ Log:
   32/32 focused tests, and complete zero-skip hermetic parity. Report assembly,
   terminal output, traces, commands, and the distinct auto-eval summary remain
   unchanged.
+- 2026-07-26 — PR #247 merged the closeout-projection child as `57cba50c` with
+  every CI lane green; the serialized render followed as `7a22b818`. Closed
+  that child and activated `refactor-tutor-stub-interim-presentation` for the
+  remaining pure loading copy and hint projection while retaining timers, TTY
+  writes, panel assembly, commands, traces, and mutable runtime state.
+- 2026-07-26 — The interim-presentation child has five pure helpers in one
+  leaf, removes the duplicate learning-summary bottleneck mapping, reduces the
+  CLI by 77 lines, and passes 9/9 direct/shared-summary tests plus the existing
+  real PTY loading scenario. Broader parity remains to run.
+- 2026-07-26 — The interim-presentation child reached review with 16/16 focused
+  presentation/summary/terminal tests, the real PTY loading scenario, and the
+  complete zero-skip hermetic contract green. Static, manifest, and source-only
+  gates also pass; timers, TTY writes, panel assembly, commands, traces, and
+  runtime state remain unchanged.
+- 2026-07-26 — Rebased the interim child onto rendered `origin/main` at
+  `a577fa6a` after three independent feature merges. The final-base overlap set
+  passes 30/30 plus the real PTY scenario, and the complete hermetic suite is
+  zero-skip green again (core 137/137); static, manifest, and 198-item
+  source-only gates also pass.
+- 2026-07-26 — PR #249 merged the interim-presentation child as `2e8f0708`
+  with every CI lane green; the serialized render followed as `315cbaed`.
+  Closed that child and activated
+  `refactor-tutor-stub-interim-frame-projection` to move only pure panel
+  ordering and frame serialization while retaining live summary calculation,
+  animation state, timers, TTY writes, commands, traces, and model/runtime
+  behavior in the CLI.
+- 2026-07-26 — The interim-frame child reached review with pure panel ordering
+  and byte-exact frame serialization in the existing presentation leaf, a
+  further 29-line CLI reduction, 19/19 focused tests, the real PTY loading
+  scenario, and complete zero-skip hermetic parity green. Live summary
+  calculation and every animation/runtime effect remain CLI-owned.

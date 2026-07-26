@@ -1,0 +1,283 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+
+import {
+  formatTutorStubSignedInterimNumber,
+  projectTutorStubInterimPanels,
+  renderTutorStubInterimFrame,
+  summarizeTutorStubInterimCapabilities,
+  tutorStubInterimCliHintPanels,
+  tutorStubInterimLevel,
+  tutorStubPlainInterimBottleneck,
+} from '../services/tutorStubInterimPresentation.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+const COLORS = Object.freeze({
+  accent2: '<accent2>',
+  bold: '<bold>',
+  reset: '<reset>',
+  dim: '<dim>',
+  yellow: '<yellow>',
+  green: '<green>',
+  cyan: '<cyan>',
+  magenta: '<magenta>',
+});
+
+test('interim signed numbers preserve null, sign, rounding, and precision behavior', () => {
+  assert.equal(formatTutorStubSignedInterimNumber(undefined), null);
+  assert.equal(formatTutorStubSignedInterimNumber(Number.NaN), null);
+  assert.equal(formatTutorStubSignedInterimNumber(0), null);
+  assert.equal(formatTutorStubSignedInterimNumber('0'), null);
+  assert.equal(formatTutorStubSignedInterimNumber(0.125), '+0.13');
+  assert.equal(formatTutorStubSignedInterimNumber(-0.125), '-0.13');
+  assert.equal(formatTutorStubSignedInterimNumber(1.2345, { decimals: 3 }), '+1.234');
+});
+
+test('interim capability summaries preserve ordering and the plain-response fallback', () => {
+  assert.equal(summarizeTutorStubInterimCapabilities(null), 'plain tutor response');
+  assert.equal(summarizeTutorStubInterimCapabilities({}), 'plain tutor response');
+  assert.equal(
+    summarizeTutorStubInterimCapabilities({
+      classifier: { enabled: true },
+      learnerDag: { enabled: true },
+      register: { enabled: true },
+      dag: {},
+    }),
+    'learner reading, reasoning progress, response style, evidence pacing',
+  );
+  assert.equal(summarizeTutorStubInterimCapabilities({ classifier: { enabled: false }, dag: true }), 'evidence pacing');
+});
+
+test('interim strength bands pin unavailable handling and every threshold boundary', () => {
+  assert.equal(tutorStubInterimLevel(undefined), 'not available');
+  assert.equal(tutorStubInterimLevel('not-a-number'), 'not available');
+  assert.equal(tutorStubInterimLevel(-1), 'low');
+  assert.equal(tutorStubInterimLevel(0.249), 'low');
+  assert.equal(tutorStubInterimLevel(0.25), 'developing');
+  assert.equal(tutorStubInterimLevel(0.499), 'developing');
+  assert.equal(tutorStubInterimLevel(0.5), 'strong');
+  assert.equal(tutorStubInterimLevel(0.749), 'strong');
+  assert.equal(tutorStubInterimLevel(0.75), 'very strong');
+  assert.equal(tutorStubInterimLevel(2), 'very strong');
+});
+
+test('interim bottleneck labels preserve authored copy and readable fallback normalization', () => {
+  const expected = {
+    release_or_pacing_gap: 'the learner needs the next usable piece of evidence',
+    warrant_gap: 'the learner needs a clearer reasoning link',
+    unsupported_assertion: 'the conclusion has moved beyond the evidence',
+    grounded_asserted_secret: 'the conclusion is supported and stated',
+    grounded_unasserted_secret: 'the conclusion is supported but not yet stated',
+  };
+  for (const [value, label] of Object.entries(expected)) {
+    assert.equal(tutorStubPlainInterimBottleneck(value), label);
+  }
+  assert.equal(tutorStubPlainInterimBottleneck('custom_learning_gap'), 'custom learning gap');
+  assert.equal(tutorStubPlainInterimBottleneck(), 'the next useful learner move');
+});
+
+test('interim CLI hints preserve passthrough, setup, coach, auto, and learner contexts', () => {
+  const shared = {
+    label: 'CLI hint',
+    tone: 'neutral',
+    text: 'type / to browse | type to filter | Tab completes | /help groups commands',
+  };
+  const cases = [
+    {
+      active: { state: { passthrough: { enabled: true }, interaction: { mode: 'coach' } } },
+      contextual: {
+        label: 'While waiting',
+        tone: 'neutral',
+        text: '/status and /transcript stay live | /scenario changes the case | /reset cancels unfinished work',
+      },
+    },
+    {
+      active: { basePhase: 'Preparing Scenario', state: { interaction: { mode: 'coach' } } },
+      contextual: {
+        label: 'Change setup',
+        tone: 'neutral',
+        text: '/scenario switches case | /profile changes learner | /settings adjusts models and pacing',
+      },
+    },
+    {
+      active: { phase: 'opening artifacts', state: {} },
+      contextual: {
+        label: 'Change setup',
+        tone: 'neutral',
+        text: '/scenario switches case | /profile changes learner | /settings adjusts models and pacing',
+      },
+    },
+    {
+      active: { state: { interaction: { mode: 'coach' } } },
+      contextual: {
+        label: 'Coach controls',
+        tone: 'neutral',
+        text: '/coach adds private guidance | /mode learner returns control | /analysis inspects the exchange',
+      },
+    },
+    {
+      active: { state: { interaction: { mode: 'auto' } } },
+      contextual: {
+        label: 'Auto controls',
+        tone: 'neutral',
+        text: '/status checks progress | /analysis inspects the exchange | /reset cancels safely',
+      },
+    },
+    {
+      active: { state: { interaction: { mode: 'learner', autoRunning: true } } },
+      contextual: {
+        label: 'Auto controls',
+        tone: 'neutral',
+        text: '/status checks progress | /analysis inspects the exchange | /reset cancels safely',
+      },
+    },
+    {
+      active: { state: { interaction: { mode: 'learner' } } },
+      contextual: {
+        label: 'Next moves',
+        tone: 'neutral',
+        text: '/clue asks for direction | /suggest previews a reply | /coach privately guides the tutor',
+      },
+    },
+  ];
+
+  for (const fixture of cases) {
+    const before = structuredClone(fixture.active);
+    assert.deepEqual(tutorStubInterimCliHintPanels(fixture.active), [shared, fixture.contextual]);
+    assert.deepEqual(fixture.active, before, 'hint projection must not mutate live animation state');
+  }
+});
+
+test('interim panel projection preserves authored order, filters empty values, and does not mutate inputs', () => {
+  const input = {
+    hints: [{ label: 'CLI hint', tone: 'neutral', text: 'Browse commands' }],
+    tutorFocus: 'Clarify the warrant',
+    dialogueOutlook: null,
+    reasoningChange: 'One premise resolved',
+    learnerReasoning: '',
+    evidencePacing: 'Next clue at turn 3',
+    learnerReading: undefined,
+    reasoningState: 'Conclusion remains open',
+    tutorStyle: 'Use a concrete example',
+    clueProgress: '2 of 4 clues revealed',
+    dialogueSoFar: 'Momentum developing',
+    fallback: 'plain tutor response',
+  };
+  const before = structuredClone(input);
+
+  assert.deepEqual(projectTutorStubInterimPanels(input), [
+    input.hints[0],
+    { label: 'Tutor focus', tone: 'focus', text: 'Clarify the warrant' },
+    { label: 'Reasoning change', tone: 'progress', text: 'One premise resolved' },
+    { label: 'Evidence pacing', tone: 'evidence', text: 'Next clue at turn 3' },
+    { label: 'Reasoning state', tone: 'progress', text: 'Conclusion remains open' },
+    { label: 'Tutor style', tone: 'focus', text: 'Use a concrete example' },
+    { label: 'Clue progress', tone: 'evidence', text: '2 of 4 clues revealed' },
+    { label: 'Dialogue so far', tone: 'progress', text: 'Momentum developing' },
+  ]);
+  assert.deepEqual(input, before);
+});
+
+test('interim panel projection preserves the active-checks fallback', () => {
+  assert.deepEqual(projectTutorStubInterimPanels({ fallback: 'plain tutor response' }), [
+    { label: 'Active checks', tone: 'neutral', text: 'plain tutor response' },
+  ]);
+});
+
+test('interim frame rendering pins spinner, elapsed time, rotation, color, and exact ANSI composition', () => {
+  const output = renderTutorStubInterimFrame({
+    tick: 4,
+    startedAt: 1_000,
+    now: 3_250,
+    columns: 90,
+    phase: 'Writing answer',
+    panels: [
+      { label: 'Tutor focus', tone: 'focus', text: 'Clarify the warrant' },
+      { label: 'Evidence pacing', tone: 'evidence', text: 'Next clue' },
+    ],
+    frames: ['a', 'b'],
+    colors: COLORS,
+  });
+
+  assert.equal(
+    output,
+    '<accent2>a <bold>Writing answer<reset><dim> ·  2.3s · <reset><yellow>view 2/2<reset><dim> | <reset><yellow>Evidence pacing<reset>: Next clue',
+  );
+});
+
+test('interim frame rendering preserves every panel tone color and neutral fallback', () => {
+  const expectations = {
+    progress: '<green>',
+    evidence: '<yellow>',
+    learner: '<cyan>',
+    focus: '<magenta>',
+    neutral: '<dim>',
+    unknown: '<dim>',
+  };
+  for (const [tone, color] of Object.entries(expectations)) {
+    const output = renderTutorStubInterimFrame({
+      tick: 0,
+      startedAt: 0,
+      now: 0,
+      columns: 80,
+      phase: 'Thinking',
+      panels: [{ label: 'Panel', tone, text: 'Detail' }],
+      frames: ['-'],
+      colors: COLORS,
+    });
+    assert.ok(output.includes(`${color}Panel<reset>: Detail`));
+  }
+});
+
+test('interim frame rendering preserves phase compaction and terminal width bounds', () => {
+  const noColors = Object.fromEntries(Object.keys(COLORS).map((key) => [key, '']));
+  const narrow = renderTutorStubInterimFrame({
+    tick: 0,
+    startedAt: 0,
+    now: 0,
+    columns: 40,
+    phase: '123456789012345678901234567890',
+    panels: [{ label: 'A', tone: 'neutral', text: 'abcdefghijklmnopqrstuvwxyz' }],
+    frames: ['-'],
+    colors: noColors,
+  });
+  assert.equal(narrow, '- 1234567890123456789012345... ·  0.0s · view 1/1 | A: abcdefghi...');
+
+  const wide = renderTutorStubInterimFrame({
+    tick: 0,
+    startedAt: 0,
+    now: 0,
+    columns: 400,
+    phase: 'Thinking',
+    panels: [{ label: 'A', tone: 'neutral', text: 'x'.repeat(400) }],
+    frames: ['-'],
+    colors: noColors,
+  });
+  assert.equal(wide.length, 179);
+  assert.match(wide, /\.\.\.$/u);
+});
+
+test('the CLI and learning summary share pure interim copy while retaining runtime and report ownership', () => {
+  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const learningSummarySource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearningSummary.js'), 'utf8');
+  const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubInterimPresentation.js'), 'utf8');
+
+  assert.match(cliSource, /from '\.\.\/services\/tutorStubInterimPresentation\.js';/u);
+  assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
+  assert.doesNotMatch(
+    cliSource,
+    /function (?:formatSignedInterimNumber|compactInterimStateSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+  );
+  assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
+  assert.match(cliSource, /function renderInterimStatus\s*\(/u);
+  assert.match(cliSource, /function startInterimAnimation\s*\(/u);
+  assert.match(cliSource, /function stopInterimAnimation\s*\(/u);
+  assert.doesNotMatch(cliSource, /function interimToneColor\s*\(/u);
+  assert.match(cliSource, /projectTutorStubInterimPanels\s*\(\{/u);
+  assert.match(cliSource, /renderTutorStubInterimFrame\s*\(\{/u);
+  assert.doesNotMatch(serviceSource, /\b(?:fs|console|process|fetch|setInterval|clearInterval|Date\.now)\s*[.(]/u);
+});

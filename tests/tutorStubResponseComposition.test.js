@@ -2508,3 +2508,54 @@ test('a learner-selected maker-mark test must be carried forward before another 
     'That is the right tool-mark test; keep the shared flaw before us.',
   );
 });
+
+test('a self-correction preface is not scored as the tutor’s uptake of the learner', () => {
+  const learnerText = 'Let us examine them for a maker’s mark; that could speak to the hand that struck them.';
+  const frame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification: { turn: { summary: 'Selects the offered maker-mark examination.' } },
+    registerSelection: { response_configuration: { action_family: 'stage_next_step' } },
+  });
+  const development = 'I draw the shilling across the touchstone and mark only what it shows.';
+
+  // Without the peel this opening would be read as a generic uptake, so the
+  // guard would reject the tutor for saying it changed course.
+  const prefaced = auditTutorStubResponseComposition({
+    text: `I was about to answer a different question. Your maker’s mark is the right test to run first. ${development}`,
+    frame,
+    learnerText,
+  });
+  assert.equal(prefaced.segments.method, 'self_correction_preface');
+  assert.equal(prefaced.segments.preface, 'I was about to answer a different question.');
+  assert.equal(prefaced.segments.uptake, 'Your maker’s mark is the right test to run first.');
+  assert.equal(
+    prefaced.issues.some((issue) => issue.type === 'generic_learner_uptake'),
+    false,
+    JSON.stringify(prefaced.issues),
+  );
+
+  // A correction folded into a real uptake is already the uptake, so nothing
+  // is peeled and the following sentence stays development.
+  const folded = auditTutorStubResponseComposition({
+    text: `I nearly answered past your maker’s mark, which is the right test to run first. ${development}`,
+    frame,
+    learnerText,
+  });
+  assert.equal(folded.segments.method, 'first_sentence');
+  assert.equal(
+    folded.segments.uptake,
+    'I nearly answered past your maker’s mark, which is the right test to run first.',
+  );
+
+  // A turn that is nothing but the correction has still not answered anyone.
+  const bare = auditTutorStubResponseComposition({
+    text: 'I was about to answer a different question.',
+    frame,
+    learnerText,
+  });
+  assert.notEqual(bare.segments.method, 'self_correction_preface');
+  assert.ok(
+    bare.issues.some((issue) => ['generic_learner_uptake', 'missing_learner_uptake'].includes(issue.type)),
+    JSON.stringify(bare.issues),
+  );
+});

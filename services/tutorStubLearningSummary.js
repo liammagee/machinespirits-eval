@@ -1,4 +1,5 @@
 import { tutorStubComprehensionSnapshot } from './tutorStubComprehensionState.js';
+import { tutorStubPlainInterimBottleneck as plainInterimBottleneck } from './tutorStubInterimPresentation.js';
 import { summarizeTutorStubLearnerResponseProvenance } from './tutorStubLearnerResponseProvenance.js';
 import { tutorStubReleasePacingSnapshot } from './tutorStubReleasePacing.js';
 
@@ -32,17 +33,6 @@ function uniqueSummaryText(items = []) {
 
 function learnerRecordSummaryRows(model, key) {
   return uniqueSummaryText(Array.isArray(model?.learnerRecord?.[key]) ? model.learnerRecord[key] : []);
-}
-
-function plainInterimBottleneck(value) {
-  const labels = {
-    release_or_pacing_gap: 'the learner needs the next usable piece of evidence',
-    warrant_gap: 'the learner needs a clearer reasoning link',
-    unsupported_assertion: 'the conclusion has moved beyond the evidence',
-    grounded_asserted_secret: 'the conclusion is supported and stated',
-    grounded_unasserted_secret: 'the conclusion is supported but not yet stated',
-  };
-  return labels[value] || String(value || 'the next useful learner move').replaceAll('_', ' ');
 }
 
 export function tutorStubLearningSummaryEndReason(reason, natural) {

@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-25T23:29:54.334Z",
+  "generated": "2026-07-26T02:14:12.220Z",
   "counts": {
-    "total": 197,
+    "total": 201,
     "byStatus": {
-      "done": 174,
-      "blocked": 4,
+      "done": 176,
+      "blocked": 5,
       "dropped": 3,
-      "triaged": 6,
-      "active": 4,
+      "triaged": 4,
+      "active": 6,
       "archived": 4,
-      "review": 2
+      "review": 3
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 44,
-      "maintenance": 43,
+      "infra": 45,
+      "maintenance": 46,
       "content": 2,
       "paper": 6,
       "ops": 7
@@ -76,51 +76,6 @@
         "testing"
       ],
       "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "negative-register-effect-estimation-grid",
-      "title": "Estimate negative-register effects with stance-fidelity gating",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-03",
-      "updated": "2026-07-03",
-      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
-      "claim_status": "future",
-      "links": {
-        "notes": [
-          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
-          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
-        ],
-        "paper": [
-          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
-          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
-        ],
-        "exports": [
-          "exports/charisma-desire-breakthrough-matrix-summary.md",
-          "exports/charisma-desire-breakthrough-matrix.json",
-          "exports/negative-register-corrosive-exemplar-results.md"
-        ],
-        "runs": [
-          "eval-2026-07-02-e7b15809",
-          "eval-2026-07-02-7e461a5c",
-          "eval-2026-07-02-5c4d52e6"
-        ],
-        "items": [
-          "register-taxonomy-negative-registers"
-        ]
-      },
-      "depends_on": [
-        "register-taxonomy-negative-registers"
-      ],
-      "tags": [
-        "registers",
-        "negative-registers",
-        "effect-estimation",
-        "stance-fidelity"
-      ]
     },
     {
       "id": "program-2-iterated-exhaust-retrain",
@@ -188,39 +143,6 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "program-2-second-trigger-family-stall",
-      "title": "Program-2: second trigger family — stall-breaking specialist (stagnant_repeat)",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "A stall-move specialist, SFT-trained on audit-labeled stagnant_repeat exhaust from the sealed archives under a fresh frozen prereg (own run licenses — the Program-2 ledger is spent), clears its frozen offline bars (floor+0.15 pattern on held-out stall moments under a deterministic stall-audit designed and frozen BEFORE training) and then a live committee-stall pilot passes E1s (CI > 0 vs silent controls) at the frozen guardrails, with the stall-density precondition met by a stall-enriched design.",
-      "claim_status": "exploratory",
-      "links": {
-        "paper": "§6.21, §6.22, §7.12",
-        "notes": [
-          "PROGRAM-2-FINETUNE-PLAN.md",
-          "PROGRAM-2-PHASE2-PREREGISTRATION.md",
-          "notes/program-2/2026-07-18-cloud-finetune-runbook.md"
-        ],
-        "items": [
-          "program-2-context-vs-weights-finetune",
-          "program-2-phase5d-second-transfer-world"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "move-library",
-        "stagnant-repeat",
-        "lambda"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
       "status": "active",
@@ -261,6 +183,8 @@
           "refactor-tutor-stub-response-details",
           "refactor-tutor-stub-field-presentation",
           "refactor-tutor-stub-closeout-projection",
+          "refactor-tutor-stub-interim-presentation",
+          "refactor-tutor-stub-interim-frame-projection",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -324,6 +248,41 @@
       ]
     },
     {
+      "id": "tutor-stub-fallback-register-and-uptake-guard",
+      "title": "Tutor-stub fallback register and learner-uptake guard",
+      "status": "active",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "A contemporary-diction world speaks its own props in its own register while every period and undeclared world keeps byte-identical deterministic text; the learner-uptake guard admits a genuinely responsive uptake that shares no tokens with the accepted meaning; targeted and hermetic suites pass without model calls.",
+      "branch": "claude/tutor-stub-uptake-guard",
+      "claim_status": "scope-bound",
+      "links": {
+        "code": [
+          "services/tutorStubSceneDiction.js",
+          "services/tutorStubDramaticRelease.js",
+          "services/tutorStubResponseComposition.js",
+          "services/tutorStubTurnProgressionContract.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubSceneDiction.test.js",
+          "services/tutorStubConversationalCompletion.js",
+          "tests/tutorStubUptakeGuardLinkage.test.js",
+          "services/tutorStubSelfCorrectionDisclosure.js",
+          "services/tutorStubGuardDisposition.js",
+          "tests/tutorStubSelfCorrectionDisclosure.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "presentation",
+        "guards"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "tutor-stub-latency-routing-optimization",
       "title": "Optimize tutor-stub foreground latency with attributable routing experiments",
       "status": "active",
@@ -350,6 +309,53 @@
         "model-routing",
         "discourse-plane",
         "mixed-mode"
+      ]
+    },
+    {
+      "id": "negative-register-effect-estimation-grid",
+      "title": "Estimate negative-register effects with stance-fidelity gating",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-07-26",
+      "branch": "codex/negative-register-effect-estimation-grid",
+      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
+          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md",
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
+          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
+        ],
+        "exports": [
+          "exports/charisma-desire-breakthrough-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-matrix.json",
+          "exports/negative-register-corrosive-exemplar-results.md"
+        ],
+        "runs": [
+          "eval-2026-07-02-e7b15809",
+          "eval-2026-07-02-7e461a5c",
+          "eval-2026-07-02-5c4d52e6"
+        ],
+        "items": [
+          "register-taxonomy-negative-registers"
+        ]
+      },
+      "depends_on": [
+        "register-taxonomy-negative-registers"
+      ],
+      "tags": [
+        "registers",
+        "negative-registers",
+        "effect-estimation",
+        "stance-fidelity"
       ]
     },
     {
@@ -507,8 +513,47 @@
       "blocked_by": "tutor-stub-transition-reward-model ended with a killed claim; no supported learned-ranking prerequisite"
     },
     {
-      "id": "refactor-tutor-stub-closeout-projection",
-      "title": "Refactor tutor-stub closeout projection",
+      "id": "program-2-second-trigger-family-stall",
+      "title": "Program-2: second trigger family — stall-breaking specialist (stagnant_repeat)",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-26",
+      "branch": "codex/program-2-second-trigger-family-stall",
+      "blocked_by": "Strict stagnant-repeat corpus floor is 49/100 audit-passing moments; future sealed runs must grow and re-audit the corpus before dataset construction or training.",
+      "verification": "A stall-move specialist, SFT-trained on audit-labeled stagnant_repeat exhaust from the sealed archives under a fresh frozen prereg (own run licenses — the Program-2 ledger is spent), clears its frozen offline bars (floor+0.15 pattern on held-out stall moments under a deterministic stall-audit designed and frozen BEFORE training) and then a live committee-stall pilot passes E1s (CI > 0 vs silent controls) at the frozen guardrails, with the stall-density precondition met by a stall-enriched design.",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": "§6.21, §6.22, §7.12",
+        "notes": [
+          "PROGRAM-2-FINETUNE-PLAN.md",
+          "PROGRAM-2-PHASE2-PREREGISTRATION.md",
+          "notes/program-2/2026-07-18-cloud-finetune-runbook.md",
+          "notes/program-2/2026-07-26-stall-corpus-audit.md"
+        ],
+        "exports": [
+          "config/adaptive-tutor-evidence/program-2-stall-phase0-1.manifest.json"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune",
+          "program-2-phase5d-second-transfer-world"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "move-library",
+        "stagnant-repeat",
+        "lambda"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "refactor-tutor-stub-interim-frame-projection",
+      "title": "Refactor tutor-stub interim frame projection",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -516,31 +561,67 @@
       "source": "review",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "Pure closeout labels, status, count formatting, and guard-accounting aggregation preserve the established report schema and values; focused, hermetic, static, and source-only gates pass without model calls.",
-      "branch": "codex/refactor-tutor-stub-closeout-projection",
+      "verification": "Frozen fixtures pin panel ordering, empty filtering, fallback behavior, rotation boundaries, spinner selection, elapsed formatting, every tone, phase compaction, terminal-width bounds, and exact ANSI composition; the real PTY loading scenario and full hermetic/static/source gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-interim-frame-projection",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-field-presentation"
+        "refactor-tutor-stub-interim-presentation"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubCloseoutProjection.js",
+          "services/tutorStubInterimPresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubCloseoutProjection.test.js"
+          "tests/tutorStubInterimPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "tests/tutorStubConcurrentTerminal.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-field-presentation"
+          "refactor-tutor-stub-interim-presentation"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
-        "closeout",
-        "guard-accounting"
+        "presentation",
+        "terminal",
+        "loading-indicator"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "tutor-stub-resume-handoff",
+      "title": "Give resumed tutor-stub sessions a dialogue handoff",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Unit, interactive CLI, and process-session HTTP regressions prove a resumed dialogue publicly recaps its question and last learner contribution, reprises the last tutor question or point, informs the next turn, and does not advance completed turns, proof state, DAG state, or evidence release.",
+      "branch": "codex/proper-tutor-resumption",
+      "depends_on": [
+        "tutor-stub-session-recipes-explicit-resume"
+      ],
+      "links": {
+        "items": [
+          "tutor-stub-session-recipes-explicit-resume",
+          "tutor-stub-resume-last-recipe"
+        ],
+        "code": [
+          "services/tutorStubResumeHandoff.js",
+          "scripts/tutor-stub.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "resume",
+        "dialogue",
+        "session-runtime"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2332,6 +2413,44 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-closeout-projection",
+      "title": "Refactor tutor-stub closeout projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "Pure closeout labels, status, count formatting, and guard-accounting aggregation preserve the established report schema and values; focused, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-closeout-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-field-presentation"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubCloseoutProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubCloseoutProjection.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-field-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "closeout",
+        "guard-accounting"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-explanatory-debug",
       "title": "Refactor tutor-stub explanatory debug",
       "status": "done",
@@ -2404,6 +2523,47 @@
         "tutor-stub",
         "presentation",
         "interaction-field"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-interim-presentation",
+      "title": "Refactor tutor-stub interim presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-07-26",
+      "verification": "One pure interim-presentation service preserves signed deltas, capability and strength labels, bottleneck copy, and every contextual CLI hint; focused, PTY, hermetic, static, and source-only gates pass without model calls.",
+      "branch": "codex/refactor-tutor-stub-interim-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-closeout-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInterimPresentation.js",
+          "services/tutorStubLearningSummary.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInterimPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-closeout-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "terminal",
+        "loading-indicator"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2847,14 +3007,15 @@
       "source": "manual",
       "created": "2026-07-26",
       "updated": "2026-07-26",
-      "verification": "The strong zero-call plan pins three committed transcript turns across Codex gpt-5.6-terra and Claude Code claude-sonnet-5 at medium effort (six calls maximum); hermetic tests prove frozen-prefix preservation, pass/fail/blocked/budget terminal states, and no retries; npm run tutor:stub:pr-benchmark -- --print-plan validates the attended PR command.",
+      "verification": "The strong zero-call plan pins three currently accepted Nocturne transcript turns across Codex gpt-5.6-terra and Claude Code claude-sonnet-5 at medium effort (six calls maximum); hermetic tests prove frozen-prefix preservation, canonical advisory severity, pass/fail/blocked/budget terminal states, no retries, scoped hook triggering, exact-SHA terminal-report caching, and stdin-preserving composition with the existing pre-push hook; npm run tutor:stub:pr-benchmark -- --print-plan validates the attended PR command.",
       "branch": "codex/tutor-pr-benchmark",
       "depends_on": [
         "tutor-stub-first-draft-series"
       ],
       "links": {
         "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/248"
+          "https://github.com/liammagee/machinespirits-eval/pull/248",
+          "https://github.com/liammagee/machinespirits-eval/pull/250"
         ],
         "notes": [
           "docs/tutor-pr-benchmark.md"

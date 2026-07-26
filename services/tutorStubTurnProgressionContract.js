@@ -184,20 +184,51 @@ function overlap(left = [], right = []) {
   return left.filter((token) => rightSet.has(token));
 }
 
-function substantiveLearnerUptake({ uptake = '', focusTerms = [], acceptedMeaning = '' } = {}) {
+/**
+ * Decide whether an uptake segment visibly takes up the learner's move.
+ *
+ * Two routes count as a material link, and only the first existed before.
+ *
+ * Route A — the uptake shares a content term with the declared focus terms or
+ * the accepted meaning. Unchanged, so everything that passed still passes.
+ *
+ * Route B — the uptake is responsive by pattern AND echoes the learner's own
+ * words. Without it, `RESPONSIVE_UPTAKE_PATTERN` was unreachable whenever
+ * required terms existed: `materiallyLinked` already demanded an overlap, so
+ * the disjunction below could never be decided by the pattern alone. A tutor
+ * that answers the learner in the learner's vocabulary, rather than in the
+ * analyst's paraphrase of it, now counts.
+ *
+ * An accepted meaning that describes the discourse act rather than the
+ * learner's content contributes no required terms. Those descriptions are
+ * written about the learner, not by them, and requiring the tutor to echo
+ * words like "referent" or "scope" makes every natural uptake fail.
+ */
+function substantiveLearnerUptake({
+  uptake = '',
+  focusTerms = [],
+  acceptedMeaning = '',
+  acceptedMeaningKind = null,
+  learnerSurface = '',
+} = {}) {
   const uptakeTerms = contentTerms(uptake);
-  const requiredTerms = [...focusTerms, ...contentTerms(acceptedMeaning)];
+  const acceptedMeaningTerms = acceptedMeaningKind === 'discourse_act' ? [] : contentTerms(acceptedMeaning);
+  const requiredTerms = [...new Set([...focusTerms, ...acceptedMeaningTerms])];
   const matchedTerms = overlap(requiredTerms, uptakeTerms);
-  const materiallyLinked = requiredTerms.length === 0 || matchedTerms.length > 0;
+  const responsive = RESPONSIVE_UPTAKE_PATTERN.test(uptake);
+  const learnerSurfaceTerms = contentTerms(learnerSurface);
+  const matchedLearnerSurfaceTerms = overlap(learnerSurfaceTerms, uptakeTerms);
+  const echoesLearnerSurface = responsive && matchedLearnerSurfaceTerms.length > 0;
+  const materiallyLinked = requiredTerms.length === 0 || matchedTerms.length > 0 || echoesLearnerSurface;
   return {
     uptakeTerms,
     requiredTerms,
     matchedTerms,
+    learnerSurfaceTerms,
+    matchedLearnerSurfaceTerms,
     materiallyLinked,
-    visible:
-      uptakeTerms.length >= 3 &&
-      materiallyLinked &&
-      (RESPONSIVE_UPTAKE_PATTERN.test(uptake) || matchedTerms.length > 0),
+    linkRoute: matchedTerms.length > 0 ? 'focus_term_overlap' : echoesLearnerSurface ? 'learner_surface_echo' : null,
+    visible: uptakeTerms.length >= 3 && materiallyLinked && (responsive || matchedTerms.length > 0),
   };
 }
 
@@ -300,7 +331,15 @@ export function deterministicTutorStubTurnProgressionUptake({
   }
   const focusTerms = contract.learner_uptake?.focus_terms || [];
   const acceptedMeaning = contract.learner_uptake?.accepted_meaning || '';
-  const linkage = substantiveLearnerUptake({ uptake: fallback, focusTerms, acceptedMeaning });
+  const acceptedMeaningKind = contract.learner_uptake?.accepted_meaning_kind || null;
+  const learnerSurface = contract.learner_uptake?.learner_surface || '';
+  const linkage = substantiveLearnerUptake({
+    uptake: fallback,
+    focusTerms,
+    acceptedMeaning,
+    acceptedMeaningKind,
+    learnerSurface,
+  });
   if (linkage.visible && !interrogativeUptake(fallback)) return fallback;
 
   const focus = boundedPublicFocus(
@@ -312,7 +351,14 @@ export function deterministicTutorStubTurnProgressionUptake({
     ? 1 + stableVariationIndex(variationKey, variants.length - 1)
     : 0;
   const echoes = (candidate) => typeof learnerEchoGuard === 'function' && learnerEchoGuard(candidate) === true;
-  const visible = (candidate) => substantiveLearnerUptake({ uptake: candidate, focusTerms, acceptedMeaning }).visible;
+  const visible = (candidate) =>
+    substantiveLearnerUptake({
+      uptake: candidate,
+      focusTerms,
+      acceptedMeaning,
+      acceptedMeaningKind,
+      learnerSurface,
+    }).visible;
   const candidate = variants[variantIndex];
   if (!echoes(candidate)) return visible(candidate) ? candidate : fallback;
   const bounded = boundedQuotedFocusCandidates(focus)
@@ -357,7 +403,17 @@ function focusSurface({ learnerText = '', responseCompositionFrame = null, disco
   const summary = semanticFocusCandidate(move.summary);
   const pedagogicalNeed = semanticFocusCandidate(move.pedagogical_need);
   const completion = responseCompositionFrame?.conversational_completion || null;
-  const acceptedMeaning = completion?.resolved ? semanticFocusCandidate(completion.acceptedMeaning) : '';
+  // A discourse-act accepted meaning describes what the learner did ("gives a
+  // short answer whose referent and scope are supplied by ...") rather than
+  // what they said. Using it as the turn's focus surface hands the guard the
+  // analyst's vocabulary — "referent", "scope", "preceding" — and then demands
+  // the tutor speak it back to the learner. Fall through to the summary or the
+  // learner's own words instead.
+  const acceptedMeaningKind = completion?.resolved ? completion.acceptedMeaningKind || null : null;
+  const acceptedMeaning =
+    completion?.resolved && acceptedMeaningKind !== 'discourse_act'
+      ? semanticFocusCandidate(completion.acceptedMeaning)
+      : '';
   const writable = tutorStubLearnerRequestsWritableEntry(learner);
   if (discoursePlane?.plane === 'instructional_meta') {
     const selected = [
@@ -581,6 +637,7 @@ export function compileTutorStubTurnProgressionContract({
           : 'direct_response',
       learner_surface: oneLine(learnerText) || null,
       accepted_meaning: oneLine(completion?.acceptedMeaning) || null,
+      accepted_meaning_kind: (completion?.resolved && completion.acceptedMeaningKind) || null,
       focus_terms: primaryTerms,
       instruction: writableEntryRequested
         ? 'UPTAKE must answer the wording request directly with the licensed entry; it must not substitute another question.'
@@ -796,6 +853,8 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
     uptake: slots.uptake,
     focusTerms: contract.learner_uptake.focus_terms || [],
     acceptedMeaning: contract.learner_uptake.accepted_meaning,
+    acceptedMeaningKind: contract.learner_uptake.accepted_meaning_kind,
+    learnerSurface: contract.learner_uptake.learner_surface,
   });
   const uptakeOverlap = uptakeLinkage.matchedTerms;
   const writableUptake =
@@ -941,6 +1000,8 @@ export function auditTutorStubLiveTurnProgressionV1({
     uptake,
     focusTerms: contract.learner_uptake.focus_terms || [],
     acceptedMeaning: contract.learner_uptake.accepted_meaning,
+    acceptedMeaningKind: contract.learner_uptake.accepted_meaning_kind,
+    learnerSurface: contract.learner_uptake.learner_surface,
   });
   const uptakeOverlap = uptakeLinkage.matchedTerms;
   const requestedEntryAnswerRecognition = responseComposition?.requestedEntryAnswerRecognition || null;
@@ -953,6 +1014,8 @@ export function auditTutorStubLiveTurnProgressionV1({
       owner: 'observed_uptake_segment',
       reason: 'the observed uptake does not substantively answer or carry the learner’s public move',
       matched_focus_terms: uptakeOverlap,
+      matched_learner_surface_terms: uptakeLinkage.matchedLearnerSurfaceTerms,
+      accepted_meaning_kind: contract.learner_uptake.accepted_meaning_kind || null,
     });
   }
 

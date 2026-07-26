@@ -94,6 +94,7 @@ export function resolveTutorStubConversationalCompletion({
     sourceTutorQuestion: sourceTutorQuestion || null,
     learnerSurface: learnerSurface || null,
     acceptedMeaning: null,
+    acceptedMeaningKind: null,
     reason: null,
     reopenForbidden: false,
     requiresNewPressure: false,
@@ -129,13 +130,23 @@ export function resolveTutorStubConversationalCompletion({
 
   const qualified = QUALIFIED_MOVE_PATTERN.test(moveSignal) || Boolean(tutorLearnerDag?.accepted?.hypothesis);
   const status = qualified ? 'qualified' : 'accepted';
-  const acceptedMeaning = contextualAnswer ? oneLine(generousInference.resolvedMeaning || summary) : summary;
+  // A generous-inference resolution describes the DISCOURSE ACT ("the learner
+  // gives a short answer whose referent and scope are supplied by the
+  // immediately preceding public question"); a classifier summary paraphrases
+  // the learner's CONTENT. Both land in acceptedMeaning, and consumers that
+  // mine it for the learner's words must be able to tell them apart — an act
+  // description contributes vocabulary ("referent", "scope", "preceding") that
+  // no tutor would ever speak to a learner.
+  const resolvedActDescription = contextualAnswer && Boolean(oneLine(generousInference.resolvedMeaning));
+  const acceptedMeaning = resolvedActDescription ? oneLine(generousInference.resolvedMeaning) : summary;
+  const acceptedMeaningKind = resolvedActDescription ? 'discourse_act' : 'content_paraphrase';
   const conceptSignature = [...new Set(tokens(`${sourceTutorQuestion} ${acceptedMeaning}`))].slice(0, 16);
   return {
     ...base,
     status,
     resolved: true,
     acceptedMeaning,
+    acceptedMeaningKind,
     reason: supportedMoves
       ? 'the learner completed at least one supported public move'
       : qualified

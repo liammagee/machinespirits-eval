@@ -137,6 +137,7 @@ import {
   deterministicTutorStubDramaticReleaseFallback,
 } from '../services/tutorStubDramaticRelease.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
+import { buildTutorStubResumeHandoff } from '../services/tutorStubResumeHandoff.js';
 import { buildTutorStubProofDebtState } from '../services/tutorStubProofDebt.js';
 import {
   TUTOR_STUB_PUBLIC_LEARNER_ANALYSIS_PARSE_MODES,
@@ -249,6 +250,12 @@ import {
   tutorStubTerminalFallbackFailureMessage,
 } from '../services/tutorStubGuardDisposition.js';
 import {
+  auditTutorStubSelfCorrectionDisclosure,
+  detectTutorStubSelfCorrectionDisclosure,
+  tutorStubDisclosableGuardCorrection,
+  tutorStubSelfCorrectionDisclosurePrompt,
+} from '../services/tutorStubSelfCorrectionDisclosure.js';
+import {
   buildTutorStubSimplifiedRecoveryConfiguration,
   composeTutorStubGuardUptakeDevelopment,
   repairTutorStubMissingClarificationInvitation,
@@ -320,6 +327,15 @@ import {
   tutorStubPlainCloseoutReason as plainCloseoutReason,
   tutorStubPlainCloseoutStatus as plainCloseoutStatus,
 } from '../services/tutorStubCloseoutProjection.js';
+import {
+  formatTutorStubSignedInterimNumber as formatSignedInterimNumber,
+  projectTutorStubInterimPanels,
+  renderTutorStubInterimFrame,
+  summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
+  tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
+  tutorStubInterimLevel as interimLevel,
+  tutorStubPlainInterimBottleneck as plainInterimBottleneck,
+} from '../services/tutorStubInterimPresentation.js';
 import {
   listTutorStubTutorInstances,
   resolveTutorStubTutorInstance,
@@ -4609,41 +4625,6 @@ function interimAnimationAvailable(interim) {
   return Boolean(interim?.enabled && output.isTTY && cliPresentation.motion !== 'off');
 }
 
-function formatSignedInterimNumber(value, { decimals = 2 } = {}) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric === 0) return null;
-  return `${numeric > 0 ? '+' : ''}${numeric.toFixed(decimals)}`;
-}
-
-function compactInterimStateSummary(state) {
-  const bits = [];
-  if (state?.classifier?.enabled) bits.push('learner reading');
-  if (state?.learnerDag?.enabled) bits.push('reasoning progress');
-  if (state?.register?.enabled) bits.push('response style');
-  if (state?.dag) bits.push('evidence pacing');
-  return bits.length ? bits.join(', ') : 'plain tutor response';
-}
-
-function interimLevel(value) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return 'not available';
-  if (numeric < 0.25) return 'low';
-  if (numeric < 0.5) return 'developing';
-  if (numeric < 0.75) return 'strong';
-  return 'very strong';
-}
-
-function plainInterimBottleneck(value) {
-  const labels = {
-    release_or_pacing_gap: 'the learner needs the next usable piece of evidence',
-    warrant_gap: 'the learner needs a clearer reasoning link',
-    unsupported_assertion: 'the conclusion has moved beyond the evidence',
-    grounded_asserted_secret: 'the conclusion is supported and stated',
-    grounded_unasserted_secret: 'the conclusion is supported but not yet stated',
-  };
-  return labels[value] || String(value || 'the next useful learner move').replaceAll('_', ' ');
-}
-
 function compactInterimFieldSummary(state) {
   if (!state?.turns?.length) return compactInterimStateSummary(state);
   const field = buildLightweightDialogueField(state.turns);
@@ -4986,116 +4967,36 @@ function compactPendingFieldSummary(state, context) {
   ].join(' | ');
 }
 
-function compactInterimCliHintPanels(active) {
-  const state = active.state || {};
-  const phase = String(active.basePhase || active.phase || '').toLowerCase();
-  const hints = [
-    {
-      label: 'CLI hint',
-      tone: 'neutral',
-      text: 'type / to browse | type to filter | Tab completes | /help groups commands',
-    },
-  ];
-
-  if (state.passthrough?.enabled) {
-    hints.push({
-      label: 'While waiting',
-      tone: 'neutral',
-      text: '/status and /transcript stay live | /scenario changes the case | /reset cancels unfinished work',
-    });
-    return hints;
-  }
-
-  if (phase.includes('scenario') || phase.includes('opening')) {
-    hints.push({
-      label: 'Change setup',
-      tone: 'neutral',
-      text: '/scenario switches case | /profile changes learner | /settings adjusts models and pacing',
-    });
-  } else if (state.interaction?.mode === 'coach') {
-    hints.push({
-      label: 'Coach controls',
-      tone: 'neutral',
-      text: '/coach adds private guidance | /mode learner returns control | /analysis inspects the exchange',
-    });
-  } else if (state.interaction?.mode === 'auto' || state.interaction?.autoRunning) {
-    hints.push({
-      label: 'Auto controls',
-      tone: 'neutral',
-      text: '/status checks progress | /analysis inspects the exchange | /reset cancels safely',
-    });
-  } else {
-    hints.push({
-      label: 'Next moves',
-      tone: 'neutral',
-      text: '/clue asks for direction | /suggest previews a reply | /coach privately guides the tutor',
-    });
-  }
-
-  return hints;
-}
-
 function compactInterimPanels(active) {
   const context = active.context || {};
-  const panels = [
-    ...compactInterimCliHintPanels(active),
-    { label: 'Tutor focus', tone: 'focus', text: compactPendingObjectiveSummary(active.state, context) },
-    { label: 'Dialogue outlook', tone: 'progress', text: compactPendingFieldSummary(active.state, context) },
-    { label: 'Reasoning change', tone: 'progress', text: compactPendingDagMovementSummary(active.state, context) },
-    { label: 'Learner reasoning', tone: 'learner', text: compactLearnerRecordUpdateSummary(active.state, context) },
-    { label: 'Evidence pacing', tone: 'evidence', text: compactEvidenceTimingSummary(active.state, context) },
-    { label: 'Learner reading', tone: 'learner', text: compactPendingLearnerSummary(context) },
-    { label: 'Reasoning state', tone: 'progress', text: compactPendingLearnerDagSummary(context) },
-    { label: 'Tutor style', tone: 'focus', text: compactPendingRegisterSummary(context) },
-    { label: 'Clue progress', tone: 'evidence', text: compactPendingTutorDagSummary(active.state, context) },
-    { label: 'Dialogue so far', tone: 'progress', text: compactInterimFieldSummary(active.state) },
-  ].filter((panel) => panel.text);
-  return panels.length
-    ? panels
-    : [{ label: 'Active checks', tone: 'neutral', text: compactInterimStateSummary(active.state) }];
-}
-
-function interimToneColor(tone) {
-  if (tone === 'progress') return C.green;
-  if (tone === 'evidence') return C.yellow;
-  if (tone === 'learner') return C.cyan;
-  if (tone === 'focus') return C.magenta;
-  return C.dim;
+  return projectTutorStubInterimPanels({
+    hints: compactInterimCliHintPanels(active),
+    tutorFocus: compactPendingObjectiveSummary(active.state, context),
+    dialogueOutlook: compactPendingFieldSummary(active.state, context),
+    reasoningChange: compactPendingDagMovementSummary(active.state, context),
+    learnerReasoning: compactLearnerRecordUpdateSummary(active.state, context),
+    evidencePacing: compactEvidenceTimingSummary(active.state, context),
+    learnerReading: compactPendingLearnerSummary(context),
+    reasoningState: compactPendingLearnerDagSummary(context),
+    tutorStyle: compactPendingRegisterSummary(context),
+    clueProgress: compactPendingTutorDagSummary(active.state, context),
+    dialogueSoFar: compactInterimFieldSummary(active.state),
+    fallback: compactInterimStateSummary(active.state),
+  });
 }
 
 function renderInterimStatus(active) {
   active.tick += 1;
-  const frames = tutorStubCliSpinnerFrames(cliPresentation);
-  const frame = frames[active.tick % frames.length];
-  const elapsed = ((Date.now() - active.startedAt) / 1000).toFixed(1).padStart(4);
-  const width = Math.max(60, Math.min(output.columns || 140, 180) - 1);
-  const panels = compactInterimPanels(active);
-  const panelIndex = Math.floor(active.tick / 4) % panels.length;
-  const panel = panels[panelIndex];
-  const phase = oneLine(active.basePhase || active.phase, { max: 28 });
-  const prefix = `${frame} ${phase} · ${elapsed}s · view ${panelIndex + 1}/${panels.length} | ${panel.label}: `;
-  const panelText = oneLine(panel.text, { max: Math.max(12, width - prefix.length) });
-  return [
-    C.accent2,
-    frame,
-    ' ',
-    C.bold,
-    phase,
-    C.reset,
-    C.dim,
-    ` · ${elapsed}s · `,
-    C.reset,
-    C.yellow,
-    `view ${panelIndex + 1}/${panels.length}`,
-    C.reset,
-    C.dim,
-    ' | ',
-    C.reset,
-    interimToneColor(panel.tone),
-    panel.label,
-    C.reset,
-    `: ${panelText}`,
-  ].join('');
+  return renderTutorStubInterimFrame({
+    tick: active.tick,
+    startedAt: active.startedAt,
+    now: Date.now(),
+    columns: output.columns,
+    phase: active.basePhase || active.phase,
+    panels: compactInterimPanels(active),
+    frames: tutorStubCliSpinnerFrames(cliPresentation),
+    colors: C,
+  });
 }
 
 function interimConcurrentTerminalIsVisible(active) {
@@ -12707,6 +12608,152 @@ async function callTutor({
       }
     }
 
+    // Self-correction pass — the last rung before the terminal safety text.
+    //
+    // The deterministic fallback is allowed to publish while the disposition
+    // catalog downgrades a conversational-integrity finding to an advisory. The
+    // finding is the same one that killed every model draft on this turn, so the
+    // learner receives a turn that quietly changed course and is never told. One
+    // more attempt is offered here, with a brief whose addressee is the learner
+    // rather than the guard. Nothing about it is templated: the model may
+    // disclose the near-miss in the register of the scene, or simply answer
+    // well and say nothing. Only two things are checked that no other guard
+    // covers — that a disclosed near-miss corresponds to a draft the tutor
+    // actually produced, and that the apparatus is never named.
+    const priorDisclosure = detectTutorStubSelfCorrectionDisclosure(recentTutorTexts.at(-1) || '');
+    const disclosableCorrection = priorDisclosure.disclosed
+      ? { disclosable: false, reason: 'the previous published turn already disclosed a self-correction' }
+      : tutorStubDisclosableGuardCorrection({ audits, attempts });
+    if (disclosableCorrection.disclosable) {
+      const disclosureAttempt = attempts.length;
+      const priorDisclosureAttempt = attempts.at(-1);
+      const disclosureBrief = tutorStubSelfCorrectionDisclosurePrompt({
+        correction: disclosableCorrection,
+        learnerText,
+        turnProgressionContract: firstDraftContract?.progression || null,
+        minimalRecoveryPrompt,
+      });
+      const disclosureUserPrompt = [
+        tutorResponseRecoveryPrompt({
+          publicPacket: publicRecoveryPacket,
+          hardIssues: audits.deliveryDecision?.hardIssues || [],
+          leakAudit: audits.leakAudit,
+          scaffoldAudit: audits.scaffoldAudit,
+          questionSupportAudit: audits.questionSupportAudit,
+          dramaticReleaseAudit: audits.dramaticReleaseAudit,
+          actorialRealizationAudit: audits.actorialRealizationAudit,
+          responseConfigurationAudit: audits.responseConfigurationAudit,
+          responseConfiguration: simplifiedRecoveryConfiguration,
+          responseCompositionAudit: audits.responseCompositionAudit,
+          liveTurnProgressionAudit: audits.liveTurnProgressionAudit,
+          liveSourceActionAlignmentAudit: audits.liveSourceActionAlignmentAudit,
+          repetitionAudit: audits.repetitionAudit,
+          closureAudit: audits.closureAudit,
+          dialogueClosureFrame,
+          minimalRecoveryPrompt,
+        }),
+        disclosureBrief,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
+      let disclosureModelResponse = null;
+      try {
+        disclosureModelResponse = await invokeTutorAttempt({
+          attemptUserPrompt: disclosureUserPrompt,
+          role: `${roleBase}_self_correction`,
+          streamMode: canStreamTutor ? 'buffered' : 'none',
+          repairAttempt: disclosureAttempt,
+          systemPromptOverride: systemPrompt,
+          instructionTextsOverride: [systemPrompt, ...publicRecoveryMachinePacket],
+          privilegeAdvisoryOverride: recoveryPrivilegeAdvisory,
+        });
+      } catch (disclosureError) {
+        // The safety text below is still reachable. A failed extra call must
+        // never cost the turn that would otherwise have shipped.
+        appendTraceEvent(trace, {
+          type: 'tutor_response_self_correction_pass_unavailable',
+          role: `${roleBase}_self_correction`,
+          turn: tutorTurn,
+          attempt: disclosureAttempt,
+          error: disclosureError?.message || String(disclosureError),
+        });
+      }
+      const disclosureText = String(disclosureModelResponse?.text || '').trim();
+      if (disclosureText) {
+        const disclosureResponse = tutorResponseFromSimplifiedRecovery(
+          disclosureModelResponse,
+          disclosureText,
+          'self_correction_candidate',
+        );
+        const disclosureDraftAudits = auditTutorDraft(disclosureResponse, {
+          role: `${roleBase}_self_correction`,
+          attempt: disclosureAttempt,
+          auditConfiguration: simplifiedRecoveryConfiguration,
+        });
+        disclosureDraftAudits.selfCorrectionDisclosureAudit = auditTutorStubSelfCorrectionDisclosure({
+          text: disclosureText,
+          priorAttemptTexts: attempts.map((entry) => entry?.candidate?.text || '').filter(Boolean),
+        });
+        const disclosureAudits = withTutorDeliveryDecision(disclosureDraftAudits, {
+          role: `${roleBase}_self_correction`,
+          attempt: disclosureAttempt,
+        });
+        const disclosed = disclosureDraftAudits.selfCorrectionDisclosureAudit.disclosed;
+        const disclosureRepairSpans = exactTutorRepairSpans(priorDisclosureAttempt.candidate.text, disclosureText);
+        attempts.push(
+          tutorGuardAttemptEnvelope({
+            kind: 'self_correction_candidate',
+            attempt: disclosureAttempt,
+            response: disclosureResponse,
+            audits: disclosureAudits,
+            repairedSpans: disclosureRepairSpans,
+          }),
+        );
+        repairsApplied.push({
+          kind: 'model_self_correction_pass',
+          fromAttempt: priorDisclosureAttempt.attempt,
+          toAttempt: disclosureAttempt,
+          triggeredBy: disclosableCorrection.findings,
+          guardedSpans: priorDisclosureAttempt.guardedSpans,
+          repairedSpans: disclosureRepairSpans,
+          disclosedNearMiss: disclosed,
+        });
+        appendTraceEvent(trace, {
+          type: 'tutor_response_self_correction_pass',
+          role: `${roleBase}_self_correction`,
+          turn: tutorTurn,
+          attempt: disclosureAttempt,
+          waivedFindings: disclosableCorrection.findings,
+          nearMiss: disclosableCorrection.nearMiss,
+          disclosed,
+          marker: disclosureDraftAudits.selfCorrectionDisclosureAudit.marker,
+          disclosureIssues: disclosureDraftAudits.selfCorrectionDisclosureAudit.issues,
+          accepted: disclosureAudits.deliveryOk,
+          text: disclosureText,
+        });
+        if (disclosureAudits.deliveryOk) {
+          attachTutorDraftAudits(disclosureResponse, disclosureAudits);
+          disclosureResponse.repaired = true;
+          disclosureResponse.selfCorrectionPass = true;
+          disclosureResponse.disclosedSelfCorrection = disclosed;
+          if (disclosureResponse.bufferedStream) disclosureResponse.guardedStreamReplay = true;
+          return attachTutorGuardAccounting({
+            response: disclosureResponse,
+            state,
+            trace,
+            tutorTurn,
+            role: roleBase,
+            guards,
+            attempts,
+            repairsApplied,
+            finalSource: 'self_correction_candidate',
+            outcome: disclosed ? 'guarded_self_correction_disclosed' : 'guarded_self_correction_pass_accepted',
+            finalAudits: disclosureAudits,
+          });
+        }
+      }
+    }
+
     const closureFallbackSelected = Boolean(
       closureGuardEnabled && (dialogueClosureFrame.mandatory || audits.closureAudit.closesDialogue),
     );
@@ -12776,6 +12823,7 @@ async function callTutor({
               avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
               turnProgressionContract: firstDraftContract?.progression || null,
               sourceAccessibilityContract: firstDraftContract?.evidence?.source_accessibility || null,
+              world,
             })
           : configuredContinuationFallbackRequired
             ? deterministicTutorStubConfiguredContinuationFallback({
@@ -16969,6 +17017,7 @@ async function main() {
       : null,
     world: worldBundle?.world || null,
     openingRealization: null,
+    resumeHandoff: null,
     openingRealizer,
     directorContext,
     directorOpeningPresented: false,
@@ -17122,8 +17171,9 @@ async function main() {
       role: message.role,
       content: String(message.content || ''),
     }));
+    const expectedOpeningMessageCount = state.turns.length * 2 + (state.resumeHandoff ? 2 : 1);
     const opening =
-      publicMessages.length === state.turns.length * 2 + 1 && publicMessages[0]?.role === 'assistant'
+      publicMessages.length === expectedOpeningMessageCount && publicMessages[0]?.role === 'assistant'
         ? jsonClone(publicMessages[0])
         : null;
     return {
@@ -17140,6 +17190,7 @@ async function main() {
       turnCount: state.turns.length,
       publicMessageCount: state.history.length,
       opening,
+      resumeHandoff: state.resumeHandoff ? jsonClone(state.resumeHandoff) : null,
       publicMessages,
       dialogueClosurePhase: state.dialogueClosure?.phase || null,
       learnerProfileId: state.learnerProfileId || null,
@@ -23123,6 +23174,23 @@ async function main() {
     return true;
   }
 
+  function emitResumeHandoff(reason = 'start', { display = true } = {}) {
+    if (!resumedDialogue || state.resumeHandoff || !state.turns.length) return state.resumeHandoff?.text || null;
+    const handoff = buildTutorStubResumeHandoff({ world: state.world, turns: state.turns });
+    if (!handoff) return null;
+    state.resumeHandoff = handoff;
+    state.history.push({ role: 'assistant', content: handoff.text });
+    appendTraceEvent(state.trace, {
+      type: 'tutor_resume_handoff',
+      reason,
+      ...handoff,
+    });
+    if (display && !exiting) {
+      console.log(`${C.magenta}tutor >${C.reset} ${handoff.text}\n`);
+    }
+    return handoff.text;
+  }
+
   async function emitOpeningPrompt(
     reason = 'start',
     { display = true, signal = null, realizer = null, deterministicSource = null } = {},
@@ -23160,6 +23228,7 @@ async function main() {
     state.history = [];
     state.turns = [];
     state.openingRealization = null;
+    state.resumeHandoff = null;
     state.coach = { pending: [], history: [] };
     state.turnFeedback = createTutorStubTurnFeedbackState({ enabled: state.turnFeedback?.enabled !== false });
     mixedLearner.promptHistory = [];
@@ -26890,7 +26959,10 @@ async function main() {
         realizer: 'deterministic',
         deterministicSource: 'session_rpc',
       });
-      if (opening && sessionRuntime.status === 'active') sessionRuntime.sync('opening_committed');
+      const resumeHandoff = opening ? null : emitResumeHandoff('session_rpc_start', { display: false });
+      if ((opening || resumeHandoff) && sessionRuntime.status === 'active') {
+        sessionRuntime.sync(opening ? 'opening_committed' : 'resume_handoff_committed');
+      }
       await runTutorStubSessionRpc({ input: rpcInput, output: rpcOutput, runtime: sessionRuntime });
     } finally {
       if (sessionRuntime.status === 'active') await sessionRuntime.finalize('session_rpc_closed');
@@ -27069,7 +27141,8 @@ async function main() {
       printInteractiveTutorOpening(opening);
     }
   } else if (resumedDialogue) {
-    printTutorFeedbackRequest(latestTutorFeedbackTarget());
+    const resumeHandoff = emitResumeHandoff('interactive_start');
+    if (resumeHandoff) startMixedLearnerPrefetch('resume_handoff');
   }
 
   if (voiceLaunchRequested && !exiting) {

@@ -1,7 +1,7 @@
 // Program-2 — extract live-pilot committee moments as an iterated-exhaust
 // dataset delta (remedy 3 PREP; no training is licensed by this script).
 //
-// For every warrant_skip moment in sealed committee-arm dialogues of a live
+// For every selected trigger moment in sealed committee-arm dialogues of a live
 // pilot root: emit the mini's actual live request (system prompt + messages,
 // incl. the activation block — the deployment interface), the delivered
 // text, the mini/composed texts and battery record, and the frozen
@@ -10,7 +10,7 @@
 // traces whose detector version or arm stamps mismatch.
 //
 // Usage:
-//   node scripts/program2-extract-live-moments.mjs [--pilot-root <dir>...] [--out <dir>]
+//   node scripts/program2-extract-live-moments.mjs [--trigger warrant_skip|stagnant_repeat] [--pilot-root <dir>...] [--out <dir>]
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -31,10 +31,24 @@ const { values: args } = parseArgs({
     },
     out: {
       type: 'string',
-      default: path.join(os.homedir(), '.machinespirits-data/program-2/datasets/phase5-live-v1'),
+      default: '',
     },
+    trigger: { type: 'string', default: 'warrant_skip' },
   },
 });
+
+const trigger = String(args.trigger || 'warrant_skip');
+if (!['warrant_skip', 'stagnant_repeat'].includes(trigger)) {
+  throw new Error(`--trigger must be warrant_skip or stagnant_repeat, got ${trigger}`);
+}
+const outputDir = path.resolve(
+  args.out ||
+    path.join(
+      os.homedir(),
+      '.machinespirits-data/program-2/datasets',
+      trigger === 'warrant_skip' ? 'phase5-live-v1' : 'phase5-live-stagnant-repeat-v1',
+    ),
+);
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -73,7 +87,7 @@ for (const root of args['pilot-root']) {
       else if (event.type === 'model_call' && String(event.role || '').endsWith('_committee_mini'))
         miniRequests.set(Number(event.turn), event.request || null);
       else if (event.type === 'program2_committee_moment') moments.set(Number(event.turn), event.moment || {});
-      else if (event.type === 'point_of_action_compliance' && event.compliance?.trigger === 'warrant_skip') {
+      else if (event.type === 'point_of_action_compliance' && event.compliance?.trigger === trigger) {
         if (event.compliance.detector_version !== DETECTOR_VERSION)
           throw new Error(`${job.id}: detector ${event.compliance.detector_version}`);
         if (event.compliance.arm !== job.arm) throw new Error(`${job.id}: arm stamp mismatch`);
@@ -104,19 +118,23 @@ for (const root of args['pilot-root']) {
           : null,
         compliant: verdict.compliant === true,
         components: verdict.components,
-        sftEligible: verdict.compliant === true && Boolean(tutorTexts.get(turn)),
+        sftEligible: trigger === 'warrant_skip' && verdict.compliant === true && Boolean(tutorTexts.get(turn)),
         ktoLabel: verdict.compliant === true,
+        ...(trigger === 'stagnant_repeat'
+          ? { eligibilityBlockedReason: 'requires_machinespirits.program2.stall-audit.v1' }
+          : {}),
       });
     }
   }
 }
 
-fs.mkdirSync(path.resolve(args.out), { recursive: true });
-const outFile = path.join(path.resolve(args.out), 'live-moments.jsonl');
+fs.mkdirSync(outputDir, { recursive: true });
+const outFile = path.join(outputDir, 'live-moments.jsonl');
 const payload = rows.map((r) => JSON.stringify(r)).join('\n') + '\n';
 fs.writeFileSync(outFile, payload);
 const summary = {
   schema: 'machinespirits.program2.live-moments-summary.v1',
+  ...(trigger === 'stagnant_repeat' ? { trigger } : {}),
   generatedAt: new Date().toISOString(),
   roots: args['pilot-root'],
   moments: rows.length,
@@ -131,5 +149,5 @@ const summary = {
   }, {}),
   sha256: sha256(payload),
 };
-fs.writeFileSync(path.join(path.resolve(args.out), 'summary.json'), `${JSON.stringify(summary, null, 2)}\n`);
+fs.writeFileSync(path.join(outputDir, 'summary.json'), `${JSON.stringify(summary, null, 2)}\n`);
 console.log(JSON.stringify(summary, null, 2));

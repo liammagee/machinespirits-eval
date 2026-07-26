@@ -34,6 +34,16 @@ function readTutorStubTraceEvents(directory) {
     .map((line) => JSON.parse(line));
 }
 
+// The turn a tutor writes when it takes the offered self-correction pass: a
+// preface saying it nearly went elsewhere, then the answer the learner is owed.
+const SELF_CORRECTION_FIXTURE = [
+  'I was about to answer a different question.',
+  'I keep your point about “First learner message” in view before we develop it.',
+  'I set the public record under examination and mark the claim’s limit.',
+  'Keep only what the public evidence already shows.',
+  'What does that let us carry forward about “First learner message”?',
+].join(' ');
+
 function installFakeCodex(tmp) {
   const fakeCodex = path.join(tmp, 'codex');
   fs.writeFileSync(
@@ -49,7 +59,9 @@ process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   const finish = () => {
     if (process.env.FAKE_CODEX_LOG) fs.appendFileSync(process.env.FAKE_CODEX_LOG, input + '\\n---CALL---\\n');
-    const response = process.env.FAKE_CODEX_VALID_ANALYSIS === '1' && input.includes('# Current learner turn')
+    const response = process.env.FAKE_CODEX_FIXTURE_MODE === 'self_correction' && input.includes('SELF-CORRECTION PASS.')
+      ? ${JSON.stringify(SELF_CORRECTION_FIXTURE)}
+      : process.env.FAKE_CODEX_VALID_ANALYSIS === '1' && input.includes('# Current learner turn')
       ? JSON.stringify({
           classification: {
             turn: {
@@ -319,17 +331,22 @@ test('ordinary invalid tutor drafts recover through a progression-safe determini
     const accounting = events.find((event) => event.type === 'tutor_response_guard_accounting')?.accounting;
     assert.ok(accounting);
     assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
+    // Both drafts fail live progression and nothing else, so the self-correction
+    // pass is offered before the safety text. Here it fails too, and the ladder
+    // falls through to exactly the fallback it always produced.
     assert.deepEqual(
       accounting.attempts.map((attempt) => attempt.kind),
-      ['original_candidate', 'plain_recovery_candidate', 'deterministic_fallback'],
+      ['original_candidate', 'plain_recovery_candidate', 'self_correction_candidate', 'deterministic_fallback'],
     );
     assert.equal(accounting.attempts[0].audits.liveTurnProgressionAudit.ok, false);
     assert.equal(accounting.attempts[1].audits.liveTurnProgressionAudit.ok, false);
     assert.equal(accounting.finalDelivery.source, 'deterministic_fallback');
     assert.equal(accounting.finalDelivery.auditOk, true);
-    assert.equal(accounting.attempts[2].audits.liveTurnProgressionAudit.ok, true);
-    assert.equal(accounting.attempts[2].audits.liveTurnProgressionAudit.observed.question_count, 1);
-    assert.deepEqual(accounting.attempts[2].audits.liveTurnProgressionAudit.issues, []);
+    const fallbackAttempt = accounting.attempts.at(-1);
+    assert.equal(fallbackAttempt.kind, 'deterministic_fallback');
+    assert.equal(fallbackAttempt.audits.liveTurnProgressionAudit.ok, true);
+    assert.equal(fallbackAttempt.audits.liveTurnProgressionAudit.observed.question_count, 1);
+    assert.deepEqual(fallbackAttempt.audits.liveTurnProgressionAudit.issues, []);
     const failureEvents = events.filter((event) => event.type === 'turn_failure_recorded');
     assert.ok(failureEvents.some((event) => event.phase === 'incremental' && event.turn === 1));
     const sealedFailure = failureEvents.find((event) => event.phase === 'sealed' && event.turn === 1);
@@ -337,6 +354,70 @@ test('ordinary invalid tutor drafts recover through a progression-safe determini
     assert.equal(sealedFailure.record.run.sealed, true);
     assert.equal(sealedFailure.record.training.trainingLicensed, false);
     assert.ok(sealedFailure.failureModes.some((mode) => mode.startsWith('guard.live_turn_progression_v1.')));
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test('a tutor that says it nearly went the wrong way publishes its own turn instead of the safety text', async () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-self-correction-disclosed-'));
+  try {
+    const result = await runInteractive({
+      tmp,
+      args: [
+        '--no-opening',
+        '--no-classifier',
+        '--no-register-selection',
+        '--no-closeout-report',
+        '--no-interim-animation',
+        '--no-stream',
+        '--no-turn-feedback',
+        '--trace-dir',
+        tmp,
+        '--world',
+        'none',
+      ],
+      initialInput: 'First learner message.\n',
+      stopWhen: (plain) => plain.includes('What does that let us carry forward about “First learner message”?'),
+      timeoutMs: 15_000,
+      env: { FAKE_CODEX_FIXTURE_MODE: 'self_correction' },
+    });
+
+    const events = fs
+      .readdirSync(tmp)
+      .filter((name) => name.endsWith('.jsonl'))
+      .flatMap((name) => fs.readFileSync(path.join(tmp, name), 'utf8').trim().split('\n'))
+      .filter(Boolean)
+      .map((line) => JSON.parse(line));
+    const accounting = events.find((event) => event.type === 'tutor_response_guard_accounting')?.accounting;
+    assert.ok(accounting);
+    // Same two failing drafts as the fallback case above. The difference is only
+    // that the model takes the offered pass, so the learner hears the tutor
+    // change course rather than a replacement written by the harness.
+    assert.deepEqual(
+      accounting.attempts.map((attempt) => attempt.kind),
+      ['original_candidate', 'plain_recovery_candidate', 'self_correction_candidate'],
+    );
+    assert.equal(accounting.outcome, 'guarded_self_correction_disclosed');
+    assert.equal(accounting.finalDelivery.source, 'self_correction_candidate');
+    assert.equal(accounting.finalDelivery.auditOk, true);
+    assert.match(result.plain, /I was about to answer a different question/u);
+
+    const pass = events.find((event) => event.type === 'tutor_response_self_correction_pass');
+    assert.ok(pass);
+    assert.equal(pass.disclosed, true);
+    assert.equal(pass.accepted, true);
+    assert.deepEqual(pass.disclosureIssues, []);
+    assert.deepEqual(
+      pass.waivedFindings.map((finding) => finding.type),
+      ['learner_uptake_not_realized', 'handoff_loses_turn_focus'],
+    );
+    // The preface is not scored as the uptake: the sentence that answers the
+    // learner is, so the pass is not a way around the guard that opened it.
+    const delivered = accounting.attempts.at(-1);
+    assert.equal(delivered.audits.responseCompositionAudit.segments.method, 'self_correction_preface');
+    assert.equal(delivered.audits.liveTurnProgressionAudit.ok, true);
+    assert.deepEqual(delivered.audits.liveTurnProgressionAudit.issues, []);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
@@ -1796,6 +1877,19 @@ test('/meta directs a persistent tutor change without creating a public learner 
       .map((name) => path.join(tmp, name))
       .find((filePath) => fs.readFileSync(filePath, 'utf8').includes('director_guidance_set'));
     assert.ok(sourceTrace);
+    const sourceTutorText = fs
+      .readFileSync(sourceTrace, 'utf8')
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => JSON.parse(line))
+      .find((event) => event.type === 'turn_complete')?.turnRecord?.tutor;
+    const expectedResumeQuestion = sourceTutorText
+      ?.match(/[^.!?]+(?:[.!?]+["'’”)]*|$)/gu)
+      ?.map((sentence) => sentence.trim())
+      .filter((sentence) => sentence.includes('?'))
+      .at(-1);
+    assert.ok(expectedResumeQuestion);
     const resumed = await runInteractive({
       tmp,
       args: [
@@ -1812,11 +1906,31 @@ test('/meta directs a persistent tutor change without creating a public learner 
         '--world',
         'world_005_marrick',
       ],
-      initialInput: '/status\n',
-      stopWhen: (plain) => plain.includes(`director request: ${direction}`),
+      initialInput: '',
+      followupInputs: [
+        {
+          afterPlainIncludes: 'Welcome back.',
+          text: 'I still need to connect the assay mark to one crucible.\n',
+        },
+      ],
+      stopWhen: (plain) => (plain.match(/tutor >/gu) || []).length >= 2,
     });
     assert.match(resumed.plain, /resume: loaded 1 turn/u);
     assert.match(resumed.plain, /director request: Use shorter replies with less world-specific jargon\./u);
+    assert.match(resumed.plain, /tutor > Welcome back\./u);
+    assert.match(resumed.plain, /We were working on this question:/u);
+    assert.match(resumed.plain, /You had just put this on the table: “The assay still confuses me\.”/u);
+    assert.ok(resumed.plain.includes(`We paused at this question: ${expectedResumeQuestion}`));
+    const resumedModelInput = fs.readFileSync(resumed.logPath, 'utf8');
+    assert.match(resumedModelInput, /Welcome back\./u);
+    assert.match(resumedModelInput, /I still need to connect the assay mark to one crucible\./u);
+    const resumedEvents = readTutorStubTraceEvents(tmp).filter((event) => event.type === 'tutor_resume_handoff');
+    assert.equal(resumedEvents.length, 1);
+    assert.equal(resumedEvents[0].sourceTurn, 1);
+    assert.equal(resumedEvents[0].repriseKind, 'question');
+    assert.equal(resumedEvents[0].repriseText, expectedResumeQuestion);
+    assert.equal(resumedEvents[0].publicTranscriptChanged, true);
+    assert.equal(resumedEvents[0].proofStateChanged, false);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
   }
