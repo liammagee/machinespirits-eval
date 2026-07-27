@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-27T04:43:29.796Z",
+  "generated": "2026-07-27T05:04:08.682Z",
   "counts": {
-    "total": 235,
+    "total": 236,
     "byStatus": {
-      "done": 205,
+      "done": 206,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 57,
-      "maintenance": 67,
+      "maintenance": 68,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -623,8 +623,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-response-configuration-presentation",
-      "title": "Refactor tutor-stub response-configuration presentation",
+      "id": "refactor-tutor-stub-response-policy-context",
+      "title": "Refactor tutor-stub response-policy context projection",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -632,37 +632,38 @@
       "source": "review",
       "created": "2026-07-27",
       "updated": "2026-07-27",
-      "verification": "Live technical-debug response-configuration bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-response-configuration-presentation",
+      "verification": "Tutor-only response configuration and policy prompt bytes remain exact while focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-response-policy-context",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-learner-classification-presentation"
+        "refactor-tutor-stub-response-configuration-presentation"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubResponseConfigurationPresentation.js",
+          "services/tutorStubResponsePolicyContext.js",
           "scripts/tutor-stub.js",
+          "tests/tutorStubResponsePolicyContext.test.js",
           "tests/tutorStubResponseConfigurationPresentation.test.js",
+          "tests/tutorStubPromptBehavior.test.js",
+          "tests/tutorStubTypedActionAdapter.test.js",
+          "tests/tutorStubResponseComposition.test.js",
           "tests/tutorStubInteractivePerformance.test.js",
-          "tests/tutorStubLearnerClassificationPresentation.test.js",
-          "tests/tutorStubLearnerDagPresentation.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-learner-classification-presentation"
+          "refactor-tutor-stub-response-configuration-presentation"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
-        "presentation",
-        "cli",
+        "prompt",
         "response-configuration",
-        "debug"
+        "policy-context"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -3534,6 +3535,53 @@
         "presentation",
         "cli",
         "release-notes"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-response-configuration-presentation",
+      "title": "Refactor tutor-stub response-configuration presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Live technical-debug response-configuration bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-response-configuration-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-learner-classification-presentation"
+      ],
+      "links": {
+        "prs": [
+          303
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubResponseConfigurationPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubResponseConfigurationPresentation.test.js",
+          "tests/tutorStubInteractivePerformance.test.js",
+          "tests/tutorStubLearnerClassificationPresentation.test.js",
+          "tests/tutorStubLearnerDagPresentation.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-learner-classification-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "response-configuration",
+        "debug"
       ],
       "milestone": "evaluation-infrastructure"
     },
