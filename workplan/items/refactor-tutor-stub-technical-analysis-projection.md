@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-technical-analysis-projection
 title: Refactor tutor-stub technical analysis presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-turn-analysis-projection
 links:
+  prs:
+    - 317
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -88,3 +90,7 @@ Log:
   zero skips. The 243-item source-only workplan, synchronized manifest,
   ref registry, ESLint, Prettier, syntax, diff, and zero-cycle ratchet across
   410 files are green on `origin/main` at `07caedf8`.
+- 2026-07-27 — PR #317 merged as `3258a19a` with all ten CI lanes green; the
+  serialized workplan render followed on `origin/main` at `b6b56e49`. Closed
+  this child and activated `refactor-tutor-stub-technical-debug-presentation`
+  for the remaining deterministic `/debug technical` renderer.

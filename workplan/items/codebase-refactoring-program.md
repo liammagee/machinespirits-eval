@@ -67,6 +67,7 @@ links:
     - refactor-tutor-stub-analysis-vocabulary
     - refactor-tutor-stub-turn-analysis-projection
     - refactor-tutor-stub-technical-analysis-projection
+    - refactor-tutor-stub-technical-debug-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -633,3 +634,27 @@ Log:
   focused assertions, all 7,323 root tests across 530 files, 137/137 tutor-core
   tests, the 243-item source workplan, and every manifest, ref, lint,
   formatting, syntax, diff, and zero-cycle gate green.
+- 2026-07-27 — PR #317 merged the technical-analysis child as `3258a19a` with
+  all ten CI lanes green; the serialized render followed on `origin/main` at
+  `b6b56e49`. Closed that child and activated
+  `refactor-tutor-stub-technical-debug-presentation` to move only the remaining
+  deterministic `/debug technical` line projection while retaining its gates,
+  preparation, concurrent-terminal wrapper, trace write, and effects in the
+  CLI.
+- 2026-07-27 — The first technical-debug parity fixture matches
+  pre-extraction PR #317 exactly after generated turn-id normalization: 1,316
+  bytes and SHA-256
+  `5f5d63300c55e4402bfc1a8f9ac7aa911655151757612d7f2ba3de16985eac6d`.
+- 2026-07-27 — The technical-debug child adds a 261-line dependency-free
+  projector and a 246-line direct test while reducing the CLI by 159 net
+  lines. It reached review on its activation base with 30/30 focused
+  assertions, all 7,326 root tests across 531 manifest files, 137/137
+  tutor-core tests, the 244-item source workplan, and every manifest, ref,
+  lint, formatting, syntax, diff, and zero-cycle gate green.
+- 2026-07-27 — Rebased the technical-debug child without conflict onto
+  rendered `origin/main` at `1fb7fe9f` after runtime-disjoint PR #318.
+  Final-base focused parity remains 30/30, tutor-core remains 137/137, and all
+  static gates remain green. The exact base passed all ten GitHub CI lanes;
+  full-root certification for this child is deferred to PR CI because the
+  loaded local host trips existing fixed subprocess deadlines even though all
+  531 files report and the implicated files pass independently.
