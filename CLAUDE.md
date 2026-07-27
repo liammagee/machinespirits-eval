@@ -115,64 +115,25 @@ A cell's architecture is determined by these YAML fields:
 
 ### Tutor Agent Cells (config/tutor-agents.yaml)
 
-**Cells 1-8: 2×2×2 factorial** (base/recog × single/multi × unified/ego_superego)
-- Odd cells: unified learner. Even cells: ego_superego learner.
-- Cells 1-2: base, single. Cells 3-4: base, multi (superego configured). Cells 5-6: recog, single. Cells 7-8: recog, multi (superego configured).
+**Cell registry (source-of-truth):** canonical `cell_*` names are the profiles in `config/tutor-agents.yaml`. `services/evalProfileRegistry.js` derives `CANONICAL_EVAL_PROFILES` from that YAML and keeps historical non-cell names in the explicit `LEGACY_EVAL_PROFILE_ALIASES` map; `EVAL_ONLY_PROFILES` remains the combined compatibility export. Read the YAML for any specific cell (or use the `/ms-cell-info` skill) and run `node scripts/eval-cli.js validate-config` when in doubt.
 
-**Cells 9-20: Prompt ablations** (all unified learner)
-- 9-12: Enhanced prompts (single/multi × unified/psycho)
-- 13-14: Hardwired rules (superego rules embedded in ego prompt)
-- 15-18: Placebo control (length-matched, no recognition theory)
-- 19-20: Memory isolation (recognition vs memory disentangling)
+The families below are orientation only — they say nothing binding about any single cell's architecture:
 
-**Cell 21: Dynamic prompt rewriting** with Writing Pad
+| Cells | Family |
+|-------|--------|
+| 1-8 | 2×2×2 factorial: base/recog × single/multi × unified/ego_superego learner |
+| 9-20 | Prompt ablations: enhanced (9-12), hardwired rules (13-14), placebo control (15-18), memory isolation (19-20) |
+| 21 | Dynamic prompt rewriting with Writing Pad |
+| 22-33 | Divergent superego variants: standard ego (22-27), dialectical ego (28-33) |
+| 34-39 | Full-feature dialectical — DEPRECATED |
+| 40-59 | Tutor mechanism variants: self-reflective evolution, quantitative disposition, prompt erosion, intersubjective recognition, combined, other-ego profiling |
+| 60-79 | Dynamic-learner mechanism variants; 71 is the naive baseline (no recognition, no superego, minimal prompt) |
+| 80-92 | Messages-mode variants (`conversation_mode: messages`) |
+| 93-100 | Superego variant ablations refining `dialectical_suspicious` |
+| 101-109 | Id-director charisma family — see "Id-Director Architecture" below |
+| 110-125 | Trap-scenario suite — see "Runner Dispatch" below; 115-123 are the P2.1 bilateral-ToM / P2.2 state-schema ablations (§6.8.5–.6) |
 
-**Cells 22-33: Divergent superego variants** (superego configured, unified learner)
-- 22-27: Standard ego + divergent superego (suspicious/adversary/advocate × base/recog)
-- 28-33: Dialectical ego + divergent superego
-
-**Cells 34-39: Full-feature dialectical** (superego null, unified learner, DEPRECATED)
-
-**Cells 40-59: Mechanism variants** (superego null, unified learner)
-- 40-45: Self-reflective evolution (suspicious/adversary/advocate × base/recog)
-- 46-47: Quantitative disposition (base/recog)
-- 48-49: Prompt erosion (base/recog)
-- 50-51: Intersubjective recognition (base/recog)
-- 52-53: Combined mechanisms (base/recog)
-- 54-59: Other-ego profiling (tutor-only/bidirectional/full-suite/strategy)
-
-**Cells 60-70, 72-79: Dynamic learner mechanism variants** (superego null, ego_superego learner)
-- 60-63: Self-reflection/profiling × base/recog
-- 64-65: Intersubjective/combined (recognition only)
-- 66-68: Cognitive prosthesis variants
-- 69-70: Base intersubjective/combined
-- 72-77: A2 sweep (quantitative/erosion/tutor-profiling × base/recog)
-- 78-79: Authentic learner variants
-
-**Cell 71: Naive baseline** (no recognition, no superego, minimal prompt)
-
-**Cells 80-92: Messages-mode variants** (conversation_mode: messages)
-- 80-83: Base (single/multi × unified/psycho) — 82-83 have superego configured
-- 84-90: Recognition — 86-89 have superego configured; 84, 85, 90 are single-agent (superego null)
-- 91-92: Recognition gemflash variants
-
-**Cells 93-100: Superego variant ablations** (refining the dialectical_suspicious mechanism)
-- 93-94: nopad (no Writing Pad), 95: matched, 96: behaviorist, 97: directive, 98: two_pass, 99: coupling, 100: best_of_n
-
-**Cells 101-109: Id-director charisma family** (`factors.id_director: true`)
-- New architecture: per-turn id-construction trace persisted to the `id_construction_trace` column.
-- Scored against `config/evaluation-rubric-charisma.yaml` (Weber-derived 8-dimension, v1.0, independent of v2.2 tutor rubric).
-- 101-104: charisma + register variants; 105-106: tuned (charisma vs pedagogy); 107-109: witness/exemplars variants.
-
-**Cells 110-125: Trap-scenario suite** (scenarios from `config/adaptive-trap-scenarios.yaml` unless noted; cells 115-123 are the P2.1 bilateral-ToM / P2.2 state-schema ablations — see `config/tutor-agents.yaml` and §6.8.5–.6 for those)
-- 110: `cell_110_langgraph_adaptive` — `runner: adaptive`; LangGraph state-policy + counterfactual replay; bypasses tutor-core's dialogue engine. Implementation in `services/adaptiveTutor/`.
-- 111-113: `runner: adaptive`; A13 pre-registration conditions (C1 recognition_only, C2 egosuperego, C4 validator) — all use the same adaptive runner so `strategy_shift_correctness` is comparable across cells.
-- 114: `cell_114_dialogue_engine_trap_baseline` — `runner: standard`; tutor-core's base single-agent ego (= `budget` profile, no superego) driven on the *same* v1 trap suite with the *same* trap-steered LLM learner (`learnerTurn` mechanism). Adapter: `scripts/run-dialogue-engine-trap-baseline.js`. Post-hoc exploratory cross-architecture floor — NOT in the A13 pre-registration. Result: §6.8.4.
-- 124-125: `cell_124_langgraph_adaptive_crosssuite` (`runner: adaptive`, cell_110's `state_policy` architecture) + `cell_125_dialogue_engine_crosssuite_baseline` (`runner: standard`, cell_114's dialogue-engine architecture), both on `config/cross-suite-trap-scenarios.yaml` — §6.8.7's "clean cross-suite test": six trap-annotated scenarios re-derived from the §6.3 suggestion suite, scored with the same binary `strict_shift`. cell_125 runs via the same `run-dialogue-engine-trap-baseline.js` adapter (it reads `profile.scenario_source`). Result: §6.8.7.
-
-**Superego presence summary**: Only cells with `multi_agent_tutor: true` AND an explicit superego block have an active superego agent. These are: 3-4, 7-8, 11-12, 17-18, 22-33, 82-83, 86-89. All other cells (including 34-79, 80-81, 84-85, 90, 95-96, 101-109) have `superego: null`.
-
-**Cell registry (source-of-truth):** canonical `cell_*` names are the profiles in `config/tutor-agents.yaml`. `services/evalProfileRegistry.js` derives `CANONICAL_EVAL_PROFILES` from that YAML and keeps historical non-cell names in the explicit `LEGACY_EVAL_PROFILE_ALIASES` map; `EVAL_ONLY_PROFILES` remains the combined compatibility export. When in doubt, inspect the YAML and run `node scripts/eval-cli.js validate-config`.
+<!-- The old per-cell catalogue was removed on 2026-07-27: it duplicated tutor-agents.yaml, which this file already declares authoritative, and drifted. Recover it from git history if ever needed. -->
 
 ### Adding New Cells
 
@@ -247,24 +208,13 @@ The script `scripts/analyze-judge-reliability.js` implements this correctly by h
 
 **There is NO `trace` column.** Do not reference `trace` in SQL queries.
 
-**Column families currently in `evaluation_results`** (browse migrations for exact names):
-- Identity: `id`, `run_id`, `scenario_id`, `dialogue_id`, `learner_id`
-- Config: `provider`, `model`, `profile_name`, `hyperparameters`, `prompt_id`, `ego_model`, `superego_model`, `factor_*`, `learner_architecture`, `conversation_mode`
-- Output: `suggestions`, `raw_response`, `scores_with_reasoning`
-- Per-turn tutor: `tutor_first_turn_score` (canonical Turn-0), `tutor_last_turn_score`, `tutor_development_score`, `tutor_scores`, `tutor_overall_score`
-- Holistic: `tutor_holistic_*`, `learner_holistic_*`, `dialogue_quality_*`, `dialogue_quality_internal_*`
-- Deliberation: `tutor_deliberation_*`, `learner_deliberation_*`
-- Charisma (cells 101-109): `tutor_charisma_scores`, `tutor_charisma_overall_score`, `tutor_charisma_rubric_version`, `tutor_charisma_judge_model`
-- Transformation indices: `adaptation_index`, `learner_growth_index`, `bilateral_transformation_index`, `incorporation_rate`, `dimension_convergence`, `transformation_quality`
-- Provenance: `config_hash`, `dialogue_content_hash`, `prompt_content_hash`, `tutor_ego_prompt_version`, `tutor_superego_prompt_version`, `learner_prompt_version`
-- Rubric versions: `tutor_rubric_version`, `learner_rubric_version`, `dialogue_rubric_version`, `deliberation_rubric_version`
-- Adaptive / id-director: `id_construction_trace`, `deliberation_rounds`
-- Validation: `passes_required`, `passes_forbidden`, `required_missing`, `forbidden_found`
-- Metadata: `created_at`, `judge_model`, `evaluation_reasoning`, `success`, `error_message`, `judge_latency_ms`, `qualitative_assessment`, `blinded_qualitative_assessment`
+To see the real columns of `evaluation_results` or `evaluation_runs`, read the migrations or ask the DB:
+
+```bash
+sqlite3 data/evaluations.db ".schema evaluation_results"
+```
 
 **Dead columns** (kept for historical reads, never written): `holistic_overall_score` (was alias for `tutor_last_turn_score`); `overall_score` (deprecated alias for `tutor_first_turn_score`).
-
-**evaluation_runs columns**: `id` (TEXT PK), `created_at`, `description`, `total_scenarios`, `total_configurations`, `total_tests`, `status`, `completed_at`, `metadata` (JSON), `git_commit`, `package_version`
 
 ### Important Notes
 
@@ -322,36 +272,9 @@ node scripts/eval-cli.js resume <runId> [--skip-rubric]    # Resume incomplete r
 node scripts/eval-cli.js export <runId> --format csv       # Export results
 ```
 
-### Statistical Analysis
+### Statistical and Qualitative Analysis
 
-| Script | Usage |
-|--------|-------|
-| `analyze-eval-results.js` | ANOVA, effect sizes, marginal means across conditions |
-| `analyze-judge-reliability.js` | Inter-judge correlation (requires rejudged paired data) |
-| `analyze-mechanism-traces.js <runId>` | Process measures (RevΔ, EgoSpec, AdaptΔ, RunVar) |
-| `analyze-trajectory-curves.js <runId...>` | Per-dimension turn-by-turn trajectory curves (§6.12) |
-| `analyze-within-test-change.js [<runId>]` | Symmetric first-to-last delta (rubric + text-proxy) (§6.15) |
-| `analyze-learning-stagnation.js [<runId>]` | Learning stagnation detection in multi-turn dialogues (§6.15) |
-| `analyze-insight-action-gap.js <runId...>` | Insight-action gap on reflection-mechanism cells (Finding 11 / D3) |
-| `analyze-recognition-lexicon.js [<runId>...]` | Theory-driven mechanism decomposition: 10-concept Hegelian lexicon density × score (D1) |
-| `analyze-rubric-consistency.js` | 5-level cross-rubric consistency checks (§5.4) |
-| `analyze-eval-costs.js` | Token usage and cost breakdown |
-| `analyze-interaction-evals.js` | Bilateral interaction scoring |
-| `analyze-modulation-learning.js` | Modulation metrics and learning outcomes |
-| `advanced-eval-analysis.js` | Extended multi-turn scenario analysis |
-| `compare-transformation.js` | Transformation metrics (adaptation, growth indices) |
-
-### Qualitative Analysis
-
-| Script | Usage |
-|--------|-------|
-| `assess-transcripts.js <runId>` | AI narrative assessment (`--blinded`, `--force`, `--model`) — **API** |
-| `qualitative-analysis.js` | Rule-based thematic coding with chi-square tests |
-| `qualitative-analysis-ai.js` | LLM-based theme discovery (`--mode classify\|discover`) — **API** |
-| `code-impasse-strategies.js` | Code dialogues into 5 Hegelian resolution strategies — **API** |
-| `code-dialectical-modulation.js` | Code superego modulation (structural + semantic) — **API** |
-| `browse-transcripts.js` | Interactive transcript browser (web UI on localhost) |
-| `calibrate-rubric.js` | Rubric version calibration (synthetic or `--live` re-scoring) |
+Every analysis script — ANOVA and effect sizes, judge reliability, mechanism traces, trajectory curves, within-test change, stagnation, insight-action gap, recognition lexicon, rubric consistency, costs, plus the qualitative coders and the transcript browser — is listed with its flags in `scripts/ANALYSIS-SCRIPTS.md`. Read that file rather than guessing a script name.
 
 ### Post-Hoc Analysis Workflow
 
