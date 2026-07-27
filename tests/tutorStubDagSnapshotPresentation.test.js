@@ -178,6 +178,10 @@ test('a live technical session preserves the exact Marrick tutor-DAG terminal bl
 test('the CLI retains snapshot construction, state access, terminal writes, and every runtime caller', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDagSnapshotPresentation.js'), 'utf8');
+  const technicalAnalysisSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubTechnicalAnalysisPresentation.js'),
+    'utf8',
+  );
   const snapshotSlice = cliSource.slice(
     cliSource.indexOf('function buildTutorDagSnapshot'),
     cliSource.indexOf('function oneLine'),
@@ -190,7 +194,11 @@ test('the CLI retains snapshot construction, state access, terminal writes, and 
   assert.match(snapshotSlice, /projectTutorStubDagSnapshotLines/u);
   assert.match(snapshotSlice, /console\.log\(line\)/u);
   assert.doesNotMatch(snapshotSlice, /proof leaves released/u);
-  assert.equal(cliSource.match(/printTutorDagSnapshot\(/gu)?.length, 5);
+  assert.equal(cliSource.match(/printTutorDagSnapshot\(/gu)?.length, 4);
+  assert.match(
+    technicalAnalysisSource,
+    /import \{ projectTutorStubDagSnapshotLines \} from '\.\/tutorStubDagSnapshotPresentation\.js';/u,
+  );
   assert.match(serviceSource, /export function projectTutorStubDagSnapshotLines/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);
   assert.doesNotMatch(serviceSource, /\b(?:fs|console|process|fetch|Date\.now)\s*[.(]/u);

@@ -66,6 +66,7 @@ links:
     - refactor-tutor-stub-dialogue-memory-context
     - refactor-tutor-stub-analysis-vocabulary
     - refactor-tutor-stub-turn-analysis-projection
+    - refactor-tutor-stub-technical-analysis-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -615,3 +616,20 @@ Log:
   137/137 tutor-core tests, all zero-skip. Manifest, 242-item source workplan,
   refs, lint, formatting, syntax, diff, and the zero-cycle ratchet across 409
   files are green.
+- 2026-07-27 — PR #316 merged the turn-analysis child as `86bb2147` with all
+  ten CI lanes green; the serialized render followed as `07caedf8`. Closed
+  that child and activated
+  `refactor-tutor-stub-technical-analysis-projection` to move the adjacent
+  operator-facing technical line projection while retaining normalization,
+  field construction, trace resolution, runtime state, and terminal writes in
+  the CLI.
+- 2026-07-27 — The first technical-analysis parity fixture matches
+  pre-extraction PR #316 exactly after generated identifier normalization:
+  2,787 bytes and SHA-256
+  `7c7c0b9c4eb55a9c075873d3f2a1711b4c30ce5d3e8c630367a7bbf11aca6778`.
+- 2026-07-27 — The technical-analysis child adds a 566-line deterministic
+  projector, reduces the CLI by 410 net lines, and pins dense/sparse plus live
+  technical output in a 371-line direct test. It reached review with 30/30
+  focused assertions, all 7,323 root tests across 530 files, 137/137 tutor-core
+  tests, the 243-item source workplan, and every manifest, ref, lint,
+  formatting, syntax, diff, and zero-cycle gate green.
