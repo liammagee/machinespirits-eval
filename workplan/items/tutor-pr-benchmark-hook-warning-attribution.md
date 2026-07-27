@@ -8,7 +8,7 @@ owner: claude
 source: manual
 created: 2026-07-27
 updated: 2026-07-27
-verification: "Passed: node --test tests/tutorStubPrBenchmarkHook.test.js (12/12, up from 8); npm run lint; npx prettier --check on all four changed files; npm run lint:cycles (0 cycles across 403 files); npm run refs:check; npm run test:manifest. Established against real repository data rather than inference: a zero-call re-audit of the nearest cached ancestor report (77838c3f7a9e, 32 commits back) returned 0 improved, 0 regressed, 6 unchanged fail, confirming the standing failure; 32 authored world files were enumerated and exactly 1 (world-001-nocturne.yaml, id world_001_nocturne) is replayed by the strong preset. A full end-to-end hook probe printed the uncovered-world notice, the STANDING attribution line naming its baseline, and the request-changing-paths caveat, exiting 0."
+verification: "Passed: node --test tests/tutorStubPrBenchmarkHook.test.js (13/13, up from 8); npm run lint; npx prettier --check on all four changed files; npm run lint:cycles (0 cycles across 403 files); npm run refs:check; npm run test:manifest. Established against real repository data rather than inference: a zero-call re-audit of the nearest cached ancestor report (77838c3f7a9e, 32 commits back) returned 0 improved, 0 regressed, 6 unchanged fail, confirming the standing failure; 32 authored world files were enumerated and exactly 1 (world-001-nocturne.yaml, id world_001_nocturne) is replayed by the strong preset. A full end-to-end hook probe printed the uncovered-world notice, the STANDING attribution line naming its baseline, and the request-changing-paths caveat, exiting 0."
 branch: claude/pr-benchmark-hook-standing-warning
 depends_on:
   - tutor-pr-benchmark-delta-harness
@@ -66,3 +66,9 @@ the standing failure disappear for the wrong reason.
   plan, fail-closed on world parse errors, with the uncovered files printed
   before the skip decision. Documented both behaviors in
   `docs/tutor-pr-benchmark.md`.
+- 2026-07-27: The first live run mislabelled its own driver as a path that
+  changes the benchmark request. The caveat filtered on a two-way split, but the
+  hook driver imports the runner, so the runner's import closure can never
+  contain it. Partitioned relevance three ways, deriving hook machinery as the
+  set difference between the hook entrypoint's closure and the runner's so it
+  stays self-maintaining, and left it unreported.
