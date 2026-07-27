@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-27T23:45:25.449Z",
+  "generated": "2026-07-27T23:56:31.168Z",
   "counts": {
-    "total": 248,
+    "total": 249,
     "byStatus": {
       "done": 215,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
-      "review": 8,
+      "review": 9,
       "active": 9,
       "archived": 4
     },
     "byType": {
       "research": 47,
       "experiment": 49,
-      "infra": 59,
+      "infra": 60,
       "maintenance": 77,
       "content": 2,
       "ops": 8,
@@ -904,6 +904,31 @@
         "ci",
         "hermetic"
       ]
+    },
+    {
+      "id": "workplan-trailer-pre-push-hook",
+      "title": "Report unlinked commits before the push, not after",
+      "status": "review",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Installing the hook preserves and chains any existing pre-push hook in either install order; a push to main carrying a commit with no workplan trailer prints the same report CI would print and still completes; a push to any other ref runs no check; flipping WORKPLAN_TRAILER_HOOK_ENFORCEMENT=blocking rejects the push.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "workplan/playbook/git-and-workflow.md"
+        ]
+      },
+      "tags": [
+        "workplan",
+        "ci",
+        "git-hooks"
+      ],
+      "milestone": "board-pm",
+      "branch": "claude/workplan-trailer-prepush"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
