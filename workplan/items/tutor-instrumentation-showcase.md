@@ -1,7 +1,7 @@
 ---
 id: tutor-instrumentation-showcase
 title: Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close
-status: active
+status: done
 type: infra
 priority: P2
 owner: claude
@@ -13,7 +13,11 @@ verification: "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero
   report.md, and a turn-aligned two-column transcripts.html; each arm's resolution
   verdict comes from the stub's own closure lifecycle, and guard coverage is read
   from the stub's `tutor_response_guard_accounting` rows rather than from the audit
-  records the turn carries either way."
+  records the turn carries either way; and each scoring pass
+  (`npm run tutor:stub:showcase:rubric`, `npm run tutor:stub:showcase:pr-benchmark`)
+  writes its own artifact beside report.json and re-renders transcripts.html, so a
+  run scored by both instruments, by one, or by neither shows the scores it actually
+  has and names the axes nobody asked."
 claim_status: methods
 depends_on:
   - tutor-instrumentation-ab-harness
@@ -26,7 +30,7 @@ tags:
   - tutor-stub
   - instrument
   - demo
-branch: claude/tutor-closure-drive
+branch: claude/showcase-score-overlay
 ---
 
 The frozen A/B answers what a given advisory block buys on one recorded turn.
@@ -110,7 +114,7 @@ Design decisions worth keeping:
   culprit was not the action-family selector (which chose `compress_sayback`
   correctly on turn 9) but `applyTutorStubConversationalCompletionSelection`
   overwriting it with an instruction to introduce new public evidence. Both are
-  fixed on `claude/tutor-closure-drive`: the snapshot now records
+  fixed on `main`: the snapshot now records
   `voicedSecretDerivation` and the assessment reports `secretStatedVia`, and
   `tutorStubReleaseScheduleExhausted` redirects both override sites to
   `compress_sayback`.
