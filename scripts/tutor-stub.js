@@ -326,9 +326,8 @@ import {
   compactTutorStubCloseoutCounts as compactCounts,
   countTutorStubCloseoutRows as countBy,
   summarizeTutorStubGuardAccounting as summarizeTutorGuardAccounting,
-  tutorStubPlainCloseoutReason as plainCloseoutReason,
-  tutorStubPlainCloseoutStatus as plainCloseoutStatus,
 } from '../services/tutorStubCloseoutProjection.js';
+import { projectTutorStubCloseoutReportLines } from '../services/tutorStubCloseoutReportPresentation.js';
 import {
   formatTutorStubSignedInterimNumber as formatSignedInterimNumber,
   projectTutorStubInterimPanels,
@@ -8692,17 +8691,11 @@ function printFieldVisualization(state, { reason = 'viz' } = {}) {
 function printDialogueCloseout(state, { reason = 'report', trace = state.trace } = {}) {
   const tracePath = traceDisplayPath(trace);
   if (!state.turns.length) {
-    console.log(`${C.cyan}session summary >${C.reset} ${plainCloseoutReason(reason)}; no completed tutor turns`);
-    if (tracePath) console.log(`${C.dim}  technical trace: ${tracePath}${C.reset}`);
-    console.log(
-      `${C.dim}  start with the tutor opening prompt, then enter one learner turn to build a report${C.reset}\n`,
-    );
+    for (const line of projectTutorStubCloseoutReportLines({ reason, tracePath, colors: C })) console.log(line);
     return null;
   }
 
   const field = buildLightweightDialogueField(state.turns);
-  const delta = field.summary.fieldDelta;
-  const final = field.summary.final;
   const last = state.turns[state.turns.length - 1] || {};
   const assessment = last.tutorLearnerDagModel?.assessment || {};
   const metrics = last.tutorLearnerDagModel?.metrics || {};
@@ -8782,88 +8775,16 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
     learning: buildDialogueLearningSummary(state, { reason, trace: traceDisplayPath(state.trace) }),
   };
 
-  console.log(
-    `${C.cyan}session summary >${C.reset} ${plainCloseoutReason(reason)}; ${state.turns.length} completed turn(s)`,
-  );
-  if (tracePath) console.log(`${C.dim}  technical trace: ${tracePath}${C.reset}`);
-  console.log(
-    `${C.dim}  training reuse: ${tutorStubTrainingReuseLabel(payload.trainingReuse)}; requested ${
-      payload.trainingReuse?.requested || 'off'
-    }; ${displayDiagnosticLabel(payload.trainingReuse?.humanSubjectClass || 'unknown')}${C.reset}`,
-  );
-  console.log(`${C.dim}  outcome: ${plainCloseoutStatus(last)}${C.reset}`);
-  const coveragePercent = Number.isFinite(Number(payload.finalAssessment.bestPathCoverage))
-    ? `${Math.round(Number(payload.finalAssessment.bestPathCoverage) * 100)}%`
-    : 'not available';
-  console.log(
-    `${C.dim}  reasoning progress: ${coveragePercent} of the strongest proof path; ${
-      payload.finalAssessment.missingPremiseCount
-    } evidence step(s) still missing; current sticking point ${displayDiagnosticLabel(
-      payload.finalAssessment.bottleneck || 'unknown',
-    )}; answer-secrecy check ${
-      payload.finalTurn.leakOk === null ? 'not available' : payload.finalTurn.leakOk ? 'passed' : 'failed'
-    }${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  interaction measures: learner progress ${final.learnerMastery}, pressure ${final.learnerRisk}, tutor alignment ${final.tutorAlignment}, momentum ${final.jointMomentum}; progress change ${
-      delta.learnerMastery >= 0 ? '+' : ''
-    }${delta.learnerMastery}, pressure change ${delta.learnerRisk >= 0 ? '+' : ''}${delta.learnerRisk}${C.reset}`,
-  );
-  console.log(`${C.dim}  tutor styles used: ${registerCounts}${C.reset}`);
-  if (payload.learning.progress?.acceleratedTurnCount) {
-    console.log(
-      `${C.dim}  learner pace: accelerated on ${payload.learning.progress.acceleratedTurnCount} turn(s); longest supported leap ${payload.learning.progress.maxSupportedMoves} moves${C.reset}`,
-    );
-  }
-  if (payload.releasePacing) {
-    console.log(
-      `${C.dim}  clue pace: ${payload.releasePacing.baseSpeed}x base; ${payload.releasePacing.counts.accelerationSignals} faster request(s), ${payload.releasePacing.counts.decelerationSignals} slower request(s); ${payload.releasePacing.counts.early} clue(s) released early${C.reset}`,
-    );
-  }
-  if (responseConfigurationVisibility.turns) {
-    console.log(
-      `${C.dim}  intended tutor style visible in wording: ${Math.round(
-        responseConfigurationVisibility.mean_realization_rate * 100,
-      )}%; visible difference between styles ${
-        responseConfigurationVisibility.pairwise_visible_difference_rate === null
-          ? 'n/a'
-          : `${Math.round(responseConfigurationVisibility.pairwise_visible_difference_rate * 100)}%`
-      } across ${responseConfigurationVisibility.distinct_configuration_count} configuration(s)${C.reset}`,
-    );
-  }
-  console.log(
-    `${C.dim}  response checks: first drafts accepted ${guardAccounting.originalCandidateAcceptedTurns}/${
-      guardAccounting.accountedTurns
-    }; mechanical repairs ${guardAccounting.mechanicalRepairTurns}; model rewrites ${
-      guardAccounting.modelRepairTurns
-    }; safe fallbacks ${guardAccounting.deterministicFallbackTurns}; final check failures ${
-      guardAccounting.finalDeliveryAuditFailures
-    }; mean tutor generation ${Math.round(guardAccounting.meanTutorGenerationLatencyMs || 0)}ms${C.reset}`,
-  );
-  console.log(`${C.dim}  sticking points seen: ${bottleneckCounts}${C.reset}`);
-  if (payload.humanDiscourse.config?.scaffoldActive) {
-    console.log(
-      `${C.dim}  human-friendly reasoning: ${payload.humanDiscourse.finalStatus || 'unknown'}; deferred proof steps ${
-        payload.humanDiscourse.proofDebtStatus || 'unknown'
-      }; side questions ${payload.humanDiscourse.sideArcCount}; open deferred steps ${
-        payload.humanDiscourse.openProofDebtCount
-      }; obvious steps carried forward ${payload.humanDiscourse.elidedBridgeCount}; question support ${compactCounts(
-        Object.entries(payload.humanDiscourse.questionSupportModes),
-      )}${C.reset}`,
-    );
-  }
-  if (payload.comprehension.features.unresolvedTerms.length || payload.comprehension.features.explainedTerms.length) {
-    console.log(
-      `${C.dim}  language help: still unclear ${
-        payload.comprehension.features.unresolvedTerms.join(', ') || 'none'
-      }; explained ${payload.comprehension.features.explainedTerms.join(', ') || 'none'}; difficulty ${
-        payload.comprehension.features.languageOpacity
-      }${C.reset}`,
-    );
-  }
-  console.log(`${C.dim}  technical turn id: ${payload.finalTurn.turnId}${C.reset}`);
-  console.log(`${C.dim}  last learner: ${oneLine(last.learner, { max: 180 })}${C.reset}`);
-  console.log(`${C.dim}  last tutor: ${oneLine(last.tutor, { max: 220 })}${C.reset}\n`);
+  const lines = projectTutorStubCloseoutReportLines({
+    reason,
+    tracePath,
+    payload,
+    lastTurn: last,
+    registerCounts,
+    bottleneckCounts,
+    colors: C,
+  });
+  for (const line of lines) console.log(line);
   return payload;
 }
 

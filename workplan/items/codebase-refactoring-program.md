@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-07-27
+updated: 2026-07-28
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -68,6 +68,7 @@ links:
     - refactor-tutor-stub-turn-analysis-projection
     - refactor-tutor-stub-technical-analysis-projection
     - refactor-tutor-stub-technical-debug-presentation
+    - refactor-tutor-stub-closeout-report-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -658,3 +659,16 @@ Log:
   full-root certification for this child is deferred to PR CI because the
   loaded local host trips existing fixed subprocess deadlines even though all
   531 files report and the implicated files pass independently.
+- 2026-07-28 — PR #319 merged the technical-debug child as `a4925f7a` with all
+  ten CI lanes green; the serialized render followed as `e3d66045`. Closed
+  that child and activated `refactor-tutor-stub-closeout-report-presentation`
+  to move only deterministic closeout terminal lines while retaining payload
+  assembly, snapshots, paths, trace emission, commands, and runtime state in
+  the CLI.
+- 2026-07-28 — The closeout-report child adds a 154-line dependency-free
+  projector and a 217-line direct test while reducing the CLI by 79 net lines.
+  It reached review with exact 1,208-byte live parity, 45/45 focused
+  assertions, 137/137 tutor-core tests, and every manifest, ref, lint,
+  formatting, syntax, diff, source-only workplan, and zero-cycle gate green.
+  The loaded-host monolithic root timeout is recorded on the child; PR CI is
+  the final full-root certification.

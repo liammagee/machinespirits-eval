@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-technical-debug-presentation
 title: Refactor tutor-stub technical debug presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-07-28
 verification: Technical /debug output remains byte-identical while dense,
   sparse, seeded live-process, focused, hermetic, manifest, static, and
   source-only gates pass.
@@ -100,3 +100,7 @@ Log:
   loaded-host run as green.
 - 2026-07-28 — Opened PR #319 from the clean, parity-pinned review branch;
   PR CI is the final full-root certification on the rebased commit.
+- 2026-07-28 — PR #319 merged as `a4925f7a` with all ten CI lanes green; the
+  serialized workplan render followed as `e3d66045`. Closed this child and
+  activated `refactor-tutor-stub-closeout-report-presentation` for the next
+  deterministic terminal renderer.
