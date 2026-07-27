@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-27T14:01:19.551Z",
+  "generated": "2026-07-27T21:39:13.565Z",
   "counts": {
-    "total": 243,
+    "total": 244,
     "byStatus": {
-      "done": 211,
+      "done": 212,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 47,
       "experiment": 49,
       "infra": 58,
-      "maintenance": 73,
+      "maintenance": 74,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -206,6 +206,7 @@
           "refactor-tutor-stub-analysis-vocabulary",
           "refactor-tutor-stub-turn-analysis-projection",
           "refactor-tutor-stub-technical-analysis-projection",
+          "refactor-tutor-stub-technical-debug-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -659,8 +660,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-technical-analysis-projection",
-      "title": "Refactor tutor-stub technical analysis presentation",
+      "id": "refactor-tutor-stub-technical-debug-presentation",
+      "title": "Refactor tutor-stub technical debug presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -668,33 +669,37 @@
       "source": "review",
       "created": "2026-07-27",
       "updated": "2026-07-27",
-      "verification": "Technical /analysis output remains byte-identical while dense, sparse, seeded live-process, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-technical-analysis-projection",
+      "verification": "Technical /debug output remains byte-identical while dense, sparse, seeded live-process, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-technical-debug-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-turn-analysis-projection"
+        "refactor-tutor-stub-technical-analysis-projection"
       ],
       "links": {
+        "prs": [
+          319
+        ],
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubTechnicalAnalysisPresentation.js",
+          "services/tutorStubTechnicalDebugPresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubTechnicalAnalysisPresentation.test.js",
-          "tests/tutorStubDagSnapshotPresentation.test.js",
+          "tests/tutorStubTechnicalDebugPresentation.test.js",
+          "tests/tutorStubExplanatoryDebug.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-turn-analysis-projection"
+          "refactor-tutor-stub-explanatory-debug",
+          "refactor-tutor-stub-technical-analysis-projection"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
         "presentation",
-        "analysis",
+        "debug",
         "terminal"
       ],
       "milestone": "evaluation-infrastructure"
@@ -3886,6 +3891,50 @@
         "presentation",
         "cli",
         "status"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-technical-analysis-projection",
+      "title": "Refactor tutor-stub technical analysis presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Technical /analysis output remains byte-identical while dense, sparse, seeded live-process, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-technical-analysis-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-turn-analysis-projection"
+      ],
+      "links": {
+        "prs": [
+          317
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubTechnicalAnalysisPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubTechnicalAnalysisPresentation.test.js",
+          "tests/tutorStubDagSnapshotPresentation.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-turn-analysis-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "analysis",
+        "terminal"
       ],
       "milestone": "evaluation-infrastructure"
     },
