@@ -17,6 +17,8 @@ depends_on:
   - refactor-tutor-stub-field-presentation
   - refactor-tutor-stub-closeout-report-presentation
 links:
+  prs:
+    - 323
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -89,3 +91,5 @@ Log:
   diff, and the zero-cycle ratchet across 412 files also pass. The first full
   run was invalid under sandboxed loopback (`EPERM`); the permissioned rerun is
   the recorded complete result.
+- 2026-07-28 — Opened PR #323 with the explicit workplan link and source-only
+  board discipline; CI is the final review gate.
