@@ -542,6 +542,78 @@ test('manifest synchronization registers ordinary suite files while preserving e
   }
 });
 
+test('an unclassifiable test file is reported as drift with a remedy, not as an internal failure', (t) => {
+  // Synchronization refills the two suite lists from their own directories, so
+  // it can never place a test file that lives outside both. That drift reached
+  // the top-level handler and printed as "Unable to synchronize hermetic test
+  // manifest: …" — the register of a crash, with no remedy attached, for what
+  // is an ordinary result the other two drift classes both explain.
+  const projectRoot = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-manifest-unclassified-')));
+  t.after(() => fs.rmSync(projectRoot, { recursive: true, force: true }));
+  const writeTest = (relativePath) => {
+    fs.mkdirSync(path.dirname(path.join(projectRoot, relativePath)), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, relativePath), '// fixture\n');
+  };
+  for (const relativePath of [
+    'services/__tests__/service.test.js',
+    'tests/root.test.js',
+    'tutor-core/services/__tests__/core.test.js',
+    'routes/unclassified.test.js',
+    // Tracked, but under a directory the scan skips, so it can never be matched
+    // against the entry below. The absent file is the commoner cause; this one
+    // is the reason the two are reported apart, since the remedies differ.
+    'vendor/skipped.test.js',
+  ]) {
+    writeTest(relativePath);
+  }
+  const manifestPath = path.join(projectRoot, 'config/hermetic-test-manifest.json');
+  fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
+  const manifest = {
+    version: 1,
+    suites: { root: { requiredFiles: [] }, core: { requiredFiles: [] } },
+    fixtureExclusions: [
+      { file: 'tests/fixtures/deleted.test.js', owner: 'fixture-owner', reason: 'stale entry' },
+      { file: 'vendor/skipped.test.js', owner: 'fixture-owner', reason: 'outside the scan' },
+    ],
+    allowedSkips: [],
+  };
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const capture = (mode) => {
+    const lines = [];
+    const [originalLog, originalError] = [console.log, console.error];
+    console.log = (line) => lines.push(String(line));
+    console.error = (line) => lines.push(String(line));
+    try {
+      return { code: runManifestSync([mode], projectRoot), output: lines.join('\n') };
+    } finally {
+      [console.log, console.error] = [originalLog, originalError];
+    }
+  };
+
+  for (const mode of ['--check', '--write']) {
+    const { code, output } = capture(mode);
+    assert.equal(code, 1, output);
+    assert.doesNotMatch(output, /Unable to synchronize/u, output);
+    assert.match(output, /does not account for every test file/u);
+    assert.match(output, /on disk, in no class: routes\/unclassified\.test\.js/u);
+    assert.match(output, /classified, not on disk: tests\/fixtures\/deleted\.test\.js/u);
+    assert.match(output, /cannot see it: vendor\/skipped\.test\.js/u);
+    // Each of the three has its own remedy, and the one the suite-level classes
+    // already print is only correct for the file that can actually be moved.
+    assert.match(output, /Move each unclassified file into .*npm run test:manifest:update/su);
+    assert.match(output, /Drop the entries naming files that no longer exist/u);
+    assert.match(output, /Un-ignore or move each file/u);
+  }
+  // A run that cannot validate must leave the manifest alone, `--write` included.
+  assert.deepEqual(loadTestManifest(projectRoot).suites.root.requiredFiles, []);
+
+  // A broken manifest is not drift, and must keep reaching the top-level handler
+  // rather than being dressed up as an ordinary, actionable report.
+  fs.writeFileSync(manifestPath, '{"version": 2}\n');
+  assert.throws(() => runManifestSync(['--check'], projectRoot), /version must be 1/u);
+});
+
 test('Node TAP accounting includes named skipped suites even when the summary skip count is zero', () => {
   const summary = parseNodeTapSummary(`TAP version 13
 ok 1 - absent dialogue suite # SKIP no logs on disk
