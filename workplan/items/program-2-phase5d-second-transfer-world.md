@@ -22,6 +22,7 @@ links:
     - notes/program-2/2026-07-26-phase5e-analyzer-validation.md
     - notes/program-2/2026-07-26-phase5e-presentation-amendment.md
     - notes/program-2/2026-07-27-phase5e-r2-replication-freeze.md
+    - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment1.md
     - config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection-amendment1.json
@@ -256,3 +257,15 @@ preflight because launch mode overwrote its own certificate-bound
 mismatch. No pilot model call ran. Launch runtime metadata now writes to
 `launch-attempt.json`; the prepared plan remains byte-stable through certificate
 validation, with regression coverage for both missing and invalid evidence.
+
+2026-07-27 Codex: The subsequent certified R2 pilot sealed 1/4 dialogues and
+then stopped under its frozen futility rule after the `proof_skipper`
+silent-control job failed both permitted attempts. This is an apparatus-
+feasibility failure with no treatment-effect estimate. Frozen replay analysis
+located three delivery defects: a questionless assertion-gap completion loop,
+a generic mandatory-closure fallback that discarded the learner's correct
+public finding, and a Codex transport/schema policy violation with no known
+tool event. Prospective pilot Amendment 1 repairs only those seams, pins exact
+zero-model replays, retains fail-closed handling for known tool events, and
+requires a new clean commit, export root, and certificate before one replacement
+four-dialogue pilot. The 18-dialogue cohort remains closed.

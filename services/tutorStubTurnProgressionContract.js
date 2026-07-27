@@ -359,10 +359,14 @@ export function deterministicTutorStubTurnProgressionUptake({
       acceptedMeaningKind,
       learnerSurface,
     }).visible;
-  const candidate = variants[variantIndex];
-  if (!echoes(candidate)) return visible(candidate) ? candidate : fallback;
+  const variantOrder = [variantIndex, ...variants.map((_, index) => index).filter((index) => index !== variantIndex)];
+  const candidate = variantOrder.map((index) => variants[index]).find((row) => !echoes(row) && visible(row));
+  if (candidate) return candidate;
   const bounded = boundedQuotedFocusCandidates(focus)
-    .map((quotedFocus) => realizeTurnProgressionUptakeVariants(quotedFocus, contract.discourse_plane)[variantIndex])
+    .flatMap((quotedFocus) => {
+      const boundedVariants = realizeTurnProgressionUptakeVariants(quotedFocus, contract.discourse_plane);
+      return variantOrder.map((index) => boundedVariants[index]);
+    })
     .find((row) => !echoes(row) && visible(row));
   return bounded || fallback;
 }
@@ -544,6 +548,7 @@ function chooseHandoffMode({
   questionSupport = null,
   actionFamily = null,
   discoursePlane = null,
+  assertionGap = false,
 } = {}) {
   if (discoursePlane?.plane === 'instructional_meta') return 'instructional_meta_repair';
   if (dialogueClosureFrame?.mandatory === true) return 'closure';
@@ -555,6 +560,10 @@ function chooseHandoffMode({
     return 'declarative_missing_support';
   }
   if (due.length) return 'question_on_due_source';
+  // A compress-sayback action at the last assertion gap is not a declarative
+  // summary. The learner has all public evidence but has not yet stated the
+  // answer, so the handoff must return the public question to them.
+  if (actionFamily === 'compress_sayback' && assertionGap) return 'assertion_gap_prompt';
   if (NO_QUESTION_ACTIONS.has(actionFamily)) return 'declarative_current_limit';
   return 'new_unresolved_check';
 }
@@ -580,6 +589,7 @@ function handoffInstruction(contract) {
 
 export function compileTutorStubTurnProgressionContract({
   learnerText = '',
+  publicQuestion = '',
   responseCompositionFrame = null,
   dramaticReleaseFrame = null,
   dialogueClosureFrame = null,
@@ -595,6 +605,11 @@ export function compileTutorStubTurnProgressionContract({
   const due = dueSurfaces({ responseCompositionFrame, dramaticReleaseFrame });
   const dueTerms = [...new Set(due.flatMap(contentTerms))];
   const writableEntryRequested = tutorStubLearnerRequestsWritableEntry(learnerText);
+  const assertionGap = Boolean(
+    responseCompositionFrame?.learner_dag?.bottleneck === 'assertion_gap' &&
+    responseCompositionFrame?.learner_dag?.final_secret_entailed === true &&
+    responseCompositionFrame?.learner_dag?.asserted_secret !== true,
+  );
   const handoffMode = chooseHandoffMode({
     writableEntryRequested,
     completion,
@@ -603,17 +618,29 @@ export function compileTutorStubTurnProgressionContract({
     questionSupport,
     actionFamily,
     discoursePlane,
+    assertionGap,
   });
-  const questionAllowed = ['new_unresolved_check', 'question_on_due_source'].includes(handoffMode);
+  const questionAllowed = ['new_unresolved_check', 'question_on_due_source', 'assertion_gap_prompt'].includes(
+    handoffMode,
+  );
   const instructionalMeta = discoursePlane?.plane === 'instructional_meta';
+  const assertionGapTarget = assertionGap && questionAllowed ? oneLine(publicQuestion) : '';
   const requiredTargetSurfaces = instructionalMeta
     ? []
-    : due.length && questionAllowed
-      ? due
-      : focus.surface
-        ? [focus.surface]
-        : [];
-  const requiredTargetTerms = instructionalMeta ? [] : due.length && questionAllowed ? dueTerms : primaryTerms;
+    : assertionGapTarget
+      ? [assertionGapTarget]
+      : due.length && questionAllowed
+        ? due
+        : focus.surface
+          ? [focus.surface]
+          : [];
+  const requiredTargetTerms = instructionalMeta
+    ? []
+    : assertionGapTarget
+      ? contentTerms(assertionGapTarget)
+      : due.length && questionAllowed
+        ? dueTerms
+        : primaryTerms;
   const prohibitedSettledSurfaces = completion?.resolved
     ? [completion.sourceTutorQuestion, completion.acceptedMeaning].map(oneLine).filter(Boolean)
     : [];
@@ -667,7 +694,9 @@ export function compileTutorStubTurnProgressionContract({
     handoff_contract: {
       mode: handoffMode,
       question_allowed: questionAllowed,
-      question_required: questionAllowed && (tactic === 'shared_scene_invitation' || due.length > 0),
+      question_required:
+        questionAllowed &&
+        (handoffMode === 'assertion_gap_prompt' || tactic === 'shared_scene_invitation' || due.length > 0),
       question_owner: questionAllowed ? 'handoff' : null,
       terminal_if_question: questionAllowed,
       required_target_surfaces: requiredTargetSurfaces,
@@ -771,6 +800,10 @@ function handoffTargetVisible(handoff, text) {
 function contractAwareFallbackQuestion(contract, defaultQuestion) {
   const question = oneLine(defaultQuestion) || 'What does that public evidence change?';
   const handoff = contract?.handoff_contract || {};
+  if (handoff.mode === 'assertion_gap_prompt') {
+    const publicQuestion = oneLine(handoff.required_target_surfaces?.[0]);
+    if (publicQuestion) return /\?$/u.test(publicQuestion) ? publicQuestion : `${publicQuestion}?`;
+  }
   const dueSurfaces = contract?.turn_focus_contract?.due_surfaces || [];
   if (dueSurfaces.length || handoffTargetVisible(handoff, question)) return question;
   const targetSurface = oneLine(handoff.required_target_surfaces?.[0] || contract?.turn_focus_contract?.primary_surface)

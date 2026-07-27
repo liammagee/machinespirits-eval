@@ -28,6 +28,7 @@ import { parseArgs } from 'node:util';
 import { collectGitActivity, collectGitHubMetrics, collectSourceMetrics, renderReport } from './repository-metrics.js';
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
+import { tutorStubCliPolicyRetryDecision } from '../services/tutorStubCliPolicyRetry.js';
 import { getProviderConfig, loadProviders, resolveModel } from '../services/evalConfigLoader.js';
 import { runLabellingGameCli } from '../services/labellingGameCli.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
@@ -239,6 +240,7 @@ import {
 } from '../services/tutorStubFirstDraftContract.js';
 import {
   auditTutorStubLiveTurnProgressionV1,
+  deterministicTutorStubTurnProgressionHandoff,
   deterministicTutorStubTurnProgressionUptake,
 } from '../services/tutorStubTurnProgressionContract.js';
 import {
@@ -4001,6 +4003,9 @@ async function callPromptModel({
         promptAudit,
       },
       error: err.message,
+      ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION'
+        ? { cliPolicyViolation: tutorStubCliPolicyRetryDecision(err, { alreadyUsed: true }) }
+        : {}),
     });
     throw err;
   }
@@ -10355,6 +10360,7 @@ async function callTutor({
     ? null
     : buildTutorStubFirstDraftContract({
         learnerText,
+        publicQuestion: world?.question || world?.publicQuestion || '',
         responseConfiguration: speakingResponseConfiguration,
         responseCompositionFrame,
         dramaticReleaseFrame,
@@ -12185,21 +12191,28 @@ async function callTutor({
       recentTutorTexts,
     };
     const fallbackRequiresSpecificUptake =
+      closureFallbackSelected ||
       (audits?.responseCompositionAudit?.issues || []).some(
         (issue) => issue.type === 'learner_selected_test_not_acknowledged',
-      ) || tutorStubLearnerSelectedToolMarkPath(learnerText);
+      ) ||
+      tutorStubLearnerSelectedToolMarkPath(learnerText);
     const deterministicFallbackUptake = deterministicTutorStubTurnProgressionUptake({
       contract: firstDraftContract?.progression || null,
       recentTutorTexts,
       variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
       learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
-      defaultUptake: deterministicTutorStubLearnerUptake({
-        learnerText,
-        classification,
-        actionFamily: responseCompositionFrame.selected_action_family || null,
-        recentTutorTexts,
-        world,
-      }),
+      // Mandatory closure must be tied to the compiled learner focus. A
+      // generic epistemic transition can otherwise share a normalized token
+      // with the learner surface and falsely look specific enough.
+      defaultUptake: closureFallbackSelected
+        ? ''
+        : deterministicTutorStubLearnerUptake({
+            learnerText,
+            classification,
+            actionFamily: responseCompositionFrame.selected_action_family || null,
+            recentTutorTexts,
+            world,
+          }),
     });
     const candidateFallbackUptake = fallbackRequiresSpecificUptake
       ? deterministicFallbackUptake
@@ -12231,6 +12244,10 @@ async function callTutor({
       : closureFallbackSelected
         ? deterministicTutorStubClosureResponse(dialogueClosureFrame, {
             responseConfiguration: simplifiedRecoveryConfiguration,
+            focusHandoff: deterministicTutorStubTurnProgressionHandoff({
+              contract: firstDraftContract?.progression || null,
+              publicObject: worldLedgerTerm(world),
+            }),
           })
         : dramaticReleaseGuardEnabled
           ? deterministicTutorStubDramaticReleaseFallback({
@@ -12765,20 +12782,39 @@ async function generateAutomatedLearnerTurn({
   const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
   const systemPrompt = automatedLearnerSystemPrompt(profile);
   const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
-  const raw = await callPromptModel({
-    prompt,
-    messageHistory,
-    resolved,
-    systemPrompt,
-    role: 'tutor_stub_auto_learner',
-    maxTokens: 900,
-    trace: state.trace,
-    stream,
-    cliEffort,
-    turn: turnNumber,
-    signal,
-    historyTurns: state.historyTurns,
-  });
+  const call = () =>
+    callPromptModel({
+      prompt,
+      messageHistory,
+      resolved,
+      systemPrompt,
+      role: 'tutor_stub_auto_learner',
+      maxTokens: 900,
+      trace: state.trace,
+      stream,
+      cliEffort,
+      turn: turnNumber,
+      signal,
+      historyTurns: state.historyTurns,
+    });
+  let raw;
+  try {
+    raw = await call();
+  } catch (error) {
+    const retryLedger = state.cliPolicyRetryLedger || (state.cliPolicyRetryLedger = {});
+    const retryKey = 'tutor_stub_auto_learner:codex_policy';
+    const decision = tutorStubCliPolicyRetryDecision(error, { alreadyUsed: retryLedger[retryKey] === true });
+    appendTraceEvent(state.trace, {
+      type: 'cli_policy_retry_decision',
+      role: 'tutor_stub_auto_learner',
+      turn: turnNumber,
+      decision,
+      publicTranscriptChanged: false,
+    });
+    if (!decision.retry) throw error;
+    retryLedger[retryKey] = true;
+    raw = await call();
+  }
   return {
     ...raw,
     text: cleanAutomatedLearnerReply(raw.text),

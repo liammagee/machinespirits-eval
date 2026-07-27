@@ -566,6 +566,7 @@ function assertValidHostPlan(contract) {
  */
 export function buildTutorStubFirstDraftContract({
   learnerText = '',
+  publicQuestion = '',
   responseConfiguration = null,
   responseCompositionFrame = null,
   dramaticReleaseFrame = null,
@@ -664,6 +665,7 @@ export function buildTutorStubFirstDraftContract({
       : baseActionInstruction;
   const progression = compileTutorStubTurnProgressionContract({
     learnerText,
+    publicQuestion,
     responseCompositionFrame,
     dramaticReleaseFrame,
     dialogueClosureFrame,
