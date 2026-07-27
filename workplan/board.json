@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-27T04:40:16.647Z",
+  "generated": "2026-07-27T04:41:50.420Z",
   "counts": {
-    "total": 233,
+    "total": 234,
     "byStatus": {
       "done": 205,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
-      "review": 4,
+      "review": 5,
       "active": 8,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 56,
-      "maintenance": 66,
+      "maintenance": 67,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -689,6 +689,31 @@
         "governance",
         "skill"
       ]
+    },
+    {
+      "id": "repoint-learner-deliberation-claim-fingerprint",
+      "title": "Re-point the learner-deliberation claim fingerprint at the trace-schema module",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "`npm run paper:provable-discourse` reports 0 fail (was 1), `npm run paper:provable-discourse:test` passes 69/69, `node --test tests/traceSchema.test.js tests/adaptiveTraceProjection.test.js` passes, and `npm run lint` / `npm run refs:check` are clean.",
+      "links": {
+        "items": [
+          "refactor-adaptive-trace-projection"
+        ]
+      },
+      "tags": [
+        "provable-discourse",
+        "traces",
+        "refactoring",
+        "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "claude/wizardly-vaughan-9b35e0"
     },
     {
       "id": "workplan-commit-trailer-check",
