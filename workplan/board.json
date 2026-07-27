@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-27T04:25:38.037Z",
+  "generated": "2026-07-27T04:27:12.390Z",
   "counts": {
-    "total": 230,
+    "total": 231,
     "byStatus": {
       "done": 204,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
-      "review": 2,
+      "review": 3,
       "active": 8,
       "archived": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 54,
+      "infra": 55,
       "maintenance": 65,
       "content": 2,
       "ops": 8,
@@ -691,6 +691,37 @@
         "workplan",
         "governance",
         "skill"
+      ]
+    },
+    {
+      "id": "workplan-commit-trailer-check",
+      "title": "Commit-trailer check for work pushed straight to main",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "`npm run wp:commit-link` reads a commit message with the same grammar `wp:pr-link` reads a PR body, accepting `Workplan-item:` and `Workplan item:` and explicit N/A and rejecting an id no card defines; it walks the first-parent line only, exempts merge commits, squash-merge subjects and `workplan/`-only commits, and fails naming each unlinked commit; a push-to-main workflow runs it unfiltered by path; replayed over `2026-07-22..origin/main` it classifies 220 of 234 first-parent commits as exempt and reports exactly the 14 direct pushes the board audit found by hand.",
+      "claim_status": "planned",
+      "branch": "claude/workplan-commit-trailer-check",
+      "links": {
+        "code": [
+          "scripts/check-commit-workplan-trailer.js",
+          "scripts/lib/workplanLink.js",
+          "scripts/check-pr-workplan-link.js",
+          ".github/workflows/workplan-commit-trailer.yml",
+          "tests/workplan.test.js"
+        ],
+        "items": [
+          "big-picture-state-of-the-nation-skill-and-board-traceability"
+        ]
+      },
+      "tags": [
+        "workplan",
+        "governance",
+        "ci"
       ]
     },
     {
