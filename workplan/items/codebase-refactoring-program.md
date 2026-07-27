@@ -63,6 +63,7 @@ links:
     - refactor-tutor-stub-response-configuration-presentation
     - refactor-tutor-stub-response-policy-context
     - refactor-tutor-stub-tutor-prompt-context
+    - refactor-tutor-stub-dialogue-memory-context
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -574,3 +575,15 @@ Log:
   113/113 for the overlap neighborhood and fully green across all 527 selected
   root files plus 137/137 tutor-core tests; the 239-item source workplan and
   zero-cycle ratchet across 408 files also pass.
+- 2026-07-27 — PR #311 merged the tutor prompt-context child as `2713ea20`
+  with all ten CI lanes green; the serialized render followed as `1dcafabe`.
+  Closed that child and activated
+  `refactor-tutor-stub-dialogue-memory-context` to move adjacent public replay,
+  compact memory, message-context, and tutor-only classifier serializers while
+  retaining their state/default/runtime owners in the CLI.
+- 2026-07-27 — The dialogue-memory context child has 113 new lines across the
+  existing public-history and tutor-only prompt owners, an 80-line net CLI
+  reduction, a 944-byte golden compact-memory fixture, and 108/108 passing
+  prompt/replay neighborhood tests. It reached review with the full 528-file
+  root manifest and 137/137 tutor-core tests green, alongside all static,
+  manifest, ref, source-only workplan, and zero-cycle gates.

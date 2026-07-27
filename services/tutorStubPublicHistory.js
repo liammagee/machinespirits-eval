@@ -1,5 +1,13 @@
 const PUBLIC_MESSAGE_ROLES = new Set(['user', 'assistant']);
 
+function oneLine(value, { max = 220 } = {}) {
+  const text = String(value || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
+  if (text.length <= max) return text;
+  return `${text.slice(0, Math.max(0, max - 3))}...`;
+}
+
 function normalizedPublicMessages(messages) {
   return (Array.isArray(messages) ? messages : [])
     .filter((message) => PUBLIC_MESSAGE_ROLES.has(message?.role))
@@ -129,4 +137,92 @@ export function tutorStubPublicMessageContext(messages, { speaker = 'tutor', act
     assistantMessageCount: publicMessages.filter((message) => message.role === 'assistant').length,
     activatedBy,
   };
+}
+
+export function buildTutorStubTutorMessageContext(messages, { modelRef = null, activatedBy = 'session_start' } = {}) {
+  return {
+    ...tutorStubPublicMessageContext(messages, {
+      speaker: 'tutor',
+      activatedBy,
+    }),
+    modelRef,
+  };
+}
+
+export function renderTutorStubRawPublicTurnTranscript(turns, limit) {
+  const publicTurns = Array.isArray(turns) ? turns : [];
+  const safeLimit = Math.max(0, Number(limit) || 0);
+  const recent = safeLimit > 0 ? publicTurns.slice(-safeLimit) : [];
+  if (recent.length === 0) return 'No previous turns in the raw recent window.';
+  return recent
+    .map((turn, index) => {
+      const absoluteTurn = publicTurns.length - recent.length + index + 1;
+      return [`Turn ${absoluteTurn}`, `Learner: ${turn.learner}`, `Tutor: ${turn.tutor}`].join('\n');
+    })
+    .join('\n\n');
+}
+
+export function projectTutorStubPublicDialogueMemorySummary(turns, { historyTurns = 0, includeAnalysis = true } = {}) {
+  const publicTurns = Array.isArray(turns) ? turns : [];
+  if (publicTurns.length === 0) return 'No previous public dialogue to summarize.';
+
+  const rawWindow = Math.max(0, Number(historyTurns) || 0);
+  const older = rawWindow > 0 ? publicTurns.slice(0, Math.max(0, publicTurns.length - rawWindow)) : publicTurns;
+  const latest = publicTurns.at(-1);
+  const latestClassification = latest?.classification || {};
+  const lines = [
+    '[Compact public dialogue memory]',
+    `Completed public turns: ${publicTurns.length}; raw recent window: ${Math.min(rawWindow, publicTurns.length)} turn(s).`,
+    older.length ? `Older turns compressed: 1-${older.length}.` : 'Older turns compressed: none yet.',
+  ];
+
+  if (older.length) {
+    lines.push('Older public milestones:');
+    for (const turn of older.slice(-6)) {
+      lines.push(
+        `- T${turn.turn}: learner ${oneLine(turn.learner, { max: 120 })}; tutor ${oneLine(turn.tutor, {
+          max: 150,
+        })}`,
+      );
+    }
+  }
+
+  if (includeAnalysis && latest) {
+    lines.push('Latest public learner analysis:');
+    lines.push(`- This turn: ${latestClassification.turn?.summary || oneLine(latest.learner, { max: 160 })}`);
+    lines.push(`- Overall: ${latestClassification.overall?.summary || 'No public overall summary yet.'}`);
+    lines.push(
+      `- Trajectory: ${
+        latestClassification.overall?.trajectory ||
+        latestClassification.overall?.current_state ||
+        'No public trajectory summary yet.'
+      }`,
+    );
+    lines.push(
+      `- Next likely need: ${
+        latestClassification.turn?.pedagogical_need ||
+        latestClassification.overall?.next_best_tutor_move ||
+        'Ask one concrete evidence-generating question.'
+      }`,
+    );
+  }
+
+  lines.push('[End compact public dialogue memory]');
+  return lines.join('\n');
+}
+
+export function projectTutorStubCompactPublicTranscript(
+  turns,
+  limit,
+  { memoryEnabled = false, historyTurns = 0, includeAnalysis = true } = {},
+) {
+  const publicTurns = Array.isArray(turns) ? turns : [];
+  const rawTranscript = renderTutorStubRawPublicTurnTranscript(publicTurns, limit);
+  if (!memoryEnabled || publicTurns.length === 0) return rawTranscript;
+  return [
+    projectTutorStubPublicDialogueMemorySummary(publicTurns, { historyTurns, includeAnalysis }),
+    '[Raw recent public transcript]',
+    rawTranscript,
+    '[End raw recent public transcript]',
+  ].join('\n\n');
 }

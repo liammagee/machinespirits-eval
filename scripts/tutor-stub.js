@@ -404,8 +404,9 @@ import {
   tutorStubOpeningSystemPrompt,
 } from '../services/tutorStubOpening.js';
 import {
+  buildTutorStubTutorMessageContext,
   compactTutorStubPublicMessagesForBudget,
-  tutorStubPublicMessageContext,
+  projectTutorStubCompactPublicTranscript,
   tutorStubPublicMessagesForSpeaker,
 } from '../services/tutorStubPublicHistory.js';
 import { buildTutorStubLearnerAdvance } from '../services/tutorStubLearnerAdvance.js';
@@ -435,6 +436,7 @@ import { projectTutorStubResponsePolicyContext } from '../services/tutorStubResp
 import {
   projectTutorStubDialogueClosureContext,
   projectTutorStubHumanDiscourseContext,
+  projectTutorStubLearnerClassifierContext,
   projectTutorStubLearnerDagModelContext,
 } from '../services/tutorStubTutorPromptContext.js';
 import {
@@ -8262,104 +8264,22 @@ function createLearnerDagState({ enabled, modelRef = null, resolved, world, drop
 }
 
 function tutorMessageContext(state, history) {
-  const context = tutorStubPublicMessageContext(history, {
-    speaker: 'tutor',
+  return buildTutorStubTutorMessageContext(history, {
+    modelRef: state?.modelRef || null,
     activatedBy: state?.tutorContext?.activatedBy || 'session_start',
   });
-  return {
-    ...context,
-    modelRef: state?.modelRef || null,
-  };
-}
-
-function rawPublicTurnTranscript(turns, limit) {
-  const safeLimit = Math.max(0, Number(limit) || 0);
-  const recent = safeLimit > 0 ? turns.slice(-safeLimit) : [];
-  if (recent.length === 0) return 'No previous turns in the raw recent window.';
-  return recent
-    .map((turn, index) => {
-      const absoluteTurn = turns.length - recent.length + index + 1;
-      return [`Turn ${absoluteTurn}`, `Learner: ${turn.learner}`, `Tutor: ${turn.tutor}`].join('\n');
-    })
-    .join('\n\n');
-}
-
-function publicDialogueMemorySummary(state, { includeAnalysis = true } = {}) {
-  const turns = state?.turns || [];
-  if (turns.length === 0) return 'No previous public dialogue to summarize.';
-
-  const rawWindow = Math.max(0, Number(state?.historyTurns ?? STUB.historyTurns) || 0);
-  const older = rawWindow > 0 ? turns.slice(0, Math.max(0, turns.length - rawWindow)) : turns;
-  const latest = turns.at(-1);
-  const latestClassification = latest?.classification || {};
-  const lines = [
-    '[Compact public dialogue memory]',
-    `Completed public turns: ${turns.length}; raw recent window: ${Math.min(rawWindow, turns.length)} turn(s).`,
-    older.length ? `Older turns compressed: 1-${older.length}.` : 'Older turns compressed: none yet.',
-  ];
-
-  if (older.length) {
-    lines.push('Older public milestones:');
-    for (const turn of older.slice(-6)) {
-      lines.push(
-        `- T${turn.turn}: learner ${oneLine(turn.learner, { max: 120 })}; tutor ${oneLine(turn.tutor, {
-          max: 150,
-        })}`,
-      );
-    }
-  }
-
-  if (includeAnalysis && latest) {
-    lines.push('Latest public learner analysis:');
-    lines.push(`- This turn: ${latestClassification.turn?.summary || oneLine(latest.learner, { max: 160 })}`);
-    lines.push(`- Overall: ${latestClassification.overall?.summary || 'No public overall summary yet.'}`);
-    lines.push(
-      `- Trajectory: ${
-        latestClassification.overall?.trajectory ||
-        latestClassification.overall?.current_state ||
-        'No public trajectory summary yet.'
-      }`,
-    );
-    lines.push(
-      `- Next likely need: ${
-        latestClassification.turn?.pedagogical_need ||
-        latestClassification.overall?.next_best_tutor_move ||
-        'Ask one concrete evidence-generating question.'
-      }`,
-    );
-  }
-
-  lines.push('[End compact public dialogue memory]');
-  return lines.join('\n');
 }
 
 function compactPublicTranscriptForPrompt(state, limit, { includeAnalysis = true } = {}) {
-  const turns = state?.turns || [];
-  const rawTranscript = rawPublicTurnTranscript(turns, limit);
-  if (!state?.memory?.enabled || turns.length === 0) return rawTranscript;
-  return [
-    publicDialogueMemorySummary(state, { includeAnalysis }),
-    '[Raw recent public transcript]',
-    rawTranscript,
-    '[End raw recent public transcript]',
-  ].join('\n\n');
+  return projectTutorStubCompactPublicTranscript(state?.turns || [], limit, {
+    memoryEnabled: Boolean(state?.memory?.enabled),
+    historyTurns: state?.historyTurns ?? STUB.historyTurns,
+    includeAnalysis,
+  });
 }
 
 function classifierTutorContext(classification) {
-  if (!classification) return '';
-  return [
-    '[Tutor-only learner classifier]',
-    `This turn: ${classification.turn?.summary || 'No turn summary.'}`,
-    `Overall: ${classification.overall?.summary || 'No overall summary.'}`,
-    `Discourse move: ${classification.turn?.discourse_move || 'unknown'}`,
-    `Evidence use: ${classification.turn?.evidence_use || 'unknown'}`,
-    `Epistemic stance: ${classification.turn?.epistemic_stance || 'unknown'}`,
-    `Immediate pedagogical need: ${
-      classification.turn?.pedagogical_need || classification.overall?.next_best_tutor_move || 'unknown'
-    }`,
-    'Use this as advisory context. Do not mention classifier labels, scores, rubrics, or hidden analysis to the learner.',
-    '[End tutor-only learner classifier]',
-  ].join('\n');
+  return projectTutorStubLearnerClassifierContext(classification);
 }
 
 function dagNodeFact(node) {
