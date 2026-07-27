@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-27T04:37:36.924Z",
+  "generated": "2026-07-27T04:40:16.647Z",
   "counts": {
-    "total": 232,
+    "total": 233,
     "byStatus": {
-      "done": 204,
+      "done": 205,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
-      "review": 3,
-      "active": 9,
+      "review": 4,
+      "active": 8,
       "archived": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 55,
+      "infra": 56,
       "maintenance": 66,
       "content": 2,
       "ops": 8,
@@ -456,36 +456,6 @@
       "branch": "claude/tutor-instrumentation-ab"
     },
     {
-      "id": "tutor-instrumentation-showcase",
-      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-27",
-      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-instrumentation-ab-harness"
-      ],
-      "links": {
-        "notes": [
-          "docs/tutor-instrumentation-showcase.md"
-        ],
-        "items": [
-          "tutor-instrumentation-ab-harness"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "instrument",
-        "demo"
-      ],
-      "branch": "claude/tutor-closure-drive"
-    },
-    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -749,6 +719,31 @@
         "workplan",
         "governance",
         "ci"
+      ]
+    },
+    {
+      "id": "hermetic-test-manifest-scanner-must-skip-gitignored-paths-ne",
+      "title": "Skip gitignored paths when scanning for hermetic test-manifest drift",
+      "status": "review",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "With two nested `.claude/worktrees/<name>/` checkouts on disk, `npm run test:manifest` reports 88 KB of false drift before the change and \"Hermetic test manifest is synchronized.\" after it; the git and filesystem enumerations agree file-for-file on the real repository (533 files each, empty symmetric difference) once `.claude/` is removed, so nothing else moved in or out of the contract; all three genuine drift classes are still reported — unregistered `tests/`, unregistered `tutor-core/services/__tests__/`, and an unclassified `routes/` test; two new tests in tests/hermeticTestRunner.test.js fail against the unfixed scanner and pass against the fixed one; the full file is 36/36, and both root shards plus the core suite run 7362 tests with 5 failures, each of which reproduces identically on HEAD (two worktree-basename assertions, three file loads needing this worktree's symlinked node_modules); lint, prettier, refs:check, lint:cycles, and workplan validation pass.",
+      "branch": "claude/zealous-heyrovsky-357f4b",
+      "links": {
+        "prs": [],
+        "notes": [],
+        "items": [
+          "hermetic-tap-summary-on-forced-exit"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "hermetic"
       ]
     },
     {
@@ -6726,6 +6721,36 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "tutor-instrumentation-showcase",
+      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-27",
+      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way; and each scoring pass (`npm run tutor:stub:showcase:rubric`, `npm run tutor:stub:showcase:pr-benchmark`) writes its own artifact beside report.json and re-renders transcripts.html, so a run scored by both instruments, by one, or by neither shows the scores it actually has and names the axes nobody asked.",
+      "claim_status": "methods",
+      "depends_on": [
+        "tutor-instrumentation-ab-harness"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-instrumentation-showcase.md"
+        ],
+        "items": [
+          "tutor-instrumentation-ab-harness"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "instrument",
+        "demo"
+      ],
+      "branch": "claude/showcase-score-overlay"
     },
     {
       "id": "tutor-stub-curriculum-mastery-runtime",
