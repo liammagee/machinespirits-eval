@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-dialogue-memory-context
 title: Refactor tutor-stub dialogue-memory and classifier prompt context
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-tutor-prompt-context
 links:
+  prs:
+    - 312
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -91,3 +93,7 @@ Log:
   manifest, 240-item source-only workplan, current ref registry, ESLint,
   Prettier, syntax, diff, and zero-cycle ratchet across 408 files all pass on
   current `origin/main` at `1dcafabe`.
+- 2026-07-27 — PR #312 merged this child as `0bbd95a5` with all ten CI lanes
+  green; the serialized workplan render followed as `2f38e863`. Closed this
+  child and activated the shared analysis-vocabulary extraction on
+  `codex/refactor-tutor-stub-analysis-vocabulary`.

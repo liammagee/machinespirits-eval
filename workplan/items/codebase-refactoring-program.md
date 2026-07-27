@@ -64,6 +64,7 @@ links:
     - refactor-tutor-stub-response-policy-context
     - refactor-tutor-stub-tutor-prompt-context
     - refactor-tutor-stub-dialogue-memory-context
+    - refactor-tutor-stub-analysis-vocabulary
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -587,3 +588,13 @@ Log:
   prompt/replay neighborhood tests. It reached review with the full 528-file
   root manifest and 137/137 tutor-core tests green, alongside all static,
   manifest, ref, source-only workplan, and zero-cycle gates.
+- 2026-07-27 — PR #312 merged the dialogue-memory context child as `0bbd95a5`
+  with all ten CI lanes green; the serialized render followed as `2f38e863`.
+  Closed that child and activated `refactor-tutor-stub-analysis-vocabulary` to
+  move shared pure policy/signal/strategy copy into the existing
+  response-details owner before extracting the larger turn-analysis renderer.
+- 2026-07-27 — The analysis-vocabulary child adds 62 lines to the existing
+  presentation owner, reduces the CLI by 59 net lines, and passes 62/62 direct
+  and shared settings/status/interim/command tests. It reached review with all
+  528 required root files and 137/137 tutor-core tests green, alongside all
+  static, manifest, ref, source-only workplan, and zero-cycle gates.
