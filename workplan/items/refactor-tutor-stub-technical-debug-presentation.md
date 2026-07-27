@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-technical-analysis-projection
 links:
+  prs:
+    - 319
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -96,3 +98,5 @@ Log:
   and voice files pass independently at 4/4 and 2/2. PR CI therefore remains
   the final full-root certification for this base rather than misreporting the
   loaded-host run as green.
+- 2026-07-28 — Opened PR #319 from the clean, parity-pinned review branch;
+  PR CI is the final full-root certification on the rebased commit.
