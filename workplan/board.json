@@ -1,14 +1,14 @@
 {
-  "generated": "2026-07-27T13:38:36.084Z",
+  "generated": "2026-07-27T14:01:19.551Z",
   "counts": {
     "total": 243,
     "byStatus": {
-      "done": 212,
+      "done": 211,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
       "review": 7,
-      "active": 8,
+      "active": 9,
       "archived": 4
     },
     "byType": {
@@ -460,6 +460,36 @@
         "frozen-replay"
       ],
       "branch": "claude/tutor-instrumentation-ab"
+    },
+    {
+      "id": "tutor-instrumentation-showcase",
+      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-27",
+      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way; each scoring pass (`npm run tutor:stub:showcase:rubric`, `npm run tutor:stub:showcase:pr-benchmark`) writes its own artifact beside report.json and re-renders transcripts.html, so a run scored by both instruments, by one, or by neither shows the scores it actually has and names the axes nobody asked; and `--rubric-version 3.0` writes `rubric-v3.0.json` beside the v2.2 artifact rather than over it, with the page rendering the two versions as separate labelled blocks that are never averaged.",
+      "claim_status": "methods",
+      "depends_on": [
+        "tutor-instrumentation-ab-harness"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-instrumentation-showcase.md"
+        ],
+        "items": [
+          "tutor-instrumentation-ab-harness"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "instrument",
+        "demo"
+      ],
+      "branch": "claude/showcase-rubric-v3"
     },
     {
       "id": "a1-human-learner-validation",
@@ -7141,36 +7171,6 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
-    },
-    {
-      "id": "tutor-instrumentation-showcase",
-      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
-      "status": "done",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-27",
-      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way; and each scoring pass (`npm run tutor:stub:showcase:rubric`, `npm run tutor:stub:showcase:pr-benchmark`) writes its own artifact beside report.json and re-renders transcripts.html, so a run scored by both instruments, by one, or by neither shows the scores it actually has and names the axes nobody asked.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-instrumentation-ab-harness"
-      ],
-      "links": {
-        "notes": [
-          "docs/tutor-instrumentation-showcase.md"
-        ],
-        "items": [
-          "tutor-instrumentation-ab-harness"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "instrument",
-        "demo"
-      ],
-      "branch": "claude/showcase-score-overlay"
     },
     {
       "id": "tutor-stub-curriculum-mastery-runtime",
