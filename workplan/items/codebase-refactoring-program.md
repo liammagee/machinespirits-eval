@@ -60,6 +60,7 @@ links:
     - refactor-tutor-stub-director-presentation
     - refactor-tutor-stub-learner-dag-presentation
     - refactor-tutor-stub-learner-classification-presentation
+    - refactor-tutor-stub-response-configuration-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -509,3 +510,27 @@ Log:
   `origin/main` at `f32ffbb7` after PRs #288, #290, and #291. The manifest-only
   overlap composes cleanly: 295/295 overlap assertions, 7,229/7,229 root tests
   across 521 files, and 137/137 tutor-core tests pass with zero skips.
+- 2026-07-27 — PR #295 merged the learner-classifier child as `7080678e` with
+  every behavioral lane green. Its sole failed job was the unrelated stale
+  ref-status gate after `paper/v3.0.230`; PR #296 repairs that generated line.
+  Closed the child and activated
+  `refactor-tutor-stub-response-configuration-presentation` to move only
+  normalized efficacy and engagement-stance line serialization while
+  retaining policy/state calculations, formatting helpers, debug gating,
+  callers, traces, and terminal writes in the CLI.
+- 2026-07-27 — The response-configuration presentation child reached review
+  with one dependency-free projector, a 68-line net CLI reduction,
+  byte-identical live technical output, 338/338 focused assertions, and
+  complete root 7,234-test plus tutor-core 137-test zero-skip parity on the
+  temporary PR #296 stack. Policy/state calculations, three helper-derived
+  display values, debug gating, call sites, traces, and terminal writes remain
+  CLI-owned.
+- 2026-07-27 — PR #296 merged as `eff8e9ae` with every CI lane green, so the
+  response-configuration child was unstacked and rebased through PR #297 onto
+  `origin/main` at `b185756e`. Final-base parity passes 7,239/7,239 root tests
+  across 522 files and 137/137 tutor-core tests with zero skips; the disjoint
+  skill-permission overlap passes 7/7.
+- 2026-07-27 — Rebased the response-configuration child onto `origin/main` at
+  `5589017d` after PRs #300 and #301. The incoming big-picture skill and
+  workplan-only changes are runtime-disjoint, and the skill-sync plus
+  response-presenter boundary passes 7/7.
