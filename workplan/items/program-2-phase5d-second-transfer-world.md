@@ -249,3 +249,10 @@ path with per-trace SHA-256 binding. No R2 paid call is authorized or has run.
 R1 cost: one attended Max-plan sonnet + codex terra cohort; local mini free;
 no Lambda and no training. R2 free preparation adds no model calls. Any R2
 pilot, cohort, or seam cost remains separately gated.
+
+2026-07-27 Codex: The first authorized R2 pilot launch stopped before provider
+preflight because launch mode overwrote its own certificate-bound
+`launch-plan.json` with runtime metadata, producing a deterministic hash
+mismatch. No pilot model call ran. Launch runtime metadata now writes to
+`launch-attempt.json`; the prepared plan remains byte-stable through certificate
+validation, with regression coverage for both missing and invalid evidence.

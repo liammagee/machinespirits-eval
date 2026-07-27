@@ -876,10 +876,15 @@ async function main() {
     );
   }
   fs.mkdirSync(outputRoot, { recursive: true });
-  const jsonPath = path.join(outputRoot, launch || prepareCertificate ? 'launch-plan.json' : 'zero-model-dry-run.json');
-  fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
+  const launchPlanPath = path.join(outputRoot, 'launch-plan.json');
+  const jsonPath = launch
+    ? path.join(outputRoot, 'launch-attempt.json')
+    : prepareCertificate
+      ? launchPlanPath
+      : path.join(outputRoot, 'zero-model-dry-run.json');
   const certificatePath = path.join(outputRoot, 'launch-certificate.json');
   if (prepareCertificate) {
+    fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
     console.log(`[phase5] certificate plan PASS; 0 model calls; ${plan.jobs.length} jobs planned`);
     console.log(
       formatProgram2LaunchCertificateReminder({
@@ -895,6 +900,7 @@ async function main() {
     return;
   }
   if (!launch) {
+    fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
     console.log(`[phase5] zero-model gate PASS; 0 model calls; ${plan.jobs.length} jobs planned`);
     console.log(`[phase5] ${path.relative(ROOT, jsonPath)}`);
     return;
@@ -906,7 +912,7 @@ async function main() {
         planKey,
         phase: planTable[planKey].certificatePhase,
         plan,
-        planFile: jsonPath,
+        planFile: launchPlanPath,
         certificateFile: certificatePath,
         outputRoot,
         sourceSha: values['expected-sha'],
@@ -938,9 +944,10 @@ async function main() {
     sha256: createHash('sha256').update(certificateBytes).digest('hex'),
     phase: launchCertificate.phase,
   };
-  fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
   const launchSha = assertLaunchAuthorization(values['expected-sha']);
   artifact.launchSha = launchSha;
+  // The certificate binds launch-plan.json byte-for-byte. Keep that prepared
+  // evidence immutable and record runtime authorization in a separate artifact.
   fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
   await ollamaPreflight(PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl, PHASE5_LIVE_PILOT_SPEC.committeeMiniModel);
   console.log(`[phase5] ollama preflight OK: ${PHASE5_LIVE_PILOT_SPEC.committeeMiniModel} present`);
