@@ -2,7 +2,6 @@
 name: ms-author-paper2
 description: Reproducible recipe for authoring Paper 2.0 sections with maximum traceability
 argument-hint: "<section> [--verify-only] [--claims-only] [--diff]"
-allowed-tools: Bash, Read, Grep, Glob, Write, Edit, Agent
 ---
 
 Reproducible authoring recipe for Paper 2.0 sections that do not depend on evaluation runs.

@@ -2,7 +2,6 @@
 name: ms-clean-runs
 description: Identify and remove stalled, failed, or test-artifact evaluation runs from the database
 argument-hint: "[stalled | artifacts | all]"
-allowed-tools: Bash, Read
 ---
 
 Identify and clean up problematic evaluation runs from `data/evaluations.db`.

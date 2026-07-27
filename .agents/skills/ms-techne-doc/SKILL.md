@@ -1,7 +1,6 @@
 ---
 name: ms-techne-doc
 description: Create, edit, view, or package a "techne doc" — a hand-authored editorial HTML note (like the dramatic-recognition arc / "summary arc") built against the shared techne.css + techne.js framework. Use when asked to make, edit, update, rebuild, view, or share the arc note, the summary arc, or a new techne/editorial HTML note. These docs are edited as HTML directly — there is no build step.
-allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 ---
 
 Work on **techne docs** — hand-authored editorial HTML notes against a shared framework. Read the full convention first: `notes/poetics/TECHNE-DOCS.md`.

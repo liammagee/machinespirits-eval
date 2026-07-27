@@ -2,7 +2,6 @@
 name: ms-research-review
 description: Review recent daily research roundups, synthesize them, and produce a prioritized, project-grounded action plan
 argument-hint: "[window, e.g. 'last 7' or a date like 2026-06-09]"
-allowed-tools: Bash, Read, Grep, Glob, Write, WebFetch, WebSearch
 ---
 
 Turn the accumulated daily research roundups into an actionable plan. The roundups

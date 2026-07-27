@@ -2,7 +2,6 @@
 name: ms-workplan
 description: Read, capture, triage and update project work on the workplan board (workplan/ folder + scripts/workplan.js)
 argument-hint: <request, e.g. "what's active", "capture: <idea>", "what's blocked on budget">
-allowed-tools: Bash, Read, Write, Edit
 ---
 
 Route the user's request (`$ARGUMENTS`) to the workplan board. The board lives in

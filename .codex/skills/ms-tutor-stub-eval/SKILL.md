@@ -1,7 +1,6 @@
 ---
 name: ms-tutor-stub-eval
 description: Run, resume, analyze, or configure the tutor-stub detective-world tutor experiments, including human-driven tutor sessions, automated single-learner policy evals, ABM learner panels, field/state reports, register-policy comparisons, multi-eval/cross-run summaries, cross-run field trajectories, and quota/token-failure recovery.
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 # Tutor Stub Eval
