@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-27T05:19:18.862Z",
+  "generated": "2026-07-27T05:48:58.416Z",
   "counts": {
-    "total": 238,
+    "total": 239,
     "byStatus": {
-      "done": 207,
+      "done": 208,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 47,
       "experiment": 49,
       "infra": 58,
-      "maintenance": 68,
+      "maintenance": 69,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -200,6 +200,8 @@
           "refactor-tutor-stub-learner-dag-presentation",
           "refactor-tutor-stub-learner-classification-presentation",
           "refactor-tutor-stub-response-configuration-presentation",
+          "refactor-tutor-stub-response-policy-context",
+          "refactor-tutor-stub-tutor-prompt-context",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -623,8 +625,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-response-policy-context",
-      "title": "Refactor tutor-stub response-policy context projection",
+      "id": "refactor-tutor-stub-tutor-prompt-context",
+      "title": "Refactor tutor-stub tutor prompt context projections",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -632,38 +634,40 @@
       "source": "review",
       "created": "2026-07-27",
       "updated": "2026-07-27",
-      "verification": "Tutor-only response configuration and policy prompt bytes remain exact while focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-response-policy-context",
+      "verification": "Redacted learner-DAG, human-discourse, and dialogue-closure prompt bytes remain exact while focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-tutor-prompt-context",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-response-configuration-presentation"
+        "refactor-tutor-stub-response-policy-context"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubResponsePolicyContext.js",
+          "services/tutorStubTutorPromptContext.js",
           "scripts/tutor-stub.js",
+          "tests/tutorStubTutorPromptContext.test.js",
           "tests/tutorStubResponsePolicyContext.test.js",
-          "tests/tutorStubResponseConfigurationPresentation.test.js",
           "tests/tutorStubPromptBehavior.test.js",
-          "tests/tutorStubTypedActionAdapter.test.js",
-          "tests/tutorStubResponseComposition.test.js",
-          "tests/tutorStubInteractivePerformance.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "services/__tests__/tutorStubDialogueClosure.test.js",
+          "tests/tutorStubAbHarness.test.js",
+          "tests/tutorStubPromptSizeReport.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-response-configuration-presentation"
+          "refactor-tutor-stub-response-policy-context"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
         "prompt",
-        "response-configuration",
-        "policy-context"
+        "learner-dag",
+        "human-discourse",
+        "dialogue-closure"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -3659,6 +3663,54 @@
         "tutor-stub",
         "presentation",
         "response-details"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-response-policy-context",
+      "title": "Refactor tutor-stub response-policy context projection",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Tutor-only response configuration and policy prompt bytes remain exact while focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-response-policy-context",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-response-configuration-presentation"
+      ],
+      "links": {
+        "prs": [
+          309
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubResponsePolicyContext.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubResponsePolicyContext.test.js",
+          "tests/tutorStubResponseConfigurationPresentation.test.js",
+          "tests/tutorStubPromptBehavior.test.js",
+          "tests/tutorStubTypedActionAdapter.test.js",
+          "tests/tutorStubResponseComposition.test.js",
+          "tests/tutorStubInteractivePerformance.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-response-configuration-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "prompt",
+        "response-configuration",
+        "policy-context"
       ],
       "milestone": "evaluation-infrastructure"
     },
