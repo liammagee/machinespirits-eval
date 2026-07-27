@@ -173,7 +173,25 @@ async function main() {
 
   const rubric = evalConfigLoader.loadRubric();
   const rubricVersion = String(rubric?.version || 'unknown');
-  const dimensionKeys = Object.keys(evalConfigLoader.getRubricDimensions());
+  const rubricDimensions = evalConfigLoader.getRubricDimensions();
+  const dimensionKeys = Object.keys(rubricDimensions);
+
+  // Each dimension's declared range and weight, resolved through the same
+  // per-dimension-then-rubric fallback the scoring engine itself uses, and
+  // recorded in the artefact.
+  //
+  // Without this the artefact holds raw scores whose scale is nowhere stated,
+  // and anything that later plots them has to guess — which matters exactly when
+  // a rubric mixes scales, as v3.0's 1-10 quality dimension beside its 1-5
+  // accuracy one does. Writing the range down at scoring time also pins it to the
+  // rubric revision that produced the numbers, so a later edit to the YAML cannot
+  // retroactively relabel an artefact already on disk.
+  const dimensionScales = Object.fromEntries(
+    dimensionKeys.map((key) => {
+      const scale = rubricDimensions[key]?.scale || rubric?.scale || { min: 1, max: 5 };
+      return [key, { min: Number(scale.min ?? 1), max: Number(scale.max ?? 5), weight: rubricDimensions[key]?.weight }];
+    }),
+  );
 
   const jobs = [];
   for (const result of report.results || []) {
@@ -243,6 +261,7 @@ async function main() {
     rubricVersion,
     judge: args.judge,
     turns: args.turns,
+    dimensionScales,
     // Restated in the artefact so a reader who opens the JSON alone still meets
     // the limitation before the numbers.
     limitation:

@@ -71,6 +71,11 @@ function tutorRubricSide(payload) {
     judge: payload.judge || null,
     turnsScored: payload.turns || null,
     limitation: payload.limitation || null,
+    // Declared range and weight per dimension, absent on artefacts written
+    // before the scorer recorded them. Anything plotting raw dimension scores
+    // needs the range; `null` here means the consumer must say what it assumed
+    // instead of assuming silently.
+    dimensionScales: payload.dimensionScales || null,
     byTurn: indexRows(payload.rows),
   };
 }
