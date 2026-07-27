@@ -1,7 +1,7 @@
 ---
 id: tutor-instrumentation-showcase
 title: Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close
-status: done
+status: active
 type: infra
 priority: P2
 owner: claude
@@ -13,11 +13,13 @@ verification: "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero
   report.md, and a turn-aligned two-column transcripts.html; each arm's resolution
   verdict comes from the stub's own closure lifecycle, and guard coverage is read
   from the stub's `tutor_response_guard_accounting` rows rather than from the audit
-  records the turn carries either way; and each scoring pass
+  records the turn carries either way; each scoring pass
   (`npm run tutor:stub:showcase:rubric`, `npm run tutor:stub:showcase:pr-benchmark`)
   writes its own artifact beside report.json and re-renders transcripts.html, so a
   run scored by both instruments, by one, or by neither shows the scores it actually
-  has and names the axes nobody asked."
+  has and names the axes nobody asked; and `--rubric-version 3.0` writes
+  `rubric-v3.0.json` beside the v2.2 artifact rather than over it, with the page
+  rendering the two versions as separate labelled blocks that are never averaged."
 claim_status: methods
 depends_on:
   - tutor-instrumentation-ab-harness
@@ -30,7 +32,7 @@ tags:
   - tutor-stub
   - instrument
   - demo
-branch: claude/showcase-score-overlay
+branch: claude/showcase-rubric-v3
 ---
 
 The frozen A/B answers what a given advisory block buys on one recorded turn.
@@ -194,6 +196,32 @@ Design decisions worth keeping:
   instrumented hardest (61.3 → 17.5). At two scored turns per arm per scenario
   neither pattern is evidence — the point is that the pooled number concealed the
   split.
+
+- **A rubric version is a filename, not a mode.** `--rubric-version <v>` points
+  `evalConfigLoader`'s existing override at `config/rubrics/v<v>/evaluation-rubric.yaml`
+  and every consumer follows, because `loadRubric` is the single door the
+  dimension list, the judge prompt and the weighted aggregate all pass through.
+  The judge *model* is the deliberate exception: `--judge` still wins, so v3.0's
+  own `fallback: openrouter.nemotron` can never quietly answer for a sonnet-class
+  judge. The artifact is named for the rubric that produced it, and the overlay
+  carries `tutorV30` as a slot of its own rather than generalising `tutorV22`
+  into a version-agnostic one — a shared slot would render whichever version was
+  scored last under a single unlabelled heading, which is exactly the mixing
+  v3.0's own header forbids. The page states that the two blocks are not
+  comparable, and gives the reason: v3.0 is 1–10 pedagogical quality plus 1–5
+  content accuracy, each normalised on its own declared scale, with a turn whose
+  content accuracy is `n/a` renormalising onto the single remaining dimension —
+  so even two v3.0 turns can rest on different effective compositions. `n/a` and
+  `—` stay distinct in the markdown table for the same reason.
+- **v3.0 needed no scoring-engine change, which is the finding of the review.**
+  The two places a mixed-scale rubric would most plausibly break were already
+  handled in `services/rubricScoring.js`: each dimension normalises against
+  `dimension.scale || rubric.scale || {min:1,max:5}` before weighting, and
+  `calculateWeightedRubricScore` skips `not_applicable` entries and divides by
+  the accumulated weight. The fallback chain is what makes this additive rather
+  than a migration — a v2.2 dimension with no `scale` of its own takes the
+  historical path and computes the identical number, so there is no version
+  branch anywhere in the engine.
 
 Standing limitation, stated in the config, the service header, `report.md`, and
 on the rendered page: **this is not a controlled comparison.** Each arm has its

@@ -31,9 +31,16 @@ import path from 'node:path';
 
 export const TUTOR_STUB_SHOWCASE_OVERLAY_SCHEMA = 'machinespirits.tutor-stub.showcase-score-overlay.v1';
 
+/**
+ * One slot per artefact filename. v3.0 gets its own slot rather than sharing a
+ * generic "tutor rubric" one, because a shared slot would show whichever version
+ * happened to be scored last under a single heading — the mixing v3.0's own
+ * header forbids. A separate slot forces the page to name the version.
+ */
 export const SHOWCASE_OVERLAY_ARTIFACTS = Object.freeze({
   prBenchmark: 'rubric-pr-benchmark-1.0.json',
   tutorV22: 'rubric-v2.2.json',
+  tutorV30: 'rubric-v3.0.json',
 });
 
 function turnKey(dialogueId, turnIndex) {
@@ -50,14 +57,38 @@ function indexRows(rows) {
 }
 
 /**
- * Build the overlay from already-parsed artefact payloads. Pure: no fs, no
- * paths. Either side may be absent, and an overlay with neither is `null` so
- * the renderer can fall through to its unscored shape rather than drawing an
- * empty scoring panel.
+ * Tutor-rubric side, shared by every rubric version. The versions differ in what
+ * they ask a judge, not in the shape of a scored turn, so one reader serves them
+ * all and a further version costs a filename rather than a parallel code path.
+ *
+ * `turns` is the scoring script's own selector ("first-last" by default). The
+ * page needs it to explain why turn 5 has no score.
  */
-export function buildShowcaseScoreOverlay({ prBenchmark = null, tutorV22 = null } = {}) {
-  if (!prBenchmark && !tutorV22) return null;
-  const overlay = { schema: TUTOR_STUB_SHOWCASE_OVERLAY_SCHEMA, prBenchmark: null, tutorV22: null };
+function tutorRubricSide(payload) {
+  if (!payload) return null;
+  return {
+    rubricVersion: payload.rubricVersion || null,
+    judge: payload.judge || null,
+    turnsScored: payload.turns || null,
+    limitation: payload.limitation || null,
+    byTurn: indexRows(payload.rows),
+  };
+}
+
+/**
+ * Build the overlay from already-parsed artefact payloads. Pure: no fs, no
+ * paths. Any side may be absent, and an overlay with none is `null` so the
+ * renderer can fall through to its unscored shape rather than drawing an empty
+ * scoring panel.
+ */
+export function buildShowcaseScoreOverlay({ prBenchmark = null, tutorV22 = null, tutorV30 = null } = {}) {
+  if (!prBenchmark && !tutorV22 && !tutorV30) return null;
+  const overlay = {
+    schema: TUTOR_STUB_SHOWCASE_OVERLAY_SCHEMA,
+    prBenchmark: null,
+    tutorV22: null,
+    tutorV30: null,
+  };
 
   if (prBenchmark) {
     overlay.prBenchmark = {
@@ -76,17 +107,8 @@ export function buildShowcaseScoreOverlay({ prBenchmark = null, tutorV22 = null 
     };
   }
 
-  if (tutorV22) {
-    overlay.tutorV22 = {
-      rubricVersion: tutorV22.rubricVersion || null,
-      judge: tutorV22.judge || null,
-      // `turns` is the scoring script's own selector ("first-last" by default).
-      // The page needs it to explain why turn 5 has no score.
-      turnsScored: tutorV22.turns || null,
-      limitation: tutorV22.limitation || null,
-      byTurn: indexRows(tutorV22.rows),
-    };
-  }
+  overlay.tutorV22 = tutorRubricSide(tutorV22);
+  overlay.tutorV30 = tutorRubricSide(tutorV30);
 
   return overlay;
 }
@@ -122,11 +144,12 @@ export function loadShowcaseScoreOverlay(runDir) {
  * a clean result.
  */
 export function showcaseTurnScores(overlay, dialogueId, turnIndex) {
-  if (!overlay) return { prBenchmark: null, tutorV22: null };
+  if (!overlay) return { prBenchmark: null, tutorV22: null, tutorV30: null };
   const key = turnKey(dialogueId, turnIndex);
   return {
     prBenchmark: overlay.prBenchmark?.byTurn[key] || null,
     tutorV22: overlay.tutorV22?.byTurn[key] || null,
+    tutorV30: overlay.tutorV30?.byTurn[key] || null,
   };
 }
 
@@ -142,14 +165,19 @@ function instrumentRows(side, { scenarioId = null } = {}) {
 }
 
 /**
- * Per-arm v2.2 means, computed here rather than read from the artefact so the
- * page and the markdown report cannot drift apart. `null` where an arm has no
- * scored turn of that kind — not 0, which would plot as a catastrophic score.
+ * Per-arm means for one tutor-rubric version, computed here rather than read
+ * from the artefact so the page and the markdown report cannot drift apart.
+ * `null` where an arm has no scored turn of that kind — not 0, which would plot
+ * as a catastrophic score.
+ *
+ * Versions are averaged separately and never pooled: v2.2 and v3.0 put a turn on
+ * different scales with different dimensions, so a mean across both would be a
+ * number with no instrument behind it.
  */
-export function showcaseV22ArmMeans(overlay, options = {}) {
-  if (!overlay?.tutorV22) return [];
+function tutorArmMeans(side, options = {}) {
+  if (!side) return [];
   const byArm = new Map();
-  for (const row of instrumentRows(overlay.tutorV22, options)) {
+  for (const row of instrumentRows(side, options)) {
     if (!row.success || !Number.isFinite(row.overallScore)) continue;
     if (!byArm.has(row.armId)) byArm.set(row.armId, []);
     byArm.get(row.armId).push(row);
@@ -163,6 +191,14 @@ export function showcaseV22ArmMeans(overlay, options = {}) {
     all: mean(rows),
     scored: rows.length,
   }));
+}
+
+export function showcaseV22ArmMeans(overlay, options = {}) {
+  return tutorArmMeans(overlay?.tutorV22, options);
+}
+
+export function showcaseV30ArmMeans(overlay, options = {}) {
+  return tutorArmMeans(overlay?.tutorV30, options);
 }
 
 /**

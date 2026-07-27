@@ -466,6 +466,85 @@ test('a scored page carries per-arm scores in the benchmark table and in every c
   assert.match(html, /nothing here averages across them/u);
 });
 
+test('two rubric versions render as two labelled blocks and are never merged into one reading', async () => {
+  const built = await report();
+  const rows = built.results.filter((result) => result.dialogue);
+  const tutorRows = (score) =>
+    rows.map((result, index) => ({
+      dialogueId: result.id,
+      scenarioId: result.scenarioId,
+      armId: result.armId,
+      baseline: Boolean(result.baseline),
+      turnIndex: 1,
+      turnLabel: 'first',
+      success: true,
+      overallScore: score + index,
+    }));
+  const overlay = buildShowcaseScoreOverlay({
+    prBenchmark: {
+      rubric: { version: '1.0' },
+      judge: 'claude-code.sonnet',
+      axesAsked: [{ axisId: 'safety' }],
+      axesUnavailable: [{ axisId: 'overall_delivery', reason: 'no case criterion in a free-running dialogue' }],
+      rows: tutorRows(0).map((row) => ({ ...row, axes: { safety: { label: 'pass' } }, transferableVerdict: 'pass' })),
+    },
+    tutorV22: { rubricVersion: '2.2', judge: 'claude-code.sonnet', turns: 'first-last', rows: tutorRows(40) },
+    tutorV30: { rubricVersion: '3.0', judge: 'claude-code.sonnet', turns: 'first-last', rows: tutorRows(80) },
+  });
+
+  const html = renderTutorStubShowcaseHtml(built, { overlay });
+  assert.match(html, /Tutor rubric — v2\.2/u);
+  assert.match(html, /Tutor rubric — v3\.0/u);
+  assert.match(html, /not comparable with the v2\.2 numbers/u);
+  // The count is derived, not hardcoded: three artefacts must announce three.
+  assert.match(html, /Three instruments, kept apart/u);
+
+  // The headline table stays on v2.2 alone: a second version sharing that column
+  // pair would read as one measure rather than two instruments.
+  assert.equal((html.match(/sc-th-score">Rubric first</gu) || []).length, 1);
+  assert.match(html, /A v3\.0 pass was also run/u);
+
+  // Both versions reach the per-turn grain and the per-scenario grain, so a
+  // column head cannot disagree with the turns beneath it about what ran.
+  assert.match(html, /tutor v3\.0/u);
+  assert.equal((html.match(/sc-score-tag">v3\.0</gu) || []).length, rows.length);
+});
+
+test('a page scored under v3.0 alone still reports it rather than rendering unscored', async () => {
+  const built = await report();
+  const rows = built.results.filter((result) => result.dialogue);
+  const overlay = buildShowcaseScoreOverlay({
+    tutorV30: {
+      rubricVersion: '3.0',
+      judge: 'claude-code.sonnet',
+      turns: 'first-last',
+      rows: rows.map((result) => ({
+        dialogueId: result.id,
+        scenarioId: result.scenarioId,
+        armId: result.armId,
+        baseline: Boolean(result.baseline),
+        turnIndex: 1,
+        turnLabel: 'first',
+        success: true,
+        overallScore: 70,
+      })),
+    },
+  });
+
+  const html = renderTutorStubShowcaseHtml(built, { overlay });
+  assert.match(html, /Tutor rubric — v3\.0/u);
+  assert.match(html, /One instrument\./u);
+  assert.ok(!/Tutor rubric — v2\.2/u.test(html), 'a version nobody ran must not appear');
+  // Match the emitted header cell, not the bare class: `sc-th-score` also names a
+  // stylesheet rule, which is present whether or not any column uses it.
+  assert.equal(
+    (html.match(/sc-th-score">Rubric first</gu) || []).length,
+    0,
+    'the headline columns are v2.2 only and v2.2 was not run',
+  );
+  assert.equal((html.match(/sc-th-score">Labels</gu) || []).length, 0, 'no PR-benchmark pass, so no Labels column');
+});
+
 test('the cli prints a finite plan and spends nothing', () => {
   const result = spawnSync(
     process.execPath,

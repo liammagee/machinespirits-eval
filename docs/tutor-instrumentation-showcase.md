@@ -178,6 +178,45 @@ Two reading caveats:
 - **Still not a controlled comparison.** The arms have different transcripts, so
   a rubric gap between them is a difference between two dialogues.
 
+### Scoring under another rubric version
+
+```bash
+npm run tutor:stub:showcase:rubric -- exports/tutor-stub-showcase/<run> --rubric-version 3.0
+```
+
+`--rubric-version <v>` points `evalConfigLoader`'s rubric-path override at
+`config/rubrics/v<v>/evaluation-rubric.yaml` — the same layout
+`eval-cli evaluate --rubric-version` uses — and every consumer follows, because
+`loadRubric` is the single door the dimension list, the judge prompt and the
+weighted aggregate all pass through. The judge *model* is the deliberate
+exception: `--judge` still wins, so a rubric file's own fallback model can never
+quietly answer for a sonnet-class one. The artifact is named for the rubric that
+produced it (`rubric-v3.0.json`), so a run can hold both versions and neither
+lands on the other.
+
+Two things make this additive rather than a migration, both in
+`services/rubricScoring.js`. Each dimension normalises against
+`dimension.scale || rubric.scale || {min:1,max:5}` before weighting, so a v2.2
+dimension with no scale of its own takes the historical path and computes the
+identical number — there is no version branch anywhere in the engine. And
+`calculateWeightedRubricScore` skips a dimension the judge marked
+`not_applicable` and divides by the weight it actually accumulated, so a turn
+with no assessable factual claim is scored on what remains rather than being
+handed the maximum.
+
+That renormalisation is also the reading caveat for v3.0. The rubric is two
+dimensions — 1–10 `overall_pedagogical_quality` at weight 0.85 beside 1–5
+`content_accuracy` at 0.15 — so a turn whose content accuracy is `n/a` rests on
+a single dimension rescaled to full weight. Two v3.0 scores in the same table can
+therefore have different effective compositions, and `n/a` stays distinct from
+`—` in the per-dimension table for exactly that reason.
+
+**v3.0 is a prospective instrument, not a replacement for v2.2**, and its own
+header says so: it comes from a PCA over v2.2 turns that found one dominant
+factor, and it must not be mixed with historical v2.2 scores. The page and the
+artifacts keep the versions apart rather than relying on a reader to remember
+that.
+
 ### What the first scored run showed
 
 `showcase-2026-07-26T14-41-49-087Z`, judge `claude-code.sonnet`, 8 judge calls.
@@ -416,11 +455,11 @@ in the same three states as the table: resolved, unresolved, or no verdict.
 ## Scores on the page
 
 Scoring is a later pass than rendering: `transcripts.html` is written when the
-run finishes, and the two score artifacts land beside it whenever someone pays a
+run finishes, and the score artifacts land beside it whenever someone pays a
 judge. So the renderer takes an optional overlay built from whichever artifacts
 exist, a run that was never scored renders exactly the page it always did, and
-each scoring script re-renders the page on its way out. Scoring only one of the
-two instruments is a supported state, not a broken one.
+each scoring script re-renders the page on its way out. Scoring under one
+instrument and not the others is a supported state, not a broken one.
 
 Scores appear in three places, at three grains:
 
@@ -430,8 +469,9 @@ Scores appear in three places, at three grains:
   bought anything;
 - each scenario's **column heads** carry that arm's scores *for that scenario*,
   under the closure chips;
-- each **turn** carries its own chips for both instruments, with the judge's
-  reasoning behind a disclosure. A second toggle hides all of it.
+- each **turn** carries its own chips for every instrument that ran, one row per
+  instrument and one row per rubric version, with the judge's reasoning behind a
+  disclosure. A second toggle hides all of it.
 
 The per-scenario grain is not decoration. On the first scored run the pooled
 means read `bare 54.4 → 22.5` and `instrumented 42.5 → 42.5`, which invites the
@@ -443,16 +483,21 @@ and on Riverside Clinic both fall, the instrumented arm hardest of all
 evidence of anything; the point is that the pooled number concealed the split,
 so the page shows both.
 
-**Nothing on the page averages the two instruments.** They ask different
-questions on different scales — v2.2 is 0–100 over eight dimensions on one turn,
-the PR-benchmark is pass/fail/unsure over three axes on every turn — and the
-`Labels` column is a verdict over the axes in force, deliberately not the
-rubric's own `overall_delivery`. Where an instrument has no result the page says
+**Nothing on the page averages one instrument with another, and that includes
+the two tutor-rubric versions.** They ask different questions on different scales
+— v2.2 is 0–100 over eight dimensions on one turn, v3.0 is one 1–10 dimension
+plus one 1–5 dimension on the same turn, the PR-benchmark is pass/fail/unsure
+over three axes on every turn — and the `Labels` column is a verdict over the
+axes in force, deliberately not the rubric's own `overall_delivery`. Each rubric
+version gets its own labelled block with its own per-arm table, and the headline
+`Rubric first`/`Rubric last` columns stay on v2.2 alone: a second version sharing
+that column pair would read as one measure rather than two instruments. Where an
+instrument has no result the page says
 which of the three absences applies: *not asked* (the axis was withheld), *not
 scored* (the instrument ran but not on this turn), or *failed* (the judge was
 asked and produced nothing). A blank would let all three read as a pass.
 
-Both instruments see the public transcript only. The proof DAG, release plan,
+Every instrument sees the public transcript only. The proof DAG, release plan,
 scaffold and guard verdicts are withheld from the judge, so the instrumented arm
 is never scored on its own internal artifacts.
 
@@ -465,11 +510,17 @@ Each run writes to `exports/tutor-stub-showcase/showcase-<stamp>/` (honouring
 - `report.md` — arm benchmark table plus a per-scenario dialogue list,
 - `report.json` — the plan, every turn, every audit, trace paths, git metadata.
 
-The two scoring passes write beside it, each only when run:
+The scoring passes write beside it, each only when run:
 
 - `rubric-v2.2.{json,md}` — v2.2 tutor-rubric scores,
+- `rubric-v3.0.{json,md}` — the same pass under `--rubric-version 3.0`, written
+  to its own filename so the two versions coexist rather than overwrite,
 - `rubric-pr-benchmark-1.0.{json,md}` — PR-benchmark labels, with the withheld
   axes and the `handoff` clause split named in both files.
+
+A filename the page has no overlay slot for is written and reported as
+off-page — `services/tutorStubShowcaseScoreOverlay.js` reads a fixed set, so a
+new rubric version needs a slot there before it can appear.
 
 Re-render both from a saved report with zero calls:
 
