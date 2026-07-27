@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-response-configuration-presentation
 title: Refactor tutor-stub response-configuration presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-learner-classification-presentation
 links:
+  prs:
+    - 303
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -103,3 +105,7 @@ Log:
   the runtime refactor; the skill-sync plus response-presenter boundary passes
   7/7. The prior full final-base parity remains applicable because the
   incoming commits change no runtime or test files.
+- 2026-07-27 — PR #303 merged as `254111ba` with all ten CI lanes green; the
+  serialized workplan render followed as `e0e1f58d`. Closed this child and
+  activated `refactor-tutor-stub-response-policy-context` for the adjacent
+  deterministic tutor-only prompt projection.
