@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-27T00:09:01.019Z",
+  "generated": "2026-07-27T00:27:41.560Z",
   "counts": {
     "total": 229,
     "byStatus": {
@@ -1095,7 +1095,8 @@
         ],
         "notes": "https://github.com/liammagee/machinespirits-eval/issues/74",
         "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/297"
+          "https://github.com/liammagee/machinespirits-eval/pull/297",
+          "https://github.com/liammagee/machinespirits-eval/pull/300"
         ]
       },
       "tags": [
