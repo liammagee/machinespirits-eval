@@ -44,7 +44,29 @@ const {
   updateTutorLastTurnScore,
   updateDialogueQualityScore,
   updateDialogueQualityInternalScore,
+  generationIdentity,
 } = await import('../services/evaluationStore.js');
+
+describe('generationIdentity', () => {
+  it('keeps identical response text distinct across scenario contexts', () => {
+    const shared = { profileName: 'cell_test', suggestions: [{ message: 'Try one example.' }] };
+    assert.notEqual(
+      generationIdentity({ ...shared, scenarioId: 'scenario_a' }),
+      generationIdentity({ ...shared, scenarioId: 'scenario_b' }),
+    );
+  });
+
+  it('matches an exact source and rejudged generation despite different judge fields', () => {
+    const source = {
+      profileName: 'cell_test',
+      scenarioId: 'scenario_a',
+      attemptIndex: 2,
+      suggestions: [{ message: 'Try one example.' }],
+      judgeModel: 'claude',
+    };
+    assert.equal(generationIdentity(source), generationIdentity({ ...source, judgeModel: 'codex' }));
+  });
+});
 
 // Track test runs for cleanup (still useful for in-test isolation)
 const testRunIds = [];
@@ -968,12 +990,16 @@ describe('updateDialogueQualityScore', () => {
 
     updateDialogueQualityScore(rowId, {
       dialogueQualityScore: 78.5,
+      dialogueQualityScores: {
+        reciprocal_adaptation: { score: 4, reasoning: 'Responds in both directions.' },
+      },
       dialogueQualitySummary: 'Good collaborative knowledge building with some missed connections.',
       dialogueQualityJudgeModel: 'claude-opus-4.6',
     });
 
     const r = getResults(run.id)[0];
     assert.strictEqual(r.dialogueQualityScore, 78.5, 'should store dialogue quality score');
+    assert.equal(r.dialogueQualityScores.reciprocal_adaptation.score, 4);
     assert.strictEqual(r.dialogueQualitySummary, 'Good collaborative knowledge building with some missed connections.');
     assert.strictEqual(r.dialogueQualityJudgeModel, 'claude-opus-4.6');
     assert.strictEqual(r.tutorFirstTurnScore, 70.0, 'should NOT alter tutor_first_turn_score');

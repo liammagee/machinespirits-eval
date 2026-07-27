@@ -16,6 +16,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { stripThinkBlocks } from './evaluationTextSanitizer.js';
+import {
+  buildScaleInstructions,
+  calculateWeightedRubricScore,
+  dimensionScaleLabel,
+  exampleDimensionScore,
+} from './rubricScoring.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_CONFIG_DIR = path.resolve(__dirname, '..', 'config');
@@ -76,27 +82,9 @@ export function getLearnerDimensions({ isMultiAgent: _isMultiAgent = false } = {
  * @returns {number} Overall score on 0-100 scale
  */
 export function calculateLearnerOverallScore(scores, isMultiAgent = false) {
+  const rubric = loadLearnerRubric();
   const dims = getLearnerDimensions({ isMultiAgent });
-
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const [key, dim] of Object.entries(dims)) {
-    const scoreEntry = scores[key];
-    if (!scoreEntry) continue;
-
-    let score = typeof scoreEntry === 'object' ? scoreEntry.score : scoreEntry;
-    if (typeof score === 'string') score = Number(score);
-    if (typeof score !== 'number' || isNaN(score) || score < 1 || score > 5) continue;
-
-    weightedSum += score * dim.weight;
-    totalWeight += dim.weight;
-  }
-
-  if (totalWeight === 0) return null;
-
-  const weightedAvg = weightedSum / totalWeight;
-  return ((weightedAvg - 1) / 4) * 100;
+  return calculateWeightedRubricScore(scores, rubric, { dimensions: dims });
 }
 
 /**
@@ -105,18 +93,29 @@ export function calculateLearnerOverallScore(scores, isMultiAgent = false) {
  * @param {Object} dimensions - Rubric dimensions to include
  * @returns {string} Formatted criteria text
  */
-function buildDimensionCriteria(dimensions) {
+function buildDimensionCriteria(rubric, dimensions) {
   return Object.entries(dimensions)
     .map(([key, dim]) => {
       const criteriaText = Object.entries(dim.criteria || {})
         .map(([score, desc]) => `  ${score}: ${desc}`)
         .join('\n');
-      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
+      return `**${dim.name}** (scale: ${dimensionScaleLabel(rubric, dim)}, weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
 ${dim.description}
 Criteria:
 ${criteriaText}`;
     })
     .join('\n\n');
+}
+
+function buildLearnerCalibrationInstruction(dimensions, { holistic = false } = {}) {
+  if (dimensions.conceptual_revision) {
+    return holistic
+      ? 'CROSS-TURN CALIBRATION: conceptual_revision and transfer_and_application require cumulative public evidence across the dialogue. Do not infer learning from compliance or fluency alone.'
+      : 'CROSS-TURN CALIBRATION: At the first learner turn, score the evidence available there. On later turns, conceptual_revision requires a visible change from an earlier position, while transfer_and_application requires use beyond repeating the tutor.';
+  }
+  return holistic
+    ? 'CROSS-TURN CALIBRATION: For revision_signals and conceptual_progression, require cumulative change across the full dialogue, not isolated fluent moments.'
+    : 'CROSS-TURN CALIBRATION: For revision_signals and conceptual_progression, a 4 or 5 requires evidence of change from prior turns. At Turn 1, score initial engagement.';
 }
 
 /**
@@ -228,8 +227,9 @@ export function buildBatchedLearnerPrompt(params) {
   if (!learnerTurnTargets || learnerTurnTargets.length === 0) return null;
 
   const isMultiAgent = learnerArchitecture === 'multi_agent' || learnerArchitecture === 'psychodynamic';
+  const rubric = loadLearnerRubric();
   const dimensions = getLearnerDimensions({ isMultiAgent });
-  const dimensionCriteria = buildDimensionCriteria(dimensions);
+  const dimensionCriteria = buildDimensionCriteria(rubric, dimensions);
 
   // Build full transcript (all turns, public only)
   const fullTranscript = buildHolisticTranscript(turns, false);
@@ -250,7 +250,7 @@ ${externalMessage}`;
   const batchedExampleScores = dimKeys
     .map(
       (key, i) =>
-        `            "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+        `            "${key}": {"score": ${exampleDimensionScore(rubric, dimensions[key], (i % 3) - 1)}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
     )
     .join(',\n');
   const exampleTurnStr = `{
@@ -276,12 +276,7 @@ All learner responses shown below are COMPLETE as generated — they are NOT tru
 
 ## EVALUATION RUBRIC
 
-Score each dimension from 1-5:
-- 1: Completely fails this criterion
-- 2: Weak, significant issues
-- 3: Adequate, meets basic expectations
-- 4: Good, exceeds expectations
-- 5: Excellent, exemplary
+${buildScaleInstructions(rubric, dimensions)}
 
 ${dimensionCriteria}
 
@@ -307,15 +302,10 @@ Score EACH learner turn listed above independently. For each turn:
 - Consider ONLY the dialogue context up to and including that turn
 - Evaluate based on the learner's external message only. Internal deliberation (if any) is scored separately.
 
-CROSS-TURN CALIBRATION: For dimensions that measure development (revision_signals,
-conceptual_progression), a score of 4 or 5 requires
-EVIDENCE OF CHANGE compared to prior turns. At Turn 1, base your score on the
-quality of the learner's initial engagement. From Turn 2 onward, ask: "How has
-the learner's thinking evolved since the previous turn?" A score of 5 requires
-the learner to demonstrate growth that builds on earlier exchanges.
+${buildLearnerCalibrationInstruction(dimensions)}
 
 For each turn, provide:
-1. A score (1-5) for each applicable dimension with brief reasoning
+1. A score on each applicable dimension's declared scale, with brief reasoning
 2. An overall score (weighted average, 0-100 scale)
 3. A brief summary
 
@@ -360,8 +350,9 @@ export function buildLearnerEvaluationPrompt(params) {
   } = params;
 
   const isMultiAgent = learnerArchitecture === 'multi_agent' || learnerArchitecture === 'psychodynamic';
+  const rubric = loadLearnerRubric();
   const dimensions = getLearnerDimensions({ isMultiAgent });
-  const dimensionCriteria = buildDimensionCriteria(dimensions);
+  const dimensionCriteria = buildDimensionCriteria(rubric, dimensions);
 
   const targetTurn = turns[targetTurnIndex];
   const truncatedTranscript = buildTruncatedTranscript(turns, targetTurnIndex);
@@ -372,7 +363,7 @@ export function buildLearnerEvaluationPrompt(params) {
   const exampleScores = dimKeys
     .map(
       (key, i) =>
-        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+        `    "${key}": {"score": ${exampleDimensionScore(rubric, dimensions[key], (i % 3) - 1)}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
     )
     .join(',\n');
 
@@ -390,12 +381,7 @@ All learner responses shown below are COMPLETE as generated — they are NOT tru
 
 ## EVALUATION RUBRIC
 
-Score each dimension from 1-5:
-- 1: Completely fails this criterion
-- 2: Weak, significant issues
-- 3: Adequate, meets basic expectations
-- 4: Good, exceeds expectations
-- 5: Excellent, exemplary
+${buildScaleInstructions(rubric, dimensions)}
 
 ${dimensionCriteria}
 
@@ -420,15 +406,10 @@ ${targetExternalMessage}
 
 Evaluate based on the learner's external message only. Internal deliberation (if any) is scored separately.
 
-CROSS-TURN CALIBRATION: For dimensions that measure development (revision_signals,
-conceptual_progression), a score of 4 or 5 requires
-EVIDENCE OF CHANGE compared to prior turns. At Turn 1, base your score on the
-quality of the learner's initial engagement. From Turn 2 onward, ask: "How has
-the learner's thinking evolved since the previous turn?" A score of 5 requires
-the learner to demonstrate growth that builds on earlier exchanges.
+${buildLearnerCalibrationInstruction(dimensions)}
 
 Evaluate the learner's turn and provide:
-1. A score (1-5) for each applicable dimension with brief reasoning
+1. A score on each applicable dimension's declared scale, with brief reasoning
 2. An overall score (weighted average, 0-100 scale)
 
 CRITICAL JSON RULES:
@@ -475,8 +456,9 @@ export function buildLearnerHolisticEvaluationPrompt(params) {
   } = params;
 
   const isMultiAgent = learnerArchitecture === 'multi_agent' || learnerArchitecture === 'psychodynamic';
+  const rubric = loadLearnerRubric();
   const dimensions = getLearnerDimensions({ isMultiAgent });
-  const dimensionCriteria = buildDimensionCriteria(dimensions);
+  const dimensionCriteria = buildDimensionCriteria(rubric, dimensions);
   // Always pass false — public messages only (internal deliberation scored separately)
   const fullTranscript = buildHolisticTranscript(turns, false);
 
@@ -484,7 +466,7 @@ export function buildLearnerHolisticEvaluationPrompt(params) {
   const exampleScores = dimKeys
     .map(
       (key, i) =>
-        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+        `    "${key}": {"score": ${exampleDimensionScore(rubric, dimensions[key], (i % 3) - 1)}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
     )
     .join(',\n');
 
@@ -498,12 +480,7 @@ All learner responses shown below are COMPLETE as generated — they are NOT tru
 
 ## EVALUATION RUBRIC
 
-Score each dimension from 1-5:
-- 1: Completely fails this criterion
-- 2: Weak, significant issues
-- 3: Adequate, meets basic expectations
-- 4: Good, exceeds expectations
-- 5: Excellent, exemplary
+${buildScaleInstructions(rubric, dimensions)}
 
 ${dimensionCriteria}
 
@@ -525,13 +502,10 @@ ${fullTranscript}
 
 Evaluate based on the learner's external messages only.
 
-CROSS-TURN CALIBRATION: When scoring development dimensions (revision_signals,
-conceptual_progression), require evidence of CUMULATIVE
-change across the full dialogue, not just isolated moments. A score of 5 means the
-learner's trajectory shows clear arc of development from first to last turn.
+${buildLearnerCalibrationInstruction(dimensions, { holistic: true })}
 
 Evaluate the learner's performance across the full dialogue and provide:
-1. A score (1-5) for each applicable dimension with brief reasoning
+1. A score on each applicable dimension's declared scale, with brief reasoning
 2. An overall score (weighted average, 0-100 scale)
 3. A short summary of the learner's overall trajectory
 

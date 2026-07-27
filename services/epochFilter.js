@@ -40,6 +40,14 @@ export const EPOCHS = {
     and: `AND tutor_rubric_version = '2.2'`,
     params: [],
   },
+  '3.0': {
+    label: 'Prospective measurement v3.0',
+    description: 'Data scored under the PCA-informed v3.0 measurement suite',
+    rubricVersions: ['3.0'],
+    where: `tutor_rubric_version = '3.0'`,
+    and: `AND tutor_rubric_version = '3.0'`,
+    params: [],
+  },
   all: {
     label: 'All Data (cross-epoch)',
     description: 'All data regardless of rubric version — use with caution',
@@ -57,8 +65,8 @@ export const DEFAULT_EPOCH = '2.0';
 
 /**
  * Parse --epoch argument from argv. Returns epoch key.
- * Accepts: --epoch pilot, --epoch 2.0, --epoch all
- * Aliases: --epoch paper1, --epoch paper2, --epoch legacy
+ * Accepts: --epoch pilot, --epoch 2.0, --epoch 3.0, --epoch all
+ * Aliases: --epoch paper1, --epoch paper2, --epoch paper3, --epoch legacy
  */
 export function parseEpochArg(argv) {
   const args = argv || process.argv;
@@ -70,9 +78,10 @@ export function parseEpochArg(argv) {
   // Aliases
   if (['pilot', 'paper1', 'legacy', '1.0'].includes(val)) return 'pilot';
   if (['2.0', 'paper2', 'current'].includes(val)) return '2.0';
+  if (['3.0', 'paper3', 'prospective'].includes(val)) return '3.0';
   if (['all', '*'].includes(val)) return 'all';
 
-  console.error(`Unknown epoch: "${val}". Use: pilot, 2.0, or all`);
+  console.error(`Unknown epoch: "${val}". Use: pilot, 2.0, 3.0, or all`);
   process.exit(1);
 }
 
@@ -121,6 +130,7 @@ export function printEpochBanner(epoch) {
 export const EPOCH_BOUNDARIES = {
   pilot: { before: '2026-02-28' },
   '2.0': { after: '2026-02-28' },
+  '3.0': { rubricVersion: '3.0' },
   all: {},
 };
 
@@ -140,5 +150,9 @@ export function dialogueMatchesEpoch(filename, epoch) {
 
   if (epoch === 'pilot') return ts < boundary;
   if (epoch === '2.0') return ts >= boundary;
+  // A filename timestamp cannot distinguish a v3.0 calibration log from a
+  // contemporaneous v2.2 log. Fail closed; DB analyses should use the stored
+  // rubric-version column instead of date inference for this epoch.
+  if (epoch === '3.0') return false;
   return true;
 }

@@ -1,0 +1,42 @@
+name: "Pedagogical Encounter Rubric (v3.0)"
+version: "3.0"
+status: calibration
+description: "Emergent interaction quality that neither tutor nor learner score can establish alone"
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "No evidence or clear failure"
+    2: "Weak"
+    3: "Adequate"
+    4: "Strong"
+    5: "Exceptional"
+
+dimensions:
+  reciprocal_adaptation:
+    name: "Reciprocal Adaptation"
+    weight: 0.40
+    description: "Do tutor and learner both alter their next moves in response to what the other actually contributed?"
+    criteria:
+      5: "A clear reciprocal loop develops: each side's later move depends materially on the other's prior contribution"
+      3: "There is real response in both directions, but one side still controls most of the trajectory or changes remain shallow"
+      1: "Parallel monologues, scripted progression, or one-sided adaptation with little consequential uptake"
+
+  joint_learning_progression:
+    name: "Joint Learning Progression"
+    weight: 0.35
+    description: "Does the interaction jointly produce movement in the problem or understanding that isolated turns would not establish?"
+    criteria:
+      5: "The exchange co-produces a clear conceptual advance, revision, or resolution grounded in both parties' contributions"
+      3: "The exchange advances, but the result is mostly attributable to one party or remains incomplete"
+      1: "No cumulative advance, circularity, premature closure, or apparent progress based only on fluency"
+
+  productive_coordination:
+    name: "Productive Coordination"
+    weight: 0.25
+    description: "Does the encounter coordinate difficulty, turn-taking, evidence, and handoff so the learner can continue meaningful work?"
+    criteria:
+      5: "Difficulty is sustained at a workable level, contributions stay aligned, and handoffs consistently enable the next productive move"
+      3: "Mostly coherent coordination with occasional over-helping, drift, unresolved tension, or weak handoff"
+      1: "The interaction overwhelms, substitutes, stalls, talks past itself, or loses the live learning target"

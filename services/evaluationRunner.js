@@ -586,15 +586,16 @@ function sleep(ms) {
 
 const SUPPORTED_JUDGE_CLIS = new Set(['claude', 'gemini', 'codex']);
 
-export function getCliJudgeModelLabel(judgeCli, modelOverride = null) {
+export function getCliJudgeModelLabel(judgeCli, modelOverride = null, effort = null) {
   const cli = String(judgeCli || '').toLowerCase();
   if (!SUPPORTED_JUDGE_CLIS.has(cli)) {
     throw new Error(`Unsupported judge CLI: ${judgeCli}`);
   }
 
-  if (cli === 'gemini') return `gemini-cli/${modelOverride || 'auto'}`;
-  if (cli === 'codex') return `codex-cli/${modelOverride || 'auto'}`;
-  return modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+  const effortSuffix = effort ? `@${effort}` : '';
+  if (cli === 'gemini') return `gemini-cli/${modelOverride || 'auto'}${effortSuffix}`;
+  if (cli === 'codex') return `codex-cli/${modelOverride || 'auto'}${effortSuffix}`;
+  return `${modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6'}${effortSuffix}`;
 }
 
 function getDefaultCliJudgeModelOverride(judgeCli = 'claude') {
@@ -607,7 +608,7 @@ function getDefaultCliJudgeModelOverride(judgeCli = 'claude') {
   }
 }
 
-async function callCliJudge(prompt, judgeCli, modelOverride = null) {
+async function callCliJudge(prompt, judgeCli, modelOverride = null, effort = null) {
   const cli = String(judgeCli || '').toLowerCase();
   if (!SUPPORTED_JUDGE_CLIS.has(cli)) {
     throw new Error(`Unsupported judge CLI: ${judgeCli}`);
@@ -617,6 +618,7 @@ async function callCliJudge(prompt, judgeCli, modelOverride = null) {
     model: modelOverride,
     prompt,
     role: 'evaluation-runner-judge',
+    effort,
   });
 
   return parseCliJudgeJsonResponse(stdout);
@@ -826,9 +828,18 @@ function normalizeCliJudgeEvaluation(parsed, judgeModelLabel, judgeLatencyMs) {
     const normalizedKey = dimensionMap[key] || key;
     if (typeof value === 'object' && value !== null) {
       const numericScore = typeof value.score === 'number' ? value.score : Number(value.score);
+      if (value.not_applicable === true) {
+        normalizedScores[normalizedKey] = {
+          score: null,
+          not_applicable: true,
+          reasoning: value.reasoning ?? value.rationale ?? value.explanation ?? null,
+        };
+        continue;
+      }
       if (!Number.isFinite(numericScore)) continue;
       normalizedScores[normalizedKey] = {
         score: numericScore,
+        not_applicable: false,
         reasoning: value.reasoning ?? value.rationale ?? value.explanation ?? null,
       };
     } else if (typeof value === 'number') {
@@ -5481,7 +5492,16 @@ export function generateReport(runId) {
  * @param {Object} opts - Judge dispatch and logging context
  */
 async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
-  const { judgeCli, judgeModel, effectiveCliJudgeModel, judgeOverrideObj, log, skipLearner, skipDeliberation } = opts;
+  const {
+    judgeCli,
+    judgeModel,
+    effectiveCliJudgeModel,
+    judgeCliEffort,
+    judgeOverrideObj,
+    log,
+    skipLearner,
+    skipDeliberation,
+  } = opts;
 
   const resolved = resolveRejudgeScenarioAndDialogueLog(result, dialogueLog);
   const fullScenario = resolved.scenario;
@@ -5499,7 +5519,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
   // ── Shared judge call helper (returns parsed JSON) ──
   async function callJudge(prompt) {
     if (judgeCli) {
-      return await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel);
+      return await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel, judgeCliEffort);
     } else {
       // Use rubricEvaluator's API-based judge: callJudgeModel returns raw text, parseJudgeResponse parses it
       const responseText = await rubricEvaluator.callJudgeModel(prompt, judgeOverrideObj);
@@ -5884,6 +5904,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
 
           evaluationStore.updateDialogueQualityScore(rowId, {
             dialogueQualityScore: score,
+            dialogueQualityScores: publicScores,
             dialogueQualitySummary: publicParsed.summary || null,
             dialogueQualityJudgeModel: judgeModel,
           });
@@ -5918,6 +5939,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
 
           evaluationStore.updateDialogueQualityInternalScore(rowId, {
             dialogueQualityInternalScore: score,
+            dialogueQualityInternalScores: fullScores,
             dialogueQualityInternalSummary: fullParsed.summary || null,
           });
           log(`    dialogue-quality(full)=${score?.toFixed(1)}`);
@@ -6067,6 +6089,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
  * @param {string} [options.judgeOverride] - Override judge model (e.g. 'openrouter.nemotron')
  * @param {string} [options.judgeCli] - CLI judge backend ('claude', 'gemini', 'codex')
  * @param {string} [options.judgeCliModel] - Optional CLI judge model override
+ * @param {string} [options.judgeCliEffort] - Optional CLI reasoning-effort override
  * @param {boolean} [options.verbose] - Show per-result progress
  * @param {string} [options.scenarioFilter] - Only rejudge results for this scenario ID
  * @param {number} [options.parallelism] - Concurrent judge calls (default 3)
@@ -6080,6 +6103,7 @@ export async function rejudgeRun(runId, options = {}) {
     judgeOverride = null,
     judgeCli = null,
     judgeCliModel = null,
+    judgeCliEffort = null,
     verbose = false,
     scenarioFilter = null,
     parallelism = DEFAULT_PARALLELISM,
@@ -6125,7 +6149,7 @@ export async function rejudgeRun(runId, options = {}) {
   const effectiveCliJudgeModel = judgeCli ? judgeCliModel || getDefaultCliJudgeModelOverride(judgeCli) : null;
   try {
     if (judgeCli) {
-      targetJudgeLabel = getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel);
+      targetJudgeLabel = getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel, judgeCliEffort);
     } else {
       const judge = rubricEvaluator.getAvailableJudge(judgeOverride ? { judgeOverride: { model: judgeOverride } } : {});
       targetJudgeLabel = rubricEvaluator.normalizeJudgeLabel(judge.provider, judge.model);
@@ -6154,16 +6178,17 @@ export async function rejudgeRun(runId, options = {}) {
       r.tutorFirstTurnScore != null &&
       r.tutorLastTurnScore != null &&
       r.dialogueQualityScore != null &&
+      r.dialogueQualityScores != null &&
       r.learnerOverallScore != null
     );
   }
 
-  // Build a map of suggestion keys → existing rows judged by the target judge.
+  // Build a map of exact generation identities → existing rows judged by the target judge.
   // In resume mode (default, no --overwrite): skip rows with COMPLETE scores.
   // Rows with incomplete scores (e.g. pre-fix single-shot only) are re-processed.
   // IMPORTANT: Must scan ALL rows in the run, not just source-filtered `results`,
   // because the target judge's rows won't be in `results` when sourceJudge differs.
-  const existingRowsByTarget = new Map(); // suggKey → row
+  const existingRowsByTarget = new Map(); // generation identity → row
   const allRowsById = new Map(); // id → row (for target row lookup in safety guard)
   if (targetJudgeLabel) {
     const allRunRows = evaluationStore.getResults(runId, {
@@ -6172,24 +6197,23 @@ export async function rejudgeRun(runId, options = {}) {
     for (const r of allRunRows) {
       allRowsById.set(r.id, r);
       if (r.judgeModel === targetJudgeLabel) {
-        const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
-        existingRowsByTarget.set(suggKey, r);
+        existingRowsByTarget.set(evaluationStore.generationIdentity(r), r);
       }
     }
   }
 
-  // Deduplicate: only rejudge unique responses (by suggestions content),
-  // and skip responses already COMPLETELY judged by the target judge
-  const seenSuggestions = new Set();
+  // Deduplicate exact generations, not response text. Identical prose in two
+  // scenario/transcript contexts is two distinct reliability items.
+  const seenGenerations = new Set();
   const uniqueResults = [];
   let skippedComplete = 0;
   let resumeIncomplete = 0;
   for (const r of results) {
-    const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
-    if (seenSuggestions.has(suggKey)) continue;
-    seenSuggestions.add(suggKey);
-    // Check if target judge already scored this response
-    const existing = existingRowsByTarget.get(suggKey);
+    const identity = evaluationStore.generationIdentity(r);
+    if (seenGenerations.has(identity)) continue;
+    seenGenerations.add(identity);
+    // Check if the target judge already scored this exact generation.
+    const existing = existingRowsByTarget.get(identity);
     if (existing) {
       if (hasCompleteScores(existing)) {
         skippedComplete++;
@@ -6284,10 +6308,10 @@ export async function rejudgeRun(runId, options = {}) {
           ? await retryWithBackoff(async () => {
               const prompt = rubricEvaluator.buildEvaluationPrompt(suggestion, scenarioContext, { dialogueContext });
               const startTime = Date.now();
-              const parsed = await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel);
+              const parsed = await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel, judgeCliEffort);
               return normalizeCliJudgeEvaluation(
                 parsed,
-                getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel),
+                getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel, judgeCliEffort),
                 Date.now() - startTime,
               );
             }, {})
@@ -6333,13 +6357,14 @@ export async function rejudgeRun(runId, options = {}) {
           // Multi-turn: score learner, dialogue, holistic, deliberation
           if (result.dialogueId && dialogueLog?.isMultiTurn) {
             const judgeModelLabel = judgeCli
-              ? getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel)
+              ? getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel, judgeCliEffort)
               : evaluation.judgeModel || null;
             try {
               await scoreMultiTurnRejudgment(rowId, result, dialogueLog, {
                 judgeCli,
                 judgeModel: judgeModelLabel,
                 effectiveCliJudgeModel,
+                judgeCliEffort,
                 judgeOverrideObj,
                 log,
                 skipLearner,

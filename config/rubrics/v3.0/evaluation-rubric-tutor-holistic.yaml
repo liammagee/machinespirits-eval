@@ -1,0 +1,42 @@
+name: "Tutor Trajectory Rubric (v3.0)"
+version: "3.0"
+status: calibration
+description: "Full-dialogue tutor trajectory measures that cannot be observed from one turn"
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "No evidence or clear failure"
+    2: "Weak"
+    3: "Adequate"
+    4: "Strong"
+    5: "Exceptional"
+
+dimensions:
+  adaptive_trajectory:
+    name: "Adaptive Trajectory"
+    weight: 0.45
+    description: "Does the tutor change strategy across turns in response to learner evidence, rather than merely rephrasing or following a fixed script?"
+    criteria:
+      5: "Later teaching is visibly and successfully reorganized around accumulated learner evidence; strategy changes are specific and consequential"
+      3: "Some learner-responsive change occurs, but the main strategy remains largely fixed or changes only cosmetically"
+      1: "No meaningful strategy change, or later turns ignore/discard what the learner revealed"
+
+  pedagogical_progression:
+    name: "Pedagogical Progression"
+    weight: 0.35
+    description: "Does the sequence build a coherent learning arc in which later turns use and extend earlier work?"
+    criteria:
+      5: "A cumulative arc is clear; scaffolding, responsibility, and conceptual work progress purposefully across turns"
+      3: "The dialogue generally advances but contains repetition, resets, or weak links between turns"
+      1: "Turns are interchangeable, circular, disconnected, or fail to develop the learning task"
+
+  closure_and_handoff:
+    name: "Closure and Handoff"
+    weight: 0.20
+    description: "Does the available ending consolidate progress and leave the learner with an appropriate, specific next move?"
+    criteria:
+      5: "Consolidates what changed, names remaining uncertainty, and gives or elicits a precise next move appropriate to the dialogue state"
+      3: "Ends coherently with a usable but generic summary or next step"
+      1: "Ends abruptly, falsely declares completion, reopens settled work, or leaves no usable next move"

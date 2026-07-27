@@ -46,6 +46,7 @@ import 'dotenv/config';
  *   --judge <ref>          Override provider-based rubric judge for 'run'
  *   --judge-cli <name>     Use CLI rubric judge for 'run' or 'rejudge' (claude, gemini, codex)
  *   --judge-cli-model <m>  Optional CLI judge model override for 'run'
+ *   --effort <level>       CLI judge effort for 'evaluate' or 'rejudge' (low, medium, high, xhigh, max, config)
  *   --verbose              Enable verbose output
  *   --runs <n>             Replications per cell (for 'run' command, default: 1)
  *   --parallelism <n>      Parallel worker count (run/resume default: 2, evaluate-learner default: 1)
@@ -161,13 +162,14 @@ function positiveIntEnv(name, fallback) {
 
 const CLI_JUDGE_TIMEOUT_MS = positiveIntEnv('EVAL_CLI_JUDGE_TIMEOUT_MS', 600_000);
 
-async function callSelectedCliJudgeText(judgeCli, model, prompt, role) {
+async function callSelectedCliJudgeText(judgeCli, model, prompt, role, effort = null) {
   return await callModelCliText({
     provider: judgeCli,
     model,
     prompt,
     role,
     timeoutMs: CLI_JUDGE_TIMEOUT_MS,
+    effort,
   });
 }
 function resolveEvaluationScenarioAndDialogueLog(result) {
@@ -2643,7 +2645,7 @@ async function main() {
         const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'rejudge'));
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js rejudge <runId> [--judge <model> | --judge-cli <claude|gemini|codex> [--model <model>]] [--scenario <id>] [--source-judge <label>] [--limit <N>] [--verbose] [--overwrite] [--skip-learner] [--skip-deliberation]',
+            'Usage: eval-cli.js rejudge <runId> [--judge <model> | --judge-cli <claude|gemini|codex> [--model <model>] [--effort <level>]] [--rubric-version <ver>] [--scenario <id>] [--source-judge <label>] [--limit <N>] [--verbose] [--overwrite] [--skip-learner] [--skip-deliberation]',
           );
           console.error('');
           console.error('By default, creates new rows (preserves history for inter-judge reliability).');
@@ -2674,10 +2676,12 @@ async function main() {
         const judgeOverride = getOption('judge') || null;
         const judgeCli = getOption('judge-cli') || null;
         const judgeCliModel = getOption('model') || null;
+        const judgeCliEffort = getOption('effort') || null;
         const scenarioFilter = getOption('scenario') || null;
         const limitStr = getOption('limit') || null;
         const limit = limitStr ? parseInt(limitStr, 10) : null;
         const sourceJudge = getOption('source-judge') || null;
+        const rubricVersionOpt = getOption('rubric-version') || null;
 
         if (judgeOverride && judgeCli) {
           console.error('Error: rejudge accepts either --judge or --judge-cli, not both');
@@ -2694,27 +2698,39 @@ async function main() {
           `  Started:   ${rejudgeStartTime.toLocaleString()} (${Intl.DateTimeFormat().resolvedOptions().timeZone})`,
         );
         if (judgeOverride) console.log(`  Judge override: ${judgeOverride}`);
-        if (judgeCli) console.log(`  Judge CLI: ${judgeCli}${judgeCliModel ? ` (${judgeCliModel})` : ''}`);
+        if (judgeCli) {
+          console.log(
+            `  Judge CLI: ${judgeCli}${judgeCliModel ? ` (${judgeCliModel})` : ''}${judgeCliEffort ? ` @ ${judgeCliEffort} effort` : ''}`,
+          );
+        }
         if (scenarioFilter) console.log(`  Scenario filter: ${scenarioFilter}`);
         if (sourceJudge) console.log(`  Source judge: ${sourceJudge}`);
+        if (rubricVersionOpt) console.log(`  Rubric version: v${rubricVersionOpt}`);
         if (limit) console.log(`  Limit: ${limit} records`);
         console.log(`  Mode: ${overwrite ? 'overwrite (replace existing)' : 'preserve history (add new rows)'}`);
         if (skipLearner) console.log('  Skipping: learner + dialogue + holistic scoring');
         if (skipDeliberation) console.log('  Skipping: deliberation scoring');
         console.log('');
 
-        const summary = await evaluationRunner.rejudgeRun(runId, {
-          judgeOverride,
-          judgeCli,
-          judgeCliModel,
-          verbose,
-          scenarioFilter,
-          overwrite,
-          skipLearner,
-          skipDeliberation,
-          limit,
-          sourceJudge,
-        });
+        if (rubricVersionOpt) setAllRubricOverrides(resolveRubricPaths(rubricVersionOpt));
+        let summary;
+        try {
+          summary = await evaluationRunner.rejudgeRun(runId, {
+            judgeOverride,
+            judgeCli,
+            judgeCliModel,
+            judgeCliEffort,
+            verbose,
+            scenarioFilter,
+            overwrite,
+            skipLearner,
+            skipDeliberation,
+            limit,
+            sourceJudge,
+          });
+        } finally {
+          if (rubricVersionOpt) clearAllRubricOverrides();
+        }
 
         const rejudgeEndTime = new Date();
         console.log('\n' + '='.repeat(60));
@@ -2884,7 +2900,7 @@ async function main() {
         const runId = expandRunId(args.find((a) => !a.startsWith('--') && a !== 'evaluate'));
         if (!runId) {
           console.error(
-            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--model <model>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--tutor-only] [--skip-deliberation] [--follow] [--review] [--refresh <ms>] [--rubric-version <ver>] [--parallelism N] [--verbose]',
+            'Usage: eval-cli.js evaluate <runId> [--scenario <id>] [--profile <name>] [--judge-cli <claude|gemini|codex>] [--model <model>] [--effort <level>] [--judge <judge>] [--force] [--multiturn-only] [--restore-turn0] [--tutor-only] [--skip-deliberation] [--follow] [--review] [--refresh <ms>] [--rubric-version <ver>] [--parallelism N] [--verbose]',
           );
           process.exit(1);
         }
@@ -2902,6 +2918,7 @@ async function main() {
         const profileFilter = getOption('profile') || getOption('profiles') || null;
         const modelOverride = getOption('model') || null;
         const judgeCli = (getOption('judge-cli') || 'claude').toLowerCase();
+        const judgeCliEffort = getOption('effort') || null;
         const judgeFilter = getOption('judge') || null;
         const rubricVersionOpt = getOption('rubric-version') || null;
         const parsedParallelism = parseInt(getOption('parallelism', '1'), 10);
@@ -2915,14 +2932,7 @@ async function main() {
         // Resolve effective judge model: CLI --model > YAML config > default
         // YAML claude_code_judge.model is only relevant for Claude CLI — skip for Gemini/Codex
         const effectiveJudgeModel = modelOverride || resolveDefaultCliJudgeModelOverride(judgeCli);
-        const judgeModelLabel =
-          judgeCli === 'gemini'
-            ? `gemini-cli/${effectiveJudgeModel || 'auto'}`
-            : judgeCli === 'codex'
-              ? `codex-cli/${effectiveJudgeModel || 'auto'}`
-              : effectiveJudgeModel
-                ? `claude-code/${effectiveJudgeModel}`
-                : 'claude-opus-4.6';
+        const judgeModelLabel = evaluationRunner.getCliJudgeModelLabel(judgeCli, effectiveJudgeModel, judgeCliEffort);
 
         // Restore env overrides from run metadata (e.g. EVAL_SCENARIOS_FILE for domain generalizability runs)
         {
@@ -3012,6 +3022,7 @@ async function main() {
             effectiveJudgeModel,
             prompt,
             'eval-cli-tutor-evaluation',
+            judgeCliEffort,
           );
 
           let jsonStr = stdout.trim();
@@ -3127,6 +3138,7 @@ async function main() {
             effectiveJudgeModel,
             prompt,
             'eval-cli-holistic-evaluation',
+            judgeCliEffort,
           );
 
           let jsonStr = stdout.trim();
@@ -3527,6 +3539,7 @@ async function main() {
                       : publicParsed.overall_score;
                   return {
                     success: true,
+                    scores: publicScores,
                     score,
                     summary: publicParsed.summary,
                     judgeInputHash,
@@ -3561,6 +3574,7 @@ async function main() {
                       : fullParsed.overall_score;
                   return {
                     success: true,
+                    scores: fullScores,
                     score,
                     summary: fullParsed.summary,
                     judgeInputHash,
@@ -3933,6 +3947,7 @@ async function main() {
             dgpScore = dgpResult.score;
             evaluationStore.updateDialogueQualityScore(result.id, {
               dialogueQualityScore: dgpScore,
+              dialogueQualityScores: dgpResult.scores,
               dialogueQualitySummary: dgpResult.summary || null,
               dialogueQualityJudgeModel: judgeModel,
             });
@@ -3942,6 +3957,7 @@ async function main() {
             dgiScore = dgiResult.score;
             evaluationStore.updateDialogueQualityInternalScore(result.id, {
               dialogueQualityInternalScore: dgiScore,
+              dialogueQualityInternalScores: dgiResult.scores,
               dialogueQualityInternalSummary: dgiResult.summary || null,
             });
             console.log(`${tag}   dialogue-quality(full)=${dgiScore.toFixed(1)}`);
@@ -4175,6 +4191,7 @@ async function main() {
 
             evaluationStore.updateDialogueQualityScore(result.id, {
               dialogueQualityScore: publicOverall,
+              dialogueQualityScores: publicScores,
               dialogueQualitySummary: publicParsed.summary || null,
               dialogueQualityJudgeModel: judgeModel,
             });
@@ -4202,6 +4219,7 @@ async function main() {
 
             evaluationStore.updateDialogueQualityInternalScore(result.id, {
               dialogueQualityInternalScore: fullOverall,
+              dialogueQualityInternalScores: fullScores,
               dialogueQualityInternalSummary: fullParsed.summary || null,
             });
 
@@ -4367,8 +4385,10 @@ async function main() {
               fs.writeFileSync(logPath, JSON.stringify(dialogueLog, null, 2));
 
               const profileName = lastResult.profileName || `${lastResult.provider}/${lastResult.model}`;
+              const formattedBase = baseScore == null ? '--' : baseScore.toFixed(1);
+              const formattedRecognition = recognitionScore == null ? '--' : recognitionScore.toFixed(1);
               console.log(
-                `  ${scenarioId} / ${profileName} ... holistic=${overallScore.toFixed(1)} (base=${baseScore.toFixed(1)} recog=${recognitionScore.toFixed(1)})`,
+                `  ${scenarioId} / ${profileName} ... holistic=${overallScore.toFixed(1)} (base=${formattedBase} recog=${formattedRecognition})`,
               );
               if (verbose && parsed.summary) {
                 const truncSummary =
@@ -4706,6 +4726,7 @@ async function main() {
           if (skipDeliberation) console.log('  --skip-deliberation: skipping deliberation quality scoring');
           if (rubricVersionOpt) console.log(`  Rubric version: v${rubricVersionOpt}`);
           if (modelOverride) console.log(`  Model: ${modelOverride}`);
+          if (judgeCliEffort) console.log(`  Judge effort: ${judgeCliEffort}`);
           console.log('');
 
           // ── Set rubric overrides if --rubric-version was specified ──
@@ -5813,7 +5834,7 @@ async function main() {
               const overall =
                 Object.keys(scores).length > 0 ? calculateDialogueQualityScore(scores) : parsed.overall_score;
 
-              return { overall, summary: parsed.summary || null };
+              return { overall, scores, summary: parsed.summary || null };
             }
 
             const promptParams = {
@@ -5839,6 +5860,7 @@ async function main() {
 
               evaluationStore.updateDialogueQualityScore(result.id, {
                 dialogueQualityScore: publicResult.overall,
+                dialogueQualityScores: publicResult.scores,
                 dialogueQualitySummary: publicResult.summary,
                 dialogueQualityJudgeModel: judgeModel,
               });
@@ -5870,6 +5892,7 @@ async function main() {
 
               evaluationStore.updateDialogueQualityInternalScore(result.id, {
                 dialogueQualityInternalScore: fullResult.overall,
+                dialogueQualityInternalScores: fullResult.scores,
                 dialogueQualityInternalSummary: fullResult.summary,
               });
               dialogueQualityInternalScores.push(fullResult.overall);
