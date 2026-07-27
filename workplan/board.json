@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-27T04:27:12.390Z",
+  "generated": "2026-07-27T04:37:36.924Z",
   "counts": {
-    "total": 231,
+    "total": 232,
     "byStatus": {
       "done": 204,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
       "review": 3,
-      "active": 8,
+      "active": 9,
       "archived": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
       "infra": 55,
-      "maintenance": 65,
+      "maintenance": 66,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -325,6 +325,33 @@
         "discourse-plane",
         "mixed-mode"
       ]
+    },
+    {
+      "id": "drama-world-public-object-reachability",
+      "title": "Make each drama world's declared public object reachable in its own deterministic text",
+      "status": "active",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Every world's deterministic fallback names that world's own public object rather than the generic 'public record', unprompted wording is pinned by test for all 32 worlds, and the change to the 17 affected worlds is enumerated rather than incidental; targeted and hermetic suites pass without model calls.",
+      "branch": "claude/world-public-objects-reachable",
+      "links": {
+        "code": [
+          "services/tutorStubResponseComposition.js",
+          "services/tutorStubSceneDiction.js",
+          "config/drama-derivation/"
+        ],
+        "tests": [
+          "tests/tutorStubResponseComposition.test.js",
+          "tests/tutorStubSceneDiction.test.js"
+        ],
+        "items": [
+          "tutor-stub-fallback-register-and-uptake-guard"
+        ]
+      }
     },
     {
       "id": "negative-register-effect-estimation-grid",
