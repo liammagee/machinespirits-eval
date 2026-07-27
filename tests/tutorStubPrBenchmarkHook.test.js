@@ -10,6 +10,7 @@ import {
   classifyTutorPrBenchmarkAttribution,
   classifyTutorPrBenchmarkHookReport,
   collectTutorPrBenchmarkCoveredWorldFiles,
+  collectTutorPrBenchmarkHookOnlyPaths,
   collectTutorPrBenchmarkReachablePaths,
   describeTutorPrBenchmarkAttribution,
   installTutorPrBenchmarkPrePushHook,
@@ -19,6 +20,7 @@ import {
   listCachedTutorPrBenchmarkHookReports,
   loadCachedTutorPrBenchmarkReport,
   parseTutorPrBenchmarkPrePushInput,
+  partitionTutorPrBenchmarkRelevance,
   resolveTutorPrBenchmarkReportRoot,
   selectNearestTutorPrBenchmarkBaseline,
   summarizeTutorPrBenchmarkWorldCoverage,
@@ -61,6 +63,51 @@ test('hook config selects the strong preset and scopes tutor-affecting paths', (
   assert.equal(isTutorPrBenchmarkHookRelevantPath('services/tutorPrBenchmarkRubric.js', hook), true);
   assert.equal(isTutorPrBenchmarkHookRelevantPath('docs/tutor-pr-benchmark.md', hook), false);
   assert.equal(isTutorPrBenchmarkHookRelevantPath('workplan/items/example.md', hook), false);
+});
+
+test('relevance splits three ways so the hook gate is not reported as a benchmark input', () => {
+  const loaded = loadTutorPrBenchmarkConfig(CONFIG_PATH);
+  const hook = validateTutorPrBenchmarkHookConfig(loaded.config);
+  hook.reachablePaths = collectTutorPrBenchmarkReachablePaths({ root: ROOT, entryPaths: hook.importRoots });
+  hook.hookOnlyPaths = collectTutorPrBenchmarkHookOnlyPaths({
+    root: ROOT,
+    hookEntryPaths: ['scripts/tutor-pr-benchmark-hook.js'],
+    reachablePaths: hook.reachablePaths,
+  });
+
+  // The gate imports the runner, so the runner's closure can never contain the
+  // gate. Deriving the difference keeps that asymmetry from being restated by
+  // hand in a filename list.
+  assert.equal(hook.hookOnlyPaths.has('scripts/tutor-pr-benchmark-hook.js'), true);
+  assert.equal(hook.hookOnlyPaths.has('services/tutorStubPrBenchmarkHook.js'), false);
+
+  const partition = partitionTutorPrBenchmarkRelevance({
+    paths: [
+      'prompts/tutor-stub-first-draft.md',
+      'scripts/tutor-pr-benchmark-hook.js',
+      'services/tutorStubFirstDraftContract.js',
+      'services/tutorStubPrBenchmarkHook.js',
+      'config/drama-derivation/world-001-nocturne.yaml',
+    ],
+    hookConfig: hook,
+  });
+  assert.deepEqual(partition.reauditable, [
+    'services/tutorStubFirstDraftContract.js',
+    'services/tutorStubPrBenchmarkHook.js',
+  ]);
+  assert.deepEqual(partition.requestChanging, [
+    'config/drama-derivation/world-001-nocturne.yaml',
+    'prompts/tutor-stub-first-draft.md',
+  ]);
+  assert.deepEqual(partition.hookMachinery, ['scripts/tutor-pr-benchmark-hook.js']);
+
+  // A push that only touches the gate must produce no request-changing caveat,
+  // otherwise the line fires on every change to this file and is ignored.
+  assert.deepEqual(
+    partitionTutorPrBenchmarkRelevance({ paths: ['scripts/tutor-pr-benchmark-hook.js'], hookConfig: hook })
+      .requestChanging,
+    [],
+  );
 });
 
 test('the configured preset replays exactly one authored world, so only that world file is measurable', () => {

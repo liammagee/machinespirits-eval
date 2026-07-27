@@ -200,10 +200,19 @@ The re-audit makes no model calls and writes to `<report dir>/attribution/`.
 | `UNATTRIBUTED` | there is no cached ancestor report, or the nearest one is not comparable under the current plan |
 
 The re-audit holds the candidate text fixed and varies only the code, so it
-attributes audit-code change. Pushed paths that change the benchmark request
-itself — prompts, fixtures, a replayed world — are outside what it can isolate,
-and the warning names them. For those, the head run and the base/head comparison
-are the evidence.
+attributes audit-code change. A relevant pushed path is therefore one of three
+things, and only the middle one is named in the caveat:
+
+| Kind | How it is identified | Attribution |
+| --- | --- | --- |
+| benchmark code | inside the runner's static import closure | the re-audit varies exactly this, so the verdict covers it |
+| request input | relevant, but neither of the other two — prompts, fixtures, a replayed world, the benchmark config | outside what the re-audit can isolate; the head run and the base/head comparison are the evidence |
+| hook machinery | reachable from the hook entrypoint but not from the runner | affects neither the request nor the audits, so it is not reported |
+
+Hook machinery is derived as that set difference rather than a filename list, so
+a module later pulled into the runner's closure reclassifies itself. Naming it
+as a request input would make the caveat fire on every push that touches this
+gate, which is the noise the line exists to remove.
 
 For an exceptional push blocked before a complete verdict, use a conspicuous
 reasoned bypass:

@@ -117,6 +117,46 @@ export function summarizeTutorPrBenchmarkWorldCoverage({ paths, hookConfig }) {
   return { uncoveredWorldPaths: uncovered, coveredWorldIds: [...(hookConfig.coveredWorldIds || [])].sort() };
 }
 
+/**
+ * Split relevant pushed paths into the two buckets the attribution line needs.
+ *
+ * A relevant path is one of three things, not two. Code inside the benchmark
+ * runner's static import closure is exactly what the zero-call re-audit varies,
+ * so the attribution verdict already covers it. Non-code inputs — prompts,
+ * fixtures, a replayed world, the benchmark config — change the request the
+ * runner makes, so only a HEAD run measures them. The hook's own machinery is
+ * neither: it decides whether to invoke the benchmark, and cannot change what
+ * the benchmark generates or how the audits score it.
+ *
+ * Naming hook machinery as request-changing would make the caveat fire on every
+ * push that touches this gate, which is the noise this line exists to remove.
+ */
+export function partitionTutorPrBenchmarkRelevance({ paths, hookConfig }) {
+  const reachable = hookConfig.reachablePaths || new Set();
+  const hookOnly = hookConfig.hookOnlyPaths || new Set();
+  const reauditable = [];
+  const requestChanging = [];
+  const hookMachinery = [];
+  for (const filePath of [...new Set(paths)].sort()) {
+    const normalized = repositoryRelative(filePath, 'changed path');
+    if (reachable.has(normalized)) reauditable.push(normalized);
+    else if (hookOnly.has(normalized)) hookMachinery.push(normalized);
+    else requestChanging.push(normalized);
+  }
+  return { reauditable, requestChanging, hookMachinery };
+}
+
+/**
+ * Paths reachable from the hook entrypoint but not from the benchmark runner.
+ *
+ * Derived as a set difference rather than an explicit file list so that a module
+ * later pulled into the runner's closure reclassifies itself.
+ */
+export function collectTutorPrBenchmarkHookOnlyPaths({ root, hookEntryPaths, reachablePaths }) {
+  const closure = collectTutorPrBenchmarkReachablePaths({ root, entryPaths: hookEntryPaths });
+  return new Set([...closure].filter((filePath) => !reachablePaths.has(filePath)));
+}
+
 function extractStaticRelativeSpecifiers(source) {
   const specifiers = [];
   let statement = '';

@@ -10,6 +10,7 @@ import {
   classifyTutorPrBenchmarkAttribution,
   classifyTutorPrBenchmarkHookReport,
   collectTutorPrBenchmarkCoveredWorldFiles,
+  collectTutorPrBenchmarkHookOnlyPaths,
   collectTutorPrBenchmarkReachablePaths,
   describeTutorPrBenchmarkAttribution,
   installTutorPrBenchmarkPrePushHook,
@@ -17,6 +18,7 @@ import {
   listCachedTutorPrBenchmarkHookReports,
   loadCachedTutorPrBenchmarkReport,
   parseTutorPrBenchmarkPrePushInput,
+  partitionTutorPrBenchmarkRelevance,
   resolveTutorPrBenchmarkReportRoot,
   selectNearestTutorPrBenchmarkBaseline,
   summarizeTutorPrBenchmarkWorldCoverage,
@@ -159,7 +161,7 @@ function reportQualityFailure({ headline, reportPath, reportDir, headOid, hookRe
   const { reaudit, error } = baseline ? reauditBaseline(baseline, reportDir) : { reaudit: null, error: null };
   const attribution = classifyTutorPrBenchmarkAttribution({ baseline, reaudit, error });
   console.error(`tutor PR benchmark hook: ${describeTutorPrBenchmarkAttribution(attribution)}`);
-  const requestChanging = relevant.paths.filter((filePath) => !hookConfig.reachablePaths.has(filePath));
+  const { requestChanging } = partitionTutorPrBenchmarkRelevance({ paths: relevant.paths, hookConfig });
   if (baseline && requestChanging.length > 0) {
     console.error(
       `tutor PR benchmark hook: the re-audit varies audit code only; these pushed paths change the benchmark request itself, so only the HEAD run measures them: ${requestChanging.join(', ')}`,
@@ -174,6 +176,16 @@ function prePush() {
   hookConfig.reachablePaths = collectTutorPrBenchmarkReachablePaths({
     root: ROOT,
     entryPaths: hookConfig.importRoots,
+  });
+  hookConfig.hookOnlyPaths = collectTutorPrBenchmarkHookOnlyPaths({
+    root: ROOT,
+    hookEntryPaths: [
+      path
+        .relative(ROOT, fileURLToPath(import.meta.url))
+        .split(path.sep)
+        .join('/'),
+    ],
+    reachablePaths: hookConfig.reachablePaths,
   });
   const plan = buildTutorPrBenchmarkPlan({ config: loaded.config, root: ROOT, preset: hookConfig.preset });
   hookConfig.coveredWorldIds = new Set(plan.jobs.map((job) => job.benchmarkCase.worldId));
