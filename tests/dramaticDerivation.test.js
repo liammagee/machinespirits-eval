@@ -144,6 +144,30 @@ test('validateWorld accepts only explicit non-empty recognition-surface lists', 
   assert.throws(() => validateWorld(raw, 'non-string-recognition-surfaces'), /entries must be non-empty strings/u);
 });
 
+test('validateWorld accepts only bounded authored recognition patterns', () => {
+  const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
+  raw.secret.recognition_patterns = [
+    {
+      id: 'answer_claim',
+      all_of: [['sealed letter'], ['identifies', 'names'], ['Ada']],
+      none_of: ['does not identify'],
+    },
+  ];
+  const valid = validateWorld(raw, 'recognition-patterns');
+  assert.deepEqual(valid.secret.recognition_patterns, raw.secret.recognition_patterns);
+
+  raw.secret.recognition_patterns[0].all_of = [['sealed letter'], ['identifies']];
+  assert.throws(() => validateWorld(raw, 'short-recognition-pattern'), /at least three alternative groups/u);
+  raw.secret.recognition_patterns[0].all_of = [['sealed letter'], ['identifies'], []];
+  assert.throws(() => validateWorld(raw, 'empty-recognition-group'), /must be a non-empty array/u);
+  raw.secret.recognition_patterns[0].all_of = [['sealed letter'], ['identifies'], ['Ada']];
+  raw.secret.recognition_patterns[0].none_of = [];
+  assert.throws(() => validateWorld(raw, 'empty-recognition-exclusion'), /must be a non-empty array/u);
+  raw.secret.recognition_patterns[0].none_of = ['does not identify'];
+  raw.secret.recognition_patterns[0].ordered = 'yes';
+  assert.throws(() => validateWorld(raw, 'non-boolean-recognition-order'), /ordered must be a boolean/u);
+});
+
 test('validateWorld carries only declarative non-speaking audience context', () => {
   const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
   raw.audience = {

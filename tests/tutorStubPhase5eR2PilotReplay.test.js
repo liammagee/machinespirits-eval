@@ -144,6 +144,114 @@ test('Phase 5e R2 grounded closure fallback carries the frozen learner finding t
   assert.equal(closureAudit.closesDialogue, true);
 });
 
+test('Phase 5e R2 pilot A2 fallback replaces both rejected uptake forms with an auditable learner-specific opening', () => {
+  for (const fixture of [
+    {
+      learnerText:
+        'With the shutter bolted, Piper’s Gullet cannot provide the east crossing’s only lift on windless mornings.',
+      summary: 'Infers the shutter blocks the sole still-air lift.',
+      evidenceUse: 'links_evidence_to_rule',
+      actionFamily: 'reanchor_public_evidence',
+      defaultUptake: 'I hear the focus: “With the shutter bolted”; that stays at the centre of this turn.',
+      variationKey: 'phase5e-r2-pilot-a2-job1-attempt1-turn8',
+      dueEvidence:
+        'Without lift on the direct line, a still-morning courier glides the long spiral — a crossing twice as long.',
+    },
+    {
+      learnerText: 'The long spiral is why the east-terrace loaves arrive cold, with Tibbin cleared.',
+      summary: 'Attributes cold loaves to the long spiral and clears Tibbin.',
+      evidenceUse: 'omits_warrant',
+      actionFamily: 'compress_sayback',
+      defaultUptake: 'That follows from what we can see; I’ll carry just that much.',
+      variationKey: 'phase5e-r2-pilot-a2-job2-attempt1-turn9',
+      dueEvidence: 'The ovenloft launch log says the morning batch leaves the racks warm.',
+    },
+  ]) {
+    const responseFrame = buildTutorStubResponseCompositionFrame({
+      learnerText: fixture.learnerText,
+      classification: {
+        turn: {
+          summary: fixture.summary,
+          request_type: 'off_task_or_mixed',
+          discourse_move: 'inference',
+          evidence_use: fixture.evidenceUse,
+        },
+      },
+      registerSelection: { response_configuration: { action_family: fixture.actionFamily } },
+      dramaticReleaseFrame: { active: true },
+    });
+    responseFrame.due_evidence_surfaces = [fixture.dueEvidence];
+    const contract = compileTutorStubTurnProgressionContract({
+      learnerText: fixture.learnerText,
+      publicQuestion: PUBLIC_QUESTION,
+      responseCompositionFrame: responseFrame,
+      actionFamily: fixture.actionFamily,
+      tactic: 'unadorned_report',
+    });
+    const uptake = deterministicTutorStubTurnProgressionUptake({
+      contract,
+      defaultUptake: fixture.defaultUptake,
+      recentTutorTexts: Array(10).fill('prior tutor turn'),
+      variationKey: fixture.variationKey,
+      learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, fixture.learnerText),
+    });
+    const text = composeTutorStubFallbackWithUptake({
+      uptake,
+      text: `I write this public line into the delivery ledger: ${fixture.dueEvidence} What can we safely say from that?`,
+    });
+    const audit = auditTutorStubResponseComposition({
+      text,
+      frame: responseFrame,
+      learnerText: fixture.learnerText,
+      firstDraftContract: { progression: contract },
+    });
+
+    assert.notEqual(uptake, fixture.defaultUptake);
+    assert.doesNotMatch(uptake, /^That follows from what we can see/iu);
+    assert.equal(audit.ok, true, `${fixture.variationKey}: ${JSON.stringify(audit.issues)}`);
+  }
+});
+
+test('Phase 5e R2 pilot A2 declarative fallback preserves the whole learner finding instead of only its ledger noun', () => {
+  const learnerText = 'The ledger records Tibbin cleared and the bolted shutter as the cause of the cold loaves.';
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    publicQuestion: PUBLIC_QUESTION,
+    responseCompositionFrame: {
+      learner_move: { summary: 'Clears Tibbin and names the shutter as cause.' },
+      learner_dag: {
+        bottleneck: 'learner_integration_gap',
+        final_secret_entailed: false,
+        asserted_secret: false,
+      },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    actionFamily: 'compress_sayback',
+    tactic: 'unadorned_report',
+  });
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract,
+    publicObject: 'delivery ledger',
+  });
+
+  assert.match(handoff, /Tibbin cleared/iu);
+  assert.match(handoff, /bolted shutter/iu);
+  assert.match(handoff, /cause of the cold loaves/iu);
+  assert.doesNotMatch(handoff, /^We will keep the ledger as the current public check/iu);
+  const audit = auditTutorStubTurnProgression({
+    contract,
+    composition: {
+      slots: {
+        uptake: 'Your reading of the bolted shutter as the cause is the point I will carry forward.',
+        performance: { entry: '', response: '' },
+        handoff,
+      },
+    },
+  });
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+});
+
 test('Phase 5e R2 pilot A1 replay reaches grounded closure from the missed natural-language premise and answer', () => {
   const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
   const record = createTutorStubPublicLearnerRecord(world);

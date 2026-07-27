@@ -113,12 +113,16 @@ export function answerSurfaceTokens(value) {
   return normalized ? normalized.split(' ').map(foldToken) : [];
 }
 
-function containsTokenSequence(haystack, needle) {
-  if (!needle.length || needle.length > haystack.length) return false;
-  for (let start = 0; start <= haystack.length - needle.length; start += 1) {
-    if (needle.every((token, offset) => haystack[start + offset] === token)) return true;
+function tokenSequenceIndex(haystack, needle, from = 0) {
+  if (!needle.length || needle.length > haystack.length) return -1;
+  for (let start = from; start <= haystack.length - needle.length; start += 1) {
+    if (needle.every((token, offset) => haystack[start + offset] === token)) return start;
   }
-  return false;
+  return -1;
+}
+
+function containsTokenSequence(haystack, needle) {
+  return tokenSequenceIndex(haystack, needle) >= 0;
 }
 
 /**
@@ -145,6 +149,80 @@ export function matchAuthoredRecognitionSurface(text, surfaces = []) {
     if (answerSurfaceMentioned(text, surface)) return String(surface).trim();
   }
   return null;
+}
+
+/**
+ * Match an author-declared claim pattern without asking a model to decide
+ * semantic equivalence.
+ *
+ * Each `all_of` row is a group of alternative public fragments; one fragment
+ * from every group must occur, in group order when `ordered` is true.
+ * `none_of` fragments fail the pattern closed.
+ * This is intentionally more expressive than a single exact recognition
+ * surface, but it remains a finite, inspectable author contract rather than
+ * fuzzy similarity.
+ */
+export function matchAuthoredRecognitionPattern(text, patterns = []) {
+  const textTokens = answerSurfaceTokens(text);
+  for (const pattern of Array.isArray(patterns) ? patterns : []) {
+    const excluded = (pattern?.none_of || []).find((surface) => answerSurfaceMentioned(text, surface));
+    if (excluded) continue;
+    const matchedAlternatives = [];
+    let cursor = 0;
+    let complete = true;
+    for (const alternatives of pattern?.all_of || []) {
+      const candidates = alternatives
+        .map((surface) => {
+          const tokens = answerSurfaceTokens(surface);
+          return {
+            surface,
+            tokens,
+            index: tokenSequenceIndex(textTokens, tokens, pattern.ordered === true ? cursor : 0),
+          };
+        })
+        .filter((row) => row.index >= 0)
+        .sort((left, right) => left.index - right.index || right.tokens.length - left.tokens.length);
+      const matched = candidates[0];
+      if (!matched) {
+        complete = false;
+        break;
+      }
+      matchedAlternatives.push(String(matched.surface).trim());
+      if (pattern.ordered === true) cursor = matched.index + matched.tokens.length;
+    }
+    if (complete && matchedAlternatives.length) {
+      return {
+        id: String(pattern.id).trim(),
+        matchedAlternatives,
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * Resolve either an exact authored clause or a structured authored pattern.
+ * Exact clauses retain precedence for backward-compatible trace attribution.
+ */
+export function matchAuthoredRecognitionClaim(text, { surfaces = [], patterns = [] } = {}) {
+  const matchedSurface = matchAuthoredRecognitionSurface(text, surfaces);
+  if (matchedSurface) {
+    return {
+      kind: 'surface',
+      matchedSurface,
+      matchedPattern: null,
+      matchedAlternatives: [],
+    };
+  }
+  const pattern = matchAuthoredRecognitionPattern(text, patterns);
+  return pattern
+    ? {
+        kind: 'pattern',
+        matchedSurface: null,
+        matchedPattern: pattern.id,
+        matchedAlternatives: pattern.matchedAlternatives,
+      }
+    : null;
 }
 
 /**

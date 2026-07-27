@@ -82,6 +82,38 @@ secret:
     - "the shuttered gullet forces the twice-long route, and the extra travel cools the loaves"
     - "the bolted shutter forces the twice-long route on windless mornings, so the warm loaves cool"
     - "the bolted shutter made every windless east-terrace loaf cold"
+  # Finite paraphrase contracts for complete causal claims observed in live
+  # pilots. Every group must match, and an explicit denial fails closed.
+  recognition_patterns:
+    - id: shutter_path_cools
+      ordered: true
+      all_of:
+        - ["bolted shutter", "shuttered gullet", "shutter over Piper's Gullet"]
+        - [blocks, blocked, forces, forced, forcing]
+        - [lift, detour, route, crossing, delivery]
+        - [cool, cooled, cools, cold]
+      none_of:
+        - "does not block"
+        - "did not block"
+        - "does not force"
+        - "did not force"
+        - "not responsible"
+        - "never blocked"
+        - "never forced"
+    - id: shutter_direct_cause
+      ordered: true
+      all_of:
+        - ["bolted shutter", "shuttered gullet", "shutter over Piper's Gullet"]
+        - [cause, caused, responsible, made]
+        - [cool, cooled, cools, cold]
+        - [loaf, loaves, bread, delivery, deliveries, arrival]
+      none_of:
+        - "does not cause"
+        - "did not cause"
+        - "is not responsible"
+        - "isn't responsible"
+        - "not responsible"
+        - "never caused"
   surface: >-
     The loaves are cooled by Piper's Gullet — the old thermal vent in the
     cliff face whose frost shutter was bolted at first frost and never

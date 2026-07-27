@@ -892,7 +892,7 @@ describe('public evidence boundary and exact DAG postprocessor', () => {
     assert.equal(result.model.assessment.bestPathCoverage, 0.5);
   });
 
-  it('recognises an authored causal answer only after entailment and an extractor answer signal', () => {
+  it('recognises an authored causal answer after entailment even when the extractor omits its answer signal', () => {
     const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
     const publicEvidence = world.premises.map((premise) => ({
       premise: premise.id,
@@ -940,8 +940,8 @@ describe('public evidence boundary and exact DAG postprocessor', () => {
       publicReleaseLedger: publicEvidence,
     });
     assert.equal(unSignalled.model.assessment.finalSecretEntailed, true);
-    assert.equal(unSignalled.model.assessment.assertedSecret, false);
-    assert.equal(unSignalled.accepted.authoredRecognition.assertedSurface, null);
+    assert.equal(unSignalled.model.assessment.assertedSecret, true);
+    assert.match(unSignalled.accepted.authoredRecognition.assertedSurface, /twice-long delivery/u);
 
     const prematureEvidence = publicEvidence
       .filter((row) => row.premise === 'p_bolt')
@@ -964,6 +964,51 @@ describe('public evidence boundary and exact DAG postprocessor', () => {
     assert.equal(premature.model.assessment.finalSecretEntailed, false);
     assert.equal(premature.model.assessment.assertedSecret, false);
     assert.equal(premature.accepted.authoredRecognition.assertedSurface, null);
+  });
+
+  it('recognises the live A2 answer paraphrases through an authored, negation-aware pattern', () => {
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 18,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+    const apply = (learnerText) =>
+      applyTutorStubPublicLearnerRecordUpdate({
+        update: {
+          adopt: world.proofPaths[0].premises,
+          retract: [],
+          derive: [],
+          hypothesis: null,
+          assert_answer: null,
+        },
+        world,
+        record: createTutorStubPublicLearnerRecord(world),
+        tutorTurn: 18,
+        learnerText,
+        publicStagedEvidence: publicEvidence,
+        publicReleaseLedger: publicEvidence,
+      });
+
+    for (const learnerText of [
+      'The bolted shutter blocks the only eastward lift in still air, forcing a long detour that cools loaves launched warm.',
+      'The delivery ledger names the bolted shutter over Piper’s Gullet as responsible for the cold east-terrace loaves.',
+      'The ledger records Tibbin cleared and the bolted shutter as the cause of the cold loaves.',
+    ]) {
+      const result = apply(learnerText);
+      assert.equal(result.model.assessment.finalSecretEntailed, true, learnerText);
+      assert.equal(result.model.assessment.assertedSecret, true, learnerText);
+      assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret', learnerText);
+      assert.match(result.accepted.authoredRecognition.assertedPattern, /^shutter_/u, learnerText);
+      assert.equal(result.accepted.authoredRecognition.assertedPatternAlternatives.length, 4, learnerText);
+    }
+
+    const denial = apply('The bolted shutter is not responsible for the cold loaves.');
+    assert.equal(denial.model.assessment.finalSecretEntailed, true);
+    assert.equal(denial.model.assessment.assertedSecret, false);
+    assert.equal(denial.accepted.authoredRecognition.assertedPattern, null);
   });
 
   it('records a bare wrong name as a mirror assertion rather than a grounded close', () => {

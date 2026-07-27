@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import {
   answerSurfaceMentioned,
+  matchAuthoredRecognitionClaim,
   matchAuthoredRecognitionSurface,
   mintAnswerConstant,
 } from './dramaticDerivation/answerSurface.js';
@@ -2387,6 +2388,8 @@ export function applyTutorStubPublicLearnerRecordUpdate({
       adoptedPremises: [],
       premiseSurfaces: {},
       assertedSurface: null,
+      assertedPattern: null,
+      assertedPatternAlternatives: [],
     },
     humanDiscourse: normalizeTutorStubHumanDiscourseExtraction(update?.human_discourse || update?.humanDiscourse),
   };
@@ -2476,18 +2479,23 @@ export function applyTutorStubPublicLearnerRecordUpdate({
     matchPattern(world.questionPattern, fact),
   );
   const secretEntailed = answerCandidates.some((fact) => factKey(fact) === factKey(world.secret.fact));
-  const extractorSignalledAnswer =
-    accepted.derive.some((fact) => factKey(fact) === factKey(world.secret.fact)) ||
-    (typeof update?.assert_answer === 'string' && Boolean(update.assert_answer.trim())) ||
-    validFactArray(update?.asserts);
-  const authoredAssertionSurface =
-    secretEntailed && extractorSignalledAnswer
-      ? matchAuthoredRecognitionSurface(learnerText, world.secret?.recognition_surfaces)
-      : null;
-  if (authoredAssertionSurface) {
+  // Once the accepted public record itself entails the answer, an authored
+  // complete claim is the deterministic backstop for a semantic extractor
+  // that omitted `derive`/`assert_answer`. Requiring the extractor to signal
+  // first made the backstop circular and let ordinary paraphrases loop to the
+  // turn cap even after the learner had publicly solved the case.
+  const authoredAssertion = secretEntailed
+    ? matchAuthoredRecognitionClaim(learnerText, {
+        surfaces: world.secret?.recognition_surfaces,
+        patterns: world.secret?.recognition_patterns,
+      })
+    : null;
+  if (authoredAssertion) {
     assertion = [...world.secret.fact];
     accepted.assertAnswer = String(learnerText || '').trim();
-    accepted.authoredRecognition.assertedSurface = authoredAssertionSurface;
+    accepted.authoredRecognition.assertedSurface = authoredAssertion.matchedSurface;
+    accepted.authoredRecognition.assertedPattern = authoredAssertion.matchedPattern;
+    accepted.authoredRecognition.assertedPatternAlternatives = authoredAssertion.matchedAlternatives;
   } else if (typeof update?.assert_answer === 'string' && update.assert_answer.trim()) {
     assertion = factFromQuestionAnswer(world, update.assert_answer, answerCandidates);
     if (assertion) {

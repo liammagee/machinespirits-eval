@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   answerSurfaceMentioned,
   answerSurfaceTokens,
+  matchAuthoredRecognitionPattern,
   mintAnswerConstant,
   normalizeAnswerSurface,
 } from '../dramaticDerivation/answerSurface.js';
@@ -69,6 +70,47 @@ describe('answerSurfaceMentioned', () => {
   it('is false for an empty needle', () => {
     assert.equal(answerSurfaceMentioned('anything at all', ''), false);
     assert.equal(answerSurfaceMentioned('anything at all', null), false);
+  });
+});
+
+describe('matchAuthoredRecognitionPattern', () => {
+  const patterns = [
+    {
+      id: 'shutter_direct_cause',
+      ordered: true,
+      all_of: [
+        ['bolted shutter', 'shuttered gullet'],
+        ['cause', 'responsible'],
+        ['cool', 'cold'],
+        ['loaf', 'loaves', 'bread'],
+      ],
+      none_of: ['not responsible', 'does not cause'],
+    },
+  ];
+
+  it('matches a finite authored paraphrase contract', () => {
+    assert.deepEqual(
+      matchAuthoredRecognitionPattern(
+        'The delivery ledger names the bolted shutter as responsible for the cold loaves.',
+        patterns,
+      ),
+      {
+        id: 'shutter_direct_cause',
+        matchedAlternatives: ['bolted shutter', 'responsible', 'cold', 'loaves'],
+      },
+    );
+  });
+
+  it('fails closed on a missing group or explicit denial', () => {
+    assert.equal(matchAuthoredRecognitionPattern('The bolted shutter is in the ledger.', patterns), null);
+    assert.equal(
+      matchAuthoredRecognitionPattern('The bolted shutter is not responsible for the cold loaves.', patterns),
+      null,
+    );
+    assert.equal(
+      matchAuthoredRecognitionPattern('Tibbin caused the cold loaves; the bolted shutter was inspected.', patterns),
+      null,
+    );
   });
 });
 

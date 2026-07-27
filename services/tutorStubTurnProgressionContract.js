@@ -15,7 +15,8 @@ const SEMANTIC_FOCUS_SIGNAL_PATTERN =
 const BRIDGE_PATTERN =
   /\b(?:before (?:we|you|i)|first\b|to (?:answer|connect|decide|learn|reach|settle|show|test)|because\b|so (?:that|we|you)|which (?:bears on|connects|means|shows)|this (?:bears on|connects to|matters because)|that (?:bears on|connects to|matters because)|with (?:that|this) (?:answered|established|settled))\b/iu;
 const RESPONSIVE_UPTAKE_PATTERN =
-  /^(?:yes\b|no\b|right\b|fair\b|exactly\b|not quite\b|you (?:are asking|asked|mean|noticed|point(?:ed)? out|say|want)|your (?:claim|distinction|question|reading|reason|suggestion)|that (?:answer|claim|distinction|question|reading|reason|suggestion)|this (?:answer|claim|distinction|question|reading|reason|suggestion)|i (?:accept|answer|carry|credit|hear|keep|mark|record|see|take)|we (?:accept|carry|keep|mark|record|take))\b/iu;
+  /^(?:yes\b|no\b|right\b|fair\b|exactly\b|not quite\b|you (?:are asking|asked|mean|noticed|point(?:ed)? out|say|want)|your (?:claim|distinction|point|question|reading|reason|suggestion)|that (?:answer|claim|distinction|point|question|reading|reason|suggestion)|this (?:answer|claim|distinction|point|question|reading|reason|suggestion)|i (?:accept|answer|carry|credit|hear|keep|mark|record|see|take)|we (?:accept|carry|keep|mark|record|take))\b/iu;
+const LEGACY_DEVELOPMENT_LIKE_UPTAKE_PATTERN = /^i hear the focus\s*:/iu;
 const NO_QUESTION_ACTIONS = new Set([
   'answer_accountably',
   'close_inquiry',
@@ -264,9 +265,9 @@ function realizeTurnProgressionUptakeVariants(quotedFocus, discoursePlane = null
     ];
   }
   return [
-    `I keep your point about “${quotedFocus}” in view before we develop it.`,
-    `I hear the focus: “${quotedFocus}”; that stays at the centre of this turn.`,
-    `Your point about “${quotedFocus}” is the one I will answer now.`,
+    `Your point about “${quotedFocus}” is the one I will carry forward.`,
+    `Your reading of “${quotedFocus}” is the one I will answer now.`,
+    `I hear your point about “${quotedFocus}” and will keep it central.`,
   ];
 }
 
@@ -340,7 +341,18 @@ export function deterministicTutorStubTurnProgressionUptake({
     acceptedMeaningKind,
     learnerSurface,
   });
-  if (linkage.visible && !interrogativeUptake(fallback)) return fallback;
+  const auditableLinkage = (candidate, row) =>
+    row.visible &&
+    RESPONSIVE_UPTAKE_PATTERN.test(candidate) &&
+    !LEGACY_DEVELOPMENT_LIKE_UPTAKE_PATTERN.test(candidate) &&
+    !interrogativeUptake(candidate);
+  // A focus-term overlap alone is not enough for deterministic delivery. The
+  // compiled contract normalizes broad words such as "see" and "understand"
+  // together, while the public response-composition audit correctly rejects
+  // "That follows from what we can see" as generic. Select only candidates
+  // that also carry a responsive construction, so the fallback and its judge
+  // share one effective contract.
+  if (auditableLinkage(fallback, linkage)) return fallback;
 
   const focus = boundedPublicFocus(
     contract.turn_focus_contract?.primary_surface || contract.learner_uptake?.learner_surface,
@@ -351,14 +363,16 @@ export function deterministicTutorStubTurnProgressionUptake({
     ? 1 + stableVariationIndex(variationKey, variants.length - 1)
     : 0;
   const echoes = (candidate) => typeof learnerEchoGuard === 'function' && learnerEchoGuard(candidate) === true;
-  const visible = (candidate) =>
-    substantiveLearnerUptake({
+  const visible = (candidate) => {
+    const row = substantiveLearnerUptake({
       uptake: candidate,
       focusTerms,
       acceptedMeaning,
       acceptedMeaningKind,
       learnerSurface,
-    }).visible;
+    });
+    return auditableLinkage(candidate, row);
+  };
   const variantOrder = [variantIndex, ...variants.map((_, index) => index).filter((index) => index !== variantIndex)];
   const candidate = variantOrder.map((index) => variants[index]).find((row) => !echoes(row) && visible(row));
   if (candidate) return candidate;
@@ -777,7 +791,8 @@ function declarativeFallbackFocus(
   const focusObject = surface.match(
     /\b(?:badge log|call log|incident log|visitor log|trial-book|book|ledger|log|record|register|notice|report|file|photograph|photo|crucible|coin|shilling|tool|sample|lunchbox)\b/iu,
   )?.[0];
-  if (focusObject) return `We will keep the ${focusObject} as the current public check.`;
+  const objectOnly = focusObject ? `We will keep the ${focusObject} as the current public check.` : '';
+  if (objectOnly && handoffTargetVisible(contract?.handoff_contract, objectOnly)) return objectOnly;
   const boundedSurface = surface
     .replace(/[?]+/gu, '')
     .replace(/[.!]+$/gu, '')

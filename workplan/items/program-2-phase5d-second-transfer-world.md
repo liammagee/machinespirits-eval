@@ -24,6 +24,7 @@ links:
     - notes/program-2/2026-07-27-phase5e-r2-replication-freeze.md
     - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment1.md
     - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment2.md
+    - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment3.md
     - config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection-amendment1.json
@@ -283,3 +284,16 @@ symmetrically suppresses due-release warrant candidates in committee and
 control. Zero-model replay now reaches full coverage and grounded assertion;
 all paid calls remain closed pending a fresh commit, certificate, and explicit
 authorization.
+
+2026-07-27 Codex: The A2 pilot sealed 1/4 jobs and then stopped under the frozen
+futility rule after the proof-skipper silent control exhausted both attempts.
+The sole sealed committee dialogue reached 1.00 coverage and hard safety but
+ran to the 40-turn cap after repeatedly stating the correct answer; three other
+attempts ended when deterministic fallbacks failed their own uptake audit. The
+zero-model bundle passed all five static plan/provenance checks and failed six
+evidence-completeness checks, so A2 is an apparatus-feasibility failure with no
+treatment-effect estimate. Prospective Amendment 3 replaces phrase-pinned
+closure with finite ordered, negation-aware authored claim patterns after exact
+public entailment, aligns deterministic uptake with its response audit, and
+preserves the full learner focus in declarative handoffs. A2 remains immutable
+and no further paid call is authorized by this repair.
