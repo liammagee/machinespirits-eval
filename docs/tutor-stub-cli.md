@@ -915,10 +915,25 @@ configured. Pass `--model` for any ref that `worlds` lists.
 
 `/ms-tutor-remote` wraps the same loop for chat, with the user as the learner.
 
-This surface carries the dialogue only. Slash commands remain rejected with
-`command_transport_unavailable`, and the terminal presentation layer — ghost-text
-drafts, Tab completion, pickers, the masthead — belongs to the TUI this transport
-bypasses. Changing lab or world means ending the session and starting another.
+Slash commands run only where the registry declares a structured
+non-interactive adapter (`processHttp: adapter_available`). `cmd --list`
+resolves the current set — today the curriculum-navigation commands `/module`,
+`/next`, `/progress`:
+
+```bash
+node scripts/tutor-stub-remote.js cmd --list
+node scripts/tutor-stub-remote.js cmd /progress
+```
+
+Everything else returns `command_transport_unavailable` with reason
+`adapter_unavailable`. That gate is checked *before* a command's declared
+effects, so widening the mount's `allowedEffects` admits nothing extra —
+extending this surface means writing an adapter per command, not relaxing a
+permission. Command output is stripped of terminal control sequences.
+
+The terminal presentation layer — ghost-text drafts, Tab completion, pickers,
+the masthead — belongs to the TUI this transport bypasses. Changing lab or world
+means ending the session and starting another.
 
 ## Terminal compatibility
 
