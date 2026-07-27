@@ -532,6 +532,7 @@
         "tests/workplanBoardFocus.test.js",
         "tests/workplanCurriculum.test.js",
         "tests/workplanSetField.test.js",
+        "tests/workplanTrailerPrePushHook.test.js",
         "tests/yokedContingencyClaimReadiness.test.js",
         "tests/yokedContingencyG0PaidSmoke.test.js",
         "tests/yokedContingencyG1PaidSmoke.test.js",
