@@ -404,6 +404,7 @@
         "tests/tutorStubCliHelp.test.js",
         "tests/tutorStubCliTheme.test.js",
         "tests/tutorStubCloseoutProjection.test.js",
+        "tests/tutorStubCloseoutReportPresentation.test.js",
         "tests/tutorStubCodexRemoteBridge.test.js",
         "tests/tutorStubCommandRegistry.test.js",
         "tests/tutorStubCompactSpeakingPrompt.test.js",
