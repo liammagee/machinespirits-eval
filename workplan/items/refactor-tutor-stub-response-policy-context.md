@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-response-policy-context
 title: Refactor tutor-stub response-policy context projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -15,6 +15,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-response-configuration-presentation
 links:
+  prs:
+    - 309
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -92,3 +94,7 @@ Log:
   The widened neighborhood now passes 190/190, and the complete hermetic suite
   passes all 523 selected root files plus 137/137 tutor-core tests. The updated
   236-item source-only workplan, manifest, refs, and cycle gates remain green.
+- 2026-07-27 — PR #309 merged the response-policy context child as `0aba11c4`
+  after all ten CI lanes passed; the serialized workplan render followed as
+  `7f313831`. Closed this child and activated the adjacent tutor-only context
+  projection slice on `codex/refactor-tutor-stub-tutor-prompt-context`.

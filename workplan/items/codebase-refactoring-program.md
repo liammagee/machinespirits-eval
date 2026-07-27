@@ -61,6 +61,8 @@ links:
     - refactor-tutor-stub-learner-dag-presentation
     - refactor-tutor-stub-learner-classification-presentation
     - refactor-tutor-stub-response-configuration-presentation
+    - refactor-tutor-stub-response-policy-context
+    - refactor-tutor-stub-tutor-prompt-context
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -553,3 +555,22 @@ Log:
   widened neighborhood passes 190/190, the complete hermetic suite passes all
   523 selected root files plus 137/137 tutor-core tests, and the 236-item
   source-only workplan, manifest, refs, and cycle gates remain green.
+- 2026-07-27 — PR #309 merged the response-policy context child as `0aba11c4`
+  with all ten CI lanes green; the serialized render followed as `7f313831`.
+  Closed that child and activated `refactor-tutor-stub-tutor-prompt-context`
+  for the adjacent redacted learner-DAG, human-discourse, and dialogue-closure
+  serializers while retaining their frame/state/runtime owners in the CLI.
+- 2026-07-27 — The tutor prompt-context child has a 232-line dependency-free
+  projector, a 199-line net CLI reduction, byte-pinned redacted-DAG and full
+  human-discourse fixtures, and 113/113 passing prompt/closure neighborhood
+  tests. Full hermetic and static parity remain before review.
+- 2026-07-27 — The tutor prompt-context child reached review with final
+  7,259/7,259 root tests across all 524 manifest files plus 137/137 tutor-core
+  tests, both zero-skip. Manifest, 237-item source-only workplan, refs, lint,
+  formatting, syntax, diff, and the zero-cycle ratchet across 406 files are
+  green on unchanged `origin/main` at `7f313831`.
+- 2026-07-27 — Rebased the tutor prompt-context child onto `origin/main` at
+  `d6ca5423` after the runtime-disjoint rubric-v3 PR #310. Final-base parity is
+  113/113 for the overlap neighborhood and fully green across all 527 selected
+  root files plus 137/137 tutor-core tests; the 239-item source workplan and
+  zero-cycle ratchet across 408 files also pass.
