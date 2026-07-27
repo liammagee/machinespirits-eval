@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-27T04:41:50.420Z",
+  "generated": "2026-07-27T04:43:29.796Z",
   "counts": {
-    "total": 234,
+    "total": 235,
     "byStatus": {
       "done": 205,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
-      "review": 5,
+      "review": 6,
       "active": 8,
       "archived": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 56,
+      "infra": 57,
       "maintenance": 67,
       "content": 2,
       "ops": 8,
@@ -714,6 +714,35 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "claude/wizardly-vaughan-9b35e0"
+    },
+    {
+      "id": "tutor-pr-benchmark-hook-warning-attribution",
+      "title": "Attribute tutor PR benchmark hook warnings and scope world triggers",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Passed: node --test tests/tutorStubPrBenchmarkHook.test.js (13/13, up from 8); npm run lint; npx prettier --check on all four changed files; npm run lint:cycles (0 cycles across 403 files); npm run refs:check; npm run test:manifest. Established against real repository data rather than inference: a zero-call re-audit of the nearest cached ancestor report (77838c3f7a9e, 32 commits back) returned 0 improved, 0 regressed, 6 unchanged fail, confirming the standing failure; 32 authored world files were enumerated and exactly 1 (world-001-nocturne.yaml, id world_001_nocturne) is replayed by the strong preset. A full end-to-end hook probe printed the uncovered-world notice, the STANDING attribution line naming its baseline, and the request-changing-paths caveat, exiting 0.",
+      "branch": "claude/pr-benchmark-hook-standing-warning",
+      "depends_on": [
+        "tutor-pr-benchmark-delta-harness",
+        "tutor-pr-benchmark-calibration-harness"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-pr-benchmark.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "pr-gate",
+        "regression",
+        "hook"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "workplan-commit-trailer-check",
