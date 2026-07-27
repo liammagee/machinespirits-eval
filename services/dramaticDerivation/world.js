@@ -37,11 +37,25 @@ export function validateWorld(raw, source = '<inline>') {
   const fail = (msg) => {
     throw new Error(`world spec ${source}: ${msg}`);
   };
+  const validateRecognitionSurfaces = (value, field) => {
+    if (value === undefined) return;
+    if (!Array.isArray(value) || value.length === 0) {
+      fail(`${field} must be a non-empty array when supplied`);
+    }
+    if (value.some((surface) => typeof surface !== 'string' || !surface.trim())) {
+      fail(`${field} entries must be non-empty strings`);
+    }
+    const normalized = value.map((surface) => surface.trim());
+    if (new Set(normalized).size !== normalized.length) {
+      fail(`${field} entries must be unique`);
+    }
+  };
   if (!raw || typeof raw !== 'object') fail('not an object');
   for (const field of ['id', 'secret', 'rules', 'premises', 'release_schedule', 'slope']) {
     if (!(field in raw)) fail(`missing required field "${field}"`);
   }
   if (!Array.isArray(raw.secret.fact)) fail('secret.fact must be a fact array');
+  validateRecognitionSurfaces(raw.secret.recognition_surfaces, 'secret.recognition_surfaces');
   if (!raw.question) fail('missing "question" (the public dramatic question)');
   if (!Array.isArray(raw.question_pattern)) {
     fail('missing "question_pattern" (the public answer shape, e.g. [heir, "?x"])');
@@ -51,6 +65,7 @@ export function validateWorld(raw, source = '<inline>') {
   for (const premise of raw.premises) {
     if (!premise.id || !Array.isArray(premise.fact)) fail('premise needs id + fact array');
     if (premiseById.has(premise.id)) fail(`duplicate premise id "${premise.id}"`);
+    validateRecognitionSurfaces(premise.recognition_surfaces, `${premise.id}.recognition_surfaces`);
     premiseById.set(premise.id, premise);
   }
   for (const rule of raw.rules) {

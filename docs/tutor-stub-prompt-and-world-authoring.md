@@ -48,6 +48,31 @@ For a curriculum module, first identify the learning claim that should become me
 8. Author presentation explicitly for every world: `temporal_frame`, `scene_ecology`, `narrative_diction`, `ledger_term`, and `summary`. There is no implicit “period language” fallback.
 9. Put quantitative success criteria in the harness and reports, not in tutor or learner speech prompts.
 
+When a world uses distinctive ordinary-language paraphrases that the semantic
+extractor may miss, the author may declare complete deterministic recognition
+clauses. Put `recognition_surfaces` on a premise for clauses equivalent to that
+public premise, or on `secret` for clauses that unambiguously state the final
+causal answer. A premise clause can be accepted only after its clue is public;
+a secret clause can become an assertion only after the accepted public record
+already entails the secret and the semantic extractor has signalled a derived
+or asserted answer on that turn. Matching normalizes spelling, punctuation,
+possessives, and inflection, but performs no semantic guessing. Author
+complete affirmative clauses rather than short aliases, and never treat these
+strings as speaking prompts:
+
+```yaml
+secret:
+  fact: [coolsLoaves, eastTerrace, pipersGullet]
+  recognition_surfaces:
+    - "the bolted shutter forces the long route, so warm loaves cool"
+
+premises:
+  - id: p_sole_lift
+    fact: [onlyStillAirLift, pipersGullet, eastTerrace]
+    recognition_surfaces:
+      - "on windless mornings every east-terrace glider depends on Piper's Gullet"
+```
+
 ## Opening the public scene
 
 The harness owns only four opening requirements:

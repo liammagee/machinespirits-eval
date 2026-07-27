@@ -74,6 +74,14 @@ learner_voice: >-
 
 secret:
   fact: [coolsLoaves, eastTerrace, pipersGullet]
+  # Complete public clauses that unambiguously state this world's causal
+  # answer without necessarily repeating the proper name Piper's Gullet.
+  # These are deterministic recognition surfaces, never speaking prompts.
+  recognition_surfaces:
+    - "the bolted shutter forces a twice-long delivery, so warm loaves cool"
+    - "the shuttered gullet forces the twice-long route, and the extra travel cools the loaves"
+    - "the bolted shutter forces the twice-long route on windless mornings, so the warm loaves cool"
+    - "the bolted shutter made every windless east-terrace loaf cold"
   surface: >-
     The loaves are cooled by Piper's Gullet — the old thermal vent in the
     cliff face whose frost shutter was bolted at first frost and never
@@ -154,6 +162,9 @@ premises:
       nobody climbed the ladder-road to unbolt it.
   - id: p_soleLift
     fact: [onlyStillAirLift, pipersGullet, eastTerrace]
+    recognition_surfaces:
+      - "on windless mornings, every east-terrace glider depends on Piper's Gullet"
+      - "on windless mornings, Piper's Gullet is the only available lift for the east crossing"
     surface: >-
       The loftmistress's wind charts are plain: on windless mornings the only
       rising air on the east crossing is the warm breath of Piper's Gullet.

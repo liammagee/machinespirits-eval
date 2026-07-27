@@ -132,6 +132,22 @@ export function answerSurfaceMentioned(text, value) {
 }
 
 /**
+ * Return the exact authored recognition surface contained in `text`.
+ *
+ * Unlike answer-name matching, these surfaces are complete public clauses
+ * whose equivalence to a premise or conclusion has been asserted by the
+ * world author. The matcher deliberately performs no semantic guessing: it
+ * only folds spelling, punctuation, possessives, and inflection in the same
+ * way as the answer bridge, then requires the authored token sequence.
+ */
+export function matchAuthoredRecognitionSurface(text, surfaces = []) {
+  for (const surface of Array.isArray(surfaces) ? surfaces : []) {
+    if (answerSurfaceMentioned(text, surface)) return String(surface).trim();
+  }
+  return null;
+}
+
+/**
  * The constant a free-text answer should be recorded under when it names no
  * candidate the learner's record entails.
  *

@@ -128,6 +128,22 @@ test('validateWorld normalizes optional public opening authorship', () => {
   assert.throws(() => validateWorld(raw, 'non-string-opening-frame'), /opening_frame\.authored_text/u);
 });
 
+test('validateWorld accepts only explicit non-empty recognition-surface lists', () => {
+  const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
+  raw.secret.recognition_surfaces = ['the full public chain establishes Marin as heir'];
+  raw.premises[0].recognition_surfaces = ['Marin is Tessa’s child'];
+  const withRecognition = validateWorld(raw, 'recognition-surfaces');
+  assert.deepEqual(withRecognition.secret.recognition_surfaces, raw.secret.recognition_surfaces);
+  assert.deepEqual(withRecognition.premises[0].recognition_surfaces, raw.premises[0].recognition_surfaces);
+
+  raw.premises[0].recognition_surfaces = [];
+  assert.throws(() => validateWorld(raw, 'empty-recognition-surfaces'), /must be a non-empty array/u);
+  raw.premises[0].recognition_surfaces = ['same clause', 'same clause'];
+  assert.throws(() => validateWorld(raw, 'duplicate-recognition-surfaces'), /entries must be unique/u);
+  raw.premises[0].recognition_surfaces = [42];
+  assert.throws(() => validateWorld(raw, 'non-string-recognition-surfaces'), /entries must be non-empty strings/u);
+});
+
 test('validateWorld carries only declarative non-speaking audience context', () => {
   const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
   raw.audience = {

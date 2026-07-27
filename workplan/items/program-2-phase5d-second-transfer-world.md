@@ -23,6 +23,7 @@ links:
     - notes/program-2/2026-07-26-phase5e-presentation-amendment.md
     - notes/program-2/2026-07-27-phase5e-r2-replication-freeze.md
     - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment1.md
+    - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment2.md
     - config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection-amendment1.json
@@ -269,3 +270,16 @@ tool event. Prospective pilot Amendment 1 repairs only those seams, pins exact
 zero-model replays, retains fail-closed handling for known tool events, and
 requires a new clean commit, export root, and certificate before one replacement
 four-dialogue pilot. The 18-dialogue cohort remains closed.
+
+2026-07-27 Codex: Replacement pilot A1 at SHA `69de4132` sealed its first two
+jobs, then stopped under the frozen futility rule when the proof-skipper
+control reached only 0.75 coverage. Both providers and transports were
+healthy; exact trace replay instead found a missed natural-language
+`p_soleLift` adoption, repeated grounded causal answers that were not resolved
+to the authored answer constant, and due-release turns incorrectly counted as
+no-new-premise warrant opportunities. Prospective Amendment 2 adds explicit
+world-authored recognition clauses with public/entailed-state guards and
+symmetrically suppresses due-release warrant candidates in committee and
+control. Zero-model replay now reaches full coverage and grounded assertion;
+all paid calls remain closed pending a fresh commit, certificate, and explicit
+authorization.

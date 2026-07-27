@@ -15,7 +15,7 @@ export const TUTOR_STUB_POINT_OF_ACTION_ARMS = Object.freeze([
 // layer inside the speaking call, `silent_control` observes only.
 export const TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS = Object.freeze(['committee', 'silent_control']);
 export const TUTOR_STUB_POINT_OF_ACTION_HANDOFF_ELIGIBILITY_VERSION =
-  'program2-phase5e-r2-handoff-eligibility-2026-07-27.v1';
+  'program2-phase5e-r2-opportunity-eligibility-2026-07-27.v2';
 const ALL_POINT_OF_ACTION_ARMS = Object.freeze([
   ...TUTOR_STUB_POINT_OF_ACTION_ARMS,
   ...TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS,
@@ -196,7 +196,12 @@ export function buildTutorStubPointOfActionTurn({
     nearClosure,
     closeInquiry,
   });
-  const trigger = assignment.trigger;
+  const dueReleaseConflict =
+    assignment.trigger === 'warrant_skip' &&
+    TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS.includes(normalizedArm) &&
+    Array.isArray(duePremises) &&
+    duePremises.length > 0;
+  const trigger = dueReleaseConflict ? null : assignment.trigger;
   let injectedText = null;
   let injectedKind = null;
   if (trigger && normalizedArm === 'triggered_placebo') {
@@ -215,10 +220,23 @@ export function buildTutorStubPointOfActionTurn({
     arm: normalizedArm,
     turn: Number(turn),
     assigned_trigger: trigger,
+    ...(dueReleaseConflict ? { suppressed_trigger: 'warrant_skip' } : {}),
     assignment_priority: trigger === 'stagnant_repeat' ? 1 : trigger === 'warrant_skip' ? 2 : null,
     cofire: assignment.cofire,
     candidates: assignment.candidates || { stagnant_repeat: false, warrant_skip: false },
-    suppression: assignment.suppression,
+    suppression: {
+      ...assignment.suppression,
+      ...(dueReleaseConflict ? { due_release_requires_new_premise: true } : {}),
+    },
+    ...(dueReleaseConflict
+      ? {
+          opportunity_eligibility: {
+            version: TUTOR_STUB_POINT_OF_ACTION_HANDOFF_ELIGIBILITY_VERSION,
+            eligible: false,
+            reason: 'due_release_conflicts_with_no_new_premise_intervention',
+          },
+        }
+      : {}),
     inputs: {
       stagnation: Number(stagnation || 0),
       proposed_action_family: proposedActionFamily || null,

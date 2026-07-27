@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 
-import { answerSurfaceMentioned, mintAnswerConstant } from './dramaticDerivation/answerSurface.js';
+import {
+  answerSurfaceMentioned,
+  matchAuthoredRecognitionSurface,
+  mintAnswerConstant,
+} from './dramaticDerivation/answerSurface.js';
 import { closure, factKey, matchPattern } from './dramaticDerivation/chainer.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from './dramaticDerivation/learnerDag.js';
 import { buildLearnerProxyDagMemory, buildTutorLearnerDagModel } from './dramaticDerivation/proxyDagMemory.js';
@@ -2379,6 +2383,11 @@ export function applyTutorStubPublicLearnerRecordUpdate({
     derive: [],
     hypothesis: null,
     assertAnswer: null,
+    authoredRecognition: {
+      adoptedPremises: [],
+      premiseSurfaces: {},
+      assertedSurface: null,
+    },
     humanDiscourse: normalizeTutorStubHumanDiscourseExtraction(update?.human_discourse || update?.humanDiscourse),
   };
   const rejected = [];
@@ -2407,6 +2416,23 @@ export function applyTutorStubPublicLearnerRecordUpdate({
       continue;
     }
     adoptReleasedRow(row);
+  }
+  // A world author may pin complete public clauses that are equivalent to a
+  // staged premise. These are a deterministic backstop for model extraction,
+  // not a fuzzy classifier: only a configured token sequence can add a fact,
+  // and only after that fact is public. This keeps ordinary learner wording
+  // from becoming apparatus attrition without granting the harness licence to
+  // infer arbitrary paraphrases.
+  for (const [premiseId, row] of released) {
+    if (!row?.fact || retracted.has(premiseId)) continue;
+    if (record.board.has(factKey(row.fact))) continue;
+    const premise = world.premiseById.get(premiseId);
+    const matchedSurface = matchAuthoredRecognitionSurface(learnerText, premise?.recognition_surfaces);
+    if (!matchedSurface || !adoptReleasedRow(row)) continue;
+    if (!accepted.authoredRecognition.adoptedPremises.includes(premiseId)) {
+      accepted.authoredRecognition.adoptedPremises.push(premiseId);
+      accepted.authoredRecognition.premiseSurfaces[premiseId] = matchedSurface;
+    }
   }
   for (const fact of Array.isArray(update?.derive) ? update.derive : []) {
     if (!validFactArray(fact)) {
@@ -2446,10 +2472,23 @@ export function applyTutorStubPublicLearnerRecordUpdate({
     accepted.hypothesis = hypothesis;
   }
   let assertion = null;
-  if (typeof update?.assert_answer === 'string' && update.assert_answer.trim()) {
-    const answerCandidates = [...closure([...record.board.values()], world.rules).facts.values()].filter((fact) =>
-      matchPattern(world.questionPattern, fact),
-    );
+  const answerCandidates = [...closure([...record.board.values()], world.rules).facts.values()].filter((fact) =>
+    matchPattern(world.questionPattern, fact),
+  );
+  const secretEntailed = answerCandidates.some((fact) => factKey(fact) === factKey(world.secret.fact));
+  const extractorSignalledAnswer =
+    accepted.derive.some((fact) => factKey(fact) === factKey(world.secret.fact)) ||
+    (typeof update?.assert_answer === 'string' && Boolean(update.assert_answer.trim())) ||
+    validFactArray(update?.asserts);
+  const authoredAssertionSurface =
+    secretEntailed && extractorSignalledAnswer
+      ? matchAuthoredRecognitionSurface(learnerText, world.secret?.recognition_surfaces)
+      : null;
+  if (authoredAssertionSurface) {
+    assertion = [...world.secret.fact];
+    accepted.assertAnswer = String(learnerText || '').trim();
+    accepted.authoredRecognition.assertedSurface = authoredAssertionSurface;
+  } else if (typeof update?.assert_answer === 'string' && update.assert_answer.trim()) {
     assertion = factFromQuestionAnswer(world, update.assert_answer, answerCandidates);
     if (assertion) {
       accepted.assertAnswer = update.assert_answer.trim();

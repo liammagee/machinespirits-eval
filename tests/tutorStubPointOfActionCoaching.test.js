@@ -199,3 +199,29 @@ test('Phase 5e r2 removes handoff-forbidden warrants from both experimental arms
     compiled,
   );
 });
+
+test('Phase 5e r2 excludes due-release warrant moments from both experimental arms before delivery', () => {
+  for (const arm of TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS) {
+    const turn = buildTutorStubPointOfActionTurn({
+      ...BASE,
+      arm,
+      evidenceUse: 'omits_warrant',
+      duePremises: ['p_due'],
+    });
+    assert.equal(turn.candidates.warrant_skip, true);
+    assert.equal(turn.assigned_trigger, null);
+    assert.equal(turn.suppressed_trigger, 'warrant_skip');
+    assert.equal(turn.suppression.due_release_requires_new_premise, true);
+    assert.equal(turn.opportunity_eligibility.eligible, false);
+    assert.equal(turn.opportunity_eligibility.reason, 'due_release_conflicts_with_no_new_premise_intervention');
+    assert.equal(auditTutorStubPointOfActionCompliance({ turn, tutorText: 'A due clue enters.' }), null);
+  }
+
+  const frozenArm = buildTutorStubPointOfActionTurn({
+    ...BASE,
+    arm: 'side_coach',
+    evidenceUse: 'omits_warrant',
+    duePremises: ['p_due'],
+  });
+  assert.equal(frozenArm.assigned_trigger, 'warrant_skip');
+});

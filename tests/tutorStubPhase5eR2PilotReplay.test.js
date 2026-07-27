@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+
+import { loadWorld } from '../services/dramaticDerivation/world.js';
 
 import {
   auditTutorStubDialogueClosureResponse,
@@ -17,8 +21,13 @@ import {
   deterministicTutorStubTurnProgressionHandoff,
   deterministicTutorStubTurnProgressionUptake,
 } from '../services/tutorStubTurnProgressionContract.js';
+import {
+  applyTutorStubPublicLearnerRecordUpdate,
+  createTutorStubPublicLearnerRecord,
+} from '../services/tutorStubPublicLearnerAnalysis.js';
 
 const PUBLIC_QUESTION = 'What makes every east-terrace loaf arrive cold on windless mornings?';
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 test('Phase 5e R2 proof-skipper assertion gap requires the public question instead of a declarative loop', () => {
   const learnerText = 'The ledger clears Tibbin; the long spiral leaves every windless-morning loaf cold.';
@@ -133,4 +142,63 @@ test('Phase 5e R2 grounded closure fallback carries the frozen learner finding t
   const closureAudit = auditTutorStubDialogueClosureResponse({ text, frame: closureFrame });
   assert.equal(closureAudit.ok, true, JSON.stringify(closureAudit.issues));
   assert.equal(closureAudit.closesDialogue, true);
+});
+
+test('Phase 5e R2 pilot A1 replay reaches grounded closure from the missed natural-language premise and answer', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+  const record = createTutorStubPublicLearnerRecord(world);
+  const stagedThrough = (turn) =>
+    world.releaseSchedule
+      .filter((entry) => entry.turn < turn)
+      .map((entry) => {
+        const premise = world.premiseById.get(entry.premise);
+        return {
+          premise: entry.premise,
+          turn: entry.turn,
+          via: entry.via,
+          surface: premise.surface,
+          fact: premise.fact,
+        };
+      });
+  const apply = (turn, learnerText, { adopt = [], derive = [], assertAnswer = null } = {}) => {
+    const publicEvidence = stagedThrough(turn);
+    return applyTutorStubPublicLearnerRecordUpdate({
+      update: { adopt, retract: [], derive, hypothesis: null, assert_answer: assertAnswer },
+      world,
+      record,
+      tutorTurn: turn,
+      learnerText,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+  };
+
+  apply(4, 'The bolted frost shutter at Piper’s Gullet is behind the cold windless deliveries, not Tibbin.', {
+    adopt: ['p_bolt'],
+  });
+  const soleLift = apply(
+    6,
+    'On windless mornings, every east-terrace glider depends on Piper’s Gullet, leaving the bolted shutter responsible for the cold loaves.',
+  );
+  apply(9, 'No—Tibbin has no place in the ledger; the bolted shutter and long spiral account for the cold loaves.', {
+    adopt: ['p_spiral'],
+  });
+  apply(11, 'I’ll carry it forward: the flight, not Tibbin’s baking, is where the loaves turn cold.', {
+    adopt: ['p_warm'],
+  });
+  const answer = apply(
+    14,
+    'The ledger’s final entry is clear: the bolted shutter forces the twice-long route on windless mornings, so the warm loaves cool before reaching the east terrace.',
+    {
+      derive: [world.secret.fact],
+      assertAnswer: 'The bolted shutter caused the cold east-terrace deliveries.',
+    },
+  );
+
+  assert.deepEqual(soleLift.accepted.authoredRecognition.adoptedPremises, ['p_soleLift']);
+  assert.equal(answer.model.assessment.bestPathCoverage, 1);
+  assert.equal(answer.model.assessment.finalSecretEntailed, true);
+  assert.equal(answer.model.assessment.assertedSecret, true);
+  assert.equal(answer.model.assessment.bottleneck, 'grounded_asserted_secret');
+  assert.match(answer.accepted.authoredRecognition.assertedSurface, /twice-long route/u);
 });
