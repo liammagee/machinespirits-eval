@@ -321,6 +321,7 @@ import {
 } from '../services/tutorStubResponseDetails.js';
 import { projectTutorStubTurnAnalysisLines } from '../services/tutorStubTurnAnalysisPresentation.js';
 import { projectTutorStubTechnicalAnalysisLines } from '../services/tutorStubTechnicalAnalysisPresentation.js';
+import { projectTutorStubTechnicalDebugLines } from '../services/tutorStubTechnicalDebugPresentation.js';
 import {
   compactTutorStubCloseoutCounts as compactCounts,
   countTutorStubCloseoutRows as countBy,
@@ -571,7 +572,6 @@ import {
 import {
   renderTutorStubLightweightFieldSvg as renderLightweightFieldSvg,
   tutorStubFieldBar as fieldBar,
-  tutorStubFieldDelta as fieldDelta,
 } from '../services/tutorStubFieldPresentation.js';
 import {
   applyTutorStubPointOfActionConstraint,
@@ -8369,12 +8369,6 @@ function oneLine(value, { max = 220 } = {}) {
   return `${text.slice(0, Math.max(0, max - 3))}...`;
 }
 
-function printAnalysisLine(label, value, { max = 220 } = {}) {
-  const text = oneLine(value, { max });
-  if (!text) return;
-  console.log(`${C.dim}  ${label}: ${text}${C.reset}`);
-}
-
 function printTutorStubFeatureMap(state = null) {
   const featureRows = tutorStubCapabilityFeatureRows(state?.capabilities || null);
   let activeContext = null;
@@ -8448,17 +8442,6 @@ function printCurrentTurnAnalysis(state, { technical = false } = {}) {
   for (const line of lines) console.log(line);
 }
 
-function debugNumber(value) {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? Number(numeric.toFixed(3)) : 'n/a';
-}
-
-function debugDelta(current, previous) {
-  if (previous === null || previous === undefined) return 'baseline';
-  const delta = fieldDelta(current, previous);
-  return `${delta >= 0 ? '+' : ''}${delta}`;
-}
-
 function printExplanatoryDebugTechnical(state, { force = false, terminalWrapped = false } = {}) {
   if (!force && !state.explanatoryDebug?.enabled) return false;
   if (!terminalWrapped && state.concurrentTerminal?.enabled) {
@@ -8468,175 +8451,33 @@ function printExplanatoryDebugTechnical(state, { force = false, terminalWrapped 
   }
   const turn = state.turns.at(-1) || null;
   if (!turn) {
-    console.log(`${C.brightBlue}${C.bold}debug explain >${C.reset} no completed turns yet\n`);
+    for (const line of projectTutorStubTechnicalDebugLines({ colors: C })) console.log(line);
     return false;
   }
 
   const previousTurn = state.turns.at(-2) || null;
-  const classification = turn.classification || {};
-  const turnAnalysis = classification.turn || {};
-  const overall = classification.overall || {};
-  const learnerDag = turn.tutorLearnerDagModel || {};
-  const assessment = learnerDag.assessment || {};
-  const metrics = learnerDag.metrics || {};
   const selection = normalizeStoredRegisterSelection(turn.registerSelection || null);
   const previousSelection = normalizeStoredRegisterSelection(previousTurn?.registerSelection || null);
   const policyCalculation = registerPolicyCalculation(selection);
-  const policyFeatures = policyCalculation.features || {};
-  const policyField = policyFeatures.field || null;
-  const policyDag = policyFeatures.dag || null;
   const field = buildLightweightDialogueField(state.turns);
   const fieldRow = field.rows.at(-1) || null;
-  const previousFieldRow = field.rows.at(-2) || null;
-  const inputs = fieldRow?.calculation?.inputs || {};
   const currentRegister = selection?.engagement_stance || selection?.selected_register || 'off';
   const previousRegister = previousSelection?.engagement_stance || previousSelection?.selected_register || 'none';
   const registerChanged = previousRegister !== 'none' && previousRegister !== currentRegister;
   const activatedPolicy = selection?.activated_policy || selection?.primary_policy || selection?.policy || 'off';
-  const distribution = formatEngagementStanceDistribution(selection?.distribution, { limit: 4 });
-  const releasePacing = turn.releasePacing || null;
-
-  console.log(
-    `${C.brightBlue}${C.bold}debug explain >${C.reset} turn ${turn.turn} · ${turn.turnId || turnDebugId(state, turn.turn)}`,
-  );
-  console.log(`${C.brightCyan}${C.bold}  A · learner analysis${C.reset}`);
-  printAnalysisLine('reading', turnAnalysis.summary || overall.summary || 'No classifier summary was stored.');
-  printAnalysisLine(
-    'labels',
-    `request=${turnAnalysis.request_type || 'unknown'}; move=${turnAnalysis.discourse_move || 'unknown'}; evidence=${
-      turnAnalysis.evidence_use || 'unknown'
-    }; stance=${turnAnalysis.epistemic_stance || 'unknown'}; agency=${turnAnalysis.agency || 'unknown'}`,
-  );
-  printAnalysisLine(
-    'reasoning record',
-    `coverage=${assessment.bestPathCoverage ?? 'n/a'}; grounded=${metrics.groundedCount || 0}; missing=${
-      metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 'n/a'
-    }; bottleneck=${assessment.bottleneck || 'unknown'}`,
-  );
-
-  console.log(`${C.brightYellow}${C.bold}  B · calculations and field update${C.reset}`);
-  if (policyField) {
-    printAnalysisLine(
-      'policy input field',
-      `surface ${policyField.beforeScore ?? 'n/a'} → ${policyField.afterScore ?? 'n/a'} (Δ ${
-        policyField.delta === null || policyField.delta === undefined
-          ? 'initial'
-          : `${policyField.delta >= 0 ? '+' : ''}${policyField.delta}`
-      }); relation=${policyField.relation || 'unknown'}`,
-    );
-  }
-  if (policyDag) {
-    printAnalysisLine(
-      'policy proof calculation',
-      `progressScore=${policyDag.progressScore ?? 'n/a'}; progress=${policyDag.progress ?? 'n/a'}; coverage=${
-        policyDag.bestPathCoverage ?? 'n/a'
-      }; missing=${policyDag.missingPremiseCount ?? 'n/a'}; bottleneck=${policyDag.bottleneck || 'unknown'}`,
-    );
-  }
-  if (fieldRow) {
-    printAnalysisLine(
-      'mastery calculation',
-      `0.34×${debugNumber(inputs.conceptual)} + 0.26×${debugNumber(inputs.readiness)} + 0.30×${debugNumber(
-        inputs.coverage,
-      )} + 0.10×${debugNumber(inputs.grounded)} = ${fieldRow.learnerMastery}`,
-    );
-    printAnalysisLine(
-      'risk calculation',
-      `0.45×${debugNumber(inputs.missing)} + 0.25×(1-${debugNumber(inputs.readiness)}) + ${debugNumber(
-        inputs.overreach,
-      )} overreach = ${fieldRow.learnerRisk}`,
-    );
-    printAnalysisLine(
-      'alignment calculation',
-      `0.30×${debugNumber(inputs.registerConfidence)} + 0.24×${debugNumber(
-        inputs.efficacyScore,
-      )} + 0.22×${debugNumber(inputs.brevity)} + 0.24×${inputs.leakOk ? 1 : 0} = ${fieldRow.tutorAlignment}`,
-    );
-    printAnalysisLine(
-      'momentum calculation',
-      `0.42×${debugNumber(inputs.masteryGain)} + 0.28×${debugNumber(
-        inputs.coverageGain,
-      )} + 0.18×${debugNumber(inputs.efficacyScore)} + 0.12×${debugNumber(inputs.releasedShare)} = ${
-        fieldRow.jointMomentum
-      }`,
-    );
-    printAnalysisLine(
-      'field updated for next turn',
-      `mastery=${fieldRow.learnerMastery} (${debugDelta(
-        fieldRow.learnerMastery,
-        previousFieldRow?.learnerMastery,
-      )}); risk=${fieldRow.learnerRisk} (${debugDelta(
-        fieldRow.learnerRisk,
-        previousFieldRow?.learnerRisk,
-      )}); alignment=${fieldRow.tutorAlignment} (${debugDelta(
-        fieldRow.tutorAlignment,
-        previousFieldRow?.tutorAlignment,
-      )}); momentum=${fieldRow.jointMomentum} (${debugDelta(fieldRow.jointMomentum, previousFieldRow?.jointMomentum)})`,
-    );
-  }
-  const dynamical = selection?.dynamical_system_policy || null;
-  if (dynamical?.state_vector) {
-    printAnalysisLine('system vector', topNumericEntries(dynamical.state_vector, { limit: 5 }).join(', '));
-    printAnalysisLine(
-      'derivatives',
-      topNumericEntries(dynamical.derivative_vector, { limit: 4, abs: true }).join(', '),
-    );
-    printAnalysisLine('stance scores', topNumericEntries(dynamical.scores, { limit: 5 }).join(', '));
-  } else if (policyCalculation.scores) {
-    printAnalysisLine('stance scores', topNumericEntries(policyCalculation.scores, { limit: 5 }).join(', '));
-  }
-
-  console.log(`${C.brightMagenta}${C.bold}  C · resulting register decision${C.reset}`);
-  printAnalysisLine(
-    'register change',
-    previousRegister === 'none'
-      ? `initial choice → ${currentRegister}`
-      : registerChanged
-        ? `${previousRegister} → ${currentRegister}`
-        : `${currentRegister} held`,
-  );
-  printAnalysisLine(
-    'policy path',
-    `stack=${selection?.policy || state.register?.policy || 'off'}; activated=${activatedPolicy}; temperature=${
-      selection?.temperature ?? state.register?.temperature ?? 'n/a'
-    }`,
-  );
-  if (selection?.random_performance?.enabled) {
-    printAnalysisLine(
-      'random performance',
-      'engagement stance and host character sampled without learner-assessment influence; the field calculations above did not select them',
-    );
-  }
-  if (selection?.policy_composition) {
-    const composition = selection.policy_composition;
-    printAnalysisLine(
-      'overlay result',
-      composition.activated_overlay
-        ? `${composition.activated_overlay} overrode the primary at strength ${composition.activated_strength}`
-        : `no overlay crossed ${composition.overlay_threshold}; primary retained`,
-    );
-  }
-  if (distribution) printAnalysisLine('stance distribution', distribution);
-  if (releasePacing) {
-    printAnalysisLine(
-      'clue release pace',
-      `${releasePacing.baseSpeed}x base → ${releasePacing.effectiveSpeed}x effective (${releasePacing.direction}); ${
-        releasePacing.signal?.reason || 'no pace-change request'
-      }${releasePacing.releasedNow?.length ? `; released ${releasePacing.releasedNow.join(', ')}` : ''}`,
-    );
-  }
-  printAnalysisLine('decision basis', selection?.register_reason || policyCalculation.drivers.slice(0, 4).join('; '));
-  if (selection) {
-    printAnalysisLine(
-      'response configuration',
-      `action=${selection.action_family || 'none'}; audience=${selection.audience_register || 'unknown'}; language=${
-        selection.lexical_accessibility || 'unknown'
-      }; scene=${selection.scene_immersion || 'unknown'}`,
-    );
-  }
-  console.log(
-    `${C.dim}  /debug off returns to dialogue plus the compact model/stance line · /debug on returns to concise prose${C.reset}\n`,
-  );
+  const lines = projectTutorStubTechnicalDebugLines({
+    turn,
+    turnIdentifier: turn.turnId || turnDebugId(state, turn.turn),
+    selection,
+    previousSelection,
+    policyCalculation,
+    field,
+    distribution: formatEngagementStanceDistribution(selection?.distribution, { limit: 4 }),
+    registerPolicy: state.register?.policy || 'off',
+    registerTemperature: state.register?.temperature ?? null,
+    colors: C,
+  });
+  for (const line of lines) console.log(line);
   appendTraceEvent(state.trace, {
     type: 'explanatory_debug_output',
     format: 'technical',
