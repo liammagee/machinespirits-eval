@@ -77,6 +77,8 @@
     "wp:ingest": "node scripts/workplan.js ingest",
     "wp:pr-link": "node scripts/check-pr-workplan-link.js",
     "wp:commit-link": "node scripts/check-commit-workplan-trailer.js",
+    "wp:trailer-hook:install": "node scripts/workplan-trailer-hook.js install",
+    "wp:trailer-hook:uninstall": "node scripts/workplan-trailer-hook.js uninstall",
     "wp:github-mirror": "node scripts/workplan-github-mirror.js",
     "wp:test": "node --test tests/workplan.test.js",
     "skills:list": "node scripts/sync-agent-skills.js list",
