@@ -1,5 +1,9 @@
 # Project Memory for Claude
 
+## How to write here
+
+Plain words, short sentences, answer what was asked and stop. The full rule is `.claude/style-rule.md`, which a `UserPromptSubmit` hook injects on every turn — edit that file to change how replies read. It applies to chat, commits, comments and notes alike. Paper prose keeps its own register.
+
 ## This fork
 
 This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` specialised for the **Dramatic Recognition / Poetics** arc (sanctioned 2026-05-19). Master plan: `DRAMATIC-RECOGNITION-PLAN.md`. The full eval-factorial machinery below (cells 1–125, ego-superego, adaptive runner, rubrics v2.2) is inherited unchanged; the *active* work lives in the poetics pipeline and lands as a new § of `docs/research/paper-full-2.0.md`. Sibling agent docs at repo root: `AGENTS.md` (Codex), `GEMINI.md`.
