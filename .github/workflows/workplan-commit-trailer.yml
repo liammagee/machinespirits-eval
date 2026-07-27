@@ -1,0 +1,49 @@
+name: Workplan commit link
+
+# Covers the gap `wp:pr-link` cannot see. That check reads a pull request body
+# and runs on `pull_request` events, so work pushed straight to main was never
+# asked which card it belongs to.
+#
+# Deliberately unfiltered by path: the commits this exists to catch are the ones
+# that touch application code and nothing under workplan/, which is exactly what
+# the paths filter on workplan-validate.yml excludes.
+#
+# This reports after the fact and cannot block a push. A red run means a commit
+# reached main with no card behind it; the remedy is to record it on the card it
+# belongs to, or create that card. Run `npm run wp:commit-link -- --range
+# origin/main..HEAD` before pushing to avoid landing one at all.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  commit-link:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The push range starts at the previous tip, which a shallow clone
+          # would not have.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # Workplan tooling only imports yaml; avoid building native deps here.
+      - name: Install yaml
+        run: npm install --no-save yaml
+
+      - name: Commits link back to workplan
+        run: npm run wp:commit-link

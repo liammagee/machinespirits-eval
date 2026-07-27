@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -6,7 +7,15 @@ export const ROOT_TEST_DIRECTORIES = ['services/__tests__', 'tests'];
 export const CORE_TEST_DIRECTORY = 'tutor-core/services/__tests__';
 export const TEST_MANIFEST_RELATIVE_PATH = 'config/hermetic-test-manifest.json';
 const DEFAULT_PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+/**
+ * Checked-in areas whose `.test.js` files are deliberately outside the manifest
+ * contract. This is not the same question as "is this path part of the repo" —
+ * `vendor/`, `data/`, and `exports/` are all tracked — so it stays in force
+ * whichever way the candidate files were enumerated.
+ */
 const TEST_SCAN_EXCLUDED_DIRECTORIES = new Set([
+  '.claude',
   '.git',
   'coverage',
   'data',
@@ -34,6 +43,11 @@ export function discoverCoreTestFiles(projectRoot = DEFAULT_PROJECT_ROOT) {
   return discoverImmediateTests(projectRoot, CORE_TEST_DIRECTORY);
 }
 
+function isExcludedTestPath(relativePath) {
+  const segments = relativePath.split(/[\\/]/u);
+  return segments.slice(0, -1).some((segment) => TEST_SCAN_EXCLUDED_DIRECTORIES.has(segment));
+}
+
 function discoverTestsRecursively(projectRoot, directory) {
   const absoluteDirectory = path.join(projectRoot, directory);
   if (!fs.existsSync(absoluteDirectory)) return [];
@@ -42,8 +56,12 @@ function discoverTestsRecursively(projectRoot, directory) {
     for (const entry of fs.readdirSync(currentDirectory, { withFileTypes: true })) {
       if (entry.isDirectory() && TEST_SCAN_EXCLUDED_DIRECTORIES.has(entry.name)) continue;
       const absolutePath = path.join(currentDirectory, entry.name);
-      if (entry.isDirectory()) visit(absolutePath);
-      else if (entry.isFile() && entry.name.endsWith('.test.js')) {
+      if (entry.isDirectory()) {
+        // A nested checkout — a submodule, or a `git worktree add` target — carries
+        // its own `.git`. Its tests belong to that checkout's manifest, not this one.
+        if (fs.existsSync(path.join(absolutePath, '.git'))) continue;
+        visit(absolutePath);
+      } else if (entry.isFile() && entry.name.endsWith('.test.js')) {
         files.push(path.relative(projectRoot, absolutePath));
       }
     }
@@ -52,8 +70,49 @@ function discoverTestsRecursively(projectRoot, directory) {
   return files.sort();
 }
 
-export function discoverAllContractTestFiles(projectRoot) {
-  return discoverTestsRecursively(projectRoot, '.');
+function runGit(args, projectRoot) {
+  return execFileSync('git', args, {
+    cwd: projectRoot,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
+}
+
+/**
+ * Test files git considers part of this checkout: tracked ones plus untracked
+ * ones that no ignore rule covers. Tracked-only would blind the contract to a
+ * brand-new unregistered test, which is the drift it exists to catch.
+ *
+ * Returns null when the enumeration cannot be trusted — git absent, or
+ * `projectRoot` not a repository root — so the caller falls back to the walk.
+ * The root check matters: run from a subdirectory git would happily answer for
+ * the enclosing repository, and an ignored fixture directory would come back
+ * empty rather than failing.
+ */
+function discoverGitTestFiles(projectRoot) {
+  try {
+    const toplevel = runGit(['rev-parse', '--show-toplevel'], projectRoot).trim();
+    if (!toplevel || fs.realpathSync(toplevel) !== fs.realpathSync(projectRoot)) return null;
+    // `--others` stops at a nested checkout's `.git` rather than descending, so
+    // an agent worktree under an un-ignored path is excluded on this path too.
+    const listed = runGit(
+      ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*.test.js'],
+      projectRoot,
+    );
+    // `--cached` reads the index, which still names files deleted from the working
+    // tree; drop those so this agrees with the per-suite filesystem discovery.
+    return [...new Set(listed.split('\0').filter(Boolean))].filter((file) =>
+      fs.existsSync(path.join(projectRoot, file)),
+    );
+  } catch {
+    return null;
+  }
+}
+
+export function discoverAllContractTestFiles(projectRoot = DEFAULT_PROJECT_ROOT) {
+  const candidates = discoverGitTestFiles(projectRoot) ?? discoverTestsRecursively(projectRoot, '.');
+  return candidates.filter((file) => !isExcludedTestPath(file)).sort();
 }
 
 export function loadTestManifest(

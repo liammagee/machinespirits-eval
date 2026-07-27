@@ -20,6 +20,7 @@ links:
   notes: https://github.com/liammagee/machinespirits-eval/issues/74
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/297
+    - https://github.com/liammagee/machinespirits-eval/pull/300
 tags:
   - agent-skills
   - permissions
@@ -63,3 +64,10 @@ Verification completed 2026-07-27:
 - `node --test tests/skillSync.test.js` passes both tests;
 - workplan source and schema validation, hermetic manifest synchronization,
   lint, formatting, and diff checks pass.
+
+Post-merge follow-up 2026-07-27:
+
+- PR #294 concurrently added `ms-big-picture` with another `allowed-tools`
+  declaration after the original audit branch was prepared. The new main-branch
+  CI policy caught it immediately; the follow-up repair removes that 56th
+  declaration without changing the skill instructions.

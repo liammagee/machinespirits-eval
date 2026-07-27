@@ -16,7 +16,6 @@ import {
   resolveTutorStubSceneDiction,
   tutorStubDeclaredSceneObject,
   tutorStubDictionPhrase,
-  tutorStubNamedSceneProp,
   tutorStubSceneLedgerTerm,
   tutorStubScenePublicObjects,
 } from './tutorStubSceneDiction.js';
@@ -1621,22 +1620,39 @@ function configuredFallbackObject({ world = null, learnerText = '', part = '' } 
   // to contain: a world that says "repair notebook" gets "notebook". Where the
   // scene names a prop the world itself declared, that whole prop wins.
   //
-  // Two orderings are deliberate. The declared prop is required to appear in the
-  // scene text rather than being taken on declaration alone, which keeps every
-  // world whose prose never names its ledger exactly where it was. And the
-  // exhibit whitelist keeps its precedence for the non-record parts: those parts
-  // are written to hold up a piece of physical evidence, and a declared ledger
-  // term is a record, not an exhibit — promoting it would have marrick's
-  // examiner reach for the trial-book rather than the coin under assay.
+  // A declaration counts on its own. Requiring `presentation.ledger_term` to
+  // *also* appear in the scene's prose is a second gate with nothing behind it —
+  // an author writing `ledger_term: assize book` has already said what this
+  // world's evidence record is called — and 18 of the 32 authored worlds declare
+  // a term their own prose never says, so the declaration was inert and they
+  // spoke the generic default instead.
+  //
+  // Two orderings are deliberate. A declaration outranks the record whitelist,
+  // because that whitelist reaches a compound prop only by the fragment it
+  // happens to contain and reaches a world with no prop at all by the bare word
+  // "record": a world declaring "assize book" should not say "the record"
+  // because that generic word turns up in its setting. But a declaration stays
+  // below the exhibit whitelist, because the non-record parts are written to
+  // hold up a piece of physical evidence and a ledger term is a record, not an
+  // exhibit — promoting it there would have marrick's examiner reach for the
+  // trial-book rather than the coin under assay.
+  const ledgerTerm = tutorStubSceneLedgerTerm(world);
   if (part === 'record_keeper') {
     // The record slot takes the declared ledger term only, never an exhibit the
     // world happens to declare beside it.
-    const declaredRecord = tutorStubNamedSceneProp(source, [tutorStubSceneLedgerTerm(world)]);
-    return declaredRecord || sceneObject(recordPattern) || 'record';
+    return ledgerTerm || sceneObject(recordPattern) || 'record';
   }
+  // Among several declared props a non-ledger one is the exhibit the part wants;
+  // the ledger term is the last resort before the generic default. No authored
+  // world declares `public_objects` today, so this ordering is for the ones that
+  // will — it should not be left to `tutorStubScenePublicObjects`' longest-first
+  // sort, which is about matching text, not about choosing.
+  const declaredExhibit = declaredProps.find((prop) => prop !== ledgerTerm);
   return (
     sceneObject(exhibitPattern) ||
     tutorStubDeclaredSceneObject(source, world) ||
+    declaredExhibit ||
+    ledgerTerm ||
     sceneObject(recordPattern) ||
     'public record'
   );

@@ -26,6 +26,11 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
+import {
+  TUTOR_STUB_NORMAL_SLASH_COMMANDS,
+  tutorStubCommandTransportAdmission,
+} from '../services/tutorStubCommandRegistry.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // Sonnet 5 over the Claude Code CLI bridge: no API key required in a cloud
@@ -42,7 +47,24 @@ const CONTROL_TIMEOUT_MS = 60_000;
 const SERVER_READY_TIMEOUT_MS = 90_000;
 const SERVER_PROBE_INTERVAL_MS = 500;
 
-const SUBCOMMANDS = new Set(['worlds', 'start', 'say', 'status', 'transcript', 'end']);
+const SUBCOMMANDS = new Set(['worlds', 'start', 'say', 'cmd', 'status', 'transcript', 'end']);
+
+// The HTTP mount admits a command only when the registry declares a structured
+// non-interactive adapter for it AND its active effects are inside this
+// allowlist (services/evalSurfaces.js). Effects are the *second* gate, so
+// widening this set alone admits nothing extra — a command without an adapter
+// is rejected before effects are consulted.
+const HTTP_ALLOWED_COMMAND_EFFECTS = Object.freeze(['persistentMutation']);
+
+/**
+ * Commands this transport can actually run, resolved from the registry rather
+ * than hardcoded, so the list tracks the adapter work instead of going stale.
+ */
+export function remoteAdmissibleCommands(commands = TUTOR_STUB_NORMAL_SLASH_COMMANDS) {
+  return commands.filter(
+    (token) => tutorStubCommandTransportAdmission(token, { allowedEffects: HTTP_ALLOWED_COMMAND_EFFECTS }).allowed,
+  );
+}
 
 /**
  * The session pointer is developer-facing state for this script only; the
@@ -87,12 +109,13 @@ export function parseRemoteArgs(argv) {
     throw new Error(`unknown subcommand: ${subcommand} (expected one of ${[...SUBCOMMANDS].join(', ')})`);
   }
 
-  const args = { subcommand, json: false, autostart: true, stopServer: false, positional: [] };
+  const args = { subcommand, json: false, autostart: true, stopServer: false, list: false, positional: [] };
   for (let index = 0; index < rest.length; index += 1) {
     const token = rest[index];
     if (token === '--json') args.json = true;
     else if (token === '--no-autostart') args.autostart = false;
     else if (token === '--stop-server') args.stopServer = true;
+    else if (token === '--list') args.list = true;
     else if (token.startsWith('--')) {
       const key = token.slice(2);
       const value = rest[index + 1];
@@ -141,6 +164,17 @@ export function extractDialogue(session) {
       speaker: message.role === 'assistant' ? 'tutor' : 'learner',
       text: message.content,
     }));
+}
+
+/**
+ * Command adapters render for a terminal, so their output can carry erase-line
+ * and cursor sequences that are noise to a non-terminal consumer. The ESC byte
+ * is built dynamically to keep a control character out of the literal
+ * (no-control-regex).
+ */
+export function stripTerminalControl(value) {
+  const ansi = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'gu');
+  return String(value || '').replace(ansi, '');
 }
 
 /** The transport reports failures as an {error:{code,message}} envelope. */
@@ -233,6 +267,7 @@ Subcommands
   worlds                    list labs, worlds, tutors and model refs
   start                     create a session (boots the server if needed)
   say <text>                send a learner turn and print the tutor's reply
+  cmd [--list | <command>]  run a slash command the transport supports
   status                    turn counters and lifecycle for the session
   transcript                print the full public dialogue
   end                       finalize the session
@@ -253,8 +288,10 @@ Options
   --stop-server             (end) also stop a server this script started
   --json                    machine-readable output
 
-Slash commands are not available: the process-backed HTTP transport rejects
-{"kind":"command"} with command_transport_unavailable by design.
+Only commands with a structured non-interactive adapter run here; "cmd --list"
+resolves the current set from the registry. Everything else is rejected with
+command_transport_unavailable (adapter_unavailable) — that gate is checked
+before command effects, so it is adapter work, not a permissions setting.
 
 Examples
   node scripts/tutor-stub-remote.js start --world world_001_nocturne
@@ -315,6 +352,37 @@ async function runSay(base, args, env) {
     const tutor = payload.result?.turn?.tutor;
     if (tutor) console.log(`\n[TUTOR]\n${tutor}`);
     else printDialogue(extractDialogue(payload.session), { limit: 2 });
+  });
+}
+
+async function runCmd(base, args, env) {
+  const admissible = remoteAdmissibleCommands();
+  const input = args.positional.join(' ').trim();
+  if (!input || args.list) {
+    emit(args, { admissible }, () => {
+      console.log(`commands available on this transport (${admissible.length}):`);
+      for (const token of admissible) console.log(`  ${token}`);
+      console.log(
+        '\nEverything else is rejected with command_transport_unavailable (adapter_unavailable):',
+        '\nthe registry has no structured non-interactive adapter for it yet. Use the',
+        '\ninteractive CLI (npm run tutor:stub) for those.',
+      );
+    });
+    return;
+  }
+
+  const sessionId = requireSessionId(args, env);
+  const command = input.startsWith('/') ? input : `/${input}`;
+  const payload = await request(
+    base,
+    'POST',
+    `/sessions/${encodeURIComponent(sessionId)}/steps`,
+    { input: command, kind: 'command' },
+    args.timeout || DEFAULT_STEP_TIMEOUT_MS,
+  );
+  emit(args, payload, () => {
+    const output = stripTerminalControl(payload.result?.command?.output).trim();
+    console.log(output ? output : `${command} accepted (no output)`);
   });
 }
 
@@ -385,6 +453,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
   if (args.subcommand === 'worlds') await runWorlds(base, args);
   else if (args.subcommand === 'start') await runStart(base, args, env, server);
   else if (args.subcommand === 'say') await runSay(base, args, env);
+  else if (args.subcommand === 'cmd') await runCmd(base, args, env);
   else if (args.subcommand === 'status') await runStatus(base, args, env);
   else if (args.subcommand === 'transcript') await runTranscript(base, args, env);
   else if (args.subcommand === 'end') await runEnd(base, args, env);

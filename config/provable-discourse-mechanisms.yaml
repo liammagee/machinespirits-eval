@@ -961,15 +961,21 @@ claims:
       type: code_path
       # Fork note: the drama-machine learner engine composes labels dynamically
       # (`learner_${role}`), so the literal three-stage labels live in the
-      # deliberation-trace consumer (evaluationRunner.js), not the engine.
-      file: "services/evaluationRunner.js"
+      # canonical trace-schema module, not the engine. Point at the *definition*
+      # site rather than a consumer: 0f373fc6 made traceSchema.js the shared
+      # emitter/reader vocabulary, and 31341370 then moved the old consumer
+      # (extractLearnerTurnsFromTrace) out of evaluationRunner.js into
+      # services/adaptiveTraceProjection.js without touching the labels.
+      # Consumers relocate under pure refactors; traceSchema.js is what must
+      # change if the pipeline shape itself changes.
+      file: "services/traceSchema.js"
       pattern: "learner_ego_initial|learner_superego|learner_ego_revision"
       min_matches: 3
     assertion:
       op: gte
       expected: 3
     remediation:
-      - "If learner deliberation labels are missing, check the learner ego/superego/revision trace handling in evaluationRunner.js (engine composes labels via learner_${role})."
+      - "If learner deliberation labels are missing, check learnerDeliberationTraceAgent / learnerTraceStage / projectLearnerDeliberationTrace in services/traceSchema.js (engine composes labels via learner_${role})."
     tags: [s4, architecture, verified]
 
   - id: paper2.s4.architecture.two_file_storage

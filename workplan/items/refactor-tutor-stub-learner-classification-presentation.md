@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-learner-classification-presentation
 title: Refactor tutor-stub learner-classifier presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-learner-dag-presentation
 links:
+  prs:
+    - 295
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -93,3 +95,8 @@ Log:
   Final-base parity passes 7,229/7,229 root tests across 521 files plus 137/137
   tutor-core tests, both with zero skips. Manifest, source-only workplan, and
   diff gates remain green.
+- 2026-07-27 — PR #295 merged as `7080678e`. Nine of ten CI lanes passed; the
+  lint job failed only because the independently created `paper/v3.0.230` tag
+  made `docs/ref-status.md` stale. The source-only ref-governance repair is PR
+  #296; the learner-classifier code and every behavioral/test lane remained
+  green.

@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-27T00:09:01.019Z",
+  "generated": "2026-07-27T04:43:29.796Z",
   "counts": {
-    "total": 229,
+    "total": 235,
     "byStatus": {
-      "done": 203,
+      "done": 205,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
-      "review": 2,
+      "review": 6,
       "active": 8,
       "archived": 4
     },
     "byType": {
       "research": 46,
       "experiment": 49,
-      "infra": 54,
-      "maintenance": 64,
+      "infra": 57,
+      "maintenance": 67,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -199,6 +199,7 @@
           "refactor-tutor-stub-director-presentation",
           "refactor-tutor-stub-learner-dag-presentation",
           "refactor-tutor-stub-learner-classification-presentation",
+          "refactor-tutor-stub-response-configuration-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -326,6 +327,33 @@
       ]
     },
     {
+      "id": "drama-world-public-object-reachability",
+      "title": "Make each drama world's declared public object reachable in its own deterministic text",
+      "status": "active",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Every world's deterministic fallback names that world's own public object rather than the generic 'public record', unprompted wording is pinned by test for all 32 worlds, and the change to the 17 affected worlds is enumerated rather than incidental; targeted and hermetic suites pass without model calls.",
+      "branch": "claude/world-public-objects-reachable",
+      "links": {
+        "code": [
+          "services/tutorStubResponseComposition.js",
+          "services/tutorStubSceneDiction.js",
+          "config/drama-derivation/"
+        ],
+        "tests": [
+          "tests/tutorStubResponseComposition.test.js",
+          "tests/tutorStubSceneDiction.test.js"
+        ],
+        "items": [
+          "tutor-stub-fallback-register-and-uptake-guard"
+        ]
+      }
+    },
+    {
       "id": "negative-register-effect-estimation-grid",
       "title": "Estimate negative-register effects with stance-fidelity gating",
       "status": "active",
@@ -426,36 +454,6 @@
         "frozen-replay"
       ],
       "branch": "claude/tutor-instrumentation-ab"
-    },
-    {
-      "id": "tutor-instrumentation-showcase",
-      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-27",
-      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-instrumentation-ab-harness"
-      ],
-      "links": {
-        "notes": [
-          "docs/tutor-instrumentation-showcase.md"
-        ],
-        "items": [
-          "tutor-instrumentation-ab-harness"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "instrument",
-        "demo"
-      ],
-      "branch": "claude/tutor-closure-drive"
     },
     {
       "id": "a1-human-learner-validation",
@@ -625,8 +623,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-learner-classification-presentation",
-      "title": "Refactor tutor-stub learner-classifier presentation",
+      "id": "refactor-tutor-stub-response-configuration-presentation",
+      "title": "Refactor tutor-stub response-configuration presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -634,29 +632,28 @@
       "source": "review",
       "created": "2026-07-27",
       "updated": "2026-07-27",
-      "verification": "Live technical-debug learner-classifier bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-learner-classification-presentation",
+      "verification": "Live technical-debug response-configuration bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-response-configuration-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-learner-dag-presentation"
+        "refactor-tutor-stub-learner-classification-presentation"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubLearnerClassificationPresentation.js",
+          "services/tutorStubResponseConfigurationPresentation.js",
           "scripts/tutor-stub.js",
+          "tests/tutorStubResponseConfigurationPresentation.test.js",
+          "tests/tutorStubInteractivePerformance.test.js",
           "tests/tutorStubLearnerClassificationPresentation.test.js",
           "tests/tutorStubLearnerDagPresentation.test.js",
-          "tests/tutorStubInteractivePerformance.test.js",
-          "tests/tutorStubMultiPremiseAdvance.test.js",
-          "services/__tests__/tutorStubPublicLearnerAnalysis.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-learner-dag-presentation"
+          "refactor-tutor-stub-learner-classification-presentation"
         ]
       },
       "tags": [
@@ -664,7 +661,7 @@
         "tutor-stub",
         "presentation",
         "cli",
-        "learner-classifier",
+        "response-configuration",
         "debug"
       ],
       "milestone": "evaluation-infrastructure"
@@ -691,6 +688,116 @@
         "workplan",
         "governance",
         "skill"
+      ]
+    },
+    {
+      "id": "repoint-learner-deliberation-claim-fingerprint",
+      "title": "Re-point the learner-deliberation claim fingerprint at the trace-schema module",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "`npm run paper:provable-discourse` reports 0 fail (was 1), `npm run paper:provable-discourse:test` passes 69/69, `node --test tests/traceSchema.test.js tests/adaptiveTraceProjection.test.js` passes, and `npm run lint` / `npm run refs:check` are clean.",
+      "links": {
+        "items": [
+          "refactor-adaptive-trace-projection"
+        ]
+      },
+      "tags": [
+        "provable-discourse",
+        "traces",
+        "refactoring",
+        "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "claude/wizardly-vaughan-9b35e0"
+    },
+    {
+      "id": "tutor-pr-benchmark-hook-warning-attribution",
+      "title": "Attribute tutor PR benchmark hook warnings and scope world triggers",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Passed: node --test tests/tutorStubPrBenchmarkHook.test.js (13/13, up from 8); npm run lint; npx prettier --check on all four changed files; npm run lint:cycles (0 cycles across 403 files); npm run refs:check; npm run test:manifest. Established against real repository data rather than inference: a zero-call re-audit of the nearest cached ancestor report (77838c3f7a9e, 32 commits back) returned 0 improved, 0 regressed, 6 unchanged fail, confirming the standing failure; 32 authored world files were enumerated and exactly 1 (world-001-nocturne.yaml, id world_001_nocturne) is replayed by the strong preset. A full end-to-end hook probe printed the uncovered-world notice, the STANDING attribution line naming its baseline, and the request-changing-paths caveat, exiting 0.",
+      "branch": "claude/pr-benchmark-hook-standing-warning",
+      "depends_on": [
+        "tutor-pr-benchmark-delta-harness",
+        "tutor-pr-benchmark-calibration-harness"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-pr-benchmark.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "pr-gate",
+        "regression",
+        "hook"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "workplan-commit-trailer-check",
+      "title": "Commit-trailer check for work pushed straight to main",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "`npm run wp:commit-link` reads a commit message with the same grammar `wp:pr-link` reads a PR body, accepting `Workplan-item:` and `Workplan item:` and explicit N/A and rejecting an id no card defines; it walks the first-parent line only, exempts merge commits, squash-merge subjects and `workplan/`-only commits, and fails naming each unlinked commit; a push-to-main workflow runs it unfiltered by path; replayed over `2026-07-22..origin/main` it classifies 220 of 234 first-parent commits as exempt and reports exactly the 14 direct pushes the board audit found by hand.",
+      "claim_status": "planned",
+      "branch": "claude/workplan-commit-trailer-check",
+      "links": {
+        "code": [
+          "scripts/check-commit-workplan-trailer.js",
+          "scripts/lib/workplanLink.js",
+          "scripts/check-pr-workplan-link.js",
+          ".github/workflows/workplan-commit-trailer.yml",
+          "tests/workplan.test.js"
+        ],
+        "items": [
+          "big-picture-state-of-the-nation-skill-and-board-traceability"
+        ]
+      },
+      "tags": [
+        "workplan",
+        "governance",
+        "ci"
+      ]
+    },
+    {
+      "id": "hermetic-test-manifest-scanner-must-skip-gitignored-paths-ne",
+      "title": "Skip gitignored paths when scanning for hermetic test-manifest drift",
+      "status": "review",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "With two nested `.claude/worktrees/<name>/` checkouts on disk, `npm run test:manifest` reports 88 KB of false drift before the change and \"Hermetic test manifest is synchronized.\" after it; the git and filesystem enumerations agree file-for-file on the real repository (533 files each, empty symmetric difference) once `.claude/` is removed, so nothing else moved in or out of the contract; all three genuine drift classes are still reported — unregistered `tests/`, unregistered `tutor-core/services/__tests__/`, and an unclassified `routes/` test; two new tests in tests/hermeticTestRunner.test.js fail against the unfixed scanner and pass against the fixed one; the full file is 36/36, and both root shards plus the core suite run 7362 tests with 5 failures, each of which reproduces identically on HEAD (two worktree-basename assertions, three file loads needing this worktree's symlinked node_modules); lint, prettier, refs:check, lint:cycles, and workplan validation pass.",
+      "branch": "claude/zealous-heyrovsky-357f4b",
+      "links": {
+        "prs": [],
+        "notes": [],
+        "items": [
+          "hermetic-tap-summary-on-forced-exit"
+        ]
+      },
+      "tags": [
+        "testing",
+        "ci",
+        "hermetic"
       ]
     },
     {
@@ -1095,7 +1202,8 @@
         ],
         "notes": "https://github.com/liammagee/machinespirits-eval/issues/74",
         "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/297"
+          "https://github.com/liammagee/machinespirits-eval/pull/297",
+          "https://github.com/liammagee/machinespirits-eval/pull/300"
         ]
       },
       "tags": [
@@ -3152,6 +3260,54 @@
         "presentation",
         "terminal",
         "loading-indicator"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-learner-classification-presentation",
+      "title": "Refactor tutor-stub learner-classifier presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Live technical-debug learner-classifier bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-learner-classification-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-learner-dag-presentation"
+      ],
+      "links": {
+        "prs": [
+          295
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubLearnerClassificationPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLearnerClassificationPresentation.test.js",
+          "tests/tutorStubLearnerDagPresentation.test.js",
+          "tests/tutorStubInteractivePerformance.test.js",
+          "tests/tutorStubMultiPremiseAdvance.test.js",
+          "services/__tests__/tutorStubPublicLearnerAnalysis.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-learner-dag-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "learner-classifier",
+        "debug"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -6619,6 +6775,36 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "tutor-instrumentation-showcase",
+      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-07-27",
+      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way; and each scoring pass (`npm run tutor:stub:showcase:rubric`, `npm run tutor:stub:showcase:pr-benchmark`) writes its own artifact beside report.json and re-renders transcripts.html, so a run scored by both instruments, by one, or by neither shows the scores it actually has and names the axes nobody asked.",
+      "claim_status": "methods",
+      "depends_on": [
+        "tutor-instrumentation-ab-harness"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-instrumentation-showcase.md"
+        ],
+        "items": [
+          "tutor-instrumentation-ab-harness"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "instrument",
+        "demo"
+      ],
+      "branch": "claude/showcase-score-overlay"
     },
     {
       "id": "tutor-stub-curriculum-mastery-runtime",

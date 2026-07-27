@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
 import {
+  discoverAllContractTestFiles,
   loadTestManifest,
   nodeTapOutputIsComplete,
   parseNodeTapSummary,
@@ -380,6 +382,103 @@ test('manifest validation reports missing, extra, and unclassified test files', 
   } finally {
     fs.rmSync(projectRoot, { recursive: true, force: true });
   }
+});
+
+test('gitignored scratch directories are outside the contract, and real drift still is not', (t) => {
+  // A nested agent worktree — `.claude/worktrees/<name>/`, created by this repo's
+  // own tooling — is a second checkout of the repository sitting inside the first.
+  // A plain filesystem walk sees several hundred of its test files and reports
+  // every one as unclassified, which made `npm run test:manifest` unusable as a
+  // pre-push check for anyone who had one on disk. Git already knows those paths
+  // are not part of the checkout, so the enumeration asks git.
+  const projectRoot = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-manifest-git-')));
+  t.after(() => fs.rmSync(projectRoot, { recursive: true, force: true }));
+  const writeTest = (relativePath) => {
+    fs.mkdirSync(path.dirname(path.join(projectRoot, relativePath)), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, relativePath), '// fixture\n');
+  };
+
+  execFileSync('git', ['init', '-q'], { cwd: projectRoot, stdio: 'ignore' });
+  fs.writeFileSync(path.join(projectRoot, '.gitignore'), '.claude/*\n');
+  for (const relativePath of [
+    'services/__tests__/service.test.js',
+    'tests/root.test.js',
+    'tutor-core/services/__tests__/core.test.js',
+    '.claude/worktrees/nested/services/__tests__/service.test.js',
+    '.claude/worktrees/nested/tests/root.test.js',
+    '.claude/worktrees/nested/routes/unclassified.test.js',
+  ]) {
+    writeTest(relativePath);
+  }
+
+  const manifest = {
+    version: 1,
+    suites: {
+      root: { requiredFiles: ['services/__tests__/service.test.js', 'tests/root.test.js'] },
+      core: { requiredFiles: ['tutor-core/services/__tests__/core.test.js'] },
+    },
+    fixtureExclusions: [],
+    allowedSkips: [],
+  };
+
+  assert.deepEqual(discoverAllContractTestFiles(projectRoot), [
+    'services/__tests__/service.test.js',
+    'tests/root.test.js',
+    'tutor-core/services/__tests__/core.test.js',
+  ]);
+  assert.doesNotThrow(() => validateTestManifest(manifest, projectRoot));
+
+  // Untracked-but-not-ignored is the state a newly written test file is in, so
+  // enumerating from the index alone would have blinded the check to exactly the
+  // drift it exists to catch. Each of the three drift classes is still reported.
+  writeTest('tests/unregistered.test.js');
+  assert.throws(
+    () => validateTestManifest(manifest, projectRoot),
+    /root test manifest drift; extra: tests\/unregistered/u,
+  );
+  fs.rmSync(path.join(projectRoot, 'tests/unregistered.test.js'));
+
+  writeTest('tutor-core/services/__tests__/unregistered.test.js');
+  assert.throws(() => validateTestManifest(manifest, projectRoot), /core test manifest drift; extra/u);
+  fs.rmSync(path.join(projectRoot, 'tutor-core/services/__tests__/unregistered.test.js'));
+
+  writeTest('routes/unclassified.test.js');
+  assert.throws(
+    () => validateTestManifest(manifest, projectRoot),
+    /classified test manifest drift; extra: routes\/unclassified\.test\.js/u,
+  );
+  fs.rmSync(path.join(projectRoot, 'routes/unclassified.test.js'));
+
+  // The index still names a file deleted from the working tree. Reporting it as
+  // present would put the git enumeration at odds with the per-suite filesystem
+  // discovery, and the manifest would then be unsatisfiable in both directions.
+  execFileSync('git', ['add', '-A'], { cwd: projectRoot, stdio: 'ignore' });
+  fs.rmSync(path.join(projectRoot, 'tests/root.test.js'));
+  assert.deepEqual(discoverAllContractTestFiles(projectRoot), [
+    'services/__tests__/service.test.js',
+    'tutor-core/services/__tests__/core.test.js',
+  ]);
+});
+
+test('without git the walk still refuses to descend into a nested checkout', (t) => {
+  // No repository here, so the enumeration falls back to the filesystem walk —
+  // which must not reintroduce the defect above on a host with no git, or under
+  // a nested checkout parked somewhere the excluded-directory list does not name.
+  const projectRoot = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-manifest-nogit-')));
+  t.after(() => fs.rmSync(projectRoot, { recursive: true, force: true }));
+  const writeTest = (relativePath) => {
+    fs.mkdirSync(path.dirname(path.join(projectRoot, relativePath)), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, relativePath), '// fixture\n');
+  };
+
+  writeTest('tests/root.test.js');
+  writeTest('.claude/worktrees/nested/tests/root.test.js');
+  writeTest('side-checkout/tests/root.test.js');
+  // What `git worktree add` leaves at the root of a linked worktree: a `.git`
+  // file pointing at the real directory, not a `.git` directory.
+  fs.writeFileSync(path.join(projectRoot, 'side-checkout/.git'), 'gitdir: /elsewhere/.git/worktrees/side\n');
+
+  assert.deepEqual(discoverAllContractTestFiles(projectRoot), ['tests/root.test.js']);
 });
 
 test('manifest synchronization registers ordinary suite files while preserving explicit classifications', () => {

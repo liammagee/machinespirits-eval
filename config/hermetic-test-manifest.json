@@ -482,6 +482,7 @@
         "tests/tutorStubReportingUx.test.js",
         "tests/tutorStubRequestedEntryCausality.test.js",
         "tests/tutorStubResponseComposition.test.js",
+        "tests/tutorStubResponseConfigurationPresentation.test.js",
         "tests/tutorStubResponseContractLeaves.test.js",
         "tests/tutorStubResponseDetails.test.js",
         "tests/tutorStubResponseGuard.test.js",
