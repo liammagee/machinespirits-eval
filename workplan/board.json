@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-27T23:38:03.455Z",
+  "generated": "2026-07-27T23:45:25.449Z",
   "counts": {
-    "total": 247,
+    "total": 248,
     "byStatus": {
-      "done": 214,
+      "done": 215,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 47,
       "experiment": 49,
       "infra": 59,
-      "maintenance": 76,
+      "maintenance": 77,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -208,6 +208,7 @@
           "refactor-tutor-stub-technical-analysis-projection",
           "refactor-tutor-stub-technical-debug-presentation",
           "refactor-tutor-stub-closeout-report-presentation",
+          "refactor-tutor-stub-field-report-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -661,8 +662,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-closeout-report-presentation",
-      "title": "Refactor tutor-stub closeout report presentation",
+      "id": "refactor-tutor-stub-field-report-presentation",
+      "title": "Refactor tutor-stub field report presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -670,39 +671,38 @@
       "source": "review",
       "created": "2026-07-28",
       "updated": "2026-07-28",
-      "verification": "Closeout terminal output remains byte-identical while dense, sparse, no-turn, seeded live-process, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-closeout-report-presentation",
+      "verification": "Field and visualization terminal output remains byte-identical while dense, no-turn, truncation, seeded live-process, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-field-report-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-closeout-projection",
-        "refactor-tutor-stub-technical-debug-presentation"
+        "refactor-tutor-stub-field-presentation",
+        "refactor-tutor-stub-closeout-report-presentation"
       ],
       "links": {
         "prs": [
-          320
+          323
         ],
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubCloseoutReportPresentation.js",
-          "services/tutorStubCloseoutProjection.js",
+          "services/tutorStubFieldPresentation.js",
+          "services/tutorStubFieldTurnProjection.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubCloseoutReportPresentation.test.js",
-          "tests/tutorStubCloseoutProjection.test.js",
-          "tests/tutorStubGuardAccounting.test.js",
+          "tests/tutorStubFieldPresentation.test.js",
+          "tests/tutorStubFieldReportPresentation.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-closeout-projection",
-          "refactor-tutor-stub-technical-debug-presentation"
+          "refactor-tutor-stub-field-presentation",
+          "refactor-tutor-stub-closeout-report-presentation"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
-        "closeout",
+        "field",
         "presentation",
         "terminal"
       ],
@@ -2988,6 +2988,54 @@
         "tutor-stub",
         "closeout",
         "guard-accounting"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-closeout-report-presentation",
+      "title": "Refactor tutor-stub closeout report presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Closeout terminal output remains byte-identical while dense, sparse, no-turn, seeded live-process, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-closeout-report-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-closeout-projection",
+        "refactor-tutor-stub-technical-debug-presentation"
+      ],
+      "links": {
+        "prs": [
+          320
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubCloseoutReportPresentation.js",
+          "services/tutorStubCloseoutProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubCloseoutReportPresentation.test.js",
+          "tests/tutorStubCloseoutProjection.test.js",
+          "tests/tutorStubGuardAccounting.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-closeout-projection",
+          "refactor-tutor-stub-technical-debug-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "closeout",
+        "presentation",
+        "terminal"
       ],
       "milestone": "evaluation-infrastructure"
     },
