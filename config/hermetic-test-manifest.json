@@ -507,6 +507,7 @@
         "tests/tutorStubTurnFailureBackfill.test.js",
         "tests/tutorStubTurnFailureIngest.test.js",
         "tests/tutorStubTurnProgressionContract.test.js",
+        "tests/tutorStubTutorPromptContext.test.js",
         "tests/tutorStubTypedActionAdapter.test.js",
         "tests/tutorStubTypedCompositeAdvocateCalibration.test.js",
         "tests/tutorStubUptakeGuardLinkage.test.js",
