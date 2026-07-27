@@ -78,9 +78,10 @@ Log:
   remains triaged, so this slice stays within the residual pure presentation
   boundary explicitly left by the earlier field-helper extraction.
 - 2026-07-28 — The seeded keyless fake-provider fixture pins the predecessor's
-  normalized `/field` plus `/viz` reports at 521 bytes and SHA-256
-  `1b946db75fdc6d8403538d335d1768323eb5711ba83f38f67ef5b8619142863c`.
-- 2026-07-28 — The same 521-byte hash passes after extraction. Two pure
+  host-independent normalized `/field` plus `/viz` reports at 505 bytes and
+  SHA-256
+  `c6184f8be4613395862fc73defc9e0f26b6edc6749ac0995ba22c80f0a08b780`.
+- 2026-07-28 — The same 505-byte hash passes after extraction. Two pure
   projectors add 62 lines to the existing field presenter, a 175-line direct
   test pins dense/no-turn/path/truncation/ownership branches, and the CLI falls
   from 25,186 to 25,156 lines (30 net). Field construction, file and directory
@@ -93,3 +94,9 @@ Log:
   the recorded complete result.
 - 2026-07-28 — Opened PR #323 with the explicit workplan link and source-only
   board discipline; CI is the final review gate.
+- 2026-07-28 — Initial CI failed only the Node 20/22 shard-1 lanes because the
+  live parity fixture retained the OS-dependent `../` traversal prefix before
+  an absolute temporary path (533 Linux bytes versus 521 macOS bytes). The
+  fixture now replaces the exact ROOT-relative temporary directory, yielding
+  the same 505-byte hash on both hosts without weakening any report assertion
+  or changing production code.

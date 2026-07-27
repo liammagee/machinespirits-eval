@@ -7,7 +7,7 @@ import {
 import { assert, fs, os, path, ROOT, runInteractive, test } from './helpers/tutorStubInteractiveHarness.js';
 
 const COLORS = { cyan: '<cyan>', dim: '<dim>', reset: '</>' };
-const LIVE_FIELD_REPORT_HASH = '1b946db75fdc6d8403538d335d1768323eb5711ba83f38f67ef5b8619142863c';
+const LIVE_FIELD_REPORT_HASH = 'c6184f8be4613395862fc73defc9e0f26b6edc6749ac0995ba22c80f0a08b780';
 
 function denseField() {
   return {
@@ -165,9 +165,9 @@ test('the CLI retains field calculation, visualization effects, and trace owners
     const normalized = `${result.plain.slice(fieldStart, fieldEnd).trimEnd()}\n---viz---\n${result.plain
       .slice(vizStart, vizEnd)
       .trimEnd()}`
-      .replaceAll(tmp, '<tmp>')
+      .replaceAll(path.relative(ROOT, tmp), '<tmp>')
       .replace(/\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-field/gu, '<run>-field');
-    assert.equal(Buffer.byteLength(normalized), 521);
+    assert.equal(Buffer.byteLength(normalized), 505);
     assert.equal(createHash('sha256').update(normalized).digest('hex'), LIVE_FIELD_REPORT_HASH);
   } finally {
     fs.rmSync(tmp, { recursive: true, force: true });
