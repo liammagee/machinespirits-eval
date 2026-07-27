@@ -17,6 +17,8 @@ depends_on:
   - refactor-tutor-stub-closeout-projection
   - refactor-tutor-stub-technical-debug-presentation
 links:
+  prs:
+    - 320
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -93,3 +95,5 @@ Log:
   focused tests pass; as with merged PR #319, PR CI remains the final
   cross-version full-root certification rather than recording the loaded-host
   run as green.
+- 2026-07-28 — Opened PR #320 with the explicit workplan link and source-only
+  board discipline; CI is the final review gate.
