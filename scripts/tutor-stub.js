@@ -312,16 +312,15 @@ import {
   tutorStubRegisterPolicyCalculation as registerPolicyCalculation,
 } from '../services/tutorStubExplanatoryDebug.js';
 import {
-  tutorStubDominantPlainPolicySignals as dominantPlainPolicySignals,
   tutorStubDisplayDiagnosticLabel as displayDiagnosticLabel,
   tutorStubPlainList as plainList,
   tutorStubPlainPolicyLabel as plainPolicyLabel,
-  tutorStubPlainResponseCheckSummary as plainResponseCheckSummary,
   tutorStubPlainSettingName as plainSettingName,
   tutorStubPlainStrategyText as plainStrategyText,
   tutorStubResponseCheckTriggerAreas as responseCheckTriggerAreas,
   tutorStubResponseMetadataLine as metadataLine,
 } from '../services/tutorStubResponseDetails.js';
+import { projectTutorStubTurnAnalysisLines } from '../services/tutorStubTurnAnalysisPresentation.js';
 import {
   compactTutorStubCloseoutCounts as compactCounts,
   countTutorStubCloseoutRows as countBy,
@@ -8457,202 +8456,17 @@ function registerTemperatureApplies(policy) {
 function printCurrentTurnAnalysis(state, { technical = false } = {}) {
   if (technical) return printCurrentTurnTechnicalAnalysis(state);
   const turn = state.turns[state.turns.length - 1] || null;
-  if (!turn) {
-    console.log(`${C.cyan}analysis >${C.reset} no completed turns yet`);
-    console.log(
-      `${C.dim}  enter a learner turn first, then use /analysis; add "technical" for debugging evidence${C.reset}\n`,
-    );
-    return;
-  }
-
-  const classification = turn.classification || {};
-  const turnAnalysis = classification.turn || {};
-  const overall = classification.overall || {};
-  const registerSelection = normalizeStoredRegisterSelection(turn.registerSelection || null);
-  const previousEfficacy = normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null);
-  const policy = registerSelection?.primary_policy || state.register?.policy || 'off';
-  const distribution = formatEngagementStanceDistribution(registerSelection?.distribution, { limit: 4 });
-  const signals = dominantPlainPolicySignals(registerSelection);
-  const generousInference = turn.generousInference || turn.humanDiscourseFrame?.generousInference || null;
-  const proofDebt = turn.humanDiscourseFrame?.proofDebt || null;
-  const questionSupport = turn.humanDiscourseFrame?.questionSupport || null;
-  const dialogueClosure = turn.dialogueClosure || null;
-  const comprehension = turn.comprehension?.beforeTutor?.features || null;
-  const dagFactDropout = turn.dagFactDropout || null;
-  const learnerAdvance = turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || null;
-
-  console.log(`${C.cyan}analysis >${C.reset} turn ${turn.turn}`);
-  printAnalysisLine('learner said', turn.learner);
-  printAnalysisLine(
-    'plain reading',
-    turnAnalysis.summary || overall.summary || 'No plain-language reading is available.',
-  );
-  if (learnerAdvance?.accelerated) {
-    printAnalysisLine(
-      'learning pace',
-      `accelerating: ${learnerAdvance.adoptedPremiseCount} public premise(s) and ${learnerAdvance.derivedFactCount} supported inference(s) were accepted together`,
-    );
-  }
-  if (turn.releasePacing?.signal?.direction && turn.releasePacing.signal.direction !== 'steady') {
-    printAnalysisLine(
-      'clue pace',
-      `${turn.releasePacing.signal.reason} The effective pace became ${turn.releasePacing.effectiveSpeed}x${
-        turn.releasePacing.releasedNow?.length
-          ? `, and ${turn.releasePacing.releasedNow.length} new clue${turn.releasePacing.releasedNow.length === 1 ? '' : 's'} entered this turn`
-          : ''
-      }.`,
-    );
-  }
-  if (generousInference?.applied) {
-    printAnalysisLine(
-      'generous inference',
-      'accepted the short answer in context; the local question counts as answered',
-    );
-    printAnalysisLine('what was carried forward', generousInference.resolvedMeaning);
-  }
-  if (proofDebt?.elision?.applied) {
-    printAnalysisLine(
-      'step compression',
-      `${proofDebt.elision.count} obvious public bridge(s) were carried forward without asking for a restatement`,
-    );
-  }
-  if (questionSupport) {
-    const supportReadings = {
-      open_question: 'the next question was answerable from public evidence',
-      embedded_directional_hint:
-        'the missing direction was put into the discourse because the exact evidence was not public yet',
-      bounded_directional_choice: 'a small public-safe choice replaced an impossible open recall question',
-      stage_then_ask: 'new evidence was stated before the learner was asked to interpret it',
-      stage_then_bounded_choice: 'new evidence was stated first, then narrowed to a small interpretive choice',
-      embedded_public_hint: 'an already-public clue was restated and narrowed before asking',
-      bounded_public_choice: 'an already-public clue was narrowed to a small interpretive choice',
-    };
-    printAnalysisLine(
-      'question support',
-      supportReadings[questionSupport.modality] || questionSupport.reason || questionSupport.modality,
-    );
-  }
-  if (dialogueClosure?.lifecycle?.phase && dialogueClosure.lifecycle.phase !== 'open') {
-    printAnalysisLine(
-      'dialogue ending',
-      dialogueClosure.lifecycle.phase === 'awaiting_checkin'
-        ? 'the public verdict has closed the proof sequence; one optional check-in remains'
-        : 'the tutor has explicitly closed the inquiry',
-    );
-  }
-  if (Number(comprehension?.pressure || 0) > 0) {
-    printAnalysisLine(
-      'wording gap',
-      comprehension.unresolvedTerms?.length
-        ? `the learner asked about ${comprehension.unresolvedTerms.join(', ')}`
-        : 'the learner recently asked for plainer wording',
-    );
-  }
-  if (dagFactDropout?.droppedNow?.length || dagFactDropout?.activeDropped?.length) {
-    printAnalysisLine(
-      'memory pressure',
-      dagFactDropout.droppedNow?.length
-        ? `${dagFactDropout.droppedNow.length} previously accumulated evidence item(s) slipped on this turn; the tutor should re-anchor without turning it into a memory test`
-        : `${dagFactDropout.activeDropped.length} accumulated evidence item(s) remain out of the learner’s active reasoning record`,
-    );
-  } else if (dagFactDropout?.repairedNow?.length) {
-    printAnalysisLine(
-      'memory recovery',
-      `${dagFactDropout.repairedNow.length} dropped evidence item(s) were re-adopted`,
-    );
-  }
-  printAnalysisLine('teaching approach', plainPolicyLabel(policy));
-  if (registerSelection?.policy_composition) {
-    const composition = registerSelection.policy_composition;
-    printAnalysisLine(
-      'additional overrides',
-      `${composition.overlay_policies.map(plainPolicyLabel).join(', ') || 'none'}; ${
-        composition.activated_overlay
-          ? `${plainPolicyLabel(composition.activated_overlay)} took priority because the change was strong enough`
-          : 'the primary policy stayed in control'
-      }`,
-    );
-  }
-  if (registerSelection) {
-    printAnalysisLine(
-      'style blend',
-      distribution ||
-        registerSelection.engagement_stance ||
-        registerSelection.selected_register ||
-        'No teaching style was stored.',
-    );
-    printAnalysisLine(
-      'next tutor move',
-      plainStrategyText(displayDiagnosticLabel(registerSelection.action_family || 'No action was stored.')),
-    );
-    printAnalysisLine(
-      'speaking level',
-      `${displayDiagnosticLabel(registerSelection.audience_register || 'unknown audience')}; ${displayDiagnosticLabel(
-        registerSelection.lexical_accessibility || 'unknown language level',
-      )}`,
-    );
-    printAnalysisLine('in-scene voice', displayDiagnosticLabel(registerSelection.scene_immersion || 'unknown'));
-    printAnalysisLine(
-      'part in the scene',
-      displayDiagnosticLabel(registerSelection.actorial_part_label || registerSelection.actorial_part || 'unknown'),
-    );
-    if (registerSelection.actorial_performance?.label) {
-      printAnalysisLine(
-        'performance tactic',
-        `${displayDiagnosticLabel(registerSelection.actorial_performance.label)} — ${registerSelection.actorial_performance.contract}`,
-      );
-    }
-    if (registerSelection.actorial_part_selection?.reason) {
-      printAnalysisLine('why this part', registerSelection.actorial_part_selection.reason);
-    }
-    if (turn.responseConfigurationAudit) {
-      printAnalysisLine(
-        'style visible in the reply',
-        `${turn.responseConfigurationAudit.visible_axis_count}/${turn.responseConfigurationAudit.axis_count} intended features were visible`,
-      );
-    }
-    if (signals.length) {
-      console.log(`${C.dim}  why this approach was chosen:${C.reset}`);
-      for (const signal of signals) console.log(`${C.dim}    - ${signal}${C.reset}`);
-    } else {
-      printAnalysisLine('why', registerSelection.reviewer_signal || turnAnalysis.pedagogical_need);
-    }
-    printAnalysisLine(
-      'tutor’s immediate aim',
-      plainStrategyText(
-        registerSelection.expected_field_move || overall.next_best_tutor_move || turnAnalysis.pedagogical_need,
-      ),
-    );
-    printAnalysisLine('reasoning aim', plainStrategyText(registerSelection.expected_dag_move));
-  } else {
-    printAnalysisLine(
-      'tutor’s immediate aim',
-      plainStrategyText(overall.next_best_tutor_move || turnAnalysis.pedagogical_need),
-    );
-  }
-  if (previousEfficacy) {
-    const result =
-      previousEfficacy.label === 'positive_progress'
-        ? 'helped the learner move forward'
-        : previousEfficacy.label === 'regression_or_overreach'
-          ? 'was followed by regression or overreach'
-          : 'did not yet produce clear reasoning progress';
-    printAnalysisLine(
-      'last teaching style result',
-      `${displayDiagnosticLabel(previousEfficacy.selected_register)}: ${result}`,
-    );
-    if (previousEfficacy.learnerFeedback?.rating) {
-      printAnalysisLine(
-        'your rating of that reply',
-        previousEfficacy.learnerFeedback.rating === 'up'
-          ? 'helpful; this was retained as one positive self-assessment signal'
-          : 'not helpful; the tutor was told to make an observable change rather than repeat the same realization',
-      );
-    }
-  }
-  const responseCheck = plainResponseCheckSummary(turn);
-  if (responseCheck) printAnalysisLine('response check', responseCheck);
-  console.log(`${C.dim}  technical details: /analysis technical (or /a technical)${C.reset}\n`);
+  const registerSelection = turn ? normalizeStoredRegisterSelection(turn.registerSelection || null) : null;
+  const previousEfficacy = turn ? normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null) : null;
+  const lines = projectTutorStubTurnAnalysisLines({
+    turn,
+    registerSelection,
+    previousEfficacy,
+    policy: registerSelection?.primary_policy || state.register?.policy || 'off',
+    distribution: formatEngagementStanceDistribution(registerSelection?.distribution, { limit: 4 }),
+    colors: C,
+  });
+  for (const line of lines) console.log(line);
 }
 
 function debugNumber(value) {
