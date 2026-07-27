@@ -139,16 +139,34 @@ function listDifference(left, right) {
   return left.filter((value) => !rightSet.has(value));
 }
 
+/**
+ * Raised by every exact-inventory check, carrying the two difference lists
+ * beside the message. Callers need to tell one class of drift from another —
+ * `runManifestSync` reports the drift `--write` repairs quite differently from
+ * the drift it cannot — and matching on the prose would make the wording of an
+ * error message load-bearing.
+ */
+export class TestInventoryDriftError extends Error {
+  constructor(label, missing, extra) {
+    super(
+      [
+        `${label} test manifest drift`,
+        ...(missing.length ? [`missing: ${missing.join(', ')}`] : []),
+        ...(extra.length ? [`extra: ${extra.join(', ')}`] : []),
+      ].join('; '),
+    );
+    this.name = 'TestInventoryDriftError';
+    this.label = label;
+    this.missing = missing;
+    this.extra = extra;
+  }
+}
+
 function assertExactFiles(label, expected, actual) {
   const missing = listDifference(expected, actual);
   const extra = listDifference(actual, expected);
   if (missing.length === 0 && extra.length === 0) return;
-  const details = [
-    `${label} test manifest drift`,
-    ...(missing.length ? [`missing: ${missing.join(', ')}`] : []),
-    ...(extra.length ? [`extra: ${extra.join(', ')}`] : []),
-  ];
-  throw new Error(details.join('; '));
+  throw new TestInventoryDriftError(label, missing, extra);
 }
 
 function assertStringList(value, label, { allowEmpty = false } = {}) {
