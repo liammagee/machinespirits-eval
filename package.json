@@ -50,6 +50,7 @@
     "tutor:stub:pr-benchmark:calibrate": "node scripts/tutor-pr-benchmark-calibration.js",
     "tutor:stub:pr-hook:install": "node scripts/tutor-pr-benchmark-hook.js install",
     "tutor:stub:pr-hook:uninstall": "node scripts/tutor-pr-benchmark-hook.js uninstall",
+    "rubric:v3:audit": "node scripts/analyze-rubric-sensitivity.js",
     "tutor:stub:first-draft-campaign": "node scripts/run-tutor-stub-first-draft-campaign.js",
     "tutor:stub:latency-benchmark": "node scripts/run-tutor-stub-latency-benchmark.js",
     "tutor:stub:trajectory-shadow": "node scripts/build-tutor-stub-trajectory-shadow.js",

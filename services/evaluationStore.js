@@ -231,6 +231,7 @@ try {
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_last_turn_score REAL`, 'tutor_last_turn_score');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN tutor_development_score REAL`, 'tutor_development_score');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_score REAL`, 'dialogue_quality_score');
+migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_scores TEXT`, 'dialogue_quality_scores');
 migrateAddColumn(`ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_summary TEXT`, 'dialogue_quality_summary');
 migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_judge_model TEXT`,
@@ -240,6 +241,10 @@ migrateAddColumn(
 migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_score REAL`,
   'dialogue_quality_internal_score',
+);
+migrateAddColumn(
+  `ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_scores TEXT`,
+  'dialogue_quality_internal_scores',
 );
 migrateAddColumn(
   `ALTER TABLE evaluation_results ADD COLUMN dialogue_quality_internal_summary TEXT`,
@@ -2229,10 +2234,14 @@ function parseResultRow(row) {
     tutorLastTurnScore: row.tutor_last_turn_score != null ? row.tutor_last_turn_score : null,
     tutorDevelopmentScore: row.tutor_development_score != null ? row.tutor_development_score : null,
     dialogueQualityScore: row.dialogue_quality_score != null ? row.dialogue_quality_score : null,
+    dialogueQualityScores: row.dialogue_quality_scores ? JSON.parse(row.dialogue_quality_scores) : null,
     dialogueQualitySummary: row.dialogue_quality_summary || null,
     dialogueQualityJudgeModel: row.dialogue_quality_judge_model || null,
     dialogueQualityInternalScore:
       row.dialogue_quality_internal_score != null ? row.dialogue_quality_internal_score : null,
+    dialogueQualityInternalScores: row.dialogue_quality_internal_scores
+      ? JSON.parse(row.dialogue_quality_internal_scores)
+      : null,
     dialogueQualityInternalSummary: row.dialogue_quality_internal_summary || null,
     tutorScores: row.tutor_scores ? JSON.parse(row.tutor_scores) : null,
     tutorOverallScore: row.tutor_overall_score != null ? row.tutor_overall_score : null,
@@ -2656,13 +2665,20 @@ export function updateTutorLastTurnScore(resultId, evaluation) {
  * @param {number} resultId - The evaluation result row ID
  * @param {Object} evaluation - Dialogue quality evaluation data
  * @param {number} evaluation.dialogueQualityScore - Overall dialogue quality (0-100)
+ * @param {Object} [evaluation.dialogueQualityScores] - Per-dimension scores
  * @param {string} [evaluation.dialogueQualitySummary] - Judge narrative summary
  * @param {string} [evaluation.dialogueQualityJudgeModel] - Judge model used
  */
 export function updateDialogueQualityScore(resultId, evaluation) {
   const recordAudit = withAuditTrail(
     resultId,
-    ['dialogue_quality_score', 'dialogue_quality_summary', 'dialogue_quality_judge_model', 'dialogue_rubric_version'],
+    [
+      'dialogue_quality_score',
+      'dialogue_quality_scores',
+      'dialogue_quality_summary',
+      'dialogue_quality_judge_model',
+      'dialogue_rubric_version',
+    ],
     'updateDialogueQualityScore',
     { judgeModel: evaluation.dialogueQualityJudgeModel, rubricVersion: getDialogueRubricVersion() },
   );
@@ -2670,6 +2686,7 @@ export function updateDialogueQualityScore(resultId, evaluation) {
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       dialogue_quality_score = ?,
+      dialogue_quality_scores = ?,
       dialogue_quality_summary = ?,
       dialogue_quality_judge_model = ?,
       dialogue_rubric_version = ?
@@ -2677,6 +2694,7 @@ export function updateDialogueQualityScore(resultId, evaluation) {
   `);
   stmt.run(
     evaluation.dialogueQualityScore ?? null,
+    evaluation.dialogueQualityScores ? JSON.stringify(evaluation.dialogueQualityScores) : null,
     evaluation.dialogueQualitySummary || null,
     evaluation.dialogueQualityJudgeModel || null,
     getDialogueRubricVersion(),
@@ -2693,12 +2711,18 @@ export function updateDialogueQualityScore(resultId, evaluation) {
  * @param {number} resultId - The evaluation result row ID
  * @param {Object} evaluation - Internal dialogue quality evaluation data
  * @param {number} evaluation.dialogueQualityInternalScore - Full-trace dialogue quality (0-100)
+ * @param {Object} [evaluation.dialogueQualityInternalScores] - Per-dimension full-trace scores
  * @param {string} [evaluation.dialogueQualityInternalSummary] - Judge narrative summary
  */
 export function updateDialogueQualityInternalScore(resultId, evaluation) {
   const recordAudit = withAuditTrail(
     resultId,
-    ['dialogue_quality_internal_score', 'dialogue_quality_internal_summary', 'dialogue_rubric_version'],
+    [
+      'dialogue_quality_internal_score',
+      'dialogue_quality_internal_scores',
+      'dialogue_quality_internal_summary',
+      'dialogue_rubric_version',
+    ],
     'updateDialogueQualityInternalScore',
     { rubricVersion: getDialogueRubricVersion() },
   );
@@ -2706,12 +2730,14 @@ export function updateDialogueQualityInternalScore(resultId, evaluation) {
   const stmt = db.prepare(`
     UPDATE evaluation_results SET
       dialogue_quality_internal_score = ?,
+      dialogue_quality_internal_scores = ?,
       dialogue_quality_internal_summary = ?,
       dialogue_rubric_version = ?
     WHERE id = ?
   `);
   stmt.run(
     evaluation.dialogueQualityInternalScore ?? null,
+    evaluation.dialogueQualityInternalScores ? JSON.stringify(evaluation.dialogueQualityInternalScores) : null,
     evaluation.dialogueQualityInternalSummary || null,
     getDialogueRubricVersion(),
     resultId,

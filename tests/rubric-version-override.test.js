@@ -64,10 +64,13 @@ function extractPromptFirstDimKey(prompt) {
 
 // Helper: build scores object matching a rubric's dimensions
 function makeScoresForVersion(version, score = 4) {
-  const keys = loadExpectedDimKeys(version);
+  const rubricPath = path.join(RUBRICS_DIR, `v${version}`, 'evaluation-rubric.yaml');
+  const rubric = yaml.parse(fs.readFileSync(rubricPath, 'utf-8'));
+  const keys = Object.keys(rubric.dimensions || {});
   const scores = {};
   for (const key of keys) {
-    scores[key] = { score, reasoning: 'test' };
+    const resolvedScore = score === 'max' ? rubric.dimensions[key]?.scale?.max || rubric.scale?.max || 5 : score;
+    scores[key] = { score: resolvedScore, reasoning: 'test' };
   }
   return scores;
 }
@@ -130,13 +133,13 @@ describe('calculateOverallScore with rubric overrides', () => {
       assert.ok(result > 0, `v${ver} overall score should be > 0, got ${result}`);
     });
 
-    it(`v${ver}: all-5s gives 100`, () => {
+    it(`v${ver}: all dimension maxima give 100`, () => {
       setRubricPathOverride(path.join(RUBRICS_DIR, `v${ver}`, 'evaluation-rubric.yaml'));
 
-      const scores = makeScoresForVersion(ver, 5);
+      const scores = makeScoresForVersion(ver, 'max');
       const result = calculateOverallScore(scores);
 
-      assert.ok(Math.abs(result - 100) < 1, `v${ver} all-5s should give ~100, got ${result}`);
+      assert.ok(Math.abs(result - 100) < 1, `v${ver} maxima should give ~100, got ${result}`);
     });
 
     it(`v${ver}: mismatched keys give null`, () => {

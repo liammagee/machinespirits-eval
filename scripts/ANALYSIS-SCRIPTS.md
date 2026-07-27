@@ -47,6 +47,7 @@ All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/pape
 | Script | Args | API? | Description | Paper sections | Data prerequisites |
 |--------|------|------|-------------|----------------|--------------------|
 | `calibrate-rubric.js` | `[--run-id <id>] [--judge <model>] [--sample N] [--from-version X] [--to-version Y] [--export <path>] [--verbose] [--live]` | **--live only** | Rubric version calibration (synthetic mapping or live re-scoring) | 5.4 | Scored rows with `scores_with_reasoning`; v2.2 YAML files in `config/rubrics/` |
+| `analyze-rubric-sensitivity.js` | `--runs <id[,id]> [--version 3.0] [--db <path>] [--json]` | No | Prospective suite audit: spread, floor/ceiling, factor structure, coverage, and same-item cross-judge agreement | Future measurement epoch | Version-matched per-dimension score JSON; repeated judges recommended |
 
 ## Interactive Tools
 
@@ -68,6 +69,7 @@ npm run analyze:modulation     # analyze-modulation-learning.js
 npm run analyze:stagnation     # analyze-learning-stagnation.js
 npm run analyze:gap            # analyze-insight-action-gap.js (needs <runId>)
 npm run analyze:lexicon        # analyze-recognition-lexicon.js (runs on all scored rows; optional <runId>)
+npm run rubric:v3:audit -- --runs <v3-run-id>
 npm run analyze:tutor-stub-register-confirmatory -- --check
 npm run derivation:analyze-loop -- --pattern '*selector-v1-*'
 npm run derivation:selector-consolidation -- --pattern '*selector-vpositive-*'

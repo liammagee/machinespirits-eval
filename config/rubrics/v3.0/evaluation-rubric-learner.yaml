@@ -1,0 +1,54 @@
+name: "Observed Learner Change Rubric (v3.0)"
+version: "3.0"
+status: calibration
+description: "Public transcript evidence of learner understanding, revision, transfer, and agency"
+
+scope_note: "This rubric measures evidence in generated or human learner messages. It is not a causal claim of durable human learning; post-test, transfer, and retention instruments remain necessary for that claim."
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "No evidence or contrary evidence"
+    2: "Weak"
+    3: "Adequate"
+    4: "Strong"
+    5: "Exceptional"
+
+dimensions:
+  demonstrated_understanding:
+    name: "Demonstrated Understanding"
+    weight: 0.35
+    description: "Does the learner publicly demonstrate an increasingly accurate and connected understanding, rather than merely assent or repeat?"
+    criteria:
+      5: "Explains the central relation accurately in their own terms, handles nuance, and uses it to reason"
+      3: "Shows partial but substantive understanding with identifiable gaps or dependence on tutor wording"
+      1: "Shows no relevant understanding, merely agrees/repeats, or ends more confused without productive articulation"
+
+  conceptual_revision:
+    name: "Conceptual Revision"
+    weight: 0.30
+    description: "Does the learner visibly revise, refine, or replace an earlier position in response to the exchange?"
+    criteria:
+      5: "Names or clearly enacts a substantive before/after change and integrates the reason for it"
+      3: "Some revision is visible, but it is local, tentative, or incompletely integrated"
+      1: "No revision evidence, rote compliance, unexplained reversal, or unchanged misconception"
+    note_for_first_turn: "At the first learner turn, score the quality and revisability of the stated position; later turns require actual change evidence."
+
+  transfer_and_application:
+    name: "Transfer and Application"
+    weight: 0.20
+    description: "Can the learner apply the developing idea to a new example, implication, contrast, or problem beyond repeating the tutor?"
+    criteria:
+      5: "Generates a sound novel application or implication and explains why it follows"
+      3: "Attempts a relevant application with partial success or substantial tutor dependence"
+      1: "No application evidence, pure repetition, or an application that contradicts the learned relation"
+
+  agency_and_metacognition:
+    name: "Agency and Metacognition"
+    weight: 0.15
+    description: "Does the learner actively steer, question, test, or monitor their own understanding?"
+    criteria:
+      5: "Actively tests understanding, identifies uncertainty, and makes a purposeful next move"
+      3: "Some self-monitoring or initiative appears, but the learner remains mostly tutor-led"
+      1: "Passive compliance, generic praise, disengagement without articulation, or no ownership of the learning move"

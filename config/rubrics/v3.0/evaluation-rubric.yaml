@@ -1,0 +1,90 @@
+# Prospective tutor-turn rubric v3.0.
+#
+# The v2.2 PCA (N=1,584 turns) found one dominant factor: PC1 explained
+# 80.7% of variance, only one eigenvalue exceeded 1, and content_accuracy was
+# the only dimension that separated in a forced two-factor rotation. v3.0
+# therefore scores those two supported components directly. It is prospective
+# and must not replace or be mixed with historical v2.2 scores.
+
+name: "Tutor Turn Quality Rubric (v3.0)"
+version: "3.0"
+status: calibration
+description: "PCA-informed tutor-turn rubric: general pedagogical quality plus separable content accuracy"
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "Fails"
+    3: "Adequate"
+    5: "Excellent"
+
+dimensions:
+  overall_pedagogical_quality:
+    name: "Overall Pedagogical Quality"
+    group: base
+    weight: 0.85
+    scale:
+      min: 1
+      max: 10
+    description: "How well does this exact tutor turn teach in its public context, excluding factual correctness, which is scored separately?"
+    construct_boundary: "A single general quality factor integrating learner uptake, calibration, scaffolding, elicitation, productive difficulty, autonomy, epistemic integrity, clarity, and usable handoff. Do not emit sub-scores for those facets."
+    criteria:
+      10: "Exceptional: precise uptake of this learner, expertly calibrated teaching, active sense-making, productive difficulty, epistemic integrity, and a highly usable next move"
+      9: "Excellent across the relevant facets, with only negligible limitations"
+      7: "Strong and clearly context-responsive teaching, but with a meaningful missed opportunity or uneven facet"
+      5: "Adequate: relevant and usable, but generic, shallow, overly directive, weakly eliciting, or only partly calibrated"
+      3: "Weak: substantial mismatch, poor scaffolding, inert delivery, or a handoff unlikely to support productive learner action"
+      1: "Pedagogically harmful or non-responsive: ignores the learner, substitutes for their thinking, seriously confuses, or provides no usable teaching move"
+    evidence_rules:
+      - "Judge the exact visible turn against the public dialogue available up to that turn."
+      - "For later turns, scores 8-10 require concrete uptake of accumulated learner evidence."
+      - "Do not reward length, warmth, theoretical vocabulary, or polish by itself."
+      - "Do not score content correctness here."
+
+  content_accuracy:
+    name: "Content Accuracy"
+    group: base
+    weight: 0.15
+    scale:
+      min: 1
+      max: 5
+    description: "Is the tutor's domain content correct, appropriately qualified, and free of misleading simplification?"
+    construct_boundary: "Score factual and domain accuracy only; do not reward pedagogical style. For a turn with no assessable domain claim, use the declared not-applicable score."
+    not_applicable_score: 5
+    criteria:
+      5: "Accurate and appropriately qualified; no material error. Also use when the turn contains no assessable domain claim"
+      3: "Mostly correct, with a minor error, omission, or simplification that does not overturn the teaching move"
+      1: "Contains a major error, false attribution, unsupported certainty, or distortion that would materially mislead the learner"
+    evidence_rules:
+      - "Distinguish contested interpretation from factual error."
+      - "Do not infer correctness from confident prose."
+
+# Self-contained operational defaults make --rubric-version 3.0 runnable.
+claude_code_judge:
+  model: sonnet
+
+judge:
+  model: openrouter.sonnet
+  reasoning_effort: low
+  hyperparameters:
+    temperature: 0.2
+    max_tokens: 5000
+  fallback:
+    model: openrouter.nemotron
+
+interaction_judge:
+  model: openrouter.sonnet
+  hyperparameters:
+    temperature: 0.2
+    max_tokens: 5000
+  fallback:
+    model: openrouter.nemotron
+
+settings:
+  runs_per_config: 3
+  parallelism: 2
+  use_ai_judge: false
+  timeout_ms: 30000
+  retry_on_failure: true
+  max_retries: 2

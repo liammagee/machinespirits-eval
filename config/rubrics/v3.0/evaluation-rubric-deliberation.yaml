@@ -1,0 +1,43 @@
+name: "Deliberation Value Rubric (v3.0)"
+version: "3.0"
+status: calibration
+description: "Symmetric tutor/learner rubric for whether hidden ego-superego work adds causal value"
+
+scale:
+  min: 1
+  max: 5
+  labels:
+    1: "No value or harmful"
+    2: "Weak"
+    3: "Adequate"
+    4: "Strong"
+    5: "Exceptional"
+
+dimensions:
+  critique_value:
+    name: "Critique Value"
+    weight: 0.35
+    description: "Does the reviewing agent identify specific, consequential problems or opportunities in the actual draft?"
+    criteria:
+      5: "Finds non-obvious, material issues and gives actionable direction grounded in the draft and dialogue state"
+      3: "Identifies a real issue but mixes specific feedback with generic review language"
+      1: "Rubber-stamps, nitpicks style, gives generic advice, or critiques something not present"
+
+  revision_value:
+    name: "Revision Value"
+    weight: 0.40
+    description: "Does the revision materially improve the externally visible move because it incorporates the critique?"
+    criteria:
+      5: "Makes a traceable substantive change that resolves the critique and improves the public move without introducing a new defect"
+      3: "Partly incorporates the critique, with a noticeable but limited improvement"
+      1: "Ignores the critique, changes only wording, worsens the move, or produces no visible improvement"
+
+  process_learning:
+    name: "Process Learning"
+    weight: 0.25
+    description: "Across available turns, does deliberation evolve using what earlier critique-revision cycles revealed?"
+    criteria:
+      5: "Later cycles explicitly use earlier outcomes, shift focus appropriately, and avoid repeating resolved failures"
+      3: "Some context-sensitive evolution occurs, but the same review/revision template largely persists"
+      1: "Each cycle resets, repeats the same critique, or shows no learning from prior public outcomes"
+    note_for_single_turn: "With one cycle, score how specifically the process uses the available dialogue and draft evidence."

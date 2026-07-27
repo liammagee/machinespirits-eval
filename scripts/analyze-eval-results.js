@@ -243,7 +243,7 @@ const V1_DIMENSIONS = [
 
 /**
  * Extract per-dimension average scores from a result row.
- * For v2.2 rows: parses tutor_scores JSON → averages across turns.
+ * For versioned rows (v2.2+): parses tutor_scores JSON → averages across turns.
  * For v1 rows: reads legacy score_* columns directly.
  * Returns { dimKey: averageScore } or null values for missing data.
  */
@@ -255,14 +255,18 @@ function extractDimensionScores(row) {
       const turns = Object.keys(parsed).filter((k) => parsed[k]?.scores);
       if (turns.length === 0) return null;
 
-      const dimAvgs = {};
-      for (const dim of V22_DIMENSIONS) {
-        const values = turns
-          .map((t) => parsed[t]?.scores?.[dim.key]?.score)
-          .filter((v) => v != null && typeof v === 'number');
-        dimAvgs[dim.key] = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null;
+      const dimensionKeys = new Set();
+      for (const turn of turns) {
+        for (const key of Object.keys(parsed[turn]?.scores || {})) dimensionKeys.add(key);
       }
-      return { version: '2.2', scores: dimAvgs };
+      const dimAvgs = {};
+      for (const key of dimensionKeys) {
+        const values = turns
+          .map((t) => parsed[t]?.scores?.[key]?.score)
+          .filter((v) => v != null && typeof v === 'number');
+        dimAvgs[key] = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null;
+      }
+      return { version: row.tutor_rubric_version || '2.2', scores: dimAvgs };
     } catch {
       // Fall through to v1
     }
@@ -337,7 +341,7 @@ Options:
   --judge <model>          Restrict rows to one judge model
   --scenarios <s1,s2,...>  Filter to specific scenarios
   --dimensions <d1,d2,...> Specify dimensions to analyze
-  --epoch <epoch>          Data epoch: pilot, 2.0 (default), or all
+  --epoch <epoch>          Data epoch: pilot, 2.0 (default), 3.0, or all
   --aggregate              Aggregate across all runs with matching eval signature
   --export <file>          Export results to CSV/JSON
   --verbose, -v            Show detailed output
@@ -535,17 +539,40 @@ async function analyzeResults(options) {
     }
     console.log(`\n${c.dim}* p < 0.05, ** p < 0.01${c.reset}\n`);
 
-    // Dimension-level analysis — auto-detect v2.2 vs v1 from data
+    // Dimension-level analysis — auto-detect the dominant rubric version
     console.log(`${c.bold}DIMENSION-LEVEL EFFECT SIZES${c.reset}`);
     console.log(`${'─'.repeat(100)}`);
 
     // Extract per-dimension scores for all rows
     const allDimExtractions = results.map((r) => ({ profile: r.profile_name, dims: extractDimensionScores(r) }));
-    const v22Count = allDimExtractions.filter((e) => e.dims?.version === '2.2').length;
-    const v1Count = allDimExtractions.filter((e) => e.dims?.version === '1.0').length;
-    const dimensions = v22Count >= v1Count ? V22_DIMENSIONS : V1_DIMENSIONS;
-    const dimVersion = v22Count >= v1Count ? '2.2' : '1.0';
-    console.log(`${c.dim}(rubric version: ${dimVersion}, ${v22Count} v2.2 rows, ${v1Count} v1.0 rows)${c.reset}`);
+    const versionCounts = new Map();
+    for (const extraction of allDimExtractions) {
+      if (!extraction.dims?.version) continue;
+      versionCounts.set(extraction.dims.version, (versionCounts.get(extraction.dims.version) || 0) + 1);
+    }
+    const [dimVersion = '1.0'] = [...versionCounts.entries()].sort((left, right) => right[1] - left[1])[0] || [];
+    const knownDimensions = dimVersion === '2.2' ? V22_DIMENSIONS : dimVersion === '1.0' ? V1_DIMENSIONS : [];
+    const detectedKeys = new Set();
+    for (const extraction of allDimExtractions) {
+      if (extraction.dims?.version !== dimVersion) continue;
+      for (const key of Object.keys(extraction.dims.scores || {})) detectedKeys.add(key);
+    }
+    // Preserve the reviewed historical output order for known rubrics. Append
+    // new/unknown dimensions deterministically so prospective versions remain
+    // analyzable without rewriting the legacy contract.
+    const knownKeys = new Set(knownDimensions.map((dimension) => dimension.key));
+    const dimensions = [
+      ...knownDimensions.filter((dimension) => detectedKeys.has(dimension.key)),
+      ...[...detectedKeys]
+        .filter((key) => !knownKeys.has(key))
+        .sort()
+        .map((key) => ({ key, name: key.replaceAll('_', ' ') })),
+    ];
+    const countSummary = [...versionCounts.entries()]
+      .sort()
+      .map(([version, count]) => `${count} v${version} rows`)
+      .join(', ');
+    console.log(`${c.dim}(rubric version: ${dimVersion}; ${countSummary})${c.reset}`);
 
     // Build per-profile per-dimension score arrays
     const profileDimScores = {};

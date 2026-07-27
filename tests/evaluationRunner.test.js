@@ -237,6 +237,7 @@ describe('getCliJudgeModelLabel', () => {
   it('formats codex CLI labels for preserve-history rejudge deduping', () => {
     assert.strictEqual(getCliJudgeModelLabel('codex', 'gpt-5'), 'codex-cli/gpt-5');
     assert.strictEqual(getCliJudgeModelLabel('codex'), 'codex-cli/auto');
+    assert.strictEqual(getCliJudgeModelLabel('codex', 'gpt-5.6-terra', 'medium'), 'codex-cli/gpt-5.6-terra@medium');
   });
 
   it('formats gemini and claude CLI labels consistently', () => {
@@ -244,6 +245,10 @@ describe('getCliJudgeModelLabel', () => {
     assert.strictEqual(getCliJudgeModelLabel('gemini'), 'gemini-cli/auto');
     assert.strictEqual(getCliJudgeModelLabel('claude', 'claude-opus-4-6'), 'claude-code/claude-opus-4-6');
     assert.strictEqual(getCliJudgeModelLabel('claude'), 'claude-opus-4.6');
+    assert.strictEqual(
+      getCliJudgeModelLabel('claude', 'claude-sonnet-5', 'medium'),
+      'claude-code/claude-sonnet-5@medium',
+    );
   });
 
   it('rejects unsupported CLI judges', () => {

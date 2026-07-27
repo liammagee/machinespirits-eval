@@ -586,15 +586,16 @@ function sleep(ms) {
 
 const SUPPORTED_JUDGE_CLIS = new Set(['claude', 'gemini', 'codex']);
 
-export function getCliJudgeModelLabel(judgeCli, modelOverride = null) {
+export function getCliJudgeModelLabel(judgeCli, modelOverride = null, effort = null) {
   const cli = String(judgeCli || '').toLowerCase();
   if (!SUPPORTED_JUDGE_CLIS.has(cli)) {
     throw new Error(`Unsupported judge CLI: ${judgeCli}`);
   }
 
-  if (cli === 'gemini') return `gemini-cli/${modelOverride || 'auto'}`;
-  if (cli === 'codex') return `codex-cli/${modelOverride || 'auto'}`;
-  return modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6';
+  const effortSuffix = effort ? `@${effort}` : '';
+  if (cli === 'gemini') return `gemini-cli/${modelOverride || 'auto'}${effortSuffix}`;
+  if (cli === 'codex') return `codex-cli/${modelOverride || 'auto'}${effortSuffix}`;
+  return `${modelOverride ? `claude-code/${modelOverride}` : 'claude-opus-4.6'}${effortSuffix}`;
 }
 
 function getDefaultCliJudgeModelOverride(judgeCli = 'claude') {
@@ -607,7 +608,7 @@ function getDefaultCliJudgeModelOverride(judgeCli = 'claude') {
   }
 }
 
-async function callCliJudge(prompt, judgeCli, modelOverride = null) {
+async function callCliJudge(prompt, judgeCli, modelOverride = null, effort = null) {
   const cli = String(judgeCli || '').toLowerCase();
   if (!SUPPORTED_JUDGE_CLIS.has(cli)) {
     throw new Error(`Unsupported judge CLI: ${judgeCli}`);
@@ -617,6 +618,7 @@ async function callCliJudge(prompt, judgeCli, modelOverride = null) {
     model: modelOverride,
     prompt,
     role: 'evaluation-runner-judge',
+    effort,
   });
 
   return parseCliJudgeJsonResponse(stdout);
@@ -5481,7 +5483,16 @@ export function generateReport(runId) {
  * @param {Object} opts - Judge dispatch and logging context
  */
 async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
-  const { judgeCli, judgeModel, effectiveCliJudgeModel, judgeOverrideObj, log, skipLearner, skipDeliberation } = opts;
+  const {
+    judgeCli,
+    judgeModel,
+    effectiveCliJudgeModel,
+    judgeCliEffort,
+    judgeOverrideObj,
+    log,
+    skipLearner,
+    skipDeliberation,
+  } = opts;
 
   const resolved = resolveRejudgeScenarioAndDialogueLog(result, dialogueLog);
   const fullScenario = resolved.scenario;
@@ -5499,7 +5510,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
   // ── Shared judge call helper (returns parsed JSON) ──
   async function callJudge(prompt) {
     if (judgeCli) {
-      return await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel);
+      return await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel, judgeCliEffort);
     } else {
       // Use rubricEvaluator's API-based judge: callJudgeModel returns raw text, parseJudgeResponse parses it
       const responseText = await rubricEvaluator.callJudgeModel(prompt, judgeOverrideObj);
@@ -6067,6 +6078,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
  * @param {string} [options.judgeOverride] - Override judge model (e.g. 'openrouter.nemotron')
  * @param {string} [options.judgeCli] - CLI judge backend ('claude', 'gemini', 'codex')
  * @param {string} [options.judgeCliModel] - Optional CLI judge model override
+ * @param {string} [options.judgeCliEffort] - Optional CLI reasoning-effort override
  * @param {boolean} [options.verbose] - Show per-result progress
  * @param {string} [options.scenarioFilter] - Only rejudge results for this scenario ID
  * @param {number} [options.parallelism] - Concurrent judge calls (default 3)
@@ -6080,6 +6092,7 @@ export async function rejudgeRun(runId, options = {}) {
     judgeOverride = null,
     judgeCli = null,
     judgeCliModel = null,
+    judgeCliEffort = null,
     verbose = false,
     scenarioFilter = null,
     parallelism = DEFAULT_PARALLELISM,
@@ -6125,7 +6138,7 @@ export async function rejudgeRun(runId, options = {}) {
   const effectiveCliJudgeModel = judgeCli ? judgeCliModel || getDefaultCliJudgeModelOverride(judgeCli) : null;
   try {
     if (judgeCli) {
-      targetJudgeLabel = getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel);
+      targetJudgeLabel = getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel, judgeCliEffort);
     } else {
       const judge = rubricEvaluator.getAvailableJudge(judgeOverride ? { judgeOverride: { model: judgeOverride } } : {});
       targetJudgeLabel = rubricEvaluator.normalizeJudgeLabel(judge.provider, judge.model);
@@ -6284,10 +6297,10 @@ export async function rejudgeRun(runId, options = {}) {
           ? await retryWithBackoff(async () => {
               const prompt = rubricEvaluator.buildEvaluationPrompt(suggestion, scenarioContext, { dialogueContext });
               const startTime = Date.now();
-              const parsed = await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel);
+              const parsed = await callCliJudge(prompt, judgeCli, effectiveCliJudgeModel, judgeCliEffort);
               return normalizeCliJudgeEvaluation(
                 parsed,
-                getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel),
+                getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel, judgeCliEffort),
                 Date.now() - startTime,
               );
             }, {})
@@ -6333,13 +6346,14 @@ export async function rejudgeRun(runId, options = {}) {
           // Multi-turn: score learner, dialogue, holistic, deliberation
           if (result.dialogueId && dialogueLog?.isMultiTurn) {
             const judgeModelLabel = judgeCli
-              ? getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel)
+              ? getCliJudgeModelLabel(judgeCli, effectiveCliJudgeModel, judgeCliEffort)
               : evaluation.judgeModel || null;
             try {
               await scoreMultiTurnRejudgment(rowId, result, dialogueLog, {
                 judgeCli,
                 judgeModel: judgeModelLabel,
                 effectiveCliJudgeModel,
+                judgeCliEffort,
                 judgeOverrideObj,
                 log,
                 skipLearner,

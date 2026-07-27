@@ -14,6 +14,12 @@ import * as evalConfigLoader from './evalConfigLoader.js';
 import { sanitizeEvaluationValue, stripThinkBlocks } from './evaluationTextSanitizer.js';
 import { callAIWithCliBridge } from './cliProviderBridge.js';
 import { jsonrepair } from 'jsonrepair';
+import {
+  buildScaleInstructions,
+  calculateWeightedRubricScore,
+  dimensionScaleLabel,
+  exampleDimensionScore,
+} from './rubricScoring.js';
 
 // HTTP request timeout for all judge API calls (ms)
 const API_CALL_TIMEOUT_MS = 60000;
@@ -464,7 +470,8 @@ function truncateForEvaluation(str, maxLen) {
  * Build the evaluation prompt for the judge model
  */
 function buildEvaluationPrompt(suggestion, scenario, context) {
-  const dimensions = evalConfigLoader.getRubricDimensions();
+  const rubric = evalConfigLoader.loadRubric();
+  const dimensions = rubric?.dimensions || {};
   const sanitizedSuggestion = sanitizeEvaluationValue(suggestion);
 
   // Build dimension criteria text
@@ -473,7 +480,7 @@ function buildEvaluationPrompt(suggestion, scenario, context) {
       const criteriaText = Object.entries(dim.criteria || {})
         .map(([score, desc]) => `  ${score}: ${desc}`)
         .join('\n');
-      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%)
+      return `**${dim.name}** (scale: ${dimensionScaleLabel(rubric, dim)}, weight: ${(dim.weight * 100).toFixed(0)}%)
 ${dim.description}
 Criteria:
 ${criteriaText}`;
@@ -502,12 +509,7 @@ ${dialogueTranscript}
 
 ## EVALUATION RUBRIC
 
-Score each dimension from 1-5:
-- 1: Completely fails this criterion
-- 2: Weak, significant issues
-- 3: Adequate, meets basic expectations
-- 4: Good, exceeds expectations
-- 5: Excellent, exemplary
+${buildScaleInstructions(rubric, dimensions)}
 
 ${dimensionCriteria}
 
@@ -537,12 +539,12 @@ ${(scenario.forbiddenElements || []).map((e) => `- ${e}`).join('\n') || '- None 
 ## YOUR TASK
 
 Evaluate the suggestion${dialogueTranscript ? ' in the context of the dialogue above' : ''} and provide:
-1. A score (1-5) for each dimension with reasoning
+1. A score on each dimension's declared scale, with reasoning
 2. Whether it passes the required/forbidden element checks
 3. An overall score (weighted average, 0-100 scale)
 
 For each dimension, include:
-- **score**: 1-5 rating
+- **score**: rating on that dimension's declared scale
 - **reasoning**: Brief explanation of why this score was given${dialogueTranscript ? ". For recognition dimensions, consider how the tutor engaged with the learner's actual responses and development." : ''}
 
 CRITICAL JSON RULES:
@@ -557,7 +559,8 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
   "scores": {
 ${Object.keys(dimensions)
   .map(
-    (key, i) => `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+    (key, i) =>
+      `    "${key}": {"score": ${exampleDimensionScore(rubric, dimensions[key], (i % 3) - 1)}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
   )
   .join(',\n')}
   },
@@ -910,15 +913,17 @@ function regexScoreRescue(text) {
   const scores = {};
   for (const dim of dimensionNames) {
     // Match patterns like: "relevance": {"score": 4  or  "relevance":{"score":4
-    const pattern = new RegExp(`"${dim}"\\s*:\\s*\\{?\\s*"?score"?\\s*:\\s*(\\d)`, 'i');
+    const pattern = new RegExp(`"${dim}"\\s*:\\s*\\{?\\s*"?score"?\\s*:\\s*(\\d+(?:\\.\\d+)?)`, 'i');
     const match = text.match(pattern);
     if (match) {
       scores[dim] = { score: parseInt(match[1], 10), reasoning: null };
     }
   }
 
-  // Need at least 3 scores for a useful partial result
-  if (Object.keys(scores).length < 3) return null;
+  // Historical rubrics require at least three recovered dimensions. Compact
+  // rubrics (v3.0 has two) require every configured dimension instead.
+  const minimumRecovered = Math.min(3, dimensionNames.length);
+  if (Object.keys(scores).length < minimumRecovered) return null;
 
   debugLog(`[rubricEvaluator] Regex rescue recovered ${Object.keys(scores).length} scores`);
 
@@ -1330,25 +1335,13 @@ export function quickValidate(suggestion, scenario) {
  * @returns {number} 0-100 score
  */
 export function calculateGroupScore(scores, groupName) {
-  const dimensions = evalConfigLoader.getRubricDimensions();
+  const rubric = evalConfigLoader.loadRubric();
+  const dimensions = rubric?.dimensions || {};
   const keyMap = { pedagogical_soundness: 'pedagogical' };
-
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const [key, dim] of Object.entries(dimensions)) {
-    if ((dim.group || 'base') !== groupName) continue;
-    const normalizedKey = keyMap[key] || key;
-    const scoreData = scores[normalizedKey] || scores[key];
-    const score = scoreData?.score ?? scoreData;
-    if (typeof score === 'number') {
-      weightedSum += score * (dim.weight || 0);
-      totalWeight += dim.weight || 0;
-    }
-  }
-
-  if (totalWeight === 0) return null;
-  return ((weightedSum / totalWeight - 1) / 4) * 100;
+  const grouped = Object.fromEntries(
+    Object.entries(dimensions).filter(([, dim]) => (dim.group || 'base') === groupName),
+  );
+  return calculateWeightedRubricScore(scores, rubric, { dimensions: grouped, aliases: keyMap });
 }
 
 /**
@@ -1373,33 +1366,10 @@ export function calculateRecognitionScore(scores) {
  * Calculate weighted overall score from dimension scores
  */
 export function calculateOverallScore(scores) {
-  const dimensions = evalConfigLoader.getRubricDimensions();
-
-  // Map rubric keys to normalized score keys (pedagogical_soundness -> pedagogical)
-  const keyMap = {
-    pedagogical_soundness: 'pedagogical',
-  };
-
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const [key, dim] of Object.entries(dimensions)) {
-    // Try both the rubric key and the normalized key
-    const normalizedKey = keyMap[key] || key;
-    const scoreData = scores[normalizedKey] || scores[key];
-    const score = scoreData?.score ?? scoreData;
-
-    if (typeof score === 'number') {
-      weightedSum += score * (dim.weight || 0);
-      totalWeight += dim.weight || 0;
-    }
-  }
-
-  if (totalWeight === 0) return null;
-
-  // Convert 1-5 scale to 0-100
-  const avgScore = weightedSum / totalWeight;
-  return ((avgScore - 1) / 4) * 100;
+  const rubric = evalConfigLoader.loadRubric();
+  return calculateWeightedRubricScore(scores, rubric, {
+    aliases: { pedagogical_soundness: 'pedagogical' },
+  });
 }
 
 /**
@@ -1513,22 +1483,7 @@ export function getRubricDimensions(rubric) {
 }
 
 export function calculateRubricOverallScore(scores, rubric) {
-  const dims = getRubricDimensions(rubric);
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const [key, dim] of Object.entries(dims)) {
-    const scoreEntry = scores?.[key];
-    if (!scoreEntry) continue;
-    const score = typeof scoreEntry === 'object' ? scoreEntry.score : scoreEntry;
-    if (typeof score !== 'number' || score < 1 || score > 5) continue;
-    weightedSum += score * dim.weight;
-    totalWeight += dim.weight;
-  }
-
-  if (totalWeight === 0) return null;
-  const weightedAvg = weightedSum / totalWeight;
-  return ((weightedAvg - 1) / 4) * 100;
+  return calculateWeightedRubricScore(scores, rubric);
 }
 
 export function buildRegisterRubricEvaluationPrompt({
@@ -1712,26 +1667,9 @@ export function getTutorHolisticDimensions({ hasRecognition = false } = {}) {
  * @returns {number} Overall score on 0-100 scale
  */
 export function calculateTutorHolisticScore(scores, hasRecognition = false) {
+  const rubric = loadTutorHolisticRubric();
   const dims = getTutorHolisticDimensions({ hasRecognition });
-
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const [key, dim] of Object.entries(dims)) {
-    const scoreEntry = scores[key];
-    if (!scoreEntry) continue;
-
-    const score = typeof scoreEntry === 'object' ? scoreEntry.score : scoreEntry;
-    if (typeof score !== 'number' || score < 1 || score > 5) continue;
-
-    weightedSum += score * dim.weight;
-    totalWeight += dim.weight;
-  }
-
-  if (totalWeight === 0) return null;
-
-  const weightedAvg = weightedSum / totalWeight;
-  return ((weightedAvg - 1) / 4) * 100;
+  return calculateWeightedRubricScore(scores, rubric, { dimensions: dims });
 }
 
 /**
@@ -1759,6 +1697,7 @@ export function buildTutorHolisticEvaluationPrompt(params) {
     transcriptArtifacts = null,
   } = params;
 
+  const rubric = loadTutorHolisticRubric();
   const dimensions = getTutorHolisticDimensions({ hasRecognition });
 
   // Build dimension criteria section
@@ -1767,7 +1706,7 @@ export function buildTutorHolisticEvaluationPrompt(params) {
       const criteriaText = Object.entries(dim.criteria || {})
         .map(([score, desc]) => `  ${score}: ${desc}`)
         .join('\n');
-      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
+      return `**${dim.name}** (scale: ${dimensionScaleLabel(rubric, dim)}, weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
 ${dim.description}
 Criteria:
 ${criteriaText}`;
@@ -1792,7 +1731,7 @@ ${criteriaText}`;
   const exampleScores = dimKeys
     .map(
       (key, i) =>
-        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+        `    "${key}": {"score": ${exampleDimensionScore(rubric, dimensions[key], (i % 3) - 1)}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
     )
     .join(',\n');
 
@@ -1802,12 +1741,7 @@ You are NOT evaluating individual turns. Evaluate the tutor's arc: scaffolding p
 
 ## EVALUATION RUBRIC
 
-Score each dimension from 1-5:
-- 1: Completely fails this criterion
-- 2: Weak, significant issues
-- 3: Adequate, meets basic expectations
-- 4: Good, exceeds expectations
-- 5: Excellent, exemplary
+${buildScaleInstructions(rubric, dimensions)}
 
 ${dimensionCriteria}
 
@@ -1827,7 +1761,7 @@ ${fullTranscript}
 ${recognitionNote}
 
 Evaluate the tutor's holistic trajectory across the full dialogue and provide:
-1. A score (1-5) for each applicable dimension with brief reasoning
+1. A score on each applicable dimension's declared scale, with brief reasoning
 2. An overall score (weighted average, 0-100 scale)
 3. A short summary of the tutor's overall dialogue trajectory
 
@@ -2075,24 +2009,8 @@ export function getDialogueDimensions() {
  * @returns {number} 0-100 score
  */
 export function calculateDialogueQualityScore(scores) {
-  const dimensions = getDialogueDimensions();
-
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const [key, dim] of Object.entries(dimensions)) {
-    const scoreData = scores[key];
-    const score = scoreData?.score ?? scoreData;
-
-    if (typeof score === 'number') {
-      weightedSum += score * (dim.weight || 0);
-      totalWeight += dim.weight || 0;
-    }
-  }
-
-  if (totalWeight === 0) return null;
-  const avgScore = weightedSum / totalWeight;
-  return ((avgScore - 1) / 4) * 100;
+  const rubric = loadDialogueRubric();
+  return calculateWeightedRubricScore(scores, rubric);
 }
 
 /**
@@ -2708,13 +2626,14 @@ export function buildDialogueQualityPrompt(params) {
     transcriptArtifacts = null,
   } = params;
 
+  const rubric = loadDialogueRubric();
   const dimensions = getDialogueDimensions();
   const dimensionCriteria = Object.entries(dimensions)
     .map(([_key, dim]) => {
       const criteriaText = Object.entries(dim.criteria || {})
         .map(([score, desc]) => `  ${score}: ${desc}`)
         .join('\n');
-      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%)
+      return `**${dim.name}** (scale: ${dimensionScaleLabel(rubric, dim)}, weight: ${(dim.weight * 100).toFixed(0)}%)
 ${dim.description}
 Criteria:
 ${criteriaText}`;
@@ -2739,7 +2658,7 @@ ${criteriaText}`;
   const exampleScores = dimKeys
     .map(
       (key, i) =>
-        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+        `    "${key}": {"score": ${exampleDimensionScore(rubric, dimensions[key], (i % 3) - 1)}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
     )
     .join(',\n');
 
@@ -2749,12 +2668,7 @@ Think of this like evaluating a dance, not individual dancers. A great dialogue 
 
 ## EVALUATION RUBRIC
 
-Score each dimension from 1-5:
-- 1: Completely fails this criterion
-- 2: Weak, significant issues
-- 3: Adequate, meets basic expectations
-- 4: Good, exceeds expectations
-- 5: Excellent, exemplary
+${buildScaleInstructions(rubric, dimensions)}
 
 ${dimensionCriteria}
 
@@ -2772,7 +2686,7 @@ ${sanitizedTranscript}
 ## YOUR TASK
 
 Evaluate the dialogue as a whole and provide:
-1. A score (1-5) for each dimension with brief reasoning
+1. A score on each dimension's declared scale, with brief reasoning
 2. An overall score (weighted average, 0-100 scale)
 3. A short summary of the dialogue's quality as a pedagogical encounter
 
@@ -2848,24 +2762,8 @@ export function getDeliberationDimensions() {
  * @returns {number} 0-100 score
  */
 export function calculateDeliberationScore(scores) {
-  const dimensions = getDeliberationDimensions();
-
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const [key, dim] of Object.entries(dimensions)) {
-    const scoreData = scores[key];
-    const score = scoreData?.score ?? scoreData;
-
-    if (typeof score === 'number') {
-      weightedSum += score * (dim.weight || 0);
-      totalWeight += dim.weight || 0;
-    }
-  }
-
-  if (totalWeight === 0) return null;
-  const avgScore = weightedSum / totalWeight;
-  return ((avgScore - 1) / 4) * 100;
+  const rubric = loadDeliberationRubric();
+  return calculateWeightedRubricScore(scores, rubric);
 }
 
 /**
@@ -2907,6 +2805,7 @@ export function buildTutorDeliberationPrompt(params) {
     learnerContext = null,
   } = params;
 
+  const rubric = loadDeliberationRubric();
   const dimensions = getDeliberationDimensions();
 
   const dimensionCriteria = Object.entries(dimensions)
@@ -2914,7 +2813,7 @@ export function buildTutorDeliberationPrompt(params) {
       const criteriaText = Object.entries(dim.criteria || {})
         .map(([score, desc]) => `  ${score}: ${desc}`)
         .join('\n');
-      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
+      return `**${dim.name}** (scale: ${dimensionScaleLabel(rubric, dim)}, weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
 ${dim.description}
 Criteria:
 ${criteriaText}`;
@@ -2928,7 +2827,7 @@ ${criteriaText}`;
   const exampleScores = dimKeys
     .map(
       (key, i) =>
-        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+        `    "${key}": {"score": ${exampleDimensionScore(rubric, dimensions[key], (i % 3) - 1)}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
     )
     .join(',\n');
 
@@ -2938,12 +2837,7 @@ Focus ONLY on the tutor's deliberation: [Tutor Ego] initial drafts, [Tutor Super
 
 ## EVALUATION RUBRIC
 
-Score each dimension from 1-5:
-- 1: Completely fails this criterion
-- 2: Weak, significant issues
-- 3: Adequate, meets basic expectations
-- 4: Good, exceeds expectations
-- 5: Excellent, exemplary
+${buildScaleInstructions(rubric, dimensions)}
 
 ${dimensionCriteria}
 
@@ -2965,7 +2859,7 @@ Evaluate ONLY the tutor's ego/superego deliberation process. Focus on:
 - Cross-turn evolution — does the deliberation adapt across the dialogue?
 
 Provide:
-1. A score (1-5) for each dimension with brief reasoning
+1. A score on each dimension's declared scale, with brief reasoning
 2. An overall score (weighted average, 0-100 scale)
 3. A short summary of the tutor's deliberation quality
 
@@ -3009,6 +2903,7 @@ export function buildLearnerDeliberationPrompt(params) {
     learnerContext = null,
   } = params;
 
+  const rubric = loadDeliberationRubric();
   const dimensions = getDeliberationDimensions();
 
   const dimensionCriteria = Object.entries(dimensions)
@@ -3016,7 +2911,7 @@ export function buildLearnerDeliberationPrompt(params) {
       const criteriaText = Object.entries(dim.criteria || {})
         .map(([score, desc]) => `  ${score}: ${desc}`)
         .join('\n');
-      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
+      return `**${dim.name}** (scale: ${dimensionScaleLabel(rubric, dim)}, weight: ${(dim.weight * 100).toFixed(0)}%, key: ${key})
 ${dim.description}
 Criteria:
 ${criteriaText}`;
@@ -3030,7 +2925,7 @@ ${criteriaText}`;
   const exampleScores = dimKeys
     .map(
       (key, i) =>
-        `    "${key}": {"score": ${(i % 3) + 2}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
+        `    "${key}": {"score": ${exampleDimensionScore(rubric, dimensions[key], (i % 3) - 1)}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
     )
     .join(',\n');
 
@@ -3040,12 +2935,7 @@ Focus ONLY on the learner's deliberation: [Learner Ego] initial reactions, [Lear
 
 ## EVALUATION RUBRIC
 
-Score each dimension from 1-5:
-- 1: Completely fails this criterion
-- 2: Weak, significant issues
-- 3: Adequate, meets basic expectations
-- 4: Good, exceeds expectations
-- 5: Excellent, exemplary
+${buildScaleInstructions(rubric, dimensions)}
 
 ${dimensionCriteria}
 
@@ -3067,7 +2957,7 @@ Evaluate ONLY the learner's ego/superego deliberation process. Focus on:
 - Cross-turn evolution — does the deliberation adapt as the dialogue develops?
 
 Provide:
-1. A score (1-5) for each dimension with brief reasoning
+1. A score on each dimension's declared scale, with brief reasoning
 2. An overall score (weighted average, 0-100 scale)
 3. A short summary of the learner's deliberation quality
 
@@ -3085,6 +2975,16 @@ ${exampleScores}
   "summary": "Brief assessment of the learner's deliberation process quality"
 }
 \`\`\``;
+}
+
+function buildTutorTurnCalibrationInstruction(dimensions) {
+  if (dimensions.adaptive_responsiveness) {
+    return 'CROSS-TURN CALIBRATION: For adaptive_responsiveness, a score of 4 or 5 requires evidence of change compared with prior turns, not just adaptive language. At Turn 1, score initial responsiveness. From Turn 2 onward, identify how the approach changed; a 5 requires explicit cross-turn development.';
+  }
+  if (dimensions.overall_pedagogical_quality) {
+    return 'CROSS-TURN CALIBRATION: Judge the current turn against the public dialogue available so far. At Turn 1, score initial calibration. From Turn 2 onward, an 8-10 for overall_pedagogical_quality requires concrete uptake of accumulated learner evidence, not merely a polished standalone answer.';
+  }
+  return 'CROSS-TURN CALIBRATION: Use only the public dialogue available up to the scored turn; do not use future turns.';
 }
 
 /**
@@ -3117,7 +3017,8 @@ function buildBatchedPerTurnTutorPrompt(params) {
 
   if (scoreableTurns.length === 0) return null;
 
-  const dimensions = evalConfigLoader.getRubricDimensions();
+  const rubric = evalConfigLoader.loadRubric();
+  const dimensions = rubric?.dimensions || {};
 
   // Build dimension criteria text (included ONCE)
   const dimensionCriteria = Object.entries(dimensions)
@@ -3125,7 +3026,7 @@ function buildBatchedPerTurnTutorPrompt(params) {
       const criteriaText = Object.entries(dim.criteria || {})
         .map(([score, desc]) => `  ${score}: ${desc}`)
         .join('\n');
-      return `**${dim.name}** (weight: ${(dim.weight * 100).toFixed(0)}%)
+      return `**${dim.name}** (scale: ${dimensionScaleLabel(rubric, dim)}, weight: ${(dim.weight * 100).toFixed(0)}%)
 ${dim.description}
 Criteria:
 ${criteriaText}`;
@@ -3158,9 +3059,12 @@ ${JSON.stringify(sanitizeEvaluationValue(suggestion), null, 2)}
   const exampleTurn = {
     turn_index: 0,
     scores: Object.fromEntries(
-      Object.entries(dimensions).map(([key]) => [
+      Object.entries(dimensions).map(([key, dimension], index) => [
         key,
-        { score: 0, reasoning: 'TODO: replace with your 1-5 score and rationale' },
+        {
+          score: exampleDimensionScore(rubric, dimension, (index % 3) - 1),
+          reasoning: `your assessment of ${key.replaceAll('_', ' ')}`,
+        },
       ]),
     ),
     validation: { passes_required: true, required_missing: [], passes_forbidden: true, forbidden_found: [] },
@@ -3172,12 +3076,7 @@ ${JSON.stringify(sanitizeEvaluationValue(suggestion), null, 2)}
 
 ## EVALUATION RUBRIC
 
-Score each dimension from 1-5:
-- 1: Completely fails this criterion
-- 2: Weak, significant issues
-- 3: Adequate, meets basic expectations
-- 4: Good, exceeds expectations
-- 5: Excellent, exemplary
+${buildScaleInstructions(rubric, dimensions)}
 
 ${dimensionCriteria}
 
@@ -3214,10 +3113,10 @@ Score EACH tutor turn listed above independently. For each turn:
 - Consider ONLY the dialogue context up to and including that turn (mentally ignore later turns)
 - Evaluate the suggestion on its own merits within the dialogue so far
 
-CROSS-TURN CALIBRATION: For the cross-turn tutor dimension adaptive_responsiveness, a score of 4 or 5 requires EVIDENCE OF CHANGE compared to prior turns — not just presence of adaptive language. At Turn 1, there are no prior turns to compare against, so base your score on the quality of the tutor's initial responsiveness to the learner's opening. From Turn 2 onward, ask: "How has the tutor's approach changed since the previous turn? What specific evidence shows adaptation?" A score of 5 requires explicit cross-turn development, not just good single-turn quality.
+${buildTutorTurnCalibrationInstruction(dimensions)}
 
 For each turn, include:
-- **scores**: 1-5 rating per dimension with brief reasoning
+- **scores**: rating on each dimension's declared scale, with brief reasoning
 - **validation**: Whether it passes required/forbidden element checks
 - **overall_score**: Weighted average on 0-100 scale
 - **summary**: Brief overall assessment
@@ -3290,19 +3189,14 @@ function buildPerTurnTutorEvaluationPrompt(params) {
   // Add per-turn framing to the scenario description
   const totalTurns = turnResults.length;
   const turnLabel = `Turn ${targetTurnIndex + 1} of ${totalTurns}`;
+  const dimensions = evalConfigLoader.getRubricDimensions();
   const perTurnScenario = {
     ...scenario,
     description:
       `${scenario.description}\n\n[PER-TURN SCORING] You are scoring the tutor's response at ${turnLabel}. ` +
       `The dialogue transcript is truncated to this point — you do NOT see future turns. ` +
       `Evaluate this response on its own merits within the dialogue context so far.\n\n` +
-      `CROSS-TURN CALIBRATION: For the cross-turn tutor dimension adaptive_responsiveness, ` +
-      `a score of 4 or 5 requires EVIDENCE OF CHANGE compared ` +
-      `to prior turns — not just presence of adaptive language. At Turn 1, there are no prior ` +
-      `turns to compare against, so base your score on the quality of the tutor's initial ` +
-      `responsiveness to the learner's opening. From Turn 2 onward, ask: "How has the tutor's ` +
-      `approach changed since the previous turn? What specific evidence shows adaptation?" ` +
-      `A score of 5 requires explicit cross-turn development, not just good single-turn quality.`,
+      buildTutorTurnCalibrationInstruction(dimensions),
   };
 
   return buildEvaluationPrompt(suggestion, perTurnScenario, { prebuiltTranscript: publicTranscript });
