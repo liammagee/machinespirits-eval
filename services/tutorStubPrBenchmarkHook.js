@@ -1,14 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { loadWorld } from './dramaticDerivation/world.js';
 import { TUTOR_PR_BENCHMARK_REPORT_SCHEMA } from './tutorStubPrBenchmark.js';
+import { TUTOR_PR_BENCHMARK_REAUDIT_SCHEMA } from './tutorStubPrBenchmarkComparison.js';
 
 export const TUTOR_PR_BENCHMARK_HOOK_MARKER = '# machinespirits:tutor-pr-benchmark-hook:v1';
 export const TUTOR_PR_BENCHMARK_HOOK_SIDECAR = 'pre-push.machinespirits-before-tutor-pr-benchmark';
 const HOOK_ENFORCEMENT = new Set(['report_only', 'blocking']);
 const HOOK_REPORT_SCOPES = new Set(['git_common', 'worktree']);
 const CACHEABLE_REPORT_STATUSES = new Set(['pass', 'fail', 'blocked', 'budget_exhausted']);
+const ATTRIBUTABLE_REPORT_STATUSES = new Set(['pass', 'fail']);
 const JAVASCRIPT_EXTENSIONS = new Set(['.js', '.mjs']);
+const WORLD_DIRECTORY = 'config/drama-derivation';
+const WORLD_FILE_PATTERN = /^world-.*\.yaml$/u;
 
 function stringList(value, label) {
   if (!Array.isArray(value) || value.length === 0 || value.some((item) => !String(item || '').trim())) {
@@ -60,13 +65,56 @@ export function validateTutorPrBenchmarkHookConfig(config) {
   };
 }
 
+export function isTutorPrBenchmarkWorldScopedPath(filePath) {
+  const normalized = repositoryRelative(filePath, 'changed path');
+  const directory = path.posix.dirname(normalized);
+  return directory === WORLD_DIRECTORY && WORLD_FILE_PATTERN.test(path.posix.basename(normalized));
+}
+
+/**
+ * Every benchmark case replays one authored world, so a world spec that no selected
+ * case replays cannot change any job's inputs. Resolving coverage by the world's own
+ * `id` rather than by filename keeps a renamed or duplicated spec honest, and an
+ * unparseable spec stays covered so a broken world still reaches the gate.
+ */
+export function collectTutorPrBenchmarkCoveredWorldFiles({ root, worldIds }) {
+  const wanted = new Set([...(worldIds || [])].map((id) => String(id).trim()).filter(Boolean));
+  if (wanted.size === 0) throw new Error('benchmark world coverage requires at least one world id');
+  const directory = path.resolve(root, WORLD_DIRECTORY);
+  const covered = new Set();
+  for (const name of fs.readdirSync(directory).sort()) {
+    if (!WORLD_FILE_PATTERN.test(name)) continue;
+    const relative = `${WORLD_DIRECTORY}/${name}`;
+    let id = null;
+    try {
+      id = loadWorld(path.join(directory, name)).id;
+    } catch {
+      covered.add(relative);
+      continue;
+    }
+    if (wanted.has(id)) covered.add(relative);
+  }
+  return covered;
+}
+
 export function isTutorPrBenchmarkHookRelevantPath(filePath, hookConfig) {
   const normalized = repositoryRelative(filePath, 'changed path');
-  return (
+  const matched =
     hookConfig.exactPaths.includes(normalized) ||
     hookConfig.pathPrefixes.some((prefix) => normalized.startsWith(prefix)) ||
-    hookConfig.reachablePaths?.has(normalized) === true
-  );
+    hookConfig.reachablePaths?.has(normalized) === true;
+  if (!matched) return false;
+  if (!hookConfig.coveredWorldFiles || !isTutorPrBenchmarkWorldScopedPath(normalized)) return true;
+  return hookConfig.coveredWorldFiles.has(normalized);
+}
+
+export function summarizeTutorPrBenchmarkWorldCoverage({ paths, hookConfig }) {
+  const uncovered = [...new Set(paths)]
+    .filter((filePath) => isTutorPrBenchmarkWorldScopedPath(filePath))
+    .filter((filePath) => hookConfig.coveredWorldFiles?.has(repositoryRelative(filePath, 'changed path')) !== true)
+    .map((filePath) => repositoryRelative(filePath, 'changed path'))
+    .sort();
+  return { uncoveredWorldPaths: uncovered, coveredWorldIds: [...(hookConfig.coveredWorldIds || [])].sort() };
 }
 
 function extractStaticRelativeSpecifiers(source) {
@@ -176,6 +224,80 @@ export function classifyTutorPrBenchmarkHookReport(report, enforcement) {
   if (report?.status === 'pass') return 'allow';
   if (report?.status === 'fail' && enforcement === 'report_only') return 'warn';
   return 'block';
+}
+
+export function listCachedTutorPrBenchmarkHookReports({ hookReportRoot, excludeSha = null }) {
+  let entries = [];
+  try {
+    entries = fs.readdirSync(hookReportRoot, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const rows = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.name === excludeSha) continue;
+    const reportPath = path.join(hookReportRoot, entry.name, 'report.json');
+    const report = loadCachedTutorPrBenchmarkReport(reportPath, entry.name);
+    if (!report || !ATTRIBUTABLE_REPORT_STATUSES.has(report.status)) continue;
+    rows.push({ sha: entry.name, reportPath, status: report.status });
+  }
+  return rows.sort((left, right) => left.sha.localeCompare(right.sha));
+}
+
+/**
+ * `distances` maps a candidate sha to its commit distance from HEAD, and omits any
+ * commit that is not an ancestor. Nearest wins so the baseline is the most recent
+ * commit whose responses were already judged, which keeps the attributed window as
+ * small as the report cache allows.
+ */
+export function selectNearestTutorPrBenchmarkBaseline({ candidates, distances }) {
+  const ranked = (candidates || [])
+    .map((candidate) => ({ ...candidate, distance: distances?.get(candidate.sha) ?? null }))
+    .filter((candidate) => Number.isInteger(candidate.distance) && candidate.distance >= 0)
+    .sort((left, right) => left.distance - right.distance || left.sha.localeCompare(right.sha));
+  return ranked[0] || null;
+}
+
+/**
+ * A head failure mixes two causes the raw report cannot separate: fresh model
+ * sampling and changed guard code. Re-auditing the baseline's saved candidates
+ * holds the responses fixed, so a re-audit that moves nothing proves the guards
+ * score identically and the failure is not this change's doing.
+ */
+export function classifyTutorPrBenchmarkAttribution({ baseline = null, reaudit = null, error = null } = {}) {
+  if (!baseline) return { outcome: 'no_baseline', baseline: null, reaudit: null, detail: null };
+  const base = { baselineSha: baseline.sha, baselineStatus: baseline.status, baselineDistance: baseline.distance };
+  if (error) return { outcome: 'baseline_incomparable', ...base, detail: String(error.message || error) };
+  if (reaudit?.schema !== TUTOR_PR_BENCHMARK_REAUDIT_SCHEMA) {
+    return { outcome: 'baseline_incomparable', ...base, detail: 're-audit produced no comparable report' };
+  }
+  const improved = Number(reaudit.summary?.improved || 0);
+  const regressed = Number(reaudit.summary?.regressed || 0);
+  const candidates = Number(reaudit.summary?.candidates || 0);
+  const counts = { improved, regressed, candidates };
+  if (regressed > 0) return { outcome: 'audit_regressed', ...base, ...counts, detail: null };
+  if (improved > 0) return { outcome: 'audit_improved', ...base, ...counts, detail: null };
+  if (baseline.status === 'fail') return { outcome: 'standing', ...base, ...counts, detail: null };
+  return { outcome: 'new_since_baseline', ...base, ...counts, detail: null };
+}
+
+export function describeTutorPrBenchmarkAttribution(attribution) {
+  const sha = String(attribution?.baselineSha || '').slice(0, 12);
+  const counts = `${attribution?.improved || 0} improved, ${attribution?.regressed || 0} regressed of ${attribution?.candidates || 0}`;
+  switch (attribution?.outcome) {
+    case 'standing':
+      return `STANDING — baseline ${sha} already failed and its saved responses score identically under this change's audit code (${counts}, zero model calls)`;
+    case 'new_since_baseline':
+      return `NEW SINCE ${sha} — that baseline passed, and its saved responses still pass under this change's audit code (${counts}), so the difference is in the responses drawn at HEAD, not the guards`;
+    case 'audit_regressed':
+      return `ATTRIBUTABLE — this change's audit code fails responses that baseline ${sha} passed (${counts}, zero model calls)`;
+    case 'audit_improved':
+      return `NOT ATTRIBUTABLE TO THE GUARDS — this change's audit code only improves baseline ${sha} (${counts}), so the failure is in the responses drawn at HEAD`;
+    case 'baseline_incomparable':
+      return `UNATTRIBUTED — nearest baseline ${sha} is not comparable under the current plan (${attribution.detail})`;
+    default:
+      return 'UNATTRIBUTED — no cached ancestor report to re-audit; the next push from this branch will have one';
+  }
 }
 
 export function renderTutorPrBenchmarkPrePushWrapper() {
