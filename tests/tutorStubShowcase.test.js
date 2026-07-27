@@ -560,3 +560,161 @@ test('the config schema constant matches the shipped file', () => {
   const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
   assert.equal(loaded.config.schema, TUTOR_STUB_SHOWCASE_CONFIG_SCHEMA);
 });
+
+/**
+ * Navigation, magnification, and the instrument-contrast panel.
+ *
+ * The page is a single file someone opens from disk, often after being sent it,
+ * so it has to carry its own way around and its own type control. The tests
+ * below pin the two properties that would rot silently: that no menu entry
+ * promises a section the page did not render, and that the whole document
+ * remains one self-contained file.
+ */
+test('the jump menu offers only anchors the page actually rendered', async () => {
+  const built = await report();
+  const html = renderTutorStubShowcaseHtml(built);
+
+  const hrefs = [...html.matchAll(/class="sc-nav-link" href="#([^"]+)"/gu)].map((match) => match[1]);
+  assert.ok(hrefs.length >= 3, 'expected a menu');
+  for (const id of hrefs) {
+    assert.ok(new RegExp(`id="${id}"`, 'u').test(html), `menu points at #${id}, which the page never renders`);
+  }
+  // Every transcript section is reachable, not just the first.
+  const scenarioIds = [...new Set(built.results.filter((row) => row.dialogue).map((row) => row.scenarioId))];
+  assert.equal(
+    hrefs.filter((id) => id.startsWith('sc-scenario-')).length,
+    scenarioIds.length,
+    'every scenario needs its own menu entry',
+  );
+});
+
+/**
+ * A scored overlay over a built report, with enough turns for a correlation to
+ * be computable at all. Two turns per dialogue — what a real showcase run scores
+ * — leaves every pairwise r undefined, so the contrast panel would render half
+ * its blocks and the tests would pass on an emptier page than the one shipped.
+ */
+function contrastOverlay(built, { v30 = false } = {}) {
+  const dialogues = built.results.filter((result) => result.dialogue);
+  const turnIndexes = [1, 2, 3, 4];
+  const rowsFor = (score) =>
+    dialogues.flatMap((result, dialogueIndex) =>
+      turnIndexes.map((turnIndex) => {
+        const step = dialogueIndex * turnIndexes.length + turnIndex - 1;
+        return {
+          dialogueId: result.id,
+          scenarioId: result.scenarioId,
+          armId: result.armId,
+          baseline: Boolean(result.baseline),
+          turnIndex,
+          turnLabel: turnIndex === 1 ? 'first' : 'last',
+          success: true,
+          ...score(step),
+        };
+      }),
+    );
+
+  return buildShowcaseScoreOverlay({
+    tutorV22: {
+      rubricVersion: '2.2',
+      judge: 'claude-code.sonnet',
+      turns: 'first-last',
+      rows: rowsFor((step) => ({
+        overallScore: 40 + step * 4,
+        scores: {
+          // Two dimensions that move together and one that moves against them,
+          // so the panel has both a "most alike" and a "least alike" pair.
+          perception_quality: { score: 1 + step * 0.4 },
+          pedagogical_craft: { score: 1 + step * 0.35 },
+          elicitation_quality: { score: 5 - step * 0.4 },
+        },
+      })),
+    },
+    tutorV30: v30
+      ? {
+          rubricVersion: '3.0',
+          judge: 'claude-code.sonnet',
+          turns: 'first-last',
+          rows: rowsFor((step) => ({
+            overallScore: 30 + step * 6,
+            scores: {
+              overall_pedagogical_quality: { score: 3 + step * 0.6 },
+              content_accuracy: { score: 4 },
+            },
+          })),
+        }
+      : null,
+  });
+}
+
+test('the menu links to the scoring sections only when there is scoring to link to', async () => {
+  const built = await report();
+  const unscored = renderTutorStubShowcaseHtml(built);
+  assert.ok(!/href="#sc-scoring"/u.test(unscored), 'no overlay, so no scoring entry');
+  assert.ok(!/href="#sc-contrast"/u.test(unscored), 'no overlay, so no contrast entry');
+
+  const scored = renderTutorStubShowcaseHtml(built, { overlay: contrastOverlay(built) });
+  assert.match(scored, /href="#sc-scoring"/u);
+  assert.match(scored, /href="#sc-contrast"/u);
+  assert.match(scored, /id="sc-contrast"/u);
+  assert.match(scored, /Instrument contrast/u);
+});
+
+test('the contrast panel reports discrimination and refuses to read the radar as merit', async () => {
+  const built = await report();
+  const html = renderTutorStubShowcaseHtml(built, { overlay: contrastOverlay(built, { v30: true }) });
+
+  assert.match(html, /Which instrument separates the turns\?/u);
+  assert.match(html, /How much does a version repeat itself\?/u);
+  assert.match(html, /Where the versions part company/u);
+  // A radar's area is an axis-order artefact, so the page must say so wherever it
+  // draws one; a reader left to interpret the shape will read bigger as better.
+  assert.match(html, /a bigger shape is not a better/u);
+  // Small n is a property of this run, and the panel is required to lead with it.
+  assert.match(html, /Small sample/u);
+});
+
+test('the contrast panel names the whole-transcript instrument it does not run', async () => {
+  const built = await report();
+  const html = renderTutorStubShowcaseHtml(built, { overlay: contrastOverlay(built) });
+
+  // Both rubrics on this page score one turn at a time. The instrument that
+  // scores a transcript as a whole exists, was tried on material like this, and
+  // failed its transfer gate — which is the useful thing to report, and is more
+  // useful than a score the page could have produced by ignoring the gate.
+  assert.match(html, /scored one turn at a time/u);
+  assert.match(html, /evaluation-rubric-poetics\.yaml/u);
+  assert.match(html, /weighted κ ≈ 0\.04\s+against a pre-registered bar of 0\.60/u);
+});
+
+test('the page carries its own type control and stays a single self-contained file', async () => {
+  const html = renderTutorStubShowcaseHtml(await report());
+
+  assert.match(html, /id="sc-toggle-text"/u);
+  assert.match(html, /id="sc-toggle-stack"/u);
+  // Root font size drives every rem on the page, so one control resizes the whole
+  // document rather than the prose alone.
+  assert.match(html, /font-size: calc\(100% \* var\(--sc-scale\)\)/u);
+  assert.match(html, /html\[data-sc-text='large'\]/u);
+  assert.ok(!/<script src=/u.test(html), 'no external script');
+  assert.ok(!/<link rel="stylesheet"/u.test(html), 'no external stylesheet');
+});
+
+test('wide tables scroll inside their own box so the page body never scrolls sideways', async () => {
+  const built = await report();
+  const html = renderTutorStubShowcaseHtml(built);
+  const tables = (html.match(/<table class="sc-table">/gu) || []).length;
+  const wrappers = (html.match(/<div class="sc-table-scroll"/gu) || []).length;
+  assert.ok(tables > 0, 'expected at least one table');
+  assert.equal(wrappers, tables, 'every table needs its own scroll container');
+  assert.match(html, /\.sc-table-scroll \{ overflow-x: auto/u);
+});
+
+test('a collapsed transcript column still says which arm it belongs to', async () => {
+  // Side by side, the two column heads label the arms. Stacked — by the nav
+  // button or by a narrow viewport — the heads are gone, and without this the
+  // reader gets two unlabelled walls of text.
+  const html = renderTutorStubShowcaseHtml(await report());
+  assert.match(html, /class="sc-cell-arm"/u);
+  assert.match(html, /body\[data-sc-stack='on'\] \.sc-cell-arm \{ display: block; \}/u);
+});
