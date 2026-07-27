@@ -312,10 +312,13 @@ import {
   tutorStubRegisterPolicyCalculation as registerPolicyCalculation,
 } from '../services/tutorStubExplanatoryDebug.js';
 import {
+  tutorStubDominantPlainPolicySignals as dominantPlainPolicySignals,
   tutorStubDisplayDiagnosticLabel as displayDiagnosticLabel,
   tutorStubPlainList as plainList,
+  tutorStubPlainPolicyLabel as plainPolicyLabel,
   tutorStubPlainResponseCheckSummary as plainResponseCheckSummary,
   tutorStubPlainSettingName as plainSettingName,
+  tutorStubPlainStrategyText as plainStrategyText,
   tutorStubResponseCheckTriggerAreas as responseCheckTriggerAreas,
   tutorStubResponseMetadataLine as metadataLine,
 } from '../services/tutorStubResponseDetails.js';
@@ -8449,68 +8452,6 @@ function printTutorStubReleaseNotes(hoursArg = '') {
 
 function registerTemperatureApplies(policy) {
   return REGISTER_TEMPERATURE_POLICIES.has(String(policy || ''));
-}
-
-function plainPolicyLabel(policy) {
-  const labels = {
-    continuous_dynamical_system: 'continuous adaptive blend',
-    continuous_empirical_dynamical_system: 'continuous adaptive blend with cross-run evidence',
-    dynamical_system: 'adaptive weighted choice',
-    empirical_dynamical_system: 'adaptive weighted choice with cross-run evidence',
-    trajectory: 'trajectory-aware choice',
-    field: 'current interaction-state choice',
-    state: 'classifier and reasoning-state choice',
-    dynamic: 'model-reviewed adaptive choice',
-    bland: 'fixed plain baseline',
-    random: 'random control',
-    negative: 'negative-register control',
-  };
-  return labels[policy] || String(policy || 'unknown policy').replaceAll('_', ' ');
-}
-
-function plainPolicySignal(axis) {
-  const labels = {
-    evidence_gap: 'the learner still needs public evidence',
-    warrant_gap: 'a reasoning link is missing',
-    agency_deficit: 'the learner needs more ownership of the next move',
-    affective_risk: 'the learner may feel exposed or pressured',
-    recognition_pressure: 'the response should acknowledge the learner’s independence',
-    coercion_risk: 'the tutor should avoid forcing agreement',
-    integration_need: 'the learner needs help connecting the pieces',
-    compression_need: 'the next move should be simpler and shorter',
-    language_opacity: 'the learner has encountered unclear or unfamiliar wording',
-    momentum: 'the dialogue has useful forward movement',
-    stagnation: 'the dialogue risks stalling',
-    disruption_need: 'the current pattern needs a gentle interruption',
-    tempo_affordance: 'the learner appears ready to move faster',
-    closure_pressure: 'the dialogue is nearing a conclusion',
-    field_regression: 'the learner’s engagement has slipped',
-    empirical_uncertainty: 'there is little evidence yet about which style works best here',
-    learner_acceleration: 'the learner supplied several warranted steps at once',
-  };
-  return labels[axis] || String(axis || '').replaceAll('_', ' ');
-}
-
-function dominantPlainPolicySignals(registerSelection, { limit = 3 } = {}) {
-  const vector = registerSelection?.dynamical_system_policy?.state_vector || {};
-  return Object.entries(vector)
-    .filter(([, value]) => Number.isFinite(Number(value)) && Number(value) > 0.15)
-    .sort((a, b) => Number(b[1]) - Number(a[1]))
-    .slice(0, limit)
-    .map(([axis]) => plainPolicySignal(axis));
-}
-
-function plainStrategyText(value) {
-  return String(value || '')
-    .replace(/learner-DAG/giu, 'learner’s reasoning')
-    .replace(/DAG/gu, 'reasoning map')
-    .replace(/proof-state/giu, 'reasoning')
-    .replace(/public premise/giu, 'piece of public evidence')
-    .replace(/learner-owned record/giu, 'learner’s stated reasoning')
-    .replace(/low-agency compliance/giu, 'passive agreement')
-    .replace(/learner-owned public move/giu, 'response in the learner’s own words')
-    .replace(/coercion pressure/giu, 'pressure to agree')
-    .replace(/final secret/giu, 'final conclusion');
 }
 
 function printCurrentTurnAnalysis(state, { technical = false } = {}) {

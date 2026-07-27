@@ -3,11 +3,15 @@ import fs from 'node:fs';
 import test from 'node:test';
 
 import {
+  tutorStubDominantPlainPolicySignals,
   tutorStubDisplayDiagnosticLabel,
   tutorStubPlainList,
+  tutorStubPlainPolicyLabel,
+  tutorStubPlainPolicySignal,
   tutorStubPlainResponseCheckArea,
   tutorStubPlainResponseCheckSummary,
   tutorStubPlainSettingName,
+  tutorStubPlainStrategyText,
   tutorStubResponseCheckTriggerAreas,
   tutorStubResponseMetadataLine,
 } from '../services/tutorStubResponseDetails.js';
@@ -56,6 +60,126 @@ test('response-check and setting labels retain authored mappings and readable fa
   assert.equal(tutorStubPlainSettingName('registerOverlays'), 'turn/conversation overrides');
   assert.equal(tutorStubPlainSettingName('registerOverlayThreshold'), 'override sensitivity');
   assert.equal(tutorStubPlainSettingName('new_setting'), 'new setting');
+});
+
+test('teaching-policy labels retain every authored mapping and the readable fallback', () => {
+  assert.deepEqual(
+    Object.fromEntries(
+      [
+        'continuous_dynamical_system',
+        'continuous_empirical_dynamical_system',
+        'dynamical_system',
+        'empirical_dynamical_system',
+        'trajectory',
+        'field',
+        'state',
+        'dynamic',
+        'bland',
+        'random',
+        'negative',
+      ].map((policy) => [policy, tutorStubPlainPolicyLabel(policy)]),
+    ),
+    {
+      continuous_dynamical_system: 'continuous adaptive blend',
+      continuous_empirical_dynamical_system: 'continuous adaptive blend with cross-run evidence',
+      dynamical_system: 'adaptive weighted choice',
+      empirical_dynamical_system: 'adaptive weighted choice with cross-run evidence',
+      trajectory: 'trajectory-aware choice',
+      field: 'current interaction-state choice',
+      state: 'classifier and reasoning-state choice',
+      dynamic: 'model-reviewed adaptive choice',
+      bland: 'fixed plain baseline',
+      random: 'random control',
+      negative: 'negative-register control',
+    },
+  );
+  assert.equal(tutorStubPlainPolicyLabel('new_policy'), 'new policy');
+  assert.equal(tutorStubPlainPolicyLabel(null), 'unknown policy');
+});
+
+test('policy-signal vocabulary retains every authored learner-facing explanation', () => {
+  assert.deepEqual(
+    Object.fromEntries(
+      [
+        'evidence_gap',
+        'warrant_gap',
+        'agency_deficit',
+        'affective_risk',
+        'recognition_pressure',
+        'coercion_risk',
+        'integration_need',
+        'compression_need',
+        'language_opacity',
+        'momentum',
+        'stagnation',
+        'disruption_need',
+        'tempo_affordance',
+        'closure_pressure',
+        'field_regression',
+        'empirical_uncertainty',
+        'learner_acceleration',
+      ].map((axis) => [axis, tutorStubPlainPolicySignal(axis)]),
+    ),
+    {
+      evidence_gap: 'the learner still needs public evidence',
+      warrant_gap: 'a reasoning link is missing',
+      agency_deficit: 'the learner needs more ownership of the next move',
+      affective_risk: 'the learner may feel exposed or pressured',
+      recognition_pressure: 'the response should acknowledge the learner’s independence',
+      coercion_risk: 'the tutor should avoid forcing agreement',
+      integration_need: 'the learner needs help connecting the pieces',
+      compression_need: 'the next move should be simpler and shorter',
+      language_opacity: 'the learner has encountered unclear or unfamiliar wording',
+      momentum: 'the dialogue has useful forward movement',
+      stagnation: 'the dialogue risks stalling',
+      disruption_need: 'the current pattern needs a gentle interruption',
+      tempo_affordance: 'the learner appears ready to move faster',
+      closure_pressure: 'the dialogue is nearing a conclusion',
+      field_regression: 'the learner’s engagement has slipped',
+      empirical_uncertainty: 'there is little evidence yet about which style works best here',
+      learner_acceleration: 'the learner supplied several warranted steps at once',
+    },
+  );
+  assert.equal(tutorStubPlainPolicySignal('new_axis'), 'new axis');
+  assert.equal(tutorStubPlainPolicySignal(null), '');
+});
+
+test('dominant policy signals retain threshold, numeric coercion, order, limit, and immutability', () => {
+  const selection = Object.freeze({
+    dynamical_system_policy: Object.freeze({
+      state_vector: Object.freeze({
+        evidence_gap: 0.61,
+        learner_acceleration: '0.9',
+        momentum: 0.15,
+        new_axis: 0.4,
+        ignored_nan: 'not-a-number',
+        closure_pressure: 0.33,
+      }),
+    }),
+  });
+  const before = structuredClone(selection);
+
+  assert.deepEqual(tutorStubDominantPlainPolicySignals(selection), [
+    'the learner supplied several warranted steps at once',
+    'the learner still needs public evidence',
+    'new axis',
+  ]);
+  assert.deepEqual(tutorStubDominantPlainPolicySignals(selection, { limit: 2 }), [
+    'the learner supplied several warranted steps at once',
+    'the learner still needs public evidence',
+  ]);
+  assert.deepEqual(tutorStubDominantPlainPolicySignals(null), []);
+  assert.deepEqual(selection, before);
+});
+
+test('strategy text removes internal tutoring jargon in the original replacement order', () => {
+  assert.equal(
+    tutorStubPlainStrategyText(
+      'The learner-DAG carries a proof-state PUBLIC PREMISE in the learner-owned record; avoid low-agency compliance and ask for a learner-owned public move without coercion pressure before the FINAL SECRET. A DAG remains internal.',
+    ),
+    'The learner’s reasoning carries a reasoning piece of public evidence in the learner’s stated reasoning; avoid passive agreement and ask for a response in the learner’s own words without pressure to agree before the final conclusion. A reasoning map remains internal.',
+  );
+  assert.equal(tutorStubPlainStrategyText(null), '');
 });
 
 test('response-check summaries deduplicate trigger areas and distinguish repaired drafts from fallback', () => {
@@ -146,6 +270,10 @@ test('tutor-stub imports the shared response-detail helpers and retains no local
   assert.doesNotMatch(source, /function plainList\s*\(/u);
   assert.doesNotMatch(source, /function plainResponseCheckArea\s*\(/u);
   assert.doesNotMatch(source, /function plainSettingName\s*\(/u);
+  assert.doesNotMatch(source, /function plainPolicyLabel\s*\(/u);
+  assert.doesNotMatch(source, /function plainPolicySignal\s*\(/u);
+  assert.doesNotMatch(source, /function dominantPlainPolicySignals\s*\(/u);
+  assert.doesNotMatch(source, /function plainStrategyText\s*\(/u);
   assert.doesNotMatch(source, /function responseCheckTriggerAreas\s*\(/u);
   assert.doesNotMatch(source, /function plainResponseCheckSummary\s*\(/u);
   assert.doesNotMatch(source, /function metadataLine\s*\(/u);
