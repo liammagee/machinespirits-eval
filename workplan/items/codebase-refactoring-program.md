@@ -534,3 +534,22 @@ Log:
   `5589017d` after PRs #300 and #301. The incoming big-picture skill and
   workplan-only changes are runtime-disjoint, and the skill-sync plus
   response-presenter boundary passes 7/7.
+- 2026-07-27 — PR #303 merged the response-configuration child as `254111ba`
+  with all ten CI lanes green; the serialized render followed as `e0e1f58d`.
+  Closed that child and activated `refactor-tutor-stub-response-policy-context`
+  to move the adjacent deterministic tutor-only prompt projection while
+  retaining policy selection, world diction, runtime prompt assembly, model
+  calls, state, traces, and effects in the CLI.
+- 2026-07-27 — The response-policy context child has a 151-line pure projector,
+  a 111-line net CLI reduction, a 6,561-byte golden full-context fixture, and
+  184/184 passing response/prompt/typed-action neighborhood tests. It rebased
+  onto `66d0cb7e` after PR #299's disjoint workplan commit-link contract.
+- 2026-07-27 — The response-policy context child reached review with final
+  7,251/7,251 root tests across 523 files plus 137/137 tutor-core tests, all
+  zero-skip. Manifest, source-only workplan, refs, lint, formatting, syntax,
+  diff, and the zero-cycle ratchet across 405 files are green.
+- 2026-07-27 — The handoff rebased cleanly again onto current `origin/main` at
+  `90084e70`. Its incoming response-composition changes remain compatible: the
+  widened neighborhood passes 190/190, the complete hermetic suite passes all
+  523 selected root files plus 137/137 tutor-core tests, and the 236-item
+  source-only workplan, manifest, refs, and cycle gates remain green.
