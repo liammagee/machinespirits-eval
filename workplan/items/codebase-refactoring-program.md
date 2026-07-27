@@ -65,6 +65,7 @@ links:
     - refactor-tutor-stub-tutor-prompt-context
     - refactor-tutor-stub-dialogue-memory-context
     - refactor-tutor-stub-analysis-vocabulary
+    - refactor-tutor-stub-turn-analysis-projection
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -598,3 +599,19 @@ Log:
   and shared settings/status/interim/command tests. It reached review with all
   528 required root files and 137/137 tutor-core tests green, alongside all
   static, manifest, ref, source-only workplan, and zero-cycle gates.
+- 2026-07-27 — PR #313 merged the analysis-vocabulary child as `91893217`
+  with all ten CI lanes green; the serialized render followed as `af137b0f`.
+  Closed that child and activated
+  `refactor-tutor-stub-turn-analysis-projection` to extract only the pure
+  learner-facing line projection from `printCurrentTurnAnalysis` while
+  retaining technical dispatch, state normalization, and terminal ownership.
+- 2026-07-27 — The turn-analysis child adds a 286-line pure projector and
+  reduces the CLI by 186 net lines. Four direct tests pin dense, sparse, empty,
+  question-support, efficacy, immutability, and ownership branches; a seeded
+  fake-provider completed turn is byte-identical to pre-extraction `main` at
+  1,093 bytes and SHA-256 `a379dd60b84a554b4e79a4ad00bcf2d294aaa2a9751112f50148f4b14ad303b9`.
+- 2026-07-27 — The turn-analysis child reached review with 66/66 focused
+  assertions, 7,320/7,320 root tests across all 529 manifest files, and
+  137/137 tutor-core tests, all zero-skip. Manifest, 242-item source workplan,
+  refs, lint, formatting, syntax, diff, and the zero-cycle ratchet across 409
+  files are green.

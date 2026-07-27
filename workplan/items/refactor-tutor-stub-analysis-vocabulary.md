@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-analysis-vocabulary
 title: Refactor tutor-stub analysis vocabulary helpers
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-dialogue-memory-context
 links:
+  prs:
+    - 313
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -87,3 +89,9 @@ Log:
   workplan, synchronized manifest, current ref registry, ESLint, Prettier,
   syntax, diff, and zero-cycle ratchet across 408 files all pass on
   `origin/main` at `2f38e863`.
+- 2026-07-27 — PR #313 merged the analysis-vocabulary child as `91893217`
+  with all ten CI lanes green; the serialized render followed as `af137b0f`.
+  Closed this child and activated `refactor-tutor-stub-turn-analysis-projection`
+  to move only the learner-facing `/analysis` line projection while retaining
+  normalization, technical analysis, slash dispatch, state, and terminal writes
+  in the CLI.
