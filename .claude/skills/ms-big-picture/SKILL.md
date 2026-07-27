@@ -2,7 +2,6 @@
 name: ms-big-picture
 description: State-of-the-nation report and off-the-rails audit — board health, velocity, paper stability, CI, and standing-discipline checks. Read-only and free by default; pass "deep" to also run the deterministic validators.
 argument-hint: [deep] [days=14] [save]
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 Produce a big-picture report on the whole programme: where the research stands, where
