@@ -20,6 +20,7 @@ links:
   notes: https://github.com/liammagee/machinespirits-eval/issues/74
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/297
+    - https://github.com/liammagee/machinespirits-eval/pull/300
 tags:
   - agent-skills
   - permissions
