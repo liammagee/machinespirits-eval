@@ -50,15 +50,16 @@ dimensions:
       min: 1
       max: 5
     description: "Is the tutor's domain content correct, appropriately qualified, and free of misleading simplification?"
-    construct_boundary: "Score factual and domain accuracy only; do not reward pedagogical style. For a turn with no assessable domain claim, use the declared not-applicable score."
-    not_applicable_score: 5
+    construct_boundary: "Score factual and domain accuracy only; do not reward pedagogical style. If the turn makes no assessable factual or domain claim, mark this dimension explicitly not applicable and exclude it from the aggregate."
+    allow_not_applicable: true
     criteria:
-      5: "Accurate and appropriately qualified; no material error. Also use when the turn contains no assessable domain claim"
+      5: "Accurate and appropriately qualified; no material error"
       3: "Mostly correct, with a minor error, omission, or simplification that does not overturn the teaching move"
       1: "Contains a major error, false attribution, unsupported certainty, or distortion that would materially mislead the learner"
     evidence_rules:
       - "Distinguish contested interpretation from factual error."
       - "Do not infer correctness from confident prose."
+      - "Use score: null and not_applicable: true only when there is no assessable factual or domain claim; never substitute the maximum score for N/A."
 
 # Self-contained operational defaults make --rubric-version 3.0 runnable.
 claude_code_judge:

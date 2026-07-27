@@ -44,7 +44,29 @@ const {
   updateTutorLastTurnScore,
   updateDialogueQualityScore,
   updateDialogueQualityInternalScore,
+  generationIdentity,
 } = await import('../services/evaluationStore.js');
+
+describe('generationIdentity', () => {
+  it('keeps identical response text distinct across scenario contexts', () => {
+    const shared = { profileName: 'cell_test', suggestions: [{ message: 'Try one example.' }] };
+    assert.notEqual(
+      generationIdentity({ ...shared, scenarioId: 'scenario_a' }),
+      generationIdentity({ ...shared, scenarioId: 'scenario_b' }),
+    );
+  });
+
+  it('matches an exact source and rejudged generation despite different judge fields', () => {
+    const source = {
+      profileName: 'cell_test',
+      scenarioId: 'scenario_a',
+      attemptIndex: 2,
+      suggestions: [{ message: 'Try one example.' }],
+      judgeModel: 'claude',
+    };
+    assert.equal(generationIdentity(source), generationIdentity({ ...source, judgeModel: 'codex' }));
+  });
+});
 
 // Track test runs for cleanup (still useful for in-test isolation)
 const testRunIds = [];

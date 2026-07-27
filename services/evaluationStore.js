@@ -812,7 +812,7 @@ function expectedTestsForRun(run) {
   return (run?.totalScenarios || 0) * (run?.totalConfigurations || 0) * runsPerConfig;
 }
 
-function generationIdentity(result) {
+export function generationIdentity(result) {
   const attemptIndex = normalizeAttemptIndex(result.attemptIndex ?? result.runNum);
   const pair = `${result.profileName || ''}:${result.scenarioId || ''}`;
   if (attemptIndex != null) return `${pair}:attempt:${attemptIndex}`;
@@ -3429,6 +3429,7 @@ export default {
   loadImmutableDialogueLog,
   // Rubric version comparison
   getResultById,
+  generationIdentity,
   cloneRowsForRubricVersion,
   // P0 Provenance
   getScoreAudit,

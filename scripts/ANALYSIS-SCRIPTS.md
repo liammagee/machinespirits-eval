@@ -48,6 +48,7 @@ All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/pape
 |--------|------|------|-------------|----------------|--------------------|
 | `calibrate-rubric.js` | `[--run-id <id>] [--judge <model>] [--sample N] [--from-version X] [--to-version Y] [--export <path>] [--verbose] [--live]` | **--live only** | Rubric version calibration (synthetic mapping or live re-scoring) | 5.4 | Scored rows with `scores_with_reasoning`; v2.2 YAML files in `config/rubrics/` |
 | `analyze-rubric-sensitivity.js` | `--runs <id[,id]> [--version 3.0] [--db <path>] [--json]` | No | Prospective suite audit: spread, floor/ceiling, factor structure, coverage, and same-item cross-judge agreement | Future measurement epoch | Version-matched per-dimension score JSON; repeated judges recommended |
+| `calibrate-rubric-v3-accuracy.js` | `prepare\|score\|analyze --split <development\|held_out>` | Only `score` | Authored accuracy contrasts, blinded human sheets, two-CLI scoring, and held-out gates | Rubric v3.0 calibration | Uses the committed 20-item packet and frozen promotion thresholds |
 
 ## Interactive Tools
 

@@ -480,8 +480,12 @@ function buildEvaluationPrompt(suggestion, scenario, context) {
       const criteriaText = Object.entries(dim.criteria || {})
         .map(([score, desc]) => `  ${score}: ${desc}`)
         .join('\n');
+      const applicability = dim.allow_not_applicable
+        ? '\nApplicability: If there is no assessable factual or domain claim, return score=null and not_applicable=true. Otherwise return an in-range numeric score and not_applicable=false.'
+        : '';
       return `**${dim.name}** (scale: ${dimensionScaleLabel(rubric, dim)}, weight: ${(dim.weight * 100).toFixed(0)}%)
 ${dim.description}
+${applicability}
 Criteria:
 ${criteriaText}`;
     })
@@ -545,6 +549,7 @@ Evaluate the suggestion${dialogueTranscript ? ' in the context of the dialogue a
 
 For each dimension, include:
 - **score**: rating on that dimension's declared scale
+- **not_applicable**: for dimensions that allow it, true only when no assessable claim exists; an N/A dimension is excluded from the aggregate
 - **reasoning**: Brief explanation of why this score was given${dialogueTranscript ? ". For recognition dimensions, consider how the tutor engaged with the learner's actual responses and development." : ''}
 
 CRITICAL JSON RULES:
@@ -558,10 +563,10 @@ Respond with ONLY a JSON object in this exact format (no other text before or af
 {
   "scores": {
 ${Object.keys(dimensions)
-  .map(
-    (key, i) =>
-      `    "${key}": {"score": ${exampleDimensionScore(rubric, dimensions[key], (i % 3) - 1)}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`,
-  )
+  .map((key, i) => {
+    const applicability = dimensions[key].allow_not_applicable ? ', "not_applicable": false' : '';
+    return `    "${key}": {"score": ${exampleDimensionScore(rubric, dimensions[key], (i % 3) - 1)}${applicability}, "reasoning": "your assessment of ${key.replace(/_/g, ' ')}"}`;
+  })
   .join(',\n')}
   },
   "validation": {
@@ -1102,6 +1107,7 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
       if (typeof value === 'object' && value !== null) {
         scores[normalizedKey] = {
           score: value.score,
+          ...(value.not_applicable === true ? { not_applicable: true } : {}),
           reasoning: value.reasoning,
         };
       } else if (typeof value === 'number') {
@@ -1116,7 +1122,7 @@ export async function evaluateSuggestion(suggestion, scenario, context = {}, ove
     let overallScore = parsed.overall_score;
     if (Object.keys(scores).length > 0) {
       const calculatedScore = calculateOverallScore(scores);
-      if (calculatedScore > 0) {
+      if (calculatedScore != null) {
         overallScore = calculatedScore;
       }
     }
@@ -2633,8 +2639,12 @@ export function buildDialogueQualityPrompt(params) {
       const criteriaText = Object.entries(dim.criteria || {})
         .map(([score, desc]) => `  ${score}: ${desc}`)
         .join('\n');
+      const applicability = dim.allow_not_applicable
+        ? '\nApplicability: If there is no assessable factual or domain claim, return score=null and not_applicable=true. Otherwise return an in-range numeric score and not_applicable=false.'
+        : '';
       return `**${dim.name}** (scale: ${dimensionScaleLabel(rubric, dim)}, weight: ${(dim.weight * 100).toFixed(0)}%)
 ${dim.description}
+${applicability}
 Criteria:
 ${criteriaText}`;
     })
@@ -3063,6 +3073,7 @@ ${JSON.stringify(sanitizeEvaluationValue(suggestion), null, 2)}
         key,
         {
           score: exampleDimensionScore(rubric, dimension, (index % 3) - 1),
+          ...(dimension.allow_not_applicable ? { not_applicable: false } : {}),
           reasoning: `your assessment of ${key.replaceAll('_', ' ')}`,
         },
       ]),
@@ -3117,6 +3128,7 @@ ${buildTutorTurnCalibrationInstruction(dimensions)}
 
 For each turn, include:
 - **scores**: rating on each dimension's declared scale, with brief reasoning
+- For a dimension allowing N/A, use **score: null, not_applicable: true** only when no assessable claim exists; exclude it from the aggregate
 - **validation**: Whether it passes required/forbidden element checks
 - **overall_score**: Weighted average on 0-100 scale
 - **summary**: Brief overall assessment

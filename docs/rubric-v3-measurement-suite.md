@@ -63,6 +63,12 @@ Each component is normalized to 0–100 before weighting. Thus quality 10 plus
 accuracy 1 yields 85, while both maxima yield 100. Raw component scores are
 retained; the aggregate is never the only evidence.
 
+Content accuracy has an explicit N/A state. A turn with no assessable factual
+or domain claim is stored as `score: null, not_applicable: true`; it is excluded
+from the weighted aggregate. It is never converted to a maximum score. This
+prevents reflective questions and other claim-free turns from creating a false
+accuracy ceiling.
+
 The 1–10 quality scale creates headroom, but it does not by itself prove higher
 sensitivity. Calibration must check observed spread, floor/ceiling compression,
 known contrasts, and agreement.
@@ -230,3 +236,61 @@ two-variable PCA is largely a restatement of their correlation. The decisive
 question is whether the two components respond differently when they should,
 while the 1–10 quality factor uses enough of its range to distinguish meaningful
 changes.
+
+## Content-accuracy contrast and human-label harness
+
+The committed packet contains 20 opaque-ID items: 15 development items and five
+held-out items. Each split is balanced across correct content, minor error,
+major error, appropriately qualified contested interpretation, and genuine
+N/A. Authored targets stay out of the blinded JSONL and coder sheets.
+
+Prepare independent human work before inspecting machine scores:
+
+```bash
+npm run rubric:v3:accuracy -- prepare \
+  --split development \
+  --out-dir exports/rubric-v3-calibration/human-labelling
+
+npm run rubric:v3:accuracy -- prepare \
+  --split held_out \
+  --out-dir exports/rubric-v3-calibration/human-labelling
+```
+
+Two people fill the `coder-a.csv` and `coder-b.csv` sheets independently. Use
+`applicable` plus an integer 1–5, or `not_applicable` with a blank score. If
+they disagree, copy a sheet, set `coder_id` to `adjudicated`, and enter the
+resolved labels. The analysis command accepts the two coder files and optional
+adjudication file through `--human`.
+
+Score a split with the two local medium-effort judges:
+
+```bash
+npm run rubric:v3:accuracy -- score --split development \
+  --judge-cli claude --model claude-sonnet-5 --effort medium \
+  --out exports/rubric-v3-calibration/development-claude.json
+
+npm run rubric:v3:accuracy -- score --split development \
+  --judge-cli codex --model gpt-5.6-terra --effort medium \
+  --out exports/rubric-v3-calibration/development-codex.json
+
+npm run rubric:v3:accuracy -- analyze --split development \
+  --scores exports/rubric-v3-calibration/development-claude.json,exports/rubric-v3-calibration/development-codex.json \
+  --human exports/rubric-v3-calibration/human-labelling/development-human-labels-coder-a.csv,exports/rubric-v3-calibration/human-labelling/development-human-labels-coder-b.csv \
+  --out exports/rubric-v3-calibration/development-analysis.json
+```
+
+The thresholds live in
+[`content-accuracy-promotion-thresholds.yaml`](../config/rubrics/v3.0/content-accuracy-promotion-thresholds.yaml).
+They were frozen in Git after development scoring and before held-out scoring.
+Promotion always requires the machine gates plus two independent human coders
+and a complete agreed or adjudicated anchor.
+
+### Development result (2026-07-27)
+
+On the 15 authored development items, Claude Sonnet 5 and Codex GPT-5.6 Terra
+agreed on applicability for all items. Across the 12 jointly applicable items,
+same-item agreement was r=.952, MAE=.17 on the 1–5 scale, exact agreement
+91.7%, and within-one agreement 91.7%. Codex matched all authored targets;
+Claude differed on one item by treating a small arithmetic-result error as
+major rather than minor. These results pass the frozen machine thresholds, but
+they do not satisfy the human gate and do not promote v3.0.

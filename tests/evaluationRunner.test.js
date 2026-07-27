@@ -257,6 +257,26 @@ describe('getCliJudgeModelLabel', () => {
 });
 
 describe('CLI judge normalization', () => {
+  it('preserves an explicit N/A dimension and excludes it from the aggregate', () => {
+    const result = normalizeCliJudgeEvaluation(
+      {
+        scores: {
+          perception_quality: { score: 4, reasoning: 'Solid teaching' },
+          content_accuracy: { score: null, not_applicable: true, reasoning: 'No assessable domain claim' },
+        },
+      },
+      'codex-cli/gpt-5.6-terra@medium',
+      10,
+    );
+    assert.equal(result.success, true);
+    assert.deepEqual(result.scores.content_accuracy, {
+      score: null,
+      not_applicable: true,
+      reasoning: 'No assessable domain claim',
+    });
+    assert.equal(result.overallScore, 75);
+  });
+
   it('parses the final JSON block when CLI stdout echoes the prompt first', () => {
     const parsed = parseCliJudgeJsonResponse(`
 [2026-03-04T05:31:25] User instructions:

@@ -187,6 +187,14 @@ describe('rubric scoring — v3.0', () => {
     });
     assert.strictEqual(score, 100, 'valid content accuracy is reweighted when quality is invalid');
   });
+
+  it('excludes explicit N/A content accuracy instead of treating it as a maximum score', () => {
+    const score = calculateOverallScore({
+      overall_pedagogical_quality: { score: 7 },
+      content_accuracy: { score: 5, not_applicable: true },
+    });
+    assert.ok(Math.abs(score - 66.66666666666666) < 1e-9, `expected quality-only aggregate, got ${score}`);
+  });
 });
 
 // ============================================================================

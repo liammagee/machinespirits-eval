@@ -44,10 +44,13 @@ function safeJson(value) {
 }
 
 function stableItemKey(row) {
-  if (row.dialogue_content_hash) return row.dialogue_content_hash;
+  const pair = `${row.profile_name || ''}:${row.scenario_id || ''}`;
+  if (row.attempt_index != null) return `${pair}:attempt:${row.attempt_index}`;
+  if (row.dialogue_id) return `${pair}:dialogue:${row.dialogue_id}`;
+  if (row.dialogue_content_hash) return `${pair}:dialogue-hash:${row.dialogue_content_hash}`;
   if (row.suggestions == null || row.suggestions === '') return null;
   const source = typeof row.suggestions === 'string' ? row.suggestions : JSON.stringify(row.suggestions);
-  return crypto.createHash('sha256').update(source).digest('hex');
+  return `${pair}:suggestions:${crypto.createHash('sha256').update(source).digest('hex')}`;
 }
 
 function selectedColumn(columns, name) {
@@ -81,7 +84,10 @@ export function loadSensitivityRows({ dbPath, runs }) {
       'dialogue_rubric_version',
       'deliberation_rubric_version',
       'dialogue_content_hash',
+      'dialogue_id',
+      'attempt_index',
       'suggestions',
+      'scores_with_reasoning',
       'tutor_scores',
       'tutor_holistic_scores',
       'learner_scores',
@@ -106,49 +112,49 @@ function instrumentSpecs(rubricDir) {
   return [
     {
       id: 'tutor_turn_quality',
-      scoreColumn: 'tutor_scores',
+      scoreColumns: ['tutor_scores', 'scores_with_reasoning'],
       versionColumn: 'tutor_rubric_version',
       judgeColumn: 'judge_model',
       rubric: loadYaml(path.join(rubricDir, 'evaluation-rubric.yaml')),
     },
     {
       id: 'tutor_trajectory',
-      scoreColumn: 'tutor_holistic_scores',
+      scoreColumns: ['tutor_holistic_scores'],
       versionColumn: 'tutor_rubric_version',
       judgeColumn: 'tutor_holistic_judge_model',
       rubric: loadYaml(path.join(rubricDir, 'evaluation-rubric-tutor-holistic.yaml')),
     },
     {
       id: 'learner_turn_change',
-      scoreColumn: 'learner_scores',
+      scoreColumns: ['learner_scores'],
       versionColumn: 'learner_rubric_version',
       judgeColumn: 'learner_judge_model',
       rubric: loadYaml(path.join(rubricDir, 'evaluation-rubric-learner.yaml')),
     },
     {
       id: 'learner_trajectory_change',
-      scoreColumn: 'learner_holistic_scores',
+      scoreColumns: ['learner_holistic_scores'],
       versionColumn: 'learner_rubric_version',
       judgeColumn: 'learner_holistic_judge_model',
       rubric: loadYaml(path.join(rubricDir, 'evaluation-rubric-learner.yaml')),
     },
     {
       id: 'pedagogical_encounter_public',
-      scoreColumn: 'dialogue_quality_scores',
+      scoreColumns: ['dialogue_quality_scores'],
       versionColumn: 'dialogue_rubric_version',
       judgeColumn: 'dialogue_quality_judge_model',
       rubric: loadYaml(path.join(rubricDir, 'evaluation-rubric-dialogue.yaml')),
     },
     {
       id: 'tutor_deliberation',
-      scoreColumn: 'tutor_deliberation_scores',
+      scoreColumns: ['tutor_deliberation_scores'],
       versionColumn: 'deliberation_rubric_version',
       judgeColumn: 'tutor_deliberation_judge_model',
       rubric: loadYaml(path.join(rubricDir, 'evaluation-rubric-deliberation.yaml')),
     },
     {
       id: 'learner_deliberation',
-      scoreColumn: 'learner_deliberation_scores',
+      scoreColumns: ['learner_deliberation_scores'],
       versionColumn: 'deliberation_rubric_version',
       judgeColumn: 'learner_deliberation_judge_model',
       rubric: loadYaml(path.join(rubricDir, 'evaluation-rubric-deliberation.yaml')),
@@ -163,7 +169,7 @@ export function analyzeSensitivityRows(rows, { rubricDir, version }) {
     const observations = [];
     for (const row of rows) {
       if (String(row[spec.versionColumn] || '') !== version) continue;
-      const payload = safeJson(row[spec.scoreColumn]);
+      const payload = spec.scoreColumns.map((column) => safeJson(row[column])).find(Boolean);
       for (const vector of extractScoreVectors(payload, dimensions)) {
         observations.push({
           ...vector,

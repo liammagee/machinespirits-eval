@@ -1,0 +1,36 @@
+schema: machinespirits.rubric-v3.content-accuracy-thresholds.v1
+version: "1.0"
+status: frozen_before_held_out_scoring
+rubric_version: "3.0"
+frozen_at: "2026-07-27T00:30:12Z"
+development_evidence:
+  packet_split: development
+  item_count: 15
+  claude_score_artifact_sha256: 52788451c07f60b9abbf8d01bb2c664827b4a0b00cacfb1d6941abec89da7b6e
+  codex_score_artifact_sha256: 10ce3a4fc84805c1d5012d9dcaa0a92d886ec0c490273c8a553ec8afcbc5faf6
+  analysis_artifact_sha256: d8cb43baaca3a9f2d685776700114b0f5833b2df00e6439c7ec1ea76d011bd9c
+  machine_gates_passed: true
+  held_out_scores_seen: false
+
+machine_same_item:
+  applicability_agreement_min: 0.90
+  applicable_pearson_r_min: 0.70
+  applicable_mae_max: 0.75
+  applicable_within_one_min: 0.90
+
+authored_contrast:
+  applicability_accuracy_min: 0.90
+  applicable_pearson_r_min: 0.70
+  applicable_mae_max: 0.75
+  applicable_within_one_min: 0.90
+
+human_anchor:
+  independent_coders_min: 2
+  coder_applicability_agreement_min: 0.80
+  coder_applicable_within_one_min: 0.80
+  machine_human_applicability_agreement_min: 0.80
+  machine_human_applicable_pearson_r_min: 0.70
+  machine_human_applicable_mae_max: 0.75
+  machine_human_applicable_within_one_min: 0.90
+
+promotion_rule: "All held-out machine, authored-contrast, and adjudicated human-anchor gates must pass; no development item may be reused as held-out evidence."

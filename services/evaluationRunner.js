@@ -828,9 +828,18 @@ function normalizeCliJudgeEvaluation(parsed, judgeModelLabel, judgeLatencyMs) {
     const normalizedKey = dimensionMap[key] || key;
     if (typeof value === 'object' && value !== null) {
       const numericScore = typeof value.score === 'number' ? value.score : Number(value.score);
+      if (value.not_applicable === true) {
+        normalizedScores[normalizedKey] = {
+          score: null,
+          not_applicable: true,
+          reasoning: value.reasoning ?? value.rationale ?? value.explanation ?? null,
+        };
+        continue;
+      }
       if (!Number.isFinite(numericScore)) continue;
       normalizedScores[normalizedKey] = {
         score: numericScore,
+        not_applicable: false,
         reasoning: value.reasoning ?? value.rationale ?? value.explanation ?? null,
       };
     } else if (typeof value === 'number') {
@@ -6171,12 +6180,12 @@ export async function rejudgeRun(runId, options = {}) {
     );
   }
 
-  // Build a map of suggestion keys → existing rows judged by the target judge.
+  // Build a map of exact generation identities → existing rows judged by the target judge.
   // In resume mode (default, no --overwrite): skip rows with COMPLETE scores.
   // Rows with incomplete scores (e.g. pre-fix single-shot only) are re-processed.
   // IMPORTANT: Must scan ALL rows in the run, not just source-filtered `results`,
   // because the target judge's rows won't be in `results` when sourceJudge differs.
-  const existingRowsByTarget = new Map(); // suggKey → row
+  const existingRowsByTarget = new Map(); // generation identity → row
   const allRowsById = new Map(); // id → row (for target row lookup in safety guard)
   if (targetJudgeLabel) {
     const allRunRows = evaluationStore.getResults(runId, {
@@ -6185,24 +6194,23 @@ export async function rejudgeRun(runId, options = {}) {
     for (const r of allRunRows) {
       allRowsById.set(r.id, r);
       if (r.judgeModel === targetJudgeLabel) {
-        const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
-        existingRowsByTarget.set(suggKey, r);
+        existingRowsByTarget.set(evaluationStore.generationIdentity(r), r);
       }
     }
   }
 
-  // Deduplicate: only rejudge unique responses (by suggestions content),
-  // and skip responses already COMPLETELY judged by the target judge
-  const seenSuggestions = new Set();
+  // Deduplicate exact generations, not response text. Identical prose in two
+  // scenario/transcript contexts is two distinct reliability items.
+  const seenGenerations = new Set();
   const uniqueResults = [];
   let skippedComplete = 0;
   let resumeIncomplete = 0;
   for (const r of results) {
-    const suggKey = typeof r.suggestions === 'string' ? r.suggestions : JSON.stringify(r.suggestions);
-    if (seenSuggestions.has(suggKey)) continue;
-    seenSuggestions.add(suggKey);
-    // Check if target judge already scored this response
-    const existing = existingRowsByTarget.get(suggKey);
+    const identity = evaluationStore.generationIdentity(r);
+    if (seenGenerations.has(identity)) continue;
+    seenGenerations.add(identity);
+    // Check if the target judge already scored this exact generation.
+    const existing = existingRowsByTarget.get(identity);
     if (existing) {
       if (hasCompleteScores(existing)) {
         skippedComplete++;

@@ -84,9 +84,20 @@ test('v3 tutor prompt and score support the mixed 1-10 and 1-5 scales', (t) => {
   assert.match(prompt, /Overall Pedagogical Quality\*\* \(scale: 1-10/u);
   assert.match(prompt, /Content Accuracy\*\* \(scale: 1-5/u);
   assert.match(prompt, /Use each dimension's declared scale/u);
+  assert.match(prompt, /score=null and not_applicable=true/u);
+  assert.match(prompt, /"content_accuracy": \{"score": 3, "not_applicable": false/u);
   assert.equal(
     calculateOverallScore({ overall_pedagogical_quality: { score: 10 }, content_accuracy: { score: 1 } }),
     85,
+  );
+  assert.ok(
+    Math.abs(
+      calculateOverallScore({
+        overall_pedagogical_quality: { score: 7 },
+        content_accuracy: { score: null, not_applicable: true },
+      }) -
+        200 / 3,
+    ) < 1e-9,
   );
 });
 

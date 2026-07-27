@@ -45,6 +45,7 @@ export function calculateWeightedRubricScore(scores, rubric, options = {}) {
   for (const [key, dimension] of Object.entries(dimensions)) {
     const alias = aliases[key];
     const entry = scores?.[alias] ?? scores?.[key];
+    if (entry && typeof entry === 'object' && entry.not_applicable === true) continue;
     const rawScore = entry && typeof entry === 'object' ? entry.score : entry;
     const normalized = normalizeDimensionScore(rawScore, rubric, dimension);
     const weight = finiteNumber(dimension.weight) || 0;
@@ -77,7 +78,10 @@ export function buildScaleInstructions(rubric, dimensions = rubric?.dimensions |
   const lines = entries.map(([key, dimension]) => {
     const scale = resolveDimensionScale(rubric, dimension);
     const name = dimension.name || key.replaceAll('_', ' ');
-    return `- ${name} (${key}): integer ${scale.min}-${scale.max}`;
+    const notApplicable = dimension.allow_not_applicable
+      ? '; or score=null with not_applicable=true only when no assessable claim exists'
+      : '';
+    return `- ${name} (${key}): integer ${scale.min}-${scale.max}${notApplicable}`;
   });
   return `Use each dimension's declared scale:\n${lines.join('\n')}`;
 }

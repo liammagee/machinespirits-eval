@@ -53,3 +53,28 @@ test('sensitivity analysis reports headroom, factor structure, coverage, and sam
   assert.equal(report.dimensions.quality.ceiling_rate, 1 / 8);
   assert.equal(report.factor_structure.eigenvalues.length, 2);
 });
+
+test('N/A dimensions keep other dimension statistics and are excluded from factor-complete rows', () => {
+  const observations = [
+    { itemKey: 'a', observationKey: '0', judge: 'claude', scores: { quality: 4, accuracy: 3 } },
+    { itemKey: 'a', observationKey: '0', judge: 'codex', scores: { quality: 5, accuracy: 3 } },
+    {
+      itemKey: 'b',
+      observationKey: '0',
+      judge: 'claude',
+      scores: { quality: 7, accuracy: { score: null, not_applicable: true } },
+    },
+    {
+      itemKey: 'b',
+      observationKey: '0',
+      judge: 'codex',
+      scores: { quality: 8, accuracy: { score: 5, not_applicable: true } },
+    },
+  ];
+
+  const report = analyzeRubricInstrument(observations, rubric);
+  assert.equal(report.observations_complete, 2);
+  assert.equal(report.dimensions.quality.n, 4);
+  assert.equal(report.dimensions.accuracy.n, 2);
+  assert.equal(report.cross_judge.n_pairs, 2, 'quality-only aggregates remain comparable across judges');
+});

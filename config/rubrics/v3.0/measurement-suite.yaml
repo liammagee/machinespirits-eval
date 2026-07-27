@@ -71,6 +71,13 @@ reliability_layer:
 
 calibration_gates:
   enforcement: report_only
+  content_accuracy:
+    authored_packet: content-accuracy-calibration.yaml
+    frozen_thresholds: content-accuracy-promotion-thresholds.yaml
+    development_items: 15
+    held_out_items: 5
+    human_coders_required: 2
+    explicit_na_excluded_from_aggregate: true
   promotion_requires:
     - human_anchor_agreement_reviewed
     - same_response_cross_judge_reliability_reviewed

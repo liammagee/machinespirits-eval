@@ -67,6 +67,7 @@ function jacobiEigenvalues(matrix) {
 }
 
 function numericScore(entry) {
+  if (entry && typeof entry === 'object' && entry.not_applicable === true) return null;
   const raw = entry && typeof entry === 'object' ? entry.score : entry;
   const score = typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : raw;
   return typeof score === 'number' && Number.isFinite(score) ? score : null;
@@ -122,7 +123,8 @@ function crossJudgeSummary(complete, rubric) {
     if (!observation.itemKey || !observation.judge) continue;
     const key = `${observation.itemKey}:${observation.observationKey}`;
     if (!groups.has(key)) groups.set(key, new Map());
-    groups.get(key).set(observation.judge, calculateWeightedRubricScore(observation.scores, rubric));
+    const aggregate = calculateWeightedRubricScore(observation.scores, rubric);
+    if (aggregate != null) groups.get(key).set(observation.judge, aggregate);
   }
 
   const pairs = [];
@@ -159,7 +161,9 @@ export function analyzeRubricInstrument(observations, rubric) {
   );
   const perDimension = {};
   for (const key of dimensionKeys) {
-    const values = complete.map((observation) => numericScore(observation.scores[key]));
+    const values = observations
+      .map((observation) => numericScore(observation.scores?.[key]))
+      .filter((value) => value != null);
     const scale = dimensions[key].scale || rubric.scale || { min: 1, max: 5 };
     perDimension[key] = {
       n: values.length,
@@ -179,11 +183,11 @@ export function analyzeRubricInstrument(observations, rubric) {
     dimensions: perDimension,
     factor_structure: correlationSummary(complete, dimensionKeys),
     coverage: {
-      scenarios: new Set(complete.map((item) => item.scenario).filter(Boolean)).size,
-      candidate_generators: new Set(complete.map((item) => item.generator).filter(Boolean)).size,
-      profiles: new Set(complete.map((item) => item.profile).filter(Boolean)).size,
-      judges: new Set(complete.map((item) => item.judge).filter(Boolean)).size,
+      scenarios: new Set(observations.map((item) => item.scenario).filter(Boolean)).size,
+      candidate_generators: new Set(observations.map((item) => item.generator).filter(Boolean)).size,
+      profiles: new Set(observations.map((item) => item.profile).filter(Boolean)).size,
+      judges: new Set(observations.map((item) => item.judge).filter(Boolean)).size,
     },
-    cross_judge: crossJudgeSummary(complete, rubric),
+    cross_judge: crossJudgeSummary(observations, rubric),
   };
 }
