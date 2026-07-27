@@ -1,13 +1,13 @@
 ---
 id: repoint-learner-deliberation-claim-fingerprint
 title: Re-point the learner-deliberation claim fingerprint at the trace-schema module
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: claude
 source: review
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-07-28
 verification: "`npm run paper:provable-discourse` reports 0 fail (was 1),
   `npm run paper:provable-discourse:test` passes 69/69, `node --test
   tests/traceSchema.test.js tests/adaptiveTraceProjection.test.js` passes, and
