@@ -78,6 +78,14 @@ calibration_gates:
     held_out_items: 5
     human_coders_required: 2
     explicit_na_excluded_from_aggregate: true
+  secondary_instruments:
+    status: pilot_human_contrasts_required
+    frozen_runs:
+      - eval-2026-06-19-78558bf2_rubric-v3.0
+      - eval-2026-07-01-5dad2e60_rubric-v3.0
+      - eval-2026-03-08-09bd97c5_rubric-v3.0
+    audit_artifact_sha256: 6f16f5824693779ab1dbdfb9d18a9b66905a7d085b00cd9e05667a852dec7cf2
+    interpretation: "Same-item reliability pilot only; small N and dominant first factors do not validate dimensional independence."
   promotion_requires:
     - human_anchor_agreement_reviewed
     - same_response_cross_judge_reliability_reviewed

@@ -782,4 +782,13 @@ describe('evaluate / rejudge scoring parity', () => {
       assert.ok(fnBody.includes(col), `updateResultTutorScores must write column '${col}'`);
     }
   });
+
+  it('rejudge persists public and internal dialogue dimension vectors, not only aggregates', () => {
+    const source = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8');
+    assert.match(source, /updateDialogueQualityScore\(rowId, \{[\s\S]*?dialogueQualityScores: publicScores/u);
+    assert.match(
+      source,
+      /updateDialogueQualityInternalScore\(rowId, \{[\s\S]*?dialogueQualityInternalScores: fullScores/u,
+    );
+  });
 });

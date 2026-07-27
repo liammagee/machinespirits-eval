@@ -230,7 +230,7 @@ function renderReport(result) {
 export function main(argv = process.argv.slice(2)) {
   if (argv.includes('--help') || argv.includes('-h')) {
     console.log(
-      `Usage: node scripts/analyze-rubric-sensitivity.js --runs <run1,run2> [--version 3.0] [--db <path>] [--json]\n\nRead-only; no model calls and no database writes.`,
+      `Usage: node scripts/analyze-rubric-sensitivity.js --runs <run1,run2> [--version 3.0] [--db <path>] [--json] [--out <path>]\n\nRead-only with respect to the evaluation database; --out writes only the requested report artifact.`,
     );
     return 0;
   }
@@ -250,7 +250,13 @@ export function main(argv = process.argv.slice(2)) {
     db: dbPath.replace(os.homedir(), '~'),
     instruments: analyzeSensitivityRows(rows, { rubricDir, version }),
   };
-  console.log(argv.includes('--json') ? JSON.stringify(result, null, 2) : renderReport(result));
+  const rendered = argv.includes('--json') ? `${JSON.stringify(result, null, 2)}\n` : `${renderReport(result)}\n`;
+  const outputPath = option(argv, 'out');
+  if (outputPath) {
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, rendered);
+    console.log(`Rubric sensitivity report written: ${outputPath}`);
+  } else process.stdout.write(rendered);
   return 0;
 }
 

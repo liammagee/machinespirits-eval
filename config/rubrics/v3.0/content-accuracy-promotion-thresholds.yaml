@@ -1,6 +1,6 @@
 schema: machinespirits.rubric-v3.content-accuracy-thresholds.v1
 version: "1.0"
-status: frozen_before_held_out_scoring
+status: held_out_machine_pass_human_pending
 rubric_version: "3.0"
 frozen_at: "2026-07-27T00:30:12Z"
 development_evidence:
@@ -10,7 +10,16 @@ development_evidence:
   codex_score_artifact_sha256: 10ce3a4fc84805c1d5012d9dcaa0a92d886ec0c490273c8a553ec8afcbc5faf6
   analysis_artifact_sha256: d8cb43baaca3a9f2d685776700114b0f5833b2df00e6439c7ec1ea76d011bd9c
   machine_gates_passed: true
-  held_out_scores_seen: false
+  held_out_scores_seen_at_threshold_freeze: false
+held_out_evidence:
+  packet_split: held_out
+  item_count: 5
+  claude_score_artifact_sha256: bfaf3e2737712ab93a2148b848c853e202fdd89a57c603272fa2bdb54c5936fa
+  codex_score_artifact_sha256: 1357aab353ad8544520a1a1ded7ad65b298cf6122c07769f2ba88f008ce89fd0
+  analysis_artifact_sha256: 6957e9e0c11c5ec166e354870f99b88fcb96a62c86be415e2f4bf65165b06986
+  machine_gates_passed: true
+  human_gates_passed: false
+  promotion_ready: false
 
 machine_same_item:
   applicability_agreement_min: 0.90

@@ -294,3 +294,43 @@ same-item agreement was r=.952, MAE=.17 on the 1–5 scale, exact agreement
 Claude differed on one item by treating a small arithmetic-result error as
 major rather than minor. These results pass the frozen machine thresholds, but
 they do not satisfy the human gate and do not promote v3.0.
+
+### Held-out machine result (2026-07-27)
+
+The two model judges then scored the five-item held-out packet after the
+threshold commit was pushed. They agreed on applicability and on all four raw
+applicable scores, and both matched every authored anchor: r=1.00, MAE=0,
+exact agreement 100%, and within-one agreement 100%. This clears the held-out
+machine gates. `promotion_ready` remains false because both held-out human
+coder sheets are deliberately blank.
+
+## Separate follow-on instrument pilot
+
+The follow-on instruments were scored separately on frozen dialogue rows from
+three derived v3.0 runs. The packet includes two generator families, both
+judges, five or more scenarios for the public instruments, and a distinct
+three-dialogue `cell_8_recog_multi_psycho` source with configured tutor and
+learner superegos for deliberation. No new conversations were generated.
+
+| Instrument | Complete observations | Same-item pairs | Judge r | MAE (0–100) | PC1 | Eigenvalues |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Tutor trajectory | 19 | 9 | .942 | 7.50 | 79.3% | 2.38, .54, .08 |
+| Learner turns | 54 | 24 | .765 | 10.36 | 76.2% | 3.05, .50, .33, .13 |
+| Learner trajectory | 19 | 9 | .901 | 8.06 | 71.5% | 2.86, .77, .23, .14 |
+| Pedagogical encounter | 18 | 9 | .967 | 9.44 | 91.5% | 2.74, .19, .06 |
+| Tutor deliberation | 6 | 3 | .971 | 2.92 | 87.3% | 2.62, .38, .00 |
+| Learner deliberation | 13 | 6 | .887 | 11.88 | 91.7% | 2.75, .15, .10 |
+
+These are pilot diagnostics, not validation. Reliability is promising, but
+each rubric has one dominant factor and none has a second eigenvalue above 1;
+encounter and deliberation are especially compressed. The samples are also
+small and opportunistic. Do not interpret the named dimensions as independent
+measures yet.
+
+The next calibration cycle should give each instrument its own authored
+development/held-out contrasts and human sheets. Change one intended construct
+at a time—for example adaptation without closure, revision without transfer,
+joint progression without smooth coordination, and valuable critique without
+material revision. If those contrasts still move all dimensions together,
+collapse that instrument to one holistic score rather than preserving labels
+that the judges cannot distinguish.

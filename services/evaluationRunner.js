@@ -5904,6 +5904,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
 
           evaluationStore.updateDialogueQualityScore(rowId, {
             dialogueQualityScore: score,
+            dialogueQualityScores: publicScores,
             dialogueQualitySummary: publicParsed.summary || null,
             dialogueQualityJudgeModel: judgeModel,
           });
@@ -5938,6 +5939,7 @@ async function scoreMultiTurnRejudgment(rowId, result, dialogueLog, opts) {
 
           evaluationStore.updateDialogueQualityInternalScore(rowId, {
             dialogueQualityInternalScore: score,
+            dialogueQualityInternalScores: fullScores,
             dialogueQualityInternalSummary: fullParsed.summary || null,
           });
           log(`    dialogue-quality(full)=${score?.toFixed(1)}`);
@@ -6176,6 +6178,7 @@ export async function rejudgeRun(runId, options = {}) {
       r.tutorFirstTurnScore != null &&
       r.tutorLastTurnScore != null &&
       r.dialogueQualityScore != null &&
+      r.dialogueQualityScores != null &&
       r.learnerOverallScore != null
     );
   }
