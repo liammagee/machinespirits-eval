@@ -501,6 +501,7 @@
         "tests/tutorStubSourceAccessibilityContract.test.js",
         "tests/tutorStubSpeakerPublicPremise.test.js",
         "tests/tutorStubStructuredFirstDraft.test.js",
+        "tests/tutorStubTechnicalAnalysisPresentation.test.js",
         "tests/tutorStubTrainingReuse.test.js",
         "tests/tutorStubTrainingReusePresentation.test.js",
         "tests/tutorStubTrajectoryShadow.test.js",
