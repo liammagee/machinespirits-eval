@@ -69,6 +69,7 @@ links:
     - refactor-tutor-stub-technical-analysis-projection
     - refactor-tutor-stub-technical-debug-presentation
     - refactor-tutor-stub-closeout-report-presentation
+    - refactor-tutor-stub-field-report-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -672,3 +673,15 @@ Log:
   formatting, syntax, diff, source-only workplan, and zero-cycle gate green.
   The loaded-host monolithic root timeout is recorded on the child; PR CI is
   the final full-root certification.
+- 2026-07-28 — PR #320 merged the closeout-report child as `31bf577a` with all
+  ten CI lanes green; the serialized render followed as `0110ccb0`. Closed
+  that child and activated `refactor-tutor-stub-field-report-presentation` for
+  the `/field` and `/viz` terminal-line seam explicitly retained by the earlier
+  field-helper extraction. Field calculation, file writes, traces, command
+  handling, and runtime state remain CLI-owned.
+- 2026-07-28 — The field-report child reached review with exact 521-byte live
+  `/field` plus `/viz` parity, a 30-line net CLI reduction, 37/37 focused
+  assertions, 7,337/7,337 root tests, and 137/137 tutor-core tests, all
+  zero-skip. Every manifest, ref, lint, formatting, syntax, diff, source-only
+  workplan, and zero-cycle gate is green; application effects remain in their
+  existing owners.

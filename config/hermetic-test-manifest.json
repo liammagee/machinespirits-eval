@@ -424,6 +424,7 @@
         "tests/tutorStubExplanatoryDebug.test.js",
         "tests/tutorStubFeatureMap.test.js",
         "tests/tutorStubFieldPresentation.test.js",
+        "tests/tutorStubFieldReportPresentation.test.js",
         "tests/tutorStubFieldTrajectory.test.js",
         "tests/tutorStubFieldTurnProjection.test.js",
         "tests/tutorStubFirstDraftBlindReview.test.js",
