@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-27T22:38:28.559Z",
+  "generated": "2026-07-27T22:59:15.745Z",
   "counts": {
-    "total": 245,
+    "total": 246,
     "byStatus": {
-      "done": 213,
+      "done": 214,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 47,
       "experiment": 49,
       "infra": 58,
-      "maintenance": 75,
+      "maintenance": 76,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -772,29 +772,28 @@
       ]
     },
     {
-      "id": "repoint-learner-deliberation-claim-fingerprint",
-      "title": "Re-point the learner-deliberation claim fingerprint at the trace-schema module",
+      "id": "fix-rubric-dimension-count-claims",
+      "title": "Fix the off-by-one in both v2.2 rubric dimension-count claims",
       "status": "review",
       "type": "maintenance",
       "priority": "P2",
       "owner": "claude",
       "source": "review",
-      "created": "2026-07-27",
-      "updated": "2026-07-27",
-      "verification": "`npm run paper:provable-discourse` reports 0 fail (was 1), `npm run paper:provable-discourse:test` passes 69/69, `node --test tests/traceSchema.test.js tests/adaptiveTraceProjection.test.js` passes, and `npm run lint` / `npm run refs:check` are clean.",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "`npm run paper:provable-discourse` reports 134 pass / 29 warn / 0 fail with both claims at actual=8 and actual=5; a negative test (delete one dimension) now fails the claim where it previously passed; `npm run paper:provable-discourse:test` passes 69/69 (needs a writable LOGS_ROOT); `npm run lint` and `npm run refs:check` are clean.",
       "links": {
         "items": [
-          "refactor-adaptive-trace-projection"
+          "repoint-learner-deliberation-claim-fingerprint"
         ]
       },
       "tags": [
         "provable-discourse",
-        "traces",
-        "refactoring",
+        "rubrics",
         "paper-2"
       ],
       "milestone": "paper-2-evidence-cleanup",
-      "branch": "claude/wizardly-vaughan-9b35e0"
+      "branch": "worktree-rubric-dim-count-fix"
     },
     {
       "id": "tutor-pr-benchmark-hook-warning-attribution",
@@ -6996,6 +6995,31 @@
       ],
       "milestone": "evaluation-infrastructure",
       "branch": "codex/repair-codex-session-capacity-and-cursors"
+    },
+    {
+      "id": "repoint-learner-deliberation-claim-fingerprint",
+      "title": "Re-point the learner-deliberation claim fingerprint at the trace-schema module",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-28",
+      "verification": "`npm run paper:provable-discourse` reports 0 fail (was 1), `npm run paper:provable-discourse:test` passes 69/69, `node --test tests/traceSchema.test.js tests/adaptiveTraceProjection.test.js` passes, and `npm run lint` / `npm run refs:check` are clean.",
+      "links": {
+        "items": [
+          "refactor-adaptive-trace-projection"
+        ]
+      },
+      "tags": [
+        "provable-discourse",
+        "traces",
+        "refactoring",
+        "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "claude/wizardly-vaughan-9b35e0"
     },
     {
       "id": "review-ego-superego-internal-history-window",
