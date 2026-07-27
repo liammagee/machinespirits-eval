@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-27T06:49:57.651Z",
+  "generated": "2026-07-27T09:07:27.809Z",
   "counts": {
-    "total": 240,
+    "total": 241,
     "byStatus": {
-      "done": 209,
+      "done": 210,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 47,
       "experiment": 49,
       "infra": 58,
-      "maintenance": 70,
+      "maintenance": 71,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -203,6 +203,7 @@
           "refactor-tutor-stub-response-policy-context",
           "refactor-tutor-stub-tutor-prompt-context",
           "refactor-tutor-stub-dialogue-memory-context",
+          "refactor-tutor-stub-analysis-vocabulary",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -626,8 +627,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-dialogue-memory-context",
-      "title": "Refactor tutor-stub dialogue-memory and classifier prompt context",
+      "id": "refactor-tutor-stub-analysis-vocabulary",
+      "title": "Refactor tutor-stub analysis vocabulary helpers",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -635,42 +636,40 @@
       "source": "review",
       "created": "2026-07-27",
       "updated": "2026-07-27",
-      "verification": "Public replay, compact dialogue-memory, and tutor-only learner classifier bytes remain exact while focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-dialogue-memory-context",
+      "verification": "Policy labels, field-signal explanations, dominant-signal selection, and strategy-text normalization remain exact while focused, hermetic, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-analysis-vocabulary",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-tutor-prompt-context"
+        "refactor-tutor-stub-dialogue-memory-context"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubPublicHistory.js",
-          "services/tutorStubTutorPromptContext.js",
+          "services/tutorStubResponseDetails.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubDialogueMemoryContext.test.js",
-          "tests/tutorStubTutorPromptContext.test.js",
-          "tests/tutorStubPromptBehavior.test.js",
-          "tests/tutorStubRoleHistory.test.js",
-          "tests/tutorStubPromptSizeReport.test.js",
-          "tests/tutorStubFirstDraftContract.test.js",
-          "tests/tutorStubHumanDiscourseLayer.test.js",
-          "tests/tutorStubAbHarness.test.js",
-          "config/hermetic-test-manifest.json"
+          "tests/tutorStubResponseDetails.test.js",
+          "tests/tutorStubDialogueSettingsPresentation.test.js",
+          "tests/tutorStubSessionStatusPresentation.test.js",
+          "tests/tutorStubInterimPresentation.test.js",
+          "tests/tutorStubInteractiveHelp.test.js",
+          "tests/tutorStubCommandRegistry.test.js",
+          "tests/tutorStubRegisterPolicyComposition.test.js",
+          "tests/tutorStubCapabilities.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-tutor-prompt-context"
+          "refactor-tutor-stub-dialogue-memory-context"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
-        "prompt",
-        "public-history",
-        "memory",
-        "classifier"
+        "presentation",
+        "analysis",
+        "vocabulary",
+        "register-policy"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -2924,6 +2923,58 @@
         "presentation",
         "cli",
         "proof-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-dialogue-memory-context",
+      "title": "Refactor tutor-stub dialogue-memory and classifier prompt context",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Public replay, compact dialogue-memory, and tutor-only learner classifier bytes remain exact while focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-dialogue-memory-context",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-tutor-prompt-context"
+      ],
+      "links": {
+        "prs": [
+          312
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubPublicHistory.js",
+          "services/tutorStubTutorPromptContext.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDialogueMemoryContext.test.js",
+          "tests/tutorStubTutorPromptContext.test.js",
+          "tests/tutorStubPromptBehavior.test.js",
+          "tests/tutorStubRoleHistory.test.js",
+          "tests/tutorStubPromptSizeReport.test.js",
+          "tests/tutorStubFirstDraftContract.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
+          "tests/tutorStubAbHarness.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-tutor-prompt-context"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "prompt",
+        "public-history",
+        "memory",
+        "classifier"
       ],
       "milestone": "evaluation-infrastructure"
     },
