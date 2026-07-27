@@ -2,7 +2,6 @@
 name: ms-drama-machine
 description: Assemble a pedagogical "drama" from a natural-language brief — "a tutor like X, a learner like Y, on topic T, with peripeteia/catharsis, learner played by me, judged by a 3-of-4 panel". Maps the brief onto the drama-machine slot model, stochastically fills the rest from priors, validates the adaptation turn_plan against the poetics ontology, emits a drama/cast/audience spec, and (optionally) lowers it to the existing generator + critic to run. Use to specify, sample, and run a tutoring drama without hand-writing a YAML.
 argument-hint: "<natural-language brief>  [--spec <file>] [--seed N] [--arms <arm,...>] [--mock] [--run]"
-allowed-tools: Bash, Read, Write
 ---
 
 You assemble a **drama** for the drama machine. A drama is a binding of values to slots across the six Aristotelian parts (mythos/ethos/dianoia/lexis/opsis/melos) + the audience + the cast. Your job: turn the user's brief into a *complete, valid, runnable* spec, being honest about what runs today vs what is roadmap.

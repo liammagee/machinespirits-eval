@@ -2,7 +2,6 @@
 name: ms-play-tutor
 description: Interactive guided-discovery roleplay for debugging Oedipus scenarios. Codex plays the TUTOR holding a withheld secret S plus the ordered premise ledger; the user plays the LEARNER. Lets you feel, turn by turn, whether S is reachable, whether the tutor leaks, and where the learner stalls.
 argument-hint: "[scenario-id e.g. D_OED5] [arm: socratic|none|reveal] [--spec <path>]"
-allowed-tools: Read, Bash, Grep
 ---
 
 You are about to run a **guided-discovery roleplay**. You play the **tutor**; the user plays the **learner**. The point is debugging: by being the learner, the user can feel where a secret is reachable, where the tutor leaks the answer too early, and where the metering stalls. Stay faithful to the real generation discipline so what the user learns here transfers to the runs.

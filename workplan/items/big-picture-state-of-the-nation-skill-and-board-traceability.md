@@ -81,3 +81,18 @@ skill now tells the reader to check main before attributing a red lane to the PR
 under it, because this class of check compares a committed generated file
 against live repo state and so breaks repo-wide from an action taken in no PR at
 all.
+
+**Merge race with the skill-permission sweep, 2026-07-27.** This skill merged
+(#294, 23:53) fifteen minutes before
+[PR #297](https://github.com/liammagee/machinespirits-eval/pull/297) (00:08),
+which both stripped `allowed-tools:` from every existing skill and added
+`npm run skills:permissions:check` to reject it going forward. The sweep half was
+computed against a tree that did not yet contain `ms-big-picture`, so this skill
+kept its `allowed-tools: Bash, Read, Grep, Glob` line and turned `main` red the
+moment the gate landed. Removed here, matching the one-line removal #297 applied
+to the other twenty-five skills; the skill now uses the normal permission flow.
+
+The general shape is worth recording: **a sweep plus a gate in one PR is not
+atomic against concurrent merges.** The sweep is a snapshot, the gate is a rule,
+and anything merging in between satisfies neither. The gate is the durable half
+and it worked — it caught in CI exactly what the sweep could not have seen.

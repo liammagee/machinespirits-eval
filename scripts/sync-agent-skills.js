@@ -92,6 +92,30 @@ export function skillMatrix(config) {
   });
 }
 
+export function skillPermissionViolations(config) {
+  const violations = [];
+  for (const [rootKey, root] of Object.entries(config.roots)) {
+    for (const name of listSkillNames(root)) {
+      const file = path.join(root, name, 'SKILL.md');
+      const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+      if (lines[0]?.trim() !== '---') continue;
+      const frontmatterEnd = lines.findIndex((line, index) => index > 0 && line.trim() === '---');
+      if (frontmatterEnd === -1) continue;
+      for (let index = 1; index < frontmatterEnd; index += 1) {
+        if (/^allowed-tools\s*:/.test(lines[index])) {
+          violations.push({
+            rootKey,
+            name,
+            file,
+            line: index + 1,
+          });
+        }
+      }
+    }
+  }
+  return violations;
+}
+
 function listFiles(dir) {
   const out = [];
   const walk = (current, prefix = '') => {
@@ -181,6 +205,18 @@ function cmdCheck(config, selected) {
   if (bad.length) fail(`${bad.length} mirror target(s) need sync`);
 }
 
+function cmdCheckPermissions(config) {
+  const violations = skillPermissionViolations(config);
+  if (!violations.length) {
+    console.log('No repo-local skills declare allowed-tools preapprovals.');
+    return;
+  }
+  for (const violation of violations) {
+    console.log(`preapproved-tools\t${violation.rootKey}\t${violation.name}\t${rel(violation.file)}:${violation.line}`);
+  }
+  fail(`${violations.length} skill(s) declare allowed-tools; repo-local skills must use the normal permission flow`);
+}
+
 function cmdSync(config, selected, { dryRun = false } = {}) {
   const rows = mirrorStatuses(config, selected);
   printStatus(rows);
@@ -199,8 +235,11 @@ function main() {
   const config = loadConfig(f.config || process.env.SKILL_SYNC_CONFIG || DEFAULT_CONFIG);
   if (cmd === 'list') return printList(config);
   if (cmd === 'check') return cmdCheck(config, f._);
+  if (cmd === 'check-permissions') return cmdCheckPermissions(config);
   if (cmd === 'sync') return cmdSync(config, f._, { dryRun: Boolean(f['dry-run']) });
-  fail(`unknown command: ${cmd}\nusage: sync-agent-skills.js list|check|sync [skill...] [--dry-run] [--config <file>]`);
+  fail(
+    `unknown command: ${cmd}\nusage: sync-agent-skills.js list|check|check-permissions|sync [skill...] [--dry-run] [--config <file>]`,
+  );
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {

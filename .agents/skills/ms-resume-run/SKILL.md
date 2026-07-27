@@ -3,7 +3,6 @@ name: ms-resume-run
 description: Resume an incomplete evaluation run — diagnose missing tests, clean empty rows, resume generation, and start judging
 argument-hint: <run-id>
 disable-model-invocation: true
-allowed-tools: Bash, Read, Grep
 ---
 
 Resume an incomplete evaluation run `$ARGUMENTS`.

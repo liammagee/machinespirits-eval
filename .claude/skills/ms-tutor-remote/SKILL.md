@@ -2,7 +2,6 @@
 name: ms-tutor-remote
 description: Play a real tutor-stub session from chat — including Claude Code on the web or mobile, where there is no terminal. You are the learner; Claude relays each turn to the actual tutor-stub CLI running headlessly. Use to sit a tutoring drama from a phone, demo a world, or feel a tutor's behaviour without a TTY.
 argument-hint: "[world id or description, e.g. world_001_nocturne | --lab mixed_drafting | --model claude-code.opus]"
-allowed-tools: Bash, Read
 ---
 
 The user wants to **be the learner** in a live tutor-stub session. You are the

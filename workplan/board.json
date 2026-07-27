@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-26T23:54:33.808Z",
+  "generated": "2026-07-27T00:09:01.019Z",
   "counts": {
-    "total": 228,
+    "total": 229,
     "byStatus": {
-      "done": 202,
+      "done": 203,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 54,
-      "maintenance": 63,
+      "maintenance": 64,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -1074,6 +1074,37 @@
         "register",
         "dag"
       ]
+    },
+    {
+      "id": "claude-skill-permission-hardening",
+      "title": "Remove blanket tool preapproval from repository skills",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "No repository-local SKILL.md declares allowed-tools; a dependency-free policy check rejects future skill-local preapprovals in CI, and configured skill mirrors remain synchronized.",
+      "links": {
+        "code": [
+          "scripts/sync-agent-skills.js",
+          "tests/skillSync.test.js",
+          "config/agent-skill-sync.json",
+          ".github/workflows/test.yml"
+        ],
+        "notes": "https://github.com/liammagee/machinespirits-eval/issues/74",
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/297"
+        ]
+      },
+      "tags": [
+        "agent-skills",
+        "permissions",
+        "security"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "codex/claude-skill-permission-hardening"
     },
     {
       "id": "consolidated-labelling-game-harness",
