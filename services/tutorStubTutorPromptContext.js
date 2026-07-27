@@ -26,6 +26,23 @@ function compactAuditRows(rows = [], limit = 3) {
   return visible.length ? visible.map((row) => `- ${row}`).join('\n') : '- none';
 }
 
+export function projectTutorStubLearnerClassifierContext(classification) {
+  if (!classification) return '';
+  return [
+    '[Tutor-only learner classifier]',
+    `This turn: ${classification.turn?.summary || 'No turn summary.'}`,
+    `Overall: ${classification.overall?.summary || 'No overall summary.'}`,
+    `Discourse move: ${classification.turn?.discourse_move || 'unknown'}`,
+    `Evidence use: ${classification.turn?.evidence_use || 'unknown'}`,
+    `Epistemic stance: ${classification.turn?.epistemic_stance || 'unknown'}`,
+    `Immediate pedagogical need: ${
+      classification.turn?.pedagogical_need || classification.overall?.next_best_tutor_move || 'unknown'
+    }`,
+    'Use this as advisory context. Do not mention classifier labels, scores, rubrics, or hidden analysis to the learner.',
+    '[End tutor-only learner classifier]',
+  ].join('\n');
+}
+
 export function projectTutorStubLearnerDagModelContext(result, { releasedEvidence = [] } = {}) {
   const model = result?.model || result;
   if (!model) return '';

@@ -413,6 +413,7 @@
         "tests/tutorStubCurriculumTranslation.test.js",
         "tests/tutorStubDagSnapshotPresentation.test.js",
         "tests/tutorStubDevelopmentSpeakerTransport.test.js",
+        "tests/tutorStubDialogueMemoryContext.test.js",
         "tests/tutorStubDialogueSettingsPresentation.test.js",
         "tests/tutorStubDirectorPresentation.test.js",
         "tests/tutorStubDiscoursePlane.test.js",

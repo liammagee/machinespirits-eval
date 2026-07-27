@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-tutor-prompt-context
 title: Refactor tutor-stub tutor prompt context projections
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-response-policy-context
 links:
+  prs:
+    - 311
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -96,3 +98,8 @@ Log:
   tutor-core tests with zero skips. The updated 239-item source-only workplan,
   manifest, refs, formatting, ESLint, and zero-cycle ratchet across 408 files
   are green.
+- 2026-07-27 — PR #311 merged this child as `2713ea20` with all ten CI lanes
+  green; the serialized workplan render followed as `1dcafabe`. Closed this
+  child and activated the adjacent public dialogue-memory and tutor-only
+  classifier projection slice on
+  `codex/refactor-tutor-stub-dialogue-memory-context`.
