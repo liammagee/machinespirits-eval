@@ -79,10 +79,13 @@ counters.
 
 Say so plainly if the user reaches for it — do not fake it:
 
-- **No slash commands.** The process-backed HTTP transport rejects
-  `{"kind":"command"}` with `command_transport_unavailable`, by design. So no
-  `/mode`, `/lab`, `/suggest`, `/character`, `/register`. Changing lab or world
-  means ending the session and starting a new one.
+- **Almost no slash commands.** Only commands with a structured non-interactive
+  adapter run here. Check with `node scripts/tutor-stub-remote.js cmd --list`
+  rather than guessing — today it is the curriculum-navigation set (`/module`,
+  `/next`, `/progress`), usable via `cmd /progress`. Everything else, including
+  `/help`, `/mode`, `/lab`, `/suggest`, returns `command_transport_unavailable`
+  (`adapter_unavailable`). Changing lab or world means ending the session and
+  starting a new one.
 - **No terminal presentation.** No ghost-text drafts, Tab completion, pickers,
   or the masthead — those live in the TUI this transport deliberately bypasses.
 - Each turn is a billed model call through the CLI bridge. Mention this once if
