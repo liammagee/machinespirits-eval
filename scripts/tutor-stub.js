@@ -569,8 +569,9 @@ import {
   projectTutorStubLightweightFieldTurn as lightweightFieldTurn,
 } from '../services/tutorStubFieldTurnProjection.js';
 import {
+  projectTutorStubFieldVisualizationLines,
+  projectTutorStubLightweightFieldLines,
   renderTutorStubLightweightFieldSvg as renderLightweightFieldSvg,
-  tutorStubFieldBar as fieldBar,
 } from '../services/tutorStubFieldPresentation.js';
 import {
   applyTutorStubPointOfActionConstraint,
@@ -8598,37 +8599,8 @@ function printCurrentTurnTechnicalAnalysis(state) {
 }
 
 function printLightweightDialogueField(state) {
-  if (!state.turns.length) {
-    console.log(`${C.cyan}field >${C.reset} no completed turns yet`);
-    console.log(`${C.dim}  enter a learner turn first, or run with --resume-last and then use /field${C.reset}\n`);
-    return null;
-  }
-
-  const field = buildLightweightDialogueField(state.turns);
-  const delta = field.summary.fieldDelta;
-  const final = field.summary.final;
-  console.log(`${C.cyan}field >${C.reset} ${field.turnCount} turn lightweight interaction field`);
-  console.log(
-    `${C.dim}  final: mastery ${final.learnerMastery}, risk ${final.learnerRisk}, alignment ${final.tutorAlignment}, momentum ${final.jointMomentum}, coverage ${final.coverage}${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  delta: mastery ${delta.learnerMastery >= 0 ? '+' : ''}${delta.learnerMastery}, risk ${
-      delta.learnerRisk >= 0 ? '+' : ''
-    }${delta.learnerRisk}, alignment ${delta.tutorAlignment >= 0 ? '+' : ''}${delta.tutorAlignment}, momentum ${
-      delta.jointMomentum >= 0 ? '+' : ''
-    }${delta.jointMomentum}; mean speed ${field.summary.meanSpeed}${C.reset}`,
-  );
-  console.log(`${C.dim}  bottleneck: ${final.bottleneck || 'unknown'}${C.reset}`);
-  console.log(
-    `${C.dim}  turn | mastery        | risk           | align          | momentum       | move / register / bottleneck${C.reset}`,
-  );
-  for (const row of field.rows) {
-    const label = [row.learnerMove, row.register || 'no-register', row.bottleneck].filter(Boolean).join(' / ');
-    console.log(
-      `${C.dim}  ${String(row.turn).padStart(4)} | ${fieldBar(row.learnerMastery)} ${row.learnerMastery.toFixed(2)} | ${fieldBar(row.learnerRisk)} ${row.learnerRisk.toFixed(2)} | ${fieldBar(row.tutorAlignment)} ${row.tutorAlignment.toFixed(2)} | ${fieldBar(row.jointMomentum)} ${row.jointMomentum.toFixed(2)} | ${oneLine(label, { max: 96 })}${C.reset}`,
-    );
-  }
-  console.log();
+  const field = state.turns.length ? buildLightweightDialogueField(state.turns) : null;
+  for (const line of projectTutorStubLightweightFieldLines(field, { colors: C })) console.log(line);
   return field;
 }
 
@@ -8677,14 +8649,12 @@ function writeFieldVisualization(state, { reason = 'field_viz', force = false } 
 
 function printFieldVisualization(state, { reason = 'viz' } = {}) {
   if (!state.turns.length) {
-    console.log(`${C.cyan}viz >${C.reset} no completed turns yet`);
-    console.log(`${C.dim}  enter a learner turn first, or run with --resume-last and then use /viz${C.reset}\n`);
+    for (const line of projectTutorStubFieldVisualizationLines(null, { colors: C })) console.log(line);
     return null;
   }
   const result = writeFieldVisualization(state, { reason, force: true });
   if (!result) return null;
-  console.log(`${C.cyan}viz >${C.reset} ${result.svgDisplayPath}`);
-  console.log(`${C.dim}  data: ${result.jsonDisplayPath}${C.reset}\n`);
+  for (const line of projectTutorStubFieldVisualizationLines(result, { colors: C })) console.log(line);
   return result;
 }
 

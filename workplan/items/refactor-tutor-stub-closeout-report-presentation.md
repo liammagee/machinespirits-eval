@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-closeout-report-presentation
 title: Refactor tutor-stub closeout report presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -97,3 +97,7 @@ Log:
   run as green.
 - 2026-07-28 — Opened PR #320 with the explicit workplan link and source-only
   board discipline; CI is the final review gate.
+- 2026-07-28 — PR #320 merged as `31bf577a` with all ten CI lanes green; the
+  serialized workplan render followed as `0110ccb0`. Closed this child and
+  handed the next residual pure terminal seam to
+  `refactor-tutor-stub-field-report-presentation`.
