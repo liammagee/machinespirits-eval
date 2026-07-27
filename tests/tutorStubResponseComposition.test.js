@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
+import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
   auditTutorStubResponseComposition,
   buildTutorStubResponseCompositionFrame,
@@ -2747,4 +2751,135 @@ test('the configured fallback keeps its frozen wording where no world is supplie
     fallbackFor(null, 'scene_partner', ''),
   );
   assert.match(fallbackFor(null, 'scene_partner', ''), /I set the public record between us/u);
+});
+
+// Closing the echo leak above left the authoring gap it had been covering:
+// a world's `presentation.ledger_term` was reachable only where the world's own
+// prose also said it, so the eighteen worlds that name their record nowhere but
+// in the declaration fell to the abstract "public record" at every host part.
+// A declaration now counts on its own, and the sweep below pins the result for
+// the whole authored corpus rather than for one synthetic world.
+const DRAMA_WORLD_DIR = path.join(
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'),
+  'config/drama-derivation',
+);
+
+function authoredWorlds() {
+  return fs
+    .readdirSync(DRAMA_WORLD_DIR)
+    .filter((name) => name.endsWith('.yaml'))
+    .sort()
+    .map((name) => ({ name, world: loadWorld(path.join(DRAMA_WORLD_DIR, name)) }));
+}
+
+test('every authored world reaches a public object of its own', () => {
+  const worlds = authoredWorlds();
+  assert.ok(worlds.length >= 32, `expected the authored corpus, found ${worlds.length} worlds`);
+
+  for (const { name, world } of worlds) {
+    const ledgerTerm = world.presentation?.ledger_term;
+    assert.ok(ledgerTerm, `${name} declares no presentation.ledger_term`);
+
+    // The record slot speaks the world's declared term, whatever its prose says.
+    assert.match(
+      fallbackFor(world, 'record_keeper', ''),
+      new RegExp(`\\b${ledgerTerm}\\b`, 'iu'),
+      `${name} does not enter its own record`,
+    );
+
+    for (const part of OBJECT_SELECTION_PARTS) {
+      const text = fallbackFor(world, part, '');
+      assert.equal(
+        /\bpublic record\b/iu.test(text),
+        false,
+        `${name} still falls to the generic default at ${part}: ${text}`,
+      );
+    }
+  }
+});
+
+test('the object each world holds up is one that world owns', () => {
+  // #293's invariant, applied to the corpus rather than to one fixture: the
+  // object named at any part must come from the world's own declaration or its
+  // own prose. This is what a snapshot of all 352 unprompted turns would catch,
+  // without breaking every time the host bank is reworded.
+  for (const { name, world } of authoredWorlds()) {
+    const own = [
+      world.setting || '',
+      world.openingFrame?.situation || '',
+      world.question || '',
+      world.presentation?.ledger_term || '',
+    ].join(' ');
+    for (const part of OBJECT_SELECTION_PARTS) {
+      const text = fallbackFor(world, part, '');
+      // The host banks wrap the object in fixed staging; whatever noun phrase
+      // they carry, its content words have to be the world's own.
+      const objectWords = text.match(
+        /\b(?:assize book|succession roll|inquiry log|trial-book|minute-book|meeting minutes|repair notebook|[a-z-]+ (?:log|ledger|book|roll|register|record|notebook|minutes|card))\b/iu,
+      );
+      if (!objectWords) continue;
+      assert.match(
+        own,
+        new RegExp(`\\b${objectWords[0].replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}\\b`, 'iu'),
+        `${name} names "${objectWords[0]}" at ${part}, which the world does not own`,
+      );
+    }
+  }
+});
+
+test('a declared ledger term is reached without the prose repeating it', () => {
+  // The hethel family's shape: the term exists only in `presentation`.
+  const world = {
+    id: 'world_006_hethel',
+    title: 'The Hethel Assize',
+    setting: 'The assize sits in the market hall, and the town has settled its verdict already.',
+    question: 'Whose hand struck the light shillings?',
+    presentation: { ledger_term: 'assize book' },
+  };
+  assert.match(fallbackFor(world, 'record_keeper', ''), /\bassize book\b/iu);
+  assert.match(fallbackFor(world, 'scene_partner', ''), /\bassize book\b/iu);
+});
+
+test('a declared ledger term does not displace the exhibit a period world holds up', () => {
+  // Marrick is a pinned assay scene. Its record slot takes the declared term,
+  // but the parts written to hold up physical evidence keep reaching the coin —
+  // promoting the declaration above the exhibit whitelist would have the
+  // examiner brandish the trial-book instead.
+  const marrick = loadWorld(path.join(DRAMA_WORLD_DIR, 'world-005-marrick.yaml'));
+  assert.match(fallbackFor(marrick, 'examiner', ''), /\b(?:coin|shilling|crucible|cupel|touchstone|balance)\b/iu);
+  assert.equal(/\btrial-book\b/iu.test(fallbackFor(marrick, 'examiner', '')), false);
+  assert.match(fallbackFor(marrick, 'record_keeper', ''), /\btrial-book\b/iu);
+});
+
+test('a world that declares nothing still falls back to its prose and then the generic', () => {
+  // The frozen path for undeclared worlds, and the reason the advocate
+  // counterpressure fixture above is unmoved: with no `presentation` block
+  // there is no declaration to promote, so the whitelist runs as before.
+  const undeclared = {
+    id: 'world_test_undeclared',
+    setting: 'The Tallow Street meeting room, with the minute-book open beside the depot motion.',
+    question: 'What browns out Tallow Street every Thursday evening?',
+  };
+  assert.match(fallbackFor(undeclared, 'scene_partner', ''), /\bminute-book\b/iu);
+  assert.match(
+    fallbackFor({ id: 'world_test_bare', setting: 'A room.', question: 'Why?' }, 'scene_partner', ''),
+    /\bpublic record\b/iu,
+  );
+});
+
+test('world-025 speaks its declared meeting minutes rather than the DAG name for the same object', () => {
+  // The one world that moves from a real object to another real object.
+  // `minuteBook` is a proof-DAG fact argument — the world header lists it with
+  // tallowStreet and secretary as setting-public *names* — while
+  // `presentation.ledger_term: meeting minutes` is the presentation layer's own
+  // declaration, and the fallback's public object is presentation. That the
+  // prose says "minute-book" is why this world escaped the generic default
+  // before; it was an accident of the whitelist, not a choice.
+  const tallowStreet = loadWorld(path.join(DRAMA_WORLD_DIR, 'world-025-tallow-street.yaml'));
+  assert.equal(tallowStreet.presentation.ledger_term, 'meeting minutes');
+  for (const part of OBJECT_SELECTION_PARTS) {
+    const text = fallbackFor(tallowStreet, part, '');
+    assert.match(text, /\bmeeting minutes\b/iu, `${part} does not name the declared term`);
+    assert.equal(/\bminute-book\b/iu.test(text), false, `${part} still names the DAG constant: ${text}`);
+  }
 });
