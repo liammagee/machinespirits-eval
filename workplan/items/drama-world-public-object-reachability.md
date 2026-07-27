@@ -2,7 +2,7 @@
 id: drama-world-public-object-reachability
 title: Make each drama world's declared public object reachable in its own
   deterministic text
-status: triaged
+status: active
 type: maintenance
 priority: P2
 owner: claude
@@ -87,3 +87,62 @@ on marrick still holds.
   mixed. The all-or-nothing split is itself informative — a world either has a
   reachable object or it does not, so this is a per-world authoring fact rather
   than a per-part accident.
+- 2026-07-27 — Code route taken; content route unused. `configuredFallbackObject`
+  now reads `presentation.ledger_term` / `presentation.public_objects` as
+  sufficient on their own, and `record_keeper` takes the declared term alone
+  rather than an exhibit the world happens to declare beside it.
+
+  Two orderings decided rather than defaulted. A declaration outranks the record
+  whitelist, because that whitelist reaches a compound prop only by whichever
+  fragment it happens to contain and reaches an undeclared world by the bare word
+  "record" — so a world declaring "assize book" should not say "the record"
+  merely because the generic word turns up in its setting. A declaration stays
+  below the exhibit whitelist, because the non-record parts are written to hold
+  up physical evidence and a ledger term is a record, not an exhibit; promoting
+  it there would have marrick's examiner reach for the trial-book rather than the
+  coin under assay. The first ordering was measured before it was chosen: with
+  the declaration below the record whitelist, only `record_keeper` moved and the
+  other ten parts still scraped "the record" out of the prose.
+
+  Re-measured across 32 worlds x 11 host parts x 17 learner lines (5,984 cases),
+  diffed against the pre-change revision:
+
+      cases changed             3,344
+      worlds touched            18 — the 17 above plus world-025
+      changed from a generic    3,157
+      changed from a real object  187
+      generic cases             3,157 -> 0
+
+  The 187 are all world-025-tallow-street, all 11 parts x 17 lines, "minute-book"
+  -> "meeting minutes". That world is the only one moving from one real object to
+  another, and it is a decision rather than a side effect: the world header lists
+  `minuteBook` among the setting-public *names* used as proof-DAG fact arguments,
+  beside `tallowStreet` and `secretary`, while `presentation.ledger_term: meeting
+  minutes` is the presentation layer's own declaration — and this fallback is
+  presentation. That its prose says "minute-book" is why it escaped the generic
+  default before, which the card already recorded as an accident of the #293
+  whitelist addition. Both names are in register for the world (family
+  `council-minutes`, diction "council minutes"), so nothing is lost by preferring
+  the declared one, and preferring the prose one would reinstate exactly the
+  accidental gate this change removes.
+
+  Six tests added to `tests/tutorStubResponseComposition.test.js`. Four fail on
+  the pre-change code: the corpus sweep (every world reaches its own object, zero
+  generic), the ownership property (the object named is one the world declares or
+  its prose contains — #293's invariant applied to the corpus instead of one
+  fixture), the bare declaration reaching through without the prose repeating it,
+  and the world-025 transition pinned by name. Two pass on both by design, which
+  is the point of including them: marrick's examiner still holds up the coin
+  while its record slot still says trial-book, and a world with no `presentation`
+  block still falls through to the whitelist and then the generic.
+
+  Suites: composition 128/128; adjacent scene-diction / response-guard /
+  due-source 25/25; wider `tutorStub*` sweep 1,208/1,210 across two consecutive
+  runs, the two failures identical on the pre-change tree (the codex remote
+  bridge cannot import `@modelcontextprotocol/sdk` in this checkout, and one
+  assertion in `tutorStubProofCommandPresentation`). A single intermediate sweep
+  showed two extra failures in `tutorStubGuardAccounting` and
+  `tutorStubInteractiveDirection`; both pass in isolation with and without the
+  change and did not recur, so they are concurrency flake under back-to-back
+  load, not this change. `test:manifest` synchronized (no new test files),
+  `refs:check` current, `lint:cycles` clean, eslint and prettier clean.
