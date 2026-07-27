@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-27T00:27:41.560Z",
+  "generated": "2026-07-27T04:25:38.037Z",
   "counts": {
-    "total": 229,
+    "total": 230,
     "byStatus": {
-      "done": 203,
+      "done": 204,
       "blocked": 5,
       "dropped": 3,
       "triaged": 4,
@@ -15,7 +15,7 @@
       "research": 46,
       "experiment": 49,
       "infra": 54,
-      "maintenance": 64,
+      "maintenance": 65,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -199,6 +199,7 @@
           "refactor-tutor-stub-director-presentation",
           "refactor-tutor-stub-learner-dag-presentation",
           "refactor-tutor-stub-learner-classification-presentation",
+          "refactor-tutor-stub-response-configuration-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -625,8 +626,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-learner-classification-presentation",
-      "title": "Refactor tutor-stub learner-classifier presentation",
+      "id": "refactor-tutor-stub-response-configuration-presentation",
+      "title": "Refactor tutor-stub response-configuration presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -634,29 +635,28 @@
       "source": "review",
       "created": "2026-07-27",
       "updated": "2026-07-27",
-      "verification": "Live technical-debug learner-classifier bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-learner-classification-presentation",
+      "verification": "Live technical-debug response-configuration bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-response-configuration-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-learner-dag-presentation"
+        "refactor-tutor-stub-learner-classification-presentation"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubLearnerClassificationPresentation.js",
+          "services/tutorStubResponseConfigurationPresentation.js",
           "scripts/tutor-stub.js",
+          "tests/tutorStubResponseConfigurationPresentation.test.js",
+          "tests/tutorStubInteractivePerformance.test.js",
           "tests/tutorStubLearnerClassificationPresentation.test.js",
           "tests/tutorStubLearnerDagPresentation.test.js",
-          "tests/tutorStubInteractivePerformance.test.js",
-          "tests/tutorStubMultiPremiseAdvance.test.js",
-          "services/__tests__/tutorStubPublicLearnerAnalysis.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-learner-dag-presentation"
+          "refactor-tutor-stub-learner-classification-presentation"
         ]
       },
       "tags": [
@@ -664,7 +664,7 @@
         "tutor-stub",
         "presentation",
         "cli",
-        "learner-classifier",
+        "response-configuration",
         "debug"
       ],
       "milestone": "evaluation-infrastructure"
@@ -3153,6 +3153,54 @@
         "presentation",
         "terminal",
         "loading-indicator"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-learner-classification-presentation",
+      "title": "Refactor tutor-stub learner-classifier presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Live technical-debug learner-classifier bytes remain identical while pure projection, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-learner-classification-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-learner-dag-presentation"
+      ],
+      "links": {
+        "prs": [
+          295
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubLearnerClassificationPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLearnerClassificationPresentation.test.js",
+          "tests/tutorStubLearnerDagPresentation.test.js",
+          "tests/tutorStubInteractivePerformance.test.js",
+          "tests/tutorStubMultiPremiseAdvance.test.js",
+          "services/__tests__/tutorStubPublicLearnerAnalysis.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-learner-dag-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation",
+        "cli",
+        "learner-classifier",
+        "debug"
       ],
       "milestone": "evaluation-infrastructure"
     },
