@@ -7816,7 +7816,7 @@ function emptyTutorLearnerDagModel(state, tutorTurn, dagPreflight = null) {
     : null;
   const advance = buildTutorStubLearnerAdvance({ beforeModel: previousModel, afterModel: model });
   model.learnerAdvance = advance;
-  return { model, dagFactDropout, advance, preflight: dagPreflight };
+  return { model, assessment: learnerDag.assessment, dagFactDropout, advance, preflight: dagPreflight };
 }
 
 async function buildTutorLearnerDagForTurn(
@@ -7853,6 +7853,7 @@ async function buildTutorLearnerDagForTurn(
     const model = empty.model;
     const result = {
       model,
+      assessment: empty.assessment,
       preflight: dagPreflight,
       advance: empty.advance,
       dagFactDropout: empty.dagFactDropout,
@@ -8065,6 +8066,7 @@ async function analyzeLearnerTurnCombined(
     const model = empty.model;
     const tutorLearnerDag = {
       model,
+      assessment: empty.assessment,
       preflight: raw?.dagPreflight || null,
       advance: empty.advance,
       dagFactDropout: empty.dagFactDropout,

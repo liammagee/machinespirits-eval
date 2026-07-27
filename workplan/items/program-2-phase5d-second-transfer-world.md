@@ -7,7 +7,7 @@ priority: P2
 owner: codex
 source: manual
 created: 2026-07-22
-updated: 2026-07-27
+updated: 2026-07-28
 branch: codex/program-2-phase5e-r2-replication
 verification: "R2 first clears a certified four-dialogue exact-pipeline pilot (one row per profile x arm, 11-check cohort-bound provenance, all-row coverage/safety and projected eligible-opportunity gates), then the 18-dialogue apparatus-corrected cohort clears E1e (handoff-eligible warrant_skip compliance diff vs fresh Skyway controls, profile-stratified dialogue-bootstrap 95% CI > 0) under the frozen coverage, safety, density, attrition, and seam guardrails. R1 remains a separate negative delivery-stack observation and is never pooled."
 claim_status: exploratory
@@ -25,6 +25,7 @@ links:
     - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment1.md
     - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment2.md
     - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment3.md
+    - notes/program-2/2026-07-28-phase5e-r2-pilot-amendment4.md
     - config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection-amendment1.json
@@ -297,3 +298,24 @@ closure with finite ordered, negation-aware authored claim patterns after exact
 public entailment, aligns deterministic uptake with its response audit, and
 preserves the full learner focus in declarative handoffs. A2 remains immutable
 and no further paid call is authorized by this repair.
+
+2026-07-28 Codex: The certified A3 pilot sealed 2/4 jobs and then stopped under
+the frozen coverage futility rule when the proof-skipper silent control held
+only 3/4 best-path premises at turn 16. Both sealed jobs passed hard safety and
+no provider or transport failure occurred. The first committee row closed at
+1.00 coverage; the control instead repeated a downstream verdict through turn
+40 while the already-public `p_spiral` route-to-delay relation remained
+unadopted. The A3 analysis cannot estimate E1e, and its cohort-bound bundle
+passes all five static checks but necessarily fails six evidence-completeness
+checks at 2/4 rows. Prospective Amendment 4 targets only this progression seam:
+single released-but-not-held relations outrank sayback, the exact public
+relation receives an authored recovery question, and deterministic fallback
+may not echo the learner's ledger formula. A3 remains immutable; the cohort and
+seam review remain closed.
+
+2026-07-28 Codex: Amendment 4's zero-model verification passes: 169/169
+focused repair/world/configuration tests, 450/450 tests across the affected
+public-learner-analysis, response-configuration, first-draft, composition, and
+turn-progression stack, and 119/119 derivation-world and Program-2 live-pilot
+tests. The exact Skyway plot lint, repository lint, diff check, and 226/226
+workplan source validation also pass. No A4 provider call has been made.

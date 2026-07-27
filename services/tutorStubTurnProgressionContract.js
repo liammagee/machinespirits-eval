@@ -563,10 +563,12 @@ function chooseHandoffMode({
   actionFamily = null,
   discoursePlane = null,
   assertionGap = false,
+  integrationTarget = null,
 } = {}) {
   if (discoursePlane?.plane === 'instructional_meta') return 'instructional_meta_repair';
   if (dialogueClosureFrame?.mandatory === true) return 'closure';
   if (questionSupport?.responsiveRepairRequired === true) return 'direct_answer';
+  if (integrationTarget?.active === true) return 'missing_relation_recovery';
   if (completion?.resolved === true && due.length) return 'new_unresolved_check';
   if (completion?.resolved === true) return 'declarative_missing_support';
   if (writableEntryRequested && !due.length) return 'declarative_missing_support';
@@ -587,6 +589,9 @@ function handoffInstruction(contract) {
   const focus = contract.turn_focus_contract;
   if (contract.discourse_plane?.plane === 'instructional_meta') {
     return 'End after the plain restatement or one declarative invitation to unpack another phrase. Do not return to the proof or ask a proof question in this turn.';
+  }
+  if (handoff.mode === 'missing_relation_recovery' && focus.integration_target?.question) {
+    return `HANDOFF alone asks exactly: “${focus.integration_target.question}” Do not replace it with a verdict, sayback, or generic evidence question.`;
   }
   const target = focus.due_surfaces.length ? 'the due SOURCE' : 'TURN FOCUS';
   const settled = handoff.prohibited_settled_surfaces.length ? ' Do not reopen the settled point.' : '';
@@ -614,6 +619,9 @@ export function compileTutorStubTurnProgressionContract({
   const discoursePlane = responseCompositionFrame?.discourse_plane || null;
   const completion = responseCompositionFrame?.conversational_completion || null;
   const focus = focusSurface({ learnerText, responseCompositionFrame, discoursePlane });
+  const integrationTarget = responseCompositionFrame?.learner_integration_target?.active
+    ? structuredClone(responseCompositionFrame.learner_integration_target)
+    : null;
   const primaryGroups = focusGroups(focus.surface);
   const primaryTerms = [...new Set(primaryGroups.flatMap((group) => group.terms))];
   const due = dueSurfaces({ responseCompositionFrame, dramaticReleaseFrame });
@@ -633,15 +641,21 @@ export function compileTutorStubTurnProgressionContract({
     actionFamily,
     discoursePlane,
     assertionGap,
+    integrationTarget,
   });
-  const questionAllowed = ['new_unresolved_check', 'question_on_due_source', 'assertion_gap_prompt'].includes(
-    handoffMode,
-  );
+  const questionAllowed = [
+    'new_unresolved_check',
+    'question_on_due_source',
+    'assertion_gap_prompt',
+    'missing_relation_recovery',
+  ].includes(handoffMode);
   const instructionalMeta = discoursePlane?.plane === 'instructional_meta';
   const assertionGapTarget = assertionGap && questionAllowed ? oneLine(publicQuestion) : '';
   const requiredTargetSurfaces = instructionalMeta
     ? []
-    : assertionGapTarget
+    : integrationTarget
+      ? [integrationTarget.question]
+      : assertionGapTarget
       ? [assertionGapTarget]
       : due.length && questionAllowed
         ? due
@@ -650,7 +664,9 @@ export function compileTutorStubTurnProgressionContract({
           : [];
   const requiredTargetTerms = instructionalMeta
     ? []
-    : assertionGapTarget
+    : integrationTarget
+      ? contentTerms(integrationTarget.question)
+      : assertionGapTarget
       ? contentTerms(assertionGapTarget)
       : due.length && questionAllowed
         ? dueTerms
@@ -698,9 +714,12 @@ export function compileTutorStubTurnProgressionContract({
       sibling_relation_requires_explicit_bridge: siblingBridgeRequired,
       relation_kind: focusRelation.kind,
       relation_basis: focusRelation.basis,
+      integration_target: integrationTarget,
       bridge_markers: ['before we', 'first', 'to answer', 'to connect', 'because', 'so that', 'which bears on'],
       instruction: instructionalMeta
         ? 'Keep the explanation itself as the turn focus. Restate the latest tutor point in plain contemporary English; do not advance the inquiry or reinterpret the request as evidence.'
+        : integrationTarget
+          ? `Recover this already-public relation before another verdict: “${integrationTarget.target}” Ask exactly: “${integrationTarget.question}” Do not state the target for the learner or copy their ledger formula.`
         : focus.surface
           ? `Keep the learner’s requested focus primary: “${focus.surface}”. Do not silently replace its relation with a neighbouring one.`
           : 'Keep the current public relation primary; do not silently substitute a neighbouring relation.',
@@ -710,11 +729,15 @@ export function compileTutorStubTurnProgressionContract({
       question_allowed: questionAllowed,
       question_required:
         questionAllowed &&
-        (handoffMode === 'assertion_gap_prompt' || tactic === 'shared_scene_invitation' || due.length > 0),
+        (handoffMode === 'assertion_gap_prompt' ||
+          handoffMode === 'missing_relation_recovery' ||
+          tactic === 'shared_scene_invitation' ||
+          due.length > 0),
       question_owner: questionAllowed ? 'handoff' : null,
       terminal_if_question: questionAllowed,
       required_target_surfaces: requiredTargetSurfaces,
       required_target_terms: requiredTargetTerms,
+      required_exact_question: integrationTarget?.question || null,
       prohibited_settled_surfaces: prohibitedSettledSurfaces,
       instruction: null,
     },
@@ -818,6 +841,10 @@ function contractAwareFallbackQuestion(contract, defaultQuestion) {
   if (handoff.mode === 'assertion_gap_prompt') {
     const publicQuestion = oneLine(handoff.required_target_surfaces?.[0]);
     if (publicQuestion) return /\?$/u.test(publicQuestion) ? publicQuestion : `${publicQuestion}?`;
+  }
+  if (handoff.mode === 'missing_relation_recovery') {
+    const targetQuestion = oneLine(contract?.turn_focus_contract?.integration_target?.question);
+    if (targetQuestion) return /\?$/u.test(targetQuestion) ? targetQuestion : `${targetQuestion}?`;
   }
   const dueSurfaces = contract?.turn_focus_contract?.due_surfaces || [];
   if (dueSurfaces.length || handoffTargetVisible(handoff, question)) return question;
@@ -942,6 +969,14 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
   }
   if (handoff.question_required && !QUESTION_PATTERN.test(slots.handoff)) {
     issues.push({ type: 'required_handoff_question_missing', owner: 'handoff' });
+  }
+  if (handoff.required_exact_question && oneLine(slots.handoff) !== oneLine(handoff.required_exact_question)) {
+    issues.push({
+      type: 'required_exact_handoff_question_missing',
+      owner: 'handoff',
+      expected: handoff.required_exact_question,
+      observed: slots.handoff,
+    });
   }
   if (handoff.terminal_if_question && QUESTION_PATTERN.test(slots.handoff) && !/\?(?:[”"'’])?$/u.test(slots.handoff)) {
     issues.push({ type: 'handoff_question_not_terminal', owner: 'handoff' });
@@ -1091,6 +1126,14 @@ export function auditTutorStubLiveTurnProgressionV1({
   }
   if (handoff.question_required && questionCount === 0) {
     issues.push({ type: 'required_handoff_question_missing', owner: 'terminal_sentence' });
+  }
+  if (handoff.required_exact_question && oneLine(terminalSurface) !== oneLine(handoff.required_exact_question)) {
+    issues.push({
+      type: 'required_exact_handoff_question_missing',
+      owner: 'terminal_sentence',
+      expected: handoff.required_exact_question,
+      observed: terminalSurface,
+    });
   }
   if (
     handoff.terminal_if_question &&

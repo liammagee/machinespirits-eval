@@ -562,6 +562,9 @@ export function buildTutorStubResponseCompositionFrame({
     discourse_plane: discoursePlane ? structuredClone(discoursePlane) : null,
     learner_dag: dag,
     selected_action_family: actionFamily,
+    learner_integration_target: configuration.learner_integration_target
+      ? structuredClone(configuration.learner_integration_target)
+      : null,
     action_target: actionTarget,
     conversational_completion: completion,
     public_focus_mapping: publicFocusMapping ? structuredClone(publicFocusMapping) : null,
@@ -1818,6 +1821,7 @@ export function deterministicTutorStubConfiguredContinuationFallback({
   const stance = oneLine(responseConfiguration?.engagement_stance || 'plain');
   const part = oneLine(responseConfiguration?.actorial_host_part || responseConfiguration?.actorial_part || 'examiner');
   const actionFamily = oneLine(responseConfiguration?.action_family || '');
+  const integrationTarget = turnProgressionContract?.turn_focus_contract?.integration_target || null;
   const tactic = oneLine(responseConfiguration?.actorial_performance?.id || '');
   const object = configuredFallbackObject({ world, learnerText, part });
   const diction = resolveTutorStubSceneDiction(world);
@@ -1829,9 +1833,11 @@ export function deterministicTutorStubConfiguredContinuationFallback({
       /\b(?:i|we)\s+(?:enter|mark|note|record|write)\s+(?:that|this|it)\b/iu.test(uptake));
   const candidates = configuredFallbackVariantOrder({ variationKey, recentTutorTexts }).map((variant) =>
     [
-      oneLine(uptake),
+      integrationTarget?.active ? oneLine(integrationTarget.qualification) : oneLine(uptake),
       configuredFallbackVariationBridge(variant),
-      uptakeAlreadyPerformsRecordKeeper ? null : configuredFallbackPerformance({ part, object, tactic, diction }),
+      integrationTarget?.active || !uptakeAlreadyPerformsRecordKeeper
+        ? configuredFallbackPerformance({ part, object, tactic, diction })
+        : null,
       configuredFallbackStance(stance),
       deterministicTutorStubTurnProgressionHandoff({
         contract: turnProgressionContract,

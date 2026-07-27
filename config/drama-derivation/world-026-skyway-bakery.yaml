@@ -203,6 +203,16 @@ premises:
       No other flue, ledge, or chimney lifts a glider on that line.
   - id: p_spiral
     fact: [longSpiralDoublesCrossing, eastTerrace]
+    recognition_surfaces:
+      - "the long spiral doubles the crossing"
+      - "the long spiral route makes the crossing twice as long"
+      - "taking the long spiral makes the crossing twice as long"
+    integration_repair:
+      question: "What does taking the long spiral do to the length of the crossing?"
+      target: "The long spiral doubles the crossing."
+      qualification: >-
+        Your claim names the windless journey, but it still skips what the
+        long spiral does to the crossing.
     surface: >-
       Without lift on the direct line, a still-morning courier glides the
       long spiral down past the gull roosts and climbs the far stair of air —

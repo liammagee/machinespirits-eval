@@ -9,6 +9,7 @@ import {
 import {
   auditTutorStubResponseConfiguration,
   buildTutorStubResponseConfiguration,
+  buildTutorStubLearnerIntegrationTarget,
   normalizeTutorStubActorialPartId,
   selectTutorStubActorialPart,
   selectTutorStubActorialPerformance,
@@ -3788,6 +3789,47 @@ test('an exhausted release schedule asks for the conclusion instead of staging a
 
   assert.equal(selected.actionFamily, 'compress_sayback');
   assert.match(selected.reason, /already been released/iu);
+});
+
+test('a sole released integration target outranks exhausted-schedule sayback', () => {
+  const world = testWorld();
+  world.premiseById.set('p_relation', {
+    surface: 'The long route doubles the crossing.',
+    fact: ['doubles', 'route', 'crossing'],
+    integration_repair: {
+      question: 'What does the long route do to the crossing?',
+      target: 'The long route doubles the crossing.',
+      qualification: 'Your claim names the result, but it still skips what the route does to the crossing.',
+    },
+  });
+  const tutorLearnerDag = learnerDag({ bottleneck: 'learner_integration_gap', coverage: 0.75 });
+  tutorLearnerDag.assessment = {
+    bottleneck: 'learner_integration_gap',
+    missingPremises: [{ premiseId: 'p_relation', bucket: 'released_but_not_held' }],
+  };
+  const target = buildTutorStubLearnerIntegrationTarget({ tutorLearnerDag, world });
+  const selected = selectTutorStubActionFamily({
+    classification: classification(),
+    tutorLearnerDag,
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    releasePacing: { direction: 'steady', dueNow: [], nextRelease: null, schedule: [] },
+    world,
+  });
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText: 'The journey caused the result.',
+    classification: classification(),
+    tutorLearnerDag,
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    releasePacing: { direction: 'steady', dueNow: [], nextRelease: null, schedule: [] },
+    world,
+  });
+
+  assert.equal(target.target, 'The long route doubles the crossing.');
+  assert.equal(selected.actionFamily, 'stage_next_step');
+  assert.match(selected.reason, /sole remaining learner-record gap/iu);
+  assert.equal(configuration.learner_integration_target.question, 'What does the long route do to the crossing?');
+  assert.match(tutorStubResponseConfigurationPrompt(configuration), /Missing public relation recovery/iu);
 });
 
 test('an exhausted schedule also blocks an acceleration request from staging a missing clue', () => {

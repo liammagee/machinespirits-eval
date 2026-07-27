@@ -96,6 +96,20 @@ export function validateWorld(raw, source = '<inline>') {
     }
     if (new Set(ids).size !== ids.length) fail(`${field} ids must be unique`);
   };
+  const validateIntegrationRepair = (value, field) => {
+    if (value === undefined) return;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      fail(`${field} must be an object when supplied`);
+    }
+    for (const key of ['question', 'target', 'qualification']) {
+      if (typeof value[key] !== 'string' || !value[key].trim()) {
+        fail(`${field}.${key} must be a non-empty string`);
+      }
+    }
+    if (!/[?]\s*$/u.test(value.question.trim())) {
+      fail(`${field}.question must end with a question mark`);
+    }
+  };
   if (!raw || typeof raw !== 'object') fail('not an object');
   for (const field of ['id', 'secret', 'rules', 'premises', 'release_schedule', 'slope']) {
     if (!(field in raw)) fail(`missing required field "${field}"`);
@@ -113,6 +127,7 @@ export function validateWorld(raw, source = '<inline>') {
     if (!premise.id || !Array.isArray(premise.fact)) fail('premise needs id + fact array');
     if (premiseById.has(premise.id)) fail(`duplicate premise id "${premise.id}"`);
     validateRecognitionSurfaces(premise.recognition_surfaces, `${premise.id}.recognition_surfaces`);
+    validateIntegrationRepair(premise.integration_repair, `${premise.id}.integration_repair`);
     premiseById.set(premise.id, premise);
   }
   for (const rule of raw.rules) {

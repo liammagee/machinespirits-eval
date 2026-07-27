@@ -13,8 +13,14 @@ import {
   auditTutorStubResponseComposition,
   buildTutorStubResponseCompositionFrame,
   composeTutorStubFallbackWithUptake,
+  deterministicTutorStubConfiguredContinuationFallback,
   tutorStubSubstantiveLearnerEcho,
 } from '../services/tutorStubResponseComposition.js';
+import { buildTutorStubFirstDraftContract } from '../services/tutorStubFirstDraftContract.js';
+import {
+  buildTutorStubResponseConfiguration,
+  selectTutorStubActionFamily,
+} from '../services/tutorStubResponseConfiguration.js';
 import {
   auditTutorStubTurnProgression,
   compileTutorStubTurnProgressionContract,
@@ -309,4 +315,154 @@ test('Phase 5e R2 pilot A1 replay reaches grounded closure from the missed natur
   assert.equal(answer.model.assessment.assertedSecret, true);
   assert.equal(answer.model.assessment.bottleneck, 'grounded_asserted_secret');
   assert.match(answer.accepted.authoredRecognition.assertedSurface, /twice-long route/u);
+});
+
+test('Phase 5e R2 pilot A3 turn 8 does not award the unstated spiral-length relation', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+  const record = createTutorStubPublicLearnerRecord(world);
+  const stagedThrough = (turn) =>
+    world.releaseSchedule
+      .filter((entry) => entry.turn < turn)
+      .map((entry) => {
+        const premise = world.premiseById.get(entry.premise);
+        return { premise: entry.premise, turn: entry.turn, via: entry.via, surface: premise.surface, fact: premise.fact };
+      });
+  const apply = (turn, learnerText, adopt = []) => {
+    const publicEvidence = stagedThrough(turn);
+    return applyTutorStubPublicLearnerRecordUpdate({
+      update: { adopt, retract: [], derive: [], hypothesis: null, assert_answer: null },
+      world,
+      record,
+      tutorTurn: turn,
+      learnerText,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+  };
+
+  apply(7, 'The shutter is bolted and Piper’s Gullet is the only windless lift.', ['p_bolt', 'p_soleLift']);
+  const turn8 = apply(8, 'The long spiral route leaves the east-terrace loaves cold, not Tibbin’s dough.');
+
+  assert.equal(turn8.accepted.adopt.includes('p_spiral'), false);
+  assert.equal(turn8.accepted.authoredRecognition.adoptedPremises.includes('p_spiral'), false);
+  assert.equal(turn8.model.assessment.bestPathCoverage, 0.5);
+  assert.equal(turn8.assessment.missingPremises.some((row) => row.premiseId === 'p_spiral'), true);
+});
+
+test('Phase 5e R2 pilot A3 frozen-prefix replay targets the missing spiral relation and reaches closure', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+  const record = createTutorStubPublicLearnerRecord(world);
+  const stagedThrough = (turn) =>
+    world.releaseSchedule
+      .filter((entry) => entry.turn < turn)
+      .map((entry) => {
+        const premise = world.premiseById.get(entry.premise);
+        return { premise: entry.premise, turn: entry.turn, via: entry.via, surface: premise.surface, fact: premise.fact };
+      });
+  const apply = (turn, learnerText, adopt = []) => {
+    const publicEvidence = stagedThrough(turn);
+    return applyTutorStubPublicLearnerRecordUpdate({
+      update: { adopt, retract: [], derive: [], hypothesis: null, assert_answer: null },
+      world,
+      record,
+      tutorTurn: turn,
+      learnerText,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+  };
+
+  apply(10, 'The bread leaves warm; its cooling belongs to the journey, not Tibbin.', [
+    'p_bolt',
+    'p_soleLift',
+    'p_warm',
+  ]);
+  const turn13Text = 'I enter it: Tibbin is cleared; the cold loaves cool on the windless journey.';
+  const turn16Text = 'I enter it: Tibbin is clear; the windless crossing chills the loaves.';
+  const turn13 = apply(13, turn13Text);
+  const turn16 = apply(16, turn16Text);
+  const releasePacing = { direction: 'steady', dueNow: [], nextRelease: null, schedule: [] };
+
+  for (const [turn, learnerText, result] of [
+    [13, turn13Text, turn13],
+    [16, turn16Text, turn16],
+  ]) {
+    const action = selectTutorStubActionFamily({
+      classification: { turn: { request_type: 'off_task_or_mixed' } },
+      tutorLearnerDag: result,
+      comprehension: { pressure: 0, unresolvedTerms: [] },
+      releasePacing,
+      world,
+    });
+    const configuration = buildTutorStubResponseConfiguration({
+      engagementStance: 'plain',
+      learnerText,
+      classification: {
+        turn: {
+          request_type: 'off_task_or_mixed',
+          summary: 'States the downstream windless-journey verdict without the route-length relation.',
+        },
+      },
+      tutorLearnerDag: result,
+      comprehension: { pressure: 0, unresolvedTerms: [] },
+      releasePacing,
+      world,
+    });
+    const responseFrame = buildTutorStubResponseCompositionFrame({
+      learnerText,
+      classification: {
+        turn: {
+          request_type: 'off_task_or_mixed',
+          summary: 'States the downstream windless-journey verdict without the route-length relation.',
+        },
+      },
+      tutorLearnerDag: result.model,
+      registerSelection: { response_configuration: configuration },
+    });
+    const firstDraftContract = buildTutorStubFirstDraftContract({
+      learnerText,
+      publicQuestion: PUBLIC_QUESTION,
+      responseConfiguration: configuration,
+      responseCompositionFrame: responseFrame,
+    });
+    const fallback = deterministicTutorStubConfiguredContinuationFallback({
+      uptake: `Your reading of “${learnerText}” is the one I will answer now.`,
+      responseConfiguration: configuration,
+      world,
+      learnerText,
+      turnProgressionContract: firstDraftContract.progression,
+      recentTutorTexts: [],
+      variationKey: `phase5e-a3-turn-${turn}`,
+    });
+    const audit = auditTutorStubResponseComposition({
+      text: fallback,
+      frame: responseFrame,
+      learnerText,
+      firstDraftContract,
+    });
+
+    assert.equal(result.model.assessment.bestPathCoverage, 0.75);
+    assert.deepEqual(result.assessment.missingOnBestPath, ['p_spiral']);
+    assert.equal(action.actionFamily, 'stage_next_step');
+    assert.equal(configuration.action_family, 'stage_next_step');
+    assert.equal(firstDraftContract.development.action_family, 'stage_next_step');
+    assert.equal(firstDraftContract.progression.handoff_contract.mode, 'missing_relation_recovery');
+    assert.equal(
+      deterministicTutorStubTurnProgressionHandoff({ contract: firstDraftContract.progression }),
+      'What does taking the long spiral do to the length of the crossing?',
+    );
+    assert.doesNotMatch(fallback, /I enter it/iu);
+    assert.match(fallback, /What does taking the long spiral do to the length of the crossing\?$/u);
+    assert.equal(audit.ok, true, `turn ${turn}: ${JSON.stringify(audit.issues)}`);
+  }
+
+  const recovered = apply(
+    17,
+    'The long spiral doubles the crossing; the bolted shutter forces that route, so the extra travel cools the loaves.',
+  );
+  assert.deepEqual(recovered.accepted.authoredRecognition.adoptedPremises, ['p_spiral']);
+  assert.equal(recovered.model.assessment.bestPathCoverage, 1);
+  assert.equal(recovered.model.assessment.finalSecretEntailed, true);
+  assert.equal(recovered.model.assessment.assertedSecret, true);
+  assert.equal(recovered.model.assessment.bottleneck, 'grounded_asserted_secret');
 });

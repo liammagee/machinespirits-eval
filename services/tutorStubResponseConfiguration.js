@@ -29,6 +29,8 @@ const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-
 const ACTORIAL_REALIZATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.actorial-realization-audit.v1';
 export const TUTOR_STUB_ACTORIAL_PERFORMANCE_REALIZATION_SCHEMA =
   'machinespirits.tutor-stub.actorial-performance-realization.v1';
+export const TUTOR_STUB_LEARNER_INTEGRATION_TARGET_SCHEMA =
+  'machinespirits.tutor-stub.learner-integration-target.v1';
 
 const WORLD_STOP_WORDS = new Set(
   'about after again also among because before being between could every from have into itself more most other over same should some such than that their them then there these they this those through under very what when where which while with would your'.split(
@@ -64,6 +66,27 @@ function comprehensionFeatures(comprehension) {
   return comprehension?.features || comprehension || {};
 }
 
+export function buildTutorStubLearnerIntegrationTarget({ tutorLearnerDag = null, world = null } = {}) {
+  const assessment = tutorLearnerDag?.assessment || null;
+  if (assessment?.bottleneck !== 'learner_integration_gap') return null;
+  const missing = Array.isArray(assessment.missingPremises) ? assessment.missingPremises : [];
+  if (missing.length !== 1 || missing[0]?.bucket !== 'released_but_not_held') return null;
+  const premiseId = String(missing[0]?.premiseId || '').trim();
+  const premise = premiseId ? world?.premiseById?.get?.(premiseId) : null;
+  const repair = premise?.integration_repair;
+  if (!repair?.question || !repair?.target || !repair?.qualification) return null;
+  return {
+    schema: TUTOR_STUB_LEARNER_INTEGRATION_TARGET_SCHEMA,
+    active: true,
+    source: 'sole_released_but_not_held_best_path_premise',
+    premise_id: premiseId,
+    public_surface: oneLine(premise.surface),
+    question: oneLine(repair.question),
+    target: oneLine(repair.target),
+    qualification: oneLine(repair.qualification),
+  };
+}
+
 function configurationSignal({ learnerText, classification }) {
   return oneLine(
     [
@@ -84,6 +107,7 @@ export function selectTutorStubActionFamily({
   comprehension,
   releasePacing,
   discoursePlane,
+  world,
 } = {}) {
   const requestType = requestTypeFrom(classification);
   const features = comprehensionFeatures(comprehension);
@@ -92,6 +116,7 @@ export function selectTutorStubActionFamily({
   const assessment = model.assessment || {};
   const memoryReliability = model.memoryReliability || {};
   const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
+  const learnerIntegrationTarget = buildTutorStubLearnerIntegrationTarget({ tutorLearnerDag, world });
   const releaseExhausted = tutorStubReleaseScheduleExhausted(releasePacing);
   let actionFamily = 'clarify_distinction';
   let reason = 'Default to one inspectable distinction or check.';
@@ -114,6 +139,10 @@ export function selectTutorStubActionFamily({
     actionFamily = 'reanchor_public_evidence';
     reason =
       'Previously accumulated public evidence has slipped from the active record, so restage one clue without making memory itself the test.';
+  } else if (learnerIntegrationTarget?.active) {
+    actionFamily = 'stage_next_step';
+    reason =
+      'One already-public best-path relation is the sole remaining learner-record gap, so recover that exact relation before another verdict or sayback.';
   } else if (!releaseExhausted && (releasePacing?.direction === 'accelerate' || releasePacing?.dueNow?.length)) {
     actionFamily = 'stage_next_step';
     reason = releasePacing?.dueNow?.length
@@ -642,7 +671,9 @@ export function buildTutorStubResponseConfiguration({
     comprehension,
     releasePacing,
     discoursePlane,
+    world,
   });
+  const learnerIntegrationTarget = buildTutorStubLearnerIntegrationTarget({ tutorLearnerDag, world });
   const audience = selectTutorStubAudienceRegister({ learnerText, classification, tutorLearnerDag, comprehension });
   const lexical = selectTutorStubLexicalAccessibility({ classification, tutorLearnerDag, comprehension });
   const scene =
@@ -706,6 +737,7 @@ export function buildTutorStubResponseConfiguration({
     unresolved_terms: unresolvedTerms,
     learner_advance: learnerAdvance ? structuredClone(learnerAdvance) : null,
     release_pacing: releasePacing ? structuredClone(releasePacing) : null,
+    learner_integration_target: learnerIntegrationTarget ? structuredClone(learnerIntegrationTarget) : null,
     engagement_stance_distribution: Array.isArray(effectiveStanceDistribution)
       ? structuredClone(effectiveStanceDistribution)
       : null,
@@ -811,6 +843,9 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
     configuration.learner_advance?.accelerated
       ? `Learner pace: accelerating. Credit all ${configuration.learner_advance.supportedMoveCount} warranted learner-owned proof moves already made; do not ask for any of them again. Test or extend only the next unresolved edge.`
       : 'Learner pace: steady unless the public turn itself warrants otherwise.',
+    configuration.learner_integration_target?.active
+      ? `Missing public relation recovery: the learner has not yet stated “${configuration.learner_integration_target.target}” even though its clue is public. Qualify the downstream verdict with “${configuration.learner_integration_target.qualification}” and ask exactly: “${configuration.learner_integration_target.question}” Do not supply the target sentence, accept another downstream verdict as a substitute, or copy a learner ledger formula.`
+      : null,
     configuration.release_pacing?.direction === 'accelerate'
       ? `Clue release: faster at ${configuration.release_pacing.effectiveSpeed}x. Stage at most one newly available clue batch now, with a short handoff and no redundant proof demand.`
       : configuration.release_pacing?.direction === 'decelerate'

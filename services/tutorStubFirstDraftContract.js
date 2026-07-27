@@ -581,6 +581,9 @@ export function buildTutorStubFirstDraftContract({
   const discoursePlane = responseCompositionFrame?.discourse_plane || configuration.discourse_plane || null;
   const stance = configuration.engagement_stance || 'precise';
   const actionFamily = configuration.action_family || 'clarify_distinction';
+  const learnerIntegrationTarget = configuration.learner_integration_target?.active
+    ? configuration.learner_integration_target
+    : null;
   const part = configuration.actorial_part || 'scene_partner';
   const addresseeProfile = configuration.addressee_profile || configuration.audience_register || 'domain_apprentice';
   const lexical = configuration.lexical_accessibility || 'standard';
@@ -656,7 +659,9 @@ export function buildTutorStubFirstDraftContract({
   const tacticExecution = [baseTacticExecution, causalPerformanceInstruction].filter(Boolean).join(' ');
   const stanceExecution = STANCE_EXECUTION_CUES[stance] || null;
   const baseActionInstruction =
-    directionOnlyWithoutNewEvidence && actionFamily === 'stage_next_step'
+    learnerIntegrationTarget
+      ? `Recover the one already-public relation the learner has not stated. Qualify the downstream verdict with “${learnerIntegrationTarget.qualification}” and ask exactly “${learnerIntegrationTarget.question}” Do not supply “${learnerIntegrationTarget.target}” for the learner, accept another downstream verdict as a substitute, or copy the learner's ledger wording.`
+      : directionOnlyWithoutNewEvidence && actionFamily === 'stage_next_step'
       ? 'No new evidence is available in this reply. Restage one already-public clue and state what it supports. Then name the next public check with a concrete verb such as test, check, compare, or trace. Do not ask the learner to invent unseen evidence.'
       : ACTION_CUES[actionFamily] || ACTION_CUES.clarify_distinction;
   const actionInstruction =

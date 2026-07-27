@@ -144,6 +144,25 @@ test('validateWorld accepts only explicit non-empty recognition-surface lists', 
   assert.throws(() => validateWorld(raw, 'non-string-recognition-surfaces'), /entries must be non-empty strings/u);
 });
 
+test('validateWorld accepts only complete public integration-repair contracts', () => {
+  const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
+  raw.premises[0].integration_repair = {
+    question: 'What relation does this clue state?',
+    target: 'The clue states the missing public relation.',
+    qualification: 'Your claim still skips the relation stated by this clue.',
+  };
+  const withRepair = validateWorld(raw, 'integration-repair');
+  assert.deepEqual(withRepair.premises[0].integration_repair, raw.premises[0].integration_repair);
+
+  raw.premises[0].integration_repair.question = 'What relation does this clue state';
+  assert.throws(() => validateWorld(raw, 'integration-repair-question'), /must end with a question mark/u);
+  raw.premises[0].integration_repair.question = 'What relation does this clue state?';
+  raw.premises[0].integration_repair.target = '';
+  assert.throws(() => validateWorld(raw, 'integration-repair-target'), /target must be a non-empty string/u);
+  raw.premises[0].integration_repair = [];
+  assert.throws(() => validateWorld(raw, 'integration-repair-shape'), /must be an object when supplied/u);
+});
+
 test('validateWorld accepts only bounded authored recognition patterns', () => {
   const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
   raw.secret.recognition_patterns = [

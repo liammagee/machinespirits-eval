@@ -2584,6 +2584,7 @@ export function applyTutorStubPublicLearnerRecordUpdate({
   return {
     model,
     snapshot,
+    assessment: learnerDag.assessment,
     advance,
     dagFactDropout,
     accepted,
