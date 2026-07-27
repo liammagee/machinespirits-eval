@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -52,8 +53,51 @@ function discoverTestsRecursively(projectRoot, directory) {
   return files.sort();
 }
 
+/**
+ * Test files as Git sees them: tracked, plus untracked files Git would add.
+ * Ignored paths are excluded, which is the point — a working tree can hold
+ * whole extra checkouts that are gitignored (`.claude/worktrees/<name>/` is the
+ * live case), and walking those reports every one of their test files as drift
+ * against a manifest describing this repo. CI never sees them because it starts
+ * from a fresh clone, so a filesystem walk makes the check pass in CI and fail
+ * locally for a reason the developer did not cause.
+ *
+ * Untracked-but-not-ignored files stay in scope on purpose: adding a test file
+ * and forgetting to register it is exactly the drift the manifest exists to
+ * catch, and that should fail before the file is ever committed.
+ *
+ * Returns null when the answer cannot be trusted — no Git, or a projectRoot
+ * that is not itself the repository root, which would make the reported paths
+ * relative to the wrong base.
+ */
+function discoverTestsFromGit(projectRoot) {
+  const run = (args) => spawnSync('git', ['-C', projectRoot, ...args], { encoding: 'utf8' });
+  const toplevel = run(['rev-parse', '--show-toplevel']);
+  if (toplevel.error || toplevel.status !== 0) return null;
+  if (path.resolve(String(toplevel.stdout).trim()) !== path.resolve(projectRoot)) return null;
+
+  const listed = run([
+    'ls-files',
+    '--cached',
+    '--others',
+    '--exclude-standard',
+    '-z',
+    '--full-name',
+    '--',
+    '*.test.js',
+  ]);
+  if (listed.error || listed.status !== 0) return null;
+  return [
+    ...new Set(
+      String(listed.stdout || '')
+        .split('\0')
+        .filter(Boolean),
+    ),
+  ].sort();
+}
+
 export function discoverAllContractTestFiles(projectRoot) {
-  return discoverTestsRecursively(projectRoot, '.');
+  return discoverTestsFromGit(projectRoot) ?? discoverTestsRecursively(projectRoot, '.');
 }
 
 export function loadTestManifest(

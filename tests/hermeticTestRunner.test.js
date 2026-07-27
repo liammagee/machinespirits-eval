@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -372,6 +373,54 @@ test('manifest validation reports missing, extra, and unclassified test files', 
     assert.throws(() => validateTestManifest(manifest, projectRoot), /missing: tests\/missing\.test\.js/u);
 
     manifest.suites.root.requiredFiles.pop();
+    writeTest('routes/unclassified.test.js');
+    assert.throws(
+      () => validateTestManifest(manifest, projectRoot),
+      /classified test manifest drift; extra: routes\/unclassified\.test\.js/u,
+    );
+  } finally {
+    fs.rmSync(projectRoot, { recursive: true, force: true });
+  }
+});
+
+test('manifest validation ignores test files Git ignores, such as nested worktree checkouts', () => {
+  const projectRoot = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-manifest-gitignored-')));
+  const git = (...args) =>
+    spawnSync('git', ['-C', projectRoot, ...args], {
+      encoding: 'utf8',
+      env: { ...process.env, GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_SYSTEM: '/dev/null' },
+    });
+  const writeTest = (relativePath) => {
+    fs.mkdirSync(path.dirname(path.join(projectRoot, relativePath)), { recursive: true });
+    fs.writeFileSync(path.join(projectRoot, relativePath), '// fixture\n');
+  };
+  try {
+    git('init', '--quiet');
+    fs.writeFileSync(path.join(projectRoot, '.gitignore'), '.claude/worktrees/\n');
+    writeTest('services/__tests__/service.test.js');
+    writeTest('tests/root.test.js');
+    writeTest('tutor-core/services/__tests__/core.test.js');
+
+    const manifest = {
+      version: 1,
+      suites: {
+        root: { requiredFiles: ['services/__tests__/service.test.js', 'tests/root.test.js'] },
+        core: { requiredFiles: ['tutor-core/services/__tests__/core.test.js'] },
+      },
+      fixtureExclusions: [],
+      allowedSkips: [],
+    };
+    assert.deepEqual(validateTestManifest(manifest, projectRoot).excludedFiles, []);
+
+    // A gitignored checkout of the whole repo — the shape `.claude/worktrees/<name>/`
+    // takes on disk. Its test files belong to that checkout's own manifest, and CI
+    // never sees them because it clones fresh, so they must not read as drift here.
+    writeTest('.claude/worktrees/some-agent/tests/root.test.js');
+    writeTest('.claude/worktrees/some-agent/services/__tests__/service.test.js');
+    assert.deepEqual(validateTestManifest(manifest, projectRoot).excludedFiles, []);
+
+    // An untracked file that Git does *not* ignore still counts: registering a new
+    // test is the drift the manifest exists to catch, and it should fail before commit.
     writeTest('routes/unclassified.test.js');
     assert.throws(
       () => validateTestManifest(manifest, projectRoot),
