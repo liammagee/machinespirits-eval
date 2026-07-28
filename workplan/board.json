@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T13:09:44.978Z",
+  "generated": "2026-07-28T13:13:21.951Z",
   "counts": {
-    "total": 291,
+    "total": 292,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 39,
+      "review": 40,
       "active": 9,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 115,
+      "maintenance": 116,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -289,6 +289,7 @@
           "refactor-tutor-stub-recipe-model-identity",
           "refactor-tutor-stub-model-temperature",
           "refactor-tutor-stub-cli-parsing",
+          "refactor-tutor-stub-model-selection",
           "refactor-tutor-stub-proof-command-projection",
           "refactor-tutor-stub-interaction-mode-presentation",
           "refactor-tutor-stub-session-status-presentation",
@@ -1311,6 +1312,46 @@
         "model",
         "catalogue",
         "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-model-selection",
+      "title": "Refactor tutor-stub model selection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 9/9 model-choice fixtures including byte-exact live CLI blocks plus full hermetic root and tutor-core zero-skip contracts preserve unsupported aliases, catalogue construction, availability checks, and error wording; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-model-selection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-cli-parsing"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubModelChoicePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubModelChoicePresentation.test.js"
+        ],
+        "prs": [
+          372
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-cli-parsing"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "models"
       ],
       "milestone": "evaluation-infrastructure"
     },
