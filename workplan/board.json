@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T12:57:47.648Z",
+  "generated": "2026-07-28T13:00:55.724Z",
   "counts": {
-    "total": 289,
+    "total": 290,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 37,
+      "review": 38,
       "active": 9,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 113,
+      "maintenance": 114,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -287,6 +287,7 @@
           "refactor-tutor-stub-director-notes-model",
           "refactor-tutor-stub-prompt-blocks",
           "refactor-tutor-stub-recipe-model-identity",
+          "refactor-tutor-stub-model-temperature",
           "refactor-tutor-stub-proof-command-projection",
           "refactor-tutor-stub-interaction-mode-presentation",
           "refactor-tutor-stub-session-status-presentation",
@@ -1269,6 +1270,46 @@
         "model",
         "catalogue",
         "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-model-temperature",
+      "title": "Refactor tutor-stub model temperature policy",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 3/3 model-temperature fixtures plus full hermetic root and tutor-core zero-skip contracts preserve fixed OpenAI GPT-5 temperature and requested-temperature pass-through; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-model-temperature",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-recipe-model-identity"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubModelTemperature.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubModelTemperature.test.js"
+        ],
+        "prs": [
+          370
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-recipe-model-identity"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "models"
       ],
       "milestone": "evaluation-infrastructure"
     },
