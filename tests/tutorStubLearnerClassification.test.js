@@ -4,7 +4,11 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { buildTutorStubFailedClassification } from '../services/tutorStubLearnerClassification.js';
+import {
+  applyTutorStubLearnerAdvanceAssessment,
+  buildTutorStubFailedClassification,
+  floorTutorStubClassifierScore,
+} from '../services/tutorStubLearnerClassification.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -65,4 +69,80 @@ test('the CLI imports rather than redeclares failed-classification construction'
   assert.doesNotMatch(cliSource, /function failedClassification/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);
   assert.doesNotMatch(serviceSource, /\b(?:fs|console|process|fetch|Date\.now)\s*[.(]/u);
+});
+
+test('classifier score flooring preserves sufficient scores and upgrades missing or low envelopes', () => {
+  const scoreValue = (score) => (score && typeof score === 'object' ? score.score : score);
+  const high = { score: 5, reason: 'original' };
+
+  assert.equal(floorTutorStubClassifierScore(high, 4, 'replacement', { scoreValue }), high);
+  assert.deepEqual(floorTutorStubClassifierScore({ score: 2, detail: 'keep' }, 4, 'advance', { scoreValue }), {
+    score: 4,
+    detail: 'keep',
+    reason: 'advance',
+  });
+  assert.deepEqual(floorTutorStubClassifierScore(null, 4, 'advance', { scoreValue }), {
+    score: 4,
+    reason: 'advance',
+  });
+});
+
+test('learner advance assessment preserves no-op paths and maps accelerated proof movement', () => {
+  const scoreValue = (score) => (score && typeof score === 'object' ? score.score : score);
+  const unchanged = { turn: { evidence_use: 'none' } };
+  assert.equal(applyTutorStubLearnerAdvanceAssessment(unchanged, null, { scoreValue }), unchanged);
+
+  const classification = {
+    turn: {
+      evidence_use: 'repeats_setup',
+      agency: 'attempting',
+      scores: { conceptual_engagement: { score: 5, reason: 'already high' }, epistemic_readiness: 2 },
+    },
+  };
+  const advance = {
+    accelerated: true,
+    multiStep: true,
+    derivedFactCount: 2,
+    supportedMoveCount: 3,
+  };
+  const result = applyTutorStubLearnerAdvanceAssessment(
+    classification,
+    { model: { learnerAdvance: advance } },
+    {
+      scoreValue,
+    },
+  );
+
+  assert.equal(result, classification);
+  assert.equal(result.turn.learner_advance, advance);
+  assert.equal(result.turn.learning_pace, 'accelerating');
+  assert.equal(result.turn.reasoning_span, 'multi_step');
+  assert.equal(result.turn.discourse_move, 'inference');
+  assert.equal(result.turn.evidence_use, 'links_evidence_to_rule');
+  assert.equal(result.turn.agency, 'steering');
+  assert.deepEqual(result.turn.scores.conceptual_engagement, { score: 5, reason: 'already high' });
+  assert.deepEqual(result.turn.scores.epistemic_readiness, {
+    score: 4,
+    reason: 'Accepted 3 learner-owned public proof moves in one turn.',
+  });
+});
+
+test('non-accelerated and evidence-adoption advances preserve their exact branch behavior', () => {
+  const scoreValue = (score) => (score && typeof score === 'object' ? score.score : score);
+  const held = { turn: { evidence_use: 'none' } };
+  const nonAccelerated = { accelerated: false };
+  applyTutorStubLearnerAdvanceAssessment(held, { advance: nonAccelerated }, { scoreValue });
+  assert.equal(held.turn.learner_advance, nonAccelerated);
+  assert.equal(held.turn.learning_pace, undefined);
+
+  const adopted = { turn: { evidence_use: 'none', agency: 'resistant' } };
+  applyTutorStubLearnerAdvanceAssessment(
+    adopted,
+    { advance: { accelerated: true, multiStep: false, derivedFactCount: 0, supportedMoveCount: 2 } },
+    { scoreValue },
+  );
+  assert.equal(adopted.turn.reasoning_span, 'multi_premise');
+  assert.equal(adopted.turn.discourse_move, 'evidence_adoption');
+  assert.equal(adopted.turn.evidence_use, 'cites_public_evidence');
+  assert.equal(adopted.turn.agency, 'resistant');
 });

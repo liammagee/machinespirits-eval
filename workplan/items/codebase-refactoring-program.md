@@ -1085,3 +1085,10 @@ Log:
   27-line net CLI reduction, eight focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass. Fifty-loop runs 1–10
   have removed 196 net lines from `scripts/tutor-stub.js` without regressions.
+- 2026-07-28 — Activated fifty-loop run 11,
+  `refactor-tutor-stub-learner-advance-classification`, from PR #383's reviewed
+  head. Learner-DAG inference, classifier invocation, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop learner-advance-classification run reached review
+  with a 21-line net CLI reduction, nine focused assertions, and complete
+  zero-skip hermetic parity. All static and source-only gates pass.
