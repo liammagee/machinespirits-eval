@@ -50,6 +50,27 @@ export function projectTutorStubCurrentDebugSelection(state, { duringTurn = fals
   };
 }
 
+export function projectTutorStubCurrentDebugLines(
+  { runId, selectedId, activeId, tracePath, lastCompletedTurnId, clipboard },
+  { colors = {} } = {},
+) {
+  const lines = [
+    `${colors.cyan}debug id >${colors.reset} ${selectedId}`,
+    `${colors.dim}  run id: ${runId}${colors.reset}`,
+  ];
+  if (lastCompletedTurnId) {
+    lines.push(`${colors.dim}  last completed turn: ${lastCompletedTurnId}${colors.reset}`);
+  }
+  if (activeId) lines.push(`${colors.dim}  in-progress turn: ${activeId}${colors.reset}`);
+  lines.push(
+    `${colors.dim}  trace: ${tracePath || 'disabled for this run; rerun without --no-trace for a local JSONL trace'}${colors.reset}`,
+    clipboard.copied
+      ? `${colors.green}  copied this diagnostic block to the clipboard${colors.reset}\n`
+      : `${colors.dim}  clipboard unavailable; select this block to copy it into Codex${colors.reset}\n`,
+  );
+  return lines;
+}
+
 export function createTutorStubDebugLinePrinters({ write, colors = {} } = {}) {
   return {
     printTurnDebugLine(state, turn) {
