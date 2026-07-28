@@ -126,6 +126,51 @@ export function tutorStubRecipeConfigHash(config) {
     .digest('hex');
 }
 
+export function safeTutorStubRecipeBaseUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    url.username = '';
+    url.password = '';
+    url.search = '';
+    url.hash = '';
+    return url.toString();
+  } catch (_) {
+    return null;
+  }
+}
+
+export function buildTutorStubRecipeModelIdentity(ref, route = null) {
+  const identity = {
+    ref: String(ref || '').trim() || null,
+    provider: route?.provider || null,
+    model: route?.model || null,
+    baseUrl: safeTutorStubRecipeBaseUrl(route?.baseUrl),
+    cli: typeof route?.cli === 'boolean' ? route.cli : null,
+  };
+  return {
+    ...identity,
+    routingHash: tutorStubRecipeConfigHash(identity),
+  };
+}
+
+export function createTutorStubRecipeModelIdentityResolver({
+  resolveModel,
+  getProviderConfig,
+  visibleResolvedModel,
+} = {}) {
+  return function tutorStubRecipeModelIdentity(ref, visible = null) {
+    const modelRef = String(ref || '').trim();
+    let route = visible;
+    if (!route && modelRef) {
+      const resolved = resolveModel(modelRef);
+      route = visibleResolvedModel(resolved, getProviderConfig(resolved.provider));
+    }
+    return buildTutorStubRecipeModelIdentity(modelRef, route);
+  };
+}
+
 export function captureTutorStubRecipeOptions(args = {}) {
   return Object.fromEntries(
     TUTOR_STUB_RECIPE_OPTION_KEYS.filter((key) => args[key] !== undefined).map((key) => [key, args[key]]),
