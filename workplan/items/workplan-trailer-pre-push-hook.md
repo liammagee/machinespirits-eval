@@ -1,7 +1,7 @@
 ---
 id: workplan-trailer-pre-push-hook
 title: Report unlinked commits before the push, not after
-status: review
+status: done
 type: infra
 priority: P3
 owner: claude
@@ -13,6 +13,8 @@ claim_status: methods
 links:
   notes:
     - workplan/playbook/git-and-workflow.md
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/325
 tags:
   - workplan
   - ci
@@ -65,3 +67,18 @@ Follow-ups, neither blocking:
   ids against the wrong tree and can report a linked commit as unlinked. Report-only
   makes that a false alarm rather than a blocked push, which is one more reason
   not to gate on it yet.
+
+## Log
+
+2026-07-28 — merged as PR #325, all 10 CI checks green. Verification met by
+the 11 tests in `tests/workplanTrailerPrePushHook.test.js`: chaining holds in
+both install orders, a preserved hook's non-zero exit short-circuits before
+this one runs, a push to a non-protected ref runs no check, and the same
+failing range reports under the default and rejects under
+`WORKPLAN_TRAILER_HOOK_ENFORCEMENT=blocking`.
+
+Installing it in a given checkout stays a manual step. The installer renames
+the incumbent hook to a sidecar, and an agent sandbox that forbids writes
+under `.git/hooks` can create that file but not set its exec bit, which
+leaves a chain that rejects every push. Run `npm run wp:trailer-hook:install`
+yourself rather than from a sandboxed shell.
