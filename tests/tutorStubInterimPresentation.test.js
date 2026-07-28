@@ -14,6 +14,7 @@ import {
   summarizeTutorStubInterimCapabilities,
   summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingLearnerDag,
+  summarizeTutorStubPendingRegister,
   tutorStubInterimCliHintPanels,
   tutorStubInterimLevel,
   tutorStubPlainInterimBottleneck,
@@ -171,6 +172,55 @@ test('pending learner summary preserves labels, score bands, need precedence, co
       { scoreValue, plainStrategyText },
     ),
     'turn 3 | still being read; still being read | conceptual engagement not available | evidence awareness not available | A long raw learner turn with repeated spacing.',
+  );
+});
+
+test('pending register summary preserves blend, actorial, aim, efficacy, rating, and fallback branches', () => {
+  const dependencies = {
+    formatDistribution: (distribution, options) => {
+      assert.deepEqual(options, { limit: 4 });
+      return distribution?.label || '';
+    },
+    displayDiagnosticLabel: (value) => `display:${value}`,
+    plainStrategyText: (value) => `plain:${value}`,
+  };
+  assert.equal(summarizeTutorStubPendingRegister(null, dependencies), null);
+  assert.equal(
+    summarizeTutorStubPendingRegister(
+      {
+        registerSelection: {
+          selected_register: 'precise',
+          distribution: { label: 'precise 70%, plain 30%' },
+          actorial_part: 'teacher_role',
+          actorial_performance: { label: 'Deliberately calm' },
+          expected_field_move: 'repair warrant',
+        },
+        previousRegisterEfficacy: {
+          label: 'positive_progress',
+          selected_register: 'plain',
+          learnerFeedback: { rating: 'up' },
+        },
+      },
+      dependencies,
+    ),
+    'blend precise 70%, plain 30% | playing display:teacher_role | through Deliberately calm | aim: plain:repair warrant | last plain helped | learner rated it helpful',
+  );
+  assert.equal(
+    summarizeTutorStubPendingRegister(
+      {
+        registerSelection: {},
+        previousRegisterEfficacy: { label: 'regression_or_overreach', learnerFeedback: { rating: 'down' } },
+      },
+      dependencies,
+    ),
+    'led by unknown | last style hurt progress | learner rated it not helpful',
+  );
+  assert.equal(
+    summarizeTutorStubPendingRegister(
+      { previousRegisterEfficacy: { label: 'no_clear_progress', selected_register: 'warm' } },
+      dependencies,
+    ),
+    'last warm had no clear effect yet',
   );
 });
 
@@ -364,7 +414,7 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
-    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);

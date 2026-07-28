@@ -380,6 +380,7 @@ import {
   summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
   summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
+  summarizeTutorStubPendingRegister,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
   tutorStubInterimLevel as interimLevel,
   tutorStubPlainInterimBottleneck as plainInterimBottleneck,
@@ -3169,39 +3170,12 @@ function compactLearnerRecordUpdateSummary(state, context) {
   return bits.length > 1 ? bits.join(' | ') : null;
 }
 
-function compactPendingRegisterSummary(context) {
-  const selection = context?.registerSelection;
-  const efficacy = context?.previousRegisterEfficacy;
-  if (!selection && !efficacy) return null;
-  const bits = [];
-  if (selection) {
-    const blend = formatEngagementStanceDistribution(selection.distribution, { limit: 4 });
-    bits.push(blend ? `blend ${blend}` : `led by ${selection.selected_register || 'unknown'}`);
-    if (selection.actorial_part_label || selection.actorial_part) {
-      bits.push(
-        `playing ${oneLine(selection.actorial_part_label || displayDiagnosticLabel(selection.actorial_part), { max: 42 })}`,
-      );
-    }
-    if (selection.actorial_performance?.label) {
-      bits.push(`through ${oneLine(selection.actorial_performance.label, { max: 32 })}`);
-    }
-    if (selection.expected_field_move)
-      bits.push(`aim: ${oneLine(plainStrategyText(selection.expected_field_move), { max: 68 })}`);
-  }
-  if (efficacy) {
-    const result =
-      efficacy.label === 'positive_progress'
-        ? 'helped'
-        : efficacy.label === 'regression_or_overreach'
-          ? 'hurt progress'
-          : 'had no clear effect yet';
-    bits.push(`last ${efficacy.selected_register || 'style'} ${result}`);
-    if (efficacy.learnerFeedback?.rating) {
-      bits.push(`learner rated it ${efficacy.learnerFeedback.rating === 'up' ? 'helpful' : 'not helpful'}`);
-    }
-  }
-  return bits.join(' | ');
-}
+const compactPendingRegisterSummary = (context) =>
+  summarizeTutorStubPendingRegister(context, {
+    formatDistribution: formatEngagementStanceDistribution,
+    displayDiagnosticLabel,
+    plainStrategyText,
+  });
 
 function currentReleaseRows(state, tutorTurn) {
   const world = state?.world;
