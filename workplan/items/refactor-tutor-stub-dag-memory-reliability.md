@@ -14,6 +14,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-strict-dag-audit
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/358
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
