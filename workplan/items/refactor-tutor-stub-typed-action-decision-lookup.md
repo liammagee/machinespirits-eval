@@ -20,7 +20,8 @@ links:
     - services/tutorStubTypedActionRestoration.js
     - scripts/tutor-stub.js
     - tests/tutorStubTypedActionRestoration.test.js
-  prs: []
+  prs:
+    - 422
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-director-guidance-restoration
@@ -56,3 +57,6 @@ Log:
   turns into a focused restoration service, reducing `scripts/tutor-stub.js`
   by eight lines. Three focused assertions, synchronized hermetic inventory,
   complete zero-skip hermetic parity, and all static/source-only gates pass.
+- 2026-07-28 — Opened PR #422 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
