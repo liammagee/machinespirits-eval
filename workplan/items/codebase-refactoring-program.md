@@ -887,3 +887,11 @@ Log:
   CLI reduction, 49 focused assertions, 7,444 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated second-loop run 7,
+  `refactor-tutor-stub-warrant-audit-projection`, from PR #355's reviewed head.
+  Human-discourse extraction, world fact rendering, learner classification,
+  model calls, runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop warrant-audit run reached review with a 56-line net
+  CLI reduction, 48 focused assertions, 7,447 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
