@@ -12,6 +12,7 @@ import {
   renderTutorStubInterimFrame,
   resolveTutorStubInterimState,
   summarizeTutorStubInterimCapabilities,
+  summarizeTutorStubInterimField,
   summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingDagMovement,
   summarizeTutorStubPendingLearnerDag,
@@ -90,6 +91,31 @@ test('interim capability summaries preserve ordering and the plain-response fall
     'learner reading, reasoning progress, response style, evidence pacing',
   );
   assert.equal(summarizeTutorStubInterimCapabilities({ classifier: { enabled: false }, dag: true }), 'evidence pacing');
+});
+
+test('interim field summary preserves no-turn capability fallback, strength bands, and bottleneck copy', () => {
+  const builder = (turns) => {
+    assert.deepEqual(turns, [{ turn: 1 }]);
+    return {
+      summary: {
+        final: {
+          learnerMastery: 0.8,
+          learnerRisk: 0.2,
+          tutorAlignment: 0.6,
+          jointMomentum: 0.4,
+          bottleneck: 'release_or_pacing_gap',
+        },
+      },
+    };
+  };
+  assert.equal(
+    summarizeTutorStubInterimField({ classifier: { enabled: true } }, { buildLightweightDialogueField: builder }),
+    'learner reading',
+  );
+  assert.equal(
+    summarizeTutorStubInterimField({ turns: [{ turn: 1 }] }, { buildLightweightDialogueField: builder }),
+    'learner understanding very strong | pressure low | tutor fit strong | momentum developing | the learner needs the next usable piece of evidence',
+  );
 });
 
 test('interim strength bands pin unavailable handling and every threshold boundary', () => {
@@ -547,7 +573,7 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
-    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingObjectiveSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingDagMovementSummary|compactLearnerRecordUpdateSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactInterimFieldSummary|compactPendingObjectiveSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingDagMovementSummary|compactLearnerRecordUpdateSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);

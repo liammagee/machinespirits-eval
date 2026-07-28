@@ -377,6 +377,7 @@ import {
   renderTutorStubInterimFrame,
   resolveTutorStubInterimState as getInterimState,
   summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
+  summarizeTutorStubInterimField,
   summarizeTutorStubPendingDagMovement,
   summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
@@ -3070,19 +3071,7 @@ function interimAnimationAvailable(interim) {
   return Boolean(interim?.enabled && output.isTTY && cliPresentation.motion !== 'off');
 }
 
-function compactInterimFieldSummary(state) {
-  if (!state?.turns?.length) return compactInterimStateSummary(state);
-  const field = buildLightweightDialogueField(state.turns);
-  const final = field.summary.final;
-  const bottleneck = plainInterimBottleneck(final.bottleneck);
-  return [
-    `learner understanding ${interimLevel(final.learnerMastery)}`,
-    `pressure ${interimLevel(final.learnerRisk)}`,
-    `tutor fit ${interimLevel(final.tutorAlignment)}`,
-    `momentum ${interimLevel(final.jointMomentum)}`,
-    bottleneck,
-  ].join(' | ');
-}
+const compactInterimFieldSummary = (state) => summarizeTutorStubInterimField(state, { buildLightweightDialogueField });
 
 const compactPendingObjectiveSummary = (state, context) =>
   summarizeTutorStubPendingObjective(state, context, { currentReleaseRows, plainStrategyText });

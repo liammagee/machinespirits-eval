@@ -40,6 +40,20 @@ export function summarizeTutorStubInterimCapabilities(state) {
   return bits.length ? bits.join(', ') : 'plain tutor response';
 }
 
+export function summarizeTutorStubInterimField(state, { buildLightweightDialogueField } = {}) {
+  if (!state?.turns?.length) return summarizeTutorStubInterimCapabilities(state);
+  const field = buildLightweightDialogueField(state.turns);
+  const final = field.summary.final;
+  const bottleneck = tutorStubPlainInterimBottleneck(final.bottleneck);
+  return [
+    `learner understanding ${tutorStubInterimLevel(final.learnerMastery)}`,
+    `pressure ${tutorStubInterimLevel(final.learnerRisk)}`,
+    `tutor fit ${tutorStubInterimLevel(final.tutorAlignment)}`,
+    `momentum ${tutorStubInterimLevel(final.jointMomentum)}`,
+    bottleneck,
+  ].join(' | ');
+}
+
 export function tutorStubInterimLevel(value) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return 'not available';

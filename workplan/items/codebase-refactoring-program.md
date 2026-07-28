@@ -1151,3 +1151,11 @@ Log:
 - 2026-07-28 — Fifty-loop interim-objective-summary run reached review with a
   23-line net CLI reduction, 19 focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 20,
+  `refactor-tutor-stub-interim-field-summary`, from PR #393's reviewed head.
+  Dialogue-field construction, runtime state, and effects remain in their
+  current owners.
+- 2026-07-28 — Fifty-loop interim-field-summary run reached review with an
+  11-line net CLI reduction, 20 focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass. Fifty-loop runs 1–20 have
+  removed 375 net lines from `scripts/tutor-stub.js` without regressions.
