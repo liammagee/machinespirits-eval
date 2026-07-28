@@ -27,6 +27,7 @@ links:
     - services/tutorStubDagFactDropout.js
     - services/tutorStubDagSnapshotPresentation.js
   prs:
+    - 360
     - 352
     - 353
     - 354
