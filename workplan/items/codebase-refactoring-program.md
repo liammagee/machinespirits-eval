@@ -58,6 +58,7 @@ links:
     - refactor-tutor-stub-public-evidence
     - refactor-tutor-stub-response-leak-audit
     - refactor-tutor-stub-one-line-projection
+    - refactor-tutor-stub-generous-fallback
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -968,3 +969,10 @@ Log:
 - 2026-07-28 — Third-loop one-line-projection run reached review with a
   seven-line net CLI reduction, five focused assertions, and complete
   zero-skip hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 6,
+  `refactor-tutor-stub-generous-fallback`, from PR #365's reviewed head.
+  Generous-inference detection, response generation, state, and effects remain
+  in their current owners.
+- 2026-07-28 — Third-loop generous-fallback run reached review with an
+  18-line net CLI reduction, 14 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.

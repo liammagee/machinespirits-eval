@@ -3,10 +3,34 @@ import { describe, it } from 'node:test';
 
 import {
   auditTutorStubGenerousInferenceResponse,
+  deterministicTutorStubGenerousInferenceFallback,
   resolveTutorStubGenerousInference,
 } from '../tutorStubGenerousInference.js';
 
 describe('tutor-stub generous inference', () => {
+  it('advances to the first surfaced due clue', () => {
+    assert.equal(
+      deterministicTutorStubGenerousInferenceFallback({
+        dueEvidence: [{ surface: '' }, { surface: 'The new public clue.' }],
+      }),
+      'Yes—that answers the last point, so we can move on. The next concrete clue is: The new public clue. What does this new clue add on its own?',
+    );
+  });
+
+  it('carries the latest clue when no new evidence is due', () => {
+    assert.equal(
+      deterministicTutorStubGenerousInferenceFallback({ latestEvidence: { surface: 'The last public clue.' } }),
+      'Yes—that answers the last point, so we can carry it forward. Keep the last concrete clue in view: The last public clue. We can leave the wider conclusion open until another clue enters the conversation.',
+    );
+  });
+
+  it('settles the local point without inventing evidence', () => {
+    assert.equal(
+      deterministicTutorStubGenerousInferenceFallback(),
+      'Yes—that answers the last point. We will leave it settled until a genuinely new public fact gives us something further to test.',
+    );
+  });
+
   it('accepts an adjacent same-referent answer as a completed local move', () => {
     const resolution = resolveTutorStubGenerousInference({
       mode: 'defeasible_human_scaffold',

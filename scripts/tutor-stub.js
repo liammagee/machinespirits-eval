@@ -119,6 +119,7 @@ import {
 import { cleanTutorStubClarificationSpeech, cleanTutorStubStageSpeech } from '../services/tutorStubStageSpeech.js';
 import {
   auditTutorStubGenerousInferenceResponse,
+  deterministicTutorStubGenerousInferenceFallback as deterministicGenerousInferenceFallback,
   resolveTutorStubGenerousInference,
 } from '../services/tutorStubGenerousInference.js';
 import {
@@ -1734,25 +1735,6 @@ function tutorResponseRecoveryPrompt({
 // independent scenarios (presentation metadata, not register).
 function groupedWorldEntries() {
   return groupTutorStubWorldEntries(selectableWorldSummaries());
-}
-
-function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEvidence = null } = {}) {
-  const next = (Array.isArray(dueEvidence) ? dueEvidence : []).find((row) => row?.surface) || null;
-  if (next) {
-    return [
-      'Yes—that answers the last point, so we can move on.',
-      `The next concrete clue is: ${oneLine(next.surface, { max: 260 })}`,
-      'What does this new clue add on its own?',
-    ].join(' ');
-  }
-  if (latestEvidence?.surface) {
-    return [
-      'Yes—that answers the last point, so we can carry it forward.',
-      `Keep the last concrete clue in view: ${oneLine(latestEvidence.surface, { max: 260 })}`,
-      'We can leave the wider conclusion open until another clue enters the conversation.',
-    ].join(' ');
-  }
-  return 'Yes—that answers the last point. We will leave it settled until a genuinely new public fact gives us something further to test.';
 }
 
 function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
