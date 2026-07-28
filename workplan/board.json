@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T08:54:16.832Z",
+  "generated": "2026-07-28T10:31:44.320Z",
   "counts": {
-    "total": 261,
+    "total": 269,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 9,
+      "review": 17,
       "active": 9,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 85,
+      "maintenance": 93,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -301,6 +301,10 @@
           "refactor-tutor-stub-picker-presentation",
           "refactor-tutor-stub-picker-entries",
           "refactor-tutor-stub-world-grouping",
+          "refactor-tutor-stub-world-vocabulary",
+          "refactor-tutor-stub-launch-mode-contract",
+          "refactor-tutor-stub-model-choice-catalog",
+          "refactor-tutor-stub-director-context",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -754,6 +758,180 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
+      "id": "refactor-tutor-stub-director-context",
+      "title": "Refactor tutor-stub director initial context",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Initial director context and live context/reprise terminal blocks remain exact across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-director-context",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-model-choice-catalog"
+      ],
+      "links": {
+        "prs": [
+          345
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDirectorPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDirectorPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-model-choice-catalog"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "director",
+        "context",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-human-discourse-config",
+      "title": "Refactor tutor-stub human discourse config",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "All three human-discourse mode envelopes remain exact across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-human-discourse-config",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-world-speaker-prompt"
+      ],
+      "links": {
+        "prs": [
+          348
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubHumanDiscourseConfig.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubHumanDiscourseConfig.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-world-speaker-prompt"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "human-discourse",
+        "configuration"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-launch-mode-contract",
+      "title": "Refactor tutor-stub launch-mode contract",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Launch modes, aliases, errors, and live TTY transitions remain exact across direct, PTY, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-launch-mode-contract",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-world-vocabulary"
+      ],
+      "links": {
+        "prs": [
+          343
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubLaunchMode.js",
+          "services/tutorStubPickerPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLaunchMode.test.js",
+          "tests/labellingGameCli.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-world-vocabulary"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "launch",
+        "mode",
+        "terminal"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-model-choice-catalog",
+      "title": "Refactor tutor-stub model-choice catalogue",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Model admission, exclusions, access labels, fallback, ordering, and exact terminal blocks remain unchanged across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-model-choice-catalog",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-launch-mode-contract"
+      ],
+      "links": {
+        "prs": [
+          344
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubModelChoicePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubModelChoicePresentation.test.js",
+          "tests/tutorStubDialogueSettingsPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-launch-mode-contract"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "model",
+        "catalogue",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-picker-entries",
       "title": "Refactor tutor-stub picker entry projection",
       "status": "review",
@@ -844,6 +1022,50 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-stack-recovery",
+      "title": "Recover orphaned tutor-stub refactor stack",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "The seven preserved slices pass focused, full hermetic, manifest, static, source-only workplan, ref-status, syntax, and diff gates on current origin/main ancestry.",
+      "branch": "codex/refactor-tutor-stub-human-discourse-config",
+      "claim_status": "planned",
+      "links": {
+        "prs": [
+          349
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/tutor-stub.js",
+          "services/tutorStubHumanDiscourseConfig.js",
+          "services/tutorStubWorldPromptContext.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-world-vocabulary",
+          "refactor-tutor-stub-launch-mode-contract",
+          "refactor-tutor-stub-model-choice-catalog",
+          "refactor-tutor-stub-director-context",
+          "refactor-tutor-stub-world-public-prompt",
+          "refactor-tutor-stub-world-speaker-prompt",
+          "refactor-tutor-stub-human-discourse-config"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "git",
+        "stack-recovery"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-world-grouping",
       "title": "Refactor tutor-stub world family grouping",
       "status": "review",
@@ -882,6 +1104,136 @@
         "tutor-stub",
         "world",
         "grouping",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-world-public-prompt",
+      "title": "Refactor tutor-stub world public prompt",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Public world prompt lines remain exact across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-world-public-prompt",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-director-context"
+      ],
+      "links": {
+        "prs": [
+          346
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubWorldPromptContext.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubWorldPromptContext.test.js",
+          "tests/tutorStubPromptBehavior.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-director-context"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "world",
+        "prompt",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-world-speaker-prompt",
+      "title": "Refactor tutor-stub world speaker prompt",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Speaking-tutor evidence-contract lines remain exact across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-world-speaker-prompt",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-world-public-prompt"
+      ],
+      "links": {
+        "prs": [
+          347
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubWorldPromptContext.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubWorldPromptContext.test.js",
+          "tests/tutorStubPromptBehavior.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-world-public-prompt"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "world",
+        "prompt",
+        "dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-world-vocabulary",
+      "title": "Refactor tutor-stub world presentation vocabulary",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Authored ledger and narrative-flavour labels remain byte-exact across direct, prompt, response-policy, focused, hermetic, static, manifest, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-world-vocabulary",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-world-grouping"
+      ],
+      "links": {
+        "prs": [
+          342
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubWorldPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubWorldCatalogPresentation.test.js",
+          "tests/tutorStubResponsePolicyContext.test.js",
+          "tests/tutorStubPromptBehavior.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-world-grouping"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "world",
+        "vocabulary",
         "presentation"
       ],
       "milestone": "evaluation-infrastructure"
