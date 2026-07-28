@@ -184,6 +184,49 @@ test('resolving an arm honours all/none/explicit selections and derives the lear
   assert.throws(() => resolveTutorStubAbArm('d', { features: ['no_such_feature'] }), /unknown tutor A\/B feature/u);
 });
 
+test('the length control is the bare request plus one sentence and no advisory content', () => {
+  const abPlan = plan('length_control', { scenarios: ['tallow_short'] });
+  const caseId = abPlan.jobs[0].caseId;
+  const forArm = (armId) =>
+    prepareTutorStubAbJob(
+      abPlan.jobs.find((entry) => entry.armId === armId && entry.caseId === caseId),
+      { root: ROOT },
+    );
+  const bare = forArm('baseline');
+  const matched = forArm('length_matched');
+
+  // Same system prompt, same public prefix, no blocks: the only thing the
+  // control adds over the bare tutor is a character count.
+  assert.equal(matched.projection.systemPrompt, bare.projection.systemPrompt);
+  assert.deepEqual(matched.history, bare.history);
+  assert.deepEqual(matched.projection.retainedFeatures, []);
+  assert.equal(matched.projection.advisoryChars, 0);
+  assert.equal(matched.latest.content, `Write a reply of about 450 characters.\n\n${bare.latest.content}`);
+  assert.equal(matched.projection.lengthTargetChars, 450);
+  assert.equal(bare.projection.lengthTargetChars, null);
+  assert.equal(bare.projection.lengthDirectiveChars, 0);
+
+  // Unbracketed on purpose: a `[header]` note would be indistinguishable from
+  // instrumentation to the parser, which fails closed on unregistered headers.
+  assert.equal(parseTutorStubAdvisoryBlocks(matched.latest.content).blocks.length, 0);
+});
+
+test('a length target is rejected on the baseline and separates otherwise identical arms', () => {
+  assert.throws(
+    () => resolveTutorStubAbArm('bare', { baseline: true, features: 'none', length_target_chars: 450 }),
+    /must not carry a length target/u,
+  );
+  assert.throws(
+    () => resolveTutorStubAbArm('bad', { features: 'none', length_target_chars: 0 }),
+    /must be a positive integer/u,
+  );
+  // Stripping the features off both non-baseline arms would collapse them into
+  // one lane on features alone; the length target is what keeps them distinct.
+  const collapsed = plan('length_control', { scenarios: ['tallow_short'], featureOverride: 'none' });
+  const targets = collapsed.arms.filter((arm) => !arm.baseline).map((arm) => arm.lengthTargetChars);
+  assert.deepEqual(targets, [450, null]);
+});
+
 test('projection refuses a request whose blocks are not all registered', () => {
   const bundle = {
     learnerText: 'hello',

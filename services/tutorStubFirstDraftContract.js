@@ -67,8 +67,12 @@ const PART_CUES = Object.freeze({
     'In the unquoted host voice, open, read, mark, enter, or close a named public record and distinguish what is entered from what remains unproved.',
   authored_source:
     'Enter the assigned public source directly and voice only the supplied evidence before returning the inquiry to the learner.',
+  // "Strongest licensed claim" with the licence unstated is an instruction to
+  // push until something gives, and the advocate turns are where the answer-term
+  // leaks landed. The ceiling is now named: the strongest claim the released
+  // record carries, and the thing it does not yet reach.
   advocate:
-    'In one short unquoted host sentence beginning “My case is”, state the strongest licensed claim and its concrete limit. Do not append a semicolon-shaped test. Let the selected action supply a separate final handoff.',
+    'In one short unquoted host sentence beginning “My case is”, state the strongest claim the released public record carries and name what that record does not yet establish. Do not append a semicolon-shaped test. Let the selected action supply a separate final handoff.',
   skeptic:
     'In the unquoted host voice, challenge one unsafe leap or weak link and give the learner a fair public route to answer it.',
   satirist:
@@ -86,7 +90,8 @@ const COMPACT_PART_CUES = Object.freeze({
   examiner: 'inspect, compare, test, weigh, or point to one named public exhibit',
   record_keeper: 'open, read, mark, enter, or close a public record, separating its entry from what remains unproved',
   authored_source: 'enter the public source directly and voice only the supplied evidence',
-  advocate: 'begin “My case is”, state the strongest licensed claim and its limit, and leave the test for HANDOFF',
+  advocate:
+    'begin “My case is”, state the strongest claim the released public record carries, name what it does not yet establish, and leave the test for HANDOFF',
   skeptic: 'challenge one unsafe leap and show one fair public route through it',
   satirist:
     'catch a polished claim or rote formula contradicting one named public object, expose the mismatch with a wry reversal, and leave a repair path',
@@ -290,7 +295,13 @@ function compactUptakeInstruction(contract) {
         ? `Begin exactly “Write:” with this learner-sayable sentence: “The ${subject} did not cause the ${outcome}.” Keep both named roles exact; never widen either role or change cause into prevention.`
         : causalContract
           ? 'Begin exactly “Write:” with one learner-sayable sentence: the candidate was inactive while the outcome still occurred, so this rules out candidate causation. Preserve named actors and polarity; never say the candidate failed to prevent or stop the outcome.'
-          : 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.';
+          : // The two branches above hand the model the exact sentence to write.
+            // This one used to say "licensed by the public record" and leave the
+            // record unnamed, which is where the answer-term leaks came from.
+            // Point it at the rendered RECORD lines instead.
+            hasPublicRecord(contract)
+            ? 'Begin exactly “Write:” with one learner-sayable sentence saying what one numbered RECORD line says. Preserve its actors, relation, and polarity; never reverse cause or evidentiary force, and claim nothing the line does not carry.'
+            : 'Begin exactly “Write:” with one learner-sayable sentence licensed by the public record. Preserve actors, relation, and polarity; never reverse cause or evidentiary force.';
   } else if (contract.opening?.responsive_repair_required) {
     instruction = 'Answer the learner’s unanswered question directly before doing anything else.';
   }
@@ -334,6 +345,43 @@ function compactSourceAccessibilityInstruction(contract = null) {
     `Reuse at least ${row.min_material_source_tokens} material SOURCE words in order and one source-specific anchor.`,
     'Add only a, an, or the; preserve no, not, only, and may; do not copy all SOURCE or ask.',
   ].join(' ');
+}
+
+/**
+ * The released evidence, quoted back into the speaking prompt.
+ *
+ * The contract has always computed this list (`evidence.committed_public_surfaces`)
+ * and never rendered it, so slots that say "licensed" named a licence the page
+ * did not carry. The model then reconstructed the record from the dialogue
+ * history and overshot it — asserting a conclusion the released evidence does
+ * not reach, or reading a source as saying more than it says.
+ *
+ * Only rendered when no new evidence is due. With a due SOURCE the model already
+ * has exact quoted text to work from and the audits show no leak there; adding
+ * the whole back-catalogue then would compete with the line it is supposed to
+ * voice.
+ */
+function publicRecordSurfaces(contract) {
+  if (contract?.evidence?.active) return [];
+  return (contract?.evidence?.committed_public_surfaces || []).map(oneLine).filter(Boolean);
+}
+
+/**
+ * Whether the RECORD block will actually be rendered. Slot instructions that
+ * point at RECORD must ask this rather than re-deriving the gate: a slot citing
+ * a block the prompt does not carry is the same defect in a new place.
+ */
+function hasPublicRecord(contract) {
+  return publicRecordSurfaces(contract).length > 0;
+}
+
+function compactPublicRecordLines(contract) {
+  const surfaces = publicRecordSurfaces(contract);
+  if (!surfaces.length) return [];
+  return [
+    'RECORD — All public evidence so far, in full; nothing else is public yet.',
+    ...surfaces.map((surface, index) => `  R${index + 1}. ${surface}`),
+  ];
 }
 
 function compactTacticInstruction(contract) {
@@ -834,6 +882,9 @@ export function tutorStubFirstDraftContractPrompt(contract = null) {
     '[Tutor-only host plan]',
     `Write one paragraph: four unlabeled${writableUptake ? ' host sentences (only Write: UPTAKE may quote)' : ', unquoted host sentences'}, each at most ${contract.language.host_sentence_word_target || contract.language.max_average_sentence_words} words. Follow UPTAKE > PART > ${source ? 'SOURCE > ' : ''}TACTIC > HANDOFF. SOURCE is a separate quotation. Never merge slots.`,
     `GLOBAL — Intelligent ${addresseeProfile.replace(/_/gu, ' ')}; ${contract.language.lexical_accessibility.replace(/_/gu, ' ')} common words; one relation per host sentence.${plainNovice ? ' Gloss their specialist term in UPTAKE.' : ''} Keep ${contract.language.scene_immersion.replace(/_/gu, ' ')} scene contact with public objects. Add no fact.`,
+    // Before the slots that cite it, so the licence is read before the
+    // instructions that depend on it.
+    ...compactPublicRecordLines(contract),
     `UPTAKE — ${slotsById.get('uptake').instruction}`,
     `PART — ${slotsById.get('part').instruction}`,
     source ? `SOURCE — ${source.cues.join(' ')}` : null,

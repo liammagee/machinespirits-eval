@@ -146,6 +146,32 @@ export function parseTutorStubAdvisoryBlocks(content) {
   return { blocks, residue, unknownBlocks };
 }
 
+/**
+ * Length control.
+ *
+ * Every advisory that lowers the failure count also lengthens the reply, and
+ * several audits check for something the reply is missing, so a longer reply has
+ * more room to contain it. An arm can therefore ask for a target reply length
+ * and nothing else: same learner text, same system prompt, no advisory blocks,
+ * one sentence naming a character count. If that arm scores like the contract
+ * arm, the contract was buying length; if it scores like the bare tutor, the
+ * contract was buying content.
+ *
+ * The directive is deliberately unbracketed. Advisory blocks are `[header]` /
+ * `[End header]` delimited and `parseTutorStubAdvisoryBlocks` fails closed on an
+ * unregistered header, so a bracketed length note would be indistinguishable
+ * from instrumentation to anything that re-reads the projected request.
+ */
+function lengthDirective(chars) {
+  return `Write a reply of about ${chars} characters.`;
+}
+
+function normalizeLengthTarget(value, label) {
+  if (value === undefined || value === null) return null;
+  if (!Number.isInteger(value) || value < 1) throw new Error(`${label} must be a positive integer`);
+  return value;
+}
+
 function normalizeFeatureList(value, label) {
   if (value === undefined || value === null) return null;
   if (!Array.isArray(value)) throw new Error(`${label} must be a list of feature ids`);
@@ -174,6 +200,10 @@ export function resolveTutorStubAbArm(id, definition = {}) {
   const features = TUTOR_STUB_AB_FEATURE_IDS.filter((featureId) => kept.has(featureId));
   const learnerFraming =
     definition.learner_framing === undefined ? features.length > 0 : Boolean(definition.learner_framing);
+  const lengthTargetChars = normalizeLengthTarget(definition.length_target_chars, `arm ${armId}.length_target_chars`);
+  if (lengthTargetChars !== null && definition.baseline) {
+    throw new Error(`baseline arm ${armId} must not carry a length target`);
+  }
   return {
     schema: AB_ARM_SCHEMA,
     id: armId,
@@ -181,6 +211,7 @@ export function resolveTutorStubAbArm(id, definition = {}) {
     summary: String(definition.summary || ''),
     baseline: Boolean(definition.baseline),
     features,
+    lengthTargetChars,
     omitted: TUTOR_STUB_AB_FEATURE_IDS.filter((featureId) => !kept.has(featureId)),
     learnerFraming,
     guardsClaimed: [...new Set(features.flatMap((featureId) => tutorStubAbFeature(featureId).guards))].sort(),
@@ -207,7 +238,11 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
   const retained = parsed.blocks.filter((block) => keep.has(block.featureId));
   const learnerText = String(bundle.learnerText || '').trim();
   const residue = arm.learnerFraming ? parsed.residue || `Learner says:\n${learnerText}` : learnerText;
-  const content = [...retained.map((block) => block.text), residue].filter(Boolean).join('\n\n');
+  // The length note sits where the advisory blocks sit, ahead of the learner
+  // text, so position is not one of the things that varies between arms.
+  const lengthTargetChars = arm.lengthTargetChars ?? null;
+  const directive = lengthTargetChars === null ? null : lengthDirective(lengthTargetChars);
+  const content = [directive, ...retained.map((block) => block.text), residue].filter(Boolean).join('\n\n');
   latest.content = content;
   return {
     schema: AB_REQUEST_PROJECTION_SCHEMA,
@@ -223,6 +258,10 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
       .filter((featureId) => featureId && !keep.has(featureId)),
     requestedFeatures: [...arm.features],
     learnerFraming: arm.learnerFraming,
+    lengthTargetChars,
+    // Kept out of advisoryChars: the length note carries no planner content, and
+    // folding it in would make the control look mildly instrumented in reports.
+    lengthDirectiveChars: directive ? directive.length : 0,
     advisoryChars: retained.reduce((total, block) => total + block.text.length, 0),
     requestChars: content.length,
   };

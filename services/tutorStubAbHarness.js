@@ -19,6 +19,14 @@ import path from 'node:path';
 import yaml from 'yaml';
 
 import { callAIWithCliBridge } from './cliProviderBridge.js';
+import {
+  buildCommitteeCompositionBlock,
+  committeeMiniGenerate,
+  committeeQuestionSentences,
+  PROGRAM2_COMMITTEE_DEFAULTS,
+  PROGRAM2_WARRANT_CUE_RE,
+  runCommitteeBattery,
+} from './program2CommitteeEngine.js';
 import { loadWorld } from './dramaticDerivation/world.js';
 import {
   auditTutorStubFrozenCandidate,
@@ -37,7 +45,19 @@ export const TUTOR_STUB_AB_CONFIG_SCHEMA = 'machinespirits.tutor-stub.ab-config.
 export const TUTOR_STUB_AB_PLAN_SCHEMA = 'machinespirits.tutor-stub.ab-plan.v1';
 export const TUTOR_STUB_AB_REPORT_SCHEMA = 'machinespirits.tutor-stub.ab-report.v1';
 
-const MODEL_PROVIDERS = new Set(['codex', 'claude-code']);
+/**
+ * Speaking-model providers.
+ *
+ * `codex` and `claude-code` are the CLI bridges. `ollama` is the locally served
+ * lane, added so a Program-2 fine-tune can stand in the comparison as another
+ * version of the tutor: the other arms vary what reaches the prompt, this one
+ * varies who is reading it. It reuses the Phase-5 client
+ * (`committeeMiniGenerate`) rather than opening a second way to call the same
+ * endpoint, so the serving pin — native chat API, thinking off, greedy — stays
+ * in one place.
+ */
+const CLI_BRIDGE_PROVIDERS = new Set(['codex', 'claude-code']);
+const MODEL_PROVIDERS = new Set([...CLI_BRIDGE_PROVIDERS, 'ollama', 'committee']);
 const TERMINAL_STATUSES = new Set(['complete', 'blocked', 'budget_exhausted']);
 
 /**
@@ -89,9 +109,37 @@ export function validateTutorStubAbConfig(config) {
     throw new Error('A/B config requires models, arms, scenarios, and presets');
   }
   for (const [id, model] of Object.entries(config.models)) {
-    if (!MODEL_PROVIDERS.has(model?.provider)) throw new Error(`model ${id} must use codex or claude-code`);
+    if (!MODEL_PROVIDERS.has(model?.provider)) {
+      throw new Error(`model ${id} must use codex, claude-code, or ollama`);
+    }
     if (!String(model.model || '').trim()) throw new Error(`model ${id} requires model`);
     positiveInt(model.timeout_ms, `model ${id}.timeout_ms`);
+    if (model.provider === 'committee') {
+      // Program-2's own arrangement: the tuned mini writes one question, a
+      // frontier model writes the turn around it verbatim. Both halves are
+      // named here so a report says which mini and which composer produced a
+      // row — the whole point of the lane is that neither alone is the speaker.
+      const mini = model.mini || {};
+      const composer = model.composer || {};
+      if (!String(mini.model || '').trim()) throw new Error(`model ${id} requires mini.model`);
+      if (!String(mini.base_url || '').trim()) throw new Error(`model ${id} requires mini.base_url`);
+      positiveInt(mini.num_ctx, `model ${id}.mini.num_ctx`);
+      positiveInt(mini.max_tokens, `model ${id}.mini.max_tokens`);
+      positiveInt(mini.timeout_ms, `model ${id}.mini.timeout_ms`);
+      if (!CLI_BRIDGE_PROVIDERS.has(composer.provider)) {
+        throw new Error(`model ${id}.composer.provider must be codex or claude-code`);
+      }
+      if (!String(composer.model || '').trim()) throw new Error(`model ${id} requires composer.model`);
+    }
+    if (model.provider === 'ollama') {
+      // The context window is the one setting that silently turns a real score
+      // into a truncation artifact: the instrumented arms send ~6k characters
+      // of advisories on top of the world and the prefix. Make it explicit per
+      // model rather than inheriting a default that may not fit.
+      positiveInt(model.num_ctx, `model ${id}.num_ctx`);
+      positiveInt(model.max_tokens, `model ${id}.max_tokens`);
+      if (!String(model.base_url || '').trim()) throw new Error(`model ${id} requires base_url`);
+    }
   }
   const arms = Object.entries(config.arms).map(([id, definition]) => resolveTutorStubAbArm(id, definition));
   const baselines = arms.filter((arm) => arm.baseline);
@@ -216,7 +264,10 @@ export function buildTutorStubAbPlan({
   const baselineArm = resolvedArms.find((arm) => arm.baseline);
   if (!baselineArm) throw new Error('selected arms must include the baseline arm');
   const nonBaseline = resolvedArms.filter((arm) => !arm.baseline);
-  const signatures = new Set(nonBaseline.map((arm) => arm.features.join('|')));
+  // The length target is part of the signature: two arms with no features and
+  // different target lengths are distinct lanes, and two with the same target
+  // are the duplicate this check exists to catch.
+  const signatures = new Set(nonBaseline.map((arm) => `${arm.features.join('|')}@${arm.lengthTargetChars ?? ''}`));
   if (nonBaseline.length > 1 && signatures.size !== nonBaseline.length) {
     throw new Error('selected arms resolve to duplicate feature sets; a feature override collapsed distinct arms');
   }
@@ -288,6 +339,7 @@ export function publicTutorStubAbPlan(plan) {
       baseline: arm.baseline,
       features: [...arm.features],
       omitted: [...arm.omitted],
+      lengthTargetChars: arm.lengthTargetChars ?? null,
       guardsClaimed: [...arm.guardsClaimed],
     })),
     scenarios: plan.scenarios.map((scenario) => ({
@@ -302,7 +354,17 @@ export function publicTutorStubAbPlan(plan) {
     })),
     models: plan.modelIds.map((id) => {
       const model = plan.jobs.find((job) => job.modelId === id)?.model;
-      return { id, provider: model.provider, model: model.model, effort: model.effort, timeoutMs: model.timeout_ms };
+      return {
+        id,
+        provider: model.provider,
+        model: model.model,
+        effort: model.effort,
+        timeoutMs: model.timeout_ms,
+        // Recorded so a report says what window the reply was written in — a
+        // low score under a small window is a truncation artifact, not a result.
+        numCtx: model.num_ctx ?? null,
+        maxTokens: model.max_tokens ?? null,
+      };
     }),
     jobs: plan.jobs.map((job) => ({
       id: job.id,
@@ -331,7 +393,92 @@ export function prepareTutorStubAbJob(job, { root, loadWorldForId = worldForId }
   return { bundle, world, projection, latest: projection.latest, history: projection.history };
 }
 
+/**
+ * The Program-2 committee, run as one speaker.
+ *
+ * Faithful to PROGRAM-2-PHASE5B §2: the mini answers the moment, its question
+ * sentence becomes the protected span (the one carrying a warrant cue if there
+ * is one, else the first), the composer writes the turn around that span
+ * verbatim, and the pre-delivery check confirms the span survived and that the
+ * turn asks exactly one question. Any failure keeps the mini's own reply.
+ *
+ * What is deliberately NOT reproduced is the resample/trim/greedy ladder Phase
+ * 5b delivered through. Every other version of the tutor in this bench is
+ * graded on its first reply; giving one lane retries would measure the ladder.
+ */
+async function generateCommitteeCandidate({ job, prepared }) {
+  const startedAt = Date.now();
+  const { mini: miniConfig, composer } = job.model;
+  const messages = [...prepared.history, { role: 'user', content: prepared.latest.content }];
+  const mini = await committeeMiniGenerate({
+    url: miniConfig.base_url,
+    model: miniConfig.model,
+    systemPrompt: prepared.projection.systemPrompt,
+    messages,
+    numCtx: miniConfig.num_ctx,
+    maxTokens: miniConfig.max_tokens,
+    timeoutMs: miniConfig.timeout_ms,
+  });
+  const questions = committeeQuestionSentences(mini.text);
+  const span = questions.find((question) => PROGRAM2_WARRANT_CUE_RE.test(question)) || questions[0] || null;
+  const trace = { miniModel: miniConfig.model, composerModel: composer.model, miniChars: mini.text.length, span };
+
+  // No question to protect means there is nothing for the committee to carry.
+  // The mini's reply stands rather than the composer silently becoming a
+  // frontier-alone lane that reports as a committee row.
+  if (!span) {
+    return {
+      text: mini.text,
+      latencyMs: Date.now() - startedAt,
+      provider: 'committee',
+      model: `${miniConfig.model}+${composer.model}`,
+      tokenUsageAvailable: false,
+      committee: { ...trace, delivered: 'mini', reason: 'no_question_span' },
+    };
+  }
+
+  const composed = await callAIWithCliBridge(
+    { provider: composer.provider, model: composer.model },
+    prepared.projection.systemPrompt,
+    `${prepared.latest.content}\n\n${buildCommitteeCompositionBlock(span)}`,
+    'tutor_stub_ab_committee',
+    { messageHistory: prepared.history, effort: composer.effort, timeoutMs: job.model.timeout_ms },
+  );
+  const composedText = String(composed?.text || '').trim();
+  const battery = runCommitteeBattery({ composedText, span });
+  return {
+    text: battery.pass ? composedText : mini.text,
+    latencyMs: Date.now() - startedAt,
+    provider: 'committee',
+    model: `${miniConfig.model}+${composer.model}`,
+    tokenUsageAvailable: false,
+    committee: {
+      ...trace,
+      delivered: battery.pass ? 'composed' : 'mini',
+      reason: battery.failedCheck,
+      composedChars: composedText.length,
+    },
+  };
+}
+
 async function defaultGenerateCandidate({ job, prepared }) {
+  if (job.model.provider === 'committee') return await generateCommitteeCandidate({ job, prepared });
+  if (job.model.provider === 'ollama') {
+    // No fallback battery here. Phase 5b delivered mini replies through a
+    // resample/trim/greedy ladder; running that would measure the ladder as
+    // much as the weights. This takes the first reply as spoken, which is the
+    // same deal every other version of the tutor in this bench gets.
+    const generated = await committeeMiniGenerate({
+      url: job.model.base_url || PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl,
+      model: job.model.model,
+      systemPrompt: prepared.projection.systemPrompt,
+      messages: [...prepared.history, { role: 'user', content: prepared.latest.content }],
+      numCtx: job.model.num_ctx,
+      maxTokens: job.model.max_tokens,
+      timeoutMs: job.model.timeout_ms,
+    });
+    return { ...generated, provider: 'ollama', model: job.model.model, tokenUsageAvailable: false };
+  }
   return await callAIWithCliBridge(
     { provider: job.model.provider, model: job.model.model },
     prepared.projection.systemPrompt,
@@ -432,6 +579,9 @@ export async function runTutorStubAb({
         latencyMs: Number(generated?.latencyMs || Date.now() - started),
         usage: normalizeTokenUsage(generated, { available: generated?.tokenUsageAvailable }),
         learnerText: job.learnerText,
+        // Which half of a committee actually spoke. A lane that keeps falling
+        // back to the mini is not the arrangement its label claims.
+        committee: generated?.committee ?? null,
         candidate,
         auditedText: audit?.auditedText || candidate,
         safetyFailure: audit?.safetyFailure === true,

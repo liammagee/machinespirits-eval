@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-07-26
-updated: 2026-07-26
+updated: 2026-07-29
 verification: "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call plan;
   the baseline arm's projected request is exactly the learner utterance with zero
   advisory chars; every arm is audited with the recorded run's guard set and pinning
@@ -64,6 +64,15 @@ asserts that reclassifications never land outside them.
 Not established, and deliberately not claimed anywhere: whether
 `tutor:stub:pr-benchmark` now gates harder than it used to. It grades freshly
 generated text, not recorded text, and has not been run against this.
+
+First result, 2026-07-29. Broken rules per turn, pooled over every run so far:
+bare tutor 5.04, contract 1.67, and 4.4–5.3 for each of the other single pieces
+— length padding, continuity, evidence window, learner classifier, redacted
+proof-DAG readout, discourse scaffold. Only the per-turn performance contract
+leaves the bare tutor's band. The apparent cost of the contract, that it was the
+only arm that ever leaked, does not survive inspection: all nine recorded leaks
+are checker false positives, tracked in
+`workplan/items/tutor-stub-leak-audit-false-positives.md`.
 
 Standing limitation: turns after the first are counterfactual for every arm
 except the one that produced the recording, since the frozen learner utterances

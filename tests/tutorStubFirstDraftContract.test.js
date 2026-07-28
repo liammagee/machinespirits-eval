@@ -229,6 +229,89 @@ test('keeps a writable-entry scene invitation declarative after the uptake answe
   assert.ok(wordCount(prompt) <= 220, `expected writable V1 prompt at most 220 words, received ${wordCount(prompt)}`);
 });
 
+// The contract computed `evidence.committed_public_surfaces` for a long time and
+// never rendered it, so every slot saying "licensed" named a licence the page did
+// not carry. On the frozen A/B bench that produced reproducible hard leaks — a
+// conclusion about the answer term at Greyfen turn 3, an evidence claim wider
+// than its source at Nocturne turn 9. These tests pin the block into the prompt
+// and pin the slots that cite it to it.
+test('quotes the committed public evidence into the prompt when no new evidence is due', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next?',
+    responseConfiguration: configuration({ actorial_part: 'advocate', actorial_part_label: 'advocate' }),
+    committedPublicEvidence: [
+      'Held to the lamp, every leaf shows the same heron watermark.',
+      'The stock-book is plain: heron paper entered the copy-room in the winter of the flood.',
+    ],
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.match(prompt, /^RECORD — All public evidence so far, in full; nothing else is public yet\.$/mu);
+  assert.match(prompt, /^ {2}R1\. Held to the lamp, every leaf shows the same heron watermark\.$/mu);
+  assert.match(prompt, /^ {2}R2\. The stock-book is plain: heron paper entered the copy-room/mu);
+  // The block is read before the slots that cite it.
+  assert.ok(prompt.indexOf('RECORD —') < prompt.indexOf('UPTAKE —'));
+});
+
+test('binds the writable uptake and the advocate to the rendered record rather than to the word licensed', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next?',
+    responseConfiguration: configuration({ actorial_part: 'advocate', actorial_part_label: 'advocate' }),
+    committedPublicEvidence: ['The Larkin unit carries a resident Aspergillus strain, G17.'],
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+  const uptake = contract.host_plan.slots.find((slot) => slot.id === 'uptake');
+  const part = contract.host_plan.slots.find((slot) => slot.id === 'part');
+
+  assert.match(uptake.instruction, /saying what one numbered RECORD line says/iu);
+  assert.match(uptake.instruction, /claim nothing the line does not carry/iu);
+  assert.doesNotMatch(uptake.instruction, /licensed by the public record/iu);
+  // "strongest licensed claim" with the licence unstated is an instruction to
+  // push until something gives; the ceiling has to be named.
+  assert.match(part.instruction, /strongest claim the released public record carries/iu);
+  assert.match(part.instruction, /name what it does not yet establish/iu);
+  assert.doesNotMatch(part.instruction, /strongest licensed claim/iu);
+  assert.match(prompt, /strongest claim the released public record carries/iu);
+});
+
+test('omits the record when new evidence is due, leaving the exact source line to carry the licence', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next?',
+    responseConfiguration: configuration(),
+    committedPublicEvidence: ['The Larkin unit carries a resident Aspergillus strain, G17.'],
+    dramaticReleaseFrame: {
+      active: true,
+      entries: [{ id: 'e1', surface: 'The door gasket is perished the whole length of the hinge.' }],
+    },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+
+  assert.equal(contract.evidence.active, true);
+  assert.doesNotMatch(prompt, /^RECORD —/mu);
+  // Still computed and stored — only the rendering is gated.
+  assert.deepEqual(contract.evidence.committed_public_surfaces, [
+    'The Larkin unit carries a resident Aspergillus strain, G17.',
+  ]);
+});
+
+test('falls back to the unbound wording when there is no committed public evidence to quote', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'What should I write next?',
+    responseConfiguration: configuration(),
+    committedPublicEvidence: [],
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+  const uptake = contract.host_plan.slots.find((slot) => slot.id === 'uptake');
+
+  assert.doesNotMatch(prompt, /^RECORD —/mu);
+  // A slot must never cite a block the prompt does not carry.
+  assert.doesNotMatch(uptake.instruction, /RECORD/u);
+  assert.match(uptake.instruction, /licensed by the public record/iu);
+});
+
 test('binds a writable causal entry to the public relation without reversing causal role', () => {
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'What should I put in the minutes about the chargers?',
@@ -274,9 +357,12 @@ test('binds a writable causal entry to the public relation without reversing cau
   assert.match(contract.opening.causal_performance_entry_instruction, /strong, weak, limited, or weakened/iu);
   assert.match(contract.opening.causal_performance_entry_instruction, /Do not repeat the minutes sentence/iu);
   assert.match(contract.opening.causal_performance_response_instruction, /actual cause remains open/iu);
+  // Raised from 250 when the RECORD block started quoting the committed public
+  // evidence into the prompt. The block is what the causal slots cite, so its
+  // words are the licence itself and cannot be trimmed without misstating it.
   assert.ok(
-    wordCount(prompt) <= 250,
-    `expected causal writable V1 prompt at most 250 words, received ${wordCount(prompt)}`,
+    wordCount(prompt) <= 280,
+    `expected causal writable V1 prompt at most 280 words, received ${wordCount(prompt)}`,
   );
 });
 

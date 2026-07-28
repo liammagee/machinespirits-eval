@@ -745,7 +745,66 @@ const STUB = {
   responseDetails: process.env.TUTOR_STUB_RESPONSE_DETAILS !== '0',
   voiceModel: process.env.TUTOR_STUB_VOICE_MODEL || DEFAULT_TUTOR_STUB_VOICE_MODEL,
   voiceName: process.env.TUTOR_STUB_VOICE_NAME || DEFAULT_TUTOR_STUB_VOICE_NAME,
+  speakerAdvisoryBlocks: process.env.TUTOR_STUB_SPEAKER_ADVISORY_BLOCKS || '',
 };
+
+/**
+ * Which private advisory blocks get pasted into the speaking model's final user
+ * message. Ids match the feature registry the A/B bench measures them under
+ * (`services/tutorStubAbArms.js`).
+ *
+ * The bench ran each block on its own against a bare tutor across three frozen
+ * dialogues. The continuity note, the learner classifier and the redacted
+ * learner-DAG readout all landed inside the noise band, and together they cost
+ * about 1,250 characters a turn. They are off by default here.
+ *
+ * This drops them from the *prompt* only. Everything upstream still computes
+ * them: the turn contract quotes the classifier's reading of the learner word
+ * for word, and the planner picks its move after reading the DAG. Turning these
+ * off stops pasting the working next to the answer; it does not remove the
+ * working.
+ */
+const SPEAKER_ADVISORY_BLOCK_IDS = Object.freeze([
+  'context_continuity',
+  'evidence_window',
+  'learner_classifier',
+  'learner_dag',
+  'human_scaffold',
+  'first_draft_contract',
+]);
+const DEFAULT_SPEAKER_ADVISORY_BLOCKS = Object.freeze([
+  'evidence_window',
+  // Kept on: its own bench reading (-1.9) sits inside the band but never
+  // changed sign, and it is the block that claims the human-scaffold and
+  // question-support checks. Needs its own run before it can come out.
+  'human_scaffold',
+  'first_draft_contract',
+]);
+
+/**
+ * `all` restores every block, `none` clears them, otherwise a comma-separated
+ * subset. Fails closed on an unknown id: silently ignoring a typo would let a
+ * run report a prompt shape it did not have.
+ */
+function resolveSpeakerAdvisoryBlocks(raw) {
+  const text = String(raw ?? '').trim();
+  if (!text) return new Set(DEFAULT_SPEAKER_ADVISORY_BLOCKS);
+  if (text === 'all') return new Set(SPEAKER_ADVISORY_BLOCK_IDS);
+  if (text === 'none') return new Set();
+  const requested = text
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  const unknown = requested.filter((id) => !SPEAKER_ADVISORY_BLOCK_IDS.includes(id));
+  if (unknown.length) {
+    throw new Error(
+      `unknown speaker advisory block: ${unknown.join(', ')} (known: ${SPEAKER_ADVISORY_BLOCK_IDS.join(', ')})`,
+    );
+  }
+  return new Set(requested);
+}
+
+const SPEAKER_ADVISORY_BLOCKS = resolveSpeakerAdvisoryBlocks(STUB.speakerAdvisoryBlocks);
 
 let cliPresentation = createTutorStubCliPresentation({
   theme: STUB.cliTheme,
@@ -8593,12 +8652,19 @@ async function callTutor({
     : learnerMessageCount > 1
       ? `Learner says in ${learnerMessageCount} consecutive messages before your reply (treat them as one compound turn):\n${learnerText}`
       : `Learner says:\n${learnerText}`;
+  // Only the six measured blocks are gated. The advisories below them —
+  // comprehension, director, coach, point-of-action, tuning, feedback — have
+  // never been through the A/B bench, so there is no reading to cut them on.
+  const withSpeakerBlock = (id, text) => (SPEAKER_ADVISORY_BLOCKS.has(id) ? text : null);
   const speakerAdvisoryParts = [
-    tutorMemory,
-    dag && world && !instructionalMetaRepair ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-    advisory,
-    learnerDagAdvisory,
-    firstDraftHumanDiscourseAdvisory,
+    withSpeakerBlock('context_continuity', tutorMemory),
+    withSpeakerBlock(
+      'evidence_window',
+      dag && world && !instructionalMetaRepair ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+    ),
+    withSpeakerBlock('learner_classifier', advisory),
+    withSpeakerBlock('learner_dag', learnerDagAdvisory),
+    withSpeakerBlock('human_scaffold', firstDraftHumanDiscourseAdvisory),
     instructionalMetaRestatementAdvisory,
     comprehensionAdvisory,
     directorGuidanceAdvisory,
@@ -8608,13 +8674,24 @@ async function callTutor({
     tutorFeedbackAdvisory,
     // Keep the executable contract nearest the learner line so later analysis
     // advisories cannot bury the actual speaking task.
-    firstDraftContractAdvisory,
+    withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
   ]
     .filter(Boolean)
     .map((text) => sanitizeTutorStubSpeakerAdvisory({ world: dag ? world : null, tutorTurn, text }));
   const promptParts = [...speakerAdvisoryParts, learnerPrompt].filter(Boolean);
   const userPrompt = promptParts.join('\n\n');
   const machineAdvisoryParts = [...speakerAdvisoryParts].filter(Boolean);
+  // Stamp the prompt shape on the turn. Without this a transcript cannot say
+  // which blocks it was written under, and runs from either side of a default
+  // change would pool silently.
+  if (!passthrough) {
+    appendTraceEvent(trace, {
+      type: 'tutor_speaker_advisory_blocks',
+      turn: tutorTurn,
+      enabled: SPEAKER_ADVISORY_BLOCK_IDS.filter((id) => SPEAKER_ADVISORY_BLOCKS.has(id)),
+      omitted: SPEAKER_ADVISORY_BLOCK_IDS.filter((id) => !SPEAKER_ADVISORY_BLOCKS.has(id)),
+    });
+  }
   let effectiveSpeakerSystemPrompt = effectiveSystemPrompt;
   let effectiveSpeakerUserPrompt = userPrompt;
   let effectiveSpeakerInstructionTexts = [systemPrompt, ...machineAdvisoryParts].filter(Boolean);
@@ -8642,9 +8719,14 @@ async function callTutor({
       world: dag ? world : null,
       tutorTurn,
       baseSystemPrompt: systemPrompt,
-      continuityPrompt: tutorMemory,
-      publicEvidencePrompt: dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-      firstDraftContractPrompt: firstDraftContractAdvisory,
+      // Rebuilt from named parts, so it has to honour the same gate — otherwise
+      // a leak recovery would quietly restore a block the run had switched off.
+      continuityPrompt: withSpeakerBlock('context_continuity', tutorMemory),
+      publicEvidencePrompt: withSpeakerBlock(
+        'evidence_window',
+        dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+      ),
+      firstDraftContractPrompt: withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
       learnerPrompt,
       messageHistory: context,
     });

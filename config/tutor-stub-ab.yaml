@@ -20,6 +20,59 @@ models:
     model: claude-sonnet-5
     effort: medium
     timeout_ms: 180000
+  # Locally served speakers. Every other lane in this bench varies what reaches
+  # the prompt; these vary who reads it. The tuned model is the Program-2
+  # Phase-5c artifact — a Qwen3.5-9B trained on the apparatus's own sealed
+  # labels for one narrow move — and its own base sibling is the control.
+  # Served on the frozen Phase-2 pin; calls are local and cost nothing.
+  qwen_tuned:
+    provider: ollama
+    model: program2-sft-instruct-v2:latest
+    base_url: http://127.0.0.1:11434
+    num_ctx: 16384
+    max_tokens: 1024
+    timeout_ms: 600000
+  qwen_base:
+    provider: ollama
+    model: qwen3.5:9b
+    base_url: http://127.0.0.1:11434
+    num_ctx: 16384
+    max_tokens: 1024
+    timeout_ms: 600000
+  # Program-2's own arrangement (Phase 5b/5c): the tuned mini writes one
+  # question, the frontier model writes the turn around it word for word. The
+  # earlier local lanes ran the mini as the whole speaker, which is not what
+  # Program-2 ever claimed; this is the lane that tests the claim.
+  committee_tuned:
+    provider: committee
+    model: program2-committee
+    timeout_ms: 300000
+    mini:
+      model: program2-sft-instruct-v2:latest
+      base_url: http://127.0.0.1:11434
+      num_ctx: 16384
+      max_tokens: 1024
+      timeout_ms: 600000
+    composer:
+      provider: codex
+      model: gpt-5.6-terra
+      effort: medium
+  # The same arrangement with the untuned sibling as mini. Without this, a
+  # committee win could just be "a second model wrote the question".
+  committee_base:
+    provider: committee
+    model: base-committee
+    timeout_ms: 300000
+    mini:
+      model: qwen3.5:9b
+      base_url: http://127.0.0.1:11434
+      num_ctx: 16384
+      max_tokens: 1024
+      timeout_ms: 600000
+    composer:
+      provider: codex
+      model: gpt-5.6-terra
+      effort: medium
 
 # Feature ids come from the registry in services/tutorStubAbArms.js:
 #   context_continuity, evidence_window, learner_classifier, learner_dag,
@@ -54,6 +107,45 @@ arms:
     label: Evidence window only
     summary: The committed/due evidence boundary and nothing else.
     features: [evidence_window]
+  # Leave-one-in arms. The `no_*` arms above measure what one block adds on top
+  # of the other five, which reads ~0 for every block when the blocks overlap.
+  # These ask the other question: what does one block buy on its own?
+  #
+  # Settled, three runs each across the three scenarios, against a noise band of
+  # +/-3 broken rules: continuity -0.1, classifier -1.4, DAG +0.0, scaffold -1.9,
+  # evidence window -3.8, contract -15.8. The first four are parked, not deleted:
+  # a reworded version of any of them (the DAG readout as imperatives is the
+  # cheapest one to try) needs its lane back to be testable.
+  continuity_only:
+    label: Context continuity only
+    summary: Only the note that the full public prefix was replayed in order.
+    features: [context_continuity]
+  classifier_only:
+    label: Learner classifier only
+    summary: Discourse move, evidence use, stance and immediate need, nothing else.
+    features: [learner_classifier]
+  dag_only:
+    label: Learner DAG only
+    summary: The redacted learner proof-DAG and nothing else.
+    features: [learner_dag]
+  scaffold_only:
+    label: Human scaffold only
+    summary: Branch, local question, warrant frame and proof debt, nothing else.
+    features: [human_scaffold]
+  contract_only:
+    label: First-draft contract only
+    summary: The per-turn performance contract and nothing else.
+    features: [first_draft_contract]
+  # Length control. Across nine runs the contract arm replied in 448 characters
+  # on average against the bare tutor's 197, and several audits fault a reply for
+  # something it left out, so length alone could explain the contract's score.
+  # This arm is the bare tutor plus one sentence naming that length.
+  length_matched:
+    label: Length-matched bare tutor
+    summary: No advisories at all — one sentence asking for a reply of about 450 characters.
+    features: none
+    learner_framing: false
+    length_target_chars: 450
 
 scenarios:
   tallow_short:
@@ -92,6 +184,55 @@ presets:
   cross_model:
     models: [codex_medium, claude_medium]
     arms: [baseline, instrumented]
+    scenarios: [tallow_short]
+  # Does the contract buy content or does it buy length? Three lanes: bare,
+  # bare-told-to-write-long, and the contract. 3 arms x 14 turns across the three
+  # scenarios = 42 calls. Pass --max-calls 30 when running one scenario at a time.
+  length_control:
+    models: [codex_medium]
+    arms: [baseline, length_matched, contract_only]
+    scenarios: [tallow_short, nocturne_full, greyfen_short]
+  # Who is speaking, rather than what they were told. Tuned Qwen and its base
+  # sibling, each bare and each with the stage directions. The frontier numbers
+  # for the same two arms already exist from the length_control runs, so this
+  # adds the missing rows rather than repeating them.
+  # 2 models x 2 arms x 14 turns = 56 calls; local, so free. Smoke one scenario
+  # first: 2 x 2 x 3 = 12 calls on tallow_short.
+  local_speaker:
+    models: [qwen_tuned, qwen_base]
+    arms: [baseline, contract_only]
+    scenarios: [tallow_short, nocturne_full, greyfen_short]
+  # Does Program-2's committee beat the frontier model on this bench? Both
+  # committees, bare and with the stage directions, against the frontier rows
+  # that already exist. 2 speakers x 2 arms x 14 turns = 56 turns, each costing
+  # one local call plus one frontier call.
+  committee_check:
+    models: [committee_tuned, committee_base]
+    arms: [baseline, contract_only]
+    scenarios: [tallow_short, nocturne_full, greyfen_short]
+  # The three lanes still worth running once the settled four are parked: bare,
+  # the evidence window on its own, and the contract on its own. Keeping the
+  # evidence window is what separates "the block carried a sentence the model
+  # had not seen" from "the block also said what to do with it" — drop it and
+  # the contract's number has no shape.
+  # 3 arms x 14 turns = 42 calls. Pass --max-calls 30 per scenario.
+  live_contrast:
+    models: [codex_medium]
+    arms: [baseline, evidence_only, contract_only]
+    scenarios: [tallow_short, nocturne_full, greyfen_short]
+  # 7 arms x 3 turns = 21 calls, above the default 16. Pass --max-calls 24.
+  leave_one_in:
+    models: [codex_medium]
+    arms:
+      [
+        baseline,
+        continuity_only,
+        evidence_only,
+        classifier_only,
+        dag_only,
+        scaffold_only,
+        contract_only,
+      ]
     scenarios: [tallow_short]
 
 # The rubric is the deterministic frozen-turn audit. Pinning the guard set to
