@@ -49,7 +49,9 @@ const API_ROUTERS = [
 
 // Static UI surfaces: [mountPath, dirRelativeToRoot]. Each is existsSync-guarded
 // at mount time so a missing directory is skipped silently rather than erroring.
-const STATIC_SURFACES = [
+// Exported so tests/staticSurfaceRailContract.test.js can enumerate the surfaces
+// instead of keeping a second hand-maintained list that drifts out of step.
+export const STATIC_SURFACES = [
   ['/tutor', 'public/tutor'], // shared browser + Electron tutor-stub session studio
   ['/pilot', 'public/pilot'], // participant-facing human-learner pilot UI
   ['/pilot-admin', 'public/pilot-admin'], // operator dashboard (token-gated API)

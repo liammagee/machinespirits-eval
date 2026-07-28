@@ -305,6 +305,13 @@
       </li>
     </template>
 
+    <!--
+      The rail carries the persisted skin as well as the nav, and this shell is one of the
+      four static surfaces it was written for. It must stay ABOVE app.js: both scripts are
+      deferred and run in document order, and app.js owns data-theme here (it reads its own
+      machinespirits.theme key, not the dashboard's poetics-theme). Running last lets it win.
+    -->
+    <script src="/components/rail-inject.js" data-active="tutor" data-compact defer></script>
     <script type="module" src="./app.js"></script>
   </body>
 </html>
