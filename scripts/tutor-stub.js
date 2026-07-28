@@ -143,6 +143,13 @@ import { createTutorStubResponseLeakAudit } from '../services/tutorStubResponseL
 import { compactTutorStubOneLine as oneLine } from '../services/tutorStubTextProjection.js';
 import { effectiveTutorStubModelTemperature as effectiveTemperatureForModel } from '../services/tutorStubModelTemperature.js';
 import {
+  parseTutorStubAutoTurns as parseAutoTurns,
+  parseTutorStubCommaSeparatedStrings as commaSeparatedStrings,
+  parseTutorStubNumber as parseNumber,
+  parseTutorStubOptionalBoundedInt as parseOptionalBoundedInt,
+  parseTutorStubPositiveInt as parsePositiveInt,
+} from '../services/tutorStubCliParsing.js';
+import {
   createTutorStubPromptBlockModel,
   delimitTutorStubPrompt as delimitedPrompt,
   replaceDelimitedTutorStubPrompt as replaceDelimitedPrompt,
@@ -1101,39 +1108,6 @@ function printHelp() {
   );
 }
 
-function parseNumber(value, name, { min = -Infinity, max = Infinity } = {}) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < min || parsed > max) {
-    throw new Error(`${name} must be a number between ${min} and ${max}`);
-  }
-  return parsed;
-}
-
-function parsePositiveInt(value, name) {
-  const parsed = Number.parseInt(value, 10);
-  if (!Number.isFinite(parsed) || parsed < 1) {
-    throw new Error(`${name} must be a positive integer`);
-  }
-  return parsed;
-}
-
-function parseOptionalBoundedInt(value, name, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
-  const raw = String(value ?? '').trim();
-  if (!raw) return null;
-  const parsed = Number(raw);
-  if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
-    throw new Error(`${name} must be an integer between ${min} and ${max}`);
-  }
-  return parsed;
-}
-
-function commaSeparatedStrings(value) {
-  return String(value || '')
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-}
-
 function assertSupportedModelRefs(refs) {
   for (const [label, ref] of Object.entries(refs)) {
     const normalized = String(ref || '')
@@ -1169,14 +1143,6 @@ function resolveTutorModelSelection(ref) {
     throw new Error(`${modelRef} is unavailable; configure ${requirement} first`);
   }
   return { modelRef, resolved, providerConfig };
-}
-
-function parseAutoTurns(value) {
-  const raw = String(value || '')
-    .trim()
-    .toLowerCase();
-  if (['0', 'none', 'unbounded', 'until-grounded', 'grounded'].includes(raw)) return null;
-  return parsePositiveInt(value, '--auto-turns');
 }
 
 function resolveWorkspacePath(value) {
