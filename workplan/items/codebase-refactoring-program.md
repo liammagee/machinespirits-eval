@@ -1063,3 +1063,10 @@ Log:
 - 2026-07-28 — Fifty-loop learner-DAG-prompt run reached review with an 18-line
   net CLI reduction, five focused assertions, and complete zero-skip hermetic
   parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 8,
+  `refactor-tutor-stub-register-history-prompt`, from PR #379's reviewed head.
+  Register normalization, runtime state, prompt assembly, policy selection, and
+  effects remain in their current owners.
+- 2026-07-28 — Fifty-loop register-history-prompt run reached review with a
+  15-line net CLI reduction, 25 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.

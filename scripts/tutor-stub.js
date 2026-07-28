@@ -628,6 +628,7 @@ import {
 } from '../services/tutorStubRegisterPolicy.js';
 import { normalizeTutorStubDagMode } from '../services/tutorStubDagFeatures.js';
 import { createTutorStubRegisterEmpiricalPriorModel } from '../services/tutorStubRegisterEmpiricalPrior.js';
+import { projectTutorStubRegisterHistoryPrompt } from '../services/tutorStubRegisterHistoryProjection.js';
 import {
   buildTutorStubLightweightDialogueField as buildLightweightDialogueField,
   projectTutorStubLightweightFieldTurn as lightweightFieldTurn,
@@ -2495,24 +2496,8 @@ const { engagementStancePalettePromptRows, requestTypePromptRows } = createTutor
   getRequestTypeDefinitions,
 });
 
-function registerHistoryPromptSummary(state) {
-  const history = state.register?.history || [];
-  if (!history.length) return 'No prior tutor-register choices.';
-  return history
-    .slice(-6)
-    .map((entry) => {
-      const normalized = normalizeStoredRegisterSelection(entry);
-      const efficacy = normalized?.efficacy
-        ? `${normalized.efficacy.label} (DAG score ${normalized.efficacy.progressScore}; ${
-            normalized.efficacy.learnerFeedback?.rating
-              ? `learner rating ${normalized.efficacy.learnerFeedback.rating}; `
-              : ''
-          }${normalized.efficacy.summary})`
-        : 'pending next learner turn';
-      return `Turn ${entry.turn}: ${normalized?.selected_register || 'unknown'} — ${entry.register_reason || 'no reason'}; efficacy: ${efficacy}`;
-    })
-    .join('\n');
-}
+const registerHistoryPromptSummary = (state) =>
+  projectTutorStubRegisterHistoryPrompt(state, { normalizeSelection: normalizeStoredRegisterSelection });
 
 function latestFieldStateMismatch(state) {
   return latestRegisterEfficacy(state)?.mismatch || null;
