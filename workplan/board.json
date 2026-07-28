@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-28T06:13:12.366Z",
+  "generated": "2026-07-28T06:40:53.138Z",
   "counts": {
-    "total": 256,
+    "total": 258,
     "byStatus": {
-      "done": 220,
+      "done": 222,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 80,
+      "maintenance": 82,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -297,6 +297,7 @@
           "refactor-tutor-stub-field-report-presentation",
           "refactor-tutor-stub-curriculum-progress-presentation",
           "refactor-tutor-stub-curriculum-catalog-presentation",
+          "refactor-tutor-stub-world-catalog-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -750,8 +751,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-curriculum-catalog-presentation",
-      "title": "Refactor tutor-stub curriculum catalogue presentation",
+      "id": "refactor-tutor-stub-world-catalog-presentation",
+      "title": "Refactor tutor-stub world catalogue presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -759,36 +760,38 @@
       "source": "review",
       "created": "2026-07-28",
       "updated": "2026-07-28",
-      "verification": "Curriculum catalogue output remains byte-identical while direct, canonical live-process, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-curriculum-catalog-presentation",
+      "verification": "World catalogue output remains byte-identical while direct, canonical live-process, picker/quality, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-world-catalog-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-curriculum-progress-presentation"
+        "refactor-tutor-stub-curriculum-catalog-presentation"
       ],
       "links": {
         "prs": [
-          334
+          338
         ],
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/curriculum/tutorStubCurriculumCatalogPresentation.js",
-          "services/curriculum/tutorStubCurriculum.js",
+          "services/tutorStubWorldPresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubCurriculumCatalogPresentation.test.js",
+          "tests/tutorStubWorldCatalogPresentation.test.js",
+          "tests/derivationWorldPresentation.test.js",
+          "tests/derivationWorldQuality.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-curriculum-progress-presentation",
+          "refactor-tutor-stub-curriculum-catalog-presentation",
           "automate-browser-and-packaged-electron-tutor-stub-acceptance"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
-        "curriculum",
+        "world",
+        "scenario",
         "presentation",
         "terminal"
       ],
@@ -3119,6 +3122,51 @@
         "refactoring",
         "tutor-stub",
         "closeout",
+        "presentation",
+        "terminal"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-curriculum-catalog-presentation",
+      "title": "Refactor tutor-stub curriculum catalogue presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Curriculum catalogue output remains byte-identical while direct, canonical live-process, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-curriculum-catalog-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-curriculum-progress-presentation"
+      ],
+      "links": {
+        "prs": [
+          334
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/curriculum/tutorStubCurriculumCatalogPresentation.js",
+          "services/curriculum/tutorStubCurriculum.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubCurriculumCatalogPresentation.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-curriculum-progress-presentation",
+          "automate-browser-and-packaged-electron-tutor-stub-acceptance"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "curriculum",
         "presentation",
         "terminal"
       ],
@@ -8096,6 +8144,35 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "tutor-shell-missing-nav-rail",
+      "title": "/tutor is the only researcher surface with no nav rail",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Opening /tutor shows the same rail the other researcher surfaces carry, with \"tutor lab\" marked as the current destination; the tutor's own theme button still works and the page does not lose data-theme; a test that reads the surface list from the mounter fails if any researcher surface drops the rail.",
+      "links": {
+        "code": [
+          "public/tutor/index.html",
+          "public/components/rail-inject.js",
+          "services/evalSurfaces.js",
+          "tests/staticSurfaceSkin.test.js"
+        ],
+        "items": [
+          "tutor-shell-misses-skin-attribute",
+          "scriptorium-static-tools-desktop-quality"
+        ]
+      },
+      "tags": [
+        "ui",
+        "scriptorium",
+        "navigation"
+      ]
     },
     {
       "id": "workplan-trailer-pre-push-hook",
