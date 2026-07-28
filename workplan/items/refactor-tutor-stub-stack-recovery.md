@@ -14,6 +14,8 @@ verification: The seven preserved slices pass focused, full hermetic, manifest,
 branch: codex/refactor-tutor-stub-human-discourse-config
 claim_status: planned
 links:
+  prs:
+    - 349
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -69,3 +71,5 @@ Log:
   assertions pass with zero skips. Manifest, 269-item source workplan, refs,
   lint, formatting, syntax, diff, and the zero-cycle ratchet across 423 files
   also pass.
+- 2026-07-28 — Opened recovery PR #349 directly against `main`; managed refs
+  are unchanged.
