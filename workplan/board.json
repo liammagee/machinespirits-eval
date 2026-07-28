@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T21:27:31.085Z",
+  "generated": "2026-07-28T21:33:59.134Z",
   "counts": {
-    "total": 323,
+    "total": 324,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 66,
+      "review": 67,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 141,
+      "maintenance": 142,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -2122,6 +2122,47 @@
         "tutor-stub",
         "learner-dag",
         "prompts"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-learner-public-evidence-state",
+      "title": "Refactor tutor-stub learner public evidence state",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "9 focused public-evidence assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve staged-evidence and release-ledger aliases, shared-reference behavior, and empty-input behavior",
+      "branch": "codex/refactor-tutor-stub-learner-public-evidence-state",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-public-release-ledger"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubPublicEvidence.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubPublicEvidence.test.js"
+        ],
+        "prs": [
+          402
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-public-release-ledger"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "public-evidence",
+        "learner-dag"
       ],
       "milestone": "evaluation-infrastructure"
     },
