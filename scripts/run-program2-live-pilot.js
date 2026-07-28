@@ -597,6 +597,95 @@ export function validatePhase5eR2ExactPipelinePilotPlan(plan) {
   return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
 }
 
+// Phase 5f is the first post-apparatus-hardening transfer check. Its pilot
+// uses a world that predates the repairs but postdates the Program-2 training
+// and original experimental freeze. The four exact-pipeline rows are a
+// feasibility gate only; an 18-dialogue cohort remains separately gated.
+export const PHASE5F_PILOT_SPEC = Object.freeze({
+  schema: 'machinespirits.tutor-stub.program2-phase5f-pilot-plan.v1',
+  preregistration: 'PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md',
+  worldSelectionEvidence: 'config/adaptive-tutor-evidence/program-2-phase5f-world-selection.json',
+  certificateGateSpec: 'config/adaptive-tutor-evidence/program-2-phase5f-pilot-gates.json',
+  runSeed: 20260728,
+  world: 'world_031_tideway_makerspace',
+  repeats: 1,
+  fallbackPolicy: 'v2',
+  evidenceUseRubric: TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY,
+  futureCohortSchema: 'machinespirits.tutor-stub.program2-phase5f-plan.v1',
+});
+
+export function buildPhase5fExactPipelinePilotPlan({
+  outputRoot = 'exports/program2-live-pilot-5f-pilot',
+  evidenceUseRubric = PHASE5F_PILOT_SPEC.evidenceUseRubric,
+} = {}) {
+  const rubric = normalizeTutorStubEvidenceUseRubric(evidenceUseRubric);
+  if (rubric !== PHASE5F_PILOT_SPEC.evidenceUseRubric) {
+    throw new Error(`Phase 5f pilot pins evidence_use rubric ${PHASE5F_PILOT_SPEC.evidenceUseRubric}`);
+  }
+  const cells = PHASE5_LIVE_PILOT_SPEC.profiles.flatMap((profile) =>
+    PHASE5_LIVE_PILOT_SPEC.arms.map((arm) => ({ repeat: 1, profile, arm })),
+  );
+  const jobs = deterministicShuffle(cells, PHASE5F_PILOT_SPEC.runSeed).map((cell, index) => {
+    const id = [`p5f-pilot-${String(index + 1).padStart(2, '0')}`, cell.profile, cell.arm].join('-');
+    const job = { ordinal: index + 1, id, tutorFamily: PHASE5_LIVE_PILOT_SPEC.tutorFamily, ...cell };
+    return {
+      ...job,
+      command: commandForJob(job, outputRoot, {
+        runSeed: PHASE5F_PILOT_SPEC.runSeed,
+        fallbackPolicy: cell.arm === 'committee' ? PHASE5F_PILOT_SPEC.fallbackPolicy : null,
+        world: PHASE5F_PILOT_SPEC.world,
+        evidenceUseRubric: rubric,
+      }),
+    };
+  });
+  return {
+    ...PHASE5_LIVE_PILOT_SPEC,
+    ...PHASE5F_PILOT_SPEC,
+    detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    evidenceUseRubric: rubric,
+    outputRoot,
+    ordering: 'seeded Fisher-Yates over one fresh-world exact-pipeline row per profile x arm cell',
+    jobs,
+  };
+}
+
+export function validatePhase5fExactPipelinePilotPlan(plan) {
+  const errors = [];
+  if (plan.jobs.length !== 4) errors.push(`expected 4 jobs, found ${plan.jobs.length}`);
+  const cellCounts = new Map();
+  for (const job of plan.jobs) {
+    const key = [job.profile, job.arm].join('|');
+    cellCounts.set(key, (cellCounts.get(key) || 0) + 1);
+    const policy = flagValue(job.command, '--committee-fallback-policy');
+    if (job.arm === 'committee' && policy !== PHASE5F_PILOT_SPEC.fallbackPolicy) {
+      errors.push(`${job.id} missing fallback policy ${PHASE5F_PILOT_SPEC.fallbackPolicy}`);
+    }
+    if (job.arm === 'silent_control' && policy !== null) errors.push(`${job.id} control carries fallback policy`);
+    if (flagValue(job.command, '--world') !== PHASE5F_PILOT_SPEC.world) errors.push(`${job.id} world mismatch`);
+    if (flagValue(job.command, '--run-seed') !== String(PHASE5F_PILOT_SPEC.runSeed)) {
+      errors.push(`${job.id} run-seed mismatch`);
+    }
+    if (flagValue(job.command, '--model') !== PHASE5_LIVE_PILOT_SPEC.tutorFamily) {
+      errors.push(`${job.id} tutor-family mismatch`);
+    }
+    for (const flag of ['--classifier-model', '--learner-record-model', '--auto-learner-model']) {
+      if (flagValue(job.command, flag) !== PHASE5_LIVE_PILOT_SPEC.supportingModel) {
+        errors.push(`${job.id} changed fixed supporting seam ${flag}`);
+      }
+    }
+  }
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    for (const arm of PHASE5_LIVE_PILOT_SPEC.arms) {
+      if (cellCounts.get(`${profile}|${arm}`) !== 1) errors.push(`${profile}|${arm} pilot cell count mismatch`);
+    }
+  }
+  if (plan.evidenceUseRubric !== PHASE5F_PILOT_SPEC.evidenceUseRubric) {
+    errors.push(`Phase 5f pilot must stamp evidence_use rubric ${PHASE5F_PILOT_SPEC.evidenceUseRubric}`);
+  }
+  errors.push(...evidenceUseRubricErrors(plan));
+  return { ok: errors.length === 0, errors, jobCount: plan.jobs.length, balancedCellCount: cellCounts.size };
+}
+
 export function validatePhase5bLivePilotPlan(plan) {
   const errors = [];
   if (plan.jobs.length !== 18) errors.push(`expected 18 jobs, found ${plan.jobs.length}`);
@@ -804,7 +893,7 @@ async function main() {
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--dry-run | --prepare-certificate | --launch-approved --expected-sha <sha> --launch-certificate <file>] [--plan 5|5b|5c|5e-pilot|5e] [--output-dir <dir>] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--dry-run | --prepare-certificate | --launch-approved --expected-sha <sha> --launch-certificate <file>] [--plan 5|5b|5c|5e-pilot|5e|5f-pilot] [--output-dir <dir>] [--limit-jobs N]',
     );
     console.log('\nPaid launch prerequisite: generate a fresh certificate with npm run program2:certify-launch.');
     console.log(
@@ -850,8 +939,16 @@ async function main() {
       validate: validatePhase5eR2ExactPipelinePilotPlan,
       certificatePhase: 'pilot',
     },
+    '5f-pilot': {
+      root: 'exports/program2-live-pilot-5f-pilot',
+      build: buildPhase5fExactPipelinePilotPlan,
+      validate: validatePhase5fExactPipelinePilotPlan,
+      certificatePhase: 'pilot',
+    },
   };
-  if (!planTable[planKey]) throw new Error(`unknown --plan ${planKey} (expected 5, 5b, 5c, 5e-pilot, or 5e)`);
+  if (!planTable[planKey]) {
+    throw new Error(`unknown --plan ${planKey} (expected 5, 5b, 5c, 5e-pilot, 5e, or 5f-pilot)`);
+  }
   const defaultRoot = launch || prepareCertificate ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
   const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
   const plan = planTable[planKey].build({ outputRoot });
@@ -959,7 +1056,9 @@ async function main() {
     : { schema: 'machinespirits.tutor-stub.program2-phase5-launch-state.v1', jobs: {} };
   const saveState = () => fs.writeFileSync(statePath, `${JSON.stringify(launchState, null, 2)}\n`);
   const enforceLiveFutility = (stage) => {
-    const rows = ['5e', '5e-pilot'].includes(planKey) ? loadProgram2Phase5eRows({ plan, root: outputRoot }) : [];
+    const rows = ['5e', '5e-pilot', '5f-pilot'].includes(planKey)
+      ? loadProgram2Phase5eRows({ plan, root: outputRoot })
+      : [];
     const check = evaluateProgram2LiveFutility({
       plan,
       launchState,

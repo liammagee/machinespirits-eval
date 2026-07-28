@@ -9,10 +9,13 @@ import assert from 'node:assert/strict';
 import {
   PHASE5E_SPEC,
   PHASE5E_PILOT_SPEC,
+  PHASE5F_PILOT_SPEC,
   buildPhase5eLivePilotPlan,
   buildPhase5eR2ExactPipelinePilotPlan,
+  buildPhase5fExactPipelinePilotPlan,
   validatePhase5eLivePilotPlan,
   validatePhase5eR2ExactPipelinePilotPlan,
+  validatePhase5fExactPipelinePilotPlan,
 } from '../scripts/run-program2-live-pilot.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
@@ -161,6 +164,52 @@ describe('Program-2 Phase 5e live-pilot plan', () => {
     assert.match(cohort.stdout, /program2-live-pilot-5e-r2-pilot\/pilot-bundle\.json/u);
     assert.match(cohort.stdout, /program-2-phase5e-r2-gates\.json/u);
     assert.equal(JSON.parse(fs.readFileSync(path.join(cohortRoot, 'launch-plan.json'), 'utf8')).plan.jobs.length, 18);
+  });
+
+  it('freezes a four-dialogue Phase 5f pilot on the post-training unseen Tideway world', () => {
+    const plan = buildPhase5fExactPipelinePilotPlan({ outputRoot: 'phase5f-pilot-output' });
+    assert.deepEqual(validatePhase5fExactPipelinePilotPlan(plan), {
+      ok: true,
+      errors: [],
+      jobCount: 4,
+      balancedCellCount: 4,
+    });
+    assert.equal(plan.schema, PHASE5F_PILOT_SPEC.schema);
+    assert.equal(plan.world, 'world_031_tideway_makerspace');
+    assert.equal(plan.runSeed, 20260728);
+    assert.equal(plan.evidenceUseRubric, 'v1');
+    assert.deepEqual(
+      [...new Set(plan.jobs.map((job) => `${job.profile}|${job.arm}`))].sort(),
+      [
+        'affective_resistant|committee',
+        'affective_resistant|silent_control',
+        'proof_skipper|committee',
+        'proof_skipper|silent_control',
+      ],
+    );
+    for (const job of plan.jobs) {
+      assert.equal(flagValue(job.command, '--world'), PHASE5F_PILOT_SPEC.world);
+      assert.equal(flagValue(job.command, '--run-seed'), String(PHASE5F_PILOT_SPEC.runSeed));
+      assert.equal(flagValue(job.command, '--learner-analysis-evidence-use-rubric'), 'v1');
+    }
+  });
+
+  it('prepares the Phase 5f certificate plan without making model calls', () => {
+    const pilotRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'program2-phase5f-pilot-'));
+    const pilot = spawnSync(
+      process.execPath,
+      ['scripts/run-program2-live-pilot.js', '--prepare-certificate', '--plan', '5f-pilot', '--output-dir', pilotRoot],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+    assert.equal(pilot.status, 0, `${pilot.stdout}\n${pilot.stderr}`);
+    assert.match(pilot.stdout, /certificate plan PASS; 0 model calls/u);
+    assert.match(pilot.stdout, /--phase pilot/u);
+    assert.match(pilot.stdout, /world-031-tideway-makerspace\.yaml/u);
+    assert.match(pilot.stdout, /program-2-phase5f-pilot-gates\.json/u);
+    const artifact = JSON.parse(fs.readFileSync(path.join(pilotRoot, 'launch-plan.json'), 'utf8'));
+    assert.equal(artifact.modelCallsBeforeArtifact, 0);
+    assert.equal(artifact.plan.jobs.length, 4);
+    assert.equal(artifact.plan.world, PHASE5F_PILOT_SPEC.world);
   });
 
   it('builds a cohort-bound 11-check bundle from four sealed exact-pipeline traces', () => {
