@@ -9428,7 +9428,16 @@ async function callTutor({
       auditConfiguration?.recovery_transition || auditConfiguration?.speaking_transition || null,
     );
     const repetitionAudit = repetitionGuardEnabled
-      ? auditTutorStubRepetitionResponse({ text: response.text, recentTutorTexts })
+      ? auditTutorStubRepetitionResponse({
+          text: response.text,
+          recentTutorTexts,
+          // A turn owed a new exhibit, or standing as the closing act, is
+          // licensed to work in the vocabulary already on the table.
+          advance: {
+            releasedNewEvidence: dramaticReleaseFrame.entries.length > 0,
+            terminal: Boolean(dialogueClosureFrame?.mandatory),
+          },
+        })
       : { ok: true, issues: [], maxSimilarity: 0 };
     const closureAudit = closureGuardEnabled
       ? auditTutorStubDialogueClosureResponse({ text: response.text, frame: dialogueClosureFrame })
@@ -12027,6 +12036,10 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
         recentTutorTexts: tutorMessageContext(state, state.history)
           .messages.filter((message) => message.role === 'assistant')
           .map((message) => message.content),
+        // Passthrough has no release schedule and no closure frame to consult,
+        // so the advance channel runs on text alone here. That asymmetry is the
+        // point of observing this arm rather than guarding it.
+        advance: {},
       })
     : null;
   const observedAudits = observedAuditsRequested

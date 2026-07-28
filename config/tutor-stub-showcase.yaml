@@ -59,6 +59,13 @@ arms:
       - --tutor-learner-dag
     model_call_budget: 90
 
+# How many turns a scenario may keep running after its world has released its
+# last exhibit. Past that the tutor has no new material and starts restating
+# what it has already said, which is what the Riverside arms did. The validator
+# holds every cap to this, so a cap can no longer drift away from the schedule
+# it was set against.
+closing_allowance: 3
+
 scenarios:
   campus_faq:
     label: Campus FAQ triage
@@ -66,11 +73,16 @@ scenarios:
     summary: A team choosing the baseline a campus FAQ triage tool should be measured against.
     max_turns: 10
     safety_turns: 14
+    # This world releases seven exhibits out to turn 16. Ten turns reach four
+    # of them and stop; the dialogue is cut off rather than finished, so its
+    # arc must not be read beside a scenario that reached its own end.
+    truncates_release_schedule: shows the first four exhibits of a sixteen-turn schedule within a ten-turn demonstration
 
   riverside_clinic:
     label: Riverside Clinic scheduling
     world: world_029_riverside_clinic
     summary: A contemporary clinic scheduling inquiry with a short authored chain.
+    # Last exhibit lands at turn 7, leaving one turn to close.
     max_turns: 8
     safety_turns: 12
 

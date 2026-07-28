@@ -4,7 +4,9 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // with a version-2 trace without accounting for that.
 // 4 (2026-07-28): dialogue_closure gained premature_dialogue_close, so a
 // version-3 trace cannot carry that row and its absence there means nothing.
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 4;
+// 5 (2026-07-28): repetition gained tutor_turn_without_advance, a second
+// channel that fires on a stall the lexical similarity score never sees.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 5;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -131,6 +133,12 @@ const RULES = Object.freeze([
       rationale: 'Material tutor repetition must not trap the learner in a repeated exchange.',
     }),
   ),
+  rule({
+    guard: 'repetition',
+    type: 'tutor_turn_without_advance',
+    category: 'conversational_integrity',
+    rationale: 'A turn that restates the covered ground in fresh words traps the learner just as surely.',
+  }),
   ...[
     'missing_explicit_dialogue_close',
     'closure_response_opens_another_turn',

@@ -119,7 +119,7 @@ test('the live terminal fallback cannot exhaust delivery on optional actorial an
 
   const decision = decideTutorStubGuardDelivery(rows, { terminalFallback: true });
   assert.equal(decision.ok, true);
-  assert.equal(decision.catalogVersion, 4);
+  assert.equal(decision.catalogVersion, 5);
   assert.deepEqual(decision.hardIssues, []);
   assert.deepEqual(
     decision.advisoryIssues.map((issue) => `${issue.guard}:${issue.type}`),

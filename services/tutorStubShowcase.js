@@ -26,8 +26,13 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import yaml from 'yaml';
+
+import { loadWorld } from './dramaticDerivation/world.js';
+
+const DEFAULT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export const TUTOR_STUB_SHOWCASE_CONFIG_SCHEMA = 'machinespirits.tutor-stub.showcase-config.v1';
 export const TUTOR_STUB_SHOWCASE_PLAN_SCHEMA = 'machinespirits.tutor-stub.showcase-plan.v1';
@@ -142,9 +147,40 @@ function positiveInt(value, label) {
   return value;
 }
 
+/**
+ * Read each scenario world's release schedule so the turn cap can be checked
+ * against it. This is the only part of validation that touches the filesystem,
+ * which is why it lives with the loader: `validateTutorStubShowcaseConfig`
+ * stays a pure function of its inputs and tests can hand it any schedule.
+ */
+export function readTutorStubShowcaseReleaseSchedules(config, { worldDir } = {}) {
+  const directory = worldDir || path.join(DEFAULT_ROOT, 'config', 'drama-derivation');
+  const schedules = {};
+  for (const [id, scenario] of Object.entries(config?.scenarios || {})) {
+    const file = `${String(scenario?.world || '').replace(/_/gu, '-')}.yaml`;
+    const worldPath = path.join(directory, file);
+    if (!fs.existsSync(worldPath)) continue;
+    const releases = loadWorld(worldPath).releaseSchedule || [];
+    schedules[id] = {
+      releaseCount: releases.length,
+      lastReleaseTurn: releases.reduce((last, entry) => Math.max(last, Number(entry?.turn || 0)), 0),
+    };
+  }
+  return schedules;
+}
+
 export function loadTutorStubShowcaseConfig(configPath) {
   const source = fs.readFileSync(configPath, 'utf8');
-  return { config: yaml.parse(source), source, configSha256: sha256(source), configPath: path.resolve(configPath) };
+  const config = yaml.parse(source);
+  return {
+    config,
+    source,
+    configSha256: sha256(source),
+    configPath: path.resolve(configPath),
+    releaseSchedules: readTutorStubShowcaseReleaseSchedules(config, {
+      worldDir: path.join(path.dirname(path.resolve(configPath)), 'drama-derivation'),
+    }),
+  };
 }
 
 function resolveArm(id, definition) {
@@ -167,7 +203,49 @@ function resolveArm(id, definition) {
   };
 }
 
-export function validateTutorStubShowcaseConfig(config) {
+/**
+ * Tie the turn cap to the world's own release schedule.
+ *
+ * The caps were hand-set and drifted away from the schedules they were meant to
+ * fit. Riverside Clinic releases its last exhibit at turn 7 under a cap of 8;
+ * AI Syllabus releases its last at turn 16 under a cap of 10, so that dialogue
+ * is stopped with three exhibits still unreleased. Those are opposite faults
+ * and only one of them was visible in the report.
+ *
+ * A cap past the last release must leave a closing allowance and no more, or
+ * the tutor spends turns with nothing new to say. A cap short of the last
+ * release is sometimes what you want — a showcase need not run a world to its
+ * end — but it must say so, because a truncated dialogue and a completed one
+ * cannot be read the same way.
+ */
+function validateTurnCapAgainstReleases(id, scenario, schedule, closingAllowance) {
+  if (!schedule || !schedule.lastReleaseTurn) return;
+  const { lastReleaseTurn } = schedule;
+  const truncationReason = String(scenario.truncates_release_schedule || '').trim();
+  if (scenario.max_turns <= lastReleaseTurn) {
+    if (!truncationReason) {
+      throw new Error(
+        `scenario ${id}.max_turns (${scenario.max_turns}) stops before the world releases its last exhibit at turn ${lastReleaseTurn}; ` +
+          'set truncates_release_schedule to state why the dialogue is cut short',
+      );
+    }
+    return;
+  }
+  if (truncationReason) {
+    throw new Error(
+      `scenario ${id} declares truncates_release_schedule but max_turns (${scenario.max_turns}) already runs past the last release at turn ${lastReleaseTurn}`,
+    );
+  }
+  const ceiling = lastReleaseTurn + closingAllowance;
+  if (scenario.max_turns > ceiling) {
+    throw new Error(
+      `scenario ${id}.max_turns (${scenario.max_turns}) leaves more than closing_allowance (${closingAllowance}) turns after the last release at turn ${lastReleaseTurn}; ` +
+        'the tutor would run out of new material before the cap',
+    );
+  }
+}
+
+export function validateTutorStubShowcaseConfig(config, { releaseSchedules = null } = {}) {
   if (!config || config.schema !== TUTOR_STUB_SHOWCASE_CONFIG_SCHEMA) {
     throw new Error(`showcase config schema must be ${TUTOR_STUB_SHOWCASE_CONFIG_SCHEMA}`);
   }
@@ -181,12 +259,16 @@ export function validateTutorStubShowcaseConfig(config) {
   const arms = Object.entries(config.arms).map(([id, definition]) => resolveArm(id, definition));
   const baselines = arms.filter((arm) => arm.baseline);
   if (baselines.length !== 1) throw new Error('exactly one arm must be marked baseline: true');
+  const closingAllowance = positiveInt(config.closing_allowance, 'closing_allowance');
   for (const [id, scenario] of Object.entries(config.scenarios)) {
     if (!String(scenario?.world || '').trim()) throw new Error(`scenario ${id} requires world`);
     positiveInt(scenario.max_turns, `scenario ${id}.max_turns`);
     positiveInt(scenario.safety_turns, `scenario ${id}.safety_turns`);
     if (scenario.safety_turns < scenario.max_turns) {
       throw new Error(`scenario ${id}.safety_turns must not be below max_turns`);
+    }
+    if (releaseSchedules) {
+      validateTurnCapAgainstReleases(id, scenario, releaseSchedules[id], closingAllowance);
     }
   }
   if (!config.models[config.learner?.model]) throw new Error('learner.model must name a configured model');
@@ -288,8 +370,9 @@ export function buildTutorStubShowcasePlan({
   maxDialogues = null,
   traceRoot = '.tutor-stub-traces/showcase',
   configSha256 = null,
+  releaseSchedules = null,
 } = {}) {
-  const { config: validated, arms: allArms } = validateTutorStubShowcaseConfig(config);
+  const { config: validated, arms: allArms } = validateTutorStubShowcaseConfig(config, { releaseSchedules });
   const selectedPreset = validated.presets[preset];
   if (!selectedPreset) throw new Error(`unknown showcase preset ${preset}`);
   const armIds = [...new Set((arms || selectedPreset.arms).map(String))];

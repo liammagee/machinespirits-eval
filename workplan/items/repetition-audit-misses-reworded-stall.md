@@ -1,7 +1,7 @@
 ---
 id: repetition-audit-misses-reworded-stall
 title: The repetition audit catches verbatim looping and misses a reworded stall
-status: active
+status: done
 type: infra
 priority: P3
 owner: claude
@@ -9,17 +9,20 @@ source: review
 created: 2026-07-28
 updated: 2026-07-28
 verification: >-
-  A run of tutor turns that restate the same claim in fresh words on every turn
-  raises an issue, with the eight-turn Riverside bare arm from the 2026-07-26
-  showcase pinned as the case that currently passes; the existing verbatim cases
-  (campus bare t8–t10, Jaccard 0.84/0.94/0.84) keep firing with the same issue
-  type and no change in `maxSimilarity`; whatever channel is added reports its
-  own score beside the lexical one rather than replacing it.
+  `auditTutorStubAdvanceResponse` scores content-word novelty against the recent
+  tutor turns and fires `tutor_turn_without_advance` below 0.25. The full
+  eight-turn Riverside bare arm is pinned as a test case: it fires on the last
+  turn while `maxSimilarity` stays under the lexical threshold, which is the
+  whole point. Both scores are reported on the one audit object; the lexical
+  channel is unchanged and the advance channel is opt-in, so a caller that
+  cannot supply its context gets exactly the old behaviour.
 links:
   code:
     - services/tutorStubResponseGuard.js
+    - services/tutorStubGuardDisposition.js
     - services/tutorStubObservedAudits.js
     - scripts/tutor-stub.js
+    - tests/tutorStubResponseGuard.test.js
   items:
     - tutor-instrumentation-showcase
     - tutor-redeclares-close-lifecycle-has-not-accepted
@@ -71,15 +74,45 @@ and evidence releases move together perfectly — every turn that releases an
 exhibit asks a question, every turn without one asks none. That co-movement is
 the cheap signal, and it is already on the turn record.
 
-## Direction
+## What was built
 
-Add a second channel beside the lexical one rather than retuning it. Report both
-scores. The lexical check is doing its job on the case it was built for; what is
-missing is a check on whether the turn added anything, and the release plan plus
-the question frame already know the answer on an instrumented turn.
+A second channel, `auditTutorStubAdvanceResponse`, beside the lexical one rather
+than a retune of it. It asks what share of a turn's content words the last ten
+turns have not already used, and fires `tutor_turn_without_advance` below 0.25.
+Both scores ride on the one audit object.
 
-The bare arm is the harder half — it builds neither, which is why the observed
-pass carries only leak and repetition in the first place. A no-advance signal
-for a bare turn would need to come from the text. Worth scoping before
-committing to it; a channel that only works on the instrumented arm is still
-worth having, as long as the asymmetry is reported rather than hidden.
+The bare arm turned out not to be the harder half after all. The card expected to
+need the release plan and the question frame, and so expected an instrumented-only
+signal; a text-only novelty score works on both arms, which is what makes the
+observed-audit path on passthrough worth anything.
+
+## Where the floor came from
+
+Read off the four showcase arms, not chosen a priori. Novelty per turn:
+
+```
+campus_faq  bare    --  .62 .50 X.22 X.24 X.10 X.00 X.00 X.06 X.00
+campus_faq  instr   --  .74 .77  .69  .54  .73  .45  .41  .30  .30
+riverside   bare    --  .61 .39  .48  .40  .26 X.23 X.14
+riverside   instr   --  .79 .67  .60  .32 X.20  .31
+```
+
+Campus instrumented — the arm that *rose* — bottoms out at 0.30 and never fires.
+Every stalling stretch drops below 0.25. The floor sits in a 0.07 gap between
+them.
+
+Two things worth stating about that. It catches campus bare from t4, four turns
+before the lexical channel woke at t8. And it is a threshold read off eight
+scored turns in two dialogues on one model, so it is set loose on purpose: it
+fires on the deep end of a stall and lets the onset through rather than risk
+blocking a good turn. Riverside bare t6 at 0.26 is a turn the judge marked down
+that this floor lets pass.
+
+## Exemptions
+
+A turn can be word-poor without stalling, so three cases skip the check and say
+which: it delivers an exhibit (`released_new_evidence`), it is the closing act
+(`terminal_turn`), or it is under eight content words (`too_short_to_judge`).
+Passthrough has neither a release schedule nor a closure frame, so on that arm
+the channel runs on text alone — the asymmetry is recorded in `advanceSkipped`
+rather than hidden.

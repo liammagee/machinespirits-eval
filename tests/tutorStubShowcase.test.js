@@ -184,6 +184,57 @@ test('every declared arm flag is either a bare switch or takes exactly one value
   for (const flag of TUTOR_STUB_SHOWCASE_ARM_FLAGS) assert.match(flag, /^--[a-z0-9-]+$/u);
 });
 
+test('the shipped config validates against the release schedules its worlds actually declare', () => {
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  // Read off the worlds rather than restated here: the point of the check is
+  // that nobody has to keep the two numbers in step by hand.
+  assert.ok(loaded.releaseSchedules.riverside_clinic.lastReleaseTurn > 0);
+  assert.ok(loaded.releaseSchedules.campus_faq.lastReleaseTurn > 0);
+  validateTutorStubShowcaseConfig(loaded.config, { releaseSchedules: loaded.releaseSchedules });
+});
+
+test('a turn cap that runs on past the last exhibit is rejected', () => {
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  const schedules = { riverside_clinic: { lastReleaseTurn: 7, releaseCount: 4 } };
+  loaded.config.scenarios.riverside_clinic.max_turns = 7 + loaded.config.closing_allowance + 1;
+  loaded.config.scenarios.riverside_clinic.safety_turns = 20;
+
+  assert.throws(
+    () => validateTutorStubShowcaseConfig(loaded.config, { releaseSchedules: schedules }),
+    /run out of new material/u,
+  );
+});
+
+test('a turn cap that stops before the last exhibit must say why', () => {
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  const schedules = { campus_faq: { lastReleaseTurn: 16, releaseCount: 7 } };
+  delete loaded.config.scenarios.campus_faq.truncates_release_schedule;
+
+  assert.throws(
+    () => validateTutorStubShowcaseConfig(loaded.config, { releaseSchedules: schedules }),
+    /stops before the world releases its last exhibit/u,
+  );
+});
+
+test('a scenario may not claim truncation while running past its last exhibit', () => {
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  const schedules = { riverside_clinic: { lastReleaseTurn: 7, releaseCount: 4 } };
+  loaded.config.scenarios.riverside_clinic.truncates_release_schedule = 'not actually true';
+
+  assert.throws(
+    () => validateTutorStubShowcaseConfig(loaded.config, { releaseSchedules: schedules }),
+    /already runs past the last release/u,
+  );
+});
+
+test('the turn-cap rule is skipped entirely when no schedules are supplied', () => {
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  loaded.config.scenarios.riverside_clinic.max_turns = 60;
+  loaded.config.scenarios.riverside_clinic.safety_turns = 60;
+
+  validateTutorStubShowcaseConfig(loaded.config);
+});
+
 test('the plan spans scenarios x arms x models and keeps its child commands', () => {
   const built = plan('default');
   assert.equal(built.plannedDialogues, 4);
