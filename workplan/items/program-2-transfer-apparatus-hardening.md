@@ -73,6 +73,8 @@ their first attempt with full frozen-horizon coverage, hard safety, and no
 attrition. Its zero eligible committee moments are recorded on the separate
 Phase 5f experiment card and are not evidence for or against this infra card.
 
-The card is ready for review once the branch is reconciled with current
-`main` and its focused, derivation-quality, hermetic-manifest, lint, and
-workplan source gates pass. No further paid run is required for this card.
+The branch is reconciled with current `main`. Its review gates pass: 309
+focused Program-2 and tutor-response tests, the 32-world derivation-quality
+audit, the hermetic manifest check, lint, and the 294-item workplan source
+check. The separate post-sync outer-loop and merged model-selection suites also
+pass. No further paid run is required for this card.
