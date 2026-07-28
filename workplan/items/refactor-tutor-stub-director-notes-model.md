@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-28
 updated: 2026-07-28
-verification: focused 7/7 including byte-exact live Marrick fixtures plus full hermetic root and tutor-core zero-skip contracts preserve opening withholding and issued scene notes; every static and source-only gate passes
+verification: focused 7/7 including byte-exact live Marrick fixtures plus full hermetic root and tutor-core zero-skip contracts preserve opening withholding and issued scene notes; every static and source-only gate passes; strong benchmark same-response re-audit records 0 regressions and 0 safety changes
 branch: codex/refactor-tutor-stub-director-notes-model
 claim_status: planned
 depends_on:
@@ -20,6 +20,8 @@ links:
     - services/tutorStubDirectorPresentation.js
     - scripts/tutor-stub.js
     - tests/tutorStubDirectorPresentation.test.js
+  prs:
+    - 367
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-generous-fallback
@@ -51,3 +53,6 @@ Log:
 - 2026-07-28 — Bound the director-notes state model to the CLI-owned release
   selector and clone operation, reducing the CLI by 15 lines. Seven focused
   assertions and the complete zero-skip hermetic contract pass.
+- 2026-07-28 — The required strong benchmark retained the six existing fresh
+  candidate quality failures; zero-call same-response re-audit found zero
+  regressions and zero safety changes. Recorded on PR #367.
