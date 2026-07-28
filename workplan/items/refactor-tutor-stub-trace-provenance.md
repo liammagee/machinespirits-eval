@@ -20,7 +20,8 @@ links:
     - services/traceSchema.js
     - scripts/tutor-stub.js
     - tests/traceSchema.test.js
-  prs: []
+  prs:
+    - 408
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-trace-secret-redaction
@@ -53,3 +54,6 @@ Log:
   the shared trace-schema service, reducing `scripts/tutor-stub.js` by 11
   lines. Seven focused assertions, complete zero-skip hermetic parity, and all
   static/source-only gates pass.
+- 2026-07-28 — Opened PR #408 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
