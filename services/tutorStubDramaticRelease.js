@@ -1,4 +1,5 @@
 import { compileTutorStubDueSourceActionReferents, renderTutorStubDueSource } from './tutorStubDueSourceRenderer.js';
+import { tutorStubTextInvitesClarification } from './tutorStubQuestionSupport.js';
 import { deterministicTutorStubTurnProgressionHandoff } from './tutorStubTurnProgressionContract.js';
 import {
   TUTOR_STUB_DRAMATIC_RELEASE_SCHEMA,
@@ -860,22 +861,27 @@ export function deterministicTutorStubDramaticReleaseFallback({
           diction,
         }),
   );
-  const clarification = support?.clarificationInvitationRequired
-    ? 'You can also ask me to unpack any word or connection in it.'
-    : null;
   const directRepair =
     support?.responsiveRepairRequired && !oneLine(uptake)
       ? 'You’re right—I did not answer your question directly. The public record that answers it is this:'
       : null;
+  // The handoff builder now carries the invitation inside the question it
+  // writes. Saying it again as a sentence of its own would both repeat it and
+  // put speech after a question the contract requires to be last.
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract: turnProgressionContract,
+    support,
+    defaultQuestion: fallbackQuestion({ stance, variationKey, avoidQuestion }),
+    publicObject: sceneObject(frame.entries[0], 'record', world),
+  });
+  const clarification =
+    support?.clarificationInvitationRequired && !tutorStubTextInvitesClarification(handoff)
+      ? 'You can also ask me to unpack any word or connection in it.'
+      : null;
   const development = [
     directRepair,
     ...rendered,
-    deterministicTutorStubTurnProgressionHandoff({
-      contract: turnProgressionContract,
-      support,
-      defaultQuestion: fallbackQuestion({ stance, variationKey, avoidQuestion }),
-      publicObject: sceneObject(frame.entries[0], 'record', world),
-    }),
+    handoff,
     turnProgressionContract?.handoff_contract?.question_allowed === false ? null : clarification,
   ]
     .filter(Boolean)

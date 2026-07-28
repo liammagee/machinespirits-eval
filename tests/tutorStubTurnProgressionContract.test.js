@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   TUTOR_STUB_TURN_PROGRESSION_AUDIT_SCHEMA,
   TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
+  auditTutorStubLiveTurnProgressionV1,
   auditTutorStubTurnProgression,
   compileTutorStubTurnProgressionContract,
   deterministicTutorStubTurnProgressionHandoff,
@@ -972,4 +973,138 @@ test('deterministic V1 recovery replaces interrogative uptake instead of strippi
   assert.notEqual(uptake, 'Which public mark would connect the tool to one hand');
   assert.match(uptake, /Your point about/iu);
   assert.doesNotMatch(uptake, /\?/u);
+});
+
+// Campus turn 10 of the 2026-07-29 showcase run, verbatim from the trace. The
+// learner had signalled trouble twice, the handoff contract supplied its own
+// question, and the built last-resort line lost the invitation the support
+// contract asked for — so the line was refused and the dialogue ended with
+// nothing published.
+const CAMPUS_TURN_10_HANDOFF = {
+  mode: 'assertion_gap_prompt',
+  question_allowed: true,
+  question_required: true,
+  question_owner: 'handoff',
+  terminal_if_question: true,
+  required_target_surfaces: [
+    'What should the campus FAQ tool use as its first implementation baseline, on the evidence in the formulation card?',
+  ],
+  required_target_terms: [
+    'campu',
+    'faq',
+    'tool',
+    'use',
+    'first',
+    'implementation',
+    'baseline',
+    'evidence',
+    'formulation',
+    'card',
+  ],
+  required_exact_question: null,
+  prohibited_settled_surfaces: [],
+  instruction: 'HANDOFF alone asks one final question about TURN FOCUS.',
+};
+
+const CAMPUS_TURN_10_SUPPORT = {
+  answerability: 'public_but_needs_scaffold',
+  modality: 'bounded_public_choice',
+  adaptiveMultipleChoice: true,
+  guardRequired: true,
+  clarificationInvitationRequired: true,
+  responsiveRepairRequired: false,
+  struggleCount: 2,
+};
+
+function campusTurn10Contract() {
+  return {
+    schema: TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
+    complete: true,
+    public_only: true,
+    learner_uptake: {
+      required: false,
+      mode: 'public_move',
+      focus_terms: ['baseline', 'implementation'],
+      accepted_meaning: null,
+      accepted_meaning_kind: null,
+      learner_surface: 'The learner is unsure which baseline to start from.',
+    },
+    turn_focus_contract: {
+      primary_surface: 'the first implementation baseline in the formulation card',
+      primary_terms: ['baseline', 'implementation', 'card'],
+      due_surfaces: [],
+      due_terms: [],
+      instruction: 'Keep the turn on the first implementation baseline.',
+    },
+    handoff_contract: CAMPUS_TURN_10_HANDOFF,
+  };
+}
+
+test('a contract-supplied handoff question still carries the clarification invitation', () => {
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract: campusTurn10Contract(),
+    support: CAMPUS_TURN_10_SUPPORT,
+    defaultQuestion:
+      'Would you rather test that distinction against what is already public, hold it open for the next public fact, or ask me to clarify a word or connection?',
+    publicObject: 'formulation card',
+  });
+
+  // The contract's own question is kept, so the turn focus is unchanged.
+  assert.match(handoff, /first implementation baseline, on the evidence in the formulation card/u);
+  // One question, and it is the last thing said.
+  assert.equal((handoff.match(/\?/gu) || []).length, 1);
+  assert.match(handoff, /\?$/u);
+  assert.equal(auditTutorStubQuestionSupportResponse({ text: handoff, support: CAMPUS_TURN_10_SUPPORT }).ok, true);
+});
+
+test('the built campus turn-10 fallback passes the checks that refused it', () => {
+  const contract = campusTurn10Contract();
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract,
+    support: CAMPUS_TURN_10_SUPPORT,
+    defaultQuestion: 'What does that let us carry forward?',
+    publicObject: 'formulation card',
+  });
+  const text = [
+    'I open the formulation card and enter your first baseline: hand-authored rules, approved guidance, and escalation for uncertainty.',
+    handoff,
+  ].join(' ');
+  const audit = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text,
+    responseComposition: {
+      segments: {
+        uptake: '',
+        development: text,
+      },
+    },
+  });
+
+  assert.equal(auditTutorStubQuestionSupportResponse({ text, support: CAMPUS_TURN_10_SUPPORT }).ok, true);
+  const types = audit.issues.map((issue) => issue.type);
+  assert.equal(types.includes('handoff_question_not_terminal'), false);
+  assert.equal(types.includes('multiple_questions_violate_terminal_handoff'), false);
+  assert.equal(types.includes('handoff_loses_turn_focus'), false);
+  assert.equal(types.includes('required_handoff_question_missing'), false);
+});
+
+test('an exact required handoff question is left alone rather than extended', () => {
+  const contract = campusTurn10Contract();
+  contract.handoff_contract = {
+    ...CAMPUS_TURN_10_HANDOFF,
+    mode: 'missing_relation_recovery',
+    required_exact_question: 'Which line in the formulation card names the baseline?',
+  };
+  contract.turn_focus_contract.integration_target = {
+    question: 'Which line in the formulation card names the baseline?',
+  };
+
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract,
+    support: CAMPUS_TURN_10_SUPPORT,
+    defaultQuestion: 'What does that let us carry forward?',
+    publicObject: 'formulation card',
+  });
+
+  assert.equal(handoff, 'Which line in the formulation card names the baseline?');
 });

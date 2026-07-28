@@ -199,7 +199,12 @@ function openRecallQuestions(text) {
     );
 }
 
-function invitesClarification(source) {
+/**
+ * The one reading of "a clarifying question is visibly available". Builders that
+ * have to satisfy this check import it rather than keeping a second matcher that
+ * can drift away from the one the audit uses.
+ */
+export function tutorStubTextInvitesClarification(source) {
   return (
     /\b(?:ask|tell)\s+me\b.{0,80}\b(?:clue|term|word|part|meaning|unclear|explain)/isu.test(source) ||
     /\b(?:if|when)\b.{0,70}\b(?:unclear|not sure|unsure|doesn[’']?t make sense)\b.{0,80}\b(?:ask|say|tell)/isu.test(
@@ -266,7 +271,7 @@ export function auditTutorStubQuestionSupportResponse({ text = '', support = nul
     }
   }
   if (support.clarificationInvitationRequired && source.includes('?')) {
-    if (!invitesClarification(source)) {
+    if (!tutorStubTextInvitesClarification(source)) {
       issues.push({
         type: 'missing_clarification_invitation',
         reason:

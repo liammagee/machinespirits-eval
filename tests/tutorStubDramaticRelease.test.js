@@ -12,6 +12,7 @@ import {
   tutorStubSourcePerspectiveDriftVisible,
   tutorStubDramaticReleasePrompt,
 } from '../services/tutorStubDramaticRelease.js';
+import { tutorStubTextInvitesClarification } from '../services/tutorStubQuestionSupport.js';
 import { TUTOR_STUB_SOURCE_ACCESSIBILITY_AUDIT_SCHEMA } from '../services/tutorStubSourceAccessibilityContract.js';
 
 test('duplicate due-clue wording is rejected before it can be delivered', () => {
@@ -746,7 +747,11 @@ test('the deterministic release fallback performs the complete handoff', () => {
   assert.match(text, /“(?:I|My)\b/u);
   assert.match(text, /without carrying its claim beyond the evidence/u);
   assert.match(text, /I attest: The lift notice authorizes Wrenfold to clear appliances/u);
-  assert.match(text, /ask me to unpack/u);
+  // The invitation is folded into the handoff question rather than added after
+  // it, so the question stays last. Read it the way the support audit does.
+  assert.equal(tutorStubTextInvitesClarification(text), true);
+  assert.equal((text.match(/\?/gu) || []).length, 1);
+  assert.match(text, /\?$/u);
   assert.doesNotMatch(text, /role-play|I’ll be|another piece of information|Back to us/iu);
   assert.equal(auditTutorStubDramaticReleaseResponse({ text, frame }).ok, true);
 });

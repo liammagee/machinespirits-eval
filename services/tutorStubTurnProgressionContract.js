@@ -1,3 +1,5 @@
+import { tutorStubTextInvitesClarification } from './tutorStubQuestionSupport.js';
+
 export const TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA = 'machinespirits.tutor-stub.turn-progression-contract.v1';
 export const TUTOR_STUB_TURN_PROGRESSION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.turn-progression-audit.v1';
 export const TUTOR_STUB_LIVE_TURN_PROGRESSION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.live-turn-progression-audit.v1';
@@ -937,6 +939,32 @@ function contractAwareFallbackQuestion(contract, defaultQuestion) {
 }
 
 /**
+ * Carry the clarification invitation on a handoff that ends in a question.
+ *
+ * The invitation cannot be a sentence of its own here: a handoff contract with
+ * `terminal_if_question` requires the question to be the last thing said, so an
+ * appended sentence trades one finding for another. Folding it into the question
+ * keeps one question mark, keeps it last, and only adds to the target-term
+ * coverage the same sentence is measured on.
+ *
+ * An exact required question is the stronger claim on that sentence and is left
+ * alone; the support finding then stands, which is the correct reading.
+ */
+export function tutorStubHandoffWithClarificationInvitation(text, { support = null, handoff = null } = {}) {
+  const source = oneLine(text);
+  if (support?.clarificationInvitationRequired !== true || !source) return source;
+  if (tutorStubTextInvitesClarification(source)) return source;
+  if (!QUESTION_PATTERN.test(source)) return `${source} You can also ask me to unpack any word or connection.`;
+  if (handoff?.required_exact_question) return source;
+  const stem = source.replace(/\s*\?+\s*$/u, '').replace(/[,;]\s*$/u, '');
+  if (!stem) return source;
+  // A comma already inside the question would read the added clause as one more
+  // item in a list, so the dash keeps it a separate offer.
+  const join = /,/u.test(stem) ? ' — or' : ', or';
+  return `${stem}${join} ask me which word or connection needs unpacking?`;
+}
+
+/**
  * Realize the compiled V1 handoff for deterministic recovery. This consumes
  * the same public progression contract as the speaking prompt; it does not
  * infer V2 slot spans or weaken the delivery audit.
@@ -948,7 +976,7 @@ export function deterministicTutorStubTurnProgressionHandoff({
   publicObject = '',
 } = {}) {
   if (contract?.schema !== TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA || contract.complete !== true) {
-    return oneLine(defaultQuestion);
+    return tutorStubHandoffWithClarificationInvitation(defaultQuestion, { support });
   }
   if (contract.handoff_contract?.question_allowed === false) {
     return declarativeFallbackFocus(contract, {
@@ -957,7 +985,17 @@ export function deterministicTutorStubTurnProgressionHandoff({
       publicObject,
     });
   }
-  return contractAwareFallbackQuestion(contract, defaultQuestion);
+  // The question-allowed branch used to drop `support` entirely, and
+  // `contractAwareFallbackQuestion` returns the contract's own question whenever
+  // it has one — discarding the default question, which was the only thing
+  // carrying the invitation. Campus turn 10 of the 2026-07-29 showcase run was
+  // an assertion-gap turn on a learner who had signalled trouble twice: the last
+  // line lost the invitation, the support check refused it, and the dialogue
+  // ended with nothing published.
+  return tutorStubHandoffWithClarificationInvitation(contractAwareFallbackQuestion(contract, defaultQuestion), {
+    support,
+    handoff: contract.handoff_contract,
+  });
 }
 
 function compositionSlots(composition = null) {
