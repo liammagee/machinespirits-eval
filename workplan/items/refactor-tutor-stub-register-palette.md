@@ -15,6 +15,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-stack-recovery
 links:
+  prs:
+    - 350
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -64,3 +66,5 @@ Log:
   manifest files and 137/137 tutor-core assertions pass with zero skips.
   Manifest, 270-item source workplan, refs, lint, formatting, syntax, diff, and
   the zero-cycle ratchet across 424 files also pass.
+- 2026-07-28 — Opened dependent PR #350 on recovery PR #349's branch; managed
+  refs are unchanged.
