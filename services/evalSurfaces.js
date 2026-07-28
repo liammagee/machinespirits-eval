@@ -37,6 +37,7 @@ import { mountSubjectExplorer } from './subjectExplorer.js';
 import { createTutorStubProcessSessionHost } from './tutorStubProcessSessionFactory.js';
 import { buildTutorStubPublicCatalog } from './tutorStubCatalog.js';
 import { tutorStubCommandTransportAdmission } from './tutorStubCommandRegistry.js';
+import { STATIC_SURFACES } from './evalStaticSurfaces.js';
 
 // API routers, in mount order. [mountPath, router].
 const API_ROUTERS = [
@@ -47,18 +48,10 @@ const API_ROUTERS = [
   ['/api/human-coding', humanCodingRoutes],
 ];
 
-// Static UI surfaces: [mountPath, dirRelativeToRoot]. Each is existsSync-guarded
-// at mount time so a missing directory is skipped silently rather than erroring.
-const STATIC_SURFACES = [
-  ['/tutor', 'public/tutor'], // shared browser + Electron tutor-stub session studio
-  ['/pilot', 'public/pilot'], // participant-facing human-learner pilot UI
-  ['/pilot-admin', 'public/pilot-admin'], // operator dashboard (token-gated API)
-  ['/adjudication', 'public/adjudication'], // A19 blinded human-adjudication forms
-  ['/human-coding-admin', 'public/human-coding-admin'], // consolidated human labelling game
-  ['/eval', 'public/eval'], // static research explainers and companion notes
-  ['/components', 'public/components'], // shared design system (techne.css) + UI components
-  ['/docs', 'docs'], // documentation tree (poetics pre-mounts /docs/research)
-];
+// Static UI surfaces live in their own module so tests can read the list without
+// importing this one, which pulls in every route module and opens the DB. Each
+// is existsSync-guarded at mount time so a missing directory is skipped silently
+// rather than erroring.
 
 /**
  * Mount the eval API routers + static UI surfaces onto an existing Express app.
