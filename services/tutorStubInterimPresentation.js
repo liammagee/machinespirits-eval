@@ -267,6 +267,36 @@ export function summarizeTutorStubPendingTutorDag(state, context, { buildTutorDa
   return `turn ${snapshot.turn} | ${snapshot.leavesReleased} of ${snapshot.leavesTotal} key clues revealed | ${next}`;
 }
 
+export function summarizeTutorStubPendingField(
+  state,
+  context,
+  { buildLightweightDialogueField, lightweightFieldTurn, buildTutorDagSnapshot } = {},
+) {
+  if (!context?.classification && !context?.tutorLearnerDag?.model) return null;
+  const completedField = buildLightweightDialogueField(state?.turns || []);
+  const previous = completedField.rows.at(-1) || null;
+  const pendingTurn = {
+    turn: context.tutorTurn || (state?.turns?.length || 0) + 1,
+    learner: context.learnerText || '',
+    classification: context.classification || null,
+    tutorLearnerDagModel: context.tutorLearnerDag?.model || null,
+    registerSelection: context.registerSelection || null,
+    previousRegisterEfficacy: context.previousRegisterEfficacy || null,
+    tutor: '',
+    tutorDag:
+      context.tutorDagSnapshot || buildTutorDagSnapshot(state, context.tutorTurn || (state?.turns?.length || 0) + 1),
+  };
+  const row = lightweightFieldTurn(pendingTurn, previous);
+  return [
+    `turn ${row.turn}`,
+    `learner understanding ${tutorStubInterimLevel(row.learnerMastery)}`,
+    `pressure ${tutorStubInterimLevel(row.learnerRisk)}`,
+    `tutor fit ${tutorStubInterimLevel(row.tutorAlignment)}`,
+    `momentum ${tutorStubInterimLevel(row.jointMomentum)}`,
+    tutorStubPlainInterimBottleneck(row.bottleneck),
+  ].join(' | ');
+}
+
 export function tutorStubInterimCliHintPanels(active) {
   const state = active.state || {};
   const phase = String(active.basePhase || active.phase || '').toLowerCase();

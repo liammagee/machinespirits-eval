@@ -380,6 +380,7 @@ import {
   summarizeTutorStubInterimField,
   summarizeTutorStubEvidenceTiming,
   summarizeTutorStubPendingDagMovement,
+  summarizeTutorStubPendingField,
   summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
   summarizeTutorStubPendingObjective,
@@ -387,8 +388,6 @@ import {
   summarizeTutorStubPendingTutorDag,
   summarizeTutorStubLearnerRecordUpdate,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
-  tutorStubInterimLevel as interimLevel,
-  tutorStubPlainInterimBottleneck as plainInterimBottleneck,
 } from '../services/tutorStubInterimPresentation.js';
 import {
   listTutorStubTutorInstances,
@@ -3100,6 +3099,13 @@ const compactEvidenceTimingSummary = (state, context) =>
 const compactPendingTutorDagSummary = (state, context) =>
   summarizeTutorStubPendingTutorDag(state, context, { buildTutorDagSnapshot });
 
+const compactPendingFieldSummary = (state, context) =>
+  summarizeTutorStubPendingField(state, context, {
+    buildLightweightDialogueField,
+    lightweightFieldTurn,
+    buildTutorDagSnapshot,
+  });
+
 function currentReleaseRows(state, tutorTurn) {
   const world = state?.world;
   if (!world || !Number.isFinite(Number(tutorTurn))) return [];
@@ -3213,32 +3219,6 @@ function nextReleaseRow(state) {
     surface: String(premise?.surface || '').trim(),
     fact: premise?.fact || null,
   };
-}
-
-function compactPendingFieldSummary(state, context) {
-  if (!context?.classification && !context?.tutorLearnerDag?.model) return null;
-  const completedField = buildLightweightDialogueField(state?.turns || []);
-  const previous = completedField.rows.at(-1) || null;
-  const pendingTurn = {
-    turn: context.tutorTurn || (state?.turns?.length || 0) + 1,
-    learner: context.learnerText || '',
-    classification: context.classification || null,
-    tutorLearnerDagModel: context.tutorLearnerDag?.model || null,
-    registerSelection: context.registerSelection || null,
-    previousRegisterEfficacy: context.previousRegisterEfficacy || null,
-    tutor: '',
-    tutorDag:
-      context.tutorDagSnapshot || buildTutorDagSnapshot(state, context.tutorTurn || (state?.turns?.length || 0) + 1),
-  };
-  const row = lightweightFieldTurn(pendingTurn, previous);
-  return [
-    `turn ${row.turn}`,
-    `learner understanding ${interimLevel(row.learnerMastery)}`,
-    `pressure ${interimLevel(row.learnerRisk)}`,
-    `tutor fit ${interimLevel(row.tutorAlignment)}`,
-    `momentum ${interimLevel(row.jointMomentum)}`,
-    plainInterimBottleneck(row.bottleneck),
-  ].join(' | ');
 }
 
 function compactInterimPanels(active) {

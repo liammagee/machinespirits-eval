@@ -16,6 +16,7 @@ import {
   summarizeTutorStubInterimField,
   summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingDagMovement,
+  summarizeTutorStubPendingField,
   summarizeTutorStubPendingLearnerDag,
   summarizeTutorStubPendingObjective,
   summarizeTutorStubPendingRegister,
@@ -437,6 +438,54 @@ test('pending tutor-DAG summary preserves supplied snapshots, lazy construction,
   );
   assert.equal(calls, 1, 'a supplied snapshot must avoid reconstruction');
   assert.equal(summarizeTutorStubPendingTutorDag({}, { tutorTurn: 1 }, dependencies), null);
+});
+
+test('pending field summary preserves activation, projected inputs, prior-row context, strength bands, and bottleneck copy', () => {
+  const previous = { turn: 2, learnerMastery: 0.4 };
+  const dependencies = {
+    buildLightweightDialogueField: (turns) => {
+      assert.deepEqual(turns, [{ turn: 2 }]);
+      return { rows: [previous] };
+    },
+    buildTutorDagSnapshot: (_state, turn) => ({ turn, generated: true }),
+    lightweightFieldTurn: (pendingTurn, suppliedPrevious) => {
+      assert.equal(suppliedPrevious, previous);
+      assert.deepEqual(pendingTurn, {
+        turn: 3,
+        learner: 'I need the link.',
+        classification: { overall: { state: 'blocked' } },
+        tutorLearnerDagModel: { id: 'learner-dag' },
+        registerSelection: { selected_register: 'plain' },
+        previousRegisterEfficacy: { label: 'no_clear_progress' },
+        tutor: '',
+        tutorDag: { turn: 3, generated: true },
+      });
+      return {
+        turn: 3,
+        learnerMastery: 0.3,
+        learnerRisk: 0.8,
+        tutorAlignment: 0.6,
+        jointMomentum: 0.1,
+        bottleneck: 'warrant_gap',
+      };
+    },
+  };
+  assert.equal(summarizeTutorStubPendingField({}, {}, dependencies), null);
+  assert.equal(
+    summarizeTutorStubPendingField(
+      { turns: [{ turn: 2 }] },
+      {
+        tutorTurn: 3,
+        learnerText: 'I need the link.',
+        classification: { overall: { state: 'blocked' } },
+        tutorLearnerDag: { model: { id: 'learner-dag' } },
+        registerSelection: { selected_register: 'plain' },
+        previousRegisterEfficacy: { label: 'no_clear_progress' },
+      },
+      dependencies,
+    ),
+    'turn 3 | learner understanding developing | pressure very strong | tutor fit strong | momentum low | the learner needs a clearer reasoning link',
+  );
 });
 
 test('interim CLI hints preserve passthrough, setup, coach, auto, and learner contexts', () => {
