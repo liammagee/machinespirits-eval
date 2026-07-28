@@ -10587,6 +10587,20 @@ async function callTutor({
     const disclosableCorrection = priorDisclosure.disclosed
       ? { disclosable: false, reason: 'the previous published turn already disclosed a self-correction' }
       : tutorStubDisclosableGuardCorrection({ audits, attempts });
+    if (!disclosableCorrection.disclosable && disclosableCorrection.survivedFindings?.length) {
+      // Declining costs a rung, so say so in the trace. Without this the skip
+      // and the ordinary "nothing here to disclose" case look identical, and
+      // the next run cannot be checked against the six turns that motivated it.
+      appendTraceEvent(trace, {
+        type: 'tutor_response_self_correction_pass_skipped',
+        role: `${roleBase}_self_correction`,
+        turn: tutorTurn,
+        attempt: attempts.length,
+        reason: disclosableCorrection.reason,
+        survivedFindings: disclosableCorrection.survivedFindings,
+        waivedFindings: disclosableCorrection.findings,
+      });
+    }
     if (disclosableCorrection.disclosable) {
       const disclosureAttempt = attempts.length;
       const priorDisclosureAttempt = attempts.at(-1);
