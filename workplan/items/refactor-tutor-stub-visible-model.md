@@ -20,6 +20,8 @@ links:
     - services/tutorStubModelChoicePresentation.js
     - scripts/tutor-stub.js
     - tests/tutorStubModelChoicePresentation.test.js
+  prs:
+    - 376
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-register-prior-loading
@@ -51,3 +53,5 @@ Log:
   selection service, reducing `scripts/tutor-stub.js` by 12 lines. Twenty-five
   focused assertions, the complete zero-skip hermetic suite, and all static and
   source-only gates pass.
+- 2026-07-28 — Opened PR #376 against `main`; the benchmark hook correctly
+  classified the projection-only slice as not response-generation relevant.
