@@ -1303,3 +1303,5 @@ Log:
   zero-skip hermetic parity. All static/source-only gates pass. Fifty-loop runs
   31–40 have removed 40 net lines from `scripts/tutor-stub.js` while
   centralizing transport, trace, and debug contracts without regressions.
+- 2026-07-28 — Opened fifty-loop run 40 as PR #414 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
