@@ -69,3 +69,9 @@ Log:
   remain before dispatch, the zero-skip hermetic suite passes 7,664/7,664 root
   tests plus 137/137 tutor-core tests, and the static import graph remains at
   zero cycles across 449 files.
+- 2026-07-29 — A manual strong tutor PR benchmark on runtime commit `567df2b5`
+  completed all 6 model calls and reported 0 pass / 6 audit failures. This is a
+  standing head result, not a base/head regression attribution; the focused
+  byte/contract tests and full hermetic suite provide the parity evidence for
+  this structural extraction. The new pipeline path is now explicitly in the
+  benchmark hook scope so subsequent behavioral edits cannot be skipped.
