@@ -484,6 +484,7 @@
         "tests/tutorStubPromptSizeReport.test.js",
         "tests/tutorStubProofCommandPresentation.test.js",
         "tests/tutorStubProofDebt.test.js",
+        "tests/tutorStubPublicEvidence.test.js",
         "tests/tutorStubQaMatrix.test.js",
         "tests/tutorStubQuestionSupport.test.js",
         "tests/tutorStubRegisterPalette.test.js",

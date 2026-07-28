@@ -31,7 +31,7 @@ import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../servi
 import { getProviderConfig, loadProviders, resolveModel } from '../services/evalConfigLoader.js';
 import { runLabellingGameCli } from '../services/labellingGameCli.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
-import { closure, factKey } from '../services/dramaticDerivation/chainer.js';
+import { factKey } from '../services/dramaticDerivation/chainer.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from '../services/dramaticDerivation/learnerDag.js';
 import {
   buildLearnerProxyDagMemory,
@@ -139,12 +139,11 @@ import {
 import { buildTutorStubObservedAudits } from '../services/tutorStubObservedAudits.js';
 import {
   formatTutorStubFact as factText,
-  tutorStubFactMatches as factMatches,
   tutorStubSplitSymbolWords as splitSymbolWords,
   tutorStubTextContainsToken as textContainsToken,
   tutorStubTextTokens as textTokens,
 } from '../services/tutorStubFactModel.js';
-import { tutorStubPublicProvenanceText } from '../services/tutorStubPublicProvenance.js';
+import { createTutorStubPublicEvidenceModel } from '../services/tutorStubPublicEvidence.js';
 import {
   auditTutorStubEvidenceAssertions,
   tutorStubPrivateTokenAlreadyPublic,
@@ -1547,63 +1546,13 @@ function loadRegisterEmpiricalPrior(value, { policy }) {
   return { prior, filePath, status };
 }
 
-function candidatePublicPremiseIds({ state = null, world = null, tutorTurn = null, publicPremiseIds = null } = {}) {
-  if (publicPremiseIds instanceof Set) return new Set(publicPremiseIds);
-  if (Array.isArray(publicPremiseIds)) return new Set(publicPremiseIds.filter(Boolean));
-  if (!world) return new Set();
-  if (state?.releasePacing) {
-    return new Set([
-      ...committedReleaseRows(state, tutorTurn).map((row) => row.premise),
-      ...currentReleaseRows(state, tutorTurn).map((row) => row.premise),
-    ]);
-  }
-  return new Set(
-    world.releaseSchedule.filter((entry) => Number(entry.turn) <= Number(tutorTurn)).map((entry) => entry.premise),
-  );
-}
-
-function publicFactsAtTurn(world, tutorTurn, state = null, publicPremiseIds = null) {
-  if (!world) return [];
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  const released = [...available].map((premiseId) => world.premiseById.get(premiseId)?.fact).filter(Boolean);
-  return [...(world.background || []), ...released];
-}
-
-function entailedFactsAtTurn(world, tutorTurn, state = null, publicPremiseIds = null) {
-  return [...closure(publicFactsAtTurn(world, tutorTurn, state, publicPremiseIds), world.rules || []).facts.values()];
-}
-
-function entailsFactAtTurn(world, tutorTurn, fact, state = null, publicPremiseIds = null) {
-  return entailedFactsAtTurn(world, tutorTurn, state, publicPremiseIds).some((entailed) => factMatches(entailed, fact));
-}
-
-function answerTermForWorld(world) {
-  const pattern = world?.questionPattern || [];
-  const answerIndex = pattern.findIndex((part) => typeof part === 'string' && part.startsWith('?'));
-  if (answerIndex < 0) return null;
-  return world?.secret?.fact?.[answerIndex] || null;
-}
-
-function publicTextForTurn(world, tutorTurn, learnerText = '', state = null, publicPremiseIds = null) {
-  if (!world) return '';
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  return tutorStubPublicProvenanceText({
-    world,
-    publicPremiseIds: available,
-    priorTurns: state?.turns || [],
-    learnerText,
-  });
-}
-
-function publicEvidenceTextForAssertion(world, tutorTurn, learnerText = '', state = null, publicPremiseIds = null) {
-  if (!world) return '';
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  const releasedSurface = [...available].map((premiseId) => world.premiseById.get(premiseId)?.surface || '').join('\n');
-  const transcript = (state?.turns || []).flatMap((turn) => [turn?.learner || '', turn?.tutor || '']).join('\n');
-  return [world.question, world.setting, world.openingFrame?.situation, releasedSurface, transcript, learnerText].join(
-    '\n',
-  );
-}
+const {
+  answerTermForWorld,
+  candidatePublicPremiseIds,
+  entailsFactAtTurn,
+  publicEvidenceTextForAssertion,
+  publicTextForTurn,
+} = createTutorStubPublicEvidenceModel({ committedReleaseRows, currentReleaseRows });
 
 const PRIVATE_TOKEN_STOPWORDS = new Set([
   'about',
