@@ -15,6 +15,7 @@ import {
   summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingDagMovement,
   summarizeTutorStubPendingLearnerDag,
+  summarizeTutorStubPendingObjective,
   summarizeTutorStubPendingRegister,
   summarizeTutorStubLearnerRecordUpdate,
   tutorStubInterimCliHintPanels,
@@ -320,6 +321,42 @@ test('learner-record update summary preserves accepted, retracted, derived, hypo
   );
 });
 
+test('pending objective summary preserves activation, precedence, clue plurality, register fallback, and compaction', () => {
+  const currentReleaseRows = (_state, turn) => (turn === 3 ? [{ premise: 'p1' }, { premise: 'p2' }] : []);
+  const plainStrategyText = (value) => `plain:${value}`;
+  const dependencies = { currentReleaseRows, plainStrategyText };
+  assert.equal(summarizeTutorStubPendingObjective({}, null, dependencies), null);
+  assert.equal(
+    summarizeTutorStubPendingObjective(
+      {},
+      {
+        tutorTurn: 3,
+        learnerText: 'Why?',
+        classification: {
+          turn: { pedagogical_need: 'lower-priority turn need' },
+          overall: { next_best_tutor_move: 'lower-priority overall move' },
+        },
+        tutorLearnerDag: { model: { assessment: { bottleneck: 'warrant_gap' } } },
+        registerSelection: { selected_register: 'precise', expected_dag_move: 'repair the warrant' },
+      },
+      dependencies,
+    ),
+    'turn 3 | focus: the learner needs a clearer reasoning link | style led by precise | 2 new clues available now | aim: plain:repair the warrant',
+  );
+  assert.equal(
+    summarizeTutorStubPendingObjective(
+      {},
+      { tutorTurn: 4, classification: { turn: { pedagogical_need: 'Name the immediate next move.' } } },
+      dependencies,
+    ),
+    'turn 4 | focus: Name the immediate next move. | style still being chosen | aim: plain:Name the immediate next move.',
+  );
+  assert.equal(
+    summarizeTutorStubPendingObjective({}, { tutorTurn: 5, tutorLearnerDag: { model: {} } }, dependencies),
+    'turn 5 | focus: awaiting analysis | style still being chosen | aim: plain:choose one learner-owned next move',
+  );
+});
+
 test('interim CLI hints preserve passthrough, setup, coach, auto, and learner contexts', () => {
   const shared = {
     label: 'CLI hint',
@@ -510,7 +547,7 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
-    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingDagMovementSummary|compactLearnerRecordUpdateSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingObjectiveSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingDagMovementSummary|compactLearnerRecordUpdateSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);

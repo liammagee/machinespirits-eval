@@ -380,6 +380,7 @@ import {
   summarizeTutorStubPendingDagMovement,
   summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
+  summarizeTutorStubPendingObjective,
   summarizeTutorStubPendingRegister,
   summarizeTutorStubLearnerRecordUpdate,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
@@ -3083,32 +3084,8 @@ function compactInterimFieldSummary(state) {
   ].join(' | ');
 }
 
-function compactPendingObjectiveSummary(state, context) {
-  if (!context?.learnerText && !context?.classification && !context?.tutorLearnerDag?.model) return null;
-  const turn = context.classification?.turn || {};
-  const overall = context.classification?.overall || {};
-  const assessment = context.tutorLearnerDag?.model?.assessment || {};
-  const selection = context.registerSelection || {};
-  const bottleneck = plainInterimBottleneck(assessment.bottleneck || turn.pedagogical_need || 'awaiting analysis');
-  const register = selection.selected_register
-    ? `style led by ${selection.selected_register}`
-    : 'style still being chosen';
-  const target =
-    selection.expected_dag_move ||
-    overall.next_best_tutor_move ||
-    turn.pedagogical_need ||
-    'choose one learner-owned next move';
-  const due = currentReleaseRows(state, context.tutorTurn).map((row) => row.premise);
-  return [
-    `turn ${context.tutorTurn || '?'}`,
-    `focus: ${oneLine(bottleneck, { max: 54 })}`,
-    register,
-    due.length ? `${due.length} new clue${due.length === 1 ? '' : 's'} available now` : null,
-    `aim: ${oneLine(plainStrategyText(target), { max: 76 })}`,
-  ]
-    .filter(Boolean)
-    .join(' | ');
-}
+const compactPendingObjectiveSummary = (state, context) =>
+  summarizeTutorStubPendingObjective(state, context, { currentReleaseRows, plainStrategyText });
 
 const compactPendingLearnerSummary = (context) =>
   summarizeTutorStubPendingLearner(context, { scoreValue, plainStrategyText });

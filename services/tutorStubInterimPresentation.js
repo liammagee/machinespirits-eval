@@ -192,6 +192,35 @@ export function summarizeTutorStubLearnerRecordUpdate(state, context, { factSurf
   return bits.length > 1 ? bits.join(' | ') : null;
 }
 
+export function summarizeTutorStubPendingObjective(state, context, { currentReleaseRows, plainStrategyText } = {}) {
+  if (!context?.learnerText && !context?.classification && !context?.tutorLearnerDag?.model) return null;
+  const turn = context.classification?.turn || {};
+  const overall = context.classification?.overall || {};
+  const assessment = context.tutorLearnerDag?.model?.assessment || {};
+  const selection = context.registerSelection || {};
+  const bottleneck = tutorStubPlainInterimBottleneck(
+    assessment.bottleneck || turn.pedagogical_need || 'awaiting analysis',
+  );
+  const register = selection.selected_register
+    ? `style led by ${selection.selected_register}`
+    : 'style still being chosen';
+  const target =
+    selection.expected_dag_move ||
+    overall.next_best_tutor_move ||
+    turn.pedagogical_need ||
+    'choose one learner-owned next move';
+  const due = currentReleaseRows(state, context.tutorTurn).map((row) => row.premise);
+  return [
+    `turn ${context.tutorTurn || '?'}`,
+    `focus: ${oneLine(bottleneck, { max: 54 })}`,
+    register,
+    due.length ? `${due.length} new clue${due.length === 1 ? '' : 's'} available now` : null,
+    `aim: ${oneLine(plainStrategyText(target), { max: 76 })}`,
+  ]
+    .filter(Boolean)
+    .join(' | ');
+}
+
 export function tutorStubInterimCliHintPanels(active) {
   const state = active.state || {};
   const phase = String(active.basePhase || active.phase || '').toLowerCase();
