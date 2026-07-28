@@ -481,6 +481,7 @@
         "tests/tutorStubProfileDiscrimination.test.js",
         "tests/tutorStubPromptAudit.test.js",
         "tests/tutorStubPromptBehavior.test.js",
+        "tests/tutorStubPromptBlocks.test.js",
         "tests/tutorStubPromptSizeReport.test.js",
         "tests/tutorStubProofCommandPresentation.test.js",
         "tests/tutorStubProofDebt.test.js",

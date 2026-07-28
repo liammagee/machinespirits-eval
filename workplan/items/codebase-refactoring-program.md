@@ -60,6 +60,7 @@ links:
     - refactor-tutor-stub-one-line-projection
     - refactor-tutor-stub-generous-fallback
     - refactor-tutor-stub-director-notes-model
+    - refactor-tutor-stub-prompt-blocks
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -985,3 +986,10 @@ Log:
   15-line net CLI reduction, seven focused assertions including byte-exact live
   terminal fixtures, and complete zero-skip hermetic parity. All static and
   source-only gates pass.
+- 2026-07-28 — Activated third-loop run 8,
+  `refactor-tutor-stub-prompt-blocks`, from PR #367's reviewed head. Authored
+  block constants, full prompt assembly, world selection, state, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop prompt-blocks run reached review with a 20-line net
+  CLI reduction, six focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
