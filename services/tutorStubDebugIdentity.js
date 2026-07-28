@@ -16,3 +16,11 @@ export function formatTutorStubTurnDebugId(runId, turn) {
 export function formatTutorStubOpeningDebugId(runId) {
   return `${normalizedRunId(runId)}:opening`;
 }
+
+export function resolveTutorStubStateRunDebugId(state) {
+  return state?.debugRunId || state?.trace?.runId || 'no-trace';
+}
+
+export function formatTutorStubStateTurnDebugId(state, turn) {
+  return formatTutorStubTurnDebugId(resolveTutorStubStateRunDebugId(state), turn);
+}

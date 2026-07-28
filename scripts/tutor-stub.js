@@ -82,7 +82,9 @@ import { projectTutorStubStrictDagAuditState as buildStrictDagAuditState } from 
 import {
   formatTutorStubOpeningDebugId as openingDebugId,
   formatTutorStubSafeTimestamp as safeTimestampForFile,
+  formatTutorStubStateTurnDebugId as turnDebugId,
   formatTutorStubTurnDebugId as formatTurnDebugId,
+  resolveTutorStubStateRunDebugId as stateRunDebugId,
 } from '../services/tutorStubDebugIdentity.js';
 import {
   listTutorStubCurriculumModules,
@@ -3428,14 +3430,6 @@ function reserveProgram2ProviderBudget({ maxTokens, trace = null, role = 'unknow
     });
     throw error;
   }
-}
-
-function stateRunDebugId(state) {
-  return state?.debugRunId || state?.trace?.runId || 'no-trace';
-}
-
-function turnDebugId(state, turn) {
-  return formatTurnDebugId(stateRunDebugId(state), turn);
 }
 
 function printDebugIdLine(state, id, label = 'turn id') {

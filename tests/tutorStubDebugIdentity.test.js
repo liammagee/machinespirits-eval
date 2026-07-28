@@ -4,7 +4,9 @@ import test from 'node:test';
 import {
   formatTutorStubOpeningDebugId,
   formatTutorStubSafeTimestamp,
+  formatTutorStubStateTurnDebugId,
   formatTutorStubTurnDebugId,
+  resolveTutorStubStateRunDebugId,
 } from '../services/tutorStubDebugIdentity.js';
 
 test('debug timestamps remain filename-safe and byte-exact', () => {
@@ -26,8 +28,24 @@ test('opening debug ids share the same run normalization', () => {
   assert.equal(formatTutorStubOpeningDebugId(''), 'no-trace:opening');
 });
 
+test('state debug identity preserves explicit, trace, and no-trace precedence', () => {
+  assert.equal(resolveTutorStubStateRunDebugId({ debugRunId: 'explicit', trace: { runId: 'trace' } }), 'explicit');
+  assert.equal(resolveTutorStubStateRunDebugId({ trace: { runId: 'trace' } }), 'trace');
+  assert.equal(resolveTutorStubStateRunDebugId({}), 'no-trace');
+  assert.equal(resolveTutorStubStateRunDebugId(null), 'no-trace');
+});
+
+test('state turn debug ids reuse canonical run normalization and turn padding', () => {
+  assert.equal(formatTutorStubStateTurnDebugId({ debugRunId: 'run' }, 4), 'run:t004');
+  assert.equal(formatTutorStubStateTurnDebugId({ trace: { runId: 'trace' } }, '12'), 'trace:t012');
+  assert.equal(formatTutorStubStateTurnDebugId(null, 0), 'no-trace');
+});
+
 test('the CLI imports rather than redeclares the debug identity model', () => {
   const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
   assert.match(source, /from '\.\.\/services\/tutorStubDebugIdentity\.js'/u);
-  assert.doesNotMatch(source, /function (?:safeTimestampForFile|formatTurnDebugId|openingDebugId)\(/u);
+  assert.doesNotMatch(
+    source,
+    /function (?:safeTimestampForFile|formatTurnDebugId|openingDebugId|stateRunDebugId|turnDebugId)\(/u,
+  );
 });
