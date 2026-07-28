@@ -1,10 +1,11 @@
 ---
 id: tutor-shell-misses-skin-attribute
 title: The /tutor shell never receives data-skin, so it stays parchment
-status: triaged
+status: review
 type: maintenance
 priority: P3
-owner: unassigned
+owner: claude
+branch: claude/tudor-stub-cli-remote-afplmq
 source: review
 created: 2026-07-28
 updated: 2026-07-28
@@ -14,6 +15,10 @@ verification: >-
   parchment in the tweaks panel and reloading /tutor shows parchment; the tutor
   tokens still resolve when techne.css is absent.
 links:
+  code:
+    - public/components/skin-early-apply.js
+    - public/components/rail-inject.js
+    - tests/staticSurfaceSkin.test.js
   items:
     - scriptorium-static-tools-desktop-quality
 tags:
@@ -73,3 +78,12 @@ makes the page legible if `techne.css` fails to load.
   across `/chat`, `/pilot-admin` and `/adjudication`; checking each one against
   the current tree, all three are resolved and the gap has moved to `/tutor`,
   which did not exist in that form when the note was written.
+- 2026-07-28 — Took the second option from "Likely fix". The early-apply now
+  lives in `public/components/skin-early-apply.js`, loaded synchronously in
+  `<head>` by all four researcher-chrome static surfaces, and the copy inside
+  `rail-inject.js` is gone. The three siblings that already re-skinned did so
+  from a deferred script, so they painted parchment first; they now apply it
+  before paint too. Checked in headless Chromium: all four set
+  `data-skin="stark"`. `tests/staticSurfaceSkin.test.js` fails if a surface
+  ships without the script, defers it, loads it after a stylesheet, or if
+  rail-inject reads `poetics-skin` again.

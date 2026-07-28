@@ -381,6 +381,7 @@
         "tests/showcasePrBenchmarkScoring.test.js",
         "tests/skillSync.test.js",
         "tests/staticImportCycles.test.js",
+        "tests/staticSurfaceSkin.test.js",
         "tests/streamingReporter.test.js",
         "tests/structureLearnerContext.test.js",
         "tests/superego-guard.test.js",
