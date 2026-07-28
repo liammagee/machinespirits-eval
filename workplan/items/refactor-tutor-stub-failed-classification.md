@@ -20,6 +20,8 @@ links:
     - services/tutorStubLearnerClassification.js
     - scripts/tutor-stub.js
     - tests/tutorStubLearnerClassification.test.js
+  prs:
+    - 383
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-classifier-world-context
@@ -51,3 +53,5 @@ Log:
   effect-free service, reducing `scripts/tutor-stub.js` by 27 lines. Eight
   focused assertions, complete zero-skip hermetic parity, and all static and
   source-only gates pass.
+- 2026-07-28 — Opened PR #383 against `main`; the benchmark hook correctly
+  classified the fallback-envelope slice as not response-generation relevant.
