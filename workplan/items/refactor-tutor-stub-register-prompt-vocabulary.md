@@ -20,6 +20,8 @@ links:
     - services/tutorStubRegisterPalette.js
     - scripts/tutor-stub.js
     - tests/tutorStubRegisterPalette.test.js
+  prs:
+    - 377
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-visible-model
@@ -52,3 +54,5 @@ Log:
   an injected register-palette model, reducing `scripts/tutor-stub.js` by 25
   lines. Twenty-six focused assertions, complete zero-skip hermetic parity, and
   all static/source-only gates pass.
+- 2026-07-28 — Opened PR #377 against `main`; the benchmark hook correctly
+  classified the data-projection slice as not response-generation relevant.
