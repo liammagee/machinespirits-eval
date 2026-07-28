@@ -15,6 +15,9 @@
  * contract (the moss shades, --brick, --prussian, --ease) in its own :root so
  * the rail themes correctly without a runtime shim.
  *
+ * Host pages must also load components/skin-early-apply.js synchronously in
+ * <head>; this file no longer applies the skin itself.
+ *
  * Usage (before </body>):
  *   <script src="/components/rail-inject.js" data-active="tutor" defer></script>
  *   - data-active : NAV key to highlight (tutor | adjudicate | pilot-admin | ...)
@@ -22,18 +25,12 @@
  *                   chrome already carries a brand mark, e.g. /tutor)
  */
 (function () {
-  // Pick up the dashboard's persisted skin + theme so the injected rail (and any
-  // token-driven chrome) matches what was chosen on the server-rendered pages.
-  // Skin defaults to stark when never set, mirroring the rail's early-apply.
-  try {
-    const de = document.documentElement;
-    if (localStorage.getItem('poetics-theme') === 'dark') de.setAttribute('data-theme', 'dark');
-    let sk = localStorage.getItem('poetics-skin');
-    if (sk === null) sk = 'stark';
-    if (sk === 'stark') de.setAttribute('data-skin', 'stark');
-  } catch (_e) {
-    /* localStorage blocked — fall through to defaults */
-  }
+  // The persisted skin + theme are applied by components/skin-early-apply.js,
+  // which each host page loads synchronously in <head>. It used to be copied in
+  // here as well, and running it from a deferred script meant the page painted
+  // parchment first — /tutor then shipped without either copy and never
+  // re-skinned at all. One file now owns it.
+  //
   // Capture the script's data-* synchronously — document.currentScript is null
   // by the time the fetch().then() callbacks run.
   const script = document.currentScript;
