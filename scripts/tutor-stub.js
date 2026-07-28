@@ -540,6 +540,7 @@ import {
   projectTutorStubScenarioPickerEntries,
   projectTutorStubScenarioPickerLines,
 } from '../services/tutorStubPickerPresentation.js';
+import { TUTOR_STUB_LAUNCH_MODES, normalizeTutorStubLaunchMode } from '../services/tutorStubLaunchMode.js';
 import { projectTutorStubSessionStatusLines } from '../services/tutorStubSessionStatusPresentation.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -2579,42 +2580,6 @@ function printCurriculumModules(ref) {
 
 function printAutomatedLearnerProfiles() {
   console.log(learnerProfileListText());
-}
-
-const TUTOR_STUB_LAUNCH_MODES = Object.freeze([
-  {
-    id: 'chat',
-    label: 'Mixed tutor chat',
-    description: 'Open the default human + AI learner-drafting conversation.',
-  },
-  {
-    id: 'labelling-game',
-    label: 'Labelling game',
-    description: 'Human-label the superego taxonomy or tutor-stub impasse corpus.',
-  },
-]);
-
-function normalizeTutorStubLaunchMode(value, { allowEmpty = false } = {}) {
-  const normalized = String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_]+/gu, '-');
-  if (!normalized && allowEmpty) return '';
-  const aliases = new Map([
-    ['chat', 'chat'],
-    ['default', 'chat'],
-    ['tutor', 'chat'],
-    ['tutor-chat', 'chat'],
-    ['labelling', 'labelling-game'],
-    ['labeling', 'labelling-game'],
-    ['labelling-game', 'labelling-game'],
-    ['labeling-game', 'labelling-game'],
-  ]);
-  const resolved = aliases.get(normalized);
-  if (!resolved) {
-    throw new Error(`unknown --launch-mode "${value}"; use chat or labelling-game`);
-  }
-  return resolved;
 }
 
 function defaultLaunchModePickerAvailable() {
