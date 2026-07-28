@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T10:31:44.320Z",
+  "generated": "2026-07-28T10:38:51.274Z",
   "counts": {
-    "total": 269,
+    "total": 270,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 17,
+      "review": 18,
       "active": 9,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 93,
+      "maintenance": 94,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -1018,6 +1018,48 @@
         "picker",
         "presentation",
         "terminal"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-register-palette",
+      "title": "Refactor tutor-stub register palette",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Register palette modes and diagnostics remain exact across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-register-palette",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-stack-recovery"
+      ],
+      "links": {
+        "prs": [
+          350
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubRegisterPalette.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubRegisterPalette.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-stack-recovery"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "register",
+        "configuration"
       ],
       "milestone": "evaluation-infrastructure"
     },
