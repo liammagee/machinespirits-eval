@@ -469,7 +469,7 @@ import {
 import { projectTutorStubTrainingReuseStatusLines } from '../services/tutorStubTrainingReusePresentation.js';
 import { projectTutorStubDialogueSettingsLines } from '../services/tutorStubDialogueSettingsPresentation.js';
 import {
-  buildTutorStubModelChoiceEntries,
+  createTutorStubModelSelection,
   projectTutorStubModelChoiceLines,
 } from '../services/tutorStubModelChoicePresentation.js';
 import {
@@ -1112,42 +1112,15 @@ function printHelp() {
   );
 }
 
-function assertSupportedModelRefs(refs) {
-  for (const [label, ref] of Object.entries(refs)) {
-    const normalized = String(ref || '')
-      .trim()
-      .toLowerCase();
-    if (UNSUPPORTED_CODEX_MINI_REFS.has(normalized)) {
-      throw new Error(
-        `${label}=${ref} is not supported by the local Codex CLI ChatGPT-account route. ` +
-          'Use codex.gpt-5.6-terra for the CLI-backed speaking tutor, codex.gpt-5.6-sol for interpretation, or openai.mini/openrouter.gpt-mini for GPT mini.',
-      );
-    }
-  }
-}
-
-function tutorModelChoiceEntries(currentRef = STUB.model) {
-  return buildTutorStubModelChoiceEntries({
-    currentRef,
-    providers: loadProviders()?.providers || {},
+const { assertSupportedModelRefs, tutorModelChoiceEntries, resolveTutorModelSelection } = createTutorStubModelSelection(
+  {
+    loadProviders,
     getProviderConfig,
     isCliProvider,
     resolveModel,
     unsupportedRefs: UNSUPPORTED_CODEX_MINI_REFS,
-  });
-}
-
-function resolveTutorModelSelection(ref) {
-  const modelRef = String(ref || '').trim();
-  assertSupportedModelRefs({ model: modelRef });
-  const resolved = resolveModel(modelRef);
-  const providerConfig = getProviderConfig(resolved.provider);
-  if (!providerConfig.isConfigured) {
-    const requirement = providerConfig.api_key_env || providerConfig.base_url || 'provider configuration';
-    throw new Error(`${modelRef} is unavailable; configure ${requirement} first`);
-  }
-  return { modelRef, resolved, providerConfig };
-}
+  },
+);
 
 function resolveWorkspacePath(value) {
   return path.isAbsolute(value) ? value : path.join(ROOT, value);
