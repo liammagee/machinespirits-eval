@@ -1331,3 +1331,5 @@ Log:
   fifteen-line net CLI reduction, fourteen focused assertions, and complete
   zero-skip hermetic parity. A lint-detected unused binding was repaired before
   the clean full rerun; all static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 43 as PR #417 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.

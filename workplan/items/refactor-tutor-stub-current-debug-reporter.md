@@ -20,7 +20,8 @@ links:
     - services/tutorStubDebugIdentity.js
     - scripts/tutor-stub.js
     - tests/tutorStubDebugIdentity.test.js
-  prs: []
+  prs:
+    - 417
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-current-debug-lines
@@ -55,3 +56,6 @@ Log:
   lines. A lint-detected unused binding was removed before a complete clean
   rerun; fourteen focused assertions, zero-skip hermetic parity, and all
   static/source-only gates pass.
+- 2026-07-28 — Opened PR #417 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
