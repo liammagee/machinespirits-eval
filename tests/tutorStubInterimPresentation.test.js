@@ -12,6 +12,7 @@ import {
   renderTutorStubInterimFrame,
   resolveTutorStubInterimState,
   summarizeTutorStubInterimCapabilities,
+  summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingLearnerDag,
   tutorStubInterimCliHintPanels,
   tutorStubInterimLevel,
@@ -138,6 +139,38 @@ test('pending learner-DAG summary preserves model precedence, counts, missing fa
       tutorLearnerDagModel: { metrics: {}, assessment: { missingPremiseCount: 2 } },
     }),
     'turn 5 | 0 public facts held | 0 inferences stated | 2 evidence pieces still needed | the next useful learner move',
+  );
+});
+
+test('pending learner summary preserves labels, score bands, need precedence, compaction, and raw fallback', () => {
+  const scoreValue = (score) => (score && typeof score === 'object' ? score.score : score);
+  const plainStrategyText = (value) => `plain:${value}`;
+  assert.equal(summarizeTutorStubPendingLearner(null, { scoreValue, plainStrategyText }), null);
+  assert.equal(
+    summarizeTutorStubPendingLearner(
+      {
+        tutorTurn: 2,
+        learnerText: 'ignored once classification exists',
+        classification: {
+          turn: {
+            discourse_move: 'repair_request',
+            epistemic_stance: 'self_correcting',
+            pedagogical_need: 'Use one concrete bridge. '.repeat(8),
+            scores: { conceptual_engagement: { score: 4 }, epistemic_readiness: 2 },
+          },
+          overall: { next_best_tutor_move: 'lower-priority overall cue' },
+        },
+      },
+      { scoreValue, plainStrategyText },
+    ),
+    'turn 2 | repair request; self correcting | conceptual engagement very strong | evidence awareness developing | needs: plain:Use one concrete bridge. Use one concrete bridge. Use...',
+  );
+  assert.equal(
+    summarizeTutorStubPendingLearner(
+      { tutorTurn: 3, learnerText: '  A long raw learner turn with   repeated spacing.  ' },
+      { scoreValue, plainStrategyText },
+    ),
+    'turn 3 | still being read; still being read | conceptual engagement not available | evidence awareness not available | A long raw learner turn with repeated spacing.',
   );
 });
 
@@ -331,7 +364,7 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
-    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerDagSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);

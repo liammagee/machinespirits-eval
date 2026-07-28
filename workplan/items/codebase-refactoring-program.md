@@ -1114,3 +1114,11 @@ Log:
 - 2026-07-28 — Fifty-loop interim-learner-DAG-summary run reached review with a
   14-line net CLI reduction, 14 focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 15,
+  `refactor-tutor-stub-interim-learner-summary`, from PR #388's reviewed head.
+  Classification, context assembly, runtime state, and effects remain in their
+  current owners.
+- 2026-07-28 — Fifty-loop interim-learner-summary run reached review with a
+  15-line net CLI reduction, 15 focused assertions, and complete zero-skip
+  hermetic parity. The focused fixture pins score-band and compaction
+  boundaries; all static and source-only gates pass.
