@@ -384,6 +384,7 @@ import {
   summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
   summarizeTutorStubPendingObjective,
   summarizeTutorStubPendingRegister,
+  summarizeTutorStubPendingTutorDag,
   summarizeTutorStubLearnerRecordUpdate,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
   tutorStubInterimLevel as interimLevel,
@@ -3096,6 +3097,9 @@ const compactPendingRegisterSummary = (context) =>
 const compactEvidenceTimingSummary = (state, context) =>
   summarizeTutorStubEvidenceTiming(state, context, { currentReleaseRows, nextReleaseRow, committedReleaseRows });
 
+const compactPendingTutorDagSummary = (state, context) =>
+  summarizeTutorStubPendingTutorDag(state, context, { buildTutorDagSnapshot });
+
 function currentReleaseRows(state, tutorTurn) {
   const world = state?.world;
   if (!world || !Number.isFinite(Number(tutorTurn))) return [];
@@ -3209,16 +3213,6 @@ function nextReleaseRow(state) {
     surface: String(premise?.surface || '').trim(),
     fact: premise?.fact || null,
   };
-}
-
-function compactPendingTutorDagSummary(state, context) {
-  const snapshot =
-    context?.tutorDagSnapshot || buildTutorDagSnapshot(state, context?.tutorTurn || state?.turns?.length + 1);
-  if (!snapshot) return null;
-  const next = snapshot.nextRelease
-    ? `next clue planned for turn ${snapshot.nextRelease.turn}`
-    : 'all planned clues are available';
-  return `turn ${snapshot.turn} | ${snapshot.leavesReleased} of ${snapshot.leavesTotal} key clues revealed | ${next}`;
 }
 
 function compactPendingFieldSummary(state, context) {

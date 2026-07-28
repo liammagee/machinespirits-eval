@@ -19,6 +19,7 @@ import {
   summarizeTutorStubPendingLearnerDag,
   summarizeTutorStubPendingObjective,
   summarizeTutorStubPendingRegister,
+  summarizeTutorStubPendingTutorDag,
   summarizeTutorStubLearnerRecordUpdate,
   tutorStubInterimCliHintPanels,
   tutorStubInterimLevel,
@@ -412,6 +413,30 @@ test('evidence timing summary preserves current, prior, future, exhausted, and u
     summarizeTutorStubEvidenceTiming(state, { tutorTurn: 3 }, { ...dependencies, nextReleaseRow: () => null }),
     'turn 3 | no new evidence this turn; earlier evidence remains available | all planned clues are available',
   );
+});
+
+test('pending tutor-DAG summary preserves supplied snapshots, lazy construction, release timing, and null handling', () => {
+  let calls = 0;
+  const buildTutorDagSnapshot = (_state, turn) => {
+    calls += 1;
+    return turn === 3 ? { turn: 3, leavesReleased: 2, leavesTotal: 5, nextRelease: { turn: 4 } } : null;
+  };
+  const dependencies = { buildTutorDagSnapshot };
+  assert.equal(
+    summarizeTutorStubPendingTutorDag({ turns: [{}, {}] }, {}, dependencies),
+    'turn 3 | 2 of 5 key clues revealed | next clue planned for turn 4',
+  );
+  assert.equal(calls, 1);
+  assert.equal(
+    summarizeTutorStubPendingTutorDag(
+      {},
+      { tutorTurn: 9, tutorDagSnapshot: { turn: 8, leavesReleased: 5, leavesTotal: 5 } },
+      dependencies,
+    ),
+    'turn 8 | 5 of 5 key clues revealed | all planned clues are available',
+  );
+  assert.equal(calls, 1, 'a supplied snapshot must avoid reconstruction');
+  assert.equal(summarizeTutorStubPendingTutorDag({}, { tutorTurn: 1 }, dependencies), null);
 });
 
 test('interim CLI hints preserve passthrough, setup, coach, auto, and learner contexts', () => {

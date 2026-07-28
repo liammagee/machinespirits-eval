@@ -257,6 +257,16 @@ export function summarizeTutorStubEvidenceTiming(
   return `turn ${tutorTurn} | ${dueSummary} | ${nextSummary}`;
 }
 
+export function summarizeTutorStubPendingTutorDag(state, context, { buildTutorDagSnapshot } = {}) {
+  const snapshot =
+    context?.tutorDagSnapshot || buildTutorDagSnapshot(state, context?.tutorTurn || state?.turns?.length + 1);
+  if (!snapshot) return null;
+  const next = snapshot.nextRelease
+    ? `next clue planned for turn ${snapshot.nextRelease.turn}`
+    : 'all planned clues are available';
+  return `turn ${snapshot.turn} | ${snapshot.leavesReleased} of ${snapshot.leavesTotal} key clues revealed | ${next}`;
+}
+
 export function tutorStubInterimCliHintPanels(active) {
   const state = active.state || {};
   const phase = String(active.basePhase || active.phase || '').toLowerCase();
