@@ -56,7 +56,7 @@ npm run tutor:stub:pr-benchmark -- \
 
 This makes zero model calls. It feeds the exact saved candidate strings through
 the current checked-out deterministic audits and reports pass flips, safety
-changes, and failure-cluster deltas in `reaudit.json` and `reaudit.md`. A
+changes, and broken-rule deltas in `reaudit.json` and `reaudit.md`. A
 regression or newly introduced safety failure makes the re-audit fail; existing
 failures that remain failures are reported without being mislabelled as new
 regressions. Reports record both the current commit and whether the evaluated
