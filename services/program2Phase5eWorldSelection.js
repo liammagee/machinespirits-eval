@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import yaml from 'js-yaml';
+import yaml from 'yaml';
 
 export const PROGRAM2_PHASE5E_WORLD_SELECTION_SCHEMA = 'machinespirits.program2.phase5e-world-selection.v1';
 export const PROGRAM2_PHASE5E_FROZEN_SIX = Object.freeze(['evidence', 'item', 'test', 'record', 'fact', 'rule']);
@@ -81,7 +81,7 @@ function proseText(value, key = null) {
 export function measureProgram2Phase5eWorld(filePath) {
   const bytes = fs.readFileSync(filePath);
   const sourceText = bytes.toString('utf8');
-  const world = yaml.load(sourceText);
+  const world = yaml.parse(sourceText);
   const text = proseText(world).join('\n');
   const words = wordCount(text);
   const cueCounts = Object.fromEntries(

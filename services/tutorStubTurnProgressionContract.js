@@ -130,6 +130,32 @@ function exactAuthoredSourceSpans(text = '', authoredSourceTexts = []) {
     .sort((left, right) => left.start - right.start || left.end - right.end);
 }
 
+/**
+ * Sentence boundaries with quoted evidence kept whole. `Intl.Segmenter` breaks
+ * at a `.` or `?` inside an authored source, so a turn that quotes an exhibit
+ * containing a question comes back with the quote cut in two — and then
+ * `sentences.at(-1)` and `sentences.slice(-2)` are reading a fragment. In the
+ * 2026-07-28 showcase run that cost campus turn 1 two of its three drafts: the
+ * quoted proposal split at `such as "Can I drop this module?"`, so the handoff
+ * target terms were measured against the six-word tail rather than the sentence
+ * carrying them. `hostQuestionPositions` below already masks question marks
+ * inside these spans; the segmenter gets the same treatment here.
+ */
+function liveSentences(text = '', authoredSourceTexts = []) {
+  const source = String(text || '');
+  const spans = exactAuthoredSourceSpans(source, authoredSourceTexts);
+  const insideAuthoredSource = (index) => spans.some((span) => index > span.start && index < span.end);
+  const merged = [];
+  for (const segment of liveSentenceSegmenter.segment(source)) {
+    if (merged.length && insideAuthoredSource(segment.index)) {
+      merged[merged.length - 1] += segment.segment;
+      continue;
+    }
+    merged.push(segment.segment);
+  }
+  return merged.map((sentence) => oneLine(sentence)).filter(Boolean);
+}
+
 function hostQuestionPositions(text = '', authoredSourceTexts = []) {
   const source = String(text || '');
   const spans = exactAuthoredSourceSpans(source, authoredSourceTexts);
@@ -405,6 +431,24 @@ function coverage(required = [], text = '') {
   };
 }
 
+/**
+ * Whether a handoff surface has lost the turn's typed focus: it must carry at
+ * least two of the required target terms, or all of them when fewer than two
+ * were typed.
+ *
+ * This used to also compare `target.coverage` against `minimum / required.length`,
+ * which is the same test written twice — except that `coverage` is rounded to
+ * three decimals and the threshold is not. A turn matching exactly two of
+ * fifteen terms scores 0.133 against a threshold of 0.1333, so it failed a check
+ * it had passed. That cost four of the nineteen findings in the 2026-07-28
+ * showcase run, campus turn 1's first draft among them, and each one sent the
+ * turn down the recovery ladder toward canned text.
+ */
+function losesHandoffFocus(target, requiredTerms = []) {
+  if (!requiredTerms.length) return false;
+  return target.count < Math.min(2, requiredTerms.length);
+}
+
 function semanticFocusCandidate(value = '') {
   return oneLine(value)
     .replace(
@@ -638,11 +682,9 @@ export function compileTutorStubTurnProgressionContract({
   const dueTerms = [...new Set(due.flatMap(contentTerms))];
   const unsupportedCausalClaim = Boolean(
     due.length === 0 &&
-      dialogueClosureFrame?.mandatory !== true &&
-      responseCompositionFrame?.learner_dag?.final_secret_entailed !== true &&
-      ['omits_warrant', 'overleaps_evidence'].includes(
-        oneLine(responseCompositionFrame?.learner_move?.evidence_use),
-      ),
+    dialogueClosureFrame?.mandatory !== true &&
+    responseCompositionFrame?.learner_dag?.final_secret_entailed !== true &&
+    ['omits_warrant', 'overleaps_evidence'].includes(oneLine(responseCompositionFrame?.learner_move?.evidence_use)),
   );
   const boundedFocus = unsupportedCausalClaim
     ? {
@@ -684,21 +726,21 @@ export function compileTutorStubTurnProgressionContract({
     : integrationTarget
       ? [integrationTarget.question]
       : assertionGapTarget
-      ? [assertionGapTarget]
-      : due.length && questionAllowed
-        ? due
-        : boundedFocus.surface
-          ? [boundedFocus.surface]
-          : [];
+        ? [assertionGapTarget]
+        : due.length && questionAllowed
+          ? due
+          : boundedFocus.surface
+            ? [boundedFocus.surface]
+            : [];
   const requiredTargetTerms = instructionalMeta
     ? []
     : integrationTarget
       ? contentTerms(integrationTarget.question)
       : assertionGapTarget
-      ? contentTerms(assertionGapTarget)
-      : due.length && questionAllowed
-        ? dueTerms
-        : primaryTerms;
+        ? contentTerms(assertionGapTarget)
+        : due.length && questionAllowed
+          ? dueTerms
+          : primaryTerms;
   const prohibitedSettledSurfaces = completion?.resolved
     ? [completion.sourceTutorQuestion, completion.acceptedMeaning].map(oneLine).filter(Boolean)
     : [];
@@ -734,7 +776,7 @@ export function compileTutorStubTurnProgressionContract({
           ? 'UPTAKE must answer the request for a simpler explanation directly. Treat it as a repair to the instructional dialogue, not as a proposition, clue, or proof move.'
           : unsupportedCausalClaim
             ? 'UPTAKE must qualify the learner’s proposed causal answer without quoting, confirming, denying, or paraphrasing it. Say only that the public evidence has not established it yet.'
-          : 'UPTAKE must visibly answer, credit, qualify, correct, or receive the learner’s actual move before development begins.',
+            : 'UPTAKE must visibly answer, credit, qualify, correct, or receive the learner’s actual move before development begins.',
     },
     turn_focus_contract: {
       primary_surface: boundedFocus.surface || null,
@@ -754,11 +796,11 @@ export function compileTutorStubTurnProgressionContract({
         ? 'Keep the explanation itself as the turn focus. Restate the latest tutor point in plain contemporary English; do not advance the inquiry or reinterpret the request as evidence.'
         : integrationTarget
           ? `Recover this already-public relation before another verdict: “${integrationTarget.target}” Ask exactly: “${integrationTarget.question}” Do not state the target for the learner or copy their ledger formula.`
-        : unsupportedCausalClaim
-          ? 'Qualify the proposed causal answer without repeating or paraphrasing it. Keep it open until public evidence supports the missing connection.'
-          : boundedFocus.surface
-            ? `Keep the learner’s requested focus primary: “${boundedFocus.surface}”. Do not silently replace its relation with a neighbouring one.`
-          : 'Keep the current public relation primary; do not silently substitute a neighbouring relation.',
+          : unsupportedCausalClaim
+            ? 'Qualify the proposed causal answer without repeating or paraphrasing it. Keep it open until public evidence supports the missing connection.'
+            : boundedFocus.surface
+              ? `Keep the learner’s requested focus primary: “${boundedFocus.surface}”. Do not silently replace its relation with a neighbouring one.`
+              : 'Keep the current public relation primary; do not silently substitute a neighbouring relation.',
     },
     handoff_contract: {
       mode: handoffMode,
@@ -1031,12 +1073,7 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
   }
 
   const target = coverage(handoff.required_target_terms, slots.handoff);
-  const minimumTargetCount = Math.min(2, handoff.required_target_terms.length);
-  if (
-    handoff.required_target_terms.length &&
-    (target.count < minimumTargetCount ||
-      target.coverage < Math.min(0.5, minimumTargetCount / handoff.required_target_terms.length))
-  ) {
+  if (losesHandoffFocus(target, handoff.required_target_terms)) {
     issues.push({
       type: 'handoff_loses_turn_focus',
       owner: 'handoff',
@@ -1109,9 +1146,7 @@ export function auditTutorStubLiveTurnProgressionV1({
   const observedComposition = responseComposition?.segments || responseComposition || {};
   const uptake = oneLine(observedComposition?.uptake);
   const development = oneLine(observedComposition?.development);
-  const sentences = [...liveSentenceSegmenter.segment(responseText)]
-    .map((segment) => oneLine(segment.segment))
-    .filter(Boolean);
+  const sentences = liveSentences(responseText, authoredSourceTexts);
   const terminalSurface = sentences.at(-1) || '';
   const questionPositions = hostQuestionPositions(responseText, authoredSourceTexts);
   const questionCount = questionPositions.length;
@@ -1204,18 +1239,25 @@ export function auditTutorStubLiveTurnProgressionV1({
   // target. V1 has no trustworthy HANDOFF slot span, so inspect that real
   // adjacent boundary instead of fabricating V2 ownership. Declarative endings
   // must still carry their own focus in the terminal sentence.
-  const targetSurface =
-    questionCount > 0 && handoff.question_owner === 'handoff' ? sentences.slice(-2).join(' ') : terminalSurface;
+  //
+  // A closing turn is the exception, and it was rejecting every draft it got.
+  // The closure guard needs the last sentence to be the closing act — "The
+  // Riverside Clinic inquiry is closed" — and this check was demanding the same
+  // sentence carry the turn's target terms. Nothing can be both, so Riverside's
+  // close in the 2026-07-28 run failed on all four attempts and went out as
+  // canned text. The turn must still carry its focus; it just may say it before
+  // the sentence that ends the dialogue.
+  const closingTurn = handoff.mode === 'closure';
+  const targetSurface = closingTurn
+    ? responseText
+    : questionCount > 0 && handoff.question_owner === 'handoff'
+      ? sentences.slice(-2).join(' ')
+      : terminalSurface;
   const target = coverage(handoff.required_target_terms, targetSurface);
-  const minimumTargetCount = Math.min(2, handoff.required_target_terms.length);
-  if (
-    handoff.required_target_terms.length &&
-    (target.count < minimumTargetCount ||
-      target.coverage < Math.min(0.5, minimumTargetCount / handoff.required_target_terms.length))
-  ) {
+  if (losesHandoffFocus(target, handoff.required_target_terms)) {
     issues.push({
       type: 'handoff_loses_turn_focus',
-      owner: 'terminal_sentence',
+      owner: closingTurn ? 'whole_response' : 'terminal_sentence',
       required_target_surfaces: handoff.required_target_surfaces,
       audited_target_surface: targetSurface,
       matched_terms: target.matched,
@@ -1263,7 +1305,7 @@ export function auditTutorStubLiveTurnProgressionV1({
       requested_entry_recognized: requestedEntryAnswerRecognition?.recognized === true,
     },
     handoff: {
-      owner: 'terminal_sentence',
+      owner: closingTurn ? 'whole_response' : 'terminal_sentence',
       mode: handoff.mode,
       question_owner: handoff.question_owner,
       target_coverage: target,

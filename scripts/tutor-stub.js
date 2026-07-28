@@ -374,10 +374,14 @@ import {
 } from '../services/tutorStubCloseoutProjection.js';
 import { projectTutorStubCloseoutReportLines } from '../services/tutorStubCloseoutReportPresentation.js';
 import {
+  createTutorStubInterimState as createInterimState,
+  findTutorStubPreviousLearnerDagModel as previousLearnerDagModel,
   formatTutorStubSignedInterimNumber as formatSignedInterimNumber,
   projectTutorStubInterimPanels,
   renderTutorStubInterimFrame,
+  resolveTutorStubInterimState as getInterimState,
   summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
+  summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
   tutorStubInterimLevel as interimLevel,
   tutorStubPlainInterimBottleneck as plainInterimBottleneck,
@@ -481,8 +485,18 @@ import {
   projectTutorStubDirectorContextLines,
   projectTutorStubDirectorNotesLines,
 } from '../services/tutorStubDirectorPresentation.js';
-import { projectTutorStubLearnerClassificationLines } from '../services/tutorStubLearnerClassificationPresentation.js';
-import { projectTutorStubLearnerDagLines } from '../services/tutorStubLearnerDagPresentation.js';
+import {
+  projectTutorStubClassifierWorldContext as classifierWorldContext,
+  projectTutorStubLearnerClassificationLines,
+} from '../services/tutorStubLearnerClassificationPresentation.js';
+import {
+  applyTutorStubLearnerAdvanceAssessment,
+  buildTutorStubFailedClassification as failedClassification,
+} from '../services/tutorStubLearnerClassification.js';
+import {
+  projectTutorStubLearnerDagLines,
+  projectTutorStubLearnerDagPromptSummary as learnerDagPromptSummary,
+} from '../services/tutorStubLearnerDagPresentation.js';
 import { projectTutorStubResponseConfigurationLines } from '../services/tutorStubResponseConfigurationPresentation.js';
 import { projectTutorStubResponsePolicyContext } from '../services/tutorStubResponsePolicyContext.js';
 import {
@@ -628,6 +642,7 @@ import {
 } from '../services/tutorStubRegisterPolicy.js';
 import { normalizeTutorStubDagMode } from '../services/tutorStubDagFeatures.js';
 import { createTutorStubRegisterEmpiricalPriorModel } from '../services/tutorStubRegisterEmpiricalPrior.js';
+import { projectTutorStubRegisterHistoryPrompt } from '../services/tutorStubRegisterHistoryProjection.js';
 import {
   buildTutorStubLightweightDialogueField as buildLightweightDialogueField,
   projectTutorStubLightweightFieldTurn as lightweightFieldTurn,
@@ -2496,45 +2511,8 @@ const { engagementStancePalettePromptRows, requestTypePromptRows } = createTutor
   getRequestTypeDefinitions,
 });
 
-function learnerDagPromptSummary(model) {
-  if (!model) return 'No prior tutor-side learner-DAG model is available yet.';
-  const record = model.learnerRecord || {};
-  return JSON.stringify(
-    {
-      turn: model.turn ?? null,
-      metrics: model.metrics || {},
-      assessment: model.assessment || {},
-      memoryReliability: model.memoryReliability || null,
-      learnerRecord: {
-        grounded: (record.grounded || []).slice(-8),
-        voicedDerived: (record.voicedDerived || []).slice(-8),
-        hypotheses: (record.hypotheses || []).slice(-5),
-        answerCandidates: record.answerCandidates || [],
-      },
-    },
-    null,
-    2,
-  );
-}
-
-function registerHistoryPromptSummary(state) {
-  const history = state.register?.history || [];
-  if (!history.length) return 'No prior tutor-register choices.';
-  return history
-    .slice(-6)
-    .map((entry) => {
-      const normalized = normalizeStoredRegisterSelection(entry);
-      const efficacy = normalized?.efficacy
-        ? `${normalized.efficacy.label} (DAG score ${normalized.efficacy.progressScore}; ${
-            normalized.efficacy.learnerFeedback?.rating
-              ? `learner rating ${normalized.efficacy.learnerFeedback.rating}; `
-              : ''
-          }${normalized.efficacy.summary})`
-        : 'pending next learner turn';
-      return `Turn ${entry.turn}: ${normalized?.selected_register || 'unknown'} — ${entry.register_reason || 'no reason'}; efficacy: ${efficacy}`;
-    })
-    .join('\n');
-}
+const registerHistoryPromptSummary = (state) =>
+  projectTutorStubRegisterHistoryPrompt(state, { normalizeSelection: normalizeStoredRegisterSelection });
 
 function latestFieldStateMismatch(state) {
   return latestRegisterEfficacy(state)?.mismatch || null;
@@ -2623,19 +2601,6 @@ function engagementStanceSelectionPolicyPrompt(state) {
     );
   }
   return lines.join('\n');
-}
-
-function classifierWorldContext(state) {
-  if (!state.world) return 'No detective-story world is active.';
-  return [
-    `World: ${state.world.id} - ${state.world.title}`,
-    state.world.discipline ? `Discipline: ${state.world.discipline}` : null,
-    `Public question: ${state.world.question}`,
-    `Opening situation: ${String(state.world.setting || '').trim()}`,
-    `DAG mode: ${state.dag ? 'on, but hidden DAG state is intentionally withheld from this classifier' : 'off'}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
 }
 
 function buildLearnerClassifierPrompt({ learnerText, state }) {
@@ -3040,34 +3005,6 @@ async function callClassifierModel({
   });
 }
 
-function failedClassification({ message, resolved, latencyMs = 0, usage = null }) {
-  return {
-    error: message,
-    turn: {
-      summary: 'Classifier failed before the tutor turn.',
-      request_type: 'off_task_or_mixed',
-      discourse_move: 'unknown',
-      evidence_use: 'unknown',
-      epistemic_stance: 'unknown',
-      affect: 'unknown',
-      agency: 'unknown',
-      scores: {},
-      pedagogical_need: 'Proceed cautiously and use the learner input directly.',
-    },
-    overall: {
-      summary: 'Overall classification is unavailable because the classifier failed.',
-      trajectory: 'unknown',
-      recurring_pattern: 'unknown',
-      current_state: 'unknown',
-      next_best_tutor_move: 'Ask a focused diagnostic question.',
-    },
-    provider: resolved?.provider || null,
-    model: resolved?.model || null,
-    latencyMs,
-    usage: usage || { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
-  };
-}
-
 async function classifyLearnerInput({ learnerText, state, signal = null }) {
   const startedAt = Date.now();
   try {
@@ -3120,32 +3057,8 @@ function printClassification(classification) {
   for (const line of projectTutorStubLearnerClassificationLines(presentation, { colors: C })) console.log(line);
 }
 
-function floorClassifierScore(score, minimum, reason) {
-  const current = Number(scoreValue(score));
-  if (Number.isFinite(current) && current >= minimum) return score;
-  if (score && typeof score === 'object') return { ...score, score: minimum, reason };
-  return { score: minimum, reason };
-}
-
-function applyLearnerAdvanceAssessment(classification, tutorLearnerDag) {
-  const advance = tutorLearnerDag?.advance || tutorLearnerDag?.model?.learnerAdvance || null;
-  const turn = classification?.turn;
-  if (!advance || !turn) return classification;
-  turn.learner_advance = advance;
-  if (!advance.accelerated) return classification;
-  turn.learning_pace = 'accelerating';
-  turn.reasoning_span = advance.multiStep ? 'multi_step' : 'multi_premise';
-  turn.discourse_move = advance.derivedFactCount > 0 ? 'inference' : 'evidence_adoption';
-  if (['none', 'repeats_setup', 'cites_public_evidence'].includes(turn.evidence_use)) {
-    turn.evidence_use = advance.derivedFactCount > 0 ? 'links_evidence_to_rule' : 'cites_public_evidence';
-  }
-  if (['passive', 'complying', 'attempting'].includes(turn.agency)) turn.agency = 'steering';
-  turn.scores = turn.scores || {};
-  const reason = `Accepted ${advance.supportedMoveCount} learner-owned public proof moves in one turn.`;
-  turn.scores.conceptual_engagement = floorClassifierScore(turn.scores.conceptual_engagement, 4, reason);
-  turn.scores.epistemic_readiness = floorClassifierScore(turn.scores.epistemic_readiness, 4, reason);
-  return classification;
-}
+const applyLearnerAdvanceAssessment = (classification, tutorLearnerDag) =>
+  applyTutorStubLearnerAdvanceAssessment(classification, tutorLearnerDag, { scoreValue });
 
 function clearStatusLine() {
   process.stdout.write('\r\x1b[2K');
@@ -3154,21 +3067,6 @@ function clearStatusLine() {
 function printWithConcurrentTerminal(state, callback) {
   const terminal = state?.concurrentTerminal;
   return terminal?.enabled ? terminal.print(callback) : callback();
-}
-
-function createInterimState({ enabled }) {
-  return { enabled, active: null, lastContext: null };
-}
-
-function getInterimState(holder) {
-  if (!holder) return null;
-  if (
-    Object.prototype.hasOwnProperty.call(holder, 'active') &&
-    Object.prototype.hasOwnProperty.call(holder, 'enabled')
-  ) {
-    return holder;
-  }
-  return holder.interim || null;
 }
 
 function interimAnimationAvailable(interim) {
@@ -3187,12 +3085,6 @@ function compactInterimFieldSummary(state) {
     `momentum ${interimLevel(final.jointMomentum)}`,
     bottleneck,
   ].join(' | ');
-}
-
-function previousLearnerDagModel(state, context) {
-  const currentTurn = Number(context?.tutorTurn || 0);
-  return [...(state?.turns || [])].reverse().find((turn) => !currentTurn || Number(turn.turn || 0) < currentTurn)
-    ?.tutorLearnerDagModel;
 }
 
 function compactPendingObjectiveSummary(state, context) {
@@ -3239,21 +3131,6 @@ function compactPendingLearnerSummary(context) {
   if (need) bits.push(`needs: ${oneLine(plainStrategyText(need), { max: 62 })}`);
   if (!context.classification && context.learnerText) bits.push(oneLine(context.learnerText, { max: 72 }));
   return bits.join(' | ');
-}
-
-function compactPendingLearnerDagSummary(context) {
-  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
-  if (!model) return null;
-  const metrics = model.metrics || {};
-  const assessment = model.assessment || {};
-  const missing = metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0;
-  return [
-    `turn ${model.turn || context.tutorTurn || '?'}`,
-    `${metrics.groundedCount || 0} public facts held`,
-    `${metrics.voicedDerivedCount || 0} inferences stated`,
-    `${missing} evidence pieces still needed`,
-    plainInterimBottleneck(assessment.bottleneck),
-  ].join(' | ');
 }
 
 function compactPendingDagMovementSummary(state, context) {
@@ -8256,7 +8133,14 @@ async function callTutor({
       auditConfiguration?.recovery_transition || auditConfiguration?.speaking_transition || null,
     );
     const repetitionAudit = repetitionGuardEnabled
-      ? auditTutorStubRepetitionResponse({ text: response.text, recentTutorTexts })
+      ? auditTutorStubRepetitionResponse({
+          text: response.text,
+          recentTutorTexts,
+          // The closing act is licensed to work in the vocabulary already on the
+          // table. A turn owed an exhibit is not: a real exhibit is new words
+          // and carries itself past the floor.
+          advance: { terminal: Boolean(dialogueClosureFrame?.mandatory) },
+        })
       : { ok: true, issues: [], maxSimilarity: 0 };
     const closureAudit = closureGuardEnabled
       ? auditTutorStubDialogueClosureResponse({ text: response.text, frame: dialogueClosureFrame })
@@ -8376,6 +8260,11 @@ async function callTutor({
         ok: repetitionAudit.ok,
         issues: repetitionAudit.issues,
         maxSimilarity: repetitionAudit.maxSimilarity,
+        // Both channels, and the reason the second one stood down. Without the
+        // skip reason a silent advance channel is indistinguishable from one
+        // that never ran, which is exactly the ambiguity on the bare arm.
+        novelty: repetitionAudit.novelty ?? null,
+        advanceSkipped: repetitionAudit.advanceSkipped ?? null,
       });
     }
     if (closureGuardEnabled) {
@@ -9404,6 +9293,20 @@ async function callTutor({
     const disclosableCorrection = priorDisclosure.disclosed
       ? { disclosable: false, reason: 'the previous published turn already disclosed a self-correction' }
       : tutorStubDisclosableGuardCorrection({ audits, attempts });
+    if (!disclosableCorrection.disclosable && disclosableCorrection.survivedFindings?.length) {
+      // Declining costs a rung, so say so in the trace. Without this the skip
+      // and the ordinary "nothing here to disclose" case look identical, and
+      // the next run cannot be checked against the six turns that motivated it.
+      appendTraceEvent(trace, {
+        type: 'tutor_response_self_correction_pass_skipped',
+        role: `${roleBase}_self_correction`,
+        turn: tutorTurn,
+        attempt: attempts.length,
+        reason: disclosableCorrection.reason,
+        survivedFindings: disclosableCorrection.survivedFindings,
+        waivedFindings: disclosableCorrection.findings,
+      });
+    }
     if (disclosableCorrection.disclosable) {
       const disclosureAttempt = attempts.length;
       const priorDisclosureAttempt = attempts.at(-1);
@@ -10899,6 +10802,10 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
         recentTutorTexts: tutorMessageContext(state, state.history)
           .messages.filter((message) => message.role === 'assistant')
           .map((message) => message.content),
+        // Passthrough has no release schedule and no closure frame to consult,
+        // so the advance channel runs on text alone here. That asymmetry is the
+        // point of observing this arm rather than guarding it.
+        advance: {},
       })
     : null;
   const observedAudits = observedAuditsRequested

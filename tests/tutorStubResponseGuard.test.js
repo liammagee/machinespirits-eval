@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import { auditTutorStubQuestionSupportResponse } from '../services/tutorStubQuestionSupport.js';
 import {
+  auditTutorStubAdvanceResponse,
   auditTutorStubReleaseDelivery,
   auditTutorStubRepetitionResponse,
   deterministicTutorStubContextualFallback,
@@ -246,6 +247,94 @@ test('the repetition guard rejects a substantial sentence repeated inside one re
   assert.deepEqual(
     audit.issues.map((issue) => issue.type),
     ['repeated_tutor_sentence'],
+  );
+});
+
+// The whole bare Riverside Clinic arm, showcase run 2026-07-26T14-41-49-087Z.
+// From turn 4 on the tutor makes one move five times in five different
+// sentences — an access trace is not a cancellation record, so produce the
+// appointment audit entry with action, time and source — and the judge called
+// the last of them nearly identical in content to those before it. The arm
+// scored 28.7. The full window matters here: the stall is only visible against
+// the vocabulary the earlier turns established, which is why the channel
+// compares against the recent turns rather than the immediately preceding one.
+const RIVERSIDE_BARE_ARM = [
+  'Yes—the access log shows Mara opened the record, not that she cancelled it. I’d look for the audit entry that names the action on the appointment itself. What action would count as stronger evidence than simply opening Noor’s record?',
+  'Exactly. Opening a record is only a footprint; the cancellation entry should show the appointment action and its source. What would you need that entry to show before linking the cancellation to Mara?',
+  'Precisely. We still need the appointment’s own audit entry—not just Mara’s access footprint—to show she issued the cancellation. What timestamp and source would make that link persuasive?',
+  'That would be strong evidence: the appointment action, its timing, and Mara’s source would line up. Until those three match, her opening the record remains only an access trace.',
+  'That keeps the review fair: Mara’s access trace is not a cancellation record. The next decisive clue is the appointment audit entry showing what changed, when, and from which source.',
+  'Exactly. Until that entry ties the cancellation itself to Mara’s source, the evidence does not support blaming her. The care log should record that distinction.',
+  'I enter that distinction in the care log: Mara opened Noor’s record, but no cancellation is linked to her without an appointment audit entry showing the action, time, and source.',
+  'I mark it: Mara’s record opening is an access trace, not proof of cancellation. The cancellation remains unlinked until its own audit entry shows the action, time, and source.',
+];
+const RIVERSIDE_STALL = { text: RIVERSIDE_BARE_ARM.at(-1), recentTutorTexts: RIVERSIDE_BARE_ARM.slice(0, -1) };
+
+test('the advance channel catches a reworded stall the similarity score walks past', () => {
+  const audit = auditTutorStubRepetitionResponse({
+    ...RIVERSIDE_STALL,
+    advance: {},
+  });
+
+  assert.equal(audit.ok, false);
+  assert.deepEqual(
+    audit.issues.map((issue) => issue.type),
+    ['tutor_turn_without_advance'],
+  );
+  // The point of the second channel: the lexical score stays far below its own
+  // threshold on the very turn the novelty score condemns.
+  assert.ok(audit.maxSimilarity < 0.82, `expected a passing similarity score, got ${audit.maxSimilarity}`);
+  assert.ok(audit.novelty < 0.25, `expected a failing novelty score, got ${audit.novelty}`);
+});
+
+test('the advance channel leaves the lexical channel alone unless it is asked for', () => {
+  const audit = auditTutorStubRepetitionResponse({
+    ...RIVERSIDE_STALL,
+  });
+
+  assert.equal(audit.ok, true);
+  assert.deepEqual(audit.issues, []);
+  assert.equal(audit.novelty, null);
+});
+
+test('the advance channel exempts a closing turn and a turn too short to judge', () => {
+  const stalled = RIVERSIDE_STALL;
+
+  assert.equal(auditTutorStubAdvanceResponse({ ...stalled, terminal: true }).skipped, 'terminal_turn');
+  assert.equal(
+    auditTutorStubAdvanceResponse({ ...stalled, text: 'The cancellation remains unlinked.' }).skipped,
+    'too_short_to_judge',
+  );
+  assert.equal(
+    auditTutorStubAdvanceResponse({ text: RIVERSIDE_STALL.text, recentTutorTexts: [] }).skipped,
+    'no_prior_turns',
+  );
+  const terminal = auditTutorStubAdvanceResponse({ ...stalled, terminal: true });
+  assert.equal(terminal.ok, true);
+  assert.equal(terminal.novelty, null);
+});
+
+test('delivering an exhibit is not an exemption, because a real exhibit is new words', () => {
+  // The 2026-07-28 smoke run exempted four of the instrumented arm's six turns
+  // on this ground and left the channel a no-op. Those same turns pass on their
+  // own novelty. A turn that names an exhibit and restates the rest does not.
+  const released =
+    'I place the overnight record beside the access log: at 01:58 the regional booking service marked ' +
+    'Noor’s clinic appointment as a duplicate for the sweep, pairing it with an unfinished pharmacy request.';
+  const exhibit = auditTutorStubAdvanceResponse({ text: released, recentTutorTexts: RIVERSIDE_BARE_ARM.slice(0, 4) });
+  assert.equal(exhibit.skipped, null, 'a release turn is judged like any other');
+  assert.equal(exhibit.ok, true);
+  assert.ok(exhibit.novelty > 0.25, `a real release carries itself past the floor, got ${exhibit.novelty}`);
+
+  // Same claimed release, but the rest of the turn is the stall verbatim.
+  const dressed = auditTutorStubAdvanceResponse({
+    ...RIVERSIDE_STALL,
+    text: `I open the ledger. ${RIVERSIDE_STALL.text}`,
+  });
+  assert.equal(dressed.ok, false, 'naming an exhibit no longer buys a pass');
+  assert.deepEqual(
+    dressed.issues.map((issue) => issue.type),
+    ['tutor_turn_without_advance'],
   );
 });
 

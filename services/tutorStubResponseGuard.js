@@ -123,7 +123,82 @@ function similarity(left, right) {
   return union ? intersection / union : 0;
 }
 
-export function auditTutorStubRepetitionResponse({ text = '', recentTutorTexts = [], threshold = 0.82 } = {}) {
+/**
+ * Second repetition channel: does this turn say anything the recent turns have
+ * not already said?
+ *
+ * The lexical channel asks whether a reply *resembles* an earlier one, so a
+ * tutor that restates the same move in fresh words walks under it. Riverside's
+ * bare arm reworded one request four turns running at similarities of
+ * 0.21-0.38, nowhere near the 0.82 threshold, while the judge described the
+ * last of them as nearly identical in content to the three before it. Word-set
+ * novelty asks a different question: what share of this turn's content words
+ * have the last ten turns not already used?
+ *
+ * The floor is read off observed runs rather than chosen a priori, and the two
+ * channels are reported side by side because they disagree — a turn can repeat
+ * a phrasing without stalling, and stall without repeating a phrasing.
+ */
+export function auditTutorStubAdvanceResponse({
+  text = '',
+  recentTutorTexts = [],
+  floor = 0.25,
+  minimumContentWords = 8,
+  terminal = false,
+} = {}) {
+  const contentWords = new Set(words(text));
+  const priorTexts = (Array.isArray(recentTutorTexts) ? recentTutorTexts : []).slice(-10).filter((row) => oneLine(row));
+  // A turn can be word-poor without stalling when it is the closing act, or too
+  // short to measure. Delivering an exhibit used to be a third exemption and is
+  // deliberately not one any more: in the 2026-07-28 smoke run it fired on four
+  // of the instrumented arm's six turns and left the channel a no-op on the
+  // whole dialogue. It was never needed. An exhibit is text nobody has said yet,
+  // so a real release scores its own way past the floor — those four turns score
+  // 0.58 to 0.75 unexempted. What the exemption bought was a loophole: name an
+  // exhibit, restate everything else, pass unread.
+  const skipped = !priorTexts.length
+    ? 'no_prior_turns'
+    : terminal
+      ? 'terminal_turn'
+      : contentWords.size < Number(minimumContentWords)
+        ? 'too_short_to_judge'
+        : null;
+  if (skipped) {
+    return { schema: TUTOR_STUB_RESPONSE_GUARD_SCHEMA, ok: true, issues: [], novelty: null, skipped };
+  }
+  const priorWords = new Set(priorTexts.flatMap((row) => words(row)));
+  const freshWords = [...contentWords].filter((word) => !wordSetContains(priorWords, word));
+  const novelty = freshWords.length / contentWords.size;
+  const issues =
+    novelty < Number(floor)
+      ? [
+          {
+            type: 'tutor_turn_without_advance',
+            reason:
+              'the reply introduces almost no material the recent tutor turns have not already covered, so it restates rather than advances',
+            novelty,
+            freshWordCount: freshWords.length,
+            contentWordCount: contentWords.size,
+            comparedTurns: priorTexts.length,
+          },
+        ]
+      : [];
+  return {
+    schema: TUTOR_STUB_RESPONSE_GUARD_SCHEMA,
+    ok: issues.length === 0,
+    issues,
+    novelty,
+    skipped: null,
+    freshWords,
+  };
+}
+
+export function auditTutorStubRepetitionResponse({
+  text = '',
+  recentTutorTexts = [],
+  threshold = 0.82,
+  advance = null,
+} = {}) {
   const candidate = normalizedText(text);
   if (!candidate) return { ok: true, issues: [], maxSimilarity: 0 };
   const internalRepeat = repeatedSentenceWithinResponse(text);
@@ -185,11 +260,18 @@ export function auditTutorStubRepetitionResponse({ text = '', recentTutorTexts =
             },
           ]
         : [];
+  // The advance channel is opt-in so that callers who cannot supply its context
+  // — whether the turn released evidence, whether it is the closing act — get
+  // exactly the lexical behaviour they had before rather than a guess.
+  const advanceAudit = advance ? auditTutorStubAdvanceResponse({ ...advance, text, recentTutorTexts }) : null;
+  const allIssues = [...issues, ...(advanceAudit?.issues || [])];
   return {
     schema: TUTOR_STUB_RESPONSE_GUARD_SCHEMA,
-    ok: issues.length === 0,
-    issues,
+    ok: allIssues.length === 0,
+    issues: allIssues,
     maxSimilarity: internalRepeat ? 1 : comparisons.reduce((max, row) => Math.max(max, row.similarity), 0),
+    novelty: advanceAudit ? advanceAudit.novelty : null,
+    advanceSkipped: advanceAudit ? advanceAudit.skipped : null,
   };
 }
 

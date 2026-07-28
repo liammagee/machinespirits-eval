@@ -34,6 +34,16 @@ function readTutorStubTraceEvents(directory) {
     .map((line) => JSON.parse(line));
 }
 
+// A first draft that fails on its own checks rather than on the ones that go on
+// to reject the recovery. The pass is offered only when the recovery's finding
+// is new, so a fixture whose two drafts fail identically would be testing the
+// skip rather than the disclosure.
+const SELF_CORRECTION_FIRST_DRAFT_FIXTURE = [
+  'I keep your point about “First learner message” in view.',
+  'Which public mark would let you match it to one hand?',
+  'What does that let us carry forward about “First learner message”?',
+].join(' ');
+
 // The turn a tutor writes when it takes the offered self-correction pass: a
 // preface saying it nearly went elsewhere, then the answer the learner is owed.
 const SELF_CORRECTION_FIXTURE = [
@@ -103,6 +113,8 @@ process.stdin.on('end', () => {
         ? 'I would compare the metal residues first.'
         : input.includes('[Tutor-only dramatic clue release]')
           ? "I see the point you are putting on the table. “I am tapping the mint-yard register: Verrell alone draws the mint-yard crucible.” Take the crucible as a fingerprint—which public mark would let you match it to one hand?"
+          : process.env.FAKE_CODEX_FIXTURE_MODE === 'self_correction' && !input.includes('[End tutor-only repair instruction]')
+            ? ${JSON.stringify(SELF_CORRECTION_FIRST_DRAFT_FIXTURE)}
           : 'I see the point you are putting on the table. Take the crucible as a fingerprint: which public mark would let you match it to one hand?';
     if (outputPath) fs.writeFileSync(outputPath, response);
     process.stdout.write(JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: response } }) + '\\n');

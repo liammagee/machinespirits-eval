@@ -28,7 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import yaml from 'js-yaml';
+import { parse as parseYaml } from 'yaml';
 
 import { countProgram2Phase5eFrozenSixUnits } from '../services/program2Phase5eWorldSelection.js';
 import { evaluateProgram2LiveFutility } from '../services/program2ExperimentSafety.js';
@@ -39,13 +39,7 @@ const flagOf = (name, fallback) => {
   const index = process.argv.indexOf(name);
   return index > -1 ? process.argv[index + 1] : fallback;
 };
-const VALUE_FLAGS = new Set([
-  '--analysis-phase',
-  '--marrick-world',
-  '--transfer-world',
-  '--gate-spec',
-  '--json',
-]);
+const VALUE_FLAGS = new Set(['--analysis-phase', '--marrick-world', '--transfer-world', '--gate-spec', '--json']);
 const positional = [];
 for (let index = 2; index < process.argv.length; index += 1) {
   const token = process.argv[index];
@@ -145,7 +139,7 @@ function camelSegments(term) {
 }
 
 function deriveWorldEvidenceLexicon(worldPath) {
-  const world = yaml.load(fs.readFileSync(worldPath, 'utf8'));
+  const world = parseYaml(fs.readFileSync(worldPath, 'utf8'));
   const persons = new Set();
   for (const src of [world.secret, world.mirror]) {
     const fact = src?.fact;
@@ -483,9 +477,7 @@ const terminalVerdict = !densityPass
       : { status: 'not_supported', reason: 'density_sufficient_but_primary_endpoint_not_positive' };
 
 const artifact = {
-  schema: IS_PHASE5F
-    ? 'machinespirits.program2.phase5f-analysis.v1'
-    : 'machinespirits.program2.phase5e-r2-analysis.v1',
+  schema: IS_PHASE5F ? 'machinespirits.program2.phase5f-analysis.v1' : 'machinespirits.program2.phase5e-r2-analysis.v1',
   generatedAt: new Date().toISOString(),
   preregistration: IS_PHASE5F
     ? 'PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md'

@@ -1056,3 +1056,61 @@ Log:
 - 2026-07-28 — Fifty-loop register-prompt-vocabulary run reached review with a
   25-line net CLI reduction, 26 focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 7,
+  `refactor-tutor-stub-learner-dag-prompt`, from PR #377's reviewed head.
+  Learner-DAG construction, runtime state, prompt assembly, and effects remain
+  in their current owners.
+- 2026-07-28 — Fifty-loop learner-DAG-prompt run reached review with an 18-line
+  net CLI reduction, five focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 8,
+  `refactor-tutor-stub-register-history-prompt`, from PR #379's reviewed head.
+  Register normalization, runtime state, prompt assembly, policy selection, and
+  effects remain in their current owners.
+- 2026-07-28 — Fifty-loop register-history-prompt run reached review with a
+  15-line net CLI reduction, 25 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 9,
+  `refactor-tutor-stub-classifier-world-context`, from PR #380's reviewed head.
+  Classifier prompt assembly, runtime state, model calls, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop classifier-world-context run reached review with a
+  10-line net CLI reduction, five focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 10,
+  `refactor-tutor-stub-failed-classification`, from PR #381's reviewed head.
+  Classifier invocation, error handling, runtime state, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop failed-classification run reached review with a
+  27-line net CLI reduction, eight focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass. Fifty-loop runs 1–10
+  have removed 196 net lines from `scripts/tutor-stub.js` without regressions.
+- 2026-07-28 — Activated fifty-loop run 11,
+  `refactor-tutor-stub-learner-advance-classification`, from PR #383's reviewed
+  head. Learner-DAG inference, classifier invocation, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop learner-advance-classification run reached review
+  with a 21-line net CLI reduction, nine focused assertions, and complete
+  zero-skip hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 12,
+  `refactor-tutor-stub-interim-state-holder`, from PR #384's reviewed head. TTY
+  checks, animation timers, runtime state, terminal writes, and effects remain
+  in their current owners.
+- 2026-07-28 — Fifty-loop interim-state-holder run reached review with a
+  13-line net CLI reduction, 12 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 13,
+  `refactor-tutor-stub-previous-learner-dag`, from PR #386's reviewed head. DAG
+  construction, interim summaries, runtime state, and effects remain in their
+  current owners.
+- 2026-07-28 — Fifty-loop previous-learner-DAG run reached review with a
+  five-line net CLI reduction, 13 focused assertions, and complete zero-skip
+  hermetic parity. Its focused fixture now pins the existing immediate-
+  predecessor/undefined-model contract. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 14,
+  `refactor-tutor-stub-interim-learner-dag-summary`, from PR #387's reviewed
+  head. Learner-DAG inference, context assembly, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop interim-learner-DAG-summary run reached review with a
+  14-line net CLI reduction, 14 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
