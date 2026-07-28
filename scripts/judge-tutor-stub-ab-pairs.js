@@ -23,6 +23,7 @@
  * it, so a run interrupted by a quota window resumes rather than restarts.
  */
 
+import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -209,6 +210,28 @@ function parseVerdict(text) {
   return { better: better === 'SAME' ? 'same' : better, reason: String(parsed.reason || '').slice(0, 400) };
 }
 
+/**
+ * The scenes are invented sabotage inquiries, and the judge's own usage-policy
+ * filter turns a few of these transcripts away. It writes that notice to stdout
+ * and exits non-zero, and the bridge reports only the exit code, so the wrapper
+ * below keeps the last stdout for the caller to read. Judging is one call at a
+ * time, so the single slot cannot be raced.
+ */
+let lastCliStdout = '';
+const REFUSAL_PATTERN = /usage policy|unable to respond to this request/iu;
+
+function capturingSpawn(command, spawnArgs, options) {
+  const child = spawn(command, spawnArgs, options);
+  let seen = '';
+  child.stdout?.on('data', (chunk) => {
+    seen += chunk;
+  });
+  child.on('close', () => {
+    lastCliStdout = seen;
+  });
+  return child;
+}
+
 async function judge({ pair, model, mock }) {
   if (mock) {
     // Plumbing only: prefers whichever candidate ends in a question mark, then
@@ -220,6 +243,7 @@ async function judge({ pair, model, mock }) {
   const userPrompt = buildUserPrompt(pair);
   let lastErr;
   for (let attempt = 1; attempt <= CLI_ATTEMPTS; attempt += 1) {
+    lastCliStdout = '';
     try {
       const result = await callAIWithCliBridge(
         { provider: 'claude-code', model },
@@ -228,6 +252,7 @@ async function judge({ pair, model, mock }) {
         'judge-tutor-stub-ab-pairs',
         {
           timeoutMs: CLI_TIMEOUT_MS,
+          spawnImpl: capturingSpawn,
         },
       );
       const verdict = parseVerdict(result.text);
@@ -238,6 +263,13 @@ async function judge({ pair, model, mock }) {
       // A dead quota is not worth hammering; hand it back so the caller can
       // resume after the window resets.
       if (/session limit|usage limit|rate limit|quota/i.test(String(e?.message || e))) throw e;
+      // The filter does not fire on every wording of the same scene, so a
+      // refusal is worth a second try. Once it has held twice the pair is
+      // recorded as turned away rather than dropped, so the judged count is
+      // never quietly smaller than the pair count.
+      if (REFUSAL_PATTERN.test(lastCliStdout) && attempt >= 2) {
+        return { better: 'refused', reason: 'the judge’s usage-policy filter turned this transcript away' };
+      }
     }
     process.stderr.write(
       `  [retry] ${pair.id} attempt ${attempt}/${CLI_ATTEMPTS}: ${String(lastErr?.message || lastErr).slice(0, 120)}\n`,
@@ -248,14 +280,41 @@ async function judge({ pair, model, mock }) {
 }
 
 function summarise(records) {
-  const decided = records.filter((r) => r.winner !== 'same');
+  const refused = records.filter((r) => r.winner === 'refused').length;
+  const judged = records.filter((r) => r.winner !== 'refused');
+  const decided = judged.filter((r) => r.winner !== 'same');
   const contractWins = decided.filter((r) => r.winner === 'contract_only').length;
   const bareWins = decided.filter((r) => r.winner === 'baseline').length;
-  const ties = records.length - decided.length;
+  const ties = judged.length - decided.length;
   const rate = decided.length ? contractWins / decided.length : 0;
   // Two-sided binomial spread on the decided pairs, normal approximation.
   const se = decided.length ? Math.sqrt((rate * (1 - rate)) / decided.length) : 0;
-  return { n: records.length, decided: decided.length, contractWins, bareWins, ties, rate, se };
+  return { n: judged.length, refused, decided: decided.length, contractWins, bareWins, ties, rate, se };
+}
+
+/**
+ * Judges are known to reward length, and the contract replies are the longer
+ * ones, so a win rate on its own cannot tell a better turn from a longer turn.
+ * This splits the decided pairs by how much longer the contract reply was and
+ * reports the rate in each band. If the preference is really about length it
+ * should fall away as the two replies come closer in size.
+ */
+function lengthBands(records) {
+  const decided = records.filter((r) => r.winner === 'baseline' || r.winner === 'contract_only');
+  const withGap = decided.map((r) => ({ ...r, gap: r.contractChars - r.bareChars })).sort((a, b) => a.gap - b.gap);
+  const size = Math.ceil(withGap.length / 4) || 1;
+  const bands = [];
+  for (let i = 0; i < withGap.length; i += size) {
+    const chunk = withGap.slice(i, i + size);
+    if (!chunk.length) continue;
+    bands.push({
+      from: chunk[0].gap,
+      to: chunk[chunk.length - 1].gap,
+      n: chunk.length,
+      rate: chunk.filter((r) => r.winner === 'contract_only').length / chunk.length,
+    });
+  }
+  return bands;
 }
 
 async function main() {
@@ -285,8 +344,10 @@ async function main() {
   for (const [i, pair] of todo.entries()) {
     const startedAt = Date.now();
     const verdict = await judge({ pair, model: args.model, mock: args.mock });
-    const winner =
-      verdict.better === 'same' ? 'same' : verdict.better === pair.bareLabel ? 'baseline' : 'contract_only';
+    let winner;
+    if (verdict.better === 'refused') winner = 'refused';
+    else if (verdict.better === 'same') winner = 'same';
+    else winner = verdict.better === pair.bareLabel ? 'baseline' : 'contract_only';
     const record = {
       id: pair.id,
       slot: pair.slot,
@@ -309,12 +370,21 @@ async function main() {
     .filter((l) => l.trim())
     .map((l) => JSON.parse(l));
   const s = summarise(all);
-  process.stdout.write(
-    `\n${s.n} pairs judged (${s.ties} called level)\n` +
-      `contract preferred on ${s.contractWins} of ${s.decided} decided pairs — ${(s.rate * 100).toFixed(0)}% (se ${(s.se * 100).toFixed(0)}%)\n` +
-      `bare preferred on ${s.bareWins}\n` +
-      `written to ${outPath}\n`,
-  );
+  const lines = [
+    '',
+    `${s.n} pairs judged (${s.ties} called level)`,
+    `contract preferred on ${s.contractWins} of ${s.decided} decided pairs — ${(s.rate * 100).toFixed(0)}% (se ${(s.se * 100).toFixed(0)}%)`,
+    `bare preferred on ${s.bareWins}`,
+  ];
+  if (s.refused) lines.push(`${s.refused} pairs turned away by the judge's content filter and left unjudged`);
+  lines.push('', 'by how much longer the contract reply was:');
+  for (const band of lengthBands(all)) {
+    lines.push(
+      `  ${`${band.from > 0 ? '+' : ''}${band.from} to ${band.to > 0 ? '+' : ''}${band.to} chars`.padEnd(26)} contract preferred on ${(band.rate * 100).toFixed(0)}% of ${band.n}`,
+    );
+  }
+  lines.push('', `written to ${outPath}`);
+  process.stdout.write(`${lines.join('\n')}\n`);
 }
 
 main().catch((e) => {
