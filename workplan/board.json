@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T13:37:49.990Z",
+  "generated": "2026-07-28T14:34:42.205Z",
   "counts": {
-    "total": 298,
+    "total": 306,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 45,
+      "review": 53,
       "active": 10,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 62,
-      "maintenance": 120,
+      "maintenance": 128,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -821,6 +821,47 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
+      "id": "refactor-tutor-stub-classifier-world-context",
+      "title": "Refactor tutor-stub classifier world context",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "five focused learner-classifier assertions including the live terminal contract, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve fallback, public fields, optional discipline, setting trimming, and hidden-DAG disclosure",
+      "branch": "codex/refactor-tutor-stub-classifier-world-context",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-register-history-prompt"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubLearnerClassificationPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLearnerClassificationPresentation.test.js"
+        ],
+        "prs": [
+          381
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-register-history-prompt"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "classifier",
+        "prompts"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-cli-parsing",
       "title": "Refactor tutor-stub CLI parsing",
       "status": "review",
@@ -1149,6 +1190,46 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-failed-classification",
+      "title": "Refactor tutor-stub failed classification fallback",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "eight focused classification assertions including the live terminal contract, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve conservative turn/overall fallbacks, route metadata, latency, usage, and fresh defaults",
+      "branch": "codex/refactor-tutor-stub-failed-classification",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-classifier-world-context"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubLearnerClassification.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLearnerClassification.test.js"
+        ],
+        "prs": [
+          383
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-classifier-world-context"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "classifier"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-generous-fallback",
       "title": "Refactor tutor-stub generous-inference fallback",
       "status": "review",
@@ -1316,6 +1397,87 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-interim-learner-dag-summary",
+      "title": "Refactor tutor-stub interim learner-DAG summary",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "14 focused interim-presentation assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve model precedence, turn/count fields, missing-premise fallback, bottleneck copy, and null handling",
+      "branch": "codex/refactor-tutor-stub-interim-learner-dag-summary",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-previous-learner-dag"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInterimPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInterimPresentation.test.js"
+        ],
+        "prs": [
+          388
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-previous-learner-dag"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "interim-ui",
+        "learner-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-interim-state-holder",
+      "title": "Refactor tutor-stub interim state holder",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "12 focused interim-presentation assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve initial shape, direct/nested resolution, precedence, and null handling",
+      "branch": "codex/refactor-tutor-stub-interim-state-holder",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-learner-advance-classification"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInterimPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInterimPresentation.test.js"
+        ],
+        "prs": [
+          386
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-learner-advance-classification"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "interim-ui"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-launch-mode-contract",
       "title": "Refactor tutor-stub launch-mode contract",
       "status": "review",
@@ -1357,6 +1519,88 @@
         "launch",
         "mode",
         "terminal"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-learner-advance-classification",
+      "title": "Refactor tutor-stub learner-advance classification",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "nine focused learner-advance and classification assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve score floors, no-op paths, accelerated movement labels, evidence use, agency, and reasons",
+      "branch": "codex/refactor-tutor-stub-learner-advance-classification",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-failed-classification"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubLearnerClassification.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLearnerClassification.test.js"
+        ],
+        "prs": [
+          384
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-failed-classification"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "classifier",
+        "learner-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-learner-dag-prompt",
+      "title": "Refactor tutor-stub learner-DAG prompt summary",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "five focused learner-DAG assertions including the live terminal contract, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve null fallback, bounded history, record fields, and JSON shape",
+      "branch": "codex/refactor-tutor-stub-learner-dag-prompt",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-register-prompt-vocabulary"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubLearnerDagPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLearnerDagPresentation.test.js"
+        ],
+        "prs": [
+          379
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-register-prompt-vocabulary"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "learner-dag",
+        "prompts"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -1615,6 +1859,47 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-previous-learner-dag",
+      "title": "Refactor tutor-stub previous learner-DAG lookup",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "13 focused interim-presentation assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve immediate preceding-turn selection, current-turn exclusion, undefined-model behavior, unbounded lookup, and empty state",
+      "branch": "codex/refactor-tutor-stub-previous-learner-dag",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-interim-state-holder"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubInterimPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubInterimPresentation.test.js"
+        ],
+        "prs": [
+          387
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-interim-state-holder"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "interim-ui",
+        "learner-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-prompt-blocks",
       "title": "Refactor tutor-stub prompt blocks",
       "status": "review",
@@ -1732,6 +2017,47 @@
         "refactoring",
         "tutor-stub",
         "provenance"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-register-history-prompt",
+      "title": "Refactor tutor-stub register history prompt",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "25 focused register-history and policy assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve six-turn bounds, normalization, efficacy, ratings, reasons, pending state, and fallback text",
+      "branch": "codex/refactor-tutor-stub-register-history-prompt",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-learner-dag-prompt"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubRegisterHistoryProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubRegisterHistoryProjection.test.js"
+        ],
+        "prs": [
+          380
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-learner-dag-prompt"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "registers",
+        "prompts"
       ],
       "milestone": "evaluation-infrastructure"
     },
