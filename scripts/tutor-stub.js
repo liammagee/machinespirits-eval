@@ -434,7 +434,10 @@ import {
 } from '../services/tutorStubTrainingReuse.js';
 import { projectTutorStubTrainingReuseStatusLines } from '../services/tutorStubTrainingReusePresentation.js';
 import { projectTutorStubDialogueSettingsLines } from '../services/tutorStubDialogueSettingsPresentation.js';
-import { projectTutorStubModelChoiceLines } from '../services/tutorStubModelChoicePresentation.js';
+import {
+  buildTutorStubModelChoiceEntries,
+  projectTutorStubModelChoiceLines,
+} from '../services/tutorStubModelChoicePresentation.js';
 import {
   projectTutorStubDirectorContextLines,
   projectTutorStubDirectorNotesLines,
@@ -1120,64 +1123,14 @@ function assertSupportedModelRefs(refs) {
   }
 }
 
-const PREFERRED_TUTOR_MODEL_REFS = [
-  'codex.gpt-5.6-terra',
-  'codex.gpt-5.6-sol',
-  'codex.gpt-5.6-luna',
-  'codex.gpt-5.5',
-  'claude-code.sonnet',
-  'claude-code.fable',
-  'claude-code.opus',
-  'claude-code.haiku',
-];
-
 function tutorModelChoiceEntries(currentRef = STUB.model) {
-  const providers = loadProviders()?.providers || {};
-  const entries = [];
-  for (const [provider, config] of Object.entries(providers)) {
-    let providerConfig;
-    try {
-      providerConfig = getProviderConfig(provider);
-    } catch {
-      continue;
-    }
-    if (!providerConfig.isConfigured && !String(currentRef).startsWith(`${provider}.`)) continue;
-    for (const [alias, model] of Object.entries(config.models || {})) {
-      const ref = `${provider}.${alias}`;
-      if (UNSUPPORTED_CODEX_MINI_REFS.has(ref.toLowerCase())) continue;
-      const access = isCliProvider(provider)
-        ? 'CLI login'
-        : config.api_key_env
-          ? `${config.api_key_env} configured`
-          : 'local endpoint';
-      entries.push({ ref, provider, alias, model, access, current: ref === currentRef });
-    }
-  }
-  if (!entries.some((entry) => entry.ref === currentRef)) {
-    try {
-      const resolved = resolveModel(currentRef);
-      entries.push({
-        ref: currentRef,
-        provider: resolved.provider,
-        alias: currentRef.slice(currentRef.indexOf('.') + 1),
-        model: resolved.model,
-        access: 'current launch model',
-        current: true,
-      });
-    } catch {
-      // The normal launch validation reports an invalid current model.
-    }
-  }
-  const preferredIndex = new Map(PREFERRED_TUTOR_MODEL_REFS.map((ref, index) => [ref, index]));
-  return entries.sort((left, right) => {
-    if (left.current !== right.current) return left.current ? -1 : 1;
-    const leftPreferred = preferredIndex.has(left.ref) ? preferredIndex.get(left.ref) : Number.MAX_SAFE_INTEGER;
-    const rightPreferred = preferredIndex.has(right.ref) ? preferredIndex.get(right.ref) : Number.MAX_SAFE_INTEGER;
-    return (
-      leftPreferred - rightPreferred ||
-      left.provider.localeCompare(right.provider) ||
-      left.alias.localeCompare(right.alias)
-    );
+  return buildTutorStubModelChoiceEntries({
+    currentRef,
+    providers: loadProviders()?.providers || {},
+    getProviderConfig,
+    isCliProvider,
+    resolveModel,
+    unsupportedRefs: UNSUPPORTED_CODEX_MINI_REFS,
   });
 }
 

@@ -78,6 +78,7 @@ links:
     - refactor-tutor-stub-world-grouping
     - refactor-tutor-stub-world-vocabulary
     - refactor-tutor-stub-launch-mode-contract
+    - refactor-tutor-stub-model-choice-catalog
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -780,3 +781,12 @@ Log:
 - 2026-07-28 — The launch-mode child reached review with a 35-line net CLI
   reduction, 14 focused assertions, 7,418 root assertions, and 137 tutor-core
   assertions green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-model-choice-catalog` from PR #343's reviewed head to
+  move pure provider-model admission, access labeling, fallback, and ordering
+  into the existing model-choice owner. Provider loading, commands, pickers,
+  and effects remain CLI-owned.
+- 2026-07-28 — The model-choice catalogue child reached review with a 47-line
+  net CLI reduction, 55 focused assertions, 7,420 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
