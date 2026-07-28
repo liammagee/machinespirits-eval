@@ -35,6 +35,21 @@ export function printTutorStubAutomaticTechnicalDetails(state, render, { print }
   return true;
 }
 
+export function projectTutorStubCurrentDebugSelection(state, { duringTurn = false } = {}) {
+  const last = state?.turns?.at(-1) || null;
+  const runId = resolveTutorStubStateRunDebugId(state);
+  const completedId = last?.turnId || (state?.history?.length ? formatTutorStubOpeningDebugId(runId) : null);
+  const activeId = duringTurn ? formatTutorStubStateTurnDebugId(state, (last?.turn || 0) + 1) : null;
+  return {
+    runId,
+    completedId,
+    activeId,
+    selectedId: activeId || completedId || runId,
+    tracePath: state?.trace?.filePath || null,
+    lastCompletedTurnId: last ? last.turnId || formatTutorStubStateTurnDebugId(state, last.turn) : null,
+  };
+}
+
 export function printTutorStubDebugIdLine(state, id, label = 'turn id', { write, colors = {} } = {}) {
   if (!id) return null;
   if (!state.printedDebugIds) state.printedDebugIds = new Set();

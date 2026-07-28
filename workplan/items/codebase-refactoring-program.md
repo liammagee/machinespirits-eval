@@ -1294,3 +1294,14 @@ Log:
   hermetic parity. All static/source-only gates pass.
 - 2026-07-28 — Opened fifty-loop run 39 as PR #413 against `main`; the push
   benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 40,
+  `refactor-tutor-stub-current-debug-selection`, from PR #413's reviewed head.
+  Clipboard access, clipboard text formatting, terminal writes, runtime state,
+  and effects remain in the CLI.
+- 2026-07-28 — Fifty-loop current-debug-selection run reached review with a
+  three-line net CLI reduction, eleven focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass. Fifty-loop runs
+  31–40 have removed 40 net lines from `scripts/tutor-stub.js` while
+  centralizing transport, trace, and debug contracts without regressions.
+- 2026-07-28 — Opened fifty-loop run 40 as PR #414 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
