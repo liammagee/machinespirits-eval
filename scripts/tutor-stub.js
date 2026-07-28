@@ -615,6 +615,7 @@ import {
   createTutorStubReleasePacingState,
   normalizeTutorStubReleaseSpeed,
   projectTutorStubCommittedReleaseRows,
+  projectTutorStubCurrentReleaseRows,
   projectTutorStubNextReleaseRow,
   restoreTutorStubReleasePacingFromTurns,
   setTutorStubReleaseSpeed,
@@ -3109,40 +3110,9 @@ const compactPendingFieldSummary = (state, context) =>
   });
 
 function currentReleaseRows(state, tutorTurn) {
-  const world = state?.world;
-  if (!world || !Number.isFinite(Number(tutorTurn))) return [];
-  const pointOfAction = state?.pointOfAction?.current || null;
-  if (
-    Number(pointOfAction?.turn) === Number(tutorTurn) &&
-    pointOfAction?.compiled_constraint?.suppress_new_premise === true
-  ) {
-    return [];
-  }
-  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
-  const dueIds = snapshot
-    ? snapshot.turn === Number(tutorTurn) && snapshot.dueNow.length
-      ? snapshot.dueNow
-      : snapshot.schedule
-          .filter(
-            (entry) =>
-              Number(entry.effectiveTurn) === Number(tutorTurn) &&
-              (entry.releasedTurn === null || entry.releasedTurn === undefined),
-          )
-          .map((entry) => entry.premise)
-    : world.releaseSchedule.filter((entry) => Number(entry.turn) === Number(tutorTurn)).map((entry) => entry.premise);
-  return dueIds.map((premiseId) => {
-    const premise = world.premiseById.get(premiseId);
-    const release = world.releaseSchedule.find((entry) => entry.premise === premiseId);
-    return {
-      ...projectTutorStubSpeakerPublicPremise(premise, {
-        premise: premiseId,
-        turn: Number(tutorTurn),
-        via: release?.via || null,
-      }),
-      presentation: release?.presentation || null,
-      role: release?.role || null,
-      cue: release?.cue || null,
-    };
+  return projectTutorStubCurrentReleaseRows(state?.releasePacing, state?.world, tutorTurn, {
+    pointOfAction: state?.pointOfAction?.current || null,
+    projectPremise: projectTutorStubSpeakerPublicPremise,
   });
 }
 

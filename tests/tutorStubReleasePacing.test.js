@@ -14,6 +14,7 @@ import {
   createTutorStubReleasePacingState,
   detectTutorStubReleasePacingSignal,
   projectTutorStubCommittedReleaseRows,
+  projectTutorStubCurrentReleaseRows,
   projectTutorStubNextReleaseRow,
   setTutorStubReleaseSpeed,
   tutorStubReleasePacingSnapshot,
@@ -92,6 +93,51 @@ test('committed release rows preserve pacing, turn bounds, projection, fallback,
   ]);
   assert.deepEqual(projectTutorStubCommittedReleaseRows(null, world, 4, dependencies), [{ fallback: 4 }]);
   assert.deepEqual(projectTutorStubCommittedReleaseRows(pacing, null, 6, dependencies), []);
+});
+
+test('current release rows preserve due schedules, authored fallback, point-of-action suppression, and metadata', () => {
+  const world = sampleWorld();
+  world.releaseSchedule[0] = {
+    ...world.releaseSchedule[0],
+    presentation: 'opening',
+    role: 'witness',
+    cue: 'show the mark',
+  };
+  world.premiseById = new Map(world.releaseSchedule.map((entry) => [entry.premise, { id: entry.premise }]));
+  const projectPremise = (premise, release) => ({ id: premise.id, ...release });
+  const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
+
+  assert.deepEqual(projectTutorStubCurrentReleaseRows(pacing, world, 1, { projectPremise }), [
+    {
+      id: 'p_open',
+      premise: 'p_open',
+      turn: 1,
+      via: 'tutor',
+      presentation: 'opening',
+      role: 'witness',
+      cue: 'show the mark',
+    },
+  ]);
+  assert.deepEqual(projectTutorStubCurrentReleaseRows(null, world, 5, { projectPremise }), [
+    {
+      id: 'p_trace',
+      premise: 'p_trace',
+      turn: 5,
+      via: 'director',
+      presentation: null,
+      role: null,
+      cue: null,
+    },
+  ]);
+  assert.deepEqual(
+    projectTutorStubCurrentReleaseRows(pacing, world, 1, {
+      pointOfAction: { turn: 1, compiled_constraint: { suppress_new_premise: true } },
+      projectPremise,
+    }),
+    [],
+  );
+  assert.deepEqual(projectTutorStubCurrentReleaseRows(pacing, null, 1, { projectPremise }), []);
+  assert.deepEqual(projectTutorStubCurrentReleaseRows(pacing, world, Number.NaN, { projectPremise }), []);
 });
 
 test('world-005 steady 1x pacing keeps p_caster on authored turn 10, not turn 9', () => {
