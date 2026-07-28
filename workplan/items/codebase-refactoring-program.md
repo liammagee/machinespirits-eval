@@ -1077,3 +1077,11 @@ Log:
 - 2026-07-28 — Fifty-loop classifier-world-context run reached review with a
   10-line net CLI reduction, five focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 10,
+  `refactor-tutor-stub-failed-classification`, from PR #381's reviewed head.
+  Classifier invocation, error handling, runtime state, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop failed-classification run reached review with a
+  27-line net CLI reduction, eight focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass. Fifty-loop runs 1–10
+  have removed 196 net lines from `scripts/tutor-stub.js` without regressions.
