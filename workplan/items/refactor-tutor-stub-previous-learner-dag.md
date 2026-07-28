@@ -20,6 +20,8 @@ links:
     - services/tutorStubInterimPresentation.js
     - scripts/tutor-stub.js
     - tests/tutorStubInterimPresentation.test.js
+  prs:
+    - 387
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-interim-state-holder
@@ -53,3 +55,5 @@ Log:
   exposed and now pins the existing immediate-predecessor/undefined-model
   contract; 13 focused assertions, complete zero-skip hermetic parity, and all
   static/source-only gates pass.
+- 2026-07-28 — Opened PR #387 against `main`; the benchmark hook correctly
+  classified the lookup-only slice as not response-generation relevant.
