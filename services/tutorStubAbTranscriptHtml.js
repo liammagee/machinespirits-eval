@@ -185,10 +185,10 @@ function summaryTable(report) {
     })
     .join('');
   return `<table class="ab-table">
-    <thead><tr><th>Arm</th><th>Clusters</th><th>Hard</th><th>Δ vs baseline</th><th>Pass</th><th>Rate</th><th>Safety</th><th>Advisory chars</th><th>Reply chars</th><th>Latency</th></tr></thead>
+    <thead><tr><th>Arm</th><th>Broken rules</th><th>Hard</th><th>Δ vs baseline</th><th>Pass</th><th>Rate</th><th>Safety</th><th>Advisory chars</th><th>Reply chars</th><th>Latency</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>
-  <p class="ab-note">Failure clusters are the headline. Pass is all-or-nothing per turn and can read 0/N for every arm at once; the cluster tallies say how far each arm is from clean.</p>`;
+  <p class="ab-note">Broken rules are the headline. Pass is all-or-nothing per turn and can read 0/N for every arm at once; the broken-rule tallies say how far each arm is from clean.</p>`;
 }
 
 function clusterDeltaTable(report) {
@@ -207,11 +207,11 @@ function clusterDeltaTable(report) {
         .join('');
       return `<div class="ab-delta-block">
         <h3>${escapeHtml(arm.label)} vs baseline</h3>
-        <table class="ab-table"><thead><tr><th>Failure cluster</th><th>Baseline</th><th>Arm</th><th>Δ</th></tr></thead><tbody>${rows}</tbody></table>
+        <table class="ab-table"><thead><tr><th>Broken rule</th><th>Baseline</th><th>Arm</th><th>Δ</th></tr></thead><tbody>${rows}</tbody></table>
       </div>`;
     })
     .join('');
-  return blocks || '<p class="ab-note">No failure clusters were recorded on either side.</p>';
+  return blocks || '<p class="ab-note">No broken rules were recorded on either side.</p>';
 }
 
 function armLegend(report) {
@@ -323,7 +323,7 @@ ${renderMachineSpiritsHouseBackdrop()}
   <div class="ab-panel">
     <div class="ab-controls">
       <label><input type="checkbox" id="ab-toggle-diff" checked /> highlight what the baseline did not say</label>
-      <label><input type="checkbox" id="ab-toggle-clusters" checked /> show failure clusters</label>
+      <label><input type="checkbox" id="ab-toggle-clusters" checked /> show broken rules</label>
     </div>
   </div>
 

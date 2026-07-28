@@ -136,7 +136,7 @@ function printSummary(report, paths) {
       ? '     '
       : `${arm.clusterDeltaTotal > 0 ? '+' : ''}${arm.clusterDeltaTotal}`.padStart(5);
     console.log(
-      `  ${arm.baseline ? '*' : ' '} ${arm.id.padEnd(14)} clusters ${String(arm.totalClusters).padStart(3)} (${String(arm.totalHardClusters).padStart(3)} hard) ${delta}` +
+      `  ${arm.baseline ? '*' : ' '} ${arm.id.padEnd(14)} broken rules ${String(arm.totalClusters).padStart(3)} (${String(arm.totalHardClusters).padStart(3)} hard) ${delta}` +
         `  pass ${String(arm.pass).padStart(2)}/${String(arm.scored).padEnd(2)} ${rate.padStart(4)}` +
         `  advisory ${String(arm.meanAdvisoryChars ?? 0).padStart(5)} chars  reply ${String(arm.meanCandidateChars ?? 0).padStart(4)} chars` +
         (arm.blocked ? `  (${arm.blocked} blocked)` : ''),
