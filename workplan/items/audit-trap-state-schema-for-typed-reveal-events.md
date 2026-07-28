@@ -1,7 +1,7 @@
 ---
 id: audit-trap-state-schema-for-typed-reveal-events
 title: Audit the trap-scenario state schema for typed reveal events
-status: triaged
+status: done
 type: research
 priority: P2
 owner: unassigned
@@ -15,11 +15,16 @@ verification: >-
   learnerProfileSchema fields actually recorded at that turn via loadTrace(),
   naming every turn where a strategy shift was scored with no typed reveal event
   under it; drawn from existing dialogue logs and state snapshots, no new runs.
-claim_status: planned
+branch: claude/audit-trap-state-schema-reveal-sxoggr
+claim_status: methods
 links:
   notes:
     - notes/daily-notes/2026-07-20-research-roundup.html
     - notes/research-plans/2026-07-27-research-plan.html
+    - notes/2026-07-28-trap-state-schema-typed-reveal-audit.md
+  scripts:
+    - scripts/audit-trap-reveal-events.js
+    - scripts/lib/trapRevealQueryCoding.js
 tags:
   - adaptive-tutor
   - state-schema
@@ -71,3 +76,30 @@ the gap list comes back thin, that is the finding.
 
 - 2026-07-28 — Card opened from the 2026-07-27 research plan, where this was the
   first of three ranked items. Promoted from `workplan/inbox/2026-07-20-arxiv-2607.05577.md`.
+- 2026-07-28 — Audit done. Gap list in
+  `notes/2026-07-28-trap-state-schema-typed-reveal-audit.md`. Hand coding of all 14
+  trap turns against the four NWM query types is checked in at
+  `scripts/lib/trapRevealQueryCoding.js`; the mechanical half is
+  `scripts/audit-trap-reveal-events.js` (read-only, joins the coding to the state
+  fields at trigger+1 via `loadTrace()`).
+
+  Result: 30 of 30 scored trap turns across cells 110/111/113/124 carry no typed
+  reveal event. Not thin, and not a close call — `evidenceLog`/`hypotheses` are
+  written only by the three `state_policy_*evidence_bound*` architectures and
+  `tomProbes` only by the `bilateral_tom*` ones, so all three channels are
+  structurally empty on these four cells. `strategy_shift_correctness` reads
+  `tutorInternal.policyAction` and the scenario answer key, and no state. The one
+  typed event present, `trapEvents`, is `hiddenLearnerState.triggerSignal` echoed by
+  the runner at the scripted turn, so it sits upstream of the tutor and no scorer
+  reads it. Cell 111 (`recognition_only`, the A13 C1 baseline) has no
+  `learnerProfileUpdate` node and so records no learner state at any turn.
+
+  Reads as a wiring gap rather than a schema gap: `evidenceLog` and
+  `tomProbes.infoaccess_list` already answer who-knows-what and when-learned, they
+  just do not run on the trap cells. Setup-payoff — needed by 11 of the 30 turns —
+  has no home anywhere.
+
+  Limitation: this checkout has no `data/` or `logs/`, so the trace half ran on a
+  hermetic mock corpus. Every finding is fixed by graph topology, schema, and what
+  the scorers read, so none turns on model output; re-running the script against the
+  real corpus should reproduce the verdict counts exactly.
