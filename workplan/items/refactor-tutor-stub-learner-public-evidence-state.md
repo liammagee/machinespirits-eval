@@ -20,7 +20,8 @@ links:
     - services/tutorStubPublicEvidence.js
     - scripts/tutor-stub.js
     - tests/tutorStubPublicEvidence.test.js
-  prs: []
+  prs:
+    - 402
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-public-release-ledger
@@ -53,3 +54,6 @@ Log:
   public-evidence service, reducing `scripts/tutor-stub.js` by three lines.
   Nine focused assertions, complete zero-skip hermetic parity, and all
   static/source-only gates pass.
+- 2026-07-28 — Opened PR #402 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
