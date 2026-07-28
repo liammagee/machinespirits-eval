@@ -6,6 +6,7 @@ import {
   formatTutorStubSafeTimestamp,
   formatTutorStubStateTurnDebugId,
   formatTutorStubTurnDebugId,
+  printTutorStubDebugIdLine,
   resolveTutorStubStateRunDebugId,
   tutorStubAutomaticTechnicalDetailsEnabled,
 } from '../services/tutorStubDebugIdentity.js';
@@ -60,11 +61,27 @@ test('automatic technical details require both enabled explanatory debug and the
   );
 });
 
+test('debug-ID line printing preserves missing IDs, first-print formatting, de-duplication, labels, and state', () => {
+  const state = {};
+  const lines = [];
+  const options = {
+    write: (line) => lines.push(line),
+    colors: { cyan: '<cyan>', reset: '<reset>' },
+  };
+  assert.equal(printTutorStubDebugIdLine(state, null, 'turn id', options), null);
+  assert.equal(state.printedDebugIds, undefined);
+  assert.equal(printTutorStubDebugIdLine(state, 'run:t001', 'active id', options), 'run:t001');
+  assert.equal(printTutorStubDebugIdLine(state, 'run:t001', 'changed label', options), 'run:t001');
+  assert.equal(printTutorStubDebugIdLine(state, 'run:t002', undefined, options), 'run:t002');
+  assert.deepEqual(lines, ['<cyan>active id ><reset> run:t001', '<cyan>turn id ><reset> run:t002']);
+  assert.deepEqual([...state.printedDebugIds], ['run:t001', 'run:t002']);
+});
+
 test('the CLI imports rather than redeclares the debug identity model', () => {
   const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
   assert.match(source, /from '\.\.\/services\/tutorStubDebugIdentity\.js'/u);
   assert.doesNotMatch(
     source,
-    /function (?:safeTimestampForFile|formatTurnDebugId|openingDebugId|stateRunDebugId|turnDebugId|automaticTechnicalDetailsEnabled)\(/u,
+    /function (?:safeTimestampForFile|formatTurnDebugId|openingDebugId|stateRunDebugId|turnDebugId|automaticTechnicalDetailsEnabled|printDebugIdLine)\(/u,
   );
 });

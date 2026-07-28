@@ -84,6 +84,7 @@ import {
   formatTutorStubSafeTimestamp as safeTimestampForFile,
   formatTutorStubStateTurnDebugId as turnDebugId,
   formatTutorStubTurnDebugId as formatTurnDebugId,
+  printTutorStubDebugIdLine,
   resolveTutorStubStateRunDebugId as stateRunDebugId,
   tutorStubAutomaticTechnicalDetailsEnabled as automaticTechnicalDetailsEnabled,
 } from '../services/tutorStubDebugIdentity.js';
@@ -3433,23 +3434,20 @@ function reserveProgram2ProviderBudget({ maxTokens, trace = null, role = 'unknow
   }
 }
 
-function printDebugIdLine(state, id, label = 'turn id') {
-  if (!id) return null;
-  if (!state.printedDebugIds) state.printedDebugIds = new Set();
-  if (state.printedDebugIds.has(id)) return id;
-  state.printedDebugIds.add(id);
-  console.log(`${C.cyan}${label} >${C.reset} ${id}`);
-  return id;
-}
-
 function printTurnDebugLine(state, turn) {
   if (!automaticTechnicalDetailsEnabled(state)) return null;
-  return printDebugIdLine(state, turnDebugId(state, turn), 'turn id');
+  return printTutorStubDebugIdLine(state, turnDebugId(state, turn), 'turn id', {
+    write: console.log,
+    colors: C,
+  });
 }
 
 function printOpeningDebugLine(state) {
   if (!automaticTechnicalDetailsEnabled(state)) return null;
-  return printDebugIdLine(state, openingDebugId(stateRunDebugId(state)), 'turn id');
+  return printTutorStubDebugIdLine(state, openingDebugId(stateRunDebugId(state)), 'turn id', {
+    write: console.log,
+    colors: C,
+  });
 }
 
 function printAutomaticTechnicalDetails(state, render) {

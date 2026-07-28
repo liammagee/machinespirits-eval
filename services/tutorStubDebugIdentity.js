@@ -28,3 +28,12 @@ export function formatTutorStubStateTurnDebugId(state, turn) {
 export function tutorStubAutomaticTechnicalDetailsEnabled(state) {
   return Boolean(state?.explanatoryDebug?.enabled && state.explanatoryDebug.format === 'technical');
 }
+
+export function printTutorStubDebugIdLine(state, id, label = 'turn id', { write, colors = {} } = {}) {
+  if (!id) return null;
+  if (!state.printedDebugIds) state.printedDebugIds = new Set();
+  if (state.printedDebugIds.has(id)) return id;
+  state.printedDebugIds.add(id);
+  write(`${colors.cyan}${label} >${colors.reset} ${id}`);
+  return id;
+}
