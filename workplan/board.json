@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-28T14:34:42.205Z",
+  "generated": "2026-07-28T14:51:33.188Z",
   "counts": {
-    "total": 306,
+    "total": 310,
     "byStatus": {
-      "done": 224,
+      "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
       "review": 53,
-      "active": 10,
+      "active": 12,
       "archived": 4
     },
     "byType": {
       "research": 50,
       "experiment": 50,
-      "infra": 62,
+      "infra": 66,
       "maintenance": 128,
       "content": 2,
       "ops": 8,
@@ -444,6 +444,39 @@
       }
     },
     {
+      "id": "guard-ladder-ships-canned-text-on-most-turns",
+      "title": "The guard ladder ships canned text on most instrumented turns",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "A turn that quotes an exhibit containing a question mark is audited against the whole quoted sentence rather than the fragment after the internal `?`, with the real campus turn-1 string pinned as the case; a closing turn is not asked to put the handoff target terms in the sentence that declares the close; and the self-correction pass either changes the finding that triggered it or does not run, checked against the six turns in the 2026-07-28 run where it ran and changed nothing.",
+      "links": {
+        "code": [
+          "services/tutorStubTurnProgressionContract.js",
+          "services/tutorStubFirstDraftOuterLoop.js",
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubSelfCorrectionDisclosure.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubTurnProgressionContract.test.js",
+          "tests/tutorStubLiveFirstDraftAudit.test.js",
+          "tests/tutorStubSelfCorrectionDisclosure.test.js"
+        ],
+        "items": [
+          "tutor-instrumentation-showcase",
+          "repetition-audit-misses-reworded-stall",
+          "tutor-redeclares-close-lifecycle-has-not-accepted"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
       "id": "negative-register-effect-estimation-grid",
       "title": "Estimate negative-register effects with stance-fidelity gating",
       "status": "active",
@@ -613,6 +646,37 @@
         "demo"
       ],
       "branch": "worktree-showcase-readability-and-rubric-contrast"
+    },
+    {
+      "id": "tutor-redeclares-close-lifecycle-has-not-accepted",
+      "title": "The tutor re-declares a close the closure lifecycle has not accepted",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "A response that declares the case closed while `dialogueClosure.lifecycle.phase` is still `open` raises an issue instead of passing unread, with the real Riverside turn-5 string pinned as the case and the other 35 showcase turns pinned as passing; a live run then shows the regenerated turn is not a second closing declaration; a turn taken after the lifecycle has closed is left alone.",
+      "links": {
+        "code": [
+          "services/tutorStubDialogueClosure.js",
+          "services/tutorStubGuardDisposition.js",
+          "services/__tests__/tutorStubDialogueClosure.test.js",
+          "services/tutorStubResponseConfiguration.js",
+          "services/tutorStubReleasePacing.js",
+          "services/tutorStubPublicLearnerAnalysis.js",
+          "scripts/tutor-stub.js"
+        ],
+        "items": [
+          "tutor-instrumentation-showcase",
+          "showcase-turn-cap-untied-to-release-schedule"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "closure"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -9401,6 +9465,37 @@
       "claim_status": "future"
     },
     {
+      "id": "showcase-turn-cap-untied-to-release-schedule",
+      "title": "Showcase turn caps are hand-set and untied to the world's release schedule",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "`validateTutorStubShowcaseConfig` takes a per-scenario release schedule and refuses two shapes: a cap running more than `closing_allowance` turns past the world's last release, and a cap stopping before that release without a stated `truncates_release_schedule` reason. The loader reads the schedules off the worlds so the two numbers cannot drift apart by hand. Six tests in `tests/tutorStubShowcase.test.js` cover the shipped config, both failing shapes, the contradictory-declaration shape, and the no-schedule path.",
+      "links": {
+        "code": [
+          "config/tutor-stub-showcase.yaml",
+          "services/tutorStubShowcase.js",
+          "scripts/run-tutor-stub-showcase.js",
+          "config/drama-derivation/world-029-riverside-clinic.yaml",
+          "config/drama-derivation/world-016-ai-syllabus-af1.yaml",
+          "tests/tutorStubShowcase.test.js"
+        ],
+        "items": [
+          "tutor-instrumentation-showcase",
+          "tutor-redeclares-close-lifecycle-has-not-accepted"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "showcase",
+        "config"
+      ]
+    },
+    {
       "id": "socialcoach-personalized-social-skill-learning-with-rl-based",
       "title": "SocialCoach: Personalized Social Skill Learning with RL-based Agentic Tutoring and Practice",
       "status": "done",
@@ -10088,6 +10183,35 @@
         "paper-positioning"
       ],
       "claim_status": "methods"
+    },
+    {
+      "id": "repetition-audit-misses-reworded-stall",
+      "title": "The repetition audit catches verbatim looping and misses a reworded stall",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "`auditTutorStubAdvanceResponse` scores content-word novelty against the recent tutor turns and fires `tutor_turn_without_advance` below 0.25. The full eight-turn Riverside bare arm is pinned as a test case: it fires on the last turn while `maxSimilarity` stays under the lexical threshold, which is the whole point. Both scores are reported on the one audit object; the lexical channel is unchanged and the advance channel is opt-in, so a caller that cannot supply its context gets exactly the old behaviour.",
+      "links": {
+        "code": [
+          "services/tutorStubResponseGuard.js",
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubObservedAudits.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubResponseGuard.test.js"
+        ],
+        "items": [
+          "tutor-instrumentation-showcase",
+          "tutor-redeclares-close-lifecycle-has-not-accepted"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
     },
     {
       "id": "revisit-adaptation-conformity-human-anchor",
