@@ -1,13 +1,18 @@
 import { createHash } from 'node:crypto';
 
-import { answerSurfaceMentioned, mintAnswerConstant } from './dramaticDerivation/answerSurface.js';
+import {
+  answerSurfaceMentioned,
+  matchAuthoredRecognitionClaim,
+  matchAuthoredRecognitionSurface,
+  mintAnswerConstant,
+} from './dramaticDerivation/answerSurface.js';
 import { closure, factKey, matchPattern } from './dramaticDerivation/chainer.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from './dramaticDerivation/learnerDag.js';
 import { buildLearnerProxyDagMemory, buildTutorLearnerDagModel } from './dramaticDerivation/proxyDagMemory.js';
 import {
-  TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
   applyTutorStubDagFactDropout,
   createTutorStubDagFactDropoutState,
+  projectTutorStubDagMemoryReliability,
 } from './tutorStubDagFactDropout.js';
 import { closeTruncatedTutorStubJson, normalizeTutorStubAnalysisEnvelope } from './tutorStubJson.js';
 import { buildTutorStubLearnerAdvance } from './tutorStubLearnerAdvance.js';
@@ -2379,6 +2384,13 @@ export function applyTutorStubPublicLearnerRecordUpdate({
     derive: [],
     hypothesis: null,
     assertAnswer: null,
+    authoredRecognition: {
+      adoptedPremises: [],
+      premiseSurfaces: {},
+      assertedSurface: null,
+      assertedPattern: null,
+      assertedPatternAlternatives: [],
+    },
     humanDiscourse: normalizeTutorStubHumanDiscourseExtraction(update?.human_discourse || update?.humanDiscourse),
   };
   const rejected = [];
@@ -2407,6 +2419,23 @@ export function applyTutorStubPublicLearnerRecordUpdate({
       continue;
     }
     adoptReleasedRow(row);
+  }
+  // A world author may pin complete public clauses that are equivalent to a
+  // staged premise. These are a deterministic backstop for model extraction,
+  // not a fuzzy classifier: only a configured token sequence can add a fact,
+  // and only after that fact is public. This keeps ordinary learner wording
+  // from becoming apparatus attrition without granting the harness licence to
+  // infer arbitrary paraphrases.
+  for (const [premiseId, row] of released) {
+    if (!row?.fact || retracted.has(premiseId)) continue;
+    if (record.board.has(factKey(row.fact))) continue;
+    const premise = world.premiseById.get(premiseId);
+    const matchedSurface = matchAuthoredRecognitionSurface(learnerText, premise?.recognition_surfaces);
+    if (!matchedSurface || !adoptReleasedRow(row)) continue;
+    if (!accepted.authoredRecognition.adoptedPremises.includes(premiseId)) {
+      accepted.authoredRecognition.adoptedPremises.push(premiseId);
+      accepted.authoredRecognition.premiseSurfaces[premiseId] = matchedSurface;
+    }
   }
   for (const fact of Array.isArray(update?.derive) ? update.derive : []) {
     if (!validFactArray(fact)) {
@@ -2446,10 +2475,28 @@ export function applyTutorStubPublicLearnerRecordUpdate({
     accepted.hypothesis = hypothesis;
   }
   let assertion = null;
-  if (typeof update?.assert_answer === 'string' && update.assert_answer.trim()) {
-    const answerCandidates = [...closure([...record.board.values()], world.rules).facts.values()].filter((fact) =>
-      matchPattern(world.questionPattern, fact),
-    );
+  const answerCandidates = [...closure([...record.board.values()], world.rules).facts.values()].filter((fact) =>
+    matchPattern(world.questionPattern, fact),
+  );
+  const secretEntailed = answerCandidates.some((fact) => factKey(fact) === factKey(world.secret.fact));
+  // Once the accepted public record itself entails the answer, an authored
+  // complete claim is the deterministic backstop for a semantic extractor
+  // that omitted `derive`/`assert_answer`. Requiring the extractor to signal
+  // first made the backstop circular and let ordinary paraphrases loop to the
+  // turn cap even after the learner had publicly solved the case.
+  const authoredAssertion = secretEntailed
+    ? matchAuthoredRecognitionClaim(learnerText, {
+        surfaces: world.secret?.recognition_surfaces,
+        patterns: world.secret?.recognition_patterns,
+      })
+    : null;
+  if (authoredAssertion) {
+    assertion = [...world.secret.fact];
+    accepted.assertAnswer = String(learnerText || '').trim();
+    accepted.authoredRecognition.assertedSurface = authoredAssertion.matchedSurface;
+    accepted.authoredRecognition.assertedPattern = authoredAssertion.matchedPattern;
+    accepted.authoredRecognition.assertedPatternAlternatives = authoredAssertion.matchedAlternatives;
+  } else if (typeof update?.assert_answer === 'string' && update.assert_answer.trim()) {
     assertion = factFromQuestionAnswer(world, update.assert_answer, answerCandidates);
     if (assertion) {
       accepted.assertAnswer = update.assert_answer.trim();
@@ -2522,21 +2569,13 @@ export function applyTutorStubPublicLearnerRecordUpdate({
     proxyDagMemory,
     assessment: learnerDag.assessment,
   });
-  model.memoryReliability = dagFactDropout
-    ? {
-        schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
-        configuredRate: dagFactDropout.configuredRate,
-        activeDroppedCount: dagFactDropout.activeDropped.length,
-        droppedThisTurn: dagFactDropout.droppedNow.length,
-        repairedThisTurn: dagFactDropout.repairedNow.length,
-        visibility: 'conduct',
-      }
-    : null;
+  model.memoryReliability = projectTutorStubDagMemoryReliability(dagFactDropout);
   const advance = buildTutorStubLearnerAdvance({ accepted, beforeModel: previousModel, afterModel: model });
   model.learnerAdvance = advance;
   return {
     model,
     snapshot,
+    assessment: learnerDag.assessment,
     advance,
     dagFactDropout,
     accepted,

@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-28T07:44:27.019Z",
+  "generated": "2026-07-28T13:37:49.990Z",
   "counts": {
-    "total": 259,
+    "total": 298,
     "byStatus": {
       "done": 224,
       "blocked": 5,
-      "dropped": 3,
-      "triaged": 7,
-      "review": 7,
-      "active": 9,
+      "dropped": 4,
+      "triaged": 6,
+      "review": 45,
+      "active": 10,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 49,
-      "infra": 61,
-      "maintenance": 83,
+      "experiment": 50,
+      "infra": 62,
+      "maintenance": 120,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -137,37 +137,6 @@
       "branch": "main"
     },
     {
-      "id": "program-2-phase5d-second-transfer-world",
-      "title": "Program-2 Phase 5e: second transfer world (letter-hostile probe)",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "The Phase 5b/5c-validated committee (program2-sft-instruct-v2, fallback policy v2, span/battery byte-unchanged), moved unchanged to a THIRD world selected for minimum native frozen-six density (letter-hostile), clears E1e (pooled warrant_skip compliance diff vs the new world's own fresh controls, dialogue-cluster bootstrap 95% CI > 0) under the frozen guardrails (coverage −0.05, safety −0.10, density ≥ 15, seam ≤ 0.65) with the costume-leak metric reported both arms.",
-      "claim_status": "exploratory",
-      "links": {
-        "paper": "§6.21, §7.12",
-        "notes": [
-          "PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md",
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
-          "config/adaptive-tutor-evidence/program-2-phase5c.manifest.json"
-        ],
-        "items": [
-          "program-2-context-vs-weights-finetune"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "move-library",
-        "cross-world-transfer"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
       "id": "tutor-stub-http-command-adapter-coverage",
       "title": "Widen tutor-stub HTTP slash-command coverage per command",
       "status": "triaged",
@@ -276,6 +245,22 @@
           "refactor-tutor-stub-feature-map-projection",
           "refactor-tutor-stub-release-notes-projection",
           "refactor-tutor-stub-dag-snapshot-projection",
+          "refactor-tutor-stub-dag-snapshot-model",
+          "refactor-tutor-stub-second-loop-recovery",
+          "refactor-tutor-stub-debug-identifiers",
+          "refactor-tutor-stub-fact-matching",
+          "refactor-tutor-stub-public-evidence",
+          "refactor-tutor-stub-response-leak-audit",
+          "refactor-tutor-stub-one-line-projection",
+          "refactor-tutor-stub-generous-fallback",
+          "refactor-tutor-stub-director-notes-model",
+          "refactor-tutor-stub-prompt-blocks",
+          "refactor-tutor-stub-recipe-model-identity",
+          "refactor-tutor-stub-model-temperature",
+          "refactor-tutor-stub-cli-parsing",
+          "refactor-tutor-stub-model-selection",
+          "refactor-tutor-stub-dag-mode",
+          "refactor-tutor-stub-register-prior-loading",
           "refactor-tutor-stub-proof-command-projection",
           "refactor-tutor-stub-interaction-mode-presentation",
           "refactor-tutor-stub-session-status-presentation",
@@ -299,6 +284,12 @@
           "refactor-tutor-stub-curriculum-catalog-presentation",
           "refactor-tutor-stub-world-catalog-presentation",
           "refactor-tutor-stub-picker-presentation",
+          "refactor-tutor-stub-picker-entries",
+          "refactor-tutor-stub-world-grouping",
+          "refactor-tutor-stub-world-vocabulary",
+          "refactor-tutor-stub-launch-mode-contract",
+          "refactor-tutor-stub-model-choice-catalog",
+          "refactor-tutor-stub-director-context",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -531,6 +522,45 @@
       "branch": "codex/program2-committee-floor-ablation"
     },
     {
+      "id": "program-2-phase5f-fresh-transfer-world",
+      "title": "Program-2 Phase 5f: clean post-hardening transfer world",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "branch": "codex/program-2-phase5e-r2-replication",
+      "verification": "A3 sealed 4/4 rows on their first attempt with no final attrition, full coverage by turn 16, hard safety passing, and all 31 gate-grade decisions clean. Closure burden fell from 53 total A2 turns to 35 A3 turns, including 25 to 8 for affective-resistant committee, but deterministic fallback remained 25/35 turns (71.4%). Neither arm produced a frozen warrant_skip opportunity, so A3 is a successful apparatus-feasibility result and not a committee-transfer estimate. The card remains active until a separately merged prospective cohort amendment freezes a non-zero opportunity-density gate, Phase 5f-native analyzer, cohort-bound pilot bundle, and terminal stopping rule; no 18-dialogue cohort is licensed.",
+      "claim_status": "planned",
+      "depends_on": [
+        "program-2-transfer-apparatus-hardening"
+      ],
+      "links": {
+        "notes": [
+          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md",
+          "PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md"
+        ],
+        "items": [
+          "program-2-phase5d-second-transfer-world",
+          "program-2-transfer-apparatus-hardening"
+        ],
+        "code": [
+          "scripts/run-program2-live-pilot.js",
+          "config/adaptive-tutor-evidence/program-2-phase5f-world-selection.json",
+          "config/adaptive-tutor-evidence/program-2-phase5f-pilot-gates.json"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "move-library",
+        "cross-world-transfer"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
       "id": "tutor-instrumentation-ab-harness",
       "title": "Instrumentation A/B — bare tutor vs instrumented tutor on one frozen dialogue",
       "status": "active",
@@ -752,6 +782,793 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
+      "id": "program-2-transfer-apparatus-hardening",
+      "title": "Program-2 transfer apparatus hardening after Phase 5e A4",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "branch": "codex/program-2-phase5e-r2-replication",
+      "verification": "Without model calls, frozen A1-A4 and Phase 5f A2 prefixes plus non-Skyway fixtures prove queued recovery for every released-but-unheld best-path premise, rejection of closure while strict DAG premises remain missing, idempotent one-time due-clue delivery, preservation of cue-bearing committee content, recognition of authored entailed-answer paraphrases, and a fail-closed unsupported-answer recovery that does not echo the proposed conclusion. Focused, derivation-quality, hermetic-manifest, lint, and workplan source gates must pass before a replacement certificate is prepared.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md"
+        ],
+        "items": [
+          "program-2-phase5d-second-transfer-world",
+          "program-2-phase5f-fresh-transfer-world"
+        ],
+        "code": [
+          "services/tutorStubResponseConfiguration.js",
+          "services/tutorStubTurnProgressionContract.js",
+          "services/tutorStubDialogueClosure.js",
+          "services/tutorStubDramaticRelease.js",
+          "services/program2CommitteeEngine.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubPhase5eR2PilotReplay.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "program-2",
+        "apparatus",
+        "guards"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "refactor-tutor-stub-cli-parsing",
+      "title": "Refactor tutor-stub CLI parsing",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 6/6 CLI parsing fixtures plus full hermetic root and tutor-core zero-skip contracts preserve coercion, bounds, auto-turn aliases, lists, and error wording; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-cli-parsing",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-model-temperature"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubCliParsing.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubCliParsing.test.js"
+        ],
+        "prs": [
+          371
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-model-temperature"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "cli"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-dag-memory-reliability",
+      "title": "Refactor tutor-stub DAG memory reliability projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 41/41; hermetic root 7452/7452 across 551 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-dag-memory-reliability",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-strict-dag-audit"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/358"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDagFactDropout.js",
+          "services/tutorStubPublicLearnerAnalysis.js",
+          "scripts/tutor-stub.js",
+          "services/__tests__/tutorStubDagFactDropout.test.js",
+          "services/__tests__/tutorStubPublicLearnerAnalysis.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-strict-dag-audit"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "dag",
+        "deduplication"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-dag-mode",
+      "title": "Refactor tutor-stub DAG mode normalization",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 11/11 DAG fixtures including three mode contracts plus full hermetic root and tutor-core zero-skip contracts preserve defaults, case folding, hyphen aliases, validation, and error wording; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-dag-mode",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-model-selection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDagFeatures.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDagFeatures.test.js"
+        ],
+        "prs": [
+          373
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-model-selection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-dag-snapshot-model",
+      "title": "Refactor tutor-stub DAG snapshot model",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 8/8 including byte-exact live Marrick block; hermetic root 7454/7454 across 551 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-dag-snapshot-model",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-dag-memory-reliability"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDagSnapshotPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDagSnapshotPresentation.test.js"
+        ],
+        "prs": [
+          359
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-dag-memory-reliability",
+          "refactor-tutor-stub-dag-snapshot-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "dag",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-debug-identifiers",
+      "title": "Refactor tutor-stub debug identifiers",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 5/5 plus full hermetic root and tutor-core zero-skip contracts preserve exact timestamp, turn-id, and opening-id bytes; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-debug-identifiers",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-second-loop-recovery"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDebugIdentity.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDebugIdentity.test.js"
+        ],
+        "prs": [
+          361
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-second-loop-recovery"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "trace"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-director-context",
+      "title": "Refactor tutor-stub director initial context",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Initial director context and live context/reprise terminal blocks remain exact across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-director-context",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-model-choice-catalog"
+      ],
+      "links": {
+        "prs": [
+          345
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDirectorPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDirectorPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-model-choice-catalog"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "director",
+        "context",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-director-notes-model",
+      "title": "Refactor tutor-stub director notes model",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 7/7 including byte-exact live Marrick fixtures plus full hermetic root and tutor-core zero-skip contracts preserve opening withholding and issued scene notes; every static and source-only gate passes; strong benchmark same-response re-audit records 0 regressions and 0 safety changes",
+      "branch": "codex/refactor-tutor-stub-director-notes-model",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-generous-fallback"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDirectorPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDirectorPresentation.test.js"
+        ],
+        "prs": [
+          367
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-generous-fallback"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "director"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-fact-matching",
+      "title": "Refactor tutor-stub fact matching",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 5/5 plus full hermetic root and tutor-core zero-skip contracts preserve symbolic formatting, normalization, regex safety, and canonical fact equality; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-fact-matching",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-debug-identifiers"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubFactModel.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubFactModel.test.js"
+        ],
+        "prs": [
+          362
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-debug-identifiers"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "proof-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-generous-fallback",
+      "title": "Refactor tutor-stub generous-inference fallback",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 14/14 plus full hermetic root and tutor-core zero-skip contracts preserve due, latest, and no-evidence fallback bytes; every static and source-only gate passes; strong benchmark same-response re-audit records 0 regressions and 0 safety changes",
+      "branch": "codex/refactor-tutor-stub-generous-fallback",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-one-line-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubGenerousInference.js",
+          "services/tutorStubTextProjection.js",
+          "scripts/tutor-stub.js",
+          "services/__tests__/tutorStubGenerousInference.test.js"
+        ],
+        "prs": [
+          366
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-one-line-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "pedagogy"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-guard-attempt-envelope",
+      "title": "Refactor tutor-stub guard attempt envelope",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 16/16; hermetic root 7435/7435 across 547 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-guard-attempt-envelope",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-repair-spans"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/353"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubGuardAttemptProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubGuardAttemptProjection.test.js",
+          "tests/tutorStubGuardAccounting.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-repair-spans"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "guard",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-guard-spans",
+      "title": "Refactor tutor-stub guard spans",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 26/26; hermetic root 7431/7431 across 546 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-guard-spans",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-register-palette"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/351"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubGuardSpanProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubGuardSpanProjection.test.js",
+          "tests/tutorStubGuardAccounting.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-register-palette"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "guard",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-human-discourse-config",
+      "title": "Refactor tutor-stub human discourse config",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "All three human-discourse mode envelopes remain exact across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-human-discourse-config",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-world-speaker-prompt"
+      ],
+      "links": {
+        "prs": [
+          348
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubHumanDiscourseConfig.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubHumanDiscourseConfig.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-world-speaker-prompt"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "human-discourse",
+        "configuration"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-launch-mode-contract",
+      "title": "Refactor tutor-stub launch-mode contract",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Launch modes, aliases, errors, and live TTY transitions remain exact across direct, PTY, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-launch-mode-contract",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-world-vocabulary"
+      ],
+      "links": {
+        "prs": [
+          343
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubLaunchMode.js",
+          "services/tutorStubPickerPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLaunchMode.test.js",
+          "tests/labellingGameCli.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-world-vocabulary"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "launch",
+        "mode",
+        "terminal"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-model-choice-catalog",
+      "title": "Refactor tutor-stub model-choice catalogue",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Model admission, exclusions, access labels, fallback, ordering, and exact terminal blocks remain unchanged across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-model-choice-catalog",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-launch-mode-contract"
+      ],
+      "links": {
+        "prs": [
+          344
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubModelChoicePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubModelChoicePresentation.test.js",
+          "tests/tutorStubDialogueSettingsPresentation.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-launch-mode-contract"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "model",
+        "catalogue",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-model-selection",
+      "title": "Refactor tutor-stub model selection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 9/9 model-choice fixtures including byte-exact live CLI blocks plus full hermetic root and tutor-core zero-skip contracts preserve unsupported aliases, catalogue construction, availability checks, and error wording; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-model-selection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-cli-parsing"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubModelChoicePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubModelChoicePresentation.test.js"
+        ],
+        "prs": [
+          372
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-cli-parsing"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "models"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-model-temperature",
+      "title": "Refactor tutor-stub model temperature policy",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 3/3 model-temperature fixtures plus full hermetic root and tutor-core zero-skip contracts preserve fixed OpenAI GPT-5 temperature and requested-temperature pass-through; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-model-temperature",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-recipe-model-identity"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubModelTemperature.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubModelTemperature.test.js"
+        ],
+        "prs": [
+          370
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-recipe-model-identity"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "models"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-one-line-projection",
+      "title": "Refactor tutor-stub one-line projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 5/5 plus full hermetic root and tutor-core zero-skip contracts preserve whitespace, budget, truncation, and fallback bytes across every existing caller; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-one-line-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-response-leak-audit"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubTextProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubTextProjection.test.js"
+        ],
+        "prs": [
+          365
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-response-leak-audit"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-picker-entries",
+      "title": "Refactor tutor-stub picker entry projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Scenario and curriculum picker entries remain deep-equal while direct identity, fallback, live PTY, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-picker-entries",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-picker-presentation"
+      ],
+      "links": {
+        "prs": [
+          340
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubPickerPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubPickerPresentation.test.js",
+          "tests/labellingGameCli.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-picker-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "picker",
+        "scenario",
+        "curriculum"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-picker-presentation",
       "title": "Refactor tutor-stub picker presentation",
       "status": "review",
@@ -794,6 +1611,821 @@
         "picker",
         "presentation",
         "terminal"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-prompt-blocks",
+      "title": "Refactor tutor-stub prompt blocks",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 6/6 prompt-block fixtures plus full hermetic root and tutor-core zero-skip contracts preserve delimit/replace and multiple-choice guidance bytes; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-prompt-blocks",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-director-notes-model"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubPromptBlocks.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubPromptBlocks.test.js"
+        ],
+        "prs": [
+          368
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-director-notes-model"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "prompts"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-public-evidence",
+      "title": "Refactor tutor-stub public evidence model",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 7/7 plus full hermetic root and tutor-core zero-skip contracts preserve release selection, closure, answer terms, and guard-visible text; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-public-evidence",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-fact-matching"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubPublicEvidence.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubPublicEvidence.test.js"
+        ],
+        "prs": [
+          363
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-fact-matching"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "evidence",
+        "proof-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-recipe-model-identity",
+      "title": "Refactor tutor-stub recipe model identity",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 15/15 recipe fixtures including three model-identity contracts plus full hermetic root and tutor-core zero-skip contracts preserve URL sanitization, lazy route resolution, identity fields, and routing hashes; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-recipe-model-identity",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-prompt-blocks"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubSessionRecipe.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubSessionRecipe.test.js"
+        ],
+        "prs": [
+          369
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-prompt-blocks"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "provenance"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-register-palette",
+      "title": "Refactor tutor-stub register palette",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Register palette modes and diagnostics remain exact across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-register-palette",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-stack-recovery"
+      ],
+      "links": {
+        "prs": [
+          350
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubRegisterPalette.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubRegisterPalette.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-stack-recovery"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "register",
+        "configuration"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-register-prior-loading",
+      "title": "Refactor tutor-stub register prior loading",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "27 focused assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate pass while preserving opt-outs, path resolution, schemas, deployment statuses, and errors",
+      "branch": "codex/refactor-tutor-stub-register-prior-loading",
+      "claim_status": "scope-bound",
+      "depends_on": [
+        "refactor-tutor-stub-dag-mode"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubRegisterEmpiricalPrior.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubRegisterEmpiricalPrior.test.js"
+        ],
+        "prs": [
+          374
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-dag-mode"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "registers"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-register-prompt-vocabulary",
+      "title": "Refactor tutor-stub register prompt vocabulary",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "26 focused register-palette and policy assertions, the zero-skip hermetic suite (7516 root plus tutor-core 137/137), and every static/source-only gate preserve stance summaries, request-type rows, JSON formatting, defaults, and fallbacks",
+      "branch": "codex/refactor-tutor-stub-register-prompt-vocabulary",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-visible-model"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubRegisterPalette.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubRegisterPalette.test.js"
+        ],
+        "prs": [
+          377
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-visible-model"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "registers",
+        "prompts"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-repair-spans",
+      "title": "Refactor tutor-stub exact repair spans",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 14/14; hermetic root 7433/7433 across 546 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-repair-spans",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-guard-spans"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/352"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubGuardSpanProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubGuardSpanProjection.test.js",
+          "tests/tutorStubGuardAccounting.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-guard-spans"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "guard",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-response-leak-audit",
+      "title": "Refactor tutor-stub response leak audit",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused leak-audit and response-guard 18/18 plus full hermetic root and tutor-core zero-skip contracts preserve concealed-answer, private-conclusion, unreleased-content, and evidence-assertion behavior; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-response-leak-audit",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-public-evidence"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubResponseLeakAudit.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubResponseLeakAudit.test.js",
+          "tests/tutorStubResponseGuard.test.js"
+        ],
+        "prs": [
+          364
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-public-evidence"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "guards",
+        "privacy"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-scaffold-state",
+      "title": "Refactor tutor-stub scaffold state projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 48/48; hermetic root 7438/7438 across 548 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-scaffold-state",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-guard-attempt-envelope"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/354"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubScaffoldState.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubScaffoldState.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-guard-attempt-envelope"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "human-discourse",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-second-loop-recovery",
+      "title": "Recover tutor-stub second refactor loop onto main",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "the eight reviewed missing slices replay cleanly onto current main; full hermetic root and tutor-core contracts pass with zero skips, together with source-only workplan, manifest, lint, format, cycle, refs, syntax, commit-link, and diff gates",
+      "branch": "codex/refactor-tutor-stub-second-loop-recovery",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-guard-spans"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/tutor-stub.js",
+          "services/tutorStubGuardSpanProjection.js",
+          "services/tutorStubGuardAttemptProjection.js",
+          "services/tutorStubScaffoldState.js",
+          "services/tutorStubSideArcState.js",
+          "services/tutorStubWarrantPremiseAudit.js",
+          "services/tutorStubStrictDagAuditState.js",
+          "services/tutorStubDagFactDropout.js",
+          "services/tutorStubDagSnapshotPresentation.js"
+        ],
+        "prs": [
+          360,
+          352,
+          353,
+          354,
+          355,
+          356,
+          357,
+          358,
+          359
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-repair-spans",
+          "refactor-tutor-stub-guard-attempt-envelope",
+          "refactor-tutor-stub-scaffold-state",
+          "refactor-tutor-stub-side-arc-state",
+          "refactor-tutor-stub-warrant-audit-projection",
+          "refactor-tutor-stub-strict-dag-audit",
+          "refactor-tutor-stub-dag-memory-reliability",
+          "refactor-tutor-stub-dag-snapshot-model"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "recovery",
+        "git"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-side-arc-state",
+      "title": "Refactor tutor-stub side-arc state projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 49/49; hermetic root 7444/7444 across 549 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-side-arc-state",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-scaffold-state"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/355"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubSideArcState.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubSideArcState.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-scaffold-state"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "human-discourse",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-stack-recovery",
+      "title": "Recover orphaned tutor-stub refactor stack",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "The seven preserved slices pass focused, full hermetic, manifest, static, source-only workplan, ref-status, syntax, and diff gates on current origin/main ancestry.",
+      "branch": "codex/refactor-tutor-stub-human-discourse-config",
+      "claim_status": "planned",
+      "links": {
+        "prs": [
+          349
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/tutor-stub.js",
+          "services/tutorStubHumanDiscourseConfig.js",
+          "services/tutorStubWorldPromptContext.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-world-vocabulary",
+          "refactor-tutor-stub-launch-mode-contract",
+          "refactor-tutor-stub-model-choice-catalog",
+          "refactor-tutor-stub-director-context",
+          "refactor-tutor-stub-world-public-prompt",
+          "refactor-tutor-stub-world-speaker-prompt",
+          "refactor-tutor-stub-human-discourse-config"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "git",
+        "stack-recovery"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-strict-dag-audit",
+      "title": "Refactor tutor-stub strict DAG audit state",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 48/48; hermetic root 7450/7450 across 551 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-strict-dag-audit",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-warrant-audit-projection"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/357"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubStrictDagAuditState.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubStrictDagAuditState.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-warrant-audit-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "dag",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-visible-model",
+      "title": "Refactor tutor-stub visible model projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "25 focused model-selection and recipe assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve visible provider, model, configuration, endpoint, API-key, and CLI-route metadata",
+      "branch": "codex/refactor-tutor-stub-visible-model",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-register-prior-loading"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubModelChoicePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubModelChoicePresentation.test.js"
+        ],
+        "prs": [
+          376
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-register-prior-loading"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "models"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-warrant-audit-projection",
+      "title": "Refactor tutor-stub warrant audit projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 48/48; hermetic root 7447/7447 across 550 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-warrant-audit-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-side-arc-state"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/356"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubWarrantPremiseAudit.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubWarrantPremiseAudit.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-side-arc-state"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "human-discourse",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-world-grouping",
+      "title": "Refactor tutor-stub world family grouping",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "World family keys and base-first grouping remain deep-equal while identity, immutability, catalogue hash, picker, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-world-grouping",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-picker-entries"
+      ],
+      "links": {
+        "prs": [
+          341
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubWorldPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubWorldCatalogPresentation.test.js",
+          "tests/tutorStubPickerPresentation.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-picker-entries"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "world",
+        "grouping",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-world-public-prompt",
+      "title": "Refactor tutor-stub world public prompt",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Public world prompt lines remain exact across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-world-public-prompt",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-director-context"
+      ],
+      "links": {
+        "prs": [
+          346
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubWorldPromptContext.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubWorldPromptContext.test.js",
+          "tests/tutorStubPromptBehavior.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-director-context"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "world",
+        "prompt",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-world-speaker-prompt",
+      "title": "Refactor tutor-stub world speaker prompt",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Speaking-tutor evidence-contract lines remain exact across direct, live, focused, hermetic, manifest, static, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-world-speaker-prompt",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-world-public-prompt"
+      ],
+      "links": {
+        "prs": [
+          347
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubWorldPromptContext.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubWorldPromptContext.test.js",
+          "tests/tutorStubPromptBehavior.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-world-public-prompt"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "world",
+        "prompt",
+        "dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-world-vocabulary",
+      "title": "Refactor tutor-stub world presentation vocabulary",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Authored ledger and narrative-flavour labels remain byte-exact across direct, prompt, response-policy, focused, hermetic, static, manifest, and source-only gates.",
+      "branch": "codex/refactor-tutor-stub-world-vocabulary",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-world-grouping"
+      ],
+      "links": {
+        "prs": [
+          342
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubWorldPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubWorldCatalogPresentation.test.js",
+          "tests/tutorStubResponsePolicyContext.test.js",
+          "tests/tutorStubPromptBehavior.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-world-grouping"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "world",
+        "vocabulary",
+        "presentation"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -8389,6 +10021,55 @@
         "workplan",
         "plan-2"
       ]
+    },
+    {
+      "id": "program-2-phase5d-second-transfer-world",
+      "title": "Program-2 Phase 5e: second transfer world (letter-hostile probe)",
+      "status": "dropped",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-28",
+      "branch": "codex/program-2-phase5e-r2-replication",
+      "verification": "Closed without an E1e estimate: immutable R1 and R2 A1-A4 artifacts remain separate, A4's 2/4 sealed pilot and failed cohort bundle are recorded, Skyway is explicitly retired from held-out use, and successor apparatus-hardening plus fresh-world cards own any further work.",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": "§6.21, §7.12",
+        "notes": [
+          "PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5E-SECOND-TRANSFER-PREREGISTRATION.md",
+          "notes/program-2/2026-07-26-phase5e-world-selection.md",
+          "notes/program-2/2026-07-26-phase5e-world-selection-amendment1.md",
+          "notes/program-2/2026-07-26-phase5e-analyzer-validation.md",
+          "notes/program-2/2026-07-26-phase5e-presentation-amendment.md",
+          "notes/program-2/2026-07-27-phase5e-r2-replication-freeze.md",
+          "notes/program-2/2026-07-27-phase5e-r2-pilot-amendment1.md",
+          "notes/program-2/2026-07-27-phase5e-r2-pilot-amendment2.md",
+          "notes/program-2/2026-07-27-phase5e-r2-pilot-amendment3.md",
+          "notes/program-2/2026-07-28-phase5e-r2-pilot-amendment4.md",
+          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md",
+          "config/adaptive-tutor-evidence/program-2-phase5c.manifest.json",
+          "config/adaptive-tutor-evidence/program-2-phase5e-world-selection.json",
+          "config/adaptive-tutor-evidence/program-2-phase5e-world-selection-amendment1.json",
+          "config/adaptive-tutor-evidence/program-2-phase5e-r2-gates.json",
+          "config/adaptive-tutor-evidence/program-2-phase5e-r2-pilot-gates.json"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune",
+          "program-2-transfer-apparatus-hardening",
+          "program-2-phase5f-fresh-transfer-world"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "move-library",
+        "cross-world-transfer"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "a18-38-teacher-as-learner-ml-fine-tuning-ladder",

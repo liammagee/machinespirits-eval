@@ -6,6 +6,7 @@ import {
   auditTutorStubDramaticReleaseResponse,
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
+  prepareTutorStubDueClueUptake,
   tutorStubFirstPersonRoleVoiceVisible,
   tutorStubRoleStageDirectionVisible,
   tutorStubSourcePerspectiveDriftVisible,
@@ -36,6 +37,25 @@ test('duplicate due-clue wording is rejected before it can be delivered', () => 
   assert.equal(issue.premise, 'p_new');
   assert.equal(issue.bearingSentenceCount, 2);
   assert.equal(issue.matches.length, 2);
+});
+
+test('A4 turn-2 fallback replaces clue-bearing uptake before the due clue is delivered once', () => {
+  const dueSurface =
+    "Tibbin joined the ovenloft this spring — the very season the east terrace's cold mornings began.";
+  const frame = buildTutorStubDramaticReleaseFrame({
+    dueEvidence: [{ premise: 'p_hired', via: 'tutor', surface: dueSurface }],
+  });
+  const prepared = prepareTutorStubDueClueUptake({
+    uptake: 'I hear your point about “The cold loaves began when Tibbin joined the ovenloft” and will keep it central.',
+    frame,
+  });
+  const text = `${prepared.text} I look at the delivery ledger: ${dueSurface} What does that show?`;
+  const audit = auditTutorStubClueDeliveryMultiplicity({ text, frame });
+
+  assert.equal(prepared.replaced, true);
+  assert.deepEqual(prepared.repeatedPremises, ['p_hired']);
+  assert.doesNotMatch(prepared.text, /Tibbin|ovenloft/iu);
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
 });
 
 test('duplicate-clue guard exempts one exact passing compensation span and no other overlap', () => {

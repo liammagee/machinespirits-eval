@@ -163,6 +163,31 @@ export function auditTutorStubClueDeliveryMultiplicity({
   };
 }
 
+/**
+ * Keep deterministic recovery idempotent when its learner-uptake sentence
+ * overlaps a clue that must be delivered later in the same response. The
+ * replacement acknowledges the learner without previewing, paraphrasing, or
+ * duplicating the due public clue.
+ */
+export function prepareTutorStubDueClueUptake({ uptake = '', frame = null } = {}) {
+  const source = oneLine(uptake);
+  if (!source || !frame?.active) {
+    return { text: source, replaced: false, repeatedPremises: [] };
+  }
+  const repeatedPremises = (frame.entries || [])
+    .filter((entry) => clueBearingSentenceMatches(source, entry.surface).length > 0)
+    .map((entry) => entry.premise || null)
+    .filter(Boolean);
+  if (!repeatedPremises.length) {
+    return { text: source, replaced: false, repeatedPremises: [] };
+  }
+  return {
+    text: 'Your proposed reading is the point this new public entry now tests.',
+    replaced: true,
+    repeatedPremises,
+  };
+}
+
 function inferredPresentationMode(row = {}) {
   const surface = oneLine(row.surface).toLowerCase();
   const role = oneLine(row.role).toLowerCase();

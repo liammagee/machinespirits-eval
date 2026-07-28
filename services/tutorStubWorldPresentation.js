@@ -16,6 +16,38 @@ export function tutorStubWorldPickerSummary(world) {
   return setting.split(/(?<=\.)\s/u)[0] || world?.question;
 }
 
+export function tutorStubWorldLedgerTerm(world) {
+  return String(tutorStubWorldPresentation(world).ledger_term || 'evidence record');
+}
+
+export function tutorStubWorldFlavourPhrase(world) {
+  const diction = tutorStubWorldPresentation(world).narrative_diction;
+  return diction ? `${diction} flavour` : "world's authored diction";
+}
+
+export function tutorStubWorldFamilyKey(world) {
+  const presentation = tutorStubWorldPresentation(world);
+  return String(presentation.family || presentation.variant_of || world.id);
+}
+
+export function groupTutorStubWorldEntries(entries = []) {
+  const families = new Map();
+  for (const entry of entries) {
+    const key = tutorStubWorldFamilyKey(entry.world);
+    if (!families.has(key)) families.set(key, []);
+    families.get(key).push(entry);
+  }
+  const ordered = [];
+  for (const members of families.values()) {
+    const base = members.find((member) => !tutorStubWorldPresentation(member.world).variant_of) || members[0];
+    ordered.push({ ...base, isVariant: false, familySize: members.length });
+    for (const member of members) {
+      if (member !== base) ordered.push({ ...member, isVariant: true, familySize: members.length });
+    }
+  }
+  return ordered;
+}
+
 export function projectTutorStubWorldCatalogLines(entries = [], { root = '.' } = {}) {
   const lines = [];
   for (const { filePath, world, isVariant, familySize } of entries) {

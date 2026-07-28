@@ -55,7 +55,12 @@ test('ordinary invalid tutor drafts recover through a progression-safe determini
       timeoutMs: 15_000,
     });
 
-    assert.match(result.plain, /I keep your point about “First learner message” in view/iu);
+    // Uptake wording is deliberately varied, so pin the shared public focus
+    // and progression promise rather than one retired surface realization.
+    assert.match(
+      result.plain,
+      /(?:Your point about “First learner message” is the one I will carry forward|Your reading of “First learner message” is the one I will answer now|I hear your point about “First learner message” and will keep it central)/iu,
+    );
     const events = fs
       .readdirSync(tmp)
       .filter((name) => name.endsWith('.jsonl'))

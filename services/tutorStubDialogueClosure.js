@@ -136,15 +136,17 @@ export function auditTutorStubDialogueClosureResponse({ text, frame } = {}) {
   if (!frame?.enabled) {
     return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [] };
   }
+  const verdict = detectTutorStubVerdictDeclaration(text, { answerTerm: frame.answerTerm });
   if (!frame.mandatory && !frame.available) {
     // Closure is not earned yet, so the only closing question is whether the
-    // response claimed it anyway. Passing here unread is what let a tutor state
-    // "I mark the case closed" three turns running while the lifecycle stayed
-    // open, each restatement read by a per-turn rubric as a turn that asked for
-    // nothing. A lifecycle already closed is a different matter and left alone.
-    const unearned = detectTutorStubVerdictDeclaration(text, { answerTerm: frame.answerTerm });
-    if (frame.phase === 'closed' || !unearned.explicitClosure) {
-      return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [], verdict: unearned };
+    // response claimed it anyway — either by declaring the case closed or by
+    // handing over the verdict, which settles the inquiry just as finally.
+    // Passing here unread is what let a tutor state "I mark the case closed"
+    // three turns running while the lifecycle stayed open, each restatement
+    // read by a per-turn rubric as a turn that asked for nothing. A lifecycle
+    // already closed is a different matter and left alone.
+    if (frame.phase === 'closed' || !verdict.declared) {
+      return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [], verdict };
     }
     return {
       ok: false,
@@ -153,15 +155,16 @@ export function auditTutorStubDialogueClosureResponse({ text, frame } = {}) {
       issues: [
         {
           type: 'premature_dialogue_close',
-          reason:
-            'the response declares the case closed while the closure conditions are unmet, so the dialogue must continue',
-          matches: [unearned.closureMatch].filter(Boolean),
+          reason: verdict.explicitClosure
+            ? 'the response declares the case closed while the closure conditions are unmet, so the dialogue must continue'
+            : 'the response closes or settles the inquiry while the strict learner DAG remains open',
+          matches: [verdict.closureMatch].filter(Boolean),
         },
       ],
-      verdict: unearned,
+      verdict,
+      questionCount: questionRows(text).length,
     };
   }
-  const verdict = detectTutorStubVerdictDeclaration(text, { answerTerm: frame.answerTerm });
   const shouldClose = Boolean(frame.mandatory || verdict.declared);
   if (!shouldClose) {
     return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [], verdict };
@@ -233,7 +236,7 @@ export function tutorStubClosureAcknowledgement(text) {
 
 export function deterministicTutorStubClosureResponse(
   frame,
-  { acknowledgement = false, responseConfiguration = null } = {},
+  { acknowledgement = false, responseConfiguration = null, focusHandoff = '' } = {},
 ) {
   const tactic = responseConfiguration?.actorial_performance?.id || null;
   const performedClose = {
@@ -248,6 +251,22 @@ export function deterministicTutorStubClosureResponse(
       'The room’s easy verdict has broken against the public evidence. I close the record; this inquiry is complete.',
     unadorned_report: 'The public evidence supports the finding. I close the record here; this inquiry is complete.',
   }[tactic];
+  const focused = String(focusHandoff || '')
+    .replace(/[.!]+$/gu, '')
+    .trim();
+  if (focused && !/\?/u.test(focused)) {
+    const close = performedClose || 'I close the public record here; this inquiry is complete.';
+    const closeClause = close
+      .replace(
+        /^(?:The public evidence (?:establishes|settles|supports) (?:this|the) finding(?:, and no more)?\.\s*)/iu,
+        '',
+      )
+      .replace(/^(?:Let the finding stand exactly as the public evidence bears it\.\s*)/iu, '')
+      .replace(/^(?:The room’s easy verdict has broken against the public evidence\.\s*)/iu, '')
+      .replace(/^(?:We have reached the supported finding together\.\s*)/iu, '')
+      .trim();
+    return `${focused}; ${closeClause}`;
+  }
   if (performedClose) return performedClose;
   if (frame?.phase === 'final_checkin_response' || acknowledgement || !frame?.allowCheckIn) {
     return 'Then we can close the book here. The verdict stands on the public evidence, and this inquiry is complete.';

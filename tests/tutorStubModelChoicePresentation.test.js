@@ -6,7 +6,14 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { projectTutorStubModelChoiceLines } from '../services/tutorStubModelChoicePresentation.js';
+import {
+  PREFERRED_TUTOR_MODEL_REFS,
+  assertTutorStubSupportedModelRefs,
+  buildTutorStubModelChoiceEntries,
+  createTutorStubModelSelection,
+  projectTutorStubModelChoiceLines,
+  projectTutorStubVisibleResolvedModel,
+} from '../services/tutorStubModelChoicePresentation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({
@@ -32,6 +39,153 @@ function modelEntry(index, { current = false } = {}) {
     access: index % 2 ? 'API key' : 'CLI login',
   };
 }
+
+test('model-choice catalogue preserves admission, access labels, exclusions, fallback, and ordering', () => {
+  const providers = {
+    codex: { models: { 'gpt-5.6-sol': 'gpt-5.6-sol', mini: 'gpt-mini' } },
+    openai: { api_key_env: 'OPENAI_API_KEY', models: { mini: 'gpt-5-mini' } },
+    local: { models: { beta: 'local-beta', alpha: 'local-alpha' } },
+    broken: { models: { ignored: 'ignored' } },
+  };
+  const configured = new Set(['codex', 'local']);
+  const entries = buildTutorStubModelChoiceEntries({
+    currentRef: 'external.current',
+    providers,
+    getProviderConfig(provider) {
+      if (provider === 'broken') throw new Error('broken provider');
+      return { isConfigured: configured.has(provider) };
+    },
+    isCliProvider: (provider) => provider === 'codex',
+    resolveModel: () => ({ provider: 'external', model: 'external-model' }),
+    unsupportedRefs: new Set(['codex.mini']),
+  });
+
+  assert.equal(Object.isFrozen(PREFERRED_TUTOR_MODEL_REFS), true);
+  assert.deepEqual(entries, [
+    {
+      ref: 'external.current',
+      provider: 'external',
+      alias: 'current',
+      model: 'external-model',
+      access: 'current launch model',
+      current: true,
+    },
+    {
+      ref: 'codex.gpt-5.6-sol',
+      provider: 'codex',
+      alias: 'gpt-5.6-sol',
+      model: 'gpt-5.6-sol',
+      access: 'CLI login',
+      current: false,
+    },
+    {
+      ref: 'local.alpha',
+      provider: 'local',
+      alias: 'alpha',
+      model: 'local-alpha',
+      access: 'local endpoint',
+      current: false,
+    },
+    {
+      ref: 'local.beta',
+      provider: 'local',
+      alias: 'beta',
+      model: 'local-beta',
+      access: 'local endpoint',
+      current: false,
+    },
+  ]);
+});
+
+test('model-choice catalogue admits an unconfigured current provider and tolerates unresolved current refs', () => {
+  const entries = buildTutorStubModelChoiceEntries({
+    currentRef: 'openai.mini',
+    providers: { openai: { api_key_env: 'OPENAI_API_KEY', models: { mini: 'gpt-5-mini' } } },
+    getProviderConfig: () => ({ isConfigured: false }),
+    isCliProvider: () => false,
+    resolveModel: () => {
+      throw new Error('must not resolve an already listed current ref');
+    },
+  });
+  assert.deepEqual(entries, [
+    {
+      ref: 'openai.mini',
+      provider: 'openai',
+      alias: 'mini',
+      model: 'gpt-5-mini',
+      access: 'OPENAI_API_KEY configured',
+      current: true,
+    },
+  ]);
+
+  assert.deepEqual(
+    buildTutorStubModelChoiceEntries({
+      currentRef: 'missing.ref',
+      getProviderConfig: () => ({ isConfigured: false }),
+      isCliProvider: () => false,
+      resolveModel: () => {
+        throw new Error('unknown');
+      },
+    }),
+    [],
+  );
+});
+
+test('model selection rejects unsupported local Codex aliases with the existing actionable error', () => {
+  const unsupportedRefs = new Set(['codex.mini']);
+  assert.doesNotThrow(() => assertTutorStubSupportedModelRefs({ model: 'codex.gpt-5.6-terra' }, { unsupportedRefs }));
+  assert.throws(
+    () => assertTutorStubSupportedModelRefs({ model: ' CODEX.MINI ' }, { unsupportedRefs }),
+    /model=\s+CODEX\.MINI\s+is not supported.*Use codex\.gpt-5\.6-terra/u,
+  );
+});
+
+test('model selection binds catalogue inputs and fails unavailable routes with the same requirement', () => {
+  const calls = [];
+  const selection = createTutorStubModelSelection({
+    loadProviders: () => ({ providers: { codex: { models: { sol: 'gpt-5.6-sol' } } } }),
+    getProviderConfig: (provider) => {
+      calls.push(`config:${provider}`);
+      return provider === 'codex' ? { isConfigured: true } : { isConfigured: false, api_key_env: 'OPENAI_API_KEY' };
+    },
+    isCliProvider: (provider) => provider === 'codex',
+    resolveModel: (ref) =>
+      ref.startsWith('codex.')
+        ? { provider: 'codex', model: 'gpt-5.6-sol' }
+        : { provider: 'openai', model: 'gpt-5-mini' },
+    unsupportedRefs: new Set(['codex.mini']),
+  });
+
+  assert.equal(selection.tutorModelChoiceEntries('codex.sol')[0].ref, 'codex.sol');
+  assert.throws(() => selection.assertSupportedModelRefs({ classifier: 'CODEX.MINI' }), /classifier=CODEX\.MINI/u);
+  assert.equal(selection.resolveTutorModelSelection(' codex.sol ').modelRef, 'codex.sol');
+  assert.throws(() => selection.resolveTutorModelSelection('openai.mini'), /configure OPENAI_API_KEY first/u);
+  assert.deepEqual(calls, ['config:codex', 'config:codex', 'config:openai']);
+  assert.equal(Object.isFrozen(selection), true);
+});
+
+test('visible model projection preserves provider configuration and CLI-route metadata', () => {
+  const isCliProvider = (provider) => provider === 'codex';
+  const selection = createTutorStubModelSelection({
+    loadProviders: () => ({ providers: {} }),
+    getProviderConfig: () => ({ isConfigured: true }),
+    isCliProvider,
+    resolveModel: () => ({ provider: 'codex', model: 'gpt-5.6-sol' }),
+  });
+  const resolved = { provider: 'codex', model: 'gpt-5.6-sol', isConfigured: true };
+  const providerConfig = { api_key_env: '', base_url: 'http://localhost:11434' };
+  const expected = {
+    provider: 'codex',
+    model: 'gpt-5.6-sol',
+    configured: true,
+    apiKeyEnv: null,
+    baseUrl: 'http://localhost:11434',
+    cli: true,
+  };
+
+  assert.deepEqual(projectTutorStubVisibleResolvedModel(resolved, providerConfig, { isCliProvider }), expected);
+  assert.deepEqual(selection.visibleResolvedModel(resolved, providerConfig), expected);
+});
 
 test('model-choice projection pins current marker, padding, exact bytes, and input immutability', () => {
   const input = {
@@ -145,6 +299,11 @@ test('the CLI retains role and entry resolution, slash dispatch, picker behavior
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubModelChoicePresentation\.js';/u);
+  assert.match(cliSource, /createTutorStubModelSelection/u);
+  assert.doesNotMatch(
+    cliSource,
+    /function (?:assertSupportedModelRefs|tutorModelChoiceEntries|resolveTutorModelSelection)\(/u,
+  );
   assert.match(choiceSlice, /liveModelRoleDefinitions\[role\]/u);
   assert.match(choiceSlice, /liveModelRoleRef\(role\)/u);
   assert.match(choiceSlice, /tutorModelChoiceEntries\(currentRef\)/u);

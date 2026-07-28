@@ -170,13 +170,14 @@ function privateSpeakerContentNeedles(world, tutorTurn) {
   const needles = [
     ...PRIVATE_SPEAKER_MARKERS,
     world.secret?.surface,
+    ...(world.secret?.recognition_surfaces || []),
     factText(world.secret?.fact),
     factText(world.mirror?.fact),
   ];
   for (const premise of world.premises || []) {
     const release = (world.releaseSchedule || []).find((entry) => entry.premise === premise.id);
     if (Number(release?.turn) <= Number(tutorTurn)) continue;
-    needles.push(premise.surface, factText(premise.fact));
+    needles.push(premise.surface, ...(premise.recognition_surfaces || []), factText(premise.fact));
   }
   return needles.map((needle) => String(needle || '').trim()).filter((needle) => needle.length >= 4);
 }
@@ -222,6 +223,9 @@ export function auditTutorStubSpeakerPrivilege({
   }
   if (world) {
     add('concealed_answer_surface', 'secret', world.secret?.surface);
+    for (const surface of world.secret?.recognition_surfaces || []) {
+      add('concealed_answer_recognition_surface', 'secret', surface);
+    }
     add('concealed_answer_fact', 'secret', factText(world.secret?.fact));
     add('mirror_fact_notation', 'mirror', factText(world.mirror?.fact));
     for (const rule of world.rules || []) add('private_rule_id', rule.id, rule.id);
@@ -230,6 +234,9 @@ export function auditTutorStubSpeakerPrivilege({
       const release = (world.releaseSchedule || []).find((entry) => entry.premise === premise.id);
       if (Number(release?.turn) > Number(tutorTurn)) {
         add('future_evidence_surface', premise.id, premise.surface);
+        for (const surface of premise.recognition_surfaces || []) {
+          add('future_evidence_recognition_surface', premise.id, surface);
+        }
         add('future_fact_notation', premise.id, factText(premise.fact));
       }
     }

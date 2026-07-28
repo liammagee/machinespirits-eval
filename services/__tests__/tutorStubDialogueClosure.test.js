@@ -153,6 +153,32 @@ describe('tutor-stub dialogue closure', () => {
     assert.equal(audit.verdict, undefined);
   });
 
+  it('rejects closure language while the strict learner DAG remains open', () => {
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),
+      learnerDagModel: {
+        assessment: {
+          bottleneck: 'learner_integration_gap',
+          finalSecretEntailed: false,
+          assertedSecret: false,
+          missingPremiseCount: 1,
+        },
+      },
+      tutorDagSnapshot: completeTutorDag(),
+      answerTerm: 'the bolted shutter',
+    });
+    const audit = auditTutorStubDialogueClosureResponse({
+      frame,
+      text: 'Warm launch, bolted shutter, and forced spiral — the full chain stands, and the case is closed.',
+    });
+
+    assert.equal(frame.available, false);
+    assert.equal(frame.mandatory, false);
+    assert.equal(audit.ok, false);
+    assert.equal(audit.closesDialogue, false);
+    assert.equal(audit.issues[0].type, 'premature_dialogue_close');
+  });
+
   it('allows one optional check-in and then advances to awaiting_checkin', () => {
     const lifecycle = createTutorStubDialogueClosureLifecycle({
       enabled: true,

@@ -864,6 +864,153 @@ describe('public evidence boundary and exact DAG postprocessor', () => {
     }
   });
 
+  it('uses an authored public clause to adopt the missed Skyway sole-lift premise', () => {
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+    const record = createTutorStubPublicLearnerRecord(world);
+    const bolt = world.premiseById.get('p_bolt');
+    record.board.set(JSON.stringify(bolt.fact), bolt.fact);
+    const stagedIds = ['p_hired', 'p_bolt', 'p_soleLift'];
+    const publicEvidence = stagedIds.map((premiseId) => {
+      const premise = world.premiseById.get(premiseId);
+      return { premise: premiseId, turn: 6, via: 'fixture', surface: premise.surface, fact: premise.fact };
+    });
+    const learnerText =
+      'On windless mornings, every east-terrace glider depends on Piper’s Gullet, leaving the bolted shutter responsible for the cold loaves.';
+    const result = applyTutorStubPublicLearnerRecordUpdate({
+      update: { adopt: [], retract: [], derive: [], hypothesis: null, assert_answer: null },
+      world,
+      record,
+      tutorTurn: 6,
+      learnerText,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+
+    assert.deepEqual(result.accepted.adopt, ['p_soleLift']);
+    assert.deepEqual(result.accepted.authoredRecognition.adoptedPremises, ['p_soleLift']);
+    assert.match(result.accepted.authoredRecognition.premiseSurfaces.p_soleLift, /every east-terrace glider/u);
+    assert.equal(result.model.assessment.bestPathCoverage, 0.5);
+  });
+
+  it('recognises an authored causal answer after entailment even when the extractor omits its answer signal', () => {
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 11,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+    const learnerText =
+      'Ledger: on windless mornings the bolted shutter forces a twice-long delivery, so warm loaves cool before reaching the east terrace.';
+    const result = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: world.proofPaths[0].premises,
+        retract: [],
+        derive: [world.secret.fact],
+        hypothesis: null,
+        assert_answer: 'The bolted shutter causes a long delay that cools the warm loaves.',
+      },
+      world,
+      record: createTutorStubPublicLearnerRecord(world),
+      tutorTurn: 11,
+      learnerText,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+
+    assert.equal(result.model.assessment.finalSecretEntailed, true);
+    assert.equal(result.model.assessment.assertedSecret, true);
+    assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret');
+    assert.match(result.accepted.authoredRecognition.assertedSurface, /twice-long delivery/u);
+
+    const unSignalled = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: world.proofPaths[0].premises,
+        retract: [],
+        derive: [],
+        hypothesis: null,
+        assert_answer: null,
+      },
+      world,
+      record: createTutorStubPublicLearnerRecord(world),
+      tutorTurn: 11,
+      learnerText,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+    assert.equal(unSignalled.model.assessment.finalSecretEntailed, true);
+    assert.equal(unSignalled.model.assessment.assertedSecret, true);
+    assert.match(unSignalled.accepted.authoredRecognition.assertedSurface, /twice-long delivery/u);
+
+    const prematureEvidence = publicEvidence
+      .filter((row) => row.premise === 'p_bolt')
+      .map((row) => ({ ...row, turn: 4 }));
+    const premature = applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: ['p_bolt'],
+        retract: [],
+        derive: [world.secret.fact],
+        hypothesis: null,
+        assert_answer: 'The bolted shutter causes a long delay that cools the warm loaves.',
+      },
+      world,
+      record: createTutorStubPublicLearnerRecord(world),
+      tutorTurn: 4,
+      learnerText,
+      publicStagedEvidence: prematureEvidence,
+      publicReleaseLedger: prematureEvidence,
+    });
+    assert.equal(premature.model.assessment.finalSecretEntailed, false);
+    assert.equal(premature.model.assessment.assertedSecret, false);
+    assert.equal(premature.accepted.authoredRecognition.assertedSurface, null);
+  });
+
+  it('recognises the live A2 answer paraphrases through an authored, negation-aware pattern', () => {
+    const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+    const publicEvidence = world.premises.map((premise) => ({
+      premise: premise.id,
+      turn: 18,
+      via: 'fixture',
+      surface: premise.surface,
+      fact: premise.fact,
+    }));
+    const apply = (learnerText) =>
+      applyTutorStubPublicLearnerRecordUpdate({
+        update: {
+          adopt: world.proofPaths[0].premises,
+          retract: [],
+          derive: [],
+          hypothesis: null,
+          assert_answer: null,
+        },
+        world,
+        record: createTutorStubPublicLearnerRecord(world),
+        tutorTurn: 18,
+        learnerText,
+        publicStagedEvidence: publicEvidence,
+        publicReleaseLedger: publicEvidence,
+      });
+
+    for (const learnerText of [
+      'The bolted shutter blocks the only eastward lift in still air, forcing a long detour that cools loaves launched warm.',
+      'The delivery ledger names the bolted shutter over Piper’s Gullet as responsible for the cold east-terrace loaves.',
+      'The ledger records Tibbin cleared and the bolted shutter as the cause of the cold loaves.',
+    ]) {
+      const result = apply(learnerText);
+      assert.equal(result.model.assessment.finalSecretEntailed, true, learnerText);
+      assert.equal(result.model.assessment.assertedSecret, true, learnerText);
+      assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret', learnerText);
+      assert.match(result.accepted.authoredRecognition.assertedPattern, /^shutter_/u, learnerText);
+      assert.equal(result.accepted.authoredRecognition.assertedPatternAlternatives.length, 4, learnerText);
+    }
+
+    const denial = apply('The bolted shutter is not responsible for the cold loaves.');
+    assert.equal(denial.model.assessment.finalSecretEntailed, true);
+    assert.equal(denial.model.assessment.assertedSecret, false);
+    assert.equal(denial.accepted.authoredRecognition.assertedPattern, null);
+  });
+
   it('records a bare wrong name as a mirror assertion rather than a grounded close', () => {
     const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
     const publicEvidence = world.premises.map((premise) => ({

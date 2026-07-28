@@ -890,7 +890,7 @@ test('deterministic V1 recovery replaces generic uptake with bounded typed learn
     defaultUptake: 'I hear the point; the next public fact must answer it.',
   });
 
-  assert.equal(uptake, 'I keep your point about “First learner message” in view before we develop it.');
+  assert.equal(uptake, 'Your point about “First learner message” is the one I will carry forward.');
   assert.doesNotMatch(uptake, /\?/u);
   const audit = auditTutorStubTurnProgression({
     contract,
@@ -919,7 +919,7 @@ test('deterministic V1 recovery varies bounded uptake after a recent tutor turn'
     variationKey: 'run:t2',
   });
 
-  assert.doesNotMatch(uptake, /^I keep your point/iu);
+  assert.doesNotMatch(uptake, /^Your point/iu);
   assert.match(uptake, /Second learner message/iu);
   assert.doesNotMatch(uptake, /\?/u);
 });
@@ -950,7 +950,7 @@ test('deterministic V1 recovery bounds the quoted focus below the learner echo a
   // whole surface back — exactly what the response-composition audit rejects
   // as verbatim_learner_echo on the deterministic fallback.
   assert.equal(tutorStubSubstantiveLearnerEcho(unguarded, learnerText), true);
-  assert.equal(uptake, 'I keep your point about “I am not sure, can you just tell” in view before we develop it.');
+  assert.equal(uptake, 'Your point about “I am not sure, can you just tell” is the one I will carry forward.');
   assert.equal(tutorStubSubstantiveLearnerEcho(uptake, learnerText), false);
 });
 
@@ -970,6 +970,6 @@ test('deterministic V1 recovery replaces interrogative uptake instead of strippi
   });
 
   assert.notEqual(uptake, 'Which public mark would connect the tool to one hand');
-  assert.match(uptake, /I keep your point about/iu);
+  assert.match(uptake, /Your point about/iu);
   assert.doesNotMatch(uptake, /\?/u);
 });

@@ -128,6 +128,65 @@ test('validateWorld normalizes optional public opening authorship', () => {
   assert.throws(() => validateWorld(raw, 'non-string-opening-frame'), /opening_frame\.authored_text/u);
 });
 
+test('validateWorld accepts only explicit non-empty recognition-surface lists', () => {
+  const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
+  raw.secret.recognition_surfaces = ['the full public chain establishes Marin as heir'];
+  raw.premises[0].recognition_surfaces = ['Marin is Tessa’s child'];
+  const withRecognition = validateWorld(raw, 'recognition-surfaces');
+  assert.deepEqual(withRecognition.secret.recognition_surfaces, raw.secret.recognition_surfaces);
+  assert.deepEqual(withRecognition.premises[0].recognition_surfaces, raw.premises[0].recognition_surfaces);
+
+  raw.premises[0].recognition_surfaces = [];
+  assert.throws(() => validateWorld(raw, 'empty-recognition-surfaces'), /must be a non-empty array/u);
+  raw.premises[0].recognition_surfaces = ['same clause', 'same clause'];
+  assert.throws(() => validateWorld(raw, 'duplicate-recognition-surfaces'), /entries must be unique/u);
+  raw.premises[0].recognition_surfaces = [42];
+  assert.throws(() => validateWorld(raw, 'non-string-recognition-surfaces'), /entries must be non-empty strings/u);
+});
+
+test('validateWorld accepts only complete public integration-repair contracts', () => {
+  const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
+  raw.premises[0].integration_repair = {
+    question: 'What relation does this clue state?',
+    target: 'The clue states the missing public relation.',
+    qualification: 'Your claim still skips the relation stated by this clue.',
+  };
+  const withRepair = validateWorld(raw, 'integration-repair');
+  assert.deepEqual(withRepair.premises[0].integration_repair, raw.premises[0].integration_repair);
+
+  raw.premises[0].integration_repair.question = 'What relation does this clue state';
+  assert.throws(() => validateWorld(raw, 'integration-repair-question'), /must end with a question mark/u);
+  raw.premises[0].integration_repair.question = 'What relation does this clue state?';
+  raw.premises[0].integration_repair.target = '';
+  assert.throws(() => validateWorld(raw, 'integration-repair-target'), /target must be a non-empty string/u);
+  raw.premises[0].integration_repair = [];
+  assert.throws(() => validateWorld(raw, 'integration-repair-shape'), /must be an object when supplied/u);
+});
+
+test('validateWorld accepts only bounded authored recognition patterns', () => {
+  const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
+  raw.secret.recognition_patterns = [
+    {
+      id: 'answer_claim',
+      all_of: [['sealed letter'], ['identifies', 'names'], ['Ada']],
+      none_of: ['does not identify'],
+    },
+  ];
+  const valid = validateWorld(raw, 'recognition-patterns');
+  assert.deepEqual(valid.secret.recognition_patterns, raw.secret.recognition_patterns);
+
+  raw.secret.recognition_patterns[0].all_of = [['sealed letter'], ['identifies']];
+  assert.throws(() => validateWorld(raw, 'short-recognition-pattern'), /at least three alternative groups/u);
+  raw.secret.recognition_patterns[0].all_of = [['sealed letter'], ['identifies'], []];
+  assert.throws(() => validateWorld(raw, 'empty-recognition-group'), /must be a non-empty array/u);
+  raw.secret.recognition_patterns[0].all_of = [['sealed letter'], ['identifies'], ['Ada']];
+  raw.secret.recognition_patterns[0].none_of = [];
+  assert.throws(() => validateWorld(raw, 'empty-recognition-exclusion'), /must be a non-empty array/u);
+  raw.secret.recognition_patterns[0].none_of = ['does not identify'];
+  raw.secret.recognition_patterns[0].ordered = 'yes';
+  assert.throws(() => validateWorld(raw, 'non-boolean-recognition-order'), /ordered must be a boolean/u);
+});
+
 test('validateWorld carries only declarative non-speaking audience context', () => {
   const raw = yaml.parse(fs.readFileSync(WORLD_PATH, 'utf8'));
   raw.audience = {

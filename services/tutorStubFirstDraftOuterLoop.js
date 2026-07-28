@@ -460,7 +460,7 @@ function validateV27Iteration1Observation(observation, label) {
         ],
       },
     ],
-    `${label} dominant failure cluster`,
+    `${label} dominant broken rule`,
   );
   expect(observation?.comparison?.comparison_available, false, `${label} comparison availability`);
   expect(observation?.comparison?.measurable_improvement, null, `${label} measurable improvement`);
@@ -541,7 +541,7 @@ function validateV27Iteration2Observation(observation, label) {
       { cluster: 'actorialRealizationAudit:missing_selected_actorial_part', count: 1 },
       { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_part', count: 1 },
     ],
-    `${label} dominant failure clusters`,
+    `${label} dominant broken rules`,
   );
   expectJson(
     observation?.comparison,
@@ -634,7 +634,7 @@ function validateV27Iteration3Observation(observation, label) {
   expectJson(
     observation?.dominant_failure_clusters,
     [{ cluster: 'jointPerformanceGenerationAudit:slot_has_outer_whitespace', count: 1 }],
-    `${label} dominant failure clusters`,
+    `${label} dominant broken rules`,
   );
   expectJson(
     observation?.comparison,
@@ -739,7 +739,7 @@ function validateV27Iteration4Observation(observation, label) {
       { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance', count: 1 },
       { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance', count: 1 },
     ],
-    `${label} dominant failure clusters`,
+    `${label} dominant broken rules`,
   );
   expectJson(
     observation?.comparison,
@@ -841,7 +841,7 @@ function validateV27Iteration5Observation(observation, label) {
   expectJson(
     observation?.dominant_failure_clusters,
     [{ cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:scene_immersion', count: 1 }],
-    `${label} dominant failure clusters`,
+    `${label} dominant broken rules`,
   );
   expectJson(
     observation?.comparison,
@@ -957,7 +957,7 @@ function validateV27Iteration6Observation(observation, label) {
       { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:engagement_stance', count: 1 },
       { cluster: 'responseCompositionAudit:verbatim_learner_echo', count: 1 },
     ],
-    `${label} dominant failure clusters`,
+    `${label} dominant broken rules`,
   );
   expectJson(
     observation?.comparison,
@@ -1061,7 +1061,7 @@ function validateV27Iteration7Observation(observation, label) {
     `${label} per-turn latency and tokens`,
   );
   expectJson(observation?.token_usage, { input: 68702, output: 982, total: 69684 }, `${label} token usage`);
-  expectJson(observation?.dominant_failure_clusters, [], `${label} dominant failure clusters`);
+  expectJson(observation?.dominant_failure_clusters, [], `${label} dominant broken rules`);
   expectJson(
     observation?.comparison,
     {
@@ -1165,7 +1165,7 @@ function validateV27Iteration8Advance(advance, label) {
       { cluster: 'jointPerformanceAudit:composite_part_requirement_failed:actorial_part', count: 1 },
       { cluster: 'responseCompositionAudit:missing_learner_uptake', count: 1 },
     ],
-    `${label} failure clusters`,
+    `${label} broken rules`,
   );
   expectJson(
     advance?.seed_dispositions,
@@ -1524,7 +1524,7 @@ function validateV31Iteration1Observation(observation, label) {
       { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:action_family', count: 1 },
       { cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_part', count: 1 },
     ],
-    `${label} failure clusters`,
+    `${label} broken rules`,
   );
   expectJson(observation?.attempted_cells, ['tallow_answer_seeking'], `${label} attempted cells`);
   expectJson(
@@ -1726,7 +1726,7 @@ function validateV32Iteration1Observation(observation, label) {
   expectJson(
     observation?.dominant_failure_clusters,
     [{ cluster: 'turnProgressionAudit:handoff_loses_turn_focus:handoff', count: 1 }],
-    `${label} failure clusters`,
+    `${label} broken rules`,
   );
   expect(
     observation?.failure_interpretation?.strict_failure,
@@ -1959,7 +1959,7 @@ function validateV33Iteration1Observation(observation, label) {
   expectJson(
     observation?.dominant_failure_clusters,
     [{ cluster: 'jointPerformanceAudit:axis_not_realized_in_owner:actorial_performance', count: 1 }],
-    `${label} failure clusters`,
+    `${label} broken rules`,
   );
   expect(
     observation?.qualitative_review?.exact_write_sentence,
@@ -2482,7 +2482,7 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
         'jointPerformanceGenerationAudit:slot_exceeds_word_target',
         'jointPerformanceGenerationPrompt:v2_axis_ownership_conflict',
       ],
-      'V27 iteration 2 target clusters',
+      'V27 iteration 2 target broken rules',
     );
     expectJson(
       workingScreen.iteration2Change?.speaking_changes,
@@ -2547,7 +2547,7 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
         'actorialRealizationAudit:missing_selected_actorial_part',
         'jointPerformanceAudit:axis_not_realized_in_owner:actorial_part',
       ],
-      'V27 iteration 3 target clusters',
+      'V27 iteration 3 target broken rules',
     );
     expectJson(workingScreen.iteration3Change?.speaking_changes, [], 'V27 iteration 3 speaking changes');
     expectJson(workingScreen.iteration3Change?.recovery_changes, [], 'V27 iteration 3 recovery changes');
@@ -2600,7 +2600,7 @@ export function validateTutorStubFirstDraftOuterLoop({ manifest, root = process.
     expectJson(
       workingScreen.iteration4Change?.target_failure_clusters,
       ['jointPerformanceGenerationAudit:slot_has_outer_whitespace'],
-      'V27 iteration 4 target clusters',
+      'V27 iteration 4 target broken rules',
     );
     expectJson(workingScreen.iteration4Change?.speaking_changes, [], 'V27 iteration 4 speaking changes');
     expectJson(workingScreen.iteration4Change?.recovery_changes, [], 'V27 iteration 4 recovery changes');

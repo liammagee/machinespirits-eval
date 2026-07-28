@@ -1,0 +1,138 @@
+{
+  "schema": "machinespirits.program2.phase5e-world-selection.v1",
+  "frozenSix": ["evidence", "item", "test", "record", "fact", "rule"],
+  "metric": "case-insensitive word-boundary counts with possessive/plural suffixes over parsed world prose (setting, questions, glosses, surfaces, and dramaturgy), excluding formal facts/rules/schedules, per 1,000 words",
+  "structureRuleFloor": 5,
+  "candidates": [
+    {
+      "worldId": "world_024_emberwick_forum",
+      "title": "The Locking of the Perpetual Soup Thread",
+      "file": "world-024-emberwick-forum.yaml",
+      "sha256": "e3a32d70a704a910d1ad7bc6c28f90d9b6624ef57d38fe899cbf574f78e454ba",
+      "words": 851,
+      "cueMatches": 0,
+      "cueMatchesPer1kWords": 0,
+      "cueCounts": {
+        "evidence": 0,
+        "item": 0,
+        "test": 0,
+        "record": 0,
+        "fact": 0,
+        "rule": 0
+      },
+      "premises": 5,
+      "rules": 4,
+      "proofPaths": 1,
+      "structureFloorPassed": false
+    },
+    {
+      "worldId": "world_026_skyway_bakery",
+      "title": "The Cold Loaves of the East Terrace",
+      "file": "world-026-skyway-bakery.yaml",
+      "sha256": "01b09759c6129c21181bc1cd1bc749d2739d662974f6422c56cf8a318075fe0d",
+      "words": 894,
+      "cueMatches": 2,
+      "cueMatchesPer1kWords": 2.237136465324385,
+      "cueCounts": {
+        "evidence": 0,
+        "item": 0,
+        "test": 0,
+        "record": 0,
+        "fact": 2,
+        "rule": 0
+      },
+      "premises": 5,
+      "rules": 5,
+      "proofPaths": 1,
+      "structureFloorPassed": true
+    },
+    {
+      "worldId": "world_025_tallow_street",
+      "title": "The Thursday Brownouts of Tallow Street",
+      "file": "world-025-tallow-street.yaml",
+      "sha256": "3b049af9e6ccc78162427379d906cefede1c9e33c66c5339d6cc02a191fc2f93",
+      "words": 994,
+      "cueMatches": 4,
+      "cueMatchesPer1kWords": 4.024144869215292,
+      "cueCounts": {
+        "evidence": 1,
+        "item": 1,
+        "test": 0,
+        "record": 1,
+        "fact": 1,
+        "rule": 0
+      },
+      "premises": 6,
+      "rules": 6,
+      "proofPaths": 1,
+      "structureFloorPassed": true
+    },
+    {
+      "worldId": "world_023_greyfen_lab",
+      "title": "The Contamination in the Greyfen Lab",
+      "file": "world-023-greyfen-lab.yaml",
+      "sha256": "3fc4048c4a3ac818d0ef2f66b710a666b98ffbda176700c25107c13ae21faf7b",
+      "words": 836,
+      "cueMatches": 5,
+      "cueMatchesPer1kWords": 5.980861244019139,
+      "cueCounts": {
+        "evidence": 1,
+        "item": 0,
+        "test": 0,
+        "record": 2,
+        "fact": 1,
+        "rule": 1
+      },
+      "premises": 5,
+      "rules": 4,
+      "proofPaths": 1,
+      "structureFloorPassed": false
+    },
+    {
+      "worldId": "world_022_foxtrot_jukebox",
+      "title": "The Case of the Silent Jukebox",
+      "file": "world-022-foxtrot-jukebox.yaml",
+      "sha256": "220ec1b8ad6fac7031b30c96dcd57eec76a4e2184d7ff4ead135924acf27c15b",
+      "words": 614,
+      "cueMatches": 5,
+      "cueMatchesPer1kWords": 8.143322475570033,
+      "cueCounts": {
+        "evidence": 3,
+        "item": 0,
+        "test": 0,
+        "record": 0,
+        "fact": 1,
+        "rule": 1
+      },
+      "premises": 4,
+      "rules": 2,
+      "proofPaths": 1,
+      "structureFloorPassed": false
+    },
+    {
+      "worldId": "world_028_larkspur_fridge",
+      "title": "The Lunchbox on Shelf Two",
+      "file": "world-028-larkspur-fridge.yaml",
+      "sha256": "8cb7149e73109b8dc33828321f6ce1034d137f0614a078110ba1c4105b693963",
+      "words": 680,
+      "cueMatches": 6,
+      "cueMatchesPer1kWords": 8.823529411764707,
+      "cueCounts": {
+        "evidence": 1,
+        "item": 1,
+        "test": 1,
+        "record": 1,
+        "fact": 0,
+        "rule": 2
+      },
+      "premises": 4,
+      "rules": 2,
+      "proofPaths": 1,
+      "structureFloorPassed": false
+    }
+  ],
+  "nativeWinner": "world_024_emberwick_forum",
+  "selectedWorld": "world_026_skyway_bakery",
+  "selectedFile": "world-026-skyway-bakery.yaml",
+  "selectionReason": "world_024_emberwick_forum is the raw letter-hostility winner but has 4 rules; selected world_026_skyway_bakery, the lowest-density candidate meeting the >=5-rule floor."
+}

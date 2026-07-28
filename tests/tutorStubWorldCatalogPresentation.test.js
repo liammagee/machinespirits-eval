@@ -1,7 +1,11 @@
 import { createHash } from 'node:crypto';
 
 import {
+  groupTutorStubWorldEntries,
   projectTutorStubWorldCatalogLines,
+  tutorStubWorldFlavourPhrase,
+  tutorStubWorldFamilyKey,
+  tutorStubWorldLedgerTerm,
   tutorStubWorldPickerSummary,
   tutorStubWorldPresentation,
 } from '../services/tutorStubWorldPresentation.js';
@@ -19,6 +23,13 @@ test('world presentation and picker summaries preserve authored and fallback sem
     'First sentence.',
   );
   assert.equal(tutorStubWorldPickerSummary({ setting: '', question: 'Fallback question?' }), 'Fallback question?');
+  assert.equal(tutorStubWorldLedgerTerm({ presentation: { ledger_term: 'case book' } }), 'case book');
+  assert.equal(tutorStubWorldLedgerTerm(null), 'evidence record');
+  assert.equal(
+    tutorStubWorldFlavourPhrase({ presentation: { narrative_diction: 'plain archival' } }),
+    'plain archival flavour',
+  );
+  assert.equal(tutorStubWorldFlavourPhrase(null), "world's authored diction");
 });
 
 test('world catalogue projection preserves families, variants, tags, paths, order, and immutability', () => {
@@ -63,6 +74,37 @@ test('world catalogue projection preserves families, variants, tags, paths, orde
     '  What happened?',
   ]);
   assert.deepEqual(projectTutorStubWorldCatalogLines(), []);
+});
+
+test('world family grouping preserves family order, base selection, identity, and input immutability', () => {
+  const variantFirst = { id: 'variant-first', presentation: { family: 'family-a', variant_of: 'base-a' } };
+  const base = { id: 'base-a', presentation: { family: 'family-a' } };
+  const variantLast = { id: 'variant-last', presentation: { family: 'family-a', variant_of: 'base-a' } };
+  const variantOnly = { id: 'variant-only', presentation: { family: 'family-b', variant_of: 'missing-base' } };
+  const entries = [
+    { filePath: '/variant-first', world: variantFirst },
+    { filePath: '/base', world: base },
+    { filePath: '/variant-last', world: variantLast },
+    { filePath: '/variant-only', world: variantOnly },
+  ];
+  const before = structuredClone(entries);
+  const grouped = groupTutorStubWorldEntries(entries);
+
+  assert.equal(tutorStubWorldFamilyKey(base), 'family-a');
+  assert.equal(tutorStubWorldFamilyKey({ id: 'fallback' }), 'fallback');
+  assert.deepEqual(
+    grouped.map(({ world, isVariant, familySize }) => ({ id: world.id, isVariant, familySize })),
+    [
+      { id: 'base-a', isVariant: false, familySize: 3 },
+      { id: 'variant-first', isVariant: true, familySize: 3 },
+      { id: 'variant-last', isVariant: true, familySize: 3 },
+      { id: 'variant-only', isVariant: false, familySize: 1 },
+    ],
+  );
+  assert.equal(grouped[0].world, base);
+  assert.equal(grouped[1].world, variantFirst);
+  assert.deepEqual(entries, before);
+  assert.deepEqual(groupTutorStubWorldEntries(), []);
 });
 
 test('the CLI retains world loading, grouping, and terminal ownership while live catalogue output stays byte-identical', () => {

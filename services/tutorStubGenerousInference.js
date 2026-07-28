@@ -200,3 +200,23 @@ export function auditTutorStubGenerousInferenceResponse({ text, resolution } = {
       : [];
   return { ok: issues.length === 0, issues, similarity };
 }
+
+export function deterministicTutorStubGenerousInferenceFallback({ dueEvidence = [], latestEvidence = null } = {}) {
+  const next = (Array.isArray(dueEvidence) ? dueEvidence : []).find((row) => row?.surface) || null;
+  if (next) {
+    return [
+      'Yes—that answers the last point, so we can move on.',
+      `The next concrete clue is: ${compactTutorStubOneLine(next.surface, { max: 260 })}`,
+      'What does this new clue add on its own?',
+    ].join(' ');
+  }
+  if (latestEvidence?.surface) {
+    return [
+      'Yes—that answers the last point, so we can carry it forward.',
+      `Keep the last concrete clue in view: ${compactTutorStubOneLine(latestEvidence.surface, { max: 260 })}`,
+      'We can leave the wider conclusion open until another clue enters the conversation.',
+    ].join(' ');
+  }
+  return 'Yes—that answers the last point. We will leave it settled until a genuinely new public fact gives us something further to test.';
+}
+import { compactTutorStubOneLine } from './tutorStubTextProjection.js';

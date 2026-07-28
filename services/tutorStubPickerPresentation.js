@@ -31,6 +31,38 @@ function viewportBoundaryLines({ entries, viewportStart, viewportHeight, colors 
   };
 }
 
+export function projectTutorStubScenarioPickerEntries({ groupedEntries = [], defaultBundle = null } = {}) {
+  const entries = groupedEntries.map(({ filePath, world, isVariant }) => ({
+    id: world.id,
+    title: `${isVariant ? '↳ ' : ''}${world.title}`,
+    discipline: world.discipline || 'Authored reasoning drama',
+    question: world.question,
+    description: tutorStubWorldPickerSummary(world) || world.setting || world.learnerVoice || world.question,
+    filePath,
+    world,
+  }));
+  if (defaultBundle && !entries.some((entry) => entry.id === defaultBundle.world.id)) {
+    entries.unshift({
+      id: defaultBundle.world.id,
+      title: defaultBundle.world.title,
+      discipline: defaultBundle.world.discipline || 'Custom reasoning drama',
+      question: defaultBundle.world.question,
+      description: defaultBundle.world.setting || defaultBundle.world.learnerVoice || defaultBundle.world.question,
+      filePath: defaultBundle.filePath,
+      world: defaultBundle.world,
+    });
+  }
+  return entries;
+}
+
+export function projectTutorStubCurriculumPickerEntries({ modules = [], entries = [] } = {}) {
+  const modulesById = new Map(modules.map((module) => [module.id, module]));
+  return entries.map((entry) => ({
+    ...entry,
+    module: modulesById.get(entry.id) || null,
+  }));
+}
+
 export function projectTutorStubLaunchModePickerLines({ entries, selectedIndex, columns, colors = {} }) {
   const C = pickerColors(colors);
   const width = pickerWidth(columns, 120);
@@ -117,3 +149,4 @@ export function projectTutorStubCurriculumPickerLines({
     ].filter(Boolean),
   );
 }
+import { tutorStubWorldPickerSummary } from './tutorStubWorldPresentation.js';

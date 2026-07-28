@@ -140,6 +140,7 @@ const RULES = Object.freeze([
     rationale: 'A turn that restates the covered ground in fresh words traps the learner just as surely.',
   }),
   ...[
+    'premature_dialogue_close',
     'missing_explicit_dialogue_close',
     'closure_response_opens_another_turn',
     'multiple_closure_questions',

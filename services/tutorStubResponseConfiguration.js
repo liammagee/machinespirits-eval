@@ -29,6 +29,8 @@ const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-
 const ACTORIAL_REALIZATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.actorial-realization-audit.v1';
 export const TUTOR_STUB_ACTORIAL_PERFORMANCE_REALIZATION_SCHEMA =
   'machinespirits.tutor-stub.actorial-performance-realization.v1';
+export const TUTOR_STUB_LEARNER_INTEGRATION_TARGET_SCHEMA =
+  'machinespirits.tutor-stub.learner-integration-target.v1';
 
 const WORLD_STOP_WORDS = new Set(
   'about after again also among because before being between could every from have into itself more most other over same should some such than that their them then there these they this those through under very what when where which while with would your'.split(
@@ -64,6 +66,65 @@ function comprehensionFeatures(comprehension) {
   return comprehension?.features || comprehension || {};
 }
 
+export function buildTutorStubLearnerIntegrationTarget({
+  tutorLearnerDag = null,
+  world = null,
+  dueEvidence = [],
+} = {}) {
+  const assessment = tutorLearnerDag?.assessment || null;
+  if (assessment?.bottleneck !== 'learner_integration_gap') return null;
+  const missing = Array.isArray(assessment.missingPremises) ? assessment.missingPremises : [];
+  const queue = missing
+    .filter((row) => row?.bucket === 'released_but_not_held')
+    .map((row) => {
+      const premiseId = String(row?.premiseId || '').trim();
+      const premise = premiseId ? world?.premiseById?.get?.(premiseId) : null;
+      return premise && oneLine(premise.surface) ? { premiseId, premise } : null;
+    })
+    .filter(Boolean);
+  if (!queue.length) return null;
+  const { premiseId, premise } = queue[0];
+  const repair = premise?.integration_repair;
+  const authoredRepair = Boolean(repair?.question && repair?.target && repair?.qualification);
+  const publicSurface = oneLine(premise.surface);
+  const dueRows = (Array.isArray(dueEvidence) ? dueEvidence : [dueEvidence]).filter(Boolean);
+  const targetIsDueNow = dueRows.some((row) => {
+    const duePremiseId = String(row?.premise || row?.premiseId || row?.id || '').trim();
+    return duePremiseId === premiseId || (!duePremiseId && oneLine(row?.surface) === publicSurface);
+  });
+  const useDeicticDueRelease = targetIsDueNow && !authoredRepair;
+  const question = authoredRepair
+    ? oneLine(repair.question)
+    : useDeicticDueRelease
+      ? 'How does this newly released clue enter the chain you just stated?'
+      : `How does the public clue “${publicSurface}” enter the chain you just stated?`;
+  const target = authoredRepair ? oneLine(repair.target) : publicSurface;
+  const qualification = authoredRepair
+    ? oneLine(repair.qualification)
+    : useDeicticDueRelease
+      ? 'Your conclusion names the result, but this newly released clue has not yet entered your account.'
+      : `Your conclusion names the result, but the already-public clue “${publicSurface}” has not yet entered your account.`;
+  return {
+    schema: TUTOR_STUB_LEARNER_INTEGRATION_TARGET_SCHEMA,
+    active: true,
+    source: 'released_but_not_held_best_path_queue',
+    strategy: authoredRepair
+      ? 'authored_relation_question'
+      : useDeicticDueRelease
+        ? 'due_release_deictic_anchor'
+        : 'public_surface_anchor',
+    premise_id: premiseId,
+    public_surface: publicSurface,
+    question,
+    target,
+    qualification,
+    queue: queue.map((row) => row.premiseId),
+    queue_position: 1,
+    queue_length: queue.length,
+    due_release_collision_avoided: useDeicticDueRelease,
+  };
+}
+
 function configurationSignal({ learnerText, classification }) {
   return oneLine(
     [
@@ -84,6 +145,7 @@ export function selectTutorStubActionFamily({
   comprehension,
   releasePacing,
   discoursePlane,
+  world,
 } = {}) {
   const requestType = requestTypeFrom(classification);
   const features = comprehensionFeatures(comprehension);
@@ -92,6 +154,7 @@ export function selectTutorStubActionFamily({
   const assessment = model.assessment || {};
   const memoryReliability = model.memoryReliability || {};
   const learnerAdvance = learnerAdvanceFrom(tutorLearnerDag);
+  const learnerIntegrationTarget = buildTutorStubLearnerIntegrationTarget({ tutorLearnerDag, world });
   const releaseExhausted = tutorStubReleaseScheduleExhausted(releasePacing);
   let actionFamily = 'clarify_distinction';
   let reason = 'Default to one inspectable distinction or check.';
@@ -114,6 +177,10 @@ export function selectTutorStubActionFamily({
     actionFamily = 'reanchor_public_evidence';
     reason =
       'Previously accumulated public evidence has slipped from the active record, so restage one clue without making memory itself the test.';
+  } else if (learnerIntegrationTarget?.active) {
+    actionFamily = 'stage_next_step';
+    reason =
+      'An already-public best-path relation remains outside the learner record, so recover the next queued relation before another verdict or sayback.';
   } else if (!releaseExhausted && (releasePacing?.direction === 'accelerate' || releasePacing?.dueNow?.length)) {
     actionFamily = 'stage_next_step';
     reason = releasePacing?.dueNow?.length
@@ -642,6 +709,12 @@ export function buildTutorStubResponseConfiguration({
     comprehension,
     releasePacing,
     discoursePlane,
+    world,
+  });
+  const learnerIntegrationTarget = buildTutorStubLearnerIntegrationTarget({
+    tutorLearnerDag,
+    world,
+    dueEvidence,
   });
   const audience = selectTutorStubAudienceRegister({ learnerText, classification, tutorLearnerDag, comprehension });
   const lexical = selectTutorStubLexicalAccessibility({ classification, tutorLearnerDag, comprehension });
@@ -706,6 +779,7 @@ export function buildTutorStubResponseConfiguration({
     unresolved_terms: unresolvedTerms,
     learner_advance: learnerAdvance ? structuredClone(learnerAdvance) : null,
     release_pacing: releasePacing ? structuredClone(releasePacing) : null,
+    learner_integration_target: learnerIntegrationTarget ? structuredClone(learnerIntegrationTarget) : null,
     engagement_stance_distribution: Array.isArray(effectiveStanceDistribution)
       ? structuredClone(effectiveStanceDistribution)
       : null,
@@ -811,6 +885,13 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
     configuration.learner_advance?.accelerated
       ? `Learner pace: accelerating. Credit all ${configuration.learner_advance.supportedMoveCount} warranted learner-owned proof moves already made; do not ask for any of them again. Test or extend only the next unresolved edge.`
       : 'Learner pace: steady unless the public turn itself warrants otherwise.',
+    configuration.learner_integration_target?.active
+      ? configuration.learner_integration_target.strategy === 'due_release_deictic_anchor'
+        ? `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the target clue is being released in this response. Deliver its supplied source exactly once, do not repeat or paraphrase it in the qualification, and ask exactly: “${configuration.learner_integration_target.question}” The deictic phrase “this newly released clue” refers to that single delivery; do not replace it with the clue's full text, answer how it fits, or accept another downstream verdict as a substitute.`
+        : configuration.learner_integration_target.strategy === 'public_surface_anchor'
+        ? `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the already-public clue “${configuration.learner_integration_target.public_surface}” is still outside the learner record. Qualify the downstream verdict with “${configuration.learner_integration_target.qualification}” and ask exactly: “${configuration.learner_integration_target.question}” The quotation is a public anchor, not a learner claim: do not answer how it fits, accept another downstream verdict as a substitute, or copy a learner ledger formula.`
+        : `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the learner has not yet stated “${configuration.learner_integration_target.target}” even though its clue is public. Qualify the downstream verdict with “${configuration.learner_integration_target.qualification}” and ask exactly: “${configuration.learner_integration_target.question}” Do not supply the target sentence, accept another downstream verdict as a substitute, or copy a learner ledger formula.`
+      : null,
     configuration.release_pacing?.direction === 'accelerate'
       ? `Clue release: faster at ${configuration.release_pacing.effectiveSpeed}x. Stage at most one newly available clue batch now, with a short handoff and no redundant proof demand.`
       : configuration.release_pacing?.direction === 'decelerate'

@@ -4,8 +4,10 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
+  projectTutorStubCurriculumPickerEntries,
   projectTutorStubCurriculumPickerLines,
   projectTutorStubLaunchModePickerLines,
+  projectTutorStubScenarioPickerEntries,
   projectTutorStubScenarioPickerLines,
 } from '../services/tutorStubPickerPresentation.js';
 
@@ -16,6 +18,93 @@ const colors = Object.freeze({
   cyan: '<c>',
   dim: '<d>',
   reset: '</>',
+});
+
+test('scenario picker entry projection preserves family variants and custom defaults', () => {
+  const base = Object.freeze({
+    id: 'world-base',
+    title: 'Base world',
+    discipline: '',
+    question: 'Base question?',
+    setting: 'Base setting.',
+    presentation: Object.freeze({ summary: 'Authored summary.' }),
+  });
+  const variant = Object.freeze({
+    id: 'world-variant',
+    title: 'Variant world',
+    discipline: 'History',
+    question: 'Variant question?',
+    learnerVoice: 'Variant voice.',
+  });
+  const custom = Object.freeze({
+    id: 'world-custom',
+    title: 'Custom world',
+    question: 'Custom question?',
+    learnerVoice: 'Custom voice.',
+  });
+  const groupedEntries = Object.freeze([
+    Object.freeze({ filePath: '/world-base.yaml', world: base, isVariant: false }),
+    Object.freeze({ filePath: '/world-variant.yaml', world: variant, isVariant: true }),
+  ]);
+  const before = structuredClone(groupedEntries);
+  const entries = projectTutorStubScenarioPickerEntries({
+    groupedEntries,
+    defaultBundle: Object.freeze({ filePath: '/custom.yaml', world: custom }),
+  });
+
+  assert.deepEqual(
+    entries.map(({ id, title, discipline, description, filePath }) => ({
+      id,
+      title,
+      discipline,
+      description,
+      filePath,
+    })),
+    [
+      {
+        id: 'world-custom',
+        title: 'Custom world',
+        discipline: 'Custom reasoning drama',
+        description: 'Custom voice.',
+        filePath: '/custom.yaml',
+      },
+      {
+        id: 'world-base',
+        title: 'Base world',
+        discipline: 'Authored reasoning drama',
+        description: 'Authored summary.',
+        filePath: '/world-base.yaml',
+      },
+      {
+        id: 'world-variant',
+        title: '↳ Variant world',
+        discipline: 'History',
+        description: 'Variant question?',
+        filePath: '/world-variant.yaml',
+      },
+    ],
+  );
+  assert.equal(entries[0].world, custom);
+  assert.equal(entries[1].world, base);
+  assert.deepEqual(groupedEntries, before);
+});
+
+test('curriculum picker entry projection joins public rows to authored modules without mutation', () => {
+  const modules = Object.freeze([
+    Object.freeze({ id: 'module-a', workplan_binding: Object.freeze({ declared_completion_verification: 'A' }) }),
+  ]);
+  const entries = Object.freeze([
+    Object.freeze({ id: 'module-a', title: 'A' }),
+    Object.freeze({ id: 'module-missing', title: 'Missing' }),
+  ]);
+  const projected = projectTutorStubCurriculumPickerEntries({ modules, entries });
+
+  assert.equal(projected[0].module, modules[0]);
+  assert.equal(projected[1].module, null);
+  assert.deepEqual(entries, [
+    { id: 'module-a', title: 'A' },
+    { id: 'module-missing', title: 'Missing' },
+  ]);
 });
 
 test('launch picker projection preserves selection, truncation, colors, and instructions', () => {
@@ -134,7 +223,7 @@ test('the CLI retains picker state, key handling, terminal writes, and entry own
   assert.match(source, /const moveSelection = \(delta\) =>/u);
   assert.match(source, /input\.on\('keypress', onKeypress\)/u);
   assert.match(source, /for \(const line of lines\) output\.write/u);
-  assert.match(source, /const entries = groupedWorldEntries\(\)/u);
+  assert.match(source, /groupedEntries: groupedWorldEntries\(\)/u);
   assert.match(source, /const bundle = loadTutorStubCurriculum\('workplan'/u);
   assert.doesNotMatch(service, /node:readline|process|console\.|output\.|input\./u);
 });
