@@ -67,6 +67,10 @@ import { projectTutorStubGuardAttemptEnvelope } from '../services/tutorStubGuard
 import { projectTutorStubScaffoldState } from '../services/tutorStubScaffoldState.js';
 import { projectTutorStubSideArcState as buildSideArcState } from '../services/tutorStubSideArcState.js';
 import {
+  projectTutorStubPublicStocktakeRows,
+  projectTutorStubWarrantPremiseAudit,
+} from '../services/tutorStubWarrantPremiseAudit.js';
+import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
   renderTutorStubCurriculumModule,
@@ -667,7 +671,6 @@ const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'co
 const NEGATIVE_FLOOR_REGISTERS = ['ironic', 'sarcastic', 'face_threat'];
 const DAG_MODES = ['strict_dag', 'human_scaffold', 'defeasible_human_scaffold'];
 const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-frame.v1';
-const WARRANT_PREMISE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.warrant-premise-audit.v1';
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
 const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
 const TUTOR_TYPED_ACTION_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.typed-action-outcome.v1';
@@ -4874,21 +4877,11 @@ function buildStrictDagAuditState(tutorLearnerDag) {
   };
 }
 
-function publicStocktakeRows(rows = [], source = 'learner_record') {
-  return (Array.isArray(rows) ? rows : [])
-    .map((row) => ({
-      surface: String(row?.surface || row?.text || '').trim(),
-      turn: Number.isFinite(Number(row?.turn)) ? Number(row.turn) : null,
-      source,
-    }))
-    .filter((row) => row.surface);
-}
-
 function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = null, learnerText = '', world = null }) {
   const model = tutorLearnerDag?.model || tutorLearnerDag || null;
   const record = model?.learnerRecord || {};
-  const explicitWarrants = publicStocktakeRows(record.voicedDerived, 'voiced_derived_public_claim');
-  const explicitPublicPremises = publicStocktakeRows(record.grounded, 'grounded_public_record');
+  const explicitWarrants = projectTutorStubPublicStocktakeRows(record.voicedDerived, 'voiced_derived_public_claim');
+  const explicitPublicPremises = projectTutorStubPublicStocktakeRows(record.grounded, 'grounded_public_record');
   const extraction = normalizeHumanDiscourseExtraction(
     tutorLearnerDag?.accepted?.humanDiscourse || tutorLearnerDag?.extractor?.humanDiscourse,
   );
@@ -4915,14 +4908,6 @@ function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = n
       })),
     'strict_dag_rejection',
   );
-  const proofDebtCandidates = [
-    ...extraction.proofDebtCandidates,
-    ...extraction.provisionalClaims
-      .filter((row) => row.warrantNeeded)
-      .map((row) => ({ ...row, reason: row.reason || row.warrantNeeded })),
-    ...heuristicMissingWarrants,
-    ...rejectedDebt,
-  ];
   const strictProofAdoptions = [
     ...(tutorLearnerDag?.accepted?.adopt || []).map((premise) => ({
       surface: premise,
@@ -4933,57 +4918,16 @@ function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = n
       source: 'strict_derived_public_claim',
     })),
   ].filter((row) => row.surface);
-  const proofStatus =
-    model?.assessment?.finalSecretEntailed && model?.assessment?.assertedSecret
-      ? 'strict_grounded_closure'
-      : extraction.proofStatus !== 'unclear'
-        ? extraction.proofStatus
-        : proofDebtCandidates.length
-          ? 'provisional_or_debt_open'
-          : 'strict_or_open';
-  return {
-    schema: WARRANT_PREMISE_AUDIT_SCHEMA,
-    mode: dagMode,
-    phase: HUMAN_DISCOURSE_PHASE,
-    proofStatus,
-    status:
-      dagMode === 'strict_dag'
-        ? 'strict_audit_only'
-        : extraction.illicitHiddenPremises.length || extraction.suppressedPremises.length
-          ? 'hidden_or_suppressed_premise_risk'
-          : proofDebtCandidates.length
-            ? 'proof_debt_open'
-            : 'current_turn_clean',
-    warrants: {
-      explicit: explicitWarrants,
-      implied: extraction.impliedWarrants,
-      missing: [...extraction.missingWarrants, ...heuristicMissingWarrants],
-    },
-    premises: {
-      explicitPublic: explicitPublicPremises,
-      impliedPublic: extraction.impliedPremises,
-      suppressedOrPrivate: extraction.suppressedPremises,
-      commonSenseBridges: extraction.commonSenseBridges,
-      illicitHidden: extraction.illicitHiddenPremises,
-    },
-    provisionalClaims: extraction.provisionalClaims,
-    proofDebtCandidates,
+  return projectTutorStubWarrantPremiseAudit({
+    dagMode,
+    model,
+    extraction,
+    explicitWarrants,
+    explicitPublicPremises,
+    heuristicMissingWarrants,
+    rejectedDebt,
     strictProofAdoptions,
-    extractionSideArc: extraction.sideArc,
-    counts: {
-      explicitWarrants: explicitWarrants.length,
-      impliedWarrants: extraction.impliedWarrants.length,
-      missingWarrants: extraction.missingWarrants.length + heuristicMissingWarrants.length,
-      explicitPublicPremises: explicitPublicPremises.length,
-      impliedPremises: extraction.impliedPremises.length,
-      suppressedPremises: extraction.suppressedPremises.length,
-      commonSenseBridges: extraction.commonSenseBridges.length,
-      illicitHiddenPremises: extraction.illicitHiddenPremises.length,
-      provisionalClaims: extraction.provisionalClaims.length,
-      proofDebtCandidates: proofDebtCandidates.length,
-      strictProofAdoptions: strictProofAdoptions.length,
-    },
-  };
+  });
 }
 
 function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classification = null, learnerText = '' }) {
