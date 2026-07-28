@@ -20,6 +20,8 @@ links:
     - services/tutorStubInterimPresentation.js
     - scripts/tutor-stub.js
     - tests/tutorStubInterimPresentation.test.js
+  prs:
+    - 394
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-interim-objective-summary
@@ -53,3 +55,5 @@ Log:
   strength bands and bottleneck vocabulary it uses, reducing
   `scripts/tutor-stub.js` by 11 lines. Twenty focused assertions, complete
   zero-skip hermetic parity, and all static/source-only gates pass.
+- 2026-07-28 — Opened PR #394 against `main`; the benchmark hook correctly
+  classified the interim-projection slice as not response-generation relevant.
