@@ -8,6 +8,7 @@ import {
   redactTraceSecrets,
   TRACE_SCHEMA_VERSION,
   TUTOR_STUB_RUN_PROVENANCE_SCHEMA,
+  tutorStubTraceDisplayPath,
 } from '../services/traceSchema.js';
 
 const DELIBERATION = [
@@ -90,6 +91,28 @@ describe('tutor-stub run provenance', () => {
         gitError: 'git unavailable',
       },
     );
+  });
+});
+
+describe('tutor-stub trace display path', () => {
+  it('returns null for disabled traces and delegates enabled paths to the injected relative-path function', () => {
+    let calls = 0;
+    const relativePath = (root, filePath) => {
+      calls += 1;
+      assert.equal(root, '/repo');
+      assert.equal(filePath, '/repo/logs/run.jsonl');
+      return 'logs/run.jsonl';
+    };
+    assert.equal(tutorStubTraceDisplayPath(null, { relativePath, repoRoot: '/repo' }), null);
+    assert.equal(tutorStubTraceDisplayPath({ enabled: false }, { relativePath, repoRoot: '/repo' }), null);
+    assert.equal(
+      tutorStubTraceDisplayPath(
+        { enabled: true, filePath: '/repo/logs/run.jsonl' },
+        { relativePath, repoRoot: '/repo' },
+      ),
+      'logs/run.jsonl',
+    );
+    assert.equal(calls, 1);
   });
 });
 

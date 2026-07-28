@@ -30,7 +30,11 @@ import { call as callAI, callStream as streamAI } from '../tutor-core/services/u
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
 import { tutorStubCliPolicyRetryDecision } from '../services/tutorStubCliPolicyRetry.js';
 import { getProviderConfig, loadProviders, resolveModel } from '../services/evalConfigLoader.js';
-import { captureTutorStubRunProvenance, redactTraceSecrets } from '../services/traceSchema.js';
+import {
+  captureTutorStubRunProvenance,
+  redactTraceSecrets,
+  tutorStubTraceDisplayPath,
+} from '../services/traceSchema.js';
 import { runLabellingGameCli } from '../services/labellingGameCli.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
 import { factKey } from '../services/dramaticDerivation/chainer.js';
@@ -3501,8 +3505,7 @@ function printCurrentDebugId(state, { duringTurn = false } = {}) {
 }
 
 function traceDisplayPath(trace) {
-  if (!trace?.enabled) return null;
-  return path.relative(ROOT, trace.filePath);
+  return tutorStubTraceDisplayPath(trace, { relativePath: path.relative, repoRoot: ROOT });
 }
 
 function jsonClone(value) {

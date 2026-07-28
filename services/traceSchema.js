@@ -83,6 +83,11 @@ export function captureTutorStubRunProvenance(
   return provenance;
 }
 
+export function tutorStubTraceDisplayPath(trace, { relativePath, repoRoot } = {}) {
+  if (!trace?.enabled) return null;
+  return relativePath(repoRoot, trace.filePath);
+}
+
 /**
  * Classify a canonical or historical learner trace entry.
  *
@@ -171,4 +176,5 @@ export default {
   learnerTraceStage,
   projectLearnerDeliberationTrace,
   redactTraceSecrets,
+  tutorStubTraceDisplayPath,
 };
