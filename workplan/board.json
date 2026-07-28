@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T22:08:31.861Z",
+  "generated": "2026-07-28T22:09:13.740Z",
   "counts": {
-    "total": 345,
+    "total": 346,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 88,
+      "review": 89,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 163,
+      "maintenance": 164,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -2491,6 +2491,47 @@
         "tutor-stub",
         "learner-dag",
         "prompts"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-learner-dag-replay",
+      "title": "Refactor tutor-stub learner-DAG replay",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "4 focused learner-DAG replay assertions, synchronized hermetic manifest, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve gates, update projection, turn/text/dropout semantics, evidence merge, model state/cloning, counts, and empty-turn behavior",
+      "branch": "codex/refactor-tutor-stub-learner-dag-replay",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-typed-action-restoration"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubLearnerDagRestoration.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubLearnerDagRestoration.test.js"
+        ],
+        "prs": [
+          424
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-typed-action-restoration"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "learner-dag",
+        "persistence"
       ],
       "milestone": "evaluation-infrastructure"
     },
