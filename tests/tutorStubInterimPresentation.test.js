@@ -5,9 +5,11 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  createTutorStubInterimState,
   formatTutorStubSignedInterimNumber,
   projectTutorStubInterimPanels,
   renderTutorStubInterimFrame,
+  resolveTutorStubInterimState,
   summarizeTutorStubInterimCapabilities,
   tutorStubInterimCliHintPanels,
   tutorStubInterimLevel,
@@ -25,6 +27,19 @@ const COLORS = Object.freeze({
   green: '<green>',
   cyan: '<cyan>',
   magenta: '<magenta>',
+});
+
+test('interim state creation and holder resolution preserve direct and nested runtime shapes', () => {
+  const interim = createTutorStubInterimState({ enabled: true });
+  assert.deepEqual(interim, { enabled: true, active: null, lastContext: null });
+  assert.equal(resolveTutorStubInterimState(interim), interim);
+  assert.equal(resolveTutorStubInterimState({ interim }), interim);
+  assert.equal(
+    resolveTutorStubInterimState({ enabled: false, active: undefined, interim: { enabled: true } }).enabled,
+    false,
+  );
+  assert.equal(resolveTutorStubInterimState({ interim: null }), null);
+  assert.equal(resolveTutorStubInterimState(null), null);
 });
 
 test('interim signed numbers preserve null, sign, rounding, and precision behavior', () => {
@@ -270,7 +285,7 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
-    /function (?:formatSignedInterimNumber|compactInterimStateSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+    /function (?:createInterimState|getInterimState|formatSignedInterimNumber|compactInterimStateSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);

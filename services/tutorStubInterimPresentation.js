@@ -4,6 +4,21 @@
  * computation remain in the CLI.
  */
 
+export function createTutorStubInterimState({ enabled }) {
+  return { enabled, active: null, lastContext: null };
+}
+
+export function resolveTutorStubInterimState(holder) {
+  if (!holder) return null;
+  if (
+    Object.prototype.hasOwnProperty.call(holder, 'active') &&
+    Object.prototype.hasOwnProperty.call(holder, 'enabled')
+  ) {
+    return holder;
+  }
+  return holder.interim || null;
+}
+
 export function formatTutorStubSignedInterimNumber(value, { decimals = 2 } = {}) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric) || numeric === 0) return null;

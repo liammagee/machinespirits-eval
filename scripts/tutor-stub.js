@@ -371,9 +371,11 @@ import {
 } from '../services/tutorStubCloseoutProjection.js';
 import { projectTutorStubCloseoutReportLines } from '../services/tutorStubCloseoutReportPresentation.js';
 import {
+  createTutorStubInterimState as createInterimState,
   formatTutorStubSignedInterimNumber as formatSignedInterimNumber,
   projectTutorStubInterimPanels,
   renderTutorStubInterimFrame,
+  resolveTutorStubInterimState as getInterimState,
   summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
   tutorStubInterimLevel as interimLevel,
@@ -3056,21 +3058,6 @@ function clearStatusLine() {
 function printWithConcurrentTerminal(state, callback) {
   const terminal = state?.concurrentTerminal;
   return terminal?.enabled ? terminal.print(callback) : callback();
-}
-
-function createInterimState({ enabled }) {
-  return { enabled, active: null, lastContext: null };
-}
-
-function getInterimState(holder) {
-  if (!holder) return null;
-  if (
-    Object.prototype.hasOwnProperty.call(holder, 'active') &&
-    Object.prototype.hasOwnProperty.call(holder, 'enabled')
-  ) {
-    return holder;
-  }
-  return holder.interim || null;
 }
 
 function interimAnimationAvailable(interim) {
