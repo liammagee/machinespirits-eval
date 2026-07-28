@@ -7,13 +7,24 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-07-26
-updated: 2026-07-27
+updated: 2026-07-28
 verification: "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call
   plan whose arms hold learner parity in every preset; a paid run writes report.json,
   report.md, and a turn-aligned two-column transcripts.html; each arm's resolution
   verdict comes from the stub's own closure lifecycle, and guard coverage is read
   from the stub's `tutor_response_guard_accounting` rows rather than from the audit
-  records the turn carries either way."
+  records the turn carries either way; each scoring pass
+  (`npm run tutor:stub:showcase:rubric`, `npm run tutor:stub:showcase:pr-benchmark`)
+  writes its own artifact beside report.json and re-renders transcripts.html, so a
+  run scored by both instruments, by one, or by neither shows the scores it actually
+  has and names the axes nobody asked; `--rubric-version 3.0` writes
+  `rubric-v3.0.json` beside the v2.2 artifact rather than over it, with the page
+  rendering the two versions as separate labelled blocks that are never averaged;
+  and a page carrying two scored versions also carries the instrument-contrast
+  panel — spread, within-version dimension redundancy, turn-by-turn divergence, a
+  per-dimension radar, and the whole-transcript instrument it declines to run —
+  alongside a jump menu whose every entry resolves to a section the page rendered
+  and a type control that scales the whole document from one root font size."
 claim_status: methods
 depends_on:
   - tutor-instrumentation-ab-harness
@@ -26,7 +37,7 @@ tags:
   - tutor-stub
   - instrument
   - demo
-branch: claude/tutor-closure-drive
+branch: worktree-showcase-readability-and-rubric-contrast
 ---
 
 The frozen A/B answers what a given advisory block buys on one recorded turn.
@@ -110,7 +121,7 @@ Design decisions worth keeping:
   culprit was not the action-family selector (which chose `compress_sayback`
   correctly on turn 9) but `applyTutorStubConversationalCompletionSelection`
   overwriting it with an instruction to introduce new public evidence. Both are
-  fixed on `claude/tutor-closure-drive`: the snapshot now records
+  fixed on `main`: the snapshot now records
   `voicedSecretDerivation` and the assessment reports `secretStatedVia`, and
   `tutorStubReleaseScheduleExhausted` redirects both override sites to
   `compress_sayback`.
@@ -190,6 +201,80 @@ Design decisions worth keeping:
   instrumented hardest (61.3 → 17.5). At two scored turns per arm per scenario
   neither pattern is evidence — the point is that the pooled number concealed the
   split.
+
+- **A rubric version is a filename, not a mode.** `--rubric-version <v>` points
+  `evalConfigLoader`'s existing override at `config/rubrics/v<v>/evaluation-rubric.yaml`
+  and every consumer follows, because `loadRubric` is the single door the
+  dimension list, the judge prompt and the weighted aggregate all pass through.
+  The judge *model* is the deliberate exception: `--judge` still wins, so v3.0's
+  own `fallback: openrouter.nemotron` can never quietly answer for a sonnet-class
+  judge. The artifact is named for the rubric that produced it, and the overlay
+  carries `tutorV30` as a slot of its own rather than generalising `tutorV22`
+  into a version-agnostic one — a shared slot would render whichever version was
+  scored last under a single unlabelled heading, which is exactly the mixing
+  v3.0's own header forbids. The page states that the two blocks are not
+  comparable, and gives the reason: v3.0 is 1–10 pedagogical quality plus 1–5
+  content accuracy, each normalised on its own declared scale, with a turn whose
+  content accuracy is `n/a` renormalising onto the single remaining dimension —
+  so even two v3.0 turns can rest on different effective compositions. `n/a` and
+  `—` stay distinct in the markdown table for the same reason.
+- **v3.0 needed no scoring-engine change, which is the finding of the review.**
+  The two places a mixed-scale rubric would most plausibly break were already
+  handled in `services/rubricScoring.js`: each dimension normalises against
+  `dimension.scale || rubric.scale || {min:1,max:5}` before weighting, and
+  `calculateWeightedRubricScore` skips `not_applicable` entries and divides by
+  the accumulated weight. The fallback chain is what makes this additive rather
+  than a migration — a v2.2 dimension with no `scale` of its own takes the
+  historical path and computes the identical number, so there is no version
+  branch anywhere in the engine.
+
+- **"Not comparable" was the right caveat and the wrong stopping point.** The
+  v3.0 panel said the two versions must not be pooled and left the reader with
+  the question they actually have next — whether the newer instrument is better.
+  `services/tutorStubShowcaseRubricContrast.js` answers it from this run's own
+  rows: composite spread and distinct-verdict count per version, the correlation
+  between every pair of a version's own dimensions, and the turn-by-turn
+  divergence between versions. On the current run the reading is that v3.0 is a
+  defensible simplification rather than a sharper instrument — wider spread
+  (sd 24.0 vs 20.7) but *fewer* distinct verdicts across the same 8 turns (6 vs
+  7), which is the same ordering stretched over a longer scale. v3.0's design
+  premise does hold up: v2.2's mean |r| across its 28 dimension pairs is 0.713,
+  with `pedagogical_craft ~ elicitation_quality` at 0.970. Every figure carries
+  the small-n warning, and at n = 8 with p = 8 the correlation matrix is
+  rank-deficient by construction, so the panel prints that before the numbers.
+- **The radar reports shape, never area.** A radar's enclosed area changes when
+  the dimensions are reordered, so `services/tutorStubShowcaseRadar.js` is
+  wrapped in prose forbidding the "bigger shape = better tutor" reading, and the
+  chart earns its place on the other thing: it made visible that 4 of v2.2's 8
+  dimensions land on the *same* mean for both arms, so whatever composite gap
+  exists is carried by a minority of what is averaged into it. Each axis
+  normalises on its own declared range (v3.0 mixes 1–10 with 1–5), the rubric
+  floor plots at the centre rather than a fifth of the way out, an unscored
+  dimension cuts a corner instead of spiking to the centre, and below three axes
+  the chart is refused in favour of bars plus a stated reason — two axes enclose
+  no area and the line they draw is pure axis-order artefact.
+- **The whole-transcript instrument exists and is deliberately not run.**
+  Everything on this page is scored one turn at a time, so whether a dialogue
+  holds together as a whole is out of reach of any rubric here.
+  `config/evaluation-rubric-poetics.yaml` is that instrument, and it failed its
+  transfer gate to tutor–learner transcripts at weighted κ ≈ 0.04 against a
+  pre-registered bar of 0.60. Wiring it in anyway would add a number without
+  adding a measurement; the page names the file, states the failure, and stops.
+- **Magnification is the reading mode, so the page is built for it.** One
+  `--sc-scale` variable drives `html { font-size }`, and every length on the page
+  is a rem, so the type control grows type, padding, gutters and the chart
+  together instead of reflowing prose inside fixed furniture. The three-step
+  control is the visible half; the load-bearing half is the collapse breakpoint,
+  moved 960px → 1180px, because browser zoom shrinks the CSS viewport and two
+  480px columns of transcript are side by side without being readable. Tables
+  scroll in their own box so the body never scrolls sideways, and a collapsed
+  column re-states which arm it belongs to — stacked, the column heads that
+  carried that are gone.
+- **The jump menu is generated from what rendered, not from a fixed list.** A
+  menu entry pointing at a section an unscored run never emitted would be a
+  broken link on exactly the pages most likely to be sent to someone outside the
+  project; a test walks every `href` and requires the id to exist in the same
+  document.
 
 Standing limitation, stated in the config, the service header, `report.md`, and
 on the rendered page: **this is not a controlled comparison.** Each arm has its

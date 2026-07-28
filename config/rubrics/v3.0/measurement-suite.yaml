@@ -1,0 +1,95 @@
+schema: machinespirits.evaluation.measurement-suite.v1
+id: tutor-quality-measurement-suite
+version: "3.0"
+status: calibration
+active_by_default: false
+historical_comparator: "2.2"
+
+epoch_policy:
+  - "Score v3.0 prospectively or in a derived calibration run created by --rubric-version 3.0."
+  - "Never merge v3.0 scores into a v2.2 analysis or overwrite historical v2.2 rows."
+  - "Same-response v2.2/v3.0 rescoring is calibration evidence, not a continuation of the v2.2 measurement series."
+
+instruments:
+  turn_contract_acceptance:
+    evidence: exact_candidate_and_frozen_public_prefix
+    rubric: ../../tutor-pr-benchmark-rubric.yaml
+    version: "1.0"
+    measures: exact_next_turn_acceptance
+  tutor_turn_quality:
+    evidence: public_transcript_prefix_and_exact_tutor_turn
+    rubric: evaluation-rubric.yaml
+    measures: general_pedagogical_quality_and_content_accuracy
+  tutor_trajectory:
+    evidence: full_public_dialogue
+    rubric: evaluation-rubric-tutor-holistic.yaml
+    measures: adaptation_progression_and_closure
+  learner_change:
+    evidence: public_learner_turns_and_full_public_trajectory
+    rubric: evaluation-rubric-learner.yaml
+    measures: observed_understanding_revision_transfer_and_agency
+    limitation: not_a_causal_or_durable_human_learning_measure
+  pedagogical_encounter:
+    evidence: full_public_dialogue
+    rubric: evaluation-rubric-dialogue.yaml
+    measures: reciprocal_adaptation_joint_progression_and_coordination
+  tutor_deliberation:
+    evidence: tutor_ego_superego_revision_trace
+    rubric: evaluation-rubric-deliberation.yaml
+    measures: critique_revision_and_process_learning
+  learner_deliberation:
+    evidence: learner_ego_superego_revision_trace
+    rubric: evaluation-rubric-deliberation.yaml
+    measures: critique_revision_and_process_learning
+
+reliability_layer:
+  unit: same_exact_response_or_dialogue_scored_repeatedly
+  required_slices:
+    - scenario
+    - candidate_generator
+    - judge
+  minimum_design:
+    distinct_scenarios: 3
+    distinct_candidate_generators: 2
+    distinct_judges: 2
+    repeated_scores_per_identical_item: 2
+  preferred_local_models:
+    candidate_generators:
+      - provider: codex
+        model: gpt-5.6-terra
+        reasoning_effort: medium
+      - provider: claude-code
+        model: claude-sonnet-5
+        reasoning_effort: medium
+    judges:
+      - provider: codex
+        model: gpt-5.6-terra
+        reasoning_effort: medium
+      - provider: claude-code
+        model: claude-sonnet-5
+        reasoning_effort: medium
+
+calibration_gates:
+  enforcement: report_only
+  content_accuracy:
+    authored_packet: content-accuracy-calibration.yaml
+    frozen_thresholds: content-accuracy-promotion-thresholds.yaml
+    development_items: 15
+    held_out_items: 5
+    human_coders_required: 2
+    explicit_na_excluded_from_aggregate: true
+  secondary_instruments:
+    status: pilot_human_contrasts_required
+    frozen_runs:
+      - eval-2026-06-19-78558bf2_rubric-v3.0
+      - eval-2026-07-01-5dad2e60_rubric-v3.0
+      - eval-2026-03-08-09bd97c5_rubric-v3.0
+    audit_artifact_sha256: 6f16f5824693779ab1dbdfb9d18a9b66905a7d085b00cd9e05667a852dec7cf2
+    interpretation: "Same-item reliability pilot only; small N and dominant first factors do not validate dimensional independence."
+  promotion_requires:
+    - human_anchor_agreement_reviewed
+    - same_response_cross_judge_reliability_reviewed
+    - floor_and_ceiling_rates_reviewed
+    - scenario_and_generator_slices_reviewed
+    - tutor_turn_factor_structure_reviewed
+    - held_out_acceptance_packet

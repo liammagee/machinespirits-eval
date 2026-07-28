@@ -2,7 +2,6 @@
 name: ms-analyze-run
 description: Analyze an evaluation run — pull scores from the DB, compute statistics, and summarize findings
 argument-hint: <run-id>
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 Analyze evaluation run `$ARGUMENTS`.

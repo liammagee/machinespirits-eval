@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-07-27
+updated: 2026-07-28
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -59,6 +59,18 @@ links:
     - refactor-tutor-stub-model-choice-presentation
     - refactor-tutor-stub-director-presentation
     - refactor-tutor-stub-learner-dag-presentation
+    - refactor-tutor-stub-learner-classification-presentation
+    - refactor-tutor-stub-response-configuration-presentation
+    - refactor-tutor-stub-response-policy-context
+    - refactor-tutor-stub-tutor-prompt-context
+    - refactor-tutor-stub-dialogue-memory-context
+    - refactor-tutor-stub-analysis-vocabulary
+    - refactor-tutor-stub-turn-analysis-projection
+    - refactor-tutor-stub-technical-analysis-projection
+    - refactor-tutor-stub-technical-debug-presentation
+    - refactor-tutor-stub-closeout-report-presentation
+    - refactor-tutor-stub-field-report-presentation
+    - refactor-tutor-stub-curriculum-progress-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -492,3 +504,197 @@ Log:
   complete root 7,206-test plus tutor-core 137-test zero-skip parity. DAG
   construction, assessment state, debug gating, warning provenance, traces,
   call sites, and terminal writes remain CLI-owned.
+- 2026-07-27 — PR #289 merged the learner-DAG child as `26503b06` with all ten
+  CI lanes green; the serialized render followed as `e2a7cd75`. Closed that
+  child and activated `refactor-tutor-stub-learner-classification-presentation`
+  to move only normalized classifier diagnostic line serialization while
+  retaining classification, score normalization, warning resolution, debug
+  gating, callers, traces, and terminal writes in the CLI.
+- 2026-07-27 — The learner-classifier presentation child reached review with
+  one dependency-free projector, a seven-line net CLI reduction,
+  byte-identical live technical output, 118/118 focused assertions, and
+  initial-base root 7,210-test plus tutor-core 137-test zero-skip parity.
+  Classification, score and warning semantics, debug gating, call sites,
+  traces, and terminal writes remain CLI-owned.
+- 2026-07-27 — Rebased the learner-classifier presentation child onto
+  `origin/main` at `f32ffbb7` after PRs #288, #290, and #291. The manifest-only
+  overlap composes cleanly: 295/295 overlap assertions, 7,229/7,229 root tests
+  across 521 files, and 137/137 tutor-core tests pass with zero skips.
+- 2026-07-27 — PR #295 merged the learner-classifier child as `7080678e` with
+  every behavioral lane green. Its sole failed job was the unrelated stale
+  ref-status gate after `paper/v3.0.230`; PR #296 repairs that generated line.
+  Closed the child and activated
+  `refactor-tutor-stub-response-configuration-presentation` to move only
+  normalized efficacy and engagement-stance line serialization while
+  retaining policy/state calculations, formatting helpers, debug gating,
+  callers, traces, and terminal writes in the CLI.
+- 2026-07-27 — The response-configuration presentation child reached review
+  with one dependency-free projector, a 68-line net CLI reduction,
+  byte-identical live technical output, 338/338 focused assertions, and
+  complete root 7,234-test plus tutor-core 137-test zero-skip parity on the
+  temporary PR #296 stack. Policy/state calculations, three helper-derived
+  display values, debug gating, call sites, traces, and terminal writes remain
+  CLI-owned.
+- 2026-07-27 — PR #296 merged as `eff8e9ae` with every CI lane green, so the
+  response-configuration child was unstacked and rebased through PR #297 onto
+  `origin/main` at `b185756e`. Final-base parity passes 7,239/7,239 root tests
+  across 522 files and 137/137 tutor-core tests with zero skips; the disjoint
+  skill-permission overlap passes 7/7.
+- 2026-07-27 — Rebased the response-configuration child onto `origin/main` at
+  `5589017d` after PRs #300 and #301. The incoming big-picture skill and
+  workplan-only changes are runtime-disjoint, and the skill-sync plus
+  response-presenter boundary passes 7/7.
+- 2026-07-27 — PR #303 merged the response-configuration child as `254111ba`
+  with all ten CI lanes green; the serialized render followed as `e0e1f58d`.
+  Closed that child and activated `refactor-tutor-stub-response-policy-context`
+  to move the adjacent deterministic tutor-only prompt projection while
+  retaining policy selection, world diction, runtime prompt assembly, model
+  calls, state, traces, and effects in the CLI.
+- 2026-07-27 — The response-policy context child has a 151-line pure projector,
+  a 111-line net CLI reduction, a 6,561-byte golden full-context fixture, and
+  184/184 passing response/prompt/typed-action neighborhood tests. It rebased
+  onto `66d0cb7e` after PR #299's disjoint workplan commit-link contract.
+- 2026-07-27 — The response-policy context child reached review with final
+  7,251/7,251 root tests across 523 files plus 137/137 tutor-core tests, all
+  zero-skip. Manifest, source-only workplan, refs, lint, formatting, syntax,
+  diff, and the zero-cycle ratchet across 405 files are green.
+- 2026-07-27 — The handoff rebased cleanly again onto current `origin/main` at
+  `90084e70`. Its incoming response-composition changes remain compatible: the
+  widened neighborhood passes 190/190, the complete hermetic suite passes all
+  523 selected root files plus 137/137 tutor-core tests, and the 236-item
+  source-only workplan, manifest, refs, and cycle gates remain green.
+- 2026-07-27 — PR #309 merged the response-policy context child as `0aba11c4`
+  with all ten CI lanes green; the serialized render followed as `7f313831`.
+  Closed that child and activated `refactor-tutor-stub-tutor-prompt-context`
+  for the adjacent redacted learner-DAG, human-discourse, and dialogue-closure
+  serializers while retaining their frame/state/runtime owners in the CLI.
+- 2026-07-27 — The tutor prompt-context child has a 232-line dependency-free
+  projector, a 199-line net CLI reduction, byte-pinned redacted-DAG and full
+  human-discourse fixtures, and 113/113 passing prompt/closure neighborhood
+  tests. Full hermetic and static parity remain before review.
+- 2026-07-27 — The tutor prompt-context child reached review with final
+  7,259/7,259 root tests across all 524 manifest files plus 137/137 tutor-core
+  tests, both zero-skip. Manifest, 237-item source-only workplan, refs, lint,
+  formatting, syntax, diff, and the zero-cycle ratchet across 406 files are
+  green on unchanged `origin/main` at `7f313831`.
+- 2026-07-27 — Rebased the tutor prompt-context child onto `origin/main` at
+  `d6ca5423` after the runtime-disjoint rubric-v3 PR #310. Final-base parity is
+  113/113 for the overlap neighborhood and fully green across all 527 selected
+  root files plus 137/137 tutor-core tests; the 239-item source workplan and
+  zero-cycle ratchet across 408 files also pass.
+- 2026-07-27 — PR #311 merged the tutor prompt-context child as `2713ea20`
+  with all ten CI lanes green; the serialized render followed as `1dcafabe`.
+  Closed that child and activated
+  `refactor-tutor-stub-dialogue-memory-context` to move adjacent public replay,
+  compact memory, message-context, and tutor-only classifier serializers while
+  retaining their state/default/runtime owners in the CLI.
+- 2026-07-27 — The dialogue-memory context child has 113 new lines across the
+  existing public-history and tutor-only prompt owners, an 80-line net CLI
+  reduction, a 944-byte golden compact-memory fixture, and 108/108 passing
+  prompt/replay neighborhood tests. It reached review with the full 528-file
+  root manifest and 137/137 tutor-core tests green, alongside all static,
+  manifest, ref, source-only workplan, and zero-cycle gates.
+- 2026-07-27 — PR #312 merged the dialogue-memory context child as `0bbd95a5`
+  with all ten CI lanes green; the serialized render followed as `2f38e863`.
+  Closed that child and activated `refactor-tutor-stub-analysis-vocabulary` to
+  move shared pure policy/signal/strategy copy into the existing
+  response-details owner before extracting the larger turn-analysis renderer.
+- 2026-07-27 — The analysis-vocabulary child adds 62 lines to the existing
+  presentation owner, reduces the CLI by 59 net lines, and passes 62/62 direct
+  and shared settings/status/interim/command tests. It reached review with all
+  528 required root files and 137/137 tutor-core tests green, alongside all
+  static, manifest, ref, source-only workplan, and zero-cycle gates.
+- 2026-07-27 — PR #313 merged the analysis-vocabulary child as `91893217`
+  with all ten CI lanes green; the serialized render followed as `af137b0f`.
+  Closed that child and activated
+  `refactor-tutor-stub-turn-analysis-projection` to extract only the pure
+  learner-facing line projection from `printCurrentTurnAnalysis` while
+  retaining technical dispatch, state normalization, and terminal ownership.
+- 2026-07-27 — The turn-analysis child adds a 286-line pure projector and
+  reduces the CLI by 186 net lines. Four direct tests pin dense, sparse, empty,
+  question-support, efficacy, immutability, and ownership branches; a seeded
+  fake-provider completed turn is byte-identical to pre-extraction `main` at
+  1,093 bytes and SHA-256 `a379dd60b84a554b4e79a4ad00bcf2d294aaa2a9751112f50148f4b14ad303b9`.
+- 2026-07-27 — The turn-analysis child reached review with 66/66 focused
+  assertions, 7,320/7,320 root tests across all 529 manifest files, and
+  137/137 tutor-core tests, all zero-skip. Manifest, 242-item source workplan,
+  refs, lint, formatting, syntax, diff, and the zero-cycle ratchet across 409
+  files are green.
+- 2026-07-27 — PR #316 merged the turn-analysis child as `86bb2147` with all
+  ten CI lanes green; the serialized render followed as `07caedf8`. Closed
+  that child and activated
+  `refactor-tutor-stub-technical-analysis-projection` to move the adjacent
+  operator-facing technical line projection while retaining normalization,
+  field construction, trace resolution, runtime state, and terminal writes in
+  the CLI.
+- 2026-07-27 — The first technical-analysis parity fixture matches
+  pre-extraction PR #316 exactly after generated identifier normalization:
+  2,787 bytes and SHA-256
+  `7c7c0b9c4eb55a9c075873d3f2a1711b4c30ce5d3e8c630367a7bbf11aca6778`.
+- 2026-07-27 — The technical-analysis child adds a 566-line deterministic
+  projector, reduces the CLI by 410 net lines, and pins dense/sparse plus live
+  technical output in a 371-line direct test. It reached review with 30/30
+  focused assertions, all 7,323 root tests across 530 files, 137/137 tutor-core
+  tests, the 243-item source workplan, and every manifest, ref, lint,
+  formatting, syntax, diff, and zero-cycle gate green.
+- 2026-07-27 — PR #317 merged the technical-analysis child as `3258a19a` with
+  all ten CI lanes green; the serialized render followed on `origin/main` at
+  `b6b56e49`. Closed that child and activated
+  `refactor-tutor-stub-technical-debug-presentation` to move only the remaining
+  deterministic `/debug technical` line projection while retaining its gates,
+  preparation, concurrent-terminal wrapper, trace write, and effects in the
+  CLI.
+- 2026-07-27 — The first technical-debug parity fixture matches
+  pre-extraction PR #317 exactly after generated turn-id normalization: 1,316
+  bytes and SHA-256
+  `5f5d63300c55e4402bfc1a8f9ac7aa911655151757612d7f2ba3de16985eac6d`.
+- 2026-07-27 — The technical-debug child adds a 261-line dependency-free
+  projector and a 246-line direct test while reducing the CLI by 159 net
+  lines. It reached review on its activation base with 30/30 focused
+  assertions, all 7,326 root tests across 531 manifest files, 137/137
+  tutor-core tests, the 244-item source workplan, and every manifest, ref,
+  lint, formatting, syntax, diff, and zero-cycle gate green.
+- 2026-07-27 — Rebased the technical-debug child without conflict onto
+  rendered `origin/main` at `1fb7fe9f` after runtime-disjoint PR #318.
+  Final-base focused parity remains 30/30, tutor-core remains 137/137, and all
+  static gates remain green. The exact base passed all ten GitHub CI lanes;
+  full-root certification for this child is deferred to PR CI because the
+  loaded local host trips existing fixed subprocess deadlines even though all
+  531 files report and the implicated files pass independently.
+- 2026-07-28 — PR #319 merged the technical-debug child as `a4925f7a` with all
+  ten CI lanes green; the serialized render followed as `e3d66045`. Closed
+  that child and activated `refactor-tutor-stub-closeout-report-presentation`
+  to move only deterministic closeout terminal lines while retaining payload
+  assembly, snapshots, paths, trace emission, commands, and runtime state in
+  the CLI.
+- 2026-07-28 — The closeout-report child adds a 154-line dependency-free
+  projector and a 217-line direct test while reducing the CLI by 79 net lines.
+  It reached review with exact 1,208-byte live parity, 45/45 focused
+  assertions, 137/137 tutor-core tests, and every manifest, ref, lint,
+  formatting, syntax, diff, source-only workplan, and zero-cycle gate green.
+  The loaded-host monolithic root timeout is recorded on the child; PR CI is
+  the final full-root certification.
+- 2026-07-28 — PR #320 merged the closeout-report child as `31bf577a` with all
+  ten CI lanes green; the serialized render followed as `0110ccb0`. Closed
+  that child and activated `refactor-tutor-stub-field-report-presentation` for
+  the `/field` and `/viz` terminal-line seam explicitly retained by the earlier
+  field-helper extraction. Field calculation, file writes, traces, command
+  handling, and runtime state remain CLI-owned.
+- 2026-07-28 — The field-report child reached review with exact 505-byte live
+  `/field` plus `/viz` parity, a 30-line net CLI reduction, 37/37 focused
+  assertions, 7,337/7,337 root tests, and 137/137 tutor-core tests, all
+  zero-skip. Every manifest, ref, lint, formatting, syntax, diff, source-only
+  workplan, and zero-cycle gate is green; application effects remain in their
+  existing owners.
+- 2026-07-28 — PR #323 merged the field-report child as `941af8d8`; the
+  host-independent final fixture passed all current CI lanes. Closed that
+  child and activated `refactor-tutor-stub-curriculum-progress-presentation`
+  to move only deterministic `/progress` line serialization while retaining
+  curriculum projection, runtime state, command dispatch, and terminal writes
+  in the CLI. The pre-extraction keyless report is 1,740 bytes with SHA-256
+  `5256a00d8ff9926ab9f94234ba8db7ed09579ef4627d330bab205e005396d894`.
+- 2026-07-28 — The curriculum-progress child reached review with a 34-line
+  pure projector, a 21-line net CLI reduction, exact 1,740-byte live parity,
+  75/75 focused assertions, 7,377/7,377 root tests, and 137/137 tutor-core
+  tests. All selected files executed with zero skips; static and source-only
+  workplan gates are green.

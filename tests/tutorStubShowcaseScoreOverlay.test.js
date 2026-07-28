@@ -11,6 +11,7 @@ import {
   showcaseLabelArmCounts,
   showcaseTurnScores,
   showcaseV22ArmMeans,
+  showcaseV30ArmMeans,
   SHOWCASE_OVERLAY_ARTIFACTS,
   TUTOR_STUB_SHOWCASE_OVERLAY_SCHEMA,
 } from '../services/tutorStubShowcaseScoreOverlay.js';
@@ -74,10 +75,25 @@ const TUTOR_V22 = {
   ],
 };
 
-test('an overlay with neither artefact is null so the page renders unscored', () => {
+// Same rows, different instrument. v3.0 puts a turn on a different scale with
+// different dimensions, so the fixture deliberately carries scores that would be
+// indistinguishable from v2.2's if the two were ever pooled.
+const TUTOR_V30 = {
+  rubricVersion: '3.0',
+  judge: 'claude-code.sonnet',
+  turns: 'first-last',
+  limitation: 'Free-running showcase.',
+  rows: [
+    v22Row({ overallScore: 90 }),
+    v22Row({ turnIndex: 4, turnLabel: 'last', overallScore: 50 }),
+    v22Row({ armId: 'instrumented', baseline: false, dialogueId: 'alpha__inst__m', overallScore: 30 }),
+  ],
+};
+
+test('an overlay with no artefact at all is null so the page renders unscored', () => {
   assert.equal(buildShowcaseScoreOverlay(), null);
   assert.equal(buildShowcaseScoreOverlay({}), null);
-  assert.equal(buildShowcaseScoreOverlay({ prBenchmark: null, tutorV22: null }), null);
+  assert.equal(buildShowcaseScoreOverlay({ prBenchmark: null, tutorV22: null, tutorV30: null }), null);
 });
 
 test('either instrument alone builds an overlay carrying only that side', () => {
@@ -89,6 +105,47 @@ test('either instrument alone builds an overlay carrying only that side', () => 
   const scoresOnly = buildShowcaseScoreOverlay({ tutorV22: TUTOR_V22 });
   assert.equal(scoresOnly.prBenchmark, null);
   assert.equal(scoresOnly.tutorV22.turnsScored, 'first-last');
+  assert.equal(scoresOnly.tutorV30, null, 'a run scored under v2.2 alone must not claim a v3.0 reading');
+
+  const v30Only = buildShowcaseScoreOverlay({ tutorV30: TUTOR_V30 });
+  assert.equal(v30Only.tutorV22, null);
+  assert.equal(v30Only.tutorV30.rubricVersion, '3.0');
+});
+
+test('the two rubric versions occupy separate slots and neither borrows the other’s numbers', () => {
+  const overlay = buildShowcaseScoreOverlay({ tutorV22: TUTOR_V22, tutorV30: TUTOR_V30 });
+  assert.equal(overlay.tutorV22.rubricVersion, '2.2');
+  assert.equal(overlay.tutorV30.rubricVersion, '3.0');
+
+  // Same turn, both instruments, two different numbers. A shared slot would show
+  // whichever version was scored last, which is the mixing v3.0's header forbids.
+  const scored = showcaseTurnScores(overlay, 'alpha__bare__m', 1);
+  assert.equal(scored.tutorV22.overallScore, 60);
+  assert.equal(scored.tutorV30.overallScore, 90);
+});
+
+test('per-arm means are computed per version and never pooled across versions', () => {
+  const overlay = buildShowcaseScoreOverlay({ tutorV22: TUTOR_V22, tutorV30: TUTOR_V30 });
+
+  const bareV22 = showcaseV22ArmMeans(overlay).find((arm) => arm.armId === 'bare');
+  const bareV30 = showcaseV30ArmMeans(overlay).find((arm) => arm.armId === 'bare');
+  assert.equal(bareV22.first, 70); // 60 and 80, both v2.2 rows
+  assert.equal(bareV30.first, 90, 'the v3.0 mean must not pick up the v2.2 rows');
+  assert.equal(bareV30.last, 50);
+  assert.equal(bareV30.scored, 2, 'v3.0 scored one fewer turn than v2.2 and says so');
+
+  // Each accessor reads its own side only, so an overlay missing one version
+  // yields an empty list rather than the other version's numbers.
+  assert.deepEqual(showcaseV30ArmMeans(buildShowcaseScoreOverlay({ tutorV22: TUTOR_V22 })), []);
+  assert.deepEqual(showcaseV22ArmMeans(buildShowcaseScoreOverlay({ tutorV30: TUTOR_V30 })), []);
+  assert.deepEqual(showcaseV30ArmMeans(null), []);
+});
+
+test('each rubric version has its own artefact filename so one pass cannot land on another', () => {
+  const filenames = Object.values(SHOWCASE_OVERLAY_ARTIFACTS);
+  assert.equal(new Set(filenames).size, filenames.length);
+  assert.equal(SHOWCASE_OVERLAY_ARTIFACTS.tutorV22, 'rubric-v2.2.json');
+  assert.equal(SHOWCASE_OVERLAY_ARTIFACTS.tutorV30, 'rubric-v3.0.json');
 });
 
 test('the withheld axes survive into the overlay so the page can name them', () => {
@@ -108,8 +165,12 @@ test('turn lookup keys on dialogue and turn, and reports absence rather than a c
   assert.equal(partial.prBenchmark.transferableVerdict, 'fail');
   assert.equal(partial.tutorV22, null);
 
-  assert.deepEqual(showcaseTurnScores(overlay, 'nope', 1), { prBenchmark: null, tutorV22: null });
-  assert.deepEqual(showcaseTurnScores(null, 'alpha__bare__m', 1), { prBenchmark: null, tutorV22: null });
+  assert.deepEqual(showcaseTurnScores(overlay, 'nope', 1), { prBenchmark: null, tutorV22: null, tutorV30: null });
+  assert.deepEqual(showcaseTurnScores(null, 'alpha__bare__m', 1), {
+    prBenchmark: null,
+    tutorV22: null,
+    tutorV30: null,
+  });
 });
 
 test('rows without a dialogue id or a finite turn index are dropped rather than keyed to undefined', () => {

@@ -1,7 +1,6 @@
 ---
 name: ms-theory-synthesis
 description: Refresh the "theory behind the machine" synthesis — the reference surface mapping the project's theoretical lineages (Hegel recognition · Freud ego/superego/id · Weber charisma · Aristotle poetics) onto the architecture, mechanisms, and findings. Use when asked to update, refresh, re-synthesise, or re-stamp the theory synthesis / theory-synthesis.html / the /theory surface, or after the paper version bumps and the theory prose needs re-checking.
-allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 ---
 
 Refresh the **theory synthesis** — a techne reference surface at `notes/poetics/theory-synthesis.html`, served at **`/theory`** in the web app and (by construction) the desktop. It maps the four theoretical lineages the project operationalises onto concrete mechanisms and findings, and reports what the data did to each.

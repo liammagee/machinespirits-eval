@@ -13,6 +13,7 @@ import { generatedViewPolicy } from '../scripts/workplan.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = path.join(ROOT, 'scripts', 'workplan.js');
 const PR_LINK = path.join(ROOT, 'scripts', 'check-pr-workplan-link.js');
+const COMMIT_LINK = path.join(ROOT, 'scripts', 'check-commit-workplan-trailer.js');
 const SCHEMA_SRC = path.join(ROOT, 'workplan', 'schema', 'item.schema.json');
 
 function makeBoard() {
@@ -281,4 +282,144 @@ test('add --inbox then triage produces a valid item', () => {
   assert.equal(items.length, 1);
   const v = run(dir, ['validate']);
   assert.equal(v.status, 0, v.stdout + v.stderr);
+});
+
+// --- commit trailer check (scripts/check-commit-workplan-trailer.js) ---------
+// A throwaway git repo per test. GIT_CONFIG_GLOBAL/SYSTEM are neutralised so the
+// developer's own gitconfig — this repo sets core.hooksPath — cannot reach in
+// and run hooks against the fixture.
+function makeGitRepo() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'wp-git-'));
+  const env = {
+    ...process.env,
+    GIT_CONFIG_GLOBAL: '/dev/null',
+    GIT_CONFIG_SYSTEM: '/dev/null',
+    GIT_AUTHOR_NAME: 'Test',
+    GIT_AUTHOR_EMAIL: 'test@example.com',
+    GIT_COMMITTER_NAME: 'Test',
+    GIT_COMMITTER_EMAIL: 'test@example.com',
+  };
+  const g = (...args) => {
+    const r = spawnSync('git', args, { cwd: dir, encoding: 'utf8', env });
+    assert.equal(r.status, 0, `git ${args.join(' ')}: ${r.stdout}${r.stderr}`);
+    return r.stdout.trim();
+  };
+  g('init', '-q', '-b', 'main');
+  g('config', 'core.hooksPath', path.join(dir, '.no-hooks'));
+  g('commit', '-q', '--allow-empty', '-m', 'root');
+  return { dir, g, env };
+}
+function commitFile(repo, file, message) {
+  const full = path.join(repo.dir, file);
+  fs.mkdirSync(path.dirname(full), { recursive: true });
+  fs.writeFileSync(full, `${message}\n`);
+  repo.g('add', '-A');
+  repo.g('commit', '-q', '-m', message);
+}
+function runCommitLink(repo, boardDir, range) {
+  return spawnSync('node', [COMMIT_LINK, '--range', range], {
+    cwd: repo.dir,
+    encoding: 'utf8',
+    env: { ...repo.env, WORKPLAN_DIR: boardDir },
+  });
+}
+
+test('commit link check accepts a Workplan-item trailer and explicit N/A', () => {
+  const board = makeBoard();
+  writeItem(board, 'sample-good', GOOD);
+  const repo = makeGitRepo();
+  const base = repo.g('rev-parse', 'HEAD');
+
+  commitFile(repo, 'services/a.js', 'feat: a thing\n\nWorkplan-item: sample-good');
+  commitFile(repo, 'services/b.js', 'chore: tidy\n\nWorkplan-item: N/A');
+
+  const r = runCommitLink(repo, board, `${base}..HEAD`);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /2 linked, 0 exempt, 0 unlinked/);
+  assert.match(r.stdout, /-> sample-good/);
+  assert.match(r.stdout, /-> N\/A/);
+});
+
+test('commit link check fails a direct commit that names no card', () => {
+  const board = makeBoard();
+  writeItem(board, 'sample-good', GOOD);
+  const repo = makeGitRepo();
+  const base = repo.g('rev-parse', 'HEAD');
+
+  commitFile(repo, 'services/a.js', 'feat: untraceable change');
+
+  const r = runCommitLink(repo, board, `${base}..HEAD`);
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /UNLINKED .*feat: untraceable change/);
+  assert.match(r.stderr, /git commit --trailer/);
+});
+
+test('commit link check does not accept an id that no card defines', () => {
+  const board = makeBoard();
+  writeItem(board, 'sample-good', GOOD);
+  const repo = makeGitRepo();
+  const base = repo.g('rev-parse', 'HEAD');
+
+  commitFile(repo, 'services/a.js', 'feat: a thing\n\nWorkplan-item: misspelled-item');
+
+  const r = runCommitLink(repo, board, `${base}..HEAD`);
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /saw: misspelled-item/);
+});
+
+test('commit link check exempts merges and walks only the first-parent line', () => {
+  const board = makeBoard();
+  writeItem(board, 'sample-good', GOOD);
+  const repo = makeGitRepo();
+  const base = repo.g('rev-parse', 'HEAD');
+
+  // A branch whose own commits carry no trailer, merged as a PR would be. The
+  // merge is exempt and the branch commits are off the first-parent line, so
+  // nothing here should be demanded a trailer.
+  repo.g('checkout', '-q', '-b', 'feature');
+  commitFile(repo, 'services/c.js', 'feat: branch work one');
+  commitFile(repo, 'services/d.js', 'feat: branch work two');
+  repo.g('checkout', '-q', 'main');
+  repo.g('merge', '-q', '--no-ff', '-m', 'Merge pull request #1 from feature', 'feature');
+
+  const r = runCommitLink(repo, board, `${base}..HEAD`);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /1 commit\(s\).*0 linked, 1 exempt, 0 unlinked/);
+  assert.match(r.stdout, /exempt .*merge commit/);
+});
+
+test('commit link check exempts commits that touch only workplan/', () => {
+  const board = makeBoard();
+  writeItem(board, 'sample-good', GOOD);
+  const repo = makeGitRepo();
+  const base = repo.g('rev-parse', 'HEAD');
+
+  commitFile(repo, 'workplan/BOARD.md', 'workplan: refresh generated views');
+  commitFile(repo, 'docs/notes.md', 'docs: a note outside the board');
+
+  const r = runCommitLink(repo, board, `${base}..HEAD`);
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /exempt .*touches only workplan\//);
+  assert.match(r.stderr, /UNLINKED .*docs: a note outside the board/);
+});
+
+test('commit link check exempts a squash-merged pull request subject', () => {
+  const board = makeBoard();
+  writeItem(board, 'sample-good', GOOD);
+  const repo = makeGitRepo();
+  const base = repo.g('rev-parse', 'HEAD');
+
+  commitFile(repo, 'services/a.js', 'feat: squashed work (#123)');
+
+  const r = runCommitLink(repo, board, `${base}..HEAD`);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /exempt .*squash-merged/);
+});
+
+test('PR link check accepts the git trailer spelling of the link', () => {
+  const dir = makeBoard();
+  writeItem(dir, 'sample-good', GOOD);
+  const r = runPrLink(dir, 'Some description\n\nWorkplan-item: sample-good\n');
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /linked sample-good/);
 });

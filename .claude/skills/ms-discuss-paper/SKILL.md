@@ -2,7 +2,6 @@
 name: ms-discuss-paper
 description: Load the latest canonical paper version and synthesize a four-lens briefing (philosophy, pedagogy, methodology, technology) to prime an in-chat discussion. Use when the user wants to talk through the paper, review its argument, or prepare for a meeting/seminar about it.
 argument-hint: "[philosophy|pedagogy|methodology|technology|all] [--depth brief|deep] [--check]"
-allowed-tools: Bash, Read, Grep, Glob
 ---
 
 Prime an in-chat discussion of the canonical paper across four lenses: **philosophy**, **pedagogy**, **methodology**, **technology**.

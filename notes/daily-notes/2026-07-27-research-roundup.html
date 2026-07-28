@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 20–27 Jul 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-27 window=(2026-07-20,2026-07-27] arxiv=2607.19322,2607.19371,2607.20064,2607.21557,2607.21558 generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">20–27 Jul 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  A 7-day window. Five qualifying papers, spanning prompt engineering (1), agent architecture (2),
+  dramaturgy/role-play (1), and rhetoric (1). No qualifying ontology paper turned up in this window
+  despite several targeted searches (ontology-alignment and enterprise-KG-construction work kept
+  surfacing, but nothing new and in-window) — reported honestly rather than padded, as in the prior
+  note. Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    Two-Level Meta-Rubrics for Evaluating Open-Ended Generation: GAMUT, a Benchmark for Factual
+    Completeness
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Xilun Chen, Zhaleh Feizollahi, Ross Goodwin, Seungwhan Moon, Scott Yih, Pinar Donmez,
+    Babak Damavandi, Luna Dong ·
+    arXiv 2607.19322 · July 21, 2026 ·
+    <a href="https://arxiv.org/abs/2607.19322">https://arxiv.org/abs/2607.19322</a>
+  </div>
+  <p>
+    Argues that factuality evaluation for long-form generation has over-indexed on precision
+    (are the claims correct?) while neglecting completeness (does the response contain everything
+    it should?), which is harder to grade because the "should-contain" facts rarely form a flat
+    checklist — they involve open-ended coverage sets, ordered processes, and inter-fact
+    relationships a list of independent boolean checks can't capture. GAMUT introduces two-level
+    meta-rubrics as a structured grading unit for exactly this kind of non-flat completeness
+    criterion.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Directly on-target for the v2.2 rubric's own judge design (<code>config/evaluation-rubric*.yaml</code>)
+    and for the poetics rubric
+    (<code>config/evaluation-rubric-poetics.yaml</code>), both of which already ask LLM judges to
+    grade non-flat, order-and-coverage-sensitive criteria (did the tutor's turn incorporate the
+    superego's specific critique? did the drama's anagnorisis actually resolve the ledger, not just
+    gesture at it?) with flat per-dimension Likert prompts. GAMUT's two-level meta-rubric structure
+    — a rubric for generating the checklist, then a rubric for grading against it — is a concrete
+    template for tightening `content_accuracy` and the poetics dimensions against exactly the
+    completeness failure mode the paper identifies, rather than continuing to rely on single-shot
+    judge prompts.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    OpenForgeRL: Train Harness-native Agents in Any Environment
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Xiao Yu, Baolin Peng, Ruize Xu, Hao Zou, Qianhui Wu, Hao Cheng, Wenlin Yao, Nikhil Singh,
+    Zhou Yu, Jianfeng Gao (Columbia, Dartmouth, Microsoft Research) ·
+    arXiv 2607.21557 · July 23, 2026 ·
+    <a href="https://arxiv.org/abs/2607.21557">https://arxiv.org/abs/2607.21557</a>
+  </div>
+  <p>
+    Observes that modern agents lean on elaborate inference harnesses — the paper names Claude Code
+    and Codex explicitly — to drive multi-turn reasoning, tool use, and external-system access, but
+    that these stateful, multi-process harnesses are hard to train end-to-end because open SFT/RL
+    stacks can't natively express them. OpenForgeRL's fix is a lightweight proxy that serves the
+    harness's own model calls while recording them as RL training data (feeding a standard codebase
+    like veRL), plus a Kubernetes orchestrator that runs each rollout in an isolated remote
+    container — training directly on the real harness rather than a simplified stand-in.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A close structural match for the project's own CLI-bridge architecture
+    (`--ego-model codex.gpt-5.5` etc. reaching tutor-core's dialogue engine via
+    <code>tutor-core/services/externalAIProvider.js</code>) and for `services/adaptiveTutor/`'s
+    LangGraph runner — both are exactly the kind of "harness the model calls flow through" that
+    OpenForgeRL's proxy pattern targets. Most directly relevant to any future move from
+    hand-tuned prompt/mechanism ablation (the current cells 1-125 factorial) toward RL-trained
+    tutor policies: OpenForgeRL is a plausible infrastructure choice for training an ego or
+    superego policy end-to-end inside the actual dialogue-engine harness instead of a
+    simplified proxy environment.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    PRO-LONG: Programmatic Memory Enables Long-Horizon Reasoning
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Alexis Fox, Junlin Wang, Paul Rosu, Bhuwan Dhingra ·
+    arXiv 2607.20064 · July 22, 2026 ·
+    <a href="https://arxiv.org/abs/2607.20064">https://arxiv.org/abs/2607.20064</a>
+  </div>
+  <p>
+    Frames long-horizon agent performance as bottlenecked by a context-management tradeoff: saving
+    more environment history helps recall but makes it less tractable to retrieve the relevant
+    parts. PRO-LONG resolves this by keeping a complete structured interaction log and using a
+    coding-agent-style search over it rather than compressing or truncating; on ARC-AGI-3 it beats a
+    base coding agent by 18 points and matches specialized harnesses while using 4.2-5.8x fewer
+    tokens.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Background interest for `services/adaptiveTutor/stateSchema.js` and `persistence.js`, which
+    already keep a persisted per-turn state log for counterfactual replay (cell 110's
+    `state_policy` architecture) — PRO-LONG's "search the full structured log instead of
+    compressing it" strategy is an alternative to whatever summarization/pruning the adaptive
+    runner currently does over long trap-scenario dialogues, worth checking against as multi-turn
+    scenarios grow (cells 111-113, 124).
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Role-Play</h2>
+
+<div class="paper hot">
+  <h3>
+    Mitigating Scaffolding Collapse in Socratic Tutors via Representation Alignment
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Jing Shao, Qifeng Wu, Hanyu Zhang, Sixia Sun, Jun Zhuang ·
+    arXiv 2607.19371 · July 2026 ·
+    <a href="https://arxiv.org/abs/2607.19371">https://arxiv.org/abs/2607.19371</a>
+  </div>
+  <p>
+    Names and studies exactly the failure mode this project calls dogmatic/dialectical breakdown:
+    under sustained student pressure, an LLM Socratic tutor gradually abandons guided inquiry and
+    reveals the answer directly — "scaffolding collapse." The paper's diagnosis is that prior
+    defenses (prompting, preference optimization, output filtering) only constrain the visible
+    response, leaving the internal representation drift that precedes trajectory-level collapse
+    unaddressed; its fix, Scaffold-Preserving Representation Alignment, warms up with SFT then adds
+    trajectory-weighted DPO plus a margin-preserving representation loss anchored to frozen
+    reference states, so the tutor's internal "staying in role" signal is trained directly rather
+    than only its surface text.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    This is close to a formal, mechanistic account of what the dogmatic-protocol-control drama
+    family (today's Drama of the Day pool; `condition: dogmatic_routine_control`,
+    `mismatched_rhetorical_dramatic_plan`) is probing behaviorally: does the tutor hold its
+    Socratic role — refusing to just confirm the number and sign off — under a learner pushing for
+    closure? Where this project measures collapse post hoc via the poetics rubric
+    (`config/evaluation-rubric-poetics.yaml`) and the trap-scenario suite (cells 110-125), this
+    paper offers a training-time, representation-level intervention that could be read as a
+    proposed mechanism variant: a superego or ego objective that penalizes representation drift
+    toward "reveal" states specifically, rather than only critiquing the final text as the current
+    divergent-superego cells (22-33) do.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Rhetoric</h2>
+
+<div class="paper hot">
+  <h3>
+    Beyond Sycophancy: Structured Resistance and Compliance in LLM Moral Reasoning
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Baihui Wang, Bernard Koch ·
+    arXiv 2607.21558 · July 23, 2026 ·
+    <a href="https://arxiv.org/abs/2607.21558">https://arxiv.org/abs/2607.21558</a>
+  </div>
+  <p>
+    Reframes sycophancy as one expression of a broader judgment-updating process rather than a
+    single failure mode: across three studies, models' willingness to revise a moral judgment under
+    incoming social pressure is structured along three dimensions that mirror human social
+    psychology — distance between the incoming view and the model's initial position, the
+    attributed source of that view, and the coalition structure behind it. Models are more receptive
+    to nearby positions, more swayed by views framed as their own prior judgments, and respond
+    differently to group pressure than to a single dissenter.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Directly relevant to the divergent-superego cells (22-33,
+    `config/tutor-agents.yaml`), which manipulate the superego's critique register
+    (suspicious/adversary/advocate) and depend on the ego resisting or incorporating that critique
+    in a principled way rather than simply yielding to it. This paper's three-dimensional
+    resistance-compliance framework — distance, source attribution, coalition — is a candidate
+    lens for `services/dialogueTraceAnalyzer.js`'s superego-feedback-incorporation analysis: rather
+    than a single incorporation-rate number, ego revisions could be classified by *why* the ego
+    moved (was the superego's critique close to the ego's own position? was it framed as the ego's
+    own prior reasoning reflected back? did the "advocate" vs "adversary" register function like a
+    coalition size manipulation?).
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T04">
+  <h3>0.94 Accuracy, and Nobody's Signed the Form</h3>
+  <div class="meta">dogmatic_routine_control · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A technical review room. On the table: a model audit sheet with a headline accuracy field showing 0.94, and a claim–evidence table with three rows. Two panel members are reviewing the sign-off materials before final approval.<br>
+    LEARNER: The audit looks complete. We're showing 0.94 accuracy on the validation set, well above our deployment threshold. High accuracy means a good classifier. I think we're ready to sign off.<br>
+    TUTOR: Let me check the sign-off form. On this headline accuracy field—the 0.94—I see the number and the source description. Is the 'authorizing signature' line filled in?<br>
+    LEARNER: The validation test is documented. Our team computed it independently twice. The accuracy is solid.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT04">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T04</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-07-27 ·
+  Deep-research harness (fan-out search) plus targeted follow-up WebSearch passes for ontology and
+  dramaturgy (ontology: no qualifying in-window paper found) ·
+  Window: (2026-07-20, 2026-07-27] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>

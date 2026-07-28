@@ -2,7 +2,6 @@
 name: ms-replay-one-side
 description: Counterfactual replay of a guided-discovery dialogue — freeze one side's turns + the scene from a source run and regenerate the OTHER side K times via a chosen bridge, then graded-score the result. Isolates learner-variance from scene-variance (the thing fresh re-runs confound). Use to ask "is this near-miss a learner draw or a structural cap?" For dramatic derivation selector/pacing failures where the goal is to preserve turns 1..N and resume live from a failure turn, use `ms-derivation-episode-replay` instead.
 argument-hint: "<run-dir> <arm> [--side learner] [--repeats K] [--generator api|Codex|mock] [--model sonnet]"
-allowed-tools: Bash, Read
 ---
 
 Run a one-side replay and read its grade distribution. The point: a fresh re-run gives a *new scene* each time, so it can't separate "the learner drew badly" from "the scene lacked the evidence." This holds the scene + the frozen side fixed and varies only the regenerated side.

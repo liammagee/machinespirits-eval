@@ -31,6 +31,26 @@ derived view, historical context, or a cross-link. Concretely:
   doc, the `exports/` report, the run IDs, the atlas module, the PR. It does not
   restate them. `TODO.md` and `notes/` stay design history and rationale; they
   are not live todo boards.
+- **Every change that reaches `main` names its card.** Through a pull request
+  that is the `Workplan item:` line in the PR body (`wp:pr-link`). Pushing
+  straight to `main` it is a commit trailer (`wp:commit-link`):
+
+  ```bash
+  git commit --trailer "Workplan-item: some-card-id"
+  ```
+
+  Use `N/A` when the change genuinely has no card. Merge commits and commits
+  touching only `workplan/` are exempt. Check before you push with
+  `npm run wp:commit-link -- --range origin/main..HEAD` — the CI job runs after
+  the push and cannot stop it, so a red run means going back to record the
+  commit on a card by hand.
+
+  `npm run wp:trailer-hook:install` runs that same check automatically on every
+  push to `main`, while the message can still be amended. It reports and does
+  not reject, so the push always completes; set
+  `WORKPLAN_TRAILER_HOOK_ENFORCEMENT=blocking` if you want it to stop you.
+  It preserves and chains any pre-push hook already installed, and
+  `npm run wp:trailer-hook:uninstall` puts that hook back.
 
 If you find yourself pasting content that already lives in the paper, a note, or
 an export, stop and link to it instead.

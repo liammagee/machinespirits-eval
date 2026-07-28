@@ -2,7 +2,6 @@
 name: ms-cell-info
 description: Look up a cell's architecture by reading tutor-agents.yaml — never guess, always check
 argument-hint: "<cell name or number, e.g. cell_5 or 90>"
-allowed-tools: Bash, Read, Grep
 ---
 
 Look up the architecture of cell `$ARGUMENTS` by reading the YAML configuration.

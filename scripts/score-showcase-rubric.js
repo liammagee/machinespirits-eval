@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Score showcase transcripts against the v2.2 tutor rubric.
+ * Score showcase transcripts against a tutor rubric.
  *
  * The showcase reports two kinds of number already: cost (calls, wall clock,
  * tokens) and conduct (audits, guard coverage, repairs, fallbacks). Neither says
@@ -9,6 +9,10 @@
  * reaches a showcase transcript without any database round trip:
  * `evaluateSuggestion`'s `context.prebuiltTranscript` takes a plain public
  * transcript string, which is exactly what a showcase run already holds.
+ * `--rubric-version` swaps in a versioned rubric from `config/rubrics/` instead;
+ * each version writes its own artefact and the page keeps them apart, because
+ * versions measure different things on different scales and a mean across two of
+ * them would be a number with no instrument behind it.
  *
  * Two turns are scored per dialogue, mirroring the DB's canonical pair:
  * `tutor_first_turn_score` (Turn 0, the opening move) and
@@ -32,16 +36,21 @@
  *                   on this instrument)
  *   --turns <spec>  first,last (default) | first | last | all
  *   --dry-run       build every prompt, call nothing, report the plan
- *   --out <path>    output basename (default <run-dir>/rubric-v2.2)
+ *   --rubric-version <v>
+ *                   score with config/rubrics/v<v>/evaluation-rubric.yaml instead
+ *                   of the active config/evaluation-rubric.yaml
+ *   --out <path>    output basename (default <run-dir>/rubric-v<rubric version>)
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { evaluateSuggestion } from '../services/rubricEvaluator.js';
-import evalConfigLoader from '../services/evalConfigLoader.js';
+import evalConfigLoader, { clearRubricPathOverride, setRubricPathOverride } from '../services/evalConfigLoader.js';
 import { refreshTutorStubShowcaseHtml } from '../services/tutorStubShowcaseHtml.js';
+import { SHOWCASE_OVERLAY_ARTIFACTS } from '../services/tutorStubShowcaseScoreOverlay.js';
 
 const { values: args, positionals } = parseArgs({
   allowPositionals: true,
@@ -49,9 +58,26 @@ const { values: args, positionals } = parseArgs({
     judge: { type: 'string', default: 'claude-code.sonnet' },
     turns: { type: 'string', default: 'first,last' },
     'dry-run': { type: 'boolean', default: false },
+    'rubric-version': { type: 'string' },
     out: { type: 'string' },
   },
 });
+
+const RUBRICS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'config', 'rubrics');
+
+/**
+ * `config/rubrics/v<version>/evaluation-rubric.yaml`, the layout
+ * `eval-cli evaluate --rubric-version` already uses. Deliberately not that
+ * command's `resolveRubricPaths`, which requires all five instruments to be
+ * present in the directory: this pass scores tutor turns and loads nothing else,
+ * so demanding a learner or dialogue rubric it will never open would reject a
+ * version that is complete for the only thing being asked of it.
+ */
+function resolveTutorRubricPath(version) {
+  const target = path.join(RUBRICS_DIR, `v${version}`, 'evaluation-rubric.yaml');
+  if (!fs.existsSync(target)) throw new Error(`no tutor rubric for version ${version}: ${target}`);
+  return target;
+}
 
 function resolveReportPath(input) {
   if (!input) throw new Error('usage: node scripts/score-showcase-rubric.js <report.json | run-dir>');
@@ -136,9 +162,36 @@ async function main() {
   const reportPath = resolveReportPath(positionals[0]);
   const runDir = path.dirname(reportPath);
   const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+
+  // One override, set before anything reads a rubric. `loadRubric` is the single
+  // door: the dimension list below, the prompt the judge is given, and the
+  // weighted aggregate all go through it, so setting the path here is enough to
+  // move the whole pass onto another version. The judge model is the deliberate
+  // exception — it stays whatever `--judge` says, so a rubric file's own fallback
+  // model cannot quietly answer for a sonnet-class one.
+  if (args['rubric-version']) setRubricPathOverride(resolveTutorRubricPath(args['rubric-version']));
+
   const rubric = evalConfigLoader.loadRubric();
   const rubricVersion = String(rubric?.version || 'unknown');
-  const dimensionKeys = Object.keys(evalConfigLoader.getRubricDimensions());
+  const rubricDimensions = evalConfigLoader.getRubricDimensions();
+  const dimensionKeys = Object.keys(rubricDimensions);
+
+  // Each dimension's declared range and weight, resolved through the same
+  // per-dimension-then-rubric fallback the scoring engine itself uses, and
+  // recorded in the artefact.
+  //
+  // Without this the artefact holds raw scores whose scale is nowhere stated,
+  // and anything that later plots them has to guess — which matters exactly when
+  // a rubric mixes scales, as v3.0's 1-10 quality dimension beside its 1-5
+  // accuracy one does. Writing the range down at scoring time also pins it to the
+  // rubric revision that produced the numbers, so a later edit to the YAML cannot
+  // retroactively relabel an artefact already on disk.
+  const dimensionScales = Object.fromEntries(
+    dimensionKeys.map((key) => {
+      const scale = rubricDimensions[key]?.scale || rubric?.scale || { min: 1, max: 5 };
+      return [key, { min: Number(scale.min ?? 1), max: Number(scale.max ?? 5), weight: rubricDimensions[key]?.weight }];
+    }),
+  );
 
   const jobs = [];
   for (const result of report.results || []) {
@@ -197,13 +250,18 @@ async function main() {
     });
   }
 
-  const outBase = args.out ? path.resolve(args.out) : path.join(runDir, 'rubric-v2.2');
+  // Named for the rubric that produced it, not for whichever version was current
+  // when this script was written. A v3.0 pass therefore cannot land on top of the
+  // v2.2 artefact, which is the one way two versions could end up merged.
+  const defaultOutBase = path.join(runDir, `rubric-v${rubricVersion}`);
+  const outBase = args.out ? path.resolve(args.out) : defaultOutBase;
   const payload = {
     schema: 'machinespirits.tutor-stub.showcase-rubric.v1',
     reportPath: path.relative(process.cwd(), reportPath),
     rubricVersion,
     judge: args.judge,
     turns: args.turns,
+    dimensionScales,
     // Restated in the artefact so a reader who opens the JSON alone still meets
     // the limitation before the numbers.
     limitation:
@@ -253,8 +311,14 @@ async function main() {
   md.push(`| Dialogue | Turn | ${dimensionKeys.join(' | ')} |`);
   md.push(`|---|---|${dimensionKeys.map(() => '---:').join('|')}|`);
   for (const row of rows) {
+    // `n/a` and `—` are different facts. v3.0's content_accuracy may be declared
+    // not-applicable by the judge, in which case the weighted score renormalizes
+    // onto the remaining dimensions — a deliberate verdict, not a missing one.
+    // Rendering both as a dash would hide which turns rest on one dimension.
     const cells = dimensionKeys.map((key) => {
-      const value = row.scores?.[key]?.score;
+      const entry = row.scores?.[key];
+      if (entry?.not_applicable === true) return 'n/a';
+      const value = entry?.score;
       return Number.isFinite(value) ? String(value) : '—';
     });
     md.push(`| ${row.dialogueId} | ${row.turnLabel} | ${cells.join(' | ')} |`);
@@ -268,14 +332,33 @@ async function main() {
 
   // Same reasoning as the PR-benchmark pass: the page predates the scoring, so
   // it is re-rendered here against whichever artefacts are now beside it.
+  //
+  // The page reads a fixed set of filenames, so an artefact can be written and
+  // still never appear — either because it went somewhere else, or because no
+  // overlay slot is registered for a rubric version the page has never been
+  // taught about. Both are said out loud: a pass that silently fails to show up
+  // is indistinguishable from one nobody paid for.
+  const artifactName = `${path.basename(outBase)}.json`;
+  const registered = Object.values(SHOWCASE_OVERLAY_ARTIFACTS).includes(artifactName);
   const refreshed = refreshTutorStubShowcaseHtml({ report, runDir });
   if (!refreshed) console.log('transcripts.html: not present, nothing to refresh');
-  else if (outBase !== path.join(runDir, 'rubric-v2.2')) {
+  else if (outBase !== defaultOutBase) {
     console.log('transcripts.html: refreshed, but --out is outside the run dir so this pass is not on the page');
+  } else if (!registered) {
+    console.log(
+      `transcripts.html: refreshed, but no overlay slot is registered for ${artifactName}, ` +
+        'so this pass is not on the page (add it to SHOWCASE_OVERLAY_ARTIFACTS)',
+    );
   } else console.log(`transcripts: ${path.relative(process.cwd(), refreshed)}`);
 }
 
-main().catch((error) => {
-  console.error(error.message);
-  process.exitCode = 1;
-});
+// The override is module-level state on the config loader, so it is cleared on
+// every exit path. Nothing else runs in this process today, but a script that
+// leaves a rubric override set is exactly the shape of bug that later makes one
+// pass silently score under another version's rubric.
+main()
+  .finally(clearRubricPathOverride)
+  .catch((error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });

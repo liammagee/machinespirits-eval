@@ -399,14 +399,14 @@
       "actual_value": 16
     },
     "paper2.s4.architecture.learner_deliberation": {
-      "updated_at": "2026-07-05T11:48:06.443Z",
+      "updated_at": "2026-07-27T00:13:38.661Z",
       "fingerprint": {
         "source": "code_path",
-        "file": "services/evaluationRunner.js",
+        "file": "services/traceSchema.js",
         "pattern": "learner_ego_initial|learner_superego|learner_ego_revision",
-        "match_count": 5
+        "match_count": 10
       },
-      "actual_value": 5
+      "actual_value": 10
     },
     "paper2.s4.architecture.two_file_storage": {
       "updated_at": "2026-07-05T11:48:06.443Z",
@@ -501,24 +501,24 @@
       "actual_value": 4909
     },
     "paper2.s5.rubric.tutor_v22_dims": {
-      "updated_at": "2026-07-05T11:48:06.443Z",
+      "updated_at": "2026-07-27T14:16:41.000Z",
       "fingerprint": {
         "source": "code_path",
         "file": "config/rubrics/v2.2/evaluation-rubric.yaml",
-        "pattern": "name:",
-        "match_count": 9
+        "pattern": "\\n    name:",
+        "match_count": 8
       },
-      "actual_value": 9
+      "actual_value": 8
     },
     "paper2.s5.rubric.learner_v22_dims": {
-      "updated_at": "2026-07-05T11:48:06.443Z",
+      "updated_at": "2026-07-27T14:16:41.000Z",
       "fingerprint": {
         "source": "code_path",
         "file": "config/rubrics/v2.2/evaluation-rubric-learner.yaml",
-        "pattern": "name:",
-        "match_count": 6
+        "pattern": "\\n    name:",
+        "match_count": 5
       },
-      "actual_value": 6
+      "actual_value": 5
     },
     "paper2.s5.taxonomy.ten_categories": {
       "updated_at": "2026-07-05T11:48:06.443Z",

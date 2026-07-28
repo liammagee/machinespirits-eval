@@ -16,9 +16,17 @@ import {
   extractDialogue,
   parseRemoteArgs,
   readRemoteState,
+  remoteAdmissibleCommands,
   resolveRemoteStateDir,
+  stripTerminalControl,
   writeRemoteState,
 } from '../scripts/tutor-stub-remote.js';
+import {
+  TUTOR_STUB_COMMAND_EFFECT_KEYS,
+  TUTOR_STUB_NORMAL_SLASH_COMMANDS,
+  resolveTutorStubCommand,
+  tutorStubCommandTransportAdmission,
+} from '../services/tutorStubCommandRegistry.js';
 
 function isolatedEnv() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-remote-'));
@@ -129,6 +137,52 @@ test('session pointer round-trips through the env-overridable state dir', () => 
     clearRemoteState(env);
   } finally {
     fs.rmSync(resolveRemoteStateDir(env), { recursive: true, force: true });
+  }
+});
+
+test('strips terminal control sequences from command output', () => {
+  const esc = String.fromCharCode(27);
+  assert.equal(stripTerminalControl(`${esc}[2Kcourse progress${esc}[0m`), 'course progress');
+  assert.equal(stripTerminalControl('plain text'), 'plain text');
+  assert.equal(stripTerminalControl(null), '');
+});
+
+test('cmd parses --list and a command token', () => {
+  assert.equal(parseRemoteArgs(['cmd', '--list']).list, true);
+  assert.equal(parseRemoteArgs(['cmd', '/progress']).positional.join(' '), '/progress');
+  assert.equal(parseRemoteArgs(['cmd', 'module', 'blueprint']).positional.join(' '), 'module blueprint');
+});
+
+test('admissible commands are exactly those with a structured adapter', () => {
+  const admissible = remoteAdmissibleCommands();
+  assert.ok(admissible.length > 0, 'expected at least one adapter-backed command');
+  for (const token of admissible) {
+    const definition = resolveTutorStubCommand(token);
+    assert.equal(definition.transport.processHttp, 'adapter_available');
+    assert.equal(definition.transport.noninteractiveAdapter, 'structured');
+  }
+});
+
+test('the adapter gate, not the effect allowlist, is what bounds the command set', () => {
+  // Regression pin for a real misdiagnosis: admission checks the adapter
+  // declaration BEFORE the effect allowlist, so widening allowedEffects admits
+  // nothing extra. If this ever fails, the gate order changed and the driver's
+  // usage text about "adapter work, not a permissions setting" is now wrong.
+  const withPersistentMutation = remoteAdmissibleCommands();
+  const withEveryEffect = TUTOR_STUB_NORMAL_SLASH_COMMANDS.filter(
+    (token) =>
+      tutorStubCommandTransportAdmission(token, { allowedEffects: [...TUTOR_STUB_COMMAND_EFFECT_KEYS] }).allowed,
+  );
+  assert.deepEqual(withEveryEffect, withPersistentMutation);
+});
+
+test('blocked commands report the adapter gate, not a disallowed effect', () => {
+  const blocked = TUTOR_STUB_NORMAL_SLASH_COMMANDS.filter((token) => !remoteAdmissibleCommands().includes(token));
+  assert.ok(blocked.length > 0, 'expected some commands to remain terminal-only');
+  for (const token of blocked) {
+    const admission = tutorStubCommandTransportAdmission(token, { allowedEffects: ['persistentMutation'] });
+    assert.equal(admission.allowed, false);
+    assert.equal(admission.reason, 'adapter_unavailable');
   }
 });
 

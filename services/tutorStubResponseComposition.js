@@ -16,8 +16,8 @@ import {
   resolveTutorStubSceneDiction,
   tutorStubDeclaredSceneObject,
   tutorStubDictionPhrase,
-  tutorStubNamedSceneProp,
   tutorStubSceneLedgerTerm,
+  tutorStubScenePublicObjects,
 } from './tutorStubSceneDiction.js';
 
 export const TUTOR_STUB_RESPONSE_COMPOSITION_SCHEMA = 'machinespirits.tutor-stub.response-composition.v1';
@@ -1585,11 +1585,37 @@ export function deterministicTutorStubLearnerUptake({
 }
 
 function configuredFallbackObject({ world = null, learnerText = '', part = '' } = {}) {
-  const source = oneLine(
-    `${learnerText} ${world?.setting || ''} ${world?.openingFrame?.situation || ''} ${world?.question || ''}`,
-  );
+  const scene = oneLine(`${world?.setting || ''} ${world?.openingFrame?.situation || ''} ${world?.question || ''}`);
+  const source = oneLine(`${learnerText} ${scene}`);
+  // The learner may choose among the objects this scene has; it may not add one.
+  //
+  // Both whitelists were previously matched against the learner's line and the
+  // scene concatenated, first hit anywhere, so any whitelist noun the learner
+  // uttered became the object the tutor then held up. That misreads two kinds of
+  // sentence. A figure of speech becomes an exhibit — "the touchstone for me is
+  // whether the water travelled" returns "I put the touchstone in front of us" —
+  // and six whitelist entries are ordinary English verbs, so "can you report
+  // what you found", "let me log that", "register my objection" all name a prop.
+  //
+  // The rule below keeps the learner's choice and adds the scene's ownership as
+  // a second condition: a noun the world declares as its own prop wins in the
+  // world's full wording, a noun the scene's prose names is taken as the learner
+  // said it, and anything else falls back to the scene's own first object. With
+  // no learner text this reduces to `scene.match(pattern)`, which is what the
+  // concatenated source already produced, so every world's unprompted wording is
+  // byte-identical by construction rather than by measurement.
+  const declaredProps = tutorStubScenePublicObjects(world);
+  const sceneObject = (pattern) => {
+    const chosen = oneLine(learnerText).match(pattern)?.[0];
+    if (chosen) {
+      const owned = declaredProps.find((prop) => new RegExp(`\\b${chosen}\\b`, 'iu').test(prop));
+      if (owned) return owned;
+      if (new RegExp(`\\b${chosen}\\b`, 'iu').test(scene)) return chosen;
+    }
+    return scene.match(pattern)?.[0] || '';
+  };
   const recordPattern =
-    /\b(?:proposal card|formulation card|trial-book|visitor badge log|badge log|lost-property ledger|ledger|log|record|register|notebook|file|card)\b/iu;
+    /\b(?:proposal card|formulation card|minute-book|trial-book|visitor badge log|badge log|lost-property ledger|ledger|log|record|register|notebook|file|card)\b/iu;
   const exhibitPattern =
     /\b(?:shilling|coin|crucible|cupel|touchstone|balance|tool|sample|notice|report|photograph|photo|lunchbox)\b/iu;
   // Both whitelists are period nouns matched against the scene's own prose, and
@@ -1597,23 +1623,40 @@ function configuredFallbackObject({ world = null, learnerText = '', part = '' } 
   // to contain: a world that says "repair notebook" gets "notebook". Where the
   // scene names a prop the world itself declared, that whole prop wins.
   //
-  // Two orderings are deliberate. The declared prop is required to appear in the
-  // scene text rather than being taken on declaration alone, which keeps every
-  // world whose prose never names its ledger exactly where it was. And the
-  // exhibit whitelist keeps its precedence for the non-record parts: those parts
-  // are written to hold up a piece of physical evidence, and a declared ledger
-  // term is a record, not an exhibit — promoting it would have marrick's
-  // examiner reach for the trial-book rather than the coin under assay.
+  // A declaration counts on its own. Requiring `presentation.ledger_term` to
+  // *also* appear in the scene's prose is a second gate with nothing behind it —
+  // an author writing `ledger_term: assize book` has already said what this
+  // world's evidence record is called — and 18 of the 32 authored worlds declare
+  // a term their own prose never says, so the declaration was inert and they
+  // spoke the generic default instead.
+  //
+  // Two orderings are deliberate. A declaration outranks the record whitelist,
+  // because that whitelist reaches a compound prop only by the fragment it
+  // happens to contain and reaches a world with no prop at all by the bare word
+  // "record": a world declaring "assize book" should not say "the record"
+  // because that generic word turns up in its setting. But a declaration stays
+  // below the exhibit whitelist, because the non-record parts are written to
+  // hold up a piece of physical evidence and a ledger term is a record, not an
+  // exhibit — promoting it there would have marrick's examiner reach for the
+  // trial-book rather than the coin under assay.
+  const ledgerTerm = tutorStubSceneLedgerTerm(world);
   if (part === 'record_keeper') {
     // The record slot takes the declared ledger term only, never an exhibit the
     // world happens to declare beside it.
-    const declaredRecord = tutorStubNamedSceneProp(source, [tutorStubSceneLedgerTerm(world)]);
-    return declaredRecord || source.match(recordPattern)?.[0] || 'record';
+    return ledgerTerm || sceneObject(recordPattern) || 'record';
   }
+  // Among several declared props a non-ledger one is the exhibit the part wants;
+  // the ledger term is the last resort before the generic default. No authored
+  // world declares `public_objects` today, so this ordering is for the ones that
+  // will — it should not be left to `tutorStubScenePublicObjects`' longest-first
+  // sort, which is about matching text, not about choosing.
+  const declaredExhibit = declaredProps.find((prop) => prop !== ledgerTerm);
   return (
-    source.match(exhibitPattern)?.[0] ||
+    sceneObject(exhibitPattern) ||
     tutorStubDeclaredSceneObject(source, world) ||
-    source.match(recordPattern)?.[0] ||
+    declaredExhibit ||
+    ledgerTerm ||
+    sceneObject(recordPattern) ||
     'public record'
   );
 }

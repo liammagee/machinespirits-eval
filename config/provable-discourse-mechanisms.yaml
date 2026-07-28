@@ -961,15 +961,21 @@ claims:
       type: code_path
       # Fork note: the drama-machine learner engine composes labels dynamically
       # (`learner_${role}`), so the literal three-stage labels live in the
-      # deliberation-trace consumer (evaluationRunner.js), not the engine.
-      file: "services/evaluationRunner.js"
+      # canonical trace-schema module, not the engine. Point at the *definition*
+      # site rather than a consumer: 0f373fc6 made traceSchema.js the shared
+      # emitter/reader vocabulary, and 31341370 then moved the old consumer
+      # (extractLearnerTurnsFromTrace) out of evaluationRunner.js into
+      # services/adaptiveTraceProjection.js without touching the labels.
+      # Consumers relocate under pure refactors; traceSchema.js is what must
+      # change if the pipeline shape itself changes.
+      file: "services/traceSchema.js"
       pattern: "learner_ego_initial|learner_superego|learner_ego_revision"
       min_matches: 3
     assertion:
       op: gte
       expected: 3
     remediation:
-      - "If learner deliberation labels are missing, check the learner ego/superego/revision trace handling in evaluationRunner.js (engine composes labels via learner_${role})."
+      - "If learner deliberation labels are missing, check learnerDeliberationTraceAgent / learnerTraceStage / projectLearnerDeliberationTrace in services/traceSchema.js (engine composes labels via learner_${role})."
     tags: [s4, architecture, verified]
 
   - id: paper2.s4.architecture.two_file_storage
@@ -1566,11 +1572,19 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
+      # Anchored at the dimension indentation. A bare "name:" also matched the
+      # rubric's own top-level `name:` key, so the count read 9 for 8 dimensions
+      # and a deleted dimension still cleared the threshold — the claim could not
+      # detect the drift it exists to detect. `code_path` compiles the pattern
+      # with the `g` flag only (no `m`), so `^` cannot anchor to a line start;
+      # match the newline explicitly instead.
       file: "config/rubrics/v2.2/evaluation-rubric.yaml"
-      pattern: "name:"
+      pattern: "\\n    name:"
       min_matches: 8
+    # `eq`, not `gte`: v2.2 is a frozen rubric version, so the claim should fail
+    # on an added dimension as well as a removed one.
     assertion:
-      op: gte
+      op: eq
       expected: 8
     remediation:
       - "If v2.2 tutor rubric dims differ from 8, update §5 dimension count."
@@ -1586,11 +1600,13 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
+      # Same off-by-one as the tutor claim above: anchored at the dimension
+      # indentation so the rubric's own top-level `name:` stops counting.
       file: "config/rubrics/v2.2/evaluation-rubric-learner.yaml"
-      pattern: "name:"
+      pattern: "\\n    name:"
       min_matches: 5
     assertion:
-      op: gte
+      op: eq
       expected: 5
     remediation:
       - "If v2.2 learner rubric dims differ from 5, update §5 dimension count."

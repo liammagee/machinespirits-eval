@@ -1,14 +1,18 @@
 ---
 id: dialogue-conclusion-answer-recognition
-title: 'Dialogues never conclude: the answer matcher cannot see natural English'
-status: review
+title: "Dialogues never conclude: the answer matcher cannot see natural English"
+status: done
 type: infra
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-26
 updated: 2026-07-26
-verification: 'Every orthography of an authored answer constant that appears in the sealed phase-5e traces resolves to assertedSecret, closure fires through tutorStubLearnerDagGrounded, no phantom unsupported assertion is minted from a sentence-shaped claim, and a corpus lint prevents any new world shipping an answer its own prose cannot state.'
+verification: Every orthography of an authored answer constant that appears in
+  the sealed phase-5e traces resolves to assertedSecret, closure fires through
+  tutorStubLearnerDagGrounded, no phantom unsupported assertion is minted from a
+  sentence-shaped claim, and a corpus lint prevents any new world shipping an
+  answer its own prose cannot state.
 claim_status: planned
 links:
   notes:
@@ -106,3 +110,9 @@ secret; it is the one case where the learner reached the answer and never
 stated it in either channel. Re-running the pilot on the fixed stack is what
 would replace this counterfactual with a measurement — the replay cannot model
 how the tutor would have behaved after closing.
+
+- 2026-07-27 — Closed. [PR #279](https://github.com/liammagee/machinespirits-eval/pull/279)
+  merged as `91b0d8e3`, shipping `services/dramaticDerivation/answerSurface.js`
+  and the corpus lint `services/__tests__/dramaWorldAnswerReachability.test.js`
+  that the verification line required; the phase-5e re-score against the fixed
+  matcher is recorded above (`02691cf6`). CI green on merge.

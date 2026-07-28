@@ -24,6 +24,9 @@ jobs:
       - name: Check the required test inventory
         run: npm run test:manifest
 
+      - name: Reject skill-local tool preapprovals
+        run: npm run skills:permissions:check
+
   lint:
     runs-on: ubuntu-latest
     steps:

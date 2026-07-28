@@ -237,6 +237,7 @@ describe('getCliJudgeModelLabel', () => {
   it('formats codex CLI labels for preserve-history rejudge deduping', () => {
     assert.strictEqual(getCliJudgeModelLabel('codex', 'gpt-5'), 'codex-cli/gpt-5');
     assert.strictEqual(getCliJudgeModelLabel('codex'), 'codex-cli/auto');
+    assert.strictEqual(getCliJudgeModelLabel('codex', 'gpt-5.6-terra', 'medium'), 'codex-cli/gpt-5.6-terra@medium');
   });
 
   it('formats gemini and claude CLI labels consistently', () => {
@@ -244,6 +245,10 @@ describe('getCliJudgeModelLabel', () => {
     assert.strictEqual(getCliJudgeModelLabel('gemini'), 'gemini-cli/auto');
     assert.strictEqual(getCliJudgeModelLabel('claude', 'claude-opus-4-6'), 'claude-code/claude-opus-4-6');
     assert.strictEqual(getCliJudgeModelLabel('claude'), 'claude-opus-4.6');
+    assert.strictEqual(
+      getCliJudgeModelLabel('claude', 'claude-sonnet-5', 'medium'),
+      'claude-code/claude-sonnet-5@medium',
+    );
   });
 
   it('rejects unsupported CLI judges', () => {
@@ -252,6 +257,26 @@ describe('getCliJudgeModelLabel', () => {
 });
 
 describe('CLI judge normalization', () => {
+  it('preserves an explicit N/A dimension and excludes it from the aggregate', () => {
+    const result = normalizeCliJudgeEvaluation(
+      {
+        scores: {
+          perception_quality: { score: 4, reasoning: 'Solid teaching' },
+          content_accuracy: { score: null, not_applicable: true, reasoning: 'No assessable domain claim' },
+        },
+      },
+      'codex-cli/gpt-5.6-terra@medium',
+      10,
+    );
+    assert.equal(result.success, true);
+    assert.deepEqual(result.scores.content_accuracy, {
+      score: null,
+      not_applicable: true,
+      reasoning: 'No assessable domain claim',
+    });
+    assert.equal(result.overallScore, 75);
+  });
+
   it('parses the final JSON block when CLI stdout echoes the prompt first', () => {
     const parsed = parseCliJudgeJsonResponse(`
 [2026-03-04T05:31:25] User instructions:
@@ -756,5 +781,14 @@ describe('evaluate / rejudge scoring parity', () => {
     for (const col of expectedColumns) {
       assert.ok(fnBody.includes(col), `updateResultTutorScores must write column '${col}'`);
     }
+  });
+
+  it('rejudge persists public and internal dialogue dimension vectors, not only aggregates', () => {
+    const source = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8');
+    assert.match(source, /updateDialogueQualityScore\(rowId, \{[\s\S]*?dialogueQualityScores: publicScores/u);
+    assert.match(
+      source,
+      /updateDialogueQualityInternalScore\(rowId, \{[\s\S]*?dialogueQualityInternalScores: fullScores/u,
+    );
   });
 });

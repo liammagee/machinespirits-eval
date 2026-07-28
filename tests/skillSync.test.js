@@ -61,3 +61,19 @@ test('skill sync copies configured mirrors and check detects drift', () => {
   assert.equal(drift.status, 1);
   assert.match(drift.stdout, /different\tms-workplan\tclaude -> codex/);
 });
+
+test('skill permission check rejects skill-local tool preapprovals', () => {
+  const { roots, config } = makeFixture();
+  const sourceSkill = path.join(roots.claude, 'ms-workplan', 'SKILL.md');
+  fs.writeFileSync(sourceSkill, '---\nname: ms-workplan\nallowed-tools: Read, Bash\n---\n\nUse the board.\n');
+
+  const rejected = run(config, ['check-permissions']);
+  assert.equal(rejected.status, 1);
+  assert.match(rejected.stdout, /preapproved-tools\tclaude\tms-workplan/);
+  assert.match(rejected.stderr, /must use the normal permission flow/);
+
+  fs.writeFileSync(sourceSkill, '---\nname: ms-workplan\n---\n\nUse the board.\n');
+  const accepted = run(config, ['check-permissions']);
+  assert.equal(accepted.status, 0, accepted.stdout + accepted.stderr);
+  assert.match(accepted.stdout, /No repo-local skills declare allowed-tools preapprovals/);
+});

@@ -154,6 +154,24 @@ pushing the same commit again reuses a valid `pass` report, or a valid `fail`
 report while in report-only calibration mode, only when its recorded SHA
 matches.
 
+World specs are scoped to what the selected preset actually replays. Every case
+names one authored world, so a `config/drama-derivation/world-*.yaml` whose
+declared `id` is not among those worlds cannot change any job's input, and the
+gate treats it as irrelevant rather than spending the matrix on a resample that
+measures nothing. The push still names the unmeasurable files so the omission is
+visible:
+
+```
+tutor PR benchmark hook: not measurable by the strong preset (it replays
+world_001_nocturne only): config/drama-derivation/world-005-marrick.yaml
+```
+
+Coverage is keyed on the world's own `id`, not its filename, so a renamed or
+duplicated spec is classified by what it declares. A world file that fails to
+parse stays inside the gate. Every world file is separately validated by the
+world quality and presentation test suites, which is what licenses excluding the
+unreplayed ones here.
+
 The hook currently runs with `hook.enforcement: report_only` while the
 versioned PR-turn rubric is calibrated. It fails closed when a relevant push is not
 the checked-out `HEAD`, when relevant tracked or untracked paths are dirty,
@@ -163,6 +181,38 @@ and allowed through. Change enforcement to `blocking` only after the selected
 turns and criteria have a reviewed, repeatable baseline. In either mode, the
 bounded matrix runs once: there is no retry, repair, fallback, or continuation
 loop.
+
+### Attributing a quality warning
+
+A quality `fail` on its own cannot say whether the push caused it: the head run
+draws fresh responses, so a failure mixes model sampling with whatever the audit
+code now does. The warning is therefore followed by an attribution line. The gate
+finds the nearest cached ancestor commit that has a comparable report, re-audits
+that report's saved responses under the current code, and reports what moved.
+The re-audit makes no model calls and writes to `<report dir>/attribution/`.
+
+| Line | What it establishes |
+| --- | --- |
+| `STANDING` | the baseline already failed and its saved responses score identically here, so the failure predates the push |
+| `NEW SINCE <sha>` | the baseline passed and still passes under this code, so the difference is in the responses drawn at `HEAD` |
+| `ATTRIBUTABLE` | this change's audit code fails responses the baseline passed |
+| `NOT ATTRIBUTABLE TO THE GUARDS` | this change's audit code only improves the baseline's responses |
+| `UNATTRIBUTED` | there is no cached ancestor report, or the nearest one is not comparable under the current plan |
+
+The re-audit holds the candidate text fixed and varies only the code, so it
+attributes audit-code change. A relevant pushed path is therefore one of three
+things, and only the middle one is named in the caveat:
+
+| Kind | How it is identified | Attribution |
+| --- | --- | --- |
+| benchmark code | inside the runner's static import closure | the re-audit varies exactly this, so the verdict covers it |
+| request input | relevant, but neither of the other two — prompts, fixtures, a replayed world, the benchmark config | outside what the re-audit can isolate; the head run and the base/head comparison are the evidence |
+| hook machinery | reachable from the hook entrypoint but not from the runner | affects neither the request nor the audits, so it is not reported |
+
+Hook machinery is derived as that set difference rather than a filename list, so
+a module later pulled into the runner's closure reclassifies itself. Naming it
+as a request input would make the caveat fire on every push that touches this
+gate, which is the noise the line exists to remove.
 
 For an exceptional push blocked before a complete verdict, use a conspicuous
 reasoned bypass:

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Plan — review of the 16 Jun – 20 Jul 2026 roundups</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 900px; margin: 2rem auto;
+           padding: 0 1.5rem; line-height: 1.65; color: #1a1a1a; background: #fafaf8; }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; color: #444; text-transform: uppercase; letter-spacing: .06em; }
+    .item { border-left: 3px solid #aaa; padding: .5rem 1rem; margin: 1rem 0; background: #fff; }
+    .item.p1 { border-left-color: #c0392b; } .item.p2 { border-left-color: #1a5276; } .item.p3 { border-left-color: #1e8449; }
+    .item h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+    .item .row { font-size: .9rem; margin: .25rem 0; }
+    .k { font-weight: bold; color: #555; }
+    .cost { display:inline-block; font-size:.74rem; font-weight:bold; padding:.1rem .45rem; border-radius:3px; background:#1e8449; color:#fff; }
+    .cost.amber { background: #d4a017; }
+    .intro-note { font-size: .9rem; color: #555; background: #f0f0ea; border: 1px solid #ddd;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .alert { font-size: .9rem; color: #7a2e00; background: #fff4e5; border: 1px solid #e6b26a;
+             padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .brake { background: #fbeee6; border: 1px solid #e0c0a0; padding: .6rem 1rem; border-radius: 3px; }
+    a { color: #1a5276; } footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+    code { font-size: .88em; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-07-27 reviews=2026-06-16,2026-06-17,2026-06-18,2026-06-20,2026-06-21,2026-06-23,2026-06-24,2026-06-25,2026-06-26,2026-06-27,2026-07-02,2026-07-03,2026-07-05,2026-07-20 generator=ms-research-review -->
+
+<h1>Research Plan <small style="font-weight:normal;font-size:.85em">review of the 16 Jun – 20 Jul 2026 roundups</small></h1>
+
+<div class="intro-note">
+  <strong>Review → plan.</strong> Thirteen of the fourteen roundups on record were already synthesized by the
+  2026-07-06 and 2026-07-20 plans. The only genuinely new material is the <strong>2026-07-20 roundup</strong>
+  itself (six papers, window 5–20 Jul) — it landed and was captured into <code>workplan/inbox/</code> the same
+  day its own plan was written, so that plan reviewed everything <em>through</em> 07-05 but not its own day's
+  roundup. No roundup has landed since (seven days, well inside normal cadence — not flagging as a feed gap
+  the way the 15-day 07-05→07-20 gap was last week). All three items below are drawn from that 07-20 roundup's
+  three UNBLOCK papers, each mapped onto a different, non-overlapping piece of existing machinery. The three
+  items still open from last week's plan (contagion-audit, MACR-adjudication, DeFAb) remain untriaged and are
+  carried forward in the backlog rather than re-derived. <strong>Implement and evaluate remain human-gated</strong>
+  (see the brake).
+</div>
+
+<h2>The plan</h2>
+
+<div class="item p1">
+  <h3>P1 · Narrative World Model as an audit for the trap-scenario state schema — "Narrative World Model:
+    Narratology-Grounded Writer Memory for Long-Form Fiction" (2607.05577)</h3>
+  <div class="row"><span class="k">Why:</span> NWM's typed temporal-state graph exists to answer exactly two
+    questions — who knows a given fact and when they learned it, and whether an earlier setup paid off — which
+    are precisely what <code>strategy_shift_correctness</code> scoring (cells 110-125) and the whole-transcript
+    poetics rubric currently leave to judge inference. <code>services/adaptiveTutor/stateSchema.js</code>'s
+    <code>learnerProfileSchema</code> already carries a rich bilateral-ToM extension (<code>misconceptions</code>,
+    <code>confidence</code>, <code>agencySignal</code>, <code>zpdEstimate</code>, <code>tomProbes</code>) but has
+    no explicit typed slot for "event revealed at turn T" as distinct from ongoing belief state — that's the
+    specific structural gap NWM's schema would surface.</div>
+  <div class="row"><span class="k">Do:</span> read-only audit. Pull persisted state traces for a small sample of
+    cell 110/111/113/124 dialogues (<code>config/adaptive-trap-scenarios.yaml</code> +
+    <code>config/cross-suite-trap-scenarios.yaml</code>) and hand-code each trap turn against NWM's four query
+    types (who-knows-what, when-learned, event-ordering, setup-payoff) against the actual
+    <code>learnerProfileSchema</code> fields recorded at that turn via <code>loadTrace()</code>
+    (<code>scripts/analyze-strategy-shift.js</code>). Flag turns where a strategy-shift was scored but the
+    underlying state trace contains no typed "reveal" event to ground it.</div>
+  <div class="row"><span class="k">Evaluate:</span> reuse already-generated dialogue logs / state snapshots for
+    cells 110-125 (no new runs) — output is a structural gap list to weigh against
+    <code>strategy_shift_correctness</code>, not a new metric on its own.
+    <span class="cost">existing data / log audit</span></div>
+</div>
+
+<div class="item p2">
+  <h3>P2 · Kernel-proof grounding discipline for the C4 validator — "Evidence-Grounded Verified Agentic
+    Reasoning" / EG-VAR (2607.12650)</h3>
+  <div class="row"><span class="k">Why:</span> EG-VAR's core move — every accepted claim must structurally
+    descend from an attested tool call or kernel-checked chain, else the system must Abstain — is a formalized
+    version of what cell_113's (<code>state_policy_with_validator</code>) grounding validator already tries to
+    do informally: promote or retire learner-hypotheses against the evidence ledger
+    (<code>GROUNDING_VALIDATOR_SYSTEM</code>, <code>services/adaptiveTutor/realLLM.js:913</code>). The existing
+    code comments at <code>services/adaptiveTutor/graph.js:625-631</code> already flag the gap themselves: the
+    validator emits <code>{hypothesis_id, new_status, reasoning}</code> freely, and a hallucinated
+    <code>hypothesis_id</code> is "silently dropped" rather than structurally caught — exactly the failure mode
+    EG-VAR is built to eliminate via Abstain-over-hallucinate.</div>
+  <div class="row"><span class="k">Do:</span> code + log audit of the A13 conditions (cells 111-113, run
+    via <code>runner: adaptive</code>). For a sample of completed cell_113 dialogues, check whether every
+    validator promote/retire decision's cited evidence actually exists in the evidence ledger at that turn,
+    versus reasoning-only with no structural check — i.e. hand-measure the informal "silent-drop" rate the code
+    comment already names but doesn't quantify.</div>
+  <div class="row"><span class="k">Evaluate:</span> re-analysis of existing A13 dialogue traces, comparing
+    cell_113 (validator on) against cell_112 (<code>state_policy</code>, validator off) on
+    <code>strategy_shift_correctness</code> (<code>scripts/analyze-strategy-shift.js</code>), cross-checked
+    against the hand-audited hallucinated-hypothesis-id rate. <strong>First confirm cells 111-113 already have
+    completed rows</strong> (<code>ms-query-db</code>) before assuming this is zero-cost — if the A13 pre-registration
+    run hasn't finished, this item needs a status check, not fresh generation.
+    <span class="cost">existing data (conditional on A13 completion)</span></div>
+</div>
+
+<div class="item p3">
+  <h3>P3 · Framing-trajectory schema for the Writing Pad / prompt-erosion cells — "From Prompt Engineering to
+    Epistemic Prompting" (2607.11680)</h3>
+  <div class="row"><span class="k">Why:</span> the paper's "prompt framing trajectory" — prompt → response →
+    learner uptake → disciplinary check → reframe — is a structured, education-research-grounded vocabulary for
+    exactly what cell 21 (dynamic prompt rewriting with the Writing Pad) and the prompt-erosion cells 48-49 try
+    to track informally via text-proxy erosion metrics. It's a candidate second coding scheme for
+    <code>services/dialogueTraceAnalyzer.js</code>'s <code>analyzeSuperegoIncorporation()</code>, which currently
+    reduces incorporation to a single <code>incorporationRate</code> ratio.</div>
+  <div class="row"><span class="k">Do:</span> read-only recoding. Take existing <code>tutor_deliberation_*</code>
+    logs for cell 21 and cells 48-49 and hand-code a small sample of turns against the 5-stage framing-trajectory
+    schema — does a superego "check" actually produce a traceable "reframe" in the next ego turn, versus the ego
+    just restating its prior response — then compare against the existing <code>incorporationRate</code> signal
+    to see whether the two measures agree or the trajectory schema catches incorporation the current text-proxy
+    metric misses.</div>
+  <div class="row"><span class="k">Evaluate:</span> existing dialogue logs plus <code>incorporation_rate</code> /
+    <code>dimension_convergence</code> columns for cells 21, 48, 49 — an <code>npm run analyze:traces</code>
+    re-analysis, no new generation. <span class="cost">existing data</span></div>
+</div>
+
+<h2>Backlog (named, not started)</h2>
+<ul style="font-size:.92rem;">
+  <li><strong>Carried forward from 2026-07-20</strong> (still open, untriaged): the contagion-network
+    judge-reliability audit (2606.20493), the MACR explicit-adjudication extension to cells 93-100
+    (2606.20245), and the DeFAb defeasible-abduction second lens on the poetics κ-failure (2606.18557) — none
+    of the three have a <code>workplan/items/</code> card yet.</li>
+  <li><strong>Order-of-addition prompt engineering</strong> (2607.05537, WATCH) — statistical method for
+    locating the best position for a prompt element; background for any future ablation of component
+    <em>order</em> within the ego/superego prompts (e.g. where recognition-theory language sits relative to
+    task instructions in cells 13-14), not an immediate item.</li>
+  <li><strong>Agora auction-based task allocation</strong> (2607.09600, WATCH) — competence-weighted bidding
+    across expert solvers; loosely adjacent to the id-director architecture (cells 101-109,
+    <code>services/idDirectorEngine.js</code>) as a hypothetical future "mechanism router" across cells 40-59,
+    but the current architecture uses fixed cell assignment, not dynamic allocation — no near-term fit.</li>
+  <li><strong>Epistemic Stance Flexibility Probing / ESFP</strong> (2607.12739, WATCH) — lexical stance markers
+    ("I think") can decouple from actual expressed stance; a caution for any future rubric dimension scoring
+    the divergent-superego register (cells 22-33) or charisma register (101-109) from surface phrasing alone.</li>
+  <li><strong>Carried forward from 2026-07-06</strong> (still open, untriaged): MAS-PromptBench (2606.23664),
+    FAPO/APEX/environment-grounded APO (2606.19605, 2606.11459, 2606.17838), ARMOR-MAD (2606.13197),
+    DRIFTLENS (2607.02374), MAGNET/ATLAS (2607.00918), the memory cluster (2606.09900, 2606.13681, 2606.19911).</li>
+</ul>
+
+<h2>The brake</h2>
+<div class="brake">
+  All three items above are existing-data / code-and-log audits, read-only — no paid eval runs, no rejudge
+  spend, and nothing lands in the paper without sign-off. P2 is conditional on the A13 pre-registration run
+  (cells 111-113) already having completed rows; if it hasn't, the item is a status check, not a re-analysis.
+  Backlog items needing fresh paid runs or new cells remain the user's to authorize, given the pre-registration
+  / single-paper discipline (<code>CLAUDE.md</code> → "Paper Authoring Discipline").
+</div>
+
+<footer>Generated by <code>ms-research-review</code> · reviewed the 16 Jun – 20 Jul 2026 daily roundups (none
+newer exist) · reviewed by a human before any implementation.</footer>
+</body>
+</html>

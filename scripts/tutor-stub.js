@@ -63,6 +63,7 @@ import {
   tutorStubCurriculumPrivatePrompt,
   tutorStubCurriculumPublicProjection,
 } from '../services/curriculum/tutorStubCurriculumRuntime.js';
+import { projectTutorStubCurriculumProgressLines } from '../services/curriculum/tutorStubCurriculumProgressPresentation.js';
 import {
   TUTOR_STUB_CURRICULUM_TRANSLATOR_SYSTEM_PROMPT,
   TUTOR_STUB_TUTOR_OUTPUT_TRANSLATOR_SYSTEM_PROMPT,
@@ -213,12 +214,8 @@ import {
   summarizeTutorStubResponseConfigurationAudits,
   tutorStubConfigurableActorialPartIds,
   tutorStubRandomizableActorialPartIds,
-  tutorStubResponseConfigurationPrompt,
 } from '../services/tutorStubResponseConfiguration.js';
-import {
-  dramaticAudiencePromptLines,
-  normalizeTutorStubResponseConfiguration,
-} from '../services/tutorStubRegisterPragmatics.js';
+import { dramaticAudiencePromptLines } from '../services/tutorStubRegisterPragmatics.js';
 import {
   freezeTutorStubLearnerRecordUpdateForDiscoursePlane,
   resolveTutorStubDiscoursePlane,
@@ -320,18 +317,20 @@ import {
 import {
   tutorStubDisplayDiagnosticLabel as displayDiagnosticLabel,
   tutorStubPlainList as plainList,
-  tutorStubPlainResponseCheckSummary as plainResponseCheckSummary,
+  tutorStubPlainPolicyLabel as plainPolicyLabel,
   tutorStubPlainSettingName as plainSettingName,
-  tutorStubResponseCheckTriggerAreas as responseCheckTriggerAreas,
+  tutorStubPlainStrategyText as plainStrategyText,
   tutorStubResponseMetadataLine as metadataLine,
 } from '../services/tutorStubResponseDetails.js';
+import { projectTutorStubTurnAnalysisLines } from '../services/tutorStubTurnAnalysisPresentation.js';
+import { projectTutorStubTechnicalAnalysisLines } from '../services/tutorStubTechnicalAnalysisPresentation.js';
+import { projectTutorStubTechnicalDebugLines } from '../services/tutorStubTechnicalDebugPresentation.js';
 import {
   compactTutorStubCloseoutCounts as compactCounts,
   countTutorStubCloseoutRows as countBy,
   summarizeTutorStubGuardAccounting as summarizeTutorGuardAccounting,
-  tutorStubPlainCloseoutReason as plainCloseoutReason,
-  tutorStubPlainCloseoutStatus as plainCloseoutStatus,
 } from '../services/tutorStubCloseoutProjection.js';
+import { projectTutorStubCloseoutReportLines } from '../services/tutorStubCloseoutReportPresentation.js';
 import {
   formatTutorStubSignedInterimNumber as formatSignedInterimNumber,
   projectTutorStubInterimPanels,
@@ -410,8 +409,9 @@ import {
   tutorStubOpeningSystemPrompt,
 } from '../services/tutorStubOpening.js';
 import {
+  buildTutorStubTutorMessageContext,
   compactTutorStubPublicMessagesForBudget,
-  tutorStubPublicMessageContext,
+  projectTutorStubCompactPublicTranscript,
   tutorStubPublicMessagesForSpeaker,
 } from '../services/tutorStubPublicHistory.js';
 import { buildTutorStubLearnerAdvance } from '../services/tutorStubLearnerAdvance.js';
@@ -434,7 +434,16 @@ import {
   projectTutorStubDirectorContextLines,
   projectTutorStubDirectorNotesLines,
 } from '../services/tutorStubDirectorPresentation.js';
+import { projectTutorStubLearnerClassificationLines } from '../services/tutorStubLearnerClassificationPresentation.js';
 import { projectTutorStubLearnerDagLines } from '../services/tutorStubLearnerDagPresentation.js';
+import { projectTutorStubResponseConfigurationLines } from '../services/tutorStubResponseConfigurationPresentation.js';
+import { projectTutorStubResponsePolicyContext } from '../services/tutorStubResponsePolicyContext.js';
+import {
+  projectTutorStubDialogueClosureContext,
+  projectTutorStubHumanDiscourseContext,
+  projectTutorStubLearnerClassifierContext,
+  projectTutorStubLearnerDagModelContext,
+} from '../services/tutorStubTutorPromptContext.js';
 import {
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
@@ -563,11 +572,9 @@ import {
   projectTutorStubLightweightFieldTurn as lightweightFieldTurn,
 } from '../services/tutorStubFieldTurnProjection.js';
 import {
-  describeTutorStubFieldShift as describeFieldShift,
+  projectTutorStubFieldVisualizationLines,
+  projectTutorStubLightweightFieldLines,
   renderTutorStubLightweightFieldSvg as renderLightweightFieldSvg,
-  summarizeTutorStubFieldShift as summarizeFieldShift,
-  tutorStubFieldBar as fieldBar,
-  tutorStubFieldDelta as fieldDelta,
 } from '../services/tutorStubFieldPresentation.js';
 import {
   applyTutorStubPointOfActionConstraint,
@@ -4096,30 +4103,22 @@ async function classifyLearnerInput({ learnerText, state, signal = null }) {
 
 function printClassification(classification) {
   if (!classification) return;
-  const conceptual = scoreValue(classification.turn?.scores?.conceptual_engagement);
-  const readiness = scoreValue(classification.turn?.scores?.epistemic_readiness);
-  const requestType = classification.turn?.request_type || 'unknown_request';
-  const move = classification.turn?.discourse_move || 'unknown';
-  const stance = classification.turn?.epistemic_stance || 'unknown';
-  const need = classification.turn?.pedagogical_need || classification.overall?.next_best_tutor_move || '';
-  const errorPrefix =
-    classification.error || classification.parseError ? `${C.red} learner-classifier warning${C.reset}` : '';
-
-  console.log(`${C.cyan}learner classifier >${C.reset} ${classification.turn?.summary || 'No turn summary.'}`);
-  console.log(
-    `${C.dim}  request: ${requestType}; move: ${move}; stance: ${stance}; conceptual ${conceptual}/5, readiness ${readiness}/5${C.reset}`,
-  );
-  if (classification.turn?.learning_pace || classification.turn?.reasoning_span) {
-    console.log(
-      `${C.dim}  pace: ${classification.turn?.learning_pace || 'steady'}; reasoning span: ${
-        classification.turn?.reasoning_span || 'unknown'
-      }${C.reset}`,
-    );
-  }
-  console.log(`${C.dim}  overall: ${classification.overall?.summary || 'No overall summary.'}${C.reset}`);
-  if (need) console.log(`${C.dim}  tutor cue: ${need}${C.reset}`);
-  if (errorPrefix)
-    console.log(`${errorPrefix}${C.dim}: ${classification.error || classification.parseError}${C.reset}`);
+  const turn = classification.turn || {};
+  const overall = classification.overall || {};
+  const presentation = {
+    summary: turn.summary || 'No turn summary.',
+    requestType: turn.request_type || 'unknown_request',
+    discourseMove: turn.discourse_move || 'unknown',
+    epistemicStance: turn.epistemic_stance || 'unknown',
+    conceptual: scoreValue(turn.scores?.conceptual_engagement),
+    readiness: scoreValue(turn.scores?.epistemic_readiness),
+    learningPace: turn.learning_pace || '',
+    reasoningSpan: turn.reasoning_span || '',
+    overallSummary: overall.summary || 'No overall summary.',
+    pedagogicalNeed: turn.pedagogical_need || overall.next_best_tutor_move || '',
+    warning: classification.error || classification.parseError || '',
+  };
+  for (const line of projectTutorStubLearnerClassificationLines(presentation, { colors: C })) console.log(line);
 }
 
 function floorClassifierScore(score, minimum, reason) {
@@ -8195,99 +8194,30 @@ function printTutorLearnerDagModel(result) {
   for (const line of projectTutorStubLearnerDagLines(result, { colors: C })) console.log(line);
 }
 
-function printResponseConfigurationSelection(selection, previousEfficacy = null) {
-  if (previousEfficacy) {
-    const fieldDelta = formatSignedInterimNumber(previousEfficacy.field?.delta, { decimals: 3 }) || '0';
-    const mismatch = previousEfficacy.mismatch ? `; ${previousEfficacy.mismatch}; field ${fieldDelta}` : '';
-    console.log(
-      `${C.cyan}stance efficacy >${C.reset} ${
-        previousEfficacy.engagement_stance || previousEfficacy.selected_register
-      } ${previousEfficacy.label}${mismatch} (${previousEfficacy.summary})`,
-    );
-    if (previousEfficacy.learnerFeedback?.rating) {
-      console.log(
-        `${C.dim}  explicit learner rating: ${previousEfficacy.learnerFeedback.rating === 'up' ? '👍 helpful' : '👎 not helpful'}; self-assessment ${previousEfficacy.selfAssessmentLabel}${C.reset}`,
-      );
-    }
-  }
-  if (!selection) return;
-  const warning = selection.warning ? ` ${C.red}${selection.warning}${C.reset}` : '';
-  const confidence = selection.confidence !== null ? `; confidence ${selection.confidence}` : '';
-  const source =
-    selection.source && selection.source !== 'combined_learner_analysis' ? `; source ${selection.source}` : '';
-  console.log(
-    `${C.cyan}engagement stance >${C.reset} ${
-      selection.engagement_stance || selection.selected_register
-    }${confidence}${source}${warning}`,
-  );
-  if (selection.light_adaptation?.triggered) {
-    console.log(
-      `${C.dim}  light adaptation: continued confusion/frustration streak ${selection.light_adaptation.streak}; stance and host character shifted with seeded draws${C.reset}`,
-    );
-  } else if (selection.random_performance?.enabled) {
-    console.log(
-      `${C.dim}  random performance: stance and host character sampled independently of learner assessment; action and safety controls retained${C.reset}`,
-    );
-  } else if (Number.isFinite(Number(selection.temperature))) {
-    console.log(
-      `${C.dim}  adaptive-performance temperature: ${selection.temperature} (stance + part; lower sharper, higher broader)${C.reset}`,
-    );
-  }
-  if (selection.policy_composition) {
-    const composition = selection.policy_composition;
-    console.log(
-      `${C.dim}  policy stack: ${composition.policy_stack}; overlay threshold ${composition.overlay_threshold}; activated ${
-        composition.activated_overlay || 'primary'
-      }${C.reset}`,
-    );
-  }
-  const distribution = formatEngagementStanceDistribution(selection.distribution);
-  if (distribution) console.log(`${C.dim}  distribution: ${distribution}${C.reset}`);
-  if (selection.continuous_register_policy?.dominant_blend) {
-    console.log(
-      `${C.dim}  continuous blend: ${selection.continuous_register_policy.dominant_blend}; entropy ${
-        selection.continuous_register_policy.entropy_bits ?? 'n/a'
-      } bits${C.reset}`,
-    );
-  }
-  if (selection.request_type || selection.reviewer_signal) {
-    console.log(
-      `${C.dim}  request: ${selection.request_type || 'unknown'}; action: ${
-        selection.action_family || 'none'
-      }; reviewer signal: ${selection.reviewer_signal || 'unknown'}${C.reset}`,
-    );
-  }
-  console.log(
-    `${C.dim}  audience: ${selection.audience_register || 'unknown'}; lexical: ${
-      selection.lexical_accessibility || 'unknown'
-    }; scene: ${selection.scene_immersion || 'unknown'}; part: ${
-      selection.actorial_part_label || selection.actorial_part || 'unknown'
-    }${C.reset}`,
-  );
-  if (selection.actorial_part_selection?.distribution) {
-    console.log(
-      `${C.dim}  part distribution: ${selection.actorial_part_selection.distribution
+function responseConfigurationPresentation(selection, previousEfficacy = null) {
+  const partDistribution = selection?.actorial_part_selection?.distribution
+    ? selection.actorial_part_selection.distribution
         .slice(0, 4)
         .map((row) => `${displayDiagnosticLabel(row.part)} ${Math.round(Number(row.probability || 0) * 100)}%`)
-        .join(', ')}; reason: ${selection.actorial_part_selection.reason || 'n/a'}${C.reset}`,
-    );
-  }
-  if (selection.register_reason) console.log(`${C.dim}  reason: ${selection.register_reason}${C.reset}`);
-  if (selection.expected_dag_move) console.log(`${C.dim}  expected DAG move: ${selection.expected_dag_move}${C.reset}`);
-  if (selection.expected_field_move) {
-    const effectivePolicy = selection.activated_policy || selection.primary_policy || selection.policy;
-    const expectedMoveLabel =
-      effectivePolicy === 'state'
-        ? 'expected state move'
-        : effectivePolicy === 'trajectory'
-          ? 'expected trajectory move'
-          : effectivePolicy === 'dynamical_system' ||
-              effectivePolicy === 'empirical_dynamical_system' ||
-              effectivePolicy === 'continuous_dynamical_system' ||
-              effectivePolicy === 'continuous_empirical_dynamical_system'
-            ? 'expected dynamical move'
-            : 'expected field move';
-    console.log(`${C.dim}  ${expectedMoveLabel}: ${selection.expected_field_move}${C.reset}`);
+        .join(', ')
+    : null;
+  return {
+    previousEfficacy,
+    fieldDelta: previousEfficacy
+      ? formatSignedInterimNumber(previousEfficacy.field?.delta, { decimals: 3 }) || '0'
+      : '0',
+    selection,
+    distribution: selection ? formatEngagementStanceDistribution(selection.distribution) : '',
+    partDistribution,
+  };
+}
+
+function printResponseConfigurationSelection(selection, previousEfficacy = null) {
+  for (const line of projectTutorStubResponseConfigurationLines(
+    responseConfigurationPresentation(selection, previousEfficacy),
+    { colors: C },
+  )) {
+    console.log(line);
   }
 }
 
@@ -8295,121 +8225,13 @@ function responseConfigurationContext(
   selection,
   { multipleChoice = false, humanDiscourseFrame = null, dialogueClosureFrame = null, world = null } = {},
 ) {
-  if (!selection) return '';
-  const generousInference = humanDiscourseFrame?.generousInference || null;
-  const engagementStance = selection.engagement_stance || selection.selected_register;
-  const definition = getEngagementStanceDefinition(engagementStance) || {};
-  const effectivePolicy = selection.activated_policy || selection.primary_policy || selection.policy;
-  const expectedMoveLabel =
-    effectivePolicy === 'state'
-      ? 'Expected learner-state move'
-      : effectivePolicy === 'trajectory'
-        ? 'Expected learner-trajectory move'
-        : effectivePolicy === 'dynamical_system' ||
-            effectivePolicy === 'empirical_dynamical_system' ||
-            effectivePolicy === 'continuous_dynamical_system' ||
-            effectivePolicy === 'continuous_empirical_dynamical_system'
-          ? 'Expected learner-dynamical move'
-          : 'Expected learner-field move';
-  const continuousStyleInstruction = String(selection.continuous_register_policy?.style_instruction || '').trim();
-  const vectorSummary =
-    selection.continuous_register_policy?.dominant_blend ||
-    (selection.register_vector
-      ? Object.entries(selection.register_vector)
-          .sort((a, b) => Number(b[1]) - Number(a[1]) || a[0].localeCompare(b[0]))
-          .map(([register, weight]) => `${register} ${Math.round(Number(weight || 0) * 100)}%`)
-          .join(', ')
-      : '');
-  const guardrails = [
-    ...(Array.isArray(definition.forbidden_phrases) && definition.forbidden_phrases.length
-      ? [`Forbidden phrase families: ${definition.forbidden_phrases.join(', ')}`]
-      : []),
-    definition.recognition_guardrail ? `Recognition guardrail: ${definition.recognition_guardrail}` : null,
-    selection.simulated_only
-      ? 'This is a simulated-only register; do not use it unless the operator explicitly enabled it.'
-      : null,
-  ].filter(Boolean);
-  const responseConfiguration = normalizeTutorStubResponseConfiguration(
-    selection.response_configuration || {
-      engagement_stance: engagementStance,
-      action_family: selection.action_family,
-      addressee_profile: selection.addressee_profile || selection.audience_register,
-      audience_register: selection.audience_register,
-      lexical_accessibility: selection.lexical_accessibility,
-      scene_immersion: selection.scene_immersion,
-      actorial_part: selection.actorial_part,
-      actorial_part_label: selection.actorial_part_label,
-      actorial_part_selection: selection.actorial_part_selection,
-      actorial_performance:
-        selection.actorial_performance ||
-        selectTutorStubActorialPerformance({
-          engagementStance,
-          actorialPart: selection.actorial_part,
-        }),
-      unresolved_terms: selection.unresolved_terms || [],
-    },
-    { world },
-  );
-  const typedAction = selection.typed_action_decision?.chosen_action || null;
-  const typedActionContext = typedAction
-    ? [
-        '[Tutor-only typed pedagogical action]',
-        `Action type: ${typedAction.action_type}`,
-        `Move family: ${typedAction.move_family}`,
-        `Support level: ${typedAction.support_level} of 3`,
-        `Task: ${typedAction.task_id}`,
-        `Knowledge component: ${typedAction.knowledge_component}`,
-        `Prerequisite path: ${typedAction.prerequisite_path.join(' -> ') || 'none specified'}`,
-        `Item difficulty: ${typedAction.item_difficulty}`,
-        `Expected learner evidence: ${typedAction.expected_evidence.success.join(', ') || 'none specified'}`,
-        `Forbidden learner evidence: ${typedAction.expected_evidence.failure.join(', ') || 'none specified'}`,
-        `Responsibility owner: ${typedAction.responsibility_owner}`,
-        'The move family, support level, engagement stance, and task are independent controls. Realize each exactly as selected; do not infer one from another.',
-        '[End tutor-only typed pedagogical action]',
-      ].join('\n')
-    : null;
-  return [
-    tutorStubResponseConfigurationPrompt(responseConfiguration),
-    typedActionContext,
-    '[Tutor-only response-policy evidence]',
-    `Selected engagement stance: ${engagementStance}`,
-    selection.policy_composition ? `Policy stack: ${selection.policy_composition.policy_stack}` : null,
-    selection.policy_composition
-      ? `Policy decision: ${selection.policy_composition.activated_overlay || 'primary policy retained'}; overlay threshold ${
-          selection.policy_composition.overlay_threshold
-        }.`
-      : null,
-    selection.legacy_selected_register ? `Legacy register alias: ${selection.legacy_selected_register}` : null,
-    `Valence: ${selection.valence || 'unknown'}`,
-    `Logical request type: ${selection.request_type || selection.learner_signal || 'unknown'}`,
-    `Action family: ${selection.action_family || 'none'}`,
-    `Reviewer signal: ${selection.reviewer_signal || 'unknown'}`,
-    `Reason: ${selection.register_reason || 'No reason supplied.'}`,
-    Number.isFinite(Number(selection.temperature))
-      ? `Adaptive-performance temperature: ${selection.temperature} (applies to the engagement-stance and actorial-part distributions; lower means sharper and higher means broader).`
-      : null,
-    vectorSummary ? `Continuous register vector: ${vectorSummary}` : null,
-    continuousStyleInstruction || null,
-    `Expected learner-DAG move: ${selection.expected_dag_move || 'No expected move supplied.'}`,
-    `${expectedMoveLabel}: ${selection.expected_field_move || 'No expected state/field move supplied.'}`,
-    guardrails.length ? 'Guardrails:' : null,
-    ...guardrails,
-    'Write the next tutor message so the engagement stance, independent action family, actorial part, audience register, lexical accessibility, and scene immersion are all visible without naming the configuration, classifier, or learner-DAG machinery.',
-    multipleChoice
-      ? `Keep the turn compact. In story mode, if you use multiple choice, offer 2-4 short public evidence options and invite the learner to choose or write their own ${worldLedgerTerm(world)} line.`
-      : "Keep the turn compact. In story mode, give one live issue and one light prompt for the learner's next thought; do not require a full warranted claim unless the learner is making an unsafe or case-closing leap.",
-    generousInference?.applied
-      ? `Human-scaffold override: the learner has already answered the immediately preceding local question by unambiguous context. This overrides any expected DAG/state/field move that would ask for a restatement, name, premise, warrant, or ${worldLedgerTerm(world)} version of the same answer. Acknowledge it and advance to a genuinely new pressure.`
-      : null,
-    dialogueClosureFrame?.mandatory
-      ? 'Dialogue-closure override: the proof is complete for this dialogue. Closure now overrides every expected DAG/state/field move. Do not solicit another proof step.'
-      : dialogueClosureFrame?.available
-        ? 'Dialogue-closure override: the authored public proof is complete. If this response states the final verdict, it must close the inquiry rather than reopening another proof step.'
-        : null,
-    '[End tutor-only response-policy evidence]',
-  ]
-    .filter(Boolean)
-    .join('\n');
+  return projectTutorStubResponsePolicyContext(selection, {
+    multipleChoice,
+    humanDiscourseFrame,
+    dialogueClosureFrame,
+    world,
+    ledgerTerm: worldLedgerTerm(world),
+  });
 }
 
 function tutorPromptSurfaceKey(value) {
@@ -8419,219 +8241,15 @@ function tutorPromptSurfaceKey(value) {
 }
 
 function tutorLearnerDagModelContext(result, { releasedEvidence = [] } = {}) {
-  const model = result?.model || result;
-  if (!model) return '';
-  const metrics = model.metrics || {};
-  const assessment = model.assessment || {};
-  const record = model.learnerRecord || {};
-  const memoryReliability = model.memoryReliability || null;
-  const groundedRows = Array.isArray(record.grounded) ? record.grounded : [];
-  const groundedSurfaceKeys = new Set(groundedRows.map((row) => tutorPromptSurfaceKey(row?.surface)).filter(Boolean));
-  const groundedReleasedCount = (Array.isArray(releasedEvidence) ? releasedEvidence : []).filter((row) =>
-    groundedSurfaceKeys.has(tutorPromptSurfaceKey(row?.surface)),
-  ).length;
-  const groundedOtherCount = Math.max(0, groundedRows.length - groundedReleasedCount);
-  const groundingStatus = [
-    groundedReleasedCount
-      ? `- ${groundedReleasedCount} released public evidence item${groundedReleasedCount === 1 ? '' : 's'} currently learner-grounded; exact item labels appear in the public evidence window.`
-      : '- no released public evidence is currently learner-grounded',
-    groundedOtherCount
-      ? `- ${groundedOtherCount} additional public or derived fact${groundedOtherCount === 1 ? '' : 's'} currently grounded`
-      : null,
-  ]
-    .filter(Boolean)
-    .join('\n');
-  const hypotheses = (record.hypotheses || []).map((row) => `- ${row.text}`).join('\n') || '- none';
-  const candidates = (record.answerCandidates || []).map((row) => `- ${row.surface}`).join('\n') || '- none';
-  return [
-    '[Tutor-only redacted learner-DAG model]',
-    `Best-path coverage: ${assessment.bestPathCoverage ?? 'unavailable'}`,
-    `Bottleneck: ${assessment.bottleneck || 'unavailable'}`,
-    `Counts: grounded=${metrics.groundedCount || 0}, voiced=${metrics.voicedDerivedCount || 0}, hypotheses=${
-      metrics.hypothesisCount || 0
-    }, answerCandidates=${metrics.answerCandidateCount || 0}, missing=${metrics.missingPremiseCount || 0}`,
-    memoryReliability?.activeDroppedCount
-      ? `Memory reliability: ${memoryReliability.activeDroppedCount} previously accumulated public evidence item(s) are no longer active in the redacted record. Re-anchor gently from public evidence; do not announce forgetting, dropout, or an internal memory test.`
-      : null,
-    'Grounding status:',
-    groundingStatus,
-    'Learner hypotheses:',
-    hypotheses,
-    'Answer candidates derivable from the tutor model of the learner record:',
-    candidates,
-    'Use this as advisory context only. Do not mention DAGs, coverage, missing counts, hidden paths, or internal state.',
-    '[End tutor-only redacted learner-DAG model]',
-  ].join('\n');
-}
-
-function compactAuditRows(rows = [], limit = 3) {
-  const visible = (Array.isArray(rows) ? rows : [])
-    .map((row) => {
-      if (typeof row === 'string') return row.trim();
-      const bits = [row?.surface, row?.warrantNeeded, row?.reason]
-        .filter(Boolean)
-        .map((value) => oneLine(value, { max: 120 }));
-      return bits.join(' — ');
-    })
-    .filter(Boolean)
-    .slice(0, limit);
-  return visible.length ? visible.map((row) => `- ${row}`).join('\n') : '- none';
+  return projectTutorStubLearnerDagModelContext(result, { releasedEvidence });
 }
 
 function humanDiscourseTutorContext(frame, { includeQuestionSupport = true, includeDefaultResponseShape = true } = {}) {
-  if (!frame || frame.mode === 'strict_dag') return '';
-  const scaffold = frame.scaffoldState || {};
-  const branch = scaffold.branch || {};
-  const sideArc = frame.sideArc || {};
-  const discoursePlane = frame.discoursePlane || null;
-  const proofDebt = frame.proofDebt || {};
-  const audit = frame.warrantPremiseAudit || {};
-  const compression = frame.stepCompression || {};
-  const generousInference = frame.generousInference || null;
-  const conversationalCompletion = frame.conversationalCompletion || null;
-  const questionSupport = frame.questionSupport || null;
-  const due = discoursePlane?.freeze_clue_release ? [] : scaffold.releaseState?.dueNow || [];
-  const latest = scaffold.releaseState?.latestReleased || null;
-  const promptRule =
-    frame.mode === 'defeasible_human_scaffold'
-      ? 'Treat plausible learner leaps as compressed human reasoning. Keep obvious omitted bridges as internal proof debt, and surface a warrant gap only when the leap is unsafe, conflicting, or would close the case.'
-      : 'Frame one local warrant in ordinary language while preserving the strict proof audit; do not expand the whole proof chain or license the final answer early.';
-  if (discoursePlane?.plane === 'instructional_meta') {
-    return [
-      '[Tutor-only human discourse scaffold]',
-      `Mode: ${frame.mode}; strict DAG remains the audit, but the learner-facing scaffold is active.`,
-      'Discourse plane: instructional repair. The learner is asking about the explanation itself, not contributing a proposition to the inquiry. Keep the learner-DAG and clue release frozen for this turn.',
-      sideArc.detected
-        ? `Side arc: ${sideArc.type}. Repair the explanation completely before any later return to the inquiry.`
-        : 'Repair the explanation completely before any later return to the inquiry.',
-      'The public inquiry question remains paused. Do not quote it, restate it, or ask any other question in this turn.',
-      includeDefaultResponseShape
-        ? 'Response shape: directly acknowledge the wording problem, restate the immediately preceding tutor point in plain words, and optionally end with one declarative invitation to unpack another phrase.'
-        : null,
-      'Never mention scaffold state, proof debt, side arcs, DAGs, premise ids, rule ids, hidden facts, or release schedules.',
-      '[End tutor-only human discourse scaffold]',
-    ]
-      .filter(Boolean)
-      .join('\n');
-  }
-  return [
-    '[Tutor-only human discourse scaffold]',
-    `Mode: ${frame.mode}; strict DAG remains the audit, but the learner-facing scaffold is active.`,
-    discoursePlane?.plane === 'instructional_meta'
-      ? 'Discourse plane: instructional repair. The learner is asking about the explanation itself, not contributing a proposition to the inquiry. Keep the learner-DAG and clue release frozen for this turn.'
-      : null,
-    compression.enabled
-      ? `Step compression: on; ${compression.policy || 'accept obvious public bridges as implied'}; max explicit demands per turn ${compression.maxExplicitDemandsPerTurn ?? 1}.`
-      : null,
-    `Current branch: ${branch.label || branch.id || 'open scaffold'}.`,
-    scaffold.localQuestion ? `Local question: ${scaffold.localQuestion}` : null,
-    scaffold.warrantFrame ? `Warrant frame: ${scaffold.warrantFrame}` : null,
-    scaffold.joinReminder ? `Join reminder: ${scaffold.joinReminder}` : null,
-    due.length
-      ? `Evidence available now: ${due
-          .map(
-            (row) =>
-              `${row.via === 'director' ? 'scene evidence' : 'tutor exhibit'}: ${oneLine(row.surface, { max: 120 })}`,
-          )
-          .join(' | ')}`
-      : latest
-        ? `Latest public evidence: ${oneLine(latest.surface, { max: 140 })}`
-        : null,
-    generousInference.applied ? 'Contextual answer resolution: APPLIED with high confidence.' : null,
-    generousInference.applied ? `Resolved learner move: ${generousInference.resolvedMeaning}` : null,
-    generousInference.applied ? `Authoritative next-turn rule: ${generousInference.tutorInstruction}` : null,
-    conversationalCompletion?.resolved
-      ? `Conversational completion: ${conversationalCompletion.status}. The immediately preceding local question is closed in learner-facing discourse.`
-      : null,
-    conversationalCompletion?.resolved
-      ? `Accepted learner meaning: ${conversationalCompletion.acceptedMeaning || conversationalCompletion.learnerSurface}`
-      : null,
-    conversationalCompletion?.instruction
-      ? `Authoritative completion rule: ${conversationalCompletion.instruction}`
-      : null,
-    sideArc.detected
-      ? discoursePlane?.plane === 'instructional_meta'
-        ? `Side arc: ${sideArc.type}. Repair the explanation completely in this turn. Do not return to the local evidence question until a later learner turn.`
-        : `Side arc: ${sideArc.type}. Answer the learner's clarification/trust/affect need briefly, then ${sideArc.returnTarget?.afterSideArc || 'return to the local evidence question'}.`
-      : 'Side arc: none detected; stay on the local warrant.',
-    `Proof debt status: ${proofDebt.status || 'unknown'}; open=${proofDebt.counts?.open ?? 0}; harmful=${proofDebt.counts?.harmful ?? 0}.`,
-    proofDebt.open?.length ? `Open proof debt:\n${compactAuditRows(proofDebt.open)}` : null,
-    proofDebt.elision?.applied
-      ? `Compressed bridge accepted: ${proofDebt.elision.count} ordinary warrant row(s) are elided from learner-facing demands.`
-      : null,
-    proofDebt.elision?.tutorInstruction || null,
-    // proofDebt.open already contains every non-elided missing warrant. Rendering
-    // audit.warrants.missing again duplicated learner-derived context and made the
-    // prompt audit mistake repeated bookkeeping for repeated instructions.
-    audit.premises?.suppressedOrPrivate?.length || audit.premises?.illicitHidden?.length
-      ? `Hidden/private premise risk:\n${compactAuditRows([
-          ...(audit.premises?.suppressedOrPrivate || []),
-          ...(audit.premises?.illicitHidden || []),
-        ])}`
-      : null,
-    promptRule,
-    includeQuestionSupport && questionSupport
-      ? `Question support: ${questionSupport.answerability}; modality ${questionSupport.modality}. ${questionSupport.reason}`
-      : null,
-    includeQuestionSupport && questionSupport?.tutorInstruction
-      ? `Authoritative question rule: ${questionSupport.tutorInstruction}`
-      : null,
-    "Learner-facing behavior: use plain public evidence language, answer side clarifications briefly, and usually move with the learner's compressed inference rather than forcing them to spell out every link.",
-    'When the learner skips an obvious public bridge, do not quiz them on it. Carry the bridge internally as implied proof debt and continue to the next useful pressure.',
-    includeQuestionSupport && questionSupport?.answerability === 'direction_only_until_evidence_is_public'
-      ? 'This epistemic-affordance rule overrides the local question, response action, and expected DAG move if any of them would ask the learner to supply unseen information.'
-      : null,
-    generousInference.applied
-      ? 'The immediately preceding local question is closed for learner-facing purposes. Do not paraphrase it into another question, ask for a name, ask what it licenses, or request a public-record restatement. The strict learner-DAG may remain incomplete as an audit; that incompleteness must not control this spoken turn.'
-      : null,
-    'Ask for an explicit warrant only if the learner is about to name/confirm a suspect, contradicts public evidence, relies on unstaged evidence, or reaches a conclusion that would be false without the missing bridge.',
-    includeDefaultResponseShape && discoursePlane?.plane === 'instructional_meta'
-      ? 'Response shape: acknowledge the comprehension problem, restate the latest tutor point in plain words, and end without a proof question or new clue.'
-      : includeDefaultResponseShape
-        ? 'Default response shape: one short acknowledgement, one sentence naming the live evidence pressure, one light question. Avoid lists of routes, ledgers, or multiple required subclaims.'
-        : null,
-    'Never mention scaffold state, proof debt, side arcs, DAGs, premise ids, rule ids, hidden facts, or release schedules.',
-    '[End tutor-only human discourse scaffold]',
-  ]
-    .filter(Boolean)
-    .join('\n');
+  return projectTutorStubHumanDiscourseContext(frame, { includeQuestionSupport, includeDefaultResponseShape });
 }
 
 function dialogueClosureTutorContext(frame) {
-  if (!frame?.enabled || (!frame.mandatory && !frame.available)) return '';
-  if (frame.phase === 'final_checkin_response') {
-    return [
-      '[Tutor-only dialogue closure]',
-      'Phase: one final learner check-in after the case reached closure.',
-      'Answer only the learner’s check-in from the public transcript. Do not introduce new evidence or restart the proof sequence.',
-      'End with an explicit statement that the case, book, or inquiry is closed and complete.',
-      'Do not ask any further question. This is the terminal tutor turn.',
-      '[End tutor-only dialogue closure]',
-    ].join('\n');
-  }
-  if (frame.mandatory) {
-    return [
-      '[Tutor-only dialogue closure]',
-      `Closure basis: ${frame.basis}. The final conclusion is grounded and asserted; the dialogue must now wind down.`,
-      'Briefly acknowledge the learner’s result and name the decisive public chain in ordinary language.',
-      'Explicitly say that the case, book, or inquiry is closed. Do not ask another proof question.',
-      frame.allowCheckIn
-        ? 'You may end with one optional check-in about whether the learner wants one link revisited. If you ask it, it must be the only question.'
-        : 'Do not ask a follow-up question; end the dialogue now.',
-      '[End tutor-only dialogue closure]',
-    ].join('\n');
-  }
-  return [
-    '[Tutor-only dialogue closure]',
-    'The authored proof DAG is now fully public, so conversational closure is available even if the strict learner-record audit remains incomplete.',
-    'Do not announce the final verdict unless the learner’s current public move genuinely settles the public question.',
-    'If you do state or confirm the final verdict, explicitly close the case instead of returning to another proof prompt.',
-    frame.allowCheckIn
-      ? 'After closing, you may ask one optional final check-in about a link to revisit; it must be the only question.'
-      : 'If you close, do not ask a follow-up question.',
-    'If the learner has not settled the public question, continue normally without pretending the dialogue is closed.',
-    '[End tutor-only dialogue closure]',
-  ].join('\n');
+  return projectTutorStubDialogueClosureContext(frame);
 }
 
 function createLearnerDagState({ enabled, modelRef = null, resolved, world, dropout = null }) {
@@ -8655,104 +8273,22 @@ function createLearnerDagState({ enabled, modelRef = null, resolved, world, drop
 }
 
 function tutorMessageContext(state, history) {
-  const context = tutorStubPublicMessageContext(history, {
-    speaker: 'tutor',
+  return buildTutorStubTutorMessageContext(history, {
+    modelRef: state?.modelRef || null,
     activatedBy: state?.tutorContext?.activatedBy || 'session_start',
   });
-  return {
-    ...context,
-    modelRef: state?.modelRef || null,
-  };
-}
-
-function rawPublicTurnTranscript(turns, limit) {
-  const safeLimit = Math.max(0, Number(limit) || 0);
-  const recent = safeLimit > 0 ? turns.slice(-safeLimit) : [];
-  if (recent.length === 0) return 'No previous turns in the raw recent window.';
-  return recent
-    .map((turn, index) => {
-      const absoluteTurn = turns.length - recent.length + index + 1;
-      return [`Turn ${absoluteTurn}`, `Learner: ${turn.learner}`, `Tutor: ${turn.tutor}`].join('\n');
-    })
-    .join('\n\n');
-}
-
-function publicDialogueMemorySummary(state, { includeAnalysis = true } = {}) {
-  const turns = state?.turns || [];
-  if (turns.length === 0) return 'No previous public dialogue to summarize.';
-
-  const rawWindow = Math.max(0, Number(state?.historyTurns ?? STUB.historyTurns) || 0);
-  const older = rawWindow > 0 ? turns.slice(0, Math.max(0, turns.length - rawWindow)) : turns;
-  const latest = turns.at(-1);
-  const latestClassification = latest?.classification || {};
-  const lines = [
-    '[Compact public dialogue memory]',
-    `Completed public turns: ${turns.length}; raw recent window: ${Math.min(rawWindow, turns.length)} turn(s).`,
-    older.length ? `Older turns compressed: 1-${older.length}.` : 'Older turns compressed: none yet.',
-  ];
-
-  if (older.length) {
-    lines.push('Older public milestones:');
-    for (const turn of older.slice(-6)) {
-      lines.push(
-        `- T${turn.turn}: learner ${oneLine(turn.learner, { max: 120 })}; tutor ${oneLine(turn.tutor, {
-          max: 150,
-        })}`,
-      );
-    }
-  }
-
-  if (includeAnalysis && latest) {
-    lines.push('Latest public learner analysis:');
-    lines.push(`- This turn: ${latestClassification.turn?.summary || oneLine(latest.learner, { max: 160 })}`);
-    lines.push(`- Overall: ${latestClassification.overall?.summary || 'No public overall summary yet.'}`);
-    lines.push(
-      `- Trajectory: ${
-        latestClassification.overall?.trajectory ||
-        latestClassification.overall?.current_state ||
-        'No public trajectory summary yet.'
-      }`,
-    );
-    lines.push(
-      `- Next likely need: ${
-        latestClassification.turn?.pedagogical_need ||
-        latestClassification.overall?.next_best_tutor_move ||
-        'Ask one concrete evidence-generating question.'
-      }`,
-    );
-  }
-
-  lines.push('[End compact public dialogue memory]');
-  return lines.join('\n');
 }
 
 function compactPublicTranscriptForPrompt(state, limit, { includeAnalysis = true } = {}) {
-  const turns = state?.turns || [];
-  const rawTranscript = rawPublicTurnTranscript(turns, limit);
-  if (!state?.memory?.enabled || turns.length === 0) return rawTranscript;
-  return [
-    publicDialogueMemorySummary(state, { includeAnalysis }),
-    '[Raw recent public transcript]',
-    rawTranscript,
-    '[End raw recent public transcript]',
-  ].join('\n\n');
+  return projectTutorStubCompactPublicTranscript(state?.turns || [], limit, {
+    memoryEnabled: Boolean(state?.memory?.enabled),
+    historyTurns: state?.historyTurns ?? STUB.historyTurns,
+    includeAnalysis,
+  });
 }
 
 function classifierTutorContext(classification) {
-  if (!classification) return '';
-  return [
-    '[Tutor-only learner classifier]',
-    `This turn: ${classification.turn?.summary || 'No turn summary.'}`,
-    `Overall: ${classification.overall?.summary || 'No overall summary.'}`,
-    `Discourse move: ${classification.turn?.discourse_move || 'unknown'}`,
-    `Evidence use: ${classification.turn?.evidence_use || 'unknown'}`,
-    `Epistemic stance: ${classification.turn?.epistemic_stance || 'unknown'}`,
-    `Immediate pedagogical need: ${
-      classification.turn?.pedagogical_need || classification.overall?.next_best_tutor_move || 'unknown'
-    }`,
-    'Use this as advisory context. Do not mention classifier labels, scores, rubrics, or hidden analysis to the learner.',
-    '[End tutor-only learner classifier]',
-  ].join('\n');
+  return projectTutorStubLearnerClassifierContext(classification);
 }
 
 function dagNodeFact(node) {
@@ -8842,31 +8378,6 @@ function oneLine(value, { max = 220 } = {}) {
   return `${text.slice(0, Math.max(0, max - 3))}...`;
 }
 
-function compactFactRow(row) {
-  if (!row) return '';
-  if (typeof row === 'string') return row;
-  if (row.surface) return row.surface;
-  if (row.text) return row.text;
-  if (row.fact) return factText(row.fact);
-  if (row.premise) return row.premise;
-  return JSON.stringify(row);
-}
-
-function printAnalysisLine(label, value, { max = 220 } = {}) {
-  const text = oneLine(value, { max });
-  if (!text) return;
-  console.log(`${C.dim}  ${label}: ${text}${C.reset}`);
-}
-
-function printAnalysisList(label, rows, { limit = 5 } = {}) {
-  const visible = Array.isArray(rows) ? rows.map(compactFactRow).filter(Boolean).slice(-limit) : [];
-  if (!visible.length) return;
-  console.log(`${C.dim}  ${label}:${C.reset}`);
-  for (const row of visible) {
-    console.log(`${C.dim}    - ${oneLine(row)}${C.reset}`);
-  }
-}
-
 function printTutorStubFeatureMap(state = null) {
   const featureRows = tutorStubCapabilityFeatureRows(state?.capabilities || null);
   let activeContext = null;
@@ -8924,278 +8435,20 @@ function registerTemperatureApplies(policy) {
   return REGISTER_TEMPERATURE_POLICIES.has(String(policy || ''));
 }
 
-function plainPolicyLabel(policy) {
-  const labels = {
-    continuous_dynamical_system: 'continuous adaptive blend',
-    continuous_empirical_dynamical_system: 'continuous adaptive blend with cross-run evidence',
-    dynamical_system: 'adaptive weighted choice',
-    empirical_dynamical_system: 'adaptive weighted choice with cross-run evidence',
-    trajectory: 'trajectory-aware choice',
-    field: 'current interaction-state choice',
-    state: 'classifier and reasoning-state choice',
-    dynamic: 'model-reviewed adaptive choice',
-    bland: 'fixed plain baseline',
-    random: 'random control',
-    negative: 'negative-register control',
-  };
-  return labels[policy] || String(policy || 'unknown policy').replaceAll('_', ' ');
-}
-
-function plainPolicySignal(axis) {
-  const labels = {
-    evidence_gap: 'the learner still needs public evidence',
-    warrant_gap: 'a reasoning link is missing',
-    agency_deficit: 'the learner needs more ownership of the next move',
-    affective_risk: 'the learner may feel exposed or pressured',
-    recognition_pressure: 'the response should acknowledge the learner’s independence',
-    coercion_risk: 'the tutor should avoid forcing agreement',
-    integration_need: 'the learner needs help connecting the pieces',
-    compression_need: 'the next move should be simpler and shorter',
-    language_opacity: 'the learner has encountered unclear or unfamiliar wording',
-    momentum: 'the dialogue has useful forward movement',
-    stagnation: 'the dialogue risks stalling',
-    disruption_need: 'the current pattern needs a gentle interruption',
-    tempo_affordance: 'the learner appears ready to move faster',
-    closure_pressure: 'the dialogue is nearing a conclusion',
-    field_regression: 'the learner’s engagement has slipped',
-    empirical_uncertainty: 'there is little evidence yet about which style works best here',
-    learner_acceleration: 'the learner supplied several warranted steps at once',
-  };
-  return labels[axis] || String(axis || '').replaceAll('_', ' ');
-}
-
-function dominantPlainPolicySignals(registerSelection, { limit = 3 } = {}) {
-  const vector = registerSelection?.dynamical_system_policy?.state_vector || {};
-  return Object.entries(vector)
-    .filter(([, value]) => Number.isFinite(Number(value)) && Number(value) > 0.15)
-    .sort((a, b) => Number(b[1]) - Number(a[1]))
-    .slice(0, limit)
-    .map(([axis]) => plainPolicySignal(axis));
-}
-
-function plainStrategyText(value) {
-  return String(value || '')
-    .replace(/learner-DAG/giu, 'learner’s reasoning')
-    .replace(/DAG/gu, 'reasoning map')
-    .replace(/proof-state/giu, 'reasoning')
-    .replace(/public premise/giu, 'piece of public evidence')
-    .replace(/learner-owned record/giu, 'learner’s stated reasoning')
-    .replace(/low-agency compliance/giu, 'passive agreement')
-    .replace(/learner-owned public move/giu, 'response in the learner’s own words')
-    .replace(/coercion pressure/giu, 'pressure to agree')
-    .replace(/final secret/giu, 'final conclusion');
-}
-
 function printCurrentTurnAnalysis(state, { technical = false } = {}) {
   if (technical) return printCurrentTurnTechnicalAnalysis(state);
   const turn = state.turns[state.turns.length - 1] || null;
-  if (!turn) {
-    console.log(`${C.cyan}analysis >${C.reset} no completed turns yet`);
-    console.log(
-      `${C.dim}  enter a learner turn first, then use /analysis; add "technical" for debugging evidence${C.reset}\n`,
-    );
-    return;
-  }
-
-  const classification = turn.classification || {};
-  const turnAnalysis = classification.turn || {};
-  const overall = classification.overall || {};
-  const registerSelection = normalizeStoredRegisterSelection(turn.registerSelection || null);
-  const previousEfficacy = normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null);
-  const policy = registerSelection?.primary_policy || state.register?.policy || 'off';
-  const distribution = formatEngagementStanceDistribution(registerSelection?.distribution, { limit: 4 });
-  const signals = dominantPlainPolicySignals(registerSelection);
-  const generousInference = turn.generousInference || turn.humanDiscourseFrame?.generousInference || null;
-  const proofDebt = turn.humanDiscourseFrame?.proofDebt || null;
-  const questionSupport = turn.humanDiscourseFrame?.questionSupport || null;
-  const dialogueClosure = turn.dialogueClosure || null;
-  const comprehension = turn.comprehension?.beforeTutor?.features || null;
-  const dagFactDropout = turn.dagFactDropout || null;
-  const learnerAdvance = turn.learnerAdvance || turn.tutorLearnerDagUpdate?.advance || null;
-
-  console.log(`${C.cyan}analysis >${C.reset} turn ${turn.turn}`);
-  printAnalysisLine('learner said', turn.learner);
-  printAnalysisLine(
-    'plain reading',
-    turnAnalysis.summary || overall.summary || 'No plain-language reading is available.',
-  );
-  if (learnerAdvance?.accelerated) {
-    printAnalysisLine(
-      'learning pace',
-      `accelerating: ${learnerAdvance.adoptedPremiseCount} public premise(s) and ${learnerAdvance.derivedFactCount} supported inference(s) were accepted together`,
-    );
-  }
-  if (turn.releasePacing?.signal?.direction && turn.releasePacing.signal.direction !== 'steady') {
-    printAnalysisLine(
-      'clue pace',
-      `${turn.releasePacing.signal.reason} The effective pace became ${turn.releasePacing.effectiveSpeed}x${
-        turn.releasePacing.releasedNow?.length
-          ? `, and ${turn.releasePacing.releasedNow.length} new clue${turn.releasePacing.releasedNow.length === 1 ? '' : 's'} entered this turn`
-          : ''
-      }.`,
-    );
-  }
-  if (generousInference?.applied) {
-    printAnalysisLine(
-      'generous inference',
-      'accepted the short answer in context; the local question counts as answered',
-    );
-    printAnalysisLine('what was carried forward', generousInference.resolvedMeaning);
-  }
-  if (proofDebt?.elision?.applied) {
-    printAnalysisLine(
-      'step compression',
-      `${proofDebt.elision.count} obvious public bridge(s) were carried forward without asking for a restatement`,
-    );
-  }
-  if (questionSupport) {
-    const supportReadings = {
-      open_question: 'the next question was answerable from public evidence',
-      embedded_directional_hint:
-        'the missing direction was put into the discourse because the exact evidence was not public yet',
-      bounded_directional_choice: 'a small public-safe choice replaced an impossible open recall question',
-      stage_then_ask: 'new evidence was stated before the learner was asked to interpret it',
-      stage_then_bounded_choice: 'new evidence was stated first, then narrowed to a small interpretive choice',
-      embedded_public_hint: 'an already-public clue was restated and narrowed before asking',
-      bounded_public_choice: 'an already-public clue was narrowed to a small interpretive choice',
-    };
-    printAnalysisLine(
-      'question support',
-      supportReadings[questionSupport.modality] || questionSupport.reason || questionSupport.modality,
-    );
-  }
-  if (dialogueClosure?.lifecycle?.phase && dialogueClosure.lifecycle.phase !== 'open') {
-    printAnalysisLine(
-      'dialogue ending',
-      dialogueClosure.lifecycle.phase === 'awaiting_checkin'
-        ? 'the public verdict has closed the proof sequence; one optional check-in remains'
-        : 'the tutor has explicitly closed the inquiry',
-    );
-  }
-  if (Number(comprehension?.pressure || 0) > 0) {
-    printAnalysisLine(
-      'wording gap',
-      comprehension.unresolvedTerms?.length
-        ? `the learner asked about ${comprehension.unresolvedTerms.join(', ')}`
-        : 'the learner recently asked for plainer wording',
-    );
-  }
-  if (dagFactDropout?.droppedNow?.length || dagFactDropout?.activeDropped?.length) {
-    printAnalysisLine(
-      'memory pressure',
-      dagFactDropout.droppedNow?.length
-        ? `${dagFactDropout.droppedNow.length} previously accumulated evidence item(s) slipped on this turn; the tutor should re-anchor without turning it into a memory test`
-        : `${dagFactDropout.activeDropped.length} accumulated evidence item(s) remain out of the learner’s active reasoning record`,
-    );
-  } else if (dagFactDropout?.repairedNow?.length) {
-    printAnalysisLine(
-      'memory recovery',
-      `${dagFactDropout.repairedNow.length} dropped evidence item(s) were re-adopted`,
-    );
-  }
-  printAnalysisLine('teaching approach', plainPolicyLabel(policy));
-  if (registerSelection?.policy_composition) {
-    const composition = registerSelection.policy_composition;
-    printAnalysisLine(
-      'additional overrides',
-      `${composition.overlay_policies.map(plainPolicyLabel).join(', ') || 'none'}; ${
-        composition.activated_overlay
-          ? `${plainPolicyLabel(composition.activated_overlay)} took priority because the change was strong enough`
-          : 'the primary policy stayed in control'
-      }`,
-    );
-  }
-  if (registerSelection) {
-    printAnalysisLine(
-      'style blend',
-      distribution ||
-        registerSelection.engagement_stance ||
-        registerSelection.selected_register ||
-        'No teaching style was stored.',
-    );
-    printAnalysisLine(
-      'next tutor move',
-      plainStrategyText(displayDiagnosticLabel(registerSelection.action_family || 'No action was stored.')),
-    );
-    printAnalysisLine(
-      'speaking level',
-      `${displayDiagnosticLabel(registerSelection.audience_register || 'unknown audience')}; ${displayDiagnosticLabel(
-        registerSelection.lexical_accessibility || 'unknown language level',
-      )}`,
-    );
-    printAnalysisLine('in-scene voice', displayDiagnosticLabel(registerSelection.scene_immersion || 'unknown'));
-    printAnalysisLine(
-      'part in the scene',
-      displayDiagnosticLabel(registerSelection.actorial_part_label || registerSelection.actorial_part || 'unknown'),
-    );
-    if (registerSelection.actorial_performance?.label) {
-      printAnalysisLine(
-        'performance tactic',
-        `${displayDiagnosticLabel(registerSelection.actorial_performance.label)} — ${registerSelection.actorial_performance.contract}`,
-      );
-    }
-    if (registerSelection.actorial_part_selection?.reason) {
-      printAnalysisLine('why this part', registerSelection.actorial_part_selection.reason);
-    }
-    if (turn.responseConfigurationAudit) {
-      printAnalysisLine(
-        'style visible in the reply',
-        `${turn.responseConfigurationAudit.visible_axis_count}/${turn.responseConfigurationAudit.axis_count} intended features were visible`,
-      );
-    }
-    if (signals.length) {
-      console.log(`${C.dim}  why this approach was chosen:${C.reset}`);
-      for (const signal of signals) console.log(`${C.dim}    - ${signal}${C.reset}`);
-    } else {
-      printAnalysisLine('why', registerSelection.reviewer_signal || turnAnalysis.pedagogical_need);
-    }
-    printAnalysisLine(
-      'tutor’s immediate aim',
-      plainStrategyText(
-        registerSelection.expected_field_move || overall.next_best_tutor_move || turnAnalysis.pedagogical_need,
-      ),
-    );
-    printAnalysisLine('reasoning aim', plainStrategyText(registerSelection.expected_dag_move));
-  } else {
-    printAnalysisLine(
-      'tutor’s immediate aim',
-      plainStrategyText(overall.next_best_tutor_move || turnAnalysis.pedagogical_need),
-    );
-  }
-  if (previousEfficacy) {
-    const result =
-      previousEfficacy.label === 'positive_progress'
-        ? 'helped the learner move forward'
-        : previousEfficacy.label === 'regression_or_overreach'
-          ? 'was followed by regression or overreach'
-          : 'did not yet produce clear reasoning progress';
-    printAnalysisLine(
-      'last teaching style result',
-      `${displayDiagnosticLabel(previousEfficacy.selected_register)}: ${result}`,
-    );
-    if (previousEfficacy.learnerFeedback?.rating) {
-      printAnalysisLine(
-        'your rating of that reply',
-        previousEfficacy.learnerFeedback.rating === 'up'
-          ? 'helpful; this was retained as one positive self-assessment signal'
-          : 'not helpful; the tutor was told to make an observable change rather than repeat the same realization',
-      );
-    }
-  }
-  const responseCheck = plainResponseCheckSummary(turn);
-  if (responseCheck) printAnalysisLine('response check', responseCheck);
-  console.log(`${C.dim}  technical details: /analysis technical (or /a technical)${C.reset}\n`);
-}
-
-function debugNumber(value) {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? Number(numeric.toFixed(3)) : 'n/a';
-}
-
-function debugDelta(current, previous) {
-  if (previous === null || previous === undefined) return 'baseline';
-  const delta = fieldDelta(current, previous);
-  return `${delta >= 0 ? '+' : ''}${delta}`;
+  const registerSelection = turn ? normalizeStoredRegisterSelection(turn.registerSelection || null) : null;
+  const previousEfficacy = turn ? normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null) : null;
+  const lines = projectTutorStubTurnAnalysisLines({
+    turn,
+    registerSelection,
+    previousEfficacy,
+    policy: registerSelection?.primary_policy || state.register?.policy || 'off',
+    distribution: formatEngagementStanceDistribution(registerSelection?.distribution, { limit: 4 }),
+    colors: C,
+  });
+  for (const line of lines) console.log(line);
 }
 
 function printExplanatoryDebugTechnical(state, { force = false, terminalWrapped = false } = {}) {
@@ -9207,175 +8460,33 @@ function printExplanatoryDebugTechnical(state, { force = false, terminalWrapped 
   }
   const turn = state.turns.at(-1) || null;
   if (!turn) {
-    console.log(`${C.brightBlue}${C.bold}debug explain >${C.reset} no completed turns yet\n`);
+    for (const line of projectTutorStubTechnicalDebugLines({ colors: C })) console.log(line);
     return false;
   }
 
   const previousTurn = state.turns.at(-2) || null;
-  const classification = turn.classification || {};
-  const turnAnalysis = classification.turn || {};
-  const overall = classification.overall || {};
-  const learnerDag = turn.tutorLearnerDagModel || {};
-  const assessment = learnerDag.assessment || {};
-  const metrics = learnerDag.metrics || {};
   const selection = normalizeStoredRegisterSelection(turn.registerSelection || null);
   const previousSelection = normalizeStoredRegisterSelection(previousTurn?.registerSelection || null);
   const policyCalculation = registerPolicyCalculation(selection);
-  const policyFeatures = policyCalculation.features || {};
-  const policyField = policyFeatures.field || null;
-  const policyDag = policyFeatures.dag || null;
   const field = buildLightweightDialogueField(state.turns);
   const fieldRow = field.rows.at(-1) || null;
-  const previousFieldRow = field.rows.at(-2) || null;
-  const inputs = fieldRow?.calculation?.inputs || {};
   const currentRegister = selection?.engagement_stance || selection?.selected_register || 'off';
   const previousRegister = previousSelection?.engagement_stance || previousSelection?.selected_register || 'none';
   const registerChanged = previousRegister !== 'none' && previousRegister !== currentRegister;
   const activatedPolicy = selection?.activated_policy || selection?.primary_policy || selection?.policy || 'off';
-  const distribution = formatEngagementStanceDistribution(selection?.distribution, { limit: 4 });
-  const releasePacing = turn.releasePacing || null;
-
-  console.log(
-    `${C.brightBlue}${C.bold}debug explain >${C.reset} turn ${turn.turn} · ${turn.turnId || turnDebugId(state, turn.turn)}`,
-  );
-  console.log(`${C.brightCyan}${C.bold}  A · learner analysis${C.reset}`);
-  printAnalysisLine('reading', turnAnalysis.summary || overall.summary || 'No classifier summary was stored.');
-  printAnalysisLine(
-    'labels',
-    `request=${turnAnalysis.request_type || 'unknown'}; move=${turnAnalysis.discourse_move || 'unknown'}; evidence=${
-      turnAnalysis.evidence_use || 'unknown'
-    }; stance=${turnAnalysis.epistemic_stance || 'unknown'}; agency=${turnAnalysis.agency || 'unknown'}`,
-  );
-  printAnalysisLine(
-    'reasoning record',
-    `coverage=${assessment.bestPathCoverage ?? 'n/a'}; grounded=${metrics.groundedCount || 0}; missing=${
-      metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 'n/a'
-    }; bottleneck=${assessment.bottleneck || 'unknown'}`,
-  );
-
-  console.log(`${C.brightYellow}${C.bold}  B · calculations and field update${C.reset}`);
-  if (policyField) {
-    printAnalysisLine(
-      'policy input field',
-      `surface ${policyField.beforeScore ?? 'n/a'} → ${policyField.afterScore ?? 'n/a'} (Δ ${
-        policyField.delta === null || policyField.delta === undefined
-          ? 'initial'
-          : `${policyField.delta >= 0 ? '+' : ''}${policyField.delta}`
-      }); relation=${policyField.relation || 'unknown'}`,
-    );
-  }
-  if (policyDag) {
-    printAnalysisLine(
-      'policy proof calculation',
-      `progressScore=${policyDag.progressScore ?? 'n/a'}; progress=${policyDag.progress ?? 'n/a'}; coverage=${
-        policyDag.bestPathCoverage ?? 'n/a'
-      }; missing=${policyDag.missingPremiseCount ?? 'n/a'}; bottleneck=${policyDag.bottleneck || 'unknown'}`,
-    );
-  }
-  if (fieldRow) {
-    printAnalysisLine(
-      'mastery calculation',
-      `0.34×${debugNumber(inputs.conceptual)} + 0.26×${debugNumber(inputs.readiness)} + 0.30×${debugNumber(
-        inputs.coverage,
-      )} + 0.10×${debugNumber(inputs.grounded)} = ${fieldRow.learnerMastery}`,
-    );
-    printAnalysisLine(
-      'risk calculation',
-      `0.45×${debugNumber(inputs.missing)} + 0.25×(1-${debugNumber(inputs.readiness)}) + ${debugNumber(
-        inputs.overreach,
-      )} overreach = ${fieldRow.learnerRisk}`,
-    );
-    printAnalysisLine(
-      'alignment calculation',
-      `0.30×${debugNumber(inputs.registerConfidence)} + 0.24×${debugNumber(
-        inputs.efficacyScore,
-      )} + 0.22×${debugNumber(inputs.brevity)} + 0.24×${inputs.leakOk ? 1 : 0} = ${fieldRow.tutorAlignment}`,
-    );
-    printAnalysisLine(
-      'momentum calculation',
-      `0.42×${debugNumber(inputs.masteryGain)} + 0.28×${debugNumber(
-        inputs.coverageGain,
-      )} + 0.18×${debugNumber(inputs.efficacyScore)} + 0.12×${debugNumber(inputs.releasedShare)} = ${
-        fieldRow.jointMomentum
-      }`,
-    );
-    printAnalysisLine(
-      'field updated for next turn',
-      `mastery=${fieldRow.learnerMastery} (${debugDelta(
-        fieldRow.learnerMastery,
-        previousFieldRow?.learnerMastery,
-      )}); risk=${fieldRow.learnerRisk} (${debugDelta(
-        fieldRow.learnerRisk,
-        previousFieldRow?.learnerRisk,
-      )}); alignment=${fieldRow.tutorAlignment} (${debugDelta(
-        fieldRow.tutorAlignment,
-        previousFieldRow?.tutorAlignment,
-      )}); momentum=${fieldRow.jointMomentum} (${debugDelta(fieldRow.jointMomentum, previousFieldRow?.jointMomentum)})`,
-    );
-  }
-  const dynamical = selection?.dynamical_system_policy || null;
-  if (dynamical?.state_vector) {
-    printAnalysisLine('system vector', topNumericEntries(dynamical.state_vector, { limit: 5 }).join(', '));
-    printAnalysisLine(
-      'derivatives',
-      topNumericEntries(dynamical.derivative_vector, { limit: 4, abs: true }).join(', '),
-    );
-    printAnalysisLine('stance scores', topNumericEntries(dynamical.scores, { limit: 5 }).join(', '));
-  } else if (policyCalculation.scores) {
-    printAnalysisLine('stance scores', topNumericEntries(policyCalculation.scores, { limit: 5 }).join(', '));
-  }
-
-  console.log(`${C.brightMagenta}${C.bold}  C · resulting register decision${C.reset}`);
-  printAnalysisLine(
-    'register change',
-    previousRegister === 'none'
-      ? `initial choice → ${currentRegister}`
-      : registerChanged
-        ? `${previousRegister} → ${currentRegister}`
-        : `${currentRegister} held`,
-  );
-  printAnalysisLine(
-    'policy path',
-    `stack=${selection?.policy || state.register?.policy || 'off'}; activated=${activatedPolicy}; temperature=${
-      selection?.temperature ?? state.register?.temperature ?? 'n/a'
-    }`,
-  );
-  if (selection?.random_performance?.enabled) {
-    printAnalysisLine(
-      'random performance',
-      'engagement stance and host character sampled without learner-assessment influence; the field calculations above did not select them',
-    );
-  }
-  if (selection?.policy_composition) {
-    const composition = selection.policy_composition;
-    printAnalysisLine(
-      'overlay result',
-      composition.activated_overlay
-        ? `${composition.activated_overlay} overrode the primary at strength ${composition.activated_strength}`
-        : `no overlay crossed ${composition.overlay_threshold}; primary retained`,
-    );
-  }
-  if (distribution) printAnalysisLine('stance distribution', distribution);
-  if (releasePacing) {
-    printAnalysisLine(
-      'clue release pace',
-      `${releasePacing.baseSpeed}x base → ${releasePacing.effectiveSpeed}x effective (${releasePacing.direction}); ${
-        releasePacing.signal?.reason || 'no pace-change request'
-      }${releasePacing.releasedNow?.length ? `; released ${releasePacing.releasedNow.join(', ')}` : ''}`,
-    );
-  }
-  printAnalysisLine('decision basis', selection?.register_reason || policyCalculation.drivers.slice(0, 4).join('; '));
-  if (selection) {
-    printAnalysisLine(
-      'response configuration',
-      `action=${selection.action_family || 'none'}; audience=${selection.audience_register || 'unknown'}; language=${
-        selection.lexical_accessibility || 'unknown'
-      }; scene=${selection.scene_immersion || 'unknown'}`,
-    );
-  }
-  console.log(
-    `${C.dim}  /debug off returns to dialogue plus the compact model/stance line · /debug on returns to concise prose${C.reset}\n`,
-  );
+  const lines = projectTutorStubTechnicalDebugLines({
+    turn,
+    turnIdentifier: turn.turnId || turnDebugId(state, turn.turn),
+    selection,
+    previousSelection,
+    policyCalculation,
+    field,
+    distribution: formatEngagementStanceDistribution(selection?.distribution, { limit: 4 }),
+    registerPolicy: state.register?.policy || 'off',
+    registerTemperature: state.register?.temperature ?? null,
+    colors: C,
+  });
+  for (const line of lines) console.log(line);
   appendTraceEvent(state.trace, {
     type: 'explanatory_debug_output',
     format: 'technical',
@@ -9475,448 +8586,30 @@ async function printExplanatoryDebugTurn(
 
 function printCurrentTurnTechnicalAnalysis(state) {
   const turn = state.turns[state.turns.length - 1] || null;
-  if (!turn) {
-    console.log(`${C.cyan}analysis >${C.reset} no completed turns yet`);
-    console.log(
-      `${C.dim}  enter a learner turn first, then use /analysis to inspect the stored classifier, learner-DAG, register, and tutor-DAG data${C.reset}\n`,
-    );
-    return;
-  }
-
-  const classification = turn.classification || null;
-  const turnAnalysis = classification?.turn || {};
-  const overall = classification?.overall || {};
-  const conceptual = scoreValue(turnAnalysis.scores?.conceptual_engagement);
-  const readiness = scoreValue(turnAnalysis.scores?.epistemic_readiness);
-  const learnerDagModel = turn.tutorLearnerDagModel || null;
-  const metrics = learnerDagModel?.metrics || {};
-  const assessment = learnerDagModel?.assessment || {};
-  const learnerRecord = learnerDagModel?.learnerRecord || {};
-  const update = turn.tutorLearnerDagUpdate || null;
-  const dagPreflight = update?.preflight || null;
-  const accepted = update?.accepted || {};
-  const rejected = update?.rejected || [];
-  const extractor = update?.extractor || {};
-  const registerSelection = normalizeStoredRegisterSelection(turn.registerSelection || null);
-  const selectedEfficacy = registerSelection?.efficacy || null;
-  const previousEfficacy = normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null);
-  const tracePath = traceDisplayPath(state.trace);
-  const comprehension = turn.comprehension?.beforeTutor || null;
-  const dagFactDropout = turn.dagFactDropout || null;
-  const learnerAdvance = turn.learnerAdvance || update?.advance || learnerDagModel?.learnerAdvance || null;
-  const field = buildLightweightDialogueField(state.turns);
-  const fieldRow = field.rows.at(-1) || null;
-  const previousFieldRow = field.rows.at(-2) || null;
-  const firstFieldRow = field.rows[0] || null;
-
-  console.log(
-    `${C.cyan}analysis technical >${C.reset} current completed turn ${turn.turn}; id ${turn.turnId || turnDebugId(state, turn.turn)}`,
-  );
-  printAnalysisLine('learner', turn.learner);
-  if (comprehension?.features) {
-    printAnalysisLine(
-      'comprehension side-state',
-      `pressure=${comprehension.features.pressure}; unresolved=${
-        comprehension.features.unresolvedTerms?.join(',') || 'none'
-      }; explained=${comprehension.features.explainedTerms?.join(',') || 'none'}; advancesDAG=false`,
-    );
-  }
-  if (dagFactDropout) {
-    printAnalysisLine(
-      'DAG fact dropout',
-      `rate=${dagFactDropout.configuredRate}; seed=${dagFactDropout.seed}; eligible=${dagFactDropout.eligibleCount}; droppedNow=${
-        dagFactDropout.droppedNow?.map((row) => row.premiseId).join(',') || 'none'
-      }; repairedNow=${dagFactDropout.repairedNow?.map((row) => row.premiseId).join(',') || 'none'}; active=${
-        dagFactDropout.activeDropped?.map((row) => row.premiseId).join(',') || 'none'
-      }; visibility=conduct`,
-    );
-  }
-
-  if (classification) {
-    printAnalysisLine('did this turn', turnAnalysis.summary || 'No turn summary.');
-    printAnalysisLine('did overall', overall.summary || 'No overall summary.');
-    printAnalysisLine('logical request type', turnAnalysis.request_type || 'unknown_request');
-    printAnalysisLine(
-      'rubric',
-      `move=${turnAnalysis.discourse_move || 'unknown'}; stance=${turnAnalysis.epistemic_stance || 'unknown'}; evidence=${
-        turnAnalysis.evidence_use || 'unknown'
-      }; agency=${turnAnalysis.agency || 'unknown'}; conceptual=${conceptual}/5; readiness=${readiness}/5`,
-    );
-    printAnalysisLine(
-      'reasoning pace',
-      `${turnAnalysis.learning_pace || 'steady'}; span=${turnAnalysis.reasoning_span || 'unknown'}`,
-    );
-    printAnalysisLine('trajectory', overall.trajectory);
-    printAnalysisLine('current state', overall.current_state);
-    printAnalysisLine('next tutor move', overall.next_best_tutor_move || turnAnalysis.pedagogical_need);
-    if (classification.error || classification.parseError) {
-      printAnalysisLine('classifier warning', classification.error || classification.parseError);
-    }
-  } else {
-    printAnalysisLine('classifier', state.classifier?.enabled ? 'no classifier output stored for this turn' : 'off');
-  }
-
-  if (learnerDagModel) {
-    if (dagPreflight) {
-      printAnalysisLine(
-        'DAG preflight',
-        `beforeModel=${dagPreflight.computedBeforeModelCall === true}; publicPremises=${
-          dagPreflight.eligiblePublicPremiseIds?.length || 0
-        }; candidateDerivations=${dagPreflight.possibleNextDerivations?.length || 0}; commitsProgress=${
-          dagPreflight.authority?.commitsProgress === true
-        }; hash=${dagPreflight.contentSha256 || 'n/a'}`,
-      );
-    }
-    printAnalysisLine(
-      'learner-DAG',
-      `coverage=${assessment.bestPathCoverage ?? 'n/a'}; bottleneck=${assessment.bottleneck || 'unknown'}; grounded=${
-        metrics.groundedCount || 0
-      }; voiced=${metrics.voicedDerivedCount || 0}; hypotheses=${metrics.hypothesisCount || 0}; missing=${
-        metrics.missingPremiseCount || 0
-      }`,
-    );
-    if (update) {
-      printAnalysisLine(
-        'learner-record update',
-        `adopted=${accepted.adopt?.length || 0}; derived=${accepted.derive?.length || 0}; retracted=${
-          accepted.retract?.length || 0
-        }; hypothesis=${accepted.hypothesis ? 'yes' : 'no'}; assertedAnswer=${accepted.assertAnswer || 'none'}`,
-      );
-      if (learnerAdvance) {
-        printAnalysisLine(
-          'learner advance',
-          `pace=${learnerAdvance.pace}; supportedMoves=${learnerAdvance.supportedMoveCount}; multiPremise=${
-            learnerAdvance.multiPremise
-          }; multiStep=${learnerAdvance.multiStep}; strength=${learnerAdvance.strength}`,
-        );
-      }
-      if (rejected.length)
-        printAnalysisLine('learner-record rejected', `${rejected.length} extractor item(s) rejected`);
-      if (extractor.error || extractor.parseError)
-        printAnalysisLine('learner-record warning', extractor.error || extractor.parseError);
-    }
-    printAnalysisList('grounded public record', learnerRecord.grounded);
-    printAnalysisList('learner hypotheses', learnerRecord.hypotheses);
-    printAnalysisList('answer candidates', learnerRecord.answerCandidates);
-  } else {
-    printAnalysisLine('learner-DAG', state.learnerDag?.enabled ? 'no learner-DAG model stored for this turn' : 'off');
-  }
-
-  if (registerSelection) {
-    const confidence =
-      registerSelection.confidence === null || registerSelection.confidence === undefined
-        ? ''
-        : `; confidence=${registerSelection.confidence}`;
-    printAnalysisLine(
-      'engagement stance',
-      `${registerSelection.engagement_stance || registerSelection.selected_register}${confidence}`,
-    );
-    printAnalysisLine(
-      'stance temperature',
-      `${registerSelection.temperature ?? state.register?.temperature ?? 'n/a'} (engagement stance and actorial part; lower sharper, higher broader)`,
-    );
-    printAnalysisLine(
-      'logical request type',
-      registerSelection.request_type || registerSelection.learner_signal || 'unknown',
-    );
-    printAnalysisLine('action family', registerSelection.action_family || 'none');
-    printAnalysisLine('audience register', registerSelection.audience_register || 'unknown');
-    printAnalysisLine('lexical accessibility', registerSelection.lexical_accessibility || 'unknown');
-    printAnalysisLine('scene immersion', registerSelection.scene_immersion || 'unknown');
-    printAnalysisLine(
-      'actorial part',
-      `${registerSelection.actorial_part || 'unknown'} (${registerSelection.actorial_part_label || 'no public label'})`,
-    );
-    if (registerSelection.actorial_performance) {
-      printAnalysisLine(
-        'actorial performance',
-        `${registerSelection.actorial_performance.id || 'unknown'} (${registerSelection.actorial_performance.label || 'no public label'}): ${registerSelection.actorial_performance.contract || 'no contract stored'}`,
-      );
-    }
-    if (registerSelection.actorial_part_selection?.distribution) {
-      printAnalysisLine(
-        'actorial-part distribution',
-        registerSelection.actorial_part_selection.distribution
-          .map((row) => `${row.part}:${Math.round(Number(row.probability || 0) * 100)}%`)
-          .join(', '),
-      );
-      printAnalysisLine('actorial-part drivers', registerSelection.actorial_part_selection.reason || 'none');
-      printAnalysisLine(
-        'actorial-part selection',
-        `${registerSelection.actorial_part_selection.selection_method || 'argmax'}; selected probability ${
-          registerSelection.actorial_part_selection.probability ?? 'n/a'
-        }${
-          Number.isFinite(Number(registerSelection.actorial_part_selection.random?.decision?.draw))
-            ? `; seeded draw ${registerSelection.actorial_part_selection.random.decision.draw}`
-            : ''
-        }`,
-      );
-    }
-    if (registerSelection.legacy_selected_register) {
-      printAnalysisLine('legacy register alias', registerSelection.legacy_selected_register);
-    }
-    printAnalysisLine('reviewer signal', registerSelection.reviewer_signal || 'unknown');
-    printAnalysisLine('register reason', registerSelection.register_reason);
-    if (registerSelection.policy_composition) {
-      const composition = registerSelection.policy_composition;
-      printAnalysisLine(
-        'policy composition',
-        `stack=${composition.policy_stack}; threshold=${composition.overlay_threshold}; activated=${
-          composition.activated_overlay || 'primary'
-        }`,
-      );
-      for (const overlay of composition.overlay_evaluations || []) {
-        printAnalysisLine(
-          `${overlay.policy} overlay`,
-          `strength=${overlay.signal_strength}; candidate=${overlay.selected_register || 'none'}; thresholdMet=${
-            overlay.threshold_met
-          }; differs=${overlay.differs_from_primary}; ${overlay.reasons?.join('; ') || ''}`,
-        );
-      }
-    }
-    printAnalysisLine('expected DAG move', registerSelection.expected_dag_move);
-    printAnalysisLine(
-      (registerSelection.activated_policy || registerSelection.primary_policy || registerSelection.policy) === 'state'
-        ? 'expected state move'
-        : 'expected field move',
-      registerSelection.expected_field_move,
-    );
-    printAnalysisLine('expected progress marker', registerSelection.expected_progress_marker);
-    const distribution = formatEngagementStanceDistribution(registerSelection.distribution, { limit: 7 });
-    if (distribution) printAnalysisLine('engagement-stance distribution', distribution);
-    if (registerSelection.field_policy?.features) {
-      const features = registerSelection.field_policy.features;
-      printAnalysisLine(
-        'field policy',
-        `relation=${features.field?.relation || 'unknown'}; fieldDelta=${
-          features.field?.delta ?? 'n/a'
-        }; dagScore=${features.dag?.progressScore ?? 'n/a'}; bottleneck=${features.dag?.bottleneck || 'unknown'}`,
-      );
-    }
-    if (registerSelection.trajectory_policy?.trajectory) {
-      const trajectory = registerSelection.trajectory_policy.trajectory;
-      const flags = Object.entries(trajectory.flags || {})
-        .filter(([, value]) => value)
-        .map(([key]) => key)
-        .join(',');
-      printAnalysisLine(
-        'trajectory policy',
-        `fieldSlope=${trajectory.field?.slope ?? 'n/a'}; dagSlope=${
-          trajectory.dag?.slope ?? 'n/a'
-        }; riskSlope=${trajectory.risk?.slope ?? 'n/a'}; flags=${flags || 'none'}`,
-      );
-    }
-    if (registerSelection.dynamical_system_policy?.state_vector) {
-      const policy = registerSelection.dynamical_system_policy;
-      const vector = topNumericEntries(policy.state_vector, { limit: 4 }).join(', ');
-      const attractors = topNumericEntries(policy.attractors, { limit: 3 }).join(', ');
-      printAnalysisLine('dynamical policy', `vector=${vector || 'none'}; attractors=${attractors || 'none'}`);
-      if (policy.corpus_empirical?.enabled) {
-        const corrections = topNumericEntries(policy.corpus_empirical.corrections, { limit: 4, abs: true }).join(', ');
-        printAnalysisLine('corpus prior', `corrections=${corrections || 'none'}`);
-      } else if (policy.corpus_empirical?.reason) {
-        printAnalysisLine('corpus prior', policy.corpus_empirical.reason);
-      }
-    }
-    if (registerSelection.state_policy?.features) {
-      const features = registerSelection.state_policy.features;
-      printAnalysisLine(
-        'state policy',
-        `bottleneck=${features.dag?.bottleneck || 'unknown'}; coverage=${
-          features.dag?.bestPathCoverage ?? 'n/a'
-        }; missing=${features.dag?.missingPremiseCount ?? 'n/a'}; surface=${features.scores?.learnerSurface ?? 'n/a'}`,
-      );
-    }
-    if (selectedEfficacy) {
-      printAnalysisLine(
-        'selected register efficacy',
-        `${selectedEfficacy.label}; score=${selectedEfficacy.progressScore}; ${
-          selectedEfficacy.mismatch || 'field-state unknown'
-        }; fieldDelta=${selectedEfficacy.field?.delta ?? 'n/a'}; ${selectedEfficacy.summary}`,
-      );
-    } else {
-      printAnalysisLine('selected register efficacy', 'pending the next learner turn');
-    }
-  } else {
-    printAnalysisLine('selected register', state.register?.enabled ? 'none stored for this turn' : 'off');
-  }
-  if (turn.responseConfigurationAudit) {
-    const audit = turn.responseConfigurationAudit;
-    printAnalysisLine(
-      'configuration realization',
-      `${audit.visible_axis_count}/${audit.axis_count}; rate=${audit.realization_rate}; transcriptVisible=${audit.transcript_visible}`,
-    );
-    printAnalysisLine(
-      'visible axes',
-      Object.entries(audit.axes || {})
-        .map(([axis, value]) => `${axis}=${value.visible ? 'yes' : 'no'}`)
-        .join('; '),
-    );
-  }
-  if (previousEfficacy) {
-    printAnalysisLine(
-      'previous register efficacy',
-      `${previousEfficacy.selected_register}: ${previousEfficacy.label}; score=${previousEfficacy.progressScore}; ${
-        previousEfficacy.mismatch || 'field-state unknown'
-      }; fieldDelta=${previousEfficacy.field?.delta ?? 'n/a'}; ${previousEfficacy.summary}`,
-    );
-  }
-
-  if (fieldRow) {
-    printAnalysisLine(
-      'field state',
-      `mastery=${fieldRow.learnerMastery}; risk=${fieldRow.learnerRisk}; alignment=${fieldRow.tutorAlignment}; momentum=${fieldRow.jointMomentum}; speed=${fieldRow.speed}`,
-    );
-    printAnalysisLine('field shift', summarizeFieldShift(fieldRow, previousFieldRow, firstFieldRow));
-    printAnalysisLine('field reading', describeFieldShift(fieldRow, previousFieldRow, field.summary));
-  }
-
-  if (turn.tutorLeakAudit) {
-    const leaks = turn.tutorLeakAudit.leaks || [];
-    printAnalysisLine(
-      'answer-secrecy check',
-      turn.tutorLeakAudit.ok ? 'passed' : `${leaks.length} issue(s) remained after revision and recheck`,
-    );
-    for (const leak of leaks.slice(0, 3)) {
-      printAnalysisLine(`answer-secrecy issue ${leak.type || 'unknown'}`, leak.reason);
-    }
-  }
-  const responseCheckAreas = responseCheckTriggerAreas(turn);
-  if (turn.tutorResponseRepaired) {
-    printAnalysisLine(
-      'response revision',
-      `${turn.tutorDeterministicFallback ? 'safe fallback' : 'model rewrite'}; triggered by ${
-        responseCheckAreas.length ? plainList(responseCheckAreas) : 'an unsuccessful response check'
-      }`,
-    );
-  }
-
-  if (turn.tutorDag) {
-    printTutorDagSnapshot(turn.tutorDag);
-  } else {
-    printAnalysisLine('tutor DAG', state.dag ? 'no snapshot stored for this turn' : 'off');
-  }
-
-  if (turn.humanDiscourseFrame) {
-    const frame = turn.humanDiscourseFrame;
-    const scaffold = frame.scaffoldState || {};
-    const proofDebt = frame.proofDebt || {};
-    const audit = frame.warrantPremiseAudit || {};
-    const generousInference = frame.generousInference || {};
-    const questionSupport = frame.questionSupport || {};
-    printAnalysisLine(
-      'human scaffold',
-      `${frame.mode}; branch=${scaffold.branch?.label || scaffold.branch?.id || 'none'}; sideArc=${
-        frame.sideArc?.detected ? frame.sideArc.type : 'none'
-      }; proofDebt=${proofDebt.status || 'unknown'}`,
-    );
-    printAnalysisLine('local question', scaffold.localQuestion);
-    printAnalysisLine(
-      'generous inference',
-      generousInference.applied
-        ? `applied; kind=${generousInference.kind}; confidence=${generousInference.confidence}; ${generousInference.reason}`
-        : `not applied; ${generousInference.reason || 'no contextual resolution recorded'}`,
-    );
-    if (generousInference.applied) {
-      printAnalysisLine('resolved meaning', generousInference.resolvedMeaning);
-      printAnalysisLine('spoken-turn override', generousInference.tutorInstruction);
-    }
-    if (proofDebt.elision?.applied) {
-      printAnalysisLine(
-        'proof-debt elision',
-        `applied=${proofDebt.elision.applied}; elided=${proofDebt.elision.count}; open=${proofDebt.counts?.open || 0}; ${proofDebt.elision.reason}`,
-      );
-    }
-    if (questionSupport.schema) {
-      printAnalysisLine(
-        'question support',
-        `answerability=${questionSupport.answerability}; modality=${questionSupport.modality}; adaptiveChoice=${
-          questionSupport.adaptiveMultipleChoice
-        }; cooldown=${questionSupport.adaptiveChoiceCoolingDown}; ${questionSupport.reason}`,
-      );
-      if (turn.tutorQuestionSupportAudit) {
-        printAnalysisLine(
-          'question-answerability check',
-          turn.tutorQuestionSupportAudit.ok
-            ? 'ok'
-            : `${turn.tutorQuestionSupportAudit.issues?.length || 0} issue(s) remained`,
-        );
-      }
-    }
-    if (turn.tutorHumanScaffoldAudit) {
-      printAnalysisLine(
-        'answered-question check',
-        turn.tutorHumanScaffoldAudit.ok
-          ? `ok; semantic re-question similarity=${turn.tutorHumanScaffoldAudit.similarity ?? 0}`
-          : `${turn.tutorHumanScaffoldAudit.issues?.length || 0} issue(s) remained`,
-      );
-    }
-    if (audit.counts) {
-      printAnalysisLine(
-        'warrant stocktake',
-        `explicit=${audit.counts.explicitWarrants || 0}; implied=${audit.counts.impliedWarrants || 0}; missing=${
-          audit.counts.missingWarrants || 0
-        }; suppressed=${audit.counts.suppressedPremises || 0}; commonsense=${audit.counts.commonSenseBridges || 0}`,
-      );
-    }
-  }
-
-  if (turn.dialogueClosure) {
-    const closure = turn.dialogueClosure;
-    printAnalysisLine(
-      'dialogue closure',
-      `frame=${closure.frame?.phase || 'open'}; basis=${closure.frame?.basis || closure.lifecycle?.basis || 'none'}; lifecycle=${
-        closure.lifecycle?.phase || 'open'
-      }; strictGrounded=${closure.frame?.strictGrounded === true}; authoredDagSatisfied=${
-        closure.frame?.authoredDagSatisfied === true
-      }`,
-    );
-    if (closure.audit) {
-      printAnalysisLine(
-        'ending check',
-        `ok=${closure.audit.ok}; closes=${closure.audit.closesDialogue}; checkIn=${closure.audit.invitesCheckIn}; issues=${
-          closure.audit.issues?.length || 0
-        }`,
-      );
-    }
-  }
-
-  printAnalysisLine('trace', tracePath);
-  console.log();
+  const registerSelection = turn ? normalizeStoredRegisterSelection(turn.registerSelection || null) : null;
+  const previousEfficacy = turn ? normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null) : null;
+  const field = turn ? buildLightweightDialogueField(state.turns) : null;
+  const lines = projectTutorStubTechnicalAnalysisLines({
+    turn,
+    turnIdentifier: turn ? turn.turnId || turnDebugId(state, turn.turn) : null,
+    registerSelection,
+    previousEfficacy,
+    distribution: formatEngagementStanceDistribution(registerSelection?.distribution, { limit: 7 }),
+    tracePath: turn ? traceDisplayPath(state.trace) : '',
+    field,
+    classifierEnabled: Boolean(state.classifier?.enabled),
+    learnerDagEnabled: Boolean(state.learnerDag?.enabled),
+    registerEnabled: Boolean(state.register?.enabled),
+    registerTemperature: state.register?.temperature ?? null,
+    tutorDagEnabled: Boolean(state.dag),
+    colors: C,
+  });
+  for (const line of lines) console.log(line);
 }
 
 function printLightweightDialogueField(state) {
-  if (!state.turns.length) {
-    console.log(`${C.cyan}field >${C.reset} no completed turns yet`);
-    console.log(`${C.dim}  enter a learner turn first, or run with --resume-last and then use /field${C.reset}\n`);
-    return null;
-  }
-
-  const field = buildLightweightDialogueField(state.turns);
-  const delta = field.summary.fieldDelta;
-  const final = field.summary.final;
-  console.log(`${C.cyan}field >${C.reset} ${field.turnCount} turn lightweight interaction field`);
-  console.log(
-    `${C.dim}  final: mastery ${final.learnerMastery}, risk ${final.learnerRisk}, alignment ${final.tutorAlignment}, momentum ${final.jointMomentum}, coverage ${final.coverage}${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  delta: mastery ${delta.learnerMastery >= 0 ? '+' : ''}${delta.learnerMastery}, risk ${
-      delta.learnerRisk >= 0 ? '+' : ''
-    }${delta.learnerRisk}, alignment ${delta.tutorAlignment >= 0 ? '+' : ''}${delta.tutorAlignment}, momentum ${
-      delta.jointMomentum >= 0 ? '+' : ''
-    }${delta.jointMomentum}; mean speed ${field.summary.meanSpeed}${C.reset}`,
-  );
-  console.log(`${C.dim}  bottleneck: ${final.bottleneck || 'unknown'}${C.reset}`);
-  console.log(
-    `${C.dim}  turn | mastery        | risk           | align          | momentum       | move / register / bottleneck${C.reset}`,
-  );
-  for (const row of field.rows) {
-    const label = [row.learnerMove, row.register || 'no-register', row.bottleneck].filter(Boolean).join(' / ');
-    console.log(
-      `${C.dim}  ${String(row.turn).padStart(4)} | ${fieldBar(row.learnerMastery)} ${row.learnerMastery.toFixed(2)} | ${fieldBar(row.learnerRisk)} ${row.learnerRisk.toFixed(2)} | ${fieldBar(row.tutorAlignment)} ${row.tutorAlignment.toFixed(2)} | ${fieldBar(row.jointMomentum)} ${row.jointMomentum.toFixed(2)} | ${oneLine(label, { max: 96 })}${C.reset}`,
-    );
-  }
-  console.log();
+  const field = state.turns.length ? buildLightweightDialogueField(state.turns) : null;
+  for (const line of projectTutorStubLightweightFieldLines(field, { colors: C })) console.log(line);
   return field;
 }
 
@@ -9965,31 +8658,23 @@ function writeFieldVisualization(state, { reason = 'field_viz', force = false } 
 
 function printFieldVisualization(state, { reason = 'viz' } = {}) {
   if (!state.turns.length) {
-    console.log(`${C.cyan}viz >${C.reset} no completed turns yet`);
-    console.log(`${C.dim}  enter a learner turn first, or run with --resume-last and then use /viz${C.reset}\n`);
+    for (const line of projectTutorStubFieldVisualizationLines(null, { colors: C })) console.log(line);
     return null;
   }
   const result = writeFieldVisualization(state, { reason, force: true });
   if (!result) return null;
-  console.log(`${C.cyan}viz >${C.reset} ${result.svgDisplayPath}`);
-  console.log(`${C.dim}  data: ${result.jsonDisplayPath}${C.reset}\n`);
+  for (const line of projectTutorStubFieldVisualizationLines(result, { colors: C })) console.log(line);
   return result;
 }
 
 function printDialogueCloseout(state, { reason = 'report', trace = state.trace } = {}) {
   const tracePath = traceDisplayPath(trace);
   if (!state.turns.length) {
-    console.log(`${C.cyan}session summary >${C.reset} ${plainCloseoutReason(reason)}; no completed tutor turns`);
-    if (tracePath) console.log(`${C.dim}  technical trace: ${tracePath}${C.reset}`);
-    console.log(
-      `${C.dim}  start with the tutor opening prompt, then enter one learner turn to build a report${C.reset}\n`,
-    );
+    for (const line of projectTutorStubCloseoutReportLines({ reason, tracePath, colors: C })) console.log(line);
     return null;
   }
 
   const field = buildLightweightDialogueField(state.turns);
-  const delta = field.summary.fieldDelta;
-  const final = field.summary.final;
   const last = state.turns[state.turns.length - 1] || {};
   const assessment = last.tutorLearnerDagModel?.assessment || {};
   const metrics = last.tutorLearnerDagModel?.metrics || {};
@@ -10069,88 +8754,16 @@ function printDialogueCloseout(state, { reason = 'report', trace = state.trace }
     learning: buildDialogueLearningSummary(state, { reason, trace: traceDisplayPath(state.trace) }),
   };
 
-  console.log(
-    `${C.cyan}session summary >${C.reset} ${plainCloseoutReason(reason)}; ${state.turns.length} completed turn(s)`,
-  );
-  if (tracePath) console.log(`${C.dim}  technical trace: ${tracePath}${C.reset}`);
-  console.log(
-    `${C.dim}  training reuse: ${tutorStubTrainingReuseLabel(payload.trainingReuse)}; requested ${
-      payload.trainingReuse?.requested || 'off'
-    }; ${displayDiagnosticLabel(payload.trainingReuse?.humanSubjectClass || 'unknown')}${C.reset}`,
-  );
-  console.log(`${C.dim}  outcome: ${plainCloseoutStatus(last)}${C.reset}`);
-  const coveragePercent = Number.isFinite(Number(payload.finalAssessment.bestPathCoverage))
-    ? `${Math.round(Number(payload.finalAssessment.bestPathCoverage) * 100)}%`
-    : 'not available';
-  console.log(
-    `${C.dim}  reasoning progress: ${coveragePercent} of the strongest proof path; ${
-      payload.finalAssessment.missingPremiseCount
-    } evidence step(s) still missing; current sticking point ${displayDiagnosticLabel(
-      payload.finalAssessment.bottleneck || 'unknown',
-    )}; answer-secrecy check ${
-      payload.finalTurn.leakOk === null ? 'not available' : payload.finalTurn.leakOk ? 'passed' : 'failed'
-    }${C.reset}`,
-  );
-  console.log(
-    `${C.dim}  interaction measures: learner progress ${final.learnerMastery}, pressure ${final.learnerRisk}, tutor alignment ${final.tutorAlignment}, momentum ${final.jointMomentum}; progress change ${
-      delta.learnerMastery >= 0 ? '+' : ''
-    }${delta.learnerMastery}, pressure change ${delta.learnerRisk >= 0 ? '+' : ''}${delta.learnerRisk}${C.reset}`,
-  );
-  console.log(`${C.dim}  tutor styles used: ${registerCounts}${C.reset}`);
-  if (payload.learning.progress?.acceleratedTurnCount) {
-    console.log(
-      `${C.dim}  learner pace: accelerated on ${payload.learning.progress.acceleratedTurnCount} turn(s); longest supported leap ${payload.learning.progress.maxSupportedMoves} moves${C.reset}`,
-    );
-  }
-  if (payload.releasePacing) {
-    console.log(
-      `${C.dim}  clue pace: ${payload.releasePacing.baseSpeed}x base; ${payload.releasePacing.counts.accelerationSignals} faster request(s), ${payload.releasePacing.counts.decelerationSignals} slower request(s); ${payload.releasePacing.counts.early} clue(s) released early${C.reset}`,
-    );
-  }
-  if (responseConfigurationVisibility.turns) {
-    console.log(
-      `${C.dim}  intended tutor style visible in wording: ${Math.round(
-        responseConfigurationVisibility.mean_realization_rate * 100,
-      )}%; visible difference between styles ${
-        responseConfigurationVisibility.pairwise_visible_difference_rate === null
-          ? 'n/a'
-          : `${Math.round(responseConfigurationVisibility.pairwise_visible_difference_rate * 100)}%`
-      } across ${responseConfigurationVisibility.distinct_configuration_count} configuration(s)${C.reset}`,
-    );
-  }
-  console.log(
-    `${C.dim}  response checks: first drafts accepted ${guardAccounting.originalCandidateAcceptedTurns}/${
-      guardAccounting.accountedTurns
-    }; mechanical repairs ${guardAccounting.mechanicalRepairTurns}; model rewrites ${
-      guardAccounting.modelRepairTurns
-    }; safe fallbacks ${guardAccounting.deterministicFallbackTurns}; final check failures ${
-      guardAccounting.finalDeliveryAuditFailures
-    }; mean tutor generation ${Math.round(guardAccounting.meanTutorGenerationLatencyMs || 0)}ms${C.reset}`,
-  );
-  console.log(`${C.dim}  sticking points seen: ${bottleneckCounts}${C.reset}`);
-  if (payload.humanDiscourse.config?.scaffoldActive) {
-    console.log(
-      `${C.dim}  human-friendly reasoning: ${payload.humanDiscourse.finalStatus || 'unknown'}; deferred proof steps ${
-        payload.humanDiscourse.proofDebtStatus || 'unknown'
-      }; side questions ${payload.humanDiscourse.sideArcCount}; open deferred steps ${
-        payload.humanDiscourse.openProofDebtCount
-      }; obvious steps carried forward ${payload.humanDiscourse.elidedBridgeCount}; question support ${compactCounts(
-        Object.entries(payload.humanDiscourse.questionSupportModes),
-      )}${C.reset}`,
-    );
-  }
-  if (payload.comprehension.features.unresolvedTerms.length || payload.comprehension.features.explainedTerms.length) {
-    console.log(
-      `${C.dim}  language help: still unclear ${
-        payload.comprehension.features.unresolvedTerms.join(', ') || 'none'
-      }; explained ${payload.comprehension.features.explainedTerms.join(', ') || 'none'}; difficulty ${
-        payload.comprehension.features.languageOpacity
-      }${C.reset}`,
-    );
-  }
-  console.log(`${C.dim}  technical turn id: ${payload.finalTurn.turnId}${C.reset}`);
-  console.log(`${C.dim}  last learner: ${oneLine(last.learner, { max: 180 })}${C.reset}`);
-  console.log(`${C.dim}  last tutor: ${oneLine(last.tutor, { max: 220 })}${C.reset}\n`);
+  const lines = projectTutorStubCloseoutReportLines({
+    reason,
+    tracePath,
+    payload,
+    lastTurn: last,
+    registerCounts,
+    bottleneckCounts,
+    colors: C,
+  });
+  for (const line of lines) console.log(line);
   return payload;
 }
 
@@ -21101,29 +19714,7 @@ async function main() {
 
   function printCurriculumProgress() {
     const progress = curriculumProgressSnapshot();
-    if (!progress) {
-      console.log(`${C.dim}curriculum progress is available only in a curriculum session${C.reset}\n`);
-      return null;
-    }
-    console.log(`${C.brightCyan}${C.bold}course progress >${C.reset} ${progress.curriculum.title}`);
-    for (const module of progress.modules) {
-      const marker = module.id === progress.currentModule.id ? '◆' : module.status === 'mastered' ? '✓' : '◇';
-      const evidence = Object.values(module.phaseEvidenceCounts).reduce((sum, count) => sum + count, 0);
-      const lock = module.available ? '' : ` · waiting for ${module.missingPrerequisiteModuleIds.join(', ')}`;
-      console.log(
-        `  ${marker} ${module.id} · ${module.title} · ${module.status} · ${evidence} evidence turn${evidence === 1 ? '' : 's'}${lock}`,
-      );
-    }
-    console.log(
-      `${C.dim}  current phase: ${progress.currentPhase.replaceAll('_', ' ')} · ${progress.currentPhaseEvidenceCount} evidence turn${progress.currentPhaseEvidenceCount === 1 ? '' : 's'}${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  /next advances attempted diagnostic/scaffold work; independent check and transfer require /next pass or /next revise${C.reset}`,
-    );
-    if (progress.completionAuthority === 'external_workplan_verification_only') {
-      console.log(`${C.dim}  dialogue progress never completes or closes the external workplan item${C.reset}`);
-    }
-    console.log('');
+    for (const line of projectTutorStubCurriculumProgressLines(progress, { colors: C })) console.log(line);
     return progress;
   }
 

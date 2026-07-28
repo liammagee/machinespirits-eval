@@ -30,6 +30,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..', '..');
 const V21_RUBRIC = path.join(ROOT_DIR, 'config', 'rubrics', 'v2.1', 'evaluation-rubric.yaml');
 const V22_RUBRIC = path.join(ROOT_DIR, 'config', 'rubrics', 'v2.2', 'evaluation-rubric.yaml');
+const V30_RUBRIC = path.join(ROOT_DIR, 'config', 'rubrics', 'v3.0', 'evaluation-rubric.yaml');
 
 /** Build a mock scores object where every dimension gets the same score. */
 function uniformScores(dimensions, score = 4) {
@@ -153,6 +154,50 @@ describe('rubric scoring — v2.2', () => {
 });
 
 // ============================================================================
+// v3.0 mixed-scale scoring
+// ============================================================================
+
+describe('rubric scoring — v3.0', () => {
+  beforeEach(() => setRubricPathOverride(V30_RUBRIC));
+  afterEach(() => clearRubricPathOverride());
+
+  it('scores each component against its own declared scale before weighting', () => {
+    const score = calculateOverallScore({
+      overall_pedagogical_quality: { score: 10 },
+      content_accuracy: { score: 1 },
+    });
+    assert.ok(Math.abs(score - 85) < 1e-9, `expected 85, got ${score}`);
+  });
+
+  it('maps both component maxima to 100 and both minima to 0', () => {
+    assert.strictEqual(
+      calculateOverallScore({ overall_pedagogical_quality: { score: 10 }, content_accuracy: { score: 5 } }),
+      100,
+    );
+    assert.strictEqual(
+      calculateOverallScore({ overall_pedagogical_quality: { score: 1 }, content_accuracy: { score: 1 } }),
+      0,
+    );
+  });
+
+  it('rejects out-of-range component scores without corrupting valid components', () => {
+    const score = calculateOverallScore({
+      overall_pedagogical_quality: { score: 11 },
+      content_accuracy: { score: 5 },
+    });
+    assert.strictEqual(score, 100, 'valid content accuracy is reweighted when quality is invalid');
+  });
+
+  it('excludes explicit N/A content accuracy instead of treating it as a maximum score', () => {
+    const score = calculateOverallScore({
+      overall_pedagogical_quality: { score: 7 },
+      content_accuracy: { score: 5, not_applicable: true },
+    });
+    assert.ok(Math.abs(score - 66.66666666666666) < 1e-9, `expected quality-only aggregate, got ${score}`);
+  });
+});
+
+// ============================================================================
 // getDimensionsByGroup
 // ============================================================================
 
@@ -213,6 +258,7 @@ describe('getDimensionsByGroup', () => {
     for (const [label, rubricPath] of [
       ['v2.1', V21_RUBRIC],
       ['v2.2', V22_RUBRIC],
+      ['v3.0', V30_RUBRIC],
     ]) {
       setRubricPathOverride(rubricPath);
       const allDims = Object.keys(getRubricDimensions());

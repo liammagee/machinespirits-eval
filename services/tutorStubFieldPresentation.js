@@ -14,6 +14,22 @@ function roundField(value) {
   return Number((Number(value) || 0).toFixed(3));
 }
 
+function fieldReportColors(colors = {}) {
+  return {
+    cyan: colors.cyan || '',
+    dim: colors.dim || '',
+    reset: colors.reset || '',
+  };
+}
+
+function fieldReportOneLine(value, { max = 220 } = {}) {
+  const text = String(value || '')
+    .replace(/\s+/gu, ' ')
+    .trim();
+  if (text.length <= max) return text;
+  return `${text.slice(0, Math.max(0, max - 3))}...`;
+}
+
 export function tutorStubFieldDelta(current, previous) {
   return roundField((current || 0) - (previous || 0));
 }
@@ -21,6 +37,52 @@ export function tutorStubFieldDelta(current, previous) {
 export function tutorStubFieldBar(value, { width = 12 } = {}) {
   const filled = Math.round(clampField01(value) * width);
   return `${'#'.repeat(filled)}${'.'.repeat(Math.max(0, width - filled))}`;
+}
+
+export function projectTutorStubLightweightFieldLines(field, { colors = {} } = {}) {
+  const C = fieldReportColors(colors);
+  if (!field) {
+    return Object.freeze([
+      `${C.cyan}field >${C.reset} no completed turns yet`,
+      `${C.dim}  enter a learner turn first, or run with --resume-last and then use /field${C.reset}\n`,
+    ]);
+  }
+
+  const delta = field.summary.fieldDelta;
+  const final = field.summary.final;
+  const lines = [
+    `${C.cyan}field >${C.reset} ${field.turnCount} turn lightweight interaction field`,
+    `${C.dim}  final: mastery ${final.learnerMastery}, risk ${final.learnerRisk}, alignment ${final.tutorAlignment}, momentum ${final.jointMomentum}, coverage ${final.coverage}${C.reset}`,
+    `${C.dim}  delta: mastery ${delta.learnerMastery >= 0 ? '+' : ''}${delta.learnerMastery}, risk ${
+      delta.learnerRisk >= 0 ? '+' : ''
+    }${delta.learnerRisk}, alignment ${delta.tutorAlignment >= 0 ? '+' : ''}${delta.tutorAlignment}, momentum ${
+      delta.jointMomentum >= 0 ? '+' : ''
+    }${delta.jointMomentum}; mean speed ${field.summary.meanSpeed}${C.reset}`,
+    `${C.dim}  bottleneck: ${final.bottleneck || 'unknown'}${C.reset}`,
+    `${C.dim}  turn | mastery        | risk           | align          | momentum       | move / register / bottleneck${C.reset}`,
+  ];
+  for (const row of field.rows) {
+    const label = [row.learnerMove, row.register || 'no-register', row.bottleneck].filter(Boolean).join(' / ');
+    lines.push(
+      `${C.dim}  ${String(row.turn).padStart(4)} | ${tutorStubFieldBar(row.learnerMastery)} ${row.learnerMastery.toFixed(2)} | ${tutorStubFieldBar(row.learnerRisk)} ${row.learnerRisk.toFixed(2)} | ${tutorStubFieldBar(row.tutorAlignment)} ${row.tutorAlignment.toFixed(2)} | ${tutorStubFieldBar(row.jointMomentum)} ${row.jointMomentum.toFixed(2)} | ${fieldReportOneLine(label, { max: 96 })}${C.reset}`,
+    );
+  }
+  lines.push('');
+  return Object.freeze(lines);
+}
+
+export function projectTutorStubFieldVisualizationLines(result, { colors = {} } = {}) {
+  const C = fieldReportColors(colors);
+  if (!result) {
+    return Object.freeze([
+      `${C.cyan}viz >${C.reset} no completed turns yet`,
+      `${C.dim}  enter a learner turn first, or run with --resume-last and then use /viz${C.reset}\n`,
+    ]);
+  }
+  return Object.freeze([
+    `${C.cyan}viz >${C.reset} ${result.svgDisplayPath}`,
+    `${C.dim}  data: ${result.jsonDisplayPath}${C.reset}\n`,
+  ]);
 }
 
 export function tutorStubEscapeFieldXml(value) {

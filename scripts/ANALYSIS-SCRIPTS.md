@@ -31,6 +31,7 @@ All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/pape
 | `analyze-derivation-selector-candidates.js` | `[--summary <json>] [--out <path>] [--critical <csv>] [--json]` | No | Offline selector-policy search over completed H/V arms: scores static selector variants and small runtime-probe predicates, then reports critical-case WorldIR/proof-pressure/visible-guard features | Dramatic derivation / selector reliability | A selector consolidation JSON report plus corresponding loop artifacts |
 | `analyze-derivation-learner-object-outcomes.js` | `--run <label-or-dir-or-result-json> [--run ...] [--search-dir <dir>] [--out <dir>]` | No | Post-run dual-outcome report separating proof verdict from learner-object ownership, durability, missing families, assertion gap, and leak-audit status | Dramatic derivation / learner ownership | Completed `run-derivation-loop.js` or episode artifacts with `result.json`; ownership-instrumented runs get richer outcome labels |
 | `audit-derivation-ownership-replay-candidates.js` | `[--root exports/dramatic-derivation] [--out <dir>] [--json]` | No | Read-only Path 3 trigger audit for learner-object ownership replay: finds first-pass single-family ownership misses and reports whether adding `--ownership-transfer-gate` is actionable or already tested | Dramatic derivation / learner ownership | Completed artifacts with paired `result.json` and `diagnosis.json`, especially ownership-instrumented Hethel runs |
+| `audit-trap-reveal-events.js` | `[--run-id <id>] [--profile <name>] [--db <path>] [--out <path>]` | No | Read-only structural audit of the trap-scenario state schema: at each scored trap turn (trigger+1), reports whether any typed turn-stamped reveal event (`evidenceLog`, `hypotheses`, `tomProbes`) grounds the scored strategy shift, joined to the hand-coded Narrative World Model query types in `lib/trapRevealQueryCoding.js` | Notes `2026-07-28-trap-state-schema-typed-reveal-audit.md` | Trap-cell rows (110/111/113/124) + deliberation traces in `logs/tutor-dialogues/` |
 
 ## Qualitative Analysis
 
@@ -47,6 +48,8 @@ All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/pape
 | Script | Args | API? | Description | Paper sections | Data prerequisites |
 |--------|------|------|-------------|----------------|--------------------|
 | `calibrate-rubric.js` | `[--run-id <id>] [--judge <model>] [--sample N] [--from-version X] [--to-version Y] [--export <path>] [--verbose] [--live]` | **--live only** | Rubric version calibration (synthetic mapping or live re-scoring) | 5.4 | Scored rows with `scores_with_reasoning`; v2.2 YAML files in `config/rubrics/` |
+| `analyze-rubric-sensitivity.js` | `--runs <id[,id]> [--version 3.0] [--db <path>] [--json]` | No | Prospective suite audit: spread, floor/ceiling, factor structure, coverage, and same-item cross-judge agreement | Future measurement epoch | Version-matched per-dimension score JSON; repeated judges recommended |
+| `calibrate-rubric-v3-accuracy.js` | `prepare\|score\|analyze --split <development\|held_out>` | Only `score` | Authored accuracy contrasts, blinded human sheets, two-CLI scoring, and held-out gates | Rubric v3.0 calibration | Uses the committed 20-item packet and frozen promotion thresholds |
 
 ## Interactive Tools
 
@@ -68,6 +71,7 @@ npm run analyze:modulation     # analyze-modulation-learning.js
 npm run analyze:stagnation     # analyze-learning-stagnation.js
 npm run analyze:gap            # analyze-insight-action-gap.js (needs <runId>)
 npm run analyze:lexicon        # analyze-recognition-lexicon.js (runs on all scored rows; optional <runId>)
+npm run rubric:v3:audit -- --runs <v3-run-id>
 npm run analyze:tutor-stub-register-confirmatory -- --check
 npm run derivation:analyze-loop -- --pattern '*selector-v1-*'
 npm run derivation:selector-consolidation -- --pattern '*selector-vpositive-*'

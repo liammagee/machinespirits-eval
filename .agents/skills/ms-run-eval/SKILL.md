@@ -3,7 +3,6 @@ name: ms-run-eval
 description: Run an evaluation with specified cells and handle the full generation + judging pipeline
 argument-hint: "<cell-profiles> [--runs N] [--model provider.alias]"
 disable-model-invocation: true
-allowed-tools: Bash, Read, Grep
 ---
 
 Run an evaluation pipeline. The user will specify which cells and how many runs.

@@ -2,7 +2,6 @@
 name: ms-tutor-remote
 description: Play a real tutor-stub session from chat — including Claude Code on the web or mobile, where there is no terminal. You are the learner; Claude relays each turn to the actual tutor-stub CLI running headlessly. Use to sit a tutoring drama from a phone, demo a world, or feel a tutor's behaviour without a TTY.
 argument-hint: "[world id or description, e.g. world_001_nocturne | --lab mixed_drafting | --model claude-code.opus]"
-allowed-tools: Bash, Read
 ---
 
 The user wants to **be the learner** in a live tutor-stub session. You are the
@@ -80,10 +79,13 @@ counters.
 
 Say so plainly if the user reaches for it — do not fake it:
 
-- **No slash commands.** The process-backed HTTP transport rejects
-  `{"kind":"command"}` with `command_transport_unavailable`, by design. So no
-  `/mode`, `/lab`, `/suggest`, `/character`, `/register`. Changing lab or world
-  means ending the session and starting a new one.
+- **Almost no slash commands.** Only commands with a structured non-interactive
+  adapter run here. Check with `node scripts/tutor-stub-remote.js cmd --list`
+  rather than guessing — today it is the curriculum-navigation set (`/module`,
+  `/next`, `/progress`), usable via `cmd /progress`. Everything else, including
+  `/help`, `/mode`, `/lab`, `/suggest`, returns `command_transport_unavailable`
+  (`adapter_unavailable`). Changing lab or world means ending the session and
+  starting a new one.
 - **No terminal presentation.** No ghost-text drafts, Tab completion, pickers,
   or the masthead — those live in the TUI this transport deliberately bypasses.
 - Each turn is a billed model call through the CLI bridge. Mention this once if

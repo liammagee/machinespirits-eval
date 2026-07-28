@@ -363,6 +363,7 @@ describe('calculateRecognitionMetrics', () => {
 const VERSIONED_TUTOR_RUBRICS = [
   { version: '2.1', path: 'config/rubrics/v2.1/evaluation-rubric.yaml', expectedDimensions: 14 },
   { version: '2.2', path: 'config/rubrics/v2.2/evaluation-rubric.yaml', expectedDimensions: 8 },
+  { version: '3.0', path: 'config/rubrics/v3.0/evaluation-rubric.yaml', expectedDimensions: 2 },
 ];
 
 function versionedDimensionNames({ path: rubricPath, expectedDimensions }) {

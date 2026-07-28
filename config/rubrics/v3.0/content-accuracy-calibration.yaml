@@ -1,0 +1,225 @@
+schema: machinespirits.rubric-v3.content-accuracy-packet.v1
+version: "1.0"
+rubric_version: "3.0"
+description: "Authored contrasts for calibrating content accuracy, contested interpretation, and explicit N/A handling"
+
+items:
+  - id: dev-001
+    split: development
+    category: correct
+    domain: mathematics
+    scenario_context: "A learner is checking an addition of unlike fractions."
+    learner_message: "Is three quarters plus one eighth equal to seven eighths?"
+    tutor_turn: "Yes. Rewrite three quarters as six eighths; six eighths plus one eighth is seven eighths."
+    reference_basis: "3/4 = 6/8, and 6/8 + 1/8 = 7/8."
+    expected_applicability: applicable
+    expected_score: 5
+
+  - id: dev-002
+    split: development
+    category: correct
+    domain: physics
+    scenario_context: "A learner applies constant-acceleration kinematics from rest."
+    learner_message: "If acceleration is 2 metres per second squared for 3 seconds from rest, what speed do I reach?"
+    tutor_turn: "Use v = u + at. With u = 0, a = 2 m/s², and t = 3 s, the final speed is 6 m/s."
+    reference_basis: "For constant acceleration, v = u + at = 0 + 2×3 = 6 m/s."
+    expected_applicability: applicable
+    expected_score: 5
+
+  - id: dev-003
+    split: development
+    category: correct
+    domain: mathematics
+    scenario_context: "A learner is finding the area of a circle with radius 2."
+    learner_message: "Is the area just two pi?"
+    tutor_turn: "The area formula is πr², so with radius 2 the area is π×2² = 4π square units."
+    reference_basis: "Circle area is πr²; for r=2 this is 4π."
+    expected_applicability: applicable
+    expected_score: 5
+
+  - id: dev-004
+    split: development
+    category: minor_error
+    domain: mathematics
+    scenario_context: "A learner asks for the arithmetic mean of 2, 4, and 8."
+    learner_message: "What is the mean of 2, 4, and 8?"
+    tutor_turn: "Add the values and divide by three: 2 + 4 + 8 = 14, so the mean is about 4.5."
+    reference_basis: "14/3 is approximately 4.67, not 4.5; the method and magnitude are otherwise correct."
+    expected_applicability: applicable
+    expected_score: 3
+
+  - id: dev-005
+    split: development
+    category: minor_error
+    domain: language
+    scenario_context: "A learner asks for a quick distinction between affect and effect."
+    learner_message: "How do I remember affect versus effect?"
+    tutor_turn: "A useful rule is that affect is a verb and effect is a noun. That will cover every normal English use."
+    reference_basis: "The rule covers common usage, but effect can be a verb and affect can be a noun; 'every' overstates it."
+    expected_applicability: applicable
+    expected_score: 3
+
+  - id: dev-006
+    split: development
+    category: minor_error
+    domain: chemistry
+    scenario_context: "A learner is relating boiling point to atmospheric pressure."
+    learner_message: "What temperature does water boil at?"
+    tutor_turn: "At standard sea-level pressure, pure water boils at 100°C. At higher altitude it is a little lower because the air pressure drops, usually by about one degree in total."
+    reference_basis: "The direction and 100°C reference are correct, but the altitude effect can be several degrees, not usually only one degree total."
+    expected_applicability: applicable
+    expected_score: 3
+
+  - id: dev-007
+    split: development
+    category: major_error
+    domain: mathematics
+    scenario_context: "A learner is evaluating a parenthesized negative number squared."
+    learner_message: "What is negative three squared when the negative three is in parentheses?"
+    tutor_turn: "Because the base is negative, (-3)² equals -9."
+    reference_basis: "(-3)² = (-3)×(-3) = 9."
+    expected_applicability: applicable
+    expected_score: 1
+
+  - id: dev-008
+    split: development
+    category: major_error
+    domain: earth_science
+    scenario_context: "A learner asks why Earth has seasons."
+    learner_message: "Why is it summer in one part of the year and winter in another?"
+    tutor_turn: "Summer happens when Earth moves much closer to the Sun, and winter happens when it moves farther away."
+    reference_basis: "Seasons are primarily caused by Earth's axial tilt and resulting sunlight angle/day length, not Earth-Sun distance."
+    expected_applicability: applicable
+    expected_score: 1
+
+  - id: dev-009
+    split: development
+    category: major_error
+    domain: biology
+    scenario_context: "A learner asks how influenza is treated."
+    learner_message: "Would antibiotics kill the flu virus?"
+    tutor_turn: "Yes. Influenza is a bacterial infection, so a standard antibiotic directly kills the virus."
+    reference_basis: "Influenza is viral; antibiotics do not kill influenza viruses, though they may treat secondary bacterial infections."
+    expected_applicability: applicable
+    expected_score: 1
+
+  - id: dev-010
+    split: development
+    category: contested_interpretation
+    domain: literature
+    scenario_context: "A learner asks what the green light means in The Great Gatsby."
+    learner_message: "Does the green light have one definite meaning?"
+    tutor_turn: "A common, defensible reading treats it as Gatsby's unreachable desire and the receding American Dream, but the novel supports other emphases; present this as an interpretation, not a settled fact."
+    reference_basis: "The symbolism is interpretive; the response accurately qualifies a well-established reading rather than claiming exclusivity."
+    expected_applicability: applicable
+    expected_score: 5
+
+  - id: dev-011
+    split: development
+    category: contested_interpretation
+    domain: history
+    scenario_context: "A learner asks for the single cause of the Western Roman Empire's collapse."
+    learner_message: "Was Rome's fall basically caused by invasions?"
+    tutor_turn: "Invasions were important, but historians weigh them alongside political instability, fiscal strain, military change, and other interacting causes. It is safer to argue a multicausal case than declare one settled cause."
+    reference_basis: "Causal priority is contested; the response accurately represents a multicausal historical debate."
+    expected_applicability: applicable
+    expected_score: 5
+
+  - id: dev-012
+    split: development
+    category: contested_interpretation
+    domain: philosophy_of_physics
+    scenario_context: "A learner asks whether the quantum wavefunction is literally real."
+    learner_message: "Is the wavefunction a real physical thing or just information?"
+    tutor_turn: "Quantum theory does not force one uncontested answer: interpretations treat the wavefunction differently, so distinguish the shared predictive formalism from the disputed ontology."
+    reference_basis: "The ontological status of the wavefunction differs across interpretations; the response appropriately marks the dispute."
+    expected_applicability: applicable
+    expected_score: 5
+
+  - id: dev-013
+    split: development
+    category: not_applicable
+    domain: metacognition
+    scenario_context: "A learner has just offered an explanation; the tutor elicits reflection without adding domain content."
+    learner_message: "I think I have explained it, but I am not sure."
+    tutor_turn: "Which sentence in your explanation are you least confident about, and what would make you revise it?"
+    reference_basis: "The turn contains no assessable factual or domain claim."
+    expected_applicability: not_applicable
+    expected_score: null
+
+  - id: dev-014
+    split: development
+    category: not_applicable
+    domain: metacognition
+    scenario_context: "A learner is stuck; the tutor asks for an external representation without asserting content."
+    learner_message: "I keep losing track of the relationships."
+    tutor_turn: "Draw a quick diagram of the relationships as you currently see them, then point to the first connection that feels uncertain."
+    reference_basis: "The turn contains no assessable factual or domain claim."
+    expected_applicability: not_applicable
+    expected_score: null
+
+  - id: dev-015
+    split: development
+    category: not_applicable
+    domain: metacognition
+    scenario_context: "A learner requests an answer; the tutor first elicits the learner's uncertainty."
+    learner_message: "Can you just tell me the answer?"
+    tutor_turn: "Before I do, which assumption in your attempt are you most unsure about?"
+    reference_basis: "The turn contains no assessable factual or domain claim."
+    expected_applicability: not_applicable
+    expected_score: null
+
+  - id: held-001
+    split: held_out
+    category: correct
+    domain: mathematics
+    scenario_context: "A learner differentiates a power function."
+    learner_message: "What is the derivative of x cubed?"
+    tutor_turn: "Apply the power rule: bring down the 3 and reduce the exponent by 1, giving 3x²."
+    reference_basis: "d(x³)/dx = 3x²."
+    expected_applicability: applicable
+    expected_score: 5
+
+  - id: held-002
+    split: held_out
+    category: minor_error
+    domain: mathematics
+    scenario_context: "A learner calculates the circumference of a circle with diameter 10."
+    learner_message: "What circumference should I get for diameter 10?"
+    tutor_turn: "Use C = πd. With d = 10, that is about 31.9 units."
+    reference_basis: "10π is approximately 31.42, so 31.9 is a modest numerical error while the method is correct."
+    expected_applicability: applicable
+    expected_score: 3
+
+  - id: held-003
+    split: held_out
+    category: major_error
+    domain: biology
+    scenario_context: "A learner compares plant and animal cells."
+    learner_message: "Do plant cells have mitochondria too?"
+    tutor_turn: "No. Plants only use chloroplasts for energy and have no mitochondria."
+    reference_basis: "Plant cells generally contain mitochondria as well as chloroplasts."
+    expected_applicability: applicable
+    expected_score: 1
+
+  - id: held-004
+    split: held_out
+    category: contested_interpretation
+    domain: film_studies
+    scenario_context: "A learner asks whether Inception's ending proves that Cobb is dreaming."
+    learner_message: "Does the ending definitely mean he is still dreaming?"
+    tutor_turn: "That is a plausible reading, but the film withholds a decisive answer. Treat the unresolved top as deliberate ambiguity and support whichever interpretation you argue."
+    reference_basis: "The ending is intentionally open to interpretation; the response accurately qualifies its reading."
+    expected_applicability: applicable
+    expected_score: 5
+
+  - id: held-005
+    split: held_out
+    category: not_applicable
+    domain: metacognition
+    scenario_context: "A learner states confidence; the tutor asks them to test it without asserting content."
+    learner_message: "I am sure my rule always works."
+    tutor_turn: "What counterexample would be most likely to break your rule, and how could you test it?"
+    reference_basis: "The turn contains no assessable factual or domain claim."
+    expected_applicability: not_applicable
+    expected_score: null

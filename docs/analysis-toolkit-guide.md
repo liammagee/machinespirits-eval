@@ -52,6 +52,18 @@ node scripts/analyze-judge-reliability.js
 
 **Prerequisite**: At least one run must have been scored by two different judges (same `suggestions` content, different `judge_model`).
 
+For the prospective v3.0 measurement epoch, keep the rubric override on both
+the first score and every rejudgment, then run the zero-call sensitivity audit:
+
+```bash
+node scripts/eval-cli.js evaluate <sourceRun> --rubric-version 3.0 --judge-cli claude --model sonnet
+node scripts/eval-cli.js rejudge <derivedRun> --rubric-version 3.0 --judge-cli codex --model gpt-5.6-terra
+npm run rubric:v3:audit -- --runs <derivedRun>
+```
+
+See `docs/rubric-v3-measurement-suite.md` for the measurement boundaries and
+held-out calibration pathway.
+
 ## Qualitative Depth
 
 ```

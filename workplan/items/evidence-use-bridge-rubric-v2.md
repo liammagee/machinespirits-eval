@@ -1,7 +1,8 @@
 ---
 id: evidence-use-bridge-rubric-v2
-title: Version the evidence_use rubric so the bridge definition can change without mixing instruments
-status: review
+title: Version the evidence_use rubric so the bridge definition can change
+  without mixing instruments
+status: done
 type: infra
 priority: P2
 owner: unassigned
@@ -87,3 +88,10 @@ Open and deliberately not done here (see
   distillation labels under the repaired construct.
 - Distilling the local model against a two-family consensus target. The archive
   is single-family, so this needs a second judge pass first.
+
+- 2026-07-27 — Closed. [PR #270](https://github.com/liammagee/machinespirits-eval/pull/270)
+  merged 2026-07-26. The verification held at merge: the default classifier
+  prompt stayed byte-identical and `v2_bridge_voiced` was opt-in only. The
+  successor card [[evidence-use-v2-default-and-archive-relabel]] then flipped
+  the default and relabelled both archives deliberately, which is a change of
+  instrument by decision rather than a breach of this card's contract.

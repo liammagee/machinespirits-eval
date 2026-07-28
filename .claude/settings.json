@@ -4,6 +4,16 @@
     "deny": ["mcp__evaluations-db__write_query", "mcp__evaluations-db__create_table"]
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat \"${CLAUDE_PROJECT_DIR:-.}/.claude/style-rule.md\" 2>/dev/null; exit 0"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "hooks": [

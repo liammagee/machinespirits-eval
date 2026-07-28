@@ -2,7 +2,6 @@
 name: ms-litreview
 description: Synthesize the local PDF corpus into an architecture-aimed literature review for a specific topic, cross-referenced against current project decisions
 argument-hint: <topic-and-questions> [--out <path>] [--areas <01,05,09>] [--depth quick|standard|deep]
-allowed-tools: Bash, Read, Grep, Glob, Write, Agent
 ---
 
 Synthesize a literature review for the topic in `$ARGUMENTS`. Cross-reference findings against the project's current architectural targets (`docs/explorations/Codex/comprehensive-strategy.md`) and substrate decisions (`docs/explorations/Codex/agents/agent-framework-analysis.md`). Output a structured markdown report to `docs/explorations/literature/synthesis/`.
