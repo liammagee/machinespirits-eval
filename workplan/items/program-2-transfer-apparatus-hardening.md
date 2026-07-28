@@ -1,7 +1,7 @@
 ---
 id: program-2-transfer-apparatus-hardening
 title: Program-2 transfer apparatus hardening after Phase 5e A4
-status: active
+status: review
 type: infra
 priority: P1
 owner: codex
@@ -61,3 +61,18 @@ longer test transfer.
   weakening the secrecy guard.
 
 No paid pilot belongs to this card.
+
+## Review handoff
+
+The generic recovery queue, strict-DAG closure refusal, idempotent due-clue
+delivery, cue-preserving committee handoff, authored entailed-answer
+recognition, and non-echoing unsupported-answer boundary are implemented with
+zero-model replays over the frozen Skyway and Tideway failures plus non-Skyway
+fixtures. The certified Tideway A3 feasibility pilot then sealed 4/4 rows on
+their first attempt with full frozen-horizon coverage, hard safety, and no
+attrition. Its zero eligible committee moments are recorded on the separate
+Phase 5f experiment card and are not evidence for or against this infra card.
+
+The card is ready for review once the branch is reconciled with current
+`main` and its focused, derivation-quality, hermetic-manifest, lint, and
+workplan source gates pass. No further paid run is required for this card.

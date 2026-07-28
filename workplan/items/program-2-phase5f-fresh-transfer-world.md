@@ -9,7 +9,7 @@ source: review
 created: 2026-07-28
 updated: 2026-07-28
 branch: codex/program-2-phase5e-r2-replication
-verification: "A2 sealed 4/4 rows with no final attrition, full coverage by turn 16, hard safety passing, and all 55 gate-grade decisions clean. It nevertheless exposed apparatus burden: the affective-resistant committee row had already entailed and stated the answer at turn 8 but did not close until turn 25; 38/53 sealed turns used deterministic fallback; and both proof-skipper first attempts failed closed when fallback echoed an unsupported causal answer. Zero-model replays now recognise the observed entailed Tideway paraphrases, reject their negations, and compile unsupported causal claims to a declarative public-evidence boundary without repeating the proposed answer. The distinct A3 four-dialogue plan preserves every experimental pin and requires a fresh certificate plus A3-specific payload authorization; no 18-dialogue cohort is yet licensed."
+verification: "A3 sealed 4/4 rows on their first attempt with no final attrition, full coverage by turn 16, hard safety passing, and all 31 gate-grade decisions clean. Closure burden fell from 53 total A2 turns to 35 A3 turns, including 25 to 8 for affective-resistant committee, but deterministic fallback remained 25/35 turns (71.4%). Neither arm produced a frozen warrant_skip opportunity, so A3 is a successful apparatus-feasibility result and not a committee-transfer estimate. The card remains active until a separately merged prospective cohort amendment freezes a non-zero opportunity-density gate, Phase 5f-native analyzer, cohort-bound pilot bundle, and terminal stopping rule; no 18-dialogue cohort is licensed."
 claim_status: planned
 depends_on:
   - program-2-transfer-apparatus-hardening
@@ -88,3 +88,20 @@ inherited from A2.
 Skyway A1-A4 remain apparatus-calibration evidence only. They are never pooled
 with this prospective cohort. The four-dialogue pilot and 18-dialogue cohort
 have separate certificates and separate external-payload authorization gates.
+
+## A3 closeout
+
+A3 sealed all four rows on their first attempt with full frozen-horizon
+coverage, hard safety, no attrition, and 31/31 clean gate-grade decisions. The
+post-A2 repair bounded the previously runaway closure: total turns fell from 53
+to 35 and the affected committee row fell from 25 to 8. The remaining
+first-draft/guard burden is material, however, because 25/35 turns still used
+deterministic fallback.
+
+The pilot contained zero eligible `warrant_skip` opportunities in both arms.
+It therefore validates Tideway apparatus feasibility but does not exercise the
+learned committee move or estimate cross-world transfer. A prospective cohort
+amendment must add a non-zero opportunity-density requirement and Phase
+5f-native analysis/bundle machinery before any cohort certificate or paid
+authorization. Failure to reach that frozen density is a terminal
+design-limitation outcome, not permission for another trace-informed repair.

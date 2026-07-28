@@ -1,9 +1,10 @@
 # Program-2 Phase 5f — fresh-world apparatus-hardening pilot pre-registration
 
-Status: **PRELAUNCH FREEZE** on branch
-`codex/program-2-phase5e-r2-replication` (2026-07-28). This document freezes a
-four-dialogue feasibility pilot only. It does not authorize external payloads,
-the paid pilot, an 18-dialogue cohort, seam review, or any empirical claim.
+Status: **A3 FEASIBILITY COMPLETE; COHORT NOT YET PREREGISTERED** on branch
+`codex/program-2-phase5e-r2-replication` (2026-07-28). Sections 1-10 preserve
+the successive four-dialogue feasibility freezes and amendments; section 11
+records the immutable A3 outcome. This document does not authorize an
+18-dialogue cohort, seam review, or any empirical transfer claim.
 
 ## 1. Purpose
 
@@ -197,3 +198,39 @@ A3 requires a fresh zero-model certificate bound to its exact clean source
 SHA. Planning and certification do not authorize execution. The external
 payload destinations and scopes require explicit authorization for A3; the
 18-dialogue cohort and seam review remain separately gated.
+
+## 11. A3 feasibility closeout (2026-07-28)
+
+The certified A3 pilot ran at source SHA
+`473640a4ae8aa159e5b8a395686bcfc9ee0a5c69` and is immutable at
+`exports/program2-live-pilot-5f-pilot-a3/`. All four profile-arm rows sealed on
+their first attempt with no final attrition. Every row reached full proof-path
+coverage by turn 16, hard safety passed in both arms, and the frozen gate grader
+accepted all 31 scorable decisions without a failure or warning. These are
+successful apparatus-feasibility endpoints, not a treatment estimate.
+
+The post-A2 closure repair removed the runaway dialogue. A3 used 35 sealed
+tutor turns in total, compared with 53 in A2, and the previously pathological
+`affective_resistant|committee` row closed in 8 turns rather than 25. The
+apparatus nevertheless remained recovery-heavy: 25/35 A3 tutor turns (71.4%)
+used deterministic fallback and 28/35 (80.0%) used a revised or recovered
+response. A2's corresponding deterministic-fallback rate was 38/53 (71.7%),
+so the repair bounded closure length without reducing the proportional
+first-draft/guard mismatch.
+
+Critically, neither arm produced a frozen `warrant_skip` opportunity. The
+committee and control opportunity counts are both zero, delivered-compliance
+rates and their difference are undefined, and no committee-delivery moment was
+available for direct inspection. The pilot therefore demonstrates that the
+repaired exact pipeline can complete Tideway safely; it does not test whether
+the learned committee move transfers to Tideway.
+
+The Phase 5e-derived saved-artifact analysis at
+`exports/program2-live-pilot-5f-pilot-a3/analysis.json` is diagnostic only: its
+schema and preregistration pointer remain Phase 5e-specific. Before any cohort
+can be certified, a prospective Phase 5f amendment must freeze a non-zero
+opportunity-density requirement, a Phase 5f-native analyzer, and a
+cohort-bound pilot bundle. The cohort requires a separate certificate and
+explicit external-payload authorization. If the frozen cohort cannot reach its
+opportunity-density gate, that is a terminal design-limitation result rather
+than grounds for another trace-informed repair sequence.
