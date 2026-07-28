@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T21:56:00.308Z",
+  "generated": "2026-07-28T21:57:56.635Z",
   "counts": {
-    "total": 338,
+    "total": 341,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 81,
+      "review": 84,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 156,
+      "maintenance": 159,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -1132,6 +1132,47 @@
         "tutor-stub",
         "debug",
         "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-current-debug-reporter",
+      "title": "Refactor tutor-stub current debug reporter",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "14 focused debug-identity assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve the clipboard envelope and payload, line writes, selected IDs, and public return shape",
+      "branch": "codex/refactor-tutor-stub-current-debug-reporter",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-current-debug-lines"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDebugIdentity.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDebugIdentity.test.js"
+        ],
+        "prs": [
+          417
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-current-debug-lines"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "debug",
+        "orchestration"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -3075,6 +3116,47 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-register-state-restoration",
+      "title": "Refactor tutor-stub register state restoration",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "4 focused register-restoration assertions, synchronized hermetic manifest, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve disabled no-op, filtering, replacement, efficacy attachment, sorting, cloning, empty reset, restored count, and current selection",
+      "branch": "codex/refactor-tutor-stub-register-state-restoration",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-turn-attempt-guard"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubRegisterStateRestoration.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubRegisterStateRestoration.test.js"
+        ],
+        "prs": [
+          419
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-turn-attempt-guard"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "register",
+        "persistence"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-repair-spans",
       "title": "Refactor tutor-stub exact repair spans",
       "status": "review",
@@ -3715,6 +3797,47 @@
         "tutor-stub",
         "traces",
         "secrets"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-turn-attempt-guard",
+      "title": "Refactor tutor-stub turn-attempt guard",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "3 focused turn-attempt assertions, synchronized hermetic manifest, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve error identity, signal precedence, callback short-circuiting, call count, and no-op behavior",
+      "branch": "codex/refactor-tutor-stub-turn-attempt-guard",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-current-debug-reporter"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubTurnAttempt.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubTurnAttempt.test.js"
+        ],
+        "prs": [
+          418
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-current-debug-reporter"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "cancellation",
+        "lifecycle"
       ],
       "milestone": "evaluation-infrastructure"
     },
