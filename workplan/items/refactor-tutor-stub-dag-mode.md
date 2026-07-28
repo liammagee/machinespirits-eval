@@ -20,6 +20,8 @@ links:
     - services/tutorStubDagFeatures.js
     - scripts/tutor-stub.js
     - tests/tutorStubDagFeatures.test.js
+  prs:
+    - 373
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-model-selection
@@ -50,3 +52,5 @@ Log:
 - 2026-07-28 — Moved DAG-mode normalization beside the canonical DAG feature
   model, reducing the CLI by six lines. Eleven focused assertions and the
   complete zero-skip hermetic contract pass.
+- 2026-07-28 — Opened PR #373 against `main`; the benchmark hook correctly
+  classified the normalization-only slice as not response-generation relevant.
