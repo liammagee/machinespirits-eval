@@ -20,7 +20,8 @@ links:
     - services/tutorStubPublicEvidence.js
     - scripts/tutor-stub.js
     - tests/tutorStubPublicEvidence.test.js
-  prs: []
+  prs:
+    - 401
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-current-release-rows
@@ -52,3 +53,6 @@ Log:
   service, reducing `scripts/tutor-stub.js` by one line and removing the ledger
   shape from the CLI. Eight focused assertions, complete zero-skip hermetic
   parity, and all static/source-only gates pass.
+- 2026-07-28 — Opened PR #401 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
