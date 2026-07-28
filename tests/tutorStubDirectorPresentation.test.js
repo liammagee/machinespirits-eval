@@ -7,12 +7,41 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  buildTutorStubDirectorInitialContext,
   projectTutorStubDirectorContextLines,
   projectTutorStubDirectorNotesLines,
 } from '../services/tutorStubDirectorPresentation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({ cyan: '<cyan>', dim: '<dim>', reset: '<reset>' });
+
+test('director initial context preserves authored world and injected audience semantics', () => {
+  const world = Object.freeze({
+    title: 'The Test Room',
+    question: 'What happened?',
+    setting: '  A lamp burns.  ',
+    learnerVoice: '',
+  });
+  const audienceLines = Object.freeze(['A public gallery.', 'No hidden proof.']);
+  const context = buildTutorStubDirectorInitialContext(world, { audienceLines });
+
+  assert.deepEqual(context, {
+    stageNotes: 'Before the first exchange, The Test Room is set as a public inquiry: What happened?\nA lamp burns.',
+    tutorCharacter:
+      'The tutor enters as an adaptive scene actor: patient with the learner, but ready to examine, keep the record, argue, witness, or close as the public evidence demands.',
+    learnerCharacter: 'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
+    audienceContext: 'A public gallery.\nNo hidden proof.',
+    registerNote:
+      "The tutor's voice should follow the public characters and scene pressure without adding hidden evidence or proof machinery.",
+  });
+  assert.equal(buildTutorStubDirectorInitialContext(null), null);
+  assert.deepEqual(world, {
+    title: 'The Test Room',
+    question: 'What happened?',
+    setting: '  A lamp burns.  ',
+    learnerVoice: '',
+  });
+});
 
 function terminalBytes(lines) {
   return lines.map((line) => `${line}\n`).join('');
