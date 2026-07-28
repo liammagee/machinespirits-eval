@@ -14,6 +14,7 @@ import {
   projectTutorStubModelChoiceLines,
   projectTutorStubVisibleResolvedModel,
 } from '../services/tutorStubModelChoicePresentation.js';
+import { credentialFreeChildEnv } from './helpers/credentialFreeChildEnv.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({
@@ -273,13 +274,12 @@ test('real tutor and classifier model-choice commands preserve exact no-model te
       encoding: 'utf8',
       input: variant.input,
       timeout: 15_000,
-      env: {
-        ...process.env,
+      env: credentialFreeChildEnv({
         NO_COLOR: '1',
         TUTOR_STUB_OPENING_REALIZER: 'deterministic',
         TUTOR_STUB_SUMMARY_OPEN: '0',
         TUTOR_STUB_REMEMBER_SETTINGS: '0',
-      },
+      }),
     });
     const block = result.stdout.match(variant.pattern)?.[0] || '';
 
