@@ -5,9 +5,9 @@ import { closure, factKey, matchPattern } from './dramaticDerivation/chainer.js'
 import { buildLearnerDag, buildLearnerDagSnapshot } from './dramaticDerivation/learnerDag.js';
 import { buildLearnerProxyDagMemory, buildTutorLearnerDagModel } from './dramaticDerivation/proxyDagMemory.js';
 import {
-  TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
   applyTutorStubDagFactDropout,
   createTutorStubDagFactDropoutState,
+  projectTutorStubDagMemoryReliability,
 } from './tutorStubDagFactDropout.js';
 import { closeTruncatedTutorStubJson, normalizeTutorStubAnalysisEnvelope } from './tutorStubJson.js';
 import { buildTutorStubLearnerAdvance } from './tutorStubLearnerAdvance.js';
@@ -2522,16 +2522,7 @@ export function applyTutorStubPublicLearnerRecordUpdate({
     proxyDagMemory,
     assessment: learnerDag.assessment,
   });
-  model.memoryReliability = dagFactDropout
-    ? {
-        schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
-        configuredRate: dagFactDropout.configuredRate,
-        activeDroppedCount: dagFactDropout.activeDropped.length,
-        droppedThisTurn: dagFactDropout.droppedNow.length,
-        repairedThisTurn: dagFactDropout.repairedNow.length,
-        visibility: 'conduct',
-      }
-    : null;
+  model.memoryReliability = projectTutorStubDagMemoryReliability(dagFactDropout);
   const advance = buildTutorStubLearnerAdvance({ accepted, beforeModel: previousModel, afterModel: model });
   model.learnerAdvance = advance;
   return {
