@@ -29,8 +29,7 @@ const RESPONSE_CONFIGURATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.response-
 const ACTORIAL_REALIZATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.actorial-realization-audit.v1';
 export const TUTOR_STUB_ACTORIAL_PERFORMANCE_REALIZATION_SCHEMA =
   'machinespirits.tutor-stub.actorial-performance-realization.v1';
-export const TUTOR_STUB_LEARNER_INTEGRATION_TARGET_SCHEMA =
-  'machinespirits.tutor-stub.learner-integration-target.v1';
+export const TUTOR_STUB_LEARNER_INTEGRATION_TARGET_SCHEMA = 'machinespirits.tutor-stub.learner-integration-target.v1';
 
 const WORLD_STOP_WORDS = new Set(
   'about after again also among because before being between could every from have into itself more most other over same should some such than that their them then there these they this those through under very what when where which while with would your'.split(
@@ -885,13 +884,15 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
     configuration.learner_advance?.accelerated
       ? `Learner pace: accelerating. Credit all ${configuration.learner_advance.supportedMoveCount} warranted learner-owned proof moves already made; do not ask for any of them again. Test or extend only the next unresolved edge.`
       : 'Learner pace: steady unless the public turn itself warrants otherwise.',
-    configuration.learner_integration_target?.active
-      ? configuration.learner_integration_target.strategy === 'due_release_deictic_anchor'
-        ? `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the target clue is being released in this response. Deliver its supplied source exactly once, do not repeat or paraphrase it in the qualification, and ask exactly: “${configuration.learner_integration_target.question}” The deictic phrase “this newly released clue” refers to that single delivery; do not replace it with the clue's full text, answer how it fits, or accept another downstream verdict as a substitute.`
-        : configuration.learner_integration_target.strategy === 'public_surface_anchor'
-        ? `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the already-public clue “${configuration.learner_integration_target.public_surface}” is still outside the learner record. Qualify the downstream verdict with “${configuration.learner_integration_target.qualification}” and ask exactly: “${configuration.learner_integration_target.question}” The quotation is a public anchor, not a learner claim: do not answer how it fits, accept another downstream verdict as a substitute, or copy a learner ledger formula.`
-        : `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the learner has not yet stated “${configuration.learner_integration_target.target}” even though its clue is public. Qualify the downstream verdict with “${configuration.learner_integration_target.qualification}” and ask exactly: “${configuration.learner_integration_target.question}” Do not supply the target sentence, accept another downstream verdict as a substitute, or copy a learner ledger formula.`
-      : null,
+    ...(configuration.learner_integration_target?.active
+      ? [
+          configuration.learner_integration_target.strategy === 'due_release_deictic_anchor'
+            ? `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the target clue is being released in this response. Deliver its supplied source exactly once, do not repeat or paraphrase it in the qualification, and ask exactly: “${configuration.learner_integration_target.question}” The deictic phrase “this newly released clue” refers to that single delivery; do not replace it with the clue's full text, answer how it fits, or accept another downstream verdict as a substitute.`
+            : configuration.learner_integration_target.strategy === 'public_surface_anchor'
+              ? `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the already-public clue “${configuration.learner_integration_target.public_surface}” is still outside the learner record. Qualify the downstream verdict with “${configuration.learner_integration_target.qualification}” and ask exactly: “${configuration.learner_integration_target.question}” The quotation is a public anchor, not a learner claim: do not answer how it fits, accept another downstream verdict as a substitute, or copy a learner ledger formula.`
+              : `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the learner has not yet stated “${configuration.learner_integration_target.target}” even though its clue is public. Qualify the downstream verdict with “${configuration.learner_integration_target.qualification}” and ask exactly: “${configuration.learner_integration_target.question}” Do not supply the target sentence, accept another downstream verdict as a substitute, or copy a learner ledger formula.`,
+        ]
+      : []),
     configuration.release_pacing?.direction === 'accelerate'
       ? `Clue release: faster at ${configuration.release_pacing.effectiveSpeed}x. Stage at most one newly available clue batch now, with a short handoff and no redundant proof demand.`
       : configuration.release_pacing?.direction === 'decelerate'

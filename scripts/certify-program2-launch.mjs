@@ -106,18 +106,20 @@ export function buildCertificateFromFiles({
   const plan = planArtifact?.plan || planArtifact;
   const world = readStructured(worldFile);
   const pilots = pilotBundleFiles.map(loadPilotBundle);
-  const pilotEvidenceFiles = pilots.flatMap((pilot) => pilot.evidenceFiles).map((entry) => {
-    const file = resolveRoot(entry.file);
-    const relative = path.relative(ROOT, file);
-    if (!entry.file || relative.startsWith('..') || path.isAbsolute(relative)) {
-      throw new Error(`pilot evidence escapes repository root: ${entry.file || 'missing'}`);
-    }
-    if (!fs.existsSync(file)) throw new Error(`pilot evidence not found: ${entry.file}`);
-    if (entry.sha256 && sha256File(file) !== entry.sha256) {
-      throw new Error(`pilot evidence hash mismatch: ${entry.file}`);
-    }
-    return bindFile(file, entry.role || 'pilot_trace');
-  });
+  const pilotEvidenceFiles = pilots
+    .flatMap((pilot) => pilot.evidenceFiles)
+    .map((entry) => {
+      const file = resolveRoot(entry.file);
+      const relative = path.relative(ROOT, file);
+      if (!entry.file || relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error(`pilot evidence escapes repository root: ${entry.file || 'missing'}`);
+      }
+      if (!fs.existsSync(file)) throw new Error(`pilot evidence not found: ${entry.file}`);
+      if (entry.sha256 && sha256File(file) !== entry.sha256) {
+        throw new Error(`pilot evidence hash mismatch: ${entry.file}`);
+      }
+      return bindFile(file, entry.role || 'pilot_trace');
+    });
   const gateSpec = gateSpecFile ? readStructured(gateSpecFile) : {};
   return buildProgram2LaunchCertificate({
     phase,

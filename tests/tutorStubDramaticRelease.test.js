@@ -40,8 +40,7 @@ test('duplicate due-clue wording is rejected before it can be delivered', () => 
 });
 
 test('A4 turn-2 fallback replaces clue-bearing uptake before the due clue is delivered once', () => {
-  const dueSurface =
-    "Tibbin joined the ovenloft this spring — the very season the east terrace's cold mornings began.";
+  const dueSurface = "Tibbin joined the ovenloft this spring — the very season the east terrace's cold mornings began.";
   const frame = buildTutorStubDramaticReleaseFrame({
     dueEvidence: [{ premise: 'p_hired', via: 'tutor', surface: dueSurface }],
   });
