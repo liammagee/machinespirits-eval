@@ -381,6 +381,7 @@ import {
   renderTutorStubInterimFrame,
   resolveTutorStubInterimState as getInterimState,
   summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
+  summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
   tutorStubInterimLevel as interimLevel,
@@ -3114,24 +3115,8 @@ function compactPendingObjectiveSummary(state, context) {
     .join(' | ');
 }
 
-function compactPendingLearnerSummary(context) {
-  if (!context?.learnerText && !context?.classification) return null;
-  const turn = context.classification?.turn || {};
-  const overall = context.classification?.overall || {};
-  const scores = turn.scores || {};
-  const move = String(turn.discourse_move || 'still being read').replaceAll('_', ' ');
-  const stance = String(turn.epistemic_stance || 'still being read').replaceAll('_', ' ');
-  const need = turn.pedagogical_need || overall.next_best_tutor_move || '';
-  const bits = [
-    `turn ${context.tutorTurn || '?'}`,
-    `${move}; ${stance}`,
-    `conceptual engagement ${interimLevel(Number(scoreValue(scores.conceptual_engagement)) / 5)}`,
-    `evidence awareness ${interimLevel(Number(scoreValue(scores.epistemic_readiness)) / 5)}`,
-  ];
-  if (need) bits.push(`needs: ${oneLine(plainStrategyText(need), { max: 62 })}`);
-  if (!context.classification && context.learnerText) bits.push(oneLine(context.learnerText, { max: 72 }));
-  return bits.join(' | ');
-}
+const compactPendingLearnerSummary = (context) =>
+  summarizeTutorStubPendingLearner(context, { scoreValue, plainStrategyText });
 
 function compactPendingDagMovementSummary(state, context) {
   const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
