@@ -20,6 +20,8 @@ links:
     - services/tutorStubInterimPresentation.js
     - scripts/tutor-stub.js
     - tests/tutorStubInterimPresentation.test.js
+  prs:
+    - 386
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-learner-advance-classification
@@ -51,3 +53,5 @@ Log:
   existing interim presentation primitives, reducing `scripts/tutor-stub.js`
   by 13 lines. Twelve focused assertions, complete zero-skip hermetic parity,
   and all static/source-only gates pass.
+- 2026-07-28 — Opened PR #386 against `main`; the benchmark hook correctly
+  classified the state-holder slice as not response-generation relevant.
