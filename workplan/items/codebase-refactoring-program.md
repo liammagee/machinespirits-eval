@@ -1206,3 +1206,10 @@ Log:
 - 2026-07-28 — Fifty-loop public-release-ledger run reached review with the
   ledger shape removed from the CLI, eight focused assertions, and complete
   zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 28,
+  `refactor-tutor-stub-learner-public-evidence-state`, from PR #401's reviewed
+  head. Committed-row selection, learner-DAG inference, runtime state, and
+  effects remain unchanged.
+- 2026-07-28 — Fifty-loop learner-public-evidence-state run reached review with
+  a three-line net CLI reduction, nine focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.

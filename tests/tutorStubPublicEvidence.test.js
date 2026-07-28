@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 import {
   createTutorStubPublicEvidenceModel,
+  projectTutorStubLearnerPublicEvidenceState,
   projectTutorStubPublicReleaseLedger,
 } from '../services/tutorStubPublicEvidence.js';
 
@@ -40,6 +41,18 @@ test('public release ledger preserves row order and the learner-visible release 
     ],
   );
   assert.deepEqual(projectTutorStubPublicReleaseLedger(), []);
+});
+
+test('learner public-evidence state preserves the shared staged-evidence and ledger view', () => {
+  const rows = [{ premise: 'p1' }];
+  const state = projectTutorStubLearnerPublicEvidenceState(rows);
+  assert.deepEqual(state, { publicStagedEvidence: rows, publicReleaseLedger: rows });
+  assert.equal(state.publicStagedEvidence, rows);
+  assert.equal(state.publicReleaseLedger, rows);
+  assert.deepEqual(projectTutorStubLearnerPublicEvidenceState(), {
+    publicStagedEvidence: [],
+    publicReleaseLedger: [],
+  });
 });
 
 test('candidate premise ids honor explicit overrides and authored schedules', () => {

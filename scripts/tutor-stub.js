@@ -144,6 +144,7 @@ import { buildTutorStubObservedAudits } from '../services/tutorStubObservedAudit
 import { formatTutorStubFact as factText } from '../services/tutorStubFactModel.js';
 import {
   createTutorStubPublicEvidenceModel,
+  projectTutorStubLearnerPublicEvidenceState,
   projectTutorStubPublicReleaseLedger,
 } from '../services/tutorStubPublicEvidence.js';
 import { createTutorStubResponseLeakAudit } from '../services/tutorStubResponseLeakAudit.js';
@@ -3138,11 +3139,7 @@ function publicReleaseLedger(state, throughTurn = Number.POSITIVE_INFINITY) {
 }
 
 function learnerPublicEvidenceState(state, tutorTurn) {
-  const staged = committedReleaseRows(state, tutorTurn);
-  return {
-    publicStagedEvidence: staged,
-    publicReleaseLedger: staged,
-  };
+  return projectTutorStubLearnerPublicEvidenceState(committedReleaseRows(state, tutorTurn));
 }
 
 function learnerDagPreflightForTurn(state, tutorTurn, { traceSource = null } = {}) {

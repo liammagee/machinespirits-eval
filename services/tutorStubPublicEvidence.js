@@ -10,6 +10,13 @@ export function projectTutorStubPublicReleaseLedger(rows = []) {
   }));
 }
 
+export function projectTutorStubLearnerPublicEvidenceState(rows = []) {
+  return {
+    publicStagedEvidence: rows,
+    publicReleaseLedger: rows,
+  };
+}
+
 export function createTutorStubPublicEvidenceModel({ committedReleaseRows, currentReleaseRows } = {}) {
   const committedRows = typeof committedReleaseRows === 'function' ? committedReleaseRows : () => [];
   const currentRows = typeof currentReleaseRows === 'function' ? currentReleaseRows : () => [];
