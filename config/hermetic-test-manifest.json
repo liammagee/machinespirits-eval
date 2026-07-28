@@ -536,6 +536,7 @@
         "tests/tutorStubTrajectoryShadow.test.js",
         "tests/tutorStubTranscriptHtml.test.js",
         "tests/tutorStubTurnAnalysisPresentation.test.js",
+        "tests/tutorStubTurnAttempt.test.js",
         "tests/tutorStubTurnFailureBackfill.test.js",
         "tests/tutorStubTurnFailureIngest.test.js",
         "tests/tutorStubTurnProgressionContract.test.js",

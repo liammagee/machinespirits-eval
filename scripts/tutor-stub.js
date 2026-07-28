@@ -524,6 +524,7 @@ import {
 } from '../services/tutorStubLearnerDagPresentation.js';
 import { projectTutorStubResponseConfigurationLines } from '../services/tutorStubResponseConfigurationPresentation.js';
 import { projectTutorStubResponsePolicyContext } from '../services/tutorStubResponsePolicyContext.js';
+import { assertTutorStubTurnAttemptCurrent } from '../services/tutorStubTurnAttempt.js';
 import {
   projectTutorStubDialogueClosureContext,
   projectTutorStubHumanDiscourseContext,
@@ -3457,19 +3458,6 @@ function traceDisplayPath(trace) {
 function jsonClone(value) {
   if (value === undefined) return undefined;
   return JSON.parse(JSON.stringify(value));
-}
-
-function abortTutorStubTurnAttempt(message = 'learner turn attempt was superseded') {
-  const error = new Error(message);
-  error.name = 'AbortError';
-  error.code = 'TUTOR_STUB_TURN_SUPERSEDED';
-  return error;
-}
-
-function assertTutorStubTurnAttemptCurrent({ signal = null, isCurrent = null } = {}) {
-  if (signal?.aborted || (typeof isCurrent === 'function' && !isCurrent())) {
-    throw abortTutorStubTurnAttempt();
-  }
 }
 
 function restoreRegisterStateFromTurns(state, turns) {
