@@ -71,6 +71,17 @@ export function projectTutorStubCurrentDebugLines(
   return lines;
 }
 
+export function createTutorStubCurrentDebugReporter({ formatClipboardText, copyClipboard, write, colors = {} } = {}) {
+  return function reportCurrentDebugId(state, { duringTurn = false } = {}) {
+    const selection = projectTutorStubCurrentDebugSelection(state, { duringTurn });
+    const { runId, completedId, activeId, selectedId, tracePath } = selection;
+    const clipboardText = formatClipboardText({ runId, selectedId, completedId, activeId, tracePath });
+    const clipboard = copyClipboard(clipboardText);
+    for (const line of projectTutorStubCurrentDebugLines({ ...selection, clipboard }, { colors })) write(line);
+    return { runId, completedId, activeId, tracePath, clipboard };
+  };
+}
+
 export function createTutorStubDebugLinePrinters({ write, colors = {} } = {}) {
   return {
     printTurnDebugLine(state, turn) {
