@@ -20,6 +20,8 @@ links:
     - services/tutorStubInterimPresentation.js
     - scripts/tutor-stub.js
     - tests/tutorStubInterimPresentation.test.js
+  prs:
+    - 391
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-interim-register-summary
@@ -53,3 +55,5 @@ Log:
   Static lint caught and removed the now-obsolete CLI lookup alias; 17 focused
   assertions, complete zero-skip hermetic parity, and all static/source-only
   gates pass.
+- 2026-07-28 — Opened PR #391 against `main`; the benchmark hook correctly
+  classified the interim-projection slice as not response-generation relevant.
