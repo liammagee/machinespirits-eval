@@ -8,6 +8,7 @@ import {
   formatTutorStubTurnDebugId,
   printTutorStubAutomaticTechnicalDetails,
   printTutorStubDebugIdLine,
+  projectTutorStubCurrentDebugSelection,
   resolveTutorStubStateRunDebugId,
   tutorStubAutomaticTechnicalDetailsEnabled,
 } from '../services/tutorStubDebugIdentity.js';
@@ -72,6 +73,50 @@ test('automatic technical-details printing preserves the disabled gate and injec
   assert.deepEqual(calls, []);
   assert.equal(printTutorStubAutomaticTechnicalDetails(enabled, render, options), true);
   assert.deepEqual(calls, [{ state: enabled, callback: render }]);
+});
+
+test('current debug selection preserves run, opening, completed-turn, active-turn, and trace precedence', () => {
+  assert.deepEqual(projectTutorStubCurrentDebugSelection({ trace: { runId: 'run-a' } }), {
+    runId: 'run-a',
+    completedId: null,
+    activeId: null,
+    selectedId: 'run-a',
+    tracePath: null,
+    lastCompletedTurnId: null,
+  });
+  assert.deepEqual(
+    projectTutorStubCurrentDebugSelection(
+      {
+        trace: { runId: 'run-a', filePath: '/tmp/run-a.jsonl' },
+        history: [{ role: 'assistant', content: 'opening' }],
+      },
+      { duringTurn: true },
+    ),
+    {
+      runId: 'run-a',
+      completedId: 'run-a:opening',
+      activeId: 'run-a:t001',
+      selectedId: 'run-a:t001',
+      tracePath: '/tmp/run-a.jsonl',
+      lastCompletedTurnId: null,
+    },
+  );
+  assert.deepEqual(
+    projectTutorStubCurrentDebugSelection({ trace: { runId: 'run-a' }, turns: [{ turn: 3, turnId: 'custom-id' }] }),
+    {
+      runId: 'run-a',
+      completedId: 'custom-id',
+      activeId: null,
+      selectedId: 'custom-id',
+      tracePath: null,
+      lastCompletedTurnId: 'custom-id',
+    },
+  );
+  assert.equal(
+    projectTutorStubCurrentDebugSelection({ trace: { runId: 'run-a' }, turns: [{ turn: 3 }] }, { duringTurn: true })
+      .lastCompletedTurnId,
+    'run-a:t003',
+  );
 });
 
 test('debug-ID line printing preserves missing IDs, first-print formatting, de-duplication, labels, and state', () => {

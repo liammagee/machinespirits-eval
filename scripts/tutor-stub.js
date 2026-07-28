@@ -86,6 +86,7 @@ import {
   formatTutorStubTurnDebugId as formatTurnDebugId,
   printTutorStubAutomaticTechnicalDetails,
   printTutorStubDebugIdLine,
+  projectTutorStubCurrentDebugSelection,
   resolveTutorStubStateRunDebugId as stateRunDebugId,
   tutorStubAutomaticTechnicalDetailsEnabled as automaticTechnicalDetailsEnabled,
 } from '../services/tutorStubDebugIdentity.js';
@@ -3456,12 +3457,8 @@ function printAutomaticTechnicalDetails(state, render) {
 }
 
 function printCurrentDebugId(state, { duringTurn = false } = {}) {
-  const last = state?.turns?.at(-1) || null;
-  const completedId = last?.turnId || (state?.history?.length ? openingDebugId(stateRunDebugId(state)) : null);
-  const activeId = duringTurn ? turnDebugId(state, (last?.turn || 0) + 1) : null;
-  const runId = stateRunDebugId(state);
-  const selectedId = activeId || completedId || runId;
-  const tracePath = state?.trace?.filePath || null;
+  const { runId, completedId, activeId, selectedId, tracePath, lastCompletedTurnId } =
+    projectTutorStubCurrentDebugSelection(state, { duringTurn });
   const clipboardText = formatTutorStubDebugClipboardText({
     runId,
     selectedId,
@@ -3472,7 +3469,7 @@ function printCurrentDebugId(state, { duringTurn = false } = {}) {
   const clipboard = copyTutorStubTextToClipboard(clipboardText);
   console.log(`${C.cyan}debug id >${C.reset} ${selectedId}`);
   console.log(`${C.dim}  run id: ${runId}${C.reset}`);
-  if (last) console.log(`${C.dim}  last completed turn: ${last.turnId || turnDebugId(state, last.turn)}${C.reset}`);
+  if (lastCompletedTurnId) console.log(`${C.dim}  last completed turn: ${lastCompletedTurnId}${C.reset}`);
   if (activeId) console.log(`${C.dim}  in-progress turn: ${activeId}${C.reset}`);
   console.log(
     `${C.dim}  trace: ${tracePath || 'disabled for this run; rerun without --no-trace for a local JSONL trace'}${C.reset}`,
