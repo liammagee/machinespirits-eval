@@ -18,8 +18,17 @@ export function tutorStubPrivateTokenAlreadyPublic(token, publicTokens = new Set
   return [...publicSet].some((publicToken) => evidenceTokenRoot(publicToken) === root);
 }
 
+// The `to` of "ties X to Y" must be a word of its own. Without the hyphen
+// guards, "I trace the winter-to-thaw entry with my finger" reads as one
+// exhibit traced to another, because the `to` inside the compound carries word
+// boundaries on both sides.
 const CORRESPONDENCE_PATTERN =
-  /\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|identical to|match(?:es|ed)?|same (?:[\p{L}\p{N}-]+\s+)?(?:alloy|flaw|mark|metal|residue|strain|streak)|tie(?:s|d)?\b[^.!?;]{0,55}\bto|trace(?:s|d)?\b[^.!?;]{0,55}\bto)\b/iu;
+  /\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|identical to|match(?:es|ed)?|same (?:[\p{L}\p{N}-]+\s+)?(?:alloy|flaw|mark|metal|residue|strain|streak)|tie(?:s|d)?\b[^.!?;]{0,55}(?<!-)\bto(?!-)|trace(?:s|d)?\b[^.!?;]{0,55}(?<!-)\bto(?!-))\b/iu;
+// A determined "the match" names a correspondence without claiming one, so the
+// tutor can handle it as stage business. "a match between X and Y" still
+// claims, and so is left alone.
+const NAMED_MATCH_PATTERN =
+  /\b(?:a|an|any|her|his|its|no|that|the|their|this)\s+match\b(?!\s*(?:between|for|to|with)\b)/giu;
 const EVIDENCE_OBJECT_PATTERN =
   /\b(?:alloys?|assays?|coins?|crucibles?|dies?|entries|entry|flaws?|leavings|logs?|marks?|metals?|records?|residues?|samples?|shillings?|strains?|streaks?|tools?|traces?)\b/iu;
 const NON_ASSERTIVE_PATTERN =
@@ -72,7 +81,7 @@ function assertedCorrespondence(value) {
   return (
     surface &&
     !surface.endsWith('?') &&
-    CORRESPONDENCE_PATTERN.test(surface) &&
+    CORRESPONDENCE_PATTERN.test(surface.replace(NAMED_MATCH_PATTERN, ' ')) &&
     EVIDENCE_OBJECT_PATTERN.test(surface) &&
     !PERSON_ATTRIBUTION_PATTERN.test(surface) &&
     !CUSTODY_ATTRIBUTION_PATTERN.test(surface) &&

@@ -88,6 +88,35 @@ test('does not treat an answer-naming casting inference plus an unaccounted die 
   assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'edony', wordPatterns: dieWords }), false);
 });
 
+test('reads the rejected half of a contrast as a stated limit, not a claim', () => {
+  const ruining = [/\bruined\b/u];
+
+  // Every recorded Greyfen turn-3 leak was one of these: the tutor names the
+  // thing the record does not reach, and the sentence was scored as reaching it.
+  for (const text of [
+    'The Larkin quarantine record and swab support G17 inside Larkin, not the conclusion that Larkin ruined Corvat.',
+    'The swab supports Larkin as a G17 source, not Larkin ruined Corvat.',
+    'The quarantine record supports G17 in Larkin, not that Larkin ruined Corvat.',
+    'The record places G17 in Larkin, but not that Larkin ruined Corvat.',
+    'Quarantine record and swab support Larkin as a source; they do not establish Larkin ruined Corvat.',
+  ]) {
+    assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'Larkin', wordPatterns: ruining }), false, text);
+  }
+});
+
+test('still catches a conclusion on the asserted side of a contrast', () => {
+  const ruining = [/\bruined\b/u];
+
+  for (const text of [
+    'Larkin ruined Corvat, not Devlin.',
+    'The swab shows Larkin ruined Corvat, and the log agrees.',
+    // The rejected half ends at the semicolon, so the clause after it is read.
+    'The record supports G17, not the conclusion; Larkin ruined Corvat.',
+  ]) {
+    assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'Larkin', wordPatterns: ruining }), true, text);
+  }
+});
+
 test('does not treat explicit cast-versus-strike boundaries as a final conclusion', () => {
   for (const text of [
     'I press the charcoal entry beside the streak: rightly entered—Edony cast this blank, but a blank alone cannot strike.',

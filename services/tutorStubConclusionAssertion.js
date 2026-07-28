@@ -18,9 +18,34 @@ function answerVisible(text, answerTerm) {
   return identifyingTokens.some((token) => new RegExp(`\\b${escapedToken(token)}\\b`, 'iu').test(text));
 }
 
+const CONTRAST_REJECTION = /[,;—–]\s*(?:and\s+|but\s+|yet\s+)?not\b/iu;
+
+/**
+ * Drop the rejected half of a contrast before the sentence is read. "A, not B"
+ * asserts A and denies B, so conclusion vocabulary that appears only in B is a
+ * stated limit rather than a claim — the shape a tutor uses to name the thing
+ * the record does not reach. The rejected span ends at the next semicolon, so a
+ * later independent clause is still read on its own terms.
+ */
+function assertedSide(sentence) {
+  let kept = '';
+  let rest = sentence;
+  for (;;) {
+    const marker = CONTRAST_REJECTION.exec(rest);
+    if (!marker) return `${kept}${rest}`;
+    kept += rest.slice(0, marker.index);
+    const rejected = rest.slice(marker.index + marker[0].length);
+    const resumes = rejected.indexOf(';');
+    if (resumes === -1) return kept;
+    rest = rejected.slice(resumes);
+  }
+}
+
 function explicitlyWithholdsConclusion(text) {
   return (
-    /\b(?:does not|doesn[’']t|did not|didn[’']t|not yet|nothing yet|unproved|unproven)\b/iu.test(text) ||
+    /\b(?:do not|don[’']t|does not|doesn[’']t|did not|didn[’']t|not yet|nothing yet|unproved|unproven)\b/iu.test(
+      text,
+    ) ||
     /\b(?:cannot|can[’']t|will not|won[’']t|would not|wouldn[’']t)\b[^.!?]{0,28}\b(?:conclude|name|prove|say|show|write)\b/iu.test(
       text,
     ) ||
@@ -47,15 +72,19 @@ function explicitlyWithholdsConclusion(text) {
 /**
  * Detect an asserted answer-linked conclusion rather than a negated,
  * provisional, or explicitly interrogated boundary. The answer name and the
- * conclusion vocabulary must occur in the same public sentence. A following
- * pronoun sentence is joined to preserve detection of "Edony ... She struck".
+ * conclusion vocabulary must occur in the same public sentence, on the asserted
+ * side of any contrast. A following pronoun sentence is joined to preserve
+ * detection of "Edony ... She struck".
  */
 export function tutorStubAnswerConclusionAsserted({ text = '', answerTerm = '', wordPatterns = [] } = {}) {
   const sentences = oneLine(text)
     .replace(/([.!?])[”"'’](?=\s)/gu, '$1 ')
     .split(/(?<=[.!?])\s+/u)
     .map((sentence) => sentence.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    // After the split, so a sentence emptied by its own contrast still holds
+    // its place and the pronoun join below reaches the right neighbour.
+    .map(assertedSide);
 
   for (let index = 0; index < sentences.length; index += 1) {
     const sentence = sentences[index];

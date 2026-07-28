@@ -68,6 +68,35 @@ test('allows questions, requirements, conditions, and explicit non-matches', () 
   }
 });
 
+test('does not read the to inside a hyphenated compound as tracing one exhibit to another', () => {
+  // Every recorded Nocturne turn-9 leak was this stage direction: "trace the
+  // winter-to" satisfied a pattern looking for "traces ... to".
+  for (const text of [
+    'I trace the winter-to-thaw entry with my finger.',
+    'I trace its winter-to-thaw entry with my finger.',
+    'I tie the winter-to-thaw span to nothing yet.',
+  ]) {
+    assert.equal(auditTutorStubEvidenceAssertions({ text }).ok, true, text);
+  }
+
+  assert.equal(auditTutorStubEvidenceAssertions({ text: 'The residue traces to the weir-forge crucible.' }).ok, false);
+});
+
+test('lets the tutor handle a named match as stage business without claiming one', () => {
+  assert.equal(
+    auditTutorStubEvidenceAssertions({
+      text: 'I open the Larkin log and mark the match, while the contamination source remains unproved.',
+    }).ok,
+    true,
+  );
+
+  // A match with its two sides named is still a claim.
+  assert.equal(
+    auditTutorStubEvidenceAssertions({ text: 'I mark a match between this alloy and the crucible leavings.' }).ok,
+    false,
+  );
+});
+
 test('ignores conversational agreement that is not an exhibit correspondence', () => {
   assert.equal(auditTutorStubEvidenceAssertions({ text: 'Your answer matches the distinction we entered.' }).ok, true);
 });
