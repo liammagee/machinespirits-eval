@@ -879,3 +879,11 @@ Log:
   net CLI reduction, 48 focused assertions, 7,438 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated second-loop run 6,
+  `refactor-tutor-stub-side-arc-state`, from PR #354's reviewed head. Learner
+  classification, generous inference, scaffold construction, model calls,
+  runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop side-arc-state run reached review with a 52-line net
+  CLI reduction, 49 focused assertions, 7,444 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
