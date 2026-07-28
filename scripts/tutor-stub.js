@@ -349,6 +349,7 @@ import {
 } from '../services/tutorStubTranscriptHtml.js';
 import { writeTutorStubLearningSummaryHtml } from '../services/tutorStubLearningSummaryHtml.js';
 import {
+  renderTutorStubStreamLabel,
   tutorStubProviderSupportsEventStreaming as providerSupportsEventStreaming,
   tutorStubProviderSupportsTokenStreaming as providerSupportsStreaming,
 } from '../services/tutorStubDevelopmentSpeakerTransport.js';
@@ -3862,11 +3863,7 @@ function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening 
 }
 
 function streamLabel(role) {
-  if (role === 'tutor_stub_tutor') return `${C.brightMagenta}${C.bold}tutor >${C.reset} `;
-  if (role === 'tutor_stub_learner_analysis') return `${C.cyan}learner analysis stream >${C.reset} `;
-  if (role === 'tutor_stub_learner_record') return `${C.cyan}learner DAG stream >${C.reset} `;
-  if (role === 'tutor_stub_learner_classifier') return `${C.cyan}learner classifier stream >${C.reset} `;
-  return `${C.cyan}${role} >${C.reset} `;
+  return renderTutorStubStreamLabel(role, C);
 }
 
 function createConsoleTokenSink(role, interim = null) {
