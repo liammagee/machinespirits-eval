@@ -20,6 +20,8 @@ links:
     - services/tutorStubSessionRecipe.js
     - scripts/tutor-stub.js
     - tests/tutorStubSessionRecipe.test.js
+  prs:
+    - 369
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-prompt-blocks
@@ -51,3 +53,6 @@ Log:
 - 2026-07-28 — Moved recipe model identity and safe base-URL projection beside
   canonical recipe hashing, reducing the CLI by 28 lines. Fifteen focused
   assertions and the complete zero-skip hermetic contract pass.
+- 2026-07-28 — The required strong benchmark retained the six existing fresh
+  candidate quality failures; zero-call same-response re-audit found zero
+  regressions and zero safety changes. Recorded on PR #369.
