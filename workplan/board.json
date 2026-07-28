@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T12:11:37.787Z",
+  "generated": "2026-07-28T12:54:37.512Z",
   "counts": {
-    "total": 281,
+    "total": 283,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 29,
+      "review": 31,
       "active": 9,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 105,
+      "maintenance": 107,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -279,6 +279,8 @@
           "refactor-tutor-stub-dag-snapshot-model",
           "refactor-tutor-stub-second-loop-recovery",
           "refactor-tutor-stub-debug-identifiers",
+          "refactor-tutor-stub-fact-matching",
+          "refactor-tutor-stub-public-evidence",
           "refactor-tutor-stub-proof-command-projection",
           "refactor-tutor-stub-interaction-mode-presentation",
           "refactor-tutor-stub-session-status-presentation",
@@ -929,6 +931,46 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-fact-matching",
+      "title": "Refactor tutor-stub fact matching",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 5/5 plus full hermetic root and tutor-core zero-skip contracts preserve symbolic formatting, normalization, regex safety, and canonical fact equality; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-fact-matching",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-debug-identifiers"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubFactModel.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubFactModel.test.js"
+        ],
+        "prs": [
+          362
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-debug-identifiers"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "proof-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-guard-attempt-envelope",
       "title": "Refactor tutor-stub guard attempt envelope",
       "status": "review",
@@ -1230,6 +1272,47 @@
         "picker",
         "presentation",
         "terminal"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-public-evidence",
+      "title": "Refactor tutor-stub public evidence model",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 7/7 plus full hermetic root and tutor-core zero-skip contracts preserve release selection, closure, answer terms, and guard-visible text; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-public-evidence",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-fact-matching"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubPublicEvidence.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubPublicEvidence.test.js"
+        ],
+        "prs": [
+          363
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-fact-matching"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "evidence",
+        "proof-dag"
       ],
       "milestone": "evaluation-infrastructure"
     },
