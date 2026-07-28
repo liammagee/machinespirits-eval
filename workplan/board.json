@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T07:44:27.019Z",
+  "generated": "2026-07-28T07:58:09.023Z",
   "counts": {
-    "total": 259,
+    "total": 260,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 7,
+      "review": 8,
       "active": 9,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 83,
+      "maintenance": 84,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -299,6 +299,7 @@
           "refactor-tutor-stub-curriculum-catalog-presentation",
           "refactor-tutor-stub-world-catalog-presentation",
           "refactor-tutor-stub-picker-presentation",
+          "refactor-tutor-stub-picker-entries",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -750,6 +751,50 @@
         "lambda"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "refactor-tutor-stub-picker-entries",
+      "title": "Refactor tutor-stub picker entry projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Scenario and curriculum picker entries remain deep-equal while direct identity, fallback, live PTY, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-picker-entries",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-picker-presentation"
+      ],
+      "links": {
+        "prs": [
+          340
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubPickerPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubPickerPresentation.test.js",
+          "tests/labellingGameCli.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-picker-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "picker",
+        "scenario",
+        "curriculum"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "refactor-tutor-stub-picker-presentation",
