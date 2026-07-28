@@ -72,6 +72,7 @@ links:
     - refactor-tutor-stub-field-report-presentation
     - refactor-tutor-stub-curriculum-progress-presentation
     - refactor-tutor-stub-curriculum-catalog-presentation
+    - refactor-tutor-stub-world-catalog-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -713,3 +714,18 @@ Log:
   tests. All 550 selected files executed with zero skips; static and
   source-only workplan gates are green, and command/runtime movement remains
   excluded behind the browser/Electron acceptance gate.
+- 2026-07-28 — PR #334 merged the curriculum-catalogue child as `8dba3582`.
+  Closed that child and activated
+  `refactor-tutor-stub-world-catalog-presentation` for authorial world-summary
+  helpers and deterministic `--list-worlds` lines. World loading, eligibility,
+  family grouping, picker behavior, commands, and terminal writes remain in
+  their current owners; setting/diction presentation remains explicitly
+  separate from register. The pre-extraction catalogue is 71 lines, 6,670
+  bytes, and SHA-256
+  `a7f97c026e1f19d18d56b3f061ecf51772a76c22fa2dc121df9a58d91dafd42c`.
+- 2026-07-28 — The world-catalogue child reached review with one 36-line pure
+  presentation owner, a 24-line net CLI reduction, exact 6,670-byte live
+  parity, 27/27 focused assertions, 7,403/7,403 root tests, and 137/137
+  tutor-core tests. All 551 selected files executed with zero skips; static and
+  source-only workplan gates are green, and setting/diction remains separate
+  from register policy.
