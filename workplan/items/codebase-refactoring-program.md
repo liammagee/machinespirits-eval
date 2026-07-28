@@ -1107,3 +1107,10 @@ Log:
   five-line net CLI reduction, 13 focused assertions, and complete zero-skip
   hermetic parity. Its focused fixture now pins the existing immediate-
   predecessor/undefined-model contract. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 14,
+  `refactor-tutor-stub-interim-learner-dag-summary`, from PR #387's reviewed
+  head. Learner-DAG inference, context assembly, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop interim-learner-DAG-summary run reached review with a
+  14-line net CLI reduction, 14 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.

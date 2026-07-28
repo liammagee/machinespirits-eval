@@ -12,6 +12,7 @@ import {
   renderTutorStubInterimFrame,
   resolveTutorStubInterimState,
   summarizeTutorStubInterimCapabilities,
+  summarizeTutorStubPendingLearnerDag,
   tutorStubInterimCliHintPanels,
   tutorStubInterimLevel,
   tutorStubPlainInterimBottleneck,
@@ -112,6 +113,32 @@ test('interim bottleneck labels preserve authored copy and readable fallback nor
   }
   assert.equal(tutorStubPlainInterimBottleneck('custom_learning_gap'), 'custom learning gap');
   assert.equal(tutorStubPlainInterimBottleneck(), 'the next useful learner move');
+});
+
+test('pending learner-DAG summary preserves model precedence, counts, missing fallback, and null handling', () => {
+  assert.equal(summarizeTutorStubPendingLearnerDag(null), null);
+  assert.equal(summarizeTutorStubPendingLearnerDag({ tutorTurn: 4 }), null);
+  assert.equal(
+    summarizeTutorStubPendingLearnerDag({
+      tutorTurn: 4,
+      tutorLearnerDag: {
+        model: {
+          turn: 3,
+          metrics: { groundedCount: 2, voicedDerivedCount: 1, missingPremiseCount: 4 },
+          assessment: { missingPremiseCount: 9, bottleneck: 'warrant_gap' },
+        },
+      },
+      tutorLearnerDagModel: { turn: 99 },
+    }),
+    'turn 3 | 2 public facts held | 1 inferences stated | 4 evidence pieces still needed | the learner needs a clearer reasoning link',
+  );
+  assert.equal(
+    summarizeTutorStubPendingLearnerDag({
+      tutorTurn: 5,
+      tutorLearnerDagModel: { metrics: {}, assessment: { missingPremiseCount: 2 } },
+    }),
+    'turn 5 | 0 public facts held | 0 inferences stated | 2 evidence pieces still needed | the next useful learner move',
+  );
 });
 
 test('interim CLI hints preserve passthrough, setup, coach, auto, and learner contexts', () => {
@@ -304,7 +331,7 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
-    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerDagSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);

@@ -378,6 +378,7 @@ import {
   renderTutorStubInterimFrame,
   resolveTutorStubInterimState as getInterimState,
   summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
+  summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
   tutorStubInterimLevel as interimLevel,
   tutorStubPlainInterimBottleneck as plainInterimBottleneck,
@@ -3123,21 +3124,6 @@ function compactPendingLearnerSummary(context) {
   if (need) bits.push(`needs: ${oneLine(plainStrategyText(need), { max: 62 })}`);
   if (!context.classification && context.learnerText) bits.push(oneLine(context.learnerText, { max: 72 }));
   return bits.join(' | ');
-}
-
-function compactPendingLearnerDagSummary(context) {
-  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
-  if (!model) return null;
-  const metrics = model.metrics || {};
-  const assessment = model.assessment || {};
-  const missing = metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0;
-  return [
-    `turn ${model.turn || context.tutorTurn || '?'}`,
-    `${metrics.groundedCount || 0} public facts held`,
-    `${metrics.voicedDerivedCount || 0} inferences stated`,
-    `${missing} evidence pieces still needed`,
-    plainInterimBottleneck(assessment.bottleneck),
-  ].join(' | ');
 }
 
 function compactPendingDagMovementSummary(state, context) {

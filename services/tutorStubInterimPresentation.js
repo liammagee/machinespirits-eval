@@ -60,6 +60,21 @@ export function tutorStubPlainInterimBottleneck(value) {
   return labels[value] || String(value || 'the next useful learner move').replaceAll('_', ' ');
 }
 
+export function summarizeTutorStubPendingLearnerDag(context) {
+  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
+  if (!model) return null;
+  const metrics = model.metrics || {};
+  const assessment = model.assessment || {};
+  const missing = metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0;
+  return [
+    `turn ${model.turn || context.tutorTurn || '?'}`,
+    `${metrics.groundedCount || 0} public facts held`,
+    `${metrics.voicedDerivedCount || 0} inferences stated`,
+    `${missing} evidence pieces still needed`,
+    tutorStubPlainInterimBottleneck(assessment.bottleneck),
+  ].join(' | ');
+}
+
 export function tutorStubInterimCliHintPanels(active) {
   const state = active.state || {};
   const phase = String(active.basePhase || active.phase || '').toLowerCase();
