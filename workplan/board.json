@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T11:13:48.990Z",
+  "generated": "2026-07-28T12:11:37.787Z",
   "counts": {
-    "total": 271,
+    "total": 281,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 19,
+      "review": 29,
       "active": 9,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 95,
+      "maintenance": 105,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -276,6 +276,9 @@
           "refactor-tutor-stub-feature-map-projection",
           "refactor-tutor-stub-release-notes-projection",
           "refactor-tutor-stub-dag-snapshot-projection",
+          "refactor-tutor-stub-dag-snapshot-model",
+          "refactor-tutor-stub-second-loop-recovery",
+          "refactor-tutor-stub-debug-identifiers",
           "refactor-tutor-stub-proof-command-projection",
           "refactor-tutor-stub-interaction-mode-presentation",
           "refactor-tutor-stub-session-status-presentation",
@@ -758,6 +761,131 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
+      "id": "refactor-tutor-stub-dag-memory-reliability",
+      "title": "Refactor tutor-stub DAG memory reliability projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 41/41; hermetic root 7452/7452 across 551 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-dag-memory-reliability",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-strict-dag-audit"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/358"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDagFactDropout.js",
+          "services/tutorStubPublicLearnerAnalysis.js",
+          "scripts/tutor-stub.js",
+          "services/__tests__/tutorStubDagFactDropout.test.js",
+          "services/__tests__/tutorStubPublicLearnerAnalysis.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-strict-dag-audit"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "dag",
+        "deduplication"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-dag-snapshot-model",
+      "title": "Refactor tutor-stub DAG snapshot model",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 8/8 including byte-exact live Marrick block; hermetic root 7454/7454 across 551 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-dag-snapshot-model",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-dag-memory-reliability"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDagSnapshotPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDagSnapshotPresentation.test.js"
+        ],
+        "prs": [
+          359
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-dag-memory-reliability",
+          "refactor-tutor-stub-dag-snapshot-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "dag",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-debug-identifiers",
+      "title": "Refactor tutor-stub debug identifiers",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 5/5 plus full hermetic root and tutor-core zero-skip contracts preserve exact timestamp, turn-id, and opening-id bytes; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-debug-identifiers",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-second-loop-recovery"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDebugIdentity.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDebugIdentity.test.js"
+        ],
+        "prs": [
+          361
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-second-loop-recovery"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "trace"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-director-context",
       "title": "Refactor tutor-stub director initial context",
       "status": "review",
@@ -797,6 +925,48 @@
         "director",
         "context",
         "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-guard-attempt-envelope",
+      "title": "Refactor tutor-stub guard attempt envelope",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 16/16; hermetic root 7435/7435 across 547 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-guard-attempt-envelope",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-repair-spans"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/353"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubGuardAttemptProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubGuardAttemptProjection.test.js",
+          "tests/tutorStubGuardAccounting.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-repair-spans"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "guard",
+        "projection"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -1106,6 +1276,194 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-repair-spans",
+      "title": "Refactor tutor-stub exact repair spans",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 14/14; hermetic root 7433/7433 across 546 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-repair-spans",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-guard-spans"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/352"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubGuardSpanProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubGuardSpanProjection.test.js",
+          "tests/tutorStubGuardAccounting.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-guard-spans"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "guard",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-scaffold-state",
+      "title": "Refactor tutor-stub scaffold state projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 48/48; hermetic root 7438/7438 across 548 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-scaffold-state",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-guard-attempt-envelope"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/354"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubScaffoldState.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubScaffoldState.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-guard-attempt-envelope"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "human-discourse",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-second-loop-recovery",
+      "title": "Recover tutor-stub second refactor loop onto main",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "the eight reviewed missing slices replay cleanly onto current main; full hermetic root and tutor-core contracts pass with zero skips, together with source-only workplan, manifest, lint, format, cycle, refs, syntax, commit-link, and diff gates",
+      "branch": "codex/refactor-tutor-stub-second-loop-recovery",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-guard-spans"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/tutor-stub.js",
+          "services/tutorStubGuardSpanProjection.js",
+          "services/tutorStubGuardAttemptProjection.js",
+          "services/tutorStubScaffoldState.js",
+          "services/tutorStubSideArcState.js",
+          "services/tutorStubWarrantPremiseAudit.js",
+          "services/tutorStubStrictDagAuditState.js",
+          "services/tutorStubDagFactDropout.js",
+          "services/tutorStubDagSnapshotPresentation.js"
+        ],
+        "prs": [
+          360,
+          352,
+          353,
+          354,
+          355,
+          356,
+          357,
+          358,
+          359
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-repair-spans",
+          "refactor-tutor-stub-guard-attempt-envelope",
+          "refactor-tutor-stub-scaffold-state",
+          "refactor-tutor-stub-side-arc-state",
+          "refactor-tutor-stub-warrant-audit-projection",
+          "refactor-tutor-stub-strict-dag-audit",
+          "refactor-tutor-stub-dag-memory-reliability",
+          "refactor-tutor-stub-dag-snapshot-model"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "recovery",
+        "git"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-side-arc-state",
+      "title": "Refactor tutor-stub side-arc state projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 49/49; hermetic root 7444/7444 across 549 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-side-arc-state",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-scaffold-state"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/355"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubSideArcState.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubSideArcState.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-scaffold-state"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "human-discourse",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-stack-recovery",
       "title": "Recover orphaned tutor-stub refactor stack",
       "status": "review",
@@ -1146,6 +1504,90 @@
         "tutor-stub",
         "git",
         "stack-recovery"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-strict-dag-audit",
+      "title": "Refactor tutor-stub strict DAG audit state",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 48/48; hermetic root 7450/7450 across 551 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-strict-dag-audit",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-warrant-audit-projection"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/357"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubStrictDagAuditState.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubStrictDagAuditState.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-warrant-audit-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "dag",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-warrant-audit-projection",
+      "title": "Refactor tutor-stub warrant audit projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 48/48; hermetic root 7447/7447 across 550 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-warrant-audit-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-side-arc-state"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/356"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubWarrantPremiseAudit.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubWarrantPremiseAudit.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-side-arc-state"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "human-discourse",
+        "projection"
       ],
       "milestone": "evaluation-infrastructure"
     },
