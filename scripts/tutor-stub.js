@@ -62,7 +62,15 @@ import {
   buildTutorStubHumanDiscourseRunConfig as buildHumanDiscourseRunConfig,
 } from '../services/tutorStubHumanDiscourseConfig.js';
 import { buildTutorStubRegisterPalette } from '../services/tutorStubRegisterPalette.js';
-import { projectTutorStubGuardedSpans } from '../services/tutorStubGuardSpanProjection.js';
+import { projectTutorStubExactRepairSpans as exactTutorRepairSpans } from '../services/tutorStubGuardSpanProjection.js';
+import { projectTutorStubGuardAttemptEnvelope } from '../services/tutorStubGuardAttemptProjection.js';
+import { projectTutorStubScaffoldState } from '../services/tutorStubScaffoldState.js';
+import { projectTutorStubSideArcState as buildSideArcState } from '../services/tutorStubSideArcState.js';
+import {
+  projectTutorStubPublicStocktakeRows,
+  projectTutorStubWarrantPremiseAudit,
+} from '../services/tutorStubWarrantPremiseAudit.js';
+import { projectTutorStubStrictDagAuditState as buildStrictDagAuditState } from '../services/tutorStubStrictDagAuditState.js';
 import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
@@ -205,6 +213,7 @@ import {
   createTutorStubDagFactDropoutState,
   normalizeTutorStubDagFactDropoutRate,
   normalizeTutorStubDagFactDropoutSeed,
+  projectTutorStubDagMemoryReliability,
   tutorStubDagFactDropoutSnapshot,
 } from '../services/tutorStubDagFactDropout.js';
 import {
@@ -538,7 +547,10 @@ import { renderTutorStubCliHelp } from '../services/tutorStubCliHelp.js';
 import { projectTutorStubFeatureMapLines } from '../services/tutorStubFeatureMap.js';
 import { projectTutorStubInteractiveHelpLines } from '../services/tutorStubInteractiveHelp.js';
 import { projectTutorStubReleaseNotesLines } from '../services/tutorStubReleaseNotesPresentation.js';
-import { projectTutorStubDagSnapshotLines } from '../services/tutorStubDagSnapshotPresentation.js';
+import {
+  projectTutorStubDagSnapshot,
+  projectTutorStubDagSnapshotLines,
+} from '../services/tutorStubDagSnapshotPresentation.js';
 import {
   projectTutorStubProofDagArtifactPaths,
   projectTutorStubProofDagSemanticLayerLines,
@@ -664,9 +676,6 @@ const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'co
 const NEGATIVE_FLOOR_REGISTERS = ['ironic', 'sarcastic', 'face_threat'];
 const DAG_MODES = ['strict_dag', 'human_scaffold', 'defeasible_human_scaffold'];
 const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-frame.v1';
-const SCAFFOLD_STATE_SCHEMA = 'machinespirits.tutor-stub.scaffold-state.v1';
-const SIDE_ARC_SCHEMA = 'machinespirits.tutor-stub.side-arc.v1';
-const WARRANT_PREMISE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.warrant-premise-audit.v1';
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
 const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
 const TUTOR_TYPED_ACTION_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.typed-action-outcome.v1';
@@ -2071,76 +2080,15 @@ function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEviden
   return 'Yes—that answers the last point. We will leave it settled until a genuinely new public fact gives us something further to test.';
 }
 
-function tutorGuardedSpans(text, audits) {
-  return projectTutorStubGuardedSpans(text, tutorStubGuardIssueRows(audits));
-}
-
-function exactTutorRepairSpans(originalText, repairedText) {
-  const original = String(originalText || '');
-  const repaired = String(repairedText || '');
-  if (original === repaired) return [];
-  let prefix = 0;
-  while (prefix < original.length && prefix < repaired.length && original[prefix] === repaired[prefix]) prefix += 1;
-  let suffix = 0;
-  while (
-    suffix < original.length - prefix &&
-    suffix < repaired.length - prefix &&
-    original[original.length - 1 - suffix] === repaired[repaired.length - 1 - suffix]
-  ) {
-    suffix += 1;
-  }
-  return [
-    {
-      offsetEncoding: 'utf16_code_units',
-      original: {
-        start: prefix,
-        end: original.length - suffix,
-        text: original.slice(prefix, original.length - suffix),
-      },
-      repaired: {
-        start: prefix,
-        end: repaired.length - suffix,
-        text: repaired.slice(prefix, repaired.length - suffix),
-      },
-    },
-  ];
-}
-
 function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
-  const text = String(response?.text || '');
-  const recoveryMetadata = response?.recoveryStrategy || response?.recoveryBatch || null;
-  const generation = {
-    callId: response?.guardCallId || null,
-    role: response?.guardRole || null,
-    latencyMs: Number(response?.latencyMs || 0),
-    usage: response?.usage ? jsonClone(response.usage) : null,
-    tokenUsageAvailable: response?.tokenUsageAvailable ?? null,
-    ...(recoveryMetadata
-      ? {
-          candidateKind: response.recoveryCandidateKind || kind,
-          ...recoveryMetadata,
-        }
-      : {}),
-  };
-  return {
+  return projectTutorStubGuardAttemptEnvelope({
     kind,
     attempt,
-    provider: response?.provider || null,
-    model: response?.model || null,
-    deliveryConfiguration: jsonClone(response?.deliveryResponseConfiguration || null),
-    configurationTransition: jsonClone(response?.responseConfigurationTransition || null),
-    candidate: {
-      start: 0,
-      end: text.length,
-      text,
-      offsetEncoding: 'utf16_code_units',
-    },
+    response,
     audits,
-    auditOk: audits?.deliveryOk ?? audits?.ok ?? null,
-    generation,
-    guardedSpans: audits ? tutorGuardedSpans(text, audits) : [],
+    issues: audits ? tutorStubGuardIssueRows(audits) : [],
     repairedSpans,
-  };
+  });
 }
 
 function buildTutorGuardAccounting({
@@ -4904,154 +4852,24 @@ function scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag }) {
   return branchTemplateForEvidence({}, world);
 }
 
-function compactReleaseRow(row = {}) {
-  return {
-    premise: row.premise || null,
-    turn: row.turn ?? null,
-    via: row.via || null,
-    surface: oneLine(row.surface || '', { max: 220 }) || null,
-  };
-}
-
-function compactFutureReleaseWindow(row = {}) {
-  return {
-    turn: row.turn ?? null,
-    via: row.via || null,
-  };
-}
-
 function buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag }) {
-  const enabled = dagMode !== 'strict_dag';
   const world = state?.world || null;
-  const dueNow = currentReleaseRows(state, tutorTurn);
-  const released = committedReleaseRows(state, tutorTurn);
-  const next = nextReleaseRow(state);
-  const branch = scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag });
-  const modeNote =
-    dagMode === 'defeasible_human_scaffold'
-      ? 'Learner may make compressed local leaps; tutor carries obvious public bridges internally and surfaces proof debt only when it matters.'
-      : dagMode === 'human_scaffold'
-        ? 'Tutor frames one local warrant and permits ordinary-language reasoning while strict proof remains the audit.'
-        : 'Strict audit mode; no scaffold adaptation.';
-  return {
-    schema: SCAFFOLD_STATE_SCHEMA,
-    mode: dagMode,
-    enabled,
-    source: enabled ? 'dramaturgy_release_projection' : 'strict_dag_disabled',
-    turn: tutorTurn,
+  return projectTutorStubScaffoldState({
+    dagMode,
+    tutorTurn,
     activeAct: activeDramaturgyAct(world, tutorTurn),
-    branch,
-    localQuestion: enabled ? branch.localQuestion : null,
-    warrantFrame: enabled ? branch.warrantFrame : null,
-    joinReminder: enabled ? branch.joinReminder : null,
-    releaseState: {
-      releasedCount: released.length,
-      dueNow: dueNow.map(compactReleaseRow),
-      latestReleased: released.at(-1) ? compactReleaseRow(released.at(-1)) : null,
-      // The public scaffold needs to know only that a future gap exists. Its
-      // premise id and surface remain owned by the deterministic planner.
-      nextRelease: next ? compactFutureReleaseWindow(next) : null,
-    },
-    returnTarget: enabled
-      ? {
-          kind: dueNow.length
-            ? 'current_release'
-            : branch.id === 'world_conclusion_join'
-              ? 'join_warrant'
-              : 'local_branch_warrant',
-          prompt: branch.localQuestion,
-          afterSideArc: `Return to: ${branch.localQuestion}`,
-        }
-      : null,
-    modeNote,
-    status: enabled ? 'projected_from_dramaturgy' : 'not_enabled_strict_dag',
-  };
-}
-
-function buildSideArcState({
-  dagMode,
-  classification = null,
-  learnerText = '',
-  scaffoldState = null,
-  generousInference = null,
-}) {
-  if (generousInference?.applied) {
-    return {
-      schema: SIDE_ARC_SCHEMA,
-      mode: dagMode,
-      detected: false,
-      type: null,
-      status: 'contextual_answer_resolved',
-      returnTarget: null,
-      learnerNeed: 'Acknowledge the resolved local inference and advance.',
-      reason: 'A high-confidence adjacent elliptical answer completed the current local move.',
-    };
-  }
-  const turn = classification?.turn || {};
-  const labels = [turn.request_type, turn.discourse_move, turn.epistemic_stance, turn.affect]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
-  const text = String(learnerText || '').toLowerCase();
-  let type = null;
-  let reason = 'no side arc detected';
-  if (/plain|simpl|clarif|what do you mean|old language|confus|translate|wording/u.test(`${labels} ${text}`)) {
-    type = 'clarification_or_plain_language';
-    reason = 'learner is asking for clarification, translation, or simpler wording';
-  } else if (/challenge|authority_refusal|low_trust|why|how do we know|prove|smuggling/u.test(`${labels} ${text}`)) {
-    type = 'warrant_challenge';
-    reason = 'learner is challenging the warrant or the tutor authority behind it';
-  } else if (/resistant|affective|frustrat|pressure|defensive|too much|lost/u.test(`${labels} ${text}`)) {
-    type = 'affective_repair';
-    reason = 'learner is signalling affective resistance, pressure, or loss of agency';
-  } else if (/off_task|unrelated/u.test(labels)) {
-    type = 'off_task_or_contextual';
-    reason = 'learner moved away from the proof path';
-  }
-  return {
-    schema: SIDE_ARC_SCHEMA,
-    mode: dagMode,
-    detected: Boolean(type),
-    type,
-    status: type ? 'active_return_required' : 'none',
-    returnTarget: type ? scaffoldState?.returnTarget || null : null,
-    learnerNeed: type ? turn.pedagogical_need || classification?.overall?.next_best_tutor_move || null : null,
-    reason,
-  };
-}
-
-function buildStrictDagAuditState(tutorLearnerDag) {
-  const model = tutorLearnerDag?.model || tutorLearnerDag || null;
-  const assessment = model?.assessment || {};
-  const metrics = model?.metrics || {};
-  return {
-    enabled: Boolean(model),
-    coverage: assessment.bestPathCoverage ?? null,
-    bottleneck: assessment.bottleneck || null,
-    finalSecretEntailed: assessment.finalSecretEntailed === true,
-    assertedSecret: assessment.assertedSecret === true,
-    assertedMirror: assessment.assertedMirror === true,
-    unsupportedAssertionCount: Number(assessment.unsupportedAssertionCount || 0),
-    missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0),
-    missingPremiseBuckets: assessment.missingPremiseBuckets || {},
-  };
-}
-
-function publicStocktakeRows(rows = [], source = 'learner_record') {
-  return (Array.isArray(rows) ? rows : [])
-    .map((row) => ({
-      surface: String(row?.surface || row?.text || '').trim(),
-      turn: Number.isFinite(Number(row?.turn)) ? Number(row.turn) : null,
-      source,
-    }))
-    .filter((row) => row.surface);
+    branch: scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag }),
+    dueNow: currentReleaseRows(state, tutorTurn),
+    released: committedReleaseRows(state, tutorTurn),
+    nextRelease: nextReleaseRow(state),
+  });
 }
 
 function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = null, learnerText = '', world = null }) {
   const model = tutorLearnerDag?.model || tutorLearnerDag || null;
   const record = model?.learnerRecord || {};
-  const explicitWarrants = publicStocktakeRows(record.voicedDerived, 'voiced_derived_public_claim');
-  const explicitPublicPremises = publicStocktakeRows(record.grounded, 'grounded_public_record');
+  const explicitWarrants = projectTutorStubPublicStocktakeRows(record.voicedDerived, 'voiced_derived_public_claim');
+  const explicitPublicPremises = projectTutorStubPublicStocktakeRows(record.grounded, 'grounded_public_record');
   const extraction = normalizeHumanDiscourseExtraction(
     tutorLearnerDag?.accepted?.humanDiscourse || tutorLearnerDag?.extractor?.humanDiscourse,
   );
@@ -5078,14 +4896,6 @@ function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = n
       })),
     'strict_dag_rejection',
   );
-  const proofDebtCandidates = [
-    ...extraction.proofDebtCandidates,
-    ...extraction.provisionalClaims
-      .filter((row) => row.warrantNeeded)
-      .map((row) => ({ ...row, reason: row.reason || row.warrantNeeded })),
-    ...heuristicMissingWarrants,
-    ...rejectedDebt,
-  ];
   const strictProofAdoptions = [
     ...(tutorLearnerDag?.accepted?.adopt || []).map((premise) => ({
       surface: premise,
@@ -5096,57 +4906,16 @@ function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = n
       source: 'strict_derived_public_claim',
     })),
   ].filter((row) => row.surface);
-  const proofStatus =
-    model?.assessment?.finalSecretEntailed && model?.assessment?.assertedSecret
-      ? 'strict_grounded_closure'
-      : extraction.proofStatus !== 'unclear'
-        ? extraction.proofStatus
-        : proofDebtCandidates.length
-          ? 'provisional_or_debt_open'
-          : 'strict_or_open';
-  return {
-    schema: WARRANT_PREMISE_AUDIT_SCHEMA,
-    mode: dagMode,
-    phase: HUMAN_DISCOURSE_PHASE,
-    proofStatus,
-    status:
-      dagMode === 'strict_dag'
-        ? 'strict_audit_only'
-        : extraction.illicitHiddenPremises.length || extraction.suppressedPremises.length
-          ? 'hidden_or_suppressed_premise_risk'
-          : proofDebtCandidates.length
-            ? 'proof_debt_open'
-            : 'current_turn_clean',
-    warrants: {
-      explicit: explicitWarrants,
-      implied: extraction.impliedWarrants,
-      missing: [...extraction.missingWarrants, ...heuristicMissingWarrants],
-    },
-    premises: {
-      explicitPublic: explicitPublicPremises,
-      impliedPublic: extraction.impliedPremises,
-      suppressedOrPrivate: extraction.suppressedPremises,
-      commonSenseBridges: extraction.commonSenseBridges,
-      illicitHidden: extraction.illicitHiddenPremises,
-    },
-    provisionalClaims: extraction.provisionalClaims,
-    proofDebtCandidates,
+  return projectTutorStubWarrantPremiseAudit({
+    dagMode,
+    model,
+    extraction,
+    explicitWarrants,
+    explicitPublicPremises,
+    heuristicMissingWarrants,
+    rejectedDebt,
     strictProofAdoptions,
-    extractionSideArc: extraction.sideArc,
-    counts: {
-      explicitWarrants: explicitWarrants.length,
-      impliedWarrants: extraction.impliedWarrants.length,
-      missingWarrants: extraction.missingWarrants.length + heuristicMissingWarrants.length,
-      explicitPublicPremises: explicitPublicPremises.length,
-      impliedPremises: extraction.impliedPremises.length,
-      suppressedPremises: extraction.suppressedPremises.length,
-      commonSenseBridges: extraction.commonSenseBridges.length,
-      illicitHiddenPremises: extraction.illicitHiddenPremises.length,
-      provisionalClaims: extraction.provisionalClaims.length,
-      proofDebtCandidates: proofDebtCandidates.length,
-      strictProofAdoptions: strictProofAdoptions.length,
-    },
-  };
+  });
 }
 
 function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classification = null, learnerText = '' }) {
@@ -7389,16 +7158,7 @@ function emptyTutorLearnerDagModel(state, tutorTurn, dagPreflight = null) {
     proxyDagMemory,
     assessment: learnerDag.assessment,
   });
-  model.memoryReliability = dagFactDropout
-    ? {
-        schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
-        configuredRate: dagFactDropout.configuredRate,
-        activeDroppedCount: dagFactDropout.activeDropped.length,
-        droppedThisTurn: dagFactDropout.droppedNow.length,
-        repairedThisTurn: dagFactDropout.repairedNow.length,
-        visibility: 'conduct',
-      }
-    : null;
+  model.memoryReliability = projectTutorStubDagMemoryReliability(dagFactDropout);
   const advance = buildTutorStubLearnerAdvance({ beforeModel: previousModel, afterModel: model });
   model.learnerAdvance = advance;
   return { model, dagFactDropout, advance, preflight: dagPreflight };
@@ -7875,79 +7635,15 @@ function classifierTutorContext(classification) {
   return projectTutorStubLearnerClassifierContext(classification);
 }
 
-function dagNodeFact(node) {
-  const content = node?.statement?.content || {};
-  if (content.rel === 'holds_L') return content.fact;
-  if (content.rel === 'grounded_L') return content.of;
-  return node?.fact || null;
-}
-
-function dagNodeLabel(node) {
-  if (!node) return 'unknown';
-  const fact = dagNodeFact(node);
-  const renderedFact = fact ? factText(fact) : node.id;
-  if (node.leaf) return `hold:${node.premiseId || renderedFact}`;
-  return `ground:${renderedFact}`;
-}
-
 function buildTutorDagSnapshot(state, tutorTurn) {
   if (!state.dag || !state.world || !state.tutorDag) return null;
-  const world = state.world;
-  const dag = state.tutorDag;
-  const nodesById = new Map((dag.nodes || []).map((node) => [node.id, node]));
-  const releaseByPremise = new Map(world.releaseSchedule.map((entry) => [entry.premise, entry]));
-  const releasedRows = committedReleaseRows(state, tutorTurn);
-  const releasedPremises = new Set(releasedRows.map((entry) => entry.premise));
-  const releasedTurnByPremise = new Map(releasedRows.map((entry) => [entry.premise, entry.turn]));
-  const leaves = (dag.leaves || []).map((premiseId) => {
-    const premise = world.premiseById.get(premiseId);
-    const release = releaseByPremise.get(premiseId);
-    return {
-      premise: premiseId,
-      fact: premise ? factText(premise.fact) : premiseId,
-      released: releasedPremises.has(premiseId),
-      scheduledTurn: release?.turn ?? null,
-      releasedTurn: releasedTurnByPremise.get(premiseId) ?? null,
-      via: release?.via || null,
-    };
+  return projectTutorStubDagSnapshot({
+    dag: state.tutorDag,
+    world: state.world,
+    tutorTurn,
+    releasedRows: committedReleaseRows(state, tutorTurn),
+    nextRelease: nextReleaseRow(state),
   });
-  const nextRelease = nextReleaseRow(state);
-  const nodes = (dag.nodes || []).map((node) => ({
-    id: node.id,
-    label: dagNodeLabel(node),
-    origin: node.origin,
-    rule: node.rule || null,
-    leaf: Boolean(node.leaf),
-    premise: node.premiseId || null,
-    fact: dagNodeFact(node) ? factText(dagNodeFact(node)) : null,
-  }));
-  const edges = (dag.edges || []).map((edge) => ({
-    from: edge.from,
-    to: edge.to,
-    fromLabel: dagNodeLabel(nodesById.get(edge.from)),
-    toLabel: dagNodeLabel(nodesById.get(edge.to)),
-    rule: edge.rule || null,
-  }));
-
-  return {
-    schema: dag.schema,
-    turn: tutorTurn,
-    derivable: Boolean(dag.derivable),
-    root: dag.root,
-    rootLabel: dagNodeLabel(nodesById.get(dag.root)),
-    leavesReleased: leaves.filter((leaf) => leaf.released).length,
-    leavesTotal: leaves.length,
-    nextRelease: nextRelease
-      ? {
-          premise: nextRelease.premise,
-          turn: nextRelease.turn,
-          via: nextRelease.via,
-        }
-      : null,
-    leaves,
-    nodes,
-    edges,
-  };
 }
 
 function printTutorDagSnapshot(snapshot) {

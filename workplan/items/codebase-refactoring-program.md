@@ -51,6 +51,8 @@ links:
     - refactor-tutor-stub-feature-map-projection
     - refactor-tutor-stub-release-notes-projection
     - refactor-tutor-stub-dag-snapshot-projection
+    - refactor-tutor-stub-dag-snapshot-model
+    - refactor-tutor-stub-second-loop-recovery
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -855,3 +857,74 @@ Log:
   CLI reduction, 26 focused assertions, 7,431 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated second-loop run 3,
+  `refactor-tutor-stub-repair-spans`, from PR #351's reviewed head. Repair
+  selection, accounting, runtime state, and effects remain in their current
+  owners.
+- 2026-07-28 — Second-loop repair-span run reached review with a 28-line net
+  CLI reduction, 14 focused assertions, 7,433 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 4,
+  `refactor-tutor-stub-guard-attempt-envelope`, from PR #352's reviewed head.
+  Audit evaluation, repair selection, accounting aggregation, runtime state,
+  and effects remain in their current owners.
+- 2026-07-28 — Second-loop guard-attempt-envelope run reached review with a
+  32-line net CLI reduction, 16 focused assertions, 7,435 root assertions, and
+  137 tutor-core assertions green with zero skips. All static and source-only
+  gates pass; one dead wrapper exposed by the extraction was removed.
+- 2026-07-28 — Activated second-loop run 5,
+  `refactor-tutor-stub-scaffold-state`, from PR #353's reviewed head. World and
+  dramaturgy loading, branch choice, release scheduling, model calls, runtime
+  state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop scaffold-state run reached review with a 51-line
+  net CLI reduction, 48 focused assertions, 7,438 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 6,
+  `refactor-tutor-stub-side-arc-state`, from PR #354's reviewed head. Learner
+  classification, generous inference, scaffold construction, model calls,
+  runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop side-arc-state run reached review with a 52-line net
+  CLI reduction, 49 focused assertions, 7,444 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 7,
+  `refactor-tutor-stub-warrant-audit-projection`, from PR #355's reviewed head.
+  Human-discourse extraction, world fact rendering, learner classification,
+  model calls, runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop warrant-audit run reached review with a 56-line net
+  CLI reduction, 48 focused assertions, 7,447 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 8,
+  `refactor-tutor-stub-strict-dag-audit`, from PR #356's reviewed head. DAG
+  construction, learner updates, warrant audit, proof debt, model calls,
+  runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop strict-DAG-audit run reached review with a 16-line
+  net CLI reduction, 48 focused assertions, 7,450 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 9,
+  `refactor-tutor-stub-dag-memory-reliability`, from PR #357's reviewed head.
+  Dropout scheduling, board mutation, DAG construction, model calls, runtime
+  state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop DAG-memory-reliability run reached review with 16
+  duplicate source lines removed across the CLI and public-analysis service,
+  41 focused assertions, 7,452 root assertions, and 137 tutor-core assertions
+  green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated second-loop run 10,
+  `refactor-tutor-stub-dag-snapshot-model`, from PR #358's reviewed head. The
+  completed `dag-snapshot-projection` card remains the earlier terminal-line
+  presentation slice.
+  Tutor-DAG construction, release scheduling, state access, terminal writes,
+  runtime callers, and effects remain in their current owners.
+- 2026-07-28 — Second-loop tutor-DAG-snapshot run reached review with a
+  61-line net CLI reduction, eight focused assertions including the byte-exact
+  live Marrick terminal block, 7,454 root assertions, and 137 tutor-core
+  assertions green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — GitHub marked PRs #352–#359 merged while retaining feature
+  branches as their bases, so their reviewed commits did not enter `main`.
+  Replayed only those eight missing slices onto current `origin/main` under
+  `refactor-tutor-stub-second-loop-recovery`; the complete hermetic contract
+  passes before beginning the third ten-run loop.

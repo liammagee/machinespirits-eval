@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { projectTutorStubGuardedSpans } from '../services/tutorStubGuardSpanProjection.js';
+import {
+  projectTutorStubExactRepairSpans,
+  projectTutorStubGuardedSpans,
+} from '../services/tutorStubGuardSpanProjection.js';
 
 test('guard span projection preserves literal matches, de-duplication, and ordering', () => {
   const text = 'Alpha clue. Beta clue. Alpha clue.';
@@ -69,4 +72,35 @@ test('guard span projection preserves closure, insertion, and whole-candidate fa
   assert.equal(whole[0].basis, 'whole_candidate_audit_scope');
   assert.equal(whole[0].text, 'Candidate');
   assert.deepEqual(projectTutorStubGuardedSpans('Candidate', []), []);
+});
+
+test('exact repair spans preserve shared prefix and suffix in UTF-16 offsets', () => {
+  const original = 'A 😀 tutor says old claim. Done.';
+  const repaired = 'A 😀 tutor says revised claim. Done.';
+
+  assert.deepEqual(projectTutorStubExactRepairSpans(original, repaired), [
+    {
+      offsetEncoding: 'utf16_code_units',
+      original: { start: 16, end: 18, text: 'ol' },
+      repaired: { start: 16, end: 22, text: 'revise' },
+    },
+  ]);
+});
+
+test('exact repair spans handle insertions, deletions, and unchanged text', () => {
+  assert.deepEqual(projectTutorStubExactRepairSpans('Close.', 'Close now.'), [
+    {
+      offsetEncoding: 'utf16_code_units',
+      original: { start: 5, end: 5, text: '' },
+      repaired: { start: 5, end: 9, text: ' now' },
+    },
+  ]);
+  assert.deepEqual(projectTutorStubExactRepairSpans('Close now.', 'Close.'), [
+    {
+      offsetEncoding: 'utf16_code_units',
+      original: { start: 5, end: 9, text: ' now' },
+      repaired: { start: 5, end: 5, text: '' },
+    },
+  ]);
+  assert.deepEqual(projectTutorStubExactRepairSpans('Same', 'Same'), []);
 });
