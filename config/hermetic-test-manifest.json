@@ -502,6 +502,7 @@
         "tests/tutorStubRegisterPolicy.test.js",
         "tests/tutorStubRegisterPolicyComposition.test.js",
         "tests/tutorStubRegisterPriors.test.js",
+        "tests/tutorStubRegisterStateRestoration.test.js",
         "tests/tutorStubReleaseNotesPresentation.test.js",
         "tests/tutorStubReleasePacing.test.js",
         "tests/tutorStubRemoteDriver.test.js",
