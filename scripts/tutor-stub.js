@@ -133,21 +133,12 @@ import {
   auditTutorStubReleaseDelivery,
   auditTutorStubRepetitionResponse,
   deterministicTutorStubContextualFallback,
-  resolveTutorStubAnswerReference,
   snapshotTutorStubPublicPremiseIds,
 } from '../services/tutorStubResponseGuard.js';
 import { buildTutorStubObservedAudits } from '../services/tutorStubObservedAudits.js';
-import {
-  formatTutorStubFact as factText,
-  tutorStubSplitSymbolWords as splitSymbolWords,
-  tutorStubTextContainsToken as textContainsToken,
-  tutorStubTextTokens as textTokens,
-} from '../services/tutorStubFactModel.js';
+import { formatTutorStubFact as factText } from '../services/tutorStubFactModel.js';
 import { createTutorStubPublicEvidenceModel } from '../services/tutorStubPublicEvidence.js';
-import {
-  auditTutorStubEvidenceAssertions,
-  tutorStubPrivateTokenAlreadyPublic,
-} from '../services/tutorStubEvidenceAssertion.js';
+import { createTutorStubResponseLeakAudit } from '../services/tutorStubResponseLeakAudit.js';
 import {
   TUTOR_STUB_CHARACTER_RESTATEMENT_SCHEMA,
   TUTOR_STUB_CHARACTER_RESTATEMENT_SYSTEM_PROMPT,
@@ -155,10 +146,6 @@ import {
   buildTutorStubCharacterRestatementPrompt,
   cleanTutorStubCharacterRestatement,
 } from '../services/tutorStubCharacterRestatement.js';
-import {
-  tutorStubAnswerConclusionAsserted,
-  tutorStubSecretConclusionWordPatterns,
-} from '../services/tutorStubConclusionAssertion.js';
 import {
   TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
   TUTOR_STUB_QUARANTINE_CONTINUATION,
@@ -1546,241 +1533,9 @@ function loadRegisterEmpiricalPrior(value, { policy }) {
   return { prior, filePath, status };
 }
 
-const {
-  answerTermForWorld,
-  candidatePublicPremiseIds,
-  entailsFactAtTurn,
-  publicEvidenceTextForAssertion,
-  publicTextForTurn,
-} = createTutorStubPublicEvidenceModel({ committedReleaseRows, currentReleaseRows });
-
-const PRIVATE_TOKEN_STOPWORDS = new Set([
-  'about',
-  'above',
-  'after',
-  'again',
-  'alone',
-  'answer',
-  'assay',
-  'because',
-  'built',
-  'before',
-  'beside',
-  'bench',
-  'blank',
-  'blanks',
-  'building',
-  'came',
-  'cast',
-  'coin',
-  'coins',
-  'comparison',
-  'contrast',
-  'counts',
-  'could',
-  'differs',
-  'down',
-  'every',
-  'exactly',
-  'evidence',
-  'false',
-  'finish',
-  'finished',
-  'hand',
-  'lesson',
-  'lessons',
-  'line',
-  'make',
-  'measure',
-  'measures',
-  'mark',
-  'might',
-  'name',
-  'nothing',
-  'only',
-  'plain',
-  'progress',
-  'public',
-  'record',
-  'results',
-  'rule',
-  'says',
-  'scored',
-  'shilling',
-  'shillings',
-  'should',
-  'shown',
-  'single',
-  'still',
-  'struck',
-  'that',
-  'their',
-  'there',
-  'thing',
-  'things',
-  'them',
-  'these',
-  'this',
-  'trial',
-  'turn',
-  'twice',
-  'verdict',
-  'warrant',
-  'what',
-  'when',
-  'where',
-  'which',
-  'with',
-  'would',
-]);
-
-function unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText, state = null, publicPremiseIds = null }) {
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  const publicTokens = textTokens(publicTextForTurn(world, tutorTurn, learnerText, state, publicPremiseIds));
-  const rows = [];
-  for (const premise of world?.premises || []) {
-    const release = world.releaseSchedule.find((entry) => entry.premise === premise.id);
-    if (!release || available.has(premise.id)) continue;
-
-    const factTokens = new Set(
-      (premise.fact || [])
-        .slice(1)
-        .flatMap(splitSymbolWords)
-        .filter(
-          (token) =>
-            token.length >= 4 &&
-            !PRIVATE_TOKEN_STOPWORDS.has(token) &&
-            !tutorStubPrivateTokenAlreadyPublic(token, publicTokens),
-        ),
-    );
-    const surfaceTokens = new Set(
-      splitSymbolWords(premise.surface).filter(
-        (token) =>
-          token.length >= 5 &&
-          !PRIVATE_TOKEN_STOPWORDS.has(token) &&
-          !tutorStubPrivateTokenAlreadyPublic(token, publicTokens),
-      ),
-    );
-    const factMatches = [...factTokens].filter((token) => textContainsToken(text, token));
-    const surfaceMatches = [...surfaceTokens].filter((token) => textContainsToken(text, token));
-    const strongMatches = [...new Set([...factMatches, ...surfaceMatches])].sort();
-    if (factMatches.length || surfaceMatches.length >= 2) {
-      rows.push({
-        premise: premise.id,
-        scheduledTurn: release.turn,
-        matches: strongMatches,
-      });
-    }
-  }
-  return rows;
-}
-
-function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = null, publicPremiseIds = null }) {
-  if (!world) return { ok: true, leaks: [] };
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  const leaks = [];
-  const answerTerm = answerTermForWorld(world);
-  const publicText = publicTextForTurn(world, tutorTurn, learnerText, state, available);
-  const answerReference = resolveTutorStubAnswerReference({ answerTerm, text, publicText });
-  const mentionsAnswer = answerReference.referencesAnswer;
-  const finalEntailed = entailsFactAtTurn(world, tutorTurn, world.secret.fact, state, available);
-
-  if (answerReference.concealedMatches.length && !finalEntailed && !answerReference.answerNamePublic) {
-    leaks.push({
-      type: 'concealed_answer_name',
-      reason: `mentions ${answerTerm} before the public record entails the answer`,
-      matches: answerReference.concealedMatches,
-    });
-  }
-
-  if (mentionsAnswer) {
-    const lower = String(text || '').toLowerCase();
-    const intermediateChecks = [
-      {
-        fact: ['castBlankFor', world.questionPattern?.[1] || world.secret.fact?.[1], answerTerm],
-        words: [/cast/u, /blank/u],
-        label: 'private_blank_conclusion',
-      },
-      {
-        fact: ['cutDieFor', world.questionPattern?.[1] || world.secret.fact?.[1], answerTerm],
-        words: [/\bcut\b/u, /\bdie\b/u],
-        label: 'private_die_conclusion',
-      },
-      {
-        fact: world.secret.fact,
-        words: [
-          ...(world.secret?.fact?.[0] === 'struckBy'
-            ? [/\bstruck\b/u, /\bstrike\b/u, /\bcoiner\b/u, /\bcoined\b/u, /\bmade\b/u]
-            : []),
-          ...tutorStubSecretConclusionWordPatterns(world.secret?.fact?.[0]),
-        ],
-        label: 'private_final_conclusion',
-      },
-    ];
-    const worldRulePredicates = new Set(
-      (world.rules || []).flatMap((rule) => [...(rule.if || []), ...(rule.then || [])]).map((fact) => fact?.[0]),
-    );
-    for (const check of intermediateChecks) {
-      // The intermediate-conclusion checks encode the assay worlds' law
-      // (castBlankFor/cutDieFor/struckBy vocabulary). Apply them only where
-      // the world's own rules carry those predicates; every other world is
-      // covered by the generic concealed-answer + unreleased-premise audits.
-      if (check.label !== 'private_final_conclusion' && !worldRulePredicates.has(check.fact[0])) {
-        continue;
-      }
-      if (
-        tutorStubAnswerConclusionAsserted({
-          text: lower,
-          answerTerm,
-          wordPatterns: check.words,
-        }) &&
-        !entailsFactAtTurn(world, tutorTurn, check.fact, state, available)
-      ) {
-        leaks.push({
-          type: check.label,
-          reason: `states a conclusion about ${answerTerm} before that conclusion is derivable from released evidence`,
-          fact: factText(check.fact),
-        });
-      }
-    }
-  }
-
-  for (const row of unreleasedPremiseLeakRows({
-    text,
-    world,
-    tutorTurn,
-    learnerText,
-    state,
-    publicPremiseIds: available,
-  })) {
-    leaks.push({
-      type: 'unreleased_premise_content',
-      reason: `uses content from ${row.premise} before its scheduled release at turn ${row.scheduledTurn}`,
-      premise: row.premise,
-      matches: row.matches,
-    });
-  }
-
-  const evidenceAssertionAudit = auditTutorStubEvidenceAssertions({
-    text,
-    permittedText: publicEvidenceTextForAssertion(world, tutorTurn, learnerText, state, available),
-  });
-  for (const issue of evidenceAssertionAudit.issues) {
-    leaks.push({
-      type: issue.type,
-      reason: issue.reason,
-      text: issue.text,
-    });
-  }
-
-  return {
-    ok: leaks.length === 0,
-    leaks,
-    finalEntailed,
-    answerNamePublic: answerReference.answerNamePublic,
-    publicPremiseIds: [...available],
-  };
-}
+const publicEvidenceModel = createTutorStubPublicEvidenceModel({ committedReleaseRows, currentReleaseRows });
+const { answerTermForWorld } = publicEvidenceModel;
+const { auditTutorResponseLeak } = createTutorStubResponseLeakAudit({ publicEvidenceModel });
 
 function tutorResponseRecoveryPrompt({
   publicPacket = [],
