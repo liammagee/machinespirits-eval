@@ -73,7 +73,10 @@ export function buildTutorStubDialogueClosureFrame({
     answerTerm: String(answerTerm || '').trim() || null,
     basis: null,
   };
-  if (!current.enabled || current.phase === 'closed') return base;
+  if (!current.enabled) return base;
+  // A closed lifecycle offers no further closing act, but the frame must still
+  // say so: the audit distinguishes an unearned close from a post-closure one.
+  if (current.phase === 'closed') return { ...base, phase: 'closed' };
   if (current.phase === 'awaiting_checkin') {
     return {
       ...base,
@@ -106,13 +109,19 @@ export function buildTutorStubDialogueClosureFrame({
 
 export function detectTutorStubVerdictDeclaration(text, { answerTerm = '' } = {}) {
   const source = String(text || '');
-  const explicitClosure = EXPLICIT_CLOSURE_PATTERN.test(source) && !NEGATED_CLOSURE_PATTERN.test(source);
+  const closureMatch = NEGATED_CLOSURE_PATTERN.test(source) ? null : source.match(EXPLICIT_CLOSURE_PATTERN);
+  const explicitClosure = Boolean(closureMatch);
   const finalVerdict = Boolean(
     !NEGATED_VERDICT_PATTERN.test(source) &&
     (AFFIRMATIVE_VERDICT_PATTERN.test(source) ||
       (answerMentioned(source, answerTerm) && ANSWER_VERDICT_PATTERN.test(source))),
   );
-  return { declared: explicitClosure || finalVerdict, explicitClosure, finalVerdict };
+  return {
+    declared: explicitClosure || finalVerdict,
+    explicitClosure,
+    finalVerdict,
+    closureMatch: closureMatch?.[0] || null,
+  };
 }
 
 function questionRows(text) {
@@ -129,7 +138,14 @@ export function auditTutorStubDialogueClosureResponse({ text, frame } = {}) {
   }
   const verdict = detectTutorStubVerdictDeclaration(text, { answerTerm: frame.answerTerm });
   if (!frame.mandatory && !frame.available) {
-    if (!verdict.declared) {
+    // Closure is not earned yet, so the only closing question is whether the
+    // response claimed it anyway — either by declaring the case closed or by
+    // handing over the verdict, which settles the inquiry just as finally.
+    // Passing here unread is what let a tutor state "I mark the case closed"
+    // three turns running while the lifecycle stayed open, each restatement
+    // read by a per-turn rubric as a turn that asked for nothing. A lifecycle
+    // already closed is a different matter and left alone.
+    if (frame.phase === 'closed' || !verdict.declared) {
       return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [], verdict };
     }
     return {
@@ -139,7 +155,10 @@ export function auditTutorStubDialogueClosureResponse({ text, frame } = {}) {
       issues: [
         {
           type: 'premature_dialogue_close',
-          reason: 'the response closes or settles the inquiry while the strict learner DAG remains open',
+          reason: verdict.explicitClosure
+            ? 'the response declares the case closed while the closure conditions are unmet, so the dialogue must continue'
+            : 'the response closes or settles the inquiry while the strict learner DAG remains open',
+          matches: [verdict.closureMatch].filter(Boolean),
         },
       ],
       verdict,

@@ -67,6 +67,43 @@ test('a draft that also crossed an evidence boundary is not a disclosure case', 
   assert.equal(disclosable.reason, 'a hard finding remains that the fallback would not waive');
 });
 
+test('a finding that already survived a re-draft does not open the pass', () => {
+  // Riverside turn 5 of the 2026-07-28 showcase run: the first draft and the
+  // plain recovery both lost the turn focus. The pass ran anyway, produced a
+  // third draft that lost it again and dropped the actorial part and the uptake
+  // as well, and the turn fell through to the fallback regardless.
+  const disclosable = tutorStubDisclosableGuardCorrection({
+    audits: uptakeFailureAudits(),
+    attempts: [
+      { kind: 'first_draft', attempt: 0, candidate: { text: 'A first draft.' }, audits: uptakeFailureAudits() },
+      { kind: 'plain_recovery_candidate', attempt: 1, candidate: { text: NEAR_MISS }, audits: uptakeFailureAudits() },
+    ],
+  });
+  assert.equal(disclosable.disclosable, false, JSON.stringify(disclosable));
+  assert.equal(disclosable.reason, 'the finding already survived a re-draft');
+  assert.deepEqual(disclosable.survivedFindings, ['learner_uptake_not_realized']);
+});
+
+test('a finding raised for the first time by the near miss still opens the pass', () => {
+  // Campus turn 6: the first draft failed on clue release, the plain recovery
+  // fixed that and re-questioned a settled point instead. That check has not
+  // been put to the model yet, so the rung is worth its call.
+  const disclosable = tutorStubDisclosableGuardCorrection({
+    audits: uptakeFailureAudits(),
+    attempts: [
+      {
+        kind: 'first_draft',
+        attempt: 0,
+        candidate: { text: 'A first draft.' },
+        audits: { dramaticReleaseAudit: { ok: false, issues: [{ type: 'opaque_clue_release' }] } },
+      },
+      { kind: 'plain_recovery_candidate', attempt: 1, candidate: { text: NEAR_MISS }, audits: uptakeFailureAudits() },
+    ],
+  });
+  assert.equal(disclosable.disclosable, true, JSON.stringify(disclosable));
+  assert.deepEqual(disclosable.survivedFindings, []);
+});
+
 test('there is nothing to disclose without a draft the tutor actually produced', () => {
   const disclosable = tutorStubDisclosableGuardCorrection({
     audits: uptakeFailureAudits(),

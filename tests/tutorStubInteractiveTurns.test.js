@@ -70,12 +70,21 @@ test('ordinary invalid tutor drafts recover through a progression-safe determini
     const accounting = events.find((event) => event.type === 'tutor_response_guard_accounting')?.accounting;
     assert.ok(accounting);
     assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
-    // Both drafts fail live progression and nothing else, so the self-correction
-    // pass is offered before the safety text. Here it fails too, and the ladder
-    // falls through to exactly the fallback it always produced.
+    // Both drafts fail live progression on the same findings, so the model has
+    // already been told about those checks and re-drafted against them once.
+    // The self-correction pass is not offered a third go at the same content;
+    // the ladder goes straight to the fallback it always produced anyway.
     assert.deepEqual(
       accounting.attempts.map((attempt) => attempt.kind),
-      ['original_candidate', 'plain_recovery_candidate', 'self_correction_candidate', 'deterministic_fallback'],
+      ['original_candidate', 'plain_recovery_candidate', 'deterministic_fallback'],
+    );
+    const skipped = events.find((event) => event.type === 'tutor_response_self_correction_pass_skipped');
+    assert.ok(skipped);
+    assert.equal(skipped.reason, 'the finding already survived a re-draft');
+    assert.deepEqual(skipped.survivedFindings, ['learner_uptake_not_realized', 'handoff_loses_turn_focus']);
+    assert.equal(
+      events.some((event) => event.type === 'tutor_response_self_correction_pass'),
+      false,
     );
     assert.equal(accounting.attempts[0].audits.liveTurnProgressionAudit.ok, false);
     assert.equal(accounting.attempts[1].audits.liveTurnProgressionAudit.ok, false);

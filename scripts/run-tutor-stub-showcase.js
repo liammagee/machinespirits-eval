@@ -219,6 +219,7 @@ async function main() {
   const loaded = loadTutorStubShowcaseConfig(configPath);
   const plan = buildTutorStubShowcasePlan({
     config: loaded.config,
+    releaseSchedules: loaded.releaseSchedules,
     preset: args.preset || 'default',
     arms: csv(args.arms),
     scenarios: csv(args.scenarios),

@@ -75,12 +75,23 @@ function comparable(value = '') {
  * crossed an evidence boundary is a different situation: the fallback is
  * replacing something the tutor should not have said, not quietly absorbing an
  * unanswered question, and there is nothing there worth disclosing.
+ *
+ * And it declines when the finding has already survived a re-draft. The model
+ * was told about that check, wrote the turn again, and the check fired on the
+ * new text too; a third draft against the same content is the harness stalling
+ * on its own recovery ladder, which is the failure `tutor_turn_without_advance`
+ * exists to catch one level up. In the 2026-07-28 showcase run this rung ran on
+ * six turns, landed on none of them, and disclosed on none of them; four of the
+ * six had a finding that had already survived a re-draft, and the two that had
+ * not still failed. Skipping those four costs nothing that run produced and
+ * saves a model call per turn.
  */
 export function tutorStubDisclosableGuardCorrection({ audits = null, attempts = [] } = {}) {
   const base = {
     schema: TUTOR_STUB_SELF_CORRECTION_DISCLOSURE_SCHEMA,
     disclosable: false,
     findings: [],
+    survivedFindings: [],
     nearMiss: null,
     reason: null,
   };
@@ -102,10 +113,26 @@ export function tutorStubDisclosableGuardCorrection({ audits = null, attempts = 
   );
   const nearMissAttempt = modelAttempts.at(-1);
   if (!nearMissAttempt) return { ...base, findings, reason: 'no_prior_attempt_text_to_disclose' };
+  const priorAttempt = modelAttempts.at(-2);
+  const priorHardTypes = new Set(
+    tutorStubGuardIssueRows(priorAttempt?.audits)
+      .filter((issue) => classifyTutorStubGuardIssue(issue).strictDisposition === 'hard')
+      .map((issue) => issue.type),
+  );
+  const survivedFindings = [...new Set(findings.map((issue) => issue.type))].filter((type) => priorHardTypes.has(type));
+  if (survivedFindings.length) {
+    return {
+      ...base,
+      findings,
+      survivedFindings,
+      reason: 'the finding already survived a re-draft',
+    };
+  }
   return {
     ...base,
     disclosable: true,
     findings,
+    survivedFindings,
     nearMiss: {
       attempt: nearMissAttempt.attempt ?? null,
       kind: nearMissAttempt.kind || null,
@@ -144,7 +171,7 @@ export function tutorStubSelfCorrectionDisclosurePrompt({
     nearMiss ? `You drafted: ${nearMiss}` : '',
     reasons.length ? `That draft does not answer them: ${reasons.join('; ')}.` : '',
     uptake?.learner_surface ? `Answer what they actually said: ${oneLine(uptake.learner_surface)}` : '',
-    'Write the turn again so it answers them.',
+    'Write the turn again so it answers them. Keep what that draft already had right and change only what is named above — a shorter turn that drops a part of it is not a repair.',
     'The learner is present for this. If your first attempt went somewhere it should not have, you may say so to them in your own words, in the register of this scene — a working detective can think aloud and change course. You may also simply answer well and say nothing about it. Both are acceptable; neither is required.',
     'If you refer to what you were going to say, refer only to what you actually drafted above. Do not invent a discarded line.',
     'Never name the machinery. The learner has no idea there are drafts, checks, or rules behind your speech, and must not learn it here. Speak only as the character in the scene.',
