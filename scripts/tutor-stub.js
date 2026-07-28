@@ -86,6 +86,7 @@ import {
   formatTutorStubStateTurnDebugId as turnDebugId,
   formatTutorStubTurnDebugId as formatTurnDebugId,
   resolveTutorStubStateRunDebugId as stateRunDebugId,
+  tutorStubAutomaticTechnicalDetailsEnabled as automaticTechnicalDetailsEnabled,
 } from '../services/tutorStubDebugIdentity.js';
 import {
   listTutorStubCurriculumModules,
@@ -3446,10 +3447,6 @@ function printDebugIdLine(state, id, label = 'turn id') {
   state.printedDebugIds.add(id);
   console.log(`${C.cyan}${label} >${C.reset} ${id}`);
   return id;
-}
-
-function automaticTechnicalDetailsEnabled(state) {
-  return Boolean(state?.explanatoryDebug?.enabled && state.explanatoryDebug.format === 'technical');
 }
 
 function printTurnDebugLine(state, turn) {

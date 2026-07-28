@@ -1269,3 +1269,10 @@ Log:
 - 2026-07-28 — Fifty-loop state-debug-identity run reached review with a
   six-line net CLI reduction, seven focused assertions, and complete zero-skip
   hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 37,
+  `refactor-tutor-stub-technical-debug-predicate`, from PR #410's reviewed head.
+  Debug printing, clipboard operations, runtime state, and effects remain in
+  the CLI.
+- 2026-07-28 — Fifty-loop technical-debug-predicate run reached review with a
+  three-line net CLI reduction, eight focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.

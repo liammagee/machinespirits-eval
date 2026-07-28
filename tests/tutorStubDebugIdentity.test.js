@@ -7,6 +7,7 @@ import {
   formatTutorStubStateTurnDebugId,
   formatTutorStubTurnDebugId,
   resolveTutorStubStateRunDebugId,
+  tutorStubAutomaticTechnicalDetailsEnabled,
 } from '../services/tutorStubDebugIdentity.js';
 
 test('debug timestamps remain filename-safe and byte-exact', () => {
@@ -41,11 +42,29 @@ test('state turn debug ids reuse canonical run normalization and turn padding', 
   assert.equal(formatTutorStubStateTurnDebugId(null, 0), 'no-trace');
 });
 
+test('automatic technical details require both enabled explanatory debug and the technical format', () => {
+  assert.equal(tutorStubAutomaticTechnicalDetailsEnabled(null), false);
+  assert.equal(tutorStubAutomaticTechnicalDetailsEnabled({}), false);
+  assert.equal(tutorStubAutomaticTechnicalDetailsEnabled({ explanatoryDebug: { enabled: true } }), false);
+  assert.equal(
+    tutorStubAutomaticTechnicalDetailsEnabled({ explanatoryDebug: { enabled: false, format: 'technical' } }),
+    false,
+  );
+  assert.equal(
+    tutorStubAutomaticTechnicalDetailsEnabled({ explanatoryDebug: { enabled: true, format: 'concise' } }),
+    false,
+  );
+  assert.equal(
+    tutorStubAutomaticTechnicalDetailsEnabled({ explanatoryDebug: { enabled: true, format: 'technical' } }),
+    true,
+  );
+});
+
 test('the CLI imports rather than redeclares the debug identity model', () => {
   const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
   assert.match(source, /from '\.\.\/services\/tutorStubDebugIdentity\.js'/u);
   assert.doesNotMatch(
     source,
-    /function (?:safeTimestampForFile|formatTurnDebugId|openingDebugId|stateRunDebugId|turnDebugId)\(/u,
+    /function (?:safeTimestampForFile|formatTurnDebugId|openingDebugId|stateRunDebugId|turnDebugId|automaticTechnicalDetailsEnabled)\(/u,
   );
 });

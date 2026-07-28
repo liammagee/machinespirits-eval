@@ -24,3 +24,7 @@ export function resolveTutorStubStateRunDebugId(state) {
 export function formatTutorStubStateTurnDebugId(state, turn) {
   return formatTutorStubTurnDebugId(resolveTutorStubStateRunDebugId(state), turn);
 }
+
+export function tutorStubAutomaticTechnicalDetailsEnabled(state) {
+  return Boolean(state?.explanatoryDebug?.enabled && state.explanatoryDebug.format === 'technical');
+}
