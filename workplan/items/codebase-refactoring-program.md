@@ -66,6 +66,7 @@ links:
     - refactor-tutor-stub-cli-parsing
     - refactor-tutor-stub-model-selection
     - refactor-tutor-stub-dag-mode
+    - refactor-tutor-stub-register-prior-loading
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -1034,3 +1035,10 @@ Log:
 - 2026-07-28 — Fifty-loop DAG-mode run reached review with a six-line net CLI
   reduction, 11 focused assertions, and complete zero-skip hermetic parity.
   All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 4,
+  `refactor-tutor-stub-register-prior-loading`, from PR #373's reviewed head.
+  Policy selection, runtime register state, filesystem location, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop register-prior-loading run reached review with a
+  22-line net CLI reduction, 27 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
