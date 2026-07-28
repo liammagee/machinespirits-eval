@@ -416,6 +416,7 @@
         "tests/tutorStubCurriculumProgressPresentation.test.js",
         "tests/tutorStubCurriculumRuntime.test.js",
         "tests/tutorStubCurriculumTranslation.test.js",
+        "tests/tutorStubDagFeatures.test.js",
         "tests/tutorStubDagSnapshotPresentation.test.js",
         "tests/tutorStubDebugIdentity.test.js",
         "tests/tutorStubDevelopmentSpeakerTransport.test.js",

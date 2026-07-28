@@ -620,6 +620,7 @@ import {
   scoreValue,
   topNumericEntries,
 } from '../services/tutorStubRegisterPolicy.js';
+import { normalizeTutorStubDagMode } from '../services/tutorStubDagFeatures.js';
 import {
   buildTutorStubLightweightDialogueField as buildLightweightDialogueField,
   projectTutorStubLightweightFieldTurn as lightweightFieldTurn,
@@ -2500,14 +2501,7 @@ function recordTutorStubTurnTiming({
   return turnTiming;
 }
 
-function normalizeDagMode(value) {
-  const mode = String(value || 'strict_dag')
-    .trim()
-    .toLowerCase()
-    .replace(/-/gu, '_');
-  if (DAG_MODES.includes(mode)) return mode;
-  throw new Error(`Unknown --dag-mode: ${value}. Expected ${DAG_MODES.join(', ')}.`);
-}
+const normalizeDagMode = (value) => normalizeTutorStubDagMode(value, { modes: DAG_MODES });
 
 function buildRegisterPalette(mode) {
   const definitions = getEngagementStanceDefinitions();
