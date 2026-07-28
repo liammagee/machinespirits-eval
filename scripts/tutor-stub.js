@@ -141,6 +141,7 @@ import { formatTutorStubFact as factText } from '../services/tutorStubFactModel.
 import { createTutorStubPublicEvidenceModel } from '../services/tutorStubPublicEvidence.js';
 import { createTutorStubResponseLeakAudit } from '../services/tutorStubResponseLeakAudit.js';
 import { compactTutorStubOneLine as oneLine } from '../services/tutorStubTextProjection.js';
+import { effectiveTutorStubModelTemperature as effectiveTemperatureForModel } from '../services/tutorStubModelTemperature.js';
 import {
   createTutorStubPromptBlockModel,
   delimitTutorStubPrompt as delimitedPrompt,
@@ -2558,17 +2559,6 @@ function recordTutorStubTurnTiming({
     publicTranscriptChanged: false,
   });
   return turnTiming;
-}
-
-function usesFixedOpenAITemperature(resolved) {
-  return resolved.provider === 'openai' && /^gpt-5(?:[.-]|$)/.test(resolved.model);
-}
-
-function effectiveTemperatureForModel(resolved, requestedTemperature) {
-  if (usesFixedOpenAITemperature(resolved)) {
-    return 1;
-  }
-  return requestedTemperature;
 }
 
 function normalizeDagMode(value) {

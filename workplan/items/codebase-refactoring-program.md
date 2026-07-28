@@ -62,6 +62,7 @@ links:
     - refactor-tutor-stub-director-notes-model
     - refactor-tutor-stub-prompt-blocks
     - refactor-tutor-stub-recipe-model-identity
+    - refactor-tutor-stub-model-temperature
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -1000,4 +1001,11 @@ Log:
   remain in their current owners.
 - 2026-07-28 — Third-loop recipe-model-identity run reached review with a
   28-line net CLI reduction, 15 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 10,
+  `refactor-tutor-stub-model-temperature`, from PR #369's reviewed head.
+  Provider selection, requested-temperature state, model calls, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop model-temperature run reached review with a 10-line
+  net CLI reduction, three focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
