@@ -20,6 +20,8 @@ links:
     - services/tutorStubCliParsing.js
     - scripts/tutor-stub.js
     - tests/tutorStubCliParsing.test.js
+  prs:
+    - 371
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-model-temperature
@@ -51,3 +53,5 @@ Log:
 - 2026-07-28 — Moved deterministic CLI parsing into a dependency-free service,
   reducing the CLI by 34 lines. Six focused assertions and the complete
   zero-skip hermetic contract pass.
+- 2026-07-28 — Opened PR #371 against `main`; the benchmark hook correctly
+  classified the parsing-only slice as not response-generation relevant.
