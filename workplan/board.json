@@ -1,21 +1,21 @@
 {
-  "generated": "2026-07-27T23:56:31.168Z",
+  "generated": "2026-07-28T00:14:46.863Z",
   "counts": {
-    "total": 249,
+    "total": 253,
     "byStatus": {
       "done": 215,
       "blocked": 5,
       "dropped": 3,
-      "triaged": 4,
+      "triaged": 8,
       "review": 9,
       "active": 9,
       "archived": 4
     },
     "byType": {
-      "research": 47,
+      "research": 50,
       "experiment": 49,
       "infra": 60,
-      "maintenance": 77,
+      "maintenance": 78,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -49,6 +49,31 @@
       }
     },
     {
+      "id": "audit-trap-state-schema-for-typed-reveal-events",
+      "title": "Audit the trap-scenario state schema for typed reveal events",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-07-20",
+      "updated": "2026-07-28",
+      "verification": "A gap list over a sample of cell 110/111/113/124 trap dialogues, each trap turn hand-coded against the four Narrative World Model query types (who-knows-what, when-learned, event-ordering, setup-payoff) and matched to the learnerProfileSchema fields actually recorded at that turn via loadTrace(), naming every turn where a strategy shift was scored with no typed reveal event under it; drawn from existing dialogue logs and state snapshots, no new runs.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-20-research-roundup.html",
+          "notes/research-plans/2026-07-27-research-plan.html"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "state-schema",
+        "trap-scenarios"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
       "id": "decide-rich-learner-memory-service-retention",
       "title": "Decide and verify the retained rich learner-memory service",
       "status": "triaged",
@@ -76,6 +101,31 @@
         "testing"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "measure-silent-drop-rate-in-the-grounding-validator",
+      "title": "Measure the silent-drop rate in cell 113's grounding validator",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-07-20",
+      "updated": "2026-07-28",
+      "verification": "Either a status check showing cells 111-113 have no completed rows yet, or a measured silent-drop rate — for a sample of finished cell_113 dialogues, every validator promote/retire decision checked against whether its cited evidence really sits in the evidence ledger at that turn — reported beside a cell_113 against cell_112 comparison on strategy_shift_correctness from scripts/analyze-strategy-shift.js, all from existing traces.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-20-research-roundup.html",
+          "notes/research-plans/2026-07-27-research-plan.html"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "grounding",
+        "a13"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "program-2-iterated-exhaust-retrain",
@@ -141,6 +191,52 @@
         "cross-world-transfer"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "recode-superego-incorporation-as-a-framing-trajectory",
+      "title": "Recode superego incorporation as a framing trajectory",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-07-20",
+      "updated": "2026-07-28",
+      "verification": "A sample of cell 21 and cells 48-49 tutor_deliberation logs hand-coded against the five-stage framing trajectory, reporting for each superego check whether the next ego turn reframes or only restates, set against the existing incorporationRate and dimension_convergence values for the same rows through an analyze:traces re-analysis; the write-up says whether the two measures agree or the trajectory coding catches incorporation the text proxy misses.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-20-research-roundup.html",
+          "notes/research-plans/2026-07-27-research-plan.html"
+        ]
+      },
+      "tags": [
+        "writing-pad",
+        "prompt-erosion",
+        "deliberation"
+      ]
+    },
+    {
+      "id": "tutor-shell-misses-skin-attribute",
+      "title": "The /tutor shell never receives data-skin, so it stays parchment",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Loading /tutor with poetics-skin unset or set to stark shows the stark palette, matching a server-rendered page opened in the same browser; switching to parchment in the tweaks panel and reloading /tutor shows parchment; the tutor tokens still resolve when techne.css is absent.",
+      "links": {
+        "items": [
+          "scriptorium-static-tools-desktop-quality"
+        ]
+      },
+      "tags": [
+        "ui",
+        "scriptorium",
+        "skins"
+      ]
     },
     {
       "id": "codebase-refactoring-program",
