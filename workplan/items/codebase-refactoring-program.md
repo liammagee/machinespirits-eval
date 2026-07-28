@@ -1254,3 +1254,11 @@ Log:
 - 2026-07-28 — Fifty-loop trace-provenance run reached review with an 11-line
   net CLI reduction, seven focused assertions, and complete zero-skip hermetic
   parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 35,
+  `refactor-tutor-stub-trace-display-path`, from PR #408's reviewed head.
+  Filesystem resolution, trace persistence, runtime state, and effects remain
+  injected or unchanged.
+- 2026-07-28 — Fifty-loop trace-display-path run reached review with relative
+  path semantics centralized in the trace schema, eight focused assertions,
+  and complete zero-skip hermetic parity. The explicit import adds three CLI
+  lines; all static/source-only gates pass.
