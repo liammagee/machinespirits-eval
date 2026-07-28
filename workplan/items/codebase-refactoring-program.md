@@ -1137,3 +1137,10 @@ Log:
   35-line net CLI reduction, 17 focused assertions, and complete zero-skip
   hermetic parity. Static lint also removed the obsolete CLI lookup alias; all
   static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 18,
+  `refactor-tutor-stub-interim-learner-record`, from PR #391's reviewed head.
+  Learner-record updates, fact rendering, runtime state, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop interim-learner-record run reached review with a
+  16-line net CLI reduction, 18 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.

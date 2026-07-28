@@ -172,6 +172,26 @@ export function summarizeTutorStubPendingDagMovement(state, context, { dagProgre
   ].join(' | ');
 }
 
+export function summarizeTutorStubLearnerRecordUpdate(state, context, { factSurface } = {}) {
+  const result = context?.tutorLearnerDag;
+  if (!result?.accepted && !result?.rejected?.length) return null;
+  const accepted = result.accepted || {};
+  const adopted = (accepted.adopt || []).join(',') || null;
+  const retracted = (accepted.retract || []).join(',') || null;
+  const derived = (accepted.derive || []).map((fact) => oneLine(factSurface(state.world, fact), { max: 34 }));
+  const rejected = result.rejected?.length || 0;
+  const bits = [
+    `turn ${context.tutorTurn || result.model?.turn || '?'}`,
+    adopted ? `${accepted.adopt.length} evidence piece${accepted.adopt.length === 1 ? '' : 's'} accepted` : null,
+    retracted ? `${accepted.retract.length} evidence piece${accepted.retract.length === 1 ? '' : 's'} withdrawn` : null,
+    derived.length ? `new inference: ${derived.slice(0, 2).join('; ')}` : null,
+    accepted.hypothesis ? `working idea: ${oneLine(accepted.hypothesis, { max: 52 })}` : null,
+    accepted.assertAnswer ? `proposed answer: ${accepted.assertAnswer}` : null,
+    rejected ? `${rejected} unsupported update${rejected === 1 ? '' : 's'} ignored` : null,
+  ].filter(Boolean);
+  return bits.length > 1 ? bits.join(' | ') : null;
+}
+
 export function tutorStubInterimCliHintPanels(active) {
   const state = active.state || {};
   const phase = String(active.basePhase || active.phase || '').toLowerCase();

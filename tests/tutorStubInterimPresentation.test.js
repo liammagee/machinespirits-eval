@@ -16,6 +16,7 @@ import {
   summarizeTutorStubPendingDagMovement,
   summarizeTutorStubPendingLearnerDag,
   summarizeTutorStubPendingRegister,
+  summarizeTutorStubLearnerRecordUpdate,
   tutorStubInterimCliHintPanels,
   tutorStubInterimLevel,
   tutorStubPlainInterimBottleneck,
@@ -274,6 +275,51 @@ test('pending DAG movement summary preserves deltas, plurality, direction, concl
   );
 });
 
+test('learner-record update summary preserves accepted, retracted, derived, hypothesis, answer, and rejection branches', () => {
+  const factSurface = (_world, fact) => `fact:${fact.join('-')}`;
+  assert.equal(summarizeTutorStubLearnerRecordUpdate({}, null, { factSurface }), null);
+  assert.equal(
+    summarizeTutorStubLearnerRecordUpdate(
+      {},
+      { tutorLearnerDag: { accepted: {}, rejected: [] }, tutorTurn: 2 },
+      { factSurface },
+    ),
+    null,
+  );
+  assert.equal(
+    summarizeTutorStubLearnerRecordUpdate(
+      { world: { id: 'world' } },
+      {
+        tutorTurn: 4,
+        tutorLearnerDag: {
+          accepted: {
+            adopt: ['p1', 'p2'],
+            retract: ['p0'],
+            derive: [
+              ['heir', 'marin'],
+              ['owns', 'marin', 'archive'],
+              ['ignored', 'third'],
+            ],
+            hypothesis: 'Marrick intended Marin to inherit.',
+            assertAnswer: 'Marin',
+          },
+          rejected: [{ reason: 'unsupported' }],
+        },
+      },
+      { factSurface },
+    ),
+    'turn 4 | 2 evidence pieces accepted | 1 evidence piece withdrawn | new inference: fact:heir-marin; fact:owns-marin-archive | working idea: Marrick intended Marin to inherit. | proposed answer: Marin | 1 unsupported update ignored',
+  );
+  assert.equal(
+    summarizeTutorStubLearnerRecordUpdate(
+      {},
+      { tutorLearnerDag: { rejected: [{}, {}], model: { turn: 5 } } },
+      { factSurface },
+    ),
+    'turn 5 | 2 unsupported updates ignored',
+  );
+});
+
 test('interim CLI hints preserve passthrough, setup, coach, auto, and learner contexts', () => {
   const shared = {
     label: 'CLI hint',
@@ -464,7 +510,7 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
-    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingDagMovementSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingDagMovementSummary|compactLearnerRecordUpdateSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);
