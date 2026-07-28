@@ -50,7 +50,8 @@ import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
   groupTutorStubWorldEntries,
   projectTutorStubWorldCatalogLines,
-  tutorStubWorldPresentation as worldPresentation,
+  tutorStubWorldFlavourPhrase as worldFlavourPhrase,
+  tutorStubWorldLedgerTerm as worldLedgerTerm,
 } from '../services/tutorStubWorldPresentation.js';
 import {
   listTutorStubCurriculumModules,
@@ -2079,15 +2080,6 @@ function tutorResponseRecoveryPrompt({
   ]
     .filter((line) => line !== null)
     .join('\n');
-}
-
-function worldLedgerTerm(world) {
-  return String(worldPresentation(world).ledger_term || 'evidence record');
-}
-
-function worldFlavourPhrase(world) {
-  const diction = worldPresentation(world).narrative_diction;
-  return diction ? `${diction} flavour` : "world's authored diction";
 }
 
 // One entry per presentation family, base world first, controlled variants

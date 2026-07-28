@@ -76,6 +76,7 @@ links:
     - refactor-tutor-stub-picker-presentation
     - refactor-tutor-stub-picker-entries
     - refactor-tutor-stub-world-grouping
+    - refactor-tutor-stub-world-vocabulary
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -762,3 +763,11 @@ Log:
   reduction, exact catalogue parity, 21 focused assertions, 7,416 root
   assertions, and 137 tutor-core assertions green with zero skips. All static
   and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-vocabulary` from PR #341's reviewed head to move
+  authored ledger and narrative-diction labels beside world presentation while
+  leaving prompts, register policy, runtime state, and all effects unchanged.
+- 2026-07-28 — The world-vocabulary child reached review with an eight-line net
+  CLI reduction, 11 focused assertions, 7,416 root assertions, and 137
+  tutor-core assertions green with zero skips. World diction remains explicitly
+  separate from tutor register; all static and source-only gates pass.
