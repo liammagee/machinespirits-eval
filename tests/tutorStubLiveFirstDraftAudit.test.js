@@ -193,6 +193,102 @@ test('live V1 question ownership excludes question marks inside an exact authore
   assert.equal(question.observed.authored_source_question_count, 1);
 });
 
+// The real campus_faq turn 1 of the 2026-07-28 showcase run. The tutor quotes a
+// proposal that itself contains two questions, and every draft of the turn was
+// rejected for losing the turn focus the quote plainly carries.
+const CAMPUS_QUOTED_PROPOSAL =
+  'I can confirm this: The proposal calls the tool a chat assistant because students will type ' +
+  'ordinary-language questions such as "Can I drop this module?" or "Where do I upload my form?"';
+const CAMPUS_TARGET_TERMS = [
+  'proposal',
+  'call',
+  'tool',
+  'chat',
+  'assistant',
+  'student',
+  'type',
+  'ordinary',
+  'language',
+  'question',
+  'such',
+  'drop',
+  'module',
+  'upload',
+  'form',
+];
+
+function campusQuotedProposalAudit(development) {
+  const uptake = 'That is the right starting point: choose from the task and available data, not the chat surface.';
+  return auditTutorStubLiveTurnProgressionV1({
+    contract: progressionContract({
+      learner_uptake: {
+        required: true,
+        mode: 'credit_or_qualify_resolved_move',
+        focus_terms: ['task', 'data', 'baseline'],
+        accepted_meaning: 'The learner prioritizes task and data inspection before selecting a baseline.',
+        accepted_meaning_kind: 'content_paraphrase',
+        learner_surface: 'I would first examine the task and existing FAQ data.',
+      },
+      handoff_contract: {
+        mode: 'new_unresolved_check',
+        question_allowed: true,
+        question_required: true,
+        question_owner: 'handoff',
+        terminal_if_question: true,
+        required_target_surfaces: [CAMPUS_QUOTED_PROPOSAL],
+        required_target_terms: CAMPUS_TARGET_TERMS,
+        prohibited_settled_surfaces: [],
+      },
+    }),
+    text: `${uptake} ${development}`,
+    responseComposition: { uptake, development },
+    authoredSourceTexts: [CAMPUS_QUOTED_PROPOSAL],
+  });
+}
+
+test('a quoted source with its own question marks stays one sentence for the terminal-boundary checks', () => {
+  const audit = campusQuotedProposalAudit(
+    `I point to the proposal: “${CAMPUS_QUOTED_PROPOSAL}” ` +
+      'What does this clue change about the first implementation baseline?',
+  );
+  // Intl.Segmenter breaks at the `?"` inside the quote, which left the last two
+  // sentences as the six-word tail plus the question — coverage 0.133 against a
+  // quote that carries every target term.
+  assert.equal(
+    audit.observed.handoff_focus_surface.startsWith('I point to the proposal:'),
+    true,
+    audit.observed.handoff_focus_surface,
+  );
+  assert.equal(
+    audit.issues.some((issue) => issue.type === 'handoff_loses_turn_focus'),
+    false,
+    JSON.stringify(audit.issues),
+  );
+  assert.equal(audit.observed.question_count, 1);
+  assert.equal(audit.observed.authored_source_question_count, 2);
+});
+
+test('a handoff that carries the minimum two target terms is not rejected by rounding', () => {
+  // Two of fifteen scores 0.133 rounded, against an unrounded 0.1333 threshold,
+  // so the surface failed the same test it passed. Nothing here quotes the
+  // source: the two terms are all this turn carries, which is the contract's
+  // stated minimum.
+  const audit = campusQuotedProposalAudit(
+    'We still need somewhere to upload a form. What does that upload form step change about the baseline?',
+  );
+  const focus = audit.issues.find((issue) => issue.type === 'handoff_loses_turn_focus');
+  assert.equal(focus, undefined, JSON.stringify(audit.issues));
+
+  const short = campusQuotedProposalAudit(
+    'We still need somewhere to upload. What does that upload step change about the baseline?',
+  );
+  assert.equal(
+    short.issues.some((issue) => issue.type === 'handoff_loses_turn_focus'),
+    true,
+    'one term of fifteen still loses the focus',
+  );
+});
+
 test('contract-aware no-due fallback passes live audit for forbidden and allowed-question handoffs', () => {
   const cases = [
     {

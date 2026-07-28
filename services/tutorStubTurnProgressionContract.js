@@ -129,6 +129,32 @@ function exactAuthoredSourceSpans(text = '', authoredSourceTexts = []) {
     .sort((left, right) => left.start - right.start || left.end - right.end);
 }
 
+/**
+ * Sentence boundaries with quoted evidence kept whole. `Intl.Segmenter` breaks
+ * at a `.` or `?` inside an authored source, so a turn that quotes an exhibit
+ * containing a question comes back with the quote cut in two — and then
+ * `sentences.at(-1)` and `sentences.slice(-2)` are reading a fragment. In the
+ * 2026-07-28 showcase run that cost campus turn 1 two of its three drafts: the
+ * quoted proposal split at `such as "Can I drop this module?"`, so the handoff
+ * target terms were measured against the six-word tail rather than the sentence
+ * carrying them. `hostQuestionPositions` below already masks question marks
+ * inside these spans; the segmenter gets the same treatment here.
+ */
+function liveSentences(text = '', authoredSourceTexts = []) {
+  const source = String(text || '');
+  const spans = exactAuthoredSourceSpans(source, authoredSourceTexts);
+  const insideAuthoredSource = (index) => spans.some((span) => index > span.start && index < span.end);
+  const merged = [];
+  for (const segment of liveSentenceSegmenter.segment(source)) {
+    if (merged.length && insideAuthoredSource(segment.index)) {
+      merged[merged.length - 1] += segment.segment;
+      continue;
+    }
+    merged.push(segment.segment);
+  }
+  return merged.map((sentence) => oneLine(sentence)).filter(Boolean);
+}
+
 function hostQuestionPositions(text = '', authoredSourceTexts = []) {
   const source = String(text || '');
   const spans = exactAuthoredSourceSpans(source, authoredSourceTexts);
@@ -385,6 +411,24 @@ function coverage(required = [], text = '') {
     count: matched.length,
     coverage: Number((matched.length / required.length).toFixed(3)),
   };
+}
+
+/**
+ * Whether a handoff surface has lost the turn's typed focus: it must carry at
+ * least two of the required target terms, or all of them when fewer than two
+ * were typed.
+ *
+ * This used to also compare `target.coverage` against `minimum / required.length`,
+ * which is the same test written twice — except that `coverage` is rounded to
+ * three decimals and the threshold is not. A turn matching exactly two of
+ * fifteen terms scores 0.133 against a threshold of 0.1333, so it failed a check
+ * it had passed. That cost four of the nineteen findings in the 2026-07-28
+ * showcase run, campus turn 1's first draft among them, and each one sent the
+ * turn down the recovery ladder toward canned text.
+ */
+function losesHandoffFocus(target, requiredTerms = []) {
+  if (!requiredTerms.length) return false;
+  return target.count < Math.min(2, requiredTerms.length);
 }
 
 function semanticFocusCandidate(value = '') {
@@ -909,12 +953,7 @@ export function auditTutorStubTurnProgression({ contract = null, composition = n
   }
 
   const target = coverage(handoff.required_target_terms, slots.handoff);
-  const minimumTargetCount = Math.min(2, handoff.required_target_terms.length);
-  if (
-    handoff.required_target_terms.length &&
-    (target.count < minimumTargetCount ||
-      target.coverage < Math.min(0.5, minimumTargetCount / handoff.required_target_terms.length))
-  ) {
+  if (losesHandoffFocus(target, handoff.required_target_terms)) {
     issues.push({
       type: 'handoff_loses_turn_focus',
       owner: 'handoff',
@@ -987,9 +1026,7 @@ export function auditTutorStubLiveTurnProgressionV1({
   const observedComposition = responseComposition?.segments || responseComposition || {};
   const uptake = oneLine(observedComposition?.uptake);
   const development = oneLine(observedComposition?.development);
-  const sentences = [...liveSentenceSegmenter.segment(responseText)]
-    .map((segment) => oneLine(segment.segment))
-    .filter(Boolean);
+  const sentences = liveSentences(responseText, authoredSourceTexts);
   const terminalSurface = sentences.at(-1) || '';
   const questionPositions = hostQuestionPositions(responseText, authoredSourceTexts);
   const questionCount = questionPositions.length;
@@ -1077,12 +1114,7 @@ export function auditTutorStubLiveTurnProgressionV1({
   const targetSurface =
     questionCount > 0 && handoff.question_owner === 'handoff' ? sentences.slice(-2).join(' ') : terminalSurface;
   const target = coverage(handoff.required_target_terms, targetSurface);
-  const minimumTargetCount = Math.min(2, handoff.required_target_terms.length);
-  if (
-    handoff.required_target_terms.length &&
-    (target.count < minimumTargetCount ||
-      target.coverage < Math.min(0.5, minimumTargetCount / handoff.required_target_terms.length))
-  ) {
+  if (losesHandoffFocus(target, handoff.required_target_terms)) {
     issues.push({
       type: 'handoff_loses_turn_focus',
       owner: 'terminal_sentence',
