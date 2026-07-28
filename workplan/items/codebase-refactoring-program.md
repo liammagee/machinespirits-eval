@@ -51,6 +51,7 @@ links:
     - refactor-tutor-stub-feature-map-projection
     - refactor-tutor-stub-release-notes-projection
     - refactor-tutor-stub-dag-snapshot-projection
+    - refactor-tutor-stub-dag-snapshot-model
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -911,3 +912,13 @@ Log:
   duplicate source lines removed across the CLI and public-analysis service,
   41 focused assertions, 7,452 root assertions, and 137 tutor-core assertions
   green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated second-loop run 10,
+  `refactor-tutor-stub-dag-snapshot-model`, from PR #358's reviewed head. The
+  completed `dag-snapshot-projection` card remains the earlier terminal-line
+  presentation slice.
+  Tutor-DAG construction, release scheduling, state access, terminal writes,
+  runtime callers, and effects remain in their current owners.
+- 2026-07-28 — Second-loop tutor-DAG-snapshot run reached review with a
+  61-line net CLI reduction, eight focused assertions including the byte-exact
+  live Marrick terminal block, 7,454 root assertions, and 137 tutor-core
+  assertions green with zero skips. All static and source-only gates pass.
