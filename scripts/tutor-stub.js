@@ -62,6 +62,7 @@ import {
   tutorStubCurriculumPrivatePrompt,
   tutorStubCurriculumPublicProjection,
 } from '../services/curriculum/tutorStubCurriculumRuntime.js';
+import { projectTutorStubCurriculumProgressLines } from '../services/curriculum/tutorStubCurriculumProgressPresentation.js';
 import {
   TUTOR_STUB_CURRICULUM_TRANSLATOR_SYSTEM_PROMPT,
   TUTOR_STUB_TUTOR_OUTPUT_TRANSLATOR_SYSTEM_PROMPT,
@@ -19659,29 +19660,7 @@ async function main() {
 
   function printCurriculumProgress() {
     const progress = curriculumProgressSnapshot();
-    if (!progress) {
-      console.log(`${C.dim}curriculum progress is available only in a curriculum session${C.reset}\n`);
-      return null;
-    }
-    console.log(`${C.brightCyan}${C.bold}course progress >${C.reset} ${progress.curriculum.title}`);
-    for (const module of progress.modules) {
-      const marker = module.id === progress.currentModule.id ? '◆' : module.status === 'mastered' ? '✓' : '◇';
-      const evidence = Object.values(module.phaseEvidenceCounts).reduce((sum, count) => sum + count, 0);
-      const lock = module.available ? '' : ` · waiting for ${module.missingPrerequisiteModuleIds.join(', ')}`;
-      console.log(
-        `  ${marker} ${module.id} · ${module.title} · ${module.status} · ${evidence} evidence turn${evidence === 1 ? '' : 's'}${lock}`,
-      );
-    }
-    console.log(
-      `${C.dim}  current phase: ${progress.currentPhase.replaceAll('_', ' ')} · ${progress.currentPhaseEvidenceCount} evidence turn${progress.currentPhaseEvidenceCount === 1 ? '' : 's'}${C.reset}`,
-    );
-    console.log(
-      `${C.dim}  /next advances attempted diagnostic/scaffold work; independent check and transfer require /next pass or /next revise${C.reset}`,
-    );
-    if (progress.completionAuthority === 'external_workplan_verification_only') {
-      console.log(`${C.dim}  dialogue progress never completes or closes the external workplan item${C.reset}`);
-    }
-    console.log('');
+    for (const line of projectTutorStubCurriculumProgressLines(progress, { colors: C })) console.log(line);
     return progress;
   }
 

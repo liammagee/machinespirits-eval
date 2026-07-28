@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-field-report-presentation
 title: Refactor tutor-stub field report presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -100,3 +100,6 @@ Log:
   fixture now replaces the exact ROOT-relative temporary directory, yielding
   the same 505-byte hash on both hosts without weakening any report assertion
   or changing production code.
+- 2026-07-28 — PR #323 merged as `941af8d8` after the portable parity repair
+  passed every current CI lane. Closed this child; the next bounded pure
+  presentation slice is curriculum progress.
