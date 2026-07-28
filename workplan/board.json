@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-28T02:39:08.965Z",
+  "generated": "2026-07-28T02:58:22.335Z",
   "counts": {
-    "total": 254,
+    "total": 255,
     "byStatus": {
       "done": 216,
       "blocked": 5,
       "dropped": 3,
-      "triaged": 8,
+      "triaged": 9,
       "review": 9,
       "active": 9,
       "archived": 4
@@ -14,7 +14,7 @@
     "byType": {
       "research": 50,
       "experiment": 49,
-      "infra": 60,
+      "infra": 61,
       "maintenance": 79,
       "content": 2,
       "ops": 8,
@@ -191,6 +191,43 @@
         "cross-world-transfer"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "tutor-stub-http-command-adapter-coverage",
+      "title": "Widen tutor-stub HTTP slash-command coverage per command",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-07-27",
+      "verification": "Each newly opened command runs over the process-backed HTTP transport with self-contained output and no TTY interaction, keeps its terminal-only side effects blocked, and has a test that fails if the declaration is flipped without the command behaving.",
+      "depends_on": [
+        "automate-browser-and-packaged-electron-tutor-stub-acceptance"
+      ],
+      "links": {
+        "code": [
+          "services/tutorStubCommandRegistry.js",
+          "services/tutorStubProcessSessionFactory.js",
+          "services/evalSurfaces.js",
+          "scripts/tutor-stub-remote.js"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/306"
+        ],
+        "items": [
+          "tutor-stub-remote-claude-code-driver",
+          "complete-tutor-stub-command-effect-metadata-before-http-comm",
+          "automate-browser-and-packaged-electron-tutor-stub-acceptance"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "runtime",
+        "api"
+      ],
+      "milestone": "distribution"
     },
     {
       "id": "recode-superego-incorporation-as-a-framing-trajectory",
