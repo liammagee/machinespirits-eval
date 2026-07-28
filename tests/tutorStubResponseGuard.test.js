@@ -297,13 +297,9 @@ test('the advance channel leaves the lexical channel alone unless it is asked fo
   assert.equal(audit.novelty, null);
 });
 
-test('the advance channel exempts a release turn, a closing turn, and a turn too short to judge', () => {
+test('the advance channel exempts a closing turn and a turn too short to judge', () => {
   const stalled = RIVERSIDE_STALL;
 
-  assert.equal(
-    auditTutorStubAdvanceResponse({ ...stalled, releasedNewEvidence: true }).skipped,
-    'released_new_evidence',
-  );
   assert.equal(auditTutorStubAdvanceResponse({ ...stalled, terminal: true }).skipped, 'terminal_turn');
   assert.equal(
     auditTutorStubAdvanceResponse({ ...stalled, text: 'The cancellation remains unlinked.' }).skipped,
@@ -313,13 +309,33 @@ test('the advance channel exempts a release turn, a closing turn, and a turn too
     auditTutorStubAdvanceResponse({ text: RIVERSIDE_STALL.text, recentTutorTexts: [] }).skipped,
     'no_prior_turns',
   );
-  for (const skipped of [
-    auditTutorStubAdvanceResponse({ ...stalled, releasedNewEvidence: true }),
-    auditTutorStubAdvanceResponse({ ...stalled, terminal: true }),
-  ]) {
-    assert.equal(skipped.ok, true);
-    assert.equal(skipped.novelty, null);
-  }
+  const terminal = auditTutorStubAdvanceResponse({ ...stalled, terminal: true });
+  assert.equal(terminal.ok, true);
+  assert.equal(terminal.novelty, null);
+});
+
+test('delivering an exhibit is not an exemption, because a real exhibit is new words', () => {
+  // The 2026-07-28 smoke run exempted four of the instrumented arm's six turns
+  // on this ground and left the channel a no-op. Those same turns pass on their
+  // own novelty. A turn that names an exhibit and restates the rest does not.
+  const released =
+    'I place the overnight record beside the access log: at 01:58 the regional booking service marked ' +
+    'Noor’s clinic appointment as a duplicate for the sweep, pairing it with an unfinished pharmacy request.';
+  const exhibit = auditTutorStubAdvanceResponse({ text: released, recentTutorTexts: RIVERSIDE_BARE_ARM.slice(0, 4) });
+  assert.equal(exhibit.skipped, null, 'a release turn is judged like any other');
+  assert.equal(exhibit.ok, true);
+  assert.ok(exhibit.novelty > 0.25, `a real release carries itself past the floor, got ${exhibit.novelty}`);
+
+  // Same claimed release, but the rest of the turn is the stall verbatim.
+  const dressed = auditTutorStubAdvanceResponse({
+    ...RIVERSIDE_STALL,
+    text: `I open the ledger. ${RIVERSIDE_STALL.text}`,
+  });
+  assert.equal(dressed.ok, false, 'naming an exhibit no longer buys a pass');
+  assert.deepEqual(
+    dressed.issues.map((issue) => issue.type),
+    ['tutor_turn_without_advance'],
+  );
 });
 
 test('world scaffolds derive their language from Larkspur rules rather than Marrick vocabulary', () => {

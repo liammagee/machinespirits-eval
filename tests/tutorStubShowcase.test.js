@@ -313,6 +313,42 @@ test('the trace parser recovers the dialogue, the guards, and the recovery attem
   assert.equal(parsed.usage.totalTokens, 3 * (120 + 2300));
 });
 
+test('an audit row carries the issue type and the scores it computed', () => {
+  // Every guard in the stub names its issues with `type`; reading `code` first
+  // rendered all of them as the bare word "issue". The scores matter for the
+  // same reason: an audit that reports only pass/fail cannot say whether it
+  // stayed quiet or stood down, and the repetition floor was read off runs.
+  const rows = traceRows({ turns: 1 });
+  const record = rows.find((row) => row.type === 'turn_complete').turnRecord;
+  record.tutorRepetitionAudit = {
+    ok: false,
+    issues: [{ type: 'tutor_turn_without_advance', reason: 'restates rather than advances', novelty: 0.14 }],
+    maxSimilarity: 0.39,
+    novelty: 0.14,
+    advanceSkipped: null,
+  };
+  const row = parseTutorStubShowcaseTrace(rows).turns[0].tutor.audits.find((r) => r.key === 'tutorRepetitionAudit');
+  assert.deepEqual(row.issues, ['tutor_turn_without_advance']);
+  assert.deepEqual(row.scores, { maxSimilarity: 0.39, novelty: 0.14 });
+  assert.equal(row.ok, false);
+  assert.ok(!('advanceSkipped' in row), 'a null skip reason is left off rather than reported as a skip');
+});
+
+test('an audit row reports why the advance channel stood down', () => {
+  const rows = traceRows({ turns: 1 });
+  const record = rows.find((row) => row.type === 'turn_complete').turnRecord;
+  record.tutorRepetitionAudit = {
+    ok: true,
+    issues: [],
+    maxSimilarity: 0.2,
+    novelty: null,
+    advanceSkipped: 'terminal_turn',
+  };
+  const row = parseTutorStubShowcaseTrace(rows).turns[0].tutor.audits.find((r) => r.key === 'tutorRepetitionAudit');
+  assert.equal(row.advanceSkipped, 'terminal_turn');
+  assert.deepEqual(row.scores, { maxSimilarity: 0.2 }, 'a null novelty is absent rather than reported as zero');
+});
+
 test('guard coverage is read from the accounting rows, not from the audit records', () => {
   // The stub attaches an audit object to the turn record whether or not the
   // guard was enabled, so counting records would report full coverage for an

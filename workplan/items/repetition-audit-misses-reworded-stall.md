@@ -110,9 +110,32 @@ that this floor lets pass.
 
 ## Exemptions
 
-A turn can be word-poor without stalling, so three cases skip the check and say
-which: it delivers an exhibit (`released_new_evidence`), it is the closing act
-(`terminal_turn`), or it is under eight content words (`too_short_to_judge`).
-Passthrough has neither a release schedule nor a closure frame, so on that arm
-the channel runs on text alone — the asymmetry is recorded in `advanceSkipped`
-rather than hidden.
+A turn can be word-poor without stalling, so two cases skip the check and say
+which: it is the closing act (`terminal_turn`), or it is under eight content
+words (`too_short_to_judge`).
+
+Delivering an exhibit was a third, and the smoke run killed it. Recording the
+scores (below) showed the release exemption firing on four of the instrumented
+arm's six turns — with `terminal_turn` on the sixth, the channel was a no-op on
+the whole dialogue. Replaying those four unexempted scores them 0.58 to 0.75.
+The exemption was never load-bearing, because an exhibit is text nobody has said
+yet and carries itself past the floor; what it bought was a loophole, since a
+turn could name an exhibit, restate everything else, and pass unread. Both cases
+are pinned as tests.
+
+Passthrough has no closure frame, so on that arm the channel runs on text alone
+and only `too_short_to_judge` can apply — the asymmetry is recorded in
+`advanceSkipped` rather than hidden.
+
+## Recording the scores
+
+The audit computed two continuous scores and no artifact kept either: the
+instrumented trace event wrote `maxSimilarity` and dropped `novelty`, and the
+showcase report kept only pass/fail. So a quiet channel and an absent one looked
+the same, and the floor could not be re-checked against a run without replaying
+the audit offline. `tutor_repetition_audit` now carries `novelty` and
+`advanceSkipped`, and the showcase audit rows carry a `scores` object.
+
+The same pass fixed a live reporting bug beside it: `auditRows` read `issue.code`
+when every guard in the stub names its issues with `type`, so every structured
+issue in every showcase report rendered as the bare word "issue".

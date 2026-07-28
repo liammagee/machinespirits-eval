@@ -482,13 +482,27 @@ export function publicTutorStubShowcasePlan(plan) {
   };
 }
 
+/**
+ * Every guard in the stub names its issues with `type`, so reading `code` first
+ * rendered all of them as the bare word "issue". The scores go through beside
+ * them: a guard that reports only pass/fail cannot tell a reader whether it
+ * stayed quiet or never ran, and the repetition thresholds were read off runs
+ * like these, so each run should be able to say what it saw.
+ */
 function auditRows(turnRecord) {
   return TUTOR_STUB_SHOWCASE_AUDIT_KEYS.filter((key) => turnRecord?.[key]).map((key) => {
     const audit = turnRecord[key];
+    const scores = Object.fromEntries(
+      Object.entries(audit).filter(([, value]) => typeof value === 'number' && Number.isFinite(value)),
+    );
     return {
       key,
       ok: audit.ok !== false,
-      issues: (audit.issues || []).map((issue) => (typeof issue === 'string' ? issue : issue?.code || 'issue')),
+      issues: (audit.issues || []).map((issue) =>
+        typeof issue === 'string' ? issue : issue?.type || issue?.code || 'issue',
+      ),
+      ...(Object.keys(scores).length ? { scores } : {}),
+      ...(audit.advanceSkipped ? { advanceSkipped: audit.advanceSkipped } : {}),
     };
   });
 }

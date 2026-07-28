@@ -9431,12 +9431,10 @@ async function callTutor({
       ? auditTutorStubRepetitionResponse({
           text: response.text,
           recentTutorTexts,
-          // A turn owed a new exhibit, or standing as the closing act, is
-          // licensed to work in the vocabulary already on the table.
-          advance: {
-            releasedNewEvidence: dramaticReleaseFrame.entries.length > 0,
-            terminal: Boolean(dialogueClosureFrame?.mandatory),
-          },
+          // The closing act is licensed to work in the vocabulary already on the
+          // table. A turn owed an exhibit is not: a real exhibit is new words
+          // and carries itself past the floor.
+          advance: { terminal: Boolean(dialogueClosureFrame?.mandatory) },
         })
       : { ok: true, issues: [], maxSimilarity: 0 };
     const closureAudit = closureGuardEnabled
@@ -9557,6 +9555,11 @@ async function callTutor({
         ok: repetitionAudit.ok,
         issues: repetitionAudit.issues,
         maxSimilarity: repetitionAudit.maxSimilarity,
+        // Both channels, and the reason the second one stood down. Without the
+        // skip reason a silent advance channel is indistinguishable from one
+        // that never ran, which is exactly the ambiguity on the bare arm.
+        novelty: repetitionAudit.novelty ?? null,
+        advanceSkipped: repetitionAudit.advanceSkipped ?? null,
       });
     }
     if (closureGuardEnabled) {

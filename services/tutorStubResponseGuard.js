@@ -144,23 +144,25 @@ export function auditTutorStubAdvanceResponse({
   recentTutorTexts = [],
   floor = 0.25,
   minimumContentWords = 8,
-  releasedNewEvidence = false,
   terminal = false,
 } = {}) {
   const contentWords = new Set(words(text));
   const priorTexts = (Array.isArray(recentTutorTexts) ? recentTutorTexts : []).slice(-10).filter((row) => oneLine(row));
-  // A turn can be word-poor for reasons that are not a stall: it delivers a new
-  // exhibit, it is the closing act, or it is too short to measure. Each of those
-  // is a licensed way to reuse the established vocabulary.
+  // A turn can be word-poor without stalling when it is the closing act, or too
+  // short to measure. Delivering an exhibit used to be a third exemption and is
+  // deliberately not one any more: in the 2026-07-28 smoke run it fired on four
+  // of the instrumented arm's six turns and left the channel a no-op on the
+  // whole dialogue. It was never needed. An exhibit is text nobody has said yet,
+  // so a real release scores its own way past the floor — those four turns score
+  // 0.58 to 0.75 unexempted. What the exemption bought was a loophole: name an
+  // exhibit, restate everything else, pass unread.
   const skipped = !priorTexts.length
     ? 'no_prior_turns'
     : terminal
       ? 'terminal_turn'
-      : releasedNewEvidence
-        ? 'released_new_evidence'
-        : contentWords.size < Number(minimumContentWords)
-          ? 'too_short_to_judge'
-          : null;
+      : contentWords.size < Number(minimumContentWords)
+        ? 'too_short_to_judge'
+        : null;
   if (skipped) {
     return { schema: TUTOR_STUB_RESPONSE_GUARD_SCHEMA, ok: true, issues: [], novelty: null, skipped };
   }
