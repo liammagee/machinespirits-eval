@@ -546,6 +546,7 @@ import {
   clearTutorStubDirectorGuidance,
   createTutorStubDirectorGuidanceState,
   mergeConcurrentTutorStubDirectorGuidance,
+  restoreTutorStubDirectorGuidanceState as restoreDirectorGuidanceState,
   setTutorStubDirectorGuidance,
   tutorStubDirectorGuidanceEntry,
   tutorStubDirectorGuidancePrompt,
@@ -3460,23 +3461,6 @@ function traceDisplayPath(trace) {
 function jsonClone(value) {
   if (value === undefined) return undefined;
   return JSON.parse(JSON.stringify(value));
-}
-
-function restoreDirectorGuidanceState(state, events = []) {
-  const lastClear = events.reduce(
-    (index, event, candidate) => (event?.type === 'history_clear' ? candidate : index),
-    -1,
-  );
-  const snapshot = [...events.slice(lastClear + 1)]
-    .reverse()
-    .map((event) => event?.directorGuidance || null)
-    .find(Boolean);
-  state.directorGuidance = createTutorStubDirectorGuidanceState(snapshot);
-  return {
-    restored: Boolean(snapshot),
-    revision: state.directorGuidance.revision,
-    active: Boolean(state.directorGuidance.active),
-  };
 }
 
 function typedActionDecisionFromTurn(turn) {

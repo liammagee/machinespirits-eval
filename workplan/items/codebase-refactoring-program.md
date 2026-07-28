@@ -1363,3 +1363,10 @@ Log:
   zero-skip hermetic parity. All static/source-only gates pass.
 - 2026-07-28 — Opened fifty-loop run 46 as PR #420 against `main`; the push
   benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 47,
+  `refactor-tutor-stub-director-guidance-restoration`, from PR #420's reviewed
+  head. Trace loading, state creation, persistence, runtime sequencing, and
+  effects remain in the CLI.
+- 2026-07-28 — Fifty-loop director-guidance-restoration run reached review with
+  a sixteen-line net CLI reduction, fifteen focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.
