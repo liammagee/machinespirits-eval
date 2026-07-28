@@ -48,6 +48,11 @@ import {
 } from '../services/engagementRegisterRegistry.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
+  projectTutorStubWorldCatalogLines,
+  tutorStubWorldPickerSummary as worldPickerSummary,
+  tutorStubWorldPresentation as worldPresentation,
+} from '../services/tutorStubWorldPresentation.js';
+import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
   renderTutorStubCurriculumModule,
@@ -2069,15 +2074,6 @@ function tutorResponseRecoveryPrompt({
     .join('\n');
 }
 
-// Authorial presentation (world.presentation): scenario ecology and
-// narrative diction are the AUTHOR's costume for the world — deliberately
-// not register (which controls speech) or engagement stance (the
-// speaker-hearer relation). Defaults preserve the legacy assay costume
-// exactly, so frozen worlds keep their learner-visible conditions.
-function worldPresentation(world) {
-  return (world && world.presentation) || {};
-}
-
 function worldLedgerTerm(world) {
   return String(worldPresentation(world).ledger_term || 'evidence record');
 }
@@ -2090,15 +2086,6 @@ function worldFlavourPhrase(world) {
 function worldFamilyKey(world) {
   const p = worldPresentation(world);
   return String(p.family || p.variant_of || world.id);
-}
-
-function worldPickerSummary(world) {
-  const p = worldPresentation(world);
-  if (p.summary) return String(p.summary);
-  const setting = String(world.setting || '')
-    .trim()
-    .replace(/\s+/gu, ' ');
-  return setting.split(/(?<=\.)\s/u)[0] || world.question;
 }
 
 // One entry per presentation family, base world first, controlled variants
@@ -2601,18 +2588,7 @@ function selectableWorldSummaries() {
 }
 
 function printWorlds() {
-  for (const { filePath, world, isVariant, familySize } of groupedWorldEntries()) {
-    if (isVariant) {
-      console.log(`  ↳ ${world.id.padEnd(34)} ${world.title}`);
-      continue;
-    }
-    const p = worldPresentation(world);
-    const tags = [p.temporal_frame, p.narrative_diction].filter(Boolean).join(', ');
-    const familyNote = familySize > 1 ? ` — family of ${familySize}` : '';
-    console.log(`${world.id.padEnd(38)} ${world.title}${tags ? ` [${tags}]` : ''}${familyNote}`);
-    console.log(`  ${path.relative(ROOT, filePath)}`);
-    console.log(`  ${worldPickerSummary(world)}`);
-  }
+  for (const line of projectTutorStubWorldCatalogLines(groupedWorldEntries(), { root: ROOT })) console.log(line);
 }
 
 function printCurriculumModules(ref) {

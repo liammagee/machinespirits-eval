@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-curriculum-catalog-presentation
 title: Refactor tutor-stub curriculum catalogue presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -88,3 +88,5 @@ Log:
   the zero-cycle ratchet across 417 files also pass.
 - 2026-07-28 — Opened PR #334 from commit `12da9057`; the explicit workplan
   trailer and PR-body item link both name this card.
+- 2026-07-28 — PR #334 merged as `8dba3582`; the remote feature branch was
+  removed and the refactor is present on `origin/main`.
