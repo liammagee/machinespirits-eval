@@ -847,3 +847,11 @@ Log:
   net CLI reduction, 67 focused assertions, 7,429 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated second-loop run 2,
+  `refactor-tutor-stub-guard-spans`, from PR #350's reviewed head. Guard
+  evaluation, repair, accounting, runtime state, and effects remain in their
+  current owners.
+- 2026-07-28 — Second-loop guard-span run reached review with an 89-line net
+  CLI reduction, 26 focused assertions, 7,431 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
