@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-28T06:41:29.314Z",
+  "generated": "2026-07-28T07:44:27.019Z",
   "counts": {
-    "total": 258,
+    "total": 259,
     "byStatus": {
-      "done": 223,
+      "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 82,
+      "maintenance": 83,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -298,6 +298,7 @@
           "refactor-tutor-stub-curriculum-progress-presentation",
           "refactor-tutor-stub-curriculum-catalog-presentation",
           "refactor-tutor-stub-world-catalog-presentation",
+          "refactor-tutor-stub-picker-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -751,8 +752,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-world-catalog-presentation",
-      "title": "Refactor tutor-stub world catalogue presentation",
+      "id": "refactor-tutor-stub-picker-presentation",
+      "title": "Refactor tutor-stub picker presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -760,38 +761,37 @@
       "source": "review",
       "created": "2026-07-28",
       "updated": "2026-07-28",
-      "verification": "World catalogue output remains byte-identical while direct, canonical live-process, picker/quality, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-world-catalog-presentation",
+      "verification": "Launch, scenario, and curriculum picker lines remain exact while direct immutable projection, live PTY, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-picker-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-curriculum-catalog-presentation"
+        "refactor-tutor-stub-world-catalog-presentation"
       ],
       "links": {
         "prs": [
-          338
+          339
         ],
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubWorldPresentation.js",
+          "services/tutorStubPickerPresentation.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubWorldCatalogPresentation.test.js",
-          "tests/derivationWorldPresentation.test.js",
-          "tests/derivationWorldQuality.test.js",
+          "tests/tutorStubPickerPresentation.test.js",
+          "tests/labellingGameCli.test.js",
+          "tests/tutorStubHumanDiscourseLayer.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-curriculum-catalog-presentation",
+          "refactor-tutor-stub-world-catalog-presentation",
           "automate-browser-and-packaged-electron-tutor-stub-acceptance"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
-        "world",
-        "scenario",
+        "picker",
         "presentation",
         "terminal"
       ],
@@ -4394,6 +4394,53 @@
         "learner-dag",
         "human-discourse",
         "dialogue-closure"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-world-catalog-presentation",
+      "title": "Refactor tutor-stub world catalogue presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "World catalogue output remains byte-identical while direct, canonical live-process, picker/quality, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-world-catalog-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-curriculum-catalog-presentation"
+      ],
+      "links": {
+        "prs": [
+          338
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubWorldPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubWorldCatalogPresentation.test.js",
+          "tests/derivationWorldPresentation.test.js",
+          "tests/derivationWorldQuality.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-curriculum-catalog-presentation",
+          "automate-browser-and-packaged-electron-tutor-stub-acceptance"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "world",
+        "scenario",
+        "presentation",
+        "terminal"
       ],
       "milestone": "evaluation-infrastructure"
     },
