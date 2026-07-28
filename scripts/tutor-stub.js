@@ -30,7 +30,7 @@ import { call as callAI, callStream as streamAI } from '../tutor-core/services/u
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
 import { tutorStubCliPolicyRetryDecision } from '../services/tutorStubCliPolicyRetry.js';
 import { getProviderConfig, loadProviders, resolveModel } from '../services/evalConfigLoader.js';
-import { redactTraceSecrets } from '../services/traceSchema.js';
+import { captureTutorStubRunProvenance, redactTraceSecrets } from '../services/traceSchema.js';
 import { runLabellingGameCli } from '../services/labellingGameCli.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
 import { factKey } from '../services/dramaticDerivation/chainer.js';
@@ -3323,18 +3323,7 @@ function captureTraceProvenance(metadata) {
   // drift is detectable from the trace alone (the terra flag-forwarding
   // incident was only caught by cross-checking run_start metadata by hand).
   // Failure-tolerant: an unreadable git state must never block the CLI.
-  const provenance = { schema: 'machinespirits.tutor-stub.run-provenance.v1', configSha256: null, git: null };
-  try {
-    provenance.configSha256 = hashCanonicalJson(metadata ?? null);
-  } catch (error) {
-    provenance.configHashError = String(error?.message || error);
-  }
-  try {
-    provenance.git = captureGitProvenanceSummary({ repoRoot: ROOT });
-  } catch (error) {
-    provenance.gitError = String(error?.message || error);
-  }
-  return provenance;
+  return captureTutorStubRunProvenance(metadata, { hashCanonicalJson, captureGitProvenanceSummary, repoRoot: ROOT });
 }
 
 function createTraceState({ enabled, traceDir, metadata }) {

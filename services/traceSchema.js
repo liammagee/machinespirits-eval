@@ -7,6 +7,7 @@
  */
 
 export const TRACE_SCHEMA_VERSION = '2.0';
+export const TUTOR_STUB_RUN_PROVENANCE_SCHEMA = 'machinespirits.tutor-stub.run-provenance.v1';
 
 const INITIAL_STAGES = new Set(['initial', 'draft', 'reaction']);
 const REVISION_STAGES = new Set(['adjudication', 'revision', 'revise', 'revised', 'final']);
@@ -62,6 +63,24 @@ export function redactTraceSecrets(value, ancestors = new WeakSet()) {
   } finally {
     ancestors.delete(value);
   }
+}
+
+export function captureTutorStubRunProvenance(
+  metadata,
+  { hashCanonicalJson, captureGitProvenanceSummary, repoRoot } = {},
+) {
+  const provenance = { schema: TUTOR_STUB_RUN_PROVENANCE_SCHEMA, configSha256: null, git: null };
+  try {
+    provenance.configSha256 = hashCanonicalJson(metadata ?? null);
+  } catch (error) {
+    provenance.configHashError = String(error?.message || error);
+  }
+  try {
+    provenance.git = captureGitProvenanceSummary({ repoRoot });
+  } catch (error) {
+    provenance.gitError = String(error?.message || error);
+  }
+  return provenance;
 }
 
 /**
@@ -146,6 +165,8 @@ export function projectLearnerDeliberationTrace({ internalDeliberation, finalMes
 
 export default {
   TRACE_SCHEMA_VERSION,
+  TUTOR_STUB_RUN_PROVENANCE_SCHEMA,
+  captureTutorStubRunProvenance,
   learnerDeliberationTraceAgent,
   learnerTraceStage,
   projectLearnerDeliberationTrace,

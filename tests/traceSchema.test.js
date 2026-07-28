@@ -1,11 +1,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  captureTutorStubRunProvenance,
   learnerDeliberationTraceAgent,
   learnerTraceStage,
   projectLearnerDeliberationTrace,
   redactTraceSecrets,
   TRACE_SCHEMA_VERSION,
+  TUTOR_STUB_RUN_PROVENANCE_SCHEMA,
 } from '../services/traceSchema.js';
 
 const DELIBERATION = [
@@ -47,6 +49,47 @@ describe('trace secret redaction', () => {
     assert.equal(redactTraceSecrets(undefined), undefined);
     assert.equal(redactTraceSecrets(7), 7);
     assert.equal(redactTraceSecrets('public'), 'public');
+  });
+});
+
+describe('tutor-stub run provenance', () => {
+  it('captures the resolved-config hash and Git summary with the canonical schema', () => {
+    const metadata = { model: 'test' };
+    assert.deepEqual(
+      captureTutorStubRunProvenance(metadata, {
+        hashCanonicalJson: (value) => {
+          assert.equal(value, metadata);
+          return 'config-hash';
+        },
+        captureGitProvenanceSummary: ({ repoRoot }) => ({ repoRoot, sha: 'abc123' }),
+        repoRoot: '/repo',
+      }),
+      {
+        schema: TUTOR_STUB_RUN_PROVENANCE_SCHEMA,
+        configSha256: 'config-hash',
+        git: { repoRoot: '/repo', sha: 'abc123' },
+      },
+    );
+  });
+
+  it('records independent hash and Git errors without blocking provenance creation', () => {
+    assert.deepEqual(
+      captureTutorStubRunProvenance(null, {
+        hashCanonicalJson: () => {
+          throw new Error('hash unavailable');
+        },
+        captureGitProvenanceSummary: () => {
+          throw 'git unavailable';
+        },
+      }),
+      {
+        schema: TUTOR_STUB_RUN_PROVENANCE_SCHEMA,
+        configSha256: null,
+        git: null,
+        configHashError: 'hash unavailable',
+        gitError: 'git unavailable',
+      },
+    );
   });
 });
 
