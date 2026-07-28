@@ -63,6 +63,7 @@ links:
     - refactor-tutor-stub-prompt-blocks
     - refactor-tutor-stub-recipe-model-identity
     - refactor-tutor-stub-model-temperature
+    - refactor-tutor-stub-cli-parsing
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -1009,3 +1010,10 @@ Log:
 - 2026-07-28 — Third-loop model-temperature run reached review with a 10-line
   net CLI reduction, three focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 1,
+  `refactor-tutor-stub-cli-parsing`, from PR #370's reviewed head. Argument
+  ownership, runtime defaults, launch orchestration, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop CLI-parsing run reached review with a 34-line net CLI
+  reduction, six focused assertions, and complete zero-skip hermetic parity.
+  All static and source-only gates pass.
