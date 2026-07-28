@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T21:42:10.700Z",
+  "generated": "2026-07-28T21:44:42.410Z",
   "counts": {
-    "total": 326,
+    "total": 328,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 69,
+      "review": 71,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 144,
+      "maintenance": 146,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -1009,6 +1009,88 @@
         "tutor-stub",
         "release-pacing",
         "public-evidence"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-console-stream-replay",
+      "title": "Refactor tutor-stub console stream replay",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "8 focused speaker-transport assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve token boundaries, whitespace, nested interim selection, finish result, and empty-text behavior",
+      "branch": "codex/refactor-tutor-stub-console-stream-replay",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-console-token-sink"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDevelopmentSpeakerTransport.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDevelopmentSpeakerTransport.test.js"
+        ],
+        "prs": [
+          406
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-console-token-sink"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "streaming",
+        "replay"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-console-token-sink",
+      "title": "Refactor tutor-stub console token sink",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "7 focused speaker-transport assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve direct writes, one-time setup, newline handling, empty finish, concurrent buffering, and atomic terminal print behavior",
+      "branch": "codex/refactor-tutor-stub-console-token-sink",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-stream-label"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDevelopmentSpeakerTransport.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDevelopmentSpeakerTransport.test.js"
+        ],
+        "prs": [
+          405
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-stream-label"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "streaming",
+        "terminal"
       ],
       "milestone": "evaluation-infrastructure"
     },
