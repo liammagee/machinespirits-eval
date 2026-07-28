@@ -20,7 +20,8 @@ links:
     - services/tutorStubComprehensionState.js
     - scripts/tutor-stub.js
     - services/__tests__/tutorStubComprehensionState.test.js
-  prs: []
+  prs:
+    - 420
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-register-state-restoration
@@ -55,3 +56,6 @@ Log:
   turns into the comprehension-state service, reducing
   `scripts/tutor-stub.js` by eighteen lines. Eleven focused assertions,
   complete zero-skip hermetic parity, and all static/source-only gates pass.
+- 2026-07-28 — Opened PR #420 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
