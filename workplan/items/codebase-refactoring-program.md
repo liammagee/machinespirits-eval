@@ -53,6 +53,7 @@ links:
     - refactor-tutor-stub-dag-snapshot-projection
     - refactor-tutor-stub-dag-snapshot-model
     - refactor-tutor-stub-second-loop-recovery
+    - refactor-tutor-stub-debug-identifiers
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -928,3 +929,10 @@ Log:
   Replayed only those eight missing slices onto current `origin/main` under
   `refactor-tutor-stub-second-loop-recovery`; the complete hermetic contract
   passes before beginning the third ten-run loop.
+- 2026-07-28 — Activated third-loop run 1,
+  `refactor-tutor-stub-debug-identifiers`, from recovery PR #360's reviewed
+  head. Trace persistence, filesystem writes, terminal presentation, and
+  runtime state remain in their current owners.
+- 2026-07-28 — Third-loop debug-identifier run reached review with a 10-line
+  net CLI reduction, five focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.

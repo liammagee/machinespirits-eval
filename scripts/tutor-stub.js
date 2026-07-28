@@ -72,6 +72,11 @@ import {
 } from '../services/tutorStubWarrantPremiseAudit.js';
 import { projectTutorStubStrictDagAuditState as buildStrictDagAuditState } from '../services/tutorStubStrictDagAuditState.js';
 import {
+  formatTutorStubOpeningDebugId as openingDebugId,
+  formatTutorStubSafeTimestamp as safeTimestampForFile,
+  formatTutorStubTurnDebugId as formatTurnDebugId,
+} from '../services/tutorStubDebugIdentity.js';
+import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
   renderTutorStubCurriculumModule,
@@ -1534,21 +1539,6 @@ function loadRegisterEmpiricalPrior(value, { policy }) {
       ? 'loaded_holdout_not_passed'
       : 'loaded';
   return { prior, filePath, status };
-}
-
-function safeTimestampForFile(date = new Date()) {
-  return date.toISOString().replace(/[:.]/g, '-');
-}
-
-function formatTurnDebugId(runId, turn) {
-  const turnNumber = Number.parseInt(turn, 10);
-  const normalizedRunId = String(runId || 'no-trace').trim() || 'no-trace';
-  if (!Number.isFinite(turnNumber) || turnNumber < 1) return normalizedRunId;
-  return `${normalizedRunId}:t${String(turnNumber).padStart(3, '0')}`;
-}
-
-function openingDebugId(runId) {
-  return `${String(runId || 'no-trace').trim() || 'no-trace'}:opening`;
 }
 
 function factText(fact) {
