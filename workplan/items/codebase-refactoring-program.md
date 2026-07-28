@@ -65,6 +65,7 @@ links:
     - refactor-tutor-stub-model-temperature
     - refactor-tutor-stub-cli-parsing
     - refactor-tutor-stub-model-selection
+    - refactor-tutor-stub-dag-mode
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -1026,3 +1027,10 @@ Log:
   CLI reduction, nine focused assertions including byte-exact live terminal
   blocks, and complete zero-skip hermetic parity. All static and source-only
   gates pass.
+- 2026-07-28 — Activated fifty-loop run 3,
+  `refactor-tutor-stub-dag-mode`, from PR #372's reviewed head. Allowed-mode
+  configuration, runtime DAG state, launch orchestration, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop DAG-mode run reached review with a six-line net CLI
+  reduction, 11 focused assertions, and complete zero-skip hermetic parity.
+  All static and source-only gates pass.
