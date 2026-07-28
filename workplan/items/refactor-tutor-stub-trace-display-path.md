@@ -20,7 +20,8 @@ links:
     - services/traceSchema.js
     - scripts/tutor-stub.js
     - tests/traceSchema.test.js
-  prs: []
+  prs:
+    - 409
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-trace-provenance
@@ -53,3 +54,6 @@ Log:
   service. The explicit multi-symbol import adds three CLI lines, while path
   semantics now have one owner. Eight focused assertions, complete zero-skip
   hermetic parity, and all static/source-only gates pass.
+- 2026-07-28 — Opened PR #409 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
