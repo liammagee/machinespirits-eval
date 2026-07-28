@@ -863,3 +863,11 @@ Log:
   CLI reduction, 14 focused assertions, 7,433 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated second-loop run 4,
+  `refactor-tutor-stub-guard-attempt-envelope`, from PR #352's reviewed head.
+  Audit evaluation, repair selection, accounting aggregation, runtime state,
+  and effects remain in their current owners.
+- 2026-07-28 — Second-loop guard-attempt-envelope run reached review with a
+  32-line net CLI reduction, 16 focused assertions, 7,435 root assertions, and
+  137 tutor-core assertions green with zero skips. All static and source-only
+  gates pass; one dead wrapper exposed by the extraction was removed.

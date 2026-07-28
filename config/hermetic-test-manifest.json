@@ -437,6 +437,7 @@
         "tests/tutorStubFrozenReplay.test.js",
         "tests/tutorStubFrozenReplayCheckpoint.test.js",
         "tests/tutorStubGuardAccounting.test.js",
+        "tests/tutorStubGuardAttemptProjection.test.js",
         "tests/tutorStubGuardDisposition.test.js",
         "tests/tutorStubGuardSpanProjection.test.js",
         "tests/tutorStubHumanDiscourseConfig.test.js",
