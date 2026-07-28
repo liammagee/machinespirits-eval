@@ -20,7 +20,8 @@ links:
     - services/tutorStubDevelopmentSpeakerTransport.js
     - scripts/tutor-stub.js
     - tests/tutorStubDevelopmentSpeakerTransport.test.js
-  prs: []
+  prs:
+    - 405
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-stream-label
@@ -53,3 +54,6 @@ Log:
   terminal effects, reducing `scripts/tutor-stub.js` by 18 lines. Seven focused
   assertions, complete zero-skip hermetic parity, and all static/source-only
   gates pass.
+- 2026-07-28 — Opened PR #405 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
