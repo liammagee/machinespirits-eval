@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-field-report-presentation
 links:
+  prs:
+    - 329
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -94,3 +96,7 @@ Log:
   dependency tree and failed only three RDF/MCP-dependent assertions; after
   lockfile-exact `npm ci`, those files pass 19/19 and the complete rerun is the
   recorded result.
+- 2026-07-28 — Opened PR #329 after a clean rebase onto current `origin/main`.
+  Post-rebase parity remains green: 75/75 focused assertions, the 254-item
+  source-only workplan check, manifest, lint, formatting, refs, syntax, diff,
+  and zero-cycle checks pass; the commit-to-workplan trailer is linked.
