@@ -9,6 +9,7 @@ import {
   formatTutorStubTurnDebugId,
   printTutorStubAutomaticTechnicalDetails,
   printTutorStubDebugIdLine,
+  projectTutorStubCurrentDebugLines,
   projectTutorStubCurrentDebugSelection,
   resolveTutorStubStateRunDebugId,
   tutorStubAutomaticTechnicalDetailsEnabled,
@@ -117,6 +118,50 @@ test('current debug selection preserves run, opening, completed-turn, active-tur
     projectTutorStubCurrentDebugSelection({ trace: { runId: 'run-a' }, turns: [{ turn: 3 }] }, { duringTurn: true })
       .lastCompletedTurnId,
     'run-a:t003',
+  );
+});
+
+test('current debug lines preserve order, optional turn rows, trace fallback, clipboard status, and colors', () => {
+  const colors = { cyan: '<cyan>', dim: '<dim>', green: '<green>', reset: '<reset>' };
+  assert.deepEqual(
+    projectTutorStubCurrentDebugLines(
+      {
+        runId: 'run-a',
+        selectedId: 'run-a:t003',
+        activeId: 'run-a:t003',
+        tracePath: '/tmp/run-a.jsonl',
+        lastCompletedTurnId: 'run-a:t002',
+        clipboard: { copied: true },
+      },
+      { colors },
+    ),
+    [
+      '<cyan>debug id ><reset> run-a:t003',
+      '<dim>  run id: run-a<reset>',
+      '<dim>  last completed turn: run-a:t002<reset>',
+      '<dim>  in-progress turn: run-a:t003<reset>',
+      '<dim>  trace: /tmp/run-a.jsonl<reset>',
+      '<green>  copied this diagnostic block to the clipboard<reset>\n',
+    ],
+  );
+  assert.deepEqual(
+    projectTutorStubCurrentDebugLines(
+      {
+        runId: 'no-trace',
+        selectedId: 'no-trace',
+        activeId: null,
+        tracePath: null,
+        lastCompletedTurnId: null,
+        clipboard: { copied: false },
+      },
+      { colors },
+    ),
+    [
+      '<cyan>debug id ><reset> no-trace',
+      '<dim>  run id: no-trace<reset>',
+      '<dim>  trace: disabled for this run; rerun without --no-trace for a local JSONL trace<reset>',
+      '<dim>  clipboard unavailable; select this block to copy it into Codex<reset>\n',
+    ],
   );
 });
 

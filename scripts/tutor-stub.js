@@ -87,6 +87,7 @@ import {
   formatTutorStubStateTurnDebugId as turnDebugId,
   formatTutorStubTurnDebugId as formatTurnDebugId,
   printTutorStubAutomaticTechnicalDetails,
+  projectTutorStubCurrentDebugLines,
   projectTutorStubCurrentDebugSelection,
   resolveTutorStubStateRunDebugId as stateRunDebugId,
   tutorStubAutomaticTechnicalDetailsEnabled as automaticTechnicalDetailsEnabled,
@@ -3462,18 +3463,12 @@ function printCurrentDebugId(state, { duringTurn = false } = {}) {
     tracePath,
   });
   const clipboard = copyTutorStubTextToClipboard(clipboardText);
-  console.log(`${C.cyan}debug id >${C.reset} ${selectedId}`);
-  console.log(`${C.dim}  run id: ${runId}${C.reset}`);
-  if (lastCompletedTurnId) console.log(`${C.dim}  last completed turn: ${lastCompletedTurnId}${C.reset}`);
-  if (activeId) console.log(`${C.dim}  in-progress turn: ${activeId}${C.reset}`);
-  console.log(
-    `${C.dim}  trace: ${tracePath || 'disabled for this run; rerun without --no-trace for a local JSONL trace'}${C.reset}`,
-  );
-  console.log(
-    clipboard.copied
-      ? `${C.green}  copied this diagnostic block to the clipboard${C.reset}\n`
-      : `${C.dim}  clipboard unavailable; select this block to copy it into Codex${C.reset}\n`,
-  );
+  for (const line of projectTutorStubCurrentDebugLines(
+    { runId, selectedId, activeId, tracePath, lastCompletedTurnId, clipboard },
+    { colors: C },
+  )) {
+    console.log(line);
+  }
   return { runId, completedId, activeId, tracePath, clipboard };
 }
 
