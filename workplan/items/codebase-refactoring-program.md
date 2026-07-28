@@ -829,3 +829,13 @@ Log:
   tutor-core assertions green with zero skips. All static and source-only gates
   pass after removing the extraction's stale import and formatting its new
   dependency-free owner.
+- 2026-07-28 — The first ten-run stack audit found that runs 4–10 had not
+  reached `main`: their PRs were alternately merged into intermediate branches
+  or closed as those bases disappeared. Activated
+  `refactor-tutor-stub-stack-recovery`, rebased the preserved final branch onto
+  current `origin/main`, and froze its cumulative delta to the seven reviewed
+  slices plus tests, manifests, and authored workplan sources.
+- 2026-07-28 — Stack recovery reached review with 69 focused, 7,427 root, and
+  137 tutor-core assertions green with zero skips. All static, manifest,
+  source-only workplan, and ref gates pass; no generated workplan view is in
+  the cumulative delta.
