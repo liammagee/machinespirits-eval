@@ -465,6 +465,7 @@
         "tests/tutorStubLearnerClassification.test.js",
         "tests/tutorStubLearnerClassificationPresentation.test.js",
         "tests/tutorStubLearnerDagPresentation.test.js",
+        "tests/tutorStubLearnerDagRestoration.test.js",
         "tests/tutorStubLearnerResponseProvenance.test.js",
         "tests/tutorStubLearningSummary.test.js",
         "tests/tutorStubLearningSummaryHtml.test.js",

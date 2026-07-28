@@ -1301,7 +1301,7 @@ Log:
 - 2026-07-28 — Fifty-loop current-debug-selection run reached review with a
   three-line net CLI reduction, eleven focused assertions, and complete
   zero-skip hermetic parity. All static/source-only gates pass. Fifty-loop runs
-  31–40 have removed 40 net lines from `scripts/tutor-stub.js` while
+  31–40 have removed 71 net lines from `scripts/tutor-stub.js` while
   centralizing transport, trace, and debug contracts without regressions.
 - 2026-07-28 — Opened fifty-loop run 40 as PR #414 against `main`; the push
   benchmark remained byte-identical to its standing failed baseline.
@@ -1391,3 +1391,13 @@ Log:
   complete zero-skip hermetic parity. All static/source-only gates pass.
 - 2026-07-28 — Opened fifty-loop run 49 as PR #423 against `main`; the push
   benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 50,
+  `refactor-tutor-stub-learner-dag-replay`, from PR #423's reviewed head.
+  World/trace loading, state creation, persistence, live DAG updates, runtime
+  sequencing, and effects remain in the CLI.
+- 2026-07-28 — Fifty-loop learner-DAG-replay run reached review with a
+  thirty-line net CLI reduction, four focused assertions, synchronized
+  hermetic inventory, and complete zero-skip hermetic parity. All
+  static/source-only gates pass. Across all fifty bounded runs,
+  `scripts/tutor-stub.js` fell from 23,999 to 23,200 lines: a 799-line net
+  reduction with no validated behavior regression.

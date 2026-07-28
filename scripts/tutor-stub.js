@@ -526,6 +526,7 @@ import {
 import { projectTutorStubResponseConfigurationLines } from '../services/tutorStubResponseConfigurationPresentation.js';
 import { projectTutorStubResponsePolicyContext } from '../services/tutorStubResponsePolicyContext.js';
 import { restoreTutorStubRegisterStateFromTurns as restoreRegisterStateFromTurns } from '../services/tutorStubRegisterStateRestoration.js';
+import { replayTutorStubLearnerDagFromTurns } from '../services/tutorStubLearnerDagRestoration.js';
 import { assertTutorStubTurnAttemptCurrent } from '../services/tutorStubTurnAttempt.js';
 import { restoreTutorStubTypedActionState as restoreTypedActionState } from '../services/tutorStubTypedActionRestoration.js';
 import {
@@ -3459,40 +3460,6 @@ function jsonClone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function replayLearnerDagFromTurns(state, turns) {
-  if (!state.learnerDag?.enabled || !state.world) return { replayed: 0, skipped: 0 };
-  let replayed = 0;
-  let skipped = 0;
-  for (const turn of turns) {
-    const accepted = turn?.tutorLearnerDagUpdate?.accepted;
-    if (accepted) {
-      const result = applyLearnerRecordUpdate({
-        update: {
-          adopt: accepted.adopt || [],
-          retract: accepted.retract || [],
-          derive: accepted.derive || [],
-          hypothesis: accepted.hypothesis || null,
-          assert_answer: accepted.assertAnswer || null,
-          human_discourse: accepted.humanDiscourse || null,
-        },
-        state,
-        tutorTurn: Number(turn.turn) || replayed + 1,
-        learnerText: turn.learner || '',
-        dropoutReplay: turn?.dagFactDropout || turn?.tutorLearnerDagUpdate?.dagFactDropout || { legacyNoDropout: true },
-        ...learnerPublicEvidenceState(state, Number(turn.turn) || replayed + 1),
-      });
-      state.learnerDag.lastModel = result.model;
-      replayed += 1;
-      continue;
-    }
-    if (turn?.tutorLearnerDagModel) {
-      state.learnerDag.lastModel = jsonClone(turn.tutorLearnerDagModel);
-      skipped += 1;
-    }
-  }
-  return { replayed, skipped };
-}
-
 function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening = false }) {
   if (!resume?.turns?.length) return null;
   const turns = resume.turns.map((turn) => jsonClone(turn));
@@ -3537,7 +3504,10 @@ function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening 
   const register = restoreRegisterStateFromTurns(state, turns);
   const comprehension = restoreComprehensionState(state, turns, resume.events || []);
   const directorGuidance = restoreDirectorGuidanceState(state, resume.events || []);
-  const learnerDag = replayLearnerDagFromTurns(state, turns);
+  const learnerDag = replayTutorStubLearnerDagFromTurns(state, turns, {
+    applyLearnerRecordUpdate,
+    learnerPublicEvidenceState,
+  });
   const typedActions = restoreTypedActionState(state, turns, resume.events || []);
   const storedClosure = turns.at(-1)?.dialogueClosure?.lifecycle || null;
   if (storedClosure && state.dialogueClosure?.enabled) {
