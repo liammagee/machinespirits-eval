@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-28T13:13:21.951Z",
+  "generated": "2026-07-28T13:32:12.092Z",
   "counts": {
-    "total": 292,
+    "total": 294,
     "byStatus": {
       "done": 224,
       "blocked": 5,
-      "dropped": 3,
-      "triaged": 7,
-      "review": 40,
-      "active": 9,
+      "dropped": 4,
+      "triaged": 6,
+      "review": 41,
+      "active": 10,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 49,
-      "infra": 61,
+      "experiment": 50,
+      "infra": 62,
       "maintenance": 116,
       "content": 2,
       "ops": 8,
@@ -135,37 +135,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
-    },
-    {
-      "id": "program-2-phase5d-second-transfer-world",
-      "title": "Program-2 Phase 5e: second transfer world (letter-hostile probe)",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "The Phase 5b/5c-validated committee (program2-sft-instruct-v2, fallback policy v2, span/battery byte-unchanged), moved unchanged to a THIRD world selected for minimum native frozen-six density (letter-hostile), clears E1e (pooled warrant_skip compliance diff vs the new world's own fresh controls, dialogue-cluster bootstrap 95% CI > 0) under the frozen guardrails (coverage −0.05, safety −0.10, density ≥ 15, seam ≤ 0.65) with the costume-leak metric reported both arms.",
-      "claim_status": "exploratory",
-      "links": {
-        "paper": "§6.21, §7.12",
-        "notes": [
-          "PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md",
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
-          "config/adaptive-tutor-evidence/program-2-phase5c.manifest.json"
-        ],
-        "items": [
-          "program-2-context-vs-weights-finetune"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "move-library",
-        "cross-world-transfer"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "tutor-stub-http-command-adapter-coverage",
@@ -551,6 +520,45 @@
       "branch": "codex/program2-committee-floor-ablation"
     },
     {
+      "id": "program-2-phase5f-fresh-transfer-world",
+      "title": "Program-2 Phase 5f: clean post-hardening transfer world",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "branch": "codex/program-2-phase5e-r2-replication",
+      "verification": "A3 sealed 4/4 rows on their first attempt with no final attrition, full coverage by turn 16, hard safety passing, and all 31 gate-grade decisions clean. Closure burden fell from 53 total A2 turns to 35 A3 turns, including 25 to 8 for affective-resistant committee, but deterministic fallback remained 25/35 turns (71.4%). Neither arm produced a frozen warrant_skip opportunity, so A3 is a successful apparatus-feasibility result and not a committee-transfer estimate. The card remains active until a separately merged prospective cohort amendment freezes a non-zero opportunity-density gate, Phase 5f-native analyzer, cohort-bound pilot bundle, and terminal stopping rule; no 18-dialogue cohort is licensed.",
+      "claim_status": "planned",
+      "depends_on": [
+        "program-2-transfer-apparatus-hardening"
+      ],
+      "links": {
+        "notes": [
+          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md",
+          "PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md"
+        ],
+        "items": [
+          "program-2-phase5d-second-transfer-world",
+          "program-2-transfer-apparatus-hardening"
+        ],
+        "code": [
+          "scripts/run-program2-live-pilot.js",
+          "config/adaptive-tutor-evidence/program-2-phase5f-world-selection.json",
+          "config/adaptive-tutor-evidence/program-2-phase5f-pilot-gates.json"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "move-library",
+        "cross-world-transfer"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
       "id": "tutor-instrumentation-ab-harness",
       "title": "Instrumentation A/B — bare tutor vs instrumented tutor on one frozen dialogue",
       "status": "active",
@@ -768,6 +776,45 @@
         "move-library",
         "stagnant-repeat",
         "lambda"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "program-2-transfer-apparatus-hardening",
+      "title": "Program-2 transfer apparatus hardening after Phase 5e A4",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "branch": "codex/program-2-phase5e-r2-replication",
+      "verification": "Without model calls, frozen A1-A4 and Phase 5f A2 prefixes plus non-Skyway fixtures prove queued recovery for every released-but-unheld best-path premise, rejection of closure while strict DAG premises remain missing, idempotent one-time due-clue delivery, preservation of cue-bearing committee content, recognition of authored entailed-answer paraphrases, and a fail-closed unsupported-answer recovery that does not echo the proposed conclusion. Focused, derivation-quality, hermetic-manifest, lint, and workplan source gates must pass before a replacement certificate is prepared.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md"
+        ],
+        "items": [
+          "program-2-phase5d-second-transfer-world",
+          "program-2-phase5f-fresh-transfer-world"
+        ],
+        "code": [
+          "services/tutorStubResponseConfiguration.js",
+          "services/tutorStubTurnProgressionContract.js",
+          "services/tutorStubDialogueClosure.js",
+          "services/tutorStubDramaticRelease.js",
+          "services/program2CommitteeEngine.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubPhase5eR2PilotReplay.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "program-2",
+        "apparatus",
+        "guards"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
     },
@@ -9811,6 +9858,55 @@
         "workplan",
         "plan-2"
       ]
+    },
+    {
+      "id": "program-2-phase5d-second-transfer-world",
+      "title": "Program-2 Phase 5e: second transfer world (letter-hostile probe)",
+      "status": "dropped",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-07-28",
+      "branch": "codex/program-2-phase5e-r2-replication",
+      "verification": "Closed without an E1e estimate: immutable R1 and R2 A1-A4 artifacts remain separate, A4's 2/4 sealed pilot and failed cohort bundle are recorded, Skyway is explicitly retired from held-out use, and successor apparatus-hardening plus fresh-world cards own any further work.",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": "§6.21, §7.12",
+        "notes": [
+          "PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
+          "PROGRAM-2-PHASE5E-SECOND-TRANSFER-PREREGISTRATION.md",
+          "notes/program-2/2026-07-26-phase5e-world-selection.md",
+          "notes/program-2/2026-07-26-phase5e-world-selection-amendment1.md",
+          "notes/program-2/2026-07-26-phase5e-analyzer-validation.md",
+          "notes/program-2/2026-07-26-phase5e-presentation-amendment.md",
+          "notes/program-2/2026-07-27-phase5e-r2-replication-freeze.md",
+          "notes/program-2/2026-07-27-phase5e-r2-pilot-amendment1.md",
+          "notes/program-2/2026-07-27-phase5e-r2-pilot-amendment2.md",
+          "notes/program-2/2026-07-27-phase5e-r2-pilot-amendment3.md",
+          "notes/program-2/2026-07-28-phase5e-r2-pilot-amendment4.md",
+          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md",
+          "config/adaptive-tutor-evidence/program-2-phase5c.manifest.json",
+          "config/adaptive-tutor-evidence/program-2-phase5e-world-selection.json",
+          "config/adaptive-tutor-evidence/program-2-phase5e-world-selection-amendment1.json",
+          "config/adaptive-tutor-evidence/program-2-phase5e-r2-gates.json",
+          "config/adaptive-tutor-evidence/program-2-phase5e-r2-pilot-gates.json"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune",
+          "program-2-transfer-apparatus-hardening",
+          "program-2-phase5f-fresh-transfer-world"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "move-library",
+        "cross-world-transfer"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "a18-38-teacher-as-learner-ml-fine-tuning-ladder",
