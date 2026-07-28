@@ -20,6 +20,8 @@ links:
     - services/tutorStubLearnerClassification.js
     - scripts/tutor-stub.js
     - tests/tutorStubLearnerClassification.test.js
+  prs:
+    - 384
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-failed-classification
@@ -53,3 +55,6 @@ Log:
   failed-classification envelope, reducing `scripts/tutor-stub.js` by 21 lines.
   Nine focused assertions, complete zero-skip hermetic parity, and all static
   and source-only gates pass.
+- 2026-07-28 — Opened PR #384 against `main`; the benchmark hook correctly
+  classified the deterministic classification slice as not response-generation
+  relevant.
