@@ -11,14 +11,17 @@ import {
   PHASE5E_PILOT_SPEC,
   PHASE5F_PILOT_SPEC,
   PHASE5F_PILOT_A2_SPEC,
+  PHASE5F_PILOT_A3_SPEC,
   buildPhase5eLivePilotPlan,
   buildPhase5eR2ExactPipelinePilotPlan,
   buildPhase5fExactPipelinePilotPlan,
   buildPhase5fA2ExactPipelinePilotPlan,
+  buildPhase5fA3ExactPipelinePilotPlan,
   validatePhase5eLivePilotPlan,
   validatePhase5eR2ExactPipelinePilotPlan,
   validatePhase5fExactPipelinePilotPlan,
   validatePhase5fA2ExactPipelinePilotPlan,
+  validatePhase5fA3ExactPipelinePilotPlan,
 } from '../scripts/run-program2-live-pilot.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
@@ -244,6 +247,39 @@ describe('Program-2 Phase 5e live-pilot plan', () => {
     const artifact = JSON.parse(fs.readFileSync(path.join(pilotRoot, 'launch-plan.json'), 'utf8'));
     assert.equal(artifact.modelCallsBeforeArtifact, 0);
     assert.equal(artifact.plan.schema, PHASE5F_PILOT_A2_SPEC.schema);
+    assert.equal(artifact.plan.jobs.length, 4);
+    assert.equal(artifact.plan.outputRoot, pilotRoot);
+  });
+
+  it('gives the post-A2 closure repair a distinct immutable A3 pilot identity', () => {
+    const outputRoot = 'phase5f-pilot-a3-output';
+    const plan = buildPhase5fA3ExactPipelinePilotPlan({ outputRoot });
+    assert.deepEqual(validatePhase5fA3ExactPipelinePilotPlan(plan), {
+      ok: true,
+      errors: [],
+      jobCount: 4,
+      balancedCellCount: 4,
+    });
+    assert.equal(plan.schema, PHASE5F_PILOT_A3_SPEC.schema);
+    assert.equal(plan.replacementOf, 'exports/program2-live-pilot-5f-pilot-a2/launch-plan.json');
+    assert.equal(plan.outputRoot, outputRoot);
+    assert.equal(plan.jobs.every((job) => job.id.startsWith('p5f-pilot-a3-')), true);
+    assert.equal(plan.jobs.every((job) => flagValue(job.command, '--trace-dir').startsWith(outputRoot)), true);
+  });
+
+  it('prepares the Phase 5f A3 certificate plan without model calls or overwriting A2', () => {
+    const pilotRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'program2-phase5f-pilot-a3-'));
+    const pilot = spawnSync(
+      process.execPath,
+      ['scripts/run-program2-live-pilot.js', '--prepare-certificate', '--plan', '5f-pilot-a3', '--output-dir', pilotRoot],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+    assert.equal(pilot.status, 0, `${pilot.stdout}\n${pilot.stderr}`);
+    assert.match(pilot.stdout, /certificate plan PASS; 0 model calls/u);
+    assert.match(pilot.stdout, /--phase pilot/u);
+    const artifact = JSON.parse(fs.readFileSync(path.join(pilotRoot, 'launch-plan.json'), 'utf8'));
+    assert.equal(artifact.modelCallsBeforeArtifact, 0);
+    assert.equal(artifact.plan.schema, PHASE5F_PILOT_A3_SPEC.schema);
     assert.equal(artifact.plan.jobs.length, 4);
     assert.equal(artifact.plan.outputRoot, pilotRoot);
   });

@@ -620,6 +620,12 @@ export const PHASE5F_PILOT_A2_SPEC = Object.freeze({
   replacementOf: 'exports/program2-live-pilot-5f-pilot/launch-plan.json',
 });
 
+export const PHASE5F_PILOT_A3_SPEC = Object.freeze({
+  ...PHASE5F_PILOT_SPEC,
+  schema: 'machinespirits.tutor-stub.program2-phase5f-pilot-a3-plan.v1',
+  replacementOf: 'exports/program2-live-pilot-5f-pilot-a2/launch-plan.json',
+});
+
 function buildPhase5fPilotPlan({ outputRoot, evidenceUseRubric, spec, idPrefix }) {
   const rubric = normalizeTutorStubEvidenceUseRubric(evidenceUseRubric);
   if (rubric !== spec.evidenceUseRubric) {
@@ -676,6 +682,18 @@ export function buildPhase5fA2ExactPipelinePilotPlan({
   });
 }
 
+export function buildPhase5fA3ExactPipelinePilotPlan({
+  outputRoot = 'exports/program2-live-pilot-5f-pilot-a3',
+  evidenceUseRubric = PHASE5F_PILOT_A3_SPEC.evidenceUseRubric,
+} = {}) {
+  return buildPhase5fPilotPlan({
+    outputRoot,
+    evidenceUseRubric,
+    spec: PHASE5F_PILOT_A3_SPEC,
+    idPrefix: 'p5f-pilot-a3',
+  });
+}
+
 function validatePhase5fPilotPlan(plan, spec) {
   const errors = [];
   if (plan.jobs.length !== 4) errors.push(`expected 4 jobs, found ${plan.jobs.length}`);
@@ -719,6 +737,10 @@ export function validatePhase5fExactPipelinePilotPlan(plan) {
 
 export function validatePhase5fA2ExactPipelinePilotPlan(plan) {
   return validatePhase5fPilotPlan(plan, PHASE5F_PILOT_A2_SPEC);
+}
+
+export function validatePhase5fA3ExactPipelinePilotPlan(plan) {
+  return validatePhase5fPilotPlan(plan, PHASE5F_PILOT_A3_SPEC);
 }
 
 export function validatePhase5bLivePilotPlan(plan) {
@@ -928,7 +950,7 @@ async function main() {
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--dry-run | --prepare-certificate | --launch-approved --expected-sha <sha> --launch-certificate <file>] [--plan 5|5b|5c|5e-pilot|5e|5f-pilot|5f-pilot-a2] [--output-dir <dir>] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--dry-run | --prepare-certificate | --launch-approved --expected-sha <sha> --launch-certificate <file>] [--plan 5|5b|5c|5e-pilot|5e|5f-pilot|5f-pilot-a2|5f-pilot-a3] [--output-dir <dir>] [--limit-jobs N]',
     );
     console.log('\nPaid launch prerequisite: generate a fresh certificate with npm run program2:certify-launch.');
     console.log(
@@ -986,9 +1008,17 @@ async function main() {
       validate: validatePhase5fA2ExactPipelinePilotPlan,
       certificatePhase: 'pilot',
     },
+    '5f-pilot-a3': {
+      root: 'exports/program2-live-pilot-5f-pilot-a3',
+      build: buildPhase5fA3ExactPipelinePilotPlan,
+      validate: validatePhase5fA3ExactPipelinePilotPlan,
+      certificatePhase: 'pilot',
+    },
   };
   if (!planTable[planKey]) {
-    throw new Error(`unknown --plan ${planKey} (expected 5, 5b, 5c, 5e-pilot, 5e, 5f-pilot, or 5f-pilot-a2)`);
+    throw new Error(
+      `unknown --plan ${planKey} (expected 5, 5b, 5c, 5e-pilot, 5e, 5f-pilot, 5f-pilot-a2, or 5f-pilot-a3)`,
+    );
   }
   const defaultRoot = launch || prepareCertificate ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
   const outputRoot = path.resolve(ROOT, values['output-dir'] || defaultRoot);
@@ -1097,7 +1127,7 @@ async function main() {
     : { schema: 'machinespirits.tutor-stub.program2-phase5-launch-state.v1', jobs: {} };
   const saveState = () => fs.writeFileSync(statePath, `${JSON.stringify(launchState, null, 2)}\n`);
   const enforceLiveFutility = (stage) => {
-    const rows = ['5e', '5e-pilot', '5f-pilot', '5f-pilot-a2'].includes(planKey)
+    const rows = ['5e', '5e-pilot', '5f-pilot', '5f-pilot-a2', '5f-pilot-a3'].includes(planKey)
       ? loadProgram2Phase5eRows({ plan, root: outputRoot })
       : [];
     const check = evaluateProgram2LiveFutility({

@@ -181,3 +181,19 @@ result remain immutable evidence for the pre-repair runtime and cannot license
 a cohort. Any replacement feasibility run requires a new suffix, fresh
 zero-model certificate, and explicit external-payload authorization. An
 18-dialogue cohort remains separately gated.
+
+## 10. A3 replacement identity (2026-07-28)
+
+The post-A2 repair is evaluated under the new plan key `5f-pilot-a3`, schema
+`machinespirits.tutor-stub.program2-phase5f-pilot-a3-plan.v1`, job prefix
+`p5f-pilot-a3`, and output directory
+`exports/program2-live-pilot-5f-pilot-a3/`. A3 preserves the A2 world, seed,
+profiles, arms, model stack, evidence-use rubric, attempt ceiling, stopping
+rule, provider budget, and feasibility gates. It changes only the source-bound
+closure recognition and unsupported-answer recovery mechanisms described in
+section 9 plus this immutable artifact namespace.
+
+A3 requires a fresh zero-model certificate bound to its exact clean source
+SHA. Planning and certification do not authorize execution. The external
+payload destinations and scopes require explicit authorization for A3; the
+18-dialogue cohort and seam review remain separately gated.
