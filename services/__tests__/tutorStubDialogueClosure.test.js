@@ -87,6 +87,72 @@ describe('tutor-stub dialogue closure', () => {
     assert.equal(audit.closesDialogue, false);
   });
 
+  // The showcase run of 2026-07-26 (riverside_clinic__instrumented) declared the
+  // case closed at turn 5 while the lifecycle stayed open until turn 7, then said
+  // it twice more. The audit passed all three without reading them.
+  const RIVERSIDE_PREMATURE_CLOSE =
+    'I mark the case closed: DUP-SWEEP-04 cancelled Noor’s appointment. The duplicate mark and its ' +
+    '02:00 start made it eligible, and the 02:03 action ledger names it as the canceller.';
+
+  function unearnedFrame() {
+    return buildTutorStubDialogueClosureFrame({
+      lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: true }),
+      learnerDagModel: { assessment: { finalSecretEntailed: true, assertedSecret: false } },
+      tutorDagSnapshot: completeTutorDag(),
+      answerTerm: 'DUP-SWEEP-04',
+    });
+  }
+
+  it('rejects a close declared before the closure conditions are met', () => {
+    const frame = unearnedFrame();
+    assert.equal(frame.mandatory, false);
+    assert.equal(frame.available, false);
+
+    const audit = auditTutorStubDialogueClosureResponse({ frame, text: RIVERSIDE_PREMATURE_CLOSE });
+
+    assert.equal(audit.ok, false);
+    assert.equal(audit.closesDialogue, false);
+    assert.equal(audit.issues[0].type, 'premature_dialogue_close');
+    assert.deepEqual(audit.issues[0].matches, ['case closed']);
+  });
+
+  it('leaves an unearned turn alone when it only saybacks the answer term', () => {
+    const audit = auditTutorStubDialogueClosureResponse({
+      frame: unearnedFrame(),
+      text:
+        'So the 02:03 ledger entry names DUP-SWEEP-04 beside the cancellation, and Mara’s entry is a view. ' +
+        'What would you say the ledger settles?',
+    });
+
+    assert.equal(audit.ok, true);
+    assert.equal(audit.issues.length, 0);
+  });
+
+  it('does not raise a premature close once the lifecycle has already closed', () => {
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: { ...createTutorStubDialogueClosureLifecycle({ enabled: true }), phase: 'closed' },
+      learnerDagModel: { assessment: { finalSecretEntailed: true, assertedSecret: true } },
+      tutorDagSnapshot: completeTutorDag(),
+      answerTerm: 'DUP-SWEEP-04',
+    });
+
+    assert.equal(frame.phase, 'closed');
+    const audit = auditTutorStubDialogueClosureResponse({ frame, text: RIVERSIDE_PREMATURE_CLOSE });
+    assert.equal(audit.ok, true);
+  });
+
+  it('reads nothing when the closure guard is off', () => {
+    const frame = buildTutorStubDialogueClosureFrame({
+      lifecycle: createTutorStubDialogueClosureLifecycle({ enabled: false }),
+      tutorDagSnapshot: completeTutorDag(),
+      answerTerm: 'DUP-SWEEP-04',
+    });
+
+    const audit = auditTutorStubDialogueClosureResponse({ frame, text: RIVERSIDE_PREMATURE_CLOSE });
+    assert.equal(audit.ok, true);
+    assert.equal(audit.verdict, undefined);
+  });
+
   it('allows one optional check-in and then advances to awaiting_checkin', () => {
     const lifecycle = createTutorStubDialogueClosureLifecycle({
       enabled: true,

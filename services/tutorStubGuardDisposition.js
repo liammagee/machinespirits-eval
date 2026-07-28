@@ -2,7 +2,9 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // 3 (2026-07-26): the terminal-fallback boundary now also downgrades
 // dramatic-form findings, so a trace's disposition rows are not comparable
 // with a version-2 trace without accounting for that.
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 3;
+// 4 (2026-07-28): dialogue_closure gained premature_dialogue_close, so a
+// version-3 trace cannot carry that row and its absence there means nothing.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 4;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -142,6 +144,12 @@ const RULES = Object.freeze([
       rationale: 'A mandatory terminal act must close semantically and must not reopen proof work.',
     }),
   ),
+  rule({
+    guard: 'dialogue_closure',
+    type: 'premature_dialogue_close',
+    category: 'semantic_closure_integrity',
+    rationale: 'The tutor may not declare the case closed before the closure conditions are met.',
+  }),
 
   // These remain strict today, but are separately visible in the proposed
   // shadow policy because they concern realization or optional support rather
