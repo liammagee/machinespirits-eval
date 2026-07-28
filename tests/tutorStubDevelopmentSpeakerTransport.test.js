@@ -4,7 +4,20 @@ import test from 'node:test';
 import {
   resolveTutorStubDevelopmentDirectModel,
   TUTOR_STUB_DEVELOPMENT_SPEAKER_TRANSPORT_SCHEMA,
+  tutorStubProviderSupportsEventStreaming,
+  tutorStubProviderSupportsTokenStreaming,
 } from '../services/tutorStubDevelopmentSpeakerTransport.js';
+
+test('speaker transport capabilities distinguish token streams, Codex events, CLI bridges, and missing providers', () => {
+  const isCli = (provider) => ['codex', 'claude-code', 'gemini-cli'].includes(provider);
+  assert.equal(tutorStubProviderSupportsTokenStreaming({ provider: 'openai' }, { isCli }), true);
+  assert.equal(tutorStubProviderSupportsTokenStreaming({ provider: 'codex' }, { isCli }), false);
+  assert.equal(tutorStubProviderSupportsTokenStreaming({ provider: 'claude-code' }, { isCli }), false);
+  assert.equal(tutorStubProviderSupportsTokenStreaming(null, { isCli }), false);
+  assert.equal(tutorStubProviderSupportsEventStreaming({ provider: 'codex' }), true);
+  assert.equal(tutorStubProviderSupportsEventStreaming({ provider: 'openai' }), false);
+  assert.equal(tutorStubProviderSupportsEventStreaming(null), false);
+});
 
 test('development direct transport resolves a configured non-CLI model without acceptance authority', () => {
   const result = resolveTutorStubDevelopmentDirectModel({

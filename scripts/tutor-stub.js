@@ -349,6 +349,10 @@ import {
 } from '../services/tutorStubTranscriptHtml.js';
 import { writeTutorStubLearningSummaryHtml } from '../services/tutorStubLearningSummaryHtml.js';
 import {
+  tutorStubProviderSupportsEventStreaming as providerSupportsEventStreaming,
+  tutorStubProviderSupportsTokenStreaming as providerSupportsStreaming,
+} from '../services/tutorStubDevelopmentSpeakerTransport.js';
+import {
   TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA,
   buildTutorStubLearningSummary as buildDialogueLearningSummary,
   tutorStubDialogueCaseStatus as dialogueCaseStatus,
@@ -3855,14 +3859,6 @@ function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening 
     metadata: resume.metadata || null,
     warnings,
   };
-}
-
-function providerSupportsStreaming(resolved) {
-  return Boolean(resolved?.provider && !isCliProvider(resolved.provider));
-}
-
-function providerSupportsEventStreaming(resolved) {
-  return resolved?.provider === 'codex';
 }
 
 function streamLabel(role) {

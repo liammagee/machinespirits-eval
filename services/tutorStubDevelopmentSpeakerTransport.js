@@ -4,6 +4,14 @@ import { resolveModel } from './evalConfigLoader.js';
 export const TUTOR_STUB_DEVELOPMENT_SPEAKER_TRANSPORT_SCHEMA =
   'machinespirits.tutor-stub.development-speaker-transport.v1';
 
+export function tutorStubProviderSupportsTokenStreaming(resolved, { isCli = isCliProvider } = {}) {
+  return Boolean(resolved?.provider && !isCli(resolved.provider));
+}
+
+export function tutorStubProviderSupportsEventStreaming(resolved) {
+  return resolved?.provider === 'codex';
+}
+
 export function resolveTutorStubDevelopmentDirectModel({
   modelRef = '',
   developmentSeed = '',
