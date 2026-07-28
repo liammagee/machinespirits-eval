@@ -13,6 +13,7 @@ import {
   resolveTutorStubInterimState,
   summarizeTutorStubInterimCapabilities,
   summarizeTutorStubPendingLearner,
+  summarizeTutorStubPendingDagMovement,
   summarizeTutorStubPendingLearnerDag,
   summarizeTutorStubPendingRegister,
   tutorStubInterimCliHintPanels,
@@ -224,6 +225,55 @@ test('pending register summary preserves blend, actorial, aim, efficacy, rating,
   );
 });
 
+test('pending DAG movement summary preserves deltas, plurality, direction, conclusions, and no-movement fallback', () => {
+  const dagProgressFeatures = (model) =>
+    model?.features || {
+      bestPathCoverage: 0,
+      groundedCount: 0,
+      voicedDerivedCount: 0,
+      answerCandidateCount: 0,
+      missingPremiseCount: 0,
+    };
+  const previous = {
+    features: {
+      bestPathCoverage: 0.25,
+      groundedCount: 3,
+      voicedDerivedCount: 2,
+      answerCandidateCount: 1,
+      missingPremiseCount: 4,
+    },
+  };
+  const current = {
+    turn: 3,
+    features: {
+      bestPathCoverage: 0.5,
+      groundedCount: 5,
+      voicedDerivedCount: 1,
+      answerCandidateCount: 0,
+      missingPremiseCount: 3,
+    },
+    assessment: { assertedSecret: true },
+  };
+  assert.equal(summarizeTutorStubPendingDagMovement(null, null, { dagProgressFeatures }), null);
+  assert.equal(
+    summarizeTutorStubPendingDagMovement(
+      { turns: [{ turn: 2, tutorLearnerDagModel: previous }] },
+      { tutorTurn: 3, tutorLearnerDagModel: current },
+      { dagProgressFeatures },
+    ),
+    'turn 3 | path coverage +0.25, 2 public facts added, 1 inference lost, 1 answer candidate removed, 1 needed piece resolved | the conclusion was stated too early',
+  );
+  const unchanged = { turn: 4, features: current.features, assessment: { finalSecretEntailed: true } };
+  assert.equal(
+    summarizeTutorStubPendingDagMovement(
+      { turns: [{ turn: 3, tutorLearnerDagModel: current }] },
+      { tutorTurn: 4, tutorLearnerDagModel: unchanged },
+      { dagProgressFeatures },
+    ),
+    'turn 4 | no clear reasoning movement yet | the conclusion is supported',
+  );
+});
+
 test('interim CLI hints preserve passthrough, setup, coach, auto, and learner contexts', () => {
   const shared = {
     label: 'CLI hint',
@@ -414,7 +464,7 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
-    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingDagMovementSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);

@@ -372,13 +372,13 @@ import {
 import { projectTutorStubCloseoutReportLines } from '../services/tutorStubCloseoutReportPresentation.js';
 import {
   createTutorStubInterimState as createInterimState,
-  findTutorStubPreviousLearnerDagModel as previousLearnerDagModel,
   formatTutorStubSignedInterimNumber as formatSignedInterimNumber,
   projectTutorStubInterimPanels,
   renderTutorStubInterimFrame,
   resolveTutorStubInterimState as getInterimState,
   summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
   summarizeTutorStubPendingLearner,
+  summarizeTutorStubPendingDagMovement,
   summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
   summarizeTutorStubPendingRegister,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
@@ -3112,43 +3112,8 @@ function compactPendingObjectiveSummary(state, context) {
 const compactPendingLearnerSummary = (context) =>
   summarizeTutorStubPendingLearner(context, { scoreValue, plainStrategyText });
 
-function compactPendingDagMovementSummary(state, context) {
-  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
-  if (!model) return null;
-  const previous = previousLearnerDagModel(state, context);
-  const currentFeatures = dagProgressFeatures(model);
-  const previousFeatures = dagProgressFeatures(previous);
-  const coverageDelta = formatSignedInterimNumber(currentFeatures.bestPathCoverage - previousFeatures.bestPathCoverage);
-  const groundedDelta = currentFeatures.groundedCount - previousFeatures.groundedCount;
-  const voicedDelta = currentFeatures.voicedDerivedCount - previousFeatures.voicedDerivedCount;
-  const answersDelta = currentFeatures.answerCandidateCount - previousFeatures.answerCandidateCount;
-  const missingDelta = currentFeatures.missingPremiseCount - previousFeatures.missingPremiseCount;
-  const deltas = [
-    coverageDelta ? `path coverage ${coverageDelta}` : null,
-    groundedDelta
-      ? `${Math.abs(groundedDelta)} public fact${Math.abs(groundedDelta) === 1 ? '' : 's'} ${groundedDelta > 0 ? 'added' : 'lost'}`
-      : null,
-    voicedDelta
-      ? `${Math.abs(voicedDelta)} inference${Math.abs(voicedDelta) === 1 ? '' : 's'} ${voicedDelta > 0 ? 'added' : 'lost'}`
-      : null,
-    answersDelta
-      ? `${Math.abs(answersDelta)} answer candidate${Math.abs(answersDelta) === 1 ? '' : 's'} ${answersDelta > 0 ? 'added' : 'removed'}`
-      : null,
-    missingDelta
-      ? `${Math.abs(missingDelta)} needed piece${Math.abs(missingDelta) === 1 ? '' : 's'} ${missingDelta < 0 ? 'resolved' : 'added'}`
-      : null,
-  ].filter(Boolean);
-  const assessment = model.assessment || {};
-  return [
-    `turn ${model.turn || context.tutorTurn || '?'}`,
-    deltas.length ? deltas.join(', ') : 'no clear reasoning movement yet',
-    assessment.finalSecretEntailed
-      ? 'the conclusion is supported'
-      : assessment.assertedSecret
-        ? 'the conclusion was stated too early'
-        : 'the conclusion remains open',
-  ].join(' | ');
-}
+const compactPendingDagMovementSummary = (state, context) =>
+  summarizeTutorStubPendingDagMovement(state, context, { dagProgressFeatures });
 
 function compactLearnerRecordUpdateSummary(state, context) {
   const result = context?.tutorLearnerDag;

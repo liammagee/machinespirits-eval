@@ -1129,3 +1129,11 @@ Log:
 - 2026-07-28 — Fifty-loop interim-register-summary run reached review with a
   26-line net CLI reduction, 16 focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 17,
+  `refactor-tutor-stub-interim-dag-movement`, from PR #390's reviewed head. DAG
+  feature construction, runtime state, and effects remain in their current
+  owners.
+- 2026-07-28 — Fifty-loop interim-DAG-movement run reached review with a
+  35-line net CLI reduction, 17 focused assertions, and complete zero-skip
+  hermetic parity. Static lint also removed the obsolete CLI lookup alias; all
+  static/source-only gates pass.

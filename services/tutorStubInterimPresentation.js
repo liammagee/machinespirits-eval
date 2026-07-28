@@ -132,6 +132,46 @@ export function summarizeTutorStubPendingRegister(
   return bits.join(' | ');
 }
 
+export function summarizeTutorStubPendingDagMovement(state, context, { dagProgressFeatures } = {}) {
+  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
+  if (!model) return null;
+  const previous = findTutorStubPreviousLearnerDagModel(state, context);
+  const currentFeatures = dagProgressFeatures(model);
+  const previousFeatures = dagProgressFeatures(previous);
+  const coverageDelta = formatTutorStubSignedInterimNumber(
+    currentFeatures.bestPathCoverage - previousFeatures.bestPathCoverage,
+  );
+  const groundedDelta = currentFeatures.groundedCount - previousFeatures.groundedCount;
+  const voicedDelta = currentFeatures.voicedDerivedCount - previousFeatures.voicedDerivedCount;
+  const answersDelta = currentFeatures.answerCandidateCount - previousFeatures.answerCandidateCount;
+  const missingDelta = currentFeatures.missingPremiseCount - previousFeatures.missingPremiseCount;
+  const deltas = [
+    coverageDelta ? `path coverage ${coverageDelta}` : null,
+    groundedDelta
+      ? `${Math.abs(groundedDelta)} public fact${Math.abs(groundedDelta) === 1 ? '' : 's'} ${groundedDelta > 0 ? 'added' : 'lost'}`
+      : null,
+    voicedDelta
+      ? `${Math.abs(voicedDelta)} inference${Math.abs(voicedDelta) === 1 ? '' : 's'} ${voicedDelta > 0 ? 'added' : 'lost'}`
+      : null,
+    answersDelta
+      ? `${Math.abs(answersDelta)} answer candidate${Math.abs(answersDelta) === 1 ? '' : 's'} ${answersDelta > 0 ? 'added' : 'removed'}`
+      : null,
+    missingDelta
+      ? `${Math.abs(missingDelta)} needed piece${Math.abs(missingDelta) === 1 ? '' : 's'} ${missingDelta < 0 ? 'resolved' : 'added'}`
+      : null,
+  ].filter(Boolean);
+  const assessment = model.assessment || {};
+  return [
+    `turn ${model.turn || context.tutorTurn || '?'}`,
+    deltas.length ? deltas.join(', ') : 'no clear reasoning movement yet',
+    assessment.finalSecretEntailed
+      ? 'the conclusion is supported'
+      : assessment.assertedSecret
+        ? 'the conclusion was stated too early'
+        : 'the conclusion remains open',
+  ].join(' | ');
+}
+
 export function tutorStubInterimCliHintPanels(active) {
   const state = active.state || {};
   const phase = String(active.basePhase || active.phase || '').toLowerCase();
