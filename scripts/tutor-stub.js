@@ -84,6 +84,7 @@ import {
   formatTutorStubSafeTimestamp as safeTimestampForFile,
   formatTutorStubStateTurnDebugId as turnDebugId,
   formatTutorStubTurnDebugId as formatTurnDebugId,
+  printTutorStubAutomaticTechnicalDetails,
   printTutorStubDebugIdLine,
   resolveTutorStubStateRunDebugId as stateRunDebugId,
   tutorStubAutomaticTechnicalDetailsEnabled as automaticTechnicalDetailsEnabled,
@@ -3451,9 +3452,7 @@ function printOpeningDebugLine(state) {
 }
 
 function printAutomaticTechnicalDetails(state, render) {
-  if (!automaticTechnicalDetailsEnabled(state)) return false;
-  printWithConcurrentTerminal(state, render);
-  return true;
+  return printTutorStubAutomaticTechnicalDetails(state, render, { print: printWithConcurrentTerminal });
 }
 
 function printCurrentDebugId(state, { duringTurn = false } = {}) {

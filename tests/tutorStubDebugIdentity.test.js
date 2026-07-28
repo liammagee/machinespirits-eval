@@ -6,6 +6,7 @@ import {
   formatTutorStubSafeTimestamp,
   formatTutorStubStateTurnDebugId,
   formatTutorStubTurnDebugId,
+  printTutorStubAutomaticTechnicalDetails,
   printTutorStubDebugIdLine,
   resolveTutorStubStateRunDebugId,
   tutorStubAutomaticTechnicalDetailsEnabled,
@@ -59,6 +60,18 @@ test('automatic technical details require both enabled explanatory debug and the
     tutorStubAutomaticTechnicalDetailsEnabled({ explanatoryDebug: { enabled: true, format: 'technical' } }),
     true,
   );
+});
+
+test('automatic technical-details printing preserves the disabled gate and injected state-aware printer', () => {
+  const calls = [];
+  const render = () => 'rendered';
+  const options = { print: (state, callback) => calls.push({ state, callback }) };
+  const disabled = { explanatoryDebug: { enabled: false, format: 'technical' } };
+  const enabled = { explanatoryDebug: { enabled: true, format: 'technical' } };
+  assert.equal(printTutorStubAutomaticTechnicalDetails(disabled, render, options), false);
+  assert.deepEqual(calls, []);
+  assert.equal(printTutorStubAutomaticTechnicalDetails(enabled, render, options), true);
+  assert.deepEqual(calls, [{ state: enabled, callback: render }]);
 });
 
 test('debug-ID line printing preserves missing IDs, first-print formatting, de-duplication, labels, and state', () => {
