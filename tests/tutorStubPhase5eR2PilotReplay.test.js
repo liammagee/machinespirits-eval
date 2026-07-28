@@ -18,6 +18,12 @@ import {
 } from '../services/tutorStubResponseComposition.js';
 import { buildTutorStubFirstDraftContract } from '../services/tutorStubFirstDraftContract.js';
 import {
+  auditTutorStubClueDeliveryMultiplicity,
+  auditTutorStubDramaticReleaseResponse,
+  buildTutorStubDramaticReleaseFrame,
+  deterministicTutorStubDramaticReleaseFallback,
+} from '../services/tutorStubDramaticRelease.js';
+import {
   buildTutorStubLearnerIntegrationTarget,
   buildTutorStubResponseConfiguration,
   selectTutorStubActionFamily,
@@ -568,5 +574,112 @@ test('generic released-premise recovery activates outside Skyway without world-a
     assert.equal(target.strategy, 'public_surface_anchor', world.id);
     assert.equal(target.public_surface, world.premiseById.get(premiseId).surface, world.id);
     assert.match(target.question, /^How does the public clue/iu, world.id);
+  }
+});
+
+test('Phase 5f A1 turn-7 replay delivers the Tideway trace once and uses a deictic recovery question', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-031-tideway-makerspace.yaml'));
+  const premiseId = 'p_trace';
+  const premise = world.premiseById.get(premiseId);
+  const release = world.releaseSchedule.find((row) => row.premise === premiseId);
+  const dueEvidence = [
+    {
+      ...premise,
+      premise: premiseId,
+      turn: release.turn,
+      via: release.via,
+      presentation: release.presentation || null,
+    },
+  ];
+  const tutorLearnerDag = {
+    assessment: {
+      bottleneck: 'learner_integration_gap',
+      missingPremises: [{ premiseId, bucket: 'released_but_not_held' }],
+      bestPathCoverage: 0.667,
+    },
+  };
+  const learnerText = 'I need to see the load trace before saying where the twist began.';
+  const classification = {
+    turn: {
+      request_type: 'stepwise_support_request',
+      summary: 'Requests the load trace before making the causal claim.',
+    },
+  };
+  const target = buildTutorStubLearnerIntegrationTarget({ tutorLearnerDag, world, dueEvidence });
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText,
+    classification,
+    tutorLearnerDag,
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    releasePacing: { direction: 'steady', dueNow: [premiseId], nextRelease: null, schedule: [] },
+    dueEvidence,
+    world,
+  });
+  const dramaticReleaseFrame = buildTutorStubDramaticReleaseFrame({ dueEvidence, world });
+  const responseFrame = buildTutorStubResponseCompositionFrame({
+    learnerText,
+    classification,
+    tutorLearnerDag,
+    registerSelection: { response_configuration: configuration },
+    dramaticReleaseFrame,
+  });
+  const firstDraftContract = buildTutorStubFirstDraftContract({
+    learnerText,
+    publicQuestion: world.question,
+    responseConfiguration: configuration,
+    responseCompositionFrame: responseFrame,
+  });
+  const fallback = deterministicTutorStubDramaticReleaseFallback({
+    frame: dramaticReleaseFrame,
+    support: {},
+    uptake: 'Fair enough, holding back until you see it is the right instinct.',
+    responseConfiguration: configuration,
+    variationKey: 'phase5f-a1-turn-7',
+    turnProgressionContract: firstDraftContract.progression,
+    world,
+  });
+
+  assert.equal(target.strategy, 'due_release_deictic_anchor');
+  assert.equal(target.due_release_collision_avoided, true);
+  assert.equal(target.question, 'How does this newly released clue enter the chain you just stated?');
+  assert.doesNotMatch(target.question, /strain-gauge|north joint|forty milliseconds/iu);
+  assert.equal(configuration.learner_integration_target.strategy, 'due_release_deictic_anchor');
+  assert.equal(firstDraftContract.progression.handoff_contract.required_exact_question, target.question);
+  assert.equal(fallback.split(premise.surface).length - 1, 1, fallback);
+  assert.match(fallback, /How does this newly released clue enter the chain you just stated\?$/u);
+  assert.equal(
+    auditTutorStubClueDeliveryMultiplicity({ text: fallback, frame: dramaticReleaseFrame }).ok,
+    true,
+    fallback,
+  );
+  assert.equal(auditTutorStubDramaticReleaseResponse({ text: fallback, frame: dramaticReleaseFrame }).ok, true, fallback);
+});
+
+test('due-release recovery stays deictic across non-Tideway worlds while older public clues retain their surface anchor', () => {
+  for (const file of [
+    'config/drama-derivation/world-005-marrick.yaml',
+    'config/drama-derivation/world-029-riverside-clinic.yaml',
+  ]) {
+    const world = loadWorld(path.join(ROOT, file));
+    const premiseId = world.proofPaths[0].premises[0];
+    const premise = world.premiseById.get(premiseId);
+    const tutorLearnerDag = {
+      assessment: {
+        bottleneck: 'learner_integration_gap',
+        missingPremises: [{ premiseId, bucket: 'released_but_not_held' }],
+      },
+    };
+    const dueTarget = buildTutorStubLearnerIntegrationTarget({
+      world,
+      tutorLearnerDag,
+      dueEvidence: [{ premise: premiseId, surface: premise.surface }],
+    });
+    const alreadyPublicTarget = buildTutorStubLearnerIntegrationTarget({ world, tutorLearnerDag, dueEvidence: [] });
+
+    assert.equal(dueTarget.strategy, 'due_release_deictic_anchor', world.id);
+    assert.doesNotMatch(dueTarget.question, new RegExp(premise.surface.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'iu'));
+    assert.equal(alreadyPublicTarget.strategy, 'public_surface_anchor', world.id);
+    assert.match(alreadyPublicTarget.question, /^How does the public clue/iu, world.id);
   }
 });

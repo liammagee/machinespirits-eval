@@ -105,3 +105,43 @@ material and dialogue history to Anthropic through
 and classification payloads to OpenAI through `codex.gpt-5.6-terra`. The Qwen
 committee remains local through Ollama. That authorization does not extend to
 an 18-dialogue cohort or seam-review calls.
+
+## 7. A1 apparatus abort (2026-07-28)
+
+The A1 pilot launched from source SHA
+`1aa78e9eefd0fd5c3667504a91b4a79ce4aead3a`. Its first seeded row,
+`affective_resistant|committee`, reached turn 7 on both permitted attempts and
+then failed the deterministic terminal fallback. No dialogue sealed and the
+remaining three rows were not launched. The frozen futility rule therefore
+aborted A1 with one finalized attrition and three pending rows.
+
+Both attempts exposed the same apparatus collision. The generic
+`released_but_not_held` recovery question quoted the complete newly due
+multi-sentence `p_trace` surface after the dramatic-release renderer had
+already delivered that source. The response correctly failed closed on
+`dramatic_release:duplicate_clue_delivery` and
+`live_source_action_alignment_v1:due_source_exact_occurrence_count`. This was
+a deterministic composition failure, not a provider, quota, local-committee,
+or pedagogical outcome. A1 remains immutable at
+`exports/program2-live-pilot-5f-pilot/` and must not contribute to any
+treatment estimate.
+
+## 8. A2 narrow repair amendment (2026-07-28)
+
+A2 changes only the generic recovery wording when its missing-premise target
+is also being released in the same response. The renderer still delivers the
+authored source exactly once, but the required question now refers to it
+deictically: “How does this newly released clue enter the chain you just
+stated?” Authored integration repairs remain unchanged, and a clue released on
+an earlier turn retains the existing explicit public-surface anchor.
+
+The exact A1 turn-7 failure is frozen as a zero-model replay, including both
+source-multiplicity guards. Cross-world regressions establish the same deictic
+behavior on Marrick and Riverside while preserving the older-public-clue path.
+The replacement retains the A1 world, seed, profiles, arms, model stack,
+rubric, attempt ceiling, stopping rule, and feasibility gates. It receives the
+new plan key `5f-pilot-a2`, schema
+`machinespirits.tutor-stub.program2-phase5f-pilot-a2-plan.v1`, job prefix
+`p5f-pilot-a2`, and output directory
+`exports/program2-live-pilot-5f-pilot-a2/`. A fresh certificate and explicit
+external-payload authorization are required before A2 can launch.
