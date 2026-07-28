@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T21:57:56.635Z",
+  "generated": "2026-07-28T21:58:35.356Z",
   "counts": {
-    "total": 341,
+    "total": 343,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 84,
+      "review": 86,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 159,
+      "maintenance": 161,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -1013,6 +1013,47 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-comprehension-restoration",
+      "title": "Refactor tutor-stub comprehension restoration",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "11 focused comprehension-state assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve event precedence, schema filtering, turn fallback, after-tutor/state precedence, cloning, empty-state creation, restored flag, and term count",
+      "branch": "codex/refactor-tutor-stub-comprehension-restoration",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-register-state-restoration"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubComprehensionState.js",
+          "scripts/tutor-stub.js",
+          "services/__tests__/tutorStubComprehensionState.test.js"
+        ],
+        "prs": [
+          420
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-register-state-restoration"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "comprehension",
+        "persistence"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-console-stream-replay",
       "title": "Refactor tutor-stub console stream replay",
       "status": "review",
@@ -1545,6 +1586,47 @@
         "director",
         "context",
         "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-director-guidance-restoration",
+      "title": "Refactor tutor-stub director guidance restoration",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "15 focused command/director assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve latest-snapshot precedence, clear boundary, cloning, empty reset, restored flag, revision, and active status",
+      "branch": "codex/refactor-tutor-stub-director-guidance-restoration",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-comprehension-restoration"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDirectorGuidance.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubCommandRegistry.test.js"
+        ],
+        "prs": [
+          421
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-comprehension-restoration"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "director",
+        "persistence"
       ],
       "milestone": "evaluation-infrastructure"
     },
