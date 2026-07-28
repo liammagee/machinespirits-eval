@@ -213,6 +213,7 @@ import {
   createTutorStubDagFactDropoutState,
   normalizeTutorStubDagFactDropoutRate,
   normalizeTutorStubDagFactDropoutSeed,
+  projectTutorStubDagMemoryReliability,
   tutorStubDagFactDropoutSnapshot,
 } from '../services/tutorStubDagFactDropout.js';
 import {
@@ -7154,16 +7155,7 @@ function emptyTutorLearnerDagModel(state, tutorTurn, dagPreflight = null) {
     proxyDagMemory,
     assessment: learnerDag.assessment,
   });
-  model.memoryReliability = dagFactDropout
-    ? {
-        schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
-        configuredRate: dagFactDropout.configuredRate,
-        activeDroppedCount: dagFactDropout.activeDropped.length,
-        droppedThisTurn: dagFactDropout.droppedNow.length,
-        repairedThisTurn: dagFactDropout.repairedNow.length,
-        visibility: 'conduct',
-      }
-    : null;
+  model.memoryReliability = projectTutorStubDagMemoryReliability(dagFactDropout);
   const advance = buildTutorStubLearnerAdvance({ beforeModel: previousModel, afterModel: model });
   model.learnerAdvance = advance;
   return { model, dagFactDropout, advance, preflight: dagPreflight };

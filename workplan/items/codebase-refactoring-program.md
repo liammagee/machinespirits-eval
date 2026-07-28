@@ -903,3 +903,11 @@ Log:
   net CLI reduction, 48 focused assertions, 7,450 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated second-loop run 9,
+  `refactor-tutor-stub-dag-memory-reliability`, from PR #357's reviewed head.
+  Dropout scheduling, board mutation, DAG construction, model calls, runtime
+  state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop DAG-memory-reliability run reached review with 16
+  duplicate source lines removed across the CLI and public-analysis service,
+  41 focused assertions, 7,452 root assertions, and 137 tutor-core assertions
+  green with zero skips. All static and source-only gates pass.

@@ -79,6 +79,19 @@ export function tutorStubDagFactDropoutSnapshot(state) {
   };
 }
 
+export function projectTutorStubDagMemoryReliability(dagFactDropout) {
+  return dagFactDropout
+    ? {
+        schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
+        configuredRate: dagFactDropout.configuredRate,
+        activeDroppedCount: dagFactDropout.activeDropped.length,
+        droppedThisTurn: dagFactDropout.droppedNow.length,
+        repairedThisTurn: dagFactDropout.repairedNow.length,
+        visibility: 'conduct',
+      }
+    : null;
+}
+
 function isDagFactDropoutTurn(value) {
   return Boolean(
     value &&
