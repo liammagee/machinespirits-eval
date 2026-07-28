@@ -71,6 +71,7 @@ links:
     - refactor-tutor-stub-closeout-report-presentation
     - refactor-tutor-stub-field-report-presentation
     - refactor-tutor-stub-curriculum-progress-presentation
+    - refactor-tutor-stub-curriculum-catalog-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -698,3 +699,17 @@ Log:
   75/75 focused assertions, 7,377/7,377 root tests, and 137/137 tutor-core
   tests. All selected files executed with zero skips; static and source-only
   workplan gates are green.
+- 2026-07-28 — PR #329 merged the curriculum-progress child as `8049a4cf`
+  with all ten CI lanes green. Closed that child and activated
+  `refactor-tutor-stub-curriculum-catalog-presentation` for the remaining pure
+  `--list-curriculum-modules` and non-TTY `/board` line projection. Curriculum
+  loading, public module normalization, commands, and terminal writes remain
+  in their current owners; the canonical pre-extraction catalogue is 28 lines,
+  852 bytes, and SHA-256
+  `ded71f142f94e2960d289b988b0930bf5356c332b9fc831303be25e1b1aaacf7`.
+- 2026-07-28 — The curriculum-catalogue child reached review with a 10-line
+  pure projector, a four-line net CLI reduction, exact 852-byte live parity,
+  30/30 focused assertions, 7,400/7,400 root tests, and 137/137 tutor-core
+  tests. All 550 selected files executed with zero skips; static and
+  source-only workplan gates are green, and command/runtime movement remains
+  excluded behind the browser/Electron acceptance gate.

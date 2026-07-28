@@ -62,6 +62,7 @@ import {
   tutorStubCurriculumPrivatePrompt,
   tutorStubCurriculumPublicProjection,
 } from '../services/curriculum/tutorStubCurriculumRuntime.js';
+import { projectTutorStubCurriculumCatalogLines } from '../services/curriculum/tutorStubCurriculumCatalogPresentation.js';
 import { projectTutorStubCurriculumProgressLines } from '../services/curriculum/tutorStubCurriculumProgressPresentation.js';
 import {
   TUTOR_STUB_CURRICULUM_TRANSLATOR_SYSTEM_PROMPT,
@@ -2616,13 +2617,8 @@ function printWorlds() {
 
 function printCurriculumModules(ref) {
   const bundle = loadTutorStubCurriculum(ref, { root: ROOT });
-  console.log(`${bundle.curriculum.title} (${bundle.curriculum.id})`);
-  console.log(`  source: ${bundle.sourceRef}`);
-  for (const module of listTutorStubCurriculumModules(bundle)) {
-    const state = [module.priority, module.status, module.owner].filter(Boolean).join(' · ');
-    console.log(`  ${module.id}${state ? `  [${state}]` : ''}`);
-    console.log(`    ${module.title}`);
-  }
+  for (const line of projectTutorStubCurriculumCatalogLines(bundle, listTutorStubCurriculumModules(bundle)))
+    console.log(line);
 }
 
 function printAutomatedLearnerProfiles() {

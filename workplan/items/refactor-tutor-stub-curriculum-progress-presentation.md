@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-curriculum-progress-presentation
 title: Refactor tutor-stub curriculum progress presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -100,3 +100,5 @@ Log:
   Post-rebase parity remains green: 75/75 focused assertions, the 254-item
   source-only workplan check, manifest, lint, formatting, refs, syntax, diff,
   and zero-cycle checks pass; the commit-to-workplan trailer is linked.
+- 2026-07-28 — PR #329 merged as `8049a4cf` with all ten CI lanes green; the
+  remote feature branch was removed and `origin/main` contains the final head.
