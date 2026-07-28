@@ -303,10 +303,7 @@ test('a fallback replaces a terse generic acknowledgement with learner-specific 
 
   assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
   assert.match(accounting.finalDelivery.candidate.text, /“It does not prove Verrell”/u);
-  assert.match(
-    accounting.finalDelivery.candidate.text,
-    /(?:carry forward|answer now|keep it central)/iu,
-  );
+  assert.match(accounting.finalDelivery.candidate.text, /(?:carry forward|answer now|keep it central)/iu);
   assert.doesNotMatch(accounting.finalDelivery.candidate.text, /^Exactly\./u);
   assert.equal(accounting.finalDelivery.auditOk, true);
 });

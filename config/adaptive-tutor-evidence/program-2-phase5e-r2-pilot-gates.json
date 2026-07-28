@@ -10,11 +10,6 @@
   "opportunityReserveFactor": 1,
   "maxOpportunitiesPerDialogue": 40,
   "maxAttritionDifference": 0,
-  "attritionPairs": [
-    [
-      "committee",
-      "silent_control"
-    ]
-  ],
+  "attritionPairs": [["committee", "silent_control"]],
   "requireCueBlind": false
 }

@@ -4,6 +4,27 @@
  * computation remain in the CLI.
  */
 
+export function createTutorStubInterimState({ enabled }) {
+  return { enabled, active: null, lastContext: null };
+}
+
+export function resolveTutorStubInterimState(holder) {
+  if (!holder) return null;
+  if (
+    Object.prototype.hasOwnProperty.call(holder, 'active') &&
+    Object.prototype.hasOwnProperty.call(holder, 'enabled')
+  ) {
+    return holder;
+  }
+  return holder.interim || null;
+}
+
+export function findTutorStubPreviousLearnerDagModel(state, context) {
+  const currentTurn = Number(context?.tutorTurn || 0);
+  return [...(state?.turns || [])].reverse().find((turn) => !currentTurn || Number(turn.turn || 0) < currentTurn)
+    ?.tutorLearnerDagModel;
+}
+
 export function formatTutorStubSignedInterimNumber(value, { decimals = 2 } = {}) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric) || numeric === 0) return null;
@@ -37,6 +58,21 @@ export function tutorStubPlainInterimBottleneck(value) {
     grounded_unasserted_secret: 'the conclusion is supported but not yet stated',
   };
   return labels[value] || String(value || 'the next useful learner move').replaceAll('_', ' ');
+}
+
+export function summarizeTutorStubPendingLearnerDag(context) {
+  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
+  if (!model) return null;
+  const metrics = model.metrics || {};
+  const assessment = model.assessment || {};
+  const missing = metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0;
+  return [
+    `turn ${model.turn || context.tutorTurn || '?'}`,
+    `${metrics.groundedCount || 0} public facts held`,
+    `${metrics.voicedDerivedCount || 0} inferences stated`,
+    `${missing} evidence pieces still needed`,
+    tutorStubPlainInterimBottleneck(assessment.bottleneck),
+  ].join(' | ');
 }
 
 export function tutorStubInterimCliHintPanels(active) {

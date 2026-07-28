@@ -14,7 +14,7 @@ import {
 } from './helpers/tutorStubInteractiveHarness.js';
 
 const COLORS = { cyan: '<cyan>', dim: '<dim>', reset: '</>' };
-const LIVE_CLOSEOUT_HASH = 'e3ca5f7f59498d709331946f65417197bbd9ba22f54b8ae6d7c77b185013c92c';
+const LIVE_CLOSEOUT_HASH = '49908aa1e7d7838f8db19a2c2fdf891f689fca926e04cb866dc6f535c51088b1';
 
 function densePayload() {
   return {

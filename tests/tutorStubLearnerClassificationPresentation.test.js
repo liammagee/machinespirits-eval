@@ -6,7 +6,10 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { projectTutorStubLearnerClassificationLines } from '../services/tutorStubLearnerClassificationPresentation.js';
+import {
+  projectTutorStubClassifierWorldContext,
+  projectTutorStubLearnerClassificationLines,
+} from '../services/tutorStubLearnerClassificationPresentation.js';
 import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -79,6 +82,36 @@ test('learner-classifier projection handles absent and normalized minimal presen
   );
 });
 
+test('classifier world context preserves no-world fallback, public fields, DAG disclosure, and optional discipline', () => {
+  assert.equal(projectTutorStubClassifierWorldContext(null), 'No detective-story world is active.');
+  assert.equal(
+    projectTutorStubClassifierWorldContext({
+      dag: true,
+      world: {
+        id: 'world_005_marrick',
+        title: 'The Marrick Ledger',
+        discipline: 'historical inference',
+        question: 'Who inherited the archive?',
+        setting: '  A damaged ledger sits on the table.  ',
+      },
+    }),
+    [
+      'World: world_005_marrick - The Marrick Ledger',
+      'Discipline: historical inference',
+      'Public question: Who inherited the archive?',
+      'Opening situation: A damaged ledger sits on the table.',
+      'DAG mode: on, but hidden DAG state is intentionally withheld from this classifier',
+    ].join('\n'),
+  );
+  assert.equal(
+    projectTutorStubClassifierWorldContext({
+      dag: false,
+      world: { id: 'w', title: 'World', question: 'Why?', setting: '' },
+    }),
+    ['World: w - World', 'Public question: Why?', 'Opening situation: ', 'DAG mode: off'].join('\n'),
+  );
+});
+
 test('real technical-debug process preserves exact learner-classifier terminal bytes', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-learner-classification-presentation-'));
   try {
@@ -141,6 +174,7 @@ test('the CLI retains learner classification semantics, debug gating, call sites
   assert.match(printSlice, /classification\.error \|\| classification\.parseError/u);
   assert.match(printSlice, /projectTutorStubLearnerClassificationLines/u);
   assert.match(printSlice, /console\.log\(line\)/u);
+  assert.doesNotMatch(cliSource, /function classifierWorldContext/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);
 });

@@ -109,7 +109,8 @@ function check(id, pass, detail) {
 
 function expectedCohortJob(cohortPlan, pilotJob) {
   return cohortPlan.jobs.find(
-    (job) => job.profile === pilotJob.profile && job.arm === pilotJob.arm && Number(job.repeat) === Number(pilotJob.repeat),
+    (job) =>
+      job.profile === pilotJob.profile && job.arm === pilotJob.arm && Number(job.repeat) === Number(pilotJob.repeat),
   );
 }
 
@@ -122,7 +123,12 @@ export function buildProgram2Phase5ePilotBundle({
   pilotSourceSha = null,
 } = {}) {
   const cohortSha256 = program2PlanSha256(cohortPlan);
-  const expectedGroups = ['affective_resistant|committee', 'affective_resistant|silent_control', 'proof_skipper|committee', 'proof_skipper|silent_control'];
+  const expectedGroups = [
+    'affective_resistant|committee',
+    'affective_resistant|silent_control',
+    'proof_skipper|committee',
+    'proof_skipper|silent_control',
+  ];
   const observedGroups = (pilotPlan?.jobs || []).map((job) => `${job.profile}|${job.arm}`).sort();
   const traces = (pilotPlan?.jobs || []).map((job) => {
     const files = sealedTraceFiles(pilotRoot, job);
@@ -131,7 +137,9 @@ export function buildProgram2Phase5ePilotBundle({
   const rows = traces.map((entry) => entry.parsed?.row).filter(Boolean);
   const exactPipeline = traces.every(({ job }) => {
     const cohortJob = expectedCohortJob(cohortPlan, job);
-    return cohortJob && JSON.stringify(canonicalCommand(job.command)) === JSON.stringify(canonicalCommand(cohortJob.command));
+    return (
+      cohortJob && JSON.stringify(canonicalCommand(job.command)) === JSON.stringify(canonicalCommand(cohortJob.command))
+    );
   });
   const identitiesMatch = traces.every(({ job, parsed }) => {
     const experiment = parsed?.runStart?.metadata?.experiment || {};
@@ -154,9 +162,13 @@ export function buildProgram2Phase5ePilotBundle({
   });
   const modelStackMatches = traces.every(({ job, parsed }) => {
     const options = parsed?.runStart?.metadata?.sessionRecipe?.config?.options || {};
-    return ['--model', '--classifier-model', '--learner-record-model', '--auto-learner-model', '--committee-mini-model'].every(
-      (flag) => String(options[flag.slice(2)] ?? '') === String(flagValue(job.command, flag) ?? ''),
-    );
+    return [
+      '--model',
+      '--classifier-model',
+      '--learner-record-model',
+      '--auto-learner-model',
+      '--committee-mini-model',
+    ].every((flag) => String(options[flag.slice(2)] ?? '') === String(flagValue(job.command, flag) ?? ''));
   });
   const apparatusMatches = traces.every(({ job, parsed }) => {
     const options = parsed?.runStart?.metadata?.sessionRecipe?.config?.options || {};
@@ -167,19 +179,26 @@ export function buildProgram2Phase5ePilotBundle({
         String(flagValue(job.command, '--committee-fallback-policy') || '')
     );
   });
-  const normalizedRowsComplete = rows.length === 4 && rows.every((row) => {
-    return (
-      Number.isFinite(row.warrant.opp) &&
-      row.fixedHorizon?.complete === true &&
-      typeof row.fixedHorizon?.coverageAtHorizon === 'number' &&
-      typeof row.fixedHorizon?.hardSafetyPassed === 'boolean'
-    );
-  });
+  const normalizedRowsComplete =
+    rows.length === 4 &&
+    rows.every((row) => {
+      return (
+        Number.isFinite(row.warrant.opp) &&
+        row.fixedHorizon?.complete === true &&
+        typeof row.fixedHorizon?.coverageAtHorizon === 'number' &&
+        typeof row.fixedHorizon?.hardSafetyPassed === 'boolean'
+      );
+    });
   const checks = [
-    check('cohort_plan_schema', cohortPlan?.schema === 'machinespirits.tutor-stub.program2-phase5e-r2-plan.v1', cohortPlan?.schema),
+    check(
+      'cohort_plan_schema',
+      cohortPlan?.schema === 'machinespirits.tutor-stub.program2-phase5e-r2-plan.v1',
+      cohortPlan?.schema,
+    ),
     check(
       'pilot_plan_schema',
-      pilotPlan?.schema === 'machinespirits.tutor-stub.program2-phase5e-r2-pilot-plan.v1' && pilotPlan?.jobs?.length === 4,
+      pilotPlan?.schema === 'machinespirits.tutor-stub.program2-phase5e-r2-pilot-plan.v1' &&
+        pilotPlan?.jobs?.length === 4,
       `${pilotPlan?.schema || 'missing'}; jobs=${pilotPlan?.jobs?.length || 0}`,
     ),
     check(
@@ -190,13 +209,29 @@ export function buildProgram2Phase5ePilotBundle({
       { planSha256: cohortSha256, cohortSourceSha, pilotSourceSha },
     ),
     check('profile_arm_coverage', JSON.stringify(observedGroups) === JSON.stringify(expectedGroups), observedGroups),
-    check('exact_pipeline_commands', exactPipeline, 'pilot commands equal their repeat-1 cohort counterparts except job and trace paths'),
-    check('sealed_trace_count', traces.every((entry) => entry.files.length === 1), traces.map((entry) => `${entry.job.id}:${entry.files.length}`)),
+    check(
+      'exact_pipeline_commands',
+      exactPipeline,
+      'pilot commands equal their repeat-1 cohort counterparts except job and trace paths',
+    ),
+    check(
+      'sealed_trace_count',
+      traces.every((entry) => entry.files.length === 1),
+      traces.map((entry) => `${entry.job.id}:${entry.files.length}`),
+    ),
     check('run_identity', identitiesMatch, 'run_start experiment identity, run_end, and JSONL parse'),
     check('world_and_seed', worldAndSeedMatch, `${pilotPlan?.world}; seed=${pilotPlan?.runSeed}`),
     check('model_stack', modelStackMatches, 'tutor, classifier, learner-record, learner, and committee-mini pins'),
-    check('rubric_and_intervention', apparatusMatches, `${pilotPlan?.evidenceUseRubric}; point-of-action arms and fallback policy`),
-    check('normalized_rows_complete', normalizedRowsComplete, `${rows.length}/4 rows with complete fixed-horizon outcomes`),
+    check(
+      'rubric_and_intervention',
+      apparatusMatches,
+      `${pilotPlan?.evidenceUseRubric}; point-of-action arms and fallback policy`,
+    ),
+    check(
+      'normalized_rows_complete',
+      normalizedRowsComplete,
+      `${rows.length}/4 rows with complete fixed-horizon outcomes`,
+    ),
   ];
   const status = checks.every((entry) => entry.pass) ? 'pass' : 'fail';
   const root = path.resolve(repositoryRoot);
