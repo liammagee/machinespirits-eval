@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-world-catalog-presentation
 links:
+  prs:
+    - 339
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -88,3 +90,5 @@ Log:
   failure was traced to the stable checkout's stale shared dependency tree;
   `npm ci` restored the declared SHACL and MCP packages, after which those 19
   assertions and the complete suite passed.
+- 2026-07-28 — Opened PR #339 with the source-only workplan link and no managed
+  ref or version impact.
