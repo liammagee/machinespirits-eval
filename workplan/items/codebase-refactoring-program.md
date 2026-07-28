@@ -1227,3 +1227,10 @@ Log:
   CLI reduction, five focused assertions, and complete zero-skip hermetic
   parity. All static/source-only gates pass. Fifty-loop runs 1–30 have removed
   483 net lines from `scripts/tutor-stub.js` without regressions.
+- 2026-07-28 — Activated fifty-loop run 31,
+  `refactor-tutor-stub-console-token-sink`, from PR #404's reviewed head.
+  Terminal writes, animation control, runtime state, and effects remain owned
+  by the CLI through injected adapters.
+- 2026-07-28 — Fifty-loop console-token-sink run reached review with an
+  18-line net CLI reduction, seven focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.

@@ -349,6 +349,7 @@ import {
 } from '../services/tutorStubTranscriptHtml.js';
 import { writeTutorStubLearningSummaryHtml } from '../services/tutorStubLearningSummaryHtml.js';
 import {
+  createTutorStubConsoleTokenSink,
   renderTutorStubStreamLabel,
   tutorStubProviderSupportsEventStreaming as providerSupportsEventStreaming,
   tutorStubProviderSupportsTokenStreaming as providerSupportsStreaming,
@@ -3867,34 +3868,15 @@ function streamLabel(role) {
 }
 
 function createConsoleTokenSink(role, interim = null) {
-  let started = false;
-  let buffered = '';
-  const terminal = getInterimState(interim)?.concurrentTerminal || null;
-  return {
-    write(token) {
-      if (terminal?.enabled) {
-        buffered += token;
-        started = true;
-        return;
-      }
-      if (!started) {
-        stopInterimAnimation(interim);
-        clearStatusLine();
-        process.stdout.write(streamLabel(role));
-        started = true;
-      }
-      process.stdout.write(token);
-    },
-    finish() {
-      if (started && terminal?.enabled) {
-        stopInterimAnimation(interim);
-        terminal.print(() => process.stdout.write(`${streamLabel(role)}${buffered}\n`));
-        return true;
-      }
-      if (started) process.stdout.write('\n');
-      return started;
-    },
-  };
+  return createTutorStubConsoleTokenSink({
+    role,
+    interim,
+    resolveInterimState: getInterimState,
+    stopInterimAnimation,
+    clearStatusLine,
+    write: (text) => process.stdout.write(text),
+    renderLabel: streamLabel,
+  });
 }
 
 function replayTextAsConsoleStream(role, text, stream = null) {
