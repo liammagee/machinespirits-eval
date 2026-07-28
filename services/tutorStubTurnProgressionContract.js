@@ -1111,13 +1111,25 @@ export function auditTutorStubLiveTurnProgressionV1({
   // target. V1 has no trustworthy HANDOFF slot span, so inspect that real
   // adjacent boundary instead of fabricating V2 ownership. Declarative endings
   // must still carry their own focus in the terminal sentence.
-  const targetSurface =
-    questionCount > 0 && handoff.question_owner === 'handoff' ? sentences.slice(-2).join(' ') : terminalSurface;
+  //
+  // A closing turn is the exception, and it was rejecting every draft it got.
+  // The closure guard needs the last sentence to be the closing act — "The
+  // Riverside Clinic inquiry is closed" — and this check was demanding the same
+  // sentence carry the turn's target terms. Nothing can be both, so Riverside's
+  // close in the 2026-07-28 run failed on all four attempts and went out as
+  // canned text. The turn must still carry its focus; it just may say it before
+  // the sentence that ends the dialogue.
+  const closingTurn = handoff.mode === 'closure';
+  const targetSurface = closingTurn
+    ? responseText
+    : questionCount > 0 && handoff.question_owner === 'handoff'
+      ? sentences.slice(-2).join(' ')
+      : terminalSurface;
   const target = coverage(handoff.required_target_terms, targetSurface);
   if (losesHandoffFocus(target, handoff.required_target_terms)) {
     issues.push({
       type: 'handoff_loses_turn_focus',
-      owner: 'terminal_sentence',
+      owner: closingTurn ? 'whole_response' : 'terminal_sentence',
       required_target_surfaces: handoff.required_target_surfaces,
       audited_target_surface: targetSurface,
       matched_terms: target.matched,
@@ -1165,7 +1177,7 @@ export function auditTutorStubLiveTurnProgressionV1({
       requested_entry_recognized: requestedEntryAnswerRecognition?.recognized === true,
     },
     handoff: {
-      owner: 'terminal_sentence',
+      owner: closingTurn ? 'whole_response' : 'terminal_sentence',
       mode: handoff.mode,
       question_owner: handoff.question_owner,
       target_coverage: target,

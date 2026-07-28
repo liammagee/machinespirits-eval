@@ -289,6 +289,74 @@ test('a handoff that carries the minimum two target terms is not rejected by rou
   );
 });
 
+test('a closing turn carries its focus anywhere in the turn, not in the sentence that closes', () => {
+  // Riverside turn 5 of the 2026-07-28 showcase run. The closure guard needs the
+  // last sentence to be the closing act; this check wanted the same sentence to
+  // carry the target terms. All four drafts failed and the close went out as
+  // canned text.
+  const closureContract = progressionContract({
+    learner_uptake: {
+      required: true,
+      mode: 'credit_or_qualify_resolved_move',
+      focus_terms: ['sweep', 'cancellation'],
+      accepted_meaning: 'The learner attributes the cancellation to the automated sweep.',
+      accepted_meaning_kind: 'content_paraphrase',
+      learner_surface: 'The duplicate sweep cancelled the appointment, not Mara.',
+    },
+    handoff_contract: {
+      mode: 'closure',
+      question_allowed: false,
+      question_required: false,
+      question_owner: null,
+      terminal_if_question: false,
+      required_target_surfaces: ['The learner correctly attributes the cancellation to the automated sweep'],
+      required_target_terms: ['learner', 'correctly', 'attribut', 'cancellation', 'automat', 'sweep'],
+      prohibited_settled_surfaces: [],
+    },
+  });
+  const uptake = 'You tied the cancellation to the duplicate sweep, and the ledger carries that.';
+  const development =
+    'The learner correctly attributes the cancellation to the automated sweep, not to Mara. The inquiry is closed.';
+  const audit = auditTutorStubLiveTurnProgressionV1({
+    contract: closureContract,
+    text: `${uptake} ${development}`,
+    responseComposition: { uptake, development },
+  });
+  assert.equal(audit.ok, true, JSON.stringify(audit.issues));
+  assert.equal(audit.handoff.owner, 'whole_response');
+  assert.equal(audit.observed.handoff_focus_surface, `${uptake} ${development}`);
+  // The sentence that ends the turn is the closing act and carries none of the
+  // target terms; the check no longer looks there.
+  assert.equal(audit.observed.terminal_surface, 'The inquiry is closed.');
+
+  // A close that says nothing about what was found still loses the focus.
+  const bareUptake = 'Good, that reading holds up.';
+  const empty = auditTutorStubLiveTurnProgressionV1({
+    contract: closureContract,
+    text: `${bareUptake} I close the record here; this inquiry is complete.`,
+    responseComposition: { uptake: bareUptake, development: 'I close the record here; this inquiry is complete.' },
+  });
+  assert.equal(
+    empty.issues.some((issue) => issue.type === 'handoff_loses_turn_focus'),
+    true,
+    JSON.stringify(empty.issues),
+  );
+
+  // Nothing changes for a declarative ending that is not the close: campus
+  // turn 9 announced a verdict without saying what it was, and that still fails.
+  const declarative = auditTutorStubLiveTurnProgressionV1({
+    contract: progressionContract({
+      handoff_contract: { ...closureContract.handoff_contract, mode: 'declarative_current_limit' },
+      learner_uptake: closureContract.learner_uptake,
+    }),
+    text: `${uptake} The verdict is now licensed.`,
+    responseComposition: { uptake, development: 'The verdict is now licensed.' },
+  });
+  const drift = declarative.issues.find((issue) => issue.type === 'handoff_loses_turn_focus');
+  assert.equal(drift?.owner, 'terminal_sentence');
+  assert.equal(drift?.audited_target_surface, 'The verdict is now licensed.');
+});
+
 test('contract-aware no-due fallback passes live audit for forbidden and allowed-question handoffs', () => {
   const cases = [
     {
