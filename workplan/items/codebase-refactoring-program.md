@@ -64,6 +64,7 @@ links:
     - refactor-tutor-stub-recipe-model-identity
     - refactor-tutor-stub-model-temperature
     - refactor-tutor-stub-cli-parsing
+    - refactor-tutor-stub-model-selection
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -1017,3 +1018,11 @@ Log:
 - 2026-07-28 — Fifty-loop CLI-parsing run reached review with a 34-line net CLI
   reduction, six focused assertions, and complete zero-skip hermetic parity.
   All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 2,
+  `refactor-tutor-stub-model-selection`, from PR #371's reviewed head. Provider
+  definitions, environment configuration, runtime model state, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop model-selection run reached review with a 27-line net
+  CLI reduction, nine focused assertions including byte-exact live terminal
+  blocks, and complete zero-skip hermetic parity. All static and source-only
+  gates pass.

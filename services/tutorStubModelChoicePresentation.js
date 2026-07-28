@@ -75,6 +75,57 @@ export function buildTutorStubModelChoiceEntries({
   });
 }
 
+export function assertTutorStubSupportedModelRefs(refs, { unsupportedRefs = new Set() } = {}) {
+  for (const [label, ref] of Object.entries(refs || {})) {
+    const normalized = String(ref || '')
+      .trim()
+      .toLowerCase();
+    if (unsupportedRefs.has(normalized)) {
+      throw new Error(
+        `${label}=${ref} is not supported by the local Codex CLI ChatGPT-account route. ` +
+          'Use codex.gpt-5.6-terra for the CLI-backed speaking tutor, codex.gpt-5.6-sol for interpretation, or openai.mini/openrouter.gpt-mini for GPT mini.',
+      );
+    }
+  }
+}
+
+export function createTutorStubModelSelection({
+  loadProviders,
+  getProviderConfig,
+  isCliProvider,
+  resolveModel,
+  unsupportedRefs = new Set(),
+} = {}) {
+  function assertSupportedModelRefs(refs) {
+    return assertTutorStubSupportedModelRefs(refs, { unsupportedRefs });
+  }
+
+  function tutorModelChoiceEntries(currentRef) {
+    return buildTutorStubModelChoiceEntries({
+      currentRef,
+      providers: loadProviders()?.providers || {},
+      getProviderConfig,
+      isCliProvider,
+      resolveModel,
+      unsupportedRefs,
+    });
+  }
+
+  function resolveTutorModelSelection(ref) {
+    const modelRef = String(ref || '').trim();
+    assertSupportedModelRefs({ model: modelRef });
+    const resolved = resolveModel(modelRef);
+    const providerConfig = getProviderConfig(resolved.provider);
+    if (!providerConfig.isConfigured) {
+      const requirement = providerConfig.api_key_env || providerConfig.base_url || 'provider configuration';
+      throw new Error(`${modelRef} is unavailable; configure ${requirement} first`);
+    }
+    return { modelRef, resolved, providerConfig };
+  }
+
+  return Object.freeze({ assertSupportedModelRefs, tutorModelChoiceEntries, resolveTutorModelSelection });
+}
+
 export function projectTutorStubModelChoiceLines({
   definition = {},
   currentRef = '',
