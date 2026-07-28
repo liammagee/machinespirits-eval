@@ -22,6 +22,10 @@ exact certificate command for that plan. Use `--plan 5b` or `--plan 5c` when
 appropriate. Phase 5e R2 uses `--plan 5e-pilot` for its four-row feasibility
 pilot and `--plan 5e` for the 18-row cohort.
 
+Phase 5f uses `--plan 5f` for its one terminal 18-dialogue Tideway cohort.
+Its four-row A3 feasibility pilot is already sealed; do not launch another
+pilot suffix.
+
 ## 2. Generate and inspect the certificate
 
 Run the emitted `npm run program2:certify-launch` command. Cohort certificates
@@ -44,6 +48,22 @@ The builder makes no model calls. It checks exact command parity, source-SHA
 parity, profile × arm coverage, sealed trace identity, world/seed/model/rubric
 pins, and complete fixed-horizon outcomes, then binds each trace by SHA-256. The `--plan 5e`
 certificate reminder names that bundle and the frozen R2 gate file directly.
+
+For Phase 5f, preserve the ignored A3 artifacts in the checkout used to make
+the certificate, prepare the `--plan 5f` cohort plan, then run:
+
+```bash
+npm run program2:phase5f:pilot-bundle
+```
+
+The Phase 5f bundle binds the four A3 traces and their launch SHA to the exact
+current cohort plan. It explicitly records that A3 observed zero
+`warrant_skip` opportunities. Because A3 was an apparatus-feasibility pilot,
+that failed observed projection is not itself a certificate blocker; the
+cohort certificate instead carries the prospective non-zero density floor and
+the paid launcher enforces it as a live mathematical-reachability stop. This
+exception is Phase 5f-specific and must not be copied into ordinary cohort
+certificates.
 
 ## 3. Launch with the certificate
 

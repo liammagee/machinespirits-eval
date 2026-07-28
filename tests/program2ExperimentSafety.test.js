@@ -133,6 +133,20 @@ test('cohort pilot evidence covers every profile and condition with an opportuni
   assert.equal(powered.pass, true);
 });
 
+test('an apparatus-only pilot may defer opportunity power to a terminal cohort gate', () => {
+  const plan = factorialPlan();
+  const result = evaluateProgram2PilotEvidence({
+    plan,
+    rows: completePilotRows(plan, { opportunities: 0 }),
+    gateSpec: { requirePilotOpportunityPower: false },
+  });
+
+  assert.equal(result.pass, true);
+  assert.equal(result.opportunityPower.pass, true);
+  assert.equal(result.opportunityPower.observedPass, false);
+  assert.equal(result.opportunityPower.requiredForCertificate, false);
+});
+
 test('budget certificate freezes the two-attempt provider ceiling', () => {
   const budget = deriveProgram2Budget(factorialPlan());
   assert.equal(budget.pass, true);

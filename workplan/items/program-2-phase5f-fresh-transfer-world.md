@@ -8,8 +8,8 @@ owner: codex
 source: review
 created: 2026-07-28
 updated: 2026-07-28
-branch: codex/program-2-phase5e-r2-replication
-verification: "A3 sealed 4/4 rows on their first attempt with no final attrition, full coverage by turn 16, hard safety passing, and all 31 gate-grade decisions clean. Closure burden fell from 53 total A2 turns to 35 A3 turns, including 25 to 8 for affective-resistant committee, but deterministic fallback remained 25/35 turns (71.4%). Neither arm produced a frozen warrant_skip opportunity, so A3 is a successful apparatus-feasibility result and not a committee-transfer estimate. The card remains active until a separately merged prospective cohort amendment freezes a non-zero opportunity-density gate, Phase 5f-native analyzer, cohort-bound pilot bundle, and terminal stopping rule; no 18-dialogue cohort is licensed."
+branch: codex/program-2-phase5f-cohort
+verification: "A3 sealed 4/4 rows on their first attempt with no final attrition, full coverage by turn 16, hard safety passing, and all 31 gate-grade decisions clean. The prospective source-only cohort amendment now freezes 10 committee plus 8 fresh controls, the inherited >=15 opportunities/arm and >=5/profile-arm terminal density floor, a Phase 5f-native analyzer, and an A3-bound 11-check pilot bundle. Deterministic tests cover the zero-opportunity apparatus-pilot certificate exception while preserving the cohort live-futility gate. No paid cohort, certificate, transfer estimate, or external-payload authorization is included; after merge the exact clean-main artifacts must be generated and separately authorized."
 claim_status: planned
 depends_on:
   - program-2-transfer-apparatus-hardening
@@ -22,8 +22,13 @@ links:
     - program-2-transfer-apparatus-hardening
   code:
     - scripts/run-program2-live-pilot.js
+    - scripts/analyze-program2-live-pilot-5f.mjs
+    - scripts/build-program2-phase5f-pilot-bundle.mjs
     - config/adaptive-tutor-evidence/program-2-phase5f-world-selection.json
     - config/adaptive-tutor-evidence/program-2-phase5f-pilot-gates.json
+    - config/adaptive-tutor-evidence/program-2-phase5f-gates.json
+  prs:
+    - 382
 tags:
   - tutor-stub
   - fine-tune
@@ -105,3 +110,28 @@ amendment must add a non-zero opportunity-density requirement and Phase
 5f-native analysis/bundle machinery before any cohort certificate or paid
 authorization. Failure to reach that frozen density is a terminal
 design-limitation outcome, not permission for another trace-informed repair.
+
+## Prospective cohort amendment
+
+The one terminal cohort is now source-frozen as 10 committee and 8 fresh
+silent-control dialogues on Tideway, with five/four repeats per profile-arm
+respectively and seed 20260728. It retains the established Phase 5e density
+floor of at least 15 opportunities per arm and 5 per profile-arm cell rather
+than lowering the threshold after A3's zero-opportunity result. A3 remains an
+apparatus pilot: its observed opportunity projection is recorded but is not a
+certificate blocker. The paid cohort itself carries the non-zero density floor
+as a live mathematical-reachability gate.
+
+The Phase 5f analyzer emits a native schema and this preregistration pointer,
+reports technical and pedagogical failures separately, and closes the card as
+`supported`, `not_supported`, or `not_estimable` with an explicit reason. The
+cohort bundle binds the four immutable A3 traces, A3 source SHA, exact repeat-1
+commands and pins to the current 18-dialogue plan. The explicitly accepted
+source transition covers the merged behavior-preserving tutor-stub refactors;
+it is not a claim that the source trees are byte-identical.
+
+This branch performs zero-model implementation and validation only. Once it is
+merged, generate the exact plan and bundle from clean `main`, generate a fresh
+certificate, and obtain separate named external-payload authorization before
+launch. At most one cohort may run. Whatever its frozen terminal verdict, no
+further repair-pilot sequence follows it.
