@@ -501,6 +501,7 @@
         "tests/tutorStubResponsePolicyContext.test.js",
         "tests/tutorStubResumeHandoff.test.js",
         "tests/tutorStubRoleHistory.test.js",
+        "tests/tutorStubScaffoldState.test.js",
         "tests/tutorStubSceneDiction.test.js",
         "tests/tutorStubSelfCorrectionDisclosure.test.js",
         "tests/tutorStubSessionHttp.test.js",
