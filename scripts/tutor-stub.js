@@ -614,6 +614,7 @@ import {
   commitTutorStubReleasePacing,
   createTutorStubReleasePacingState,
   normalizeTutorStubReleaseSpeed,
+  projectTutorStubNextReleaseRow,
   restoreTutorStubReleasePacingFromTurns,
   setTutorStubReleaseSpeed,
   tutorStubReleasePacingSnapshot,
@@ -3205,20 +3206,7 @@ function learnerDagPreflightForTurn(state, tutorTurn, { traceSource = null } = {
 }
 
 function nextReleaseRow(state) {
-  const world = state?.world;
-  if (!world) return null;
-  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
-  const next = snapshot?.nextRelease || null;
-  if (!next) return null;
-  const premise = world.premiseById.get(next.premise);
-  return {
-    premise: next.premise,
-    turn: Number(next.effectiveTurn),
-    authoredTurn: Number(next.authoredTurn),
-    via: next.via || null,
-    surface: String(premise?.surface || '').trim(),
-    fact: premise?.fact || null,
-  };
+  return projectTutorStubNextReleaseRow(state?.releasePacing, state?.world);
 }
 
 function compactInterimPanels(active) {

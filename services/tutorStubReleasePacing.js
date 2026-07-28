@@ -428,6 +428,21 @@ export function tutorStubReleasePacingSnapshot(pacing, world, current = null) {
   };
 }
 
+export function projectTutorStubNextReleaseRow(pacing, world) {
+  if (!world) return null;
+  const next = tutorStubReleasePacingSnapshot(pacing, world)?.nextRelease || null;
+  if (!next) return null;
+  const premise = world.premiseById.get(next.premise);
+  return {
+    premise: next.premise,
+    turn: Number(next.effectiveTurn),
+    authoredTurn: Number(next.authoredTurn),
+    via: next.via || null,
+    surface: String(premise?.surface || '').trim(),
+    fact: premise?.fact || null,
+  };
+}
+
 // True once every authored clue has been released and nothing is due: there is
 // no further public evidence the tutor could stage. Selecting a staging action
 // past this point sends the composer after evidence that does not exist.

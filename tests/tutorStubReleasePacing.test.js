@@ -13,6 +13,7 @@ import {
   commitTutorStubReleasePacing,
   createTutorStubReleasePacingState,
   detectTutorStubReleasePacingSignal,
+  projectTutorStubNextReleaseRow,
   setTutorStubReleaseSpeed,
   tutorStubReleasePacingSnapshot,
   tutorStubReleaseScheduleExhausted,
@@ -42,6 +43,29 @@ test('release pace 1 preserves the authored clue schedule', () => {
     tutorStubReleasePacingSnapshot(pacing, world).schedule.map((entry) => entry.authoredTurn),
     [1, 5, 9],
   );
+});
+
+test('next release row projects the pending schedule entry with public premise detail', () => {
+  const world = sampleWorld();
+  world.premiseById = new Map([
+    ['p_open', { surface: '  The opening clue.  ', fact: ['open'] }],
+    ['p_trace', { surface: 'The trace clue.', fact: ['trace'] }],
+  ]);
+  const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
+
+  assert.deepEqual(projectTutorStubNextReleaseRow(pacing, world), {
+    premise: 'p_open',
+    turn: 1,
+    authoredTurn: 1,
+    via: 'tutor',
+    surface: 'The opening clue.',
+    fact: ['open'],
+  });
+  assert.equal(projectTutorStubNextReleaseRow(pacing, null), null);
+  pacing.released.p_open = { turn: 1, authoredTurn: 1, via: 'tutor', timing: 'on_authored_turn' };
+  pacing.released.p_trace = { turn: 5, authoredTurn: 5, via: 'director', timing: 'on_authored_turn' };
+  pacing.released.p_witness = { turn: 9, authoredTurn: 9, via: 'tutor', timing: 'on_authored_turn' };
+  assert.equal(projectTutorStubNextReleaseRow(pacing, world), null);
 });
 
 test('world-005 steady 1x pacing keeps p_caster on authored turn 10, not turn 9', () => {
