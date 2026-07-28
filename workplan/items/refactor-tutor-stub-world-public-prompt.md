@@ -15,6 +15,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-director-context
 links:
+  prs:
+    - 346
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -68,3 +70,5 @@ Log:
   the zero-cycle ratchet across 422 files also pass. The initial sandboxed
   hermetic attempt could not bind localhost (`listen EPERM`); the authorized
   hermetic rerun passed in full.
+- 2026-07-28 — Opened dependent PR #346 on PR #345's branch; managed refs are
+  unchanged.
