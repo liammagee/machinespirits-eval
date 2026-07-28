@@ -799,3 +799,13 @@ Log:
 - 2026-07-28 — The director-context child reached review with a 15-line net CLI
   reduction, 48 focused assertions, 7,421 root assertions, and 137 tutor-core
   assertions green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-public-prompt` from PR #345's reviewed head to move
+  pure public world-prompt projection into a dependency-free owner. World
+  loading, audience derivation, prompt assembly, model calls, state, and effects
+  remain in their current owners.
+- 2026-07-28 — The public-world-prompt child reached review with a 25-line net
+  CLI reduction, 53 focused assertions, 7,423 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass; the localhost suites required their normal authorized execution rather
+  than the binding-restricted filesystem sandbox.
