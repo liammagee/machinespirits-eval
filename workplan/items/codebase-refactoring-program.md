@@ -1342,3 +1342,5 @@ Log:
   hermetic inventory, and complete zero-skip hermetic parity. Lint removed an
   obsolete import before the clean full rerun; all static/source-only gates
   pass.
+- 2026-07-28 — Opened fifty-loop run 44 as PR #418 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.

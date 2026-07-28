@@ -20,7 +20,8 @@ links:
     - services/tutorStubTurnAttempt.js
     - scripts/tutor-stub.js
     - tests/tutorStubTurnAttempt.test.js
-  prs: []
+  prs:
+    - 418
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-current-debug-reporter
@@ -55,3 +56,6 @@ Log:
   removed an obsolete constructor import before a clean complete rerun; three
   focused assertions, synchronized hermetic inventory, zero-skip hermetic
   parity, and all static/source-only gates pass.
+- 2026-07-28 — Opened PR #418 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
