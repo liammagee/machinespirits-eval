@@ -64,6 +64,7 @@ import {
 import { buildTutorStubRegisterPalette } from '../services/tutorStubRegisterPalette.js';
 import { projectTutorStubExactRepairSpans as exactTutorRepairSpans } from '../services/tutorStubGuardSpanProjection.js';
 import { projectTutorStubGuardAttemptEnvelope } from '../services/tutorStubGuardAttemptProjection.js';
+import { projectTutorStubScaffoldState } from '../services/tutorStubScaffoldState.js';
 import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
@@ -665,7 +666,6 @@ const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'co
 const NEGATIVE_FLOOR_REGISTERS = ['ironic', 'sarcastic', 'face_threat'];
 const DAG_MODES = ['strict_dag', 'human_scaffold', 'defeasible_human_scaffold'];
 const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-frame.v1';
-const SCAFFOLD_STATE_SCHEMA = 'machinespirits.tutor-stub.scaffold-state.v1';
 const SIDE_ARC_SCHEMA = 'machinespirits.tutor-stub.side-arc.v1';
 const WARRANT_PREMISE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.warrant-premise-audit.v1';
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
@@ -4844,68 +4844,17 @@ function scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag }) {
   return branchTemplateForEvidence({}, world);
 }
 
-function compactReleaseRow(row = {}) {
-  return {
-    premise: row.premise || null,
-    turn: row.turn ?? null,
-    via: row.via || null,
-    surface: oneLine(row.surface || '', { max: 220 }) || null,
-  };
-}
-
-function compactFutureReleaseWindow(row = {}) {
-  return {
-    turn: row.turn ?? null,
-    via: row.via || null,
-  };
-}
-
 function buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag }) {
-  const enabled = dagMode !== 'strict_dag';
   const world = state?.world || null;
-  const dueNow = currentReleaseRows(state, tutorTurn);
-  const released = committedReleaseRows(state, tutorTurn);
-  const next = nextReleaseRow(state);
-  const branch = scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag });
-  const modeNote =
-    dagMode === 'defeasible_human_scaffold'
-      ? 'Learner may make compressed local leaps; tutor carries obvious public bridges internally and surfaces proof debt only when it matters.'
-      : dagMode === 'human_scaffold'
-        ? 'Tutor frames one local warrant and permits ordinary-language reasoning while strict proof remains the audit.'
-        : 'Strict audit mode; no scaffold adaptation.';
-  return {
-    schema: SCAFFOLD_STATE_SCHEMA,
-    mode: dagMode,
-    enabled,
-    source: enabled ? 'dramaturgy_release_projection' : 'strict_dag_disabled',
-    turn: tutorTurn,
+  return projectTutorStubScaffoldState({
+    dagMode,
+    tutorTurn,
     activeAct: activeDramaturgyAct(world, tutorTurn),
-    branch,
-    localQuestion: enabled ? branch.localQuestion : null,
-    warrantFrame: enabled ? branch.warrantFrame : null,
-    joinReminder: enabled ? branch.joinReminder : null,
-    releaseState: {
-      releasedCount: released.length,
-      dueNow: dueNow.map(compactReleaseRow),
-      latestReleased: released.at(-1) ? compactReleaseRow(released.at(-1)) : null,
-      // The public scaffold needs to know only that a future gap exists. Its
-      // premise id and surface remain owned by the deterministic planner.
-      nextRelease: next ? compactFutureReleaseWindow(next) : null,
-    },
-    returnTarget: enabled
-      ? {
-          kind: dueNow.length
-            ? 'current_release'
-            : branch.id === 'world_conclusion_join'
-              ? 'join_warrant'
-              : 'local_branch_warrant',
-          prompt: branch.localQuestion,
-          afterSideArc: `Return to: ${branch.localQuestion}`,
-        }
-      : null,
-    modeNote,
-    status: enabled ? 'projected_from_dramaturgy' : 'not_enabled_strict_dag',
-  };
+    branch: scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag }),
+    dueNow: currentReleaseRows(state, tutorTurn),
+    released: committedReleaseRows(state, tutorTurn),
+    nextRelease: nextReleaseRow(state),
+  });
 }
 
 function buildSideArcState({

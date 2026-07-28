@@ -871,3 +871,11 @@ Log:
   32-line net CLI reduction, 16 focused assertions, 7,435 root assertions, and
   137 tutor-core assertions green with zero skips. All static and source-only
   gates pass; one dead wrapper exposed by the extraction was removed.
+- 2026-07-28 — Activated second-loop run 5,
+  `refactor-tutor-stub-scaffold-state`, from PR #353's reviewed head. World and
+  dramaturgy loading, branch choice, release scheduling, model calls, runtime
+  state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop scaffold-state run reached review with a 51-line
+  net CLI reduction, 48 focused assertions, 7,438 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
