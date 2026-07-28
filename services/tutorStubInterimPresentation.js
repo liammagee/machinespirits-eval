@@ -40,6 +40,20 @@ export function summarizeTutorStubInterimCapabilities(state) {
   return bits.length ? bits.join(', ') : 'plain tutor response';
 }
 
+export function summarizeTutorStubInterimField(state, { buildLightweightDialogueField } = {}) {
+  if (!state?.turns?.length) return summarizeTutorStubInterimCapabilities(state);
+  const field = buildLightweightDialogueField(state.turns);
+  const final = field.summary.final;
+  const bottleneck = tutorStubPlainInterimBottleneck(final.bottleneck);
+  return [
+    `learner understanding ${tutorStubInterimLevel(final.learnerMastery)}`,
+    `pressure ${tutorStubInterimLevel(final.learnerRisk)}`,
+    `tutor fit ${tutorStubInterimLevel(final.tutorAlignment)}`,
+    `momentum ${tutorStubInterimLevel(final.jointMomentum)}`,
+    bottleneck,
+  ].join(' | ');
+}
+
 export function tutorStubInterimLevel(value) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return 'not available';
@@ -92,6 +106,195 @@ export function summarizeTutorStubPendingLearner(context, { scoreValue, plainStr
   if (need) bits.push(`needs: ${oneLine(plainStrategyText(need), { max: 62 })}`);
   if (!context.classification && context.learnerText) bits.push(oneLine(context.learnerText, { max: 72 }));
   return bits.join(' | ');
+}
+
+export function summarizeTutorStubPendingRegister(
+  context,
+  { formatDistribution, displayDiagnosticLabel, plainStrategyText } = {},
+) {
+  const selection = context?.registerSelection;
+  const efficacy = context?.previousRegisterEfficacy;
+  if (!selection && !efficacy) return null;
+  const bits = [];
+  if (selection) {
+    const blend = formatDistribution(selection.distribution, { limit: 4 });
+    bits.push(blend ? `blend ${blend}` : `led by ${selection.selected_register || 'unknown'}`);
+    if (selection.actorial_part_label || selection.actorial_part) {
+      bits.push(
+        `playing ${oneLine(selection.actorial_part_label || displayDiagnosticLabel(selection.actorial_part), { max: 42 })}`,
+      );
+    }
+    if (selection.actorial_performance?.label) {
+      bits.push(`through ${oneLine(selection.actorial_performance.label, { max: 32 })}`);
+    }
+    if (selection.expected_field_move) {
+      bits.push(`aim: ${oneLine(plainStrategyText(selection.expected_field_move), { max: 68 })}`);
+    }
+  }
+  if (efficacy) {
+    const result =
+      efficacy.label === 'positive_progress'
+        ? 'helped'
+        : efficacy.label === 'regression_or_overreach'
+          ? 'hurt progress'
+          : 'had no clear effect yet';
+    bits.push(`last ${efficacy.selected_register || 'style'} ${result}`);
+    if (efficacy.learnerFeedback?.rating) {
+      bits.push(`learner rated it ${efficacy.learnerFeedback.rating === 'up' ? 'helpful' : 'not helpful'}`);
+    }
+  }
+  return bits.join(' | ');
+}
+
+export function summarizeTutorStubPendingDagMovement(state, context, { dagProgressFeatures } = {}) {
+  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
+  if (!model) return null;
+  const previous = findTutorStubPreviousLearnerDagModel(state, context);
+  const currentFeatures = dagProgressFeatures(model);
+  const previousFeatures = dagProgressFeatures(previous);
+  const coverageDelta = formatTutorStubSignedInterimNumber(
+    currentFeatures.bestPathCoverage - previousFeatures.bestPathCoverage,
+  );
+  const groundedDelta = currentFeatures.groundedCount - previousFeatures.groundedCount;
+  const voicedDelta = currentFeatures.voicedDerivedCount - previousFeatures.voicedDerivedCount;
+  const answersDelta = currentFeatures.answerCandidateCount - previousFeatures.answerCandidateCount;
+  const missingDelta = currentFeatures.missingPremiseCount - previousFeatures.missingPremiseCount;
+  const deltas = [
+    coverageDelta ? `path coverage ${coverageDelta}` : null,
+    groundedDelta
+      ? `${Math.abs(groundedDelta)} public fact${Math.abs(groundedDelta) === 1 ? '' : 's'} ${groundedDelta > 0 ? 'added' : 'lost'}`
+      : null,
+    voicedDelta
+      ? `${Math.abs(voicedDelta)} inference${Math.abs(voicedDelta) === 1 ? '' : 's'} ${voicedDelta > 0 ? 'added' : 'lost'}`
+      : null,
+    answersDelta
+      ? `${Math.abs(answersDelta)} answer candidate${Math.abs(answersDelta) === 1 ? '' : 's'} ${answersDelta > 0 ? 'added' : 'removed'}`
+      : null,
+    missingDelta
+      ? `${Math.abs(missingDelta)} needed piece${Math.abs(missingDelta) === 1 ? '' : 's'} ${missingDelta < 0 ? 'resolved' : 'added'}`
+      : null,
+  ].filter(Boolean);
+  const assessment = model.assessment || {};
+  return [
+    `turn ${model.turn || context.tutorTurn || '?'}`,
+    deltas.length ? deltas.join(', ') : 'no clear reasoning movement yet',
+    assessment.finalSecretEntailed
+      ? 'the conclusion is supported'
+      : assessment.assertedSecret
+        ? 'the conclusion was stated too early'
+        : 'the conclusion remains open',
+  ].join(' | ');
+}
+
+export function summarizeTutorStubLearnerRecordUpdate(state, context, { factSurface } = {}) {
+  const result = context?.tutorLearnerDag;
+  if (!result?.accepted && !result?.rejected?.length) return null;
+  const accepted = result.accepted || {};
+  const adopted = (accepted.adopt || []).join(',') || null;
+  const retracted = (accepted.retract || []).join(',') || null;
+  const derived = (accepted.derive || []).map((fact) => oneLine(factSurface(state.world, fact), { max: 34 }));
+  const rejected = result.rejected?.length || 0;
+  const bits = [
+    `turn ${context.tutorTurn || result.model?.turn || '?'}`,
+    adopted ? `${accepted.adopt.length} evidence piece${accepted.adopt.length === 1 ? '' : 's'} accepted` : null,
+    retracted ? `${accepted.retract.length} evidence piece${accepted.retract.length === 1 ? '' : 's'} withdrawn` : null,
+    derived.length ? `new inference: ${derived.slice(0, 2).join('; ')}` : null,
+    accepted.hypothesis ? `working idea: ${oneLine(accepted.hypothesis, { max: 52 })}` : null,
+    accepted.assertAnswer ? `proposed answer: ${accepted.assertAnswer}` : null,
+    rejected ? `${rejected} unsupported update${rejected === 1 ? '' : 's'} ignored` : null,
+  ].filter(Boolean);
+  return bits.length > 1 ? bits.join(' | ') : null;
+}
+
+export function summarizeTutorStubPendingObjective(state, context, { currentReleaseRows, plainStrategyText } = {}) {
+  if (!context?.learnerText && !context?.classification && !context?.tutorLearnerDag?.model) return null;
+  const turn = context.classification?.turn || {};
+  const overall = context.classification?.overall || {};
+  const assessment = context.tutorLearnerDag?.model?.assessment || {};
+  const selection = context.registerSelection || {};
+  const bottleneck = tutorStubPlainInterimBottleneck(
+    assessment.bottleneck || turn.pedagogical_need || 'awaiting analysis',
+  );
+  const register = selection.selected_register
+    ? `style led by ${selection.selected_register}`
+    : 'style still being chosen';
+  const target =
+    selection.expected_dag_move ||
+    overall.next_best_tutor_move ||
+    turn.pedagogical_need ||
+    'choose one learner-owned next move';
+  const due = currentReleaseRows(state, context.tutorTurn).map((row) => row.premise);
+  return [
+    `turn ${context.tutorTurn || '?'}`,
+    `focus: ${oneLine(bottleneck, { max: 54 })}`,
+    register,
+    due.length ? `${due.length} new clue${due.length === 1 ? '' : 's'} available now` : null,
+    `aim: ${oneLine(plainStrategyText(target), { max: 76 })}`,
+  ]
+    .filter(Boolean)
+    .join(' | ');
+}
+
+export function summarizeTutorStubEvidenceTiming(
+  state,
+  context,
+  { currentReleaseRows, nextReleaseRow, committedReleaseRows } = {},
+) {
+  const world = state?.world;
+  const tutorTurn = Number(context?.tutorTurn || (state?.turns?.length || 0) + 1);
+  if (!world || !Number.isFinite(tutorTurn)) return null;
+  const dueNow = currentReleaseRows(state, tutorTurn);
+  const next = nextReleaseRow(state);
+  const last = committedReleaseRows(state, tutorTurn).at(-1) || null;
+  const dueSummary = dueNow.length
+    ? `available now: ${oneLine(dueNow[0].surface, { max: 78 })}`
+    : last
+      ? 'no new evidence this turn; earlier evidence remains available'
+      : 'no case evidence has been introduced yet';
+  const nextSummary = next
+    ? `next new clue is planned for turn ${next.turn} from the ${next.via === 'director' ? 'scene' : 'tutor'}`
+    : 'all planned clues are available';
+  return `turn ${tutorTurn} | ${dueSummary} | ${nextSummary}`;
+}
+
+export function summarizeTutorStubPendingTutorDag(state, context, { buildTutorDagSnapshot } = {}) {
+  const snapshot =
+    context?.tutorDagSnapshot || buildTutorDagSnapshot(state, context?.tutorTurn || state?.turns?.length + 1);
+  if (!snapshot) return null;
+  const next = snapshot.nextRelease
+    ? `next clue planned for turn ${snapshot.nextRelease.turn}`
+    : 'all planned clues are available';
+  return `turn ${snapshot.turn} | ${snapshot.leavesReleased} of ${snapshot.leavesTotal} key clues revealed | ${next}`;
+}
+
+export function summarizeTutorStubPendingField(
+  state,
+  context,
+  { buildLightweightDialogueField, lightweightFieldTurn, buildTutorDagSnapshot } = {},
+) {
+  if (!context?.classification && !context?.tutorLearnerDag?.model) return null;
+  const completedField = buildLightweightDialogueField(state?.turns || []);
+  const previous = completedField.rows.at(-1) || null;
+  const pendingTurn = {
+    turn: context.tutorTurn || (state?.turns?.length || 0) + 1,
+    learner: context.learnerText || '',
+    classification: context.classification || null,
+    tutorLearnerDagModel: context.tutorLearnerDag?.model || null,
+    registerSelection: context.registerSelection || null,
+    previousRegisterEfficacy: context.previousRegisterEfficacy || null,
+    tutor: '',
+    tutorDag:
+      context.tutorDagSnapshot || buildTutorDagSnapshot(state, context.tutorTurn || (state?.turns?.length || 0) + 1),
+  };
+  const row = lightweightFieldTurn(pendingTurn, previous);
+  return [
+    `turn ${row.turn}`,
+    `learner understanding ${tutorStubInterimLevel(row.learnerMastery)}`,
+    `pressure ${tutorStubInterimLevel(row.learnerRisk)}`,
+    `tutor fit ${tutorStubInterimLevel(row.tutorAlignment)}`,
+    `momentum ${tutorStubInterimLevel(row.jointMomentum)}`,
+    tutorStubPlainInterimBottleneck(row.bottleneck),
+  ].join(' | ');
 }
 
 export function tutorStubInterimCliHintPanels(active) {

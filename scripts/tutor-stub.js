@@ -375,17 +375,22 @@ import {
 import { projectTutorStubCloseoutReportLines } from '../services/tutorStubCloseoutReportPresentation.js';
 import {
   createTutorStubInterimState as createInterimState,
-  findTutorStubPreviousLearnerDagModel as previousLearnerDagModel,
   formatTutorStubSignedInterimNumber as formatSignedInterimNumber,
   projectTutorStubInterimPanels,
   renderTutorStubInterimFrame,
   resolveTutorStubInterimState as getInterimState,
   summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
+  summarizeTutorStubInterimField,
+  summarizeTutorStubEvidenceTiming,
+  summarizeTutorStubPendingDagMovement,
+  summarizeTutorStubPendingField,
   summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
+  summarizeTutorStubPendingObjective,
+  summarizeTutorStubPendingRegister,
+  summarizeTutorStubPendingTutorDag,
+  summarizeTutorStubLearnerRecordUpdate,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
-  tutorStubInterimLevel as interimLevel,
-  tutorStubPlainInterimBottleneck as plainInterimBottleneck,
 } from '../services/tutorStubInterimPresentation.js';
 import {
   listTutorStubTutorInstances,
@@ -612,6 +617,9 @@ import {
   commitTutorStubReleasePacing,
   createTutorStubReleasePacingState,
   normalizeTutorStubReleaseSpeed,
+  projectTutorStubCommittedReleaseRows,
+  projectTutorStubCurrentReleaseRows,
+  projectTutorStubNextReleaseRow,
   restoreTutorStubReleasePacingFromTurns,
   setTutorStubReleaseSpeed,
   tutorStubReleasePacingSnapshot,
@@ -3074,201 +3082,52 @@ function interimAnimationAvailable(interim) {
   return Boolean(interim?.enabled && output.isTTY && cliPresentation.motion !== 'off');
 }
 
-function compactInterimFieldSummary(state) {
-  if (!state?.turns?.length) return compactInterimStateSummary(state);
-  const field = buildLightweightDialogueField(state.turns);
-  const final = field.summary.final;
-  const bottleneck = plainInterimBottleneck(final.bottleneck);
-  return [
-    `learner understanding ${interimLevel(final.learnerMastery)}`,
-    `pressure ${interimLevel(final.learnerRisk)}`,
-    `tutor fit ${interimLevel(final.tutorAlignment)}`,
-    `momentum ${interimLevel(final.jointMomentum)}`,
-    bottleneck,
-  ].join(' | ');
-}
+const compactInterimFieldSummary = (state) => summarizeTutorStubInterimField(state, { buildLightweightDialogueField });
 
-function compactPendingObjectiveSummary(state, context) {
-  if (!context?.learnerText && !context?.classification && !context?.tutorLearnerDag?.model) return null;
-  const turn = context.classification?.turn || {};
-  const overall = context.classification?.overall || {};
-  const assessment = context.tutorLearnerDag?.model?.assessment || {};
-  const selection = context.registerSelection || {};
-  const bottleneck = plainInterimBottleneck(assessment.bottleneck || turn.pedagogical_need || 'awaiting analysis');
-  const register = selection.selected_register
-    ? `style led by ${selection.selected_register}`
-    : 'style still being chosen';
-  const target =
-    selection.expected_dag_move ||
-    overall.next_best_tutor_move ||
-    turn.pedagogical_need ||
-    'choose one learner-owned next move';
-  const due = currentReleaseRows(state, context.tutorTurn).map((row) => row.premise);
-  return [
-    `turn ${context.tutorTurn || '?'}`,
-    `focus: ${oneLine(bottleneck, { max: 54 })}`,
-    register,
-    due.length ? `${due.length} new clue${due.length === 1 ? '' : 's'} available now` : null,
-    `aim: ${oneLine(plainStrategyText(target), { max: 76 })}`,
-  ]
-    .filter(Boolean)
-    .join(' | ');
-}
+const compactPendingObjectiveSummary = (state, context) =>
+  summarizeTutorStubPendingObjective(state, context, { currentReleaseRows, plainStrategyText });
 
 const compactPendingLearnerSummary = (context) =>
   summarizeTutorStubPendingLearner(context, { scoreValue, plainStrategyText });
 
-function compactPendingDagMovementSummary(state, context) {
-  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
-  if (!model) return null;
-  const previous = previousLearnerDagModel(state, context);
-  const currentFeatures = dagProgressFeatures(model);
-  const previousFeatures = dagProgressFeatures(previous);
-  const coverageDelta = formatSignedInterimNumber(currentFeatures.bestPathCoverage - previousFeatures.bestPathCoverage);
-  const groundedDelta = currentFeatures.groundedCount - previousFeatures.groundedCount;
-  const voicedDelta = currentFeatures.voicedDerivedCount - previousFeatures.voicedDerivedCount;
-  const answersDelta = currentFeatures.answerCandidateCount - previousFeatures.answerCandidateCount;
-  const missingDelta = currentFeatures.missingPremiseCount - previousFeatures.missingPremiseCount;
-  const deltas = [
-    coverageDelta ? `path coverage ${coverageDelta}` : null,
-    groundedDelta
-      ? `${Math.abs(groundedDelta)} public fact${Math.abs(groundedDelta) === 1 ? '' : 's'} ${groundedDelta > 0 ? 'added' : 'lost'}`
-      : null,
-    voicedDelta
-      ? `${Math.abs(voicedDelta)} inference${Math.abs(voicedDelta) === 1 ? '' : 's'} ${voicedDelta > 0 ? 'added' : 'lost'}`
-      : null,
-    answersDelta
-      ? `${Math.abs(answersDelta)} answer candidate${Math.abs(answersDelta) === 1 ? '' : 's'} ${answersDelta > 0 ? 'added' : 'removed'}`
-      : null,
-    missingDelta
-      ? `${Math.abs(missingDelta)} needed piece${Math.abs(missingDelta) === 1 ? '' : 's'} ${missingDelta < 0 ? 'resolved' : 'added'}`
-      : null,
-  ].filter(Boolean);
-  const assessment = model.assessment || {};
-  return [
-    `turn ${model.turn || context.tutorTurn || '?'}`,
-    deltas.length ? deltas.join(', ') : 'no clear reasoning movement yet',
-    assessment.finalSecretEntailed
-      ? 'the conclusion is supported'
-      : assessment.assertedSecret
-        ? 'the conclusion was stated too early'
-        : 'the conclusion remains open',
-  ].join(' | ');
-}
+const compactPendingDagMovementSummary = (state, context) =>
+  summarizeTutorStubPendingDagMovement(state, context, { dagProgressFeatures });
 
-function compactLearnerRecordUpdateSummary(state, context) {
-  const result = context?.tutorLearnerDag;
-  if (!result?.accepted && !result?.rejected?.length) return null;
-  const accepted = result.accepted || {};
-  const adopted = (accepted.adopt || []).join(',') || null;
-  const retracted = (accepted.retract || []).join(',') || null;
-  const derived = (accepted.derive || []).map((fact) => oneLine(factSurface(state.world, fact), { max: 34 }));
-  const rejected = result.rejected?.length || 0;
-  const bits = [
-    `turn ${context.tutorTurn || result.model?.turn || '?'}`,
-    adopted ? `${accepted.adopt.length} evidence piece${accepted.adopt.length === 1 ? '' : 's'} accepted` : null,
-    retracted ? `${accepted.retract.length} evidence piece${accepted.retract.length === 1 ? '' : 's'} withdrawn` : null,
-    derived.length ? `new inference: ${derived.slice(0, 2).join('; ')}` : null,
-    accepted.hypothesis ? `working idea: ${oneLine(accepted.hypothesis, { max: 52 })}` : null,
-    accepted.assertAnswer ? `proposed answer: ${accepted.assertAnswer}` : null,
-    rejected ? `${rejected} unsupported update${rejected === 1 ? '' : 's'} ignored` : null,
-  ].filter(Boolean);
-  return bits.length > 1 ? bits.join(' | ') : null;
-}
+const compactLearnerRecordUpdateSummary = (state, context) =>
+  summarizeTutorStubLearnerRecordUpdate(state, context, { factSurface });
 
-function compactPendingRegisterSummary(context) {
-  const selection = context?.registerSelection;
-  const efficacy = context?.previousRegisterEfficacy;
-  if (!selection && !efficacy) return null;
-  const bits = [];
-  if (selection) {
-    const blend = formatEngagementStanceDistribution(selection.distribution, { limit: 4 });
-    bits.push(blend ? `blend ${blend}` : `led by ${selection.selected_register || 'unknown'}`);
-    if (selection.actorial_part_label || selection.actorial_part) {
-      bits.push(
-        `playing ${oneLine(selection.actorial_part_label || displayDiagnosticLabel(selection.actorial_part), { max: 42 })}`,
-      );
-    }
-    if (selection.actorial_performance?.label) {
-      bits.push(`through ${oneLine(selection.actorial_performance.label, { max: 32 })}`);
-    }
-    if (selection.expected_field_move)
-      bits.push(`aim: ${oneLine(plainStrategyText(selection.expected_field_move), { max: 68 })}`);
-  }
-  if (efficacy) {
-    const result =
-      efficacy.label === 'positive_progress'
-        ? 'helped'
-        : efficacy.label === 'regression_or_overreach'
-          ? 'hurt progress'
-          : 'had no clear effect yet';
-    bits.push(`last ${efficacy.selected_register || 'style'} ${result}`);
-    if (efficacy.learnerFeedback?.rating) {
-      bits.push(`learner rated it ${efficacy.learnerFeedback.rating === 'up' ? 'helpful' : 'not helpful'}`);
-    }
-  }
-  return bits.join(' | ');
-}
+const compactPendingRegisterSummary = (context) =>
+  summarizeTutorStubPendingRegister(context, {
+    formatDistribution: formatEngagementStanceDistribution,
+    displayDiagnosticLabel,
+    plainStrategyText,
+  });
+
+const compactEvidenceTimingSummary = (state, context) =>
+  summarizeTutorStubEvidenceTiming(state, context, { currentReleaseRows, nextReleaseRow, committedReleaseRows });
+
+const compactPendingTutorDagSummary = (state, context) =>
+  summarizeTutorStubPendingTutorDag(state, context, { buildTutorDagSnapshot });
+
+const compactPendingFieldSummary = (state, context) =>
+  summarizeTutorStubPendingField(state, context, {
+    buildLightweightDialogueField,
+    lightweightFieldTurn,
+    buildTutorDagSnapshot,
+  });
 
 function currentReleaseRows(state, tutorTurn) {
-  const world = state?.world;
-  if (!world || !Number.isFinite(Number(tutorTurn))) return [];
-  const pointOfAction = state?.pointOfAction?.current || null;
-  if (
-    Number(pointOfAction?.turn) === Number(tutorTurn) &&
-    pointOfAction?.compiled_constraint?.suppress_new_premise === true
-  ) {
-    return [];
-  }
-  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
-  const dueIds = snapshot
-    ? snapshot.turn === Number(tutorTurn) && snapshot.dueNow.length
-      ? snapshot.dueNow
-      : snapshot.schedule
-          .filter(
-            (entry) =>
-              Number(entry.effectiveTurn) === Number(tutorTurn) &&
-              (entry.releasedTurn === null || entry.releasedTurn === undefined),
-          )
-          .map((entry) => entry.premise)
-    : world.releaseSchedule.filter((entry) => Number(entry.turn) === Number(tutorTurn)).map((entry) => entry.premise);
-  return dueIds.map((premiseId) => {
-    const premise = world.premiseById.get(premiseId);
-    const release = world.releaseSchedule.find((entry) => entry.premise === premiseId);
-    return {
-      ...projectTutorStubSpeakerPublicPremise(premise, {
-        premise: premiseId,
-        turn: Number(tutorTurn),
-        via: release?.via || null,
-      }),
-      presentation: release?.presentation || null,
-      role: release?.role || null,
-      cue: release?.cue || null,
-    };
+  return projectTutorStubCurrentReleaseRows(state?.releasePacing, state?.world, tutorTurn, {
+    pointOfAction: state?.pointOfAction?.current || null,
+    projectPremise: projectTutorStubSpeakerPublicPremise,
   });
 }
 
 function committedReleaseRows(state, throughTurn = Number.POSITIVE_INFINITY) {
-  const world = state?.world;
-  if (!world) return [];
-  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
-  if (!snapshot) return stagedEvidenceRows(world, throughTurn);
-  return snapshot.schedule
-    .filter(
-      (entry) =>
-        entry.releasedTurn !== null &&
-        entry.releasedTurn !== undefined &&
-        Number.isFinite(Number(entry.releasedTurn)) &&
-        Number(entry.releasedTurn) <= Number(throughTurn),
-    )
-    .map((entry) => {
-      const premise = world.premiseById.get(entry.premise);
-      return projectTutorStubSpeakerPublicPremise(premise, {
-        premise: entry.premise,
-        turn: Number(entry.releasedTurn),
-        via: entry.via || null,
-      });
-    });
+  return projectTutorStubCommittedReleaseRows(state?.releasePacing, state?.world, throughTurn, {
+    fallbackRows: stagedEvidenceRows,
+    projectPremise: projectTutorStubSpeakerPublicPremise,
+  });
 }
 
 function publicReleaseLedger(state, throughTurn = Number.POSITIVE_INFINITY) {
@@ -3309,74 +3168,7 @@ function learnerDagPreflightForTurn(state, tutorTurn, { traceSource = null } = {
 }
 
 function nextReleaseRow(state) {
-  const world = state?.world;
-  if (!world) return null;
-  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
-  const next = snapshot?.nextRelease || null;
-  if (!next) return null;
-  const premise = world.premiseById.get(next.premise);
-  return {
-    premise: next.premise,
-    turn: Number(next.effectiveTurn),
-    authoredTurn: Number(next.authoredTurn),
-    via: next.via || null,
-    surface: String(premise?.surface || '').trim(),
-    fact: premise?.fact || null,
-  };
-}
-
-function compactEvidenceTimingSummary(state, context) {
-  const world = state?.world;
-  const tutorTurn = Number(context?.tutorTurn || (state?.turns?.length || 0) + 1);
-  if (!world || !Number.isFinite(tutorTurn)) return null;
-  const dueNow = currentReleaseRows(state, tutorTurn);
-  const next = nextReleaseRow(state);
-  const last = committedReleaseRows(state, tutorTurn).at(-1) || null;
-  const dueSummary = dueNow.length
-    ? `available now: ${oneLine(dueNow[0].surface, { max: 78 })}`
-    : last
-      ? 'no new evidence this turn; earlier evidence remains available'
-      : 'no case evidence has been introduced yet';
-  const nextSummary = next
-    ? `next new clue is planned for turn ${next.turn} from the ${next.via === 'director' ? 'scene' : 'tutor'}`
-    : 'all planned clues are available';
-  return `turn ${tutorTurn} | ${dueSummary} | ${nextSummary}`;
-}
-
-function compactPendingTutorDagSummary(state, context) {
-  const snapshot =
-    context?.tutorDagSnapshot || buildTutorDagSnapshot(state, context?.tutorTurn || state?.turns?.length + 1);
-  if (!snapshot) return null;
-  const next = snapshot.nextRelease
-    ? `next clue planned for turn ${snapshot.nextRelease.turn}`
-    : 'all planned clues are available';
-  return `turn ${snapshot.turn} | ${snapshot.leavesReleased} of ${snapshot.leavesTotal} key clues revealed | ${next}`;
-}
-
-function compactPendingFieldSummary(state, context) {
-  if (!context?.classification && !context?.tutorLearnerDag?.model) return null;
-  const completedField = buildLightweightDialogueField(state?.turns || []);
-  const previous = completedField.rows.at(-1) || null;
-  const pendingTurn = {
-    turn: context.tutorTurn || (state?.turns?.length || 0) + 1,
-    learner: context.learnerText || '',
-    classification: context.classification || null,
-    tutorLearnerDagModel: context.tutorLearnerDag?.model || null,
-    registerSelection: context.registerSelection || null,
-    previousRegisterEfficacy: context.previousRegisterEfficacy || null,
-    tutor: '',
-    tutorDag:
-      context.tutorDagSnapshot || buildTutorDagSnapshot(state, context.tutorTurn || (state?.turns?.length || 0) + 1),
-  };
-  const row = lightweightFieldTurn(pendingTurn, previous);
-  return [
-    `turn ${row.turn}`,
-    `learner understanding ${interimLevel(row.learnerMastery)}`,
-    `pressure ${interimLevel(row.learnerRisk)}`,
-    `tutor fit ${interimLevel(row.tutorAlignment)}`,
-    `momentum ${interimLevel(row.jointMomentum)}`,
-    plainInterimBottleneck(row.bottleneck),
-  ].join(' | ');
+  return projectTutorStubNextReleaseRow(state?.releasePacing, state?.world);
 }
 
 function compactInterimPanels(active) {

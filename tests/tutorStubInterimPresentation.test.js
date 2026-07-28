@@ -12,8 +12,16 @@ import {
   renderTutorStubInterimFrame,
   resolveTutorStubInterimState,
   summarizeTutorStubInterimCapabilities,
+  summarizeTutorStubEvidenceTiming,
+  summarizeTutorStubInterimField,
   summarizeTutorStubPendingLearner,
+  summarizeTutorStubPendingDagMovement,
+  summarizeTutorStubPendingField,
   summarizeTutorStubPendingLearnerDag,
+  summarizeTutorStubPendingObjective,
+  summarizeTutorStubPendingRegister,
+  summarizeTutorStubPendingTutorDag,
+  summarizeTutorStubLearnerRecordUpdate,
   tutorStubInterimCliHintPanels,
   tutorStubInterimLevel,
   tutorStubPlainInterimBottleneck,
@@ -86,6 +94,31 @@ test('interim capability summaries preserve ordering and the plain-response fall
     'learner reading, reasoning progress, response style, evidence pacing',
   );
   assert.equal(summarizeTutorStubInterimCapabilities({ classifier: { enabled: false }, dag: true }), 'evidence pacing');
+});
+
+test('interim field summary preserves no-turn capability fallback, strength bands, and bottleneck copy', () => {
+  const builder = (turns) => {
+    assert.deepEqual(turns, [{ turn: 1 }]);
+    return {
+      summary: {
+        final: {
+          learnerMastery: 0.8,
+          learnerRisk: 0.2,
+          tutorAlignment: 0.6,
+          jointMomentum: 0.4,
+          bottleneck: 'release_or_pacing_gap',
+        },
+      },
+    };
+  };
+  assert.equal(
+    summarizeTutorStubInterimField({ classifier: { enabled: true } }, { buildLightweightDialogueField: builder }),
+    'learner reading',
+  );
+  assert.equal(
+    summarizeTutorStubInterimField({ turns: [{ turn: 1 }] }, { buildLightweightDialogueField: builder }),
+    'learner understanding very strong | pressure low | tutor fit strong | momentum developing | the learner needs the next usable piece of evidence',
+  );
 });
 
 test('interim strength bands pin unavailable handling and every threshold boundary', () => {
@@ -171,6 +204,287 @@ test('pending learner summary preserves labels, score bands, need precedence, co
       { scoreValue, plainStrategyText },
     ),
     'turn 3 | still being read; still being read | conceptual engagement not available | evidence awareness not available | A long raw learner turn with repeated spacing.',
+  );
+});
+
+test('pending register summary preserves blend, actorial, aim, efficacy, rating, and fallback branches', () => {
+  const dependencies = {
+    formatDistribution: (distribution, options) => {
+      assert.deepEqual(options, { limit: 4 });
+      return distribution?.label || '';
+    },
+    displayDiagnosticLabel: (value) => `display:${value}`,
+    plainStrategyText: (value) => `plain:${value}`,
+  };
+  assert.equal(summarizeTutorStubPendingRegister(null, dependencies), null);
+  assert.equal(
+    summarizeTutorStubPendingRegister(
+      {
+        registerSelection: {
+          selected_register: 'precise',
+          distribution: { label: 'precise 70%, plain 30%' },
+          actorial_part: 'teacher_role',
+          actorial_performance: { label: 'Deliberately calm' },
+          expected_field_move: 'repair warrant',
+        },
+        previousRegisterEfficacy: {
+          label: 'positive_progress',
+          selected_register: 'plain',
+          learnerFeedback: { rating: 'up' },
+        },
+      },
+      dependencies,
+    ),
+    'blend precise 70%, plain 30% | playing display:teacher_role | through Deliberately calm | aim: plain:repair warrant | last plain helped | learner rated it helpful',
+  );
+  assert.equal(
+    summarizeTutorStubPendingRegister(
+      {
+        registerSelection: {},
+        previousRegisterEfficacy: { label: 'regression_or_overreach', learnerFeedback: { rating: 'down' } },
+      },
+      dependencies,
+    ),
+    'led by unknown | last style hurt progress | learner rated it not helpful',
+  );
+  assert.equal(
+    summarizeTutorStubPendingRegister(
+      { previousRegisterEfficacy: { label: 'no_clear_progress', selected_register: 'warm' } },
+      dependencies,
+    ),
+    'last warm had no clear effect yet',
+  );
+});
+
+test('pending DAG movement summary preserves deltas, plurality, direction, conclusions, and no-movement fallback', () => {
+  const dagProgressFeatures = (model) =>
+    model?.features || {
+      bestPathCoverage: 0,
+      groundedCount: 0,
+      voicedDerivedCount: 0,
+      answerCandidateCount: 0,
+      missingPremiseCount: 0,
+    };
+  const previous = {
+    features: {
+      bestPathCoverage: 0.25,
+      groundedCount: 3,
+      voicedDerivedCount: 2,
+      answerCandidateCount: 1,
+      missingPremiseCount: 4,
+    },
+  };
+  const current = {
+    turn: 3,
+    features: {
+      bestPathCoverage: 0.5,
+      groundedCount: 5,
+      voicedDerivedCount: 1,
+      answerCandidateCount: 0,
+      missingPremiseCount: 3,
+    },
+    assessment: { assertedSecret: true },
+  };
+  assert.equal(summarizeTutorStubPendingDagMovement(null, null, { dagProgressFeatures }), null);
+  assert.equal(
+    summarizeTutorStubPendingDagMovement(
+      { turns: [{ turn: 2, tutorLearnerDagModel: previous }] },
+      { tutorTurn: 3, tutorLearnerDagModel: current },
+      { dagProgressFeatures },
+    ),
+    'turn 3 | path coverage +0.25, 2 public facts added, 1 inference lost, 1 answer candidate removed, 1 needed piece resolved | the conclusion was stated too early',
+  );
+  const unchanged = { turn: 4, features: current.features, assessment: { finalSecretEntailed: true } };
+  assert.equal(
+    summarizeTutorStubPendingDagMovement(
+      { turns: [{ turn: 3, tutorLearnerDagModel: current }] },
+      { tutorTurn: 4, tutorLearnerDagModel: unchanged },
+      { dagProgressFeatures },
+    ),
+    'turn 4 | no clear reasoning movement yet | the conclusion is supported',
+  );
+});
+
+test('learner-record update summary preserves accepted, retracted, derived, hypothesis, answer, and rejection branches', () => {
+  const factSurface = (_world, fact) => `fact:${fact.join('-')}`;
+  assert.equal(summarizeTutorStubLearnerRecordUpdate({}, null, { factSurface }), null);
+  assert.equal(
+    summarizeTutorStubLearnerRecordUpdate(
+      {},
+      { tutorLearnerDag: { accepted: {}, rejected: [] }, tutorTurn: 2 },
+      { factSurface },
+    ),
+    null,
+  );
+  assert.equal(
+    summarizeTutorStubLearnerRecordUpdate(
+      { world: { id: 'world' } },
+      {
+        tutorTurn: 4,
+        tutorLearnerDag: {
+          accepted: {
+            adopt: ['p1', 'p2'],
+            retract: ['p0'],
+            derive: [
+              ['heir', 'marin'],
+              ['owns', 'marin', 'archive'],
+              ['ignored', 'third'],
+            ],
+            hypothesis: 'Marrick intended Marin to inherit.',
+            assertAnswer: 'Marin',
+          },
+          rejected: [{ reason: 'unsupported' }],
+        },
+      },
+      { factSurface },
+    ),
+    'turn 4 | 2 evidence pieces accepted | 1 evidence piece withdrawn | new inference: fact:heir-marin; fact:owns-marin-archive | working idea: Marrick intended Marin to inherit. | proposed answer: Marin | 1 unsupported update ignored',
+  );
+  assert.equal(
+    summarizeTutorStubLearnerRecordUpdate(
+      {},
+      { tutorLearnerDag: { rejected: [{}, {}], model: { turn: 5 } } },
+      { factSurface },
+    ),
+    'turn 5 | 2 unsupported updates ignored',
+  );
+});
+
+test('pending objective summary preserves activation, precedence, clue plurality, register fallback, and compaction', () => {
+  const currentReleaseRows = (_state, turn) => (turn === 3 ? [{ premise: 'p1' }, { premise: 'p2' }] : []);
+  const plainStrategyText = (value) => `plain:${value}`;
+  const dependencies = { currentReleaseRows, plainStrategyText };
+  assert.equal(summarizeTutorStubPendingObjective({}, null, dependencies), null);
+  assert.equal(
+    summarizeTutorStubPendingObjective(
+      {},
+      {
+        tutorTurn: 3,
+        learnerText: 'Why?',
+        classification: {
+          turn: { pedagogical_need: 'lower-priority turn need' },
+          overall: { next_best_tutor_move: 'lower-priority overall move' },
+        },
+        tutorLearnerDag: { model: { assessment: { bottleneck: 'warrant_gap' } } },
+        registerSelection: { selected_register: 'precise', expected_dag_move: 'repair the warrant' },
+      },
+      dependencies,
+    ),
+    'turn 3 | focus: the learner needs a clearer reasoning link | style led by precise | 2 new clues available now | aim: plain:repair the warrant',
+  );
+  assert.equal(
+    summarizeTutorStubPendingObjective(
+      {},
+      { tutorTurn: 4, classification: { turn: { pedagogical_need: 'Name the immediate next move.' } } },
+      dependencies,
+    ),
+    'turn 4 | focus: Name the immediate next move. | style still being chosen | aim: plain:Name the immediate next move.',
+  );
+  assert.equal(
+    summarizeTutorStubPendingObjective({}, { tutorTurn: 5, tutorLearnerDag: { model: {} } }, dependencies),
+    'turn 5 | focus: awaiting analysis | style still being chosen | aim: plain:choose one learner-owned next move',
+  );
+});
+
+test('evidence timing summary preserves current, prior, future, exhausted, and unavailable branches', () => {
+  const state = { world: {}, turns: [{ turn: 1 }] };
+  const dependencies = {
+    currentReleaseRows: (_state, turn) => (turn === 2 ? [{ surface: '  A newly available clue.  ' }] : []),
+    nextReleaseRow: (_state) => ({ turn: 4, via: 'director' }),
+    committedReleaseRows: (_state, turn) => (turn >= 3 ? [{ premise: 'p1' }] : []),
+  };
+  assert.equal(summarizeTutorStubEvidenceTiming({}, {}, dependencies), null);
+  assert.equal(
+    summarizeTutorStubEvidenceTiming(state, { tutorTurn: 2 }, dependencies),
+    'turn 2 | available now: A newly available clue. | next new clue is planned for turn 4 from the scene',
+  );
+  assert.equal(
+    summarizeTutorStubEvidenceTiming(state, { tutorTurn: 3 }, dependencies),
+    'turn 3 | no new evidence this turn; earlier evidence remains available | next new clue is planned for turn 4 from the scene',
+  );
+  assert.equal(
+    summarizeTutorStubEvidenceTiming(
+      state,
+      { tutorTurn: 1 },
+      { ...dependencies, nextReleaseRow: () => ({ turn: 5, via: 'tutor' }) },
+    ),
+    'turn 1 | no case evidence has been introduced yet | next new clue is planned for turn 5 from the tutor',
+  );
+  assert.equal(
+    summarizeTutorStubEvidenceTiming(state, { tutorTurn: 3 }, { ...dependencies, nextReleaseRow: () => null }),
+    'turn 3 | no new evidence this turn; earlier evidence remains available | all planned clues are available',
+  );
+});
+
+test('pending tutor-DAG summary preserves supplied snapshots, lazy construction, release timing, and null handling', () => {
+  let calls = 0;
+  const buildTutorDagSnapshot = (_state, turn) => {
+    calls += 1;
+    return turn === 3 ? { turn: 3, leavesReleased: 2, leavesTotal: 5, nextRelease: { turn: 4 } } : null;
+  };
+  const dependencies = { buildTutorDagSnapshot };
+  assert.equal(
+    summarizeTutorStubPendingTutorDag({ turns: [{}, {}] }, {}, dependencies),
+    'turn 3 | 2 of 5 key clues revealed | next clue planned for turn 4',
+  );
+  assert.equal(calls, 1);
+  assert.equal(
+    summarizeTutorStubPendingTutorDag(
+      {},
+      { tutorTurn: 9, tutorDagSnapshot: { turn: 8, leavesReleased: 5, leavesTotal: 5 } },
+      dependencies,
+    ),
+    'turn 8 | 5 of 5 key clues revealed | all planned clues are available',
+  );
+  assert.equal(calls, 1, 'a supplied snapshot must avoid reconstruction');
+  assert.equal(summarizeTutorStubPendingTutorDag({}, { tutorTurn: 1 }, dependencies), null);
+});
+
+test('pending field summary preserves activation, projected inputs, prior-row context, strength bands, and bottleneck copy', () => {
+  const previous = { turn: 2, learnerMastery: 0.4 };
+  const dependencies = {
+    buildLightweightDialogueField: (turns) => {
+      assert.deepEqual(turns, [{ turn: 2 }]);
+      return { rows: [previous] };
+    },
+    buildTutorDagSnapshot: (_state, turn) => ({ turn, generated: true }),
+    lightweightFieldTurn: (pendingTurn, suppliedPrevious) => {
+      assert.equal(suppliedPrevious, previous);
+      assert.deepEqual(pendingTurn, {
+        turn: 3,
+        learner: 'I need the link.',
+        classification: { overall: { state: 'blocked' } },
+        tutorLearnerDagModel: { id: 'learner-dag' },
+        registerSelection: { selected_register: 'plain' },
+        previousRegisterEfficacy: { label: 'no_clear_progress' },
+        tutor: '',
+        tutorDag: { turn: 3, generated: true },
+      });
+      return {
+        turn: 3,
+        learnerMastery: 0.3,
+        learnerRisk: 0.8,
+        tutorAlignment: 0.6,
+        jointMomentum: 0.1,
+        bottleneck: 'warrant_gap',
+      };
+    },
+  };
+  assert.equal(summarizeTutorStubPendingField({}, {}, dependencies), null);
+  assert.equal(
+    summarizeTutorStubPendingField(
+      { turns: [{ turn: 2 }] },
+      {
+        tutorTurn: 3,
+        learnerText: 'I need the link.',
+        classification: { overall: { state: 'blocked' } },
+        tutorLearnerDag: { model: { id: 'learner-dag' } },
+        registerSelection: { selected_register: 'plain' },
+        previousRegisterEfficacy: { label: 'no_clear_progress' },
+      },
+      dependencies,
+    ),
+    'turn 3 | learner understanding developing | pressure very strong | tutor fit strong | momentum low | the learner needs a clearer reasoning link',
   );
 });
 
@@ -364,7 +678,7 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
-    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactInterimFieldSummary|compactPendingObjectiveSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingDagMovementSummary|compactLearnerRecordUpdateSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);

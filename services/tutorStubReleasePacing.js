@@ -428,6 +428,88 @@ export function tutorStubReleasePacingSnapshot(pacing, world, current = null) {
   };
 }
 
+export function projectTutorStubNextReleaseRow(pacing, world) {
+  if (!world) return null;
+  const next = tutorStubReleasePacingSnapshot(pacing, world)?.nextRelease || null;
+  if (!next) return null;
+  const premise = world.premiseById.get(next.premise);
+  return {
+    premise: next.premise,
+    turn: Number(next.effectiveTurn),
+    authoredTurn: Number(next.authoredTurn),
+    via: next.via || null,
+    surface: String(premise?.surface || '').trim(),
+    fact: premise?.fact || null,
+  };
+}
+
+export function projectTutorStubCommittedReleaseRows(
+  pacing,
+  world,
+  throughTurn = Number.POSITIVE_INFINITY,
+  { fallbackRows, projectPremise } = {},
+) {
+  if (!world) return [];
+  const snapshot = tutorStubReleasePacingSnapshot(pacing, world);
+  if (!snapshot) return fallbackRows(world, throughTurn);
+  return snapshot.schedule
+    .filter(
+      (entry) =>
+        entry.releasedTurn !== null &&
+        entry.releasedTurn !== undefined &&
+        Number.isFinite(Number(entry.releasedTurn)) &&
+        Number(entry.releasedTurn) <= Number(throughTurn),
+    )
+    .map((entry) =>
+      projectPremise(world.premiseById.get(entry.premise), {
+        premise: entry.premise,
+        turn: Number(entry.releasedTurn),
+        via: entry.via || null,
+      }),
+    );
+}
+
+export function projectTutorStubCurrentReleaseRows(
+  pacing,
+  world,
+  tutorTurn,
+  { pointOfAction = null, projectPremise } = {},
+) {
+  if (!world || !Number.isFinite(Number(tutorTurn))) return [];
+  if (
+    Number(pointOfAction?.turn) === Number(tutorTurn) &&
+    pointOfAction?.compiled_constraint?.suppress_new_premise === true
+  ) {
+    return [];
+  }
+  const snapshot = tutorStubReleasePacingSnapshot(pacing, world);
+  const dueIds = snapshot
+    ? snapshot.turn === Number(tutorTurn) && snapshot.dueNow.length
+      ? snapshot.dueNow
+      : snapshot.schedule
+          .filter(
+            (entry) =>
+              Number(entry.effectiveTurn) === Number(tutorTurn) &&
+              (entry.releasedTurn === null || entry.releasedTurn === undefined),
+          )
+          .map((entry) => entry.premise)
+    : world.releaseSchedule.filter((entry) => Number(entry.turn) === Number(tutorTurn)).map((entry) => entry.premise);
+  return dueIds.map((premiseId) => {
+    const premise = world.premiseById.get(premiseId);
+    const release = world.releaseSchedule.find((entry) => entry.premise === premiseId);
+    return {
+      ...projectPremise(premise, {
+        premise: premiseId,
+        turn: Number(tutorTurn),
+        via: release?.via || null,
+      }),
+      presentation: release?.presentation || null,
+      role: release?.role || null,
+      cue: release?.cue || null,
+    };
+  });
+}
+
 // True once every authored clue has been released and nothing is due: there is
 // no further public evidence the tutor could stage. Selecting a staging action
 // past this point sends the composer after evidence that does not exist.
