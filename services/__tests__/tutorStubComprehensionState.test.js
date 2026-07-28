@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -6,10 +7,60 @@ import {
   applyTutorStubComprehensionResponse,
   createTutorStubComprehensionState,
   detectTutorStubComprehensionRequest,
+  restoreTutorStubComprehensionState,
   tutorStubComprehensionFeatures,
   tutorStubComprehensionPrompt,
   tutorStubComprehensionSnapshot,
 } from '../tutorStubComprehensionState.js';
+
+test('comprehension restoration preserves event precedence, schema filtering, turn fallback, and cloning', () => {
+  const turnSnapshot = { terms: [{ key: 'turn', term: 'turn' }] };
+  const oldEventSnapshot = { terms: [{ key: 'old', term: 'old' }] };
+  const newEventSnapshot = { terms: [{ key: 'new', term: 'new' }] };
+  const state = {};
+  assert.deepEqual(
+    restoreTutorStubComprehensionState(
+      state,
+      [{ comprehension: { afterTutor: turnSnapshot } }],
+      [
+        { comprehensionState: oldEventSnapshot },
+        { state: { schema: 'wrong-schema', terms: [{ key: 'wrong', term: 'wrong' }] } },
+        { state: { schema: 'machinespirits.tutor-stub.comprehension-side-state.v1', ...newEventSnapshot } },
+      ],
+    ),
+    { restored: true, terms: 1 },
+  );
+  assert.equal(state.comprehension.terms[0].key, 'new');
+  assert.notEqual(state.comprehension.terms, newEventSnapshot.terms);
+
+  const turnState = {};
+  assert.deepEqual(
+    restoreTutorStubComprehensionState(turnState, [
+      { comprehension: { afterTutor: { terms: [{ key: 'earlier', term: 'earlier' }] } } },
+      {
+        comprehension: {
+          afterTutor: { terms: [{ key: 'after', term: 'after' }] },
+          state: { terms: [{ key: 'state', term: 'state' }] },
+        },
+      },
+    ]),
+    { restored: true, terms: 1 },
+  );
+  assert.equal(turnState.comprehension.terms[0].key, 'after');
+});
+
+test('comprehension restoration creates a clean empty state without snapshots', () => {
+  const state = { comprehension: { stale: true } };
+  assert.deepEqual(restoreTutorStubComprehensionState(state, [], []), { restored: false, terms: 0 });
+  assert.equal(state.comprehension.schema, 'machinespirits.tutor-stub.comprehension-side-state.v1');
+  assert.deepEqual(state.comprehension.terms, []);
+});
+
+test('the CLI imports rather than redeclares comprehension restoration', () => {
+  const source = fs.readFileSync(new URL('../../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  assert.match(source, /restoreTutorStubComprehensionState as restoreComprehensionState/u);
+  assert.doesNotMatch(source, /function restoreComprehensionState\(/u);
+});
 
 test('natural terminology questions create non-DAG comprehension pressure', () => {
   const state = createTutorStubComprehensionState();
