@@ -81,12 +81,12 @@ import {
 } from '../services/tutorStubWarrantPremiseAudit.js';
 import { projectTutorStubStrictDagAuditState as buildStrictDagAuditState } from '../services/tutorStubStrictDagAuditState.js';
 import {
+  createTutorStubDebugLinePrinters,
   formatTutorStubOpeningDebugId as openingDebugId,
   formatTutorStubSafeTimestamp as safeTimestampForFile,
   formatTutorStubStateTurnDebugId as turnDebugId,
   formatTutorStubTurnDebugId as formatTurnDebugId,
   printTutorStubAutomaticTechnicalDetails,
-  printTutorStubDebugIdLine,
   projectTutorStubCurrentDebugSelection,
   resolveTutorStubStateRunDebugId as stateRunDebugId,
   tutorStubAutomaticTechnicalDetailsEnabled as automaticTechnicalDetailsEnabled,
@@ -832,6 +832,10 @@ let cliPresentation = createTutorStubCliPresentation({
   env: process.env,
 });
 const C = { ...cliPresentation.colors };
+const { printTurnDebugLine, printOpeningDebugLine } = createTutorStubDebugLinePrinters({
+  write: console.log,
+  colors: C,
+});
 
 function configureCliPresentation({ theme, motion, noColor = false } = {}) {
   cliPresentation = createTutorStubCliPresentation({
@@ -3441,22 +3445,6 @@ function reserveProgram2ProviderBudget({ maxTokens, trace = null, role = 'unknow
     });
     throw error;
   }
-}
-
-function printTurnDebugLine(state, turn) {
-  if (!automaticTechnicalDetailsEnabled(state)) return null;
-  return printTutorStubDebugIdLine(state, turnDebugId(state, turn), 'turn id', {
-    write: console.log,
-    colors: C,
-  });
-}
-
-function printOpeningDebugLine(state) {
-  if (!automaticTechnicalDetailsEnabled(state)) return null;
-  return printTutorStubDebugIdLine(state, openingDebugId(stateRunDebugId(state)), 'turn id', {
-    write: console.log,
-    colors: C,
-  });
 }
 
 function printAutomaticTechnicalDetails(state, render) {

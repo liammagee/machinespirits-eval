@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import {
+  createTutorStubDebugLinePrinters,
   formatTutorStubOpeningDebugId,
   formatTutorStubSafeTimestamp,
   formatTutorStubStateTurnDebugId,
@@ -117,6 +118,21 @@ test('current debug selection preserves run, opening, completed-turn, active-tur
       .lastCompletedTurnId,
     'run-a:t003',
   );
+});
+
+test('debug line printers preserve technical gating, IDs, duplicate suppression, and shared colors', () => {
+  const lines = [];
+  const colors = { cyan: '<cyan>', reset: '<reset>' };
+  const printers = createTutorStubDebugLinePrinters({ write: (line) => lines.push(line), colors });
+  const disabled = { trace: { runId: 'run-a' }, explanatoryDebug: { enabled: false, format: 'technical' } };
+  const enabled = { trace: { runId: 'run-a' }, explanatoryDebug: { enabled: true, format: 'technical' } };
+  assert.equal(printers.printTurnDebugLine(disabled, 2), null);
+  assert.equal(printers.printOpeningDebugLine(disabled), null);
+  assert.equal(printers.printTurnDebugLine(enabled, 2), 'run-a:t002');
+  assert.equal(printers.printTurnDebugLine(enabled, 2), 'run-a:t002');
+  colors.cyan = '<updated>';
+  assert.equal(printers.printOpeningDebugLine(enabled), 'run-a:opening');
+  assert.deepEqual(lines, ['<cyan>turn id ><reset> run-a:t002', '<updated>turn id ><reset> run-a:opening']);
 });
 
 test('debug-ID line printing preserves missing IDs, first-print formatting, de-duplication, labels, and state', () => {
