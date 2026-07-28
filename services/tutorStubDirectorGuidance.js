@@ -26,6 +26,23 @@ export function createTutorStubDirectorGuidanceState(source = null) {
   };
 }
 
+export function restoreTutorStubDirectorGuidanceState(state, events = []) {
+  const lastClear = events.reduce(
+    (index, event, candidate) => (event?.type === 'history_clear' ? candidate : index),
+    -1,
+  );
+  const snapshot = [...events.slice(lastClear + 1)]
+    .reverse()
+    .map((event) => event?.directorGuidance || null)
+    .find(Boolean);
+  state.directorGuidance = createTutorStubDirectorGuidanceState(snapshot);
+  return {
+    restored: Boolean(snapshot),
+    revision: state.directorGuidance.revision,
+    active: Boolean(state.directorGuidance.active),
+  };
+}
+
 export function setTutorStubDirectorGuidance(
   state,
   request,
