@@ -55,6 +55,7 @@ links:
     - refactor-tutor-stub-second-loop-recovery
     - refactor-tutor-stub-debug-identifiers
     - refactor-tutor-stub-fact-matching
+    - refactor-tutor-stub-public-evidence
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -944,3 +945,10 @@ Log:
 - 2026-07-28 — Third-loop fact-matching run reached review with a 20-line net
   CLI reduction, five focused assertions, and complete zero-skip hermetic
   parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 3,
+  `refactor-tutor-stub-public-evidence`, from PR #362's reviewed head. Release
+  scheduling, world loading, response audit policy, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop public-evidence run reached review with a 51-line
+  net CLI reduction, seven focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
