@@ -536,6 +536,7 @@
         "tests/tutorStubV27JointPerformanceCalibration.test.js",
         "tests/tutorStubV33FrozenRequestFixture.test.js",
         "tests/tutorStubVoiceBridge.test.js",
+        "tests/tutorStubWarrantPremiseAudit.test.js",
         "tests/tutorStubWebSurface.test.js",
         "tests/tutorStubWorldCatalogPresentation.test.js",
         "tests/tutorStubWorldPromptContext.test.js",
