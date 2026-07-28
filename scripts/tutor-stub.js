@@ -48,6 +48,7 @@ import {
 } from '../services/engagementRegisterRegistry.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
+  groupTutorStubWorldEntries,
   projectTutorStubWorldCatalogLines,
   tutorStubWorldPresentation as worldPresentation,
 } from '../services/tutorStubWorldPresentation.js';
@@ -2089,30 +2090,11 @@ function worldFlavourPhrase(world) {
   return diction ? `${diction} flavour` : "world's authored diction";
 }
 
-function worldFamilyKey(world) {
-  const p = worldPresentation(world);
-  return String(p.family || p.variant_of || world.id);
-}
-
 // One entry per presentation family, base world first, controlled variants
 // indented after it — ten near-identical costumes stop reading as ten
 // independent scenarios (presentation metadata, not register).
 function groupedWorldEntries() {
-  const families = new Map();
-  for (const entry of selectableWorldSummaries()) {
-    const key = worldFamilyKey(entry.world);
-    if (!families.has(key)) families.set(key, []);
-    families.get(key).push(entry);
-  }
-  const ordered = [];
-  for (const members of families.values()) {
-    const base = members.find((member) => !worldPresentation(member.world).variant_of) || members[0];
-    ordered.push({ ...base, isVariant: false, familySize: members.length });
-    for (const member of members) {
-      if (member !== base) ordered.push({ ...member, isVariant: true, familySize: members.length });
-    }
-  }
-  return ordered;
+  return groupTutorStubWorldEntries(selectableWorldSummaries());
 }
 
 function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEvidence = null } = {}) {
