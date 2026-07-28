@@ -235,6 +235,28 @@ export function summarizeTutorStubPendingObjective(state, context, { currentRele
     .join(' | ');
 }
 
+export function summarizeTutorStubEvidenceTiming(
+  state,
+  context,
+  { currentReleaseRows, nextReleaseRow, committedReleaseRows } = {},
+) {
+  const world = state?.world;
+  const tutorTurn = Number(context?.tutorTurn || (state?.turns?.length || 0) + 1);
+  if (!world || !Number.isFinite(tutorTurn)) return null;
+  const dueNow = currentReleaseRows(state, tutorTurn);
+  const next = nextReleaseRow(state);
+  const last = committedReleaseRows(state, tutorTurn).at(-1) || null;
+  const dueSummary = dueNow.length
+    ? `available now: ${oneLine(dueNow[0].surface, { max: 78 })}`
+    : last
+      ? 'no new evidence this turn; earlier evidence remains available'
+      : 'no case evidence has been introduced yet';
+  const nextSummary = next
+    ? `next new clue is planned for turn ${next.turn} from the ${next.via === 'director' ? 'scene' : 'tutor'}`
+    : 'all planned clues are available';
+  return `turn ${tutorTurn} | ${dueSummary} | ${nextSummary}`;
+}
+
 export function tutorStubInterimCliHintPanels(active) {
   const state = active.state || {};
   const phase = String(active.basePhase || active.phase || '').toLowerCase();

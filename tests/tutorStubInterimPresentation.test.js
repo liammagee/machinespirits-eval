@@ -12,6 +12,7 @@ import {
   renderTutorStubInterimFrame,
   resolveTutorStubInterimState,
   summarizeTutorStubInterimCapabilities,
+  summarizeTutorStubEvidenceTiming,
   summarizeTutorStubInterimField,
   summarizeTutorStubPendingLearner,
   summarizeTutorStubPendingDagMovement,
@@ -380,6 +381,36 @@ test('pending objective summary preserves activation, precedence, clue plurality
   assert.equal(
     summarizeTutorStubPendingObjective({}, { tutorTurn: 5, tutorLearnerDag: { model: {} } }, dependencies),
     'turn 5 | focus: awaiting analysis | style still being chosen | aim: plain:choose one learner-owned next move',
+  );
+});
+
+test('evidence timing summary preserves current, prior, future, exhausted, and unavailable branches', () => {
+  const state = { world: {}, turns: [{ turn: 1 }] };
+  const dependencies = {
+    currentReleaseRows: (_state, turn) => (turn === 2 ? [{ surface: '  A newly available clue.  ' }] : []),
+    nextReleaseRow: (_state) => ({ turn: 4, via: 'director' }),
+    committedReleaseRows: (_state, turn) => (turn >= 3 ? [{ premise: 'p1' }] : []),
+  };
+  assert.equal(summarizeTutorStubEvidenceTiming({}, {}, dependencies), null);
+  assert.equal(
+    summarizeTutorStubEvidenceTiming(state, { tutorTurn: 2 }, dependencies),
+    'turn 2 | available now: A newly available clue. | next new clue is planned for turn 4 from the scene',
+  );
+  assert.equal(
+    summarizeTutorStubEvidenceTiming(state, { tutorTurn: 3 }, dependencies),
+    'turn 3 | no new evidence this turn; earlier evidence remains available | next new clue is planned for turn 4 from the scene',
+  );
+  assert.equal(
+    summarizeTutorStubEvidenceTiming(
+      state,
+      { tutorTurn: 1 },
+      { ...dependencies, nextReleaseRow: () => ({ turn: 5, via: 'tutor' }) },
+    ),
+    'turn 1 | no case evidence has been introduced yet | next new clue is planned for turn 5 from the tutor',
+  );
+  assert.equal(
+    summarizeTutorStubEvidenceTiming(state, { tutorTurn: 3 }, { ...dependencies, nextReleaseRow: () => null }),
+    'turn 3 | no new evidence this turn; earlier evidence remains available | all planned clues are available',
   );
 });
 
