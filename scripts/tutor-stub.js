@@ -522,6 +522,7 @@ import {
   assertTutorStubResumeCompatibility,
   buildTutorStubSessionRecipe,
   compareTutorStubResumeRecipe,
+  createTutorStubRecipeModelIdentityResolver,
   latestTutorStubResumeSource,
   readTutorStubSessionRecipe,
   resolveTutorStubResumeSource,
@@ -2517,40 +2518,11 @@ function visibleResolvedModel(resolved, providerConfig) {
   };
 }
 
-function safeTutorStubRecipeBaseUrl(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return null;
-  try {
-    const url = new URL(raw);
-    url.username = '';
-    url.password = '';
-    url.search = '';
-    url.hash = '';
-    return url.toString();
-  } catch (_) {
-    return null;
-  }
-}
-
-function tutorStubRecipeModelIdentity(ref, visible = null) {
-  const modelRef = String(ref || '').trim();
-  let route = visible;
-  if (!route && modelRef) {
-    const resolved = resolveModel(modelRef);
-    route = visibleResolvedModel(resolved, getProviderConfig(resolved.provider));
-  }
-  const identity = {
-    ref: modelRef || null,
-    provider: route?.provider || null,
-    model: route?.model || null,
-    baseUrl: safeTutorStubRecipeBaseUrl(route?.baseUrl),
-    cli: typeof route?.cli === 'boolean' ? route.cli : null,
-  };
-  return {
-    ...identity,
-    routingHash: hashCanonicalJson(identity),
-  };
-}
+const tutorStubRecipeModelIdentity = createTutorStubRecipeModelIdentityResolver({
+  resolveModel,
+  getProviderConfig,
+  visibleResolvedModel,
+});
 
 function printResponseDetails(meta, state, { suffix = '' } = {}) {
   if (!state?.responseDetails?.enabled) return false;
