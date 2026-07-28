@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T12:54:37.512Z",
+  "generated": "2026-07-28T12:56:28.020Z",
   "counts": {
-    "total": 283,
+    "total": 285,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 31,
+      "review": 33,
       "active": 9,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 107,
+      "maintenance": 109,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -281,6 +281,8 @@
           "refactor-tutor-stub-debug-identifiers",
           "refactor-tutor-stub-fact-matching",
           "refactor-tutor-stub-public-evidence",
+          "refactor-tutor-stub-response-leak-audit",
+          "refactor-tutor-stub-one-line-projection",
           "refactor-tutor-stub-proof-command-projection",
           "refactor-tutor-stub-interaction-mode-presentation",
           "refactor-tutor-stub-session-status-presentation",
@@ -1186,6 +1188,46 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-one-line-projection",
+      "title": "Refactor tutor-stub one-line projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 5/5 plus full hermetic root and tutor-core zero-skip contracts preserve whitespace, budget, truncation, and fallback bytes across every existing caller; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-one-line-projection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-response-leak-audit"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubTextProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubTextProjection.test.js"
+        ],
+        "prs": [
+          365
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-response-leak-audit"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-picker-entries",
       "title": "Refactor tutor-stub picker entry projection",
       "status": "review",
@@ -1397,6 +1439,48 @@
         "tutor-stub",
         "guard",
         "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-response-leak-audit",
+      "title": "Refactor tutor-stub response leak audit",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused leak-audit and response-guard 18/18 plus full hermetic root and tutor-core zero-skip contracts preserve concealed-answer, private-conclusion, unreleased-content, and evidence-assertion behavior; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-response-leak-audit",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-public-evidence"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubResponseLeakAudit.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubResponseLeakAudit.test.js",
+          "tests/tutorStubResponseGuard.test.js"
+        ],
+        "prs": [
+          364
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-public-evidence"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "guards",
+        "privacy"
       ],
       "milestone": "evaluation-infrastructure"
     },
