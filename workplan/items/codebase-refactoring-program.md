@@ -70,6 +70,7 @@ links:
     - refactor-tutor-stub-technical-debug-presentation
     - refactor-tutor-stub-closeout-report-presentation
     - refactor-tutor-stub-field-report-presentation
+    - refactor-tutor-stub-curriculum-progress-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -679,9 +680,21 @@ Log:
   the `/field` and `/viz` terminal-line seam explicitly retained by the earlier
   field-helper extraction. Field calculation, file writes, traces, command
   handling, and runtime state remain CLI-owned.
-- 2026-07-28 — The field-report child reached review with exact 521-byte live
+- 2026-07-28 — The field-report child reached review with exact 505-byte live
   `/field` plus `/viz` parity, a 30-line net CLI reduction, 37/37 focused
   assertions, 7,337/7,337 root tests, and 137/137 tutor-core tests, all
   zero-skip. Every manifest, ref, lint, formatting, syntax, diff, source-only
   workplan, and zero-cycle gate is green; application effects remain in their
   existing owners.
+- 2026-07-28 — PR #323 merged the field-report child as `941af8d8`; the
+  host-independent final fixture passed all current CI lanes. Closed that
+  child and activated `refactor-tutor-stub-curriculum-progress-presentation`
+  to move only deterministic `/progress` line serialization while retaining
+  curriculum projection, runtime state, command dispatch, and terminal writes
+  in the CLI. The pre-extraction keyless report is 1,740 bytes with SHA-256
+  `5256a00d8ff9926ab9f94234ba8db7ed09579ef4627d330bab205e005396d894`.
+- 2026-07-28 — The curriculum-progress child reached review with a 34-line
+  pure projector, a 21-line net CLI reduction, exact 1,740-byte live parity,
+  75/75 focused assertions, 7,377/7,377 root tests, and 137/137 tutor-core
+  tests. All selected files executed with zero skips; static and source-only
+  workplan gates are green.
