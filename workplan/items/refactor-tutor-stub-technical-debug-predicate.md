@@ -20,7 +20,8 @@ links:
     - services/tutorStubDebugIdentity.js
     - scripts/tutor-stub.js
     - tests/tutorStubDebugIdentity.test.js
-  prs: []
+  prs:
+    - 411
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-state-debug-identity
@@ -53,3 +54,6 @@ Log:
   debug-identity service, reducing `scripts/tutor-stub.js` by three lines.
   Eight focused assertions, complete zero-skip hermetic parity, and all
   static/source-only gates pass.
+- 2026-07-28 — Opened PR #411 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
