@@ -532,6 +532,11 @@ import {
   projectTutorStubInteractionModeBannerLines,
   projectTutorStubInteractionModeLabel,
 } from '../services/tutorStubInteractionModePresentation.js';
+import {
+  projectTutorStubCurriculumPickerLines,
+  projectTutorStubLaunchModePickerLines,
+  projectTutorStubScenarioPickerLines,
+} from '../services/tutorStubPickerPresentation.js';
 import { projectTutorStubSessionStatusLines } from '../services/tutorStubSessionStatusPresentation.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -2663,19 +2668,12 @@ async function pickTutorStubLaunchModeWithKeyboard(defaultMode = 'chat') {
   };
   const renderMenu = () => {
     clearRenderedMenu();
-    const width = Math.max(58, Math.min(Number(output.columns || 100), 120));
-    const selected = TUTOR_STUB_LAUNCH_MODES[selectedIndex];
-    const lines = [
-      ...TUTOR_STUB_LAUNCH_MODES.map((entry, index) => {
-        const active = index === selectedIndex;
-        const plain = `${active ? '›' : ' '} ${entry.label.padEnd(20)} ${oneLine(entry.description, {
-          max: Math.max(24, width - 26),
-        })}`;
-        return active ? `${C.cyan}${C.bold}${plain}${C.reset}` : plain;
-      }),
-      `${C.brightYellow}${C.bold}  launches >${C.reset} ${selected.label}`,
-      `${C.dim}  ↑/↓ move · Enter launch · Esc quit · Mixed tutor chat is the default${C.reset}`,
-    ];
+    const lines = projectTutorStubLaunchModePickerLines({
+      entries: TUTOR_STUB_LAUNCH_MODES,
+      selectedIndex,
+      columns: output.columns,
+      colors: C,
+    });
     for (const line of lines) output.write(`${line}\n`);
     renderedLineCount = lines.length;
   };
@@ -2812,30 +2810,14 @@ async function pickInitialScenarioWithKeyboard(defaultWorldRef) {
   const renderMenu = () => {
     keepSelectionVisible();
     clearRenderedMenu();
-    const width = Math.max(58, Math.min(Number(output.columns || 100), 150));
-    const visible = entries.slice(viewportStart, viewportStart + viewportHeight);
-    const selectedEntry = entries[selectedIndex];
-    const lines = [
-      `${C.dim}${viewportStart > 0 ? `  ↑ ${viewportStart} more` : '  '}${C.reset}`,
-      ...visible.map((entry, visibleIndex) => {
-        const absoluteIndex = viewportStart + visibleIndex;
-        const selected = absoluteIndex === selectedIndex;
-        const plain = `${selected ? '›' : ' '} ${entry.id.padEnd(29)} ${oneLine(entry.title, {
-          max: Math.max(18, width - 35),
-        })}`;
-        return selected ? `${C.cyan}${C.bold}${plain}${C.reset}` : plain;
-      }),
-      `${C.dim}${
-        viewportStart + viewportHeight < entries.length
-          ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
-          : '  '
-      }${C.reset}`,
-      `${C.brightYellow}${C.bold}  question >${C.reset} ${oneLine(selectedEntry.question, {
-        max: Math.max(36, width - 13),
-      })}`,
-      `${C.dim}  setting > ${oneLine(selectedEntry.description, { max: Math.max(36, width - 12) })}${C.reset}`,
-      `${C.dim}  discipline > ${oneLine(selectedEntry.discipline, { max: Math.max(30, width - 15) })}${C.reset}`,
-    ];
+    const lines = projectTutorStubScenarioPickerLines({
+      entries,
+      selectedIndex,
+      viewportStart,
+      viewportHeight,
+      columns: output.columns,
+      colors: C,
+    });
     for (const line of lines) output.write(`${line}\n`);
     renderedLineCount = lines.length;
   };
@@ -2932,34 +2914,14 @@ async function pickWorkplanModuleWithKeyboard(defaultModuleRef = '') {
   const renderMenu = () => {
     keepSelectionVisible();
     clearRenderedMenu();
-    const width = Math.max(58, Math.min(Number(output.columns || 100), 150));
-    const visible = entries.slice(viewportStart, viewportStart + viewportHeight);
-    const selectedEntry = entries[selectedIndex];
-    const stateLabel = [selectedEntry.priority, selectedEntry.status, selectedEntry.owner].filter(Boolean).join(' · ');
-    const verification = selectedEntry.module?.workplan_binding?.declared_completion_verification || '';
-    const lines = [
-      `${C.dim}${viewportStart > 0 ? `  ↑ ${viewportStart} more` : '  '}${C.reset}`,
-      ...visible.map((entry, visibleIndex) => {
-        const absoluteIndex = viewportStart + visibleIndex;
-        const selected = absoluteIndex === selectedIndex;
-        const plain = `${selected ? '›' : ' '} ${entry.id.padEnd(38)} ${oneLine(entry.title, {
-          max: Math.max(18, width - 44),
-        })}`;
-        return selected ? `${C.cyan}${C.bold}${plain}${C.reset}` : plain;
-      }),
-      `${C.dim}${
-        viewportStart + viewportHeight < entries.length
-          ? `  ↓ ${entries.length - viewportStart - viewportHeight} more`
-          : '  '
-      }${C.reset}`,
-      `${C.brightYellow}${C.bold}  inquiry >${C.reset} ${oneLine(selectedEntry.essentialQuestion, {
-        max: Math.max(36, width - 12),
-      })}`,
-      `${C.dim}  state > ${stateLabel || 'open'}${C.reset}`,
-      verification
-        ? `${C.dim}  verifies > ${oneLine(verification, { max: Math.max(34, width - 14) })}${C.reset}`
-        : null,
-    ].filter(Boolean);
+    const lines = projectTutorStubCurriculumPickerLines({
+      entries,
+      selectedIndex,
+      viewportStart,
+      viewportHeight,
+      columns: output.columns,
+      colors: C,
+    });
     for (const line of lines) output.write(`${line}\n`);
     renderedLineCount = lines.length;
   };
