@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T21:59:21.404Z",
+  "generated": "2026-07-28T22:08:31.861Z",
   "counts": {
-    "total": 344,
+    "total": 345,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 87,
+      "review": 88,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 162,
+      "maintenance": 163,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -3961,6 +3961,47 @@
         "tutor-stub",
         "typed-action",
         "compatibility"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-typed-action-restoration",
+      "title": "Refactor tutor-stub typed-action restoration",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "7 focused typed-action restoration assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve disabled/empty states, clear boundary, event/turn precedence, closed dominance, cloning, pending/provenance/lifecycle failures, state updates, and summary fields",
+      "branch": "codex/refactor-tutor-stub-typed-action-restoration",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-typed-action-decision-lookup"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubTypedActionRestoration.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubTypedActionRestoration.test.js"
+        ],
+        "prs": [
+          423
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-typed-action-decision-lookup"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "typed-action",
+        "persistence"
       ],
       "milestone": "evaluation-infrastructure"
     },
