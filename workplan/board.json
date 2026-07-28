@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T12:56:28.020Z",
+  "generated": "2026-07-28T12:57:05.566Z",
   "counts": {
-    "total": 285,
+    "total": 287,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 33,
+      "review": 35,
       "active": 9,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 109,
+      "maintenance": 111,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -283,6 +283,8 @@
           "refactor-tutor-stub-public-evidence",
           "refactor-tutor-stub-response-leak-audit",
           "refactor-tutor-stub-one-line-projection",
+          "refactor-tutor-stub-generous-fallback",
+          "refactor-tutor-stub-director-notes-model",
           "refactor-tutor-stub-proof-command-projection",
           "refactor-tutor-stub-interaction-mode-presentation",
           "refactor-tutor-stub-session-status-presentation",
@@ -933,6 +935,46 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-director-notes-model",
+      "title": "Refactor tutor-stub director notes model",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 7/7 including byte-exact live Marrick fixtures plus full hermetic root and tutor-core zero-skip contracts preserve opening withholding and issued scene notes; every static and source-only gate passes; strong benchmark same-response re-audit records 0 regressions and 0 safety changes",
+      "branch": "codex/refactor-tutor-stub-director-notes-model",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-generous-fallback"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDirectorPresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDirectorPresentation.test.js"
+        ],
+        "prs": [
+          367
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-generous-fallback"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "director"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-fact-matching",
       "title": "Refactor tutor-stub fact matching",
       "status": "review",
@@ -969,6 +1011,47 @@
         "refactoring",
         "tutor-stub",
         "proof-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-generous-fallback",
+      "title": "Refactor tutor-stub generous-inference fallback",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 14/14 plus full hermetic root and tutor-core zero-skip contracts preserve due, latest, and no-evidence fallback bytes; every static and source-only gate passes; strong benchmark same-response re-audit records 0 regressions and 0 safety changes",
+      "branch": "codex/refactor-tutor-stub-generous-fallback",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-one-line-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubGenerousInference.js",
+          "services/tutorStubTextProjection.js",
+          "scripts/tutor-stub.js",
+          "services/__tests__/tutorStubGenerousInference.test.js"
+        ],
+        "prs": [
+          366
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-one-line-projection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "pedagogy"
       ],
       "milestone": "evaluation-infrastructure"
     },
