@@ -62,7 +62,10 @@ import {
   buildTutorStubHumanDiscourseRunConfig as buildHumanDiscourseRunConfig,
 } from '../services/tutorStubHumanDiscourseConfig.js';
 import { buildTutorStubRegisterPalette } from '../services/tutorStubRegisterPalette.js';
-import { projectTutorStubGuardedSpans } from '../services/tutorStubGuardSpanProjection.js';
+import {
+  projectTutorStubExactRepairSpans as exactTutorRepairSpans,
+  projectTutorStubGuardedSpans,
+} from '../services/tutorStubGuardSpanProjection.js';
 import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
@@ -2073,37 +2076,6 @@ function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEviden
 
 function tutorGuardedSpans(text, audits) {
   return projectTutorStubGuardedSpans(text, tutorStubGuardIssueRows(audits));
-}
-
-function exactTutorRepairSpans(originalText, repairedText) {
-  const original = String(originalText || '');
-  const repaired = String(repairedText || '');
-  if (original === repaired) return [];
-  let prefix = 0;
-  while (prefix < original.length && prefix < repaired.length && original[prefix] === repaired[prefix]) prefix += 1;
-  let suffix = 0;
-  while (
-    suffix < original.length - prefix &&
-    suffix < repaired.length - prefix &&
-    original[original.length - 1 - suffix] === repaired[repaired.length - 1 - suffix]
-  ) {
-    suffix += 1;
-  }
-  return [
-    {
-      offsetEncoding: 'utf16_code_units',
-      original: {
-        start: prefix,
-        end: original.length - suffix,
-        text: original.slice(prefix, original.length - suffix),
-      },
-      repaired: {
-        start: prefix,
-        end: repaired.length - suffix,
-        text: repaired.slice(prefix, repaired.length - suffix),
-      },
-    },
-  ];
 }
 
 function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
