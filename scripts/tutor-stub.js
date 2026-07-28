@@ -439,6 +439,7 @@ import {
   projectTutorStubModelChoiceLines,
 } from '../services/tutorStubModelChoicePresentation.js';
 import {
+  buildTutorStubDirectorInitialContext,
   projectTutorStubDirectorContextLines,
   projectTutorStubDirectorNotesLines,
 } from '../services/tutorStubDirectorPresentation.js';
@@ -2887,23 +2888,7 @@ function worldPublicPrompt(world) {
 }
 
 function buildDirectorInitialContext(world) {
-  if (!world) return null;
-  return {
-    stageNotes: [
-      `Before the first exchange, ${world.title} is set as a public inquiry: ${world.question}`,
-      String(world.setting || '').trim(),
-    ]
-      .filter(Boolean)
-      .join('\n'),
-    tutorCharacter:
-      'The tutor enters as an adaptive scene actor: patient with the learner, but ready to examine, keep the record, argue, witness, or close as the public evidence demands.',
-    learnerCharacter:
-      String(world.learnerVoice || '').trim() ||
-      'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
-    audienceContext: dramaticAudiencePromptLines(world).join('\n') || null,
-    registerNote:
-      "The tutor's voice should follow the public characters and scene pressure without adding hidden evidence or proof machinery.",
-  };
+  return buildTutorStubDirectorInitialContext(world, { audienceLines: dramaticAudiencePromptLines(world) });
 }
 
 function printDirectorInitialContext(context) {

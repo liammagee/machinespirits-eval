@@ -79,6 +79,7 @@ links:
     - refactor-tutor-stub-world-vocabulary
     - refactor-tutor-stub-launch-mode-contract
     - refactor-tutor-stub-model-choice-catalog
+    - refactor-tutor-stub-director-context
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -790,3 +791,11 @@ Log:
   net CLI reduction, 55 focused assertions, 7,420 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-director-context` from PR #344's reviewed head to move
+  pure initial director-context construction beside its line projection.
+  Audience derivation, prelude state, traces, release notes, commands, and
+  terminal effects remain CLI-owned.
+- 2026-07-28 — The director-context child reached review with a 15-line net CLI
+  reduction, 48 focused assertions, 7,421 root assertions, and 137 tutor-core
+  assertions green with zero skips. All static and source-only gates pass.
