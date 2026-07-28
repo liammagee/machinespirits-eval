@@ -27,6 +27,8 @@ links:
     - config/adaptive-tutor-evidence/program-2-phase5f-world-selection.json
     - config/adaptive-tutor-evidence/program-2-phase5f-pilot-gates.json
     - config/adaptive-tutor-evidence/program-2-phase5f-gates.json
+  prs:
+    - 382
 tags:
   - tutor-stub
   - fine-tune
