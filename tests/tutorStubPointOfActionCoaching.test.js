@@ -7,6 +7,7 @@ import {
   auditTutorStubPointOfActionCompliance,
   buildTutorStubPointOfActionTurn,
   normalizeTutorStubPointOfActionArm,
+  reconcileTutorStubPointOfActionHandoffEligibility,
   tutorStubPointOfActionPlaceboAudit,
   tutorStubPointOfActionTargetText,
 } from '../services/tutorStubPointOfActionCoaching.js';
@@ -159,4 +160,68 @@ test('Phase 5 arms are additive: frozen registry untouched, no injections, detec
   const activation = tutorStubPointOfActionTargetText('warrant_skip');
   assert.equal(activation.includes('Ask exactly one focused public question'), true);
   assert.equal(activation.includes('Release no new premise'), true);
+});
+
+test('Phase 5e r2 removes handoff-forbidden warrants from both experimental arms only', () => {
+  for (const arm of TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS) {
+    const turn = buildTutorStubPointOfActionTurn({ ...BASE, arm, evidenceUse: 'omits_warrant' });
+    const suppressed = reconcileTutorStubPointOfActionHandoffEligibility(turn, {
+      handoff_contract: { mode: 'declarative_missing_support', question_allowed: false },
+    });
+    assert.equal(suppressed.assigned_trigger, null);
+    assert.equal(suppressed.suppressed_trigger, 'warrant_skip');
+    assert.equal(suppressed.suppression.handoff_contract_question_forbidden, true);
+    assert.equal(suppressed.handoff_eligibility.eligible, false);
+    assert.equal(suppressed.handoff_eligibility.reason, 'question_forbidden_by_handoff_contract');
+  }
+
+  const eligible = buildTutorStubPointOfActionTurn({
+    ...BASE,
+    arm: 'committee',
+    evidenceUse: 'omits_warrant',
+  });
+  assert.equal(
+    reconcileTutorStubPointOfActionHandoffEligibility(eligible, {
+      handoff_contract: { mode: 'new_unresolved_check', question_allowed: true },
+    }),
+    eligible,
+  );
+
+  const compiled = buildTutorStubPointOfActionTurn({
+    ...BASE,
+    arm: 'compiled_constraint',
+    evidenceUse: 'omits_warrant',
+  });
+  assert.equal(
+    reconcileTutorStubPointOfActionHandoffEligibility(compiled, {
+      handoff_contract: { mode: 'declarative_current_limit', question_allowed: false },
+    }),
+    compiled,
+  );
+});
+
+test('Phase 5e r2 excludes due-release warrant moments from both experimental arms before delivery', () => {
+  for (const arm of TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS) {
+    const turn = buildTutorStubPointOfActionTurn({
+      ...BASE,
+      arm,
+      evidenceUse: 'omits_warrant',
+      duePremises: ['p_due'],
+    });
+    assert.equal(turn.candidates.warrant_skip, true);
+    assert.equal(turn.assigned_trigger, null);
+    assert.equal(turn.suppressed_trigger, 'warrant_skip');
+    assert.equal(turn.suppression.due_release_requires_new_premise, true);
+    assert.equal(turn.opportunity_eligibility.eligible, false);
+    assert.equal(turn.opportunity_eligibility.reason, 'due_release_conflicts_with_no_new_premise_intervention');
+    assert.equal(auditTutorStubPointOfActionCompliance({ turn, tutorText: 'A due clue enters.' }), null);
+  }
+
+  const frozenArm = buildTutorStubPointOfActionTurn({
+    ...BASE,
+    arm: 'side_coach',
+    evidenceUse: 'omits_warrant',
+    duePremises: ['p_due'],
+  });
+  assert.equal(frozenArm.assigned_trigger, 'warrant_skip');
 });

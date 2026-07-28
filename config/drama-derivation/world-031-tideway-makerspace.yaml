@@ -38,6 +38,47 @@ learner_voice: >-
 
 secret:
   fact: [causedTwist, tidewayBridge, blueConnectorBatch]
+  # Finite, author-declared forms of the completed causal finding. These are
+  # recognition contracts only: they can close the dialogue after the public
+  # learner record entails the answer, but can never release or speak it.
+  recognition_patterns:
+    - id: blue_connectors_direct_cause
+      ordered: true
+      all_of:
+        - ["under-strength blue connectors", "blue connector batch", "weak connectors"]
+        - [cause, caused, causing, responsible, made]
+        - ["the twist", "bridge twist", "deck twist", "bridge to twist", "deck to twist"]
+      none_of:
+        - "does not cause"
+        - "did not cause"
+        - "doesn't cause"
+        - "is not responsible"
+        - "isn't responsible"
+        - "not responsible"
+        - "not the cause"
+        - "never caused"
+    - id: blue_connectors_because_twist
+      ordered: true
+      all_of:
+        - ["bridge twisted", "deck twisted", "footbridge twisted", "the twist"]
+        - [because, "was caused by"]
+        - ["under-strength blue connectors", "blue connector batch", "weak connectors"]
+      none_of:
+        - "not caused by"
+        - "wasn't caused by"
+        - "not the cause"
+        - "not responsible"
+    - id: blue_connectors_failure_sequence
+      ordered: true
+      all_of:
+        - ["under-strength blue connectors", "blue connector batch", "weak connectors"]
+        - ["lost stiffness first", "failed first", "moved first"]
+        - ["deck twisted", "bridge twisted", "twist followed"]
+      none_of:
+        - "did not cause"
+        - "doesn't explain"
+        - "not the cause"
+        - "not responsible"
   surface: >-
     The twist was caused by the blue connector batch. Its resin cure record is
     below the specified strength; the batch was installed at the north joint;

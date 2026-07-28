@@ -297,6 +297,8 @@ test('paid Program 2 launches fail before provider preflight when the certificat
   assert.match(`${result.stdout}\n${result.stderr}`, /--prepare-certificate --plan 5/u);
   assert.match(`${result.stdout}\n${result.stderr}`, /npm run program2:certify-launch/u);
   assert.match(`${result.stdout}\n${result.stderr}`, /docs\/program2-launch-certificates\.md/u);
+  assert.equal(fs.existsSync(path.join(outputRoot, 'launch-plan.json')), false);
+  assert.equal(fs.existsSync(path.join(outputRoot, 'launch-attempt.json')), false);
   assert.equal(fs.existsSync(path.join(outputRoot, 'launch-state.json')), false);
 });
 
@@ -388,7 +390,16 @@ test('paid launch rejects a passing-looking certificate whose evidence is missin
   );
   assert.notEqual(result.status, 0);
   assert.match(`${result.stdout}\n${result.stderr}`, /launch certificate evidence rejected/u);
+  assert.equal(fs.existsSync(path.join(outputRoot, 'launch-attempt.json')), false);
   assert.equal(fs.existsSync(path.join(outputRoot, 'launch-state.json')), false);
+});
+
+test('paid launch metadata cannot overwrite the certificate-bound launch plan', () => {
+  const source = fs.readFileSync(path.join(ROOT, 'scripts/run-program2-live-pilot.js'), 'utf8');
+  assert.match(source, /const launchPlanPath = path\.join\(outputRoot, 'launch-plan\.json'\)/u);
+  assert.match(source, /launch\s*\? path\.join\(outputRoot, 'launch-attempt\.json'\)/u);
+  assert.match(source, /planFile: launchPlanPath/u);
+  assert.match(source, /Keep that prepared\s*\/\/ evidence immutable/u);
 });
 
 test('tutor runtime reserves the Program 2 budget before both external dispatch paths', () => {

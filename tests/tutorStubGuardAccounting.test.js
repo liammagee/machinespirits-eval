@@ -302,7 +302,11 @@ test('a fallback replaces a terse generic acknowledgement with learner-specific 
   const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
 
   assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
-  assert.match(accounting.finalDelivery.candidate.text, /^You’re right to separate suspicion from proof\./u);
+  assert.match(accounting.finalDelivery.candidate.text, /“It does not prove Verrell”/u);
+  assert.match(
+    accounting.finalDelivery.candidate.text,
+    /(?:carry forward|answer now|keep it central)/iu,
+  );
   assert.doesNotMatch(accounting.finalDelivery.candidate.text, /^Exactly\./u);
   assert.equal(accounting.finalDelivery.auditOk, true);
 });

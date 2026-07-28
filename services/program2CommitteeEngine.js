@@ -29,6 +29,28 @@ export function committeeQuestionSentences(text) {
   return (String(text || '').match(/[^.!?\n]+\?/gu) || []).map((s) => s.trim()).filter((s) => s.length > 8);
 }
 
+/**
+ * Composition may protect only a question that itself carries the frozen
+ * warrant cue. If the complete mini turn is compliant but its question is
+ * generic, composing around that question would discard the cue-bearing
+ * sentence. The caller must deliver the complete mini turn through the
+ * ordinary fallback battery instead.
+ */
+export function selectCommitteeCompositionQuestion(text) {
+  const questions = committeeQuestionSentences(text);
+  const selected = questions.find((question) => PROGRAM2_WARRANT_CUE_RE.test(question)) || null;
+  return {
+    selected,
+    questions,
+    eligible: Boolean(selected),
+    reason: selected
+      ? 'question_carries_frozen_warrant_cue'
+      : questions.length
+        ? 'complete_turn_may_carry_cue_but_question_does_not'
+        : 'no_question_span',
+  };
+}
+
 // Phase 5b fallback battery (PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md §2):
 // a mini reply is deliverable as-is when it carries exactly one question and
 // the frozen cue somewhere in the turn.

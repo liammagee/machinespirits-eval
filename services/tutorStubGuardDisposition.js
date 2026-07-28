@@ -130,6 +130,7 @@ const RULES = Object.freeze([
     }),
   ),
   ...[
+    'premature_dialogue_close',
     'missing_explicit_dialogue_close',
     'closure_response_opens_another_turn',
     'multiple_closure_questions',

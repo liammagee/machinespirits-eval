@@ -28,6 +28,7 @@ import { parseArgs } from 'node:util';
 import { collectGitActivity, collectGitHubMetrics, collectSourceMetrics, renderReport } from './repository-metrics.js';
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
+import { tutorStubCliPolicyRetryDecision } from '../services/tutorStubCliPolicyRetry.js';
 import { getProviderConfig, loadProviders, resolveModel } from '../services/evalConfigLoader.js';
 import { runLabellingGameCli } from '../services/labellingGameCli.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
@@ -174,6 +175,7 @@ import {
   auditTutorStubDramaticReleaseResponse,
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
+  prepareTutorStubDueClueUptake,
 } from '../services/tutorStubDramaticRelease.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 import { buildTutorStubResumeHandoff } from '../services/tutorStubResumeHandoff.js';
@@ -274,6 +276,7 @@ import {
 } from '../services/tutorStubFirstDraftContract.js';
 import {
   auditTutorStubLiveTurnProgressionV1,
+  deterministicTutorStubTurnProgressionHandoff,
   deterministicTutorStubTurnProgressionUptake,
 } from '../services/tutorStubTurnProgressionContract.js';
 import {
@@ -634,6 +637,7 @@ import {
   auditTutorStubPointOfActionCompliance,
   buildTutorStubPointOfActionTurn,
   normalizeTutorStubPointOfActionArm,
+  reconcileTutorStubPointOfActionHandoffEligibility,
   tutorStubPointOfActionPrompt,
   tutorStubPointOfActionStandingBook,
   tutorStubPointOfActionTargetText,
@@ -644,8 +648,8 @@ import {
   buildCommitteeCompositionBlock,
   committeeFallbackBatteryPass,
   committeeMiniGenerate,
-  committeeQuestionSentences,
   runCommitteeBattery,
+  selectCommitteeCompositionQuestion,
   trimCommitteeFallback,
 } from '../services/program2CommitteeEngine.js';
 import { createProgram2ProviderBudgetFromEnvironment } from '../services/program2ExperimentSafety.js';
@@ -3070,6 +3074,9 @@ async function callPromptModel({
         promptAudit,
       },
       error: err.message,
+      ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION'
+        ? { cliPolicyViolation: tutorStubCliPolicyRetryDecision(err, { alreadyUsed: true }) }
+        : {}),
     });
     throw err;
   }
@@ -6684,7 +6691,7 @@ function emptyTutorLearnerDagModel(state, tutorTurn, dagPreflight = null) {
   model.memoryReliability = projectTutorStubDagMemoryReliability(dagFactDropout);
   const advance = buildTutorStubLearnerAdvance({ beforeModel: previousModel, afterModel: model });
   model.learnerAdvance = advance;
-  return { model, dagFactDropout, advance, preflight: dagPreflight };
+  return { model, assessment: learnerDag.assessment, dagFactDropout, advance, preflight: dagPreflight };
 }
 
 async function buildTutorLearnerDagForTurn(
@@ -6721,6 +6728,7 @@ async function buildTutorLearnerDagForTurn(
     const model = empty.model;
     const result = {
       model,
+      assessment: empty.assessment,
       preflight: dagPreflight,
       advance: empty.advance,
       dagFactDropout: empty.dagFactDropout,
@@ -6933,6 +6941,7 @@ async function analyzeLearnerTurnCombined(
     const model = empty.model;
     const tutorLearnerDag = {
       model,
+      assessment: empty.assessment,
       preflight: raw?.dagPreflight || null,
       advance: empty.advance,
       dagFactDropout: empty.dagFactDropout,
@@ -7770,6 +7779,7 @@ async function callTutor({
     ? null
     : buildTutorStubFirstDraftContract({
         learnerText,
+        publicQuestion: world?.question || world?.publicQuestion || '',
         responseConfiguration: speakingResponseConfiguration,
         responseCompositionFrame,
         dramaticReleaseFrame,
@@ -7780,6 +7790,20 @@ async function callTutor({
         sourceAccessibilityPolicy: speakingResponseConfiguration?.source_accessibility_policy || 'direct_only',
         sourceAccessibilityOwner: 'post_source_sentence',
       });
+  const assignedPointOfAction = state?.pointOfAction?.current || null;
+  const eligiblePointOfAction = reconcileTutorStubPointOfActionHandoffEligibility(
+    assignedPointOfAction,
+    firstDraftContract?.progression || null,
+  );
+  if (eligiblePointOfAction !== assignedPointOfAction) {
+    state.pointOfAction.current = eligiblePointOfAction;
+    appendTraceEvent(trace, {
+      type: 'point_of_action_handoff_suppression',
+      turn: tutorTurn,
+      pointOfAction: eligiblePointOfAction,
+      publicTranscriptChanged: false,
+    });
+  }
   const firstDraftContractAdvisory = passthrough ? null : tutorStubFirstDraftContractPrompt(firstDraftContract);
   const comprehensionAdvisory = passthrough
     ? null
@@ -8754,13 +8778,14 @@ async function callTutor({
         repairAttempt: 0,
       });
     } else {
-      const spans = committeeQuestionSentences(miniText);
-      moment.spanSentenceCount = spans.length;
-      if (!spans.length) {
-        moment.source = 'fallback_no_span';
+      const spanSelection = selectCommitteeCompositionQuestion(miniText);
+      moment.spanSentenceCount = spanSelection.questions.length;
+      moment.spanSelection = spanSelection;
+      if (!spanSelection.eligible) {
+        moment.source = spanSelection.questions.length ? 'fallback_question_lacks_cue' : 'fallback_no_span';
         chosen = await resolveCommitteeFallbackEnvelope();
       } else {
-        const span = spans.join(' ');
+        const span = spanSelection.selected;
         moment.span = span;
         const compositionBlock = buildCommitteeCompositionBlock(span);
         try {
@@ -9586,29 +9611,49 @@ async function callTutor({
       recentTutorTexts,
     };
     const fallbackRequiresSpecificUptake =
+      closureFallbackSelected ||
       (audits?.responseCompositionAudit?.issues || []).some(
         (issue) => issue.type === 'learner_selected_test_not_acknowledged',
-      ) || tutorStubLearnerSelectedToolMarkPath(learnerText);
+      ) ||
+      tutorStubLearnerSelectedToolMarkPath(learnerText);
     const deterministicFallbackUptake = deterministicTutorStubTurnProgressionUptake({
       contract: firstDraftContract?.progression || null,
       recentTutorTexts,
       variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
       learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
-      defaultUptake: deterministicTutorStubLearnerUptake({
-        learnerText,
-        classification,
-        actionFamily: responseCompositionFrame.selected_action_family || null,
-        recentTutorTexts,
-        world,
-      }),
+      // Mandatory closure must be tied to the compiled learner focus. A
+      // generic epistemic transition can otherwise share a normalized token
+      // with the learner surface and falsely look specific enough.
+      defaultUptake: closureFallbackSelected
+        ? ''
+        : deterministicTutorStubLearnerUptake({
+            learnerText,
+            classification,
+            actionFamily: responseCompositionFrame.selected_action_family || null,
+            recentTutorTexts,
+            world,
+          }),
     });
     const candidateFallbackUptake = fallbackRequiresSpecificUptake
       ? deterministicFallbackUptake
       : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
-    const fallbackUptake =
+    const fallbackUptakeCandidate =
       firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
         ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
         : candidateFallbackUptake;
+    const fallbackUptakePreparation = prepareTutorStubDueClueUptake({
+      uptake: fallbackUptakeCandidate,
+      frame: dramaticReleaseFrame,
+    });
+    const fallbackUptake = fallbackUptakePreparation.text;
+    if (fallbackUptakePreparation.replaced) {
+      appendTraceEvent(trace, {
+        type: 'fallback_uptake_due_clue_deduplicated',
+        turn: tutorTurn,
+        repeatedPremises: fallbackUptakePreparation.repeatedPremises,
+        publicTranscriptChanged: false,
+      });
+    }
     // Question support and live progression can coexist with the human
     // scaffold. Their compiled contract must select the fallback; the older
     // generous-inference text does not realize bounded choices or declarative
@@ -9632,6 +9677,10 @@ async function callTutor({
       : closureFallbackSelected
         ? deterministicTutorStubClosureResponse(dialogueClosureFrame, {
             responseConfiguration: simplifiedRecoveryConfiguration,
+            focusHandoff: deterministicTutorStubTurnProgressionHandoff({
+              contract: firstDraftContract?.progression || null,
+              publicObject: worldLedgerTerm(world),
+            }),
           })
         : dramaticReleaseGuardEnabled
           ? deterministicTutorStubDramaticReleaseFallback({
@@ -10166,20 +10215,39 @@ async function generateAutomatedLearnerTurn({
   const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
   const systemPrompt = automatedLearnerSystemPrompt(profile);
   const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
-  const raw = await callPromptModel({
-    prompt,
-    messageHistory,
-    resolved,
-    systemPrompt,
-    role: 'tutor_stub_auto_learner',
-    maxTokens: 900,
-    trace: state.trace,
-    stream,
-    cliEffort,
-    turn: turnNumber,
-    signal,
-    historyTurns: state.historyTurns,
-  });
+  const call = () =>
+    callPromptModel({
+      prompt,
+      messageHistory,
+      resolved,
+      systemPrompt,
+      role: 'tutor_stub_auto_learner',
+      maxTokens: 900,
+      trace: state.trace,
+      stream,
+      cliEffort,
+      turn: turnNumber,
+      signal,
+      historyTurns: state.historyTurns,
+    });
+  let raw;
+  try {
+    raw = await call();
+  } catch (error) {
+    const retryLedger = state.cliPolicyRetryLedger || (state.cliPolicyRetryLedger = {});
+    const retryKey = 'tutor_stub_auto_learner:codex_policy';
+    const decision = tutorStubCliPolicyRetryDecision(error, { alreadyUsed: retryLedger[retryKey] === true });
+    appendTraceEvent(state.trace, {
+      type: 'cli_policy_retry_decision',
+      role: 'tutor_stub_auto_learner',
+      turn: turnNumber,
+      decision,
+      publicTranscriptChanged: false,
+    });
+    if (!decision.retry) throw error;
+    retryLedger[retryKey] = true;
+    raw = await call();
+  }
   return {
     ...raw,
     text: cleanAutomatedLearnerReply(raw.text),
@@ -11072,7 +11140,7 @@ async function runOneTurn(
   const dynamicalState = state.pointOfAction?.enabled
     ? buildDynamicalSystemState({ state, classification, tutorLearnerDag })
     : null;
-  const pointOfAction = state.pointOfAction?.enabled
+  let pointOfAction = state.pointOfAction?.enabled
     ? buildTutorStubPointOfActionTurn({
         arm: state.pointOfAction.arm,
         turn: tutorTurn,
@@ -11224,6 +11292,7 @@ async function runOneTurn(
       deferStreamOutput: Boolean(runtimeOptions.isCurrent),
       signal: runtimeOptions.signal || null,
     }));
+  pointOfAction = state.pointOfAction?.current || pointOfAction;
   response.tutorRef = state.tuning?.activeRef || state.tutorInstance?.ref || null;
   assertTutorStubTurnAttemptCurrent(runtimeOptions);
   const priorDialogueClosure = state.dialogueClosure;

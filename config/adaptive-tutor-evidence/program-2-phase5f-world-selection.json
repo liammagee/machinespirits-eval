@@ -1,0 +1,41 @@
+{
+  "schema": "machinespirits.program2.phase5f-world-selection.v1",
+  "selectedAt": "2026-07-28",
+  "selectionRule": "From post-training worlds 029-031, exclude any world used by tracked tutor-behaviour, apparatus-repair, Program-2, or live-evaluation fixtures; presentation-only validation is allowed; select the sole remaining candidate.",
+  "trainingAndOriginalFreezeCompletedBefore": "2026-07-25T11:23:36+10:00",
+  "candidateIntroduction": {
+    "commit": "532331061e458bc200b5b9e129fc10b780653951",
+    "committedAt": "2026-07-25T11:23:36+10:00",
+    "subject": "feat(tutor-stub): broaden scenario presentation variety"
+  },
+  "candidates": [
+    {
+      "worldId": "world_029_riverside_clinic",
+      "eligible": false,
+      "reason": "Used by the apparatus-hardening non-Skyway missing-premise replay."
+    },
+    {
+      "worldId": "world_030_rowan_flat",
+      "eligible": false,
+      "reason": "Used by tutor response-composition and scene-diction behavioural fixtures."
+    },
+    {
+      "worldId": "world_031_tideway_makerspace",
+      "eligible": true,
+      "reason": "Only presentation/catalog validation is tracked; no Program-2, tutor-behaviour, apparatus-repair, or live-evaluation exposure."
+    }
+  ],
+  "selectedWorld": "world_031_tideway_makerspace",
+  "selectedFile": "config/drama-derivation/world-031-tideway-makerspace.yaml",
+  "selectedFileSha256": "205338e337ad140b8d64158b84432b4288cfeda5ce9f1c3f797e72c0bdf074d3",
+  "structuralAudit": {
+    "premises": 4,
+    "rules": 3,
+    "proofPaths": 1,
+    "primaryHorizon": 16,
+    "maxCoverageAtHorizon": 1,
+    "coverageThreshold": 0.8,
+    "pass": true
+  },
+  "scopeNote": "This selection optimizes non-exposure, not Phase 5e letter-hostility. The four-dialogue pilot is a feasibility gate and supplies no treatment-effect estimate."
+}

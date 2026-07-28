@@ -124,10 +124,28 @@ function questionRows(text) {
 }
 
 export function auditTutorStubDialogueClosureResponse({ text, frame } = {}) {
-  if (!frame?.enabled || (!frame.mandatory && !frame.available)) {
+  if (!frame?.enabled) {
     return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [] };
   }
   const verdict = detectTutorStubVerdictDeclaration(text, { answerTerm: frame.answerTerm });
+  if (!frame.mandatory && !frame.available) {
+    if (!verdict.declared) {
+      return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [], verdict };
+    }
+    return {
+      ok: false,
+      closesDialogue: false,
+      invitesCheckIn: false,
+      issues: [
+        {
+          type: 'premature_dialogue_close',
+          reason: 'the response closes or settles the inquiry while the strict learner DAG remains open',
+        },
+      ],
+      verdict,
+      questionCount: questionRows(text).length,
+    };
+  }
   const shouldClose = Boolean(frame.mandatory || verdict.declared);
   if (!shouldClose) {
     return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [], verdict };
@@ -199,7 +217,7 @@ export function tutorStubClosureAcknowledgement(text) {
 
 export function deterministicTutorStubClosureResponse(
   frame,
-  { acknowledgement = false, responseConfiguration = null } = {},
+  { acknowledgement = false, responseConfiguration = null, focusHandoff = '' } = {},
 ) {
   const tactic = responseConfiguration?.actorial_performance?.id || null;
   const performedClose = {
@@ -214,6 +232,22 @@ export function deterministicTutorStubClosureResponse(
       'The room’s easy verdict has broken against the public evidence. I close the record; this inquiry is complete.',
     unadorned_report: 'The public evidence supports the finding. I close the record here; this inquiry is complete.',
   }[tactic];
+  const focused = String(focusHandoff || '')
+    .replace(/[.!]+$/gu, '')
+    .trim();
+  if (focused && !/\?/u.test(focused)) {
+    const close = performedClose || 'I close the public record here; this inquiry is complete.';
+    const closeClause = close
+      .replace(
+        /^(?:The public evidence (?:establishes|settles|supports) (?:this|the) finding(?:, and no more)?\.\s*)/iu,
+        '',
+      )
+      .replace(/^(?:Let the finding stand exactly as the public evidence bears it\.\s*)/iu, '')
+      .replace(/^(?:The room’s easy verdict has broken against the public evidence\.\s*)/iu, '')
+      .replace(/^(?:We have reached the supported finding together\.\s*)/iu, '')
+      .trim();
+    return `${focused}; ${closeClause}`;
+  }
   if (performedClose) return performedClose;
   if (frame?.phase === 'final_checkin_response' || acknowledgement || !frame?.allowCheckIn) {
     return 'Then we can close the book here. The verdict stands on the public evidence, and this inquiry is complete.';
