@@ -1099,3 +1099,11 @@ Log:
 - 2026-07-28 — Fifty-loop interim-state-holder run reached review with a
   13-line net CLI reduction, 12 focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 13,
+  `refactor-tutor-stub-previous-learner-dag`, from PR #386's reviewed head. DAG
+  construction, interim summaries, runtime state, and effects remain in their
+  current owners.
+- 2026-07-28 — Fifty-loop previous-learner-DAG run reached review with a
+  five-line net CLI reduction, 13 focused assertions, and complete zero-skip
+  hermetic parity. Its focused fixture now pins the existing immediate-
+  predecessor/undefined-model contract. All static/source-only gates pass.

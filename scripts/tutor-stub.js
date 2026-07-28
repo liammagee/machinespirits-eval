@@ -372,6 +372,7 @@ import {
 import { projectTutorStubCloseoutReportLines } from '../services/tutorStubCloseoutReportPresentation.js';
 import {
   createTutorStubInterimState as createInterimState,
+  findTutorStubPreviousLearnerDagModel as previousLearnerDagModel,
   formatTutorStubSignedInterimNumber as formatSignedInterimNumber,
   projectTutorStubInterimPanels,
   renderTutorStubInterimFrame,
@@ -3076,12 +3077,6 @@ function compactInterimFieldSummary(state) {
     `momentum ${interimLevel(final.jointMomentum)}`,
     bottleneck,
   ].join(' | ');
-}
-
-function previousLearnerDagModel(state, context) {
-  const currentTurn = Number(context?.tutorTurn || 0);
-  return [...(state?.turns || [])].reverse().find((turn) => !currentTurn || Number(turn.turn || 0) < currentTurn)
-    ?.tutorLearnerDagModel;
 }
 
 function compactPendingObjectiveSummary(state, context) {

@@ -19,6 +19,12 @@ export function resolveTutorStubInterimState(holder) {
   return holder.interim || null;
 }
 
+export function findTutorStubPreviousLearnerDagModel(state, context) {
+  const currentTurn = Number(context?.tutorTurn || 0);
+  return [...(state?.turns || [])].reverse().find((turn) => !currentTurn || Number(turn.turn || 0) < currentTurn)
+    ?.tutorLearnerDagModel;
+}
+
 export function formatTutorStubSignedInterimNumber(value, { decimals = 2 } = {}) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric) || numeric === 0) return null;

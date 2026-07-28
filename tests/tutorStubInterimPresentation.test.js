@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   createTutorStubInterimState,
+  findTutorStubPreviousLearnerDagModel,
   formatTutorStubSignedInterimNumber,
   projectTutorStubInterimPanels,
   renderTutorStubInterimFrame,
@@ -40,6 +41,24 @@ test('interim state creation and holder resolution preserve direct and nested ru
   );
   assert.equal(resolveTutorStubInterimState({ interim: null }), null);
   assert.equal(resolveTutorStubInterimState(null), null);
+});
+
+test('previous learner-DAG lookup preserves immediate preceding-turn selection and current-turn exclusion', () => {
+  const model1 = { turn: 1 };
+  const model3 = { turn: 3 };
+  const state = {
+    turns: [{ turn: 1, tutorLearnerDagModel: model1 }, { turn: 2 }, { turn: 3, tutorLearnerDagModel: model3 }],
+  };
+
+  assert.equal(findTutorStubPreviousLearnerDagModel(state, { tutorTurn: 4 }), model3);
+  assert.equal(findTutorStubPreviousLearnerDagModel(state, { tutorTurn: 3 }), undefined);
+  assert.equal(
+    findTutorStubPreviousLearnerDagModel({ turns: [state.turns[0], state.turns[2]] }, { tutorTurn: 3 }),
+    model1,
+  );
+  assert.equal(findTutorStubPreviousLearnerDagModel(state, { tutorTurn: 1 }), undefined);
+  assert.equal(findTutorStubPreviousLearnerDagModel(state, {}), model3);
+  assert.equal(findTutorStubPreviousLearnerDagModel(null, null), undefined);
 });
 
 test('interim signed numbers preserve null, sign, rounding, and precision behavior', () => {
@@ -285,7 +304,7 @@ test('the CLI and learning summary share pure interim copy while retaining runti
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
-    /function (?:createInterimState|getInterimState|formatSignedInterimNumber|compactInterimStateSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
+    /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
   assert.match(cliSource, /function renderInterimStatus\s*\(/u);
