@@ -77,6 +77,7 @@ links:
     - refactor-tutor-stub-picker-entries
     - refactor-tutor-stub-world-grouping
     - refactor-tutor-stub-world-vocabulary
+    - refactor-tutor-stub-launch-mode-contract
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -771,3 +772,11 @@ Log:
   CLI reduction, 11 focused assertions, 7,416 root assertions, and 137
   tutor-core assertions green with zero skips. World diction remains explicitly
   separate from tutor register; all static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-launch-mode-contract` from PR #342's reviewed head to
+  give the two-mode catalogue and alias normalization one dependency-free
+  owner. TTY admission, rendering, input, dispatch, and process behavior remain
+  CLI-owned.
+- 2026-07-28 — The launch-mode child reached review with a 35-line net CLI
+  reduction, 14 focused assertions, 7,418 root assertions, and 137 tutor-core
+  assertions green with zero skips. All static and source-only gates pass.

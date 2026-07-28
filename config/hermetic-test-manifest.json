@@ -453,6 +453,7 @@
         "tests/tutorStubLabsRecipeCli.test.js",
         "tests/tutorStubLastSettings.test.js",
         "tests/tutorStubLatencyBenchmark.test.js",
+        "tests/tutorStubLaunchMode.test.js",
         "tests/tutorStubLearnerAdvance.test.js",
         "tests/tutorStubLearnerClassificationPresentation.test.js",
         "tests/tutorStubLearnerDagPresentation.test.js",
