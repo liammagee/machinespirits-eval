@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T21:58:35.356Z",
+  "generated": "2026-07-28T21:59:21.404Z",
   "counts": {
-    "total": 343,
+    "total": 344,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 86,
+      "review": 87,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 161,
+      "maintenance": 162,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -3920,6 +3920,47 @@
         "tutor-stub",
         "cancellation",
         "lifecycle"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-typed-action-decision-lookup",
+      "title": "Refactor tutor-stub typed-action decision lookup",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "3 focused typed-action lookup assertions, synchronized hermetic manifest, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve modern, legacy, and register precedence, reference identity, invalid filtering, contract-ID requirement, and null fallback",
+      "branch": "codex/refactor-tutor-stub-typed-action-decision-lookup",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-director-guidance-restoration"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubTypedActionRestoration.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubTypedActionRestoration.test.js"
+        ],
+        "prs": [
+          422
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-director-guidance-restoration"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "typed-action",
+        "compatibility"
       ],
       "milestone": "evaluation-infrastructure"
     },
