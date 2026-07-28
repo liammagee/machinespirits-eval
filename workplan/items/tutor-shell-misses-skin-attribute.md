@@ -1,7 +1,7 @@
 ---
 id: tutor-shell-misses-skin-attribute
 title: The /tutor shell never receives data-skin, so it stays parchment
-status: review
+status: done
 type: maintenance
 priority: P3
 owner: claude
@@ -15,6 +15,8 @@ verification: >-
   parchment in the tweaks panel and reloading /tutor shows parchment; the tutor
   tokens still resolve when techne.css is absent.
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/331
   code:
     - public/components/skin-early-apply.js
     - public/components/rail-inject.js
@@ -87,3 +89,4 @@ makes the page legible if `techne.css` fails to load.
   `data-skin="stark"`. `tests/staticSurfaceSkin.test.js` fails if a surface
   ships without the script, defers it, loads it after a stylesheet, or if
   rail-inject reads `poetics-skin` again.
+- 2026-07-28 — Merged in PR #331.
