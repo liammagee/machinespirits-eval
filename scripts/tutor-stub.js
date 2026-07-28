@@ -61,6 +61,7 @@ import {
   TUTOR_STUB_HUMAN_DISCOURSE_PHASE as HUMAN_DISCOURSE_PHASE,
   buildTutorStubHumanDiscourseRunConfig as buildHumanDiscourseRunConfig,
 } from '../services/tutorStubHumanDiscourseConfig.js';
+import { buildTutorStubRegisterPalette } from '../services/tutorStubRegisterPalette.js';
 import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
@@ -3128,35 +3129,12 @@ function normalizeDagMode(value) {
 
 function buildRegisterPalette(mode) {
   const definitions = getEngagementStanceDefinitions();
-  const allNames = Object.keys(definitions);
-  const safeNames = getEngagementStanceNames({ includeArmAssigned: false });
-  const value = String(mode || 'all')
-    .trim()
-    .toLowerCase();
-
-  let names;
-  if (!value || value === 'safe' || value === 'router' || value === 'positive') {
-    names = safeNames;
-  } else if (value === 'negative' || value === 'negative-floor') {
-    names = NEGATIVE_FLOOR_REGISTERS;
-  } else if (value === 'non-simulated') {
-    names = allNames.filter((name) => definitions[name]?.simulated_only !== true);
-  } else if (value === 'all' || value === 'simulated') {
-    names = allNames;
-  } else {
-    names = value
-      .split(',')
-      .map((name) => name.trim())
-      .filter(Boolean);
-  }
-
-  const resolvedNames = names.map((name) => resolveEngagementStance(name)?.register || name);
-  const unknown = names.filter((name, index) => !definitions[resolvedNames[index]]);
-  if (unknown.length) {
-    throw new Error(`Unknown --register-palette register(s): ${unknown.join(', ')}. Known: ${allNames.join(', ')}`);
-  }
-
-  return [...new Set(resolvedNames)];
+  return buildTutorStubRegisterPalette(mode, {
+    definitions,
+    safeNames: getEngagementStanceNames({ includeArmAssigned: false }),
+    negativeFloorNames: NEGATIVE_FLOOR_REGISTERS,
+    resolveStance: resolveEngagementStance,
+  });
 }
 
 function humanDirectedRegisterPalette() {

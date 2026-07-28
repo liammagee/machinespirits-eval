@@ -482,6 +482,7 @@
         "tests/tutorStubProofDebt.test.js",
         "tests/tutorStubQaMatrix.test.js",
         "tests/tutorStubQuestionSupport.test.js",
+        "tests/tutorStubRegisterPalette.test.js",
         "tests/tutorStubRegisterPolicy.test.js",
         "tests/tutorStubRegisterPolicyComposition.test.js",
         "tests/tutorStubRegisterPriors.test.js",
