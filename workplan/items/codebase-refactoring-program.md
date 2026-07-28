@@ -895,3 +895,11 @@ Log:
   CLI reduction, 48 focused assertions, 7,447 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated second-loop run 8,
+  `refactor-tutor-stub-strict-dag-audit`, from PR #356's reviewed head. DAG
+  construction, learner updates, warrant audit, proof debt, model calls,
+  runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop strict-DAG-audit run reached review with a 16-line
+  net CLI reduction, 48 focused assertions, 7,450 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
