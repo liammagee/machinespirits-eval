@@ -411,6 +411,7 @@
         "tests/tutorStubCompactSpeakingPrompt.test.js",
         "tests/tutorStubConcurrentTerminal.test.js",
         "tests/tutorStubContinuousRegister.test.js",
+        "tests/tutorStubCurriculumCatalogPresentation.test.js",
         "tests/tutorStubCurriculumProgressPresentation.test.js",
         "tests/tutorStubCurriculumRuntime.test.js",
         "tests/tutorStubCurriculumTranslation.test.js",
