@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T03:37:17.083Z",
+  "generated": "2026-07-28T05:36:46.244Z",
   "counts": {
     "total": 255,
     "byStatus": {
-      "done": 217,
+      "done": 218,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 10,
+      "review": 9,
       "active": 9,
       "archived": 4
     },
@@ -1018,31 +1018,6 @@
         "scriptorium",
         "skins"
       ]
-    },
-    {
-      "id": "workplan-trailer-pre-push-hook",
-      "title": "Report unlinked commits before the push, not after",
-      "status": "review",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-28",
-      "updated": "2026-07-28",
-      "verification": "Installing the hook preserves and chains any existing pre-push hook in either install order; a push to main carrying a commit with no workplan trailer prints the same report CI would print and still completes; a push to any other ref runs no check; flipping WORKPLAN_TRAILER_HOOK_ENFORCEMENT=blocking rejects the push.",
-      "claim_status": "methods",
-      "links": {
-        "notes": [
-          "workplan/playbook/git-and-workflow.md"
-        ]
-      },
-      "tags": [
-        "workplan",
-        "ci",
-        "git-hooks"
-      ],
-      "milestone": "board-pm",
-      "branch": "claude/workplan-trailer-prepush"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -8075,6 +8050,34 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "workplan-trailer-pre-push-hook",
+      "title": "Report unlinked commits before the push, not after",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Installing the hook preserves and chains any existing pre-push hook in either install order; a push to main carrying a commit with no workplan trailer prints the same report CI would print and still completes; a push to any other ref runs no check; flipping WORKPLAN_TRAILER_HOOK_ENFORCEMENT=blocking rejects the push.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "workplan/playbook/git-and-workflow.md"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/325"
+        ]
+      },
+      "tags": [
+        "workplan",
+        "ci",
+        "git-hooks"
+      ],
+      "milestone": "board-pm",
+      "branch": "claude/workplan-trailer-prepush"
     },
     {
       "id": "world-005-turn9-release-staging",
