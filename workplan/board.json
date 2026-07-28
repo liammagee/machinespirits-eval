@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T21:46:37.671Z",
+  "generated": "2026-07-28T21:47:21.885Z",
   "counts": {
-    "total": 331,
+    "total": 332,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 74,
+      "review": 75,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 149,
+      "maintenance": 150,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -3181,6 +3181,47 @@
         "tutor-stub",
         "git",
         "stack-recovery"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-state-debug-identity",
+      "title": "Refactor tutor-stub state debug identity",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "7 focused debug-identity assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve explicit and trace run IDs, no-trace fallback, precedence, turn normalization, and padding",
+      "branch": "codex/refactor-tutor-stub-state-debug-identity",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-trace-display-path"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDebugIdentity.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDebugIdentity.test.js"
+        ],
+        "prs": [
+          410
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-trace-display-path"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "traces",
+        "debug-identity"
       ],
       "milestone": "evaluation-infrastructure"
     },
