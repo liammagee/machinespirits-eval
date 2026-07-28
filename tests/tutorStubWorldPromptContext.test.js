@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { projectTutorStubWorldPublicPrompt } from '../services/tutorStubWorldPromptContext.js';
+import {
+  projectTutorStubWorldPublicPrompt,
+  projectTutorStubWorldSpeakerDagPrompt,
+} from '../services/tutorStubWorldPromptContext.js';
 
 test('world public prompt preserves the authored public scene and injected audience lines', () => {
   const world = Object.freeze({
@@ -54,5 +57,42 @@ test('world public prompt retains optional-field fallbacks and null-world behavi
       'Your task in story mode:',
       '- Play the tutor/investigator guiding the learner through the case.',
     ],
+  );
+});
+
+test('world speaker prompt preserves rule glosses and injected world vocabulary', () => {
+  const world = Object.freeze({
+    rules: Object.freeze([
+      Object.freeze({ gloss: '  A stamped mark identifies the workshop.  ' }),
+      Object.freeze({ gloss: 'Only public records can license a conclusion.' }),
+    ]),
+  });
+
+  assert.deepEqual(projectTutorStubWorldSpeakerDagPrompt(world, { ledgerTerm: 'case notebook' }), [
+    '# Speaking-tutor evidence contract',
+    'A private deterministic planner owns the answer, proof path, future evidence, and release schedule.',
+    'You are the speaking tutor. You receive only the public scene, public rule glosses, public dialogue, and evidence available through the current turn.',
+    'Never speculate about withheld evidence. The turn context will state exactly what evidence may enter the scene now.',
+    'Public evidence rules in ordinary language:',
+    '1. A stamped mark identifies the workshop.',
+    '2. Only public records can license a conclusion.',
+    'Speaking conduct:',
+    '- Work only from evidence already public or explicitly made available in the current turn context.',
+    '- Speak in ordinary scene language. Never invent formal notation, internal identifiers, paths, or hidden bookkeeping.',
+    "- Treat the case notebook as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the case notebook entry.",
+    '- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.',
+    "- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.",
+    '- If the learner guesses an answer, acknowledge it only as a hypothesis until the public evidence licenses it.',
+    "- When new evidence is made available for this turn, introduce at most that one authored batch and ask for the learner's natural reading of what it changes, not a full proof ledger.",
+    '- The one-new-clue limit constrains your staging, not the learner’s reasoning. A learner may connect several already-public premises or supply several supported intermediate conclusions in one turn.',
+    '- When the learner makes a warranted multi-premise or multi-step advance, credit the whole chain. Do not make them restate its parts one by one; match their pace and test only the next unresolved edge.',
+  ]);
+});
+
+test('world speaker prompt retains null-world behavior and the legacy ledger fallback', () => {
+  assert.deepEqual(projectTutorStubWorldSpeakerDagPrompt(null), []);
+  assert.match(
+    projectTutorStubWorldSpeakerDagPrompt({ rules: [] }).join('\n'),
+    /Treat the evidence record as the learner's public reasoning record/u,
   );
 });

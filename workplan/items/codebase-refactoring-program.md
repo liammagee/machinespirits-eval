@@ -809,3 +809,13 @@ Log:
   tutor-core assertions green with zero skips. All static and source-only gates
   pass; the localhost suites required their normal authorized execution rather
   than the binding-restricted filesystem sandbox.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-speaker-prompt` from PR #346's reviewed head to move
+  pure speaking-tutor evidence-contract projection beside the public-world
+  projector. World loading, DAG admission, authorial vocabulary resolution,
+  prompt assembly, model calls, state, and effects remain in their current
+  owners.
+- 2026-07-28 — The world-speaker-prompt child reached review with a 19-line net
+  CLI reduction, 55 focused assertions, 7,425 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
