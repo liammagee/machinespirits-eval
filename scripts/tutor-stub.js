@@ -530,6 +530,7 @@ import { projectTutorStubResponseConfigurationLines } from '../services/tutorStu
 import { projectTutorStubResponsePolicyContext } from '../services/tutorStubResponsePolicyContext.js';
 import { restoreTutorStubRegisterStateFromTurns as restoreRegisterStateFromTurns } from '../services/tutorStubRegisterStateRestoration.js';
 import { assertTutorStubTurnAttemptCurrent } from '../services/tutorStubTurnAttempt.js';
+import { tutorStubTypedActionDecisionFromTurn as typedActionDecisionFromTurn } from '../services/tutorStubTypedActionRestoration.js';
 import {
   projectTutorStubDialogueClosureContext,
   projectTutorStubHumanDiscourseContext,
@@ -3468,15 +3469,6 @@ function traceDisplayPath(trace) {
 function jsonClone(value) {
   if (value === undefined) return undefined;
   return JSON.parse(JSON.stringify(value));
-}
-
-function typedActionDecisionFromTurn(turn) {
-  const candidates = [
-    turn?.typedActionDecision,
-    turn?.typed_action_decision,
-    turn?.registerSelection?.typed_action_decision,
-  ];
-  return candidates.find((candidate) => candidate && typeof candidate === 'object' && candidate.contract_id) || null;
 }
 
 function restoreTypedActionState(state, turns, events = []) {
