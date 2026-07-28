@@ -19,6 +19,8 @@ links:
     - scripts/tutor-stub.js
     - services/tutorStubTutorTurnPipeline.js
     - tests/tutorStubTutorTurnPipeline.test.js
+  prs:
+    - 426
   items:
     - codebase-refactoring-program
 tags:
@@ -75,3 +77,4 @@ Log:
   byte/contract tests and full hermetic suite provide the parity evidence for
   this structural extraction. The new pipeline path is now explicitly in the
   benchmark hook scope so subsequent behavioral edits cannot be skipped.
+- 2026-07-29 — Opened macro PR 1 as PR #426.
