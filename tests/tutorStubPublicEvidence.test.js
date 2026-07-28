@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
-import { createTutorStubPublicEvidenceModel } from '../services/tutorStubPublicEvidence.js';
+import {
+  createTutorStubPublicEvidenceModel,
+  projectTutorStubPublicReleaseLedger,
+} from '../services/tutorStubPublicEvidence.js';
 
 function fixtureWorld() {
   const premises = [
@@ -24,6 +27,20 @@ function fixtureWorld() {
     rules: [{ if: [['seen', '?x']], then: [['available', '?x']] }],
   };
 }
+
+test('public release ledger preserves row order and the learner-visible release shape', () => {
+  assert.deepEqual(
+    projectTutorStubPublicReleaseLedger([
+      { premise: 'p1', turn: 1, via: 'tutor', surface: 'ignored' },
+      { premise: 'p2', turn: 3, via: 'director', fact: ['ignored'] },
+    ]),
+    [
+      { premiseId: 'p1', turn: 1, via: 'tutor' },
+      { premiseId: 'p2', turn: 3, via: 'director' },
+    ],
+  );
+  assert.deepEqual(projectTutorStubPublicReleaseLedger(), []);
+});
 
 test('candidate premise ids honor explicit overrides and authored schedules', () => {
   const model = createTutorStubPublicEvidenceModel();

@@ -1200,3 +1200,9 @@ Log:
 - 2026-07-28 — Fifty-loop current-release-rows run reached review with a
   30-line net CLI reduction, 16 focused assertions, and complete zero-skip
   hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 27,
+  `refactor-tutor-stub-public-release-ledger`, from PR #400's reviewed head.
+  Committed-row selection, runtime state, and effects remain unchanged.
+- 2026-07-28 — Fifty-loop public-release-ledger run reached review with the
+  ledger shape removed from the CLI, eight focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.
