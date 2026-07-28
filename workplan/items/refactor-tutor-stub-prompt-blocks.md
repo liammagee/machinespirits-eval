@@ -20,6 +20,8 @@ links:
     - services/tutorStubPromptBlocks.js
     - scripts/tutor-stub.js
     - tests/tutorStubPromptBlocks.test.js
+  prs:
+    - 368
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-director-notes-model
@@ -51,3 +53,6 @@ Log:
 - 2026-07-28 — Moved prompt delimiting, replacement, and response-choice rule
   projection into a dependency-free model, reducing the CLI by 20 lines. Six
   focused assertions and the complete zero-skip hermetic contract pass.
+- 2026-07-28 — The required strong benchmark retained the six existing fresh
+  candidate quality failures; zero-call same-response re-audit found zero
+  regressions and zero safety changes. Recorded on PR #368.
