@@ -20,7 +20,8 @@ links:
     - services/tutorStubDirectorGuidance.js
     - scripts/tutor-stub.js
     - tests/tutorStubCommandRegistry.test.js
-  prs: []
+  prs:
+    - 421
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-comprehension-restoration
@@ -54,3 +55,6 @@ Log:
   boundaries into the director-guidance service, reducing
   `scripts/tutor-stub.js` by sixteen lines. Fifteen focused assertions,
   complete zero-skip hermetic parity, and all static/source-only gates pass.
+- 2026-07-28 — Opened PR #421 against `main`. The benchmark hook reported the
+  standing calibration warning: baseline already failed and all six saved
+  responses remain identical (zero improved, zero regressed, zero model calls).
