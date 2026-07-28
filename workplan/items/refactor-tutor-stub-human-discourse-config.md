@@ -15,6 +15,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-world-speaker-prompt
 links:
+  prs:
+    - 348
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -67,3 +69,5 @@ Log:
   the zero-cycle ratchet across 423 files also pass. The first static pass
   identified one stale import and one formatting mismatch; both were removed,
   and the focused/static gates then passed cleanly.
+- 2026-07-28 — Opened dependent PR #348 on PR #347's branch; managed refs are
+  unchanged.
