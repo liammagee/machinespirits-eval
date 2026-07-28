@@ -621,6 +621,7 @@ import {
   topNumericEntries,
 } from '../services/tutorStubRegisterPolicy.js';
 import { normalizeTutorStubDagMode } from '../services/tutorStubDagFeatures.js';
+import { createTutorStubRegisterEmpiricalPriorModel } from '../services/tutorStubRegisterEmpiricalPrior.js';
 import {
   buildTutorStubLightweightDialogueField as buildLightweightDialogueField,
   projectTutorStubLightweightFieldTurn as lightweightFieldTurn,
@@ -1453,35 +1454,12 @@ function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
   return config;
 }
 
-function defaultRegisterEmpiricalPriorPath() {
-  return path.join(ROOT, '.tutor-stub-auto-eval/register-empirical-priors.json');
-}
-
-function resolveRegisterEmpiricalPriorPath(value, { policy }) {
-  const raw = String(value || '').trim();
-  if (/^(off|none|false|0)$/iu.test(raw)) return null;
-  if (raw && raw !== 'auto') return resolveWorkspacePath(raw);
-  if (policy === 'empirical_dynamical_system' || policy === 'continuous_empirical_dynamical_system' || raw === 'auto') {
-    return defaultRegisterEmpiricalPriorPath();
-  }
-  return null;
-}
-
-function loadRegisterEmpiricalPrior(value, { policy }) {
-  const filePath = resolveRegisterEmpiricalPriorPath(value, { policy });
-  if (!filePath) return { prior: null, filePath: null, status: 'off' };
-  if (!fs.existsSync(filePath)) return { prior: null, filePath, status: 'missing' };
-  const prior = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  if (!/register-empirical-priors\.v[12]$/u.test(String(prior.schema || ''))) {
-    throw new Error(`Invalid register empirical prior schema in ${filePath}: ${prior.schema || 'missing'}`);
-  }
-  const status = prior.schema.endsWith('.v1')
-    ? 'loaded_legacy_requires_rebuild'
-    : prior.deployment?.objectiveRegisterPriorEligible === false
-      ? 'loaded_holdout_not_passed'
-      : 'loaded';
-  return { prior, filePath, status };
-}
+const { loadRegisterEmpiricalPrior } = createTutorStubRegisterEmpiricalPriorModel({
+  resolveWorkspacePath,
+  defaultPath: path.join(ROOT, '.tutor-stub-auto-eval/register-empirical-priors.json'),
+  existsSync: fs.existsSync,
+  readFileSync: fs.readFileSync,
+});
 
 const publicEvidenceModel = createTutorStubPublicEvidenceModel({ committedReleaseRows, currentReleaseRows });
 const { answerTermForWorld } = publicEvidenceModel;
