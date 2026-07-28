@@ -20,6 +20,8 @@ links:
     - services/tutorStubLearnerClassificationPresentation.js
     - scripts/tutor-stub.js
     - tests/tutorStubLearnerClassificationPresentation.test.js
+  prs:
+    - 381
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-register-history-prompt
@@ -53,3 +55,5 @@ Log:
   classifier terminal projection, reducing `scripts/tutor-stub.js` by 10 lines.
   Five focused assertions, complete zero-skip hermetic parity, and all static
   and source-only gates pass.
+- 2026-07-28 — Opened PR #381 against `main`; the benchmark hook correctly
+  classified the data-projection slice as not response-generation relevant.
