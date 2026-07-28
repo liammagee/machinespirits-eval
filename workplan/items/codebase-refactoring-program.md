@@ -75,6 +75,7 @@ links:
     - refactor-tutor-stub-world-catalog-presentation
     - refactor-tutor-stub-picker-presentation
     - refactor-tutor-stub-picker-entries
+    - refactor-tutor-stub-world-grouping
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -752,3 +753,12 @@ Log:
   reduction, scenario/curriculum functions at 99/102 lines, 55 focused
   assertions, 7,415 root assertions, and 137 tutor-core assertions green with
   zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-grouping` from PR #340's reviewed head to give
+  world-family keys and base-first grouping one pure owner. Filesystem loading,
+  production eligibility, ordering inputs, and terminal consumers remain in
+  the CLI.
+- 2026-07-28 — The world-grouping child reached review with an 18-line net CLI
+  reduction, exact catalogue parity, 21 focused assertions, 7,416 root
+  assertions, and 137 tutor-core assertions green with zero skips. All static
+  and source-only gates pass.
