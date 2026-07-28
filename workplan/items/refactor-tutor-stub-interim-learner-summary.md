@@ -20,6 +20,8 @@ links:
     - services/tutorStubInterimPresentation.js
     - scripts/tutor-stub.js
     - tests/tutorStubInterimPresentation.test.js
+  prs:
+    - 389
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-interim-learner-dag-summary
@@ -53,3 +55,5 @@ Log:
   focused fixture now pins the existing 2/5 `developing` label and 62-character
   need limit; 15 focused assertions, complete zero-skip hermetic parity, and all
   static/source-only gates pass.
+- 2026-07-28 — Opened PR #389 against `main`; the benchmark hook correctly
+  classified the interim-projection slice as not response-generation relevant.
