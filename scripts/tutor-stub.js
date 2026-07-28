@@ -141,7 +141,10 @@ import {
 } from '../services/tutorStubResponseGuard.js';
 import { buildTutorStubObservedAudits } from '../services/tutorStubObservedAudits.js';
 import { formatTutorStubFact as factText } from '../services/tutorStubFactModel.js';
-import { createTutorStubPublicEvidenceModel } from '../services/tutorStubPublicEvidence.js';
+import {
+  createTutorStubPublicEvidenceModel,
+  projectTutorStubPublicReleaseLedger,
+} from '../services/tutorStubPublicEvidence.js';
 import { createTutorStubResponseLeakAudit } from '../services/tutorStubResponseLeakAudit.js';
 import { compactTutorStubOneLine as oneLine } from '../services/tutorStubTextProjection.js';
 import { effectiveTutorStubModelTemperature as effectiveTemperatureForModel } from '../services/tutorStubModelTemperature.js';
@@ -3124,11 +3127,7 @@ function committedReleaseRows(state, throughTurn = Number.POSITIVE_INFINITY) {
 }
 
 function publicReleaseLedger(state, throughTurn = Number.POSITIVE_INFINITY) {
-  return committedReleaseRows(state, throughTurn).map((row) => ({
-    turn: row.turn,
-    premiseId: row.premise,
-    via: row.via,
-  }));
+  return projectTutorStubPublicReleaseLedger(committedReleaseRows(state, throughTurn));
 }
 
 function learnerPublicEvidenceState(state, tutorTurn) {

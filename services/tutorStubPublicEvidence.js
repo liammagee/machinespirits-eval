@@ -2,6 +2,14 @@ import { closure } from './dramaticDerivation/chainer.js';
 import { tutorStubFactMatches } from './tutorStubFactModel.js';
 import { tutorStubPublicProvenanceText } from './tutorStubPublicProvenance.js';
 
+export function projectTutorStubPublicReleaseLedger(rows = []) {
+  return rows.map((row) => ({
+    turn: row.turn,
+    premiseId: row.premise,
+    via: row.via,
+  }));
+}
+
 export function createTutorStubPublicEvidenceModel({ committedReleaseRows, currentReleaseRows } = {}) {
   const committedRows = typeof committedReleaseRows === 'function' ? committedReleaseRows : () => [];
   const currentRows = typeof currentReleaseRows === 'function' ? currentReleaseRows : () => [];
