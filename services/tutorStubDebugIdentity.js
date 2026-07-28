@@ -50,6 +50,27 @@ export function projectTutorStubCurrentDebugSelection(state, { duringTurn = fals
   };
 }
 
+export function createTutorStubDebugLinePrinters({ write, colors = {} } = {}) {
+  return {
+    printTurnDebugLine(state, turn) {
+      if (!tutorStubAutomaticTechnicalDetailsEnabled(state)) return null;
+      return printTutorStubDebugIdLine(state, formatTutorStubStateTurnDebugId(state, turn), 'turn id', {
+        write,
+        colors,
+      });
+    },
+    printOpeningDebugLine(state) {
+      if (!tutorStubAutomaticTechnicalDetailsEnabled(state)) return null;
+      return printTutorStubDebugIdLine(
+        state,
+        formatTutorStubOpeningDebugId(resolveTutorStubStateRunDebugId(state)),
+        'turn id',
+        { write, colors },
+      );
+    },
+  };
+}
+
 export function printTutorStubDebugIdLine(state, id, label = 'turn id', { write, colors = {} } = {}) {
   if (!id) return null;
   if (!state.printedDebugIds) state.printedDebugIds = new Set();
