@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  renderTutorStubStreamLabel,
   resolveTutorStubDevelopmentDirectModel,
   TUTOR_STUB_DEVELOPMENT_SPEAKER_TRANSPORT_SCHEMA,
   tutorStubProviderSupportsEventStreaming,
@@ -17,6 +18,26 @@ test('speaker transport capabilities distinguish token streams, Codex events, CL
   assert.equal(tutorStubProviderSupportsEventStreaming({ provider: 'codex' }), true);
   assert.equal(tutorStubProviderSupportsEventStreaming({ provider: 'openai' }), false);
   assert.equal(tutorStubProviderSupportsEventStreaming(null), false);
+});
+
+test('stream labels preserve tutor, learner-analysis, DAG, classifier, and fallback copy with injected colors', () => {
+  const colors = {
+    brightMagenta: '<magenta>',
+    bold: '<bold>',
+    reset: '<reset>',
+    cyan: '<cyan>',
+  };
+  assert.equal(renderTutorStubStreamLabel('tutor_stub_tutor', colors), '<magenta><bold>tutor ><reset> ');
+  assert.equal(
+    renderTutorStubStreamLabel('tutor_stub_learner_analysis', colors),
+    '<cyan>learner analysis stream ><reset> ',
+  );
+  assert.equal(renderTutorStubStreamLabel('tutor_stub_learner_record', colors), '<cyan>learner DAG stream ><reset> ');
+  assert.equal(
+    renderTutorStubStreamLabel('tutor_stub_learner_classifier', colors),
+    '<cyan>learner classifier stream ><reset> ',
+  );
+  assert.equal(renderTutorStubStreamLabel('custom_role', colors), '<cyan>custom_role ><reset> ');
 });
 
 test('development direct transport resolves a configured non-CLI model without acceptance authority', () => {

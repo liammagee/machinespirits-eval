@@ -12,6 +12,14 @@ export function tutorStubProviderSupportsEventStreaming(resolved) {
   return resolved?.provider === 'codex';
 }
 
+export function renderTutorStubStreamLabel(role, colors = {}) {
+  if (role === 'tutor_stub_tutor') return `${colors.brightMagenta}${colors.bold}tutor >${colors.reset} `;
+  if (role === 'tutor_stub_learner_analysis') return `${colors.cyan}learner analysis stream >${colors.reset} `;
+  if (role === 'tutor_stub_learner_record') return `${colors.cyan}learner DAG stream >${colors.reset} `;
+  if (role === 'tutor_stub_learner_classifier') return `${colors.cyan}learner classifier stream >${colors.reset} `;
+  return `${colors.cyan}${role} >${colors.reset} `;
+}
+
 export function resolveTutorStubDevelopmentDirectModel({
   modelRef = '',
   developmentSeed = '',
