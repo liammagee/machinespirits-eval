@@ -59,6 +59,13 @@ export function createTutorStubConsoleTokenSink({
   };
 }
 
+export function replayTutorStubTextAsConsoleStream(role, text, stream = null, { createSink } = {}) {
+  const sink = createSink(role, stream?.interim || stream);
+  const tokens = String(text || '').match(/\S+\s*/gu) || [];
+  for (const token of tokens) sink.write(token);
+  return sink.finish();
+}
+
 export function resolveTutorStubDevelopmentDirectModel({
   modelRef = '',
   developmentSeed = '',

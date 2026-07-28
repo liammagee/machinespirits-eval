@@ -1234,3 +1234,10 @@ Log:
 - 2026-07-28 — Fifty-loop console-token-sink run reached review with an
   18-line net CLI reduction, seven focused assertions, and complete zero-skip
   hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 32,
+  `refactor-tutor-stub-console-stream-replay`, from PR #405's reviewed head.
+  Sink creation, terminal writes, animation control, runtime state, and effects
+  remain injected from the CLI.
+- 2026-07-28 — Fifty-loop console-stream-replay run reached review with a
+  two-line net CLI reduction, eight focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.

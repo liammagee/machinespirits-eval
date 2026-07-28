@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   createTutorStubConsoleTokenSink,
   renderTutorStubStreamLabel,
+  replayTutorStubTextAsConsoleStream,
   resolveTutorStubDevelopmentDirectModel,
   TUTOR_STUB_DEVELOPMENT_SPEAKER_TRANSPORT_SCHEMA,
   tutorStubProviderSupportsEventStreaming,
@@ -86,6 +87,37 @@ test('console token sink preserves concurrent-terminal buffering and atomic prin
   assert.deepEqual(events, []);
   assert.equal(sink.finish(), true);
   assert.deepEqual(events, ['stop', 'terminal:before', 'write:analysis > One two\n', 'terminal:after']);
+});
+
+test('console stream replay preserves token boundaries, nested interim selection, finish result, and empty text', () => {
+  const calls = [];
+  const createSink = (role, interim) => {
+    calls.push({ type: 'create', role, interim });
+    return {
+      write(token) {
+        calls.push({ type: 'write', token });
+      },
+      finish() {
+        calls.push({ type: 'finish' });
+        return true;
+      },
+    };
+  };
+  const interim = { id: 'interim' };
+  assert.equal(
+    replayTutorStubTextAsConsoleStream('tutor_stub_tutor', 'One  two\nthree', { interim }, { createSink }),
+    true,
+  );
+  assert.deepEqual(calls, [
+    { type: 'create', role: 'tutor_stub_tutor', interim },
+    { type: 'write', token: 'One  ' },
+    { type: 'write', token: 'two\n' },
+    { type: 'write', token: 'three' },
+    { type: 'finish' },
+  ]);
+  calls.length = 0;
+  assert.equal(replayTutorStubTextAsConsoleStream('empty', '', interim, { createSink }), true);
+  assert.deepEqual(calls, [{ type: 'create', role: 'empty', interim }, { type: 'finish' }]);
 });
 
 test('development direct transport resolves a configured non-CLI model without acceptance authority', () => {

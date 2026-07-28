@@ -348,6 +348,7 @@ import { writeTutorStubLearningSummaryHtml } from '../services/tutorStubLearning
 import {
   createTutorStubConsoleTokenSink,
   renderTutorStubStreamLabel,
+  replayTutorStubTextAsConsoleStream,
   tutorStubProviderSupportsEventStreaming as providerSupportsEventStreaming,
   tutorStubProviderSupportsTokenStreaming as providerSupportsStreaming,
 } from '../services/tutorStubDevelopmentSpeakerTransport.js';
@@ -3873,10 +3874,7 @@ function createConsoleTokenSink(role, interim = null) {
 }
 
 function replayTextAsConsoleStream(role, text, stream = null) {
-  const sink = createConsoleTokenSink(role, stream?.interim || stream);
-  const tokens = String(text || '').match(/\S+\s*/g) || [];
-  for (const token of tokens) sink.write(token);
-  return sink.finish();
+  return replayTutorStubTextAsConsoleStream(role, text, stream, { createSink: createConsoleTokenSink });
 }
 
 function printTutorResponse(response, stream = null) {
