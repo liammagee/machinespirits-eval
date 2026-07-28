@@ -50,8 +50,17 @@ import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
   groupTutorStubWorldEntries,
   projectTutorStubWorldCatalogLines,
-  tutorStubWorldPresentation as worldPresentation,
+  tutorStubWorldFlavourPhrase as worldFlavourPhrase,
+  tutorStubWorldLedgerTerm as worldLedgerTerm,
 } from '../services/tutorStubWorldPresentation.js';
+import {
+  projectTutorStubWorldPublicPrompt,
+  projectTutorStubWorldSpeakerDagPrompt,
+} from '../services/tutorStubWorldPromptContext.js';
+import {
+  TUTOR_STUB_HUMAN_DISCOURSE_PHASE as HUMAN_DISCOURSE_PHASE,
+  buildTutorStubHumanDiscourseRunConfig as buildHumanDiscourseRunConfig,
+} from '../services/tutorStubHumanDiscourseConfig.js';
 import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
@@ -433,8 +442,12 @@ import {
 } from '../services/tutorStubTrainingReuse.js';
 import { projectTutorStubTrainingReuseStatusLines } from '../services/tutorStubTrainingReusePresentation.js';
 import { projectTutorStubDialogueSettingsLines } from '../services/tutorStubDialogueSettingsPresentation.js';
-import { projectTutorStubModelChoiceLines } from '../services/tutorStubModelChoicePresentation.js';
 import {
+  buildTutorStubModelChoiceEntries,
+  projectTutorStubModelChoiceLines,
+} from '../services/tutorStubModelChoicePresentation.js';
+import {
+  buildTutorStubDirectorInitialContext,
   projectTutorStubDirectorContextLines,
   projectTutorStubDirectorNotesLines,
 } from '../services/tutorStubDirectorPresentation.js';
@@ -539,6 +552,7 @@ import {
   projectTutorStubScenarioPickerEntries,
   projectTutorStubScenarioPickerLines,
 } from '../services/tutorStubPickerPresentation.js';
+import { TUTOR_STUB_LAUNCH_MODES, normalizeTutorStubLaunchMode } from '../services/tutorStubLaunchMode.js';
 import { projectTutorStubSessionStatusLines } from '../services/tutorStubSessionStatusPresentation.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -647,12 +661,10 @@ const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
 const NEGATIVE_FLOOR_REGISTERS = ['ironic', 'sarcastic', 'face_threat'];
 const DAG_MODES = ['strict_dag', 'human_scaffold', 'defeasible_human_scaffold'];
-const HUMAN_DISCOURSE_RUN_CONFIG_SCHEMA = 'machinespirits.tutor-stub.human-discourse-run-config.v1';
 const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-frame.v1';
 const SCAFFOLD_STATE_SCHEMA = 'machinespirits.tutor-stub.scaffold-state.v1';
 const SIDE_ARC_SCHEMA = 'machinespirits.tutor-stub.side-arc.v1';
 const WARRANT_PREMISE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.warrant-premise-audit.v1';
-const HUMAN_DISCOURSE_PHASE = 'phase_2_human_scaffold_prompting';
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
 const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
 const TUTOR_TYPED_ACTION_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.typed-action-outcome.v1';
@@ -1118,64 +1130,14 @@ function assertSupportedModelRefs(refs) {
   }
 }
 
-const PREFERRED_TUTOR_MODEL_REFS = [
-  'codex.gpt-5.6-terra',
-  'codex.gpt-5.6-sol',
-  'codex.gpt-5.6-luna',
-  'codex.gpt-5.5',
-  'claude-code.sonnet',
-  'claude-code.fable',
-  'claude-code.opus',
-  'claude-code.haiku',
-];
-
 function tutorModelChoiceEntries(currentRef = STUB.model) {
-  const providers = loadProviders()?.providers || {};
-  const entries = [];
-  for (const [provider, config] of Object.entries(providers)) {
-    let providerConfig;
-    try {
-      providerConfig = getProviderConfig(provider);
-    } catch {
-      continue;
-    }
-    if (!providerConfig.isConfigured && !String(currentRef).startsWith(`${provider}.`)) continue;
-    for (const [alias, model] of Object.entries(config.models || {})) {
-      const ref = `${provider}.${alias}`;
-      if (UNSUPPORTED_CODEX_MINI_REFS.has(ref.toLowerCase())) continue;
-      const access = isCliProvider(provider)
-        ? 'CLI login'
-        : config.api_key_env
-          ? `${config.api_key_env} configured`
-          : 'local endpoint';
-      entries.push({ ref, provider, alias, model, access, current: ref === currentRef });
-    }
-  }
-  if (!entries.some((entry) => entry.ref === currentRef)) {
-    try {
-      const resolved = resolveModel(currentRef);
-      entries.push({
-        ref: currentRef,
-        provider: resolved.provider,
-        alias: currentRef.slice(currentRef.indexOf('.') + 1),
-        model: resolved.model,
-        access: 'current launch model',
-        current: true,
-      });
-    } catch {
-      // The normal launch validation reports an invalid current model.
-    }
-  }
-  const preferredIndex = new Map(PREFERRED_TUTOR_MODEL_REFS.map((ref, index) => [ref, index]));
-  return entries.sort((left, right) => {
-    if (left.current !== right.current) return left.current ? -1 : 1;
-    const leftPreferred = preferredIndex.has(left.ref) ? preferredIndex.get(left.ref) : Number.MAX_SAFE_INTEGER;
-    const rightPreferred = preferredIndex.has(right.ref) ? preferredIndex.get(right.ref) : Number.MAX_SAFE_INTEGER;
-    return (
-      leftPreferred - rightPreferred ||
-      left.provider.localeCompare(right.provider) ||
-      left.alias.localeCompare(right.alias)
-    );
+  return buildTutorStubModelChoiceEntries({
+    currentRef,
+    providers: loadProviders()?.providers || {},
+    getProviderConfig,
+    isCliProvider,
+    resolveModel,
+    unsupportedRefs: UNSUPPORTED_CODEX_MINI_REFS,
   });
 }
 
@@ -2081,15 +2043,6 @@ function tutorResponseRecoveryPrompt({
     .join('\n');
 }
 
-function worldLedgerTerm(world) {
-  return String(worldPresentation(world).ledger_term || 'evidence record');
-}
-
-function worldFlavourPhrase(world) {
-  const diction = worldPresentation(world).narrative_diction;
-  return diction ? `${diction} flavour` : "world's authored diction";
-}
-
 // One entry per presentation family, base world first, controlled variants
 // indented after it — ten near-identical costumes stop reading as ten
 // independent scenarios (presentation metadata, not register).
@@ -2589,42 +2542,6 @@ function printAutomatedLearnerProfiles() {
   console.log(learnerProfileListText());
 }
 
-const TUTOR_STUB_LAUNCH_MODES = Object.freeze([
-  {
-    id: 'chat',
-    label: 'Mixed tutor chat',
-    description: 'Open the default human + AI learner-drafting conversation.',
-  },
-  {
-    id: 'labelling-game',
-    label: 'Labelling game',
-    description: 'Human-label the superego taxonomy or tutor-stub impasse corpus.',
-  },
-]);
-
-function normalizeTutorStubLaunchMode(value, { allowEmpty = false } = {}) {
-  const normalized = String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_]+/gu, '-');
-  if (!normalized && allowEmpty) return '';
-  const aliases = new Map([
-    ['chat', 'chat'],
-    ['default', 'chat'],
-    ['tutor', 'chat'],
-    ['tutor-chat', 'chat'],
-    ['labelling', 'labelling-game'],
-    ['labeling', 'labelling-game'],
-    ['labelling-game', 'labelling-game'],
-    ['labeling-game', 'labelling-game'],
-  ]);
-  const resolved = aliases.get(normalized);
-  if (!resolved) {
-    throw new Error(`unknown --launch-mode "${value}"; use chat or labelling-game`);
-  }
-  return resolved;
-}
-
 function defaultLaunchModePickerAvailable() {
   return Boolean(
     process.argv.slice(2).length === 0 && input.isTTY && output.isTTY && typeof input.setRawMode === 'function',
@@ -2947,53 +2864,11 @@ async function pickWorkplanModuleWithKeyboard(defaultModuleRef = '') {
 }
 
 function worldPublicPrompt(world) {
-  if (!world) return [];
-  return [
-    '',
-    '# Detective-story world',
-    '',
-    `World: ${world.id} — ${world.title}`,
-    world.discipline ? `Discipline: ${world.discipline}` : null,
-    `Public question: ${world.question}`,
-    '',
-    'Opening situation visible to the learner:',
-    String(world.setting || '').trim(),
-    '',
-    'Learner role:',
-    String(world.learnerVoice || '').trim(),
-    '',
-    ...dramaticAudiencePromptLines(world),
-    '',
-    'Your task in story mode:',
-    '- Play the tutor/investigator guiding the learner through the case.',
-    '- Treat the learner as the investigator; do not solve the case for them.',
-    '- Keep the public question alive across the dialogue. Ask for grounded inferences only when the compiled turn contract assigns a question; an instructional repair may leave the question unstated for that turn.',
-    '- Treat a concrete learner question as a legitimate investigative move. When clarification is more useful than a guess, invite the investigator to ask what evidence, tool, or distinction needs explaining.',
-    '- Make that permission visible: name the clue in plain language, or explicitly invite a short clarification question when a term or referent may be unclear. Never assume the investigator knows that a question may be answered with a clarifying question.',
-    '- Stay inside the scene: address the investigator directly and never call either speaker "the tutor" or "the learner".',
-    '- You are an adaptive scene actor as well as an investigator. A private turn instruction may cast you as a fellow investigator, examiner, record-keeper, witness/source, advocate, skeptic, or closer.',
-    '- Take that part through a visible first-person action or voice, using only public evidence. Do not merely decorate the same question with theatrical language.',
-  ].filter(Boolean);
+  return projectTutorStubWorldPublicPrompt(world, { audienceLines: dramaticAudiencePromptLines(world) });
 }
 
 function buildDirectorInitialContext(world) {
-  if (!world) return null;
-  return {
-    stageNotes: [
-      `Before the first exchange, ${world.title} is set as a public inquiry: ${world.question}`,
-      String(world.setting || '').trim(),
-    ]
-      .filter(Boolean)
-      .join('\n'),
-    tutorCharacter:
-      'The tutor enters as an adaptive scene actor: patient with the learner, but ready to examine, keep the record, argue, witness, or close as the public evidence demands.',
-    learnerCharacter:
-      String(world.learnerVoice || '').trim() ||
-      'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
-    audienceContext: dramaticAudiencePromptLines(world).join('\n') || null,
-    registerNote:
-      "The tutor's voice should follow the public characters and scene pressure without adding hidden evidence or proof machinery.",
-  };
+  return buildTutorStubDirectorInitialContext(world, { audienceLines: dramaticAudiencePromptLines(world) });
 }
 
 function printDirectorInitialContext(context) {
@@ -3040,29 +2915,7 @@ function printDirectorNotesIssuedSoFar(state) {
 }
 
 function worldSpeakerDagPrompt(world) {
-  if (!world) return [];
-  return [
-    '',
-    '# Speaking-tutor evidence contract',
-    '',
-    'A private deterministic planner owns the answer, proof path, future evidence, and release schedule.',
-    'You are the speaking tutor. You receive only the public scene, public rule glosses, public dialogue, and evidence available through the current turn.',
-    'Never speculate about withheld evidence. The turn context will state exactly what evidence may enter the scene now.',
-    '',
-    'Public evidence rules in ordinary language:',
-    ...world.rules.map((rule, index) => `${index + 1}. ${String(rule.gloss || '').trim()}`),
-    '',
-    'Speaking conduct:',
-    '- Work only from evidence already public or explicitly made available in the current turn context.',
-    '- Speak in ordinary scene language. Never invent formal notation, internal identifiers, paths, or hidden bookkeeping.',
-    `- Treat the ${worldLedgerTerm(world)} as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the ${worldLedgerTerm(world)} entry.`,
-    '- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.',
-    "- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.",
-    '- If the learner guesses an answer, acknowledge it only as a hypothesis until the public evidence licenses it.',
-    "- When new evidence is made available for this turn, introduce at most that one authored batch and ask for the learner's natural reading of what it changes, not a full proof ledger.",
-    '- The one-new-clue limit constrains your staging, not the learner’s reasoning. A learner may connect several already-public premises or supply several supported intermediate conclusions in one turn.',
-    '- When the learner makes a warranted multi-premise or multi-step advance, credit the whole chain. Do not make them restate its parts one by one; match their pace and test only the next unresolved edge.',
-  ].filter(Boolean);
+  return projectTutorStubWorldSpeakerDagPrompt(world, { ledgerTerm: worldLedgerTerm(world) });
 }
 
 function responseChoiceModeRules({ multipleChoice, world = null }) {
@@ -3271,53 +3124,6 @@ function normalizeDagMode(value) {
     .replace(/-/gu, '_');
   if (DAG_MODES.includes(mode)) return mode;
   throw new Error(`Unknown --dag-mode: ${value}. Expected ${DAG_MODES.join(', ')}.`);
-}
-
-function buildHumanDiscourseRunConfig({ dagMode, dagEnabled, tutorLearnerDagEnabled }) {
-  const scaffoldActive = dagMode !== 'strict_dag';
-  const stepCompression =
-    dagMode === 'defeasible_human_scaffold'
-      ? {
-          enabled: true,
-          policy:
-            'accept obvious public bridges as implied proof debt; ask for explicit warrants only when the leap is unsafe, conflicting, or case-closing',
-          maxExplicitDemandsPerTurn: 1,
-        }
-      : {
-          enabled: false,
-          policy:
-            dagMode === 'human_scaffold'
-              ? 'frame one local warrant without expanding the whole proof chain'
-              : 'strict proof audit only',
-          maxExplicitDemandsPerTurn: dagMode === 'human_scaffold' ? 1 : 0,
-        };
-  return {
-    schema: HUMAN_DISCOURSE_RUN_CONFIG_SCHEMA,
-    dagMode,
-    strictAuditDag: Boolean(dagEnabled),
-    tutorLearnerDag: Boolean(tutorLearnerDagEnabled),
-    phase: HUMAN_DISCOURSE_PHASE,
-    scaffoldActive,
-    stepCompression,
-    scaffoldPolicy:
-      dagMode === 'defeasible_human_scaffold'
-        ? 'allow learner-owned compressed inference, keep implied proof debt internal, and only surface warrant gaps when they matter'
-        : dagMode === 'human_scaffold'
-          ? 'frame local human-facing warrants while strict DAG audit remains authoritative'
-          : 'strict DAG audit only; no human-scaffold prompt adaptation',
-    traceFields: [
-      'humanDiscourseFrame',
-      'scaffoldState',
-      'sideArc',
-      'discoursePlane',
-      'proofDebt',
-      'warrantPremiseAudit',
-      'generousInference',
-      'conversationalCompletion',
-      'questionSupport',
-    ],
-    behaviorChange: scaffoldActive,
-  };
 }
 
 function buildRegisterPalette(mode) {

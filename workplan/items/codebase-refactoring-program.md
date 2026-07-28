@@ -76,6 +76,10 @@ links:
     - refactor-tutor-stub-picker-presentation
     - refactor-tutor-stub-picker-entries
     - refactor-tutor-stub-world-grouping
+    - refactor-tutor-stub-world-vocabulary
+    - refactor-tutor-stub-launch-mode-contract
+    - refactor-tutor-stub-model-choice-catalog
+    - refactor-tutor-stub-director-context
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -762,3 +766,76 @@ Log:
   reduction, exact catalogue parity, 21 focused assertions, 7,416 root
   assertions, and 137 tutor-core assertions green with zero skips. All static
   and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-vocabulary` from PR #341's reviewed head to move
+  authored ledger and narrative-diction labels beside world presentation while
+  leaving prompts, register policy, runtime state, and all effects unchanged.
+- 2026-07-28 — The world-vocabulary child reached review with an eight-line net
+  CLI reduction, 11 focused assertions, 7,416 root assertions, and 137
+  tutor-core assertions green with zero skips. World diction remains explicitly
+  separate from tutor register; all static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-launch-mode-contract` from PR #342's reviewed head to
+  give the two-mode catalogue and alias normalization one dependency-free
+  owner. TTY admission, rendering, input, dispatch, and process behavior remain
+  CLI-owned.
+- 2026-07-28 — The launch-mode child reached review with a 35-line net CLI
+  reduction, 14 focused assertions, 7,418 root assertions, and 137 tutor-core
+  assertions green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-model-choice-catalog` from PR #343's reviewed head to
+  move pure provider-model admission, access labeling, fallback, and ordering
+  into the existing model-choice owner. Provider loading, commands, pickers,
+  and effects remain CLI-owned.
+- 2026-07-28 — The model-choice catalogue child reached review with a 47-line
+  net CLI reduction, 55 focused assertions, 7,420 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-director-context` from PR #344's reviewed head to move
+  pure initial director-context construction beside its line projection.
+  Audience derivation, prelude state, traces, release notes, commands, and
+  terminal effects remain CLI-owned.
+- 2026-07-28 — The director-context child reached review with a 15-line net CLI
+  reduction, 48 focused assertions, 7,421 root assertions, and 137 tutor-core
+  assertions green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-public-prompt` from PR #345's reviewed head to move
+  pure public world-prompt projection into a dependency-free owner. World
+  loading, audience derivation, prompt assembly, model calls, state, and effects
+  remain in their current owners.
+- 2026-07-28 — The public-world-prompt child reached review with a 25-line net
+  CLI reduction, 53 focused assertions, 7,423 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass; the localhost suites required their normal authorized execution rather
+  than the binding-restricted filesystem sandbox.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-speaker-prompt` from PR #346's reviewed head to move
+  pure speaking-tutor evidence-contract projection beside the public-world
+  projector. World loading, DAG admission, authorial vocabulary resolution,
+  prompt assembly, model calls, state, and effects remain in their current
+  owners.
+- 2026-07-28 — The world-speaker-prompt child reached review with a 19-line net
+  CLI reduction, 55 focused assertions, 7,425 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-human-discourse-config` from PR #347's reviewed head to
+  move the pure three-mode run contract and stable schema/phase constants into
+  a dependency-free owner. Normalization, prompt construction, turn state, DAG
+  execution, model calls, traces, and effects remain in their current owners.
+- 2026-07-28 — The human-discourse-config child reached review with a 45-line
+  net CLI reduction, 51 focused assertions, 7,427 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass after removing the extraction's stale import and formatting its new
+  dependency-free owner.
+- 2026-07-28 — The first ten-run stack audit found that runs 4–10 had not
+  reached `main`: their PRs were alternately merged into intermediate branches
+  or closed as those bases disappeared. Activated
+  `refactor-tutor-stub-stack-recovery`, rebased the preserved final branch onto
+  current `origin/main`, and froze its cumulative delta to the seven reviewed
+  slices plus tests, manifests, and authored workplan sources.
+- 2026-07-28 — Stack recovery reached review with 69 focused, 7,427 root, and
+  137 tutor-core assertions green with zero skips. All static, manifest,
+  source-only workplan, and ref gates pass; no generated workplan view is in
+  the cumulative delta.
