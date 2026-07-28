@@ -20,6 +20,8 @@ links:
     - services/tutorStubRegisterEmpiricalPrior.js
     - scripts/tutor-stub.js
     - tests/tutorStubRegisterEmpiricalPrior.test.js
+  prs:
+    - 374
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-dag-mode
@@ -50,3 +52,5 @@ Log:
 - 2026-07-28 — Extracted injected empirical-prior path resolution and loading,
   reducing `scripts/tutor-stub.js` by 22 lines. Twenty-seven focused assertions,
   the complete zero-skip hermetic suite, and all static/source-only gates pass.
+- 2026-07-28 — Opened PR #374 against `main`; the benchmark hook correctly
+  classified the loading-only slice as not response-generation relevant.
