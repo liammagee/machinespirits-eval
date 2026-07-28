@@ -29,6 +29,12 @@ export function tutorStubAutomaticTechnicalDetailsEnabled(state) {
   return Boolean(state?.explanatoryDebug?.enabled && state.explanatoryDebug.format === 'technical');
 }
 
+export function printTutorStubAutomaticTechnicalDetails(state, render, { print } = {}) {
+  if (!tutorStubAutomaticTechnicalDetailsEnabled(state)) return false;
+  print(state, render);
+  return true;
+}
+
 export function printTutorStubDebugIdLine(state, id, label = 'turn id', { write, colors = {} } = {}) {
   if (!id) return null;
   if (!state.printedDebugIds) state.printedDebugIds = new Set();
