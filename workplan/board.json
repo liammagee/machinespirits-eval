@@ -1,12 +1,12 @@
 {
-  "generated": "2026-07-28T03:36:06.749Z",
+  "generated": "2026-07-28T03:37:17.083Z",
   "counts": {
     "total": 255,
     "byStatus": {
-      "done": 216,
+      "done": 217,
       "blocked": 5,
       "dropped": 3,
-      "triaged": 8,
+      "triaged": 7,
       "review": 10,
       "active": 9,
       "archived": 4
@@ -47,31 +47,6 @@
           "tutor-stub-unified-session-surface"
         ]
       }
-    },
-    {
-      "id": "audit-trap-state-schema-for-typed-reveal-events",
-      "title": "Audit the trap-scenario state schema for typed reveal events",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-07-20",
-      "updated": "2026-07-28",
-      "verification": "A gap list over a sample of cell 110/111/113/124 trap dialogues, each trap turn hand-coded against the four Narrative World Model query types (who-knows-what, when-learned, event-ordering, setup-payoff) and matched to the learnerProfileSchema fields actually recorded at that turn via loadTrace(), naming every turn where a strategy shift was scored with no typed reveal event under it; drawn from existing dialogue logs and state snapshots, no new runs.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "notes/daily-notes/2026-07-20-research-roundup.html",
-          "notes/research-plans/2026-07-27-research-plan.html"
-        ]
-      },
-      "tags": [
-        "adaptive-tutor",
-        "state-schema",
-        "trap-scenarios"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "decide-rich-learner-memory-service-retention",
@@ -5836,6 +5811,37 @@
         "director"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "audit-trap-state-schema-for-typed-reveal-events",
+      "title": "Audit the trap-scenario state schema for typed reveal events",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-07-20",
+      "updated": "2026-07-28",
+      "verification": "A gap list over a sample of cell 110/111/113/124 trap dialogues, each trap turn hand-coded against the four Narrative World Model query types (who-knows-what, when-learned, event-ordering, setup-payoff) and matched to the learnerProfileSchema fields actually recorded at that turn via loadTrace(), naming every turn where a strategy shift was scored with no typed reveal event under it; drawn from existing dialogue logs and state snapshots, no new runs.",
+      "branch": "claude/audit-trap-state-schema-reveal-sxoggr",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-20-research-roundup.html",
+          "notes/research-plans/2026-07-27-research-plan.html",
+          "notes/2026-07-28-trap-state-schema-typed-reveal-audit.md"
+        ],
+        "scripts": [
+          "scripts/audit-trap-reveal-events.js",
+          "scripts/lib/trapRevealQueryCoding.js"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "state-schema",
+        "trap-scenarios"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "auto-drop-daily-routine",
