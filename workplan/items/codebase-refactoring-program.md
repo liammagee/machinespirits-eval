@@ -839,3 +839,11 @@ Log:
   137 tutor-core assertions green with zero skips. All static, manifest,
   source-only workplan, and ref gates pass; no generated workplan view is in
   the cumulative delta.
+- 2026-07-28 — Activated second-loop run 1,
+  `refactor-tutor-stub-register-palette`, from recovery PR #349's reviewed head.
+  Registry loading, CLI parsing, runtime selection, state, and effects remain
+  in their current owners.
+- 2026-07-28 — Second-loop register-palette run reached review with a 22-line
+  net CLI reduction, 67 focused assertions, 7,429 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
