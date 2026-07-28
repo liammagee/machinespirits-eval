@@ -564,11 +564,20 @@ function chooseHandoffMode({
   discoursePlane = null,
   assertionGap = false,
   integrationTarget = null,
+  unsupportedCausalClaim = false,
 } = {}) {
   if (discoursePlane?.plane === 'instructional_meta') return 'instructional_meta_repair';
   if (dialogueClosureFrame?.mandatory === true) return 'closure';
   if (questionSupport?.responsiveRepairRequired === true) return 'direct_answer';
   if (integrationTarget?.active === true) return 'missing_relation_recovery';
+  // A learner may name the right concealed answer before the public record
+  // supports it. Requiring the tutor's final sentence to repeat that exact
+  // claim creates an impossible recovery contract: the progression audit asks
+  // for the answer wording while the evidence guard correctly forbids it.
+  // Hold the proposal at the public boundary instead. This decision uses only
+  // the public classifier and redacted learner-DAG state; it never inspects the
+  // hidden answer.
+  if (unsupportedCausalClaim) return 'declarative_unsupported_claim';
   if (completion?.resolved === true && due.length) return 'new_unresolved_check';
   if (completion?.resolved === true) return 'declarative_missing_support';
   if (writableEntryRequested && !due.length) return 'declarative_missing_support';
@@ -592,6 +601,9 @@ function handoffInstruction(contract) {
   }
   if (handoff.mode === 'missing_relation_recovery' && focus.integration_target?.question) {
     return `HANDOFF alone asks exactly: “${focus.integration_target.question}” Do not replace it with a verdict, sayback, or generic evidence question.`;
+  }
+  if (handoff.mode === 'declarative_unsupported_claim') {
+    return 'End declaratively at the public evidence boundary. Do not quote, confirm, deny, or paraphrase the proposed answer, and ask no question.';
   }
   const target = focus.due_surfaces.length ? 'the due SOURCE' : 'TURN FOCUS';
   const settled = handoff.prohibited_settled_surfaces.length ? ' Do not reopen the settled point.' : '';
@@ -622,10 +634,25 @@ export function compileTutorStubTurnProgressionContract({
   const integrationTarget = responseCompositionFrame?.learner_integration_target?.active
     ? structuredClone(responseCompositionFrame.learner_integration_target)
     : null;
-  const primaryGroups = focusGroups(focus.surface);
-  const primaryTerms = [...new Set(primaryGroups.flatMap((group) => group.terms))];
   const due = dueSurfaces({ responseCompositionFrame, dramaticReleaseFrame });
   const dueTerms = [...new Set(due.flatMap(contentTerms))];
+  const unsupportedCausalClaim = Boolean(
+    due.length === 0 &&
+      dialogueClosureFrame?.mandatory !== true &&
+      responseCompositionFrame?.learner_dag?.final_secret_entailed !== true &&
+      ['omits_warrant', 'overleaps_evidence'].includes(
+        oneLine(responseCompositionFrame?.learner_move?.evidence_use),
+      ),
+  );
+  const boundedFocus = unsupportedCausalClaim
+    ? {
+        surface: 'the proposed causal answer remains open until public evidence supports it',
+        source: 'unsupported_causal_claim_boundary',
+        semanticCandidates: [],
+      }
+    : focus;
+  const boundedPrimaryGroups = focusGroups(boundedFocus.surface);
+  const primaryTerms = [...new Set(boundedPrimaryGroups.flatMap((group) => group.terms))];
   const writableEntryRequested = tutorStubLearnerRequestsWritableEntry(learnerText);
   const assertionGap = Boolean(
     responseCompositionFrame?.learner_dag?.bottleneck === 'assertion_gap' &&
@@ -642,6 +669,7 @@ export function compileTutorStubTurnProgressionContract({
     discoursePlane,
     assertionGap,
     integrationTarget,
+    unsupportedCausalClaim,
   });
   const questionAllowed = [
     'new_unresolved_check',
@@ -659,8 +687,8 @@ export function compileTutorStubTurnProgressionContract({
       ? [assertionGapTarget]
       : due.length && questionAllowed
         ? due
-        : focus.surface
-          ? [focus.surface]
+        : boundedFocus.surface
+          ? [boundedFocus.surface]
           : [];
   const requiredTargetTerms = instructionalMeta
     ? []
@@ -693,22 +721,28 @@ export function compileTutorStubTurnProgressionContract({
           ? 'credit_or_qualify_resolved_move'
           : 'direct_response',
       learner_surface: oneLine(learnerText) || null,
-      accepted_meaning: oneLine(completion?.acceptedMeaning) || null,
-      accepted_meaning_kind: (completion?.resolved && completion.acceptedMeaningKind) || null,
+      accepted_meaning: unsupportedCausalClaim
+        ? 'The proposed causal answer is not yet established by the public evidence.'
+        : oneLine(completion?.acceptedMeaning) || null,
+      accepted_meaning_kind: unsupportedCausalClaim
+        ? 'unsupported_causal_claim_boundary'
+        : (completion?.resolved && completion.acceptedMeaningKind) || null,
       focus_terms: primaryTerms,
       instruction: writableEntryRequested
         ? 'UPTAKE must answer the wording request directly with the licensed entry; it must not substitute another question.'
         : instructionalMeta
           ? 'UPTAKE must answer the request for a simpler explanation directly. Treat it as a repair to the instructional dialogue, not as a proposition, clue, or proof move.'
+          : unsupportedCausalClaim
+            ? 'UPTAKE must qualify the learner’s proposed causal answer without quoting, confirming, denying, or paraphrasing it. Say only that the public evidence has not established it yet.'
           : 'UPTAKE must visibly answer, credit, qualify, correct, or receive the learner’s actual move before development begins.',
     },
     turn_focus_contract: {
-      primary_surface: focus.surface || null,
-      primary_source: focus.source,
+      primary_surface: boundedFocus.surface || null,
+      primary_source: boundedFocus.source,
       raw_learner_surface: oneLine(learnerText) || null,
-      semantic_focus_candidates: focus.semanticCandidates,
+      semantic_focus_candidates: boundedFocus.semanticCandidates,
       primary_terms: primaryTerms,
-      primary_groups: primaryGroups,
+      primary_groups: boundedPrimaryGroups,
       due_surfaces: due,
       due_terms: dueTerms,
       sibling_relation_requires_explicit_bridge: siblingBridgeRequired,
@@ -720,8 +754,10 @@ export function compileTutorStubTurnProgressionContract({
         ? 'Keep the explanation itself as the turn focus. Restate the latest tutor point in plain contemporary English; do not advance the inquiry or reinterpret the request as evidence.'
         : integrationTarget
           ? `Recover this already-public relation before another verdict: “${integrationTarget.target}” Ask exactly: “${integrationTarget.question}” Do not state the target for the learner or copy their ledger formula.`
-        : focus.surface
-          ? `Keep the learner’s requested focus primary: “${focus.surface}”. Do not silently replace its relation with a neighbouring one.`
+        : unsupportedCausalClaim
+          ? 'Qualify the proposed causal answer without repeating or paraphrasing it. Keep it open until public evidence supports the missing connection.'
+          : boundedFocus.surface
+            ? `Keep the learner’s requested focus primary: “${boundedFocus.surface}”. Do not silently replace its relation with a neighbouring one.`
           : 'Keep the current public relation primary; do not silently substitute a neighbouring relation.',
     },
     handoff_contract: {
@@ -766,6 +802,9 @@ function declarativeFallbackFocus(
   const surface = oneLine(focus.primary_surface || uptake.accepted_meaning || uptake.learner_surface);
   if (contract?.discourse_plane?.plane === 'instructional_meta') {
     return 'I will keep the same point and restate it in short, ordinary words before we return to the inquiry.';
+  }
+  if (contract?.handoff_contract?.mode === 'declarative_unsupported_claim') {
+    return 'We will leave the proposed causal answer open until public evidence establishes the missing connection.';
   }
   const terms = new Set([...(focus.primary_terms || []), ...(uptake.focus_terms || [])].map(normalizeToken));
   if (

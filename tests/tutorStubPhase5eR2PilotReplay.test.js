@@ -23,6 +23,7 @@ import {
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
 } from '../services/tutorStubDramaticRelease.js';
+import { auditTutorStubFrozenLeak } from '../services/tutorStubFrozenReplay.js';
 import {
   buildTutorStubLearnerIntegrationTarget,
   buildTutorStubResponseConfiguration,
@@ -654,6 +655,128 @@ test('Phase 5f A1 turn-7 replay delivers the Tideway trace once and uses a deict
     fallback,
   );
   assert.equal(auditTutorStubDramaticReleaseResponse({ text: fallback, frame: dramaticReleaseFrame }).ok, true, fallback);
+});
+
+test('Phase 5f A2 turn-8 replay recognises the completed Tideway finding without repeated say-backs', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-031-tideway-makerspace.yaml'));
+  const publicEvidence = world.premises.map((premise) => ({
+    premise: premise.id,
+    turn: 8,
+    via: 'fixture',
+    surface: premise.surface,
+    fact: premise.fact,
+  }));
+  const apply = (learnerText) =>
+    applyTutorStubPublicLearnerRecordUpdate({
+      update: {
+        adopt: world.proofPaths[0].premises,
+        retract: [],
+        derive: [world.secret.fact],
+        hypothesis: null,
+        assert_answer: null,
+      },
+      world,
+      record: createTutorStubPublicLearnerRecord(world),
+      tutorTurn: 8,
+      learnerText,
+      publicStagedEvidence: publicEvidence,
+      publicReleaseLedger: publicEvidence,
+    });
+
+  for (const learnerText of [
+    'The north joint’s under-strength blue connectors lost stiffness first, and the deck twisted forty milliseconds later, so that batch caused the twist.',
+    'The bridge twisted because the under-strength blue connectors at the north joint lost stiffness first.',
+    'Under-strength blue connectors at the north joint lost stiffness first, causing the deck to twist forty milliseconds later.',
+  ]) {
+    const result = apply(learnerText);
+    assert.equal(result.model.assessment.bestPathCoverage, 1, learnerText);
+    assert.equal(result.model.assessment.finalSecretEntailed, true, learnerText);
+    assert.equal(result.model.assessment.assertedSecret, true, learnerText);
+    assert.equal(result.model.assessment.bottleneck, 'grounded_asserted_secret', learnerText);
+    assert.match(result.accepted.authoredRecognition.assertedPattern, /^blue_connectors_/u, learnerText);
+  }
+
+  const denial = apply('The under-strength blue connectors are not responsible for the bridge twist.');
+  assert.equal(denial.model.assessment.finalSecretEntailed, true);
+  assert.equal(denial.model.assessment.assertedSecret, false);
+  assert.equal(denial.accepted.authoredRecognition.assertedPattern, null);
+});
+
+test('Phase 5f A2 unsupported-answer recovery holds the public boundary without echoing the concealed conclusion', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-031-tideway-makerspace.yaml'));
+  const learnerText = 'The under-strength blue connector batch caused the twist.';
+  const responseCompositionFrame = {
+    learner_move: {
+      summary: 'Learner names the weak connector batch as the cause.',
+      discourse_move: 'inference',
+      evidence_use: 'omits_warrant',
+    },
+    learner_dag: {
+      bottleneck: 'release_or_pacing_gap',
+      final_secret_entailed: false,
+      asserted_secret: false,
+    },
+    conversational_completion: { resolved: false },
+    due_evidence_surfaces: [],
+  };
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    publicQuestion: world.question,
+    responseCompositionFrame,
+    actionFamily: 'stage_next_step',
+    tactic: 'unadorned_report',
+  });
+  const responseConfiguration = {
+    engagement_stance: 'plain',
+    action_family: 'stage_next_step',
+    actorial_part: 'record_keeper',
+    actorial_host_part: 'record_keeper',
+    actorial_performance: { id: 'unadorned_report' },
+  };
+  const uptake = deterministicTutorStubTurnProgressionUptake({
+    contract,
+    defaultUptake: 'Weak connectors alone do not prove that yet.',
+    recentTutorTexts: [],
+    variationKey: 'phase5f-a2-proof-skipper-turn-4',
+  });
+  const fallback = deterministicTutorStubConfiguredContinuationFallback({
+    uptake,
+    responseConfiguration,
+    world,
+    learnerText,
+    turnProgressionContract: contract,
+    recentTutorTexts: [],
+    variationKey: 'phase5f-a2-proof-skipper-turn-4',
+  });
+  const rejectedA2Fallback =
+    'Weak connectors alone do not prove that yet. Keep only what the public evidence already shows. What does that let us carry forward about “The under-strength blue connector batch caused the twist”?';
+
+  assert.equal(contract.handoff_contract.mode, 'declarative_unsupported_claim');
+  assert.equal(contract.handoff_contract.question_allowed, false);
+  assert.equal(contract.turn_focus_contract.primary_source, 'unsupported_causal_claim_boundary');
+  assert.doesNotMatch(uptake, /blue connector batch|caused the twist/iu);
+  assert.doesNotMatch(fallback, /blue connector batch|caused the twist/iu);
+  assert.doesNotMatch(fallback, /\?/u);
+  assert.equal(
+    auditTutorStubFrozenLeak({
+      text: rejectedA2Fallback,
+      world,
+      tutorTurn: 4,
+      learnerText,
+      publicPremiseIds: ['p_builder', 'p_strength'],
+    }).leaks.some((leak) => leak.type === 'private_final_conclusion'),
+    true,
+  );
+  assert.deepEqual(
+    auditTutorStubFrozenLeak({
+      text: fallback,
+      world,
+      tutorTurn: 4,
+      learnerText,
+      publicPremiseIds: ['p_builder', 'p_strength'],
+    }).leaks,
+    [],
+  );
 });
 
 test('due-release recovery stays deictic across non-Tideway worlds while older public clues retain their surface anchor', () => {

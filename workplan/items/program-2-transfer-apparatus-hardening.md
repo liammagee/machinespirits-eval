@@ -9,7 +9,7 @@ source: review
 created: 2026-07-28
 updated: 2026-07-28
 branch: codex/program-2-phase5e-r2-replication
-verification: "Without model calls, frozen A1-A4 prefixes plus non-Skyway fixtures prove queued recovery for every released-but-unheld best-path premise, rejection of closure while strict DAG premises remain missing, idempotent one-time due-clue delivery, and preservation of cue-bearing committee content; focused, derivation-quality, hermetic-manifest, lint, and workplan source gates pass."
+verification: "Without model calls, frozen A1-A4 and Phase 5f A2 prefixes plus non-Skyway fixtures prove queued recovery for every released-but-unheld best-path premise, rejection of closure while strict DAG premises remain missing, idempotent one-time due-clue delivery, preservation of cue-bearing committee content, recognition of authored entailed-answer paraphrases, and a fail-closed unsupported-answer recovery that does not echo the proposed conclusion. Focused, derivation-quality, hermetic-manifest, lint, and workplan source gates must pass before a replacement certificate is prepared."
 claim_status: methods
 links:
   notes:
@@ -54,5 +54,10 @@ longer test transfer.
 - Replays cover the observed A4 turn-2 duplicate, turn-9/16 multi-gap state,
   turn-34 sole-gap state, and the committee handoff, plus at least two worlds
   outside Skyway.
+- An entailed natural-language answer may close through a finite,
+  negation-aware authored recognition contract; a denied answer must not close.
+- Before entailment, deterministic recovery must hold a premature causal claim
+  at the public-evidence boundary without repeating the proposed conclusion or
+  weakening the secrecy guard.
 
 No paid pilot belongs to this card.

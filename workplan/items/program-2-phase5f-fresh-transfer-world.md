@@ -9,7 +9,7 @@ source: review
 created: 2026-07-28
 updated: 2026-07-28
 branch: codex/program-2-phase5e-r2-replication
-verification: "A1 aborted before any row sealed because the exact newly due p_trace source was repeated by the generic integration question; its traces remain immutable apparatus evidence. The A2 replacement binds the narrow deictic due-release repair, source, Tideway world, and unchanged gates in a fresh zero-model plan and certificate. A2 must seal 4/4 with coverage, safety, provenance, and attrition gates passing before any independently certified 18-dialogue cohort is designed or launched."
+verification: "A2 sealed 4/4 rows with no final attrition, full coverage by turn 16, hard safety passing, and all 55 gate-grade decisions clean. It nevertheless exposed apparatus burden: the affective-resistant committee row had already entailed and stated the answer at turn 8 but did not close until turn 25; 38/53 sealed turns used deterministic fallback; and both proof-skipper first attempts failed closed when fallback echoed an unsupported causal answer. Zero-model replays now recognise the observed entailed Tideway paraphrases, reject their negations, and compile unsupported causal claims to a declarative public-evidence boundary without repeating the proposed answer. A fresh suffix, certificate, and payload authorization are required before any replacement pilot; no 18-dialogue cohort is yet licensed."
 claim_status: planned
 depends_on:
   - program-2-transfer-apparatus-hardening
@@ -58,6 +58,26 @@ handoff. The `5f-pilot-a2` launcher key writes distinct `p5f-pilot-a2` jobs to
 `exports/program2-live-pilot-5f-pilot-a2/`, preserving A1. Its certificate is
 `exports/program2-live-pilot-5f-pilot-a2/launch-certificate.json`. Planning and
 certification remain zero-model operations and do not authorize execution.
+
+A2 then sealed all four cells and passed its frozen feasibility gates, but it
+did so with substantial recovery burden. Across 53 sealed tutor turns, 38 used
+the deterministic fallback. The `affective_resistant|committee` learner held
+the complete proof and publicly stated the correct causal finding at turn 8,
+but Tideway had no authored paraphrase-recognition contract, so strict closure
+was not registered until turn 25. Both `proof_skipper` first attempts also
+failed closed when the terminal fallback repeated the learner's premature
+causal answer and the unchanged secrecy guard correctly classified that echo
+as `private_final_conclusion`.
+
+The post-A2 repair is general at the runtime boundary and finite at the authored
+world boundary. A no-due-evidence turn classified as `omits_warrant` or
+`overleaps_evidence`, while the public learner DAG does not entail the answer,
+now compiles a declarative unsupported-claim handoff that must not quote,
+confirm, deny, or paraphrase the proposed answer. Tideway also declares a
+small, negation-aware set of completed causal paraphrase patterns; they can
+register closure only after the public record already entails the secret. The
+A2 artifacts and certificate remain immutable. These source changes require a
+new pilot suffix and fresh certificate before any further paid run.
 
 Skyway A1-A4 remain apparatus-calibration evidence only. They are never pooled
 with this prospective cohort. The four-dialogue pilot and 18-dialogue cohort

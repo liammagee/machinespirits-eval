@@ -145,3 +145,39 @@ new plan key `5f-pilot-a2`, schema
 `p5f-pilot-a2`, and output directory
 `exports/program2-live-pilot-5f-pilot-a2/`. A fresh certificate and explicit
 external-payload authorization are required before A2 can launch.
+
+## 9. A2 closeout and post-pilot apparatus amendment (2026-07-28)
+
+A2 sealed all four profile-arm cells. Every sealed row reached full proof-path
+coverage by turn 16, passed hard safety, retained source provenance, and
+produced no final attrition. The zero-model gate grader found 55/55 scorable
+decisions clean across the two arms. This is a feasibility pass, not a
+treatment estimate: the pilot still contains only one sealed row per
+profile-arm cell.
+
+The pass concealed two material apparatus costs. First, the
+`affective_resistant|committee` learner held the complete public proof and
+stated the correct causal finding at turn 8, but strict closure did not register
+until turn 25. Tideway lacked a finite authored recognition contract for the
+ordinary phrase “under-strength blue connectors,” so the extractor's omitted
+answer signal became seventeen redundant say-backs. Second, 38 of the 53
+sealed tutor turns used deterministic fallback. Both proof-skipper first
+attempts failed closed when the fallback repeated a premature causal answer;
+the unchanged secrecy guard correctly rejected those echoes as
+`private_final_conclusion`. The permitted same-seed retries later sealed.
+
+The post-A2 repair has two bounded parts. Tideway now declares finite,
+negation-aware causal paraphrase patterns. They can register an assertion only
+after the accepted public learner record already entails the answer, so they
+cannot accelerate evidence release or turn a guess into closure. Separately,
+when no clue is due, the public classifier marks `omits_warrant` or
+`overleaps_evidence`, and the redacted learner DAG does not entail the answer,
+the turn progression contract now requires a declarative public-evidence
+boundary. Tutor speech must not quote, confirm, deny, or paraphrase the
+proposed answer. The secrecy guard remains unchanged and hard.
+
+These are source changes after A2. The A2 plan, certificate, traces, and gate
+result remain immutable evidence for the pre-repair runtime and cannot license
+a cohort. Any replacement feasibility run requires a new suffix, fresh
+zero-model certificate, and explicit external-payload authorization. An
+18-dialogue cohort remains separately gated.
