@@ -80,14 +80,13 @@ import {
 } from '../services/tutorStubWarrantPremiseAudit.js';
 import { projectTutorStubStrictDagAuditState as buildStrictDagAuditState } from '../services/tutorStubStrictDagAuditState.js';
 import {
+  createTutorStubCurrentDebugReporter,
   createTutorStubDebugLinePrinters,
   formatTutorStubOpeningDebugId as openingDebugId,
   formatTutorStubSafeTimestamp as safeTimestampForFile,
   formatTutorStubStateTurnDebugId as turnDebugId,
   formatTutorStubTurnDebugId as formatTurnDebugId,
   printTutorStubAutomaticTechnicalDetails,
-  projectTutorStubCurrentDebugLines,
-  projectTutorStubCurrentDebugSelection,
   resolveTutorStubStateRunDebugId as stateRunDebugId,
   tutorStubAutomaticTechnicalDetailsEnabled as automaticTechnicalDetailsEnabled,
 } from '../services/tutorStubDebugIdentity.js';
@@ -830,6 +829,12 @@ let cliPresentation = createTutorStubCliPresentation({
 });
 const C = { ...cliPresentation.colors };
 const { printTurnDebugLine, printOpeningDebugLine } = createTutorStubDebugLinePrinters({
+  write: console.log,
+  colors: C,
+});
+const printCurrentDebugId = createTutorStubCurrentDebugReporter({
+  formatClipboardText: formatTutorStubDebugClipboardText,
+  copyClipboard: copyTutorStubTextToClipboard,
   write: console.log,
   colors: C,
 });
@@ -3443,26 +3448,6 @@ function reserveProgram2ProviderBudget({ maxTokens, trace = null, role = 'unknow
 
 function printAutomaticTechnicalDetails(state, render) {
   return printTutorStubAutomaticTechnicalDetails(state, render, { print: printWithConcurrentTerminal });
-}
-
-function printCurrentDebugId(state, { duringTurn = false } = {}) {
-  const { runId, completedId, activeId, selectedId, tracePath, lastCompletedTurnId } =
-    projectTutorStubCurrentDebugSelection(state, { duringTurn });
-  const clipboardText = formatTutorStubDebugClipboardText({
-    runId,
-    selectedId,
-    completedId,
-    activeId,
-    tracePath,
-  });
-  const clipboard = copyTutorStubTextToClipboard(clipboardText);
-  for (const line of projectTutorStubCurrentDebugLines(
-    { runId, selectedId, activeId, tracePath, lastCompletedTurnId, clipboard },
-    { colors: C },
-  )) {
-    console.log(line);
-  }
-  return { runId, completedId, activeId, tracePath, clipboard };
 }
 
 function traceDisplayPath(trace) {

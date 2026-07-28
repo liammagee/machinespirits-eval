@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import {
+  createTutorStubCurrentDebugReporter,
   createTutorStubDebugLinePrinters,
   formatTutorStubOpeningDebugId,
   formatTutorStubSafeTimestamp,
@@ -163,6 +164,56 @@ test('current debug lines preserve order, optional turn rows, trace fallback, cl
       '<dim>  clipboard unavailable; select this block to copy it into Codex<reset>\n',
     ],
   );
+});
+
+test('current debug reporter preserves injected clipboard envelope, writes, and public return shape', () => {
+  const clipboardCalls = [];
+  const copyCalls = [];
+  const lines = [];
+  const report = createTutorStubCurrentDebugReporter({
+    formatClipboardText: (envelope) => {
+      clipboardCalls.push(envelope);
+      return 'clipboard block';
+    },
+    copyClipboard: (text) => {
+      copyCalls.push(text);
+      return { copied: false, method: null };
+    },
+    write: (line) => lines.push(line),
+    colors: { cyan: '<cyan>', dim: '<dim>', reset: '<reset>' },
+  });
+  const result = report(
+    {
+      trace: { runId: 'run-a', filePath: '/tmp/run-a.jsonl' },
+      turns: [{ turn: 2, turnId: 'run-a:t002' }],
+    },
+    { duringTurn: true },
+  );
+  assert.deepEqual(clipboardCalls, [
+    {
+      runId: 'run-a',
+      selectedId: 'run-a:t003',
+      completedId: 'run-a:t002',
+      activeId: 'run-a:t003',
+      tracePath: '/tmp/run-a.jsonl',
+    },
+  ]);
+  assert.deepEqual(copyCalls, ['clipboard block']);
+  assert.deepEqual(result, {
+    runId: 'run-a',
+    completedId: 'run-a:t002',
+    activeId: 'run-a:t003',
+    tracePath: '/tmp/run-a.jsonl',
+    clipboard: { copied: false, method: null },
+  });
+  assert.deepEqual(lines, [
+    '<cyan>debug id ><reset> run-a:t003',
+    '<dim>  run id: run-a<reset>',
+    '<dim>  last completed turn: run-a:t002<reset>',
+    '<dim>  in-progress turn: run-a:t003<reset>',
+    '<dim>  trace: /tmp/run-a.jsonl<reset>',
+    '<dim>  clipboard unavailable; select this block to copy it into Codex<reset>\n',
+  ]);
 });
 
 test('debug line printers preserve technical gating, IDs, duplicate suppression, and shared colors', () => {
