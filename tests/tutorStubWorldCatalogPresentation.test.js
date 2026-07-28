@@ -3,7 +3,9 @@ import { createHash } from 'node:crypto';
 import {
   groupTutorStubWorldEntries,
   projectTutorStubWorldCatalogLines,
+  tutorStubWorldFlavourPhrase,
   tutorStubWorldFamilyKey,
+  tutorStubWorldLedgerTerm,
   tutorStubWorldPickerSummary,
   tutorStubWorldPresentation,
 } from '../services/tutorStubWorldPresentation.js';
@@ -21,6 +23,13 @@ test('world presentation and picker summaries preserve authored and fallback sem
     'First sentence.',
   );
   assert.equal(tutorStubWorldPickerSummary({ setting: '', question: 'Fallback question?' }), 'Fallback question?');
+  assert.equal(tutorStubWorldLedgerTerm({ presentation: { ledger_term: 'case book' } }), 'case book');
+  assert.equal(tutorStubWorldLedgerTerm(null), 'evidence record');
+  assert.equal(
+    tutorStubWorldFlavourPhrase({ presentation: { narrative_diction: 'plain archival' } }),
+    'plain archival flavour',
+  );
+  assert.equal(tutorStubWorldFlavourPhrase(null), "world's authored diction");
 });
 
 test('world catalogue projection preserves families, variants, tags, paths, order, and immutability', () => {

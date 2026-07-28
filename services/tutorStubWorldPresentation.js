@@ -16,6 +16,15 @@ export function tutorStubWorldPickerSummary(world) {
   return setting.split(/(?<=\.)\s/u)[0] || world?.question;
 }
 
+export function tutorStubWorldLedgerTerm(world) {
+  return String(tutorStubWorldPresentation(world).ledger_term || 'evidence record');
+}
+
+export function tutorStubWorldFlavourPhrase(world) {
+  const diction = tutorStubWorldPresentation(world).narrative_diction;
+  return diction ? `${diction} flavour` : "world's authored diction";
+}
+
 export function tutorStubWorldFamilyKey(world) {
   const presentation = tutorStubWorldPresentation(world);
   return String(presentation.family || presentation.variant_of || world.id);
