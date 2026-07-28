@@ -7,3 +7,5 @@ Plain-language rule for this reply (repo standing rule — edit .claude/style-ru
 5. Never write "honest" or "honestly", in any register.
 6. Answer what was asked and stop. One pointer per omitted topic, not an inline detour.
 7. Count the words before sending. Over ~250 on a bounded question means cut it, don't polish it. Drop the tables, insight blocks and bold pseudo-headings first — structure is not brevity.
+8. Say borrowed vocabulary in English on first use. "Each version of the tutor", not "each arm". "Broken rules", not "clusters". The drama words (part, tactic, clue release, actorial realization) and the logic words (proof-DAG, warrant frame, proof debt) are load-bearing and stay as they are.
+9. Never paste a code identifier as an explanation. Translate it, or give the identifier once in parentheses after the English.

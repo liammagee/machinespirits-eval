@@ -11,6 +11,26 @@ function directorFieldLines(label, text, colors) {
   return [`${colors.dim}  ${label}:${colors.reset} ${lines[0] || ''}`, ...lines.slice(1).map((line) => `    ${line}`)];
 }
 
+export function buildTutorStubDirectorInitialContext(world, { audienceLines = [] } = {}) {
+  if (!world) return null;
+  return {
+    stageNotes: [
+      `Before the first exchange, ${world.title} is set as a public inquiry: ${world.question}`,
+      String(world.setting || '').trim(),
+    ]
+      .filter(Boolean)
+      .join('\n'),
+    tutorCharacter:
+      'The tutor enters as an adaptive scene actor: patient with the learner, but ready to examine, keep the record, argue, witness, or close as the public evidence demands.',
+    learnerCharacter:
+      String(world.learnerVoice || '').trim() ||
+      'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
+    audienceContext: audienceLines.join('\n') || null,
+    registerNote:
+      "The tutor's voice should follow the public characters and scene pressure without adding hidden evidence or proof machinery.",
+  };
+}
+
 export function projectTutorStubDirectorContextLines(context, { colors = {} } = {}) {
   if (!context) return Object.freeze([]);
   const C = directorPresentationColors(colors);
@@ -54,4 +74,28 @@ export function projectTutorStubDirectorNotesLines(notes = {}, { colors = {} } =
     `${C.dim}  through ${notes.throughTurn > 0 ? `completed turn ${notes.throughTurn}` : 'the opening'}; future notes remain withheld${C.reset}\n`,
   );
   return Object.freeze(lines);
+}
+
+export function createTutorStubDirectorNotesModel({ committedReleaseRows, cloneValue = structuredClone } = {}) {
+  const committedRows = typeof committedReleaseRows === 'function' ? committedReleaseRows : () => [];
+  return function directorNotesIssuedSoFar(state) {
+    const throughTurn = Math.max(0, Number(state?.turns?.length || 0));
+    const openingIssued = Boolean(
+      state?.directorContext && (state.directorOpeningPresented || (state.history || []).length > 0),
+    );
+    const releases = committedRows(state, throughTurn)
+      .filter((entry) => entry.via === 'director')
+      .map((entry) => ({
+        turn: Number(entry.turn),
+        premise: entry.premise,
+        via: 'director',
+        surface: String(entry.surface || '').trim(),
+      }));
+    return {
+      schema: 'machinespirits.tutor-stub.director-notes.v1',
+      throughTurn,
+      opening: openingIssued ? cloneValue(state.directorContext) : null,
+      releases,
+    };
+  };
 }

@@ -9,12 +9,15 @@ import {
   TUTOR_STUB_SESSION_RECIPE_SCHEMA,
   applyTutorStubRecipeOptions,
   assertTutorStubResumeCompatibility,
+  buildTutorStubRecipeModelIdentity,
   buildTutorStubSessionRecipe,
   compareTutorStubResumeRecipe,
+  createTutorStubRecipeModelIdentityResolver,
   latestTutorStubResumeSource,
   normalizeTutorStubResumeTrace,
   readTutorStubSessionRecipe,
   resolveTutorStubResumeSource,
+  safeTutorStubRecipeBaseUrl,
   tutorStubExactRelaunchCommand,
   writeTutorStubSessionRecipe,
 } from '../services/tutorStubSessionRecipe.js';
@@ -95,6 +98,49 @@ test('recipe hash is deterministic and ignores creation time and presentation-on
   assert.equal(first.configHash, second.configHash);
   assert.notEqual(first.createdAt, second.createdAt);
   assert.equal(Object.isFrozen(first), true);
+});
+
+test('recipe model identity strips route credentials and unstable URL fields', () => {
+  assert.equal(safeTutorStubRecipeBaseUrl('not a URL'), null);
+  const identity = buildTutorStubRecipeModelIdentity(' openai.gpt-5 ', {
+    provider: 'openai',
+    model: 'gpt-5',
+    baseUrl: 'https://reader:secret@models.example/v1?region=test#private',
+    cli: false,
+    configured: true,
+    apiKeyEnv: 'SECRET_KEY',
+  });
+  assert.deepEqual(Object.keys(identity), ['ref', 'provider', 'model', 'baseUrl', 'cli', 'routingHash']);
+  assert.equal(identity.ref, 'openai.gpt-5');
+  assert.equal(identity.baseUrl, 'https://models.example/v1');
+  assert.match(identity.routingHash, /^[0-9a-f]{64}$/u);
+  assert.equal(identity.routingHash, buildTutorStubRecipeModelIdentity('openai.gpt-5', identity).routingHash);
+});
+
+test('recipe model identity resolver uses a supplied visible route or resolves one lazily', () => {
+  const calls = [];
+  const identify = createTutorStubRecipeModelIdentityResolver({
+    resolveModel: (ref) => {
+      calls.push(`resolve:${ref}`);
+      return { provider: 'codex', model: 'resolved-model', isConfigured: true };
+    },
+    getProviderConfig: (provider) => {
+      calls.push(`config:${provider}`);
+      return { base_url: null };
+    },
+    visibleResolvedModel: (resolved) => ({ provider: resolved.provider, model: resolved.model, cli: true }),
+  });
+  assert.equal(identify('codex.alias', { provider: 'codex', model: 'supplied', cli: true }).model, 'supplied');
+  assert.deepEqual(calls, []);
+  assert.equal(identify('codex.alias').model, 'resolved-model');
+  assert.deepEqual(calls, ['resolve:codex.alias', 'config:codex']);
+  assert.equal(identify('').provider, null);
+});
+
+test('the CLI binds rather than redeclares recipe model identity helpers', () => {
+  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  assert.match(source, /createTutorStubRecipeModelIdentityResolver/u);
+  assert.doesNotMatch(source, /function (?:safeTutorStubRecipeBaseUrl|tutorStubRecipeModelIdentity)\(/u);
 });
 
 test('recipe captures semantic committee, pressure, light-adaptation, and evaluation identity options', () => {

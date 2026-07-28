@@ -6,7 +6,11 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { projectTutorStubModelChoiceLines } from '../services/tutorStubModelChoicePresentation.js';
+import {
+  PREFERRED_TUTOR_MODEL_REFS,
+  buildTutorStubModelChoiceEntries,
+  projectTutorStubModelChoiceLines,
+} from '../services/tutorStubModelChoicePresentation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({
@@ -32,6 +36,97 @@ function modelEntry(index, { current = false } = {}) {
     access: index % 2 ? 'API key' : 'CLI login',
   };
 }
+
+test('model-choice catalogue preserves admission, access labels, exclusions, fallback, and ordering', () => {
+  const providers = {
+    codex: { models: { 'gpt-5.6-sol': 'gpt-5.6-sol', mini: 'gpt-mini' } },
+    openai: { api_key_env: 'OPENAI_API_KEY', models: { mini: 'gpt-5-mini' } },
+    local: { models: { beta: 'local-beta', alpha: 'local-alpha' } },
+    broken: { models: { ignored: 'ignored' } },
+  };
+  const configured = new Set(['codex', 'local']);
+  const entries = buildTutorStubModelChoiceEntries({
+    currentRef: 'external.current',
+    providers,
+    getProviderConfig(provider) {
+      if (provider === 'broken') throw new Error('broken provider');
+      return { isConfigured: configured.has(provider) };
+    },
+    isCliProvider: (provider) => provider === 'codex',
+    resolveModel: () => ({ provider: 'external', model: 'external-model' }),
+    unsupportedRefs: new Set(['codex.mini']),
+  });
+
+  assert.equal(Object.isFrozen(PREFERRED_TUTOR_MODEL_REFS), true);
+  assert.deepEqual(entries, [
+    {
+      ref: 'external.current',
+      provider: 'external',
+      alias: 'current',
+      model: 'external-model',
+      access: 'current launch model',
+      current: true,
+    },
+    {
+      ref: 'codex.gpt-5.6-sol',
+      provider: 'codex',
+      alias: 'gpt-5.6-sol',
+      model: 'gpt-5.6-sol',
+      access: 'CLI login',
+      current: false,
+    },
+    {
+      ref: 'local.alpha',
+      provider: 'local',
+      alias: 'alpha',
+      model: 'local-alpha',
+      access: 'local endpoint',
+      current: false,
+    },
+    {
+      ref: 'local.beta',
+      provider: 'local',
+      alias: 'beta',
+      model: 'local-beta',
+      access: 'local endpoint',
+      current: false,
+    },
+  ]);
+});
+
+test('model-choice catalogue admits an unconfigured current provider and tolerates unresolved current refs', () => {
+  const entries = buildTutorStubModelChoiceEntries({
+    currentRef: 'openai.mini',
+    providers: { openai: { api_key_env: 'OPENAI_API_KEY', models: { mini: 'gpt-5-mini' } } },
+    getProviderConfig: () => ({ isConfigured: false }),
+    isCliProvider: () => false,
+    resolveModel: () => {
+      throw new Error('must not resolve an already listed current ref');
+    },
+  });
+  assert.deepEqual(entries, [
+    {
+      ref: 'openai.mini',
+      provider: 'openai',
+      alias: 'mini',
+      model: 'gpt-5-mini',
+      access: 'OPENAI_API_KEY configured',
+      current: true,
+    },
+  ]);
+
+  assert.deepEqual(
+    buildTutorStubModelChoiceEntries({
+      currentRef: 'missing.ref',
+      getProviderConfig: () => ({ isConfigured: false }),
+      isCliProvider: () => false,
+      resolveModel: () => {
+        throw new Error('unknown');
+      },
+    }),
+    [],
+  );
+});
 
 test('model-choice projection pins current marker, padding, exact bytes, and input immutability', () => {
   const input = {

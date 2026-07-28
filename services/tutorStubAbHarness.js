@@ -597,10 +597,10 @@ export function renderTutorStubAbMarkdown(report) {
     '',
     '## Arms',
     '',
-    'Failure clusters are the headline. Pass is all-or-nothing per turn and can read',
-    '0/N for every arm at once; the cluster tallies say how far each arm is from clean.',
+    'Broken rules are the headline. Pass is all-or-nothing per turn and can read',
+    '0/N for every arm at once; the broken-rule tallies say how far each arm is from clean.',
     '',
-    '| Arm | Features | Turns | Clusters (hard) | vs baseline | Pass | Safety | Advisory chars | Reply chars | Latency |',
+    '| Arm | Features | Turns | Broken rules (hard) | vs baseline | Pass | Safety | Advisory chars | Reply chars | Latency |',
     '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ];
   for (const arm of report.summary.arms) {
@@ -613,7 +613,7 @@ export function renderTutorStubAbMarkdown(report) {
     if (!arm.clusterDeltas.length && !arm.flipsVsBaseline.length) continue;
     lines.push('', `## ${arm.label} vs baseline`, '');
     if (arm.clusterDeltas.length) {
-      lines.push('| Failure cluster | Baseline | Arm | Delta |', '| --- | ---: | ---: | ---: |');
+      lines.push('| Broken rule | Baseline | Arm | Delta |', '| --- | ---: | ---: | ---: |');
       for (const entry of arm.clusterDeltas) {
         lines.push(
           `| ${cell(entry.cluster)} | ${entry.baseline} | ${entry.arm} | ${entry.delta > 0 ? '+' : ''}${entry.delta} |`,

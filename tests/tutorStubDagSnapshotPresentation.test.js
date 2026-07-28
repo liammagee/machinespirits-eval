@@ -6,7 +6,10 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { projectTutorStubDagSnapshotLines } from '../services/tutorStubDagSnapshotPresentation.js';
+import {
+  projectTutorStubDagSnapshot,
+  projectTutorStubDagSnapshotLines,
+} from '../services/tutorStubDagSnapshotPresentation.js';
 import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -24,6 +27,81 @@ test('missing tutor-DAG snapshots project no terminal lines', () => {
   assert.deepEqual(projectTutorStubDagSnapshotLines(), []);
   assert.deepEqual(projectTutorStubDagSnapshotLines({ snapshot: null, colors: COLORS }), []);
   assert.equal(Object.isFrozen(projectTutorStubDagSnapshotLines()), true);
+});
+
+test('tutor-DAG snapshot projection preserves nodes, edges, releases, and unknown references', () => {
+  const pSeen = { fact: ['observed', 'mark'] };
+  const world = {
+    releaseSchedule: [
+      { premise: 'p_seen', turn: 2, via: 'tutor' },
+      { premise: 'p_next', turn: 7, via: 'director' },
+    ],
+    premiseById: new Map([['p_seen', pSeen]]),
+  };
+  const dag = {
+    schema: 'fixture.dag.v1',
+    derivable: true,
+    root: 'root',
+    leaves: ['p_seen', 'p_unknown'],
+    nodes: [
+      { id: 'seen', leaf: true, premiseId: 'p_seen', origin: 'premise', fact: pSeen.fact },
+      { id: 'root', origin: 'rule', rule: 'R1', statement: { content: { rel: 'grounded_L', of: ['answer', 'x'] } } },
+    ],
+    edges: [
+      { from: 'root', to: 'seen', rule: 'R1' },
+      { from: 'missing', to: 'root' },
+    ],
+  };
+
+  const snapshot = projectTutorStubDagSnapshot({
+    dag,
+    world,
+    tutorTurn: 5,
+    releasedRows: [{ premise: 'p_seen', turn: 3 }],
+    nextRelease: { premise: 'p_next', turn: 7, via: 'director', surface: 'private' },
+  });
+
+  assert.equal(snapshot.schema, 'fixture.dag.v1');
+  assert.equal(snapshot.rootLabel, 'ground:answer(x)');
+  assert.equal(snapshot.leavesReleased, 1);
+  assert.equal(snapshot.leavesTotal, 2);
+  assert.deepEqual(snapshot.nextRelease, { premise: 'p_next', turn: 7, via: 'director' });
+  assert.deepEqual(snapshot.leaves, [
+    {
+      premise: 'p_seen',
+      fact: 'observed(mark)',
+      released: true,
+      scheduledTurn: 2,
+      releasedTurn: 3,
+      via: 'tutor',
+    },
+    {
+      premise: 'p_unknown',
+      fact: 'p_unknown',
+      released: false,
+      scheduledTurn: null,
+      releasedTurn: null,
+      via: null,
+    },
+  ]);
+  assert.equal(snapshot.nodes[0].label, 'hold:p_seen');
+  assert.equal(snapshot.nodes[1].fact, 'answer(x)');
+  assert.equal(snapshot.edges[0].fromLabel, 'ground:answer(x)');
+  assert.equal(snapshot.edges[0].toLabel, 'hold:p_seen');
+  assert.equal(snapshot.edges[1].fromLabel, 'unknown');
+});
+
+test('tutor-DAG snapshot projection preserves missing-input and no-next-release branches', () => {
+  assert.equal(projectTutorStubDagSnapshot(), null);
+  assert.equal(projectTutorStubDagSnapshot({ dag: {}, world: null }), null);
+  const snapshot = projectTutorStubDagSnapshot({
+    dag: { schema: 'fixture', derivable: false, root: 'missing' },
+    world: { releaseSchedule: [], premiseById: new Map() },
+    tutorTurn: 1,
+  });
+  assert.equal(snapshot.rootLabel, 'unknown');
+  assert.equal(snapshot.nextRelease, null);
+  assert.deepEqual(snapshot.leaves, []);
 });
 
 test('non-derivable tutor-DAG projection pins exact bytes and its trailing blank line', () => {
@@ -175,7 +253,7 @@ test('a live technical session preserves the exact Marrick tutor-DAG terminal bl
   }
 });
 
-test('the CLI retains snapshot construction, state access, terminal writes, and every runtime caller', () => {
+test('the CLI retains snapshot state access, terminal writes, and every runtime caller', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDagSnapshotPresentation.js'), 'utf8');
   const technicalAnalysisSource = fs.readFileSync(
@@ -187,10 +265,11 @@ test('the CLI retains snapshot construction, state access, terminal writes, and 
     cliSource.indexOf('function oneLine'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubDagSnapshotPresentation\.js';/u);
+  assert.match(cliSource, /projectTutorStubDagSnapshot,/u);
   assert.match(snapshotSlice, /function buildTutorDagSnapshot\(state, tutorTurn\)/u);
   assert.match(snapshotSlice, /committedReleaseRows\(state, tutorTurn\)/u);
   assert.match(snapshotSlice, /nextReleaseRow\(state\)/u);
+  assert.match(snapshotSlice, /projectTutorStubDagSnapshot\(/u);
   assert.match(snapshotSlice, /projectTutorStubDagSnapshotLines/u);
   assert.match(snapshotSlice, /console\.log\(line\)/u);
   assert.doesNotMatch(snapshotSlice, /proof leaves released/u);
@@ -200,6 +279,7 @@ test('the CLI retains snapshot construction, state access, terminal writes, and 
     /import \{ projectTutorStubDagSnapshotLines \} from '\.\/tutorStubDagSnapshotPresentation\.js';/u,
   );
   assert.match(serviceSource, /export function projectTutorStubDagSnapshotLines/u);
+  assert.match(serviceSource, /export function projectTutorStubDagSnapshot/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);
   assert.doesNotMatch(serviceSource, /\b(?:fs|console|process|fetch|Date\.now)\s*[.(]/u);
 });

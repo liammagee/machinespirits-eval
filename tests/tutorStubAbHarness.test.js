@@ -231,7 +231,7 @@ test('runner reports cluster totals and per-cluster deltas against the baseline'
   assert.ok(instrumented.flipsVsBaseline.every((flip) => flip.from === 'fail' && flip.to === 'pass'));
 
   const markdown = renderTutorStubAbMarkdown(report);
-  assert.match(markdown, /Clusters \(hard\)/u);
+  assert.match(markdown, /Broken rules \(hard\)/u);
   assert.match(markdown, /-6 \(-3\)/u);
 
   const html = renderTutorStubAbTranscriptHtml(report);

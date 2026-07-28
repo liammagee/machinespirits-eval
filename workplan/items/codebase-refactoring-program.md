@@ -51,6 +51,19 @@ links:
     - refactor-tutor-stub-feature-map-projection
     - refactor-tutor-stub-release-notes-projection
     - refactor-tutor-stub-dag-snapshot-projection
+    - refactor-tutor-stub-dag-snapshot-model
+    - refactor-tutor-stub-second-loop-recovery
+    - refactor-tutor-stub-debug-identifiers
+    - refactor-tutor-stub-fact-matching
+    - refactor-tutor-stub-public-evidence
+    - refactor-tutor-stub-response-leak-audit
+    - refactor-tutor-stub-one-line-projection
+    - refactor-tutor-stub-generous-fallback
+    - refactor-tutor-stub-director-notes-model
+    - refactor-tutor-stub-prompt-blocks
+    - refactor-tutor-stub-recipe-model-identity
+    - refactor-tutor-stub-model-temperature
+    - refactor-tutor-stub-cli-parsing
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -71,6 +84,15 @@ links:
     - refactor-tutor-stub-closeout-report-presentation
     - refactor-tutor-stub-field-report-presentation
     - refactor-tutor-stub-curriculum-progress-presentation
+    - refactor-tutor-stub-curriculum-catalog-presentation
+    - refactor-tutor-stub-world-catalog-presentation
+    - refactor-tutor-stub-picker-presentation
+    - refactor-tutor-stub-picker-entries
+    - refactor-tutor-stub-world-grouping
+    - refactor-tutor-stub-world-vocabulary
+    - refactor-tutor-stub-launch-mode-contract
+    - refactor-tutor-stub-model-choice-catalog
+    - refactor-tutor-stub-director-context
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -698,3 +720,300 @@ Log:
   75/75 focused assertions, 7,377/7,377 root tests, and 137/137 tutor-core
   tests. All selected files executed with zero skips; static and source-only
   workplan gates are green.
+- 2026-07-28 — PR #329 merged the curriculum-progress child as `8049a4cf`
+  with all ten CI lanes green. Closed that child and activated
+  `refactor-tutor-stub-curriculum-catalog-presentation` for the remaining pure
+  `--list-curriculum-modules` and non-TTY `/board` line projection. Curriculum
+  loading, public module normalization, commands, and terminal writes remain
+  in their current owners; the canonical pre-extraction catalogue is 28 lines,
+  852 bytes, and SHA-256
+  `ded71f142f94e2960d289b988b0930bf5356c332b9fc831303be25e1b1aaacf7`.
+- 2026-07-28 — The curriculum-catalogue child reached review with a 10-line
+  pure projector, a four-line net CLI reduction, exact 852-byte live parity,
+  30/30 focused assertions, 7,400/7,400 root tests, and 137/137 tutor-core
+  tests. All 550 selected files executed with zero skips; static and
+  source-only workplan gates are green, and command/runtime movement remains
+  excluded behind the browser/Electron acceptance gate.
+- 2026-07-28 — PR #334 merged the curriculum-catalogue child as `8dba3582`.
+  Closed that child and activated
+  `refactor-tutor-stub-world-catalog-presentation` for authorial world-summary
+  helpers and deterministic `--list-worlds` lines. World loading, eligibility,
+  family grouping, picker behavior, commands, and terminal writes remain in
+  their current owners; setting/diction presentation remains explicitly
+  separate from register. The pre-extraction catalogue is 71 lines, 6,670
+  bytes, and SHA-256
+  `a7f97c026e1f19d18d56b3f061ecf51772a76c22fa2dc121df9a58d91dafd42c`.
+- 2026-07-28 — The world-catalogue child reached review with one 36-line pure
+  presentation owner, a 24-line net CLI reduction, exact 6,670-byte live
+  parity, 27/27 focused assertions, 7,403/7,403 root tests, and 137/137
+  tutor-core tests. All 551 selected files executed with zero skips; static and
+  source-only workplan gates are green, and setting/diction remains separate
+  from register policy.
+- 2026-07-28 — PR #338 merged the world-catalogue child through `30b59a24`.
+  Closed that child and activated `refactor-tutor-stub-picker-presentation` for
+  deterministic launch, scenario, and curriculum picker lines only. Before
+  editing, `scripts/tutor-stub.js` was 25,107 lines and the three keyboard
+  functions were 87, 134, and 123 lines; selection state, key handling,
+  terminal effects, loading, commands, and runtime behavior remain CLI-owned.
+- 2026-07-28 — The picker-presentation child reached review with one 119-line
+  pure owner, a 38-line net CLI reduction, and the three keyboard functions at
+  80, 118, and 103 lines. All 53 focused assertions, 7,413 root assertions
+  across 541 files, and 137 tutor-core assertions pass with zero skips; every
+  manifest, source-workplan, ref, static, syntax, diff, and zero-cycle gate is
+  green.
+- 2026-07-28 — Activated the dependent
+  `refactor-tutor-stub-picker-entries` slice from PR #339's reviewed head to
+  move only scenario and curriculum entry shaping into the pure picker owner.
+  Loading, grouping, default resolution, selection, and terminal behavior stay
+  in the CLI.
+- 2026-07-28 — The picker-entry child reached review with a 19-line net CLI
+  reduction, scenario/curriculum functions at 99/102 lines, 55 focused
+  assertions, 7,415 root assertions, and 137 tutor-core assertions green with
+  zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-grouping` from PR #340's reviewed head to give
+  world-family keys and base-first grouping one pure owner. Filesystem loading,
+  production eligibility, ordering inputs, and terminal consumers remain in
+  the CLI.
+- 2026-07-28 — The world-grouping child reached review with an 18-line net CLI
+  reduction, exact catalogue parity, 21 focused assertions, 7,416 root
+  assertions, and 137 tutor-core assertions green with zero skips. All static
+  and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-vocabulary` from PR #341's reviewed head to move
+  authored ledger and narrative-diction labels beside world presentation while
+  leaving prompts, register policy, runtime state, and all effects unchanged.
+- 2026-07-28 — The world-vocabulary child reached review with an eight-line net
+  CLI reduction, 11 focused assertions, 7,416 root assertions, and 137
+  tutor-core assertions green with zero skips. World diction remains explicitly
+  separate from tutor register; all static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-launch-mode-contract` from PR #342's reviewed head to
+  give the two-mode catalogue and alias normalization one dependency-free
+  owner. TTY admission, rendering, input, dispatch, and process behavior remain
+  CLI-owned.
+- 2026-07-28 — The launch-mode child reached review with a 35-line net CLI
+  reduction, 14 focused assertions, 7,418 root assertions, and 137 tutor-core
+  assertions green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-model-choice-catalog` from PR #343's reviewed head to
+  move pure provider-model admission, access labeling, fallback, and ordering
+  into the existing model-choice owner. Provider loading, commands, pickers,
+  and effects remain CLI-owned.
+- 2026-07-28 — The model-choice catalogue child reached review with a 47-line
+  net CLI reduction, 55 focused assertions, 7,420 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-director-context` from PR #344's reviewed head to move
+  pure initial director-context construction beside its line projection.
+  Audience derivation, prelude state, traces, release notes, commands, and
+  terminal effects remain CLI-owned.
+- 2026-07-28 — The director-context child reached review with a 15-line net CLI
+  reduction, 48 focused assertions, 7,421 root assertions, and 137 tutor-core
+  assertions green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-public-prompt` from PR #345's reviewed head to move
+  pure public world-prompt projection into a dependency-free owner. World
+  loading, audience derivation, prompt assembly, model calls, state, and effects
+  remain in their current owners.
+- 2026-07-28 — The public-world-prompt child reached review with a 25-line net
+  CLI reduction, 53 focused assertions, 7,423 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass; the localhost suites required their normal authorized execution rather
+  than the binding-restricted filesystem sandbox.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-world-speaker-prompt` from PR #346's reviewed head to move
+  pure speaking-tutor evidence-contract projection beside the public-world
+  projector. World loading, DAG admission, authorial vocabulary resolution,
+  prompt assembly, model calls, state, and effects remain in their current
+  owners.
+- 2026-07-28 — The world-speaker-prompt child reached review with a 19-line net
+  CLI reduction, 55 focused assertions, 7,425 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-human-discourse-config` from PR #347's reviewed head to
+  move the pure three-mode run contract and stable schema/phase constants into
+  a dependency-free owner. Normalization, prompt construction, turn state, DAG
+  execution, model calls, traces, and effects remain in their current owners.
+- 2026-07-28 — The human-discourse-config child reached review with a 45-line
+  net CLI reduction, 51 focused assertions, 7,427 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass after removing the extraction's stale import and formatting its new
+  dependency-free owner.
+- 2026-07-28 — The first ten-run stack audit found that runs 4–10 had not
+  reached `main`: their PRs were alternately merged into intermediate branches
+  or closed as those bases disappeared. Activated
+  `refactor-tutor-stub-stack-recovery`, rebased the preserved final branch onto
+  current `origin/main`, and froze its cumulative delta to the seven reviewed
+  slices plus tests, manifests, and authored workplan sources.
+- 2026-07-28 — Stack recovery reached review with 69 focused, 7,427 root, and
+  137 tutor-core assertions green with zero skips. All static, manifest,
+  source-only workplan, and ref gates pass; no generated workplan view is in
+  the cumulative delta.
+- 2026-07-28 — Activated second-loop run 1,
+  `refactor-tutor-stub-register-palette`, from recovery PR #349's reviewed head.
+  Registry loading, CLI parsing, runtime selection, state, and effects remain
+  in their current owners.
+- 2026-07-28 — Second-loop register-palette run reached review with a 22-line
+  net CLI reduction, 67 focused assertions, 7,429 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 2,
+  `refactor-tutor-stub-guard-spans`, from PR #350's reviewed head. Guard
+  evaluation, repair, accounting, runtime state, and effects remain in their
+  current owners.
+- 2026-07-28 — Second-loop guard-span run reached review with an 89-line net
+  CLI reduction, 26 focused assertions, 7,431 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 3,
+  `refactor-tutor-stub-repair-spans`, from PR #351's reviewed head. Repair
+  selection, accounting, runtime state, and effects remain in their current
+  owners.
+- 2026-07-28 — Second-loop repair-span run reached review with a 28-line net
+  CLI reduction, 14 focused assertions, 7,433 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 4,
+  `refactor-tutor-stub-guard-attempt-envelope`, from PR #352's reviewed head.
+  Audit evaluation, repair selection, accounting aggregation, runtime state,
+  and effects remain in their current owners.
+- 2026-07-28 — Second-loop guard-attempt-envelope run reached review with a
+  32-line net CLI reduction, 16 focused assertions, 7,435 root assertions, and
+  137 tutor-core assertions green with zero skips. All static and source-only
+  gates pass; one dead wrapper exposed by the extraction was removed.
+- 2026-07-28 — Activated second-loop run 5,
+  `refactor-tutor-stub-scaffold-state`, from PR #353's reviewed head. World and
+  dramaturgy loading, branch choice, release scheduling, model calls, runtime
+  state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop scaffold-state run reached review with a 51-line
+  net CLI reduction, 48 focused assertions, 7,438 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 6,
+  `refactor-tutor-stub-side-arc-state`, from PR #354's reviewed head. Learner
+  classification, generous inference, scaffold construction, model calls,
+  runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop side-arc-state run reached review with a 52-line net
+  CLI reduction, 49 focused assertions, 7,444 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 7,
+  `refactor-tutor-stub-warrant-audit-projection`, from PR #355's reviewed head.
+  Human-discourse extraction, world fact rendering, learner classification,
+  model calls, runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop warrant-audit run reached review with a 56-line net
+  CLI reduction, 48 focused assertions, 7,447 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 8,
+  `refactor-tutor-stub-strict-dag-audit`, from PR #356's reviewed head. DAG
+  construction, learner updates, warrant audit, proof debt, model calls,
+  runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop strict-DAG-audit run reached review with a 16-line
+  net CLI reduction, 48 focused assertions, 7,450 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 9,
+  `refactor-tutor-stub-dag-memory-reliability`, from PR #357's reviewed head.
+  Dropout scheduling, board mutation, DAG construction, model calls, runtime
+  state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop DAG-memory-reliability run reached review with 16
+  duplicate source lines removed across the CLI and public-analysis service,
+  41 focused assertions, 7,452 root assertions, and 137 tutor-core assertions
+  green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated second-loop run 10,
+  `refactor-tutor-stub-dag-snapshot-model`, from PR #358's reviewed head. The
+  completed `dag-snapshot-projection` card remains the earlier terminal-line
+  presentation slice.
+  Tutor-DAG construction, release scheduling, state access, terminal writes,
+  runtime callers, and effects remain in their current owners.
+- 2026-07-28 — Second-loop tutor-DAG-snapshot run reached review with a
+  61-line net CLI reduction, eight focused assertions including the byte-exact
+  live Marrick terminal block, 7,454 root assertions, and 137 tutor-core
+  assertions green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — GitHub marked PRs #352–#359 merged while retaining feature
+  branches as their bases, so their reviewed commits did not enter `main`.
+  Replayed only those eight missing slices onto current `origin/main` under
+  `refactor-tutor-stub-second-loop-recovery`; the complete hermetic contract
+  passes before beginning the third ten-run loop.
+- 2026-07-28 — Activated third-loop run 1,
+  `refactor-tutor-stub-debug-identifiers`, from recovery PR #360's reviewed
+  head. Trace persistence, filesystem writes, terminal presentation, and
+  runtime state remain in their current owners.
+- 2026-07-28 — Third-loop debug-identifier run reached review with a 10-line
+  net CLI reduction, five focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 2,
+  `refactor-tutor-stub-fact-matching`, from PR #361's reviewed head. Public
+  premise selection, entailment, leak policy, world state, and effects remain
+  in their current owners.
+- 2026-07-28 — Third-loop fact-matching run reached review with a 20-line net
+  CLI reduction, five focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 3,
+  `refactor-tutor-stub-public-evidence`, from PR #362's reviewed head. Release
+  scheduling, world loading, response audit policy, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop public-evidence run reached review with a 51-line
+  net CLI reduction, seven focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 4,
+  `refactor-tutor-stub-response-leak-audit`, from PR #363's reviewed head.
+  Release scheduling, response generation, guard orchestration, runtime state,
+  and effects remain in their current owners.
+- 2026-07-28 — Third-loop response-leak-audit run reached review with a
+  245-line net CLI reduction, 18 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 5,
+  `refactor-tutor-stub-one-line-projection`, from PR #364's reviewed head.
+  Call-site budgets, menu/report construction, terminal writes, runtime state,
+  and effects remain in their current owners.
+- 2026-07-28 — Third-loop one-line-projection run reached review with a
+  seven-line net CLI reduction, five focused assertions, and complete
+  zero-skip hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 6,
+  `refactor-tutor-stub-generous-fallback`, from PR #365's reviewed head.
+  Generous-inference detection, response generation, state, and effects remain
+  in their current owners.
+- 2026-07-28 — Third-loop generous-fallback run reached review with an
+  18-line net CLI reduction, 14 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 7,
+  `refactor-tutor-stub-director-notes-model`, from PR #366's reviewed head.
+  Director opening/release effects, traces, terminal writes, slash dispatch,
+  runtime state, and withholding policy remain unchanged.
+- 2026-07-28 — Third-loop director-notes-model run reached review with a
+  15-line net CLI reduction, seven focused assertions including byte-exact live
+  terminal fixtures, and complete zero-skip hermetic parity. All static and
+  source-only gates pass.
+- 2026-07-28 — Activated third-loop run 8,
+  `refactor-tutor-stub-prompt-blocks`, from PR #367's reviewed head. Authored
+  block constants, full prompt assembly, world selection, state, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop prompt-blocks run reached review with a 20-line net
+  CLI reduction, six focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 9,
+  `refactor-tutor-stub-recipe-model-identity`, from PR #368's reviewed head.
+  Live provider resolution, CLI model selection, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop recipe-model-identity run reached review with a
+  28-line net CLI reduction, 15 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 10,
+  `refactor-tutor-stub-model-temperature`, from PR #369's reviewed head.
+  Provider selection, requested-temperature state, model calls, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop model-temperature run reached review with a 10-line
+  net CLI reduction, three focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 1,
+  `refactor-tutor-stub-cli-parsing`, from PR #370's reviewed head. Argument
+  ownership, runtime defaults, launch orchestration, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop CLI-parsing run reached review with a 34-line net CLI
+  reduction, six focused assertions, and complete zero-skip hermetic parity.
+  All static and source-only gates pass.

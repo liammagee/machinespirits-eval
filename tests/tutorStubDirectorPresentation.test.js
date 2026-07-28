@@ -7,12 +7,42 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  buildTutorStubDirectorInitialContext,
+  createTutorStubDirectorNotesModel,
   projectTutorStubDirectorContextLines,
   projectTutorStubDirectorNotesLines,
 } from '../services/tutorStubDirectorPresentation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({ cyan: '<cyan>', dim: '<dim>', reset: '<reset>' });
+
+test('director initial context preserves authored world and injected audience semantics', () => {
+  const world = Object.freeze({
+    title: 'The Test Room',
+    question: 'What happened?',
+    setting: '  A lamp burns.  ',
+    learnerVoice: '',
+  });
+  const audienceLines = Object.freeze(['A public gallery.', 'No hidden proof.']);
+  const context = buildTutorStubDirectorInitialContext(world, { audienceLines });
+
+  assert.deepEqual(context, {
+    stageNotes: 'Before the first exchange, The Test Room is set as a public inquiry: What happened?\nA lamp burns.',
+    tutorCharacter:
+      'The tutor enters as an adaptive scene actor: patient with the learner, but ready to examine, keep the record, argue, witness, or close as the public evidence demands.',
+    learnerCharacter: 'The learner enters as attentive but not yet committed, willing to test each claim aloud.',
+    audienceContext: 'A public gallery.\nNo hidden proof.',
+    registerNote:
+      "The tutor's voice should follow the public characters and scene pressure without adding hidden evidence or proof machinery.",
+  });
+  assert.equal(buildTutorStubDirectorInitialContext(null), null);
+  assert.deepEqual(world, {
+    title: 'The Test Room',
+    question: 'What happened?',
+    setting: '  A lamp burns.  ',
+    learnerVoice: '',
+  });
+});
 
 function terminalBytes(lines) {
   return lines.map((line) => `${line}\n`).join('');
@@ -71,6 +101,42 @@ test('director-notes projection distinguishes no issued notes from opening and r
   assert.deepEqual(notes, before);
 });
 
+test('director-notes model projects only issued opening context and director releases', () => {
+  const context = { stageNotes: 'Set the room.' };
+  const state = {
+    turns: [{}, {}],
+    history: [{ role: 'assistant' }],
+    directorContext: context,
+    directorOpeningPresented: false,
+  };
+  const before = structuredClone(state);
+  const model = createTutorStubDirectorNotesModel({
+    committedReleaseRows: (_state, throughTurn) => [
+      { turn: throughTurn, premise: 'p2', via: 'director', surface: '  Tap the ledger.  ' },
+      { turn: 1, premise: 'p1', via: 'tutor', surface: 'Ignore this row.' },
+    ],
+  });
+
+  assert.deepEqual(model(state), {
+    schema: 'machinespirits.tutor-stub.director-notes.v1',
+    throughTurn: 2,
+    opening: context,
+    releases: [{ turn: 2, premise: 'p2', via: 'director', surface: 'Tap the ledger.' }],
+  });
+  assert.notEqual(model(state).opening, context);
+  assert.deepEqual(state, before);
+});
+
+test('director-notes model withholds an unpresented opening and tolerates absent release adapters', () => {
+  const model = createTutorStubDirectorNotesModel();
+  assert.deepEqual(model({ turns: [], directorContext: { stageNotes: 'Hidden.' }, history: [] }), {
+    schema: 'machinespirits.tutor-stub.director-notes.v1',
+    throughTurn: 0,
+    opening: null,
+    releases: [],
+  });
+});
+
 test('real director context and reprise retain their exact no-model terminal bytes', () => {
   const result = spawnSync(
     process.execPath,
@@ -114,17 +180,18 @@ test('the CLI retains director-state derivation, withholding, traces, terminal w
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDirectorPresentation.js'), 'utf8');
   const preludeSlice = cliSource.slice(
     cliSource.indexOf('function printDirectorPreludeBeforeFirstTutor'),
-    cliSource.indexOf('function directorNotesIssuedSoFar'),
+    cliSource.indexOf('const directorNotesIssuedSoFar'),
   );
   const notesSlice = cliSource.slice(
-    cliSource.indexOf('function directorNotesIssuedSoFar'),
+    cliSource.indexOf('const directorNotesIssuedSoFar'),
     cliSource.indexOf('function worldSpeakerDagPrompt'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubDirectorPresentation\.js';/u);
   assert.match(preludeSlice, /state\.directorOpeningPresented = true/u);
   assert.match(preludeSlice, /appendTraceEvent/u);
-  assert.match(notesSlice, /committedReleaseRows/u);
+  assert.match(notesSlice, /createTutorStubDirectorNotesModel/u);
+  assert.match(serviceSource, /committedReleaseRows/u);
   assert.match(notesSlice, /projectTutorStubDirectorNotesLines/u);
   assert.match(notesSlice, /console\.log\(line\)/u);
   assert.match(cliSource, /type: 'director_notes_reprise'/u);
