@@ -333,7 +333,13 @@ test('Phase 5e R2 pilot A3 turn 8 does not award the unstated spiral-length rela
       .filter((entry) => entry.turn < turn)
       .map((entry) => {
         const premise = world.premiseById.get(entry.premise);
-        return { premise: entry.premise, turn: entry.turn, via: entry.via, surface: premise.surface, fact: premise.fact };
+        return {
+          premise: entry.premise,
+          turn: entry.turn,
+          via: entry.via,
+          surface: premise.surface,
+          fact: premise.fact,
+        };
       });
   const apply = (turn, learnerText, adopt = []) => {
     const publicEvidence = stagedThrough(turn);
@@ -354,7 +360,10 @@ test('Phase 5e R2 pilot A3 turn 8 does not award the unstated spiral-length rela
   assert.equal(turn8.accepted.adopt.includes('p_spiral'), false);
   assert.equal(turn8.accepted.authoredRecognition.adoptedPremises.includes('p_spiral'), false);
   assert.equal(turn8.model.assessment.bestPathCoverage, 0.5);
-  assert.equal(turn8.assessment.missingPremises.some((row) => row.premiseId === 'p_spiral'), true);
+  assert.equal(
+    turn8.assessment.missingPremises.some((row) => row.premiseId === 'p_spiral'),
+    true,
+  );
 });
 
 test('Phase 5e R2 pilot A3 frozen-prefix replay targets the missing spiral relation and reaches closure', () => {
@@ -365,7 +374,13 @@ test('Phase 5e R2 pilot A3 frozen-prefix replay targets the missing spiral relat
       .filter((entry) => entry.turn < turn)
       .map((entry) => {
         const premise = world.premiseById.get(entry.premise);
-        return { premise: entry.premise, turn: entry.turn, via: entry.via, surface: premise.surface, fact: premise.fact };
+        return {
+          premise: entry.premise,
+          turn: entry.turn,
+          via: entry.via,
+          surface: premise.surface,
+          fact: premise.fact,
+        };
       });
   const apply = (turn, learnerText, adopt = []) => {
     const publicEvidence = stagedThrough(turn);
@@ -516,10 +531,7 @@ test('Phase 5e A4 turn-9 and turn-16 multi-gap states recover the first released
   assert.equal(configuration.action_family, 'stage_next_step');
   assert.equal(contract.handoff_contract.mode, 'missing_relation_recovery');
   assert.match(contract.handoff_contract.required_exact_question, /only rising air/iu);
-  assert.equal(
-    deterministicTutorStubTurnProgressionHandoff({ contract }),
-    target.question,
-  );
+  assert.equal(deterministicTutorStubTurnProgressionHandoff({ contract }), target.question);
 });
 
 test('Phase 5e A4 turn-34 sole-gap state targets p_soleLift and forbids false closure', () => {
@@ -654,7 +666,11 @@ test('Phase 5f A1 turn-7 replay delivers the Tideway trace once and uses a deict
     true,
     fallback,
   );
-  assert.equal(auditTutorStubDramaticReleaseResponse({ text: fallback, frame: dramaticReleaseFrame }).ok, true, fallback);
+  assert.equal(
+    auditTutorStubDramaticReleaseResponse({ text: fallback, frame: dramaticReleaseFrame }).ok,
+    true,
+    fallback,
+  );
 });
 
 test('Phase 5f A2 turn-8 replay recognises the completed Tideway finding without repeated say-backs', () => {

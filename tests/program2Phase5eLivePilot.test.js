@@ -29,10 +29,7 @@ import {
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
 } from '../services/tutorStubDramaticRelease.js';
-import {
-  buildProgram2Phase5ePilotBundle,
-  loadProgram2Phase5eRows,
-} from '../services/program2Phase5ePilotBundle.js';
+import { buildProgram2Phase5ePilotBundle, loadProgram2Phase5eRows } from '../services/program2Phase5ePilotBundle.js';
 import { evaluateProgram2LiveFutility, program2PlanSha256 } from '../services/program2ExperimentSafety.js';
 import { buildCertificateFromFiles } from '../scripts/certify-program2-launch.mjs';
 
@@ -86,7 +83,10 @@ function writeSyntheticPilotTrace(root, job) {
       : []),
     { type: 'run_end' },
   ];
-  fs.writeFileSync(path.join(directory, 'sealed.jsonl'), `${events.map((event) => JSON.stringify(event)).join('\n')}\n`);
+  fs.writeFileSync(
+    path.join(directory, 'sealed.jsonl'),
+    `${events.map((event) => JSON.stringify(event)).join('\n')}\n`,
+  );
 }
 
 describe('Program-2 Phase 5e live-pilot plan', () => {
@@ -130,15 +130,12 @@ describe('Program-2 Phase 5e live-pilot plan', () => {
       balancedCellCount: 4,
     });
     assert.equal(plan.schema, PHASE5E_PILOT_SPEC.schema);
-    assert.deepEqual(
-      [...new Set(plan.jobs.map((job) => `${job.profile}|${job.arm}`))].sort(),
-      [
-        'affective_resistant|committee',
-        'affective_resistant|silent_control',
-        'proof_skipper|committee',
-        'proof_skipper|silent_control',
-      ],
-    );
+    assert.deepEqual([...new Set(plan.jobs.map((job) => `${job.profile}|${job.arm}`))].sort(), [
+      'affective_resistant|committee',
+      'affective_resistant|silent_control',
+      'proof_skipper|committee',
+      'proof_skipper|silent_control',
+    ]);
     for (const job of plan.jobs) {
       assert.equal(flagValue(job.command, '--world'), PHASE5E_SPEC.world);
       assert.equal(flagValue(job.command, '--run-seed'), String(PHASE5E_SPEC.runSeed));
@@ -184,15 +181,12 @@ describe('Program-2 Phase 5e live-pilot plan', () => {
     assert.equal(plan.world, 'world_031_tideway_makerspace');
     assert.equal(plan.runSeed, 20260728);
     assert.equal(plan.evidenceUseRubric, 'v1');
-    assert.deepEqual(
-      [...new Set(plan.jobs.map((job) => `${job.profile}|${job.arm}`))].sort(),
-      [
-        'affective_resistant|committee',
-        'affective_resistant|silent_control',
-        'proof_skipper|committee',
-        'proof_skipper|silent_control',
-      ],
-    );
+    assert.deepEqual([...new Set(plan.jobs.map((job) => `${job.profile}|${job.arm}`))].sort(), [
+      'affective_resistant|committee',
+      'affective_resistant|silent_control',
+      'proof_skipper|committee',
+      'proof_skipper|silent_control',
+    ]);
     for (const job of plan.jobs) {
       assert.equal(flagValue(job.command, '--world'), PHASE5F_PILOT_SPEC.world);
       assert.equal(flagValue(job.command, '--run-seed'), String(PHASE5F_PILOT_SPEC.runSeed));
@@ -230,15 +224,28 @@ describe('Program-2 Phase 5e live-pilot plan', () => {
     assert.equal(plan.schema, PHASE5F_PILOT_A2_SPEC.schema);
     assert.equal(plan.replacementOf, 'exports/program2-live-pilot-5f-pilot/launch-plan.json');
     assert.equal(plan.outputRoot, outputRoot);
-    assert.equal(plan.jobs.every((job) => job.id.startsWith('p5f-pilot-a2-')), true);
-    assert.equal(plan.jobs.every((job) => flagValue(job.command, '--trace-dir').startsWith(outputRoot)), true);
+    assert.equal(
+      plan.jobs.every((job) => job.id.startsWith('p5f-pilot-a2-')),
+      true,
+    );
+    assert.equal(
+      plan.jobs.every((job) => flagValue(job.command, '--trace-dir').startsWith(outputRoot)),
+      true,
+    );
   });
 
   it('prepares the Phase 5f A2 certificate plan without model calls or overwriting A1', () => {
     const pilotRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'program2-phase5f-pilot-a2-'));
     const pilot = spawnSync(
       process.execPath,
-      ['scripts/run-program2-live-pilot.js', '--prepare-certificate', '--plan', '5f-pilot-a2', '--output-dir', pilotRoot],
+      [
+        'scripts/run-program2-live-pilot.js',
+        '--prepare-certificate',
+        '--plan',
+        '5f-pilot-a2',
+        '--output-dir',
+        pilotRoot,
+      ],
       { cwd: ROOT, encoding: 'utf8' },
     );
     assert.equal(pilot.status, 0, `${pilot.stdout}\n${pilot.stderr}`);
@@ -263,15 +270,28 @@ describe('Program-2 Phase 5e live-pilot plan', () => {
     assert.equal(plan.schema, PHASE5F_PILOT_A3_SPEC.schema);
     assert.equal(plan.replacementOf, 'exports/program2-live-pilot-5f-pilot-a2/launch-plan.json');
     assert.equal(plan.outputRoot, outputRoot);
-    assert.equal(plan.jobs.every((job) => job.id.startsWith('p5f-pilot-a3-')), true);
-    assert.equal(plan.jobs.every((job) => flagValue(job.command, '--trace-dir').startsWith(outputRoot)), true);
+    assert.equal(
+      plan.jobs.every((job) => job.id.startsWith('p5f-pilot-a3-')),
+      true,
+    );
+    assert.equal(
+      plan.jobs.every((job) => flagValue(job.command, '--trace-dir').startsWith(outputRoot)),
+      true,
+    );
   });
 
   it('prepares the Phase 5f A3 certificate plan without model calls or overwriting A2', () => {
     const pilotRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'program2-phase5f-pilot-a3-'));
     const pilot = spawnSync(
       process.execPath,
-      ['scripts/run-program2-live-pilot.js', '--prepare-certificate', '--plan', '5f-pilot-a3', '--output-dir', pilotRoot],
+      [
+        'scripts/run-program2-live-pilot.js',
+        '--prepare-certificate',
+        '--plan',
+        '5f-pilot-a3',
+        '--output-dir',
+        pilotRoot,
+      ],
       { cwd: ROOT, encoding: 'utf8' },
     );
     assert.equal(pilot.status, 0, `${pilot.stdout}\n${pilot.stderr}`);
@@ -309,10 +329,7 @@ describe('Program-2 Phase 5e live-pilot plan', () => {
       assert.ok(bundle.rows.every((row) => row.fixedHorizon.hardSafetyPassed === true));
       assert.equal(loadProgram2Phase5eRows({ plan: pilotPlan, root: pilotRoot }).length, 4);
 
-      const pilotGateSpecFile = path.join(
-        ROOT,
-        'config/adaptive-tutor-evidence/program-2-phase5e-r2-pilot-gates.json',
-      );
+      const pilotGateSpecFile = path.join(ROOT, 'config/adaptive-tutor-evidence/program-2-phase5e-r2-pilot-gates.json');
       const pilotGateSpec = JSON.parse(fs.readFileSync(pilotGateSpecFile, 'utf8'));
       const liveCheck = evaluateProgram2LiveFutility({
         plan: pilotPlan,
@@ -344,7 +361,10 @@ describe('Program-2 Phase 5e live-pilot plan', () => {
         sourceSha: 'a'.repeat(40),
       });
       assert.equal(certificate.status, 'pass', JSON.stringify(certificate.checks, null, 2));
-      assert.equal(certificate.evidenceBindings.files.filter((entry) => entry.role.startsWith('pilot_trace:')).length, 4);
+      assert.equal(
+        certificate.evidenceBindings.files.filter((entry) => entry.role.startsWith('pilot_trace:')).length,
+        4,
+      );
       const driftedSource = buildCertificateFromFiles({
         planFile: cohortPlanFile,
         worldFile: path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'),

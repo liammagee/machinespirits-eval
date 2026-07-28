@@ -638,11 +638,9 @@ export function compileTutorStubTurnProgressionContract({
   const dueTerms = [...new Set(due.flatMap(contentTerms))];
   const unsupportedCausalClaim = Boolean(
     due.length === 0 &&
-      dialogueClosureFrame?.mandatory !== true &&
-      responseCompositionFrame?.learner_dag?.final_secret_entailed !== true &&
-      ['omits_warrant', 'overleaps_evidence'].includes(
-        oneLine(responseCompositionFrame?.learner_move?.evidence_use),
-      ),
+    dialogueClosureFrame?.mandatory !== true &&
+    responseCompositionFrame?.learner_dag?.final_secret_entailed !== true &&
+    ['omits_warrant', 'overleaps_evidence'].includes(oneLine(responseCompositionFrame?.learner_move?.evidence_use)),
   );
   const boundedFocus = unsupportedCausalClaim
     ? {
@@ -684,21 +682,21 @@ export function compileTutorStubTurnProgressionContract({
     : integrationTarget
       ? [integrationTarget.question]
       : assertionGapTarget
-      ? [assertionGapTarget]
-      : due.length && questionAllowed
-        ? due
-        : boundedFocus.surface
-          ? [boundedFocus.surface]
-          : [];
+        ? [assertionGapTarget]
+        : due.length && questionAllowed
+          ? due
+          : boundedFocus.surface
+            ? [boundedFocus.surface]
+            : [];
   const requiredTargetTerms = instructionalMeta
     ? []
     : integrationTarget
       ? contentTerms(integrationTarget.question)
       : assertionGapTarget
-      ? contentTerms(assertionGapTarget)
-      : due.length && questionAllowed
-        ? dueTerms
-        : primaryTerms;
+        ? contentTerms(assertionGapTarget)
+        : due.length && questionAllowed
+          ? dueTerms
+          : primaryTerms;
   const prohibitedSettledSurfaces = completion?.resolved
     ? [completion.sourceTutorQuestion, completion.acceptedMeaning].map(oneLine).filter(Boolean)
     : [];
@@ -734,7 +732,7 @@ export function compileTutorStubTurnProgressionContract({
           ? 'UPTAKE must answer the request for a simpler explanation directly. Treat it as a repair to the instructional dialogue, not as a proposition, clue, or proof move.'
           : unsupportedCausalClaim
             ? 'UPTAKE must qualify the learner’s proposed causal answer without quoting, confirming, denying, or paraphrasing it. Say only that the public evidence has not established it yet.'
-          : 'UPTAKE must visibly answer, credit, qualify, correct, or receive the learner’s actual move before development begins.',
+            : 'UPTAKE must visibly answer, credit, qualify, correct, or receive the learner’s actual move before development begins.',
     },
     turn_focus_contract: {
       primary_surface: boundedFocus.surface || null,
@@ -754,11 +752,11 @@ export function compileTutorStubTurnProgressionContract({
         ? 'Keep the explanation itself as the turn focus. Restate the latest tutor point in plain contemporary English; do not advance the inquiry or reinterpret the request as evidence.'
         : integrationTarget
           ? `Recover this already-public relation before another verdict: “${integrationTarget.target}” Ask exactly: “${integrationTarget.question}” Do not state the target for the learner or copy their ledger formula.`
-        : unsupportedCausalClaim
-          ? 'Qualify the proposed causal answer without repeating or paraphrasing it. Keep it open until public evidence supports the missing connection.'
-          : boundedFocus.surface
-            ? `Keep the learner’s requested focus primary: “${boundedFocus.surface}”. Do not silently replace its relation with a neighbouring one.`
-          : 'Keep the current public relation primary; do not silently substitute a neighbouring relation.',
+          : unsupportedCausalClaim
+            ? 'Qualify the proposed causal answer without repeating or paraphrasing it. Keep it open until public evidence supports the missing connection.'
+            : boundedFocus.surface
+              ? `Keep the learner’s requested focus primary: “${boundedFocus.surface}”. Do not silently replace its relation with a neighbouring one.`
+              : 'Keep the current public relation primary; do not silently substitute a neighbouring relation.',
     },
     handoff_contract: {
       mode: handoffMode,
