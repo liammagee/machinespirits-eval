@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T21:44:42.410Z",
+  "generated": "2026-07-28T21:45:15.448Z",
   "counts": {
-    "total": 328,
+    "total": 329,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 71,
+      "review": 72,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 146,
+      "maintenance": 147,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -3305,6 +3305,47 @@
         "tutor-stub",
         "dag",
         "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-trace-secret-redaction",
+      "title": "Refactor tutor-stub trace secret redaction",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "5 focused trace-schema assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve normalized secret keys, API-key strings, arrays, cycles, repeated references, primitives, and input immutability",
+      "branch": "codex/refactor-tutor-stub-trace-secret-redaction",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-console-stream-replay"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/traceSchema.js",
+          "scripts/tutor-stub.js",
+          "tests/traceSchema.test.js"
+        ],
+        "prs": [
+          407
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-console-stream-replay"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "traces",
+        "secrets"
       ],
       "milestone": "evaluation-infrastructure"
     },
