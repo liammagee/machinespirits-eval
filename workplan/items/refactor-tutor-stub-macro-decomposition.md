@@ -1,0 +1,71 @@
+---
+id: refactor-tutor-stub-macro-decomposition
+title: Decompose tutor-stub into cohesive runtime subsystems
+status: review
+type: maintenance
+priority: P1
+owner: codex
+source: review
+created: 2026-07-29
+updated: 2026-07-29
+verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
+branch: codex/refactor-tutor-stub-tutor-turn-pipeline
+claim_status: planned
+depends_on: []
+links:
+  notes:
+    - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
+  code:
+    - scripts/tutor-stub.js
+    - services/tutorStubTutorTurnPipeline.js
+    - tests/tutorStubTutorTurnPipeline.test.js
+  items:
+    - codebase-refactoring-program
+tags:
+  - refactoring
+  - tutor-stub
+  - macro-decomposition
+  - maintainability
+milestone: evaluation-infrastructure
+---
+
+Replace helper-sized tutor-stub extractions with a bounded series of cohesive
+subsystem PRs. The target is a small composition entrypoint, not a relocated
+monolith.
+
+Acceptance:
+
+- Target 1,000–3,000 net lines removed from `scripts/tutor-stub.js` per PR;
+  stop and re-plan if the rolling three-PR average falls below 750.
+- Keep focused behavioral/byte parity, the zero-skip hermetic suite, lint,
+  formatting, manifest, refs, workplan, syntax, and import-cycle gates green.
+- Keep runtime state ownership explicit and avoid replacing the entry script
+  with another oversized or cyclic module.
+- Reuse this card across the macro series rather than creating a card for every
+  moved helper.
+
+Planned order:
+
+1. Tutor generation, audit, repair, and committee pipeline.
+2. Slash-command routing and dialogue-settings handlers.
+3. Session state, trace, resume, and transcript orchestration.
+4. Mixed-learner, model-selection, voice, and picker controllers.
+5. Response-configuration policy subsystem.
+6. Turn processing and automated-learner orchestration.
+7. Subsystem facades and entrypoint/import consolidation.
+
+Log:
+
+- 2026-07-29 — Started macro PR 1 from current `origin/main`: extract the
+  complete tutor-turn generation pipeline rather than another inner helper.
+- 2026-07-29 — Macro PR 1 moved the complete 2,265-line `callTutor`
+  generation, streaming, prompt-audit, response-audit, repair, committee, and
+  deterministic-fallback pipeline behind one injected dependency boundary.
+  `scripts/tutor-stub.js` fell from 23,299 to 21,131 lines, a 2,168-line net
+  reduction and a first-cycle rolling average above the 750-line stop floor.
+- 2026-07-29 — Three direct transport-path tests and 55 focused
+  transport/guard/recovery/prompt/interactive assertions pass. Ownership tests
+  now pin the new service boundary, both Program 2 provider-budget reservations
+  remain before dispatch, the zero-skip hermetic suite passes 7,664/7,664 root
+  tests plus 137/137 tutor-core tests, and the static import graph remains at
+  zero cycles across 449 files.

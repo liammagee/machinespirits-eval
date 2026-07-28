@@ -417,14 +417,24 @@ test('paid launch metadata cannot overwrite the certificate-bound launch plan', 
 });
 
 test('tutor runtime reserves the Program 2 budget before both external dispatch paths', () => {
-  const source = fs.readFileSync(path.join(ROOT, 'scripts/tutor-stub.js'), 'utf8');
+  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts/tutor-stub.js'), 'utf8');
+  const pipelineSource = fs.readFileSync(path.join(ROOT, 'services/tutorStubTutorTurnPipeline.js'), 'utf8');
   assert.equal(
-    source.match(/reserveProgram2ProviderBudget\(\{ maxTokens, trace, role, turn(?:: tutorTurn)? \}\);/gu)?.length,
+    [cliSource, pipelineSource].reduce(
+      (count, source) =>
+        count +
+        (source.match(/reserveProgram2ProviderBudget\(\{ maxTokens, trace, role, turn(?:: tutorTurn)? \}\);/gu)
+          ?.length || 0),
+      0,
+    ),
     2,
   );
-  for (const reservation of [
-    'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });',
-    'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });',
+  for (const { source, reservation } of [
+    { source: cliSource, reservation: 'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });' },
+    {
+      source: pipelineSource,
+      reservation: 'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });',
+    },
   ]) {
     const reserveIndex = source.indexOf(reservation);
     const dispatchIndex = source.indexOf('callAIWithCliBridge(', reserveIndex);
