@@ -443,6 +443,32 @@ export function projectTutorStubNextReleaseRow(pacing, world) {
   };
 }
 
+export function projectTutorStubCommittedReleaseRows(
+  pacing,
+  world,
+  throughTurn = Number.POSITIVE_INFINITY,
+  { fallbackRows, projectPremise } = {},
+) {
+  if (!world) return [];
+  const snapshot = tutorStubReleasePacingSnapshot(pacing, world);
+  if (!snapshot) return fallbackRows(world, throughTurn);
+  return snapshot.schedule
+    .filter(
+      (entry) =>
+        entry.releasedTurn !== null &&
+        entry.releasedTurn !== undefined &&
+        Number.isFinite(Number(entry.releasedTurn)) &&
+        Number(entry.releasedTurn) <= Number(throughTurn),
+    )
+    .map((entry) =>
+      projectPremise(world.premiseById.get(entry.premise), {
+        premise: entry.premise,
+        turn: Number(entry.releasedTurn),
+        via: entry.via || null,
+      }),
+    );
+}
+
 // True once every authored clue has been released and nothing is due: there is
 // no further public evidence the tutor could stage. Selecting a staging action
 // past this point sends the composer after evidence that does not exist.

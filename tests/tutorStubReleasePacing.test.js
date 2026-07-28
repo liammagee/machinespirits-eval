@@ -13,6 +13,7 @@ import {
   commitTutorStubReleasePacing,
   createTutorStubReleasePacingState,
   detectTutorStubReleasePacingSignal,
+  projectTutorStubCommittedReleaseRows,
   projectTutorStubNextReleaseRow,
   setTutorStubReleaseSpeed,
   tutorStubReleasePacingSnapshot,
@@ -66,6 +67,31 @@ test('next release row projects the pending schedule entry with public premise d
   pacing.released.p_trace = { turn: 5, authoredTurn: 5, via: 'director', timing: 'on_authored_turn' };
   pacing.released.p_witness = { turn: 9, authoredTurn: 9, via: 'tutor', timing: 'on_authored_turn' };
   assert.equal(projectTutorStubNextReleaseRow(pacing, world), null);
+});
+
+test('committed release rows preserve pacing, turn bounds, projection, fallback, and missing-world behavior', () => {
+  const world = sampleWorld();
+  world.premiseById = new Map([
+    ['p_open', { id: 'p_open' }],
+    ['p_trace', { id: 'p_trace' }],
+    ['p_witness', { id: 'p_witness' }],
+  ]);
+  const pacing = createTutorStubReleasePacingState({ world, speed: 1 });
+  pacing.released.p_open = { turn: 1, authoredTurn: 1, via: 'tutor', timing: 'on_authored_turn' };
+  pacing.released.p_trace = { turn: 6, authoredTurn: 5, via: 'director', timing: 'late' };
+  const projectPremise = (premise, release) => ({ id: premise.id, ...release });
+  const fallbackRows = (_world, turn) => [{ fallback: turn }];
+  const dependencies = { fallbackRows, projectPremise };
+
+  assert.deepEqual(projectTutorStubCommittedReleaseRows(pacing, world, 5, dependencies), [
+    { id: 'p_open', premise: 'p_open', turn: 1, via: 'tutor' },
+  ]);
+  assert.deepEqual(projectTutorStubCommittedReleaseRows(pacing, world, 6, dependencies), [
+    { id: 'p_open', premise: 'p_open', turn: 1, via: 'tutor' },
+    { id: 'p_trace', premise: 'p_trace', turn: 6, via: 'director' },
+  ]);
+  assert.deepEqual(projectTutorStubCommittedReleaseRows(null, world, 4, dependencies), [{ fallback: 4 }]);
+  assert.deepEqual(projectTutorStubCommittedReleaseRows(pacing, null, 6, dependencies), []);
 });
 
 test('world-005 steady 1x pacing keeps p_caster on authored turn 10, not turn 9', () => {

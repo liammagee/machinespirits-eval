@@ -1186,3 +1186,10 @@ Log:
 - 2026-07-28 — Fifty-loop next-release-row run reached review with a 12-line
   net CLI reduction, 14 focused assertions, and complete zero-skip hermetic
   parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 25,
+  `refactor-tutor-stub-committed-release-rows`, from PR #398's reviewed head.
+  Release scheduling, public premise semantics, runtime state, and effects
+  remain unchanged.
+- 2026-07-28 — Fifty-loop committed-release-rows run reached review with a
+  15-line net CLI reduction, 15 focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.

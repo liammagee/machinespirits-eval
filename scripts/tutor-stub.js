@@ -614,6 +614,7 @@ import {
   commitTutorStubReleasePacing,
   createTutorStubReleasePacingState,
   normalizeTutorStubReleaseSpeed,
+  projectTutorStubCommittedReleaseRows,
   projectTutorStubNextReleaseRow,
   restoreTutorStubReleasePacingFromTurns,
   setTutorStubReleaseSpeed,
@@ -3146,26 +3147,10 @@ function currentReleaseRows(state, tutorTurn) {
 }
 
 function committedReleaseRows(state, throughTurn = Number.POSITIVE_INFINITY) {
-  const world = state?.world;
-  if (!world) return [];
-  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
-  if (!snapshot) return stagedEvidenceRows(world, throughTurn);
-  return snapshot.schedule
-    .filter(
-      (entry) =>
-        entry.releasedTurn !== null &&
-        entry.releasedTurn !== undefined &&
-        Number.isFinite(Number(entry.releasedTurn)) &&
-        Number(entry.releasedTurn) <= Number(throughTurn),
-    )
-    .map((entry) => {
-      const premise = world.premiseById.get(entry.premise);
-      return projectTutorStubSpeakerPublicPremise(premise, {
-        premise: entry.premise,
-        turn: Number(entry.releasedTurn),
-        via: entry.via || null,
-      });
-    });
+  return projectTutorStubCommittedReleaseRows(state?.releasePacing, state?.world, throughTurn, {
+    fallbackRows: stagedEvidenceRows,
+    projectPremise: projectTutorStubSpeakerPublicPremise,
+  });
 }
 
 function publicReleaseLedger(state, throughTurn = Number.POSITIVE_INFINITY) {
