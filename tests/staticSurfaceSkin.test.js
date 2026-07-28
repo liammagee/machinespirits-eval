@@ -6,25 +6,48 @@
 // parchment while the rest of the app went stark; the logic had been copied into
 // rail-inject.js rather than shared, so nothing caught the omission.
 //
-// These assertions pin the contract that the copy is gone and every surface
-// loads the one file, synchronously and before its stylesheets.
+// The same is true of the nav rail, which those surfaces load through
+// components/rail-inject.js. /tutor shipped without that too, which left it a
+// one-way door: every other page's rail links to it as "tutor lab", and once
+// there you had nothing to click back to.
+//
+// These assertions pin the contract that the early-apply copy is gone and that
+// every researcher surface loads both scripts — the skin one synchronously,
+// before its stylesheets.
 
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { STATIC_SURFACES } from '../services/evalStaticSurfaces.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const EARLY_APPLY = 'components/skin-early-apply.js';
+const RAIL_INJECT = 'components/rail-inject.js';
 
-// Static surfaces inside the researcher chrome. /pilot is deliberately outside
-// it (participant-facing), so it is not listed here.
-const SURFACES = ['tutor', 'adjudication', 'pilot-admin', 'human-coding-admin'];
+// Mounts deliberately outside the researcher chrome. Each needs a stated reason:
+// this is the list a new surface must argue its way onto, not a dumping ground.
+const NO_CHROME = new Map([
+  ['/pilot', 'participant-facing — study subjects must not see researcher navigation'],
+  ['/eval', 'static explainers, not an app surface'],
+  ['/components', 'the design system itself, served as assets'],
+  ['/docs', 'the documentation tree, not an app surface'],
+]);
+
+// Derived from the mount table rather than hand-kept here. A copy is how /tutor
+// slipped: it was mounted for months without being on anyone's list to check.
+const SURFACES = STATIC_SURFACES.filter(([mount]) => !NO_CHROME.has(mount))
+  .map(([, dir]) => dir.replace(/^public\//u, ''))
+  .filter((surface) => fs.existsSync(path.join(ROOT, 'public', surface, 'index.html')));
 
 function surfaceHtml(surface) {
   return fs.readFileSync(path.join(ROOT, 'public', surface, 'index.html'), 'utf8');
 }
+
+test('the researcher surfaces are read from the mount table', () => {
+  assert.ok(SURFACES.length >= 4, `expected at least the four known researcher surfaces, found ${SURFACES.length}`);
+});
 
 for (const surface of SURFACES) {
   test(`/${surface} loads the shared skin early-apply`, () => {
@@ -46,7 +69,29 @@ for (const surface of SURFACES) {
       assert.ok(tag.index < firstStylesheet, `${surface} must load the skin early-apply before its first stylesheet`);
     }
   });
+
+  test(`/${surface} loads the shared nav rail`, () => {
+    const html = surfaceHtml(surface);
+    assert.match(
+      html,
+      new RegExp(`<script[^>]+src="/${RAIL_INJECT.replace(/[/.]/gu, '\\$&')}"`, 'u'),
+      `${surface} must load /${RAIL_INJECT}, or it becomes a page with no way back into the app. ` +
+        `If it belongs outside the researcher chrome, add its mount to NO_CHROME with a reason.`,
+    );
+  });
 }
+
+test('rail-inject leaves a host page its skip link', () => {
+  const railInject = fs.readFileSync(path.join(ROOT, 'public/components/rail-inject.js'), 'utf8');
+  // Injecting at body.firstChild puts ~40 nav links ahead of the skip link,
+  // which is the tabbing the link exists to skip. /tutor is the only surface
+  // with one today, so a "simplification" back to firstChild would look safe.
+  assert.match(
+    railInject,
+    /skip-link/u,
+    'rail-inject.js must insert the rail after a host page’s .skip-link, not ahead of it',
+  );
+});
 
 test('rail-inject no longer carries its own copy of the early-apply', () => {
   const railInject = fs.readFileSync(path.join(ROOT, 'public/components/rail-inject.js'), 'utf8');

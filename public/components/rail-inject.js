@@ -35,7 +35,10 @@
   // by the time the fetch().then() callbacks run.
   const script = document.currentScript;
   const active = (script && script.getAttribute('data-active')) || '';
-  const compact = !!(script && script.getAttribute('data-compact'));
+  // hasAttribute, not getAttribute: the documented usage writes `data-compact`
+  // bare, and getAttribute returns '' for a valueless attribute, which is falsy.
+  // /tutor is the first page to use the flag, so this never showed until now.
+  const compact = !!script && script.hasAttribute('data-compact');
 
   // Idempotent: if a rail is already present (double-included tag, or a future
   // server-rendered host), do nothing.
@@ -74,7 +77,12 @@
       frag.querySelectorAll('script').forEach(function (scriptEl) {
         scriptEl.setAttribute('data-rail-script', '1');
       });
-      document.body.insertBefore(frag, document.body.firstChild);
+      // A skip link only works if it is the first thing a keyboard user reaches.
+      // Going in at body.firstChild would put ~40 nav links ahead of it, which is
+      // the exact tabbing it exists to skip — so land after it when the host page
+      // has one. /tutor is currently the only surface that does.
+      const skip = document.body.querySelector(':scope > .skip-link');
+      document.body.insertBefore(frag, skip ? skip.nextSibling : document.body.firstChild);
 
       // Scripts inserted from a <template> fragment do not execute by default.
       // Recreate the rail-owned executable scripts after insertion; JSON data
