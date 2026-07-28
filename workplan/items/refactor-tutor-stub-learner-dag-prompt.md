@@ -20,6 +20,8 @@ links:
     - services/tutorStubLearnerDagPresentation.js
     - scripts/tutor-stub.js
     - tests/tutorStubLearnerDagPresentation.test.js
+  prs:
+    - 379
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-register-prompt-vocabulary
@@ -53,3 +55,5 @@ Log:
   terminal projection, reducing `scripts/tutor-stub.js` by 18 lines. Five
   focused assertions, complete zero-skip hermetic parity, and all static and
   source-only gates pass.
+- 2026-07-28 — Opened PR #379 against `main`; the benchmark hook correctly
+  classified the data-projection slice as not response-generation relevant.
