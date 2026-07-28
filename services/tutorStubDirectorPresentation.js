@@ -75,3 +75,27 @@ export function projectTutorStubDirectorNotesLines(notes = {}, { colors = {} } =
   );
   return Object.freeze(lines);
 }
+
+export function createTutorStubDirectorNotesModel({ committedReleaseRows, cloneValue = structuredClone } = {}) {
+  const committedRows = typeof committedReleaseRows === 'function' ? committedReleaseRows : () => [];
+  return function directorNotesIssuedSoFar(state) {
+    const throughTurn = Math.max(0, Number(state?.turns?.length || 0));
+    const openingIssued = Boolean(
+      state?.directorContext && (state.directorOpeningPresented || (state.history || []).length > 0),
+    );
+    const releases = committedRows(state, throughTurn)
+      .filter((entry) => entry.via === 'director')
+      .map((entry) => ({
+        turn: Number(entry.turn),
+        premise: entry.premise,
+        via: 'director',
+        surface: String(entry.surface || '').trim(),
+      }));
+    return {
+      schema: 'machinespirits.tutor-stub.director-notes.v1',
+      throughTurn,
+      opening: openingIssued ? cloneValue(state.directorContext) : null,
+      releases,
+    };
+  };
+}

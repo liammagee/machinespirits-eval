@@ -458,6 +458,7 @@ import {
 } from '../services/tutorStubModelChoicePresentation.js';
 import {
   buildTutorStubDirectorInitialContext,
+  createTutorStubDirectorNotesModel,
   projectTutorStubDirectorContextLines,
   projectTutorStubDirectorNotesLines,
 } from '../services/tutorStubDirectorPresentation.js';
@@ -2404,26 +2405,10 @@ function printDirectorPreludeBeforeFirstTutor(state, { reason = 'first_tutor_mes
   return true;
 }
 
-function directorNotesIssuedSoFar(state) {
-  const throughTurn = Math.max(0, Number(state?.turns?.length || 0));
-  const openingIssued = Boolean(
-    state?.directorContext && (state.directorOpeningPresented || (state.history || []).length > 0),
-  );
-  const releases = committedReleaseRows(state, throughTurn)
-    .filter((entry) => entry.via === 'director')
-    .map((entry) => ({
-      turn: Number(entry.turn),
-      premise: entry.premise,
-      via: 'director',
-      surface: String(entry.surface || '').trim(),
-    }));
-  return {
-    schema: 'machinespirits.tutor-stub.director-notes.v1',
-    throughTurn,
-    opening: openingIssued ? jsonClone(state.directorContext) : null,
-    releases,
-  };
-}
+const directorNotesIssuedSoFar = createTutorStubDirectorNotesModel({
+  committedReleaseRows,
+  cloneValue: jsonClone,
+});
 
 function printDirectorNotesIssuedSoFar(state) {
   const notes = directorNotesIssuedSoFar(state);
