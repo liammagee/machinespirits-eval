@@ -20,6 +20,45 @@ export function renderTutorStubStreamLabel(role, colors = {}) {
   return `${colors.cyan}${role} >${colors.reset} `;
 }
 
+export function createTutorStubConsoleTokenSink({
+  role,
+  interim = null,
+  resolveInterimState,
+  stopInterimAnimation,
+  clearStatusLine,
+  write,
+  renderLabel,
+} = {}) {
+  let started = false;
+  let buffered = '';
+  const terminal = resolveInterimState(interim)?.concurrentTerminal || null;
+  return {
+    write(token) {
+      if (terminal?.enabled) {
+        buffered += token;
+        started = true;
+        return;
+      }
+      if (!started) {
+        stopInterimAnimation(interim);
+        clearStatusLine();
+        write(renderLabel(role));
+        started = true;
+      }
+      write(token);
+    },
+    finish() {
+      if (started && terminal?.enabled) {
+        stopInterimAnimation(interim);
+        terminal.print(() => write(`${renderLabel(role)}${buffered}\n`));
+        return true;
+      }
+      if (started) write('\n');
+      return started;
+    },
+  };
+}
+
 export function resolveTutorStubDevelopmentDirectModel({
   modelRef = '',
   developmentSeed = '',
