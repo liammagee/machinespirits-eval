@@ -9,6 +9,7 @@ import assert from 'node:assert/strict';
 import {
   PHASE5E_SPEC,
   PHASE5E_PILOT_SPEC,
+  PHASE5F_SPEC,
   PHASE5F_PILOT_SPEC,
   PHASE5F_PILOT_A2_SPEC,
   PHASE5F_PILOT_A3_SPEC,
@@ -17,11 +18,13 @@ import {
   buildPhase5fExactPipelinePilotPlan,
   buildPhase5fA2ExactPipelinePilotPlan,
   buildPhase5fA3ExactPipelinePilotPlan,
+  buildPhase5fLivePilotPlan,
   validatePhase5eLivePilotPlan,
   validatePhase5eR2ExactPipelinePilotPlan,
   validatePhase5fExactPipelinePilotPlan,
   validatePhase5fA2ExactPipelinePilotPlan,
   validatePhase5fA3ExactPipelinePilotPlan,
+  validatePhase5fLivePilotPlan,
 } from '../scripts/run-program2-live-pilot.js';
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
@@ -31,6 +34,7 @@ import {
 } from '../services/tutorStubDramaticRelease.js';
 import {
   buildProgram2Phase5ePilotBundle,
+  buildProgram2Phase5fPilotBundle,
   loadProgram2Phase5eRows,
 } from '../services/program2Phase5ePilotBundle.js';
 import { evaluateProgram2LiveFutility, program2PlanSha256 } from '../services/program2ExperimentSafety.js';
@@ -55,7 +59,7 @@ function optionsFromCommand(command) {
   return options;
 }
 
-function writeSyntheticPilotTrace(root, job) {
+function writeSyntheticPilotTrace(root, job, { opportunities = 3 } = {}) {
   const directory = path.join(root, 'traces', job.id);
   fs.mkdirSync(directory, { recursive: true });
   const options = optionsFromCommand(job.command);
@@ -77,7 +81,7 @@ function writeSyntheticPilotTrace(root, job) {
         tutorLeakAudit: { ok: true, leaks: [] },
       },
     },
-    ...[1, 2, 3].map((turn) => ({
+    ...Array.from({ length: opportunities }, (_, index) => index + 1).map((turn) => ({
       type: 'point_of_action_compliance',
       compliance: { turn, trigger: 'warrant_skip', compliant: turn === 1 },
     })),
@@ -282,6 +286,150 @@ describe('Program-2 Phase 5e live-pilot plan', () => {
     assert.equal(artifact.plan.schema, PHASE5F_PILOT_A3_SPEC.schema);
     assert.equal(artifact.plan.jobs.length, 4);
     assert.equal(artifact.plan.outputRoot, pilotRoot);
+  });
+
+  it('freezes the terminal 10 committee + 8 fresh-control Phase 5f cohort', () => {
+    const plan = buildPhase5fLivePilotPlan({ outputRoot: 'phase5f-cohort-output' });
+    assert.deepEqual(validatePhase5fLivePilotPlan(plan), {
+      ok: true,
+      errors: [],
+      jobCount: 18,
+      balancedCellCount: 4,
+    });
+    assert.equal(plan.schema, PHASE5F_SPEC.schema);
+    assert.equal(plan.world, PHASE5F_SPEC.world);
+    assert.equal(plan.runSeed, PHASE5F_SPEC.runSeed);
+    assert.equal(plan.jobs.filter((job) => job.arm === 'committee').length, 10);
+    assert.equal(plan.jobs.filter((job) => job.arm === 'silent_control').length, 8);
+    assert.equal(plan.pilotBundle, 'exports/program2-live-pilot-5f-pilot-a3/pilot-bundle.json');
+    for (const job of plan.jobs) {
+      assert.equal(flagValue(job.command, '--world'), PHASE5F_SPEC.world);
+      assert.equal(flagValue(job.command, '--run-seed'), String(PHASE5F_SPEC.runSeed));
+      assert.equal(flagValue(job.command, '--learner-analysis-evidence-use-rubric'), 'v1');
+    }
+  });
+
+  it('prepares the Phase 5f cohort certificate plan without model calls', () => {
+    const cohortRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'program2-phase5f-cohort-'));
+    const cohort = spawnSync(
+      process.execPath,
+      ['scripts/run-program2-live-pilot.js', '--prepare-certificate', '--plan', '5f', '--output-dir', cohortRoot],
+      { cwd: ROOT, encoding: 'utf8' },
+    );
+    assert.equal(cohort.status, 0, `${cohort.stdout}\n${cohort.stderr}`);
+    assert.match(cohort.stdout, /certificate plan PASS; 0 model calls/u);
+    assert.match(cohort.stdout, /--phase cohort/u);
+    assert.match(cohort.stdout, /program2-live-pilot-5f-pilot-a3\/pilot-bundle\.json/u);
+    assert.match(cohort.stdout, /program-2-phase5f-gates\.json/u);
+    const artifact = JSON.parse(fs.readFileSync(path.join(cohortRoot, 'launch-plan.json'), 'utf8'));
+    assert.equal(artifact.plan.schema, PHASE5F_SPEC.schema);
+    assert.equal(artifact.plan.jobs.length, 18);
+  });
+
+  it('binds the zero-opportunity A3 pilot to the prospective Phase 5f cohort', () => {
+    const scratchRoot = fs.mkdtempSync(path.join(ROOT, 'exports', 'program2-phase5f-bundle-test-'));
+    try {
+      const pilotRoot = path.join(scratchRoot, 'pilot');
+      const cohortPlan = buildPhase5fLivePilotPlan({ outputRoot: path.join(scratchRoot, 'cohort') });
+      const pilotPlan = buildPhase5fA3ExactPipelinePilotPlan({ outputRoot: pilotRoot });
+      for (const job of pilotPlan.jobs) writeSyntheticPilotTrace(pilotRoot, job, { opportunities: 0 });
+      const cohortSourceSha = 'b'.repeat(40);
+      const bundle = buildProgram2Phase5fPilotBundle({
+        cohortPlan,
+        pilotPlan,
+        pilotRoot,
+        repositoryRoot: ROOT,
+        cohortSourceSha,
+        pilotSourceSha: PHASE5F_SPEC.pilotSourceSha,
+      });
+      assert.equal(bundle.audit.status, 'pass', JSON.stringify(bundle.audit.checks, null, 2));
+      assert.equal(bundle.audit.checks.length, 11);
+      assert.equal(bundle.rows.length, 4);
+      assert.equal(bundle.rows.every((row) => row.warrant.opp === 0), true);
+      assert.equal(bundle.expectedSourceSha, cohortSourceSha);
+      assert.equal(bundle.audit.plan.pilotSourceSha, PHASE5F_SPEC.pilotSourceSha);
+      const unknownPilotSource = buildProgram2Phase5fPilotBundle({
+        cohortPlan,
+        pilotPlan,
+        pilotRoot,
+        repositoryRoot: ROOT,
+        cohortSourceSha,
+        pilotSourceSha: 'c'.repeat(40),
+      });
+      assert.equal(unknownPilotSource.audit.status, 'fail');
+      assert.equal(
+        unknownPilotSource.audit.checks.find((entry) => entry.id === 'cohort_plan_and_source_bound').pass,
+        false,
+      );
+
+      const cohortPlanFile = path.join(scratchRoot, 'cohort-plan.json');
+      const bundleFile = path.join(scratchRoot, 'pilot-bundle.json');
+      fs.writeFileSync(cohortPlanFile, JSON.stringify({ plan: cohortPlan }));
+      fs.writeFileSync(bundleFile, JSON.stringify(bundle));
+      const certificate = buildCertificateFromFiles({
+        planFile: cohortPlanFile,
+        worldFile: path.join(ROOT, 'config/drama-derivation/world-031-tideway-makerspace.yaml'),
+        phase: 'cohort',
+        pilotBundleFiles: [bundleFile],
+        gateSpecFile: path.join(ROOT, 'config/adaptive-tutor-evidence/program-2-phase5f-gates.json'),
+        sourceSha: cohortSourceSha,
+      });
+      assert.equal(certificate.status, 'pass', JSON.stringify(certificate.checks, null, 2));
+      assert.equal(certificate.checks.opportunityPower.requiredForCertificate, false);
+      assert.equal(certificate.checks.opportunityPower.observedPass, false);
+    } finally {
+      fs.rmSync(scratchRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('runs the Phase 5f-native analyzer and emits a terminal cohort verdict', () => {
+    const scratchRoot = fs.mkdtempSync(path.join(ROOT, 'exports', 'program2-phase5f-analysis-test-'));
+    try {
+      const plan = buildPhase5fLivePilotPlan({ outputRoot: scratchRoot });
+      fs.writeFileSync(path.join(scratchRoot, 'launch-plan.json'), JSON.stringify({ plan }));
+      for (const job of plan.jobs) writeSyntheticPilotTrace(scratchRoot, job, { opportunities: 5 });
+      const report = path.join(scratchRoot, 'analysis.json');
+      const analysis = spawnSync(
+        process.execPath,
+        ['scripts/analyze-program2-live-pilot-5f.mjs', scratchRoot, '--json', report],
+        { cwd: ROOT, encoding: 'utf8' },
+      );
+      assert.equal(analysis.status, 0, `${analysis.stdout}\n${analysis.stderr}`);
+      assert.match(analysis.stdout, /terminal verdict: not_supported/u);
+      const artifact = JSON.parse(fs.readFileSync(report, 'utf8'));
+      assert.equal(artifact.schema, 'machinespirits.program2.phase5f-analysis.v1');
+      assert.equal(artifact.preregistration, 'PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md');
+      assert.equal(artifact.analysisPhase, '5f');
+      assert.equal(artifact.world, 'world_031_tideway_makerspace');
+      assert.equal(artifact.e1e.density.pass, true);
+      assert.equal(artifact.terminalVerdict.status, 'not_supported');
+    } finally {
+      fs.rmSync(scratchRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('closes a zero-opportunity Phase 5f cohort as terminally not estimable', () => {
+    const scratchRoot = fs.mkdtempSync(path.join(ROOT, 'exports', 'program2-phase5f-density-test-'));
+    try {
+      const plan = buildPhase5fLivePilotPlan({ outputRoot: scratchRoot });
+      fs.writeFileSync(path.join(scratchRoot, 'launch-plan.json'), JSON.stringify({ plan }));
+      for (const job of plan.jobs) writeSyntheticPilotTrace(scratchRoot, job, { opportunities: 0 });
+      const report = path.join(scratchRoot, 'analysis.json');
+      const analysis = spawnSync(
+        process.execPath,
+        ['scripts/analyze-program2-live-pilot-5f.mjs', scratchRoot, '--json', report],
+        { cwd: ROOT, encoding: 'utf8' },
+      );
+      assert.equal(analysis.status, 0, `${analysis.stdout}\n${analysis.stderr}`);
+      const artifact = JSON.parse(fs.readFileSync(report, 'utf8'));
+      assert.equal(artifact.e1e.density.pass, false);
+      assert.deepEqual(artifact.terminalVerdict, {
+        status: 'not_estimable',
+        reason: 'insufficient_opportunities',
+      });
+    } finally {
+      fs.rmSync(scratchRoot, { recursive: true, force: true });
+    }
   });
 
   it('builds a cohort-bound 11-check bundle from four sealed exact-pipeline traces', () => {

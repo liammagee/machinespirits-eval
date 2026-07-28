@@ -1,10 +1,11 @@
 # Program-2 Phase 5f — fresh-world apparatus-hardening pilot pre-registration
 
-Status: **A3 FEASIBILITY COMPLETE; COHORT NOT YET PREREGISTERED** on branch
-`codex/program-2-phase5e-r2-replication` (2026-07-28). Sections 1-10 preserve
-the successive four-dialogue feasibility freezes and amendments; section 11
-records the immutable A3 outcome. This document does not authorize an
-18-dialogue cohort, seam review, or any empirical transfer claim.
+Status: **A3 FEASIBILITY COMPLETE; PROSPECTIVE COHORT PREREGISTERED BUT NOT
+AUTHORIZED** on branch `codex/program-2-phase5f-cohort` (2026-07-28). Sections
+1-10 preserve the successive four-dialogue feasibility freezes and
+amendments; section 11 records the immutable A3 outcome; section 12 freezes
+the one terminal cohort. This document does not authorize the 18-dialogue
+cohort, seam review, or any empirical transfer claim.
 
 ## 1. Purpose
 
@@ -234,3 +235,85 @@ cohort-bound pilot bundle. The cohort requires a separate certificate and
 explicit external-payload authorization. If the frozen cohort cannot reach its
 opportunity-density gate, that is a terminal design-limitation result rather
 than grounds for another trace-informed repair sequence.
+
+## 12. Prospective terminal cohort amendment (2026-07-28)
+
+### 12.1 Question and immutable design
+
+The cohort asks one question: on unused Tideway, does the unchanged local
+Program-2 committee improve compliant delivery at the frozen `warrant_skip`
+point of action relative to a fresh silent control? The design contains 18 new
+dialogues: five committee repeats and four silent-control repeats for each of
+`proof_skipper` and `affective_resistant`, for 10 committee and 8 control rows.
+Seed **20260728**, model stack, world, fallback policy `v2`, evidence-use
+rubric `v1`, detector, horizons, profiles, and all runtime pins remain those of
+A3. Controls from earlier worlds are never pooled. The plan key is `5f`, schema
+`machinespirits.tutor-stub.program2-phase5f-plan.v1`, and output directory
+`exports/program2-live-pilot-5f/`.
+
+### 12.2 Primary endpoint and terminal verdicts
+
+The primary endpoint is the committee-minus-control difference in pooled
+compliant delivery among frozen `warrant_skip` opportunities. Uncertainty is
+the same profile-stratified, dialogue-cluster two-sample bootstrap used in
+Phase 5e: 5,000 draws with seed **20260728**. The result is **supported** only
+when the opportunity-density and technical gates pass and the 95% bootstrap
+interval lies wholly above zero. If density and technical gates pass but that
+positive-interval rule does not, the result is **not supported**. If the
+opportunity-density gate fails, the result is **not estimable: insufficient
+opportunities**. These are terminal outcomes for this card.
+
+The prospective density floor is inherited unchanged from Phase 5e rather
+than lowered after seeing A3: at least 15 opportunities in each arm and at
+least 5 in every profile × arm cell. A3's zero-opportunity observation is
+retained in the pilot bundle as a failed *observed* projection, but it is not a
+certificate blocker because A3 was explicitly an apparatus-feasibility pilot.
+The cohort's live futility check enforces the non-zero floor and stops only
+when a completion gate becomes mathematically unreachable; it never stops for
+a null treatment effect.
+
+### 12.3 Technical gates and failure reporting
+
+At least seven dialogues per arm must seal, at least seven matched
+profile-repeat blocks must complete with at least three per profile, every
+analyzed row must reach at least 0.8 proof-path coverage by turn 16 and pass
+hard safety, and arm attrition may differ by at most one. Technical failures
+are reported separately from the pedagogical endpoint. A technical failure
+also ends the cohort without a transfer estimate; it does not license a repair
+pilot or replacement cohort.
+
+### 12.4 A3 binding across merged refactors
+
+The A3 traces remain bound to their immutable launch SHA
+`473640a4ae8aa159e5b8a395686bcfc9ee0a5c69`. The cohort bundle accepts that one
+named pilot source transition because the intervening merged tutor-stub work
+is separately validated as behavior-preserving extraction/refactoring. The
+bundle still requires the A3 plan schema, all four sealed profile × arm rows,
+the exact cohort command for each repeat-1 counterpart apart from job/trace
+paths, frozen model/rubric/intervention pins, trace identities and hashes, and
+the current cohort plan/source binding. It does not relabel A3 as treatment
+evidence or claim byte-identical source.
+
+The zero-model tooling is:
+
+```bash
+node scripts/run-program2-live-pilot.js --prepare-certificate --plan 5f --output-dir exports/program2-live-pilot-5f
+npm run program2:phase5f:pilot-bundle
+npm run program2:phase5f:analyze -- exports/program2-live-pilot-5f --json exports/program2-live-pilot-5f/analysis.json
+```
+
+The frozen gate specification is
+`config/adaptive-tutor-evidence/program-2-phase5f-gates.json`. The analyzer
+emits `machinespirits.program2.phase5f-analysis.v1` and this preregistration
+pointer. Neither plan preparation, bundle construction, analysis, nor
+certificate generation makes model calls.
+
+### 12.5 Authorization and stopping boundary
+
+This amendment licenses implementation and zero-model validation only. After
+it reaches `main`, the exact 18-dialogue plan and A3 cohort bundle must be
+generated from a clean source, followed by a fresh certificate. Paid launch
+still requires separate explicit authorization naming the Anthropic and
+OpenAI payload destinations and scopes. At most this one cohort may run. No
+A4-style apparatus amendment, replacement suffix, or trace-informed repair
+series follows it; the card closes with the frozen terminal verdict.

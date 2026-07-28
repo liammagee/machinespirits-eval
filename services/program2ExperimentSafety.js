@@ -13,6 +13,7 @@ export const DEFAULT_PROGRAM2_GATE_SPEC = Object.freeze({
   minOpportunitiesPerCell: 60,
   minOpportunitiesPerProfileCell: 20,
   minPilotRowsPerProfileCell: 1,
+  requirePilotOpportunityPower: true,
   opportunityReserveFactor: 1.25,
   maxOpportunitiesPerDialogue: 40,
   maxAttritionDifference: 1,
@@ -211,13 +212,17 @@ export function evaluateProgram2PilotEvidence({ plan, rows, gateSpec = {} } = {}
     missingGroups.length === 0 &&
     Object.values(projectedByProfileCondition).every((entry) => entry.pass) &&
     Object.values(projectedByCondition).every((entry) => entry.pass);
+  const opportunityPowerRequired = spec.requirePilotOpportunityPower !== false;
+  const opportunityCertificatePass = !opportunityPowerRequired || opportunityPowerPass;
   return {
-    pass: rows.length > 0 && guardrails.pass && opportunityPowerPass,
+    pass: rows.length > 0 && guardrails.pass && opportunityCertificatePass,
     exactPipelineRows: rows.length,
     missingGroups,
     guardrails,
     opportunityPower: {
-      pass: opportunityPowerPass,
+      pass: opportunityCertificatePass,
+      observedPass: opportunityPowerPass,
+      requiredForCertificate: opportunityPowerRequired,
       reserveFactor: spec.opportunityReserveFactor,
       byCondition: projectedByCondition,
       byProfileCondition: projectedByProfileCondition,

@@ -6,6 +6,8 @@ import { program2PlanSha256 } from './program2ExperimentSafety.js';
 import { summarizeTutorStubFixedHorizon } from './tutorStubEvalIntegrity.js';
 
 export const PROGRAM2_PHASE5E_PILOT_BUNDLE_SCHEMA = 'machinespirits.program2.phase5e-r2-pilot-bundle.v1';
+export const PROGRAM2_PHASE5F_PILOT_BUNDLE_SCHEMA = 'machinespirits.program2.phase5f-pilot-bundle.v1';
+export const PROGRAM2_PHASE5F_A3_SOURCE_SHA = '473640a4ae8aa159e5b8a395686bcfc9ee0a5c69';
 
 const VARIABLE_COMMAND_FLAGS = new Set(['--eval-job-id', '--trace-dir']);
 
@@ -113,13 +115,17 @@ function expectedCohortJob(cohortPlan, pilotJob) {
   );
 }
 
-export function buildProgram2Phase5ePilotBundle({
+export function buildProgram2PilotBundle({
   cohortPlan,
   pilotPlan,
   pilotRoot,
   repositoryRoot,
   cohortSourceSha = null,
   pilotSourceSha = null,
+  bundleSchema = PROGRAM2_PHASE5E_PILOT_BUNDLE_SCHEMA,
+  expectedCohortSchema = 'machinespirits.tutor-stub.program2-phase5e-r2-plan.v1',
+  expectedPilotSchemas = ['machinespirits.tutor-stub.program2-phase5e-r2-pilot-plan.v1'],
+  acceptedPilotSourceSha = null,
 } = {}) {
   const cohortSha256 = program2PlanSha256(cohortPlan);
   const expectedGroups = ['affective_resistant|committee', 'affective_resistant|silent_control', 'proof_skipper|committee', 'proof_skipper|silent_control'];
@@ -160,12 +166,24 @@ export function buildProgram2Phase5ePilotBundle({
   });
   const apparatusMatches = traces.every(({ job, parsed }) => {
     const options = parsed?.runStart?.metadata?.sessionRecipe?.config?.options || {};
-    return (
+    const pointOfAction = parsed?.runStart?.metadata?.pointOfAction || {};
+    const commandRubric = flagValue(job.command, '--learner-analysis-evidence-use-rubric');
+    const commandFallback = flagValue(job.command, '--committee-fallback-policy');
+    const runtimeRubric = options['learner-analysis-evidence-use-rubric'];
+    const armMatches =
       options['point-of-action-arm'] === job.arm &&
-      options['learner-analysis-evidence-use-rubric'] === pilotPlan.evidenceUseRubric &&
-      String(options['committee-fallback-policy'] || '') ===
-        String(flagValue(job.command, '--committee-fallback-policy') || '')
-    );
+      (!pointOfAction.arm || pointOfAction.arm === job.arm);
+    const rubricMatches =
+      commandRubric === pilotPlan.evidenceUseRubric &&
+      (runtimeRubric === undefined || runtimeRubric === pilotPlan.evidenceUseRubric);
+    const fallbackMatches =
+      job.arm === 'committee'
+        ? commandFallback === pilotPlan.fallbackPolicy &&
+          options['committee-fallback-policy'] === pilotPlan.fallbackPolicy &&
+          (!pointOfAction.committee?.fallbackPolicy ||
+            pointOfAction.committee.fallbackPolicy === pilotPlan.fallbackPolicy)
+        : commandFallback === null;
+    return armMatches && rubricMatches && fallbackMatches;
   });
   const normalizedRowsComplete = rows.length === 4 && rows.every((row) => {
     return (
@@ -175,19 +193,28 @@ export function buildProgram2Phase5ePilotBundle({
       typeof row.fixedHorizon?.hardSafetyPassed === 'boolean'
     );
   });
+  const sourceTransitionAccepted =
+    pilotSourceSha === cohortSourceSha ||
+    (acceptedPilotSourceSha !== null && pilotSourceSha === acceptedPilotSourceSha);
   const checks = [
-    check('cohort_plan_schema', cohortPlan?.schema === 'machinespirits.tutor-stub.program2-phase5e-r2-plan.v1', cohortPlan?.schema),
+    check('cohort_plan_schema', cohortPlan?.schema === expectedCohortSchema, cohortPlan?.schema),
     check(
       'pilot_plan_schema',
-      pilotPlan?.schema === 'machinespirits.tutor-stub.program2-phase5e-r2-pilot-plan.v1' && pilotPlan?.jobs?.length === 4,
+      expectedPilotSchemas.includes(pilotPlan?.schema) && pilotPlan?.jobs?.length === 4,
       `${pilotPlan?.schema || 'missing'}; jobs=${pilotPlan?.jobs?.length || 0}`,
     ),
     check(
       'cohort_plan_and_source_bound',
       /^[0-9a-f]{64}$/u.test(cohortSha256) &&
         /^[0-9a-f]{40}$/u.test(cohortSourceSha || '') &&
-        pilotSourceSha === cohortSourceSha,
-      { planSha256: cohortSha256, cohortSourceSha, pilotSourceSha },
+        /^[0-9a-f]{40}$/u.test(pilotSourceSha || '') &&
+        sourceTransitionAccepted,
+      {
+        planSha256: cohortSha256,
+        cohortSourceSha,
+        pilotSourceSha,
+        sourceTransition: pilotSourceSha === cohortSourceSha ? 'same_source' : 'accepted_frozen_pilot_source',
+      },
     ),
     check('profile_arm_coverage', JSON.stringify(observedGroups) === JSON.stringify(expectedGroups), observedGroups),
     check('exact_pipeline_commands', exactPipeline, 'pilot commands equal their repeat-1 cohort counterparts except job and trace paths'),
@@ -195,13 +222,17 @@ export function buildProgram2Phase5ePilotBundle({
     check('run_identity', identitiesMatch, 'run_start experiment identity, run_end, and JSONL parse'),
     check('world_and_seed', worldAndSeedMatch, `${pilotPlan?.world}; seed=${pilotPlan?.runSeed}`),
     check('model_stack', modelStackMatches, 'tutor, classifier, learner-record, learner, and committee-mini pins'),
-    check('rubric_and_intervention', apparatusMatches, `${pilotPlan?.evidenceUseRubric}; point-of-action arms and fallback policy`),
+    check(
+      'rubric_and_intervention',
+      apparatusMatches,
+      `${pilotPlan?.evidenceUseRubric}; command-bound rubric (legacy traces may omit the runtime option), point-of-action arms, and active committee fallback policy`,
+    ),
     check('normalized_rows_complete', normalizedRowsComplete, `${rows.length}/4 rows with complete fixed-horizon outcomes`),
   ];
   const status = checks.every((entry) => entry.pass) ? 'pass' : 'fail';
   const root = path.resolve(repositoryRoot);
   return {
-    schema: PROGRAM2_PHASE5E_PILOT_BUNDLE_SCHEMA,
+    schema: bundleSchema,
     generatedAt: new Date().toISOString(),
     zeroModel: true,
     expectedPlanSha256: cohortSha256,
@@ -212,7 +243,12 @@ export function buildProgram2Phase5ePilotBundle({
     })),
     audit: {
       status,
-      plan: { schema: cohortPlan?.schema || null, sha256: cohortSha256, sourceSha: cohortSourceSha },
+      plan: {
+        schema: cohortPlan?.schema || null,
+        sha256: cohortSha256,
+        sourceSha: cohortSourceSha,
+        pilotSourceSha,
+      },
       checks,
     },
     evidenceBindings: {
@@ -223,4 +259,18 @@ export function buildProgram2Phase5ePilotBundle({
       })),
     },
   };
+}
+
+export function buildProgram2Phase5ePilotBundle(options = {}) {
+  return buildProgram2PilotBundle(options);
+}
+
+export function buildProgram2Phase5fPilotBundle(options = {}) {
+  return buildProgram2PilotBundle({
+    ...options,
+    bundleSchema: PROGRAM2_PHASE5F_PILOT_BUNDLE_SCHEMA,
+    expectedCohortSchema: 'machinespirits.tutor-stub.program2-phase5f-plan.v1',
+    expectedPilotSchemas: ['machinespirits.tutor-stub.program2-phase5f-pilot-a3-plan.v1'],
+    acceptedPilotSourceSha: PROGRAM2_PHASE5F_A3_SOURCE_SHA,
+  });
 }
