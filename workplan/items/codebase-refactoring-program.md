@@ -1213,3 +1213,10 @@ Log:
 - 2026-07-28 — Fifty-loop learner-public-evidence-state run reached review with
   a three-line net CLI reduction, nine focused assertions, and complete
   zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 29,
+  `refactor-tutor-stub-streaming-capability`, from PR #402's reviewed head.
+  Provider resolution, network calls, token sinks, runtime state, and effects
+  remain unchanged.
+- 2026-07-28 — Fifty-loop streaming-capability run reached review with a
+  four-line net CLI reduction, four focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
