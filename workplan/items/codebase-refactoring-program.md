@@ -1354,3 +1354,12 @@ Log:
   static/source-only gates pass.
 - 2026-07-28 — Opened fifty-loop run 45 as PR #419 against `main`; the push
   benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 46,
+  `refactor-tutor-stub-comprehension-restoration`, from PR #419's reviewed
+  head. Trace loading, state creation, persistence, runtime sequencing, and
+  effects remain in the CLI.
+- 2026-07-28 — Fifty-loop comprehension-restoration run reached review with an
+  eighteen-line net CLI reduction, eleven focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 46 as PR #420 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.

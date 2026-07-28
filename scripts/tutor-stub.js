@@ -253,6 +253,7 @@ import {
   applyTutorStubComprehensionResponse,
   createTutorStubComprehensionState,
   detectTutorStubComprehensionRequest,
+  restoreTutorStubComprehensionState as restoreComprehensionState,
   tutorStubComprehensionFeatures,
   tutorStubComprehensionPrompt,
   tutorStubComprehensionSnapshot,
@@ -3466,25 +3467,6 @@ function traceDisplayPath(trace) {
 function jsonClone(value) {
   if (value === undefined) return undefined;
   return JSON.parse(JSON.stringify(value));
-}
-
-function restoreComprehensionState(state, turns, events = []) {
-  const eventSnapshot = [...events]
-    .reverse()
-    .find(
-      (event) =>
-        event?.comprehensionState || event?.state?.schema === 'machinespirits.tutor-stub.comprehension-side-state.v1',
-    );
-  const turnSnapshot = [...turns]
-    .reverse()
-    .map((turn) => turn?.comprehension?.afterTutor || turn?.comprehension?.state || null)
-    .find(Boolean);
-  const snapshot = eventSnapshot?.comprehensionState || eventSnapshot?.state || turnSnapshot || null;
-  state.comprehension = createTutorStubComprehensionState(snapshot);
-  return {
-    restored: Boolean(snapshot),
-    terms: state.comprehension.terms.length,
-  };
 }
 
 function restoreDirectorGuidanceState(state, events = []) {
