@@ -16,6 +16,8 @@ claim_status: planned
 depends_on:
   - refactor-tutor-stub-curriculum-progress-presentation
 links:
+  prs:
+    - 334
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -84,3 +86,5 @@ Log:
   across 539 manifest files, and 137/137 tutor-core tests pass with zero skips.
   Manifest, 256-item source workplan, refs, lint, formatting, syntax, diff, and
   the zero-cycle ratchet across 417 files also pass.
+- 2026-07-28 — Opened PR #334 from commit `12da9057`; the explicit workplan
+  trailer and PR-body item link both name this card.
