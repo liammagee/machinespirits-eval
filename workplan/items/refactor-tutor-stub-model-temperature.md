@@ -20,6 +20,8 @@ links:
     - services/tutorStubModelTemperature.js
     - scripts/tutor-stub.js
     - tests/tutorStubModelTemperature.test.js
+  prs:
+    - 370
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-recipe-model-identity
@@ -50,3 +52,7 @@ Log:
 - 2026-07-28 — Moved model-temperature compatibility policy into a
   dependency-free service, reducing the CLI by 10 lines. Three focused
   assertions and the complete zero-skip hermetic contract pass.
+- 2026-07-28 — The required strong benchmark produced one of six fresh
+  candidate quality passes and retained the standing calibration warning;
+  zero-call same-response re-audit found zero regressions and zero safety
+  changes. Recorded on PR #370.
