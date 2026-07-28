@@ -1312,3 +1312,5 @@ Log:
 - 2026-07-28 — Fifty-loop debug-line-printers run reached review with a
   twelve-line net CLI reduction, twelve focused assertions, and complete
   zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 41 as PR #415 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
