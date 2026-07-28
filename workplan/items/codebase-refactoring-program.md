@@ -855,3 +855,11 @@ Log:
   CLI reduction, 26 focused assertions, 7,431 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated second-loop run 3,
+  `refactor-tutor-stub-repair-spans`, from PR #351's reviewed head. Repair
+  selection, accounting, runtime state, and effects remain in their current
+  owners.
+- 2026-07-28 — Second-loop repair-span run reached review with a 28-line net
+  CLI reduction, 14 focused assertions, 7,433 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
