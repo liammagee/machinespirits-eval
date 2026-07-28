@@ -1070,3 +1070,10 @@ Log:
 - 2026-07-28 — Fifty-loop register-history-prompt run reached review with a
   15-line net CLI reduction, 25 focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 9,
+  `refactor-tutor-stub-classifier-world-context`, from PR #380's reviewed head.
+  Classifier prompt assembly, runtime state, model calls, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop classifier-world-context run reached review with a
+  10-line net CLI reduction, five focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
