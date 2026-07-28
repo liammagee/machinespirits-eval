@@ -12,6 +12,7 @@ import {
   buildTutorStubModelChoiceEntries,
   createTutorStubModelSelection,
   projectTutorStubModelChoiceLines,
+  projectTutorStubVisibleResolvedModel,
 } from '../services/tutorStubModelChoicePresentation.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -161,6 +162,29 @@ test('model selection binds catalogue inputs and fails unavailable routes with t
   assert.throws(() => selection.resolveTutorModelSelection('openai.mini'), /configure OPENAI_API_KEY first/u);
   assert.deepEqual(calls, ['config:codex', 'config:codex', 'config:openai']);
   assert.equal(Object.isFrozen(selection), true);
+});
+
+test('visible model projection preserves provider configuration and CLI-route metadata', () => {
+  const isCliProvider = (provider) => provider === 'codex';
+  const selection = createTutorStubModelSelection({
+    loadProviders: () => ({ providers: {} }),
+    getProviderConfig: () => ({ isConfigured: true }),
+    isCliProvider,
+    resolveModel: () => ({ provider: 'codex', model: 'gpt-5.6-sol' }),
+  });
+  const resolved = { provider: 'codex', model: 'gpt-5.6-sol', isConfigured: true };
+  const providerConfig = { api_key_env: '', base_url: 'http://localhost:11434' };
+  const expected = {
+    provider: 'codex',
+    model: 'gpt-5.6-sol',
+    configured: true,
+    apiKeyEnv: null,
+    baseUrl: 'http://localhost:11434',
+    cli: true,
+  };
+
+  assert.deepEqual(projectTutorStubVisibleResolvedModel(resolved, providerConfig, { isCliProvider }), expected);
+  assert.deepEqual(selection.visibleResolvedModel(resolved, providerConfig), expected);
 });
 
 test('model-choice projection pins current marker, padding, exact bytes, and input immutability', () => {

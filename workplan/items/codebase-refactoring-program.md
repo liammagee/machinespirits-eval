@@ -1042,3 +1042,10 @@ Log:
 - 2026-07-28 — Fifty-loop register-prior-loading run reached review with a
   22-line net CLI reduction, 27 focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 5,
+  `refactor-tutor-stub-visible-model`, from PR #374's reviewed head. Provider
+  resolution, runtime model state, launch orchestration, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop visible-model run reached review with a 12-line net
+  CLI reduction, 25 focused assertions, and complete zero-skip hermetic parity.
+  All static and source-only gates pass.

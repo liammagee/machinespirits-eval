@@ -1114,15 +1114,14 @@ function printHelp() {
   );
 }
 
-const { assertSupportedModelRefs, tutorModelChoiceEntries, resolveTutorModelSelection } = createTutorStubModelSelection(
-  {
+const { assertSupportedModelRefs, tutorModelChoiceEntries, resolveTutorModelSelection, visibleResolvedModel } =
+  createTutorStubModelSelection({
     loadProviders,
     getProviderConfig,
     isCliProvider,
     resolveModel,
     unsupportedRefs: UNSUPPORTED_CODEX_MINI_REFS,
-  },
-);
+  });
 
 function resolveWorkspacePath(value) {
   return path.isAbsolute(value) ? value : path.join(ROOT, value);
@@ -2428,17 +2427,6 @@ function loadSystemPrompt({ worldBundle, curriculumBundle = null, dag, topic, mu
     });
   }
   return fs.readFileSync(args.system, 'utf8');
-}
-
-function visibleResolvedModel(resolved, providerConfig) {
-  return {
-    provider: resolved.provider,
-    model: resolved.model,
-    configured: resolved.isConfigured,
-    apiKeyEnv: providerConfig.api_key_env || null,
-    baseUrl: providerConfig.base_url || null,
-    cli: isCliProvider(resolved.provider),
-  };
 }
 
 const tutorStubRecipeModelIdentity = createTutorStubRecipeModelIdentityResolver({

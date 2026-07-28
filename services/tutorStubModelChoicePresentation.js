@@ -89,6 +89,17 @@ export function assertTutorStubSupportedModelRefs(refs, { unsupportedRefs = new 
   }
 }
 
+export function projectTutorStubVisibleResolvedModel(resolved, providerConfig, { isCliProvider } = {}) {
+  return {
+    provider: resolved.provider,
+    model: resolved.model,
+    configured: resolved.isConfigured,
+    apiKeyEnv: providerConfig.api_key_env || null,
+    baseUrl: providerConfig.base_url || null,
+    cli: isCliProvider(resolved.provider),
+  };
+}
+
 export function createTutorStubModelSelection({
   loadProviders,
   getProviderConfig,
@@ -123,7 +134,16 @@ export function createTutorStubModelSelection({
     return { modelRef, resolved, providerConfig };
   }
 
-  return Object.freeze({ assertSupportedModelRefs, tutorModelChoiceEntries, resolveTutorModelSelection });
+  function visibleResolvedModel(resolved, providerConfig) {
+    return projectTutorStubVisibleResolvedModel(resolved, providerConfig, { isCliProvider });
+  }
+
+  return Object.freeze({
+    assertSupportedModelRefs,
+    tutorModelChoiceEntries,
+    resolveTutorModelSelection,
+    visibleResolvedModel,
+  });
 }
 
 export function projectTutorStubModelChoiceLines({
