@@ -1,9 +1,9 @@
 {
-  "generated": "2026-07-28T00:14:46.863Z",
+  "generated": "2026-07-28T02:39:08.965Z",
   "counts": {
-    "total": 253,
+    "total": 254,
     "byStatus": {
-      "done": 215,
+      "done": 216,
       "blocked": 5,
       "dropped": 3,
       "triaged": 8,
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 60,
-      "maintenance": 78,
+      "maintenance": 79,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -305,6 +305,7 @@
           "refactor-tutor-stub-technical-debug-presentation",
           "refactor-tutor-stub-closeout-report-presentation",
           "refactor-tutor-stub-field-report-presentation",
+          "refactor-tutor-stub-curriculum-progress-presentation",
           "make-inhoused-tests-and-coverage-first-class",
           "make-pilot-state-writes-atomic",
           "isolate-remaining-direct-model-subprocesses",
@@ -758,8 +759,8 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "refactor-tutor-stub-field-report-presentation",
-      "title": "Refactor tutor-stub field report presentation",
+      "id": "refactor-tutor-stub-curriculum-progress-presentation",
+      "title": "Refactor tutor-stub curriculum progress presentation",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -767,38 +768,37 @@
       "source": "review",
       "created": "2026-07-28",
       "updated": "2026-07-28",
-      "verification": "Field and visualization terminal output remains byte-identical while dense, no-turn, truncation, seeded live-process, focused, hermetic, manifest, static, and source-only gates pass.",
-      "branch": "codex/refactor-tutor-stub-field-report-presentation",
+      "verification": "Curriculum progress output remains byte-identical while direct, keyless live-process, process-session HTTP, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-curriculum-progress-presentation",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-tutor-stub-field-presentation",
-        "refactor-tutor-stub-closeout-report-presentation"
+        "refactor-tutor-stub-field-report-presentation"
       ],
       "links": {
         "prs": [
-          323
+          329
         ],
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/tutorStubFieldPresentation.js",
-          "services/tutorStubFieldTurnProjection.js",
+          "services/curriculum/tutorStubCurriculumProgressPresentation.js",
+          "services/curriculum/tutorStubCurriculumRuntime.js",
           "scripts/tutor-stub.js",
-          "tests/tutorStubFieldPresentation.test.js",
-          "tests/tutorStubFieldReportPresentation.test.js",
+          "tests/tutorStubCurriculumProgressPresentation.test.js",
+          "tests/tutorStubCurriculumRuntime.test.js",
+          "tests/tutorStubProcessSessionHttp.test.js",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-tutor-stub-field-presentation",
-          "refactor-tutor-stub-closeout-report-presentation"
+          "refactor-tutor-stub-field-report-presentation"
         ]
       },
       "tags": [
         "refactoring",
         "tutor-stub",
-        "field",
+        "curriculum",
         "presentation",
         "terminal"
       ],
@@ -3466,6 +3466,53 @@
         "tutor-stub",
         "presentation",
         "interaction-field"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-field-report-presentation",
+      "title": "Refactor tutor-stub field report presentation",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Field and visualization terminal output remains byte-identical while dense, no-turn, truncation, seeded live-process, focused, hermetic, manifest, static, and source-only gates pass.",
+      "branch": "codex/refactor-tutor-stub-field-report-presentation",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-field-presentation",
+        "refactor-tutor-stub-closeout-report-presentation"
+      ],
+      "links": {
+        "prs": [
+          323
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubFieldPresentation.js",
+          "services/tutorStubFieldTurnProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubFieldPresentation.test.js",
+          "tests/tutorStubFieldReportPresentation.test.js",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-field-presentation",
+          "refactor-tutor-stub-closeout-report-presentation"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "field",
+        "presentation",
+        "terminal"
       ],
       "milestone": "evaluation-infrastructure"
     },
