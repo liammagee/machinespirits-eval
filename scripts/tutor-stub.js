@@ -49,7 +49,6 @@ import {
 import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
   projectTutorStubWorldCatalogLines,
-  tutorStubWorldPickerSummary as worldPickerSummary,
   tutorStubWorldPresentation as worldPresentation,
 } from '../services/tutorStubWorldPresentation.js';
 import {
@@ -533,8 +532,10 @@ import {
   projectTutorStubInteractionModeLabel,
 } from '../services/tutorStubInteractionModePresentation.js';
 import {
+  projectTutorStubCurriculumPickerEntries,
   projectTutorStubCurriculumPickerLines,
   projectTutorStubLaunchModePickerLines,
+  projectTutorStubScenarioPickerEntries,
   projectTutorStubScenarioPickerLines,
 } from '../services/tutorStubPickerPresentation.js';
 import { projectTutorStubSessionStatusLines } from '../services/tutorStubSessionStatusPresentation.js';
@@ -2762,26 +2763,7 @@ function resolveWorldRef(ref) {
 
 async function pickInitialScenarioWithKeyboard(defaultWorldRef) {
   const defaultBundle = resolveWorldRef(defaultWorldRef);
-  const entries = groupedWorldEntries().map(({ filePath, world, isVariant }) => ({
-    id: world.id,
-    title: `${isVariant ? '↳ ' : ''}${world.title}`,
-    discipline: world.discipline || 'Authored reasoning drama',
-    question: world.question,
-    description: worldPickerSummary(world) || world.setting || world.learnerVoice || world.question,
-    filePath,
-    world,
-  }));
-  if (defaultBundle && !entries.some((entry) => entry.id === defaultBundle.world.id)) {
-    entries.unshift({
-      id: defaultBundle.world.id,
-      title: defaultBundle.world.title,
-      discipline: defaultBundle.world.discipline || 'Custom reasoning drama',
-      question: defaultBundle.world.question,
-      description: defaultBundle.world.setting || defaultBundle.world.learnerVoice || defaultBundle.world.question,
-      filePath: defaultBundle.filePath,
-      world: defaultBundle.world,
-    });
-  }
+  const entries = projectTutorStubScenarioPickerEntries({ groupedEntries: groupedWorldEntries(), defaultBundle });
   if (!entries.length) return null;
 
   let selectedIndex = Math.max(
@@ -2881,11 +2863,10 @@ async function pickInitialScenarioWithKeyboard(defaultWorldRef) {
 
 async function pickWorkplanModuleWithKeyboard(defaultModuleRef = '') {
   const bundle = loadTutorStubCurriculum('workplan', { root: ROOT });
-  const modulesById = new Map((bundle.curriculum.modules || []).map((module) => [module.id, module]));
-  const entries = listTutorStubCurriculumModules(bundle).map((entry) => ({
-    ...entry,
-    module: modulesById.get(entry.id) || null,
-  }));
+  const entries = projectTutorStubCurriculumPickerEntries({
+    modules: bundle.curriculum.modules || [],
+    entries: listTutorStubCurriculumModules(bundle),
+  });
   if (!entries.length) return null;
 
   let selectedIndex = Math.max(

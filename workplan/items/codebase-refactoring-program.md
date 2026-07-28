@@ -74,6 +74,7 @@ links:
     - refactor-tutor-stub-curriculum-catalog-presentation
     - refactor-tutor-stub-world-catalog-presentation
     - refactor-tutor-stub-picker-presentation
+    - refactor-tutor-stub-picker-entries
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -742,3 +743,12 @@ Log:
   across 541 files, and 137 tutor-core assertions pass with zero skips; every
   manifest, source-workplan, ref, static, syntax, diff, and zero-cycle gate is
   green.
+- 2026-07-28 — Activated the dependent
+  `refactor-tutor-stub-picker-entries` slice from PR #339's reviewed head to
+  move only scenario and curriculum entry shaping into the pure picker owner.
+  Loading, grouping, default resolution, selection, and terminal behavior stay
+  in the CLI.
+- 2026-07-28 — The picker-entry child reached review with a 19-line net CLI
+  reduction, scenario/curriculum functions at 99/102 lines, 55 focused
+  assertions, 7,415 root assertions, and 137 tutor-core assertions green with
+  zero skips. All static and source-only gates pass.
