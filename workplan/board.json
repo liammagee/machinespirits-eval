@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T13:32:12.092Z",
+  "generated": "2026-07-28T13:33:54.990Z",
   "counts": {
-    "total": 294,
+    "total": 297,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 41,
+      "review": 44,
       "active": 10,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 62,
-      "maintenance": 116,
+      "maintenance": 119,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -259,6 +259,8 @@
           "refactor-tutor-stub-model-temperature",
           "refactor-tutor-stub-cli-parsing",
           "refactor-tutor-stub-model-selection",
+          "refactor-tutor-stub-dag-mode",
+          "refactor-tutor-stub-register-prior-loading",
           "refactor-tutor-stub-proof-command-projection",
           "refactor-tutor-stub-interaction-mode-presentation",
           "refactor-tutor-stub-session-status-presentation",
@@ -898,6 +900,46 @@
         "tutor-stub",
         "dag",
         "deduplication"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-dag-mode",
+      "title": "Refactor tutor-stub DAG mode normalization",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 11/11 DAG fixtures including three mode contracts plus full hermetic root and tutor-core zero-skip contracts preserve defaults, case folding, hyphen aliases, validation, and error wording; every static and source-only gate passes",
+      "branch": "codex/refactor-tutor-stub-dag-mode",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-model-selection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDagFeatures.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDagFeatures.test.js"
+        ],
+        "prs": [
+          373
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-model-selection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "dag"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -1736,6 +1778,46 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-register-prior-loading",
+      "title": "Refactor tutor-stub register prior loading",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "27 focused assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate pass while preserving opt-outs, path resolution, schemas, deployment statuses, and errors",
+      "branch": "codex/refactor-tutor-stub-register-prior-loading",
+      "claim_status": "scope-bound",
+      "depends_on": [
+        "refactor-tutor-stub-dag-mode"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubRegisterEmpiricalPrior.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubRegisterEmpiricalPrior.test.js"
+        ],
+        "prs": [
+          374
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-dag-mode"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "registers"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-repair-spans",
       "title": "Refactor tutor-stub exact repair spans",
       "status": "review",
@@ -2048,6 +2130,46 @@
         "tutor-stub",
         "dag",
         "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-visible-model",
+      "title": "Refactor tutor-stub visible model projection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "25 focused model-selection and recipe assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve visible provider, model, configuration, endpoint, API-key, and CLI-route metadata",
+      "branch": "codex/refactor-tutor-stub-visible-model",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-register-prior-loading"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubModelChoicePresentation.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubModelChoicePresentation.test.js"
+        ],
+        "prs": [
+          376
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-register-prior-loading"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "models"
       ],
       "milestone": "evaluation-infrastructure"
     },
