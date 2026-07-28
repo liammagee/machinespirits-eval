@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T10:38:51.274Z",
+  "generated": "2026-07-28T11:13:48.990Z",
   "counts": {
-    "total": 270,
+    "total": 271,
     "byStatus": {
       "done": 224,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 18,
+      "review": 19,
       "active": 9,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 49,
       "infra": 61,
-      "maintenance": 94,
+      "maintenance": 95,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -797,6 +797,48 @@
         "director",
         "context",
         "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-guard-spans",
+      "title": "Refactor tutor-stub guard spans",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "focused 26/26; hermetic root 7431/7431 across 546 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass",
+      "branch": "codex/refactor-tutor-stub-guard-spans",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-register-palette"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/351"
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubGuardSpanProjection.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubGuardSpanProjection.test.js",
+          "tests/tutorStubGuardAccounting.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-register-palette"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "guard",
+        "projection"
       ],
       "milestone": "evaluation-infrastructure"
     },
