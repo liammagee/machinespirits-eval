@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-world-catalog-presentation
 title: Refactor tutor-stub world catalogue presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -94,3 +94,5 @@ Log:
   across 418 files also pass.
 - 2026-07-28 — Opened PR #338 with the source-only workplan link and no managed
   ref or version impact.
+- 2026-07-28 — PR #338 merged through `30b59a24`; the exact catalogue parity
+  and separation between world diction and register policy remain intact.

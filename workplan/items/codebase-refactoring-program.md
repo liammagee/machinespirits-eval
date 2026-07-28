@@ -73,6 +73,7 @@ links:
     - refactor-tutor-stub-curriculum-progress-presentation
     - refactor-tutor-stub-curriculum-catalog-presentation
     - refactor-tutor-stub-world-catalog-presentation
+    - refactor-tutor-stub-picker-presentation
     - make-inhoused-tests-and-coverage-first-class
     - make-pilot-state-writes-atomic
     - isolate-remaining-direct-model-subprocesses
@@ -729,3 +730,15 @@ Log:
   tutor-core tests. All 551 selected files executed with zero skips; static and
   source-only workplan gates are green, and setting/diction remains separate
   from register policy.
+- 2026-07-28 — PR #338 merged the world-catalogue child through `30b59a24`.
+  Closed that child and activated `refactor-tutor-stub-picker-presentation` for
+  deterministic launch, scenario, and curriculum picker lines only. Before
+  editing, `scripts/tutor-stub.js` was 25,107 lines and the three keyboard
+  functions were 87, 134, and 123 lines; selection state, key handling,
+  terminal effects, loading, commands, and runtime behavior remain CLI-owned.
+- 2026-07-28 — The picker-presentation child reached review with one 119-line
+  pure owner, a 38-line net CLI reduction, and the three keyboard functions at
+  80, 118, and 103 lines. All 53 focused assertions, 7,413 root assertions
+  across 541 files, and 137 tutor-core assertions pass with zero skips; every
+  manifest, source-workplan, ref, static, syntax, diff, and zero-cycle gate is
+  green.
