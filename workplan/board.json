@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T21:48:37.002Z",
+  "generated": "2026-07-28T21:54:42.568Z",
   "counts": {
-    "total": 335,
+    "total": 337,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 78,
+      "review": 80,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 153,
+      "maintenance": 155,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -1095,6 +1095,47 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-current-debug-selection",
+      "title": "Refactor tutor-stub current debug selection",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "11 focused debug-identity assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve run, opening, completed-turn, active-turn, selected-ID, trace-path, and displayed last-turn precedence",
+      "branch": "codex/refactor-tutor-stub-current-debug-selection",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-technical-debug-print-gate"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDebugIdentity.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDebugIdentity.test.js"
+        ],
+        "prs": [
+          414
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-technical-debug-print-gate"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "debug",
+        "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-current-release-rows",
       "title": "Refactor tutor-stub current release rows",
       "status": "review",
@@ -1338,6 +1379,47 @@
         "refactoring",
         "tutor-stub",
         "trace"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-debug-line-printers",
+      "title": "Refactor tutor-stub debug line printers",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "12 focused debug-identity assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve technical gating, turn/opening IDs, duplicate suppression, return values, and live color updates",
+      "branch": "codex/refactor-tutor-stub-debug-line-printers",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-current-debug-selection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDebugIdentity.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDebugIdentity.test.js"
+        ],
+        "prs": [
+          415
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-current-debug-selection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "debug",
+        "presentation"
       ],
       "milestone": "evaluation-infrastructure"
     },
