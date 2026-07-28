@@ -108,6 +108,35 @@ fires on the deep end of a stall and lets the onset through rather than risk
 blocking a good turn. Riverside bare t6 at 0.26 is a turn the judge marked down
 that this floor lets pass.
 
+## What the 2026-07-28 run showed
+
+Four fresh dialogues, none blocked, no budget binding. Novelty per turn, with the
+turns the channel fired on marked:
+
+```
+campus_faq  bare    --  .81 .45 .38 X.24  .31 X.22 X.00 X.00 X.00
+campus_faq  instr   .86 .74 .66 .60  .57  .39  .54  .30  .36 X.20
+riverside   bare    --  .74 .62 .29 X.21 X.19  .30 X.20
+riverside   instr   .86 .83 .40 .50  --
+```
+
+Riverside bare reproduces the stall on text nobody had seen: word overlap peaks
+at 0.44, so the lexical channel stays silent all eight turns exactly as it did on
+2026-07-26, and novelty fires three times. On campus bare the lexical channel
+does eventually wake, at t8 on a near-verbatim repeat; novelty fires at t5 and
+t7. The instrumented arms run 0.20 to 0.86 and only campus t10 — the turn at the
+cap — falls through, so the floor is not firing on healthy turns.
+
+This is the same effect twice on the same two worlds and the same model, not an
+independent test of 0.25. The floor was read off the earlier run and now sorts
+this one; a third world or a second model would be the real check.
+
+Riverside instrumented spent 3 of its 5 turns on the deterministic fallback,
+against 1 of 7 on 2026-07-26. Neither this guard nor the closure guard failed
+once in that trace — the fallbacks came from the release, actorial-realization
+and turn-progression guards that were already there. Unexplained, and one
+dialogue against one dialogue.
+
 ## Exemptions
 
 A turn can be word-poor without stalling, so two cases skip the check and say
