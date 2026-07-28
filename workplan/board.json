@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T06:40:53.138Z",
+  "generated": "2026-07-28T06:41:29.314Z",
   "counts": {
     "total": 258,
     "byStatus": {
-      "done": 222,
+      "done": 223,
       "blocked": 5,
       "dropped": 3,
       "triaged": 7,
-      "review": 8,
+      "review": 7,
       "active": 9,
       "archived": 4
     },
@@ -963,34 +963,6 @@
         "testing",
         "ci",
         "hermetic"
-      ]
-    },
-    {
-      "id": "tutor-shell-misses-skin-attribute",
-      "title": "The /tutor shell never receives data-skin, so it stays parchment",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P3",
-      "owner": "claude",
-      "branch": "claude/tudor-stub-cli-remote-afplmq",
-      "source": "review",
-      "created": "2026-07-28",
-      "updated": "2026-07-28",
-      "verification": "Loading /tutor with poetics-skin unset or set to stark shows the stark palette, matching a server-rendered page opened in the same browser; switching to parchment in the tweaks panel and reloading /tutor shows parchment; the tutor tokens still resolve when techne.css is absent.",
-      "links": {
-        "code": [
-          "public/components/skin-early-apply.js",
-          "public/components/rail-inject.js",
-          "tests/staticSurfaceSkin.test.js"
-        ],
-        "items": [
-          "scriptorium-static-tools-desktop-quality"
-        ]
-      },
-      "tags": [
-        "ui",
-        "scriptorium",
-        "skins"
       ]
     },
     {
@@ -8144,6 +8116,37 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "tutor-shell-misses-skin-attribute",
+      "title": "The /tutor shell never receives data-skin, so it stays parchment",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "claude",
+      "branch": "claude/tudor-stub-cli-remote-afplmq",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "Loading /tutor with poetics-skin unset or set to stark shows the stark palette, matching a server-rendered page opened in the same browser; switching to parchment in the tweaks panel and reloading /tutor shows parchment; the tutor tokens still resolve when techne.css is absent.",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/331"
+        ],
+        "code": [
+          "public/components/skin-early-apply.js",
+          "public/components/rail-inject.js",
+          "tests/staticSurfaceSkin.test.js"
+        ],
+        "items": [
+          "scriptorium-static-tools-desktop-quality"
+        ]
+      },
+      "tags": [
+        "ui",
+        "scriptorium",
+        "skins"
+      ]
     },
     {
       "id": "tutor-shell-missing-nav-rail",
