@@ -4,6 +4,7 @@ import {
   learnerDeliberationTraceAgent,
   learnerTraceStage,
   projectLearnerDeliberationTrace,
+  redactTraceSecrets,
   TRACE_SCHEMA_VERSION,
 } from '../services/traceSchema.js';
 
@@ -12,6 +13,42 @@ const DELIBERATION = [
   { role: 'superego', stage: 'critique', content: 'Review it.', metrics: { model: 'test-superego' } },
   { role: 'ego', stage: 'adjudication', content: 'Revised reaction.', metrics: { model: 'test-ego' } },
 ];
+
+describe('trace secret redaction', () => {
+  it('redacts normalized secret keys, API-key strings, arrays, and cycles without mutating input', () => {
+    const shared = { safe: 'value' };
+    const input = {
+      api_key: 'not-even-key-shaped',
+      nested: {
+        Authorization: 'Bearer private',
+        tokenLike: 'sk-abcdefghijklmnop',
+        ordinary: 'sk-short',
+      },
+      array: [shared, shared],
+    };
+    input.self = input;
+
+    assert.deepEqual(redactTraceSecrets(input), {
+      api_key: '[redacted]',
+      nested: {
+        Authorization: '[redacted]',
+        tokenLike: '[redacted]',
+        ordinary: 'sk-short',
+      },
+      array: [{ safe: 'value' }, { safe: 'value' }],
+      self: '[circular]',
+    });
+    assert.equal(input.api_key, 'not-even-key-shaped');
+    assert.equal(input.self, input);
+  });
+
+  it('preserves null, undefined, primitive, and non-secret string values', () => {
+    assert.equal(redactTraceSecrets(null), null);
+    assert.equal(redactTraceSecrets(undefined), undefined);
+    assert.equal(redactTraceSecrets(7), 7);
+    assert.equal(redactTraceSecrets('public'), 'public');
+  });
+});
 
 describe('learner trace schema v2', () => {
   it('emits the exact symmetric learner sequence', () => {

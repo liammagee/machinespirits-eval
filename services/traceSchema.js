@@ -11,6 +11,16 @@ export const TRACE_SCHEMA_VERSION = '2.0';
 const INITIAL_STAGES = new Set(['initial', 'draft', 'reaction']);
 const REVISION_STAGES = new Set(['adjudication', 'revision', 'revise', 'revised', 'final']);
 
+const TRACE_SECRET_KEYS = new Set([
+  'apikey',
+  'authorization',
+  'bearer',
+  'secret',
+  'password',
+  'accesstoken',
+  'refreshtoken',
+]);
+
 function normalized(value) {
   return String(value || '')
     .trim()
@@ -31,6 +41,27 @@ export function learnerDeliberationTraceAgent(deliberation = {}) {
   }
 
   return role ? `learner_${role}` : 'learner_unknown';
+}
+
+export function redactTraceSecrets(value, ancestors = new WeakSet()) {
+  if (value === null || value === undefined) return value;
+  if (typeof value === 'string') {
+    return /^sk-[A-Za-z0-9_-]{12,}/u.test(value) ? '[redacted]' : value;
+  }
+  if (typeof value !== 'object') return value;
+  if (ancestors.has(value)) return '[circular]';
+  ancestors.add(value);
+  try {
+    if (Array.isArray(value)) return value.map((item) => redactTraceSecrets(item, ancestors));
+    const redacted = {};
+    for (const [key, nested] of Object.entries(value)) {
+      const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/gu, '');
+      redacted[key] = TRACE_SECRET_KEYS.has(normalizedKey) ? '[redacted]' : redactTraceSecrets(nested, ancestors);
+    }
+    return redacted;
+  } finally {
+    ancestors.delete(value);
+  }
 }
 
 /**
@@ -118,4 +149,5 @@ export default {
   learnerDeliberationTraceAgent,
   learnerTraceStage,
   projectLearnerDeliberationTrace,
+  redactTraceSecrets,
 };
