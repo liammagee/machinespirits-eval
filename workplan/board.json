@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T21:33:59.134Z",
+  "generated": "2026-07-28T21:42:10.700Z",
   "counts": {
-    "total": 324,
+    "total": 326,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 67,
+      "review": 69,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 142,
+      "maintenance": 144,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -3099,6 +3099,88 @@
         "tutor-stub",
         "git",
         "stack-recovery"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-stream-label",
+      "title": "Refactor tutor-stub stream label",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "5 focused speaker-transport assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve tutor, learner-analysis, learner-DAG, classifier, fallback, and color copy",
+      "branch": "codex/refactor-tutor-stub-stream-label",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-streaming-capability"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDevelopmentSpeakerTransport.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDevelopmentSpeakerTransport.test.js"
+        ],
+        "prs": [
+          404
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-streaming-capability"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "streaming",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-streaming-capability",
+      "title": "Refactor tutor-stub streaming capability",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-28",
+      "verification": "4 focused speaker-transport assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve direct token streaming, CLI exclusion, Codex event streaming, and missing-provider behavior",
+      "branch": "codex/refactor-tutor-stub-streaming-capability",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-learner-public-evidence-state"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/tutorStubDevelopmentSpeakerTransport.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubDevelopmentSpeakerTransport.test.js"
+        ],
+        "prs": [
+          403
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-learner-public-evidence-state"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "streaming",
+        "providers"
       ],
       "milestone": "evaluation-infrastructure"
     },
