@@ -137,7 +137,13 @@ import {
   snapshotTutorStubPublicPremiseIds,
 } from '../services/tutorStubResponseGuard.js';
 import { buildTutorStubObservedAudits } from '../services/tutorStubObservedAudits.js';
-import { splitTutorStubPublicWords } from '../services/tutorStubPublicText.js';
+import {
+  formatTutorStubFact as factText,
+  tutorStubFactMatches as factMatches,
+  tutorStubSplitSymbolWords as splitSymbolWords,
+  tutorStubTextContainsToken as textContainsToken,
+  tutorStubTextTokens as textTokens,
+} from '../services/tutorStubFactModel.js';
 import { tutorStubPublicProvenanceText } from '../services/tutorStubPublicProvenance.js';
 import {
   auditTutorStubEvidenceAssertions,
@@ -1539,32 +1545,6 @@ function loadRegisterEmpiricalPrior(value, { policy }) {
       ? 'loaded_holdout_not_passed'
       : 'loaded';
   return { prior, filePath, status };
-}
-
-function factText(fact) {
-  if (!Array.isArray(fact) || fact.length === 0) return String(fact || '');
-  const [rel, ...args] = fact;
-  return `${rel}(${args.join(', ')})`;
-}
-
-function splitSymbolWords(value) {
-  return splitTutorStubPublicWords(value);
-}
-
-function textTokens(text) {
-  return new Set(splitSymbolWords(text));
-}
-
-function tokenRegex(token) {
-  return new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'iu');
-}
-
-function textContainsToken(text, token) {
-  return tokenRegex(token).test(String(text || ''));
-}
-
-function factMatches(a, b) {
-  return factKey(a) === factKey(b);
 }
 
 function candidatePublicPremiseIds({ state = null, world = null, tutorTurn = null, publicPremiseIds = null } = {}) {

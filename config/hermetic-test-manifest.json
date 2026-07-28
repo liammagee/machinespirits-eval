@@ -426,6 +426,7 @@
         "tests/tutorStubDueSourceRenderer.test.js",
         "tests/tutorStubEngagementOperation.test.js",
         "tests/tutorStubExplanatoryDebug.test.js",
+        "tests/tutorStubFactModel.test.js",
         "tests/tutorStubFeatureMap.test.js",
         "tests/tutorStubFieldPresentation.test.js",
         "tests/tutorStubFieldReportPresentation.test.js",

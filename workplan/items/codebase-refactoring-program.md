@@ -54,6 +54,7 @@ links:
     - refactor-tutor-stub-dag-snapshot-model
     - refactor-tutor-stub-second-loop-recovery
     - refactor-tutor-stub-debug-identifiers
+    - refactor-tutor-stub-fact-matching
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -935,4 +936,11 @@ Log:
   runtime state remain in their current owners.
 - 2026-07-28 — Third-loop debug-identifier run reached review with a 10-line
   net CLI reduction, five focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 2,
+  `refactor-tutor-stub-fact-matching`, from PR #361's reviewed head. Public
+  premise selection, entailment, leak policy, world state, and effects remain
+  in their current owners.
+- 2026-07-28 — Third-loop fact-matching run reached review with a 20-line net
+  CLI reduction, five focused assertions, and complete zero-skip hermetic
   parity. All static and source-only gates pass.
