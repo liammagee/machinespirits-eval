@@ -20,6 +20,8 @@ links:
     - services/tutorStubModelChoicePresentation.js
     - scripts/tutor-stub.js
     - tests/tutorStubModelChoicePresentation.test.js
+  prs:
+    - 372
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-cli-parsing
@@ -52,3 +54,5 @@ Log:
 - 2026-07-28 — Bound validation, catalogue construction, and availability
   resolution into the model-choice model, reducing the CLI by 27 lines. Nine
   focused assertions and the complete zero-skip hermetic contract pass.
+- 2026-07-28 — Opened PR #372 against `main`; the benchmark hook correctly
+  classified the selection-only slice as not response-generation relevant.
