@@ -819,3 +819,13 @@ Log:
   CLI reduction, 55 focused assertions, 7,425 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated dependent slice
+  `refactor-tutor-stub-human-discourse-config` from PR #347's reviewed head to
+  move the pure three-mode run contract and stable schema/phase constants into
+  a dependency-free owner. Normalization, prompt construction, turn state, DAG
+  execution, model calls, traces, and effects remain in their current owners.
+- 2026-07-28 — The human-discourse-config child reached review with a 45-line
+  net CLI reduction, 51 focused assertions, 7,427 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass after removing the extraction's stale import and formatting its new
+  dependency-free owner.

@@ -58,6 +58,10 @@ import {
   projectTutorStubWorldSpeakerDagPrompt,
 } from '../services/tutorStubWorldPromptContext.js';
 import {
+  TUTOR_STUB_HUMAN_DISCOURSE_PHASE as HUMAN_DISCOURSE_PHASE,
+  buildTutorStubHumanDiscourseRunConfig as buildHumanDiscourseRunConfig,
+} from '../services/tutorStubHumanDiscourseConfig.js';
+import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
   renderTutorStubCurriculumModule,
@@ -657,12 +661,10 @@ const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
 const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'codex.gpt-5-mini']);
 const NEGATIVE_FLOOR_REGISTERS = ['ironic', 'sarcastic', 'face_threat'];
 const DAG_MODES = ['strict_dag', 'human_scaffold', 'defeasible_human_scaffold'];
-const HUMAN_DISCOURSE_RUN_CONFIG_SCHEMA = 'machinespirits.tutor-stub.human-discourse-run-config.v1';
 const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-frame.v1';
 const SCAFFOLD_STATE_SCHEMA = 'machinespirits.tutor-stub.scaffold-state.v1';
 const SIDE_ARC_SCHEMA = 'machinespirits.tutor-stub.side-arc.v1';
 const WARRANT_PREMISE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.warrant-premise-audit.v1';
-const HUMAN_DISCOURSE_PHASE = 'phase_2_human_scaffold_prompting';
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
 const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
 const TUTOR_TYPED_ACTION_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.typed-action-outcome.v1';
@@ -3122,53 +3124,6 @@ function normalizeDagMode(value) {
     .replace(/-/gu, '_');
   if (DAG_MODES.includes(mode)) return mode;
   throw new Error(`Unknown --dag-mode: ${value}. Expected ${DAG_MODES.join(', ')}.`);
-}
-
-function buildHumanDiscourseRunConfig({ dagMode, dagEnabled, tutorLearnerDagEnabled }) {
-  const scaffoldActive = dagMode !== 'strict_dag';
-  const stepCompression =
-    dagMode === 'defeasible_human_scaffold'
-      ? {
-          enabled: true,
-          policy:
-            'accept obvious public bridges as implied proof debt; ask for explicit warrants only when the leap is unsafe, conflicting, or case-closing',
-          maxExplicitDemandsPerTurn: 1,
-        }
-      : {
-          enabled: false,
-          policy:
-            dagMode === 'human_scaffold'
-              ? 'frame one local warrant without expanding the whole proof chain'
-              : 'strict proof audit only',
-          maxExplicitDemandsPerTurn: dagMode === 'human_scaffold' ? 1 : 0,
-        };
-  return {
-    schema: HUMAN_DISCOURSE_RUN_CONFIG_SCHEMA,
-    dagMode,
-    strictAuditDag: Boolean(dagEnabled),
-    tutorLearnerDag: Boolean(tutorLearnerDagEnabled),
-    phase: HUMAN_DISCOURSE_PHASE,
-    scaffoldActive,
-    stepCompression,
-    scaffoldPolicy:
-      dagMode === 'defeasible_human_scaffold'
-        ? 'allow learner-owned compressed inference, keep implied proof debt internal, and only surface warrant gaps when they matter'
-        : dagMode === 'human_scaffold'
-          ? 'frame local human-facing warrants while strict DAG audit remains authoritative'
-          : 'strict DAG audit only; no human-scaffold prompt adaptation',
-    traceFields: [
-      'humanDiscourseFrame',
-      'scaffoldState',
-      'sideArc',
-      'discoursePlane',
-      'proofDebt',
-      'warrantPremiseAudit',
-      'generousInference',
-      'conversationalCompletion',
-      'questionSupport',
-    ],
-    behaviorChange: scaffoldActive,
-  };
 }
 
 function buildRegisterPalette(mode) {
