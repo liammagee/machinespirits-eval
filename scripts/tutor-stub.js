@@ -139,6 +139,7 @@ import { buildTutorStubObservedAudits } from '../services/tutorStubObservedAudit
 import { formatTutorStubFact as factText } from '../services/tutorStubFactModel.js';
 import { createTutorStubPublicEvidenceModel } from '../services/tutorStubPublicEvidence.js';
 import { createTutorStubResponseLeakAudit } from '../services/tutorStubResponseLeakAudit.js';
+import { compactTutorStubOneLine as oneLine } from '../services/tutorStubTextProjection.js';
 import {
   TUTOR_STUB_CHARACTER_RESTATEMENT_SCHEMA,
   TUTOR_STUB_CHARACTER_RESTATEMENT_SYSTEM_PROMPT,
@@ -7322,14 +7323,6 @@ function buildTutorDagSnapshot(state, tutorTurn) {
 
 function printTutorDagSnapshot(snapshot) {
   for (const line of projectTutorStubDagSnapshotLines({ snapshot, colors: C })) console.log(line);
-}
-
-function oneLine(value, { max = 220 } = {}) {
-  const text = String(value || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (text.length <= max) return text;
-  return `${text.slice(0, Math.max(0, max - 3))}...`;
 }
 
 function printTutorStubFeatureMap(state = null) {
