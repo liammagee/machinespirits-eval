@@ -3827,7 +3827,7 @@ test('a sole released integration target outranks exhausted-schedule sayback', (
 
   assert.equal(target.target, 'The long route doubles the crossing.');
   assert.equal(selected.actionFamily, 'stage_next_step');
-  assert.match(selected.reason, /sole remaining learner-record gap/iu);
+  assert.match(selected.reason, /next queued relation/iu);
   assert.equal(configuration.learner_integration_target.question, 'What does the long route do to the crossing?');
   assert.match(tutorStubResponseConfigurationPrompt(configuration), /Missing public relation recovery/iu);
 });

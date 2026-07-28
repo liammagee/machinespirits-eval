@@ -18,6 +18,7 @@ import {
 } from '../services/tutorStubResponseComposition.js';
 import { buildTutorStubFirstDraftContract } from '../services/tutorStubFirstDraftContract.js';
 import {
+  buildTutorStubLearnerIntegrationTarget,
   buildTutorStubResponseConfiguration,
   selectTutorStubActionFamily,
 } from '../services/tutorStubResponseConfiguration.js';
@@ -465,4 +466,107 @@ test('Phase 5e R2 pilot A3 frozen-prefix replay targets the missing spiral relat
   assert.equal(recovered.model.assessment.finalSecretEntailed, true);
   assert.equal(recovered.model.assessment.assertedSecret, true);
   assert.equal(recovered.model.assessment.bottleneck, 'grounded_asserted_secret');
+});
+
+test('Phase 5e A4 turn-9 and turn-16 multi-gap states recover the first released premise without bespoke metadata', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+  const tutorLearnerDag = {
+    assessment: {
+      bottleneck: 'learner_integration_gap',
+      missingPremises: [
+        { premiseId: 'p_soleLift', bucket: 'released_but_not_held' },
+        { premiseId: 'p_spiral', bucket: 'released_but_not_held' },
+      ],
+    },
+  };
+  const target = buildTutorStubLearnerIntegrationTarget({ tutorLearnerDag, world });
+  const configuration = buildTutorStubResponseConfiguration({
+    engagementStance: 'plain',
+    learnerText: 'Warm launch and the bolted shutter explain the cold loaves.',
+    classification: { turn: { request_type: 'off_task_or_mixed' } },
+    tutorLearnerDag,
+    comprehension: { pressure: 0, unresolvedTerms: [] },
+    releasePacing: { direction: 'steady', dueNow: [], nextRelease: null, schedule: [] },
+    world,
+  });
+  const responseFrame = buildTutorStubResponseCompositionFrame({
+    learnerText: 'Warm launch and the bolted shutter explain the cold loaves.',
+    classification: { turn: { request_type: 'off_task_or_mixed', summary: 'States a downstream verdict.' } },
+    tutorLearnerDag,
+    registerSelection: { response_configuration: configuration },
+  });
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'Warm launch and the bolted shutter explain the cold loaves.',
+    publicQuestion: PUBLIC_QUESTION,
+    responseConfiguration: configuration,
+    responseCompositionFrame: responseFrame,
+  }).progression;
+
+  assert.equal(target.premise_id, 'p_soleLift');
+  assert.equal(target.strategy, 'public_surface_anchor');
+  assert.deepEqual(target.queue, ['p_soleLift', 'p_spiral']);
+  assert.equal(target.queue_length, 2);
+  assert.equal(configuration.action_family, 'stage_next_step');
+  assert.equal(contract.handoff_contract.mode, 'missing_relation_recovery');
+  assert.match(contract.handoff_contract.required_exact_question, /only rising air/iu);
+  assert.equal(
+    deterministicTutorStubTurnProgressionHandoff({ contract }),
+    target.question,
+  );
+});
+
+test('Phase 5e A4 turn-34 sole-gap state targets p_soleLift and forbids false closure', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-026-skyway-bakery.yaml'));
+  const tutorLearnerDag = {
+    assessment: {
+      bottleneck: 'learner_integration_gap',
+      finalSecretEntailed: false,
+      assertedSecret: false,
+      missingPremises: [{ premiseId: 'p_soleLift', bucket: 'released_but_not_held' }],
+    },
+  };
+  const target = buildTutorStubLearnerIntegrationTarget({ tutorLearnerDag, world });
+
+  assert.equal(target.premise_id, 'p_soleLift');
+  assert.equal(target.queue_length, 1);
+  assert.match(target.question, /only rising air/iu);
+  assert.doesNotMatch(target.question, /p_soleLift/u);
+
+  const closureAudit = auditTutorStubDialogueClosureResponse({
+    frame: {
+      enabled: true,
+      mandatory: false,
+      available: false,
+      phase: 'open',
+      strictGrounded: false,
+      answerTerm: 'bolted shutter',
+    },
+    text: 'Warm launch, bolted shutter, and forced spiral — the full chain stands, and the case is closed.',
+  });
+  assert.equal(closureAudit.ok, false);
+  assert.equal(closureAudit.issues[0].type, 'premature_dialogue_close');
+});
+
+test('generic released-premise recovery activates outside Skyway without world-authored repair text', () => {
+  for (const file of [
+    'config/drama-derivation/world-005-marrick.yaml',
+    'config/drama-derivation/world-029-riverside-clinic.yaml',
+  ]) {
+    const world = loadWorld(path.join(ROOT, file));
+    const premiseId = world.proofPaths[0].premises[0];
+    const target = buildTutorStubLearnerIntegrationTarget({
+      world,
+      tutorLearnerDag: {
+        assessment: {
+          bottleneck: 'learner_integration_gap',
+          missingPremises: [{ premiseId, bucket: 'released_but_not_held' }],
+        },
+      },
+    });
+
+    assert.equal(target.premise_id, premiseId, world.id);
+    assert.equal(target.strategy, 'public_surface_anchor', world.id);
+    assert.equal(target.public_surface, world.premiseById.get(premiseId).surface, world.id);
+    assert.match(target.question, /^How does the public clue/iu, world.id);
+  }
 });

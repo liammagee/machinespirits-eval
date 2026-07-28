@@ -70,20 +70,39 @@ export function buildTutorStubLearnerIntegrationTarget({ tutorLearnerDag = null,
   const assessment = tutorLearnerDag?.assessment || null;
   if (assessment?.bottleneck !== 'learner_integration_gap') return null;
   const missing = Array.isArray(assessment.missingPremises) ? assessment.missingPremises : [];
-  if (missing.length !== 1 || missing[0]?.bucket !== 'released_but_not_held') return null;
-  const premiseId = String(missing[0]?.premiseId || '').trim();
-  const premise = premiseId ? world?.premiseById?.get?.(premiseId) : null;
+  const queue = missing
+    .filter((row) => row?.bucket === 'released_but_not_held')
+    .map((row) => {
+      const premiseId = String(row?.premiseId || '').trim();
+      const premise = premiseId ? world?.premiseById?.get?.(premiseId) : null;
+      return premise && oneLine(premise.surface) ? { premiseId, premise } : null;
+    })
+    .filter(Boolean);
+  if (!queue.length) return null;
+  const { premiseId, premise } = queue[0];
   const repair = premise?.integration_repair;
-  if (!repair?.question || !repair?.target || !repair?.qualification) return null;
+  const authoredRepair = Boolean(repair?.question && repair?.target && repair?.qualification);
+  const publicSurface = oneLine(premise.surface);
+  const question = authoredRepair
+    ? oneLine(repair.question)
+    : `How does the public clue “${publicSurface}” enter the chain you just stated?`;
+  const target = authoredRepair ? oneLine(repair.target) : publicSurface;
+  const qualification = authoredRepair
+    ? oneLine(repair.qualification)
+    : `Your conclusion names the result, but the already-public clue “${publicSurface}” has not yet entered your account.`;
   return {
     schema: TUTOR_STUB_LEARNER_INTEGRATION_TARGET_SCHEMA,
     active: true,
-    source: 'sole_released_but_not_held_best_path_premise',
+    source: 'released_but_not_held_best_path_queue',
+    strategy: authoredRepair ? 'authored_relation_question' : 'public_surface_anchor',
     premise_id: premiseId,
-    public_surface: oneLine(premise.surface),
-    question: oneLine(repair.question),
-    target: oneLine(repair.target),
-    qualification: oneLine(repair.qualification),
+    public_surface: publicSurface,
+    question,
+    target,
+    qualification,
+    queue: queue.map((row) => row.premiseId),
+    queue_position: 1,
+    queue_length: queue.length,
   };
 }
 
@@ -142,7 +161,7 @@ export function selectTutorStubActionFamily({
   } else if (learnerIntegrationTarget?.active) {
     actionFamily = 'stage_next_step';
     reason =
-      'One already-public best-path relation is the sole remaining learner-record gap, so recover that exact relation before another verdict or sayback.';
+      'An already-public best-path relation remains outside the learner record, so recover the next queued relation before another verdict or sayback.';
   } else if (!releaseExhausted && (releasePacing?.direction === 'accelerate' || releasePacing?.dueNow?.length)) {
     actionFamily = 'stage_next_step';
     reason = releasePacing?.dueNow?.length
@@ -844,7 +863,9 @@ export function tutorStubResponseConfigurationPrompt(configuration, { stanceCont
       ? `Learner pace: accelerating. Credit all ${configuration.learner_advance.supportedMoveCount} warranted learner-owned proof moves already made; do not ask for any of them again. Test or extend only the next unresolved edge.`
       : 'Learner pace: steady unless the public turn itself warrants otherwise.',
     configuration.learner_integration_target?.active
-      ? `Missing public relation recovery: the learner has not yet stated “${configuration.learner_integration_target.target}” even though its clue is public. Qualify the downstream verdict with “${configuration.learner_integration_target.qualification}” and ask exactly: “${configuration.learner_integration_target.question}” Do not supply the target sentence, accept another downstream verdict as a substitute, or copy a learner ledger formula.`
+      ? configuration.learner_integration_target.strategy === 'public_surface_anchor'
+        ? `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the already-public clue “${configuration.learner_integration_target.public_surface}” is still outside the learner record. Qualify the downstream verdict with “${configuration.learner_integration_target.qualification}” and ask exactly: “${configuration.learner_integration_target.question}” The quotation is a public anchor, not a learner claim: do not answer how it fits, accept another downstream verdict as a substitute, or copy a learner ledger formula.`
+        : `Missing public relation recovery (${configuration.learner_integration_target.queue_position}/${configuration.learner_integration_target.queue_length}): the learner has not yet stated “${configuration.learner_integration_target.target}” even though its clue is public. Qualify the downstream verdict with “${configuration.learner_integration_target.qualification}” and ask exactly: “${configuration.learner_integration_target.question}” Do not supply the target sentence, accept another downstream verdict as a substitute, or copy a learner ledger formula.`
       : null,
     configuration.release_pacing?.direction === 'accelerate'
       ? `Clue release: faster at ${configuration.release_pacing.effectiveSpeed}x. Stage at most one newly available clue batch now, with a short handoff and no redundant proof demand.`

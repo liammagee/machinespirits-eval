@@ -1,7 +1,7 @@
 ---
 id: program-2-phase5d-second-transfer-world
 title: "Program-2 Phase 5e: second transfer world (letter-hostile probe)"
-status: active
+status: dropped
 type: experiment
 priority: P2
 owner: codex
@@ -9,7 +9,7 @@ source: manual
 created: 2026-07-22
 updated: 2026-07-28
 branch: codex/program-2-phase5e-r2-replication
-verification: "R2 first clears a certified four-dialogue exact-pipeline pilot (one row per profile x arm, 11-check cohort-bound provenance, all-row coverage/safety and projected eligible-opportunity gates), then the 18-dialogue apparatus-corrected cohort clears E1e (handoff-eligible warrant_skip compliance diff vs fresh Skyway controls, profile-stratified dialogue-bootstrap 95% CI > 0) under the frozen coverage, safety, density, attrition, and seam guardrails. R1 remains a separate negative delivery-stack observation and is never pooled."
+verification: "Closed without an E1e estimate: immutable R1 and R2 A1-A4 artifacts remain separate, A4's 2/4 sealed pilot and failed cohort bundle are recorded, Skyway is explicitly retired from held-out use, and successor apparatus-hardening plus fresh-world cards own any further work."
 claim_status: exploratory
 links:
   paper: §6.21, §7.12
@@ -26,6 +26,7 @@ links:
     - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment2.md
     - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment3.md
     - notes/program-2/2026-07-28-phase5e-r2-pilot-amendment4.md
+    - notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md
     - config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection.json
     - config/adaptive-tutor-evidence/program-2-phase5e-world-selection-amendment1.json
@@ -33,6 +34,8 @@ links:
     - config/adaptive-tutor-evidence/program-2-phase5e-r2-pilot-gates.json
   items:
     - program-2-context-vs-weights-finetune
+    - program-2-transfer-apparatus-hardening
+    - program-2-phase5f-fresh-transfer-world
 tags:
   - tutor-stub
   - fine-tune
@@ -319,3 +322,20 @@ public-learner-analysis, response-configuration, first-draft, composition, and
 turn-progression stack, and 119/119 derivation-world and Program-2 live-pilot
 tests. The exact Skyway plot lint, repository lint, diff check, and 226/226
 workplan source validation also pass. No A4 provider call has been made.
+
+2026-07-28 Codex: The authorized A4 pilot sealed 2/4 rows and stopped under
+the frozen coverage futility rule. The committee row reached 1.00 coverage and
+hard safety. The proof-skipper control reached 0.50 coverage at the horizon and
+0.75 at turn 40 because `p_soleLift` remained released but unheld; an earlier
+attempt also failed the duplicate-clue delivery check. The one sealed committee
+warrant opportunity lost its cue-bearing content at the protected-handoff seam.
+The incomplete nominal 0/1 versus 1/1 comparison is not an E1e estimate. A4
+therefore shows that Amendment 4 moved the missing-relation failure from
+`p_spiral` to the next unhandled premise rather than repairing the apparatus
+generally.
+
+Decision: retire Skyway as a held-out transfer world after R2 A1-A4. This card
+is dropped as a clean empirical test, not interpreted as evidence against the
+transfer hypothesis. `program-2-transfer-apparatus-hardening` owns the generic
+zero-model repair; `program-2-phase5f-fresh-transfer-world` owns the next
+prospective test on a post-training world that was not used to tune the repair.

@@ -138,6 +138,7 @@ import {
   auditTutorStubDramaticReleaseResponse,
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
+  prepareTutorStubDueClueUptake,
 } from '../services/tutorStubDramaticRelease.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 import { buildTutorStubResumeHandoff } from '../services/tutorStubResumeHandoff.js';
@@ -592,8 +593,8 @@ import {
   buildCommitteeCompositionBlock,
   committeeFallbackBatteryPass,
   committeeMiniGenerate,
-  committeeQuestionSentences,
   runCommitteeBattery,
+  selectCommitteeCompositionQuestion,
   trimCommitteeFallback,
 } from '../services/program2CommitteeEngine.js';
 import { createProgram2ProviderBudgetFromEnvironment } from '../services/program2ExperimentSafety.js';
@@ -9974,13 +9975,14 @@ async function callTutor({
         repairAttempt: 0,
       });
     } else {
-      const spans = committeeQuestionSentences(miniText);
-      moment.spanSentenceCount = spans.length;
-      if (!spans.length) {
-        moment.source = 'fallback_no_span';
+      const spanSelection = selectCommitteeCompositionQuestion(miniText);
+      moment.spanSentenceCount = spanSelection.questions.length;
+      moment.spanSelection = spanSelection;
+      if (!spanSelection.eligible) {
+        moment.source = spanSelection.questions.length ? 'fallback_question_lacks_cue' : 'fallback_no_span';
         chosen = await resolveCommitteeFallbackEnvelope();
       } else {
-        const span = spans.join(' ');
+        const span = spanSelection.selected;
         moment.span = span;
         const compositionBlock = buildCommitteeCompositionBlock(span);
         try {
@@ -10832,10 +10834,23 @@ async function callTutor({
     const candidateFallbackUptake = fallbackRequiresSpecificUptake
       ? deterministicFallbackUptake
       : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
-    const fallbackUptake =
+    const fallbackUptakeCandidate =
       firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
         ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
         : candidateFallbackUptake;
+    const fallbackUptakePreparation = prepareTutorStubDueClueUptake({
+      uptake: fallbackUptakeCandidate,
+      frame: dramaticReleaseFrame,
+    });
+    const fallbackUptake = fallbackUptakePreparation.text;
+    if (fallbackUptakePreparation.replaced) {
+      appendTraceEvent(trace, {
+        type: 'fallback_uptake_due_clue_deduplicated',
+        turn: tutorTurn,
+        repeatedPremises: fallbackUptakePreparation.repeatedPremises,
+        publicTranscriptChanged: false,
+      });
+    }
     // Question support and live progression can coexist with the human
     // scaffold. Their compiled contract must select the fallback; the older
     // generous-inference text does not realize bounded choices or declarative

@@ -124,10 +124,28 @@ function questionRows(text) {
 }
 
 export function auditTutorStubDialogueClosureResponse({ text, frame } = {}) {
-  if (!frame?.enabled || (!frame.mandatory && !frame.available)) {
+  if (!frame?.enabled) {
     return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [] };
   }
   const verdict = detectTutorStubVerdictDeclaration(text, { answerTerm: frame.answerTerm });
+  if (!frame.mandatory && !frame.available) {
+    if (!verdict.declared) {
+      return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [], verdict };
+    }
+    return {
+      ok: false,
+      closesDialogue: false,
+      invitesCheckIn: false,
+      issues: [
+        {
+          type: 'premature_dialogue_close',
+          reason: 'the response closes or settles the inquiry while the strict learner DAG remains open',
+        },
+      ],
+      verdict,
+      questionCount: questionRows(text).length,
+    };
+  }
   const shouldClose = Boolean(frame.mandatory || verdict.declared);
   if (!shouldClose) {
     return { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [], verdict };

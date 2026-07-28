@@ -43,6 +43,15 @@ test('evidence boundaries stay hard on the terminal fallback', () => {
   assert.equal(decision.hardIssues.length, 1);
 });
 
+test('premature strict-DAG closure stays hard on the terminal fallback', () => {
+  const issue = { guard: 'dialogue_closure', type: 'premature_dialogue_close' };
+  const decision = decideTutorStubGuardDelivery([issue], { terminalFallback: true });
+
+  assert.equal(decision.ok, false);
+  assert.deepEqual(decision.hardIssues, [issue]);
+  assert.equal(decision.dispositions[0].category, 'semantic_closure_integrity');
+});
+
 test('unknown guards fail closed even on the terminal fallback', () => {
   const decision = decideTutorStubGuardDelivery([unknownGuardIssue], { terminalFallback: true });
   assert.equal(decision.ok, false);

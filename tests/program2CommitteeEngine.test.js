@@ -8,6 +8,7 @@ import {
   committeeQuestionSentences,
   normalizeCommitteeWhitespace,
   runCommitteeBattery,
+  selectCommitteeCompositionQuestion,
 } from '../services/program2CommitteeEngine.js';
 
 test('frozen committee defaults match the Phase 2 serving pin', () => {
@@ -30,6 +31,28 @@ test('question-span extraction is probe-identical', () => {
     committeeQuestionSentences('First, which record shows the weight? And second, what rule binds it?'),
     ['First, which record shows the weight?', 'And second, what rule binds it?'],
   );
+});
+
+test('A4 seam preserves a compliant complete mini turn when only its preceding sentence carries the cue', () => {
+  const mini = [
+    'If the forced spiral is doing the causal work, the public record should show how that route changes the journey.',
+    'Which part of that route change would help us make the case more concrete?',
+  ].join(' ');
+  const selection = selectCommitteeCompositionQuestion(mini);
+
+  assert.equal(committeeFallbackBatteryPass(mini), true);
+  assert.equal(selection.eligible, false);
+  assert.equal(selection.selected, null);
+  assert.equal(selection.reason, 'complete_turn_may_carry_cue_but_question_does_not');
+});
+
+test('a cue-bearing committee question remains eligible for protected composition', () => {
+  const mini = 'The claim is bounded. Which public record connects that route change to the cold arrival?';
+  const selection = selectCommitteeCompositionQuestion(mini);
+
+  assert.equal(selection.eligible, true);
+  assert.equal(selection.selected, 'Which public record connects that route change to the cold arrival?');
+  assert.equal(selection.reason, 'question_carries_frozen_warrant_cue');
 });
 
 test('battery: pass requires non-empty, verbatim containment, exactly one question', () => {
