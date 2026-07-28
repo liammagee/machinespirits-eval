@@ -20,6 +20,8 @@ links:
     - services/tutorStubRegisterHistoryProjection.js
     - scripts/tutor-stub.js
     - tests/tutorStubRegisterHistoryProjection.test.js
+  prs:
+    - 380
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-learner-dag-prompt
@@ -52,3 +54,5 @@ Log:
   effect-free service, reducing `scripts/tutor-stub.js` by 15 lines. Twenty-five
   focused assertions, complete zero-skip hermetic parity, and all static and
   source-only gates pass.
+- 2026-07-28 — Opened PR #380 against `main`; the benchmark hook correctly
+  classified the history-projection slice as not response-generation relevant.
