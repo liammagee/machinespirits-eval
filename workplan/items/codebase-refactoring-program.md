@@ -1049,3 +1049,10 @@ Log:
 - 2026-07-28 — Fifty-loop visible-model run reached review with a 12-line net
   CLI reduction, 25 focused assertions, and complete zero-skip hermetic parity.
   All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 6,
+  `refactor-tutor-stub-register-prompt-vocabulary`, from PR #376's reviewed
+  head. Runtime register state, prompt assembly, policy selection, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop register-prompt-vocabulary run reached review with a
+  25-line net CLI reduction, 26 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
