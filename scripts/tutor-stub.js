@@ -61,7 +61,10 @@ import {
   TUTOR_STUB_HUMAN_DISCOURSE_PHASE as HUMAN_DISCOURSE_PHASE,
   buildTutorStubHumanDiscourseRunConfig as buildHumanDiscourseRunConfig,
 } from '../services/tutorStubHumanDiscourseConfig.js';
-import { buildTutorStubRegisterPalette } from '../services/tutorStubRegisterPalette.js';
+import {
+  buildTutorStubRegisterPalette,
+  createTutorStubRegisterPromptVocabulary,
+} from '../services/tutorStubRegisterPalette.js';
 import { projectTutorStubExactRepairSpans as exactTutorRepairSpans } from '../services/tutorStubGuardSpanProjection.js';
 import { projectTutorStubGuardAttemptEnvelope } from '../services/tutorStubGuardAttemptProjection.js';
 import { projectTutorStubScaffoldState } from '../services/tutorStubScaffoldState.js';
@@ -2484,38 +2487,10 @@ function humanDirectedRegisterPalette() {
   return Object.keys(definitions).filter((name) => definitions[name]?.simulated_only !== true);
 }
 
-function engagementStanceDefinitionSummary(name) {
-  const def = getEngagementStanceDefinition(name) || {};
-  return {
-    register: name,
-    valence: def.valence || 'unknown',
-    router_selectable: def.router_selectable === true,
-    simulated_only: def.simulated_only === true,
-    public_signature: String(def.public_signature || '').trim() || null,
-    contrast: String(def.contrast || '').trim() || null,
-    reviewer_cues: def.reviewer_cues || def.trigger || null,
-    stance_contract: String(def.stance_contract || '').trim(),
-    required_moves: Array.isArray(def.required_moves) ? def.required_moves : [],
-    risk_flags: Array.isArray(def.risk_flags) ? def.risk_flags : [],
-    forbidden_phrases: Array.isArray(def.forbidden_phrases) ? def.forbidden_phrases : [],
-    recognition_guardrail: String(def.recognition_guardrail || '').trim() || null,
-  };
-}
-
-function engagementStancePalettePromptRows(palette) {
-  return JSON.stringify(palette.map(engagementStanceDefinitionSummary), null, 2);
-}
-
-function requestTypePromptRows() {
-  const definitions = getRequestTypeDefinitions();
-  const rows = Object.entries(definitions).map(([requestType, definition]) => ({
-    request_type: requestType,
-    role: definition.role || 'logical_armature',
-    description: definition.description || '',
-    dag_use: definition.dag_use || '',
-  }));
-  return rows.length ? JSON.stringify(rows, null, 2) : 'No request-type registry is configured.';
-}
+const { engagementStancePalettePromptRows, requestTypePromptRows } = createTutorStubRegisterPromptVocabulary({
+  getEngagementStanceDefinition,
+  getRequestTypeDefinitions,
+});
 
 function learnerDagPromptSummary(model) {
   if (!model) return 'No prior tutor-side learner-DAG model is available yet.';
