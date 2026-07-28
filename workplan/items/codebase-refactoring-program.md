@@ -1372,3 +1372,11 @@ Log:
   zero-skip hermetic parity. All static/source-only gates pass.
 - 2026-07-28 — Opened fifty-loop run 47 as PR #421 against `main`; the push
   benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 48,
+  `refactor-tutor-stub-typed-action-decision-lookup`, from PR #421's reviewed
+  head. Ledger reconstruction, lifecycle validation, trace loading, runtime
+  state, and effects remain in the CLI.
+- 2026-07-28 — Fifty-loop typed-action-decision-lookup run reached review with
+  an eight-line net CLI reduction, three focused assertions, synchronized
+  hermetic inventory, and complete zero-skip hermetic parity. All
+  static/source-only gates pass.

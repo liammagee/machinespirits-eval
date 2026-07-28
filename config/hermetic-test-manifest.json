@@ -543,6 +543,7 @@
         "tests/tutorStubTurnProgressionContract.test.js",
         "tests/tutorStubTutorPromptContext.test.js",
         "tests/tutorStubTypedActionAdapter.test.js",
+        "tests/tutorStubTypedActionRestoration.test.js",
         "tests/tutorStubTypedCompositeAdvocateCalibration.test.js",
         "tests/tutorStubUptakeGuardLinkage.test.js",
         "tests/tutorStubV21PerformanceCalibrationFixture.test.js",
