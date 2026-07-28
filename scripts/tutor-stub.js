@@ -62,10 +62,8 @@ import {
   buildTutorStubHumanDiscourseRunConfig as buildHumanDiscourseRunConfig,
 } from '../services/tutorStubHumanDiscourseConfig.js';
 import { buildTutorStubRegisterPalette } from '../services/tutorStubRegisterPalette.js';
-import {
-  projectTutorStubExactRepairSpans as exactTutorRepairSpans,
-  projectTutorStubGuardedSpans,
-} from '../services/tutorStubGuardSpanProjection.js';
+import { projectTutorStubExactRepairSpans as exactTutorRepairSpans } from '../services/tutorStubGuardSpanProjection.js';
+import { projectTutorStubGuardAttemptEnvelope } from '../services/tutorStubGuardAttemptProjection.js';
 import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
@@ -2074,45 +2072,15 @@ function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEviden
   return 'Yes—that answers the last point. We will leave it settled until a genuinely new public fact gives us something further to test.';
 }
 
-function tutorGuardedSpans(text, audits) {
-  return projectTutorStubGuardedSpans(text, tutorStubGuardIssueRows(audits));
-}
-
 function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
-  const text = String(response?.text || '');
-  const recoveryMetadata = response?.recoveryStrategy || response?.recoveryBatch || null;
-  const generation = {
-    callId: response?.guardCallId || null,
-    role: response?.guardRole || null,
-    latencyMs: Number(response?.latencyMs || 0),
-    usage: response?.usage ? jsonClone(response.usage) : null,
-    tokenUsageAvailable: response?.tokenUsageAvailable ?? null,
-    ...(recoveryMetadata
-      ? {
-          candidateKind: response.recoveryCandidateKind || kind,
-          ...recoveryMetadata,
-        }
-      : {}),
-  };
-  return {
+  return projectTutorStubGuardAttemptEnvelope({
     kind,
     attempt,
-    provider: response?.provider || null,
-    model: response?.model || null,
-    deliveryConfiguration: jsonClone(response?.deliveryResponseConfiguration || null),
-    configurationTransition: jsonClone(response?.responseConfigurationTransition || null),
-    candidate: {
-      start: 0,
-      end: text.length,
-      text,
-      offsetEncoding: 'utf16_code_units',
-    },
+    response,
     audits,
-    auditOk: audits?.deliveryOk ?? audits?.ok ?? null,
-    generation,
-    guardedSpans: audits ? tutorGuardedSpans(text, audits) : [],
+    issues: audits ? tutorStubGuardIssueRows(audits) : [],
     repairedSpans,
-  };
+  });
 }
 
 function buildTutorGuardAccounting({
