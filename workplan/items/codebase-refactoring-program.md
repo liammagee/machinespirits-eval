@@ -57,6 +57,7 @@ links:
     - refactor-tutor-stub-fact-matching
     - refactor-tutor-stub-public-evidence
     - refactor-tutor-stub-response-leak-audit
+    - refactor-tutor-stub-one-line-projection
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -960,3 +961,10 @@ Log:
 - 2026-07-28 — Third-loop response-leak-audit run reached review with a
   245-line net CLI reduction, 18 focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 5,
+  `refactor-tutor-stub-one-line-projection`, from PR #364's reviewed head.
+  Call-site budgets, menu/report construction, terminal writes, runtime state,
+  and effects remain in their current owners.
+- 2026-07-28 — Third-loop one-line-projection run reached review with a
+  seven-line net CLI reduction, five focused assertions, and complete
+  zero-skip hermetic parity. All static and source-only gates pass.

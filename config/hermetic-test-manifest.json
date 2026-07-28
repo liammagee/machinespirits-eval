@@ -523,6 +523,7 @@
         "tests/tutorStubStructuredFirstDraft.test.js",
         "tests/tutorStubTechnicalAnalysisPresentation.test.js",
         "tests/tutorStubTechnicalDebugPresentation.test.js",
+        "tests/tutorStubTextProjection.test.js",
         "tests/tutorStubTrainingReuse.test.js",
         "tests/tutorStubTrainingReusePresentation.test.js",
         "tests/tutorStubTrajectoryShadow.test.js",
