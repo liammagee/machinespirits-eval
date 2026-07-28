@@ -479,7 +479,10 @@ import {
   projectTutorStubDirectorNotesLines,
 } from '../services/tutorStubDirectorPresentation.js';
 import { projectTutorStubLearnerClassificationLines } from '../services/tutorStubLearnerClassificationPresentation.js';
-import { projectTutorStubLearnerDagLines } from '../services/tutorStubLearnerDagPresentation.js';
+import {
+  projectTutorStubLearnerDagLines,
+  projectTutorStubLearnerDagPromptSummary as learnerDagPromptSummary,
+} from '../services/tutorStubLearnerDagPresentation.js';
 import { projectTutorStubResponseConfigurationLines } from '../services/tutorStubResponseConfigurationPresentation.js';
 import { projectTutorStubResponsePolicyContext } from '../services/tutorStubResponsePolicyContext.js';
 import {
@@ -2491,27 +2494,6 @@ const { engagementStancePalettePromptRows, requestTypePromptRows } = createTutor
   getEngagementStanceDefinition,
   getRequestTypeDefinitions,
 });
-
-function learnerDagPromptSummary(model) {
-  if (!model) return 'No prior tutor-side learner-DAG model is available yet.';
-  const record = model.learnerRecord || {};
-  return JSON.stringify(
-    {
-      turn: model.turn ?? null,
-      metrics: model.metrics || {},
-      assessment: model.assessment || {},
-      memoryReliability: model.memoryReliability || null,
-      learnerRecord: {
-        grounded: (record.grounded || []).slice(-8),
-        voicedDerived: (record.voicedDerived || []).slice(-8),
-        hypotheses: (record.hypotheses || []).slice(-5),
-        answerCandidates: record.answerCandidates || [],
-      },
-    },
-    null,
-    2,
-  );
-}
 
 function registerHistoryPromptSummary(state) {
   const history = state.register?.history || [];

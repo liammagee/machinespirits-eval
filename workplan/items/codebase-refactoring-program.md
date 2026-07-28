@@ -1056,3 +1056,10 @@ Log:
 - 2026-07-28 — Fifty-loop register-prompt-vocabulary run reached review with a
   25-line net CLI reduction, 26 focused assertions, and complete zero-skip
   hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 7,
+  `refactor-tutor-stub-learner-dag-prompt`, from PR #377's reviewed head.
+  Learner-DAG construction, runtime state, prompt assembly, and effects remain
+  in their current owners.
+- 2026-07-28 — Fifty-loop learner-DAG-prompt run reached review with an 18-line
+  net CLI reduction, five focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
