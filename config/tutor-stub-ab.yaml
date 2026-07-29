@@ -172,6 +172,19 @@ arms:
     features: none
     learner_framing: false
     due_line: true
+  # The testable half of light stochastic adaptation. The live feature shifts
+  # the tutor's character after two straight confused or frustrated learner
+  # turns; that trigger never fires on the frozen corpus (all 14 learners press
+  # for answers, none reads as confused), so this arm prices the shift itself:
+  # a seeded-random part change on the turns a stable hash selects, cast from
+  # the seven-part palette the frozen system prompt already names. Unshifted
+  # turns are byte-identical to the baseline and are the noise floor.
+  character_shift_only:
+    label: Character shift only
+    summary: The bare tutor with a hash-seeded change of part on half the turns — light stochastic adaptation's shift without its trigger.
+    features: none
+    learner_framing: false
+    character_shift: true
 
 scenarios:
   tallow_short:
@@ -232,6 +245,13 @@ presets:
   due_line_control:
     models: [codex_medium]
     arms: [baseline, due_line_only, contract_only]
+    scenarios: [tallow_short, nocturne_full]
+  # Does an uncued change of character help or hurt a turn? Bare against
+  # bare-plus-the-shift-line, on the two scenarios the judge's content filter
+  # never refuses. 2 arms x 10 turns = 20 calls. Pass --max-calls 20.
+  character_shift_control:
+    models: [codex_medium]
+    arms: [baseline, character_shift_only]
     scenarios: [tallow_short, nocturne_full]
   # Who is speaking, rather than what they were told. Tuned Qwen and its base
   # sibling, each bare and each with the stage directions. The frontier numbers

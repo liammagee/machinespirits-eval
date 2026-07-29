@@ -245,6 +245,64 @@ function dueLineFor(bundle) {
   return [DUE_LINE_INTRO, ...surfaces.map((surface) => `- ${surface}`)].join('\n');
 }
 
+/**
+ * Character-shift control — the testable half of "light stochastic adaptation".
+ *
+ * The live feature (`services/tutorStubLightAdaptation.js`) shifts the tutor's
+ * style and host character after two consecutive confused or frustrated
+ * learner turns. Its trigger never fires on the frozen corpus — every recorded
+ * learner presses for answers and none reads as confused — so what this arm
+ * prices is the shift itself: an uncued, seeded-random change of part, exactly
+ * what the live mechanism would apply at its trigger.
+ *
+ * One line on the turns a stable hash of the turn id selects, nothing on the
+ * rest, so the unshifted turns are byte-identical to the baseline's prompt and
+ * double as the sampling-noise floor, like the due-line arm's quiet turns. The
+ * part is drawn by the same hash from the seven-part palette the frozen system
+ * prompt itself names, so the line adds direction and zero new vocabulary. The
+ * stance axis of the live feature is deliberately left out: the frozen prompt
+ * defines no stance names, and naming one would hand the speaker vocabulary
+ * the recording never carried.
+ *
+ * Unbracketed, like every other control line in this file.
+ */
+const CHARACTER_SHIFT_PARTS = Object.freeze([
+  'investigator',
+  'examiner',
+  'record-keeper',
+  'witness/source',
+  'advocate',
+  'skeptic',
+  'closer',
+]);
+
+export const TUTOR_STUB_AB_CHARACTER_SHIFT_PARTS = CHARACTER_SHIFT_PARTS;
+
+/** Same stable small hash the pairwise judge uses for its A/B layout. */
+function stableHash(text) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i += 1) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/**
+ * The shift line for one frozen turn, or null on the turns the coin leaves
+ * unshifted. Selection and draw both key on the turn id alone, so a rerun
+ * replays the same seeded shifts — the frozen analogue of the live feature's
+ * replayable draws.
+ */
+function characterShiftFor(bundle) {
+  const turnId = String(bundle?.turnId || '');
+  if (!turnId) return null;
+  const h = stableHash(`character-shift:${turnId}`);
+  if (h % 2 !== 0) return null;
+  const part = CHARACTER_SHIFT_PARTS[(h >>> 3) % CHARACTER_SHIFT_PARTS.length];
+  return `For this turn, play the ${part} — commit to that part's action and voice. Everything else about the scene is unchanged.`;
+}
+
 function normalizeLengthTarget(value, label) {
   if (value === undefined || value === null) return null;
   if (!Number.isInteger(value) || value < 1) throw new Error(`${label} must be a positive integer`);
@@ -301,6 +359,15 @@ export function resolveTutorStubAbArm(id, definition = {}) {
   if (dueLine && features.includes('first_draft_contract')) {
     throw new Error(`arm ${armId} cannot carry the due line and the first-draft contract together`);
   }
+  const characterShift = definition.character_shift === true;
+  if (characterShift && definition.baseline) {
+    throw new Error(`baseline arm ${armId} must not carry the character shift`);
+  }
+  // The contract casts the turn's part itself; a second, hash-drawn cast on
+  // top would have the speaker holding two parts for one paragraph.
+  if (characterShift && features.includes('first_draft_contract')) {
+    throw new Error(`arm ${armId} cannot carry the character shift and the first-draft contract together`);
+  }
   return {
     schema: AB_ARM_SCHEMA,
     id: armId,
@@ -311,6 +378,7 @@ export function resolveTutorStubAbArm(id, definition = {}) {
     lengthTargetChars,
     genericPlan,
     dueLine,
+    characterShift,
     omitted: TUTOR_STUB_AB_FEATURE_IDS.filter((featureId) => !kept.has(featureId)),
     learnerFraming,
     guardsClaimed: [...new Set(features.flatMap((featureId) => tutorStubAbFeature(featureId).guards))].sort(),
@@ -345,7 +413,9 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
   const genericPlan = arm.genericPlan === true ? GENERIC_PLAN : null;
   // Null on a quiet turn, so the arm's prompt there is the baseline's prompt.
   const dueLine = arm.dueLine === true ? dueLineFor(bundle) : null;
-  const content = [directive, genericPlan, dueLine, ...retained.map((block) => block.text), residue]
+  // Null on the turns the coin leaves unshifted, for the same reason.
+  const characterShift = arm.characterShift === true ? characterShiftFor(bundle) : null;
+  const content = [directive, genericPlan, dueLine, characterShift, ...retained.map((block) => block.text), residue]
     .filter(Boolean)
     .join('\n\n');
   latest.content = content;
@@ -366,6 +436,7 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
     lengthTargetChars,
     genericPlan: genericPlan !== null,
     dueLine: dueLine !== null,
+    characterShift: characterShift !== null,
     // Kept out of advisoryChars: neither the length note nor the generic plan
     // carries any planner content, and folding either in would make a control
     // look mildly instrumented in reports. The due line does carry one piece of
@@ -373,6 +444,7 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
     lengthDirectiveChars: directive ? directive.length : 0,
     genericPlanChars: genericPlan ? genericPlan.length : 0,
     dueLineChars: dueLine ? dueLine.length : 0,
+    characterShiftChars: characterShift ? characterShift.length : 0,
     advisoryChars: retained.reduce((total, block) => total + block.text.length, 0),
     requestChars: content.length,
   };

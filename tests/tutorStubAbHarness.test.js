@@ -18,6 +18,7 @@ import {
   projectTutorStubAbRequest,
   resolveTutorStubAbArm,
   resolveTutorStubAbGuardSet,
+  TUTOR_STUB_AB_CHARACTER_SHIFT_PARTS,
   TUTOR_STUB_AB_DUE_LINE_INTRO,
   TUTOR_STUB_AB_FEATURES,
   TUTOR_STUB_AB_FEATURE_IDS,
@@ -309,6 +310,53 @@ test('the due line carries the released finding on a due turn and nothing on a q
   assert.equal(quiet.projection.dueLine, false);
   assert.equal(quiet.projection.dueLineChars, 0);
   assert.equal(quiet.latest.content, bareQuiet.latest.content);
+});
+
+test('the character shift casts a seeded part on shifted turns and nothing on the rest', () => {
+  const abPlan = plan('character_shift_control', { scenarios: ['nocturne_full'] });
+  const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
+  const byTurn = (armId, turn) =>
+    forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
+
+  // Turn 3's hash lands on shift; turn 2's lands on quiet. Both are fixed by
+  // the turn id, so a rerun replays the same seeded draws.
+  const shifted = byTurn('character_shift_only', 3);
+  const bareShifted = byTurn('baseline', 3);
+  assert.equal(shifted.projection.systemPrompt, bareShifted.projection.systemPrompt);
+  assert.deepEqual(shifted.projection.retainedFeatures, []);
+  assert.equal(shifted.projection.advisoryChars, 0);
+  assert.equal(shifted.projection.characterShift, true);
+  assert.equal(shifted.projection.characterShiftChars > 0, true);
+  assert.ok(shifted.latest.content.startsWith('For this turn, play the '));
+  assert.ok(shifted.latest.content.endsWith(`\n\n${bareShifted.latest.content}`));
+  const injected = shifted.latest.content.slice(0, -bareShifted.latest.content.length);
+  // A cast from the system prompt's own palette, not a smuggled contract: no
+  // advisory block, no slot vocabulary, and the part is one the prompt names.
+  assert.equal(parseTutorStubAdvisoryBlocks(shifted.latest.content).blocks.length, 0);
+  const named = TUTOR_STUB_AB_CHARACTER_SHIFT_PARTS.filter((part) => injected.includes(`play the ${part}`));
+  assert.equal(named.length, 1);
+  for (const word of ['UPTAKE', 'PART —', 'SOURCE', 'TACTIC', 'HANDOFF', 'RECORD', 'public exhibit', 'must']) {
+    assert.ok(!injected.includes(word), word);
+  }
+
+  // A quiet turn adds nothing: byte-identical to the bare tutor's prompt.
+  const quiet = byTurn('character_shift_only', 2);
+  const bareQuiet = byTurn('baseline', 2);
+  assert.equal(quiet.projection.characterShift, false);
+  assert.equal(quiet.projection.characterShiftChars, 0);
+  assert.equal(quiet.latest.content, bareQuiet.latest.content);
+});
+
+test('the character shift is rejected on the baseline and beside the real contract', () => {
+  assert.throws(
+    () => resolveTutorStubAbArm('bare', { baseline: true, features: 'none', character_shift: true }),
+    /must not carry the character shift/u,
+  );
+  assert.throws(
+    () => resolveTutorStubAbArm('both', { features: ['first_draft_contract'], character_shift: true }),
+    /cannot carry the character shift and the first-draft contract together/u,
+  );
+  assert.equal(resolveTutorStubAbArm('ok', { features: 'all', drop: ['first_draft_contract'] }).characterShift, false);
 });
 
 test('the due line is rejected on the baseline and beside the real contract', () => {

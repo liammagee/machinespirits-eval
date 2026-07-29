@@ -197,6 +197,28 @@ turns. The rule channel and the judge channel now agree about what is real —
 the hidden fact — and disagree only about the wrapping, which only the
 plan-aware channel rewards.
 
+Sixth result, 2026-07-29 — the character-shift control, pricing the testable
+half of light stochastic adaptation. The live feature
+(`services/tutorStubLightAdaptation.js`, shipped 2026-07-23, never before
+measured) shifts the tutor's style and host character after two straight
+confused or frustrated learner turns. Its trigger never fires on the frozen
+corpus — all 14 recorded learners press for answers; none reads as confused —
+so the arm (`character_shift_only`, preset `character_shift_control`) prices
+the shift alone: one line on the turns a stable hash selects, casting a
+hash-drawn part from the seven the frozen system prompt itself names, nothing
+on the rest. Rule channel: +2, −3, +4 against the bare tutor across three runs
+— inside the band, as designed, since the line claims no rules. Schedule-shown
+judge, 30 pairs: on the seven shifted turns the shifted tutor is preferred 5
+of 20 — the bare tutor wins three of four (a coin gives that about once in
+fifty) — while the three quiet turns, byte-identical prompts, split 4 of 8.
+The judge's reasons say the cost plainly: the shifted tutor plays its part
+instead of answering, drifting into role-anchored questions where the bare
+tutor stays on the learner's own leaf, paper and ink. Second instrument to
+find the same thing — the character-development arc's per-turn mechanism also
+hurt. What remains untested is the trigger claim itself (a shift exactly at a
+real difficulty moment), which needs a confused-learner recording; both
+existing results price the prior against it.
+
 Standing limitation: turns after the first are counterfactual for every arm
 except the one that produced the recording, since the frozen learner utterances
 answered the recorded tutor. Each row is a same-context comparison of N tutors
