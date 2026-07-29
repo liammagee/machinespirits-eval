@@ -33,6 +33,7 @@ links:
     - 428
     - 429
     - 430
+    - 431
   items:
     - codebase-refactoring-program
 tags:
@@ -181,3 +182,4 @@ Log:
   passthrough, timing, cancellation, DAG-snapshot ownership, and direct boundary
   assertions plus the zero-skip hermetic suite at 7,676/7,676 root and 137/137
   tutor-core tests.
+- 2026-07-29 — Opened macro cycle 6 as stacked PR #431.
