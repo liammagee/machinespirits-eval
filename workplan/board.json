@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-29T09:00:34.911Z",
+  "generated": "2026-07-29T02:40:27.897Z",
   "counts": {
-    "total": 350,
+    "total": 347,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
-      "triaged": 7,
-      "review": 92,
+      "triaged": 6,
+      "review": 90,
       "active": 12,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 51,
-      "infra": 68,
+      "experiment": 50,
+      "infra": 66,
       "maintenance": 165,
       "content": 2,
       "ops": 8,
@@ -47,28 +47,6 @@
           "tutor-stub-unified-session-surface"
         ]
       }
-    },
-    {
-      "id": "tutor-contract-outcome-prereg",
-      "title": "Pre-registration: does the per-turn contract change legitimate closure?",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-29",
-      "updated": "2026-07-29",
-      "verification": "Before any paid dialogue: the closure detector is hand-audited against the pilot transcripts and its misses are fixed or the endpoint is re-specified; the pilot gate (bare closure in the 20–80% band per world) is met or the world/turn-cap is re-picked and the change logged here before proceeding. The run itself is attended and checkpointed.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-instrumentation-ab-harness",
-        "tutor-eval-instrument-dashboard"
-      ],
-      "tags": [
-        "tutor-stub",
-        "prereg",
-        "outcome"
-      ]
     },
     {
       "id": "decide-rich-learner-memory-service-retention",
@@ -630,9 +608,9 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-07-26",
-      "updated": "2026-07-29",
-      "verification": "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call plan; the baseline arm's projected request is exactly the learner utterance with zero advisory chars; the plan control's projected request is the learner utterance plus one fixed 995-char plan, identical on every turn; every arm is audited with the recorded run's guard set and pinning is an identity on the fixtures; a paid run writes report.json, report.md, and a swimlane diff whose failure-cluster deltas separate the arms; `node scripts/judge-tutor-stub-ab-pairs.js --mock` exercises the whole blind-judging path with no model calls, and `--limit 0` re-summarises a recorded corpus without judging anything; every rule the bench has ever raised carries an explicit open/told class with a stated reason, held against a checked-in table by `tests/tutorStubAbHarness.test.js`, and `node scripts/rescore-tutor-stub-ab-open-rules.js --pooled` re-splits the whole recorded corpus with the API keys blanked.",
-      "claim_status": "scope-bound",
+      "updated": "2026-07-26",
+      "verification": "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call plan; the baseline arm's projected request is exactly the learner utterance with zero advisory chars; every arm is audited with the recorded run's guard set and pinning is an identity on the fixtures; a paid run writes report.json, report.md, and a swimlane diff whose failure-cluster deltas separate the arms.",
+      "claim_status": "methods",
       "links": {
         "notes": [
           "docs/tutor-instrumentation-ab.md"
@@ -4401,27 +4379,6 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "tutor-stub-leak-audit-false-positives",
-      "title": "Leak audits fire on hedges and stage directions — every recorded A/B leak was a false alarm",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-29",
-      "updated": "2026-07-29",
-      "verification": "A unit test asserts the conclusion check treats `X, not Y` as withholding, the way it already treats `does not` and `not yet`; a unit test asserts `I trace the winter-to-thaw entry with my finger` raises no evidence correspondence; replaying the nine recorded leak turns through the A/B bench reads zero leaks; the seven turns that never leaked still read zero.",
-      "claim_status": "scope-bound",
-      "depends_on": [
-        "tutor-instrumentation-ab-harness"
-      ],
-      "tags": [
-        "tutor-stub",
-        "instrument",
-        "frozen-replay"
-      ]
-    },
-    {
       "id": "big-picture-state-of-the-nation-skill-and-board-traceability",
       "title": "Big-picture state-of-the-nation skill and board traceability",
       "status": "review",
@@ -4468,26 +4425,6 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "worktree-rubric-dim-count-fix"
-    },
-    {
-      "id": "tutor-eval-instrument-dashboard",
-      "title": "One map and one page for every tutor-scoring instrument",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-29",
-      "updated": "2026-07-29",
-      "verification": "`node scripts/build-tutor-stub-ab-dashboard.js` runs on file reads alone, reports the run and lane counts, and writes `exports/tutor-stub-ab/dashboard.html`; unit tests assert the merge attaches a verdict only when run, case, version and model lane all match, that a reply no judge read says so rather than borrowing a verdict, and that both pairwise file generations normalize; the page carries the four-channel inventory and the no-cross-channel-averaging note.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-instrumentation-ab-harness"
-      ],
-      "tags": [
-        "tutor-stub",
-        "tooling"
-      ]
     },
     {
       "id": "workplan-commit-trailer-check",
