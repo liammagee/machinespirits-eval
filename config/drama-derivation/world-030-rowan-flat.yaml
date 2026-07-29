@@ -37,6 +37,26 @@ learner_voice: >-
 
 secret:
   fact: [causedWaterMark, kitchenCeiling, basinFeedHose]
+  # Deterministic backstop for the closure assertion: fires only once the
+  # record entails the secret, never on a question. The 2026-07-30 pilot
+  # recorded a learner stating this verdict in a causal form the extractor
+  # missed ("The split hose leak caused the kitchen ceiling mark").
+  recognition_patterns:
+    - id: hose_caused_mark
+      all_of:
+        - ["hose"]
+        - ["caused", "cause of", "made", "produced", "explains", "is behind"]
+        - ["ceiling mark", "kitchen ceiling", "water mark", "ceiling stain", "the mark", "the stain"]
+      none_of:
+        - "did not cause"
+        - "didn't cause"
+        - "not the hose"
+        - "rule out the hose"
+        - "does not show"
+        - "doesn't show"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
   surface: >-
     The mark was caused by the basin's flexible feed hose. Its split opens only
     when mains pressure rises; the building pressure test raised it at 08:15,

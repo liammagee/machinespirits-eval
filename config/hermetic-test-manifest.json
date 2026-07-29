@@ -563,6 +563,7 @@
         "tests/tutorStubWebSurface.test.js",
         "tests/tutorStubWorldCatalogPresentation.test.js",
         "tests/tutorStubWorldPromptContext.test.js",
+        "tests/tutorStubWorldRecognitionPatterns.test.js",
         "tests/tutorStubWorldScaffold.test.js",
         "tests/validateRecursiveTutorProtocol.test.js",
         "tests/workplan.test.js",

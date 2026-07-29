@@ -61,6 +61,23 @@ learner_voice: >-
 secret:
   fact: [composed, liane, nocturne]
   surface: "Liane of the Vara house composed the nocturne."
+  # Deterministic backstop for the closure assertion: fires only once the
+  # record entails the secret, never on a question. Requiring "liane" keeps
+  # the mirror verdict (Vess composed it) from matching.
+  recognition_patterns:
+    - id: liane_composed
+      all_of:
+        - ["liane"]
+        - ["composed", "wrote", "is the composer", "composer of", "authored"]
+        - ["nocturne", "the piece", "the manuscript", "the work", "it"]
+      none_of:
+        - "liane did not"
+        - "not liane"
+        - "does not show"
+        - "doesn't show"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
 
 mirror:
   fact: [composed, vess, nocturne]
