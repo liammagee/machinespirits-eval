@@ -65,6 +65,9 @@ hook:
     - services/tutorStubPrBenchmark.js
     - services/tutorStubPrBenchmarkHook.js
     - services/tutorStubCommandRuntime.js
+    - services/tutorStubSessionOrchestration.js
+    - services/tutorStubSessionStateRuntime.js
+    - services/tutorStubTraceRuntime.js
     - services/tutorStubTutorTurnPipeline.js
   path_prefixes:
     - config/drama-derivation/
