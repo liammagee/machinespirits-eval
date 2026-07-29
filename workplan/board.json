@@ -1,13 +1,13 @@
 {
-  "generated": "2026-07-28T22:09:13.740Z",
+  "generated": "2026-07-29T02:40:27.897Z",
   "counts": {
-    "total": 346,
+    "total": 347,
     "byStatus": {
       "done": 226,
       "blocked": 5,
       "dropped": 4,
       "triaged": 6,
-      "review": 89,
+      "review": 90,
       "active": 12,
       "archived": 4
     },
@@ -15,7 +15,7 @@
       "research": 50,
       "experiment": 50,
       "infra": 66,
-      "maintenance": 164,
+      "maintenance": 165,
       "content": 2,
       "ops": 8,
       "paper": 6
@@ -2573,6 +2573,44 @@
         "tutor-stub",
         "public-evidence",
         "learner-dag"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-macro-decomposition",
+      "title": "Decompose tutor-stub into cohesive runtime subsystems",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-29",
+      "updated": "2026-07-29",
+      "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
+      "branch": "codex/refactor-tutor-stub-tutor-turn-pipeline",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/tutor-stub.js",
+          "services/tutorStubTutorTurnPipeline.js",
+          "tests/tutorStubTutorTurnPipeline.test.js"
+        ],
+        "prs": [
+          426
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "macro-decomposition",
+        "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
     },
