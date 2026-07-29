@@ -119,14 +119,25 @@ character or gesture to carry it (−2), and six others at −1. The plan contro
 turns where the hidden contract forbids a question it breaks that rule three
 times more often than the bare tutor, which stays quiet by luck.
 
-In flight, not yet a result: one objection to the blind reading is that the
-judge cannot tell a scheduled clue release from invented plot, and penalised the
-contract for the former. `--show-due` puts the clue the world file schedules for
-that turn in front of the judge as a fact of the scene, alike for both
-candidates. At 34 of 88 pairs it does not rescue the contract — 20 decided,
-contract on 2 (10%), against 0 of 14 decided blind on those same pairs — but it
-is a third of the set and should finish before the conclusion is written
-anywhere else.
+Fourth result, 2026-07-29. The strongest objection to the second result is that
+the judge cannot tell a clue the world file schedules for that turn from plot
+the tutor invented, and marked the contract down for the former — in its own
+words, for writing the case for the learner. `--show-due` puts the scheduled
+clue in front of the judge as a fact of the scene, alike for both candidates and
+with a rule against preferring a reply merely for naming it. The clue list is
+read through the whitelist the PR benchmark uses, so the closure frame's answer
+term and the private premise ids stay out of it, and it comes from the world
+file, so it is the same for every version at a turn and cannot smuggle in one
+version's plan. Over 106 pairs — the whole frozen pool, which adds Tallow to the
+two scenes the blind set covered — 92 decided: the contract is preferred on 23,
+25%. On the same 88 as the blind set it is 28%, against 15% blind. On Tallow,
+which neither reading had covered before, 11%.
+
+So the objection is partly right and does not overturn the finding. Telling the
+judge which clue was due roughly doubles the contract's share of decided pairs
+and still leaves it losing about seven of ten. Verdicts made with the clue list
+and verdicts made without are two readings, not one, and are kept in separate
+files for that reason.
 
 Standing limitation: turns after the first are counterfactual for every arm
 except the one that produced the recording, since the frozen learner utterances
@@ -134,6 +145,6 @@ answered the recorded tutor. Each row is a same-context comparison of N tutors
 on one fixed prompt, not two free-running conversations. This is a visual and
 regression instrument; it says nothing about human learning. The blind judge is
 a second instrument, not a ground truth: it is one model's reading of which turn
-serves the learner better, on two scenes, with one speaking model behind both
-candidates. It is worth what it is worth because it shares nothing with the plan
-— not because it is right.
+serves the learner better, on two scenes blind and three with the clue list,
+with one speaking model behind both candidates. It is worth what it is worth
+because it shares nothing with the plan — not because it is right.
