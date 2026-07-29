@@ -10,6 +10,9 @@
  * computed, while the gate keeps every advisory block out of the prompt, and
  * each turn's trace row proves which blocks the prompt carried.
  *
+ * Each world runs to its own authored turn cap; --turn-cap overrides that for
+ * every world and is refused where it falls below a world's t_min.
+ *
  * Every dialogue's outcome appends to results.jsonl as it lands, and a rerun
  * with the same --out skips dialogues already recorded, so a run interrupted
  * by a quota window resumes rather than restarts. Paid: run attended.
@@ -25,6 +28,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import { loadWorld } from '../services/dramaticDerivation/world.js';
 import { parseTutorStubShowcaseTrace, readTutorStubShowcaseTrace } from '../services/tutorStubShowcase.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -39,12 +43,54 @@ const DEFAULT_WORLDS = [
   'world_030_rowan_flat',
 ];
 
+/** Model calls each turn is allowed, before the per-dialogue budget is set. */
+const CALLS_PER_TURN = 5;
+
+/**
+ * Each world's own turn cap, and the turn before which its author guarantees
+ * the answer is not derivable.
+ *
+ * A world is written to a length. Nocturne withholds derivability until turn 28
+ * and runs to 40; Rowan Flat is derivable by turn 6 and runs to 12. The first
+ * pilot ran every world at a flat 12 turns and read Nocturne's 0/5 as a floor,
+ * when in fact no tutor could have closed it — the run stopped sixteen turns
+ * before the world permits an answer. So the cap comes from the world unless a
+ * caller overrides it, and the run refuses a cap below t_min rather than
+ * producing another unmeasurable zero.
+ */
+function worldTurnBounds(worldIds) {
+  const bounds = new Map();
+  for (const id of worldIds) {
+    const file = path.join(ROOT, 'config', 'drama-derivation', `${id.replace(/_/gu, '-')}.yaml`);
+    const world = loadWorld(file);
+    bounds.set(id, { turnCap: world.turnCap ?? null, tMin: world.slope?.t_min ?? null });
+  }
+  return bounds;
+}
+
+/**
+ * The turn cap and model-call budget this world will run at.
+ *
+ * An explicit --turn-cap applies to every world and is refused where it lands
+ * below that world's t_min, since a dialogue stopped before the answer is
+ * derivable measures the cap, not the tutor.
+ */
+function resolveBounds({ args, world, bounds }) {
+  const { turnCap: authored, tMin } = bounds.get(world) || {};
+  const turnCap = args.turnCap ?? authored;
+  if (!turnCap) throw new Error(`${world}: no turn_cap in the world file and no --turn-cap given`);
+  if (tMin && turnCap < tMin) {
+    throw new Error(`${world}: cap ${turnCap} is below the world's t_min ${tMin} — the secret is not derivable by then`);
+  }
+  return { turnCap, budget: args.budget ?? turnCap * CALLS_PER_TURN };
+}
+
 function parseArgs(argv) {
   const args = {
     worlds: DEFAULT_WORLDS,
     n: 5,
-    turnCap: 12,
-    budget: 60,
+    turnCap: null,
+    budget: null,
     blocks: 'none',
     armId: 'bare',
     speaker: 'codex.gpt-5.6-terra',
@@ -79,16 +125,16 @@ function parseArgs(argv) {
   return args;
 }
 
-function childCommand({ args, world, traceDir }) {
+function childCommand({ args, world, traceDir, turnCap, budget }) {
   return [
     'scripts/tutor-stub.js',
     '--lab',
     'automated_eval',
     '--auto-learner',
     '--auto-turns',
-    String(args.turnCap),
+    String(turnCap),
     '--auto-safety-turns',
-    String(args.turnCap + 4),
+    String(turnCap + 4),
     '--world',
     world,
     '--model',
@@ -102,7 +148,7 @@ function childCommand({ args, world, traceDir }) {
     '--dag',
     '--tutor-learner-dag',
     '--model-call-budget',
-    String(args.budget),
+    String(budget),
     '--no-stream',
     '--no-interim-animation',
     '--no-remember-settings',
@@ -111,9 +157,9 @@ function childCommand({ args, world, traceDir }) {
   ];
 }
 
-function runDialogue({ args, world, traceDir }) {
+function runDialogue({ args, world, traceDir, turnCap, budget }) {
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, childCommand({ args, world, traceDir }), {
+    const child = spawn(process.execPath, childCommand({ args, world, traceDir, turnCap, budget }), {
       cwd: ROOT,
       env: { ...process.env, NO_COLOR: '1', TUTOR_STUB_SPEAKER_ADVISORY_BLOCKS: args.blocks },
       stdio: ['ignore', 'ignore', 'pipe'],
@@ -193,6 +239,7 @@ function writeReport({ outDir, args, rows }) {
     const rate = measurable.length ? closed.length / measurable.length : null;
     return {
       world,
+      turnCap: ok[0]?.turnCap ?? null,
       dialogues: ok.length,
       measurable: measurable.length,
       closed: closed.length,
@@ -213,8 +260,8 @@ function writeReport({ outDir, args, rows }) {
       effort: args.effort,
       learnerModel: args.learnerModel,
       learnerProfile: args.learnerProfile,
-      turnCap: args.turnCap,
-      budgetPerDialogue: args.budget,
+      turnCapOverride: args.turnCap,
+      budgetOverride: args.budget,
     },
     perWorld,
     errors: rows.filter((row) => row.status !== 'ok').length,
@@ -225,13 +272,15 @@ function writeReport({ outDir, args, rows }) {
     '',
     `Pre-registration: \`${report.prereg}\`. Gate: bare closure must land in the 20–80% band per world before the main run.`,
     '',
-    `Speaker \`${args.speaker}\` (${args.effort}) · learner \`${args.learnerModel}\` (${args.learnerProfile}) · turn cap ${args.turnCap} · advisory blocks: ${args.blocks}`,
+    `Speaker \`${args.speaker}\` (${args.effort}) · learner \`${args.learnerModel}\` (${args.learnerProfile}) · advisory blocks: ${args.blocks}`,
     '',
-    '| World | Dialogues | Measurable | Closed | Rate | Band | Mean turns |',
-    '|---|---|---|---|---|---|---|',
+    'Each world runs to its own authored turn cap. A world stopped short of its `t_min` cannot close, so a shared cap would measure the runner rather than the tutor.',
+    '',
+    '| World | Cap | Dialogues | Measurable | Closed | Rate | Band | Mean turns |',
+    '|---|---|---|---|---|---|---|---|',
     ...perWorld.map(
       (row) =>
-        `| ${row.world} | ${row.dialogues} | ${row.measurable} | ${row.closed} | ${row.closureRate === null ? '—' : `${Math.round(row.closureRate * 100)}%`} | ${row.band} | ${row.meanTurns ?? '—'} |`,
+        `| ${row.world} | ${row.turnCap ?? '—'} | ${row.dialogues} | ${row.measurable} | ${row.closed} | ${row.closureRate === null ? '—' : `${Math.round(row.closureRate * 100)}%`} | ${row.band} | ${row.meanTurns ?? '—'} |`,
     ),
     '',
     report.errors ? `${report.errors} dialogue(s) errored — see results.jsonl.` : 'No dialogue errors.',
@@ -246,21 +295,31 @@ async function main() {
   const outDir = args.out || path.join(ROOT, 'exports', 'tutor-stub-outcome', `pilot-${stamp}`);
   const resultsPath = path.join(outDir, 'results.jsonl');
 
+  const bounds = worldTurnBounds(args.worlds);
+  const resolved = new Map(args.worlds.map((world) => [world, resolveBounds({ args, world, bounds })]));
   const jobs = [];
   for (const world of args.worlds) {
-    for (let k = 0; k < args.n; k += 1) jobs.push({ world, k });
+    for (let k = 0; k < args.n; k += 1) jobs.push({ world, k, ...resolved.get(world) });
   }
   const done = loadDone(resultsPath);
   const todo = jobs.filter((job) => !done.has(`${job.world}#${job.k}`)).slice(0, args.limit);
 
   process.stderr.write(
     `${jobs.length} dialogues planned (${args.worlds.length} worlds × ${args.n}); ${done.size} already recorded; running ${todo.length}\n` +
-      `arm ${args.armId} · blocks ${args.blocks} · cap ${args.turnCap} · budget ${args.budget} calls/dialogue\n`,
+      `arm ${args.armId} · blocks ${args.blocks} · cap ${args.turnCap ? `${args.turnCap} (override)` : 'per world'}\n` +
+      `${args.worlds
+        .map(
+          (world) =>
+            `  ${world} cap ${resolved.get(world).turnCap} budget ${resolved.get(world).budget} (t_min ${bounds.get(world).tMin ?? '—'})`,
+        )
+        .join('\n')}\n`,
   );
   if (args.dryRun) {
     for (const job of todo) {
       const traceDir = path.join(outDir, 'traces', job.world, `d${job.k}`);
-      process.stdout.write(`node ${childCommand({ args, world: job.world, traceDir }).join(' ')}\n`);
+      process.stdout.write(
+        `node ${childCommand({ args, world: job.world, traceDir, turnCap: job.turnCap, budget: job.budget }).join(' ')}\n`,
+      );
     }
     return;
   }
@@ -270,7 +329,13 @@ async function main() {
     const traceDir = path.join(outDir, 'traces', job.world, `d${job.k}`);
     fs.mkdirSync(traceDir, { recursive: true });
     const startedAt = Date.now();
-    const { exitCode, stderrTail } = await runDialogue({ args, world: job.world, traceDir });
+    const { exitCode, stderrTail } = await runDialogue({
+      args,
+      world: job.world,
+      traceDir,
+      turnCap: job.turnCap,
+      budget: job.budget,
+    });
     let row;
     try {
       const extracted = extractResult({ traceDir });
@@ -279,6 +344,8 @@ async function main() {
         k: job.k,
         armId: args.armId,
         blocks: args.blocks,
+        turnCap: job.turnCap,
+        budget: job.budget,
         status: 'ok',
         exitCode,
         wallClockMs: Date.now() - startedAt,
