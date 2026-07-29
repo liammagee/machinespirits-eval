@@ -95,22 +95,36 @@ test('exact duplicate-only prompt rows can be compacted and re-audited safely', 
 
 test('speaker privilege audit rejects planner-only answer and future evidence', () => {
   const world = {
-    secret: { fact: ['owns', 'answer'], surface: 'The concealed answer belongs to Ada' },
+    secret: {
+      fact: ['owns', 'answer'],
+      surface: 'The concealed answer belongs to Ada',
+      recognition_surfaces: ['the signed receipt establishes that Ada owns it'],
+    },
     mirror: { fact: ['owns', 'mirror'] },
     rules: [{ id: 'R_private' }],
-    premises: [{ id: 'p_future', fact: ['found', 'future'], surface: 'A future sealed letter names Ada' }],
+    premises: [
+      {
+        id: 'p_future',
+        fact: ['found', 'future'],
+        surface: 'A future sealed letter names Ada',
+        recognition_surfaces: ['the sealed letter identifies Ada'],
+      },
+    ],
     releaseSchedule: [{ turn: 3, premise: 'p_future' }],
   };
   const audit = auditTutorStubSpeakerPrivilege({
     world,
     tutorTurn: 1,
     systemPrompt: 'The concealed answer belongs to Ada.',
-    privateAdvisory: 'A future sealed letter names Ada.',
+    privateAdvisory:
+      'A future sealed letter names Ada. the sealed letter identifies Ada. the signed receipt establishes that Ada owns it.',
   });
 
   assert.equal(audit.ok, false);
   assert.ok(audit.issues.some((issue) => issue.code === 'concealed_answer_surface'));
+  assert.ok(audit.issues.some((issue) => issue.code === 'concealed_answer_recognition_surface'));
   assert.ok(audit.issues.some((issue) => issue.code === 'future_evidence_surface'));
+  assert.ok(audit.issues.some((issue) => issue.code === 'future_evidence_recognition_surface'));
 });
 
 test('speaker prompt recovery discards contaminated advisory and preserves the public turn contract', () => {

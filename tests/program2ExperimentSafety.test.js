@@ -133,6 +133,20 @@ test('cohort pilot evidence covers every profile and condition with an opportuni
   assert.equal(powered.pass, true);
 });
 
+test('an apparatus-only pilot may defer opportunity power to a terminal cohort gate', () => {
+  const plan = factorialPlan();
+  const result = evaluateProgram2PilotEvidence({
+    plan,
+    rows: completePilotRows(plan, { opportunities: 0 }),
+    gateSpec: { requirePilotOpportunityPower: false },
+  });
+
+  assert.equal(result.pass, true);
+  assert.equal(result.opportunityPower.pass, true);
+  assert.equal(result.opportunityPower.observedPass, false);
+  assert.equal(result.opportunityPower.requiredForCertificate, false);
+});
+
 test('budget certificate freezes the two-attempt provider ceiling', () => {
   const budget = deriveProgram2Budget(factorialPlan());
   assert.equal(budget.pass, true);
@@ -297,6 +311,8 @@ test('paid Program 2 launches fail before provider preflight when the certificat
   assert.match(`${result.stdout}\n${result.stderr}`, /--prepare-certificate --plan 5/u);
   assert.match(`${result.stdout}\n${result.stderr}`, /npm run program2:certify-launch/u);
   assert.match(`${result.stdout}\n${result.stderr}`, /docs\/program2-launch-certificates\.md/u);
+  assert.equal(fs.existsSync(path.join(outputRoot, 'launch-plan.json')), false);
+  assert.equal(fs.existsSync(path.join(outputRoot, 'launch-attempt.json')), false);
   assert.equal(fs.existsSync(path.join(outputRoot, 'launch-state.json')), false);
 });
 
@@ -388,18 +404,37 @@ test('paid launch rejects a passing-looking certificate whose evidence is missin
   );
   assert.notEqual(result.status, 0);
   assert.match(`${result.stdout}\n${result.stderr}`, /launch certificate evidence rejected/u);
+  assert.equal(fs.existsSync(path.join(outputRoot, 'launch-attempt.json')), false);
   assert.equal(fs.existsSync(path.join(outputRoot, 'launch-state.json')), false);
 });
 
+test('paid launch metadata cannot overwrite the certificate-bound launch plan', () => {
+  const source = fs.readFileSync(path.join(ROOT, 'scripts/run-program2-live-pilot.js'), 'utf8');
+  assert.match(source, /const launchPlanPath = path\.join\(outputRoot, 'launch-plan\.json'\)/u);
+  assert.match(source, /launch\s*\? path\.join\(outputRoot, 'launch-attempt\.json'\)/u);
+  assert.match(source, /planFile: launchPlanPath/u);
+  assert.match(source, /Keep that prepared\s*\/\/ evidence immutable/u);
+});
+
 test('tutor runtime reserves the Program 2 budget before both external dispatch paths', () => {
-  const source = fs.readFileSync(path.join(ROOT, 'scripts/tutor-stub.js'), 'utf8');
+  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts/tutor-stub.js'), 'utf8');
+  const pipelineSource = fs.readFileSync(path.join(ROOT, 'services/tutorStubTutorTurnPipeline.js'), 'utf8');
   assert.equal(
-    source.match(/reserveProgram2ProviderBudget\(\{ maxTokens, trace, role, turn(?:: tutorTurn)? \}\);/gu)?.length,
+    [cliSource, pipelineSource].reduce(
+      (count, source) =>
+        count +
+        (source.match(/reserveProgram2ProviderBudget\(\{ maxTokens, trace, role, turn(?:: tutorTurn)? \}\);/gu)
+          ?.length || 0),
+      0,
+    ),
     2,
   );
-  for (const reservation of [
-    'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });',
-    'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });',
+  for (const { source, reservation } of [
+    { source: cliSource, reservation: 'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });' },
+    {
+      source: pipelineSource,
+      reservation: 'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });',
+    },
   ]) {
     const reserveIndex = source.indexOf(reservation);
     const dispatchIndex = source.indexOf('callAIWithCliBridge(', reserveIndex);

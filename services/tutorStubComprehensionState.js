@@ -62,6 +62,22 @@ export function createTutorStubComprehensionState(snapshot = null) {
   };
 }
 
+export function restoreTutorStubComprehensionState(state, turns, events = []) {
+  const eventSnapshot = [...events]
+    .reverse()
+    .find((event) => event?.comprehensionState || event?.state?.schema === COMPREHENSION_SCHEMA);
+  const turnSnapshot = [...turns]
+    .reverse()
+    .map((turn) => turn?.comprehension?.afterTutor || turn?.comprehension?.state || null)
+    .find(Boolean);
+  const snapshot = eventSnapshot?.comprehensionState || eventSnapshot?.state || turnSnapshot || null;
+  state.comprehension = createTutorStubComprehensionState(snapshot);
+  return {
+    restored: Boolean(snapshot),
+    terms: state.comprehension.terms.length,
+  };
+}
+
 export function detectTutorStubComprehensionRequest({
   text = '',
   classification = null,

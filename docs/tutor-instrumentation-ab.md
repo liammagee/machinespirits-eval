@@ -78,12 +78,12 @@ dropping the evidence window makes the leak guard *harder* to satisfy rather
 than switching it off. Pinning is an exact identity on the fixtures' recorded
 guards, so it cannot itself move a verdict — a test asserts this.
 
-### Read cluster counts, not pass rate
+### Read broken-rule counts, not pass rate
 
 The audit verdict is all-or-nothing per turn, and one check can fail
 universally, which collapses pass rate to a constant across arms. The headline
-metric is therefore the failure-cluster tally per arm and its delta against the
-baseline; the per-cluster delta table sums to that headline so the top-line
+metric is therefore the broken-rule tally per arm and its delta against the
+baseline; the per-rule delta table sums to that headline so the top-line
 number is always auditable against the rows.
 
 At time of writing every recorded fixture turn fails
@@ -97,9 +97,9 @@ from raw text and hold it to a stricter standard than the recording met.
 
 The effect is directly observable in the corpus. Re-auditing the *recorded*
 text of nocturne t007, t009, and t010 — all three of which carry
-`recordedAuditOk: true` and no recorded clusters — yields `ok: false` today,
+`recordedAuditOk: true` and no recorded broken rules — yields `ok: false` today,
 failing only on `live_turn_progression_v1:` / `live_source_action_alignment_v1:`
-clusters. `tests/tutorStubFrozenReplay.test.js` asserts exactly this pattern
+rules. `tests/tutorStubFrozenReplay.test.js` asserts exactly this pattern
 and fails loudly if a reclassification ever lands outside those two families,
 so the strictness is deliberate and bounded rather than drift.
 
@@ -110,10 +110,10 @@ may well realize its uptake in a way the recorded ones do not. Nothing here has
 been run against it.
 
 For the A/B itself the consequence is only that pass rate is uninformative.
-The cluster deltas still separate the arms, and they are what the reports lead
-with.
+The broken-rule deltas still separate the arms, and they are what the reports
+lead with.
 
-Cluster names come in two conventions on the same audit: `failureClusters` uses
+Broken-rule names come in two conventions on the same audit: `failureClusters` uses
 `liveTurnProgressionAudit:…`, `hardFailureClusters` uses
 `live_turn_progression_v1:…`. They are the same checks.
 
@@ -222,7 +222,7 @@ Each run writes to `exports/tutor-stub-ab/ab-<stamp>/` (honouring
 `EVAL_EXPORTS_DIR`):
 
 - `swimlane-diff.html` — the reading surface,
-- `report.md` — arm table, cluster deltas, pass flips,
+- `report.md` — arm table, broken-rule deltas, pass flips,
 - `report.json` — projections, guard sets, full audits, generated text.
 
 `report.json` retains generated candidate text. Do not paste rejected candidates
@@ -238,7 +238,7 @@ Two toggles:
 
 - **Diff** highlights words present in an arm's reply but not in the baseline's,
   by longest-common-subsequence over case- and punctuation-folded tokens.
-- **Clusters** shows each turn's failure clusters inline on the lane.
+- **Broken rules** shows each turn's broken rules inline on the lane.
 
 ### The counterfactual caveat
 

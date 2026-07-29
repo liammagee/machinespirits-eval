@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -30,6 +31,7 @@ import {
   clearTutorStubDirectorGuidance,
   createTutorStubDirectorGuidanceState,
   mergeConcurrentTutorStubDirectorGuidance,
+  restoreTutorStubDirectorGuidanceState,
   setTutorStubDirectorGuidance,
   tutorStubDirectorGuidancePrompt,
 } from '../services/tutorStubDirectorGuidance.js';
@@ -244,6 +246,36 @@ test('director guidance is a bounded private control with turn-aware and concurr
   assert.equal(cleared.text, entry.text);
   assert.equal(merged.active, null);
   assert.equal(merged.history.at(-1).action, 'clear');
+});
+
+test('director-guidance restoration preserves clear boundaries, latest precedence, reset, and cloning', () => {
+  const beforeClear = { revision: 1, active: { text: 'before' }, history: [{ action: 'set' }] };
+  const afterClear = { revision: 3, active: { text: 'after' }, history: [{ action: 'set' }] };
+  const latest = { revision: 4, active: null, history: [{ action: 'clear' }] };
+  const state = {};
+  assert.deepEqual(
+    restoreTutorStubDirectorGuidanceState(state, [
+      { directorGuidance: beforeClear },
+      { type: 'history_clear' },
+      { directorGuidance: afterClear },
+      { directorGuidance: latest },
+    ]),
+    { restored: true, revision: 4, active: false },
+  );
+  assert.notEqual(state.directorGuidance, latest);
+  assert.notEqual(state.directorGuidance.history, latest.history);
+
+  assert.deepEqual(
+    restoreTutorStubDirectorGuidanceState(state, [{ directorGuidance: beforeClear }, { type: 'history_clear' }]),
+    { restored: false, revision: 0, active: false },
+  );
+  assert.equal(state.directorGuidance.schema, 'machinespirits.tutor-stub.director-guidance.v1');
+});
+
+test('the CLI imports rather than redeclares director-guidance restoration', () => {
+  const source = fs.readFileSync(new URL('../scripts/tutor-stub.js', import.meta.url), 'utf8');
+  assert.match(source, /restoreTutorStubDirectorGuidanceState as restoreDirectorGuidanceState/u);
+  assert.doesNotMatch(source, /function restoreDirectorGuidanceState\(/u);
 });
 
 test('v9 command registry freezes the slash-token and execution-effect surfaces', () => {

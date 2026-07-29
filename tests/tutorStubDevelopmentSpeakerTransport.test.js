@@ -2,9 +2,123 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  createTutorStubConsoleTokenSink,
+  renderTutorStubStreamLabel,
+  replayTutorStubTextAsConsoleStream,
   resolveTutorStubDevelopmentDirectModel,
   TUTOR_STUB_DEVELOPMENT_SPEAKER_TRANSPORT_SCHEMA,
+  tutorStubProviderSupportsEventStreaming,
+  tutorStubProviderSupportsTokenStreaming,
 } from '../services/tutorStubDevelopmentSpeakerTransport.js';
+
+test('speaker transport capabilities distinguish token streams, Codex events, CLI bridges, and missing providers', () => {
+  const isCli = (provider) => ['codex', 'claude-code', 'gemini-cli'].includes(provider);
+  assert.equal(tutorStubProviderSupportsTokenStreaming({ provider: 'openai' }, { isCli }), true);
+  assert.equal(tutorStubProviderSupportsTokenStreaming({ provider: 'codex' }, { isCli }), false);
+  assert.equal(tutorStubProviderSupportsTokenStreaming({ provider: 'claude-code' }, { isCli }), false);
+  assert.equal(tutorStubProviderSupportsTokenStreaming(null, { isCli }), false);
+  assert.equal(tutorStubProviderSupportsEventStreaming({ provider: 'codex' }), true);
+  assert.equal(tutorStubProviderSupportsEventStreaming({ provider: 'openai' }), false);
+  assert.equal(tutorStubProviderSupportsEventStreaming(null), false);
+});
+
+test('stream labels preserve tutor, learner-analysis, DAG, classifier, and fallback copy with injected colors', () => {
+  const colors = {
+    brightMagenta: '<magenta>',
+    bold: '<bold>',
+    reset: '<reset>',
+    cyan: '<cyan>',
+  };
+  assert.equal(renderTutorStubStreamLabel('tutor_stub_tutor', colors), '<magenta><bold>tutor ><reset> ');
+  assert.equal(
+    renderTutorStubStreamLabel('tutor_stub_learner_analysis', colors),
+    '<cyan>learner analysis stream ><reset> ',
+  );
+  assert.equal(renderTutorStubStreamLabel('tutor_stub_learner_record', colors), '<cyan>learner DAG stream ><reset> ');
+  assert.equal(
+    renderTutorStubStreamLabel('tutor_stub_learner_classifier', colors),
+    '<cyan>learner classifier stream ><reset> ',
+  );
+  assert.equal(renderTutorStubStreamLabel('custom_role', colors), '<cyan>custom_role ><reset> ');
+});
+
+test('console token sink preserves direct writes, one-time setup, empty finish, and newline behavior', () => {
+  const events = [];
+  const create = (interim = null) =>
+    createTutorStubConsoleTokenSink({
+      role: 'tutor_stub_tutor',
+      interim,
+      resolveInterimState: () => null,
+      stopInterimAnimation: (value) => events.push(`stop:${value || 'none'}`),
+      clearStatusLine: () => events.push('clear'),
+      write: (text) => events.push(`write:${text}`),
+      renderLabel: () => 'tutor > ',
+    });
+  assert.equal(create().finish(), false);
+  const sink = create('interim');
+  sink.write('Hello');
+  sink.write(' world');
+  assert.equal(sink.finish(), true);
+  assert.deepEqual(events, ['stop:interim', 'clear', 'write:tutor > ', 'write:Hello', 'write: world', 'write:\n']);
+});
+
+test('console token sink preserves concurrent-terminal buffering and atomic print behavior', () => {
+  const events = [];
+  const terminal = {
+    enabled: true,
+    print(callback) {
+      events.push('terminal:before');
+      callback();
+      events.push('terminal:after');
+    },
+  };
+  const interim = { concurrentTerminal: terminal };
+  const sink = createTutorStubConsoleTokenSink({
+    role: 'tutor_stub_learner_analysis',
+    interim,
+    resolveInterimState: (value) => value,
+    stopInterimAnimation: () => events.push('stop'),
+    clearStatusLine: () => events.push('clear'),
+    write: (text) => events.push(`write:${text}`),
+    renderLabel: () => 'analysis > ',
+  });
+  sink.write('One');
+  sink.write(' two');
+  assert.deepEqual(events, []);
+  assert.equal(sink.finish(), true);
+  assert.deepEqual(events, ['stop', 'terminal:before', 'write:analysis > One two\n', 'terminal:after']);
+});
+
+test('console stream replay preserves token boundaries, nested interim selection, finish result, and empty text', () => {
+  const calls = [];
+  const createSink = (role, interim) => {
+    calls.push({ type: 'create', role, interim });
+    return {
+      write(token) {
+        calls.push({ type: 'write', token });
+      },
+      finish() {
+        calls.push({ type: 'finish' });
+        return true;
+      },
+    };
+  };
+  const interim = { id: 'interim' };
+  assert.equal(
+    replayTutorStubTextAsConsoleStream('tutor_stub_tutor', 'One  two\nthree', { interim }, { createSink }),
+    true,
+  );
+  assert.deepEqual(calls, [
+    { type: 'create', role: 'tutor_stub_tutor', interim },
+    { type: 'write', token: 'One  ' },
+    { type: 'write', token: 'two\n' },
+    { type: 'write', token: 'three' },
+    { type: 'finish' },
+  ]);
+  calls.length = 0;
+  assert.equal(replayTutorStubTextAsConsoleStream('empty', '', interim, { createSink }), true);
+  assert.deepEqual(calls, [{ type: 'create', role: 'empty', interim }, { type: 'finish' }]);
+});
 
 test('development direct transport resolves a configured non-CLI model without acceptance authority', () => {
   const result = resolveTutorStubDevelopmentDirectModel({

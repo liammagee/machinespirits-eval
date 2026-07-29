@@ -5,10 +5,34 @@ import {
   applyTutorStubDagFactDropout,
   createTutorStubDagFactDropoutState,
   normalizeTutorStubDagFactDropoutRate,
+  projectTutorStubDagMemoryReliability,
   summarizeTutorStubDagFactDropoutTrace,
   tutorStubDagFactDropoutSnapshot,
   tutorStubDagFactDropoutTurnFromTraceRecord,
 } from '../tutorStubDagFactDropout.js';
+
+test('DAG memory reliability projection preserves the shared public conduct contract', () => {
+  assert.deepEqual(
+    projectTutorStubDagMemoryReliability({
+      configuredRate: 0.2,
+      activeDropped: [{ premiseId: 'p1' }],
+      droppedNow: [{ premiseId: 'p1' }, { premiseId: 'p2' }],
+      repairedNow: [{ premiseId: 'p3' }],
+    }),
+    {
+      schema: 'machinespirits.tutor-stub.dag-fact-dropout.v1',
+      configuredRate: 0.2,
+      activeDroppedCount: 1,
+      droppedThisTurn: 2,
+      repairedThisTurn: 1,
+      visibility: 'conduct',
+    },
+  );
+});
+
+test('DAG memory reliability projection preserves the disabled null', () => {
+  assert.equal(projectTutorStubDagMemoryReliability(null), null);
+});
 
 function fixture() {
   const background = ['setting', 'marrick'];

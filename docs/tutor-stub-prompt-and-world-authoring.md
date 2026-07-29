@@ -48,6 +48,50 @@ For a curriculum module, first identify the learning claim that should become me
 8. Author presentation explicitly for every world: `temporal_frame`, `scene_ecology`, `narrative_diction`, `ledger_term`, and `summary`. There is no implicit “period language” fallback.
 9. Put quantitative success criteria in the harness and reports, not in tutor or learner speech prompts.
 
+When a world uses distinctive ordinary-language paraphrases that the semantic
+extractor may miss, the author may declare complete deterministic recognition
+contracts. Put `recognition_surfaces` on a premise for clauses equivalent to
+that public premise, or on `secret` for clauses that unambiguously state the
+final causal answer. A premise clause can be accepted only after its clue is
+public. A secret clause can become an assertion only after the accepted public
+record already entails the secret; at that point the authored contract is an
+independent backstop and does not require the semantic extractor to emit a
+second answer signal.
+
+For a bounded family of complete secret paraphrases, use
+`secret.recognition_patterns`. Every pattern must have a unique `id` and at
+least three `all_of` groups; each group lists literal alternatives, and one
+alternative from every group must match. Set `ordered: true` when those groups
+must occur in causal order. Add `none_of` clauses for explicit denials and
+other known false-positive surfaces. Matching normalizes spelling,
+punctuation, possessives, and inflection, but performs no semantic guessing.
+Author complete affirmative claims rather than short aliases, and never treat
+these strings as speaking prompts:
+
+```yaml
+secret:
+  fact: [coolsLoaves, eastTerrace, pipersGullet]
+  recognition_surfaces:
+    - "the bolted shutter forces the long route, so warm loaves cool"
+  recognition_patterns:
+    - id: shutter_path_cools
+      ordered: true
+      all_of:
+        - ["bolted shutter", "shuttered gullet"]
+        - [blocks, forces]
+        - [detour, route]
+        - [cool, cold]
+      none_of:
+        - "does not block"
+        - "not responsible"
+
+premises:
+  - id: p_sole_lift
+    fact: [onlyStillAirLift, pipersGullet, eastTerrace]
+    recognition_surfaces:
+      - "on windless mornings every east-terrace glider depends on Piper's Gullet"
+```
+
 ## Opening the public scene
 
 The harness owns only four opening requirements:

@@ -184,6 +184,57 @@ test('every declared arm flag is either a bare switch or takes exactly one value
   for (const flag of TUTOR_STUB_SHOWCASE_ARM_FLAGS) assert.match(flag, /^--[a-z0-9-]+$/u);
 });
 
+test('the shipped config validates against the release schedules its worlds actually declare', () => {
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  // Read off the worlds rather than restated here: the point of the check is
+  // that nobody has to keep the two numbers in step by hand.
+  assert.ok(loaded.releaseSchedules.riverside_clinic.lastReleaseTurn > 0);
+  assert.ok(loaded.releaseSchedules.campus_faq.lastReleaseTurn > 0);
+  validateTutorStubShowcaseConfig(loaded.config, { releaseSchedules: loaded.releaseSchedules });
+});
+
+test('a turn cap that runs on past the last exhibit is rejected', () => {
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  const schedules = { riverside_clinic: { lastReleaseTurn: 7, releaseCount: 4 } };
+  loaded.config.scenarios.riverside_clinic.max_turns = 7 + loaded.config.closing_allowance + 1;
+  loaded.config.scenarios.riverside_clinic.safety_turns = 20;
+
+  assert.throws(
+    () => validateTutorStubShowcaseConfig(loaded.config, { releaseSchedules: schedules }),
+    /run out of new material/u,
+  );
+});
+
+test('a turn cap that stops before the last exhibit must say why', () => {
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  const schedules = { campus_faq: { lastReleaseTurn: 16, releaseCount: 7 } };
+  delete loaded.config.scenarios.campus_faq.truncates_release_schedule;
+
+  assert.throws(
+    () => validateTutorStubShowcaseConfig(loaded.config, { releaseSchedules: schedules }),
+    /stops before the world releases its last exhibit/u,
+  );
+});
+
+test('a scenario may not claim truncation while running past its last exhibit', () => {
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  const schedules = { riverside_clinic: { lastReleaseTurn: 7, releaseCount: 4 } };
+  loaded.config.scenarios.riverside_clinic.truncates_release_schedule = 'not actually true';
+
+  assert.throws(
+    () => validateTutorStubShowcaseConfig(loaded.config, { releaseSchedules: schedules }),
+    /already runs past the last release/u,
+  );
+});
+
+test('the turn-cap rule is skipped entirely when no schedules are supplied', () => {
+  const loaded = loadTutorStubShowcaseConfig(CONFIG_PATH);
+  loaded.config.scenarios.riverside_clinic.max_turns = 60;
+  loaded.config.scenarios.riverside_clinic.safety_turns = 60;
+
+  validateTutorStubShowcaseConfig(loaded.config);
+});
+
 test('the plan spans scenarios x arms x models and keeps its child commands', () => {
   const built = plan('default');
   assert.equal(built.plannedDialogues, 4);
@@ -260,6 +311,42 @@ test('the trace parser recovers the dialogue, the guards, and the recovery attem
   assert.equal(parsed.modelCalls, 7);
   assert.equal(parsed.callsByRole.tutor_stub_tutor, 3);
   assert.equal(parsed.usage.totalTokens, 3 * (120 + 2300));
+});
+
+test('an audit row carries the issue type and the scores it computed', () => {
+  // Every guard in the stub names its issues with `type`; reading `code` first
+  // rendered all of them as the bare word "issue". The scores matter for the
+  // same reason: an audit that reports only pass/fail cannot say whether it
+  // stayed quiet or stood down, and the repetition floor was read off runs.
+  const rows = traceRows({ turns: 1 });
+  const record = rows.find((row) => row.type === 'turn_complete').turnRecord;
+  record.tutorRepetitionAudit = {
+    ok: false,
+    issues: [{ type: 'tutor_turn_without_advance', reason: 'restates rather than advances', novelty: 0.14 }],
+    maxSimilarity: 0.39,
+    novelty: 0.14,
+    advanceSkipped: null,
+  };
+  const row = parseTutorStubShowcaseTrace(rows).turns[0].tutor.audits.find((r) => r.key === 'tutorRepetitionAudit');
+  assert.deepEqual(row.issues, ['tutor_turn_without_advance']);
+  assert.deepEqual(row.scores, { maxSimilarity: 0.39, novelty: 0.14 });
+  assert.equal(row.ok, false);
+  assert.ok(!('advanceSkipped' in row), 'a null skip reason is left off rather than reported as a skip');
+});
+
+test('an audit row reports why the advance channel stood down', () => {
+  const rows = traceRows({ turns: 1 });
+  const record = rows.find((row) => row.type === 'turn_complete').turnRecord;
+  record.tutorRepetitionAudit = {
+    ok: true,
+    issues: [],
+    maxSimilarity: 0.2,
+    novelty: null,
+    advanceSkipped: 'terminal_turn',
+  };
+  const row = parseTutorStubShowcaseTrace(rows).turns[0].tutor.audits.find((r) => r.key === 'tutorRepetitionAudit');
+  assert.equal(row.advanceSkipped, 'terminal_turn');
+  assert.deepEqual(row.scores, { maxSimilarity: 0.2 }, 'a null novelty is absent rather than reported as zero');
 });
 
 test('guard coverage is read from the accounting rows, not from the audit records', () => {

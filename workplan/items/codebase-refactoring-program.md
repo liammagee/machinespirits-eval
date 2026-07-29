@@ -51,6 +51,22 @@ links:
     - refactor-tutor-stub-feature-map-projection
     - refactor-tutor-stub-release-notes-projection
     - refactor-tutor-stub-dag-snapshot-projection
+    - refactor-tutor-stub-dag-snapshot-model
+    - refactor-tutor-stub-second-loop-recovery
+    - refactor-tutor-stub-debug-identifiers
+    - refactor-tutor-stub-fact-matching
+    - refactor-tutor-stub-public-evidence
+    - refactor-tutor-stub-response-leak-audit
+    - refactor-tutor-stub-one-line-projection
+    - refactor-tutor-stub-generous-fallback
+    - refactor-tutor-stub-director-notes-model
+    - refactor-tutor-stub-prompt-blocks
+    - refactor-tutor-stub-recipe-model-identity
+    - refactor-tutor-stub-model-temperature
+    - refactor-tutor-stub-cli-parsing
+    - refactor-tutor-stub-model-selection
+    - refactor-tutor-stub-dag-mode
+    - refactor-tutor-stub-register-prior-loading
     - refactor-tutor-stub-proof-command-projection
     - refactor-tutor-stub-interaction-mode-presentation
     - refactor-tutor-stub-session-status-presentation
@@ -855,3 +871,536 @@ Log:
   CLI reduction, 26 focused assertions, 7,431 root assertions, and 137
   tutor-core assertions green with zero skips. All static and source-only gates
   pass.
+- 2026-07-28 — Activated second-loop run 3,
+  `refactor-tutor-stub-repair-spans`, from PR #351's reviewed head. Repair
+  selection, accounting, runtime state, and effects remain in their current
+  owners.
+- 2026-07-28 — Second-loop repair-span run reached review with a 28-line net
+  CLI reduction, 14 focused assertions, 7,433 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 4,
+  `refactor-tutor-stub-guard-attempt-envelope`, from PR #352's reviewed head.
+  Audit evaluation, repair selection, accounting aggregation, runtime state,
+  and effects remain in their current owners.
+- 2026-07-28 — Second-loop guard-attempt-envelope run reached review with a
+  32-line net CLI reduction, 16 focused assertions, 7,435 root assertions, and
+  137 tutor-core assertions green with zero skips. All static and source-only
+  gates pass; one dead wrapper exposed by the extraction was removed.
+- 2026-07-28 — Activated second-loop run 5,
+  `refactor-tutor-stub-scaffold-state`, from PR #353's reviewed head. World and
+  dramaturgy loading, branch choice, release scheduling, model calls, runtime
+  state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop scaffold-state run reached review with a 51-line
+  net CLI reduction, 48 focused assertions, 7,438 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 6,
+  `refactor-tutor-stub-side-arc-state`, from PR #354's reviewed head. Learner
+  classification, generous inference, scaffold construction, model calls,
+  runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop side-arc-state run reached review with a 52-line net
+  CLI reduction, 49 focused assertions, 7,444 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 7,
+  `refactor-tutor-stub-warrant-audit-projection`, from PR #355's reviewed head.
+  Human-discourse extraction, world fact rendering, learner classification,
+  model calls, runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop warrant-audit run reached review with a 56-line net
+  CLI reduction, 48 focused assertions, 7,447 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 8,
+  `refactor-tutor-stub-strict-dag-audit`, from PR #356's reviewed head. DAG
+  construction, learner updates, warrant audit, proof debt, model calls,
+  runtime state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop strict-DAG-audit run reached review with a 16-line
+  net CLI reduction, 48 focused assertions, 7,450 root assertions, and 137
+  tutor-core assertions green with zero skips. All static and source-only gates
+  pass.
+- 2026-07-28 — Activated second-loop run 9,
+  `refactor-tutor-stub-dag-memory-reliability`, from PR #357's reviewed head.
+  Dropout scheduling, board mutation, DAG construction, model calls, runtime
+  state, and effects remain in their current owners.
+- 2026-07-28 — Second-loop DAG-memory-reliability run reached review with 16
+  duplicate source lines removed across the CLI and public-analysis service,
+  41 focused assertions, 7,452 root assertions, and 137 tutor-core assertions
+  green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — Activated second-loop run 10,
+  `refactor-tutor-stub-dag-snapshot-model`, from PR #358's reviewed head. The
+  completed `dag-snapshot-projection` card remains the earlier terminal-line
+  presentation slice.
+  Tutor-DAG construction, release scheduling, state access, terminal writes,
+  runtime callers, and effects remain in their current owners.
+- 2026-07-28 — Second-loop tutor-DAG-snapshot run reached review with a
+  61-line net CLI reduction, eight focused assertions including the byte-exact
+  live Marrick terminal block, 7,454 root assertions, and 137 tutor-core
+  assertions green with zero skips. All static and source-only gates pass.
+- 2026-07-28 — GitHub marked PRs #352–#359 merged while retaining feature
+  branches as their bases, so their reviewed commits did not enter `main`.
+  Replayed only those eight missing slices onto current `origin/main` under
+  `refactor-tutor-stub-second-loop-recovery`; the complete hermetic contract
+  passes before beginning the third ten-run loop.
+- 2026-07-28 — Activated third-loop run 1,
+  `refactor-tutor-stub-debug-identifiers`, from recovery PR #360's reviewed
+  head. Trace persistence, filesystem writes, terminal presentation, and
+  runtime state remain in their current owners.
+- 2026-07-28 — Third-loop debug-identifier run reached review with a 10-line
+  net CLI reduction, five focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 2,
+  `refactor-tutor-stub-fact-matching`, from PR #361's reviewed head. Public
+  premise selection, entailment, leak policy, world state, and effects remain
+  in their current owners.
+- 2026-07-28 — Third-loop fact-matching run reached review with a 20-line net
+  CLI reduction, five focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 3,
+  `refactor-tutor-stub-public-evidence`, from PR #362's reviewed head. Release
+  scheduling, world loading, response audit policy, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop public-evidence run reached review with a 51-line
+  net CLI reduction, seven focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 4,
+  `refactor-tutor-stub-response-leak-audit`, from PR #363's reviewed head.
+  Release scheduling, response generation, guard orchestration, runtime state,
+  and effects remain in their current owners.
+- 2026-07-28 — Third-loop response-leak-audit run reached review with a
+  245-line net CLI reduction, 18 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 5,
+  `refactor-tutor-stub-one-line-projection`, from PR #364's reviewed head.
+  Call-site budgets, menu/report construction, terminal writes, runtime state,
+  and effects remain in their current owners.
+- 2026-07-28 — Third-loop one-line-projection run reached review with a
+  seven-line net CLI reduction, five focused assertions, and complete
+  zero-skip hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 6,
+  `refactor-tutor-stub-generous-fallback`, from PR #365's reviewed head.
+  Generous-inference detection, response generation, state, and effects remain
+  in their current owners.
+- 2026-07-28 — Third-loop generous-fallback run reached review with an
+  18-line net CLI reduction, 14 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 7,
+  `refactor-tutor-stub-director-notes-model`, from PR #366's reviewed head.
+  Director opening/release effects, traces, terminal writes, slash dispatch,
+  runtime state, and withholding policy remain unchanged.
+- 2026-07-28 — Third-loop director-notes-model run reached review with a
+  15-line net CLI reduction, seven focused assertions including byte-exact live
+  terminal fixtures, and complete zero-skip hermetic parity. All static and
+  source-only gates pass.
+- 2026-07-28 — Activated third-loop run 8,
+  `refactor-tutor-stub-prompt-blocks`, from PR #367's reviewed head. Authored
+  block constants, full prompt assembly, world selection, state, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop prompt-blocks run reached review with a 20-line net
+  CLI reduction, six focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 9,
+  `refactor-tutor-stub-recipe-model-identity`, from PR #368's reviewed head.
+  Live provider resolution, CLI model selection, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop recipe-model-identity run reached review with a
+  28-line net CLI reduction, 15 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated third-loop run 10,
+  `refactor-tutor-stub-model-temperature`, from PR #369's reviewed head.
+  Provider selection, requested-temperature state, model calls, and effects
+  remain in their current owners.
+- 2026-07-28 — Third-loop model-temperature run reached review with a 10-line
+  net CLI reduction, three focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 1,
+  `refactor-tutor-stub-cli-parsing`, from PR #370's reviewed head. Argument
+  ownership, runtime defaults, launch orchestration, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop CLI-parsing run reached review with a 34-line net CLI
+  reduction, six focused assertions, and complete zero-skip hermetic parity.
+  All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 2,
+  `refactor-tutor-stub-model-selection`, from PR #371's reviewed head. Provider
+  definitions, environment configuration, runtime model state, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop model-selection run reached review with a 27-line net
+  CLI reduction, nine focused assertions including byte-exact live terminal
+  blocks, and complete zero-skip hermetic parity. All static and source-only
+  gates pass.
+- 2026-07-28 — Activated fifty-loop run 3,
+  `refactor-tutor-stub-dag-mode`, from PR #372's reviewed head. Allowed-mode
+  configuration, runtime DAG state, launch orchestration, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop DAG-mode run reached review with a six-line net CLI
+  reduction, 11 focused assertions, and complete zero-skip hermetic parity.
+  All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 4,
+  `refactor-tutor-stub-register-prior-loading`, from PR #373's reviewed head.
+  Policy selection, runtime register state, filesystem location, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop register-prior-loading run reached review with a
+  22-line net CLI reduction, 27 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 5,
+  `refactor-tutor-stub-visible-model`, from PR #374's reviewed head. Provider
+  resolution, runtime model state, launch orchestration, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop visible-model run reached review with a 12-line net
+  CLI reduction, 25 focused assertions, and complete zero-skip hermetic parity.
+  All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 6,
+  `refactor-tutor-stub-register-prompt-vocabulary`, from PR #376's reviewed
+  head. Runtime register state, prompt assembly, policy selection, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop register-prompt-vocabulary run reached review with a
+  25-line net CLI reduction, 26 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 7,
+  `refactor-tutor-stub-learner-dag-prompt`, from PR #377's reviewed head.
+  Learner-DAG construction, runtime state, prompt assembly, and effects remain
+  in their current owners.
+- 2026-07-28 — Fifty-loop learner-DAG-prompt run reached review with an 18-line
+  net CLI reduction, five focused assertions, and complete zero-skip hermetic
+  parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 8,
+  `refactor-tutor-stub-register-history-prompt`, from PR #379's reviewed head.
+  Register normalization, runtime state, prompt assembly, policy selection, and
+  effects remain in their current owners.
+- 2026-07-28 — Fifty-loop register-history-prompt run reached review with a
+  15-line net CLI reduction, 25 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 9,
+  `refactor-tutor-stub-classifier-world-context`, from PR #380's reviewed head.
+  Classifier prompt assembly, runtime state, model calls, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop classifier-world-context run reached review with a
+  10-line net CLI reduction, five focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 10,
+  `refactor-tutor-stub-failed-classification`, from PR #381's reviewed head.
+  Classifier invocation, error handling, runtime state, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop failed-classification run reached review with a
+  27-line net CLI reduction, eight focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass. Fifty-loop runs 1–10
+  have removed 196 net lines from `scripts/tutor-stub.js` without regressions.
+- 2026-07-28 — Activated fifty-loop run 11,
+  `refactor-tutor-stub-learner-advance-classification`, from PR #383's reviewed
+  head. Learner-DAG inference, classifier invocation, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop learner-advance-classification run reached review
+  with a 21-line net CLI reduction, nine focused assertions, and complete
+  zero-skip hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 12,
+  `refactor-tutor-stub-interim-state-holder`, from PR #384's reviewed head. TTY
+  checks, animation timers, runtime state, terminal writes, and effects remain
+  in their current owners.
+- 2026-07-28 — Fifty-loop interim-state-holder run reached review with a
+  13-line net CLI reduction, 12 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 13,
+  `refactor-tutor-stub-previous-learner-dag`, from PR #386's reviewed head. DAG
+  construction, interim summaries, runtime state, and effects remain in their
+  current owners.
+- 2026-07-28 — Fifty-loop previous-learner-DAG run reached review with a
+  five-line net CLI reduction, 13 focused assertions, and complete zero-skip
+  hermetic parity. Its focused fixture now pins the existing immediate-
+  predecessor/undefined-model contract. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 14,
+  `refactor-tutor-stub-interim-learner-dag-summary`, from PR #387's reviewed
+  head. Learner-DAG inference, context assembly, runtime state, and effects
+  remain in their current owners.
+- 2026-07-28 — Fifty-loop interim-learner-DAG-summary run reached review with a
+  14-line net CLI reduction, 14 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 15,
+  `refactor-tutor-stub-interim-learner-summary`, from PR #388's reviewed head.
+  Classification, context assembly, runtime state, and effects remain in their
+  current owners.
+- 2026-07-28 — Fifty-loop interim-learner-summary run reached review with a
+  15-line net CLI reduction, 15 focused assertions, and complete zero-skip
+  hermetic parity. The focused fixture pins score-band and compaction
+  boundaries; all static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 16,
+  `refactor-tutor-stub-interim-register-summary`, from PR #389's reviewed head.
+  Register selection, efficacy scoring, runtime state, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop interim-register-summary run reached review with a
+  26-line net CLI reduction, 16 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 17,
+  `refactor-tutor-stub-interim-dag-movement`, from PR #390's reviewed head. DAG
+  feature construction, runtime state, and effects remain in their current
+  owners.
+- 2026-07-28 — Fifty-loop interim-DAG-movement run reached review with a
+  35-line net CLI reduction, 17 focused assertions, and complete zero-skip
+  hermetic parity. Static lint also removed the obsolete CLI lookup alias; all
+  static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 18,
+  `refactor-tutor-stub-interim-learner-record`, from PR #391's reviewed head.
+  Learner-record updates, fact rendering, runtime state, and effects remain in
+  their current owners.
+- 2026-07-28 — Fifty-loop interim-learner-record run reached review with a
+  16-line net CLI reduction, 18 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 19,
+  `refactor-tutor-stub-interim-objective-summary`, from PR #392's reviewed
+  head. Release-row computation, classification, register selection, runtime
+  state, and effects remain in their current owners.
+- 2026-07-28 — Fifty-loop interim-objective-summary run reached review with a
+  23-line net CLI reduction, 19 focused assertions, and complete zero-skip
+  hermetic parity. All static and source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 20,
+  `refactor-tutor-stub-interim-field-summary`, from PR #393's reviewed head.
+  Dialogue-field construction, runtime state, and effects remain in their
+  current owners.
+- 2026-07-28 — Fifty-loop interim-field-summary run reached review with an
+  11-line net CLI reduction, 20 focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass. Fifty-loop runs 1–20 have
+  removed 375 net lines from `scripts/tutor-stub.js` without regressions.
+- 2026-07-28 — Activated fifty-loop run 21,
+  `refactor-tutor-stub-interim-evidence-timing`, from PR #394's reviewed head.
+  Release scheduling, runtime state, and effects remain in their current
+  owners.
+- 2026-07-28 — Fifty-loop interim-evidence-timing run reached review with a
+  14-line net CLI reduction, 21 focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 22,
+  `refactor-tutor-stub-interim-clue-progress`, from PR #395's reviewed head.
+  DAG snapshot construction, runtime state, and effects remain in their current
+  owners.
+- 2026-07-28 — Fifty-loop interim-clue-progress run reached review with a
+  six-line net CLI reduction, 22 focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 23,
+  `refactor-tutor-stub-interim-dialogue-outlook`, from PR #396's reviewed head.
+  Field and DAG construction, runtime state, and effects remain in their
+  current owners.
+- 2026-07-28 — Fifty-loop interim-dialogue-outlook run reached review with a
+  20-line net CLI reduction, 23 focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 24,
+  `refactor-tutor-stub-next-release-row`, from PR #397's reviewed head. Release
+  scheduling, runtime state, and effects remain unchanged.
+- 2026-07-28 — Fifty-loop next-release-row run reached review with a 12-line
+  net CLI reduction, 14 focused assertions, and complete zero-skip hermetic
+  parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 25,
+  `refactor-tutor-stub-committed-release-rows`, from PR #398's reviewed head.
+  Release scheduling, public premise semantics, runtime state, and effects
+  remain unchanged.
+- 2026-07-28 — Fifty-loop committed-release-rows run reached review with a
+  15-line net CLI reduction, 15 focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 26,
+  `refactor-tutor-stub-current-release-rows`, from PR #399's reviewed head.
+  Release scheduling, public premise semantics, runtime state, and effects
+  remain unchanged.
+- 2026-07-28 — Fifty-loop current-release-rows run reached review with a
+  30-line net CLI reduction, 16 focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 27,
+  `refactor-tutor-stub-public-release-ledger`, from PR #400's reviewed head.
+  Committed-row selection, runtime state, and effects remain unchanged.
+- 2026-07-28 — Fifty-loop public-release-ledger run reached review with the
+  ledger shape removed from the CLI, eight focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 28,
+  `refactor-tutor-stub-learner-public-evidence-state`, from PR #401's reviewed
+  head. Committed-row selection, learner-DAG inference, runtime state, and
+  effects remain unchanged.
+- 2026-07-28 — Fifty-loop learner-public-evidence-state run reached review with
+  a three-line net CLI reduction, nine focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 29,
+  `refactor-tutor-stub-streaming-capability`, from PR #402's reviewed head.
+  Provider resolution, network calls, token sinks, runtime state, and effects
+  remain unchanged.
+- 2026-07-28 — Fifty-loop streaming-capability run reached review with a
+  four-line net CLI reduction, four focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 30,
+  `refactor-tutor-stub-stream-label`, from PR #403's reviewed head. Token sinks,
+  terminal writes, runtime state, and effects remain in the CLI.
+- 2026-07-28 — Fifty-loop stream-label run reached review with a three-line net
+  CLI reduction, five focused assertions, and complete zero-skip hermetic
+  parity. All static/source-only gates pass. Fifty-loop runs 1–30 have removed
+  483 net lines from `scripts/tutor-stub.js` without regressions.
+- 2026-07-28 — Activated fifty-loop run 31,
+  `refactor-tutor-stub-console-token-sink`, from PR #404's reviewed head.
+  Terminal writes, animation control, runtime state, and effects remain owned
+  by the CLI through injected adapters.
+- 2026-07-28 — Fifty-loop console-token-sink run reached review with an
+  18-line net CLI reduction, seven focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 32,
+  `refactor-tutor-stub-console-stream-replay`, from PR #405's reviewed head.
+  Sink creation, terminal writes, animation control, runtime state, and effects
+  remain injected from the CLI.
+- 2026-07-28 — Fifty-loop console-stream-replay run reached review with a
+  two-line net CLI reduction, eight focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 33,
+  `refactor-tutor-stub-trace-secret-redaction`, from PR #406's reviewed head.
+  Trace creation, persistence, runtime state, and effects remain unchanged.
+- 2026-07-28 — Fifty-loop trace-secret-redaction run reached review with a
+  28-line net CLI reduction, five focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 34,
+  `refactor-tutor-stub-trace-provenance`, from PR #407's reviewed head. Hashing,
+  Git inspection, trace creation, persistence, runtime state, and effects
+  remain injected or unchanged.
+- 2026-07-28 — Fifty-loop trace-provenance run reached review with an 11-line
+  net CLI reduction, seven focused assertions, and complete zero-skip hermetic
+  parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 35,
+  `refactor-tutor-stub-trace-display-path`, from PR #408's reviewed head.
+  Filesystem resolution, trace persistence, runtime state, and effects remain
+  injected or unchanged.
+- 2026-07-28 — Fifty-loop trace-display-path run reached review with relative
+  path semantics centralized in the trace schema, eight focused assertions,
+  and complete zero-skip hermetic parity. The explicit import adds three CLI
+  lines; all static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 36,
+  `refactor-tutor-stub-state-debug-identity`, from PR #409's reviewed head.
+  Debug printing, clipboard operations, runtime state, and effects remain in
+  the CLI.
+- 2026-07-28 — Fifty-loop state-debug-identity run reached review with a
+  six-line net CLI reduction, seven focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 37,
+  `refactor-tutor-stub-technical-debug-predicate`, from PR #410's reviewed head.
+  Debug printing, clipboard operations, runtime state, and effects remain in
+  the CLI.
+- 2026-07-28 — Fifty-loop technical-debug-predicate run reached review with a
+  three-line net CLI reduction, eight focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Activated fifty-loop run 38,
+  `refactor-tutor-stub-debug-id-line`, from PR #411's reviewed head. Console
+  writing, broader debug printing, clipboard operations, runtime state, and
+  effects remain injected or in the CLI.
+- 2026-07-28 — Fifty-loop debug-ID-line run reached review with a two-line net
+  CLI reduction, nine focused assertions, and complete zero-skip hermetic
+  parity. All static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 38 as PR #412 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 39,
+  `refactor-tutor-stub-technical-debug-print-gate`, from PR #412's reviewed
+  head. Concurrent-terminal printing, broader debug rendering, runtime state,
+  and effects remain injected or in the CLI.
+- 2026-07-28 — Fifty-loop technical-debug-print-gate run reached review with a
+  one-line net CLI reduction, ten focused assertions, and complete zero-skip
+  hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 39 as PR #413 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 40,
+  `refactor-tutor-stub-current-debug-selection`, from PR #413's reviewed head.
+  Clipboard access, clipboard text formatting, terminal writes, runtime state,
+  and effects remain in the CLI.
+- 2026-07-28 — Fifty-loop current-debug-selection run reached review with a
+  three-line net CLI reduction, eleven focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass. Fifty-loop runs
+  31–40 have removed 71 net lines from `scripts/tutor-stub.js` while
+  centralizing transport, trace, and debug contracts without regressions.
+- 2026-07-28 — Opened fifty-loop run 40 as PR #414 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 41,
+  `refactor-tutor-stub-debug-line-printers`, from PR #414's reviewed head.
+  Console output, color-state ownership, concurrent-terminal orchestration,
+  runtime state, and effects remain injected or in the CLI.
+- 2026-07-28 — Fifty-loop debug-line-printers run reached review with a
+  twelve-line net CLI reduction, twelve focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 41 as PR #415 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 42,
+  `refactor-tutor-stub-current-debug-lines`, from PR #415's reviewed head.
+  Clipboard access, terminal writes, runtime state, and effects remain in the
+  CLI.
+- 2026-07-28 — Fifty-loop current-debug-lines run reached review with a
+  five-line net CLI reduction, thirteen focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 42 as PR #416 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 43,
+  `refactor-tutor-stub-current-debug-reporter`, from PR #416's reviewed head.
+  Clipboard implementation, console implementation, live color state, runtime
+  state, and effects remain injected by the CLI.
+- 2026-07-28 — Fifty-loop current-debug-reporter run reached review with a
+  fifteen-line net CLI reduction, fourteen focused assertions, and complete
+  zero-skip hermetic parity. A lint-detected unused binding was repaired before
+  the clean full rerun; all static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 43 as PR #417 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 44,
+  `refactor-tutor-stub-turn-attempt-guard`, from PR #417's reviewed head.
+  Abort-controller creation, cancellation timing, runtime state, and effects
+  remain in the CLI.
+- 2026-07-28 — Fifty-loop turn-attempt-guard run reached review with a
+  twelve-line net CLI reduction, three focused assertions, synchronized
+  hermetic inventory, and complete zero-skip hermetic parity. Lint removed an
+  obsolete import before the clean full rerun; all static/source-only gates
+  pass.
+- 2026-07-28 — Opened fifty-loop run 44 as PR #418 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 45,
+  `refactor-tutor-stub-register-state-restoration`, from PR #418's reviewed
+  head. Trace loading, state creation, persistence, runtime sequencing, and
+  effects remain in the CLI.
+- 2026-07-28 — Fifty-loop register-state-restoration run reached review with a
+  twenty-one-line net CLI reduction, four focused assertions, synchronized
+  hermetic inventory, and complete zero-skip hermetic parity. All
+  static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 45 as PR #419 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 46,
+  `refactor-tutor-stub-comprehension-restoration`, from PR #419's reviewed
+  head. Trace loading, state creation, persistence, runtime sequencing, and
+  effects remain in the CLI.
+- 2026-07-28 — Fifty-loop comprehension-restoration run reached review with an
+  eighteen-line net CLI reduction, eleven focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 46 as PR #420 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 47,
+  `refactor-tutor-stub-director-guidance-restoration`, from PR #420's reviewed
+  head. Trace loading, state creation, persistence, runtime sequencing, and
+  effects remain in the CLI.
+- 2026-07-28 — Fifty-loop director-guidance-restoration run reached review with
+  a sixteen-line net CLI reduction, fifteen focused assertions, and complete
+  zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 47 as PR #421 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 48,
+  `refactor-tutor-stub-typed-action-decision-lookup`, from PR #421's reviewed
+  head. Ledger reconstruction, lifecycle validation, trace loading, runtime
+  state, and effects remain in the CLI.
+- 2026-07-28 — Fifty-loop typed-action-decision-lookup run reached review with
+  an eight-line net CLI reduction, three focused assertions, synchronized
+  hermetic inventory, and complete zero-skip hermetic parity. All
+  static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 48 as PR #422 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 49,
+  `refactor-tutor-stub-typed-action-restoration`, from PR #422's reviewed head.
+  Trace loading, state creation, persistence, runtime sequencing, and live
+  typed-action effects remain in the CLI.
+- 2026-07-28 — Fifty-loop typed-action-restoration run reached review with a
+  one-hundred-eight-line net CLI reduction, seven focused assertions, and
+  complete zero-skip hermetic parity. All static/source-only gates pass.
+- 2026-07-28 — Opened fifty-loop run 49 as PR #423 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline.
+- 2026-07-28 — Activated fifty-loop run 50,
+  `refactor-tutor-stub-learner-dag-replay`, from PR #423's reviewed head.
+  World/trace loading, state creation, persistence, live DAG updates, runtime
+  sequencing, and effects remain in the CLI.
+- 2026-07-28 — Fifty-loop learner-DAG-replay run reached review with a
+  thirty-line net CLI reduction, four focused assertions, synchronized
+  hermetic inventory, and complete zero-skip hermetic parity. All
+  static/source-only gates pass. Across all fifty bounded runs,
+  `scripts/tutor-stub.js` fell from 23,999 to 23,200 lines: a 799-line net
+  reduction with no validated behavior regression.
+- 2026-07-28 — Opened fifty-loop run 50 as PR #424 against `main`; the push
+  benchmark remained byte-identical to its standing failed baseline. All fifty
+  requested refactor/validate/commit/push/PR cycles are published.

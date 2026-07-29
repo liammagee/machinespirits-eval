@@ -74,6 +74,46 @@ learner_voice: >-
 
 secret:
   fact: [coolsLoaves, eastTerrace, pipersGullet]
+  # Complete public clauses that unambiguously state this world's causal
+  # answer without necessarily repeating the proper name Piper's Gullet.
+  # These are deterministic recognition surfaces, never speaking prompts.
+  recognition_surfaces:
+    - "the bolted shutter forces a twice-long delivery, so warm loaves cool"
+    - "the shuttered gullet forces the twice-long route, and the extra travel cools the loaves"
+    - "the bolted shutter forces the twice-long route on windless mornings, so the warm loaves cool"
+    - "the bolted shutter made every windless east-terrace loaf cold"
+  # Finite paraphrase contracts for complete causal claims observed in live
+  # pilots. Every group must match, and an explicit denial fails closed.
+  recognition_patterns:
+    - id: shutter_path_cools
+      ordered: true
+      all_of:
+        - ["bolted shutter", "shuttered gullet", "shutter over Piper's Gullet"]
+        - [blocks, blocked, forces, forced, forcing]
+        - [lift, detour, route, crossing, delivery]
+        - [cool, cooled, cools, cold]
+      none_of:
+        - "does not block"
+        - "did not block"
+        - "does not force"
+        - "did not force"
+        - "not responsible"
+        - "never blocked"
+        - "never forced"
+    - id: shutter_direct_cause
+      ordered: true
+      all_of:
+        - ["bolted shutter", "shuttered gullet", "shutter over Piper's Gullet"]
+        - [cause, caused, responsible, made]
+        - [cool, cooled, cools, cold]
+        - [loaf, loaves, bread, delivery, deliveries, arrival]
+      none_of:
+        - "does not cause"
+        - "did not cause"
+        - "is not responsible"
+        - "isn't responsible"
+        - "not responsible"
+        - "never caused"
   surface: >-
     The loaves are cooled by Piper's Gullet — the old thermal vent in the
     cliff face whose frost shutter was bolted at first frost and never
@@ -154,12 +194,25 @@ premises:
       nobody climbed the ladder-road to unbolt it.
   - id: p_soleLift
     fact: [onlyStillAirLift, pipersGullet, eastTerrace]
+    recognition_surfaces:
+      - "on windless mornings, every east-terrace glider depends on Piper's Gullet"
+      - "on windless mornings, Piper's Gullet is the only available lift for the east crossing"
     surface: >-
       The loftmistress's wind charts are plain: on windless mornings the only
       rising air on the east crossing is the warm breath of Piper's Gullet.
       No other flue, ledge, or chimney lifts a glider on that line.
   - id: p_spiral
     fact: [longSpiralDoublesCrossing, eastTerrace]
+    recognition_surfaces:
+      - "the long spiral doubles the crossing"
+      - "the long spiral route makes the crossing twice as long"
+      - "taking the long spiral makes the crossing twice as long"
+    integration_repair:
+      question: "What does taking the long spiral do to the length of the crossing?"
+      target: "The long spiral doubles the crossing."
+      qualification: >-
+        Your claim names the windless journey, but it still skips what the
+        long spiral does to the crossing.
     surface: >-
       Without lift on the direct line, a still-morning courier glides the
       long spiral down past the gull roosts and climbs the far stair of air —
@@ -190,7 +243,15 @@ release_schedule:
   - { turn: 3, premise: p_bolt, via: director }
   - { turn: 5, premise: p_soleLift, via: director }
   - { turn: 7, premise: p_spiral, via: tutor }
-  - { turn: 9, premise: p_warm, via: tutor }
+  - turn: 9
+    premise: p_warm
+    via: tutor
+    presentation:
+      mode: enacted_role
+      role: loftmistress opening and reading the ovenloft launch log
+      cue: >-
+        She lays the launch log open between you, taps the dawn initials, and
+        reads its line aloud.
 
 dramaturgy:
   acts:

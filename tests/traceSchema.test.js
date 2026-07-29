@@ -1,10 +1,14 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  captureTutorStubRunProvenance,
   learnerDeliberationTraceAgent,
   learnerTraceStage,
   projectLearnerDeliberationTrace,
+  redactTraceSecrets,
   TRACE_SCHEMA_VERSION,
+  TUTOR_STUB_RUN_PROVENANCE_SCHEMA,
+  tutorStubTraceDisplayPath,
 } from '../services/traceSchema.js';
 
 const DELIBERATION = [
@@ -12,6 +16,105 @@ const DELIBERATION = [
   { role: 'superego', stage: 'critique', content: 'Review it.', metrics: { model: 'test-superego' } },
   { role: 'ego', stage: 'adjudication', content: 'Revised reaction.', metrics: { model: 'test-ego' } },
 ];
+
+describe('trace secret redaction', () => {
+  it('redacts normalized secret keys, API-key strings, arrays, and cycles without mutating input', () => {
+    const shared = { safe: 'value' };
+    const input = {
+      api_key: 'not-even-key-shaped',
+      nested: {
+        Authorization: 'Bearer private',
+        tokenLike: 'sk-abcdefghijklmnop',
+        ordinary: 'sk-short',
+      },
+      array: [shared, shared],
+    };
+    input.self = input;
+
+    assert.deepEqual(redactTraceSecrets(input), {
+      api_key: '[redacted]',
+      nested: {
+        Authorization: '[redacted]',
+        tokenLike: '[redacted]',
+        ordinary: 'sk-short',
+      },
+      array: [{ safe: 'value' }, { safe: 'value' }],
+      self: '[circular]',
+    });
+    assert.equal(input.api_key, 'not-even-key-shaped');
+    assert.equal(input.self, input);
+  });
+
+  it('preserves null, undefined, primitive, and non-secret string values', () => {
+    assert.equal(redactTraceSecrets(null), null);
+    assert.equal(redactTraceSecrets(undefined), undefined);
+    assert.equal(redactTraceSecrets(7), 7);
+    assert.equal(redactTraceSecrets('public'), 'public');
+  });
+});
+
+describe('tutor-stub run provenance', () => {
+  it('captures the resolved-config hash and Git summary with the canonical schema', () => {
+    const metadata = { model: 'test' };
+    assert.deepEqual(
+      captureTutorStubRunProvenance(metadata, {
+        hashCanonicalJson: (value) => {
+          assert.equal(value, metadata);
+          return 'config-hash';
+        },
+        captureGitProvenanceSummary: ({ repoRoot }) => ({ repoRoot, sha: 'abc123' }),
+        repoRoot: '/repo',
+      }),
+      {
+        schema: TUTOR_STUB_RUN_PROVENANCE_SCHEMA,
+        configSha256: 'config-hash',
+        git: { repoRoot: '/repo', sha: 'abc123' },
+      },
+    );
+  });
+
+  it('records independent hash and Git errors without blocking provenance creation', () => {
+    assert.deepEqual(
+      captureTutorStubRunProvenance(null, {
+        hashCanonicalJson: () => {
+          throw new Error('hash unavailable');
+        },
+        captureGitProvenanceSummary: () => {
+          throw 'git unavailable';
+        },
+      }),
+      {
+        schema: TUTOR_STUB_RUN_PROVENANCE_SCHEMA,
+        configSha256: null,
+        git: null,
+        configHashError: 'hash unavailable',
+        gitError: 'git unavailable',
+      },
+    );
+  });
+});
+
+describe('tutor-stub trace display path', () => {
+  it('returns null for disabled traces and delegates enabled paths to the injected relative-path function', () => {
+    let calls = 0;
+    const relativePath = (root, filePath) => {
+      calls += 1;
+      assert.equal(root, '/repo');
+      assert.equal(filePath, '/repo/logs/run.jsonl');
+      return 'logs/run.jsonl';
+    };
+    assert.equal(tutorStubTraceDisplayPath(null, { relativePath, repoRoot: '/repo' }), null);
+    assert.equal(tutorStubTraceDisplayPath({ enabled: false }, { relativePath, repoRoot: '/repo' }), null);
+    assert.equal(
+      tutorStubTraceDisplayPath(
+        { enabled: true, filePath: '/repo/logs/run.jsonl' },
+        { relativePath, repoRoot: '/repo' },
+      ),
+      'logs/run.jsonl',
+    );
+    assert.equal(calls, 1);
+  });
+});
 
 describe('learner trace schema v2', () => {
   it('emits the exact symmetric learner sequence', () => {

@@ -401,7 +401,7 @@ export function renderTutorPrBenchmarkMarkdown(report) {
     `- Calls: ${report.jobs.filter((job) => job.called).length}/${report.plan.maxCalls}`,
     `- Commit: \`${report.metadata?.gitSha || 'unknown'}\``,
     '',
-    '| Case | Model | Status | Latency | Failure clusters |',
+    '| Case | Model | Status | Latency | Broken rules |',
     '| --- | --- | --- | ---: | --- |',
   ];
   for (const job of report.jobs) {

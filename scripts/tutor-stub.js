@@ -28,10 +28,16 @@ import { parseArgs } from 'node:util';
 import { collectGitActivity, collectGitHubMetrics, collectSourceMetrics, renderReport } from './repository-metrics.js';
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
+import { tutorStubCliPolicyRetryDecision } from '../services/tutorStubCliPolicyRetry.js';
 import { getProviderConfig, loadProviders, resolveModel } from '../services/evalConfigLoader.js';
+import {
+  captureTutorStubRunProvenance,
+  redactTraceSecrets,
+  tutorStubTraceDisplayPath,
+} from '../services/traceSchema.js';
 import { runLabellingGameCli } from '../services/labellingGameCli.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
-import { closure, factKey } from '../services/dramaticDerivation/chainer.js';
+import { factKey } from '../services/dramaticDerivation/chainer.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from '../services/dramaticDerivation/learnerDag.js';
 import {
   buildLearnerProxyDagMemory,
@@ -61,8 +67,30 @@ import {
   TUTOR_STUB_HUMAN_DISCOURSE_PHASE as HUMAN_DISCOURSE_PHASE,
   buildTutorStubHumanDiscourseRunConfig as buildHumanDiscourseRunConfig,
 } from '../services/tutorStubHumanDiscourseConfig.js';
-import { buildTutorStubRegisterPalette } from '../services/tutorStubRegisterPalette.js';
-import { projectTutorStubGuardedSpans } from '../services/tutorStubGuardSpanProjection.js';
+import {
+  buildTutorStubRegisterPalette,
+  createTutorStubRegisterPromptVocabulary,
+} from '../services/tutorStubRegisterPalette.js';
+import { projectTutorStubExactRepairSpans as exactTutorRepairSpans } from '../services/tutorStubGuardSpanProjection.js';
+import { projectTutorStubGuardAttemptEnvelope } from '../services/tutorStubGuardAttemptProjection.js';
+import { projectTutorStubScaffoldState } from '../services/tutorStubScaffoldState.js';
+import { projectTutorStubSideArcState as buildSideArcState } from '../services/tutorStubSideArcState.js';
+import {
+  projectTutorStubPublicStocktakeRows,
+  projectTutorStubWarrantPremiseAudit,
+} from '../services/tutorStubWarrantPremiseAudit.js';
+import { projectTutorStubStrictDagAuditState as buildStrictDagAuditState } from '../services/tutorStubStrictDagAuditState.js';
+import {
+  createTutorStubCurrentDebugReporter,
+  createTutorStubDebugLinePrinters,
+  formatTutorStubOpeningDebugId as openingDebugId,
+  formatTutorStubSafeTimestamp as safeTimestampForFile,
+  formatTutorStubStateTurnDebugId as turnDebugId,
+  formatTutorStubTurnDebugId as formatTurnDebugId,
+  printTutorStubAutomaticTechnicalDetails,
+  resolveTutorStubStateRunDebugId as stateRunDebugId,
+  tutorStubAutomaticTechnicalDetailsEnabled as automaticTechnicalDetailsEnabled,
+} from '../services/tutorStubDebugIdentity.js';
 import {
   listTutorStubCurriculumModules,
   loadTutorStubCurriculum,
@@ -106,6 +134,7 @@ import {
 import { cleanTutorStubClarificationSpeech, cleanTutorStubStageSpeech } from '../services/tutorStubStageSpeech.js';
 import {
   auditTutorStubGenerousInferenceResponse,
+  deterministicTutorStubGenerousInferenceFallback as deterministicGenerousInferenceFallback,
   resolveTutorStubGenerousInference,
 } from '../services/tutorStubGenerousInference.js';
 import {
@@ -120,16 +149,30 @@ import {
   auditTutorStubReleaseDelivery,
   auditTutorStubRepetitionResponse,
   deterministicTutorStubContextualFallback,
-  resolveTutorStubAnswerReference,
   snapshotTutorStubPublicPremiseIds,
 } from '../services/tutorStubResponseGuard.js';
 import { buildTutorStubObservedAudits } from '../services/tutorStubObservedAudits.js';
-import { splitTutorStubPublicWords } from '../services/tutorStubPublicText.js';
-import { tutorStubPublicProvenanceText } from '../services/tutorStubPublicProvenance.js';
+import { formatTutorStubFact as factText } from '../services/tutorStubFactModel.js';
 import {
-  auditTutorStubEvidenceAssertions,
-  tutorStubPrivateTokenAlreadyPublic,
-} from '../services/tutorStubEvidenceAssertion.js';
+  createTutorStubPublicEvidenceModel,
+  projectTutorStubLearnerPublicEvidenceState,
+  projectTutorStubPublicReleaseLedger,
+} from '../services/tutorStubPublicEvidence.js';
+import { createTutorStubResponseLeakAudit } from '../services/tutorStubResponseLeakAudit.js';
+import { compactTutorStubOneLine as oneLine } from '../services/tutorStubTextProjection.js';
+import { effectiveTutorStubModelTemperature as effectiveTemperatureForModel } from '../services/tutorStubModelTemperature.js';
+import {
+  parseTutorStubAutoTurns as parseAutoTurns,
+  parseTutorStubCommaSeparatedStrings as commaSeparatedStrings,
+  parseTutorStubNumber as parseNumber,
+  parseTutorStubOptionalBoundedInt as parseOptionalBoundedInt,
+  parseTutorStubPositiveInt as parsePositiveInt,
+} from '../services/tutorStubCliParsing.js';
+import {
+  createTutorStubPromptBlockModel,
+  delimitTutorStubPrompt as delimitedPrompt,
+  replaceDelimitedTutorStubPrompt as replaceDelimitedPrompt,
+} from '../services/tutorStubPromptBlocks.js';
 import {
   TUTOR_STUB_CHARACTER_RESTATEMENT_SCHEMA,
   TUTOR_STUB_CHARACTER_RESTATEMENT_SYSTEM_PROMPT,
@@ -137,10 +180,6 @@ import {
   buildTutorStubCharacterRestatementPrompt,
   cleanTutorStubCharacterRestatement,
 } from '../services/tutorStubCharacterRestatement.js';
-import {
-  tutorStubAnswerConclusionAsserted,
-  tutorStubSecretConclusionWordPatterns,
-} from '../services/tutorStubConclusionAssertion.js';
 import {
   TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
   TUTOR_STUB_QUARANTINE_CONTINUATION,
@@ -154,6 +193,7 @@ import {
   auditTutorStubDramaticReleaseResponse,
   buildTutorStubDramaticReleaseFrame,
   deterministicTutorStubDramaticReleaseFallback,
+  prepareTutorStubDueClueUptake,
 } from '../services/tutorStubDramaticRelease.js';
 import { buildTutorStubWorldScaffold } from '../services/tutorStubWorldScaffold.js';
 import { buildTutorStubResumeHandoff } from '../services/tutorStubResumeHandoff.js';
@@ -205,6 +245,7 @@ import {
   createTutorStubDagFactDropoutState,
   normalizeTutorStubDagFactDropoutRate,
   normalizeTutorStubDagFactDropoutSeed,
+  projectTutorStubDagMemoryReliability,
   tutorStubDagFactDropoutSnapshot,
 } from '../services/tutorStubDagFactDropout.js';
 import {
@@ -212,6 +253,7 @@ import {
   applyTutorStubComprehensionResponse,
   createTutorStubComprehensionState,
   detectTutorStubComprehensionRequest,
+  restoreTutorStubComprehensionState as restoreComprehensionState,
   tutorStubComprehensionFeatures,
   tutorStubComprehensionPrompt,
   tutorStubComprehensionSnapshot,
@@ -253,6 +295,7 @@ import {
 } from '../services/tutorStubFirstDraftContract.js';
 import {
   auditTutorStubLiveTurnProgressionV1,
+  deterministicTutorStubTurnProgressionHandoff,
   deterministicTutorStubTurnProgressionUptake,
 } from '../services/tutorStubTurnProgressionContract.js';
 import {
@@ -318,6 +361,13 @@ import {
 } from '../services/tutorStubTranscriptHtml.js';
 import { writeTutorStubLearningSummaryHtml } from '../services/tutorStubLearningSummaryHtml.js';
 import {
+  createTutorStubConsoleTokenSink,
+  renderTutorStubStreamLabel,
+  replayTutorStubTextAsConsoleStream,
+  tutorStubProviderSupportsEventStreaming as providerSupportsEventStreaming,
+  tutorStubProviderSupportsTokenStreaming as providerSupportsStreaming,
+} from '../services/tutorStubDevelopmentSpeakerTransport.js';
+import {
   TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA,
   buildTutorStubLearningSummary as buildDialogueLearningSummary,
   tutorStubDialogueCaseStatus as dialogueCaseStatus,
@@ -347,13 +397,23 @@ import {
 } from '../services/tutorStubCloseoutProjection.js';
 import { projectTutorStubCloseoutReportLines } from '../services/tutorStubCloseoutReportPresentation.js';
 import {
+  createTutorStubInterimState as createInterimState,
   formatTutorStubSignedInterimNumber as formatSignedInterimNumber,
   projectTutorStubInterimPanels,
   renderTutorStubInterimFrame,
+  resolveTutorStubInterimState as getInterimState,
   summarizeTutorStubInterimCapabilities as compactInterimStateSummary,
+  summarizeTutorStubInterimField,
+  summarizeTutorStubEvidenceTiming,
+  summarizeTutorStubPendingDagMovement,
+  summarizeTutorStubPendingField,
+  summarizeTutorStubPendingLearner,
+  summarizeTutorStubPendingLearnerDag as compactPendingLearnerDagSummary,
+  summarizeTutorStubPendingObjective,
+  summarizeTutorStubPendingRegister,
+  summarizeTutorStubPendingTutorDag,
+  summarizeTutorStubLearnerRecordUpdate,
   tutorStubInterimCliHintPanels as compactInterimCliHintPanels,
-  tutorStubInterimLevel as interimLevel,
-  tutorStubPlainInterimBottleneck as plainInterimBottleneck,
 } from '../services/tutorStubInterimPresentation.js';
 import {
   listTutorStubTutorInstances,
@@ -445,18 +505,33 @@ import {
 import { projectTutorStubTrainingReuseStatusLines } from '../services/tutorStubTrainingReusePresentation.js';
 import { projectTutorStubDialogueSettingsLines } from '../services/tutorStubDialogueSettingsPresentation.js';
 import {
-  buildTutorStubModelChoiceEntries,
+  createTutorStubModelSelection,
   projectTutorStubModelChoiceLines,
 } from '../services/tutorStubModelChoicePresentation.js';
 import {
   buildTutorStubDirectorInitialContext,
+  createTutorStubDirectorNotesModel,
   projectTutorStubDirectorContextLines,
   projectTutorStubDirectorNotesLines,
 } from '../services/tutorStubDirectorPresentation.js';
-import { projectTutorStubLearnerClassificationLines } from '../services/tutorStubLearnerClassificationPresentation.js';
-import { projectTutorStubLearnerDagLines } from '../services/tutorStubLearnerDagPresentation.js';
+import {
+  projectTutorStubClassifierWorldContext as classifierWorldContext,
+  projectTutorStubLearnerClassificationLines,
+} from '../services/tutorStubLearnerClassificationPresentation.js';
+import {
+  applyTutorStubLearnerAdvanceAssessment,
+  buildTutorStubFailedClassification as failedClassification,
+} from '../services/tutorStubLearnerClassification.js';
+import {
+  projectTutorStubLearnerDagLines,
+  projectTutorStubLearnerDagPromptSummary as learnerDagPromptSummary,
+} from '../services/tutorStubLearnerDagPresentation.js';
 import { projectTutorStubResponseConfigurationLines } from '../services/tutorStubResponseConfigurationPresentation.js';
 import { projectTutorStubResponsePolicyContext } from '../services/tutorStubResponsePolicyContext.js';
+import { restoreTutorStubRegisterStateFromTurns as restoreRegisterStateFromTurns } from '../services/tutorStubRegisterStateRestoration.js';
+import { replayTutorStubLearnerDagFromTurns } from '../services/tutorStubLearnerDagRestoration.js';
+import { assertTutorStubTurnAttemptCurrent } from '../services/tutorStubTurnAttempt.js';
+import { restoreTutorStubTypedActionState as restoreTypedActionState } from '../services/tutorStubTypedActionRestoration.js';
 import {
   projectTutorStubDialogueClosureContext,
   projectTutorStubHumanDiscourseContext,
@@ -476,6 +551,7 @@ import {
   clearTutorStubDirectorGuidance,
   createTutorStubDirectorGuidanceState,
   mergeConcurrentTutorStubDirectorGuidance,
+  restoreTutorStubDirectorGuidanceState as restoreDirectorGuidanceState,
   setTutorStubDirectorGuidance,
   tutorStubDirectorGuidanceEntry,
   tutorStubDirectorGuidancePrompt,
@@ -508,6 +584,7 @@ import {
   assertTutorStubResumeCompatibility,
   buildTutorStubSessionRecipe,
   compareTutorStubResumeRecipe,
+  createTutorStubRecipeModelIdentityResolver,
   latestTutorStubResumeSource,
   readTutorStubSessionRecipe,
   resolveTutorStubResumeSource,
@@ -538,7 +615,10 @@ import { renderTutorStubCliHelp } from '../services/tutorStubCliHelp.js';
 import { projectTutorStubFeatureMapLines } from '../services/tutorStubFeatureMap.js';
 import { projectTutorStubInteractiveHelpLines } from '../services/tutorStubInteractiveHelp.js';
 import { projectTutorStubReleaseNotesLines } from '../services/tutorStubReleaseNotesPresentation.js';
-import { projectTutorStubDagSnapshotLines } from '../services/tutorStubDagSnapshotPresentation.js';
+import {
+  projectTutorStubDagSnapshot,
+  projectTutorStubDagSnapshotLines,
+} from '../services/tutorStubDagSnapshotPresentation.js';
 import {
   projectTutorStubProofDagArtifactPaths,
   projectTutorStubProofDagSemanticLayerLines,
@@ -565,6 +645,9 @@ import {
   commitTutorStubReleasePacing,
   createTutorStubReleasePacingState,
   normalizeTutorStubReleaseSpeed,
+  projectTutorStubCommittedReleaseRows,
+  projectTutorStubCurrentReleaseRows,
+  projectTutorStubNextReleaseRow,
   restoreTutorStubReleasePacingFromTurns,
   setTutorStubReleaseSpeed,
   tutorStubReleasePacingSnapshot,
@@ -594,6 +677,9 @@ import {
   scoreValue,
   topNumericEntries,
 } from '../services/tutorStubRegisterPolicy.js';
+import { normalizeTutorStubDagMode } from '../services/tutorStubDagFeatures.js';
+import { createTutorStubRegisterEmpiricalPriorModel } from '../services/tutorStubRegisterEmpiricalPrior.js';
+import { projectTutorStubRegisterHistoryPrompt } from '../services/tutorStubRegisterHistoryProjection.js';
 import {
   buildTutorStubLightweightDialogueField as buildLightweightDialogueField,
   projectTutorStubLightweightFieldTurn as lightweightFieldTurn,
@@ -608,6 +694,7 @@ import {
   auditTutorStubPointOfActionCompliance,
   buildTutorStubPointOfActionTurn,
   normalizeTutorStubPointOfActionArm,
+  reconcileTutorStubPointOfActionHandoffEligibility,
   tutorStubPointOfActionPrompt,
   tutorStubPointOfActionStandingBook,
   tutorStubPointOfActionTargetText,
@@ -618,8 +705,8 @@ import {
   buildCommitteeCompositionBlock,
   committeeFallbackBatteryPass,
   committeeMiniGenerate,
-  committeeQuestionSentences,
   runCommitteeBattery,
+  selectCommitteeCompositionQuestion,
   trimCommitteeFallback,
 } from '../services/program2CommitteeEngine.js';
 import { createProgram2ProviderBudgetFromEnvironment } from '../services/program2ExperimentSafety.js';
@@ -641,11 +728,7 @@ import {
   selectPedagogicalAction,
 } from '../services/adaptiveTutor/actionPolicy.js';
 import { createAdaptationContract } from '../services/adaptiveTutor/adaptationContract.js';
-import {
-  appendPendingIntervention,
-  closePendingIntervention,
-  createPendingIntervention,
-} from '../services/adaptiveTutor/interventionLedger.js';
+import { appendPendingIntervention, closePendingIntervention } from '../services/adaptiveTutor/interventionLedger.js';
 import {
   buildTutorStubTypedActionDecision,
   tutorStubMoveFamilyForAction,
@@ -655,8 +738,11 @@ import {
   allowedMoveFamiliesForScaffoldPhase,
   createScaffoldLifecycle,
   SCAFFOLD_LIFECYCLE_SCHEMA,
-  validateScaffoldLifecycle,
 } from '../services/adaptiveTutor/scaffoldLifecycle.js';
+import {
+  createTutorStubTutorTurnPipeline,
+  TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS,
+} from '../services/tutorStubTutorTurnPipeline.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -664,9 +750,6 @@ const UNSUPPORTED_CODEX_MINI_REFS = new Set(['codex.mini', 'codex.gpt-mini', 'co
 const NEGATIVE_FLOOR_REGISTERS = ['ironic', 'sarcastic', 'face_threat'];
 const DAG_MODES = ['strict_dag', 'human_scaffold', 'defeasible_human_scaffold'];
 const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-frame.v1';
-const SCAFFOLD_STATE_SCHEMA = 'machinespirits.tutor-stub.scaffold-state.v1';
-const SIDE_ARC_SCHEMA = 'machinespirits.tutor-stub.side-arc.v1';
-const WARRANT_PREMISE_AUDIT_SCHEMA = 'machinespirits.tutor-stub.warrant-premise-audit.v1';
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
 const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
 const TUTOR_TYPED_ACTION_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.typed-action-outcome.v1';
@@ -764,14 +847,6 @@ const STUB = {
  * off stops pasting the working next to the answer; it does not remove the
  * working.
  */
-const SPEAKER_ADVISORY_BLOCK_IDS = Object.freeze([
-  'context_continuity',
-  'evidence_window',
-  'learner_classifier',
-  'learner_dag',
-  'human_scaffold',
-  'first_draft_contract',
-]);
 const DEFAULT_SPEAKER_ADVISORY_BLOCKS = Object.freeze([
   'evidence_window',
   // Kept on: its own bench reading (-1.9) sits inside the band but never
@@ -789,16 +864,16 @@ const DEFAULT_SPEAKER_ADVISORY_BLOCKS = Object.freeze([
 function resolveSpeakerAdvisoryBlocks(raw) {
   const text = String(raw ?? '').trim();
   if (!text) return new Set(DEFAULT_SPEAKER_ADVISORY_BLOCKS);
-  if (text === 'all') return new Set(SPEAKER_ADVISORY_BLOCK_IDS);
+  if (text === 'all') return new Set(TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS);
   if (text === 'none') return new Set();
   const requested = text
     .split(',')
     .map((id) => id.trim())
     .filter(Boolean);
-  const unknown = requested.filter((id) => !SPEAKER_ADVISORY_BLOCK_IDS.includes(id));
+  const unknown = requested.filter((id) => !TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS.includes(id));
   if (unknown.length) {
     throw new Error(
-      `unknown speaker advisory block: ${unknown.join(', ')} (known: ${SPEAKER_ADVISORY_BLOCK_IDS.join(', ')})`,
+      `unknown speaker advisory block: ${unknown.join(', ')} (known: ${TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS.join(', ')})`,
     );
   }
   return new Set(requested);
@@ -813,6 +888,16 @@ let cliPresentation = createTutorStubCliPresentation({
   env: process.env,
 });
 const C = { ...cliPresentation.colors };
+const { printTurnDebugLine, printOpeningDebugLine } = createTutorStubDebugLinePrinters({
+  write: console.log,
+  colors: C,
+});
+const printCurrentDebugId = createTutorStubCurrentDebugReporter({
+  formatClipboardText: formatTutorStubDebugClipboardText,
+  copyClipboard: copyTutorStubTextToClipboard,
+  write: console.log,
+  colors: C,
+});
 
 function configureCliPresentation({ theme, motion, noColor = false } = {}) {
   cliPresentation = createTutorStubCliPresentation({
@@ -1144,83 +1229,14 @@ function printHelp() {
   );
 }
 
-function parseNumber(value, name, { min = -Infinity, max = Infinity } = {}) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < min || parsed > max) {
-    throw new Error(`${name} must be a number between ${min} and ${max}`);
-  }
-  return parsed;
-}
-
-function parsePositiveInt(value, name) {
-  const parsed = Number.parseInt(value, 10);
-  if (!Number.isFinite(parsed) || parsed < 1) {
-    throw new Error(`${name} must be a positive integer`);
-  }
-  return parsed;
-}
-
-function parseOptionalBoundedInt(value, name, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
-  const raw = String(value ?? '').trim();
-  if (!raw) return null;
-  const parsed = Number(raw);
-  if (!Number.isInteger(parsed) || parsed < min || parsed > max) {
-    throw new Error(`${name} must be an integer between ${min} and ${max}`);
-  }
-  return parsed;
-}
-
-function commaSeparatedStrings(value) {
-  return String(value || '')
-    .split(',')
-    .map((entry) => entry.trim())
-    .filter(Boolean);
-}
-
-function assertSupportedModelRefs(refs) {
-  for (const [label, ref] of Object.entries(refs)) {
-    const normalized = String(ref || '')
-      .trim()
-      .toLowerCase();
-    if (UNSUPPORTED_CODEX_MINI_REFS.has(normalized)) {
-      throw new Error(
-        `${label}=${ref} is not supported by the local Codex CLI ChatGPT-account route. ` +
-          'Use codex.gpt-5.6-terra for the CLI-backed speaking tutor, codex.gpt-5.6-sol for interpretation, or openai.mini/openrouter.gpt-mini for GPT mini.',
-      );
-    }
-  }
-}
-
-function tutorModelChoiceEntries(currentRef = STUB.model) {
-  return buildTutorStubModelChoiceEntries({
-    currentRef,
-    providers: loadProviders()?.providers || {},
+const { assertSupportedModelRefs, tutorModelChoiceEntries, resolveTutorModelSelection, visibleResolvedModel } =
+  createTutorStubModelSelection({
+    loadProviders,
     getProviderConfig,
     isCliProvider,
     resolveModel,
     unsupportedRefs: UNSUPPORTED_CODEX_MINI_REFS,
   });
-}
-
-function resolveTutorModelSelection(ref) {
-  const modelRef = String(ref || '').trim();
-  assertSupportedModelRefs({ model: modelRef });
-  const resolved = resolveModel(modelRef);
-  const providerConfig = getProviderConfig(resolved.provider);
-  if (!providerConfig.isConfigured) {
-    const requirement = providerConfig.api_key_env || providerConfig.base_url || 'provider configuration';
-    throw new Error(`${modelRef} is unavailable; configure ${requirement} first`);
-  }
-  return { modelRef, resolved, providerConfig };
-}
-
-function parseAutoTurns(value) {
-  const raw = String(value || '')
-    .trim()
-    .toLowerCase();
-  if (['0', 'none', 'unbounded', 'until-grounded', 'grounded'].includes(raw)) return null;
-  return parsePositiveInt(value, '--auto-turns');
-}
 
 function resolveWorkspacePath(value) {
   return path.isAbsolute(value) ? value : path.join(ROOT, value);
@@ -1556,362 +1572,16 @@ function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
   return config;
 }
 
-function defaultRegisterEmpiricalPriorPath() {
-  return path.join(ROOT, '.tutor-stub-auto-eval/register-empirical-priors.json');
-}
+const { loadRegisterEmpiricalPrior } = createTutorStubRegisterEmpiricalPriorModel({
+  resolveWorkspacePath,
+  defaultPath: path.join(ROOT, '.tutor-stub-auto-eval/register-empirical-priors.json'),
+  existsSync: fs.existsSync,
+  readFileSync: fs.readFileSync,
+});
 
-function resolveRegisterEmpiricalPriorPath(value, { policy }) {
-  const raw = String(value || '').trim();
-  if (/^(off|none|false|0)$/iu.test(raw)) return null;
-  if (raw && raw !== 'auto') return resolveWorkspacePath(raw);
-  if (policy === 'empirical_dynamical_system' || policy === 'continuous_empirical_dynamical_system' || raw === 'auto') {
-    return defaultRegisterEmpiricalPriorPath();
-  }
-  return null;
-}
-
-function loadRegisterEmpiricalPrior(value, { policy }) {
-  const filePath = resolveRegisterEmpiricalPriorPath(value, { policy });
-  if (!filePath) return { prior: null, filePath: null, status: 'off' };
-  if (!fs.existsSync(filePath)) return { prior: null, filePath, status: 'missing' };
-  const prior = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  if (!/register-empirical-priors\.v[12]$/u.test(String(prior.schema || ''))) {
-    throw new Error(`Invalid register empirical prior schema in ${filePath}: ${prior.schema || 'missing'}`);
-  }
-  const status = prior.schema.endsWith('.v1')
-    ? 'loaded_legacy_requires_rebuild'
-    : prior.deployment?.objectiveRegisterPriorEligible === false
-      ? 'loaded_holdout_not_passed'
-      : 'loaded';
-  return { prior, filePath, status };
-}
-
-function safeTimestampForFile(date = new Date()) {
-  return date.toISOString().replace(/[:.]/g, '-');
-}
-
-function formatTurnDebugId(runId, turn) {
-  const turnNumber = Number.parseInt(turn, 10);
-  const normalizedRunId = String(runId || 'no-trace').trim() || 'no-trace';
-  if (!Number.isFinite(turnNumber) || turnNumber < 1) return normalizedRunId;
-  return `${normalizedRunId}:t${String(turnNumber).padStart(3, '0')}`;
-}
-
-function openingDebugId(runId) {
-  return `${String(runId || 'no-trace').trim() || 'no-trace'}:opening`;
-}
-
-function factText(fact) {
-  if (!Array.isArray(fact) || fact.length === 0) return String(fact || '');
-  const [rel, ...args] = fact;
-  return `${rel}(${args.join(', ')})`;
-}
-
-function splitSymbolWords(value) {
-  return splitTutorStubPublicWords(value);
-}
-
-function textTokens(text) {
-  return new Set(splitSymbolWords(text));
-}
-
-function tokenRegex(token) {
-  return new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'iu');
-}
-
-function textContainsToken(text, token) {
-  return tokenRegex(token).test(String(text || ''));
-}
-
-function factMatches(a, b) {
-  return factKey(a) === factKey(b);
-}
-
-function candidatePublicPremiseIds({ state = null, world = null, tutorTurn = null, publicPremiseIds = null } = {}) {
-  if (publicPremiseIds instanceof Set) return new Set(publicPremiseIds);
-  if (Array.isArray(publicPremiseIds)) return new Set(publicPremiseIds.filter(Boolean));
-  if (!world) return new Set();
-  if (state?.releasePacing) {
-    return new Set([
-      ...committedReleaseRows(state, tutorTurn).map((row) => row.premise),
-      ...currentReleaseRows(state, tutorTurn).map((row) => row.premise),
-    ]);
-  }
-  return new Set(
-    world.releaseSchedule.filter((entry) => Number(entry.turn) <= Number(tutorTurn)).map((entry) => entry.premise),
-  );
-}
-
-function publicFactsAtTurn(world, tutorTurn, state = null, publicPremiseIds = null) {
-  if (!world) return [];
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  const released = [...available].map((premiseId) => world.premiseById.get(premiseId)?.fact).filter(Boolean);
-  return [...(world.background || []), ...released];
-}
-
-function entailedFactsAtTurn(world, tutorTurn, state = null, publicPremiseIds = null) {
-  return [...closure(publicFactsAtTurn(world, tutorTurn, state, publicPremiseIds), world.rules || []).facts.values()];
-}
-
-function entailsFactAtTurn(world, tutorTurn, fact, state = null, publicPremiseIds = null) {
-  return entailedFactsAtTurn(world, tutorTurn, state, publicPremiseIds).some((entailed) => factMatches(entailed, fact));
-}
-
-function answerTermForWorld(world) {
-  const pattern = world?.questionPattern || [];
-  const answerIndex = pattern.findIndex((part) => typeof part === 'string' && part.startsWith('?'));
-  if (answerIndex < 0) return null;
-  return world?.secret?.fact?.[answerIndex] || null;
-}
-
-function publicTextForTurn(world, tutorTurn, learnerText = '', state = null, publicPremiseIds = null) {
-  if (!world) return '';
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  return tutorStubPublicProvenanceText({
-    world,
-    publicPremiseIds: available,
-    priorTurns: state?.turns || [],
-    learnerText,
-  });
-}
-
-function publicEvidenceTextForAssertion(world, tutorTurn, learnerText = '', state = null, publicPremiseIds = null) {
-  if (!world) return '';
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  const releasedSurface = [...available].map((premiseId) => world.premiseById.get(premiseId)?.surface || '').join('\n');
-  const transcript = (state?.turns || []).flatMap((turn) => [turn?.learner || '', turn?.tutor || '']).join('\n');
-  return [world.question, world.setting, world.openingFrame?.situation, releasedSurface, transcript, learnerText].join(
-    '\n',
-  );
-}
-
-const PRIVATE_TOKEN_STOPWORDS = new Set([
-  'about',
-  'above',
-  'after',
-  'again',
-  'alone',
-  'answer',
-  'assay',
-  'because',
-  'built',
-  'before',
-  'beside',
-  'bench',
-  'blank',
-  'blanks',
-  'building',
-  'came',
-  'cast',
-  'coin',
-  'coins',
-  'comparison',
-  'contrast',
-  'counts',
-  'could',
-  'differs',
-  'down',
-  'every',
-  'exactly',
-  'evidence',
-  'false',
-  'finish',
-  'finished',
-  'hand',
-  'lesson',
-  'lessons',
-  'line',
-  'make',
-  'measure',
-  'measures',
-  'mark',
-  'might',
-  'name',
-  'nothing',
-  'only',
-  'plain',
-  'progress',
-  'public',
-  'record',
-  'results',
-  'rule',
-  'says',
-  'scored',
-  'shilling',
-  'shillings',
-  'should',
-  'shown',
-  'single',
-  'still',
-  'struck',
-  'that',
-  'their',
-  'there',
-  'thing',
-  'things',
-  'them',
-  'these',
-  'this',
-  'trial',
-  'turn',
-  'twice',
-  'verdict',
-  'warrant',
-  'what',
-  'when',
-  'where',
-  'which',
-  'with',
-  'would',
-]);
-
-function unreleasedPremiseLeakRows({ text, world, tutorTurn, learnerText, state = null, publicPremiseIds = null }) {
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  const publicTokens = textTokens(publicTextForTurn(world, tutorTurn, learnerText, state, publicPremiseIds));
-  const rows = [];
-  for (const premise of world?.premises || []) {
-    const release = world.releaseSchedule.find((entry) => entry.premise === premise.id);
-    if (!release || available.has(premise.id)) continue;
-
-    const factTokens = new Set(
-      (premise.fact || [])
-        .slice(1)
-        .flatMap(splitSymbolWords)
-        .filter(
-          (token) =>
-            token.length >= 4 &&
-            !PRIVATE_TOKEN_STOPWORDS.has(token) &&
-            !tutorStubPrivateTokenAlreadyPublic(token, publicTokens),
-        ),
-    );
-    const surfaceTokens = new Set(
-      splitSymbolWords(premise.surface).filter(
-        (token) =>
-          token.length >= 5 &&
-          !PRIVATE_TOKEN_STOPWORDS.has(token) &&
-          !tutorStubPrivateTokenAlreadyPublic(token, publicTokens),
-      ),
-    );
-    const factMatches = [...factTokens].filter((token) => textContainsToken(text, token));
-    const surfaceMatches = [...surfaceTokens].filter((token) => textContainsToken(text, token));
-    const strongMatches = [...new Set([...factMatches, ...surfaceMatches])].sort();
-    if (factMatches.length || surfaceMatches.length >= 2) {
-      rows.push({
-        premise: premise.id,
-        scheduledTurn: release.turn,
-        matches: strongMatches,
-      });
-    }
-  }
-  return rows;
-}
-
-function auditTutorResponseLeak({ text, world, tutorTurn, learnerText, state = null, publicPremiseIds = null }) {
-  if (!world) return { ok: true, leaks: [] };
-  const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-  const leaks = [];
-  const answerTerm = answerTermForWorld(world);
-  const publicText = publicTextForTurn(world, tutorTurn, learnerText, state, available);
-  const answerReference = resolveTutorStubAnswerReference({ answerTerm, text, publicText });
-  const mentionsAnswer = answerReference.referencesAnswer;
-  const finalEntailed = entailsFactAtTurn(world, tutorTurn, world.secret.fact, state, available);
-
-  if (answerReference.concealedMatches.length && !finalEntailed && !answerReference.answerNamePublic) {
-    leaks.push({
-      type: 'concealed_answer_name',
-      reason: `mentions ${answerTerm} before the public record entails the answer`,
-      matches: answerReference.concealedMatches,
-    });
-  }
-
-  if (mentionsAnswer) {
-    const lower = String(text || '').toLowerCase();
-    const intermediateChecks = [
-      {
-        fact: ['castBlankFor', world.questionPattern?.[1] || world.secret.fact?.[1], answerTerm],
-        words: [/cast/u, /blank/u],
-        label: 'private_blank_conclusion',
-      },
-      {
-        fact: ['cutDieFor', world.questionPattern?.[1] || world.secret.fact?.[1], answerTerm],
-        words: [/\bcut\b/u, /\bdie\b/u],
-        label: 'private_die_conclusion',
-      },
-      {
-        fact: world.secret.fact,
-        words: [
-          ...(world.secret?.fact?.[0] === 'struckBy'
-            ? [/\bstruck\b/u, /\bstrike\b/u, /\bcoiner\b/u, /\bcoined\b/u, /\bmade\b/u]
-            : []),
-          ...tutorStubSecretConclusionWordPatterns(world.secret?.fact?.[0]),
-        ],
-        label: 'private_final_conclusion',
-      },
-    ];
-    const worldRulePredicates = new Set(
-      (world.rules || []).flatMap((rule) => [...(rule.if || []), ...(rule.then || [])]).map((fact) => fact?.[0]),
-    );
-    for (const check of intermediateChecks) {
-      // The intermediate-conclusion checks encode the assay worlds' law
-      // (castBlankFor/cutDieFor/struckBy vocabulary). Apply them only where
-      // the world's own rules carry those predicates; every other world is
-      // covered by the generic concealed-answer + unreleased-premise audits.
-      if (check.label !== 'private_final_conclusion' && !worldRulePredicates.has(check.fact[0])) {
-        continue;
-      }
-      if (
-        tutorStubAnswerConclusionAsserted({
-          text: lower,
-          answerTerm,
-          wordPatterns: check.words,
-        }) &&
-        !entailsFactAtTurn(world, tutorTurn, check.fact, state, available)
-      ) {
-        leaks.push({
-          type: check.label,
-          reason: `states a conclusion about ${answerTerm} before that conclusion is derivable from released evidence`,
-          fact: factText(check.fact),
-        });
-      }
-    }
-  }
-
-  for (const row of unreleasedPremiseLeakRows({
-    text,
-    world,
-    tutorTurn,
-    learnerText,
-    state,
-    publicPremiseIds: available,
-  })) {
-    leaks.push({
-      type: 'unreleased_premise_content',
-      reason: `uses content from ${row.premise} before its scheduled release at turn ${row.scheduledTurn}`,
-      premise: row.premise,
-      matches: row.matches,
-    });
-  }
-
-  const evidenceAssertionAudit = auditTutorStubEvidenceAssertions({
-    text,
-    permittedText: publicEvidenceTextForAssertion(world, tutorTurn, learnerText, state, available),
-  });
-  for (const issue of evidenceAssertionAudit.issues) {
-    leaks.push({
-      type: issue.type,
-      reason: issue.reason,
-      text: issue.text,
-    });
-  }
-
-  return {
-    ok: leaks.length === 0,
-    leaks,
-    finalEntailed,
-    answerNamePublic: answerReference.answerNamePublic,
-    publicPremiseIds: [...available],
-  };
-}
+const publicEvidenceModel = createTutorStubPublicEvidenceModel({ committedReleaseRows, currentReleaseRows });
+const { answerTermForWorld } = publicEvidenceModel;
+const { auditTutorResponseLeak } = createTutorStubResponseLeakAudit({ publicEvidenceModel });
 
 function tutorResponseRecoveryPrompt({
   publicPacket = [],
@@ -2111,95 +1781,15 @@ function groupedWorldEntries() {
   return groupTutorStubWorldEntries(selectableWorldSummaries());
 }
 
-function deterministicGenerousInferenceFallback({ dueEvidence = [], latestEvidence = null } = {}) {
-  const next = (Array.isArray(dueEvidence) ? dueEvidence : []).find((row) => row?.surface) || null;
-  if (next) {
-    return [
-      'Yes—that answers the last point, so we can move on.',
-      `The next concrete clue is: ${oneLine(next.surface, { max: 260 })}`,
-      'What does this new clue add on its own?',
-    ].join(' ');
-  }
-  if (latestEvidence?.surface) {
-    return [
-      'Yes—that answers the last point, so we can carry it forward.',
-      `Keep the last concrete clue in view: ${oneLine(latestEvidence.surface, { max: 260 })}`,
-      'We can leave the wider conclusion open until another clue enters the conversation.',
-    ].join(' ');
-  }
-  return 'Yes—that answers the last point. We will leave it settled until a genuinely new public fact gives us something further to test.';
-}
-
-function tutorGuardedSpans(text, audits) {
-  return projectTutorStubGuardedSpans(text, tutorStubGuardIssueRows(audits));
-}
-
-function exactTutorRepairSpans(originalText, repairedText) {
-  const original = String(originalText || '');
-  const repaired = String(repairedText || '');
-  if (original === repaired) return [];
-  let prefix = 0;
-  while (prefix < original.length && prefix < repaired.length && original[prefix] === repaired[prefix]) prefix += 1;
-  let suffix = 0;
-  while (
-    suffix < original.length - prefix &&
-    suffix < repaired.length - prefix &&
-    original[original.length - 1 - suffix] === repaired[repaired.length - 1 - suffix]
-  ) {
-    suffix += 1;
-  }
-  return [
-    {
-      offsetEncoding: 'utf16_code_units',
-      original: {
-        start: prefix,
-        end: original.length - suffix,
-        text: original.slice(prefix, original.length - suffix),
-      },
-      repaired: {
-        start: prefix,
-        end: repaired.length - suffix,
-        text: repaired.slice(prefix, repaired.length - suffix),
-      },
-    },
-  ];
-}
-
 function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
-  const text = String(response?.text || '');
-  const recoveryMetadata = response?.recoveryStrategy || response?.recoveryBatch || null;
-  const generation = {
-    callId: response?.guardCallId || null,
-    role: response?.guardRole || null,
-    latencyMs: Number(response?.latencyMs || 0),
-    usage: response?.usage ? jsonClone(response.usage) : null,
-    tokenUsageAvailable: response?.tokenUsageAvailable ?? null,
-    ...(recoveryMetadata
-      ? {
-          candidateKind: response.recoveryCandidateKind || kind,
-          ...recoveryMetadata,
-        }
-      : {}),
-  };
-  return {
+  return projectTutorStubGuardAttemptEnvelope({
     kind,
     attempt,
-    provider: response?.provider || null,
-    model: response?.model || null,
-    deliveryConfiguration: jsonClone(response?.deliveryResponseConfiguration || null),
-    configurationTransition: jsonClone(response?.responseConfigurationTransition || null),
-    candidate: {
-      start: 0,
-      end: text.length,
-      text,
-      offsetEncoding: 'utf16_code_units',
-    },
+    response,
     audits,
-    auditOk: audits?.deliveryOk ?? audits?.ok ?? null,
-    generation,
-    guardedSpans: audits ? tutorGuardedSpans(text, audits) : [],
+    issues: audits ? tutorStubGuardIssueRows(audits) : [],
     repairedSpans,
-  };
+  });
 }
 
 function buildTutorGuardAccounting({
@@ -2858,26 +2448,10 @@ function printDirectorPreludeBeforeFirstTutor(state, { reason = 'first_tutor_mes
   return true;
 }
 
-function directorNotesIssuedSoFar(state) {
-  const throughTurn = Math.max(0, Number(state?.turns?.length || 0));
-  const openingIssued = Boolean(
-    state?.directorContext && (state.directorOpeningPresented || (state.history || []).length > 0),
-  );
-  const releases = committedReleaseRows(state, throughTurn)
-    .filter((entry) => entry.via === 'director')
-    .map((entry) => ({
-      turn: Number(entry.turn),
-      premise: entry.premise,
-      via: 'director',
-      surface: String(entry.surface || '').trim(),
-    }));
-  return {
-    schema: 'machinespirits.tutor-stub.director-notes.v1',
-    throughTurn,
-    opening: openingIssued ? jsonClone(state.directorContext) : null,
-    releases,
-  };
-}
+const directorNotesIssuedSoFar = createTutorStubDirectorNotesModel({
+  committedReleaseRows,
+  cloneValue: jsonClone,
+});
 
 function printDirectorNotesIssuedSoFar(state) {
   const notes = directorNotesIssuedSoFar(state);
@@ -2889,37 +2463,12 @@ function worldSpeakerDagPrompt(world) {
   return projectTutorStubWorldSpeakerDagPrompt(world, { ledgerTerm: worldLedgerTerm(world) });
 }
 
-function responseChoiceModeRules({ multipleChoice, world = null }) {
-  return multipleChoice
-    ? [
-        "- Multiple-choice mode is on. When it would help, you may present 2-4 short lettered choices for the learner's next move.",
-        '- Multiple-choice options must be public evidence-shaped moves, not answers. Do not include the concealed answer, unstaged evidence, predicate/function notation, premise ids, rule ids, or route labels.',
-        `- In story mode, each option should be a plain ${worldLedgerTerm(world)} line shape drawn from the staged evidence. Keep ${worldFlavourPhrase(world)} but avoid long menus.`,
-        '- End by asking the learner to choose one option or write their own evidence claim.',
-      ]
-    : [
-        '- Do not default to multiple choice. A tutor-only question-support instruction may still authorize one bounded choice when uncertainty shows that an open prompt is not answerable enough.',
-        '- If no question-support override applies and the learner seems unsure, put a directional hint into the discourse before asking; never ask them to invent a record, source, name, or fact that has not entered the public scene.',
-        '- When talking through options, collapse them to one live issue: what changed, what remains unsafe, or what the learner now thinks follows.',
-        "- When the compiled handoff permits a question, end with one light prompt for the learner's natural next thought; otherwise end declaratively. Do not require a full proof step unless their leap is unsafe or case-closing.",
-      ];
-}
+const { responseChoiceModeRules } = createTutorStubPromptBlockModel({ worldLedgerTerm, worldFlavourPhrase });
 
 const CURRICULUM_MODULE_PROMPT_START = '[Curriculum module source — private tutor context]';
 const CURRICULUM_MODULE_PROMPT_END = '[End curriculum module source]';
 const CURRICULUM_PHASE_PROMPT_START = '[Curriculum phase controller — private tutor context]';
 const CURRICULUM_PHASE_PROMPT_END = '[End curriculum phase controller]';
-
-function delimitedPrompt(start, content, end) {
-  return [start, content, end].filter(Boolean).join('\n');
-}
-
-function replaceDelimitedPrompt(text, start, content, end) {
-  const from = text.indexOf(start);
-  const to = text.indexOf(end, from + start.length);
-  if (from < 0 || to < 0) return `${text}\n\n${delimitedPrompt(start, content, end)}`;
-  return `${text.slice(0, from)}${delimitedPrompt(start, content, end)}${text.slice(to + end.length)}`;
-}
 
 function buildSystemPrompt({
   topic,
@@ -2995,51 +2544,11 @@ function loadSystemPrompt({ worldBundle, curriculumBundle = null, dag, topic, mu
   return fs.readFileSync(args.system, 'utf8');
 }
 
-function visibleResolvedModel(resolved, providerConfig) {
-  return {
-    provider: resolved.provider,
-    model: resolved.model,
-    configured: resolved.isConfigured,
-    apiKeyEnv: providerConfig.api_key_env || null,
-    baseUrl: providerConfig.base_url || null,
-    cli: isCliProvider(resolved.provider),
-  };
-}
-
-function safeTutorStubRecipeBaseUrl(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return null;
-  try {
-    const url = new URL(raw);
-    url.username = '';
-    url.password = '';
-    url.search = '';
-    url.hash = '';
-    return url.toString();
-  } catch (_) {
-    return null;
-  }
-}
-
-function tutorStubRecipeModelIdentity(ref, visible = null) {
-  const modelRef = String(ref || '').trim();
-  let route = visible;
-  if (!route && modelRef) {
-    const resolved = resolveModel(modelRef);
-    route = visibleResolvedModel(resolved, getProviderConfig(resolved.provider));
-  }
-  const identity = {
-    ref: modelRef || null,
-    provider: route?.provider || null,
-    model: route?.model || null,
-    baseUrl: safeTutorStubRecipeBaseUrl(route?.baseUrl),
-    cli: typeof route?.cli === 'boolean' ? route.cli : null,
-  };
-  return {
-    ...identity,
-    routingHash: hashCanonicalJson(identity),
-  };
-}
+const tutorStubRecipeModelIdentity = createTutorStubRecipeModelIdentityResolver({
+  resolveModel,
+  getProviderConfig,
+  visibleResolvedModel,
+});
 
 function printResponseDetails(meta, state, { suffix = '' } = {}) {
   if (!state?.responseDetails?.enabled) return false;
@@ -3077,25 +2586,7 @@ function recordTutorStubTurnTiming({
   return turnTiming;
 }
 
-function usesFixedOpenAITemperature(resolved) {
-  return resolved.provider === 'openai' && /^gpt-5(?:[.-]|$)/.test(resolved.model);
-}
-
-function effectiveTemperatureForModel(resolved, requestedTemperature) {
-  if (usesFixedOpenAITemperature(resolved)) {
-    return 1;
-  }
-  return requestedTemperature;
-}
-
-function normalizeDagMode(value) {
-  const mode = String(value || 'strict_dag')
-    .trim()
-    .toLowerCase()
-    .replace(/-/gu, '_');
-  if (DAG_MODES.includes(mode)) return mode;
-  throw new Error(`Unknown --dag-mode: ${value}. Expected ${DAG_MODES.join(', ')}.`);
-}
+const normalizeDagMode = (value) => normalizeTutorStubDagMode(value, { modes: DAG_MODES });
 
 function buildRegisterPalette(mode) {
   const definitions = getEngagementStanceDefinitions();
@@ -3112,78 +2603,13 @@ function humanDirectedRegisterPalette() {
   return Object.keys(definitions).filter((name) => definitions[name]?.simulated_only !== true);
 }
 
-function engagementStanceDefinitionSummary(name) {
-  const def = getEngagementStanceDefinition(name) || {};
-  return {
-    register: name,
-    valence: def.valence || 'unknown',
-    router_selectable: def.router_selectable === true,
-    simulated_only: def.simulated_only === true,
-    public_signature: String(def.public_signature || '').trim() || null,
-    contrast: String(def.contrast || '').trim() || null,
-    reviewer_cues: def.reviewer_cues || def.trigger || null,
-    stance_contract: String(def.stance_contract || '').trim(),
-    required_moves: Array.isArray(def.required_moves) ? def.required_moves : [],
-    risk_flags: Array.isArray(def.risk_flags) ? def.risk_flags : [],
-    forbidden_phrases: Array.isArray(def.forbidden_phrases) ? def.forbidden_phrases : [],
-    recognition_guardrail: String(def.recognition_guardrail || '').trim() || null,
-  };
-}
+const { engagementStancePalettePromptRows, requestTypePromptRows } = createTutorStubRegisterPromptVocabulary({
+  getEngagementStanceDefinition,
+  getRequestTypeDefinitions,
+});
 
-function engagementStancePalettePromptRows(palette) {
-  return JSON.stringify(palette.map(engagementStanceDefinitionSummary), null, 2);
-}
-
-function requestTypePromptRows() {
-  const definitions = getRequestTypeDefinitions();
-  const rows = Object.entries(definitions).map(([requestType, definition]) => ({
-    request_type: requestType,
-    role: definition.role || 'logical_armature',
-    description: definition.description || '',
-    dag_use: definition.dag_use || '',
-  }));
-  return rows.length ? JSON.stringify(rows, null, 2) : 'No request-type registry is configured.';
-}
-
-function learnerDagPromptSummary(model) {
-  if (!model) return 'No prior tutor-side learner-DAG model is available yet.';
-  const record = model.learnerRecord || {};
-  return JSON.stringify(
-    {
-      turn: model.turn ?? null,
-      metrics: model.metrics || {},
-      assessment: model.assessment || {},
-      memoryReliability: model.memoryReliability || null,
-      learnerRecord: {
-        grounded: (record.grounded || []).slice(-8),
-        voicedDerived: (record.voicedDerived || []).slice(-8),
-        hypotheses: (record.hypotheses || []).slice(-5),
-        answerCandidates: record.answerCandidates || [],
-      },
-    },
-    null,
-    2,
-  );
-}
-
-function registerHistoryPromptSummary(state) {
-  const history = state.register?.history || [];
-  if (!history.length) return 'No prior tutor-register choices.';
-  return history
-    .slice(-6)
-    .map((entry) => {
-      const normalized = normalizeStoredRegisterSelection(entry);
-      const efficacy = normalized?.efficacy
-        ? `${normalized.efficacy.label} (DAG score ${normalized.efficacy.progressScore}; ${
-            normalized.efficacy.learnerFeedback?.rating
-              ? `learner rating ${normalized.efficacy.learnerFeedback.rating}; `
-              : ''
-          }${normalized.efficacy.summary})`
-        : 'pending next learner turn';
-      return `Turn ${entry.turn}: ${normalized?.selected_register || 'unknown'} — ${entry.register_reason || 'no reason'}; efficacy: ${efficacy}`;
-    })
-    .join('\n');
-}
+const registerHistoryPromptSummary = (state) =>
+  projectTutorStubRegisterHistoryPrompt(state, { normalizeSelection: normalizeStoredRegisterSelection });
 
 function latestFieldStateMismatch(state) {
   return latestRegisterEfficacy(state)?.mismatch || null;
@@ -3272,19 +2698,6 @@ function engagementStanceSelectionPolicyPrompt(state) {
     );
   }
   return lines.join('\n');
-}
-
-function classifierWorldContext(state) {
-  if (!state.world) return 'No detective-story world is active.';
-  return [
-    `World: ${state.world.id} - ${state.world.title}`,
-    state.world.discipline ? `Discipline: ${state.world.discipline}` : null,
-    `Public question: ${state.world.question}`,
-    `Opening situation: ${String(state.world.setting || '').trim()}`,
-    `DAG mode: ${state.dag ? 'on, but hidden DAG state is intentionally withheld from this classifier' : 'off'}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
 }
 
 function buildLearnerClassifierPrompt({ learnerText, state }) {
@@ -3658,6 +3071,9 @@ async function callPromptModel({
         promptAudit,
       },
       error: err.message,
+      ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION'
+        ? { cliPolicyViolation: tutorStubCliPolicyRetryDecision(err, { alreadyUsed: true }) }
+        : {}),
     });
     throw err;
   }
@@ -3684,34 +3100,6 @@ async function callClassifierModel({
     turn,
     signal,
   });
-}
-
-function failedClassification({ message, resolved, latencyMs = 0, usage = null }) {
-  return {
-    error: message,
-    turn: {
-      summary: 'Classifier failed before the tutor turn.',
-      request_type: 'off_task_or_mixed',
-      discourse_move: 'unknown',
-      evidence_use: 'unknown',
-      epistemic_stance: 'unknown',
-      affect: 'unknown',
-      agency: 'unknown',
-      scores: {},
-      pedagogical_need: 'Proceed cautiously and use the learner input directly.',
-    },
-    overall: {
-      summary: 'Overall classification is unavailable because the classifier failed.',
-      trajectory: 'unknown',
-      recurring_pattern: 'unknown',
-      current_state: 'unknown',
-      next_best_tutor_move: 'Ask a focused diagnostic question.',
-    },
-    provider: resolved?.provider || null,
-    model: resolved?.model || null,
-    latencyMs,
-    usage: usage || { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
-  };
 }
 
 async function classifyLearnerInput({ learnerText, state, signal = null }) {
@@ -3766,32 +3154,8 @@ function printClassification(classification) {
   for (const line of projectTutorStubLearnerClassificationLines(presentation, { colors: C })) console.log(line);
 }
 
-function floorClassifierScore(score, minimum, reason) {
-  const current = Number(scoreValue(score));
-  if (Number.isFinite(current) && current >= minimum) return score;
-  if (score && typeof score === 'object') return { ...score, score: minimum, reason };
-  return { score: minimum, reason };
-}
-
-function applyLearnerAdvanceAssessment(classification, tutorLearnerDag) {
-  const advance = tutorLearnerDag?.advance || tutorLearnerDag?.model?.learnerAdvance || null;
-  const turn = classification?.turn;
-  if (!advance || !turn) return classification;
-  turn.learner_advance = advance;
-  if (!advance.accelerated) return classification;
-  turn.learning_pace = 'accelerating';
-  turn.reasoning_span = advance.multiStep ? 'multi_step' : 'multi_premise';
-  turn.discourse_move = advance.derivedFactCount > 0 ? 'inference' : 'evidence_adoption';
-  if (['none', 'repeats_setup', 'cites_public_evidence'].includes(turn.evidence_use)) {
-    turn.evidence_use = advance.derivedFactCount > 0 ? 'links_evidence_to_rule' : 'cites_public_evidence';
-  }
-  if (['passive', 'complying', 'attempting'].includes(turn.agency)) turn.agency = 'steering';
-  turn.scores = turn.scores || {};
-  const reason = `Accepted ${advance.supportedMoveCount} learner-owned public proof moves in one turn.`;
-  turn.scores.conceptual_engagement = floorClassifierScore(turn.scores.conceptual_engagement, 4, reason);
-  turn.scores.epistemic_readiness = floorClassifierScore(turn.scores.epistemic_readiness, 4, reason);
-  return classification;
-}
+const applyLearnerAdvanceAssessment = (classification, tutorLearnerDag) =>
+  applyTutorStubLearnerAdvanceAssessment(classification, tutorLearnerDag, { scoreValue });
 
 function clearStatusLine() {
   process.stdout.write('\r\x1b[2K');
@@ -3802,273 +3166,64 @@ function printWithConcurrentTerminal(state, callback) {
   return terminal?.enabled ? terminal.print(callback) : callback();
 }
 
-function createInterimState({ enabled }) {
-  return { enabled, active: null, lastContext: null };
-}
-
-function getInterimState(holder) {
-  if (!holder) return null;
-  if (
-    Object.prototype.hasOwnProperty.call(holder, 'active') &&
-    Object.prototype.hasOwnProperty.call(holder, 'enabled')
-  ) {
-    return holder;
-  }
-  return holder.interim || null;
-}
-
 function interimAnimationAvailable(interim) {
   return Boolean(interim?.enabled && output.isTTY && cliPresentation.motion !== 'off');
 }
 
-function compactInterimFieldSummary(state) {
-  if (!state?.turns?.length) return compactInterimStateSummary(state);
-  const field = buildLightweightDialogueField(state.turns);
-  const final = field.summary.final;
-  const bottleneck = plainInterimBottleneck(final.bottleneck);
-  return [
-    `learner understanding ${interimLevel(final.learnerMastery)}`,
-    `pressure ${interimLevel(final.learnerRisk)}`,
-    `tutor fit ${interimLevel(final.tutorAlignment)}`,
-    `momentum ${interimLevel(final.jointMomentum)}`,
-    bottleneck,
-  ].join(' | ');
-}
+const compactInterimFieldSummary = (state) => summarizeTutorStubInterimField(state, { buildLightweightDialogueField });
 
-function previousLearnerDagModel(state, context) {
-  const currentTurn = Number(context?.tutorTurn || 0);
-  return [...(state?.turns || [])].reverse().find((turn) => !currentTurn || Number(turn.turn || 0) < currentTurn)
-    ?.tutorLearnerDagModel;
-}
+const compactPendingObjectiveSummary = (state, context) =>
+  summarizeTutorStubPendingObjective(state, context, { currentReleaseRows, plainStrategyText });
 
-function compactPendingObjectiveSummary(state, context) {
-  if (!context?.learnerText && !context?.classification && !context?.tutorLearnerDag?.model) return null;
-  const turn = context.classification?.turn || {};
-  const overall = context.classification?.overall || {};
-  const assessment = context.tutorLearnerDag?.model?.assessment || {};
-  const selection = context.registerSelection || {};
-  const bottleneck = plainInterimBottleneck(assessment.bottleneck || turn.pedagogical_need || 'awaiting analysis');
-  const register = selection.selected_register
-    ? `style led by ${selection.selected_register}`
-    : 'style still being chosen';
-  const target =
-    selection.expected_dag_move ||
-    overall.next_best_tutor_move ||
-    turn.pedagogical_need ||
-    'choose one learner-owned next move';
-  const due = currentReleaseRows(state, context.tutorTurn).map((row) => row.premise);
-  return [
-    `turn ${context.tutorTurn || '?'}`,
-    `focus: ${oneLine(bottleneck, { max: 54 })}`,
-    register,
-    due.length ? `${due.length} new clue${due.length === 1 ? '' : 's'} available now` : null,
-    `aim: ${oneLine(plainStrategyText(target), { max: 76 })}`,
-  ]
-    .filter(Boolean)
-    .join(' | ');
-}
+const compactPendingLearnerSummary = (context) =>
+  summarizeTutorStubPendingLearner(context, { scoreValue, plainStrategyText });
 
-function compactPendingLearnerSummary(context) {
-  if (!context?.learnerText && !context?.classification) return null;
-  const turn = context.classification?.turn || {};
-  const overall = context.classification?.overall || {};
-  const scores = turn.scores || {};
-  const move = String(turn.discourse_move || 'still being read').replaceAll('_', ' ');
-  const stance = String(turn.epistemic_stance || 'still being read').replaceAll('_', ' ');
-  const need = turn.pedagogical_need || overall.next_best_tutor_move || '';
-  const bits = [
-    `turn ${context.tutorTurn || '?'}`,
-    `${move}; ${stance}`,
-    `conceptual engagement ${interimLevel(Number(scoreValue(scores.conceptual_engagement)) / 5)}`,
-    `evidence awareness ${interimLevel(Number(scoreValue(scores.epistemic_readiness)) / 5)}`,
-  ];
-  if (need) bits.push(`needs: ${oneLine(plainStrategyText(need), { max: 62 })}`);
-  if (!context.classification && context.learnerText) bits.push(oneLine(context.learnerText, { max: 72 }));
-  return bits.join(' | ');
-}
+const compactPendingDagMovementSummary = (state, context) =>
+  summarizeTutorStubPendingDagMovement(state, context, { dagProgressFeatures });
 
-function compactPendingLearnerDagSummary(context) {
-  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
-  if (!model) return null;
-  const metrics = model.metrics || {};
-  const assessment = model.assessment || {};
-  const missing = metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0;
-  return [
-    `turn ${model.turn || context.tutorTurn || '?'}`,
-    `${metrics.groundedCount || 0} public facts held`,
-    `${metrics.voicedDerivedCount || 0} inferences stated`,
-    `${missing} evidence pieces still needed`,
-    plainInterimBottleneck(assessment.bottleneck),
-  ].join(' | ');
-}
+const compactLearnerRecordUpdateSummary = (state, context) =>
+  summarizeTutorStubLearnerRecordUpdate(state, context, { factSurface });
 
-function compactPendingDagMovementSummary(state, context) {
-  const model = context?.tutorLearnerDag?.model || context?.tutorLearnerDagModel || null;
-  if (!model) return null;
-  const previous = previousLearnerDagModel(state, context);
-  const currentFeatures = dagProgressFeatures(model);
-  const previousFeatures = dagProgressFeatures(previous);
-  const coverageDelta = formatSignedInterimNumber(currentFeatures.bestPathCoverage - previousFeatures.bestPathCoverage);
-  const groundedDelta = currentFeatures.groundedCount - previousFeatures.groundedCount;
-  const voicedDelta = currentFeatures.voicedDerivedCount - previousFeatures.voicedDerivedCount;
-  const answersDelta = currentFeatures.answerCandidateCount - previousFeatures.answerCandidateCount;
-  const missingDelta = currentFeatures.missingPremiseCount - previousFeatures.missingPremiseCount;
-  const deltas = [
-    coverageDelta ? `path coverage ${coverageDelta}` : null,
-    groundedDelta
-      ? `${Math.abs(groundedDelta)} public fact${Math.abs(groundedDelta) === 1 ? '' : 's'} ${groundedDelta > 0 ? 'added' : 'lost'}`
-      : null,
-    voicedDelta
-      ? `${Math.abs(voicedDelta)} inference${Math.abs(voicedDelta) === 1 ? '' : 's'} ${voicedDelta > 0 ? 'added' : 'lost'}`
-      : null,
-    answersDelta
-      ? `${Math.abs(answersDelta)} answer candidate${Math.abs(answersDelta) === 1 ? '' : 's'} ${answersDelta > 0 ? 'added' : 'removed'}`
-      : null,
-    missingDelta
-      ? `${Math.abs(missingDelta)} needed piece${Math.abs(missingDelta) === 1 ? '' : 's'} ${missingDelta < 0 ? 'resolved' : 'added'}`
-      : null,
-  ].filter(Boolean);
-  const assessment = model.assessment || {};
-  return [
-    `turn ${model.turn || context.tutorTurn || '?'}`,
-    deltas.length ? deltas.join(', ') : 'no clear reasoning movement yet',
-    assessment.finalSecretEntailed
-      ? 'the conclusion is supported'
-      : assessment.assertedSecret
-        ? 'the conclusion was stated too early'
-        : 'the conclusion remains open',
-  ].join(' | ');
-}
+const compactPendingRegisterSummary = (context) =>
+  summarizeTutorStubPendingRegister(context, {
+    formatDistribution: formatEngagementStanceDistribution,
+    displayDiagnosticLabel,
+    plainStrategyText,
+  });
 
-function compactLearnerRecordUpdateSummary(state, context) {
-  const result = context?.tutorLearnerDag;
-  if (!result?.accepted && !result?.rejected?.length) return null;
-  const accepted = result.accepted || {};
-  const adopted = (accepted.adopt || []).join(',') || null;
-  const retracted = (accepted.retract || []).join(',') || null;
-  const derived = (accepted.derive || []).map((fact) => oneLine(factSurface(state.world, fact), { max: 34 }));
-  const rejected = result.rejected?.length || 0;
-  const bits = [
-    `turn ${context.tutorTurn || result.model?.turn || '?'}`,
-    adopted ? `${accepted.adopt.length} evidence piece${accepted.adopt.length === 1 ? '' : 's'} accepted` : null,
-    retracted ? `${accepted.retract.length} evidence piece${accepted.retract.length === 1 ? '' : 's'} withdrawn` : null,
-    derived.length ? `new inference: ${derived.slice(0, 2).join('; ')}` : null,
-    accepted.hypothesis ? `working idea: ${oneLine(accepted.hypothesis, { max: 52 })}` : null,
-    accepted.assertAnswer ? `proposed answer: ${accepted.assertAnswer}` : null,
-    rejected ? `${rejected} unsupported update${rejected === 1 ? '' : 's'} ignored` : null,
-  ].filter(Boolean);
-  return bits.length > 1 ? bits.join(' | ') : null;
-}
+const compactEvidenceTimingSummary = (state, context) =>
+  summarizeTutorStubEvidenceTiming(state, context, { currentReleaseRows, nextReleaseRow, committedReleaseRows });
 
-function compactPendingRegisterSummary(context) {
-  const selection = context?.registerSelection;
-  const efficacy = context?.previousRegisterEfficacy;
-  if (!selection && !efficacy) return null;
-  const bits = [];
-  if (selection) {
-    const blend = formatEngagementStanceDistribution(selection.distribution, { limit: 4 });
-    bits.push(blend ? `blend ${blend}` : `led by ${selection.selected_register || 'unknown'}`);
-    if (selection.actorial_part_label || selection.actorial_part) {
-      bits.push(
-        `playing ${oneLine(selection.actorial_part_label || displayDiagnosticLabel(selection.actorial_part), { max: 42 })}`,
-      );
-    }
-    if (selection.actorial_performance?.label) {
-      bits.push(`through ${oneLine(selection.actorial_performance.label, { max: 32 })}`);
-    }
-    if (selection.expected_field_move)
-      bits.push(`aim: ${oneLine(plainStrategyText(selection.expected_field_move), { max: 68 })}`);
-  }
-  if (efficacy) {
-    const result =
-      efficacy.label === 'positive_progress'
-        ? 'helped'
-        : efficacy.label === 'regression_or_overreach'
-          ? 'hurt progress'
-          : 'had no clear effect yet';
-    bits.push(`last ${efficacy.selected_register || 'style'} ${result}`);
-    if (efficacy.learnerFeedback?.rating) {
-      bits.push(`learner rated it ${efficacy.learnerFeedback.rating === 'up' ? 'helpful' : 'not helpful'}`);
-    }
-  }
-  return bits.join(' | ');
-}
+const compactPendingTutorDagSummary = (state, context) =>
+  summarizeTutorStubPendingTutorDag(state, context, { buildTutorDagSnapshot });
+
+const compactPendingFieldSummary = (state, context) =>
+  summarizeTutorStubPendingField(state, context, {
+    buildLightweightDialogueField,
+    lightweightFieldTurn,
+    buildTutorDagSnapshot,
+  });
 
 function currentReleaseRows(state, tutorTurn) {
-  const world = state?.world;
-  if (!world || !Number.isFinite(Number(tutorTurn))) return [];
-  const pointOfAction = state?.pointOfAction?.current || null;
-  if (
-    Number(pointOfAction?.turn) === Number(tutorTurn) &&
-    pointOfAction?.compiled_constraint?.suppress_new_premise === true
-  ) {
-    return [];
-  }
-  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
-  const dueIds = snapshot
-    ? snapshot.turn === Number(tutorTurn) && snapshot.dueNow.length
-      ? snapshot.dueNow
-      : snapshot.schedule
-          .filter(
-            (entry) =>
-              Number(entry.effectiveTurn) === Number(tutorTurn) &&
-              (entry.releasedTurn === null || entry.releasedTurn === undefined),
-          )
-          .map((entry) => entry.premise)
-    : world.releaseSchedule.filter((entry) => Number(entry.turn) === Number(tutorTurn)).map((entry) => entry.premise);
-  return dueIds.map((premiseId) => {
-    const premise = world.premiseById.get(premiseId);
-    const release = world.releaseSchedule.find((entry) => entry.premise === premiseId);
-    return {
-      ...projectTutorStubSpeakerPublicPremise(premise, {
-        premise: premiseId,
-        turn: Number(tutorTurn),
-        via: release?.via || null,
-      }),
-      presentation: release?.presentation || null,
-      role: release?.role || null,
-      cue: release?.cue || null,
-    };
+  return projectTutorStubCurrentReleaseRows(state?.releasePacing, state?.world, tutorTurn, {
+    pointOfAction: state?.pointOfAction?.current || null,
+    projectPremise: projectTutorStubSpeakerPublicPremise,
   });
 }
 
 function committedReleaseRows(state, throughTurn = Number.POSITIVE_INFINITY) {
-  const world = state?.world;
-  if (!world) return [];
-  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
-  if (!snapshot) return stagedEvidenceRows(world, throughTurn);
-  return snapshot.schedule
-    .filter(
-      (entry) =>
-        entry.releasedTurn !== null &&
-        entry.releasedTurn !== undefined &&
-        Number.isFinite(Number(entry.releasedTurn)) &&
-        Number(entry.releasedTurn) <= Number(throughTurn),
-    )
-    .map((entry) => {
-      const premise = world.premiseById.get(entry.premise);
-      return projectTutorStubSpeakerPublicPremise(premise, {
-        premise: entry.premise,
-        turn: Number(entry.releasedTurn),
-        via: entry.via || null,
-      });
-    });
+  return projectTutorStubCommittedReleaseRows(state?.releasePacing, state?.world, throughTurn, {
+    fallbackRows: stagedEvidenceRows,
+    projectPremise: projectTutorStubSpeakerPublicPremise,
+  });
 }
 
 function publicReleaseLedger(state, throughTurn = Number.POSITIVE_INFINITY) {
-  return committedReleaseRows(state, throughTurn).map((row) => ({
-    turn: row.turn,
-    premiseId: row.premise,
-    via: row.via,
-  }));
+  return projectTutorStubPublicReleaseLedger(committedReleaseRows(state, throughTurn));
 }
 
 function learnerPublicEvidenceState(state, tutorTurn) {
-  const staged = committedReleaseRows(state, tutorTurn);
-  return {
-    publicStagedEvidence: staged,
-    publicReleaseLedger: staged,
-  };
+  return projectTutorStubLearnerPublicEvidenceState(committedReleaseRows(state, tutorTurn));
 }
 
 function learnerDagPreflightForTurn(state, tutorTurn, { traceSource = null } = {}) {
@@ -4093,74 +3248,7 @@ function learnerDagPreflightForTurn(state, tutorTurn, { traceSource = null } = {
 }
 
 function nextReleaseRow(state) {
-  const world = state?.world;
-  if (!world) return null;
-  const snapshot = tutorStubReleasePacingSnapshot(state?.releasePacing, world);
-  const next = snapshot?.nextRelease || null;
-  if (!next) return null;
-  const premise = world.premiseById.get(next.premise);
-  return {
-    premise: next.premise,
-    turn: Number(next.effectiveTurn),
-    authoredTurn: Number(next.authoredTurn),
-    via: next.via || null,
-    surface: String(premise?.surface || '').trim(),
-    fact: premise?.fact || null,
-  };
-}
-
-function compactEvidenceTimingSummary(state, context) {
-  const world = state?.world;
-  const tutorTurn = Number(context?.tutorTurn || (state?.turns?.length || 0) + 1);
-  if (!world || !Number.isFinite(tutorTurn)) return null;
-  const dueNow = currentReleaseRows(state, tutorTurn);
-  const next = nextReleaseRow(state);
-  const last = committedReleaseRows(state, tutorTurn).at(-1) || null;
-  const dueSummary = dueNow.length
-    ? `available now: ${oneLine(dueNow[0].surface, { max: 78 })}`
-    : last
-      ? 'no new evidence this turn; earlier evidence remains available'
-      : 'no case evidence has been introduced yet';
-  const nextSummary = next
-    ? `next new clue is planned for turn ${next.turn} from the ${next.via === 'director' ? 'scene' : 'tutor'}`
-    : 'all planned clues are available';
-  return `turn ${tutorTurn} | ${dueSummary} | ${nextSummary}`;
-}
-
-function compactPendingTutorDagSummary(state, context) {
-  const snapshot =
-    context?.tutorDagSnapshot || buildTutorDagSnapshot(state, context?.tutorTurn || state?.turns?.length + 1);
-  if (!snapshot) return null;
-  const next = snapshot.nextRelease
-    ? `next clue planned for turn ${snapshot.nextRelease.turn}`
-    : 'all planned clues are available';
-  return `turn ${snapshot.turn} | ${snapshot.leavesReleased} of ${snapshot.leavesTotal} key clues revealed | ${next}`;
-}
-
-function compactPendingFieldSummary(state, context) {
-  if (!context?.classification && !context?.tutorLearnerDag?.model) return null;
-  const completedField = buildLightweightDialogueField(state?.turns || []);
-  const previous = completedField.rows.at(-1) || null;
-  const pendingTurn = {
-    turn: context.tutorTurn || (state?.turns?.length || 0) + 1,
-    learner: context.learnerText || '',
-    classification: context.classification || null,
-    tutorLearnerDagModel: context.tutorLearnerDag?.model || null,
-    registerSelection: context.registerSelection || null,
-    previousRegisterEfficacy: context.previousRegisterEfficacy || null,
-    tutor: '',
-    tutorDag:
-      context.tutorDagSnapshot || buildTutorDagSnapshot(state, context.tutorTurn || (state?.turns?.length || 0) + 1),
-  };
-  const row = lightweightFieldTurn(pendingTurn, previous);
-  return [
-    `turn ${row.turn}`,
-    `learner understanding ${interimLevel(row.learnerMastery)}`,
-    `pressure ${interimLevel(row.learnerRisk)}`,
-    `tutor fit ${interimLevel(row.tutorAlignment)}`,
-    `momentum ${interimLevel(row.jointMomentum)}`,
-    plainInterimBottleneck(row.bottleneck),
-  ].join(' | ');
+  return projectTutorStubNextReleaseRow(state?.releasePacing, state?.world);
 }
 
 function compactInterimPanels(active) {
@@ -4311,18 +3399,7 @@ function captureTraceProvenance(metadata) {
   // drift is detectable from the trace alone (the terra flag-forwarding
   // incident was only caught by cross-checking run_start metadata by hand).
   // Failure-tolerant: an unreadable git state must never block the CLI.
-  const provenance = { schema: 'machinespirits.tutor-stub.run-provenance.v1', configSha256: null, git: null };
-  try {
-    provenance.configSha256 = hashCanonicalJson(metadata ?? null);
-  } catch (error) {
-    provenance.configHashError = String(error?.message || error);
-  }
-  try {
-    provenance.git = captureGitProvenanceSummary({ repoRoot: ROOT });
-  } catch (error) {
-    provenance.gitError = String(error?.message || error);
-  }
-  return provenance;
+  return captureTutorStubRunProvenance(metadata, { hashCanonicalJson, captureGitProvenanceSummary, repoRoot: ROOT });
 }
 
 function createTraceState({ enabled, traceDir, metadata }) {
@@ -4432,327 +3509,17 @@ function reserveProgram2ProviderBudget({ maxTokens, trace = null, role = 'unknow
   }
 }
 
-function stateRunDebugId(state) {
-  return state?.debugRunId || state?.trace?.runId || 'no-trace';
-}
-
-function turnDebugId(state, turn) {
-  return formatTurnDebugId(stateRunDebugId(state), turn);
-}
-
-function printDebugIdLine(state, id, label = 'turn id') {
-  if (!id) return null;
-  if (!state.printedDebugIds) state.printedDebugIds = new Set();
-  if (state.printedDebugIds.has(id)) return id;
-  state.printedDebugIds.add(id);
-  console.log(`${C.cyan}${label} >${C.reset} ${id}`);
-  return id;
-}
-
-function automaticTechnicalDetailsEnabled(state) {
-  return Boolean(state?.explanatoryDebug?.enabled && state.explanatoryDebug.format === 'technical');
-}
-
-function printTurnDebugLine(state, turn) {
-  if (!automaticTechnicalDetailsEnabled(state)) return null;
-  return printDebugIdLine(state, turnDebugId(state, turn), 'turn id');
-}
-
-function printOpeningDebugLine(state) {
-  if (!automaticTechnicalDetailsEnabled(state)) return null;
-  return printDebugIdLine(state, openingDebugId(stateRunDebugId(state)), 'turn id');
-}
-
 function printAutomaticTechnicalDetails(state, render) {
-  if (!automaticTechnicalDetailsEnabled(state)) return false;
-  printWithConcurrentTerminal(state, render);
-  return true;
-}
-
-function printCurrentDebugId(state, { duringTurn = false } = {}) {
-  const last = state?.turns?.at(-1) || null;
-  const completedId = last?.turnId || (state?.history?.length ? openingDebugId(stateRunDebugId(state)) : null);
-  const activeId = duringTurn ? turnDebugId(state, (last?.turn || 0) + 1) : null;
-  const runId = stateRunDebugId(state);
-  const selectedId = activeId || completedId || runId;
-  const tracePath = state?.trace?.filePath || null;
-  const clipboardText = formatTutorStubDebugClipboardText({
-    runId,
-    selectedId,
-    completedId,
-    activeId,
-    tracePath,
-  });
-  const clipboard = copyTutorStubTextToClipboard(clipboardText);
-  console.log(`${C.cyan}debug id >${C.reset} ${selectedId}`);
-  console.log(`${C.dim}  run id: ${runId}${C.reset}`);
-  if (last) console.log(`${C.dim}  last completed turn: ${last.turnId || turnDebugId(state, last.turn)}${C.reset}`);
-  if (activeId) console.log(`${C.dim}  in-progress turn: ${activeId}${C.reset}`);
-  console.log(
-    `${C.dim}  trace: ${tracePath || 'disabled for this run; rerun without --no-trace for a local JSONL trace'}${C.reset}`,
-  );
-  console.log(
-    clipboard.copied
-      ? `${C.green}  copied this diagnostic block to the clipboard${C.reset}\n`
-      : `${C.dim}  clipboard unavailable; select this block to copy it into Codex${C.reset}\n`,
-  );
-  return { runId, completedId, activeId, tracePath, clipboard };
-}
-
-function redactTraceSecrets(value, ancestors = new WeakSet()) {
-  if (value === null || value === undefined) return value;
-  if (typeof value === 'string') {
-    return /^sk-[A-Za-z0-9_-]{12,}/u.test(value) ? '[redacted]' : value;
-  }
-  if (typeof value !== 'object') return value;
-  if (ancestors.has(value)) return '[circular]';
-  ancestors.add(value);
-  try {
-    if (Array.isArray(value)) return value.map((item) => redactTraceSecrets(item, ancestors));
-    const redacted = {};
-    for (const [key, nested] of Object.entries(value)) {
-      const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/gu, '');
-      if (
-        ['apikey', 'authorization', 'bearer', 'secret', 'password', 'accesstoken', 'refreshtoken'].includes(
-          normalizedKey,
-        )
-      ) {
-        redacted[key] = '[redacted]';
-      } else {
-        redacted[key] = redactTraceSecrets(nested, ancestors);
-      }
-    }
-    return redacted;
-  } finally {
-    ancestors.delete(value);
-  }
+  return printTutorStubAutomaticTechnicalDetails(state, render, { print: printWithConcurrentTerminal });
 }
 
 function traceDisplayPath(trace) {
-  if (!trace?.enabled) return null;
-  return path.relative(ROOT, trace.filePath);
+  return tutorStubTraceDisplayPath(trace, { relativePath: path.relative, repoRoot: ROOT });
 }
 
 function jsonClone(value) {
   if (value === undefined) return undefined;
   return JSON.parse(JSON.stringify(value));
-}
-
-function abortTutorStubTurnAttempt(message = 'learner turn attempt was superseded') {
-  const error = new Error(message);
-  error.name = 'AbortError';
-  error.code = 'TUTOR_STUB_TURN_SUPERSEDED';
-  return error;
-}
-
-function assertTutorStubTurnAttemptCurrent({ signal = null, isCurrent = null } = {}) {
-  if (signal?.aborted || (typeof isCurrent === 'function' && !isCurrent())) {
-    throw abortTutorStubTurnAttempt();
-  }
-}
-
-function restoreRegisterStateFromTurns(state, turns) {
-  if (!state.register?.enabled) return { restored: 0 };
-  const byTurn = new Map();
-  for (const turn of turns) {
-    if (!turn?.registerSelection) continue;
-    const selection = jsonClone(turn.registerSelection);
-    const key = Number(selection.turn || turn.turn);
-    if (!Number.isFinite(key)) continue;
-    byTurn.set(key, selection);
-  }
-  for (const turn of turns) {
-    const efficacy = turn?.previousRegisterEfficacy;
-    const key = Number(efficacy?.registerTurn);
-    if (!Number.isFinite(key) || !byTurn.has(key)) continue;
-    const selection = byTurn.get(key);
-    if (!selection.efficacy) selection.efficacy = jsonClone(efficacy);
-  }
-  state.register.history = [...byTurn.values()].sort((a, b) => Number(a.turn || 0) - Number(b.turn || 0));
-  state.register.current = state.register.history[state.register.history.length - 1] || null;
-  return { restored: state.register.history.length };
-}
-
-function restoreComprehensionState(state, turns, events = []) {
-  const eventSnapshot = [...events]
-    .reverse()
-    .find(
-      (event) =>
-        event?.comprehensionState || event?.state?.schema === 'machinespirits.tutor-stub.comprehension-side-state.v1',
-    );
-  const turnSnapshot = [...turns]
-    .reverse()
-    .map((turn) => turn?.comprehension?.afterTutor || turn?.comprehension?.state || null)
-    .find(Boolean);
-  const snapshot = eventSnapshot?.comprehensionState || eventSnapshot?.state || turnSnapshot || null;
-  state.comprehension = createTutorStubComprehensionState(snapshot);
-  return {
-    restored: Boolean(snapshot),
-    terms: state.comprehension.terms.length,
-  };
-}
-
-function restoreDirectorGuidanceState(state, events = []) {
-  const lastClear = events.reduce(
-    (index, event, candidate) => (event?.type === 'history_clear' ? candidate : index),
-    -1,
-  );
-  const snapshot = [...events.slice(lastClear + 1)]
-    .reverse()
-    .map((event) => event?.directorGuidance || null)
-    .find(Boolean);
-  state.directorGuidance = createTutorStubDirectorGuidanceState(snapshot);
-  return {
-    restored: Boolean(snapshot),
-    revision: state.directorGuidance.revision,
-    active: Boolean(state.directorGuidance.active),
-  };
-}
-
-function typedActionDecisionFromTurn(turn) {
-  const candidates = [
-    turn?.typedActionDecision,
-    turn?.typed_action_decision,
-    turn?.registerSelection?.typed_action_decision,
-  ];
-  return candidates.find((candidate) => candidate && typeof candidate === 'object' && candidate.contract_id) || null;
-}
-
-function restoreTypedActionState(state, turns, events = []) {
-  if (!state.typedActions?.enabled) {
-    return { enabled: false, restored: false, ledgerRecords: 0, pendingContractId: null, phase: null };
-  }
-  const lastClear = events.reduce(
-    (index, event, candidate) => (event?.type === 'history_clear' ? candidate : index),
-    -1,
-  );
-  const activeEvents = events.slice(lastClear + 1);
-  const records = new Map();
-  const order = [];
-  const decisions = new Map();
-  let lifecycle = null;
-  const rememberRecord = (record) => {
-    const contractId = record?.contract_id;
-    if (!contractId) return;
-    if (records.get(contractId)?.status === 'closed' && record.status !== 'closed') return;
-    if (!records.has(contractId)) order.push(contractId);
-    records.set(contractId, jsonClone(record));
-  };
-  const rememberDecision = (decision, pendingIntervention = null) => {
-    const contractId = decision?.contract_id;
-    if (!contractId || typeof decision !== 'object') return;
-    decisions.set(contractId, jsonClone(decision));
-    if (pendingIntervention?.contract_id === contractId) {
-      rememberRecord(pendingIntervention);
-      return;
-    }
-    if (!records.has(contractId) && decision.adaptation_contract?.contract_id === contractId) {
-      rememberRecord(createPendingIntervention(decision.adaptation_contract));
-    }
-  };
-
-  for (const event of activeEvents) {
-    if (event?.type === 'tutor_typed_action_decision') {
-      rememberDecision(event.decision, event.pendingIntervention);
-    } else if (event?.type === 'tutor_typed_action_outcome_closed') {
-      rememberRecord(event.outcome?.closed_record);
-    } else if (event?.type === 'tutor_scaffold_lifecycle_transition' && event.lifecycle) {
-      lifecycle = jsonClone(event.lifecycle);
-    }
-  }
-  for (const turn of turns) {
-    const decision = typedActionDecisionFromTurn(turn);
-    if (decision) rememberDecision(decision);
-    const closedRecord =
-      turn?.typedActionOutcomeAfterNextLearner?.closed_record || turn?.typedActionPriorOutcome?.closed_record || null;
-    if (closedRecord) rememberRecord(closedRecord);
-  }
-
-  const ledger = order.map((contractId) => records.get(contractId)).filter(Boolean);
-  const pending = ledger.filter((record) => record.status === 'pending');
-  if (pending.length > 1) {
-    throw new Error(
-      `resume typed-action trace has multiple pending interventions: ${pending.map((record) => record.contract_id).join(', ')}`,
-    );
-  }
-  const pendingContractId = pending[0]?.contract_id || null;
-  const currentDecision = pendingContractId ? decisions.get(pendingContractId) || null : null;
-  if (pendingContractId && !currentDecision) {
-    throw new Error(`resume typed-action trace is missing decision provenance for ${pendingContractId}`);
-  }
-
-  lifecycle =
-    lifecycle ||
-    [...turns]
-      .reverse()
-      .map((turn) => turn?.scaffoldLifecycle || null)
-      .find(Boolean) ||
-    createScaffoldLifecycle();
-  if (pendingContractId && !lifecycle.pending_contract_id && currentDecision) {
-    lifecycle = advanceScaffoldLifecycle(createScaffoldLifecycle(), {
-      kind: 'typed_action_decision',
-      turn: currentDecision.chosen_action?.turn || currentDecision.adaptation_contract?.turn_index || null,
-      decision: currentDecision,
-    }).lifecycle;
-  }
-  validateScaffoldLifecycle(lifecycle);
-  if (pendingContractId && lifecycle.pending_contract_id !== pendingContractId) {
-    throw new Error(
-      `resume typed-action lifecycle pending contract ${lifecycle.pending_contract_id || 'none'} does not match ledger ${pendingContractId}`,
-    );
-  }
-  if (!pendingContractId && lifecycle.pending_contract_id) {
-    throw new Error(
-      `resume typed-action lifecycle has orphaned pending contract ${lifecycle.pending_contract_id} without a ledger record`,
-    );
-  }
-  state.typedActions.ledger = ledger;
-  state.typedActions.currentDecision = currentDecision;
-  state.typedActions.scaffoldLifecycle = lifecycle;
-  return {
-    enabled: true,
-    restored: Boolean(ledger.length || currentDecision || lifecycle.transition_count),
-    ledgerRecords: ledger.length,
-    closedRecords: ledger.filter((record) => record.status === 'closed').length,
-    pendingContractId,
-    currentActionType: currentDecision?.chosen_action?.action_type || null,
-    phase: lifecycle.phase,
-    lifecycleTransitions: lifecycle.transition_count,
-  };
-}
-
-function replayLearnerDagFromTurns(state, turns) {
-  if (!state.learnerDag?.enabled || !state.world) return { replayed: 0, skipped: 0 };
-  let replayed = 0;
-  let skipped = 0;
-  for (const turn of turns) {
-    const accepted = turn?.tutorLearnerDagUpdate?.accepted;
-    if (accepted) {
-      const result = applyLearnerRecordUpdate({
-        update: {
-          adopt: accepted.adopt || [],
-          retract: accepted.retract || [],
-          derive: accepted.derive || [],
-          hypothesis: accepted.hypothesis || null,
-          assert_answer: accepted.assertAnswer || null,
-          human_discourse: accepted.humanDiscourse || null,
-        },
-        state,
-        tutorTurn: Number(turn.turn) || replayed + 1,
-        learnerText: turn.learner || '',
-        dropoutReplay: turn?.dagFactDropout || turn?.tutorLearnerDagUpdate?.dagFactDropout || { legacyNoDropout: true },
-        ...learnerPublicEvidenceState(state, Number(turn.turn) || replayed + 1),
-      });
-      state.learnerDag.lastModel = result.model;
-      replayed += 1;
-      continue;
-    }
-    if (turn?.tutorLearnerDagModel) {
-      state.learnerDag.lastModel = jsonClone(turn.tutorLearnerDagModel);
-      skipped += 1;
-    }
-  }
-  return { replayed, skipped };
 }
 
 function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening = false }) {
@@ -4799,7 +3566,10 @@ function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening 
   const register = restoreRegisterStateFromTurns(state, turns);
   const comprehension = restoreComprehensionState(state, turns, resume.events || []);
   const directorGuidance = restoreDirectorGuidanceState(state, resume.events || []);
-  const learnerDag = replayLearnerDagFromTurns(state, turns);
+  const learnerDag = replayTutorStubLearnerDagFromTurns(state, turns, {
+    applyLearnerRecordUpdate,
+    learnerPublicEvidenceState,
+  });
   const typedActions = restoreTypedActionState(state, turns, resume.events || []);
   const storedClosure = turns.at(-1)?.dialogueClosure?.lifecycle || null;
   if (storedClosure && state.dialogueClosure?.enabled) {
@@ -4853,58 +3623,24 @@ function restoreDialogueFromTrace(state, resume, { currentWorld, restoreOpening 
   };
 }
 
-function providerSupportsStreaming(resolved) {
-  return Boolean(resolved?.provider && !isCliProvider(resolved.provider));
-}
-
-function providerSupportsEventStreaming(resolved) {
-  return resolved?.provider === 'codex';
-}
-
 function streamLabel(role) {
-  if (role === 'tutor_stub_tutor') return `${C.brightMagenta}${C.bold}tutor >${C.reset} `;
-  if (role === 'tutor_stub_learner_analysis') return `${C.cyan}learner analysis stream >${C.reset} `;
-  if (role === 'tutor_stub_learner_record') return `${C.cyan}learner DAG stream >${C.reset} `;
-  if (role === 'tutor_stub_learner_classifier') return `${C.cyan}learner classifier stream >${C.reset} `;
-  return `${C.cyan}${role} >${C.reset} `;
+  return renderTutorStubStreamLabel(role, C);
 }
 
 function createConsoleTokenSink(role, interim = null) {
-  let started = false;
-  let buffered = '';
-  const terminal = getInterimState(interim)?.concurrentTerminal || null;
-  return {
-    write(token) {
-      if (terminal?.enabled) {
-        buffered += token;
-        started = true;
-        return;
-      }
-      if (!started) {
-        stopInterimAnimation(interim);
-        clearStatusLine();
-        process.stdout.write(streamLabel(role));
-        started = true;
-      }
-      process.stdout.write(token);
-    },
-    finish() {
-      if (started && terminal?.enabled) {
-        stopInterimAnimation(interim);
-        terminal.print(() => process.stdout.write(`${streamLabel(role)}${buffered}\n`));
-        return true;
-      }
-      if (started) process.stdout.write('\n');
-      return started;
-    },
-  };
+  return createTutorStubConsoleTokenSink({
+    role,
+    interim,
+    resolveInterimState: getInterimState,
+    stopInterimAnimation,
+    clearStatusLine,
+    write: (text) => process.stdout.write(text),
+    renderLabel: streamLabel,
+  });
 }
 
 function replayTextAsConsoleStream(role, text, stream = null) {
-  const sink = createConsoleTokenSink(role, stream?.interim || stream);
-  const tokens = String(text || '').match(/\S+\s*/g) || [];
-  for (const token of tokens) sink.write(token);
-  return sink.finish();
+  return replayTutorStubTextAsConsoleStream(role, text, stream, { createSink: createConsoleTokenSink });
 }
 
 function printTutorResponse(response, stream = null) {
@@ -4963,154 +3699,24 @@ function scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag }) {
   return branchTemplateForEvidence({}, world);
 }
 
-function compactReleaseRow(row = {}) {
-  return {
-    premise: row.premise || null,
-    turn: row.turn ?? null,
-    via: row.via || null,
-    surface: oneLine(row.surface || '', { max: 220 }) || null,
-  };
-}
-
-function compactFutureReleaseWindow(row = {}) {
-  return {
-    turn: row.turn ?? null,
-    via: row.via || null,
-  };
-}
-
 function buildScaffoldState({ state, tutorTurn, dagMode, tutorLearnerDag }) {
-  const enabled = dagMode !== 'strict_dag';
   const world = state?.world || null;
-  const dueNow = currentReleaseRows(state, tutorTurn);
-  const released = committedReleaseRows(state, tutorTurn);
-  const next = nextReleaseRow(state);
-  const branch = scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag });
-  const modeNote =
-    dagMode === 'defeasible_human_scaffold'
-      ? 'Learner may make compressed local leaps; tutor carries obvious public bridges internally and surfaces proof debt only when it matters.'
-      : dagMode === 'human_scaffold'
-        ? 'Tutor frames one local warrant and permits ordinary-language reasoning while strict proof remains the audit.'
-        : 'Strict audit mode; no scaffold adaptation.';
-  return {
-    schema: SCAFFOLD_STATE_SCHEMA,
-    mode: dagMode,
-    enabled,
-    source: enabled ? 'dramaturgy_release_projection' : 'strict_dag_disabled',
-    turn: tutorTurn,
+  return projectTutorStubScaffoldState({
+    dagMode,
+    tutorTurn,
     activeAct: activeDramaturgyAct(world, tutorTurn),
-    branch,
-    localQuestion: enabled ? branch.localQuestion : null,
-    warrantFrame: enabled ? branch.warrantFrame : null,
-    joinReminder: enabled ? branch.joinReminder : null,
-    releaseState: {
-      releasedCount: released.length,
-      dueNow: dueNow.map(compactReleaseRow),
-      latestReleased: released.at(-1) ? compactReleaseRow(released.at(-1)) : null,
-      // The public scaffold needs to know only that a future gap exists. Its
-      // premise id and surface remain owned by the deterministic planner.
-      nextRelease: next ? compactFutureReleaseWindow(next) : null,
-    },
-    returnTarget: enabled
-      ? {
-          kind: dueNow.length
-            ? 'current_release'
-            : branch.id === 'world_conclusion_join'
-              ? 'join_warrant'
-              : 'local_branch_warrant',
-          prompt: branch.localQuestion,
-          afterSideArc: `Return to: ${branch.localQuestion}`,
-        }
-      : null,
-    modeNote,
-    status: enabled ? 'projected_from_dramaturgy' : 'not_enabled_strict_dag',
-  };
-}
-
-function buildSideArcState({
-  dagMode,
-  classification = null,
-  learnerText = '',
-  scaffoldState = null,
-  generousInference = null,
-}) {
-  if (generousInference?.applied) {
-    return {
-      schema: SIDE_ARC_SCHEMA,
-      mode: dagMode,
-      detected: false,
-      type: null,
-      status: 'contextual_answer_resolved',
-      returnTarget: null,
-      learnerNeed: 'Acknowledge the resolved local inference and advance.',
-      reason: 'A high-confidence adjacent elliptical answer completed the current local move.',
-    };
-  }
-  const turn = classification?.turn || {};
-  const labels = [turn.request_type, turn.discourse_move, turn.epistemic_stance, turn.affect]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
-  const text = String(learnerText || '').toLowerCase();
-  let type = null;
-  let reason = 'no side arc detected';
-  if (/plain|simpl|clarif|what do you mean|old language|confus|translate|wording/u.test(`${labels} ${text}`)) {
-    type = 'clarification_or_plain_language';
-    reason = 'learner is asking for clarification, translation, or simpler wording';
-  } else if (/challenge|authority_refusal|low_trust|why|how do we know|prove|smuggling/u.test(`${labels} ${text}`)) {
-    type = 'warrant_challenge';
-    reason = 'learner is challenging the warrant or the tutor authority behind it';
-  } else if (/resistant|affective|frustrat|pressure|defensive|too much|lost/u.test(`${labels} ${text}`)) {
-    type = 'affective_repair';
-    reason = 'learner is signalling affective resistance, pressure, or loss of agency';
-  } else if (/off_task|unrelated/u.test(labels)) {
-    type = 'off_task_or_contextual';
-    reason = 'learner moved away from the proof path';
-  }
-  return {
-    schema: SIDE_ARC_SCHEMA,
-    mode: dagMode,
-    detected: Boolean(type),
-    type,
-    status: type ? 'active_return_required' : 'none',
-    returnTarget: type ? scaffoldState?.returnTarget || null : null,
-    learnerNeed: type ? turn.pedagogical_need || classification?.overall?.next_best_tutor_move || null : null,
-    reason,
-  };
-}
-
-function buildStrictDagAuditState(tutorLearnerDag) {
-  const model = tutorLearnerDag?.model || tutorLearnerDag || null;
-  const assessment = model?.assessment || {};
-  const metrics = model?.metrics || {};
-  return {
-    enabled: Boolean(model),
-    coverage: assessment.bestPathCoverage ?? null,
-    bottleneck: assessment.bottleneck || null,
-    finalSecretEntailed: assessment.finalSecretEntailed === true,
-    assertedSecret: assessment.assertedSecret === true,
-    assertedMirror: assessment.assertedMirror === true,
-    unsupportedAssertionCount: Number(assessment.unsupportedAssertionCount || 0),
-    missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0),
-    missingPremiseBuckets: assessment.missingPremiseBuckets || {},
-  };
-}
-
-function publicStocktakeRows(rows = [], source = 'learner_record') {
-  return (Array.isArray(rows) ? rows : [])
-    .map((row) => ({
-      surface: String(row?.surface || row?.text || '').trim(),
-      turn: Number.isFinite(Number(row?.turn)) ? Number(row.turn) : null,
-      source,
-    }))
-    .filter((row) => row.surface);
+    branch: scaffoldBranchForTurn({ state, world, tutorTurn, tutorLearnerDag }),
+    dueNow: currentReleaseRows(state, tutorTurn),
+    released: committedReleaseRows(state, tutorTurn),
+    nextRelease: nextReleaseRow(state),
+  });
 }
 
 function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = null, learnerText = '', world = null }) {
   const model = tutorLearnerDag?.model || tutorLearnerDag || null;
   const record = model?.learnerRecord || {};
-  const explicitWarrants = publicStocktakeRows(record.voicedDerived, 'voiced_derived_public_claim');
-  const explicitPublicPremises = publicStocktakeRows(record.grounded, 'grounded_public_record');
+  const explicitWarrants = projectTutorStubPublicStocktakeRows(record.voicedDerived, 'voiced_derived_public_claim');
+  const explicitPublicPremises = projectTutorStubPublicStocktakeRows(record.grounded, 'grounded_public_record');
   const extraction = normalizeHumanDiscourseExtraction(
     tutorLearnerDag?.accepted?.humanDiscourse || tutorLearnerDag?.extractor?.humanDiscourse,
   );
@@ -5137,14 +3743,6 @@ function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = n
       })),
     'strict_dag_rejection',
   );
-  const proofDebtCandidates = [
-    ...extraction.proofDebtCandidates,
-    ...extraction.provisionalClaims
-      .filter((row) => row.warrantNeeded)
-      .map((row) => ({ ...row, reason: row.reason || row.warrantNeeded })),
-    ...heuristicMissingWarrants,
-    ...rejectedDebt,
-  ];
   const strictProofAdoptions = [
     ...(tutorLearnerDag?.accepted?.adopt || []).map((premise) => ({
       surface: premise,
@@ -5155,57 +3753,16 @@ function buildWarrantPremiseAudit({ dagMode, tutorLearnerDag, classification = n
       source: 'strict_derived_public_claim',
     })),
   ].filter((row) => row.surface);
-  const proofStatus =
-    model?.assessment?.finalSecretEntailed && model?.assessment?.assertedSecret
-      ? 'strict_grounded_closure'
-      : extraction.proofStatus !== 'unclear'
-        ? extraction.proofStatus
-        : proofDebtCandidates.length
-          ? 'provisional_or_debt_open'
-          : 'strict_or_open';
-  return {
-    schema: WARRANT_PREMISE_AUDIT_SCHEMA,
-    mode: dagMode,
-    phase: HUMAN_DISCOURSE_PHASE,
-    proofStatus,
-    status:
-      dagMode === 'strict_dag'
-        ? 'strict_audit_only'
-        : extraction.illicitHiddenPremises.length || extraction.suppressedPremises.length
-          ? 'hidden_or_suppressed_premise_risk'
-          : proofDebtCandidates.length
-            ? 'proof_debt_open'
-            : 'current_turn_clean',
-    warrants: {
-      explicit: explicitWarrants,
-      implied: extraction.impliedWarrants,
-      missing: [...extraction.missingWarrants, ...heuristicMissingWarrants],
-    },
-    premises: {
-      explicitPublic: explicitPublicPremises,
-      impliedPublic: extraction.impliedPremises,
-      suppressedOrPrivate: extraction.suppressedPremises,
-      commonSenseBridges: extraction.commonSenseBridges,
-      illicitHidden: extraction.illicitHiddenPremises,
-    },
-    provisionalClaims: extraction.provisionalClaims,
-    proofDebtCandidates,
+  return projectTutorStubWarrantPremiseAudit({
+    dagMode,
+    model,
+    extraction,
+    explicitWarrants,
+    explicitPublicPremises,
+    heuristicMissingWarrants,
+    rejectedDebt,
     strictProofAdoptions,
-    extractionSideArc: extraction.sideArc,
-    counts: {
-      explicitWarrants: explicitWarrants.length,
-      impliedWarrants: extraction.impliedWarrants.length,
-      missingWarrants: extraction.missingWarrants.length + heuristicMissingWarrants.length,
-      explicitPublicPremises: explicitPublicPremises.length,
-      impliedPremises: extraction.impliedPremises.length,
-      suppressedPremises: extraction.suppressedPremises.length,
-      commonSenseBridges: extraction.commonSenseBridges.length,
-      illicitHiddenPremises: extraction.illicitHiddenPremises.length,
-      provisionalClaims: extraction.provisionalClaims.length,
-      proofDebtCandidates: proofDebtCandidates.length,
-      strictProofAdoptions: strictProofAdoptions.length,
-    },
-  };
+  });
 }
 
 function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classification = null, learnerText = '' }) {
@@ -7448,19 +6005,10 @@ function emptyTutorLearnerDagModel(state, tutorTurn, dagPreflight = null) {
     proxyDagMemory,
     assessment: learnerDag.assessment,
   });
-  model.memoryReliability = dagFactDropout
-    ? {
-        schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
-        configuredRate: dagFactDropout.configuredRate,
-        activeDroppedCount: dagFactDropout.activeDropped.length,
-        droppedThisTurn: dagFactDropout.droppedNow.length,
-        repairedThisTurn: dagFactDropout.repairedNow.length,
-        visibility: 'conduct',
-      }
-    : null;
+  model.memoryReliability = projectTutorStubDagMemoryReliability(dagFactDropout);
   const advance = buildTutorStubLearnerAdvance({ beforeModel: previousModel, afterModel: model });
   model.learnerAdvance = advance;
-  return { model, dagFactDropout, advance, preflight: dagPreflight };
+  return { model, assessment: learnerDag.assessment, dagFactDropout, advance, preflight: dagPreflight };
 }
 
 async function buildTutorLearnerDagForTurn(
@@ -7497,6 +6045,7 @@ async function buildTutorLearnerDagForTurn(
     const model = empty.model;
     const result = {
       model,
+      assessment: empty.assessment,
       preflight: dagPreflight,
       advance: empty.advance,
       dagFactDropout: empty.dagFactDropout,
@@ -7709,6 +6258,7 @@ async function analyzeLearnerTurnCombined(
     const model = empty.model;
     const tutorLearnerDag = {
       model,
+      assessment: empty.assessment,
       preflight: raw?.dagPreflight || null,
       advance: empty.advance,
       dagFactDropout: empty.dagFactDropout,
@@ -7934,91 +6484,19 @@ function classifierTutorContext(classification) {
   return projectTutorStubLearnerClassifierContext(classification);
 }
 
-function dagNodeFact(node) {
-  const content = node?.statement?.content || {};
-  if (content.rel === 'holds_L') return content.fact;
-  if (content.rel === 'grounded_L') return content.of;
-  return node?.fact || null;
-}
-
-function dagNodeLabel(node) {
-  if (!node) return 'unknown';
-  const fact = dagNodeFact(node);
-  const renderedFact = fact ? factText(fact) : node.id;
-  if (node.leaf) return `hold:${node.premiseId || renderedFact}`;
-  return `ground:${renderedFact}`;
-}
-
 function buildTutorDagSnapshot(state, tutorTurn) {
   if (!state.dag || !state.world || !state.tutorDag) return null;
-  const world = state.world;
-  const dag = state.tutorDag;
-  const nodesById = new Map((dag.nodes || []).map((node) => [node.id, node]));
-  const releaseByPremise = new Map(world.releaseSchedule.map((entry) => [entry.premise, entry]));
-  const releasedRows = committedReleaseRows(state, tutorTurn);
-  const releasedPremises = new Set(releasedRows.map((entry) => entry.premise));
-  const releasedTurnByPremise = new Map(releasedRows.map((entry) => [entry.premise, entry.turn]));
-  const leaves = (dag.leaves || []).map((premiseId) => {
-    const premise = world.premiseById.get(premiseId);
-    const release = releaseByPremise.get(premiseId);
-    return {
-      premise: premiseId,
-      fact: premise ? factText(premise.fact) : premiseId,
-      released: releasedPremises.has(premiseId),
-      scheduledTurn: release?.turn ?? null,
-      releasedTurn: releasedTurnByPremise.get(premiseId) ?? null,
-      via: release?.via || null,
-    };
+  return projectTutorStubDagSnapshot({
+    dag: state.tutorDag,
+    world: state.world,
+    tutorTurn,
+    releasedRows: committedReleaseRows(state, tutorTurn),
+    nextRelease: nextReleaseRow(state),
   });
-  const nextRelease = nextReleaseRow(state);
-  const nodes = (dag.nodes || []).map((node) => ({
-    id: node.id,
-    label: dagNodeLabel(node),
-    origin: node.origin,
-    rule: node.rule || null,
-    leaf: Boolean(node.leaf),
-    premise: node.premiseId || null,
-    fact: dagNodeFact(node) ? factText(dagNodeFact(node)) : null,
-  }));
-  const edges = (dag.edges || []).map((edge) => ({
-    from: edge.from,
-    to: edge.to,
-    fromLabel: dagNodeLabel(nodesById.get(edge.from)),
-    toLabel: dagNodeLabel(nodesById.get(edge.to)),
-    rule: edge.rule || null,
-  }));
-
-  return {
-    schema: dag.schema,
-    turn: tutorTurn,
-    derivable: Boolean(dag.derivable),
-    root: dag.root,
-    rootLabel: dagNodeLabel(nodesById.get(dag.root)),
-    leavesReleased: leaves.filter((leaf) => leaf.released).length,
-    leavesTotal: leaves.length,
-    nextRelease: nextRelease
-      ? {
-          premise: nextRelease.premise,
-          turn: nextRelease.turn,
-          via: nextRelease.via,
-        }
-      : null,
-    leaves,
-    nodes,
-    edges,
-  };
 }
 
 function printTutorDagSnapshot(snapshot) {
   for (const line of projectTutorStubDagSnapshotLines({ snapshot, colors: C })) console.log(line);
-}
-
-function oneLine(value, { max = 220 } = {}) {
-  const text = String(value || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  if (text.length <= max) return text;
-  return `${text.slice(0, Math.max(0, max - 3))}...`;
 }
 
 function printTutorStubFeatureMap(state = null) {
@@ -8472,2228 +6950,103 @@ function tutorCoachGuidanceContext(state, { tutorTurn = null } = {}) {
   ].join('\n');
 }
 
-async function callTutor({
-  learnerText,
-  history,
-  state = null,
-  systemPrompt,
-  resolved,
-  temperature,
-  maxTokens,
-  historyTurns,
-  world,
-  dag,
-  classification,
-  tutorLearnerDagModel,
-  registerSelection,
-  humanDiscourseFrame = null,
-  dialogueClosureFrame = null,
-  trace = null,
-  stream = null,
-  cliEffort = null,
-  roleBase = 'tutor_stub_tutor',
-  learnerMessages = null,
-  tutorFeedback = null,
-  feedbackAdaptationPlan = null,
-  deferStreamOutput = false,
-  passthrough = false,
-  signal = null,
-}) {
-  const messageContext = tutorMessageContext(state, history);
-  const context = messageContext.messages;
-  const recentTutorTexts = context.filter((message) => message.role === 'assistant').map((message) => message.content);
-  const tutorTurn = Math.floor(history.length / 2) + 1;
-  // Freeze the speaking boundary once for the whole call. Release pacing is
-  // transactional and can be rolled back or committed after generation; every
-  // candidate in this call must nevertheless be judged against exactly the
-  // evidence that appeared in the original speaking prompt.
-  const speakerPublicPremiseIds = new Set(
-    passthrough
-      ? []
-      : snapshotTutorStubPublicPremiseIds({
-          committedEvidence: committedReleaseRows(state, tutorTurn),
-          dueEvidence: currentReleaseRows(state, tutorTurn),
-        }),
-  );
-  const tutorMemory = passthrough
-    ? null
-    : [
-        '[Tutor context continuity]',
-        `All ${messageContext.replayedMessageCount} previous public user/assistant messages are replayed in their original order for this model call.`,
-        '[End tutor context continuity]',
-      ].join('\n');
-  const advisory = passthrough ? null : classifierTutorContext(classification);
-  const learnerDagAdvisory = passthrough
-    ? null
-    : tutorLearnerDagModelContext(tutorLearnerDagModel, {
-        releasedEvidence: dag && world ? committedReleaseRows(state, tutorTurn) : [],
-      });
-  const instructionalMetaRepair = Boolean(
-    !passthrough && humanDiscourseFrame?.discoursePlane?.plane === 'instructional_meta',
-  );
-  const dramaticReleaseFrame = passthrough
-    ? { active: false, entries: [] }
-    : buildTutorStubDramaticReleaseFrame({
-        dueEvidence: instructionalMetaRepair ? [] : currentReleaseRows(state, tutorTurn),
-        world: state.world,
-      });
-  const responseConfiguration = registerSelection?.response_configuration || registerSelection || null;
-  const committedPublicEvidence = passthrough ? [] : committedReleaseRows(state, tutorTurn);
-  const duePublicEvidence = passthrough || instructionalMetaRepair ? [] : currentReleaseRows(state, tutorTurn);
-  const publicCounterpressure = passthrough
-    ? null
-    : resolveTutorStubPublicCounterpressure({
-        world,
-        publicEvidence: committedPublicEvidence,
-        dueEvidence: duePublicEvidence,
-      });
-  const performanceObligationContract = passthrough
-    ? null
-    : compileTutorStubPerformanceObligationContract({
-        responseConfiguration,
-        publicWorld: {
-          visibility: 'public',
-          title: world?.title,
-          setting: world?.setting,
-          question: world?.question || world?.publicQuestion,
-          summary: world?.openingFrame?.situation || world?.openingSituation,
-          temporal_frame: world?.presentation?.temporal_frame,
-          narrative_diction: world?.presentation?.narrative_diction,
-          ledger_term: world?.presentation?.ledger_term,
-          public_objects: [world?.presentation?.ledger_term].filter(Boolean),
-          audience_context: world?.audience?.context || null,
-        },
-        publicTurn: {
-          visibility: 'public',
-          learner_move: learnerText,
-          pressure_target: publicCounterpressure?.pressureTarget || null,
-          contrary_evidence: publicCounterpressure ? [publicCounterpressure.contraryEvidence] : [],
-          public_evidence: committedPublicEvidence,
-          due_evidence: duePublicEvidence,
-        },
-      });
-  const speakingResponseConfiguration =
-    performanceObligationContract?.tactic_applicability?.applicable === false
-      ? {
-          ...structuredClone(responseConfiguration || {}),
-          actorial_performance: structuredClone(
-            performanceObligationContract.selection?.actorial_performance ||
-              responseConfiguration?.actorial_performance ||
-              {},
-          ),
-          speaking_transition: structuredClone(performanceObligationContract.selection?.speaking_transition || null),
-        }
-      : responseConfiguration;
-  const firstDraftHumanDiscourseAdvisory = passthrough
-    ? null
-    : humanDiscourseTutorContext(humanDiscourseFrame, {
-        includeQuestionSupport: false,
-        includeDefaultResponseShape: false,
-      });
-  const instructionalMetaRestatementAdvisory = instructionalMetaRepair
-    ? [
-        '[Tutor-only instructional repair target]',
-        recentTutorTexts.length
-          ? 'Restatement target: the immediately preceding public tutor message already present in replayed dialogue. Restate its meaning without copying its difficult wording.'
-          : 'No preceding public tutor message is replayed. Explain the public task in plain words without repeating the inquiry question verbatim.',
-        'Do not quote the public inquiry question and do not output a question mark. This turn repairs wording only.',
-        '[End tutor-only instructional repair target]',
-      ].join('\n')
-    : null;
-  const responseCompositionFrame = passthrough
-    ? { active: false }
-    : buildTutorStubResponseCompositionFrame({
-        learnerText,
-        classification,
-        tutorLearnerDag: tutorLearnerDagModel,
-        registerSelection,
-        dramaticReleaseFrame,
-        dialogueClosureFrame,
-        conversationalCompletion: humanDiscourseFrame?.conversationalCompletion || null,
-        publicFocusMapping: humanDiscourseFrame?.scaffoldState?.branch?.publicRelationMap || null,
-        recentTutorTexts,
-        discoursePlane: humanDiscourseFrame?.discoursePlane || null,
-      });
-  const firstDraftContract = passthrough
-    ? null
-    : buildTutorStubFirstDraftContract({
-        learnerText,
-        responseConfiguration: speakingResponseConfiguration,
-        responseCompositionFrame,
-        dramaticReleaseFrame,
-        committedPublicEvidence,
-        questionSupport: humanDiscourseFrame?.questionSupport || null,
-        dialogueClosureFrame,
-        performanceObligationContract,
-        sourceAccessibilityPolicy: speakingResponseConfiguration?.source_accessibility_policy || 'direct_only',
-        sourceAccessibilityOwner: 'post_source_sentence',
-      });
-  const firstDraftContractAdvisory = passthrough ? null : tutorStubFirstDraftContractPrompt(firstDraftContract);
-  const comprehensionAdvisory = passthrough
-    ? null
-    : tutorStubComprehensionPrompt(state?.comprehension, { turn: tutorTurn });
-  const directorGuidanceAdvisory = passthrough
-    ? null
-    : tutorStubDirectorGuidancePrompt(state?.directorGuidance, { tutorTurn });
-  const coachAdvisory = passthrough ? null : tutorCoachGuidanceContext(state, { tutorTurn });
-  const pointOfActionAdvisory = passthrough ? null : tutorStubPointOfActionPrompt(state?.pointOfAction?.current);
-  const tuningAdvisory = passthrough ? null : tutorStubTuningTurnAdvisory(state?.tuning);
-  const tutorFeedbackAdvisory = passthrough
-    ? null
-    : tutorStubTurnFeedbackPrompt(tutorFeedback, { adaptationPlan: feedbackAdaptationPlan });
-  // The original speaking attempt receives one compiled performance contract.
-  // Keep the detailed configuration/composition/release surfaces for audited
-  // recovery, where a failed axis must be named precisely, instead of making
-  // the first draft reconcile the same requirements several times.
-  const effectiveSystemPrompt = systemPrompt;
-  const learnerMessageCount = Array.isArray(learnerMessages) ? learnerMessages.length : 1;
-  const learnerPrompt = passthrough
-    ? learnerText
-    : learnerMessageCount > 1
-      ? `Learner says in ${learnerMessageCount} consecutive messages before your reply (treat them as one compound turn):\n${learnerText}`
-      : `Learner says:\n${learnerText}`;
-  // Only the six measured blocks are gated. The advisories below them —
-  // comprehension, director, coach, point-of-action, tuning, feedback — have
-  // never been through the A/B bench, so there is no reading to cut them on.
-  const withSpeakerBlock = (id, text) => (SPEAKER_ADVISORY_BLOCKS.has(id) ? text : null);
-  const speakerAdvisoryParts = [
-    withSpeakerBlock('context_continuity', tutorMemory),
-    withSpeakerBlock(
-      'evidence_window',
-      dag && world && !instructionalMetaRepair ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-    ),
-    withSpeakerBlock('learner_classifier', advisory),
-    withSpeakerBlock('learner_dag', learnerDagAdvisory),
-    withSpeakerBlock('human_scaffold', firstDraftHumanDiscourseAdvisory),
-    instructionalMetaRestatementAdvisory,
-    comprehensionAdvisory,
-    directorGuidanceAdvisory,
-    coachAdvisory,
-    pointOfActionAdvisory,
-    tuningAdvisory,
-    tutorFeedbackAdvisory,
-    // Keep the executable contract nearest the learner line so later analysis
-    // advisories cannot bury the actual speaking task.
-    withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
-  ]
-    .filter(Boolean)
-    .map((text) => sanitizeTutorStubSpeakerAdvisory({ world: dag ? world : null, tutorTurn, text }));
-  const promptParts = [...speakerAdvisoryParts, learnerPrompt].filter(Boolean);
-  const userPrompt = promptParts.join('\n\n');
-  const machineAdvisoryParts = [...speakerAdvisoryParts].filter(Boolean);
-  // Stamp the prompt shape on the turn. Without this a transcript cannot say
-  // which blocks it was written under, and runs from either side of a default
-  // change would pool silently.
-  if (!passthrough) {
-    appendTraceEvent(trace, {
-      type: 'tutor_speaker_advisory_blocks',
-      turn: tutorTurn,
-      enabled: SPEAKER_ADVISORY_BLOCK_IDS.filter((id) => SPEAKER_ADVISORY_BLOCKS.has(id)),
-      omitted: SPEAKER_ADVISORY_BLOCK_IDS.filter((id) => !SPEAKER_ADVISORY_BLOCKS.has(id)),
-    });
-  }
-  let effectiveSpeakerSystemPrompt = effectiveSystemPrompt;
-  let effectiveSpeakerUserPrompt = userPrompt;
-  let effectiveSpeakerInstructionTexts = [systemPrompt, ...machineAdvisoryParts].filter(Boolean);
-  let speakerPrivilegeAudit = passthrough
-    ? {
-        schema: 'machinespirits.tutor-stub.speaker-privilege-audit.v1',
-        ok: true,
-        bypassed: true,
-        reason: 'passthrough_uses_only_system_setup_public_history_and_latest_user_message',
-      }
-    : auditTutorStubSpeakerPrivilege({
-        world: dag ? world : null,
-        tutorTurn,
-        systemPrompt: effectiveSystemPrompt,
-        privateAdvisory: machineAdvisoryParts.join('\n\n'),
-      });
-  if (!speakerPrivilegeAudit.ok) {
-    const blockedAudit = speakerPrivilegeAudit;
-    appendTraceEvent(trace, {
-      type: 'tutor_speaker_privilege_audit',
-      turn: tutorTurn,
-      audit: blockedAudit,
-    });
-    const recovery = recoverTutorStubSpeakerPrompt({
-      world: dag ? world : null,
-      tutorTurn,
-      baseSystemPrompt: systemPrompt,
-      // Rebuilt from named parts, so it has to honour the same gate — otherwise
-      // a leak recovery would quietly restore a block the run had switched off.
-      continuityPrompt: withSpeakerBlock('context_continuity', tutorMemory),
-      publicEvidencePrompt: withSpeakerBlock(
-        'evidence_window',
-        dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-      ),
-      firstDraftContractPrompt: withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
-      learnerPrompt,
-      messageHistory: context,
-    });
-    appendTraceEvent(trace, {
-      type: 'tutor_speaker_privilege_recovery',
-      turn: tutorTurn,
-      method: recovery.method,
-      applied: recovery.applied,
-      originalIssues: blockedAudit.issues.map((issue) => ({ code: issue.code, source: issue.source })),
-      speakerPrivilegeAudit: recovery.speakerPrivilegeAudit,
-      promptAudit: recovery.promptAudit,
-    });
-    if (!recovery.applied) {
-      const error = new Error(
-        `Speaking-tutor prompt crossed the private-planner boundary and public-only recovery failed: ${blockedAudit.issues
-          .map((issue) => `${issue.code}:${issue.source}`)
-          .join(', ')}`,
-      );
-      error.code = 'TUTOR_SPEAKER_PRIVILEGE_RECOVERY_FAILED';
-      throw error;
-    }
-    effectiveSpeakerSystemPrompt = recovery.systemPrompt;
-    effectiveSpeakerUserPrompt = recovery.userPrompt;
-    effectiveSpeakerInstructionTexts = recovery.instructionTexts;
-    speakerPrivilegeAudit = {
-      ...recovery.speakerPrivilegeAudit,
-      recovery: {
-        applied: true,
-        method: recovery.method,
-        originalIssues: blockedAudit.issues.map((issue) => ({ code: issue.code, source: issue.source })),
-      },
-    };
-  }
-  const leakGuardEnabled = Boolean(!passthrough && dag && world);
-  const scaffoldGuardEnabled = Boolean(!passthrough && humanDiscourseFrame?.generousInference?.applied);
-  const questionSupportGuardEnabled = Boolean(!passthrough && humanDiscourseFrame?.questionSupport?.guardRequired);
-  const dramaticReleaseGuardEnabled = Boolean(!passthrough && dramaticReleaseFrame.active);
-  const actorialRealizationGuardEnabled = Boolean(
-    !passthrough && responseConfiguration?.actorial_part && responseConfiguration?.actorial_performance,
-  );
-  const responseCompositionGuardEnabled = Boolean(!passthrough && responseCompositionFrame.active);
-  const repetitionGuardEnabled = Boolean(!passthrough && recentTutorTexts.length > 0);
-  const closureGuardEnabled = Boolean(
-    dialogueClosureFrame?.enabled && (dialogueClosureFrame.mandatory || dialogueClosureFrame.available),
-  );
-  const responseGuardEnabled =
-    leakGuardEnabled ||
-    scaffoldGuardEnabled ||
-    questionSupportGuardEnabled ||
-    dramaticReleaseGuardEnabled ||
-    actorialRealizationGuardEnabled ||
-    responseCompositionGuardEnabled ||
-    repetitionGuardEnabled ||
-    closureGuardEnabled;
-  const guards = {
-    enabled: responseGuardEnabled,
-    leak: leakGuardEnabled,
-    humanScaffold: scaffoldGuardEnabled,
-    questionSupport: questionSupportGuardEnabled,
-    dramaticRelease: dramaticReleaseGuardEnabled,
-    actorialRealization: actorialRealizationGuardEnabled,
-    responseComposition: responseCompositionGuardEnabled,
-    repetition: repetitionGuardEnabled,
-    dialogueClosure: closureGuardEnabled,
-  };
-  const canStreamTutor = Boolean(stream?.enabled && providerSupportsStreaming(resolved));
-  const tutorStreamMode = canStreamTutor ? (responseGuardEnabled || deferStreamOutput ? 'buffered' : 'live') : 'none';
-  let tutorModelCallSequence = 0;
-
-  async function invokeTutorAttempt({
-    attemptUserPrompt,
-    role,
-    streamMode = 'none',
-    repairAttempt = 0,
-    systemPromptOverride = null,
-    instructionTextsOverride = null,
-    privilegeAdvisoryOverride = null,
-  }) {
-    const startedAt = new Date().toISOString();
-    const instructionTexts =
-      instructionTextsOverride || (passthrough ? [systemPrompt] : effectiveSpeakerInstructionTexts);
-    let attemptSystemPrompt = systemPromptOverride || effectiveSpeakerSystemPrompt;
-    let effectiveAttemptUserPrompt = attemptUserPrompt;
-    let effectiveInstructionTexts = instructionTexts;
-    let attemptSpeakerPrivilegeAudit = speakerPrivilegeAudit;
-    if (!passthrough && (systemPromptOverride || instructionTextsOverride)) {
-      attemptSpeakerPrivilegeAudit = auditTutorStubSpeakerPrivilege({
-        world: dag ? world : null,
-        tutorTurn,
-        systemPrompt: attemptSystemPrompt,
-        privateAdvisory:
-          privilegeAdvisoryOverride === null
-            ? effectiveInstructionTexts.slice(1).join('\n\n')
-            : privilegeAdvisoryOverride,
-      });
-      appendTraceEvent(trace, {
-        type: 'tutor_speaker_privilege_audit',
-        role,
-        turn: tutorTurn,
-        repairAttempt,
-        audit: attemptSpeakerPrivilegeAudit,
-      });
-      if (!attemptSpeakerPrivilegeAudit.ok) {
-        const error = new Error(
-          `Tutor recovery prompt crossed the private-planner boundary: ${attemptSpeakerPrivilegeAudit.issues
-            .map((issue) => `${issue.code}:${issue.source}`)
-            .join(', ')}`,
-        );
-        error.code = 'TUTOR_RECOVERY_SPEAKER_PRIVILEGE_FAILED';
-        error.speakerPrivilegeAudit = attemptSpeakerPrivilegeAudit;
-        throw error;
-      }
-    }
-    let promptAudit = passthrough
-      ? {
-          schema: 'machinespirits.tutor-stub.prompt-audit.v1',
-          surface: 'tutor_turn_passthrough',
-          ok: true,
-          bypassed: true,
-          reason: 'preserve_exact_system_history_and_user_payload',
-          violations: [],
-          duplicateInstructionLines: [],
-        }
-      : auditTutorStubPrompt({
-          surface: 'tutor_turn',
-          systemPrompt: attemptSystemPrompt,
-          userPrompt: effectiveAttemptUserPrompt,
-          messageHistory: context,
-          instructionTexts: effectiveInstructionTexts,
-        });
-    const duplicateOnlyFailure =
-      !passthrough &&
-      !promptAudit.ok &&
-      promptAudit.duplicateInstructionLines?.length > 0 &&
-      promptAudit.violations.every((violation) => violation.code === 'duplicate_instruction_lines');
-    if (duplicateOnlyFailure) {
-      const originalAudit = promptAudit;
-      const actualPromptRecovery = recoverTutorStubDuplicateInstructionLines({
-        texts: [attemptSystemPrompt, effectiveAttemptUserPrompt],
-        duplicateInstructionLines: originalAudit.duplicateInstructionLines,
-      });
-      const instructionRecovery = recoverTutorStubDuplicateInstructionLines({
-        texts: effectiveInstructionTexts,
-        duplicateInstructionLines: originalAudit.duplicateInstructionLines,
-      });
-      [attemptSystemPrompt, effectiveAttemptUserPrompt] = actualPromptRecovery.texts;
-      effectiveInstructionTexts = instructionRecovery.texts;
-      const recoveredAudit = auditTutorStubPrompt({
-        surface: 'tutor_turn',
-        systemPrompt: attemptSystemPrompt,
-        userPrompt: effectiveAttemptUserPrompt,
-        messageHistory: context,
-        instructionTexts: effectiveInstructionTexts,
-      });
-      const recovery = {
-        applied: actualPromptRecovery.applied && instructionRecovery.applied && recoveredAudit.ok,
-        method: 'deduplicate_exact_instruction_lines',
-        originalDuplicateInstructionLines: originalAudit.duplicateInstructionLines,
-        removedPromptLineCount: actualPromptRecovery.removedLines.length,
-        removedInstructionLineCount: instructionRecovery.removedLines.length,
-      };
-      promptAudit = { ...recoveredAudit, recovery };
-      appendTraceEvent(trace, {
-        type: 'prompt_audit_recovery',
-        role,
-        turn: tutorTurn,
-        repairAttempt,
-        recovery,
-        audit: promptAudit,
-      });
-    }
-    if (!promptAudit.ok) {
-      appendTraceEvent(trace, {
-        type: 'prompt_audit_failed',
-        role,
-        turn: tutorTurn,
-        repairAttempt,
-        audit: promptAudit,
-      });
-      const error = new Error(
-        `Tutor prompt audit failed: ${promptAudit.violations.map((violation) => violation.code).join(', ')}${
-          promptAudit.duplicateInstructionLines?.length
-            ? `; repeated instruction: ${promptAudit.duplicateInstructionLines[0].line}`
-            : ''
-        }`,
-      );
-      error.code = 'TUTOR_PROMPT_AUDIT_FAILED';
-      error.promptAudit = promptAudit;
-      throw error;
-    }
-    const request = {
-      systemPrompt: attemptSystemPrompt,
-      messages: [...context, { role: 'user', content: effectiveAttemptUserPrompt }],
-      config: {
-        temperature,
-        maxTokens,
-        historyTurns,
-        leakGuard: leakGuardEnabled,
-        scaffoldGuard: scaffoldGuardEnabled,
-        questionSupportGuard: questionSupportGuardEnabled,
-        actorialRealizationGuard: actorialRealizationGuardEnabled,
-        responseCompositionGuard: responseCompositionGuardEnabled,
-        repetitionGuard: repetitionGuardEnabled,
-        closureGuard: closureGuardEnabled,
-        repairAttempt,
-        messageHistoryMode: messageContext.historyMode,
-        availableMessageCount: messageContext.availableMessageCount,
-        replayedMessageCount: messageContext.replayedMessageCount,
-        replayedUserMessageCount: messageContext.userMessageCount,
-        replayedAssistantMessageCount: messageContext.assistantMessageCount,
-        contextActivatedBy: messageContext.activatedBy,
-        firstDraftContractSchema: firstDraftContract?.schema || null,
-        firstDraftCompatibilityDecisions: firstDraftContract?.compatibility?.decisions || [],
-        passthrough,
-        promptAudit,
-        speakerPrivilegeAudit: attemptSpeakerPrivilegeAudit,
-      },
-    };
-    if (cliEffort) request.config.cliEffort = cliEffort;
-    const useStreamingApi = streamMode === 'live' || streamMode === 'buffered';
-    reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });
-    reserveTutorStubMeteredModelCall({ trace, role, turn: tutorTurn });
-    let response;
-    if (isCliProvider(resolved.provider)) {
-      const result = await callAIWithCliBridge(
-        { provider: resolved.provider, model: resolved.model },
-        attemptSystemPrompt,
-        effectiveAttemptUserPrompt,
-        role,
-        { messageHistory: context, effort: cliEffort, signal },
-      );
-      response = {
-        text: result.text,
-        provider: result.provider,
-        model: result.model,
-        latencyMs: result.latencyMs,
-        usage: {
-          inputTokens: result.inputTokens || 0,
-          outputTokens: result.outputTokens || 0,
-          totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
-          cost: result.cost || 0,
-        },
-        effort: result.effort || result.reasoningEffort || null,
-        reasoningEffort: result.reasoningEffort || result.effort || null,
-        tokenUsageAvailable: result.tokenUsageAvailable,
-      };
-    } else if (useStreamingApi) {
-      const sink = streamMode === 'live' ? createConsoleTokenSink(role, stream?.interim) : null;
-      let final = null;
-      for await (const chunk of streamAI({
-        provider: resolved.provider,
-        model: resolved.model,
-        systemPrompt: attemptSystemPrompt,
-        messages: request.messages,
-        preset: 'socratic',
-        config: { temperature, maxTokens },
-      })) {
-        if (chunk.type === 'text_delta') {
-          if (sink) sink.write(chunk.content);
-        } else if (chunk.type === 'done') {
-          final = chunk;
-        }
-      }
-      const streamed = sink ? sink.finish() : false;
-      response = {
-        text: final?.content || '',
-        provider: final?.provider || resolved.provider,
-        model: final?.model || resolved.model,
-        latencyMs: final?.latencyMs || 0,
-        usage: final?.usage || null,
-        streamed,
-        generatedWithStreaming: true,
-        bufferedStream: streamMode === 'buffered',
-      };
-    } else {
-      const result = await callAI({
-        provider: resolved.provider,
-        model: resolved.model,
-        systemPrompt: attemptSystemPrompt,
-        messages: request.messages,
-        preset: 'socratic',
-        config: { temperature, maxTokens },
-      });
-      response = {
-        text: result.content,
-        provider: result.provider,
-        model: result.model,
-        latencyMs: result.latencyMs,
-        usage: result.usage,
-      };
-    }
-
-    response.guardCallId = `${tutorTurn}:${++tutorModelCallSequence}`;
-    response.guardRole = role;
-    response.firstDraftContract = firstDraftContract ? jsonClone(firstDraftContract) : null;
-    response.promptSnapshot = {
-      systemPrompt: attemptSystemPrompt,
-      userPrompt: effectiveAttemptUserPrompt,
-      messageHistory: context,
-      role,
-      repairAttempt,
-      config: request.config,
-      promptAudit,
-      speakerPrivilegeAudit: attemptSpeakerPrivilegeAudit,
-      firstDraftContract: response.firstDraftContract,
-    };
-    appendTraceEvent(trace, {
-      type: 'model_call',
-      role,
-      turn: tutorTurn,
-      startedAt,
-      provider: response.provider,
-      model: response.model,
-      request,
-      response: {
-        text: response.text,
-        latencyMs: response.latencyMs,
-        usage: response.usage,
-        tokenUsageAvailable: response.tokenUsageAvailable,
-        streamed: Boolean(response.streamed),
-        effort: response.effort || response.reasoningEffort || null,
-      },
-    });
-    return response;
-  }
-
-  function auditTutorDraft(response, { role, attempt, auditConfiguration = speakingResponseConfiguration }) {
-    let responseCompositionAudit = responseCompositionGuardEnabled
-      ? auditTutorStubResponseComposition({
-          text: response.text,
-          frame: responseCompositionFrame,
-          learnerText,
-          firstDraftContract,
-        })
-      : { ok: true, active: false, issues: [], segments: null };
-    const composedText = formatTutorStubResponseComposition(responseCompositionAudit);
-    if (responseCompositionAudit.ok && composedText) {
-      response.text = composedText;
-      responseCompositionAudit = auditTutorStubResponseComposition({
-        text: response.text,
-        frame: responseCompositionFrame,
-        learnerText,
-        firstDraftContract,
-      });
-    }
-    response.responseComposition = responseCompositionAudit.segments || null;
-    response.responseCompositionFrame = responseCompositionFrame;
-    response.responseCompositionAudit = responseCompositionAudit;
-    const liveTurnProgressionAudit =
-      firstDraftContract?.progression?.complete === true
-        ? auditTutorStubLiveTurnProgressionV1({
-            contract: firstDraftContract.progression,
-            text: response.text,
-            responseComposition: responseCompositionAudit,
-            authoredSourceTexts: (firstDraftContract.evidence?.sources || []).map((source) => source?.text),
-          })
-        : {
-            schema: 'machinespirits.tutor-stub.live-turn-progression-audit.v1',
-            active: false,
-            ok: true,
-            scope: 'whole_response_terminal_boundary',
-            slot_ownership_inferred: false,
-            issues: [],
-          };
-    const liveSourceActionAlignmentAudit = firstDraftContract
-      ? auditTutorStubLiveSourceActionAlignmentV1({
-          text: response.text,
-          firstDraftContract,
-        })
-      : {
-          schema: 'machinespirits.tutor-stub.live-source-action-alignment-audit.v1',
-          active: false,
-          ok: true,
-          scope: 'exact_source_occurrence_and_nearest_pre_source_host_boundary',
-          slot_ownership_inferred: false,
-          issues: [],
-        };
-    const leakAudit = leakGuardEnabled
-      ? auditTutorResponseLeak({
-          text: response.text,
-          world,
-          tutorTurn,
-          learnerText,
-          state,
-          publicPremiseIds: speakerPublicPremiseIds,
-        })
-      : { ok: true, leaks: [] };
-    const scaffoldAudit = scaffoldGuardEnabled
-      ? auditTutorStubGenerousInferenceResponse({
-          text: response.text,
-          resolution: humanDiscourseFrame.generousInference,
-        })
-      : { ok: true, issues: [], similarity: 0 };
-    const questionSupportAudit = questionSupportGuardEnabled
-      ? auditTutorStubQuestionSupportResponse({
-          text: response.text,
-          support: humanDiscourseFrame.questionSupport,
-        })
-      : { ok: true, issues: [] };
-    const dramaticReleaseAudit = dramaticReleaseGuardEnabled
-      ? auditTutorStubDramaticReleaseResponse({
-          text: response.text,
-          frame: dramaticReleaseFrame,
-          sourceAccessibilityAudit: liveSourceActionAlignmentAudit,
-        })
-      : { ok: true, active: false, issues: [] };
-    const releaseDeliveryAudit = auditTutorStubReleaseDelivery({
-      text: response.text,
-      world,
-      premiseIds: dramaticReleaseFrame.entries.map((entry) => entry.premise).filter(Boolean),
-    });
-    const liveConfigurationSurface = tutorStubLiveResponseConfigurationSurface({
-      text: response.text,
-      liveSourceActionAlignmentAudit,
-    });
-    const responseConfigurationAudit = actorialRealizationGuardEnabled
-      ? auditTutorStubResponseConfiguration({
-          text: liveConfigurationSurface.text,
-          configuration: auditConfiguration,
-          world,
-          composition: response.responseComposition,
-          performanceObligationContract,
-        })
-      : null;
-    if (responseConfigurationAudit) {
-      responseConfigurationAudit.live_source_axis_ownership = {
-        active: liveConfigurationSurface.active,
-        reason: liveConfigurationSurface.reason,
-        excluded_spans: liveConfigurationSurface.excluded_spans,
-      };
-    }
-    const actorialRealizationAudit = responseConfigurationAudit?.actorial_realization || {
-      ok: true,
-      issues: [],
-      active: false,
-    };
-    response.deliveryResponseConfiguration = jsonClone(auditConfiguration || null);
-    response.responseConfigurationTransition = jsonClone(
-      auditConfiguration?.recovery_transition || auditConfiguration?.speaking_transition || null,
-    );
-    const repetitionAudit = repetitionGuardEnabled
-      ? auditTutorStubRepetitionResponse({ text: response.text, recentTutorTexts })
-      : { ok: true, issues: [], maxSimilarity: 0 };
-    const closureAudit = closureGuardEnabled
-      ? auditTutorStubDialogueClosureResponse({ text: response.text, frame: dialogueClosureFrame })
-      : { ok: true, closesDialogue: false, invitesCheckIn: false, issues: [] };
-    if (leakGuardEnabled) {
-      appendTraceEvent(trace, {
-        type: 'tutor_response_audit',
-        role,
-        turn: tutorTurn,
-        attempt,
-        ok: leakAudit.ok,
-        leaks: leakAudit.leaks,
-        publicPremiseIds: [...speakerPublicPremiseIds],
-        duePremiseIds: dramaticReleaseFrame.entries.map((entry) => entry.premise).filter(Boolean),
-      });
-    }
-    if (scaffoldGuardEnabled) {
-      appendTraceEvent(trace, {
-        type: 'tutor_human_scaffold_audit',
-        role,
-        turn: tutorTurn,
-        attempt,
-        ok: scaffoldAudit.ok,
-        issues: scaffoldAudit.issues,
-        similarity: scaffoldAudit.similarity,
-        generousInference: humanDiscourseFrame.generousInference,
-      });
-    }
-    if (questionSupportGuardEnabled) {
-      appendTraceEvent(trace, {
-        type: 'tutor_question_support_audit',
-        role,
-        turn: tutorTurn,
-        attempt,
-        ok: questionSupportAudit.ok,
-        issues: questionSupportAudit.issues,
-        support: humanDiscourseFrame.questionSupport,
-      });
-    }
-    if (dramaticReleaseGuardEnabled) {
-      appendTraceEvent(trace, {
-        type: 'tutor_dramatic_release_audit',
-        role,
-        turn: tutorTurn,
-        attempt,
-        ok: dramaticReleaseAudit.ok,
-        issues: dramaticReleaseAudit.issues,
-        frame: dramaticReleaseFrame,
-      });
-    }
-    if (actorialRealizationGuardEnabled) {
-      appendTraceEvent(trace, {
-        type: 'tutor_actorial_realization_audit',
-        role,
-        turn: tutorTurn,
-        attempt,
-        ok: actorialRealizationAudit.ok,
-        issues: actorialRealizationAudit.issues,
-        selectedPart: auditConfiguration?.actorial_part,
-        selectedPartLabel: auditConfiguration?.actorial_part_label,
-        selectedPerformance: auditConfiguration?.actorial_performance,
-        originallySelectedPart: responseConfiguration?.actorial_part,
-        responseConfigurationTransition: response.responseConfigurationTransition,
-        responseConfigurationAudit,
-      });
-    }
-    if (responseCompositionGuardEnabled) {
-      appendTraceEvent(trace, {
-        type: 'tutor_response_composition_audit',
-        role,
-        turn: tutorTurn,
-        attempt,
-        ok: responseCompositionAudit.ok,
-        issues: responseCompositionAudit.issues,
-        frame: responseCompositionFrame,
-        segments: responseCompositionAudit.segments,
-      });
-    }
-    if (firstDraftContract) {
-      appendTraceEvent(trace, {
-        type: 'tutor_live_turn_progression_audit',
-        role,
-        turn: tutorTurn,
-        attempt,
-        ok: liveTurnProgressionAudit.ok,
-        active: liveTurnProgressionAudit.active,
-        scope: liveTurnProgressionAudit.scope,
-        slotOwnershipInferred: liveTurnProgressionAudit.slot_ownership_inferred,
-        issues: liveTurnProgressionAudit.issues,
-        audit: liveTurnProgressionAudit,
-      });
-      appendTraceEvent(trace, {
-        type: 'tutor_live_source_action_alignment_audit',
-        role,
-        turn: tutorTurn,
-        attempt,
-        ok: liveSourceActionAlignmentAudit.ok,
-        active: liveSourceActionAlignmentAudit.active,
-        scope: liveSourceActionAlignmentAudit.scope,
-        slotOwnershipInferred: liveSourceActionAlignmentAudit.slot_ownership_inferred,
-        issues: liveSourceActionAlignmentAudit.issues,
-        directAccessible: liveSourceActionAlignmentAudit.direct_accessible,
-        compensationRequired: liveSourceActionAlignmentAudit.compensation_required,
-        compensationContractReady: liveSourceActionAlignmentAudit.compensation_contract_ready,
-        compensationVisible: liveSourceActionAlignmentAudit.compensation_visible,
-        effectiveMode: liveSourceActionAlignmentAudit.effective_mode,
-        sourceAccessibility: liveSourceActionAlignmentAudit.source_accessibility,
-        audit: liveSourceActionAlignmentAudit,
-      });
-    }
-    if (repetitionGuardEnabled) {
-      appendTraceEvent(trace, {
-        type: 'tutor_repetition_audit',
-        role,
-        turn: tutorTurn,
-        attempt,
-        ok: repetitionAudit.ok,
-        issues: repetitionAudit.issues,
-        maxSimilarity: repetitionAudit.maxSimilarity,
-      });
-    }
-    if (closureGuardEnabled) {
-      appendTraceEvent(trace, {
-        type: 'tutor_dialogue_closure_audit',
-        role,
-        turn: tutorTurn,
-        attempt,
-        ok: closureAudit.ok,
-        closesDialogue: closureAudit.closesDialogue,
-        invitesCheckIn: closureAudit.invitesCheckIn,
-        issues: closureAudit.issues,
-        frame: dialogueClosureFrame,
-      });
-    }
-    return {
-      ok:
-        leakAudit.ok &&
-        scaffoldAudit.ok &&
-        questionSupportAudit.ok &&
-        dramaticReleaseAudit.ok &&
-        releaseDeliveryAudit.ok &&
-        actorialRealizationAudit.ok &&
-        responseCompositionAudit.ok &&
-        liveTurnProgressionAudit.ok &&
-        liveSourceActionAlignmentAudit.ok &&
-        repetitionAudit.ok &&
-        closureAudit.ok,
-      leakAudit,
-      scaffoldAudit,
-      questionSupportAudit,
-      dramaticReleaseAudit,
-      releaseDeliveryAudit,
-      actorialRealizationAudit,
-      responseConfigurationAudit,
-      responseCompositionAudit,
-      liveTurnProgressionAudit,
-      liveSourceActionAlignmentAudit,
-      repetitionAudit,
-      closureAudit,
-    };
-  }
-
-  function preservableTutorUptake(audits) {
-    if (
-      (audits?.liveTurnProgressionAudit?.issues || []).some((issue) => issue.type === 'learner_uptake_not_realized')
-    ) {
-      return '';
-    }
-    if (
-      (audits?.responseCompositionAudit?.issues || []).some((issue) =>
-        ['missing_learner_uptake', 'generic_learner_uptake', 'verbatim_learner_echo'].includes(issue.type),
-      )
-    ) {
-      return '';
-    }
-    const uptake = String(audits?.responseCompositionAudit?.segments?.uptake || '').trim();
-    if (!uptake) return '';
-    if (
-      /\?/u.test(uptake) ||
-      /^(?:what|which|who|whose|where|when|why|how|can|could|do|does|did|is|are|was|were|have|has|had|may|might|shall|should|will|would)\b/iu.test(
-        uptake,
-      )
-    ) {
-      return '';
-    }
-    if (/^(?:correct|exactly(?: so)?|fair|good|just so|right|yes)[.!]?$/iu.test(uptake)) return '';
-    // A safe opening is not worth preserving when it is the very repetition
-    // that caused this draft to be rejected. Let the deterministic uptake
-    // selector choose a fresh acknowledgement for the repair/fallback.
-    if (!auditTutorStubRepetitionResponse({ text: uptake, recentTutorTexts }).ok) return '';
-    if (dramaticReleaseFrame?.active) {
-      const duePremiseIds = dramaticReleaseFrame.entries.map((entry) => entry?.premise).filter(Boolean);
-      const uptakeDeliveryAudit = auditTutorStubReleaseDelivery({
-        text: uptake,
-        world,
-        premiseIds: duePremiseIds,
-      });
-      if (uptakeDeliveryAudit.deliveredPremises.length) return '';
-      const uptakeReleaseAudit = auditTutorStubDramaticReleaseResponse({ text: uptake, frame: dramaticReleaseFrame });
-      if (
-        uptakeReleaseAudit.entranceVisible ||
-        uptakeReleaseAudit.enactmentVisible ||
-        uptakeReleaseAudit.exhibitHandoffVisible
-      ) {
-        return '';
-      }
-    }
-    if (!leakGuardEnabled) return uptake;
-    const uptakeLeakAudit = auditTutorResponseLeak({
-      text: uptake,
-      world,
-      tutorTurn,
-      learnerText,
-      state,
-      publicPremiseIds: speakerPublicPremiseIds,
-    });
-    return uptakeLeakAudit.ok ? uptake : '';
-  }
-
-  function ensureFallbackComposition(text, uptake) {
-    const candidate = composeTutorStubFallbackWithUptake({ text, uptake });
-    const baseAudit = auditTutorStubResponseComposition({
-      text: candidate,
-      frame: responseCompositionFrame,
-      learnerText,
-      firstDraftContract,
-    });
-    return baseAudit.ok ? formatTutorStubResponseComposition(baseAudit) || candidate : candidate;
-  }
-
-  function withTutorDeliveryDecision(
-    audits,
-    { allowActorialAdvisory = false, advisoryReason = null, role, attempt, terminalFallback = false } = {},
-  ) {
-    const deliveryDecision = tutorStubGuardDeliveryDecision(tutorStubGuardIssueRows(audits), {
-      allowActorialAdvisory,
-      terminalFallback,
-    });
-    const result = {
-      ...audits,
-      deliveryOk: deliveryDecision.ok,
-      deliveryDecision,
-    };
-    if (deliveryDecision.ok && deliveryDecision.advisoryIssues.length) {
-      appendTraceEvent(trace, {
-        type: 'tutor_response_delivery_advisory',
-        role,
-        turn: tutorTurn,
-        attempt,
-        accepted: true,
-        advisoryIssues: deliveryDecision.advisoryIssues,
-        reason: advisoryReason || 'optional actorial realization did not outweigh the passing hard response checks',
-      });
-    }
-    return result;
-  }
-
-  function attachTutorDraftAudits(response, audits) {
-    response.leakAudit = audits.leakAudit;
-    response.scaffoldAudit = audits.scaffoldAudit;
-    response.questionSupportAudit = audits.questionSupportAudit;
-    response.dramaticReleaseAudit = audits.dramaticReleaseAudit;
-    response.releaseDeliveryAudit = audits.releaseDeliveryAudit;
-    response.actorialRealizationAudit = audits.actorialRealizationAudit;
-    response.liveTurnProgressionAudit = audits.liveTurnProgressionAudit;
-    response.liveSourceActionAlignmentAudit = audits.liveSourceActionAlignmentAudit;
-    response.repetitionAudit = audits.repetitionAudit;
-    response.closureAudit = audits.closureAudit;
-    response.deliveryDecision = audits.deliveryDecision || null;
-    return response;
-  }
-
-  function tutorResponseFromSimplifiedRecovery(recoveryResponse, text, candidateKind) {
-    return {
-      ...recoveryResponse,
-      text,
-      recoveryCandidateKind: candidateKind,
-      recoveryStrategy: {
-        schema: 'machinespirits.tutor-stub.guard-recovery.v1',
-        parseMode: 'single_plain_text',
-        parsed: Boolean(String(text || '').trim()),
-        error: String(text || '').trim() ? null : 'empty simplified recovery candidate',
-      },
-    };
-  }
-
-  if (firstDraftContract) {
-    appendTraceEvent(trace, {
-      type: 'tutor_first_draft_contract',
-      turn: tutorTurn,
-      contract: firstDraftContract,
-      publicTranscriptChanged: false,
-    });
-  }
-
-  // Program-2 Phase 5 committee first draft
-  // (PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md §2): at warrant_skip
-  // moments in the committee arm, the local mini writes the reply, the
-  // frontier composes the turn around the mini's question span verbatim, and
-  // the fail-closed battery decides which text becomes the first draft. The
-  // chosen draft then passes through the standard guard/repair pipeline
-  // below, identical to every other arm.
-  async function invokeCommitteeFirstDraft() {
-    const momentTurn = state.pointOfAction.current;
-    const activation = tutorStubPointOfActionTargetText('warrant_skip');
-    const miniUserPrompt = `${effectiveSpeakerUserPrompt}\n\n${activation}`;
-    const miniStartedAt = new Date().toISOString();
-    let miniText = '';
-    let miniLatencyMs = 0;
-    let miniError = null;
-    reserveTutorStubMeteredModelCall({ trace, role: `${roleBase}_committee_mini`, turn: tutorTurn });
-    try {
-      const mini = await committeeMiniGenerate({
-        url: state.committee.ollamaUrl,
-        model: state.committee.miniModel,
-        systemPrompt: effectiveSpeakerSystemPrompt,
-        messages: [...context, { role: 'user', content: miniUserPrompt }],
-        numCtx: state.committee.numCtx,
-        maxTokens,
-        timeoutMs: state.committee.timeoutMs,
-      });
-      miniText = String(mini.text || '').trim();
-      miniLatencyMs = mini.latencyMs;
-    } catch (err) {
-      miniError = String(err?.message || err).slice(0, 300);
-    }
-    appendTraceEvent(trace, {
-      type: 'model_call',
-      role: `${roleBase}_committee_mini`,
-      turn: tutorTurn,
-      startedAt: miniStartedAt,
-      provider: 'ollama',
-      model: state.committee.miniModel,
-      request: {
-        systemPrompt: effectiveSpeakerSystemPrompt,
-        messages: [...context, { role: 'user', content: miniUserPrompt }],
-        config: { temperature: 0, numCtx: state.committee.numCtx, maxTokens, think: false },
-      },
-      response: { text: miniText, latencyMs: miniLatencyMs, error: miniError },
-    });
-    const miniResponseEnvelope = (deliveredText = miniText) => ({
-      text: deliveredText,
-      provider: 'ollama',
-      model: state.committee.miniModel,
-      latencyMs: miniLatencyMs,
-      usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
-      tokenUsageAvailable: false,
-      guardCallId: `${tutorTurn}:${++tutorModelCallSequence}`,
-      guardRole: roleBase,
-      firstDraftContract: firstDraftContract ? jsonClone(firstDraftContract) : null,
-      promptSnapshot: {
-        systemPrompt: effectiveSpeakerSystemPrompt,
-        userPrompt: miniUserPrompt,
-        messageHistory: context,
-        role: `${roleBase}_committee_mini`,
-        repairAttempt: 0,
-        config: { temperature: 0, maxTokens, committee: true },
-        promptAudit: null,
-        speakerPrivilegeAudit: speakerPrivilegeAudit,
-      },
-    });
-    // Phase 5b fallback resolution
-    // (PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md §2): under
-    // policy v2 the fallback text must pass the same one-question + cue
-    // battery — greedy first, then up to two resamples at the frozen
-    // sampled temperature, then the cue-preserving trim. Policy v1 ships
-    // the greedy reply unchecked (the Phase 5 behavior).
-    async function resolveCommitteeFallbackEnvelope() {
-      const fallback = { policy: state.committee.fallbackPolicy || 'v1', resolution: 'v1_unchecked', resamples: 0 };
-      let deliveredText = miniText;
-      if (fallback.policy === 'v2') {
-        if (committeeFallbackBatteryPass(miniText)) {
-          fallback.resolution = 'selected_greedy';
-        } else {
-          let selected = null;
-          for (let attempt = 1; attempt <= 2 && !selected; attempt += 1) {
-            fallback.resamples = attempt;
-            reserveTutorStubMeteredModelCall({
-              trace,
-              role: `${roleBase}_committee_mini_resample`,
-              turn: tutorTurn,
-            });
-            try {
-              const resampleStartedAt = new Date().toISOString();
-              const sample = await committeeMiniGenerate({
-                url: state.committee.ollamaUrl,
-                model: state.committee.miniModel,
-                systemPrompt: effectiveSpeakerSystemPrompt,
-                messages: [...context, { role: 'user', content: miniUserPrompt }],
-                numCtx: state.committee.numCtx,
-                maxTokens,
-                timeoutMs: state.committee.timeoutMs,
-                temperature: 0.35,
-              });
-              const sampleText = String(sample.text || '').trim();
-              appendTraceEvent(trace, {
-                type: 'model_call',
-                role: `${roleBase}_committee_mini_resample`,
-                turn: tutorTurn,
-                startedAt: resampleStartedAt,
-                provider: 'ollama',
-                model: state.committee.miniModel,
-                request: { config: { temperature: 0.35, resample: attempt } },
-                response: { text: sampleText, latencyMs: sample.latencyMs },
-              });
-              if (committeeFallbackBatteryPass(sampleText)) selected = sampleText;
-            } catch (err) {
-              appendTraceEvent(trace, {
-                type: 'program2_committee_resample_error',
-                turn: tutorTurn,
-                attempt,
-                error: String(err?.message || err).slice(0, 200),
-              });
-              break;
-            }
-          }
-          if (selected) {
-            fallback.resolution = `selected_sampled_${fallback.resamples}`;
-            deliveredText = selected;
-          } else {
-            const trimmed = trimCommitteeFallback(miniText);
-            fallback.resolution = trimmed.changed ? 'trimmed' : 'unchanged';
-            deliveredText = trimmed.text;
-          }
-        }
-      }
-      moment.fallback = fallback;
-      moment.deliveredFallbackText = deliveredText === miniText ? null : deliveredText;
-      return miniResponseEnvelope(deliveredText);
-    }
-    const moment = {
-      schema: PROGRAM2_COMMITTEE_SCHEMA,
-      turn: tutorTurn,
-      trigger: momentTurn.assigned_trigger,
-      miniModel: state.committee.miniModel,
-      miniLatencyMs,
-      miniError,
-      miniText,
-      span: null,
-      spanSentenceCount: 0,
-      composedText: null,
-      composerLatencyMs: null,
-      composerError: null,
-      battery: null,
-      source: null,
-    };
-    let chosen;
-    if (miniError || !miniText) {
-      moment.source = 'frontier_mini_unavailable';
-      chosen = await invokeTutorAttempt({
-        attemptUserPrompt: effectiveSpeakerUserPrompt,
-        role: roleBase,
-        streamMode: tutorStreamMode,
-        repairAttempt: 0,
-      });
-    } else {
-      const spans = committeeQuestionSentences(miniText);
-      moment.spanSentenceCount = spans.length;
-      if (!spans.length) {
-        moment.source = 'fallback_no_span';
-        chosen = await resolveCommitteeFallbackEnvelope();
-      } else {
-        const span = spans.join(' ');
-        moment.span = span;
-        const compositionBlock = buildCommitteeCompositionBlock(span);
-        try {
-          const composer = await invokeTutorAttempt({
-            attemptUserPrompt: `${effectiveSpeakerUserPrompt}\n\n${compositionBlock}`,
-            role: `${roleBase}_committee_composer`,
-            streamMode: 'none',
-            repairAttempt: 0,
-            instructionTextsOverride: [...effectiveSpeakerInstructionTexts, compositionBlock],
-          });
-          moment.composedText = composer.text;
-          moment.composerLatencyMs = composer.latencyMs;
-          const battery = runCommitteeBattery({ composedText: composer.text, span });
-          moment.battery = battery;
-          if (battery.pass) {
-            moment.source = 'composed';
-            chosen = composer;
-            chosen.guardRole = roleBase;
-          } else {
-            moment.source =
-              battery.failedCheck === 'span_contained'
-                ? 'fallback_span_lost'
-                : battery.failedCheck === 'exactly_one_question'
-                  ? 'fallback_multi_question'
-                  : 'fallback_empty';
-            chosen = await resolveCommitteeFallbackEnvelope();
-          }
-        } catch (err) {
-          moment.composerError = String(err?.message || err).slice(0, 300);
-          moment.source = 'fallback_error';
-          chosen = await resolveCommitteeFallbackEnvelope();
-        }
-      }
-    }
-    appendTraceEvent(trace, {
-      type: 'program2_committee_moment',
-      turn: tutorTurn,
-      moment,
-    });
-    chosen.committeeMoment = moment;
-    return chosen;
-  }
-
-  try {
-    const attempts = [];
-    const repairsApplied = [];
-    const committeeMomentActive = Boolean(
-      !passthrough && state?.committee?.enabled && state?.pointOfAction?.current?.assigned_trigger === 'warrant_skip',
-    );
-    let response = committeeMomentActive
-      ? await invokeCommitteeFirstDraft()
-      : await invokeTutorAttempt({
-          attemptUserPrompt: effectiveSpeakerUserPrompt,
-          role: roleBase,
-          streamMode: tutorStreamMode,
-          repairAttempt: 0,
-        });
-
-    if (passthrough) {
-      response.passthrough = true;
-      return response;
-    }
-    if (!responseGuardEnabled) {
-      attempts.push(tutorGuardAttemptEnvelope({ kind: 'original_candidate', attempt: 0, response }));
-      return attachTutorGuardAccounting({
-        response,
-        state,
-        trace,
-        tutorTurn,
-        role: roleBase,
-        guards,
-        attempts,
-        repairsApplied,
-        finalSource: 'original_candidate',
-        outcome: 'unguarded_original',
-      });
-    }
-
-    const learnerRequestedPlainStyle = tutorStubLearnerRequestedPlainStyle(learnerText, classification);
-    const originalDraftAudits = auditTutorDraft(response, { role: roleBase, attempt: 0 });
-    let audits = withTutorDeliveryDecision(originalDraftAudits, {
-      allowActorialAdvisory:
-        learnerRequestedPlainStyle ||
-        tutorStubActorialPerformanceMayBeAdvisory(
-          originalDraftAudits.actorialRealizationAudit,
-          originalDraftAudits.responseConfigurationAudit,
-        ),
-      advisoryReason: learnerRequestedPlainStyle
-        ? 'explicit learner style request outranks optional actorial realization'
-        : 'the selected host part and every hard response check are visible; only the optional performance tactic remains below the deterministic threshold',
-      role: roleBase,
-      attempt: 0,
-    });
-    attempts.push(tutorGuardAttemptEnvelope({ kind: 'original_candidate', attempt: 0, response, audits }));
-    if (audits.deliveryOk) {
-      attachTutorDraftAudits(response, audits);
-      if (response.bufferedStream) {
-        response.guardedStreamReplay = true;
-      }
-      return attachTutorGuardAccounting({
-        response,
-        state,
-        trace,
-        tutorTurn,
-        role: roleBase,
-        guards,
-        attempts,
-        repairsApplied,
-        finalSource: 'original_candidate',
-        finalAudits: audits,
-        outcome: audits.ok ? 'guarded_original_accepted' : 'guarded_original_accepted_with_advisory',
-      });
-    }
-
-    const hostPartRepair = repairTutorStubMissingActorialPart({
-      text: response.text,
-      deliveryDecision: audits.deliveryDecision,
-      responseConfiguration: speakingResponseConfiguration,
-      responseComposition: audits.responseCompositionAudit?.segments,
-    });
-    if (hostPartRepair.changed) {
-      const hostPartResponse = {
-        ...response,
-        text: hostPartRepair.text,
-      };
-      const hostPartAttempt = attempts.length;
-      const hostPartAudits = withTutorDeliveryDecision(
-        auditTutorDraft(hostPartResponse, {
-          role: `${roleBase}_actorial_part_repair`,
-          attempt: hostPartAttempt,
-        }),
-        { role: `${roleBase}_actorial_part_repair`, attempt: hostPartAttempt },
-      );
-      const hostPartRepairSpans = exactTutorRepairSpans(response.text, hostPartResponse.text);
-      attempts.push(
-        tutorGuardAttemptEnvelope({
-          kind: 'actorial_part_repair_candidate',
-          attempt: hostPartAttempt,
-          response: hostPartResponse,
-          audits: hostPartAudits,
-          repairedSpans: hostPartRepairSpans,
-        }),
-      );
-      repairsApplied.push({
-        kind: 'mechanical_actorial_part_repair',
-        fromAttempt: 0,
-        toAttempt: hostPartAttempt,
-        triggeredBy: tutorStubGuardIssueRows(audits),
-        guardedSpans: attempts[0].guardedSpans,
-        repairedSpans: hostPartRepairSpans,
-        cue: hostPartRepair.cue,
-      });
-      appendTraceEvent(trace, {
-        type: 'tutor_response_mechanical_repair',
-        role: `${roleBase}_actorial_part_repair`,
-        turn: tutorTurn,
-        attempt: hostPartAttempt,
-        repairKind: 'missing_actorial_host_part',
-        accepted: hostPartAudits.deliveryOk,
-        cue: hostPartRepair.cue,
-        text: hostPartRepair.text,
-      });
-      if (hostPartAudits.deliveryOk) {
-        attachTutorDraftAudits(hostPartResponse, hostPartAudits);
-        hostPartResponse.repaired = true;
-        hostPartResponse.mechanicalRepair = true;
-        if (hostPartResponse.bufferedStream) hostPartResponse.guardedStreamReplay = true;
-        return attachTutorGuardAccounting({
-          response: hostPartResponse,
-          state,
-          trace,
-          tutorTurn,
-          role: roleBase,
-          guards,
-          attempts,
-          repairsApplied,
-          finalSource: 'actorial_part_repair_candidate',
-          finalAudits: hostPartAudits,
-          outcome: 'guarded_actorial_part_repair_accepted',
-        });
-      }
-    }
-
-    const firstRepairTriggers = tutorStubGuardIssueRows(audits);
-    const firstPreservedUptake = preservableTutorUptake(audits);
-    const firstRepairUptake =
-      firstPreservedUptake ||
-      deterministicTutorStubTurnProgressionUptake({
-        contract: firstDraftContract?.progression || null,
-        recentTutorTexts,
-        variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
-        learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
-        defaultUptake: deterministicTutorStubLearnerUptake({
-          learnerText,
-          classification,
-          actionFamily: responseCompositionFrame.selected_action_family || null,
-          recentTutorTexts,
-          world,
-        }),
-      });
-    // Keep recovery materially smaller than the normal speaking prompt while
-    // sanitizing every retained contract at the current release boundary.
-    // The former raw reconstruction leaked private IDs/future facts; reusing
-    // every safe speaking advisory avoided that leak but made late-turn repair
-    // calls unnecessarily large and prone to CLI timeouts.
-    const simplifiedRecoveryConfiguration = buildTutorStubSimplifiedRecoveryConfiguration(
-      speakingResponseConfiguration,
-      { closureRequired: dialogueClosureFrame?.mandatory === true },
-    );
-    const minimalRecoveryPrompt = tutorStubSimplifiedRecoveryPrompt({
-      configuration: simplifiedRecoveryConfiguration,
-      firstDraftContract,
-    });
-    const publicRecoveryMachinePacket = [
-      dag && world && !instructionalMetaRepair ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-      firstDraftHumanDiscourseAdvisory,
-      instructionalMetaRestatementAdvisory,
-      comprehensionAdvisory,
-      directorGuidanceAdvisory,
-      coachAdvisory,
-      tutorFeedbackAdvisory,
-    ]
-      .filter(Boolean)
-      .map((text) =>
-        sanitizeTutorStubSpeakerAdvisory({
-          world: dag ? world : null,
-          tutorTurn,
-          text,
-        }),
-      )
-      .filter(Boolean);
-    const publicRecoveryPacket = [...publicRecoveryMachinePacket, learnerPrompt];
-    const recoveryPrompt = tutorResponseRecoveryPrompt({
-      publicPacket: publicRecoveryPacket,
-      hardIssues: audits.deliveryDecision?.hardIssues || [],
-      leakAudit: audits.leakAudit,
-      scaffoldAudit: audits.scaffoldAudit,
-      questionSupportAudit: audits.questionSupportAudit,
-      dramaticReleaseAudit: audits.dramaticReleaseAudit,
-      actorialRealizationAudit: audits.actorialRealizationAudit,
-      responseConfigurationAudit: audits.responseConfigurationAudit,
-      responseConfiguration: simplifiedRecoveryConfiguration,
-      responseCompositionAudit: audits.responseCompositionAudit,
-      liveTurnProgressionAudit: audits.liveTurnProgressionAudit,
-      liveSourceActionAlignmentAudit: audits.liveSourceActionAlignmentAudit,
-      repetitionAudit: audits.repetitionAudit,
-      closureAudit: audits.closureAudit,
-      dialogueClosureFrame,
-      minimalRecoveryPrompt,
-    });
-    const recoveryControlPrompt = tutorResponseRecoveryPrompt({
-      publicPacket: [],
-      hardIssues: audits.deliveryDecision?.hardIssues || [],
-      leakAudit: audits.leakAudit,
-      scaffoldAudit: audits.scaffoldAudit,
-      questionSupportAudit: audits.questionSupportAudit,
-      dramaticReleaseAudit: audits.dramaticReleaseAudit,
-      actorialRealizationAudit: audits.actorialRealizationAudit,
-      responseConfigurationAudit: audits.responseConfigurationAudit,
-      responseConfiguration: simplifiedRecoveryConfiguration,
-      responseCompositionAudit: audits.responseCompositionAudit,
-      liveTurnProgressionAudit: audits.liveTurnProgressionAudit,
-      liveSourceActionAlignmentAudit: audits.liveSourceActionAlignmentAudit,
-      repetitionAudit: audits.repetitionAudit,
-      closureAudit: audits.closureAudit,
-      dialogueClosureFrame,
-      minimalRecoveryPrompt,
-    });
-    const recoveryPrivilegeAdvisory = [recoveryControlPrompt, ...publicRecoveryMachinePacket]
-      .filter(Boolean)
-      .join('\n\n');
-    const simplifiedRecoveryResponse = await invokeTutorAttempt({
-      attemptUserPrompt: recoveryPrompt,
-      role: `${roleBase}_recovery`,
-      streamMode: canStreamTutor ? 'buffered' : 'none',
-      repairAttempt: 1,
-      systemPromptOverride: systemPrompt,
-      instructionTextsOverride: [systemPrompt, ...publicRecoveryMachinePacket],
-      privilegeAdvisoryOverride: recoveryPrivilegeAdvisory,
-    });
-    const recoveryCandidate = {
-      schema: 'machinespirits.tutor-stub.guard-recovery.v1',
-      ok: Boolean(String(simplifiedRecoveryResponse.text || '').trim()),
-      parseMode: 'single_plain_text',
-      text: String(simplifiedRecoveryResponse.text || '').trim(),
-      error: String(simplifiedRecoveryResponse.text || '').trim() ? null : 'empty simplified recovery candidate',
-    };
-    appendTraceEvent(trace, {
-      type: 'tutor_response_recovery_candidate',
-      role: `${roleBase}_recovery`,
-      turn: tutorTurn,
-      modelCallCount: 1,
-      parse: {
-        schema: recoveryCandidate.schema,
-        ok: recoveryCandidate.ok,
-        mode: recoveryCandidate.parseMode,
-        error: recoveryCandidate.error,
-      },
-      recoveryTransition: simplifiedRecoveryConfiguration.recovery_transition,
-      failedHardChecks: audits.deliveryDecision?.hardIssues || [],
-      candidate: { kind: 'plain_recovery_candidate', text: recoveryCandidate.text },
-    });
-
-    response = tutorResponseFromSimplifiedRecovery(
-      simplifiedRecoveryResponse,
-      recoveryCandidate.text,
-      'plain_recovery_candidate',
-    );
-    const plainRecoveryDraftAudits = auditTutorDraft(response, {
-      role: `${roleBase}_plain_recovery`,
-      attempt: 1,
-      auditConfiguration: simplifiedRecoveryConfiguration,
-    });
-    audits = withTutorDeliveryDecision(plainRecoveryDraftAudits, {
-      allowActorialAdvisory: tutorStubPlainRecoveryAllowsActorialAdvisory({
-        loopMode: state?.loopMode,
-        learnerRequestedPlainStyle,
-      }),
-      advisoryReason: learnerRequestedPlainStyle
-        ? 'explicit learner style request outranks optional actorial realization'
-        : 'diagnostic collection preserves a safe plain recovery while recording optional actorial misses',
-      role: `${roleBase}_plain_recovery`,
-      attempt: 1,
-    });
-    const plainRecoveryResponse = response;
-    const plainRecoveryAudits = audits;
-    const modelRepairSpans = exactTutorRepairSpans(attempts[0].candidate.text, response.text);
-    attempts.push(
-      tutorGuardAttemptEnvelope({
-        kind: 'plain_recovery_candidate',
-        attempt: 1,
-        response,
-        audits,
-        repairedSpans: modelRepairSpans,
-      }),
-    );
-    repairsApplied.push({
-      kind: 'model_plain_recovery',
-      fromAttempt: 0,
-      toAttempt: 1,
-      triggeredBy: firstRepairTriggers,
-      guardedSpans: attempts[0].guardedSpans,
-      repairedSpans: modelRepairSpans,
-      generatedInSameModelCall: false,
-      recoveryTransition: simplifiedRecoveryConfiguration.recovery_transition,
-    });
-    if (audits.deliveryOk) {
-      attachTutorDraftAudits(response, audits);
-      response.repaired = true;
-      response.plainRecovery = true;
-      if (response.bufferedStream) {
-        response.guardedStreamReplay = true;
-      }
-      return attachTutorGuardAccounting({
-        response,
-        state,
-        trace,
-        tutorTurn,
-        role: roleBase,
-        guards,
-        attempts,
-        repairsApplied,
-        finalSource: 'plain_recovery_candidate',
-        finalAudits: audits,
-        outcome: 'guarded_plain_recovery_accepted',
-      });
-    }
-
-    const recoveryCompositionIssues = (plainRecoveryAudits?.responseCompositionAudit?.issues || []).filter((issue) =>
-      ['missing_learner_uptake', 'generic_learner_uptake', 'learner_selected_test_not_acknowledged'].includes(
-        issue.type,
-      ),
-    );
-    const recoveryDevelopment = String(
-      plainRecoveryAudits?.responseCompositionAudit?.segments?.development || '',
-    ).trim();
-    if (firstRepairUptake && recoveryCompositionIssues.length && recoveryDevelopment) {
-      const compositionRepairAttempt = attempts.length;
-      const compositionRepairText = composeTutorStubGuardUptakeDevelopment({
-        uptake: firstRepairUptake,
-        development: recoveryDevelopment,
-      });
-      const compositionResponse = tutorResponseFromSimplifiedRecovery(
-        simplifiedRecoveryResponse,
-        compositionRepairText,
-        'composition_repair_candidate',
-      );
-      const compositionDraftAudits = auditTutorDraft(compositionResponse, {
-        role: `${roleBase}_composition_repair`,
-        attempt: compositionRepairAttempt,
-        auditConfiguration: simplifiedRecoveryConfiguration,
-      });
-      const compositionAudits = withTutorDeliveryDecision(compositionDraftAudits, {
-        allowActorialAdvisory: tutorStubPlainRecoveryAllowsActorialAdvisory({
-          loopMode: state?.loopMode,
-          learnerRequestedPlainStyle,
-        }),
-        advisoryReason:
-          'the mechanically recomposed recovery preserves the selected host part and passes every hard response check; only the optional performance tactic remains below the visibility threshold',
-        role: `${roleBase}_composition_repair`,
-        attempt: compositionRepairAttempt,
-      });
-      const compositionRepairSpans = exactTutorRepairSpans(plainRecoveryResponse.text, compositionRepairText);
-      attempts.push(
-        tutorGuardAttemptEnvelope({
-          kind: 'composition_repair_candidate',
-          attempt: compositionRepairAttempt,
-          response: compositionResponse,
-          audits: compositionAudits,
-          repairedSpans: compositionRepairSpans,
-        }),
-      );
-      repairsApplied.push({
-        kind: 'mechanical_composition_repair',
-        fromAttempt: 1,
-        toAttempt: compositionRepairAttempt,
-        triggeredBy: recoveryCompositionIssues.map((issue) => ({ guard: 'response_composition', ...issue })),
-        guardedSpans: attempts[1].guardedSpans,
-        repairedSpans: compositionRepairSpans,
-      });
-      appendTraceEvent(trace, {
-        type: 'tutor_response_mechanical_repair',
-        role: `${roleBase}_composition_repair`,
-        turn: tutorTurn,
-        attempt: compositionRepairAttempt,
-        repairKind: 'learner_uptake_plus_policy_development',
-        accepted: compositionAudits.deliveryOk,
-        text: compositionRepairText,
-      });
-      if (compositionAudits.deliveryOk) {
-        attachTutorDraftAudits(compositionResponse, compositionAudits);
-        compositionResponse.repaired = true;
-        compositionResponse.mechanicalRepair = true;
-        if (compositionResponse.bufferedStream) compositionResponse.guardedStreamReplay = true;
-        return attachTutorGuardAccounting({
-          response: compositionResponse,
-          state,
-          trace,
-          tutorTurn,
-          role: roleBase,
-          guards,
-          attempts,
-          repairsApplied,
-          finalSource: 'composition_repair_candidate',
-          finalAudits: compositionAudits,
-          outcome: 'guarded_composition_repair_accepted',
-        });
-      }
-    }
-
-    const clarificationRepair = repairTutorStubMissingClarificationInvitation({
-      text: plainRecoveryResponse.text,
-      deliveryDecision: plainRecoveryAudits.deliveryDecision,
-    });
-    if (clarificationRepair.changed) {
-      const clarificationAttempt = attempts.length;
-      const clarificationResponse = tutorResponseFromSimplifiedRecovery(
-        simplifiedRecoveryResponse,
-        clarificationRepair.text,
-        'question_support_repair_candidate',
-      );
-      const clarificationAudits = withTutorDeliveryDecision(
-        auditTutorDraft(clarificationResponse, {
-          role: `${roleBase}_question_support_repair`,
-          attempt: clarificationAttempt,
-          auditConfiguration: simplifiedRecoveryConfiguration,
-        }),
-        { role: `${roleBase}_question_support_repair`, attempt: clarificationAttempt },
-      );
-      const clarificationRepairSpans = exactTutorRepairSpans(plainRecoveryResponse.text, clarificationRepair.text);
-      attempts.push(
-        tutorGuardAttemptEnvelope({
-          kind: 'question_support_repair_candidate',
-          attempt: clarificationAttempt,
-          response: clarificationResponse,
-          audits: clarificationAudits,
-          repairedSpans: clarificationRepairSpans,
-        }),
-      );
-      repairsApplied.push({
-        kind: 'mechanical_clarification_invitation',
-        fromAttempt: 1,
-        toAttempt: clarificationAttempt,
-        triggeredBy: tutorStubGuardIssueRows(plainRecoveryAudits),
-        guardedSpans: attempts[1].guardedSpans,
-        repairedSpans: clarificationRepairSpans,
-      });
-      appendTraceEvent(trace, {
-        type: 'tutor_response_mechanical_repair',
-        role: `${roleBase}_question_support_repair`,
-        turn: tutorTurn,
-        attempt: clarificationAttempt,
-        repairKind: 'missing_clarification_invitation',
-        accepted: clarificationAudits.deliveryOk,
-        text: clarificationRepair.text,
-      });
-      if (clarificationAudits.deliveryOk) {
-        attachTutorDraftAudits(clarificationResponse, clarificationAudits);
-        clarificationResponse.repaired = true;
-        clarificationResponse.mechanicalRepair = true;
-        if (clarificationResponse.bufferedStream) clarificationResponse.guardedStreamReplay = true;
-        return attachTutorGuardAccounting({
-          response: clarificationResponse,
-          state,
-          trace,
-          tutorTurn,
-          role: roleBase,
-          guards,
-          attempts,
-          repairsApplied,
-          finalSource: 'question_support_repair_candidate',
-          finalAudits: clarificationAudits,
-          outcome: 'guarded_question_support_repair_accepted',
-        });
-      }
-    }
-
-    const openRecallRepair = repairTutorStubUnanswerableOpenRecall({
-      text: plainRecoveryResponse.text,
-      deliveryDecision: plainRecoveryAudits.deliveryDecision,
-    });
-    if (openRecallRepair.changed) {
-      const openRecallAttempt = attempts.length;
-      const openRecallResponse = tutorResponseFromSimplifiedRecovery(
-        simplifiedRecoveryResponse,
-        openRecallRepair.text,
-        'question_support_repair_candidate',
-      );
-      const openRecallAudits = withTutorDeliveryDecision(
-        auditTutorDraft(openRecallResponse, {
-          role: `${roleBase}_question_support_repair`,
-          attempt: openRecallAttempt,
-          auditConfiguration: simplifiedRecoveryConfiguration,
-        }),
-        { role: `${roleBase}_question_support_repair`, attempt: openRecallAttempt },
-      );
-      const openRecallRepairSpans = exactTutorRepairSpans(plainRecoveryResponse.text, openRecallRepair.text);
-      attempts.push(
-        tutorGuardAttemptEnvelope({
-          kind: 'question_support_repair_candidate',
-          attempt: openRecallAttempt,
-          response: openRecallResponse,
-          audits: openRecallAudits,
-          repairedSpans: openRecallRepairSpans,
-        }),
-      );
-      repairsApplied.push({
-        kind: 'mechanical_unanswerable_open_recall_removal',
-        fromAttempt: 1,
-        toAttempt: openRecallAttempt,
-        triggeredBy: tutorStubGuardIssueRows(plainRecoveryAudits),
-        guardedSpans: attempts[1].guardedSpans,
-        repairedSpans: openRecallRepairSpans,
-      });
-      appendTraceEvent(trace, {
-        type: 'tutor_response_mechanical_repair',
-        role: `${roleBase}_question_support_repair`,
-        turn: tutorTurn,
-        attempt: openRecallAttempt,
-        repairKind: 'unanswerable_open_recall_removal',
-        accepted: openRecallAudits.deliveryOk,
-        text: openRecallRepair.text,
-      });
-      if (openRecallAudits.deliveryOk) {
-        attachTutorDraftAudits(openRecallResponse, openRecallAudits);
-        openRecallResponse.repaired = true;
-        openRecallResponse.mechanicalRepair = true;
-        if (openRecallResponse.bufferedStream) openRecallResponse.guardedStreamReplay = true;
-        return attachTutorGuardAccounting({
-          response: openRecallResponse,
-          state,
-          trace,
-          tutorTurn,
-          role: roleBase,
-          guards,
-          attempts,
-          repairsApplied,
-          finalSource: 'question_support_repair_candidate',
-          finalAudits: openRecallAudits,
-          outcome: 'guarded_question_support_repair_accepted',
-        });
-      }
-    }
-
-    const sourceVoiceRepairBases = [
-      {
-        kind: 'plain_recovery_candidate',
-        attempt: 1,
-        response: plainRecoveryResponse,
-        audits: plainRecoveryAudits,
-        auditConfiguration: simplifiedRecoveryConfiguration,
-      },
-    ];
-    for (const base of sourceVoiceRepairBases) {
-      const mechanical = repairTutorStubThirdPersonSourceLeadIn({
-        text: base.response.text,
-        dramaticReleaseFrame,
-        responseConfiguration: simplifiedRecoveryConfiguration,
-      });
-      if (!mechanical.changed) continue;
-      const sourceRepairAttempt = attempts.length;
-      const sourceResponse = tutorResponseFromSimplifiedRecovery(
-        simplifiedRecoveryResponse,
-        mechanical.text,
-        'source_voice_repair_candidate',
-      );
-      const sourceAudits = withTutorDeliveryDecision(
-        auditTutorDraft(sourceResponse, {
-          role: `${roleBase}_source_voice_repair`,
-          attempt: sourceRepairAttempt,
-          auditConfiguration: base.auditConfiguration,
-        }),
-        { role: `${roleBase}_source_voice_repair`, attempt: sourceRepairAttempt },
-      );
-      const sourceRepairSpans = exactTutorRepairSpans(base.response.text, mechanical.text);
-      attempts.push(
-        tutorGuardAttemptEnvelope({
-          kind: 'source_voice_repair_candidate',
-          attempt: sourceRepairAttempt,
-          response: sourceResponse,
-          audits: sourceAudits,
-          repairedSpans: sourceRepairSpans,
-        }),
-      );
-      repairsApplied.push({
-        kind: 'mechanical_source_voice_repair',
-        fromAttempt: base.attempt,
-        toAttempt: sourceRepairAttempt,
-        triggeredBy: tutorStubGuardIssueRows(base.audits),
-        guardedSpans: attempts.find((attempt) => attempt.attempt === base.attempt)?.guardedSpans || [],
-        repairedSpans: sourceRepairSpans,
-        replacements: mechanical.replacements,
-      });
-      appendTraceEvent(trace, {
-        type: 'tutor_response_mechanical_repair',
-        role: `${roleBase}_source_voice_repair`,
-        turn: tutorTurn,
-        attempt: sourceRepairAttempt,
-        repairKind: 'third_person_source_lead_in',
-        basedOn: base.kind,
-        accepted: sourceAudits.deliveryOk,
-        replacements: mechanical.replacements,
-        text: mechanical.text,
-      });
-      response = sourceResponse;
-      audits = sourceAudits;
-      if (sourceAudits.deliveryOk) {
-        attachTutorDraftAudits(sourceResponse, sourceAudits);
-        sourceResponse.repaired = true;
-        sourceResponse.mechanicalRepair = true;
-        if (sourceResponse.bufferedStream) sourceResponse.guardedStreamReplay = true;
-        return attachTutorGuardAccounting({
-          response: sourceResponse,
-          state,
-          trace,
-          tutorTurn,
-          role: roleBase,
-          guards,
-          attempts,
-          repairsApplied,
-          finalSource: 'source_voice_repair_candidate',
-          finalAudits: sourceAudits,
-          outcome: 'guarded_source_voice_repair_accepted',
-        });
-      }
-    }
-
-    // Self-correction pass — the last rung before the terminal safety text.
-    //
-    // The deterministic fallback is allowed to publish while the disposition
-    // catalog downgrades a conversational-integrity finding to an advisory. The
-    // finding is the same one that killed every model draft on this turn, so the
-    // learner receives a turn that quietly changed course and is never told. One
-    // more attempt is offered here, with a brief whose addressee is the learner
-    // rather than the guard. Nothing about it is templated: the model may
-    // disclose the near-miss in the register of the scene, or simply answer
-    // well and say nothing. Only two things are checked that no other guard
-    // covers — that a disclosed near-miss corresponds to a draft the tutor
-    // actually produced, and that the apparatus is never named.
-    const priorDisclosure = detectTutorStubSelfCorrectionDisclosure(recentTutorTexts.at(-1) || '');
-    const disclosableCorrection = priorDisclosure.disclosed
-      ? { disclosable: false, reason: 'the previous published turn already disclosed a self-correction' }
-      : tutorStubDisclosableGuardCorrection({ audits, attempts });
-    if (disclosableCorrection.disclosable) {
-      const disclosureAttempt = attempts.length;
-      const priorDisclosureAttempt = attempts.at(-1);
-      const disclosureBrief = tutorStubSelfCorrectionDisclosurePrompt({
-        correction: disclosableCorrection,
-        learnerText,
-        turnProgressionContract: firstDraftContract?.progression || null,
-        minimalRecoveryPrompt,
-      });
-      const disclosureUserPrompt = [
-        tutorResponseRecoveryPrompt({
-          publicPacket: publicRecoveryPacket,
-          hardIssues: audits.deliveryDecision?.hardIssues || [],
-          leakAudit: audits.leakAudit,
-          scaffoldAudit: audits.scaffoldAudit,
-          questionSupportAudit: audits.questionSupportAudit,
-          dramaticReleaseAudit: audits.dramaticReleaseAudit,
-          actorialRealizationAudit: audits.actorialRealizationAudit,
-          responseConfigurationAudit: audits.responseConfigurationAudit,
-          responseConfiguration: simplifiedRecoveryConfiguration,
-          responseCompositionAudit: audits.responseCompositionAudit,
-          liveTurnProgressionAudit: audits.liveTurnProgressionAudit,
-          liveSourceActionAlignmentAudit: audits.liveSourceActionAlignmentAudit,
-          repetitionAudit: audits.repetitionAudit,
-          closureAudit: audits.closureAudit,
-          dialogueClosureFrame,
-          minimalRecoveryPrompt,
-        }),
-        disclosureBrief,
-      ]
-        .filter(Boolean)
-        .join('\n\n');
-      let disclosureModelResponse = null;
-      try {
-        disclosureModelResponse = await invokeTutorAttempt({
-          attemptUserPrompt: disclosureUserPrompt,
-          role: `${roleBase}_self_correction`,
-          streamMode: canStreamTutor ? 'buffered' : 'none',
-          repairAttempt: disclosureAttempt,
-          systemPromptOverride: systemPrompt,
-          instructionTextsOverride: [systemPrompt, ...publicRecoveryMachinePacket],
-          privilegeAdvisoryOverride: recoveryPrivilegeAdvisory,
-        });
-      } catch (disclosureError) {
-        // The safety text below is still reachable. A failed extra call must
-        // never cost the turn that would otherwise have shipped.
-        appendTraceEvent(trace, {
-          type: 'tutor_response_self_correction_pass_unavailable',
-          role: `${roleBase}_self_correction`,
-          turn: tutorTurn,
-          attempt: disclosureAttempt,
-          error: disclosureError?.message || String(disclosureError),
-        });
-      }
-      const disclosureText = String(disclosureModelResponse?.text || '').trim();
-      if (disclosureText) {
-        const disclosureResponse = tutorResponseFromSimplifiedRecovery(
-          disclosureModelResponse,
-          disclosureText,
-          'self_correction_candidate',
-        );
-        const disclosureDraftAudits = auditTutorDraft(disclosureResponse, {
-          role: `${roleBase}_self_correction`,
-          attempt: disclosureAttempt,
-          auditConfiguration: simplifiedRecoveryConfiguration,
-        });
-        disclosureDraftAudits.selfCorrectionDisclosureAudit = auditTutorStubSelfCorrectionDisclosure({
-          text: disclosureText,
-          priorAttemptTexts: attempts.map((entry) => entry?.candidate?.text || '').filter(Boolean),
-        });
-        const disclosureAudits = withTutorDeliveryDecision(disclosureDraftAudits, {
-          role: `${roleBase}_self_correction`,
-          attempt: disclosureAttempt,
-        });
-        const disclosed = disclosureDraftAudits.selfCorrectionDisclosureAudit.disclosed;
-        const disclosureRepairSpans = exactTutorRepairSpans(priorDisclosureAttempt.candidate.text, disclosureText);
-        attempts.push(
-          tutorGuardAttemptEnvelope({
-            kind: 'self_correction_candidate',
-            attempt: disclosureAttempt,
-            response: disclosureResponse,
-            audits: disclosureAudits,
-            repairedSpans: disclosureRepairSpans,
-          }),
-        );
-        repairsApplied.push({
-          kind: 'model_self_correction_pass',
-          fromAttempt: priorDisclosureAttempt.attempt,
-          toAttempt: disclosureAttempt,
-          triggeredBy: disclosableCorrection.findings,
-          guardedSpans: priorDisclosureAttempt.guardedSpans,
-          repairedSpans: disclosureRepairSpans,
-          disclosedNearMiss: disclosed,
-        });
-        appendTraceEvent(trace, {
-          type: 'tutor_response_self_correction_pass',
-          role: `${roleBase}_self_correction`,
-          turn: tutorTurn,
-          attempt: disclosureAttempt,
-          waivedFindings: disclosableCorrection.findings,
-          nearMiss: disclosableCorrection.nearMiss,
-          disclosed,
-          marker: disclosureDraftAudits.selfCorrectionDisclosureAudit.marker,
-          disclosureIssues: disclosureDraftAudits.selfCorrectionDisclosureAudit.issues,
-          accepted: disclosureAudits.deliveryOk,
-          text: disclosureText,
-        });
-        if (disclosureAudits.deliveryOk) {
-          attachTutorDraftAudits(disclosureResponse, disclosureAudits);
-          disclosureResponse.repaired = true;
-          disclosureResponse.selfCorrectionPass = true;
-          disclosureResponse.disclosedSelfCorrection = disclosed;
-          if (disclosureResponse.bufferedStream) disclosureResponse.guardedStreamReplay = true;
-          return attachTutorGuardAccounting({
-            response: disclosureResponse,
-            state,
-            trace,
-            tutorTurn,
-            role: roleBase,
-            guards,
-            attempts,
-            repairsApplied,
-            finalSource: 'self_correction_candidate',
-            outcome: disclosed ? 'guarded_self_correction_disclosed' : 'guarded_self_correction_pass_accepted',
-            finalAudits: disclosureAudits,
-          });
-        }
-      }
-    }
-
-    const closureFallbackSelected = Boolean(
-      closureGuardEnabled && (dialogueClosureFrame.mandatory || audits.closureAudit.closesDialogue),
-    );
-    const fallbackContext = {
-      support: humanDiscourseFrame?.questionSupport || null,
-      world,
-      learnerText,
-      dueEvidence: currentReleaseRows(state, tutorTurn),
-      latestEvidence: humanDiscourseFrame?.scaffoldState?.releaseState?.latestReleased || null,
-      recentTutorTexts,
-    };
-    const fallbackRequiresSpecificUptake =
-      (audits?.responseCompositionAudit?.issues || []).some(
-        (issue) => issue.type === 'learner_selected_test_not_acknowledged',
-      ) || tutorStubLearnerSelectedToolMarkPath(learnerText);
-    const deterministicFallbackUptake = deterministicTutorStubTurnProgressionUptake({
-      contract: firstDraftContract?.progression || null,
-      recentTutorTexts,
-      variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
-      learnerEchoGuard: (candidate) => tutorStubSubstantiveLearnerEcho(candidate, learnerText),
-      defaultUptake: deterministicTutorStubLearnerUptake({
-        learnerText,
-        classification,
-        actionFamily: responseCompositionFrame.selected_action_family || null,
-        recentTutorTexts,
-        world,
-      }),
-    });
-    const candidateFallbackUptake = fallbackRequiresSpecificUptake
-      ? deterministicFallbackUptake
-      : preservableTutorUptake(audits) || firstRepairUptake || deterministicFallbackUptake;
-    const fallbackUptake =
-      firstDraftContract?.opening?.writable_entry_requested === true && !/^Write:\s*[“"]/u.test(candidateFallbackUptake)
-        ? deterministicTutorStubWritableEntryUptake({ firstDraftContract })
-        : candidateFallbackUptake;
-    // Question support and live progression can coexist with the human
-    // scaffold. Their compiled contract must select the fallback; the older
-    // generous-inference text does not realize bounded choices or declarative
-    // handoff ownership.
-    const configuredContinuationFallbackRequired = Boolean(
-      questionSupportGuardEnabled ||
-      actorialRealizationGuardEnabled ||
-      firstDraftContract?.progression?.complete === true,
-    );
-    const baseFallbackText = instructionalMetaRepair
-      ? deterministicTutorStubConfiguredContinuationFallback({
-          uptake: fallbackUptake,
-          responseConfiguration: simplifiedRecoveryConfiguration,
-          support: null,
-          world,
-          learnerText,
-          turnProgressionContract: firstDraftContract?.progression || null,
-          recentTutorTexts,
-          variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
-        })
-      : closureFallbackSelected
-        ? deterministicTutorStubClosureResponse(dialogueClosureFrame, {
-            responseConfiguration: simplifiedRecoveryConfiguration,
-          })
-        : dramaticReleaseGuardEnabled
-          ? deterministicTutorStubDramaticReleaseFallback({
-              frame: dramaticReleaseFrame,
-              support: humanDiscourseFrame?.questionSupport || null,
-              uptake: fallbackUptake,
-              responseConfiguration: simplifiedRecoveryConfiguration,
-              variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
-              avoidQuestion: humanDiscourseFrame?.conversationalCompletion?.sourceTutorQuestion || '',
-              turnProgressionContract: firstDraftContract?.progression || null,
-              sourceAccessibilityContract: firstDraftContract?.evidence?.source_accessibility || null,
-              world,
-            })
-          : configuredContinuationFallbackRequired
-            ? deterministicTutorStubConfiguredContinuationFallback({
-                uptake: fallbackUptake,
-                responseConfiguration: simplifiedRecoveryConfiguration,
-                support: humanDiscourseFrame?.questionSupport || null,
-                world,
-                learnerText,
-                turnProgressionContract: firstDraftContract?.progression || null,
-                recentTutorTexts,
-                variationKey: `${stateRunDebugId(state)}:${tutorTurn}`,
-              })
-            : scaffoldGuardEnabled
-              ? deterministicGenerousInferenceFallback(fallbackContext)
-              : deterministicTutorStubContextualFallback(fallbackContext);
-    const fallbackText =
-      dramaticReleaseGuardEnabled || instructionalMetaRepair
-        ? baseFallbackText
-        : ensureFallbackComposition(baseFallbackText, fallbackUptake);
-    const fallbackClosureAudit = closureGuardEnabled
-      ? auditTutorStubDialogueClosureResponse({ text: fallbackText, frame: dialogueClosureFrame })
-      : audits.closureAudit;
-    const fallbackQuestionSupportAudit = questionSupportGuardEnabled
-      ? auditTutorStubQuestionSupportResponse({
-          text: fallbackText,
-          support: humanDiscourseFrame.questionSupport,
-        })
-      : audits.questionSupportAudit;
-    const fallback = {
-      text: fallbackText,
-      provider: resolved.provider,
-      model: resolved.model,
-      latencyMs: response.latencyMs || 0,
-      usage: response.usage || { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
-      effort: response.effort || response.reasoningEffort || cliEffort || null,
-      reasoningEffort: response.reasoningEffort || response.effort || cliEffort || null,
-      leakAudit: audits.leakAudit,
-      scaffoldAudit: audits.scaffoldAudit,
-      questionSupportAudit: fallbackQuestionSupportAudit,
-      dramaticReleaseAudit: audits.dramaticReleaseAudit,
-      actorialRealizationAudit: audits.actorialRealizationAudit,
-      responseCompositionAudit: audits.responseCompositionAudit,
-      repetitionAudit: audits.repetitionAudit,
-      closureAudit: fallbackClosureAudit,
-      repaired: true,
-      deterministicFallback: true,
-      deterministicClosure: closureFallbackSelected,
-      tokenUsageAvailable: response.tokenUsageAvailable,
-      promptSnapshot: response.promptSnapshot || null,
-    };
-    if (canStreamTutor) {
-      fallback.guardedStreamReplay = true;
-    }
-    const fallbackAttempt = attempts.length;
-    const priorAttempt = attempts.at(-1);
-    const fallbackDraftAudits = auditTutorDraft(fallback, {
-      role: `${roleBase}_fallback`,
-      attempt: fallbackAttempt,
-      auditConfiguration: simplifiedRecoveryConfiguration,
-    });
-    const fallbackAudits = withTutorDeliveryDecision(fallbackDraftAudits, {
-      allowActorialAdvisory: tutorStubActorialPerformanceMayBeAdvisory(
-        fallbackDraftAudits.actorialRealizationAudit,
-        fallbackDraftAudits.responseConfigurationAudit,
-      ),
-      advisoryReason:
-        'the deterministic fallback is the terminal safety text — known conversational-integrity, dramatic-form, and optional actorial-realization findings on it are recorded as advisories instead of killing the dialogue; evidence, clue-transaction and closure boundaries remain hard',
-      role: `${roleBase}_fallback`,
-      attempt: fallbackAttempt,
-      terminalFallback: true,
-    });
-    attachTutorDraftAudits(fallback, fallbackAudits);
-    const fallbackRepairSpans = exactTutorRepairSpans(priorAttempt.candidate.text, fallbackText);
-    attempts.push(
-      tutorGuardAttemptEnvelope({
-        kind: 'deterministic_fallback',
-        attempt: fallbackAttempt,
-        response: fallback,
-        audits: fallbackAudits,
-        repairedSpans: fallbackRepairSpans,
-      }),
-    );
-    repairsApplied.push({
-      kind: 'deterministic_fallback',
-      fromAttempt: priorAttempt.attempt,
-      toAttempt: fallbackAttempt,
-      triggeredBy: tutorStubGuardIssueRows(audits),
-      guardedSpans: priorAttempt.guardedSpans,
-      repairedSpans: fallbackRepairSpans,
-    });
-    if (!fallbackAudits.deliveryOk) {
-      const rejectedIssues = tutorStubGuardIssueRows(fallbackAudits);
-      const exhaustedAccounting = buildTutorGuardAccounting({
-        response: fallback,
-        state,
-        tutorTurn,
-        guards,
-        attempts,
-        repairsApplied,
-        finalSource: 'rejected_deterministic_fallback',
-        finalAudits: fallbackAudits,
-        outcome: 'guard_exhausted_without_public_delivery',
-      });
-      appendTraceEvent(trace, {
-        type: 'tutor_response_fallback_rejected',
-        role: roleBase,
-        turn: tutorTurn,
-        issues: rejectedIssues,
-        text: fallbackText,
-      });
-      appendTraceEvent(trace, {
-        type: 'tutor_response_guard_exhausted',
-        role: roleBase,
-        turn: tutorTurn,
-        accounting: exhaustedAccounting,
-        publicDelivery: null,
-      });
-      const terminalFailure = {
-        schema: 'machinespirits.tutor-stub.terminal-fallback-failure.v1',
-        turn: tutorTurn,
-        attemptCount: attempts.length,
-        hardIssues: fallbackAudits.deliveryDecision?.hardIssues || [],
-        rejectedFallbackText: fallbackText,
-        tracePath: trace?.filePath || null,
-      };
-      const error = new Error(
-        tutorStubTerminalFallbackFailureMessage(fallbackAudits.deliveryDecision, {
-          candidateText: fallbackText,
-          attemptCount: attempts.length,
-          tracePath: trace?.filePath || null,
-        }),
-      );
-      error.code = 'TUTOR_FALLBACK_AUDIT_FAILED';
-      error.tutorGuardAccounting = exhaustedAccounting;
-      error.tutorFallbackFailure = terminalFailure;
-      throw error;
-    }
-    appendTraceEvent(trace, {
-      type: 'tutor_response_fallback',
-      role: roleBase,
-      turn: tutorTurn,
-      leaks: audits.leakAudit.leaks,
-      scaffoldIssues: audits.scaffoldAudit.issues,
-      questionSupportIssues: audits.questionSupportAudit.issues,
-      dramaticReleaseIssues: audits.dramaticReleaseAudit.issues,
-      actorialRealizationIssues: audits.actorialRealizationAudit.issues,
-      responseCompositionIssues: audits.responseCompositionAudit.issues,
-      liveTurnProgressionIssues: audits.liveTurnProgressionAudit.issues,
-      liveSourceActionAlignmentIssues: audits.liveSourceActionAlignmentAudit.issues,
-      repetitionIssues: audits.repetitionAudit.issues,
-      closureIssues: audits.closureAudit.issues,
-      text: fallbackText,
-    });
-    return attachTutorGuardAccounting({
-      response: fallback,
-      state,
-      trace,
-      tutorTurn,
-      role: roleBase,
-      guards,
-      attempts,
-      repairsApplied,
-      finalSource: 'deterministic_fallback',
-      finalAudits: fallbackAudits,
-      outcome: 'guarded_deterministic_fallback',
-    });
-  } catch (err) {
-    appendTraceEvent(trace, {
-      type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
-      role: roleBase,
-      turn: tutorTurn,
-      provider: resolved.provider,
-      model: resolved.model,
-      error: err.message,
-      ...(err?.tutorFallbackFailure ? { terminalFailure: err.tutorFallbackFailure } : {}),
-    });
-    throw err;
-  }
-}
+const callTutor = createTutorStubTutorTurnPipeline({
+  PROGRAM2_COMMITTEE_SCHEMA,
+  appendTraceEvent,
+  attachTutorGuardAccounting,
+  auditTutorResponseLeak,
+  auditTutorStubDialogueClosureResponse,
+  auditTutorStubDramaticReleaseResponse,
+  auditTutorStubGenerousInferenceResponse,
+  auditTutorStubLiveSourceActionAlignmentV1,
+  auditTutorStubLiveTurnProgressionV1,
+  auditTutorStubPrompt,
+  auditTutorStubQuestionSupportResponse,
+  auditTutorStubReleaseDelivery,
+  auditTutorStubRepetitionResponse,
+  auditTutorStubResponseComposition,
+  auditTutorStubResponseConfiguration,
+  auditTutorStubSelfCorrectionDisclosure,
+  auditTutorStubSpeakerPrivilege,
+  buildCommitteeCompositionBlock,
+  buildTutorGuardAccounting,
+  buildTutorStubDramaticReleaseFrame,
+  buildTutorStubFirstDraftContract,
+  buildTutorStubResponseCompositionFrame,
+  buildTutorStubSimplifiedRecoveryConfiguration,
+  callAI,
+  callAIWithCliBridge,
+  classifierTutorContext,
+  committedReleaseRows,
+  committeeFallbackBatteryPass,
+  committeeMiniGenerate,
+  compileTutorStubPerformanceObligationContract,
+  composeTutorStubFallbackWithUptake,
+  composeTutorStubGuardUptakeDevelopment,
+  createConsoleTokenSink,
+  currentReleaseRows,
+  dagTurnContext,
+  detectTutorStubSelfCorrectionDisclosure,
+  deterministicGenerousInferenceFallback,
+  deterministicTutorStubClosureResponse,
+  deterministicTutorStubConfiguredContinuationFallback,
+  deterministicTutorStubContextualFallback,
+  deterministicTutorStubDramaticReleaseFallback,
+  deterministicTutorStubLearnerUptake,
+  deterministicTutorStubTurnProgressionHandoff,
+  deterministicTutorStubTurnProgressionUptake,
+  deterministicTutorStubWritableEntryUptake,
+  exactTutorRepairSpans,
+  formatTutorStubResponseComposition,
+  humanDiscourseTutorContext,
+  isCliProvider,
+  jsonClone,
+  prepareTutorStubDueClueUptake,
+  providerSupportsStreaming,
+  reconcileTutorStubPointOfActionHandoffEligibility,
+  recoverTutorStubDuplicateInstructionLines,
+  recoverTutorStubSpeakerPrompt,
+  repairTutorStubMissingActorialPart,
+  repairTutorStubMissingClarificationInvitation,
+  repairTutorStubThirdPersonSourceLeadIn,
+  repairTutorStubUnanswerableOpenRecall,
+  reserveProgram2ProviderBudget,
+  reserveTutorStubMeteredModelCall,
+  resolveTutorStubPublicCounterpressure,
+  runCommitteeBattery,
+  sanitizeTutorStubSpeakerAdvisory,
+  selectCommitteeCompositionQuestion,
+  snapshotTutorStubPublicPremiseIds,
+  speakerAdvisoryBlocks: SPEAKER_ADVISORY_BLOCKS,
+  stateRunDebugId,
+  streamAI,
+  trimCommitteeFallback,
+  tutorCoachGuidanceContext,
+  tutorGuardAttemptEnvelope,
+  tutorLearnerDagModelContext,
+  tutorMessageContext,
+  tutorResponseRecoveryPrompt,
+  tutorStubActorialPerformanceMayBeAdvisory,
+  tutorStubComprehensionPrompt,
+  tutorStubDirectorGuidancePrompt,
+  tutorStubDisclosableGuardCorrection,
+  tutorStubFirstDraftContractPrompt,
+  tutorStubGuardDeliveryDecision,
+  tutorStubGuardIssueRows,
+  tutorStubLearnerRequestedPlainStyle,
+  tutorStubLearnerSelectedToolMarkPath,
+  tutorStubLiveResponseConfigurationSurface,
+  tutorStubPlainRecoveryAllowsActorialAdvisory,
+  tutorStubPointOfActionPrompt,
+  tutorStubPointOfActionTargetText,
+  tutorStubSelfCorrectionDisclosurePrompt,
+  tutorStubSimplifiedRecoveryPrompt,
+  tutorStubSubstantiveLearnerEcho,
+  tutorStubTerminalFallbackFailureMessage,
+  tutorStubTuningTurnAdvisory,
+  tutorStubTurnFeedbackPrompt,
+  worldLedgerTerm,
+});
 
 function saveTranscript(filePath, transcript) {
   fs.writeFileSync(filePath, `${JSON.stringify(transcript, null, 2)}\n`);
@@ -11037,20 +7390,39 @@ async function generateAutomatedLearnerTurn({
   const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
   const systemPrompt = automatedLearnerSystemPrompt(profile);
   const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
-  const raw = await callPromptModel({
-    prompt,
-    messageHistory,
-    resolved,
-    systemPrompt,
-    role: 'tutor_stub_auto_learner',
-    maxTokens: 900,
-    trace: state.trace,
-    stream,
-    cliEffort,
-    turn: turnNumber,
-    signal,
-    historyTurns: state.historyTurns,
-  });
+  const call = () =>
+    callPromptModel({
+      prompt,
+      messageHistory,
+      resolved,
+      systemPrompt,
+      role: 'tutor_stub_auto_learner',
+      maxTokens: 900,
+      trace: state.trace,
+      stream,
+      cliEffort,
+      turn: turnNumber,
+      signal,
+      historyTurns: state.historyTurns,
+    });
+  let raw;
+  try {
+    raw = await call();
+  } catch (error) {
+    const retryLedger = state.cliPolicyRetryLedger || (state.cliPolicyRetryLedger = {});
+    const retryKey = 'tutor_stub_auto_learner:codex_policy';
+    const decision = tutorStubCliPolicyRetryDecision(error, { alreadyUsed: retryLedger[retryKey] === true });
+    appendTraceEvent(state.trace, {
+      type: 'cli_policy_retry_decision',
+      role: 'tutor_stub_auto_learner',
+      turn: turnNumber,
+      decision,
+      publicTranscriptChanged: false,
+    });
+    if (!decision.retry) throw error;
+    retryLedger[retryKey] = true;
+    raw = await call();
+  }
   return {
     ...raw,
     text: cleanAutomatedLearnerReply(raw.text),
@@ -11767,6 +8139,10 @@ async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
         recentTutorTexts: tutorMessageContext(state, state.history)
           .messages.filter((message) => message.role === 'assistant')
           .map((message) => message.content),
+        // Passthrough has no release schedule and no closure frame to consult,
+        // so the advance channel runs on text alone here. That asymmetry is the
+        // point of observing this arm rather than guarding it.
+        advance: {},
       })
     : null;
   const observedAudits = observedAuditsRequested
@@ -11943,7 +8319,7 @@ async function runOneTurn(
   const dynamicalState = state.pointOfAction?.enabled
     ? buildDynamicalSystemState({ state, classification, tutorLearnerDag })
     : null;
-  const pointOfAction = state.pointOfAction?.enabled
+  let pointOfAction = state.pointOfAction?.enabled
     ? buildTutorStubPointOfActionTurn({
         arm: state.pointOfAction.arm,
         turn: tutorTurn,
@@ -12095,6 +8471,7 @@ async function runOneTurn(
       deferStreamOutput: Boolean(runtimeOptions.isCurrent),
       signal: runtimeOptions.signal || null,
     }));
+  pointOfAction = state.pointOfAction?.current || pointOfAction;
   response.tutorRef = state.tuning?.activeRef || state.tutorInstance?.ref || null;
   assertTutorStubTurnAttemptCurrent(runtimeOptions);
   const priorDialogueClosure = state.dialogueClosure;

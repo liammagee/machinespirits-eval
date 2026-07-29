@@ -20,3 +20,12 @@ export function dagProgressFeatures(model) {
     assertedMirror: assessment.assertedMirror === true,
   };
 }
+
+export function normalizeTutorStubDagMode(value, { modes = [] } = {}) {
+  const mode = String(value || 'strict_dag')
+    .trim()
+    .toLowerCase()
+    .replace(/-/gu, '_');
+  if (modes.includes(mode)) return mode;
+  throw new Error(`Unknown --dag-mode: ${value}. Expected ${modes.join(', ')}.`);
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "machinespirits.program2.phase5f-pilot-gates.v1",
+  "coverageThreshold": 0.8,
+  "minSealedPerCell": 2,
+  "minCompleteBlocks": 2,
+  "minCompleteBlocksPerProfile": 1,
+  "minOpportunitiesPerCell": 0,
+  "minOpportunitiesPerProfileCell": 0,
+  "minPilotRowsPerProfileCell": 0,
+  "opportunityReserveFactor": 1,
+  "maxOpportunitiesPerDialogue": 40,
+  "maxAttritionDifference": 0,
+  "attritionPairs": [["committee", "silent_control"]],
+  "requireCueBlind": false
+}

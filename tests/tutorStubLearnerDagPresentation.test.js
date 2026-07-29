@@ -6,7 +6,10 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { projectTutorStubLearnerDagLines } from '../services/tutorStubLearnerDagPresentation.js';
+import {
+  projectTutorStubLearnerDagLines,
+  projectTutorStubLearnerDagPromptSummary,
+} from '../services/tutorStubLearnerDagPresentation.js';
 import { runInteractive } from './helpers/tutorStubInteractiveHarness.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -74,6 +77,40 @@ test('learner-DAG projection handles absent and minimal models without inventing
   ]);
 });
 
+test('learner-DAG prompt summary preserves bounded record history and fallback fields', () => {
+  const model = {
+    turn: 7,
+    metrics: { groundedCount: 9 },
+    assessment: { bottleneck: 'p9' },
+    memoryReliability: { activeDroppedCount: 1 },
+    learnerRecord: {
+      grounded: Array.from({ length: 10 }, (_, index) => `p${index + 1}`),
+      voicedDerived: Array.from({ length: 10 }, (_, index) => `d${index + 1}`),
+      hypotheses: Array.from({ length: 7 }, (_, index) => `h${index + 1}`),
+      answerCandidates: ['Marrick'],
+    },
+  };
+  const summary = JSON.parse(projectTutorStubLearnerDagPromptSummary(model));
+
+  assert.equal(summary.turn, 7);
+  assert.deepEqual(summary.metrics, { groundedCount: 9 });
+  assert.deepEqual(summary.learnerRecord.grounded, ['p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10']);
+  assert.deepEqual(summary.learnerRecord.voicedDerived, ['d3', 'd4', 'd5', 'd6', 'd7', 'd8', 'd9', 'd10']);
+  assert.deepEqual(summary.learnerRecord.hypotheses, ['h3', 'h4', 'h5', 'h6', 'h7']);
+  assert.deepEqual(summary.learnerRecord.answerCandidates, ['Marrick']);
+  assert.equal(
+    projectTutorStubLearnerDagPromptSummary(null),
+    'No prior tutor-side learner-DAG model is available yet.',
+  );
+  assert.deepEqual(JSON.parse(projectTutorStubLearnerDagPromptSummary({})), {
+    turn: null,
+    metrics: {},
+    assessment: {},
+    memoryReliability: null,
+    learnerRecord: { grounded: [], voicedDerived: [], hypotheses: [], answerCandidates: [] },
+  });
+});
+
 test('real technical-debug process preserves exact learner-DAG terminal bytes', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-learner-dag-presentation-'));
   try {
@@ -133,4 +170,5 @@ test('the CLI retains learner-DAG construction, debug gating, call sites, and te
   assert.doesNotMatch(printSlice, /missingPremiseBuckets|dagFactDropout|supportedMoveCount/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);
+  assert.doesNotMatch(cliSource, /function learnerDagPromptSummary/u);
 });

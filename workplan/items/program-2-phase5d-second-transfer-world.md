@@ -1,23 +1,41 @@
 ---
 id: program-2-phase5d-second-transfer-world
 title: "Program-2 Phase 5e: second transfer world (letter-hostile probe)"
-status: triaged
+status: dropped
 type: experiment
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-07-22
-updated: 2026-07-22
-verification: "The Phase 5b/5c-validated committee (program2-sft-instruct-v2, fallback policy v2, span/battery byte-unchanged), moved unchanged to a THIRD world selected for minimum native frozen-six density (letter-hostile), clears E1e (pooled warrant_skip compliance diff vs the new world's own fresh controls, dialogue-cluster bootstrap 95% CI > 0) under the frozen guardrails (coverage −0.05, safety −0.10, density ≥ 15, seam ≤ 0.65) with the costume-leak metric reported both arms."
+updated: 2026-07-28
+branch: codex/program-2-phase5e-r2-replication
+verification: "Closed without an E1e estimate: immutable R1 and R2 A1-A4 artifacts remain separate, A4's 2/4 sealed pilot and failed cohort bundle are recorded, Skyway is explicitly retired from held-out use, and successor apparatus-hardening plus fresh-world cards own any further work."
 claim_status: exploratory
 links:
   paper: §6.21, §7.12
   notes:
     - PROGRAM-2-PHASE5C-CROSS-WORLD-TRANSFER-PREREGISTRATION.md
     - PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md
+    - PROGRAM-2-PHASE5E-SECOND-TRANSFER-PREREGISTRATION.md
+    - notes/program-2/2026-07-26-phase5e-world-selection.md
+    - notes/program-2/2026-07-26-phase5e-world-selection-amendment1.md
+    - notes/program-2/2026-07-26-phase5e-analyzer-validation.md
+    - notes/program-2/2026-07-26-phase5e-presentation-amendment.md
+    - notes/program-2/2026-07-27-phase5e-r2-replication-freeze.md
+    - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment1.md
+    - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment2.md
+    - notes/program-2/2026-07-27-phase5e-r2-pilot-amendment3.md
+    - notes/program-2/2026-07-28-phase5e-r2-pilot-amendment4.md
+    - notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md
     - config/adaptive-tutor-evidence/program-2-phase5c.manifest.json
+    - config/adaptive-tutor-evidence/program-2-phase5e-world-selection.json
+    - config/adaptive-tutor-evidence/program-2-phase5e-world-selection-amendment1.json
+    - config/adaptive-tutor-evidence/program-2-phase5e-r2-gates.json
+    - config/adaptive-tutor-evidence/program-2-phase5e-r2-pilot-gates.json
   items:
     - program-2-context-vs-weights-finetune
+    - program-2-transfer-apparatus-hardening
+    - program-2-phase5f-fresh-transfer-world
 tags:
   - tutor-stub
   - fine-tune
@@ -183,5 +201,141 @@ stable card ID is retained for board links; the title, endpoint, artifacts, and
 runbook now identify Phase 5e. Any launch starts from a fresh current-main
 worktree and requires a new explicit authorization gate.
 
-Cost: one evening of Max-plan sonnet + codex terra quota; local mini
-free; NO Lambda, NO training. Both outcomes land in the paper.
+2026-07-26 Codex: Activated after explicit operator confirmation in a fresh
+current-main worktree. The free world-selection measurement chose
+`world_026_skyway_bakery` at 2.24 frozen-six matches/1k words: Emberwick was
+lower at 0.00 but missed the frozen five-rule structure floor. This activation
+licenses preregistration, runner/analyzer code, and zero-model validation only;
+all quota probes, paid smoke, live launch, and seam review remain closed.
+
+2026-07-26 Codex: Completed the free implementation slice. Added the frozen
+Phase 5e preregistration; the `--plan 5e` 18-job runner plan; regression hashes
+proving Phase 5/5b/5c plans are byte-identical; and the Phase 5e analyzer with
+native frozen-six density over fresh-control delivered turns. The analyzer
+reproduced sealed 5c extraction counts (31/61 committee, 15/49 control and all
+component rates; its CI differs only because the preregistered seed changed).
+The zero-model gate passed with 18 jobs, seed 20260726, Skyway on every command,
+fallback v2 on committee only, and zero model calls. This is prelaunch
+machinery, not a Phase 5e empirical result; every paid gate remains closed.
+
+2026-07-26 Codex: The authorized eight-turn smoke passed, but the live launch
+aborted at the configured three-consecutive-failure gate before any dialogue
+sealed (0/18): the first control failed twice and the first committee unit
+failed once. All three attempts reached Skyway's turn-9 `p_warm` launch-log
+release and hit the same deterministic dramatic-release rejection
+(`opaque_clue_release`, `missing_exhibit_action`). This is a technical abort,
+not an empirical result; the unsealed traces are diagnostic and excluded. A
+pre-result Amendment 1 changes only that release's presentation metadata to an
+in-scene loftmistress reading, adds an exact zero-model fallback regression,
+and preserves refreshed world-selection evidence separately. All design,
+artifact, surface, proof, timing, and endpoint invariants remain frozen. A
+restart must use `exports/program2-live-pilot-5e-r1/`, a new commit pin, and
+fresh explicit paid authorization.
+
+2026-07-27 Codex: R1 ultimately sealed 18/18 at launch SHA `470889d5` with
+three recovered retries and no attrition. The frozen endpoint failed:
+committee 5/62 (0.0806) versus fresh control 3/31 (0.0968), difference
+−0.0161, bootstrap 95% CI [−0.0879, 0.0607]. Coverage, comparative safety,
+density, and costume-leak guardrails passed; seam review was not run. A merged
+closure re-score subsequently found that 16/18 could have closed at median
+turn 10, saving 459/720 turns. The Phase 5e analyzer's post-hoc handoff anatomy
+also locates all 20/20 questionless committee opportunities at turns where the
+final handoff contract forbade a question. R1 is therefore retained as a
+negative result for that exact delivery stack, not pooled as a clean transfer
+estimate.
+
+2026-07-27 Codex: Began the operator-selected option 2: a clean,
+apparatus-corrected R2 replication on current main. The prospective amendment
+pins the historical v1 evidence-use classifier explicitly, keeps the model and
+artifact stack fixed, uses merged conclusion recognition, and intersects
+detector candidates with the final handoff's question admissibility for both
+committee and control. Added separate `5e-pilot` (4 jobs) and `5e` R2 (18 jobs)
+certificate plans, frozen cohort gates, and a zero-model 11-check pilot-bundle
+path with per-trace SHA-256 binding. No R2 paid call is authorized or has run.
+
+R1 cost: one attended Max-plan sonnet + codex terra cohort; local mini free;
+no Lambda and no training. R2 free preparation adds no model calls. Any R2
+pilot, cohort, or seam cost remains separately gated.
+
+2026-07-27 Codex: The first authorized R2 pilot launch stopped before provider
+preflight because launch mode overwrote its own certificate-bound
+`launch-plan.json` with runtime metadata, producing a deterministic hash
+mismatch. No pilot model call ran. Launch runtime metadata now writes to
+`launch-attempt.json`; the prepared plan remains byte-stable through certificate
+validation, with regression coverage for both missing and invalid evidence.
+
+2026-07-27 Codex: The subsequent certified R2 pilot sealed 1/4 dialogues and
+then stopped under its frozen futility rule after the `proof_skipper`
+silent-control job failed both permitted attempts. This is an apparatus-
+feasibility failure with no treatment-effect estimate. Frozen replay analysis
+located three delivery defects: a questionless assertion-gap completion loop,
+a generic mandatory-closure fallback that discarded the learner's correct
+public finding, and a Codex transport/schema policy violation with no known
+tool event. Prospective pilot Amendment 1 repairs only those seams, pins exact
+zero-model replays, retains fail-closed handling for known tool events, and
+requires a new clean commit, export root, and certificate before one replacement
+four-dialogue pilot. The 18-dialogue cohort remains closed.
+
+2026-07-27 Codex: Replacement pilot A1 at SHA `69de4132` sealed its first two
+jobs, then stopped under the frozen futility rule when the proof-skipper
+control reached only 0.75 coverage. Both providers and transports were
+healthy; exact trace replay instead found a missed natural-language
+`p_soleLift` adoption, repeated grounded causal answers that were not resolved
+to the authored answer constant, and due-release turns incorrectly counted as
+no-new-premise warrant opportunities. Prospective Amendment 2 adds explicit
+world-authored recognition clauses with public/entailed-state guards and
+symmetrically suppresses due-release warrant candidates in committee and
+control. Zero-model replay now reaches full coverage and grounded assertion;
+all paid calls remain closed pending a fresh commit, certificate, and explicit
+authorization.
+
+2026-07-27 Codex: The A2 pilot sealed 1/4 jobs and then stopped under the frozen
+futility rule after the proof-skipper silent control exhausted both attempts.
+The sole sealed committee dialogue reached 1.00 coverage and hard safety but
+ran to the 40-turn cap after repeatedly stating the correct answer; three other
+attempts ended when deterministic fallbacks failed their own uptake audit. The
+zero-model bundle passed all five static plan/provenance checks and failed six
+evidence-completeness checks, so A2 is an apparatus-feasibility failure with no
+treatment-effect estimate. Prospective Amendment 3 replaces phrase-pinned
+closure with finite ordered, negation-aware authored claim patterns after exact
+public entailment, aligns deterministic uptake with its response audit, and
+preserves the full learner focus in declarative handoffs. A2 remains immutable
+and no further paid call is authorized by this repair.
+
+2026-07-28 Codex: The certified A3 pilot sealed 2/4 jobs and then stopped under
+the frozen coverage futility rule when the proof-skipper silent control held
+only 3/4 best-path premises at turn 16. Both sealed jobs passed hard safety and
+no provider or transport failure occurred. The first committee row closed at
+1.00 coverage; the control instead repeated a downstream verdict through turn
+40 while the already-public `p_spiral` route-to-delay relation remained
+unadopted. The A3 analysis cannot estimate E1e, and its cohort-bound bundle
+passes all five static checks but necessarily fails six evidence-completeness
+checks at 2/4 rows. Prospective Amendment 4 targets only this progression seam:
+single released-but-not-held relations outrank sayback, the exact public
+relation receives an authored recovery question, and deterministic fallback
+may not echo the learner's ledger formula. A3 remains immutable; the cohort and
+seam review remain closed.
+
+2026-07-28 Codex: Amendment 4's zero-model verification passes: 169/169
+focused repair/world/configuration tests, 450/450 tests across the affected
+public-learner-analysis, response-configuration, first-draft, composition, and
+turn-progression stack, and 119/119 derivation-world and Program-2 live-pilot
+tests. The exact Skyway plot lint, repository lint, diff check, and 226/226
+workplan source validation also pass. No A4 provider call has been made.
+
+2026-07-28 Codex: The authorized A4 pilot sealed 2/4 rows and stopped under
+the frozen coverage futility rule. The committee row reached 1.00 coverage and
+hard safety. The proof-skipper control reached 0.50 coverage at the horizon and
+0.75 at turn 40 because `p_soleLift` remained released but unheld; an earlier
+attempt also failed the duplicate-clue delivery check. The one sealed committee
+warrant opportunity lost its cue-bearing content at the protected-handoff seam.
+The incomplete nominal 0/1 versus 1/1 comparison is not an E1e estimate. A4
+therefore shows that Amendment 4 moved the missing-relation failure from
+`p_spiral` to the next unhandled premise rather than repairing the apparatus
+generally.
+
+Decision: retire Skyway as a held-out transfer world after R2 A1-A4. This card
+is dropped as a clean empirical test, not interpreted as evidence against the
+transfer hypothesis. `program-2-transfer-apparatus-hardening` owns the generic
+zero-model repair; `program-2-phase5f-fresh-transfer-world` owns the next
+prospective test on a post-training world that was not used to tune the repair.

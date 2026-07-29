@@ -59,6 +59,10 @@ function loadPilotBundle(file) {
   const expectedPlanSha256 = bundle?.expectedPlanSha256 || bundle?.planSha256 || null;
   return {
     rows,
+    expectedSourceSha: bundle?.expectedSourceSha || bundle?.audit?.plan?.sourceSha || null,
+    evidenceFiles: Array.isArray(bundle?.evidenceBindings?.files)
+      ? bundle.evidenceBindings.files.map((entry) => ({ ...entry }))
+      : [],
     provenance: {
       audit,
       expectedPlanSha256,
@@ -102,6 +106,20 @@ export function buildCertificateFromFiles({
   const plan = planArtifact?.plan || planArtifact;
   const world = readStructured(worldFile);
   const pilots = pilotBundleFiles.map(loadPilotBundle);
+  const pilotEvidenceFiles = pilots
+    .flatMap((pilot) => pilot.evidenceFiles)
+    .map((entry) => {
+      const file = resolveRoot(entry.file);
+      const relative = path.relative(ROOT, file);
+      if (!entry.file || relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error(`pilot evidence escapes repository root: ${entry.file || 'missing'}`);
+      }
+      if (!fs.existsSync(file)) throw new Error(`pilot evidence not found: ${entry.file}`);
+      if (entry.sha256 && sha256File(file) !== entry.sha256) {
+        throw new Error(`pilot evidence hash mismatch: ${entry.file}`);
+      }
+      return bindFile(file, entry.role || 'pilot_trace');
+    });
   const gateSpec = gateSpecFile ? readStructured(gateSpecFile) : {};
   return buildProgram2LaunchCertificate({
     phase,
@@ -109,7 +127,10 @@ export function buildCertificateFromFiles({
     sourceSha,
     world,
     pilotRows: pilots.flatMap((pilot) => pilot.rows),
-    pilotAudits: pilots.map((pilot) => pilot.provenance),
+    pilotAudits: pilots.map((pilot) => ({
+      ...pilot.provenance,
+      bound: pilot.provenance.bound && pilot.expectedSourceSha === sourceSha,
+    })),
     gateSpec,
     planValidation: genericPlanValidation(plan),
     evidenceBindings: {
@@ -118,6 +139,7 @@ export function buildCertificateFromFiles({
         bindFile(worldFile, 'world'),
         ...(gateSpecFile ? [bindFile(gateSpecFile, 'gate_spec')] : []),
         ...pilotBundleFiles.map((file, index) => bindFile(file, `pilot_bundle:${index + 1}`)),
+        ...pilotEvidenceFiles,
       ],
     },
   });

@@ -779,8 +779,8 @@ export function renderTutorStubAbMarkdown(report) {
     '',
     '## Arms',
     '',
-    'Failure clusters are the headline. Pass is all-or-nothing per turn and can read',
-    '0/N for every arm at once; the cluster tallies say how far each arm is from clean.',
+    'Broken rules are the headline. Pass is all-or-nothing per turn and can read',
+    '0/N for every arm at once; the tallies say how far each arm is from clean.',
     '',
     'Read the **open** column, not the total. The bench computes a performance',
     'contract for every turn and grades every arm against it, but shows it to one of',
@@ -789,7 +789,7 @@ export function renderTutorStubAbMarkdown(report) {
     'rules, and anything judged against the learner’s own public turn. Told counts the',
     'rest, and its size is the measured bias of the total.',
     '',
-    '| Arm | Features | Turns | Open | vs baseline | Told | Clusters (hard) | vs baseline | Pass | Safety | Advisory chars | Reply chars | Latency |',
+    '| Arm | Features | Turns | Open | vs baseline | Told | Broken rules (hard) | vs baseline | Pass | Safety | Advisory chars | Reply chars | Latency |',
     '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ];
   for (const arm of report.summary.arms) {
@@ -816,7 +816,7 @@ export function renderTutorStubAbMarkdown(report) {
       lines.push(
         `Open ${signed(arm.openClusterDeltaTotal)}, told ${signed(arm.toldClusterDeltaTotal)}.`,
         '',
-        '| Failure cluster | Keyed on | Baseline | Arm | Delta |',
+        '| Broken rule | Keyed on | Baseline | Arm | Delta |',
         '| --- | --- | ---: | ---: | ---: |',
       );
       for (const entry of arm.clusterDeltas) {

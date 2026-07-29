@@ -10,6 +10,7 @@ import {
   projectTutorStubProofDagArtifactPaths,
   projectTutorStubProofDagSemanticLayerLines,
 } from '../services/tutorStubProofCommandPresentation.js';
+import { credentialFreeChildEnv } from './helpers/credentialFreeChildEnv.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COLORS = Object.freeze({
@@ -135,12 +136,11 @@ test('real /proof paths and learner inspection commands preserve exact no-model 
       cwd: ROOT,
       encoding: 'utf8',
       input: '/proof paths\n/proof inspect learner\n/quit\n',
-      env: {
-        ...process.env,
+      env: credentialFreeChildEnv({
         NO_COLOR: '1',
         TUTOR_STUB_OPENING_REALIZER: 'deterministic',
         TUTOR_STUB_SUMMARY_OPEN: '0',
-      },
+      }),
     },
   );
   const paths = result.stdout.match(/proof-DAG artifacts >[\s\S]*?\n\n/u)?.[0] || '';

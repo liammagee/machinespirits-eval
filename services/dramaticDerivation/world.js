@@ -37,11 +37,86 @@ export function validateWorld(raw, source = '<inline>') {
   const fail = (msg) => {
     throw new Error(`world spec ${source}: ${msg}`);
   };
+  const validateRecognitionSurfaces = (value, field) => {
+    if (value === undefined) return;
+    if (!Array.isArray(value) || value.length === 0) {
+      fail(`${field} must be a non-empty array when supplied`);
+    }
+    if (value.some((surface) => typeof surface !== 'string' || !surface.trim())) {
+      fail(`${field} entries must be non-empty strings`);
+    }
+    const normalized = value.map((surface) => surface.trim());
+    if (new Set(normalized).size !== normalized.length) {
+      fail(`${field} entries must be unique`);
+    }
+  };
+  const validateRecognitionPatterns = (value, field) => {
+    if (value === undefined) return;
+    if (!Array.isArray(value) || value.length === 0) {
+      fail(`${field} must be a non-empty array when supplied`);
+    }
+    const ids = [];
+    for (const pattern of value) {
+      if (!pattern || typeof pattern !== 'object' || Array.isArray(pattern)) {
+        fail(`${field} entries must be objects`);
+      }
+      const id = String(pattern.id || '').trim();
+      if (!id) fail(`${field} entries need a non-empty id`);
+      ids.push(id);
+      if (pattern.ordered !== undefined && typeof pattern.ordered !== 'boolean') {
+        fail(`${field}.${id}.ordered must be a boolean when supplied`);
+      }
+      if (!Array.isArray(pattern.all_of) || pattern.all_of.length < 3) {
+        fail(`${field}.${id}.all_of must contain at least three alternative groups`);
+      }
+      for (const [index, alternatives] of pattern.all_of.entries()) {
+        if (!Array.isArray(alternatives) || alternatives.length === 0) {
+          fail(`${field}.${id}.all_of[${index}] must be a non-empty array`);
+        }
+        if (alternatives.some((surface) => typeof surface !== 'string' || !surface.trim())) {
+          fail(`${field}.${id}.all_of[${index}] entries must be non-empty strings`);
+        }
+        const normalized = alternatives.map((surface) => surface.trim());
+        if (new Set(normalized).size !== normalized.length) {
+          fail(`${field}.${id}.all_of[${index}] entries must be unique`);
+        }
+      }
+      if (pattern.none_of !== undefined) {
+        if (!Array.isArray(pattern.none_of) || pattern.none_of.length === 0) {
+          fail(`${field}.${id}.none_of must be a non-empty array when supplied`);
+        }
+        if (pattern.none_of.some((surface) => typeof surface !== 'string' || !surface.trim())) {
+          fail(`${field}.${id}.none_of entries must be non-empty strings`);
+        }
+        const normalized = pattern.none_of.map((surface) => surface.trim());
+        if (new Set(normalized).size !== normalized.length) {
+          fail(`${field}.${id}.none_of entries must be unique`);
+        }
+      }
+    }
+    if (new Set(ids).size !== ids.length) fail(`${field} ids must be unique`);
+  };
+  const validateIntegrationRepair = (value, field) => {
+    if (value === undefined) return;
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      fail(`${field} must be an object when supplied`);
+    }
+    for (const key of ['question', 'target', 'qualification']) {
+      if (typeof value[key] !== 'string' || !value[key].trim()) {
+        fail(`${field}.${key} must be a non-empty string`);
+      }
+    }
+    if (!/[?]\s*$/u.test(value.question.trim())) {
+      fail(`${field}.question must end with a question mark`);
+    }
+  };
   if (!raw || typeof raw !== 'object') fail('not an object');
   for (const field of ['id', 'secret', 'rules', 'premises', 'release_schedule', 'slope']) {
     if (!(field in raw)) fail(`missing required field "${field}"`);
   }
   if (!Array.isArray(raw.secret.fact)) fail('secret.fact must be a fact array');
+  validateRecognitionSurfaces(raw.secret.recognition_surfaces, 'secret.recognition_surfaces');
+  validateRecognitionPatterns(raw.secret.recognition_patterns, 'secret.recognition_patterns');
   if (!raw.question) fail('missing "question" (the public dramatic question)');
   if (!Array.isArray(raw.question_pattern)) {
     fail('missing "question_pattern" (the public answer shape, e.g. [heir, "?x"])');
@@ -51,6 +126,8 @@ export function validateWorld(raw, source = '<inline>') {
   for (const premise of raw.premises) {
     if (!premise.id || !Array.isArray(premise.fact)) fail('premise needs id + fact array');
     if (premiseById.has(premise.id)) fail(`duplicate premise id "${premise.id}"`);
+    validateRecognitionSurfaces(premise.recognition_surfaces, `${premise.id}.recognition_surfaces`);
+    validateIntegrationRepair(premise.integration_repair, `${premise.id}.integration_repair`);
     premiseById.set(premise.id, premise);
   }
   for (const rule of raw.rules) {
