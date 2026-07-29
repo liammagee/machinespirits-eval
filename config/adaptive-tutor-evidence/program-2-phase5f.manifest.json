@@ -1,0 +1,127 @@
+{
+  "schema": "machinespirits.program2.phase5f.manifest.v1",
+  "generatedAt": "2026-07-29",
+  "preregistration": "PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md",
+  "runtime": {
+    "cleanMainLaunchSha": "d7552ba90a21e8c71f94108440ffd14cf2e844bd",
+    "planSha256": "2a0e146f6b05d67c4df91bb63929ce73559bd6c9634e342e42e754ab4160af29",
+    "pilotA3LaunchSha": "473640a4ae8aa159e5b8a395686bcfc9ee0a5c69",
+    "world": "world_031_tideway_makerspace",
+    "seed": 20260728,
+    "tutor": "claude-code.sonnet-5",
+    "supportingModel": "codex.gpt-5.6-terra",
+    "committee": "program2-sft-instruct-v2"
+  },
+  "archiveRoot": "~/.machinespirits-data/program-2/phase5f-live",
+  "headline": {
+    "planned": 18,
+    "sealed": {
+      "total": 14,
+      "committee": 8,
+      "freshControl": 6
+    },
+    "pendingAfterFutilityStop": 4,
+    "finalAttrition": 0,
+    "retries": {
+      "recovered": 1,
+      "reason": "tutor recovery prompt crossed private-planner boundary at future_evidence_surface:p_trace"
+    },
+    "primaryEndpoint": {
+      "committee": "0/0 (undefined)",
+      "freshControl": "0/0 (undefined)",
+      "difference": null,
+      "ci95": null,
+      "verdict": "NOT_ESTIMABLE",
+      "reason": "insufficient_opportunities"
+    },
+    "opportunityDensity": {
+      "committee": 0,
+      "freshControl": 0,
+      "minimumPerArm": 15,
+      "minimumPerProfileArm": 5,
+      "byProfileArm": {
+        "proof_skipper|committee": 0,
+        "proof_skipper|silent_control": 0,
+        "affective_resistant|committee": 0,
+        "affective_resistant|silent_control": 0
+      },
+      "futilityReason": "proof_skipper|committee: at most 0 opportunities remain possible; need 5"
+    },
+    "guardrails": {
+      "coverage": {
+        "committee": 1.0,
+        "freshControl": 1.0,
+        "verdict": "PASS"
+      },
+      "hardSafety": {
+        "committee": 1.0,
+        "freshControl": 1.0,
+        "verdict": "PASS"
+      }
+    },
+    "failures": {
+      "technical": ["cohort has pending or unclassified jobs after the pre-registered futility stop"],
+      "pedagogical": []
+    },
+    "residualApparatusBurden": "Longest sealed row: 22 turns, 19 safe fallbacks; descriptive only because no eligible treatment moment occurred",
+    "seamReview": "not authorized and not run"
+  },
+  "traceSets": {
+    "cohort": {
+      "files": 15,
+      "sealedTraces": 14,
+      "failedAttemptTraces": 1,
+      "bytes": 101922713,
+      "inventorySha256": "a9f04debb063b60833ffcbfa7281fe22f59f9c353276d696a6582ff52a664162"
+    },
+    "pilotA3": {
+      "files": 4,
+      "sealedTraces": 4,
+      "bytes": 23112680,
+      "inventorySha256": "7d8e2e383ef08c4abb0c94fdb506fa36da7f9def15f7bdcf0a07f766b1572532"
+    },
+    "inventoryRule": "SHA-256 of sorted UTF-8 lines: archive-relative path, tab, file SHA-256, tab, byte count, newline"
+  },
+  "artifacts": {
+    "cohort/launch-plan.json": {
+      "sha256": "50105ca92e757547ad0585371a5b1b3cf44dddbc4d81add7f6c69b265099814f",
+      "bytes": 83693
+    },
+    "cohort/launch-certificate.json": {
+      "sha256": "5c4b0aadfb584f4bfc7abb303284175c1271dc3b0a88273ec4a3e0c69990442d",
+      "bytes": 10364
+    },
+    "cohort/launch-state.json": {
+      "sha256": "dd248b638879b0587493c56daa90a93ff9a2fb6ca2d26675683c3f4d7e7993e2",
+      "bytes": 13067
+    },
+    "cohort/analysis.json": {
+      "sha256": "cf26248b932807ba14c16d7bc16e270e339bac24d17be204405b6e4c55038a02",
+      "bytes": 5594
+    },
+    "cohort/runner.log": {
+      "sha256": "67e62db66bbf20a6f4bfd3fd896ce43b6ea722d0a154cf30aa485a22d57a5c60",
+      "bytes": 209176
+    },
+    "pilot-a3/launch-plan.json": {
+      "sha256": "121efdfb1f60ab594b93d103efc2fb2f453734afdc874934d67d7d4b42a9e0a6",
+      "bytes": 20625
+    },
+    "pilot-a3/launch-certificate.json": {
+      "sha256": "43c08451cc11481b3a3e4f76ce584490eb6f6d5281b5d4499ce0d02700a5e016",
+      "bytes": 4527
+    },
+    "pilot-a3/launch-state.json": {
+      "sha256": "4bcba41a2ab09cdb1bb246cf988bf58e9ffd7054d043cc53d72599e5936e4a65",
+      "bytes": 4477
+    },
+    "pilot-a3/analysis.json": {
+      "sha256": "144ef0d02d2180d481c421ec6c37abb4c6bc9a8b60e3f0144875f790a71ada9a",
+      "bytes": 4196
+    },
+    "pilot-a3/pilot-bundle.json": {
+      "sha256": "256a4ec0057f45057db716921f2b681fa15bcd200c6cf79d5259dd05ceea870b",
+      "bytes": 9314
+    }
+  }
+}

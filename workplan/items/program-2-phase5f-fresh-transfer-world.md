@@ -1,16 +1,16 @@
 ---
 id: program-2-phase5f-fresh-transfer-world
 title: "Program-2 Phase 5f: clean post-hardening transfer world"
-status: active
+status: done
 type: experiment
 priority: P2
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
-branch: codex/program-2-phase5f-cohort
-verification: "A3 sealed 4/4 rows on their first attempt with no final attrition, full coverage by turn 16, hard safety passing, and all 31 gate-grade decisions clean. The prospective source-only cohort amendment now freezes 10 committee plus 8 fresh controls, the inherited >=15 opportunities/arm and >=5/profile-arm terminal density floor, a Phase 5f-native analyzer, and an A3-bound 11-check pilot bundle. Deterministic tests cover the zero-opportunity apparatus-pilot certificate exception while preserving the cohort live-futility gate. No paid cohort, certificate, transfer estimate, or external-payload authorization is included; after merge the exact clean-main artifacts must be generated and separately authorized."
-claim_status: planned
+updated: 2026-07-29
+branch: codex/program-2-phase5f-closeout
+verification: "The separately authorized, clean-main terminal cohort stopped at its frozen live-futility boundary after 14/18 sealed dialogues (8 committee, 6 fresh controls, zero final attrition, one recovered retry): every profile-arm cell had 0 eligible warrant_skip opportunities, so E1e and its interval were undefined and the Phase 5f analyzer returned not_estimable/insufficient_opportunities. Coverage and hard safety were 1.000 in both arms; the A3-bound pilot bundle passed all 11 checks; no seam review, replacement cohort, or further repair was run."
+claim_status: exploratory
 depends_on:
   - program-2-transfer-apparatus-hardening
 links:
@@ -24,6 +24,7 @@ links:
     - scripts/run-program2-live-pilot.js
     - scripts/analyze-program2-live-pilot-5f.mjs
     - scripts/build-program2-phase5f-pilot-bundle.mjs
+    - config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
     - config/adaptive-tutor-evidence/program-2-phase5f-world-selection.json
     - config/adaptive-tutor-evidence/program-2-phase5f-pilot-gates.json
     - config/adaptive-tutor-evidence/program-2-phase5f-gates.json
@@ -135,3 +136,31 @@ merged, generate the exact plan and bundle from clean `main`, generate a fresh
 certificate, and obtain separate named external-payload authorization before
 launch. At most one cohort may run. Whatever its frozen terminal verdict, no
 further repair-pilot sequence follows it.
+
+## Terminal cohort closeout
+
+The exact cohort was certified and separately authorized on clean source
+`d7552ba90a21e8c71f94108440ffd14cf2e844bd`. The live futility rule stopped it
+after 14 of 18 dialogues sealed: eight committee and six fresh controls, with
+one first-attempt private-planner-boundary failure recovered on the permitted
+same-job retry and no final attrition. The four remaining jobs were not
+launched.
+
+All four profile-arm cells recorded zero eligible `warrant_skip`
+opportunities. In particular, all five planned `proof_skipper|committee` rows
+had sealed with zero opportunities, making that cell's frozen minimum of five
+mathematically unreachable. The Phase 5f analyzer therefore returns the
+terminal verdict `not_estimable` with reason `insufficient_opportunities`;
+committee and control compliance are both 0/0, their difference and bootstrap
+interval are undefined, and no transfer or costume-leak inference is licensed.
+Coverage and hard safety are both 1.000 in both arms.
+
+This is a design-limitation result, not evidence that the committee failed.
+Some transcripts still show material fallback and closure burden (the longest
+sealed row used 22 turns and 19 safe fallbacks), but no eligible treatment
+moment exists on which to attribute that burden to committee advice. The
+pre-registered stopping rule is now spent: no replacement cohort, seam review,
+or further Phase 5f repair is licensed. Evidence is preserved under
+`~/.machinespirits-data/program-2/phase5f-live`; hashes and the frozen reading
+are recorded in `config/adaptive-tutor-evidence/program-2-phase5f.manifest.json`
+and `PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md` section 13.
