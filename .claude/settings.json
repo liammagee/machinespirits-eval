@@ -1,6 +1,27 @@
 {
   "permissions": {
-    "allow": ["Bash(npm test *)", "Bash(npm run test:hermetic *)"],
+    "allow": [
+      "Bash(npm test *)",
+      "Bash(npm run test:hermetic *)",
+      "Bash(node scripts/workplan.js validate *)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:cycles)",
+      "Bash(npm run refs:check)",
+      "Bash(npm run format:check)",
+      "Bash(npm run test:manifest)",
+      "Bash(npm run wp:commit-link *)",
+      "Bash(npm run wp:source-check)",
+      "Bash(npm run skills:permissions:check)",
+      "Bash(npm run paper:provable-discourse)",
+      "Bash(node scripts/validate-paper-manifest.js *)",
+      "Bash(node scripts/eval-cli.js validate-config *)",
+      "Bash(./node_modules/.bin/prettier --check *)",
+      "Bash(shasum *)",
+      "Bash(ioreg *)",
+      "mcp__evaluations-db__read_query",
+      "mcp__evaluations-db__list_tables",
+      "mcp__evaluations-db__describe_table"
+    ],
     "deny": ["mcp__evaluations-db__write_query", "mcp__evaluations-db__create_table"]
   },
   "hooks": {
