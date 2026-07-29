@@ -547,6 +547,7 @@
         "tests/tutorStubTurnFailureIngest.test.js",
         "tests/tutorStubTurnProgressionContract.test.js",
         "tests/tutorStubTutorPromptContext.test.js",
+        "tests/tutorStubTutorTurnPipeline.test.js",
         "tests/tutorStubTypedActionAdapter.test.js",
         "tests/tutorStubTypedActionRestoration.test.js",
         "tests/tutorStubTypedCompositeAdvocateCalibration.test.js",

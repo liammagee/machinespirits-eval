@@ -314,9 +314,10 @@ test('dialogue-closure context pins final check-in, mandatory, and available bra
   );
 });
 
-test('the CLI retains prompt assembly, state construction, runtime call sites, and compatibility wrappers', () => {
+test('the CLI retains state construction and wrappers while the tutor-turn pipeline owns prompt assembly', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorPromptContext.js'), 'utf8');
+  const pipelineSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorTurnPipeline.js'), 'utf8');
   const learnerDagWrapper = cliSource.slice(
     cliSource.indexOf('function tutorLearnerDagModelContext'),
     cliSource.indexOf('function humanDiscourseTutorContext'),
@@ -338,7 +339,8 @@ test('the CLI retains prompt assembly, state construction, runtime call sites, a
   assert.match(cliSource, /function createLearnerDagState/u);
   assert.match(cliSource, /function buildHumanDiscourseFrame/u);
   assert.match(cliSource, /function dagTurnContext/u);
-  assert.match(cliSource, /async function callTutor/u);
+  assert.match(cliSource, /createTutorStubTutorTurnPipeline/u);
+  assert.match(pipelineSource, /return async function callTutor/u);
   assert.match(cliSource, /learnerDag: tutorLearnerDagModelContext/u);
   assert.match(cliSource, /humanDiscourse: humanDiscourseTutorContext/u);
   assert.match(cliSource, /dialogueClosure: dialogueClosureTutorContext/u);
@@ -347,4 +349,5 @@ test('the CLI retains prompt assembly, state construction, runtime call sites, a
   assert.doesNotMatch(cliSource, /\[Tutor-only dialogue closure\]/u);
   assert.doesNotMatch(serviceSource, /(?:from|import\()[^\n]*scripts\//u);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);
+  assert.doesNotMatch(pipelineSource, /(?:from|import\()[^\n]*scripts\//u);
 });
