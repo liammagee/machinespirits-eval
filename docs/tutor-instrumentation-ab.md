@@ -117,6 +117,60 @@ Cluster names come in two conventions on the same audit: `failureClusters` uses
 `liveTurnProgressionAudit:…`, `hardFailureClusters` uses
 `live_turn_progression_v1:…`. They are the same checks.
 
+### Within the cluster count, read the open column
+
+The tally above is not a ruler the arms start level on. The bench computes a
+per-turn performance contract for every turn and grades every arm against it,
+but shows it to one of them. Some rules ask *did you play the part your plan
+named*, and an arm holding no plan cannot win those at all.
+
+`services/tutorStubAbRuleKeying.js` grades each rule by one question:
+
+> Could a tutor handed nothing but the public transcript and the learner's turn
+> have satisfied this rule?
+
+A prohibition — do not repeat yourself, do not state the answer early, do not
+claim two exhibits match before that is public — passes. Every arm satisfies it
+by not doing the thing, and the bare tutor's ignorance costs it nothing. Graded
+**open**. A rule that demands a particular thing be said, or said a particular
+way, where the particular is fixed by the plan's own named slots or by a release
+schedule in the world file that only the plan relays, fails. Graded **told**.
+
+The test is *not* "does this rule read private data" — it is whether an untold
+speaker could have come out the other side clean.
+
+Every arm reports `openClusters`, `toldClusters`, and the matching deltas, and
+the report tables lead with open. The told total stays visible on purpose: the
+gap between the two is the size of the bench's own bias, measured rather than
+asserted. Pooled over the recorded corpus the contract's headline −3.08 broken
+rules per turn is −2.61 told and −0.47 open, so about 85% of it sits on rules
+the bare tutor was never in a position to win.
+
+Rules are keyed by issue type alone, not `guardFamily:issueType` — the live and
+V2 turn-progression audits raise the same names, and a recovery pass re-raises
+names it did not author, but the answer to "could an untold tutor have avoided
+this" does not change with the family that noticed it.
+
+A rule nobody has classified is counted in a third bucket and printed, never
+folded into either total, so the two halves need not add to the headline count.
+Summarising never throws on an unknown rule — that would lose a paid run at the
+last step — so drift is caught by a checked-in table in
+`tests/tutorStubAbHarness.test.js` listing every rule the corpus has raised with
+the class it was given.
+
+Recorded runs can be re-split with no model calls:
+
+```bash
+node scripts/rescore-tutor-stub-ab-open-rules.js --pooled
+```
+
+It reads `report.json` files and re-derives everything from `failureClusters`,
+never from the stored summary, so runs recorded before the split existed score
+identically to runs recorded after. It reports rates per turn rather than raw
+counts, because arms do not all appear in every run — the baseline has been
+replayed on far more turns than any single variant, so a raw difference between
+two totals would compare two different amounts of work.
+
 ## Running it
 
 Inspect the zero-call plan first:

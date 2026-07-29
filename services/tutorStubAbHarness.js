@@ -33,6 +33,11 @@ import {
   refreshTutorStubFrozenFirstDraftRequest,
   TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA,
 } from './tutorStubFrozenReplay.js';
+import {
+  splitTutorStubAbClusters,
+  tutorStubAbRuleKeying,
+  tutorStubAbRuleKeyingReason,
+} from './tutorStubAbRuleKeying.js';
 import { normalizeTokenUsage } from './tokenUsage.js';
 import {
   projectTutorStubAbRequest,
@@ -647,6 +652,17 @@ function sumClusters(counts) {
   return total;
 }
 
+/**
+ * The same tally split by whether an untold tutor could have satisfied the rule.
+ * The bench grades every arm against a plan it shows to one of them, so the
+ * headline total is not a ruler the arms start level on; the `open` half is.
+ */
+function splitTally(counts) {
+  const flat = [];
+  for (const [cluster, count] of counts) for (let i = 0; i < count; i += 1) flat.push(cluster);
+  return splitTutorStubAbClusters(flat);
+}
+
 export function summarizeTutorStubAb({ plan, results }) {
   const baselineArmId = plan.baselineArmId;
   const byArm = new Map();
@@ -656,6 +672,7 @@ export function summarizeTutorStubAb({ plan, results }) {
   const baselineRows = byArm.get(baselineArmId) || [];
   const baselineClusters = tallyClusters(baselineRows);
   const baselineHardClusters = tallyClusters(baselineRows, 'hardFailureClusters');
+  const baselineSplit = splitTally(baselineClusters);
   const baselineTotals = { clusters: sumClusters(baselineClusters), hard: sumClusters(baselineHardClusters) };
   const baselinePassById = new Map(baselineRows.map((row) => [`${row.caseId}__${row.modelId}`, row.status]));
 
@@ -667,12 +684,15 @@ export function summarizeTutorStubAb({ plan, results }) {
     const hardClusters = tallyClusters(rows, 'hardFailureClusters');
     const totalClusters = sumClusters(clusters);
     const totalHardClusters = sumClusters(hardClusters);
+    const split = splitTally(clusters);
     const clusterDeltas = [...new Set([...clusters.keys(), ...baselineClusters.keys()])]
       .map((cluster) => ({
         cluster,
         arm: clusters.get(cluster) || 0,
         baseline: baselineClusters.get(cluster) || 0,
         delta: (clusters.get(cluster) || 0) - (baselineClusters.get(cluster) || 0),
+        keying: tutorStubAbRuleKeying(cluster),
+        keyingReason: tutorStubAbRuleKeyingReason(cluster),
       }))
       .filter((entry) => entry.delta !== 0 || entry.arm > 0)
       .sort((left, right) => left.delta - right.delta || left.cluster.localeCompare(right.cluster));
@@ -706,6 +726,17 @@ export function summarizeTutorStubAb({ plan, results }) {
       meanHardClusters: scored.length ? Number((totalHardClusters / scored.length).toFixed(2)) : null,
       clusterDeltaTotal: armId === baselineArmId ? 0 : totalClusters - baselineTotals.clusters,
       hardClusterDeltaTotal: armId === baselineArmId ? 0 : totalHardClusters - baselineTotals.hard,
+      // The same tally split by whether an arm holding no plan could have
+      // satisfied the rule. `open` is the comparable half; `told` is the half
+      // the bench hands to whichever arm carries the contract, and its size is
+      // the measured bias of the headline number rather than an assertion about it.
+      openClusters: split.open,
+      toldClusters: split.told,
+      unclassifiedClusters: split.unclassified,
+      unclassifiedRules: split.unclassifiedRules,
+      openClusterDeltaTotal: armId === baselineArmId ? 0 : split.open - baselineSplit.open,
+      toldClusterDeltaTotal: armId === baselineArmId ? 0 : split.told - baselineSplit.told,
+      meanOpenClusters: scored.length ? Number((split.open / scored.length).toFixed(2)) : null,
       meanAdvisoryChars: scored.length
         ? Math.round(scored.reduce((total, row) => total + (row.projection?.advisoryChars || 0), 0) / scored.length)
         : null,
@@ -751,23 +782,46 @@ export function renderTutorStubAbMarkdown(report) {
     'Failure clusters are the headline. Pass is all-or-nothing per turn and can read',
     '0/N for every arm at once; the cluster tallies say how far each arm is from clean.',
     '',
-    '| Arm | Features | Turns | Clusters (hard) | vs baseline | Pass | Safety | Advisory chars | Reply chars | Latency |',
-    '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+    'Read the **open** column, not the total. The bench computes a performance',
+    'contract for every turn and grades every arm against it, but shows it to one of',
+    'them, so the total is not a ruler the arms start level on. Open counts only the',
+    'rules an arm holding no plan could still have satisfied — prohibitions, shape',
+    'rules, and anything judged against the learner’s own public turn. Told counts the',
+    'rest, and its size is the measured bias of the total.',
+    '',
+    '| Arm | Features | Turns | Open | vs baseline | Told | Clusters (hard) | vs baseline | Pass | Safety | Advisory chars | Reply chars | Latency |',
+    '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ];
   for (const arm of report.summary.arms) {
     const versus = arm.baseline ? '—' : `${signed(arm.clusterDeltaTotal)} (${signed(arm.hardClusterDeltaTotal)})`;
+    const openVersus = arm.baseline ? '—' : signed(arm.openClusterDeltaTotal);
     lines.push(
-      `| ${cell(arm.label)}${arm.baseline ? ' _(baseline)_' : ''} | ${cell(arm.features.join(', ') || 'none')} | ${arm.scored} | ${arm.totalClusters} (${arm.totalHardClusters}) | ${versus} | ${arm.pass}/${arm.scored} (${pct(arm.passRate)}) | ${arm.safetyFailures} | ${arm.meanAdvisoryChars ?? '—'} | ${arm.meanCandidateChars ?? '—'} | ${arm.meanLatencyMs ?? '—'} ms |`,
+      `| ${cell(arm.label)}${arm.baseline ? ' _(baseline)_' : ''} | ${cell(arm.features.join(', ') || 'none')} | ${arm.scored} | ${arm.openClusters} | ${openVersus} | ${arm.toldClusters} | ${arm.totalClusters} (${arm.totalHardClusters}) | ${versus} | ${arm.pass}/${arm.scored} (${pct(arm.passRate)}) | ${arm.safetyFailures} | ${arm.meanAdvisoryChars ?? '—'} | ${arm.meanCandidateChars ?? '—'} | ${arm.meanLatencyMs ?? '—'} ms |`,
+    );
+  }
+  const unclassified = [...new Set(report.summary.arms.flatMap((arm) => arm.unclassifiedRules || []))].sort();
+  if (unclassified.length) {
+    lines.push(
+      '',
+      `**${unclassified.length} rule(s) are in neither column** — nobody has said whether an arm holding`,
+      'no plan could have satisfied them, so they are left out of both totals:',
+      '',
+      ...unclassified.map((rule) => `- \`${rule}\``),
     );
   }
   for (const arm of report.summary.arms.filter((entry) => !entry.baseline)) {
     if (!arm.clusterDeltas.length && !arm.flipsVsBaseline.length) continue;
     lines.push('', `## ${arm.label} vs baseline`, '');
     if (arm.clusterDeltas.length) {
-      lines.push('| Failure cluster | Baseline | Arm | Delta |', '| --- | ---: | ---: | ---: |');
+      lines.push(
+        `Open ${signed(arm.openClusterDeltaTotal)}, told ${signed(arm.toldClusterDeltaTotal)}.`,
+        '',
+        '| Failure cluster | Keyed on | Baseline | Arm | Delta |',
+        '| --- | --- | ---: | ---: | ---: |',
+      );
       for (const entry of arm.clusterDeltas) {
         lines.push(
-          `| ${cell(entry.cluster)} | ${entry.baseline} | ${entry.arm} | ${entry.delta > 0 ? '+' : ''}${entry.delta} |`,
+          `| ${cell(entry.cluster)} | ${entry.keying}${entry.keyingReason ? ` — ${cell(entry.keyingReason)}` : ''} | ${entry.baseline} | ${entry.arm} | ${entry.delta > 0 ? '+' : ''}${entry.delta} |`,
         );
       }
     }

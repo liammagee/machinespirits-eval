@@ -23,6 +23,11 @@ import {
   TUTOR_STUB_AB_FEATURE_IDS,
   TUTOR_STUB_AB_GENERIC_PLAN,
 } from '../services/tutorStubAbArms.js';
+import {
+  splitTutorStubAbClusters,
+  tutorStubAbRuleKeying,
+  tutorStubAbRuleKeyingReason,
+} from '../services/tutorStubAbRuleKeying.js';
 import { renderTutorStubAbTranscriptHtml } from '../services/tutorStubAbTranscriptHtml.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -277,8 +282,7 @@ test('the generic plan is rejected on the baseline and beside the real contract'
 test('the due line carries the released finding on a due turn and nothing on a quiet one', () => {
   const abPlan = plan('due_line_control', { scenarios: ['nocturne_full'] });
   const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
-  const byTurn = (armId, turn) =>
-    forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
+  const byTurn = (armId, turn) => forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
 
   // Turn 2 releases a finding in the recorded world; turn 3 releases nothing.
   const due = byTurn('due_line_only', 2);
@@ -438,4 +442,137 @@ test('CLI lists the instrumentation feature registry', () => {
   });
   assert.equal(result.status, 0, result.stderr);
   for (const id of TUTOR_STUB_AB_FEATURE_IDS) assert.match(result.stdout, new RegExp(id, 'u'));
+});
+
+// --- rules an untold tutor could have satisfied ------------------------------
+
+/**
+ * The classes recorded for every rule the bench has actually raised across the
+ * recorded corpus. Recorded runs live under `exports/`, which is gitignored, so
+ * this checked-in list is the drift guard: reclassifying a rule by accident
+ * moves the headline number, and this is what catches it.
+ */
+const RECORDED_RULE_KEYING = {
+  'actorialRealizationAudit:missing_selected_actorial_part': 'told',
+  'actorialRealizationAudit:missing_selected_performance_tactic': 'told',
+  'dramaticReleaseAudit:duplicate_clue_delivery': 'open',
+  'dramaticReleaseAudit:missing_exhibit_action': 'told',
+  'dramaticReleaseAudit:missing_in_scene_enactment': 'told',
+  'dramaticReleaseAudit:missing_return_to_inquiry': 'open',
+  'dramaticReleaseAudit:opaque_clue_release': 'told',
+  'leakAudit:private_final_conclusion': 'open',
+  'leakAudit:unreleased_premise_content': 'open',
+  'leakAudit:unsupported_evidence_correspondence': 'open',
+  'liveSourceActionAlignmentAudit:due_source_exact_occurrence_count': 'told',
+  'liveTurnProgressionAudit:handoff_loses_turn_focus': 'told',
+  'liveTurnProgressionAudit:handoff_question_not_terminal': 'told',
+  'liveTurnProgressionAudit:learner_uptake_not_realized': 'open',
+  'liveTurnProgressionAudit:multiple_questions_violate_terminal_handoff': 'open',
+  'liveTurnProgressionAudit:question_forbidden_by_handoff_contract': 'told',
+  'liveTurnProgressionAudit:question_outside_terminal_handoff': 'told',
+  'liveTurnProgressionAudit:required_handoff_question_missing': 'told',
+  'questionSupportAudit:abstract_proof_language': 'open',
+  'questionSupportAudit:missing_clarification_invitation': 'open',
+  'questionSupportAudit:unanswerable_open_recall': 'open',
+  'releaseDeliveryAudit:missing_due_evidence': 'told',
+  'repetitionAudit:repeated_tutor_sentence': 'open',
+  'responseCompositionAudit:generic_learner_uptake': 'open',
+  'responseCompositionAudit:missing_learner_uptake': 'open',
+  'responseCompositionAudit:missing_tutor_development': 'open',
+  'responseCompositionAudit:unlicensed_requested_entry': 'told',
+  'responseCompositionAudit:verbatim_learner_echo': 'open',
+};
+
+test('every rule the bench has raised keeps the class it was given', () => {
+  for (const [cluster, expected] of Object.entries(RECORDED_RULE_KEYING)) {
+    assert.equal(tutorStubAbRuleKeying(cluster), expected, `${cluster} changed class`);
+    assert.ok(tutorStubAbRuleKeyingReason(cluster), `${cluster} has no stated reason`);
+  }
+});
+
+test('the guard family that noticed a rule does not change its class', () => {
+  // The live and V2 turn-progression audits raise the same issue types, and a
+  // recovery pass re-raises names it did not author.
+  assert.equal(
+    tutorStubAbRuleKeying('liveTurnProgressionAudit:learner_uptake_not_realized'),
+    tutorStubAbRuleKeying('turnProgressionAudit:learner_uptake_not_realized'),
+  );
+  assert.equal(tutorStubAbRuleKeying('learner_uptake_not_realized'), 'open');
+});
+
+test('an unclassified rule is quarantined rather than folded into either total', () => {
+  const split = splitTutorStubAbClusters([
+    'repetitionAudit:repeated_tutor_sentence',
+    'actorialRealizationAudit:missing_selected_actorial_part',
+    'someAudit:nobody_has_classified_this',
+  ]);
+  assert.equal(split.open, 1);
+  assert.equal(split.told, 1);
+  assert.equal(split.unclassified, 1);
+  assert.deepEqual(split.unclassifiedRules, ['someAudit:nobody_has_classified_this']);
+});
+
+test('a rule broken on four turns counts four times, like the headline total', () => {
+  const repeated = Array.from({ length: 4 }, () => 'repetitionAudit:repeated_tutor_sentence');
+  assert.equal(splitTutorStubAbClusters(repeated).open, 4);
+});
+
+test('the summary splits the tally and the halves add back up to the total', async () => {
+  const abPlan = plan('smoke');
+  const report = await runTutorStubAb({
+    plan: abPlan,
+    root: ROOT,
+    generateCandidate: async ({ job }) => ({ text: `candidate ${job.armId}`, provider: 'test', model: 'test' }),
+    auditCandidate: ({ job }) =>
+      job.armId === 'baseline'
+        ? {
+            ok: false,
+            safetyFailure: false,
+            // One rule the bare tutor could have satisfied, two it could not,
+            // and one nobody has classified.
+            failureClusters: [
+              'repetitionAudit:repeated_tutor_sentence',
+              'actorialRealizationAudit:missing_selected_actorial_part',
+              'liveSourceActionAlignmentAudit:due_source_exact_occurrence_count',
+              'someAudit:nobody_has_classified_this',
+            ],
+            hardFailureClusters: [],
+          }
+        : {
+            ok: false,
+            safetyFailure: false,
+            failureClusters: ['repetitionAudit:repeated_tutor_sentence'],
+            hardFailureClusters: [],
+          },
+  });
+  const baseline = report.summary.arms.find((arm) => arm.baseline);
+  const instrumented = report.summary.arms.find((arm) => !arm.baseline);
+
+  // Three turns in the smoke preset.
+  assert.equal(baseline.openClusters, 3);
+  assert.equal(baseline.toldClusters, 6);
+  assert.equal(baseline.unclassifiedClusters, 3);
+  assert.equal(baseline.openClusters + baseline.toldClusters + baseline.unclassifiedClusters, baseline.totalClusters);
+  assert.deepEqual(baseline.unclassifiedRules, ['someAudit:nobody_has_classified_this']);
+
+  // The whole tally makes the instrumented arm look nine rules better; on the
+  // rules the bare tutor could have satisfied it is level.
+  assert.equal(instrumented.clusterDeltaTotal, -9);
+  assert.equal(instrumented.openClusterDeltaTotal, 0);
+  assert.equal(instrumented.toldClusterDeltaTotal, -6);
+
+  const markdown = renderTutorStubAbMarkdown(report);
+  assert.match(markdown, /Open 0, told -6\./u);
+  assert.match(markdown, /nobody_has_classified_this/u);
+  assert.match(markdown, /Read the \*\*open\*\* column, not the total/u);
+});
+
+test('re-scoring recorded runs on the open rules makes no model calls', () => {
+  const result = spawnSync(process.execPath, ['scripts/rescore-tutor-stub-ab-open-rules.js', '--pooled'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    env: { ...process.env, OPENROUTER_API_KEY: '', ANTHROPIC_API_KEY: '' },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /reads recorded report\.json files only|no recorded A\/B runs found/u);
 });

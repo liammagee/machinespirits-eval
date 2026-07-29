@@ -16,7 +16,11 @@ verification: "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call 
   writes report.json, report.md, and a swimlane diff whose failure-cluster deltas
   separate the arms; `node scripts/judge-tutor-stub-ab-pairs.js --mock` exercises
   the whole blind-judging path with no model calls, and `--limit 0` re-summarises a
-  recorded corpus without judging anything."
+  recorded corpus without judging anything; every rule the bench has ever raised
+  carries an explicit open/told class with a stated reason, held against a
+  checked-in table by `tests/tutorStubAbHarness.test.js`, and
+  `node scripts/rescore-tutor-stub-ab-open-rules.js --pooled` re-splits the whole
+  recorded corpus with the API keys blanked."
 claim_status: scope-bound
 links:
   notes:
@@ -106,18 +110,45 @@ contract reply *shorter* than the generic one. Both comparisons rest on 8
 decided pairs with 3 turned away, so they are small; the direction agrees with
 the 88-pair set.
 
-Why the two rulers disagree, countable rather than asserted. The bench computes
-a performance contract for every turn and grades all three arms against it, but
-shows it to one. Split the contract's 36-cluster win by what each rule keys on:
-26 come from rules that grade against the plan's own named slots — did you use
-the part it named (−8), the tactic it named (−8), the source it named (−4), the
-question its handoff permits (−4), plus uptake and handoff-question rules (−2).
-Only 10 come from rules graded against the public scene every arm shares —
-asking for evidence not yet in the scene (−3), releasing a clue with no
-character or gesture to carry it (−2), and six others at −1. The plan control's
-+7 is the same effect backwards: its own text says end with one question, so on
-turns where the hidden contract forbids a question it breaks that rule three
-times more often than the bare tutor, which stays quiet by luck.
+Why the two rulers disagree, countable rather than asserted, and now built into
+the bench. The bench computes a performance contract for every turn and grades
+all three arms against it, but shows it to one. So the headline count is not a
+ruler the arms start level on. `services/tutorStubAbRuleKeying.js` classifies
+every rule the bench can raise by one question — *could a tutor handed nothing
+but the public transcript and the learner's turn have satisfied this?* A
+prohibition passes (`open`): any arm satisfies it by not doing the thing. A
+demand to say a particular scheduled thing, where the particular comes from the
+plan's named slots or a world-file release schedule only the plan relays, fails
+(`told`). Every arm now reports both totals, and
+`scripts/rescore-tutor-stub-ab-open-rules.js` recomputes them over every run
+already on disk with no model calls.
+
+On `plan-control-1` the contract's 36-cluster win splits 30 told, 6 open. Pooled
+over all 35 recorded runs, broken rules per turn:
+
+| arm | open | vs bare | told | vs bare | all |
+|---|---|---|---|---|---|
+| baseline | 1.48 | — | 3.82 | — | 5.30 |
+| contract_only | 1.01 | −0.47 | 1.22 | −2.61 | 2.23 |
+| evidence_only | 1.33 | −0.15 | 3.02 | −0.80 | 4.36 |
+| classifier_only | 1.31 | −0.17 | 3.58 | −0.24 | 4.89 |
+| scaffold_only | 1.40 | −0.08 | 3.38 | −0.44 | 4.78 |
+| due_line_only | 1.43 | −0.05 | 3.37 | −0.45 | 4.80 |
+| continuity_only | 1.42 | −0.06 | 3.76 | −0.07 | 5.18 |
+| dag_only | 1.44 | −0.04 | 3.76 | −0.07 | 5.20 |
+| length_matched | 1.55 | +0.07 | 3.62 | −0.20 | 5.17 |
+| generic_plan_only | 1.55 | +0.06 | 4.00 | +0.18 | 5.55 |
+
+(`instrumented`, `no_dag` and `no_scaffold` sit at 3–6 turns each and are too
+small to read.) So about 85% of the contract's headline win — −2.61 of −3.07 per
+turn — sits on rules the bare tutor was never in a position to win. No rule the
+corpus has raised falls outside the classification. On the level
+half it still wins, −0.47 per turn, roughly a third off the bare tutor's rate:
+smaller than the headline, and real. Every other single piece is within ±0.17 of
+zero there. The plan control's +0.06 open, +0.18 told is the bias backwards: its
+own text says end with one question, so on turns where the hidden contract
+forbids a question it breaks that rule more often than the bare tutor, which
+stays quiet by luck.
 
 Fourth result, 2026-07-29. The strongest objection to the second result is that
 the judge cannot tell a clue the world file schedules for that turn from plot
@@ -175,3 +206,10 @@ a second instrument, not a ground truth: it is one model's reading of which turn
 serves the learner better, on two scenes blind and three with the clue list,
 with one speaking model behind both candidates. It is worth what it is worth
 because it shares nothing with the plan — not because it is right.
+
+The open half is a fairer ruler, not an outside one. It is still the bench's own
+rules, still written alongside the instrumentation, and the classification is a
+judgement call recorded in one file so it can be argued with — each rule carries
+the reason it was graded the way it was. A rule nobody has classified is counted
+apart and printed rather than folded into either total, so the two halves need
+not add to the headline count.
