@@ -340,6 +340,7 @@ export function publicTutorStubAbPlan(plan) {
       features: [...arm.features],
       omitted: [...arm.omitted],
       lengthTargetChars: arm.lengthTargetChars ?? null,
+      genericPlan: arm.genericPlan === true,
       guardsClaimed: [...arm.guardsClaimed],
     })),
     scenarios: plan.scenarios.map((scenario) => ({

@@ -203,9 +203,14 @@ async function main() {
         `models: ${printable.models.map((model) => `${model.id}=${model.provider}.${model.model}@${model.effort}`).join(', ')}`,
       );
       for (const arm of printable.arms) {
-        console.log(
-          `arm ${arm.id}${arm.baseline ? ' (baseline)' : ''}: ${arm.features.join(', ') || 'no instrumentation'}`,
-        );
+        // Controls carry no instrumentation features but are not bare, so name
+        // what they do carry — "no instrumentation" alone misreads the lane.
+        const carried = [
+          ...arm.features,
+          arm.genericPlan ? 'generic plan (no case content)' : null,
+          arm.lengthTargetChars ? `length target ${arm.lengthTargetChars} chars` : null,
+        ].filter(Boolean);
+        console.log(`arm ${arm.id}${arm.baseline ? ' (baseline)' : ''}: ${carried.join(', ') || 'no instrumentation'}`);
       }
       for (const scenario of printable.scenarios) {
         console.log(

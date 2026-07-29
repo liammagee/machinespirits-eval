@@ -166,6 +166,46 @@ function lengthDirective(chars) {
   return `Write a reply of about ${chars} characters.`;
 }
 
+/**
+ * Plan control.
+ *
+ * The first-draft contract is the one block that moves the score, and it does
+ * two things at once: it hands the speaker a plan for the turn, and it fills
+ * that plan with this turn's own content — which part to play, which exhibit to
+ * name, which line to quote, what limit to state. An arm carrying a plan with
+ * none of that content separates the two. If it scores like the contract, the
+ * gain was having a plan; if it scores like the bare tutor, the gain was ours.
+ *
+ * So this text is fixed. It is the same on every turn of every scenario, which
+ * is what makes it content-free: it cannot carry anything about the turn it is
+ * attached to. It keeps the contract's shape — an opening line naming a
+ * four-sentence paragraph and its ordered slots, a voice line, one line per
+ * slot, a closing rule about staying in voice — and fills it with teaching
+ * advice that would be as true of any lesson on any subject.
+ *
+ * The closing rule is matched deliberately. Without it the control would break
+ * frame and lose rules for a reason that has nothing to do with the comparison.
+ *
+ * It runs about 1000 characters against the contract's 1300-2800, so it is not
+ * a length match. `length_target_chars` is the arm that answers length.
+ *
+ * Unbracketed, for the same reason as the length note: `[header]` blocks are
+ * instrumentation, and `parseTutorStubAdvisoryBlocks` fails closed on a header
+ * it does not know.
+ */
+const GENERIC_PLAN = [
+  'Write one paragraph: four unlabeled, unquoted sentences, each at most 23 words. Follow OPEN > CHECK > OFFER > ASK. Never merge them.',
+  'VOICE — Write to an intelligent adult beginner. Standard common words, one idea per sentence, no lists, no headings, no labels.',
+  'OPEN — Take up what the learner just said, in your own words, so they can hear that they were read. Never use generic praise.',
+  'CHECK — Say plainly which part of what they wrote holds and which part does not hold yet. Give the reason in the same sentence.',
+  'OFFER — Give them one concrete thing to look at, weigh, or try next. Prefer something already in front of them to something new.',
+  'ASK — End with one question they could answer from what they already have. One question only, and make it a real one.',
+  'PACE — Do one thing per turn. A turn that does one thing well beats a turn that covers everything.',
+  'Use one voice. Never announce roles, strategy, analysis, or method. Do not restate the conversation, list options, or give the answer.',
+].join('\n');
+
+export const TUTOR_STUB_AB_GENERIC_PLAN = GENERIC_PLAN;
+
 function normalizeLengthTarget(value, label) {
   if (value === undefined || value === null) return null;
   if (!Number.isInteger(value) || value < 1) throw new Error(`${label} must be a positive integer`);
@@ -204,6 +244,15 @@ export function resolveTutorStubAbArm(id, definition = {}) {
   if (lengthTargetChars !== null && definition.baseline) {
     throw new Error(`baseline arm ${armId} must not carry a length target`);
   }
+  const genericPlan = definition.generic_plan === true;
+  if (genericPlan && definition.baseline) {
+    throw new Error(`baseline arm ${armId} must not carry a generic plan`);
+  }
+  // A generic plan beside the real one is not a control of anything: the
+  // speaker would hold two plans naming different slots for the same paragraph.
+  if (genericPlan && features.includes('first_draft_contract')) {
+    throw new Error(`arm ${armId} cannot carry the generic plan and the first-draft contract together`);
+  }
   return {
     schema: AB_ARM_SCHEMA,
     id: armId,
@@ -212,6 +261,7 @@ export function resolveTutorStubAbArm(id, definition = {}) {
     baseline: Boolean(definition.baseline),
     features,
     lengthTargetChars,
+    genericPlan,
     omitted: TUTOR_STUB_AB_FEATURE_IDS.filter((featureId) => !kept.has(featureId)),
     learnerFraming,
     guardsClaimed: [...new Set(features.flatMap((featureId) => tutorStubAbFeature(featureId).guards))].sort(),
@@ -242,7 +292,11 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
   // text, so position is not one of the things that varies between arms.
   const lengthTargetChars = arm.lengthTargetChars ?? null;
   const directive = lengthTargetChars === null ? null : lengthDirective(lengthTargetChars);
-  const content = [directive, ...retained.map((block) => block.text), residue].filter(Boolean).join('\n\n');
+  // Same position as the real plan it stands in for, ahead of the learner text.
+  const genericPlan = arm.genericPlan === true ? GENERIC_PLAN : null;
+  const content = [directive, genericPlan, ...retained.map((block) => block.text), residue]
+    .filter(Boolean)
+    .join('\n\n');
   latest.content = content;
   return {
     schema: AB_REQUEST_PROJECTION_SCHEMA,
@@ -259,9 +313,12 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
     requestedFeatures: [...arm.features],
     learnerFraming: arm.learnerFraming,
     lengthTargetChars,
-    // Kept out of advisoryChars: the length note carries no planner content, and
-    // folding it in would make the control look mildly instrumented in reports.
+    genericPlan: genericPlan !== null,
+    // Kept out of advisoryChars: neither the length note nor the generic plan
+    // carries any planner content, and folding either in would make a control
+    // look mildly instrumented in reports.
     lengthDirectiveChars: directive ? directive.length : 0,
+    genericPlanChars: genericPlan ? genericPlan.length : 0,
     advisoryChars: retained.reduce((total, block) => total + block.text.length, 0),
     requestChars: content.length,
   };

@@ -20,6 +20,7 @@ import {
   resolveTutorStubAbGuardSet,
   TUTOR_STUB_AB_FEATURES,
   TUTOR_STUB_AB_FEATURE_IDS,
+  TUTOR_STUB_AB_GENERIC_PLAN,
 } from '../services/tutorStubAbArms.js';
 import { renderTutorStubAbTranscriptHtml } from '../services/tutorStubAbTranscriptHtml.js';
 
@@ -225,6 +226,51 @@ test('a length target is rejected on the baseline and separates otherwise identi
   const collapsed = plan('length_control', { scenarios: ['tallow_short'], featureOverride: 'none' });
   const targets = collapsed.arms.filter((arm) => !arm.baseline).map((arm) => arm.lengthTargetChars);
   assert.deepEqual(targets, [450, null]);
+});
+
+test('the plan control carries a fixed plan and none of the turn’s own content', () => {
+  const abPlan = plan('plan_control', { scenarios: ['nocturne_full'] });
+  const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
+  const jobs = abPlan.jobs.filter((entry) => entry.armId === 'generic_plan_only');
+  const first = forJob(jobs[0]);
+  const bare = forJob(abPlan.jobs.find((entry) => entry.armId === 'baseline' && entry.caseId === jobs[0].caseId));
+
+  assert.equal(first.projection.systemPrompt, bare.projection.systemPrompt);
+  assert.deepEqual(first.history, bare.history);
+  assert.deepEqual(first.projection.retainedFeatures, []);
+  assert.equal(first.projection.advisoryChars, 0);
+  assert.equal(first.projection.genericPlan, true);
+  assert.equal(bare.projection.genericPlan, false);
+  assert.equal(first.latest.content, `${TUTOR_STUB_AB_GENERIC_PLAN}\n\n${bare.latest.content}`);
+
+  // Unbracketed for the same reason as the length note: the parser fails closed
+  // on a header it does not know, so a bracketed control would read as
+  // instrumentation to anything re-reading the projected request.
+  assert.equal(parseTutorStubAdvisoryBlocks(first.latest.content).blocks.length, 0);
+
+  // The point of the control is that it cannot say anything about the turn it
+  // is attached to. Identical text on every turn is what makes that true.
+  const planTexts = new Set(jobs.map((job) => forJob(job).latest.content.slice(0, TUTOR_STUB_AB_GENERIC_PLAN.length)));
+  assert.equal(planTexts.size, 1);
+  assert.ok(jobs.length > 1);
+
+  // And it must not smuggle the contract's own vocabulary back in.
+  for (const word of ['UPTAKE', 'PART —', 'SOURCE', 'TACTIC', 'HANDOFF', 'RECORD', 'public exhibit']) {
+    assert.ok(!TUTOR_STUB_AB_GENERIC_PLAN.includes(word), word);
+  }
+});
+
+test('the generic plan is rejected on the baseline and beside the real contract', () => {
+  assert.throws(
+    () => resolveTutorStubAbArm('bare', { baseline: true, features: 'none', generic_plan: true }),
+    /must not carry a generic plan/u,
+  );
+  assert.throws(
+    () => resolveTutorStubAbArm('both', { features: ['first_draft_contract'], generic_plan: true }),
+    /cannot carry the generic plan and the first-draft contract together/u,
+  );
+  // Two plans naming different slots for the same paragraph is not a control.
+  assert.equal(resolveTutorStubAbArm('ok', { features: 'all', drop: ['first_draft_contract'] }).genericPlan, false);
 });
 
 test('projection refuses a request whose blocks are not all registered', () => {

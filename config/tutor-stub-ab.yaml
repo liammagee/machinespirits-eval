@@ -146,6 +146,21 @@ arms:
     features: none
     learner_framing: false
     length_target_chars: 450
+  # Plan control. The contract does two things at once: it hands the speaker a
+  # plan for the turn, and it fills that plan with this turn's own content —
+  # which part to play, which exhibit to name, which line to quote, what limit
+  # to state. This arm is the plan without the content: the same four-slot
+  # shape, the same closing rule about staying in voice, and teaching advice
+  # that would be as true of any lesson on any subject. It is fixed text, the
+  # same on every turn, so it cannot carry anything about the turn it is on.
+  # If it scores like the contract, the gain was having a plan. If it scores
+  # like the bare tutor, the gain was ours.
+  generic_plan_only:
+    label: Generic plan only
+    summary: A fixed four-slot writing plan carrying no case content, no evidence licence and no proof state.
+    features: none
+    learner_framing: false
+    generic_plan: true
 
 scenarios:
   tallow_short:
@@ -192,6 +207,13 @@ presets:
     models: [codex_medium]
     arms: [baseline, length_matched, contract_only]
     scenarios: [tallow_short, nocturne_full, greyfen_short]
+  # Does the contract buy a plan or does it buy our plan? Bare, bare-with-a-
+  # generic-plan, and the contract, on the two scenarios the blind pairwise
+  # judging already covers. 3 arms x 11 turns = 33 calls.
+  plan_control:
+    models: [codex_medium]
+    arms: [baseline, generic_plan_only, contract_only]
+    scenarios: [nocturne_full, greyfen_short]
   # Who is speaking, rather than what they were told. Tuned Qwen and its base
   # sibling, each bare and each with the stage directions. The frontier numbers
   # for the same two arms already exist from the length_control runs, so this
