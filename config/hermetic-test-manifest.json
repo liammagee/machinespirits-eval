@@ -49,6 +49,7 @@
         "services/__tests__/stateLedgerContext.test.js",
         "services/__tests__/subjectExplorer.test.js",
         "services/__tests__/tutorBlueprint.test.js",
+        "services/__tests__/tutorStubAbDashboardHtml.test.js",
         "services/__tests__/tutorStubCharacterAdaptationAudit.test.js",
         "services/__tests__/tutorStubCharacterRestatement.test.js",
         "services/__tests__/tutorStubClipboard.test.js",
