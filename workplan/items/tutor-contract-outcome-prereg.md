@@ -82,3 +82,31 @@ this card's own verdict rule.
 **To build first.** The dialogue-level blind judge (sibling of
 `scripts/judge-tutor-stub-ab-pairs.js`); the closure-audit pass over pilots.
 Both are file-reading tools; neither needs the run to exist.
+
+---
+
+**Pilot log, 2026-07-30. Gate: FAILED — main run does not start.** 20 bare
+dialogues (`exports/tutor-stub-outcome/pilot-1/`, 5 per world, cap 12, no
+errors; every turn's trace stamp confirms zero advisory blocks).
+
+Detector hand-audit: FAILED. The engine missed 3 of 8 true closures (Greyfen
+#1 and #4, Rowan Flat #4) — in each the learner states the conclusion plainly
+and twice ("G17 contamination from the breached Larkin incubator ruined the
+Corvat line…") and the assertion matcher scores it absent; the tutor then
+loops boilerplate to the cap. The missed phrasings are passive or
+causal-clause forms; the three recognized closures use subject-position
+verdict forms. Same matcher family the leak-audit card fixed for false
+positives, now failing in the other direction. All 8 detector CLOSED
+verdicts spot-check as genuine; the miss direction is false negatives only.
+
+Bands, hand-corrected: no world in band. Greyfen 5/5 and Rowan Flat 5/5 —
+saturated; Nocturne 0/5 and Tallow 0/5 — below. The floor worlds are not
+dead dialogues: both transcripts show the tutor mid-release of a decisive
+clue at the exact turn the cap falls, so a longer cap plausibly moves them;
+the pre-registered remedy (one re-pick per world) has not yet been spent.
+
+Next steps in order, none yet taken: fix the assertion matcher and prove the
+three misses caught by unit test; recompute closure offline from the recorded
+learner lines (the matcher is pure — no new spend) and re-derive this table;
+then decide the one cap re-pick for Nocturne and Tallow and whether the
+saturated worlds are dropped or kept for the turns-to-closure secondary only.
