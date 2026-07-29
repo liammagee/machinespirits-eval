@@ -32,7 +32,13 @@ import { loadWorld } from '../services/dramaticDerivation/world.js';
 import { parseTutorStubShowcaseTrace, readTutorStubShowcaseTrace } from '../services/tutorStubShowcase.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DIALOGUE_TIMEOUT_MS = 20 * 60 * 1000;
+/**
+ * Backstop for a hung child, not a schedule. The first pilot averaged ~40
+ * seconds a turn, so three times that per turn leaves room for a slow window
+ * without letting a wedged process hold the run all night.
+ */
+const TIMEOUT_MS_PER_TURN = 2 * 60 * 1000;
+const MIN_DIALOGUE_TIMEOUT_MS = 20 * 60 * 1000;
 
 // The three A/B worlds plus the one held-out world the contract has never
 // been tuned against (world_030 is the newest and least referenced).
@@ -168,7 +174,10 @@ function runDialogue({ args, world, traceDir, turnCap, budget }) {
     child.stderr.on('data', (chunk) => {
       stderrTail = (stderrTail + chunk).slice(-2000);
     });
-    const timer = setTimeout(() => child.kill('SIGKILL'), DIALOGUE_TIMEOUT_MS);
+    const timer = setTimeout(
+      () => child.kill('SIGKILL'),
+      Math.max(MIN_DIALOGUE_TIMEOUT_MS, turnCap * TIMEOUT_MS_PER_TURN),
+    );
     child.on('close', (code) => {
       clearTimeout(timer);
       resolve({ exitCode: code, stderrTail });
