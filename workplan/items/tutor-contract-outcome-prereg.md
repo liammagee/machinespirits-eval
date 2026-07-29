@@ -7,7 +7,7 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-07-30
 verification: "Before any paid dialogue: the closure detector is hand-audited
   against the pilot transcripts and its misses are fixed or the endpoint is
   re-specified; the pilot gate (bare closure in the 20–80% band per world) is
@@ -110,3 +110,47 @@ three misses caught by unit test; recompute closure offline from the recorded
 learner lines (the matcher is pure — no new spend) and re-derive this table;
 then decide the one cap re-pick for Nocturne and Tallow and whether the
 saturated worlds are dropped or kept for the turns-to-closure secondary only.
+
+---
+
+**Matcher fix, 2026-07-30 (commit `25577590`).** The four worlds gained
+`secret.recognition_patterns`, and the backstop now reads only the asserted
+part of a learner turn (`tutorStubAssertedClaimText`). Four shapes carry every
+token of a verdict while stating none of it, and all four come off before the
+pattern is matched: a question, the rejected half of a contrast, a sentence
+that withholds or hedges, and the span an evidential verb governs ("supports
+G17 as what ruined the line"). Two of the four reuse guards the leak audit
+already wrote and tested. Nine unit tests, every sentence a verbatim pilot
+turn: three positive misses, and three negatives built from what the *first*
+widened matcher wrongly closed on. That mistake is logged rather than quietly
+fixed — a matcher widened to catch false negatives fails in the other
+direction, and the third of them decided whether Greyfen counted as 3/5 or
+5/5.
+
+**Gate table, corrected offline** (`scripts/recompute-outcome-closure.js`, no
+new spend). Nocturne 0/5 · Greyfen 5/5 · Tallow 0/5 · Rowan Flat 5/5. Three
+corrections, all flat verdicts stated on turn 9 or 10 and then repeated
+near-verbatim to the cap while the tutor never closed — the silent-failure
+signature documented in `answerSurface.js`. Gate still FAILS.
+
+**The two zeros were the harness, not the tutor** (commits `7b9b0df8`,
+`d8095939`). Both floor worlds ran to a hardcoded 12 turns. Nocturne's author
+guarantees the secret is *not* derivable before turn 28 and writes the world
+to 40; Tallow's floor is turn 11, cap 18. So no tutor could have closed
+Nocturne, and Tallow was cut a turn after its earliest legal answer — those
+0/5s measured the runner. Per-dialogue rows confirm it: every one of the ten
+stopped at exactly 12 turns with `finalSecretEntailed: false`. The runner now
+takes each world's own `turn_cap`, scales the model-call budget and the
+hung-child timeout with it, and refuses a `--turn-cap` that lands below a
+world's `t_min` rather than producing another unmeasurable zero.
+
+This is not the pre-registered cap re-pick, and the re-pick stays unspent: the
+gate asked for a turn cap fixed per world at pilot, and the runner was not
+honouring the worlds' own caps at all. Greyfen (authored 14) and Rowan (12)
+ran above their floors and stay as recorded.
+
+**Re-pilot in flight, 2026-07-30.** 5 bare dialogues each on Nocturne (40
+turns) and Tallow (18), same speaker, learner and zero advisory blocks,
+into `exports/tutor-stub-outcome/pilot-2/`. Roughly 3 hours at the first
+pilot's ~40 seconds a turn; results append per dialogue and a rerun skips
+what is recorded, so a quota window pauses rather than restarts it.
