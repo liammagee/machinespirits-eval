@@ -416,6 +416,7 @@
         "tests/tutorStubCloseoutProjection.test.js",
         "tests/tutorStubCloseoutReportPresentation.test.js",
         "tests/tutorStubCodexRemoteBridge.test.js",
+        "tests/tutorStubCommandRuntime.test.js",
         "tests/tutorStubCommandRegistry.test.js",
         "tests/tutorStubCompactSpeakingPrompt.test.js",
         "tests/tutorStubConcurrentTerminal.test.js",
