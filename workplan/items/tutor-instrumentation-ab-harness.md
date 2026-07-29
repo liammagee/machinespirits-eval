@@ -130,8 +130,9 @@ term and the private premise ids stay out of it, and it comes from the world
 file, so it is the same for every version at a turn and cannot smuggle in one
 version's plan. Over 106 pairs — the whole frozen pool, which adds Tallow to the
 two scenes the blind set covered — 92 decided: the contract is preferred on 23,
-25%. On the same 88 as the blind set it is 28%, against 15% blind. On Tallow,
-which neither reading had covered before, 11%.
+25%. On the same 88 as the blind set, 68 of which both readings decided, it wins
+19 against the blind reading's 10 — 28% against 15%. On Tallow, which neither
+reading had covered before, 11%.
 
 So the objection is partly right and does not overturn the finding. Telling the
 judge which clue was due roughly doubles the contract's share of decided pairs
