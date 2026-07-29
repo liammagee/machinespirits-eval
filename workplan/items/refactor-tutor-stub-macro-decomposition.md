@@ -26,6 +26,7 @@ links:
   prs:
     - 426
     - 427
+    - 428
   items:
     - codebase-refactoring-program
 tags:
@@ -111,3 +112,4 @@ Log:
   regression set also covers the early non-interactive, passthrough, and
   metered-lab lifecycle paths that caught and closed two initialization-order
   regressions during extraction.
+- 2026-07-29 — Opened macro cycle 3 as stacked PR #428.
