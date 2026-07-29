@@ -109,7 +109,9 @@ test('passthrough exposes live release notes and repository metrics without invo
   const stdout = plainTerminalText(result.stdout);
   assert.match(stdout, /release notes > last 24 hours/u);
   assert.match(stdout, /effect >/u);
-  assert.match(stdout, /Repository metrics: machinespirits-eval/u);
+  // The header names the checkout directory, which is not `machinespirits-eval`
+  // in a worktree, so the expectation is computed rather than hardcoded.
+  assert.ok(stdout.includes(`Repository metrics: ${path.basename(ROOT)}`));
   assert.match(stdout, /Git activity/u);
   assert.doesNotMatch(stdout, /intentionally unavailable in passthrough mode/u);
   assert.doesNotMatch(stdout, /tutor >/u);
