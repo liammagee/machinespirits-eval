@@ -22,6 +22,7 @@ links:
     - tests/tutorStubTutorTurnPipeline.test.js
   prs:
     - 426
+    - 427
   items:
     - codebase-refactoring-program
 tags:
@@ -87,3 +88,4 @@ Log:
   interactive assertions, 13 director/status ownership and exact-byte checks,
   the zero-skip hermetic suite at 7,667/7,667 root plus 137/137 tutor-core
   tests, and every static gate with zero import cycles across 450 files.
+- 2026-07-29 — Opened macro cycle 2 as PR #427.
