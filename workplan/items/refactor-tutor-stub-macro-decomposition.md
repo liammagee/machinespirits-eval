@@ -9,7 +9,7 @@ source: review
 created: 2026-07-29
 updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-session-orchestration
+branch: codex/refactor-tutor-stub-interaction-controllers
 claim_status: planned
 depends_on: []
 links:
@@ -18,9 +18,11 @@ links:
   code:
     - scripts/tutor-stub.js
     - services/tutorStubCommandRuntime.js
+    - services/tutorStubModelPickerController.js
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
+    - services/tutorStubVoiceController.js
     - services/tutorStubTutorTurnPipeline.js
     - tests/tutorStubTutorTurnPipeline.test.js
   prs:
@@ -123,3 +125,12 @@ Log:
   374 workplan items with zero cycles across 460 files, and the entrypoint
   reduction remains 988 lines.
 - 2026-07-29 — Opened macro cycle 3 as stacked PR #428.
+- 2026-07-29 — Macro cycle 4 moved live tutor/model-role mutation,
+  model/register/character/profile/settings pickers, and the Realtime voice
+  bridge lifecycle behind two controller boundaries. The entrypoint fell from
+  18,944 to 17,678 lines, a 1,266-line net reduction; the rolling three-cycle
+  average is 1,151 lines per PR.
+- 2026-07-29 — Cycle 4 verification passes 88 focused voice, model, settings,
+  profile, character, and TTY assertions plus the zero-skip hermetic suite at
+  7,673/7,673 root and 137/137 tutor-core tests. Direct boundary tests pin the
+  disabled voice projection, four-role model catalog, and TTY picker ownership.
