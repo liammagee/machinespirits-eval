@@ -161,6 +161,17 @@ arms:
     features: none
     learner_framing: false
     generic_plan: true
+  # Due-line control, the plan control's mirror image. The generic plan is the
+  # contract's wrapping without the turn's content; this is the one piece of
+  # content the speaker cannot infer — the finding the world file opens at this
+  # turn — without a word of wrapping. Two lines when something is due, nothing
+  # at all on a quiet turn, so quiet turns double as a sampling-noise floor.
+  due_line_only:
+    label: Due line only
+    summary: The bare tutor handed this turn's newly opened finding, free to use or hold it — the hidden fact without the staging.
+    features: none
+    learner_framing: false
+    due_line: true
 
 scenarios:
   tallow_short:
@@ -214,6 +225,14 @@ presets:
     models: [codex_medium]
     arms: [baseline, generic_plan_only, contract_only]
     scenarios: [nocturne_full, greyfen_short]
+  # Does the hidden fact alone do the contract's work? Bare, bare-plus-the-due-
+  # line, and the contract, on the two scenarios the judge's content filter has
+  # never refused (every refusal in both judged passes was greyfen_short).
+  # 3 arms x 10 turns = 30 calls. Pass --max-calls 30.
+  due_line_control:
+    models: [codex_medium]
+    arms: [baseline, due_line_only, contract_only]
+    scenarios: [tallow_short, nocturne_full]
   # Who is speaking, rather than what they were told. Tuned Qwen and its base
   # sibling, each bare and each with the stage directions. The frontier numbers
   # for the same two arms already exist from the length_control runs, so this

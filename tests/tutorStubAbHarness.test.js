@@ -18,6 +18,7 @@ import {
   projectTutorStubAbRequest,
   resolveTutorStubAbArm,
   resolveTutorStubAbGuardSet,
+  TUTOR_STUB_AB_DUE_LINE_INTRO,
   TUTOR_STUB_AB_FEATURES,
   TUTOR_STUB_AB_FEATURE_IDS,
   TUTOR_STUB_AB_GENERIC_PLAN,
@@ -271,6 +272,51 @@ test('the generic plan is rejected on the baseline and beside the real contract'
   );
   // Two plans naming different slots for the same paragraph is not a control.
   assert.equal(resolveTutorStubAbArm('ok', { features: 'all', drop: ['first_draft_contract'] }).genericPlan, false);
+});
+
+test('the due line carries the released finding on a due turn and nothing on a quiet one', () => {
+  const abPlan = plan('due_line_control', { scenarios: ['nocturne_full'] });
+  const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
+  const byTurn = (armId, turn) =>
+    forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
+
+  // Turn 2 releases a finding in the recorded world; turn 3 releases nothing.
+  const due = byTurn('due_line_only', 2);
+  const bareDue = byTurn('baseline', 2);
+  assert.equal(due.projection.systemPrompt, bareDue.projection.systemPrompt);
+  assert.deepEqual(due.history, bareDue.history);
+  assert.deepEqual(due.projection.retainedFeatures, []);
+  assert.equal(due.projection.advisoryChars, 0);
+  assert.equal(due.projection.dueLine, true);
+  assert.equal(due.projection.dueLineChars > 0, true);
+  assert.ok(due.latest.content.startsWith(TUTOR_STUB_AB_DUE_LINE_INTRO));
+  assert.ok(due.latest.content.endsWith(`\n\n${bareDue.latest.content}`));
+  const injected = due.latest.content.slice(0, -bareDue.latest.content.length);
+  // The line is the fact, not a second contract: no advisory block, none of the
+  // contract's slot vocabulary, and no release instruction.
+  assert.equal(parseTutorStubAdvisoryBlocks(due.latest.content).blocks.length, 0);
+  for (const word of ['UPTAKE', 'PART —', 'SOURCE', 'TACTIC', 'HANDOFF', 'RECORD', 'public exhibit', 'must']) {
+    assert.ok(!injected.includes(word), word);
+  }
+
+  // A quiet turn adds nothing: byte-identical to the bare tutor's prompt.
+  const quiet = byTurn('due_line_only', 3);
+  const bareQuiet = byTurn('baseline', 3);
+  assert.equal(quiet.projection.dueLine, false);
+  assert.equal(quiet.projection.dueLineChars, 0);
+  assert.equal(quiet.latest.content, bareQuiet.latest.content);
+});
+
+test('the due line is rejected on the baseline and beside the real contract', () => {
+  assert.throws(
+    () => resolveTutorStubAbArm('bare', { baseline: true, features: 'none', due_line: true }),
+    /must not carry the due line/u,
+  );
+  assert.throws(
+    () => resolveTutorStubAbArm('both', { features: ['first_draft_contract'], due_line: true }),
+    /cannot carry the due line and the first-draft contract together/u,
+  );
+  assert.equal(resolveTutorStubAbArm('ok', { features: 'all', drop: ['first_draft_contract'] }).dueLine, false);
 });
 
 test('projection refuses a request whose blocks are not all registered', () => {

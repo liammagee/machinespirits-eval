@@ -140,6 +140,32 @@ and still leaves it losing about seven of ten. Verdicts made with the clue list
 and verdicts made without are two readings, not one, and are kept in separate
 files for that reason.
 
+Fifth result, 2026-07-29 — the due-line control, and the closing one. The
+plan control is the contract's wrapping without the turn's content; this is
+the mirror: the one piece of content the speaker cannot infer — the finding
+the world file opens at this turn — as two unbracketed lines, with the release
+decision left to the speaker, and nothing at all on a quiet turn. Arm
+`due_line_only`, preset `due_line_control`, run on Tallow and Nocturne only
+because every content-filter refusal in both judged passes was Greyfen.
+
+On the rule channel the due line moves nothing: −2, −4, −1 against the bare
+tutor across three runs, inside the ±3 noise band, while the contract moves
+−33, −31, −36. On the schedule-shown judge the ordering reverses. Against the
+bare tutor the due line is preferred on 9 of 11 decided clue turns; on quiet
+turns, where its prompt is byte-identical to the bare tutor's, it splits 6 of
+15 — the noise floor reading as noise, which is the arm's own validity check.
+Against the contract it is preferred on 23 of 30 decided pairs — level on clue
+turns at 6 of 12, and 17 of 18 on quiet turns, where the contract pads and the
+due line adds nothing. A coin gives 17 of 18 about one time in ten thousand.
+
+Read together: the contract's whole advantage on the plan-blind channel is
+carried by the one sentence naming the newly opened finding. The other ~1,700
+characters of staging buy rule-compliance on the channel that asks for that
+staging by name, and on the independent channel they cost 17 of 18 quiet
+turns. The rule channel and the judge channel now agree about what is real —
+the hidden fact — and disagree only about the wrapping, which only the
+plan-aware channel rewards.
+
 Standing limitation: turns after the first are counterfactual for every arm
 except the one that produced the recording, since the frozen learner utterances
 answered the recorded tutor. Each row is a same-context comparison of N tutors

@@ -206,6 +206,45 @@ const GENERIC_PLAN = [
 
 export const TUTOR_STUB_AB_GENERIC_PLAN = GENERIC_PLAN;
 
+/**
+ * Due-line control — the mirror image of the plan control.
+ *
+ * The generic plan keeps the contract's wrapping and strips the turn's own
+ * content. This keeps the one piece of content the speaker cannot infer — the
+ * finding the world file opens at this turn — and strips every word of
+ * wrapping. If it scores like the contract, the hidden fact alone was the gain
+ * and the staging around it is dead weight; if it scores like the bare tutor,
+ * the staging is doing real work beyond delivery.
+ *
+ * Two lines, nothing else. The first names the finding as newly open and
+ * leaves the release decision with the speaker — an instruction to release
+ * would be the contract's release slot back under another name. On a turn
+ * where nothing is due the arm adds nothing at all, so its prompt there is
+ * byte-identical to the baseline's and its quiet turns double as a
+ * sampling-noise floor.
+ *
+ * Unbracketed, like the length note and the generic plan, and it must never
+ * use the contract's slot vocabulary — a test holds it to that.
+ */
+const DUE_LINE_INTRO = 'Newly open to you in this inquiry — yours to bring in now, later, or hold back:';
+
+export const TUTOR_STUB_AB_DUE_LINE_INTRO = DUE_LINE_INTRO;
+
+/**
+ * The due line for one frozen turn, or null when the world file opens nothing.
+ *
+ * Reads the same release frame the deterministic rules and the schedule-shown
+ * judge read, and only the public surface sentence of each entry — the premise
+ * ids, the concealed answer term and the learner model never enter a prompt.
+ */
+function dueLineFor(bundle) {
+  const release = bundle?.frames?.dramaticRelease;
+  if (release?.active !== true) return null;
+  const surfaces = (release.entries || []).map((entry) => String(entry?.surface || '').trim()).filter(Boolean);
+  if (!surfaces.length) return null;
+  return [DUE_LINE_INTRO, ...surfaces.map((surface) => `- ${surface}`)].join('\n');
+}
+
 function normalizeLengthTarget(value, label) {
   if (value === undefined || value === null) return null;
   if (!Number.isInteger(value) || value < 1) throw new Error(`${label} must be a positive integer`);
@@ -253,6 +292,15 @@ export function resolveTutorStubAbArm(id, definition = {}) {
   if (genericPlan && features.includes('first_draft_contract')) {
     throw new Error(`arm ${armId} cannot carry the generic plan and the first-draft contract together`);
   }
+  const dueLine = definition.due_line === true;
+  if (dueLine && definition.baseline) {
+    throw new Error(`baseline arm ${armId} must not carry the due line`);
+  }
+  // The contract's release slot already carries this turn's finding; a second
+  // copy in a second voice is not an ablation of anything.
+  if (dueLine && features.includes('first_draft_contract')) {
+    throw new Error(`arm ${armId} cannot carry the due line and the first-draft contract together`);
+  }
   return {
     schema: AB_ARM_SCHEMA,
     id: armId,
@@ -262,6 +310,7 @@ export function resolveTutorStubAbArm(id, definition = {}) {
     features,
     lengthTargetChars,
     genericPlan,
+    dueLine,
     omitted: TUTOR_STUB_AB_FEATURE_IDS.filter((featureId) => !kept.has(featureId)),
     learnerFraming,
     guardsClaimed: [...new Set(features.flatMap((featureId) => tutorStubAbFeature(featureId).guards))].sort(),
@@ -294,7 +343,9 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
   const directive = lengthTargetChars === null ? null : lengthDirective(lengthTargetChars);
   // Same position as the real plan it stands in for, ahead of the learner text.
   const genericPlan = arm.genericPlan === true ? GENERIC_PLAN : null;
-  const content = [directive, genericPlan, ...retained.map((block) => block.text), residue]
+  // Null on a quiet turn, so the arm's prompt there is the baseline's prompt.
+  const dueLine = arm.dueLine === true ? dueLineFor(bundle) : null;
+  const content = [directive, genericPlan, dueLine, ...retained.map((block) => block.text), residue]
     .filter(Boolean)
     .join('\n\n');
   latest.content = content;
@@ -314,11 +365,14 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
     learnerFraming: arm.learnerFraming,
     lengthTargetChars,
     genericPlan: genericPlan !== null,
+    dueLine: dueLine !== null,
     // Kept out of advisoryChars: neither the length note nor the generic plan
     // carries any planner content, and folding either in would make a control
-    // look mildly instrumented in reports.
+    // look mildly instrumented in reports. The due line does carry one piece of
+    // planner content, so it gets its own count rather than hiding in either.
     lengthDirectiveChars: directive ? directive.length : 0,
     genericPlanChars: genericPlan ? genericPlan.length : 0,
+    dueLineChars: dueLine ? dueLine.length : 0,
     advisoryChars: retained.reduce((total, block) => total + block.text.length, 0),
     requestChars: content.length,
   };
