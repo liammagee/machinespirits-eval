@@ -9,7 +9,7 @@ source: review
 created: 2026-07-29
 updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-response-policy
+branch: codex/refactor-tutor-stub-turn-orchestration
 claim_status: planned
 depends_on: []
 links:
@@ -23,6 +23,7 @@ links:
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
+    - services/tutorStubTurnOrchestration.js
     - services/tutorStubVoiceController.js
     - services/tutorStubTutorTurnPipeline.js
     - tests/tutorStubTutorTurnPipeline.test.js
@@ -171,3 +172,12 @@ Log:
   452/452, all static gates remain green across 374 workplan items with zero
   cycles across 463 files, and the entrypoint reduction remains 1,831 lines.
 - 2026-07-29 — Opened macro cycle 5 as stacked PR #430.
+- 2026-07-29 — Macro cycle 6 moved passthrough and guarded turn execution,
+  analyzed-turn preparation, quarantine continuation, opening emission, and
+  automated-learner loop orchestration behind one turn-runtime boundary. The
+  entrypoint fell from 15,847 to 14,648 lines, a 1,199-line net reduction; the
+  rolling three-cycle average is 1,432 lines per PR.
+- 2026-07-29 — Cycle 6 verification passes 80 focused turn, auto-learner,
+  passthrough, timing, cancellation, DAG-snapshot ownership, and direct boundary
+  assertions plus the zero-skip hermetic suite at 7,676/7,676 root and 137/137
+  tutor-core tests.
