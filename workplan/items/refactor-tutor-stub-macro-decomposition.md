@@ -31,6 +31,7 @@ links:
     - 427
     - 428
     - 429
+    - 430
   items:
     - codebase-refactoring-program
 tags:
@@ -157,3 +158,4 @@ Log:
   field, state, trajectory, dynamical, character, and stochastic-adaptation
   assertions plus the zero-skip hermetic suite at 7,675/7,675 root and 137/137
   tutor-core tests.
+- 2026-07-29 — Opened macro cycle 5 as stacked PR #430.
