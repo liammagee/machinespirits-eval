@@ -278,6 +278,39 @@ const CHARACTER_SHIFT_PARTS = Object.freeze([
 
 export const TUTOR_STUB_AB_CHARACTER_SHIFT_PARTS = CHARACTER_SHIFT_PARTS;
 
+/**
+ * The radical palette — parts the model's house style would never fall into.
+ *
+ * The palette shift above mostly re-labelled conduct the bare tutor was
+ * already choosing: the inquiry's material casts an investigator or a skeptic
+ * naturally, so the line's marginal effect was a beat of stage business. That
+ * makes the mild arm a weak probe of the real question, which is whether the
+ * judge reads distance from the model's own default register as damage. These
+ * three parts are unmistakable in delivered text, and each card names concrete
+ * conduct rather than a label, because the mild arm showed a bare name does
+ * not move the turn. All three are the repo's own sanctioned pressure parts
+ * (docs/tutor-stub-cli.md): they demand and test, they never insult, and they
+ * need no invented evidence, so every guard still applies unchanged.
+ */
+const CHARACTER_SHIFT_RADICAL_PARTS = Object.freeze(
+  [
+    {
+      id: 'satirist',
+      line: 'For this turn, play the satirist: open with one unmistakable beat of dry mock praise aimed at the claim, formula, or dodge in front of you — never at the learner — then reverse that praise against the public evidence, and end by naming one repair the learner can make.',
+    },
+    {
+      id: 'exacting_schoolmaster',
+      line: 'For this turn, play the exacting schoolmaster: before anything else, require one precise performance — show the working, define the term, or read the line exactly as written — and accept nothing vaguer than what you asked for.',
+    },
+    {
+      id: 'adversarial_teacher',
+      line: 'For this turn, play the adversarial teacher: test the learner’s current idea against one concrete counterexample or competing reading drawn from what is already public, and make them defend it or amend it.',
+    },
+  ].map((part) => Object.freeze(part)),
+);
+
+export const TUTOR_STUB_AB_CHARACTER_SHIFT_RADICAL_PARTS = CHARACTER_SHIFT_RADICAL_PARTS;
+
 /** Same stable small hash the pairwise judge uses for its A/B layout. */
 function stableHash(text) {
   let h = 2166136261;
@@ -294,11 +327,16 @@ function stableHash(text) {
  * replays the same seeded shifts — the frozen analogue of the live feature's
  * replayable draws.
  */
-function characterShiftFor(bundle) {
+function characterShiftFor(bundle, mode) {
   const turnId = String(bundle?.turnId || '');
   if (!turnId) return null;
+  // The same coin for both palettes, so the radical arm shifts exactly the
+  // turns the mild arm shifted and every judged pair lines up across arms.
   const h = stableHash(`character-shift:${turnId}`);
   if (h % 2 !== 0) return null;
+  if (mode === 'radical') {
+    return CHARACTER_SHIFT_RADICAL_PARTS[(h >>> 3) % CHARACTER_SHIFT_RADICAL_PARTS.length].line;
+  }
   const part = CHARACTER_SHIFT_PARTS[(h >>> 3) % CHARACTER_SHIFT_PARTS.length];
   return `For this turn, play the ${part} — commit to that part's action and voice. Everything else about the scene is unchanged.`;
 }
@@ -359,7 +397,14 @@ export function resolveTutorStubAbArm(id, definition = {}) {
   if (dueLine && features.includes('first_draft_contract')) {
     throw new Error(`arm ${armId} cannot carry the due line and the first-draft contract together`);
   }
-  const characterShift = definition.character_shift === true;
+  const rawShift = definition.character_shift;
+  let characterShiftMode = null;
+  if (rawShift === true || rawShift === 'palette') characterShiftMode = 'palette';
+  else if (rawShift === 'radical') characterShiftMode = 'radical';
+  else if (rawShift !== undefined && rawShift !== false) {
+    throw new Error(`arm ${armId}.character_shift must be true, "palette", or "radical"`);
+  }
+  const characterShift = characterShiftMode !== null;
   if (characterShift && definition.baseline) {
     throw new Error(`baseline arm ${armId} must not carry the character shift`);
   }
@@ -379,6 +424,7 @@ export function resolveTutorStubAbArm(id, definition = {}) {
     genericPlan,
     dueLine,
     characterShift,
+    characterShiftMode,
     omitted: TUTOR_STUB_AB_FEATURE_IDS.filter((featureId) => !kept.has(featureId)),
     learnerFraming,
     guardsClaimed: [...new Set(features.flatMap((featureId) => tutorStubAbFeature(featureId).guards))].sort(),
@@ -414,7 +460,7 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
   // Null on a quiet turn, so the arm's prompt there is the baseline's prompt.
   const dueLine = arm.dueLine === true ? dueLineFor(bundle) : null;
   // Null on the turns the coin leaves unshifted, for the same reason.
-  const characterShift = arm.characterShift === true ? characterShiftFor(bundle) : null;
+  const characterShift = arm.characterShift === true ? characterShiftFor(bundle, arm.characterShiftMode) : null;
   const content = [directive, genericPlan, dueLine, characterShift, ...retained.map((block) => block.text), residue]
     .filter(Boolean)
     .join('\n\n');
@@ -437,6 +483,7 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
     genericPlan: genericPlan !== null,
     dueLine: dueLine !== null,
     characterShift: characterShift !== null,
+    characterShiftMode: characterShift !== null ? arm.characterShiftMode : null,
     // Kept out of advisoryChars: neither the length note nor the generic plan
     // carries any planner content, and folding either in would make a control
     // look mildly instrumented in reports. The due line does carry one piece of

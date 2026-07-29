@@ -64,7 +64,8 @@ const DEFAULT_VERSIONS = ['baseline', 'contract_only'];
 function usage() {
   return `Usage:
   node scripts/judge-tutor-stub-ab-pairs.js [--out PATH.jsonl] [--limit N]
-                                            [--model MODEL] [--scenarios a,b]
+                                            [--model MODEL] [--judge-provider claude-code|codex]
+                                            [--scenarios a,b]
                                             [--versions left,right] [--show-due]
                                             [--runs REGEX] [--mock]
 
@@ -81,6 +82,7 @@ function parseArgs(argv) {
     out: null,
     limit: Infinity,
     model: undefined,
+    judgeProvider: 'claude-code',
     scenarios: null,
     runs: null,
     mock: false,
@@ -95,6 +97,7 @@ function parseArgs(argv) {
     } else if (a === '--out') args.out = argv[++i];
     else if (a === '--limit') args.limit = Number(argv[++i]);
     else if (a === '--model') args.model = argv[++i];
+    else if (a === '--judge-provider') args.judgeProvider = argv[++i];
     else if (a === '--scenarios') args.scenarios = argv[++i].split(',').map((s) => s.trim());
     else if (a === '--versions') args.versions = argv[++i].split(',').map((s) => s.trim());
     else if (a === '--runs') args.runs = new RegExp(argv[++i]);
@@ -332,7 +335,7 @@ function capturingSpawn(command, spawnArgs, options) {
   return child;
 }
 
-async function judge({ pair, model, mock, showDue }) {
+async function judge({ pair, model, mock, showDue, judgeProvider = 'claude-code' }) {
   if (mock) {
     // Plumbing only: prefers whichever candidate ends in a question mark, then
     // falls back to the A label. Never a stand-in for a real verdict.
@@ -346,7 +349,7 @@ async function judge({ pair, model, mock, showDue }) {
     lastCliStdout = '';
     try {
       const result = await callAIWithCliBridge(
-        { provider: 'claude-code', model },
+        { provider: judgeProvider, model },
         systemPrompt,
         userPrompt,
         'judge-tutor-stub-ab-pairs',
@@ -485,7 +488,13 @@ async function main() {
 
   for (const [i, pair] of todo.entries()) {
     const startedAt = Date.now();
-    const verdict = await judge({ pair, model: args.model, mock: args.mock, showDue: args.showDue });
+    const verdict = await judge({
+      pair,
+      model: args.model,
+      mock: args.mock,
+      showDue: args.showDue,
+      judgeProvider: args.judgeProvider,
+    });
     let winner;
     if (verdict.better === 'refused') winner = 'refused';
     else if (verdict.better === 'same') winner = 'same';
@@ -500,6 +509,10 @@ async function main() {
       // with the schedule and one made without are different readings and must
       // never be pooled.
       showDue: args.showDue === true,
+      // Which model family read the pair. The default judge is claude-family,
+      // deliberately not the speakers' family; a codex-family pass over the
+      // same pairs probes whether a verdict is one family's taste.
+      judgeProvider: args.judgeProvider,
       dueCount: (pair.dueFacts || []).length,
       winner,
       reason: verdict.reason,

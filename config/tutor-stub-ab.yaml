@@ -185,6 +185,18 @@ arms:
     features: none
     learner_framing: false
     character_shift: true
+  # The radical variant. The palette shift mostly re-named conduct the model's
+  # own house style already chooses, so it probed the part axis weakly and the
+  # judge's preference for the bare tutor could be taste for the default
+  # register. These parts — satirist, exacting schoolmaster, adversarial
+  # teacher — are unmistakable in delivered text, cast with conduct cards
+  # rather than labels, on exactly the turns the mild arm shifts.
+  character_shift_radical:
+    label: Radical character shift
+    summary: The bare tutor cast hard against the model's default register — satirist, schoolmaster, or adversary — on the same hash-chosen turns.
+    features: none
+    learner_framing: false
+    character_shift: radical
 
 scenarios:
   tallow_short:
@@ -252,6 +264,16 @@ presets:
   character_shift_control:
     models: [codex_medium]
     arms: [baseline, character_shift_only]
+    scenarios: [tallow_short, nocturne_full]
+  # Magnify the shift in either direction: bare against the three pressure
+  # parts cast hard against the model's default register. Judged three ways —
+  # radical vs bare, radical vs the mild shift (no default in the pair), and
+  # the same radical-vs-bare pairs under a codex-family judge, the speakers'
+  # own family, to read how much of any verdict is one family's taste.
+  # 2 arms x 10 turns = 20 calls. Pass --max-calls 20.
+  character_shift_radical_control:
+    models: [codex_medium]
+    arms: [baseline, character_shift_radical]
     scenarios: [tallow_short, nocturne_full]
   # Who is speaking, rather than what they were told. Tuned Qwen and its base
   # sibling, each bare and each with the stage directions. The frontier numbers

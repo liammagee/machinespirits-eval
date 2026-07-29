@@ -219,6 +219,39 @@ hurt. What remains untested is the trigger claim itself (a shift exactly at a
 real difficulty moment), which needs a confused-learner recording; both
 existing results price the prior against it.
 
+Seventh result, 2026-07-30 — the radical shift, and a measured judge-family
+tax. The sixth result's mild shift could not separate two readings: the part
+hurting the turn, or the judge preferring the model's own default register
+(the bare tutor is not unassigned — it plays the house part). The radical arm
+(`character_shift_radical`) magnifies the assignment: satirist, exacting
+schoolmaster, adversarial teacher, each cast with a two-line conduct card on
+exactly the turns the mild arm shifts, judged three ways.
+
+The dose runs against simple default-punishment. On shifted turns vs bare,
+claude judge: mild 5 of 20, radical 9 of 21 — the harder costume nearly
+closes the gap, so the mild arm's cost was empty casting (a name that bought
+stage business), not distance from the default as such. Head to head with no
+default in the pair, radical edges mild 11 of 21. When the card carries a real
+move the part wins outright — the adversarial teacher's copyist
+counterexample beat the bare reply in the judge's own words for equipping the
+learner; the satirist lost not for tone but for inventing colour its
+mock-praise formula demanded ("already unpopular", nowhere in the case).
+
+The judge-family gap: the same 21 shifted pairs under a codex judge — the
+speakers' own family, whose house style the bare reply is — give the costume
+6 against claude's 9; agreement 14 of 21, and 5 of the 7 splits go to the
+costume under claude, 2 under codex. About a 14-point tax collected by the
+bare default from its own family's judge on identical text. That is the
+confirmation-bias mechanism measured, at n = 21: real, direction as
+predicted, and not the whole of the deficit.
+
+Ceiling, stated with the result: both families still lean bare overall, and
+this bench cannot distinguish shared cross-family taste for the default
+register from true quality — that would need a scoring channel that is not a
+frontier model reading prose. Runs `char-radical-r1..3`; verdicts in the
+three `pairwise-judging-*character_shift_radical*` files; the codex pass is
+`--judge-provider codex` on the same pair ids.
+
 Standing limitation: turns after the first are counterfactual for every arm
 except the one that produced the recording, since the frozen learner utterances
 answered the recorded tutor. Each row is a same-context comparison of N tutors

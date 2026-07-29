@@ -19,6 +19,7 @@ import {
   resolveTutorStubAbArm,
   resolveTutorStubAbGuardSet,
   TUTOR_STUB_AB_CHARACTER_SHIFT_PARTS,
+  TUTOR_STUB_AB_CHARACTER_SHIFT_RADICAL_PARTS,
   TUTOR_STUB_AB_DUE_LINE_INTRO,
   TUTOR_STUB_AB_FEATURES,
   TUTOR_STUB_AB_FEATURE_IDS,
@@ -345,6 +346,36 @@ test('the character shift casts a seeded part on shifted turns and nothing on th
   assert.equal(quiet.projection.characterShift, false);
   assert.equal(quiet.projection.characterShiftChars, 0);
   assert.equal(quiet.latest.content, bareQuiet.latest.content);
+});
+
+test('the radical shift casts a conduct card on the same turns the mild shift selects', () => {
+  const abPlan = plan('character_shift_radical_control', { scenarios: ['nocturne_full'] });
+  const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
+  const byTurn = (armId, turn) =>
+    forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
+
+  // The radical arm rides the same coin as the mild one: turn 3 shifts,
+  // turn 2 stays quiet and byte-identical to the baseline.
+  const shifted = byTurn('character_shift_radical', 3);
+  const bare = byTurn('baseline', 3);
+  assert.equal(shifted.projection.characterShift, true);
+  assert.equal(shifted.projection.characterShiftMode, 'radical');
+  assert.ok(shifted.latest.content.endsWith(`\n\n${bare.latest.content}`));
+  const injected = shifted.latest.content.slice(0, -bare.latest.content.length);
+  const card = TUTOR_STUB_AB_CHARACTER_SHIFT_RADICAL_PARTS.find((part) => injected.startsWith(part.line));
+  assert.ok(card, 'the injected line is one of the three radical conduct cards, verbatim');
+  assert.equal(parseTutorStubAdvisoryBlocks(shifted.latest.content).blocks.length, 0);
+
+  const quiet = byTurn('character_shift_radical', 2);
+  assert.equal(quiet.projection.characterShift, false);
+  assert.equal(quiet.projection.characterShiftMode, null);
+  assert.equal(quiet.latest.content, byTurn('baseline', 2).latest.content);
+
+  // An unknown mode fails closed rather than silently running as the palette.
+  assert.throws(
+    () => resolveTutorStubAbArm('odd', { features: 'none', character_shift: 'bogus' }),
+    /must be true, "palette", or "radical"/u,
+  );
 });
 
 test('the character shift is rejected on the baseline and beside the real contract', () => {
