@@ -29,6 +29,7 @@ links:
     - 426
     - 427
     - 428
+    - 429
   items:
     - codebase-refactoring-program
 tags:
@@ -134,3 +135,4 @@ Log:
   profile, character, and TTY assertions plus the zero-skip hermetic suite at
   7,673/7,673 root and 137/137 tutor-core tests. Direct boundary tests pin the
   disabled voice projection, four-role model catalog, and TTY picker ownership.
+- 2026-07-29 — Opened macro cycle 4 as stacked PR #429.
