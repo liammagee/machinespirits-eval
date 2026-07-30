@@ -3,7 +3,7 @@ id: tutor-contract-turns-to-closure-prereg
 title: "Pre-registration: does the per-turn contract change how fast legitimate closure comes?"
 status: triaged
 type: experiment
-priority: P1
+priority: P3
 owner: claude
 source: manual
 created: 2026-07-30
@@ -21,6 +21,20 @@ tags:
   - prereg
   - outcome
 ---
+
+**PARKED, 2026-07-30, before any paid call.** The expected result is the null,
+and the null changes nothing: the contract was already re-scoped to compliance
+machinery when the parent card closed. A win would be about a turn of pacing on
+one stack with one simulated learner; only the harm branch forces a decision,
+and the blind whole-dialogue judge already leans that way for free. The bare
+tutor's pace is nearly deterministic and part of the lag is the learner's own
+floor — turns spent hearing the last clue and voicing the proof — so the
+improvable margin may be two turns. Thirty hours against that is a bad trade.
+This card runs only if the contract's pacing ever matters to a decision, and
+then preferably cut down first to the two short worlds (bare and contract,
+five dialogues each on Rowan Flat and Greyfen, about three hours) — an effect
+that cannot show there does not justify Nocturne. The design above stays
+registered as written; parking is not an amendment.
 
 Registered before the first paid call. Amendments after the smoke gate must be
 logged here with dates; amendments after the main run starts are not permitted
