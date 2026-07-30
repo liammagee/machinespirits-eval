@@ -138,6 +138,9 @@ function hedgesClaim(text) {
  *
  * What survives is joined, so a claim whose parts span two statements still
  * matches. An empty result means the learner said nothing assertive.
+ *
+ * `withoutQuotedNonClaims` reuses this as its arbiter, so the tutor-side leak
+ * guard reads a quotation by the same four shapes.
  */
 export function tutorStubAssertedClaimText(text) {
   return oneLine(text)
@@ -150,15 +153,53 @@ export function tutorStubAssertedClaimText(text) {
     .join(' ');
 }
 
+const MARKED_QUOTATION = /[“"][^“”"]*[”"]/gu;
+
+/**
+ * Drop a marked quotation whose own words assert nothing.
+ *
+ * A tutor that opens by reading the learner's sentence back — `Your reading of
+ * “Liane's presence in the copy-room makes her a possible maker of the folio
+ * during that winter, but it provides no…” is the one I will answer now.` —
+ * carries the answer name and the conclusion verb inside one span, which is the
+ * shape a claim matcher counts. That killed a paid world_001_nocturne dialogue
+ * at turn 16 on 2026-07-30: the model's draft and the deterministic fallback
+ * both quoted the learner, so the guard rejected both and the run threw at 65
+ * model calls.
+ *
+ * Quotation is not a blanket exemption, though. Echoing a learner's flat
+ * unsupported claim does put the conclusion back in the record, which is why the
+ * Tideway A2 fallback is held to be a leak. So the marks only frame the span;
+ * the quoted words decide. `tutorStubAssertedClaimText` is the arbiter already
+ * used on the learner's own turn: a hedged, questioned, denied or handed-off
+ * quotation reduces to nothing and comes off, and a flat verdict survives inside
+ * its marks and is still read as the speaker's own.
+ *
+ * Only balanced double marks count. An unpaired mark leaves the text alone,
+ * because stripping to the end of a reply on one stray quote would blind the
+ * guard to everything after it. Single marks are never read as quotation — in
+ * this corpus `’` is an apostrophe far more often than a closing quote. A span
+ * whose terminal punctuation sits inside the closing mark leaves a `.` behind,
+ * so the sentence boundary the quotation carried survives and the frame does not
+ * merge with what follows.
+ */
+function withoutQuotedNonClaims(text) {
+  return text.replace(MARKED_QUOTATION, (span) => {
+    if (tutorStubAssertedClaimText(span.slice(1, -1))) return span;
+    return /[.!?][”"]$/u.test(span) ? '. ' : ' ';
+  });
+}
+
 /**
  * Detect an asserted answer-linked conclusion rather than a negated,
  * provisional, or explicitly interrogated boundary. The answer name and the
  * conclusion vocabulary must occur in the same public sentence, on the asserted
- * side of any contrast. A following pronoun sentence is joined to preserve
- * detection of "Edony ... She struck".
+ * side of any contrast, and outside any quotation whose own words assert
+ * nothing. A following pronoun sentence is joined to preserve detection of
+ * "Edony ... She struck".
  */
 export function tutorStubAnswerConclusionAsserted({ text = '', answerTerm = '', wordPatterns = [] } = {}) {
-  const sentences = oneLine(text)
+  const sentences = withoutQuotedNonClaims(oneLine(text))
     .replace(/([.!?])[”"'’](?=\s)/gu, '$1 ')
     .split(/(?<=[.!?])\s+/u)
     .map((sentence) => sentence.trim())
