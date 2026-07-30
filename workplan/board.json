@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-30T03:14:12.313Z",
+  "generated": "2026-07-30T07:19:49.073Z",
   "counts": {
-    "total": 353,
+    "total": 354,
     "byStatus": {
       "done": 227,
       "blocked": 5,
       "dropped": 4,
-      "triaged": 8,
+      "triaged": 9,
       "review": 92,
       "active": 13,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 53,
+      "experiment": 54,
       "infra": 69,
       "maintenance": 165,
       "content": 2,
@@ -68,6 +68,28 @@
         "tutor-stub",
         "prereg",
         "outcome"
+      ]
+    },
+    {
+      "id": "tutor-fallible-learner-closure-prereg",
+      "title": "Pre-registration: restore variance to legitimate closure with a learner that can fail",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-30",
+      "updated": "2026-07-30",
+      "verification": "Phase A runs bare-tutor only and is exploratory. Before the first paid Phase B call: the in-band cells and their profiles are frozen in a dated log entry here, and a 5-dialogue contract smoke on one in-band cell shows zero aborted dialogues. The run itself is attended and checkpointed.",
+      "claim_status": "methods",
+      "depends_on": [
+        "tutor-contract-outcome-prereg"
+      ],
+      "tags": [
+        "tutor-stub",
+        "prereg",
+        "outcome",
+        "learner"
       ]
     },
     {
