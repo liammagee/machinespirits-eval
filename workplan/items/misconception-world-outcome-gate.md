@@ -132,3 +132,28 @@ binds the *authored* schedule — the anti-reveal check walks the YAML — but
 the live pacing engine may release ahead of it (a learner-analysis signal at
 t21 raised speed to 1.49 and pulled the last clue two turns early). Floor
 readings need the release trace, not the world file.
+
+**Gate-3 (world-033, same protocol): 4 of 5 closed**, turns 26/26/25/25 and
+one dialogue open at the 40-turn cap — full path coverage, conclusion never
+asserted (`assertion_gap`); the learner's last line invents one more rival
+("another same-line effect remains possible") that no released surface
+answers. By the letter of the rule, ≥ 4 of 5 means 033 is also not stressful
+enough to host the version comparison.
+
+The pair contrast is the finding worth keeping: removing one clause from one
+premise's surface — nothing else — moved the close rate from 5/5 to 4/5 and
+produced the first non-closure in fifteen dialogues across the three gates,
+in the exact failure mode the sibling was designed to open (proof complete,
+assertion withheld behind an unanswered objection). Information placement,
+not tutoring skill, controls the outcome at this margin: one scheduled
+sentence is worth more than sixteen turns of bare-tutor argument.
+
+Next step is NOT a third world revision. The 2026-07-30 discussion (see the
+adaptation-sense taxonomy heading for §6.23) concluded the bench under-
+stresses the tutor structurally: the learner simulator is a frontier model
+whose polish survives every brief. The registered follow-up is planted,
+typed stress — a per-dialogue schedule of authored breakdowns (forgetting,
+conflation, flatness, refusal) each carrying a known right repair, scored as
+detection-and-repair rate on the replay bench — with the human-annotated
+gold (signal, move) pairs from `build-adaptation-annotation-sheet.js` as its
+specification. Design to be carded separately before any build.
