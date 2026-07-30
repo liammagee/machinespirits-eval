@@ -63,6 +63,26 @@ tutor, one dialogue per condition; the baseline is gate-3 dialogue d1
 | style guards advisory (`TUTOR_STUB_STYLE_GUARDS_ADVISORY=1`) | 13/27 (48%) |
 | characterful contemporary learner (custom brief) | 9/25 (36%) |
 | both | 8/23 (35%) |
+| both + advance window 3 | 12/21 (57%) |
+| style advisory + advance window 3, stock learner | 10/25 (40%) |
+
+The last two rows say less than they appear to: single dialogues, and the
+fallback rate swings hard between same-condition runs (8/23 vs 12/21), so the
+per-type failure-mode profile is the stable readout, not the rate. More
+telling: in all four follow-up dialogues the novelty channel
+(`tutor_turn_without_advance`) fired zero times — every one closed promptly
+and no stall formed. The stall regime is a tail event (one dialogue in five
+at gate-3), so the consolidation-killer only bites in dialogues already going
+badly.
+
+The window itself was therefore verified by exact replay of the recorded
+stall (gate-3 d1, 40 turns) through `auditTutorStubAdvanceResponse`: window 1
+fires on 20 of 40 shipped turns, isolated dips and deep stall alike; window 3
+forgives 9 turns — every isolated dip and the first two turns of each run —
+and still fires 11 times, all inside the genuine stall stretches (23, 27–30,
+35–40). The mechanism discriminates consolidation from stalling on the real
+case. Caveat: the replay scores shipped turns; live, a forgiven draft changes
+what follows.
 
 Readings, each visible in the traces:
 
