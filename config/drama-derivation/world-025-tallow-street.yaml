@@ -69,6 +69,22 @@ learner_voice: >-
 
 secret:
   fact: [causesBrownout, tallowStreet, grebeNine]
+  # Deterministic backstop for the closure assertion: fires only once the
+  # record entails the secret, never on a question. "grebe 9" and "grebe nine"
+  # fold to the same tokens as the authored constant.
+  recognition_patterns:
+    - id: grebe_nine_browns_out_tallow
+      all_of:
+        - ["grebe 9", "grebe nine"]
+        - ["browns out", "brownout", "browning out", "drops the voltage", "is behind the brownout", "causes the brownout"]
+        - ["tallow"]
+      none_of:
+        - "not grebe"
+        - "does not show"
+        - "doesn't show"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
   surface: >-
     Tallow Street is browned out by Grebe-9 — the pole transformer behind the
     launderette, wound in 1967, flagged for renewal three winters running and

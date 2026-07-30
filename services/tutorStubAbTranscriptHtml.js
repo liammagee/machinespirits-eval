@@ -115,8 +115,15 @@ function clusterChips(result) {
 }
 
 function featurePills(arm) {
-  if (!arm.features.length) return '<span class="ab-pill ab-pill--off">no instrumentation</span>';
-  return arm.features.map((feature) => `<span class="ab-pill">${escapeHtml(plainLabel(feature))}</span>`).join('');
+  const pills = arm.features.map((feature) => `<span class="ab-pill">${escapeHtml(plainLabel(feature))}</span>`);
+  // A control carries no instrumentation feature but is not the bare tutor, so
+  // it gets its own pill rather than being drawn as an empty lane.
+  if (arm.genericPlan) pills.push('<span class="ab-pill ab-pill--off">generic plan</span>');
+  if (arm.lengthTargetChars) {
+    pills.push(`<span class="ab-pill ab-pill--off">length ${arm.lengthTargetChars}</span>`);
+  }
+  if (!pills.length) return '<span class="ab-pill ab-pill--off">no instrumentation</span>';
+  return pills.join('');
 }
 
 function armLane(arm, result, baselineText, { baseline }) {

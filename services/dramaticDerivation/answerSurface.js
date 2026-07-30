@@ -158,6 +158,11 @@ export function matchAuthoredRecognitionSurface(text, surfaces = []) {
  * Each `all_of` row is a group of alternative public fragments; one fragment
  * from every group must occur, in group order when `ordered` is true.
  * `none_of` fragments fail the pattern closed.
+ *
+ * The caller is expected to hand in asserted text only — see
+ * `tutorStubAssertedClaimText`. A question, a denied contrast and a hedged
+ * concession each carry every token of a claim while asserting none of it, and
+ * this matcher counts tokens; it cannot tell them apart.
  * This is intentionally more expressive than a single exact recognition
  * surface, but it remains a finite, inspectable author contract rather than
  * fuzzy similarity.

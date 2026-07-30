@@ -146,6 +146,207 @@ export function parseTutorStubAdvisoryBlocks(content) {
   return { blocks, residue, unknownBlocks };
 }
 
+/**
+ * Length control.
+ *
+ * Every advisory that lowers the failure count also lengthens the reply, and
+ * several audits check for something the reply is missing, so a longer reply has
+ * more room to contain it. An arm can therefore ask for a target reply length
+ * and nothing else: same learner text, same system prompt, no advisory blocks,
+ * one sentence naming a character count. If that arm scores like the contract
+ * arm, the contract was buying length; if it scores like the bare tutor, the
+ * contract was buying content.
+ *
+ * The directive is deliberately unbracketed. Advisory blocks are `[header]` /
+ * `[End header]` delimited and `parseTutorStubAdvisoryBlocks` fails closed on an
+ * unregistered header, so a bracketed length note would be indistinguishable
+ * from instrumentation to anything that re-reads the projected request.
+ */
+function lengthDirective(chars) {
+  return `Write a reply of about ${chars} characters.`;
+}
+
+/**
+ * Plan control.
+ *
+ * The first-draft contract is the one block that moves the score, and it does
+ * two things at once: it hands the speaker a plan for the turn, and it fills
+ * that plan with this turn's own content — which part to play, which exhibit to
+ * name, which line to quote, what limit to state. An arm carrying a plan with
+ * none of that content separates the two. If it scores like the contract, the
+ * gain was having a plan; if it scores like the bare tutor, the gain was ours.
+ *
+ * So this text is fixed. It is the same on every turn of every scenario, which
+ * is what makes it content-free: it cannot carry anything about the turn it is
+ * attached to. It keeps the contract's shape — an opening line naming a
+ * four-sentence paragraph and its ordered slots, a voice line, one line per
+ * slot, a closing rule about staying in voice — and fills it with teaching
+ * advice that would be as true of any lesson on any subject.
+ *
+ * The closing rule is matched deliberately. Without it the control would break
+ * frame and lose rules for a reason that has nothing to do with the comparison.
+ *
+ * It runs about 1000 characters against the contract's 1300-2800, so it is not
+ * a length match. `length_target_chars` is the arm that answers length.
+ *
+ * Unbracketed, for the same reason as the length note: `[header]` blocks are
+ * instrumentation, and `parseTutorStubAdvisoryBlocks` fails closed on a header
+ * it does not know.
+ */
+const GENERIC_PLAN = [
+  'Write one paragraph: four unlabeled, unquoted sentences, each at most 23 words. Follow OPEN > CHECK > OFFER > ASK. Never merge them.',
+  'VOICE — Write to an intelligent adult beginner. Standard common words, one idea per sentence, no lists, no headings, no labels.',
+  'OPEN — Take up what the learner just said, in your own words, so they can hear that they were read. Never use generic praise.',
+  'CHECK — Say plainly which part of what they wrote holds and which part does not hold yet. Give the reason in the same sentence.',
+  'OFFER — Give them one concrete thing to look at, weigh, or try next. Prefer something already in front of them to something new.',
+  'ASK — End with one question they could answer from what they already have. One question only, and make it a real one.',
+  'PACE — Do one thing per turn. A turn that does one thing well beats a turn that covers everything.',
+  'Use one voice. Never announce roles, strategy, analysis, or method. Do not restate the conversation, list options, or give the answer.',
+].join('\n');
+
+export const TUTOR_STUB_AB_GENERIC_PLAN = GENERIC_PLAN;
+
+/**
+ * Due-line control — the mirror image of the plan control.
+ *
+ * The generic plan keeps the contract's wrapping and strips the turn's own
+ * content. This keeps the one piece of content the speaker cannot infer — the
+ * finding the world file opens at this turn — and strips every word of
+ * wrapping. If it scores like the contract, the hidden fact alone was the gain
+ * and the staging around it is dead weight; if it scores like the bare tutor,
+ * the staging is doing real work beyond delivery.
+ *
+ * Two lines, nothing else. The first names the finding as newly open and
+ * leaves the release decision with the speaker — an instruction to release
+ * would be the contract's release slot back under another name. On a turn
+ * where nothing is due the arm adds nothing at all, so its prompt there is
+ * byte-identical to the baseline's and its quiet turns double as a
+ * sampling-noise floor.
+ *
+ * Unbracketed, like the length note and the generic plan, and it must never
+ * use the contract's slot vocabulary — a test holds it to that.
+ */
+const DUE_LINE_INTRO = 'Newly open to you in this inquiry — yours to bring in now, later, or hold back:';
+
+export const TUTOR_STUB_AB_DUE_LINE_INTRO = DUE_LINE_INTRO;
+
+/**
+ * The due line for one frozen turn, or null when the world file opens nothing.
+ *
+ * Reads the same release frame the deterministic rules and the schedule-shown
+ * judge read, and only the public surface sentence of each entry — the premise
+ * ids, the concealed answer term and the learner model never enter a prompt.
+ */
+function dueLineFor(bundle) {
+  const release = bundle?.frames?.dramaticRelease;
+  if (release?.active !== true) return null;
+  const surfaces = (release.entries || []).map((entry) => String(entry?.surface || '').trim()).filter(Boolean);
+  if (!surfaces.length) return null;
+  return [DUE_LINE_INTRO, ...surfaces.map((surface) => `- ${surface}`)].join('\n');
+}
+
+/**
+ * Character-shift control — the testable half of "light stochastic adaptation".
+ *
+ * The live feature (`services/tutorStubLightAdaptation.js`) shifts the tutor's
+ * style and host character after two consecutive confused or frustrated
+ * learner turns. Its trigger never fires on the frozen corpus — every recorded
+ * learner presses for answers and none reads as confused — so what this arm
+ * prices is the shift itself: an uncued, seeded-random change of part, exactly
+ * what the live mechanism would apply at its trigger.
+ *
+ * One line on the turns a stable hash of the turn id selects, nothing on the
+ * rest, so the unshifted turns are byte-identical to the baseline's prompt and
+ * double as the sampling-noise floor, like the due-line arm's quiet turns. The
+ * part is drawn by the same hash from the seven-part palette the frozen system
+ * prompt itself names, so the line adds direction and zero new vocabulary. The
+ * stance axis of the live feature is deliberately left out: the frozen prompt
+ * defines no stance names, and naming one would hand the speaker vocabulary
+ * the recording never carried.
+ *
+ * Unbracketed, like every other control line in this file.
+ */
+const CHARACTER_SHIFT_PARTS = Object.freeze([
+  'investigator',
+  'examiner',
+  'record-keeper',
+  'witness/source',
+  'advocate',
+  'skeptic',
+  'closer',
+]);
+
+export const TUTOR_STUB_AB_CHARACTER_SHIFT_PARTS = CHARACTER_SHIFT_PARTS;
+
+/**
+ * The radical palette — parts the model's house style would never fall into.
+ *
+ * The palette shift above mostly re-labelled conduct the bare tutor was
+ * already choosing: the inquiry's material casts an investigator or a skeptic
+ * naturally, so the line's marginal effect was a beat of stage business. That
+ * makes the mild arm a weak probe of the real question, which is whether the
+ * judge reads distance from the model's own default register as damage. These
+ * three parts are unmistakable in delivered text, and each card names concrete
+ * conduct rather than a label, because the mild arm showed a bare name does
+ * not move the turn. All three are the repo's own sanctioned pressure parts
+ * (docs/tutor-stub-cli.md): they demand and test, they never insult, and they
+ * need no invented evidence, so every guard still applies unchanged.
+ */
+const CHARACTER_SHIFT_RADICAL_PARTS = Object.freeze(
+  [
+    {
+      id: 'satirist',
+      line: 'For this turn, play the satirist: open with one unmistakable beat of dry mock praise aimed at the claim, formula, or dodge in front of you — never at the learner — then reverse that praise against the public evidence, and end by naming one repair the learner can make.',
+    },
+    {
+      id: 'exacting_schoolmaster',
+      line: 'For this turn, play the exacting schoolmaster: before anything else, require one precise performance — show the working, define the term, or read the line exactly as written — and accept nothing vaguer than what you asked for.',
+    },
+    {
+      id: 'adversarial_teacher',
+      line: 'For this turn, play the adversarial teacher: test the learner’s current idea against one concrete counterexample or competing reading drawn from what is already public, and make them defend it or amend it.',
+    },
+  ].map((part) => Object.freeze(part)),
+);
+
+export const TUTOR_STUB_AB_CHARACTER_SHIFT_RADICAL_PARTS = CHARACTER_SHIFT_RADICAL_PARTS;
+
+/** Same stable small hash the pairwise judge uses for its A/B layout. */
+function stableHash(text) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i += 1) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/**
+ * The shift line for one frozen turn, or null on the turns the coin leaves
+ * unshifted. Selection and draw both key on the turn id alone, so a rerun
+ * replays the same seeded shifts — the frozen analogue of the live feature's
+ * replayable draws.
+ */
+function characterShiftFor(bundle, mode) {
+  const turnId = String(bundle?.turnId || '');
+  if (!turnId) return null;
+  // The same coin for both palettes, so the radical arm shifts exactly the
+  // turns the mild arm shifted and every judged pair lines up across arms.
+  const h = stableHash(`character-shift:${turnId}`);
+  if (h % 2 !== 0) return null;
+  if (mode === 'radical') {
+    return CHARACTER_SHIFT_RADICAL_PARTS[(h >>> 3) % CHARACTER_SHIFT_RADICAL_PARTS.length].line;
+  }
+  const part = CHARACTER_SHIFT_PARTS[(h >>> 3) % CHARACTER_SHIFT_PARTS.length];
+  return `For this turn, play the ${part} — commit to that part's action and voice. Everything else about the scene is unchanged.`;
+}
+
+function normalizeLengthTarget(value, label) {
+  if (value === undefined || value === null) return null;
+  if (!Number.isInteger(value) || value < 1) throw new Error(`${label} must be a positive integer`);
+  return value;
+}
+
 function normalizeFeatureList(value, label) {
   if (value === undefined || value === null) return null;
   if (!Array.isArray(value)) throw new Error(`${label} must be a list of feature ids`);
@@ -174,6 +375,44 @@ export function resolveTutorStubAbArm(id, definition = {}) {
   const features = TUTOR_STUB_AB_FEATURE_IDS.filter((featureId) => kept.has(featureId));
   const learnerFraming =
     definition.learner_framing === undefined ? features.length > 0 : Boolean(definition.learner_framing);
+  const lengthTargetChars = normalizeLengthTarget(definition.length_target_chars, `arm ${armId}.length_target_chars`);
+  if (lengthTargetChars !== null && definition.baseline) {
+    throw new Error(`baseline arm ${armId} must not carry a length target`);
+  }
+  const genericPlan = definition.generic_plan === true;
+  if (genericPlan && definition.baseline) {
+    throw new Error(`baseline arm ${armId} must not carry a generic plan`);
+  }
+  // A generic plan beside the real one is not a control of anything: the
+  // speaker would hold two plans naming different slots for the same paragraph.
+  if (genericPlan && features.includes('first_draft_contract')) {
+    throw new Error(`arm ${armId} cannot carry the generic plan and the first-draft contract together`);
+  }
+  const dueLine = definition.due_line === true;
+  if (dueLine && definition.baseline) {
+    throw new Error(`baseline arm ${armId} must not carry the due line`);
+  }
+  // The contract's release slot already carries this turn's finding; a second
+  // copy in a second voice is not an ablation of anything.
+  if (dueLine && features.includes('first_draft_contract')) {
+    throw new Error(`arm ${armId} cannot carry the due line and the first-draft contract together`);
+  }
+  const rawShift = definition.character_shift;
+  let characterShiftMode = null;
+  if (rawShift === true || rawShift === 'palette') characterShiftMode = 'palette';
+  else if (rawShift === 'radical') characterShiftMode = 'radical';
+  else if (rawShift !== undefined && rawShift !== false) {
+    throw new Error(`arm ${armId}.character_shift must be true, "palette", or "radical"`);
+  }
+  const characterShift = characterShiftMode !== null;
+  if (characterShift && definition.baseline) {
+    throw new Error(`baseline arm ${armId} must not carry the character shift`);
+  }
+  // The contract casts the turn's part itself; a second, hash-drawn cast on
+  // top would have the speaker holding two parts for one paragraph.
+  if (characterShift && features.includes('first_draft_contract')) {
+    throw new Error(`arm ${armId} cannot carry the character shift and the first-draft contract together`);
+  }
   return {
     schema: AB_ARM_SCHEMA,
     id: armId,
@@ -181,6 +420,11 @@ export function resolveTutorStubAbArm(id, definition = {}) {
     summary: String(definition.summary || ''),
     baseline: Boolean(definition.baseline),
     features,
+    lengthTargetChars,
+    genericPlan,
+    dueLine,
+    characterShift,
+    characterShiftMode,
     omitted: TUTOR_STUB_AB_FEATURE_IDS.filter((featureId) => !kept.has(featureId)),
     learnerFraming,
     guardsClaimed: [...new Set(features.flatMap((featureId) => tutorStubAbFeature(featureId).guards))].sort(),
@@ -207,7 +451,19 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
   const retained = parsed.blocks.filter((block) => keep.has(block.featureId));
   const learnerText = String(bundle.learnerText || '').trim();
   const residue = arm.learnerFraming ? parsed.residue || `Learner says:\n${learnerText}` : learnerText;
-  const content = [...retained.map((block) => block.text), residue].filter(Boolean).join('\n\n');
+  // The length note sits where the advisory blocks sit, ahead of the learner
+  // text, so position is not one of the things that varies between arms.
+  const lengthTargetChars = arm.lengthTargetChars ?? null;
+  const directive = lengthTargetChars === null ? null : lengthDirective(lengthTargetChars);
+  // Same position as the real plan it stands in for, ahead of the learner text.
+  const genericPlan = arm.genericPlan === true ? GENERIC_PLAN : null;
+  // Null on a quiet turn, so the arm's prompt there is the baseline's prompt.
+  const dueLine = arm.dueLine === true ? dueLineFor(bundle) : null;
+  // Null on the turns the coin leaves unshifted, for the same reason.
+  const characterShift = arm.characterShift === true ? characterShiftFor(bundle, arm.characterShiftMode) : null;
+  const content = [directive, genericPlan, dueLine, characterShift, ...retained.map((block) => block.text), residue]
+    .filter(Boolean)
+    .join('\n\n');
   latest.content = content;
   return {
     schema: AB_REQUEST_PROJECTION_SCHEMA,
@@ -223,6 +479,19 @@ export function projectTutorStubAbRequest({ bundle, arm } = {}) {
       .filter((featureId) => featureId && !keep.has(featureId)),
     requestedFeatures: [...arm.features],
     learnerFraming: arm.learnerFraming,
+    lengthTargetChars,
+    genericPlan: genericPlan !== null,
+    dueLine: dueLine !== null,
+    characterShift: characterShift !== null,
+    characterShiftMode: characterShift !== null ? arm.characterShiftMode : null,
+    // Kept out of advisoryChars: neither the length note nor the generic plan
+    // carries any planner content, and folding either in would make a control
+    // look mildly instrumented in reports. The due line does carry one piece of
+    // planner content, so it gets its own count rather than hiding in either.
+    lengthDirectiveChars: directive ? directive.length : 0,
+    genericPlanChars: genericPlan ? genericPlan.length : 0,
+    dueLineChars: dueLine ? dueLine.length : 0,
+    characterShiftChars: characterShift ? characterShift.length : 0,
     advisoryChars: retained.reduce((total, block) => total + block.text.length, 0),
     requestChars: content.length,
   };

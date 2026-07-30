@@ -1,3 +1,18 @@
+/**
+ * The measured advisory blocks the pipeline can gate out of the speaking
+ * prompt. Ids match the A/B feature registry (`services/tutorStubAbArms.js`);
+ * the caller resolves which subset is on and passes it as
+ * `speakerAdvisoryBlocks`. Blocks outside this list are never gated.
+ */
+export const TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS = Object.freeze([
+  'context_continuity',
+  'evidence_window',
+  'learner_classifier',
+  'learner_dag',
+  'human_scaffold',
+  'first_draft_contract',
+]);
+
 export function createTutorStubTutorTurnPipeline(dependencies = {}) {
   const {
     PROGRAM2_COMMITTEE_SCHEMA,
@@ -65,6 +80,11 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     runCommitteeBattery,
     sanitizeTutorStubSpeakerAdvisory,
     selectCommitteeCompositionQuestion,
+    // Which measured advisory blocks reach the speaking prompt (a Set of ids
+    // from the A/B feature registry), or null for all. The caller resolves the
+    // env override; the pipeline only honours it, in both the normal assembly
+    // and the privilege-recovery rebuild below.
+    speakerAdvisoryBlocks = null,
     snapshotTutorStubPublicPremiseIds,
     stateRunDebugId,
     streamAI,
@@ -293,12 +313,20 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       : learnerMessageCount > 1
         ? `Learner says in ${learnerMessageCount} consecutive messages before your reply (treat them as one compound turn):\n${learnerText}`
         : `Learner says:\n${learnerText}`;
+    // Only the six measured blocks are gated. The advisories below them —
+    // comprehension, director, coach, point-of-action, tuning, feedback — have
+    // never been through the A/B bench, so there is no reading to cut them on.
+    const withSpeakerBlock = (id, text) =>
+      speakerAdvisoryBlocks === null || speakerAdvisoryBlocks.has(id) ? text : null;
     const speakerAdvisoryParts = [
-      tutorMemory,
-      dag && world && !instructionalMetaRepair ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-      advisory,
-      learnerDagAdvisory,
-      firstDraftHumanDiscourseAdvisory,
+      withSpeakerBlock('context_continuity', tutorMemory),
+      withSpeakerBlock(
+        'evidence_window',
+        dag && world && !instructionalMetaRepair ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+      ),
+      withSpeakerBlock('learner_classifier', advisory),
+      withSpeakerBlock('learner_dag', learnerDagAdvisory),
+      withSpeakerBlock('human_scaffold', firstDraftHumanDiscourseAdvisory),
       instructionalMetaRestatementAdvisory,
       comprehensionAdvisory,
       directorGuidanceAdvisory,
@@ -308,13 +336,24 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       tutorFeedbackAdvisory,
       // Keep the executable contract nearest the learner line so later analysis
       // advisories cannot bury the actual speaking task.
-      firstDraftContractAdvisory,
+      withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
     ]
       .filter(Boolean)
       .map((text) => sanitizeTutorStubSpeakerAdvisory({ world: dag ? world : null, tutorTurn, text }));
     const promptParts = [...speakerAdvisoryParts, learnerPrompt].filter(Boolean);
     const userPrompt = promptParts.join('\n\n');
     const machineAdvisoryParts = [...speakerAdvisoryParts].filter(Boolean);
+    // Stamp the prompt shape on the turn. Without this a transcript cannot say
+    // which blocks it was written under, and runs from either side of a default
+    // change would pool silently.
+    if (!passthrough && speakerAdvisoryBlocks !== null) {
+      appendTraceEvent(trace, {
+        type: 'tutor_speaker_advisory_blocks',
+        turn: tutorTurn,
+        enabled: [...speakerAdvisoryBlocks],
+        omitted: TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS.filter((id) => !speakerAdvisoryBlocks.has(id)),
+      });
+    }
     let effectiveSpeakerSystemPrompt = effectiveSystemPrompt;
     let effectiveSpeakerUserPrompt = userPrompt;
     let effectiveSpeakerInstructionTexts = [systemPrompt, ...machineAdvisoryParts].filter(Boolean);
@@ -338,13 +377,18 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
         turn: tutorTurn,
         audit: blockedAudit,
       });
+      // Rebuilt from named parts, so it has to honour the same gate — otherwise
+      // a leak recovery would quietly restore a block the run had switched off.
       const recovery = recoverTutorStubSpeakerPrompt({
         world: dag ? world : null,
         tutorTurn,
         baseSystemPrompt: systemPrompt,
-        continuityPrompt: tutorMemory,
-        publicEvidencePrompt: dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
-        firstDraftContractPrompt: firstDraftContractAdvisory,
+        continuityPrompt: withSpeakerBlock('context_continuity', tutorMemory),
+        publicEvidencePrompt: withSpeakerBlock(
+          'evidence_window',
+          dag && world ? dagTurnContext(state, tutorTurn, tutorLearnerDagModel) : null,
+        ),
+        firstDraftContractPrompt: withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
         learnerPrompt,
         messageHistory: context,
       });

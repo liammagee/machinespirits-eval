@@ -18,9 +18,34 @@ function answerVisible(text, answerTerm) {
   return identifyingTokens.some((token) => new RegExp(`\\b${escapedToken(token)}\\b`, 'iu').test(text));
 }
 
+const CONTRAST_REJECTION = /[,;—–]\s*(?:and\s+|but\s+|yet\s+)?not\b/iu;
+
+/**
+ * Drop the rejected half of a contrast before the sentence is read. "A, not B"
+ * asserts A and denies B, so conclusion vocabulary that appears only in B is a
+ * stated limit rather than a claim — the shape a tutor uses to name the thing
+ * the record does not reach. The rejected span ends at the next semicolon, so a
+ * later independent clause is still read on its own terms.
+ */
+function assertedSide(sentence) {
+  let kept = '';
+  let rest = sentence;
+  for (;;) {
+    const marker = CONTRAST_REJECTION.exec(rest);
+    if (!marker) return `${kept}${rest}`;
+    kept += rest.slice(0, marker.index);
+    const rejected = rest.slice(marker.index + marker[0].length);
+    const resumes = rejected.indexOf(';');
+    if (resumes === -1) return kept;
+    rest = rejected.slice(resumes);
+  }
+}
+
 function explicitlyWithholdsConclusion(text) {
   return (
-    /\b(?:does not|doesn[’']t|did not|didn[’']t|not yet|nothing yet|unproved|unproven)\b/iu.test(text) ||
+    /\b(?:do not|don[’']t|does not|doesn[’']t|did not|didn[’']t|not yet|nothing yet|unproved|unproven)\b/iu.test(
+      text,
+    ) ||
     /\b(?:cannot|can[’']t|will not|won[’']t|would not|wouldn[’']t)\b[^.!?]{0,28}\b(?:conclude|name|prove|say|show|write)\b/iu.test(
       text,
     ) ||
@@ -44,18 +69,103 @@ function explicitlyWithholdsConclusion(text) {
   );
 }
 
+const EVIDENTIAL_HANDOFF = /\b(?:supports?|supporting|points? to|indicates?|suggests?|is consistent with)\b/iu;
+
+/**
+ * Drop what an evidential verb governs. "The swab matches Larkin, so that
+ * supports the incubator as the source that ruined the Corvat line" names the
+ * verdict only as the thing the evidence points at — the learner reports a
+ * relation between record and conclusion instead of stating the conclusion. A
+ * claim matcher counts tokens, so without this the sentence reads as the
+ * verdict itself.
+ *
+ * Kept deliberately narrow, in the shape of `assertedSide`: only the governed
+ * span goes, and a later independent clause after a semicolon is read on its
+ * own terms. That is what lets "Liane composed the nocturne; the dating and the
+ * copybooks support it" still land — the verdict stands in its own clause there,
+ * rather than only as the object of "support".
+ */
+function evidentialSide(sentence) {
+  let kept = '';
+  let rest = sentence;
+  for (;;) {
+    const marker = EVIDENTIAL_HANDOFF.exec(rest);
+    if (!marker) return `${kept}${rest}`;
+    kept += rest.slice(0, marker.index);
+    const governed = rest.slice(marker.index + marker[0].length);
+    const resumes = governed.indexOf(';');
+    if (resumes === -1) return kept;
+    rest = governed.slice(resumes);
+  }
+}
+
+/**
+ * Shapes that mark a sentence as short of a verdict, beyond what
+ * `explicitlyWithholdsConclusion` already sees.
+ *
+ * Both come from the 2026-07-30 pilot, where a widened claim matcher closed two
+ * dialogues on sentences that assert nothing. The first is a concession that
+ * names what is still owed ("...though we still need evidence that G17 was what
+ * contaminated the flasks"): the existing check only reads "but" before a
+ * must/need, and a learner hedges with though, although, however and yet just as
+ * readily. The second is epistemic status worn as an adjective — a "plausible
+ * exposure route" is a candidate, not a finding.
+ *
+ * Deliberately absent: might, may, could. They hedge often enough, but they also
+ * carry flat verdicts ("we may now conclude"), and this guard sits in front of a
+ * closure decision where a false negative merely costs a turn.
+ */
+function hedgesClaim(text) {
+  return (
+    /\b(?:but|though|although|however|yet)\b[^.!?]{0,60}\b(?:must|needs?|needed|requires?|required|lacks?|lacking|awaits?|awaiting|missing|unproved|unproven)\b/iu.test(
+      text,
+    ) || /\b(?:plausible|possible|probable|likely|potential|speculative|hypothesis|candidate)\b/iu.test(text)
+  );
+}
+
+/**
+ * The learner's words with everything that is not a stated verdict removed.
+ *
+ * The authored-claim backstop reads a learner's utterance for the case verdict,
+ * and four shapes carry every token of a claim while asserting none of it. A
+ * question ("Did the hose cause the ceiling mark?") names the claim to ask about
+ * it. A contrast ("...but not that it ruined the Corvat flasks") names it to
+ * deny it. A concession ("...though we still need evidence") names it to say it
+ * is not yet owed. An evidential handoff ("...supports G17 as what ruined the
+ * line") names it as the thing the record points at rather than as a finding.
+ * Every one of the four closed a pilot dialogue that should have stayed open, so
+ * all four come off before the pattern is matched.
+ *
+ * What survives is joined, so a claim whose parts span two statements still
+ * matches. An empty result means the learner said nothing assertive.
+ */
+export function tutorStubAssertedClaimText(text) {
+  return oneLine(text)
+    .replace(/([.!?])[”"'’](?=\s)/gu, '$1 ')
+    .split(/(?<=[.!?])\s+/u)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence && !sentence.endsWith('?'))
+    .map((sentence) => evidentialSide(assertedSide(sentence)))
+    .filter((sentence) => sentence.trim() && !explicitlyWithholdsConclusion(sentence) && !hedgesClaim(sentence))
+    .join(' ');
+}
+
 /**
  * Detect an asserted answer-linked conclusion rather than a negated,
  * provisional, or explicitly interrogated boundary. The answer name and the
- * conclusion vocabulary must occur in the same public sentence. A following
- * pronoun sentence is joined to preserve detection of "Edony ... She struck".
+ * conclusion vocabulary must occur in the same public sentence, on the asserted
+ * side of any contrast. A following pronoun sentence is joined to preserve
+ * detection of "Edony ... She struck".
  */
 export function tutorStubAnswerConclusionAsserted({ text = '', answerTerm = '', wordPatterns = [] } = {}) {
   const sentences = oneLine(text)
     .replace(/([.!?])[”"'’](?=\s)/gu, '$1 ')
     .split(/(?<=[.!?])\s+/u)
     .map((sentence) => sentence.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    // After the split, so a sentence emptied by its own contrast still holds
+    // its place and the pronoun join below reaches the right neighbour.
+    .map(assertedSide);
 
   for (let index = 0; index < sentences.length; index += 1) {
     const sentence = sentences[index];

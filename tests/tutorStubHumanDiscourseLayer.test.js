@@ -1251,7 +1251,9 @@ test('tutor-stub interactive help exposes clarification commands', () => {
   assert.match(result.stdout, /release notes > last 24 hours/u);
   assert.match(result.stdout, /effect >/u);
   assert.match(result.stdout, /look for >/u);
-  assert.match(result.stdout, /Repository metrics: machinespirits-eval/u);
+  // The header names the checkout directory, which is not `machinespirits-eval`
+  // in a worktree, so the expectation is computed rather than hardcoded.
+  assert.ok(result.stdout.includes(`Repository metrics: ${path.basename(ROOT)}`));
   assert.match(result.stdout, /Per language/u);
   assert.match(result.stdout, /Git activity/u);
   assert.match(result.stdout, /raw, script, swimlane, analysis, prompt, settings, and Replay JS views/u);

@@ -739,7 +739,10 @@ import {
   createScaffoldLifecycle,
   SCAFFOLD_LIFECYCLE_SCHEMA,
 } from '../services/adaptiveTutor/scaffoldLifecycle.js';
-import { createTutorStubTutorTurnPipeline } from '../services/tutorStubTutorTurnPipeline.js';
+import {
+  createTutorStubTutorTurnPipeline,
+  TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS,
+} from '../services/tutorStubTutorTurnPipeline.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -825,7 +828,58 @@ const STUB = {
   responseDetails: process.env.TUTOR_STUB_RESPONSE_DETAILS !== '0',
   voiceModel: process.env.TUTOR_STUB_VOICE_MODEL || DEFAULT_TUTOR_STUB_VOICE_MODEL,
   voiceName: process.env.TUTOR_STUB_VOICE_NAME || DEFAULT_TUTOR_STUB_VOICE_NAME,
+  speakerAdvisoryBlocks: process.env.TUTOR_STUB_SPEAKER_ADVISORY_BLOCKS || '',
 };
+
+/**
+ * Which private advisory blocks get pasted into the speaking model's final user
+ * message. Ids match the feature registry the A/B bench measures them under
+ * (`services/tutorStubAbArms.js`).
+ *
+ * The bench ran each block on its own against a bare tutor across three frozen
+ * dialogues. The continuity note, the learner classifier and the redacted
+ * learner-DAG readout all landed inside the noise band, and together they cost
+ * about 1,250 characters a turn. They are off by default here.
+ *
+ * This drops them from the *prompt* only. Everything upstream still computes
+ * them: the turn contract quotes the classifier's reading of the learner word
+ * for word, and the planner picks its move after reading the DAG. Turning these
+ * off stops pasting the working next to the answer; it does not remove the
+ * working.
+ */
+const DEFAULT_SPEAKER_ADVISORY_BLOCKS = Object.freeze([
+  'evidence_window',
+  // Kept on: its own bench reading (-1.9) sits inside the band but never
+  // changed sign, and it is the block that claims the human-scaffold and
+  // question-support checks. Needs its own run before it can come out.
+  'human_scaffold',
+  'first_draft_contract',
+]);
+
+/**
+ * `all` restores every block, `none` clears them, otherwise a comma-separated
+ * subset. Fails closed on an unknown id: silently ignoring a typo would let a
+ * run report a prompt shape it did not have.
+ */
+function resolveSpeakerAdvisoryBlocks(raw) {
+  const text = String(raw ?? '').trim();
+  if (!text) return new Set(DEFAULT_SPEAKER_ADVISORY_BLOCKS);
+  if (text === 'all') return new Set(TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS);
+  if (text === 'none') return new Set();
+  const requested = text
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean);
+  const unknown = requested.filter((id) => !TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS.includes(id));
+  if (unknown.length) {
+    throw new Error(
+      `unknown speaker advisory block: ${unknown.join(', ')} (known: ${TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS.join(', ')})`,
+    );
+  }
+  return new Set(requested);
+}
+
+const SPEAKER_ADVISORY_BLOCKS = resolveSpeakerAdvisoryBlocks(STUB.speakerAdvisoryBlocks);
 
 let cliPresentation = createTutorStubCliPresentation({
   theme: STUB.cliTheme,
@@ -6963,6 +7017,7 @@ const callTutor = createTutorStubTutorTurnPipeline({
   sanitizeTutorStubSpeakerAdvisory,
   selectCommitteeCompositionQuestion,
   snapshotTutorStubPublicPremiseIds,
+  speakerAdvisoryBlocks: SPEAKER_ADVISORY_BLOCKS,
   stateRunDebugId,
   streamAI,
   trimCommitteeFallback,

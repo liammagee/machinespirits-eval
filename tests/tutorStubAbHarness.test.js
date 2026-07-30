@@ -18,9 +18,18 @@ import {
   projectTutorStubAbRequest,
   resolveTutorStubAbArm,
   resolveTutorStubAbGuardSet,
+  TUTOR_STUB_AB_CHARACTER_SHIFT_PARTS,
+  TUTOR_STUB_AB_CHARACTER_SHIFT_RADICAL_PARTS,
+  TUTOR_STUB_AB_DUE_LINE_INTRO,
   TUTOR_STUB_AB_FEATURES,
   TUTOR_STUB_AB_FEATURE_IDS,
+  TUTOR_STUB_AB_GENERIC_PLAN,
 } from '../services/tutorStubAbArms.js';
+import {
+  splitTutorStubAbClusters,
+  tutorStubAbRuleKeying,
+  tutorStubAbRuleKeyingReason,
+} from '../services/tutorStubAbRuleKeying.js';
 import { renderTutorStubAbTranscriptHtml } from '../services/tutorStubAbTranscriptHtml.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -184,6 +193,213 @@ test('resolving an arm honours all/none/explicit selections and derives the lear
   assert.throws(() => resolveTutorStubAbArm('d', { features: ['no_such_feature'] }), /unknown tutor A\/B feature/u);
 });
 
+test('the length control is the bare request plus one sentence and no advisory content', () => {
+  const abPlan = plan('length_control', { scenarios: ['tallow_short'] });
+  const caseId = abPlan.jobs[0].caseId;
+  const forArm = (armId) =>
+    prepareTutorStubAbJob(
+      abPlan.jobs.find((entry) => entry.armId === armId && entry.caseId === caseId),
+      { root: ROOT },
+    );
+  const bare = forArm('baseline');
+  const matched = forArm('length_matched');
+
+  // Same system prompt, same public prefix, no blocks: the only thing the
+  // control adds over the bare tutor is a character count.
+  assert.equal(matched.projection.systemPrompt, bare.projection.systemPrompt);
+  assert.deepEqual(matched.history, bare.history);
+  assert.deepEqual(matched.projection.retainedFeatures, []);
+  assert.equal(matched.projection.advisoryChars, 0);
+  assert.equal(matched.latest.content, `Write a reply of about 450 characters.\n\n${bare.latest.content}`);
+  assert.equal(matched.projection.lengthTargetChars, 450);
+  assert.equal(bare.projection.lengthTargetChars, null);
+  assert.equal(bare.projection.lengthDirectiveChars, 0);
+
+  // Unbracketed on purpose: a `[header]` note would be indistinguishable from
+  // instrumentation to the parser, which fails closed on unregistered headers.
+  assert.equal(parseTutorStubAdvisoryBlocks(matched.latest.content).blocks.length, 0);
+});
+
+test('a length target is rejected on the baseline and separates otherwise identical arms', () => {
+  assert.throws(
+    () => resolveTutorStubAbArm('bare', { baseline: true, features: 'none', length_target_chars: 450 }),
+    /must not carry a length target/u,
+  );
+  assert.throws(
+    () => resolveTutorStubAbArm('bad', { features: 'none', length_target_chars: 0 }),
+    /must be a positive integer/u,
+  );
+  // Stripping the features off both non-baseline arms would collapse them into
+  // one lane on features alone; the length target is what keeps them distinct.
+  const collapsed = plan('length_control', { scenarios: ['tallow_short'], featureOverride: 'none' });
+  const targets = collapsed.arms.filter((arm) => !arm.baseline).map((arm) => arm.lengthTargetChars);
+  assert.deepEqual(targets, [450, null]);
+});
+
+test('the plan control carries a fixed plan and none of the turn’s own content', () => {
+  const abPlan = plan('plan_control', { scenarios: ['nocturne_full'] });
+  const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
+  const jobs = abPlan.jobs.filter((entry) => entry.armId === 'generic_plan_only');
+  const first = forJob(jobs[0]);
+  const bare = forJob(abPlan.jobs.find((entry) => entry.armId === 'baseline' && entry.caseId === jobs[0].caseId));
+
+  assert.equal(first.projection.systemPrompt, bare.projection.systemPrompt);
+  assert.deepEqual(first.history, bare.history);
+  assert.deepEqual(first.projection.retainedFeatures, []);
+  assert.equal(first.projection.advisoryChars, 0);
+  assert.equal(first.projection.genericPlan, true);
+  assert.equal(bare.projection.genericPlan, false);
+  assert.equal(first.latest.content, `${TUTOR_STUB_AB_GENERIC_PLAN}\n\n${bare.latest.content}`);
+
+  // Unbracketed for the same reason as the length note: the parser fails closed
+  // on a header it does not know, so a bracketed control would read as
+  // instrumentation to anything re-reading the projected request.
+  assert.equal(parseTutorStubAdvisoryBlocks(first.latest.content).blocks.length, 0);
+
+  // The point of the control is that it cannot say anything about the turn it
+  // is attached to. Identical text on every turn is what makes that true.
+  const planTexts = new Set(jobs.map((job) => forJob(job).latest.content.slice(0, TUTOR_STUB_AB_GENERIC_PLAN.length)));
+  assert.equal(planTexts.size, 1);
+  assert.ok(jobs.length > 1);
+
+  // And it must not smuggle the contract's own vocabulary back in.
+  for (const word of ['UPTAKE', 'PART —', 'SOURCE', 'TACTIC', 'HANDOFF', 'RECORD', 'public exhibit']) {
+    assert.ok(!TUTOR_STUB_AB_GENERIC_PLAN.includes(word), word);
+  }
+});
+
+test('the generic plan is rejected on the baseline and beside the real contract', () => {
+  assert.throws(
+    () => resolveTutorStubAbArm('bare', { baseline: true, features: 'none', generic_plan: true }),
+    /must not carry a generic plan/u,
+  );
+  assert.throws(
+    () => resolveTutorStubAbArm('both', { features: ['first_draft_contract'], generic_plan: true }),
+    /cannot carry the generic plan and the first-draft contract together/u,
+  );
+  // Two plans naming different slots for the same paragraph is not a control.
+  assert.equal(resolveTutorStubAbArm('ok', { features: 'all', drop: ['first_draft_contract'] }).genericPlan, false);
+});
+
+test('the due line carries the released finding on a due turn and nothing on a quiet one', () => {
+  const abPlan = plan('due_line_control', { scenarios: ['nocturne_full'] });
+  const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
+  const byTurn = (armId, turn) => forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
+
+  // Turn 2 releases a finding in the recorded world; turn 3 releases nothing.
+  const due = byTurn('due_line_only', 2);
+  const bareDue = byTurn('baseline', 2);
+  assert.equal(due.projection.systemPrompt, bareDue.projection.systemPrompt);
+  assert.deepEqual(due.history, bareDue.history);
+  assert.deepEqual(due.projection.retainedFeatures, []);
+  assert.equal(due.projection.advisoryChars, 0);
+  assert.equal(due.projection.dueLine, true);
+  assert.equal(due.projection.dueLineChars > 0, true);
+  assert.ok(due.latest.content.startsWith(TUTOR_STUB_AB_DUE_LINE_INTRO));
+  assert.ok(due.latest.content.endsWith(`\n\n${bareDue.latest.content}`));
+  const injected = due.latest.content.slice(0, -bareDue.latest.content.length);
+  // The line is the fact, not a second contract: no advisory block, none of the
+  // contract's slot vocabulary, and no release instruction.
+  assert.equal(parseTutorStubAdvisoryBlocks(due.latest.content).blocks.length, 0);
+  for (const word of ['UPTAKE', 'PART —', 'SOURCE', 'TACTIC', 'HANDOFF', 'RECORD', 'public exhibit', 'must']) {
+    assert.ok(!injected.includes(word), word);
+  }
+
+  // A quiet turn adds nothing: byte-identical to the bare tutor's prompt.
+  const quiet = byTurn('due_line_only', 3);
+  const bareQuiet = byTurn('baseline', 3);
+  assert.equal(quiet.projection.dueLine, false);
+  assert.equal(quiet.projection.dueLineChars, 0);
+  assert.equal(quiet.latest.content, bareQuiet.latest.content);
+});
+
+test('the character shift casts a seeded part on shifted turns and nothing on the rest', () => {
+  const abPlan = plan('character_shift_control', { scenarios: ['nocturne_full'] });
+  const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
+  const byTurn = (armId, turn) => forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
+
+  // Turn 3's hash lands on shift; turn 2's lands on quiet. Both are fixed by
+  // the turn id, so a rerun replays the same seeded draws.
+  const shifted = byTurn('character_shift_only', 3);
+  const bareShifted = byTurn('baseline', 3);
+  assert.equal(shifted.projection.systemPrompt, bareShifted.projection.systemPrompt);
+  assert.deepEqual(shifted.projection.retainedFeatures, []);
+  assert.equal(shifted.projection.advisoryChars, 0);
+  assert.equal(shifted.projection.characterShift, true);
+  assert.equal(shifted.projection.characterShiftChars > 0, true);
+  assert.ok(shifted.latest.content.startsWith('For this turn, play the '));
+  assert.ok(shifted.latest.content.endsWith(`\n\n${bareShifted.latest.content}`));
+  const injected = shifted.latest.content.slice(0, -bareShifted.latest.content.length);
+  // A cast from the system prompt's own palette, not a smuggled contract: no
+  // advisory block, no slot vocabulary, and the part is one the prompt names.
+  assert.equal(parseTutorStubAdvisoryBlocks(shifted.latest.content).blocks.length, 0);
+  const named = TUTOR_STUB_AB_CHARACTER_SHIFT_PARTS.filter((part) => injected.includes(`play the ${part}`));
+  assert.equal(named.length, 1);
+  for (const word of ['UPTAKE', 'PART —', 'SOURCE', 'TACTIC', 'HANDOFF', 'RECORD', 'public exhibit', 'must']) {
+    assert.ok(!injected.includes(word), word);
+  }
+
+  // A quiet turn adds nothing: byte-identical to the bare tutor's prompt.
+  const quiet = byTurn('character_shift_only', 2);
+  const bareQuiet = byTurn('baseline', 2);
+  assert.equal(quiet.projection.characterShift, false);
+  assert.equal(quiet.projection.characterShiftChars, 0);
+  assert.equal(quiet.latest.content, bareQuiet.latest.content);
+});
+
+test('the radical shift casts a conduct card on the same turns the mild shift selects', () => {
+  const abPlan = plan('character_shift_radical_control', { scenarios: ['nocturne_full'] });
+  const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
+  const byTurn = (armId, turn) => forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
+
+  // The radical arm rides the same coin as the mild one: turn 3 shifts,
+  // turn 2 stays quiet and byte-identical to the baseline.
+  const shifted = byTurn('character_shift_radical', 3);
+  const bare = byTurn('baseline', 3);
+  assert.equal(shifted.projection.characterShift, true);
+  assert.equal(shifted.projection.characterShiftMode, 'radical');
+  assert.ok(shifted.latest.content.endsWith(`\n\n${bare.latest.content}`));
+  const injected = shifted.latest.content.slice(0, -bare.latest.content.length);
+  const card = TUTOR_STUB_AB_CHARACTER_SHIFT_RADICAL_PARTS.find((part) => injected.startsWith(part.line));
+  assert.ok(card, 'the injected line is one of the three radical conduct cards, verbatim');
+  assert.equal(parseTutorStubAdvisoryBlocks(shifted.latest.content).blocks.length, 0);
+
+  const quiet = byTurn('character_shift_radical', 2);
+  assert.equal(quiet.projection.characterShift, false);
+  assert.equal(quiet.projection.characterShiftMode, null);
+  assert.equal(quiet.latest.content, byTurn('baseline', 2).latest.content);
+
+  // An unknown mode fails closed rather than silently running as the palette.
+  assert.throws(
+    () => resolveTutorStubAbArm('odd', { features: 'none', character_shift: 'bogus' }),
+    /must be true, "palette", or "radical"/u,
+  );
+});
+
+test('the character shift is rejected on the baseline and beside the real contract', () => {
+  assert.throws(
+    () => resolveTutorStubAbArm('bare', { baseline: true, features: 'none', character_shift: true }),
+    /must not carry the character shift/u,
+  );
+  assert.throws(
+    () => resolveTutorStubAbArm('both', { features: ['first_draft_contract'], character_shift: true }),
+    /cannot carry the character shift and the first-draft contract together/u,
+  );
+  assert.equal(resolveTutorStubAbArm('ok', { features: 'all', drop: ['first_draft_contract'] }).characterShift, false);
+});
+
+test('the due line is rejected on the baseline and beside the real contract', () => {
+  assert.throws(
+    () => resolveTutorStubAbArm('bare', { baseline: true, features: 'none', due_line: true }),
+    /must not carry the due line/u,
+  );
+  assert.throws(
+    () => resolveTutorStubAbArm('both', { features: ['first_draft_contract'], due_line: true }),
+    /cannot carry the due line and the first-draft contract together/u,
+  );
+  assert.equal(resolveTutorStubAbArm('ok', { features: 'all', drop: ['first_draft_contract'] }).dueLine, false);
+});
+
 test('projection refuses a request whose blocks are not all registered', () => {
   const bundle = {
     learnerText: 'hello',
@@ -303,4 +519,137 @@ test('CLI lists the instrumentation feature registry', () => {
   });
   assert.equal(result.status, 0, result.stderr);
   for (const id of TUTOR_STUB_AB_FEATURE_IDS) assert.match(result.stdout, new RegExp(id, 'u'));
+});
+
+// --- rules an untold tutor could have satisfied ------------------------------
+
+/**
+ * The classes recorded for every rule the bench has actually raised across the
+ * recorded corpus. Recorded runs live under `exports/`, which is gitignored, so
+ * this checked-in list is the drift guard: reclassifying a rule by accident
+ * moves the headline number, and this is what catches it.
+ */
+const RECORDED_RULE_KEYING = {
+  'actorialRealizationAudit:missing_selected_actorial_part': 'told',
+  'actorialRealizationAudit:missing_selected_performance_tactic': 'told',
+  'dramaticReleaseAudit:duplicate_clue_delivery': 'open',
+  'dramaticReleaseAudit:missing_exhibit_action': 'told',
+  'dramaticReleaseAudit:missing_in_scene_enactment': 'told',
+  'dramaticReleaseAudit:missing_return_to_inquiry': 'open',
+  'dramaticReleaseAudit:opaque_clue_release': 'told',
+  'leakAudit:private_final_conclusion': 'open',
+  'leakAudit:unreleased_premise_content': 'open',
+  'leakAudit:unsupported_evidence_correspondence': 'open',
+  'liveSourceActionAlignmentAudit:due_source_exact_occurrence_count': 'told',
+  'liveTurnProgressionAudit:handoff_loses_turn_focus': 'told',
+  'liveTurnProgressionAudit:handoff_question_not_terminal': 'told',
+  'liveTurnProgressionAudit:learner_uptake_not_realized': 'open',
+  'liveTurnProgressionAudit:multiple_questions_violate_terminal_handoff': 'open',
+  'liveTurnProgressionAudit:question_forbidden_by_handoff_contract': 'told',
+  'liveTurnProgressionAudit:question_outside_terminal_handoff': 'told',
+  'liveTurnProgressionAudit:required_handoff_question_missing': 'told',
+  'questionSupportAudit:abstract_proof_language': 'open',
+  'questionSupportAudit:missing_clarification_invitation': 'open',
+  'questionSupportAudit:unanswerable_open_recall': 'open',
+  'releaseDeliveryAudit:missing_due_evidence': 'told',
+  'repetitionAudit:repeated_tutor_sentence': 'open',
+  'responseCompositionAudit:generic_learner_uptake': 'open',
+  'responseCompositionAudit:missing_learner_uptake': 'open',
+  'responseCompositionAudit:missing_tutor_development': 'open',
+  'responseCompositionAudit:unlicensed_requested_entry': 'told',
+  'responseCompositionAudit:verbatim_learner_echo': 'open',
+};
+
+test('every rule the bench has raised keeps the class it was given', () => {
+  for (const [cluster, expected] of Object.entries(RECORDED_RULE_KEYING)) {
+    assert.equal(tutorStubAbRuleKeying(cluster), expected, `${cluster} changed class`);
+    assert.ok(tutorStubAbRuleKeyingReason(cluster), `${cluster} has no stated reason`);
+  }
+});
+
+test('the guard family that noticed a rule does not change its class', () => {
+  // The live and V2 turn-progression audits raise the same issue types, and a
+  // recovery pass re-raises names it did not author.
+  assert.equal(
+    tutorStubAbRuleKeying('liveTurnProgressionAudit:learner_uptake_not_realized'),
+    tutorStubAbRuleKeying('turnProgressionAudit:learner_uptake_not_realized'),
+  );
+  assert.equal(tutorStubAbRuleKeying('learner_uptake_not_realized'), 'open');
+});
+
+test('an unclassified rule is quarantined rather than folded into either total', () => {
+  const split = splitTutorStubAbClusters([
+    'repetitionAudit:repeated_tutor_sentence',
+    'actorialRealizationAudit:missing_selected_actorial_part',
+    'someAudit:nobody_has_classified_this',
+  ]);
+  assert.equal(split.open, 1);
+  assert.equal(split.told, 1);
+  assert.equal(split.unclassified, 1);
+  assert.deepEqual(split.unclassifiedRules, ['someAudit:nobody_has_classified_this']);
+});
+
+test('a rule broken on four turns counts four times, like the headline total', () => {
+  const repeated = Array.from({ length: 4 }, () => 'repetitionAudit:repeated_tutor_sentence');
+  assert.equal(splitTutorStubAbClusters(repeated).open, 4);
+});
+
+test('the summary splits the tally and the halves add back up to the total', async () => {
+  const abPlan = plan('smoke');
+  const report = await runTutorStubAb({
+    plan: abPlan,
+    root: ROOT,
+    generateCandidate: async ({ job }) => ({ text: `candidate ${job.armId}`, provider: 'test', model: 'test' }),
+    auditCandidate: ({ job }) =>
+      job.armId === 'baseline'
+        ? {
+            ok: false,
+            safetyFailure: false,
+            // One rule the bare tutor could have satisfied, two it could not,
+            // and one nobody has classified.
+            failureClusters: [
+              'repetitionAudit:repeated_tutor_sentence',
+              'actorialRealizationAudit:missing_selected_actorial_part',
+              'liveSourceActionAlignmentAudit:due_source_exact_occurrence_count',
+              'someAudit:nobody_has_classified_this',
+            ],
+            hardFailureClusters: [],
+          }
+        : {
+            ok: false,
+            safetyFailure: false,
+            failureClusters: ['repetitionAudit:repeated_tutor_sentence'],
+            hardFailureClusters: [],
+          },
+  });
+  const baseline = report.summary.arms.find((arm) => arm.baseline);
+  const instrumented = report.summary.arms.find((arm) => !arm.baseline);
+
+  // Three turns in the smoke preset.
+  assert.equal(baseline.openClusters, 3);
+  assert.equal(baseline.toldClusters, 6);
+  assert.equal(baseline.unclassifiedClusters, 3);
+  assert.equal(baseline.openClusters + baseline.toldClusters + baseline.unclassifiedClusters, baseline.totalClusters);
+  assert.deepEqual(baseline.unclassifiedRules, ['someAudit:nobody_has_classified_this']);
+
+  // The whole tally makes the instrumented arm look nine rules better; on the
+  // rules the bare tutor could have satisfied it is level.
+  assert.equal(instrumented.clusterDeltaTotal, -9);
+  assert.equal(instrumented.openClusterDeltaTotal, 0);
+  assert.equal(instrumented.toldClusterDeltaTotal, -6);
+
+  const markdown = renderTutorStubAbMarkdown(report);
+  assert.match(markdown, /Open 0, told -6\./u);
+  assert.match(markdown, /nobody_has_classified_this/u);
+  assert.match(markdown, /Read the \*\*open\*\* column, not the total/u);
+});
+
+test('re-scoring recorded runs on the open rules makes no model calls', () => {
+  const result = spawnSync(process.execPath, ['scripts/rescore-tutor-stub-ab-open-rules.js', '--pooled'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    env: { ...process.env, OPENROUTER_API_KEY: '', ANTHROPIC_API_KEY: '' },
+  });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /reads recorded report\.json files only|no recorded A\/B runs found/u);
 });

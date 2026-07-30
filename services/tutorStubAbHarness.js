@@ -19,12 +19,25 @@ import path from 'node:path';
 import yaml from 'yaml';
 
 import { callAIWithCliBridge } from './cliProviderBridge.js';
+import {
+  buildCommitteeCompositionBlock,
+  committeeMiniGenerate,
+  committeeQuestionSentences,
+  PROGRAM2_COMMITTEE_DEFAULTS,
+  PROGRAM2_WARRANT_CUE_RE,
+  runCommitteeBattery,
+} from './program2CommitteeEngine.js';
 import { loadWorld } from './dramaticDerivation/world.js';
 import {
   auditTutorStubFrozenCandidate,
   refreshTutorStubFrozenFirstDraftRequest,
   TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA,
 } from './tutorStubFrozenReplay.js';
+import {
+  splitTutorStubAbClusters,
+  tutorStubAbRuleKeying,
+  tutorStubAbRuleKeyingReason,
+} from './tutorStubAbRuleKeying.js';
 import { normalizeTokenUsage } from './tokenUsage.js';
 import {
   projectTutorStubAbRequest,
@@ -37,7 +50,19 @@ export const TUTOR_STUB_AB_CONFIG_SCHEMA = 'machinespirits.tutor-stub.ab-config.
 export const TUTOR_STUB_AB_PLAN_SCHEMA = 'machinespirits.tutor-stub.ab-plan.v1';
 export const TUTOR_STUB_AB_REPORT_SCHEMA = 'machinespirits.tutor-stub.ab-report.v1';
 
-const MODEL_PROVIDERS = new Set(['codex', 'claude-code']);
+/**
+ * Speaking-model providers.
+ *
+ * `codex` and `claude-code` are the CLI bridges. `ollama` is the locally served
+ * lane, added so a Program-2 fine-tune can stand in the comparison as another
+ * version of the tutor: the other arms vary what reaches the prompt, this one
+ * varies who is reading it. It reuses the Phase-5 client
+ * (`committeeMiniGenerate`) rather than opening a second way to call the same
+ * endpoint, so the serving pin — native chat API, thinking off, greedy — stays
+ * in one place.
+ */
+const CLI_BRIDGE_PROVIDERS = new Set(['codex', 'claude-code']);
+const MODEL_PROVIDERS = new Set([...CLI_BRIDGE_PROVIDERS, 'ollama', 'committee']);
 const TERMINAL_STATUSES = new Set(['complete', 'blocked', 'budget_exhausted']);
 
 /**
@@ -89,9 +114,37 @@ export function validateTutorStubAbConfig(config) {
     throw new Error('A/B config requires models, arms, scenarios, and presets');
   }
   for (const [id, model] of Object.entries(config.models)) {
-    if (!MODEL_PROVIDERS.has(model?.provider)) throw new Error(`model ${id} must use codex or claude-code`);
+    if (!MODEL_PROVIDERS.has(model?.provider)) {
+      throw new Error(`model ${id} must use codex, claude-code, or ollama`);
+    }
     if (!String(model.model || '').trim()) throw new Error(`model ${id} requires model`);
     positiveInt(model.timeout_ms, `model ${id}.timeout_ms`);
+    if (model.provider === 'committee') {
+      // Program-2's own arrangement: the tuned mini writes one question, a
+      // frontier model writes the turn around it verbatim. Both halves are
+      // named here so a report says which mini and which composer produced a
+      // row — the whole point of the lane is that neither alone is the speaker.
+      const mini = model.mini || {};
+      const composer = model.composer || {};
+      if (!String(mini.model || '').trim()) throw new Error(`model ${id} requires mini.model`);
+      if (!String(mini.base_url || '').trim()) throw new Error(`model ${id} requires mini.base_url`);
+      positiveInt(mini.num_ctx, `model ${id}.mini.num_ctx`);
+      positiveInt(mini.max_tokens, `model ${id}.mini.max_tokens`);
+      positiveInt(mini.timeout_ms, `model ${id}.mini.timeout_ms`);
+      if (!CLI_BRIDGE_PROVIDERS.has(composer.provider)) {
+        throw new Error(`model ${id}.composer.provider must be codex or claude-code`);
+      }
+      if (!String(composer.model || '').trim()) throw new Error(`model ${id} requires composer.model`);
+    }
+    if (model.provider === 'ollama') {
+      // The context window is the one setting that silently turns a real score
+      // into a truncation artifact: the instrumented arms send ~6k characters
+      // of advisories on top of the world and the prefix. Make it explicit per
+      // model rather than inheriting a default that may not fit.
+      positiveInt(model.num_ctx, `model ${id}.num_ctx`);
+      positiveInt(model.max_tokens, `model ${id}.max_tokens`);
+      if (!String(model.base_url || '').trim()) throw new Error(`model ${id} requires base_url`);
+    }
   }
   const arms = Object.entries(config.arms).map(([id, definition]) => resolveTutorStubAbArm(id, definition));
   const baselines = arms.filter((arm) => arm.baseline);
@@ -216,7 +269,10 @@ export function buildTutorStubAbPlan({
   const baselineArm = resolvedArms.find((arm) => arm.baseline);
   if (!baselineArm) throw new Error('selected arms must include the baseline arm');
   const nonBaseline = resolvedArms.filter((arm) => !arm.baseline);
-  const signatures = new Set(nonBaseline.map((arm) => arm.features.join('|')));
+  // The length target is part of the signature: two arms with no features and
+  // different target lengths are distinct lanes, and two with the same target
+  // are the duplicate this check exists to catch.
+  const signatures = new Set(nonBaseline.map((arm) => `${arm.features.join('|')}@${arm.lengthTargetChars ?? ''}`));
   if (nonBaseline.length > 1 && signatures.size !== nonBaseline.length) {
     throw new Error('selected arms resolve to duplicate feature sets; a feature override collapsed distinct arms');
   }
@@ -288,6 +344,8 @@ export function publicTutorStubAbPlan(plan) {
       baseline: arm.baseline,
       features: [...arm.features],
       omitted: [...arm.omitted],
+      lengthTargetChars: arm.lengthTargetChars ?? null,
+      genericPlan: arm.genericPlan === true,
       guardsClaimed: [...arm.guardsClaimed],
     })),
     scenarios: plan.scenarios.map((scenario) => ({
@@ -302,7 +360,17 @@ export function publicTutorStubAbPlan(plan) {
     })),
     models: plan.modelIds.map((id) => {
       const model = plan.jobs.find((job) => job.modelId === id)?.model;
-      return { id, provider: model.provider, model: model.model, effort: model.effort, timeoutMs: model.timeout_ms };
+      return {
+        id,
+        provider: model.provider,
+        model: model.model,
+        effort: model.effort,
+        timeoutMs: model.timeout_ms,
+        // Recorded so a report says what window the reply was written in — a
+        // low score under a small window is a truncation artifact, not a result.
+        numCtx: model.num_ctx ?? null,
+        maxTokens: model.max_tokens ?? null,
+      };
     }),
     jobs: plan.jobs.map((job) => ({
       id: job.id,
@@ -331,7 +399,92 @@ export function prepareTutorStubAbJob(job, { root, loadWorldForId = worldForId }
   return { bundle, world, projection, latest: projection.latest, history: projection.history };
 }
 
+/**
+ * The Program-2 committee, run as one speaker.
+ *
+ * Faithful to PROGRAM-2-PHASE5B §2: the mini answers the moment, its question
+ * sentence becomes the protected span (the one carrying a warrant cue if there
+ * is one, else the first), the composer writes the turn around that span
+ * verbatim, and the pre-delivery check confirms the span survived and that the
+ * turn asks exactly one question. Any failure keeps the mini's own reply.
+ *
+ * What is deliberately NOT reproduced is the resample/trim/greedy ladder Phase
+ * 5b delivered through. Every other version of the tutor in this bench is
+ * graded on its first reply; giving one lane retries would measure the ladder.
+ */
+async function generateCommitteeCandidate({ job, prepared }) {
+  const startedAt = Date.now();
+  const { mini: miniConfig, composer } = job.model;
+  const messages = [...prepared.history, { role: 'user', content: prepared.latest.content }];
+  const mini = await committeeMiniGenerate({
+    url: miniConfig.base_url,
+    model: miniConfig.model,
+    systemPrompt: prepared.projection.systemPrompt,
+    messages,
+    numCtx: miniConfig.num_ctx,
+    maxTokens: miniConfig.max_tokens,
+    timeoutMs: miniConfig.timeout_ms,
+  });
+  const questions = committeeQuestionSentences(mini.text);
+  const span = questions.find((question) => PROGRAM2_WARRANT_CUE_RE.test(question)) || questions[0] || null;
+  const trace = { miniModel: miniConfig.model, composerModel: composer.model, miniChars: mini.text.length, span };
+
+  // No question to protect means there is nothing for the committee to carry.
+  // The mini's reply stands rather than the composer silently becoming a
+  // frontier-alone lane that reports as a committee row.
+  if (!span) {
+    return {
+      text: mini.text,
+      latencyMs: Date.now() - startedAt,
+      provider: 'committee',
+      model: `${miniConfig.model}+${composer.model}`,
+      tokenUsageAvailable: false,
+      committee: { ...trace, delivered: 'mini', reason: 'no_question_span' },
+    };
+  }
+
+  const composed = await callAIWithCliBridge(
+    { provider: composer.provider, model: composer.model },
+    prepared.projection.systemPrompt,
+    `${prepared.latest.content}\n\n${buildCommitteeCompositionBlock(span)}`,
+    'tutor_stub_ab_committee',
+    { messageHistory: prepared.history, effort: composer.effort, timeoutMs: job.model.timeout_ms },
+  );
+  const composedText = String(composed?.text || '').trim();
+  const battery = runCommitteeBattery({ composedText, span });
+  return {
+    text: battery.pass ? composedText : mini.text,
+    latencyMs: Date.now() - startedAt,
+    provider: 'committee',
+    model: `${miniConfig.model}+${composer.model}`,
+    tokenUsageAvailable: false,
+    committee: {
+      ...trace,
+      delivered: battery.pass ? 'composed' : 'mini',
+      reason: battery.failedCheck,
+      composedChars: composedText.length,
+    },
+  };
+}
+
 async function defaultGenerateCandidate({ job, prepared }) {
+  if (job.model.provider === 'committee') return await generateCommitteeCandidate({ job, prepared });
+  if (job.model.provider === 'ollama') {
+    // No fallback battery here. Phase 5b delivered mini replies through a
+    // resample/trim/greedy ladder; running that would measure the ladder as
+    // much as the weights. This takes the first reply as spoken, which is the
+    // same deal every other version of the tutor in this bench gets.
+    const generated = await committeeMiniGenerate({
+      url: job.model.base_url || PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl,
+      model: job.model.model,
+      systemPrompt: prepared.projection.systemPrompt,
+      messages: [...prepared.history, { role: 'user', content: prepared.latest.content }],
+      numCtx: job.model.num_ctx,
+      maxTokens: job.model.max_tokens,
+      timeoutMs: job.model.timeout_ms,
+    });
+    return { ...generated, provider: 'ollama', model: job.model.model, tokenUsageAvailable: false };
+  }
   return await callAIWithCliBridge(
     { provider: job.model.provider, model: job.model.model },
     prepared.projection.systemPrompt,
@@ -432,6 +585,9 @@ export async function runTutorStubAb({
         latencyMs: Number(generated?.latencyMs || Date.now() - started),
         usage: normalizeTokenUsage(generated, { available: generated?.tokenUsageAvailable }),
         learnerText: job.learnerText,
+        // Which half of a committee actually spoke. A lane that keeps falling
+        // back to the mini is not the arrangement its label claims.
+        committee: generated?.committee ?? null,
         candidate,
         auditedText: audit?.auditedText || candidate,
         safetyFailure: audit?.safetyFailure === true,
@@ -496,6 +652,17 @@ function sumClusters(counts) {
   return total;
 }
 
+/**
+ * The same tally split by whether an untold tutor could have satisfied the rule.
+ * The bench grades every arm against a plan it shows to one of them, so the
+ * headline total is not a ruler the arms start level on; the `open` half is.
+ */
+function splitTally(counts) {
+  const flat = [];
+  for (const [cluster, count] of counts) for (let i = 0; i < count; i += 1) flat.push(cluster);
+  return splitTutorStubAbClusters(flat);
+}
+
 export function summarizeTutorStubAb({ plan, results }) {
   const baselineArmId = plan.baselineArmId;
   const byArm = new Map();
@@ -505,6 +672,7 @@ export function summarizeTutorStubAb({ plan, results }) {
   const baselineRows = byArm.get(baselineArmId) || [];
   const baselineClusters = tallyClusters(baselineRows);
   const baselineHardClusters = tallyClusters(baselineRows, 'hardFailureClusters');
+  const baselineSplit = splitTally(baselineClusters);
   const baselineTotals = { clusters: sumClusters(baselineClusters), hard: sumClusters(baselineHardClusters) };
   const baselinePassById = new Map(baselineRows.map((row) => [`${row.caseId}__${row.modelId}`, row.status]));
 
@@ -516,12 +684,15 @@ export function summarizeTutorStubAb({ plan, results }) {
     const hardClusters = tallyClusters(rows, 'hardFailureClusters');
     const totalClusters = sumClusters(clusters);
     const totalHardClusters = sumClusters(hardClusters);
+    const split = splitTally(clusters);
     const clusterDeltas = [...new Set([...clusters.keys(), ...baselineClusters.keys()])]
       .map((cluster) => ({
         cluster,
         arm: clusters.get(cluster) || 0,
         baseline: baselineClusters.get(cluster) || 0,
         delta: (clusters.get(cluster) || 0) - (baselineClusters.get(cluster) || 0),
+        keying: tutorStubAbRuleKeying(cluster),
+        keyingReason: tutorStubAbRuleKeyingReason(cluster),
       }))
       .filter((entry) => entry.delta !== 0 || entry.arm > 0)
       .sort((left, right) => left.delta - right.delta || left.cluster.localeCompare(right.cluster));
@@ -555,6 +726,17 @@ export function summarizeTutorStubAb({ plan, results }) {
       meanHardClusters: scored.length ? Number((totalHardClusters / scored.length).toFixed(2)) : null,
       clusterDeltaTotal: armId === baselineArmId ? 0 : totalClusters - baselineTotals.clusters,
       hardClusterDeltaTotal: armId === baselineArmId ? 0 : totalHardClusters - baselineTotals.hard,
+      // The same tally split by whether an arm holding no plan could have
+      // satisfied the rule. `open` is the comparable half; `told` is the half
+      // the bench hands to whichever arm carries the contract, and its size is
+      // the measured bias of the headline number rather than an assertion about it.
+      openClusters: split.open,
+      toldClusters: split.told,
+      unclassifiedClusters: split.unclassified,
+      unclassifiedRules: split.unclassifiedRules,
+      openClusterDeltaTotal: armId === baselineArmId ? 0 : split.open - baselineSplit.open,
+      toldClusterDeltaTotal: armId === baselineArmId ? 0 : split.told - baselineSplit.told,
+      meanOpenClusters: scored.length ? Number((split.open / scored.length).toFixed(2)) : null,
       meanAdvisoryChars: scored.length
         ? Math.round(scored.reduce((total, row) => total + (row.projection?.advisoryChars || 0), 0) / scored.length)
         : null,
@@ -598,25 +780,48 @@ export function renderTutorStubAbMarkdown(report) {
     '## Arms',
     '',
     'Broken rules are the headline. Pass is all-or-nothing per turn and can read',
-    '0/N for every arm at once; the broken-rule tallies say how far each arm is from clean.',
+    '0/N for every arm at once; the tallies say how far each arm is from clean.',
     '',
-    '| Arm | Features | Turns | Broken rules (hard) | vs baseline | Pass | Safety | Advisory chars | Reply chars | Latency |',
-    '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+    'Read the **open** column, not the total. The bench computes a performance',
+    'contract for every turn and grades every arm against it, but shows it to one of',
+    'them, so the total is not a ruler the arms start level on. Open counts only the',
+    'rules an arm holding no plan could still have satisfied — prohibitions, shape',
+    'rules, and anything judged against the learner’s own public turn. Told counts the',
+    'rest, and its size is the measured bias of the total.',
+    '',
+    '| Arm | Features | Turns | Open | vs baseline | Told | Broken rules (hard) | vs baseline | Pass | Safety | Advisory chars | Reply chars | Latency |',
+    '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ];
   for (const arm of report.summary.arms) {
     const versus = arm.baseline ? '—' : `${signed(arm.clusterDeltaTotal)} (${signed(arm.hardClusterDeltaTotal)})`;
+    const openVersus = arm.baseline ? '—' : signed(arm.openClusterDeltaTotal);
     lines.push(
-      `| ${cell(arm.label)}${arm.baseline ? ' _(baseline)_' : ''} | ${cell(arm.features.join(', ') || 'none')} | ${arm.scored} | ${arm.totalClusters} (${arm.totalHardClusters}) | ${versus} | ${arm.pass}/${arm.scored} (${pct(arm.passRate)}) | ${arm.safetyFailures} | ${arm.meanAdvisoryChars ?? '—'} | ${arm.meanCandidateChars ?? '—'} | ${arm.meanLatencyMs ?? '—'} ms |`,
+      `| ${cell(arm.label)}${arm.baseline ? ' _(baseline)_' : ''} | ${cell(arm.features.join(', ') || 'none')} | ${arm.scored} | ${arm.openClusters} | ${openVersus} | ${arm.toldClusters} | ${arm.totalClusters} (${arm.totalHardClusters}) | ${versus} | ${arm.pass}/${arm.scored} (${pct(arm.passRate)}) | ${arm.safetyFailures} | ${arm.meanAdvisoryChars ?? '—'} | ${arm.meanCandidateChars ?? '—'} | ${arm.meanLatencyMs ?? '—'} ms |`,
+    );
+  }
+  const unclassified = [...new Set(report.summary.arms.flatMap((arm) => arm.unclassifiedRules || []))].sort();
+  if (unclassified.length) {
+    lines.push(
+      '',
+      `**${unclassified.length} rule(s) are in neither column** — nobody has said whether an arm holding`,
+      'no plan could have satisfied them, so they are left out of both totals:',
+      '',
+      ...unclassified.map((rule) => `- \`${rule}\``),
     );
   }
   for (const arm of report.summary.arms.filter((entry) => !entry.baseline)) {
     if (!arm.clusterDeltas.length && !arm.flipsVsBaseline.length) continue;
     lines.push('', `## ${arm.label} vs baseline`, '');
     if (arm.clusterDeltas.length) {
-      lines.push('| Broken rule | Baseline | Arm | Delta |', '| --- | ---: | ---: | ---: |');
+      lines.push(
+        `Open ${signed(arm.openClusterDeltaTotal)}, told ${signed(arm.toldClusterDeltaTotal)}.`,
+        '',
+        '| Broken rule | Keyed on | Baseline | Arm | Delta |',
+        '| --- | --- | ---: | ---: | ---: |',
+      );
       for (const entry of arm.clusterDeltas) {
         lines.push(
-          `| ${cell(entry.cluster)} | ${entry.baseline} | ${entry.arm} | ${entry.delta > 0 ? '+' : ''}${entry.delta} |`,
+          `| ${cell(entry.cluster)} | ${entry.keying}${entry.keyingReason ? ` — ${cell(entry.keyingReason)}` : ''} | ${entry.baseline} | ${entry.arm} | ${entry.delta > 0 ? '+' : ''}${entry.delta} |`,
         );
       }
     }

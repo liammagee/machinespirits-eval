@@ -64,6 +64,27 @@ learner_voice: >-
 
 secret:
   fact: [ruined, corvatLine, larkinUnit]
+  # Deterministic backstop for the closure assertion: these fire only once the
+  # public record already entails the secret, and never on a question. The
+  # 2026-07-30 pilot recorded learners stating this verdict in passive and
+  # causal forms the extractor missed ("The Corvat line was ruined by G17
+  # contamination acquired during its overnight placement in the Larkin
+  # incubator"); each group below is one part of that verdict, any order.
+  recognition_patterns:
+    - id: larkin_ruined_corvat
+      all_of:
+        - ["corvat"]
+        - ["larkin"]
+        - ["ruined", "ruin", "destroyed", "contaminated", "wiped out", "lost the line"]
+      none_of:
+        - "not ruined"
+        - "did not ruin"
+        - "didn't ruin"
+        - "does not show"
+        - "doesn't show"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
   surface: >-
     The Corvat line was ruined by the Larkin unit — an incubator Facilities
     decommissioned last spring after a perished door gasket exposed a resident

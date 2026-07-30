@@ -580,6 +580,11 @@ process.stdin.on('end', () => {
           PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
           CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
           TUTOR_STUB_SUMMARY_OPEN: '0',
+          // The redacted learner-DAG readout is no longer pasted into the
+          // speaking prompt by default — its own A/B reading was inside the
+          // noise band. The block is still built, and this test is what checks
+          // its bookkeeping renders once, so run it with the blocks restored.
+          TUTOR_STUB_SPEAKER_ADVISORY_BLOCKS: 'all',
         },
       },
     );

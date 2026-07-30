@@ -14,6 +14,7 @@ import {
   createTutorStubDagFactDropoutState,
   projectTutorStubDagMemoryReliability,
 } from './tutorStubDagFactDropout.js';
+import { tutorStubAssertedClaimText } from './tutorStubConclusionAssertion.js';
 import { closeTruncatedTutorStubJson, normalizeTutorStubAnalysisEnvelope } from './tutorStubJson.js';
 import { buildTutorStubLearnerAdvance } from './tutorStubLearnerAdvance.js';
 import { buildTutorStubStateObservation } from './adaptiveTutor/tutorStubStateAdapter.js';
@@ -2484,8 +2485,12 @@ export function applyTutorStubPublicLearnerRecordUpdate({
   // that omitted `derive`/`assert_answer`. Requiring the extractor to signal
   // first made the backstop circular and let ordinary paraphrases loop to the
   // turn cap even after the learner had publicly solved the case.
+  // Only the asserted part of the turn is read. Post-entailment, "Did the hose
+  // cause the ceiling mark?", "...but not that it ruined the flasks" and
+  // "...though we still need evidence" each carry every token of the claim
+  // pattern while asserting nothing, and the backstop must not close on them.
   const authoredAssertion = secretEntailed
-    ? matchAuthoredRecognitionClaim(learnerText, {
+    ? matchAuthoredRecognitionClaim(tutorStubAssertedClaimText(learnerText), {
         surfaces: world.secret?.recognition_surfaces,
         patterns: world.secret?.recognition_patterns,
       })

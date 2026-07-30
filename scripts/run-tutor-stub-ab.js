@@ -135,12 +135,22 @@ function printSummary(report, paths) {
     const delta = arm.baseline
       ? '     '
       : `${arm.clusterDeltaTotal > 0 ? '+' : ''}${arm.clusterDeltaTotal}`.padStart(5);
+    // Open first: it is the half of the tally an arm holding no plan could
+    // still have satisfied, so it is the only column the arms start level on.
+    const openDelta = arm.baseline
+      ? '     '
+      : `${arm.openClusterDeltaTotal > 0 ? '+' : ''}${arm.openClusterDeltaTotal}`.padStart(5);
     console.log(
-      `  ${arm.baseline ? '*' : ' '} ${arm.id.padEnd(14)} broken rules ${String(arm.totalClusters).padStart(3)} (${String(arm.totalHardClusters).padStart(3)} hard) ${delta}` +
+      `  ${arm.baseline ? '*' : ' '} ${arm.id.padEnd(14)} open ${String(arm.openClusters).padStart(3)} ${openDelta}` +
+        `  told ${String(arm.toldClusters).padStart(3)}` +
+        `  all ${String(arm.totalClusters).padStart(3)} (${String(arm.totalHardClusters).padStart(3)} hard) ${delta}` +
         `  pass ${String(arm.pass).padStart(2)}/${String(arm.scored).padEnd(2)} ${rate.padStart(4)}` +
         `  advisory ${String(arm.meanAdvisoryChars ?? 0).padStart(5)} chars  reply ${String(arm.meanCandidateChars ?? 0).padStart(4)} chars` +
         (arm.blocked ? `  (${arm.blocked} blocked)` : ''),
     );
+    if (arm.unclassifiedRules?.length) {
+      console.log(`      unclassified, in neither column: ${arm.unclassifiedRules.join(', ')}`);
+    }
     for (const flip of arm.flipsVsBaseline) {
       console.log(`      turn ${flip.turn} ${flip.modelId}: ${flip.from} -> ${flip.to}`);
     }
@@ -203,9 +213,14 @@ async function main() {
         `models: ${printable.models.map((model) => `${model.id}=${model.provider}.${model.model}@${model.effort}`).join(', ')}`,
       );
       for (const arm of printable.arms) {
-        console.log(
-          `arm ${arm.id}${arm.baseline ? ' (baseline)' : ''}: ${arm.features.join(', ') || 'no instrumentation'}`,
-        );
+        // Controls carry no instrumentation features but are not bare, so name
+        // what they do carry — "no instrumentation" alone misreads the lane.
+        const carried = [
+          ...arm.features,
+          arm.genericPlan ? 'generic plan (no case content)' : null,
+          arm.lengthTargetChars ? `length target ${arm.lengthTargetChars} chars` : null,
+        ].filter(Boolean);
+        console.log(`arm ${arm.id}${arm.baseline ? ' (baseline)' : ''}: ${carried.join(', ') || 'no instrumentation'}`);
       }
       for (const scenario of printable.scenarios) {
         console.log(
