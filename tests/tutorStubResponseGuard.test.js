@@ -314,6 +314,57 @@ test('the advance channel exempts a closing turn and a turn too short to judge',
   assert.equal(terminal.novelty, null);
 });
 
+test('the stall window forgives a short consolidating run and fires on a long one', () => {
+  // Five restatements built from one word set: every turn after the first is
+  // below the novelty floor against its own priors, so the candidate closes a
+  // below-floor run of five. The default window of 1 keeps today's per-turn
+  // behaviour (covered by the tests above); a window longer than the run
+  // suppresses the issue and says so; a window inside the run still fires and
+  // reports the run length.
+  const base =
+    'The ledger shows the pump opened the northern valve during the frost inspection and the record names the observed source directly.';
+  const shuffle = [
+    'The record names the observed source directly: the pump opened the northern valve during the frost inspection, the ledger shows.',
+    'During the frost inspection the ledger shows the pump opened the northern valve, and the record names the observed source directly.',
+    'The pump opened the northern valve, the ledger shows, and during the frost inspection the record names the observed source directly.',
+    'The observed source is named directly by the record: during the frost inspection the ledger shows the pump opened the northern valve.',
+  ];
+  const candidate =
+    'The ledger shows during the frost inspection the record names the observed source directly and the pump opened the northern valve.';
+
+  const perTurn = auditTutorStubAdvanceResponse({ text: candidate, recentTutorTexts: [base, ...shuffle] });
+  assert.equal(perTurn.ok, false, 'default window keeps the per-turn behaviour');
+
+  const inside = auditTutorStubAdvanceResponse({
+    text: candidate,
+    recentTutorTexts: [base, ...shuffle],
+    stallWindow: 3,
+  });
+  assert.equal(inside.ok, false);
+  assert.equal(inside.issues[0].stallRun, 5, 'the issue reports the full below-floor run');
+  assert.equal(inside.issues[0].stallWindow, 3);
+
+  const beyond = auditTutorStubAdvanceResponse({
+    text: candidate,
+    recentTutorTexts: [base, ...shuffle],
+    stallWindow: 6,
+  });
+  assert.equal(beyond.ok, true, 'a window longer than the run forgives the turn');
+  assert.equal(beyond.windowSuppressed, true);
+  assert.equal(beyond.stallRun, 5);
+
+  // A single consolidating turn after fresh material is forgiven by any window
+  // above 1: the prior turns advance, so the run is just the candidate.
+  const single = auditTutorStubAdvanceResponse({
+    text: RIVERSIDE_STALL.text,
+    recentTutorTexts: RIVERSIDE_BARE_ARM.slice(0, 4),
+    stallWindow: 3,
+  });
+  if (single.novelty < 0.25) {
+    assert.equal(single.ok, true, 'an isolated below-floor turn is consolidation, not a stall');
+  }
+});
+
 test('delivering an exhibit is not an exemption, because a real exhibit is new words', () => {
   // The 2026-07-28 smoke run exempted four of the instrumented arm's six turns
   // on this ground and left the channel a no-op. Those same turns pass on their

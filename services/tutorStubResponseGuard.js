@@ -139,12 +139,41 @@ function similarity(left, right) {
  * channels are reported side by side because they disagree — a turn can repeat
  * a phrasing without stalling, and stall without repeating a phrasing.
  */
+// Opt-in windowed stall detection (2026-07-30). With the window at its default
+// of 1 the channel keeps its per-turn behaviour: any below-floor turn fires.
+// TUTOR_STUB_ADVANCE_WINDOW=k (k >= 2) makes the issue fire only when the
+// candidate is the k-th consecutive below-floor turn — one consolidating turn
+// is teaching, a run is a stall. Motivated by the gate-3 follow-up runs, where
+// this channel vetoed bounded consolidating drafts ("that keeps the log from
+// proving more than it says") and shipped the fallback template instead. Env
+// opt-in so recorded and preregistered runs stay byte-stable.
+const DEFAULT_ADVANCE_STALL_WINDOW = (() => {
+  const raw = Number(process.env.TUTOR_STUB_ADVANCE_WINDOW);
+  return Number.isInteger(raw) && raw >= 1 ? raw : 1;
+})();
+
+function priorBelowFloorRun(priorTexts, { floor, minimumContentWords }) {
+  let run = 0;
+  for (let index = priorTexts.length - 1; index >= 0; index -= 1) {
+    const contentWords = new Set(words(priorTexts[index]));
+    if (contentWords.size < Number(minimumContentWords)) break;
+    const earlier = priorTexts.slice(Math.max(0, index - 10), index);
+    if (!earlier.length) break;
+    const earlierWords = new Set(earlier.flatMap((row) => words(row)));
+    const fresh = [...contentWords].filter((word) => !wordSetContains(earlierWords, word));
+    if (fresh.length / contentWords.size >= Number(floor)) break;
+    run += 1;
+  }
+  return run;
+}
+
 export function auditTutorStubAdvanceResponse({
   text = '',
   recentTutorTexts = [],
   floor = 0.25,
   minimumContentWords = 8,
   terminal = false,
+  stallWindow = DEFAULT_ADVANCE_STALL_WINDOW,
 } = {}) {
   const contentWords = new Set(words(text));
   const priorTexts = (Array.isArray(recentTutorTexts) ? recentTutorTexts : []).slice(-10).filter((row) => oneLine(row));
@@ -169,17 +198,24 @@ export function auditTutorStubAdvanceResponse({
   const priorWords = new Set(priorTexts.flatMap((row) => words(row)));
   const freshWords = [...contentWords].filter((word) => !wordSetContains(priorWords, word));
   const novelty = freshWords.length / contentWords.size;
+  const belowFloor = novelty < Number(floor);
+  const window = Number.isInteger(Number(stallWindow)) && Number(stallWindow) >= 1 ? Number(stallWindow) : 1;
+  const stallRun = belowFloor ? priorBelowFloorRun(priorTexts, { floor, minimumContentWords }) + 1 : 0;
+  const windowSuppressed = belowFloor && stallRun < window;
   const issues =
-    novelty < Number(floor)
+    belowFloor && !windowSuppressed
       ? [
           {
             type: 'tutor_turn_without_advance',
             reason:
-              'the reply introduces almost no material the recent tutor turns have not already covered, so it restates rather than advances',
+              window > 1
+                ? `the reply is the ${stallRun}th consecutive turn introducing almost no material the recent tutor turns have not already covered, so the dialogue is stalling rather than consolidating`
+                : 'the reply introduces almost no material the recent tutor turns have not already covered, so it restates rather than advances',
             novelty,
             freshWordCount: freshWords.length,
             contentWordCount: contentWords.size,
             comparedTurns: priorTexts.length,
+            ...(window > 1 ? { stallRun, stallWindow: window } : {}),
           },
         ]
       : [];
@@ -190,6 +226,7 @@ export function auditTutorStubAdvanceResponse({
     novelty,
     skipped: null,
     freshWords,
+    ...(windowSuppressed ? { windowSuppressed: true, stallRun, stallWindow: window } : {}),
   };
 }
 
