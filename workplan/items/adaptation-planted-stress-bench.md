@@ -8,11 +8,14 @@ owner: claude
 source: manual
 created: 2026-07-30
 updated: 2026-07-30
-verification: "Design-stage card: no build until the annotation gold exists.
-  First build gate: at least one human-annotated dialogue (schema
-  machinespirits.adaptation-annotation.v1, from
-  scripts/build-adaptation-annotation-sheet.js) whose (state, move) pairs
-  seed the probe taxonomy and repair table."
+verification: "Design-stage card: no build until the authored gold exists.
+  First build gate: a user-edited stress schedule (draft:
+  config/drama-derivation/stress-schedule-world-033-draft.yaml) naming per
+  planted turn the state, the sim directive, and the right repair. The gate
+  was originally transcript annotation; inverted 2026-07-30 — the corpus
+  transcripts contain no states to read out (the sim has none), so the gold
+  is authored in, never discovered. The annotation sheets survive for rating
+  whether a tutor reply met a planted state."
 claim_status: methods
 depends_on:
   - misconception-world-outcome-gate
@@ -62,16 +65,21 @@ same-family fold); an adversarial learner-director with a reachability bound
 (every sabotage leaves a repair path); harvesting real deficient turns from
 role-played and pilot transcripts into a replayable probe library.
 
-## Specification source
+## Specification source (inverted 2026-07-30)
 
-The probe taxonomy and repair table are seeded from human annotation, not
-invented: `scripts/build-adaptation-annotation-sheet.js` produces blind-first
-per-turn gold — the state read, the move a good teacher makes next, and
-whether the actual reply made it — as
-`machinespirits.adaptation-annotation.v1` JSON. Annotation joins the frozen
-replay bundles (`machinespirits.tutor-stub.frozen-replay.v1`) on trace path
-plus turn index, so a move-matcher can score any tutor version against the
-same gold on the replay bench.
+The gold is authored, never discovered. First attempt was transcript
+annotation (`scripts/build-adaptation-annotation-sheet.js`, blind-first
+per-turn tagging); the user's read killed it correctly: the corpus
+transcripts contain no states to tag — the sim has none, and the one real
+pathology (circling) is visible only across stretches, which the novelty
+metrics already catch. The replacement is the authored stress schedule
+(draft: `config/drama-derivation/stress-schedule-world-033-draft.yaml`) —
+eleven planted turns across seven states, keyed to world-033's clue
+releases, each entry carrying the in-fiction cause, the sim directive, the
+right repair, an acceptable second, and the tempting wrong move. One
+authored entry drives the sim, defines the gold, and specifies the scoring.
+The annotation sheets survive for the one per-turn judgment that stays
+human: whether the tutor's reply met the planted state.
 
 ## What this line must not claim
 
