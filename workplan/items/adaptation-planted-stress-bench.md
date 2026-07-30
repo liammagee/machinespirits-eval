@@ -81,6 +81,34 @@ authored entry drives the sim, defines the gold, and specifies the scoring.
 The annotation sheets survive for the one per-turn judgment that stays
 human: whether the tutor's reply met the planted state.
 
+## The deference finding (2026-07-30) and the stance probes
+
+The transcript observation that reframed the bench's second failure pole:
+the default tutor drifts into assistant mode — nearly every reply opens by
+granting something, every learner imperative gets executed, no demand is
+ever made of the learner (baseline on the contemporary-learner dialogue:
+6/25 agreement openers, 0 refusal openers, 1 demand). Two attractors, not
+one: the bureaucrat (liturgy, guard-driven) and the butler (capitulation,
+training-driven). The stress schedule's scoring must treat capitulation as
+its own miss type beside the liturgy.
+
+**Standing identity does not transfer.** A 2,040-char stance book granting
+the tutor authority — permission to open with "No", to withhold, to set
+assignments — produced, across 20 distinct model drafts (codex tutor):
+zero refusal openers, zero demands, eight agreement openers. The model
+never DRAFTED defiance, so guard vetoes are excluded; the null is at
+generation. Meanwhile fallbacks rose 36% → 61%: the identity prose degraded
+checklist compliance while buying no authority. Trained-deep, at the draft
+level (predicted by the user before the run).
+
+Probes launched 2026-07-31: (1) cross-family — Sonnet in the tutor seat,
+same identity book, does the deference replicate; (2) same channel,
+move-shaped — the book rewritten as bare trigger-and-move rules (first word
+"No" on premature-verdict demands; one assignment per three turns; keep
+the register under mockery). With the A/B conduct-card result (per-turn,
+move-shaped: works at draft level), the matrix completes: what transfers
+is the move, or nothing.
+
 ## What this line must not claim
 
 Simulated learner throughout; detection-and-repair is a property of the
