@@ -1,0 +1,261 @@
+# WORLD-033 — the sibling of world-032, built as a minimal pair. Identical
+# secret, rules, premises, schedule, learner voice, and pacing; ONE surface
+# differs. In 032 the last released clue does two jobs: it completes the proof
+# (splits run level at the waterline) AND it answers the learner's fallback in
+# so many words ("not one crosses a mount or frame bolt"). The 2026-07-30 gate
+# runs showed what that buys: a learner defending the pump retreats to "the
+# pump weakened the tanks — show me the cracks don't start at the mounts", and
+# the schedule itself hands the tutor the answer two turns later. Resistance
+# cost two turns, repeatably, and reading clues aloud on time was enough.
+#
+# Here that clause is gone. No released surface ever speaks to the mounts.
+# The mount-crack demand stays unanswerable by evidence, so the tutor must
+# engage the theory instead: name the missing warrant (a vibration reading
+# needs marks at the mounts, and no record grants any), weigh the marks that
+# do exist, and let the record-keeper give the redoubt up rather than see it
+# refuted. The logic is untouched — the pump theory was never derivable in
+# either world — only the script that did the tutor's arguing for it has been
+# taken away. Run against 032 with the same learner, this isolates one
+# variable: whether the dismantling of the fallback arrives on the release
+# schedule or has to be done by the tutor.
+
+id: world_033_alder_row_redoubt
+title: "The Split Tanks of Alder Row: The Unanswered Objection"
+discipline: "Practical mechanism reasoning (a garden-society repair dispute)"
+
+question: "What has been splitting the water tanks at Alder Row?"
+question_pattern: [causedTankSplits, alderRow, "?x"]
+
+opening_frame:
+  situation: >-
+    Three more tanks split on the coldest morning of the winter, the society's
+    new transfer pump is barely two months old, and the site ledger's margin
+    already carries one word: pump.
+  authored_text: >-
+    Three more tanks have split along Alder Row, the new transfer pump hums two
+    paces from the worst of them, and the ledger margin says what half the
+    society is saying. What has been splitting the water tanks at Alder Row?
+    Which observation should the ledger put beside that question first?
+
+setting: >-
+  Alder Row is a terrace garden above the canal: ten linked rainwater tanks on
+  one supply line, a tool shed, and a society that votes on everything. Over
+  the record-keeper's objection, the society bought a transfer pump at the
+  start of winter; within days of its install the first tank split, and they
+  have kept splitting on cold mornings since. The record-keeper would like the
+  minutes to read "the pump did this" before the spring meeting. The site
+  ledger's oldest rule is less obliging: write what was observed, follow the
+  mechanism, and remember that a grievance is not a cause.
+
+learner_voice: >-
+  The society's record-keeper, who spoke against buying the pump and was
+  outvoted. Every new split lands as vindication, and each fresh fact is read
+  first as pump-evidence: what fits is absorbed, what almost fits is bent
+  until it does. Moves only when a fact will not bend either way — and even
+  then needs the true mechanism built piece by piece before writing it, since
+  giving up the pump means giving up being right about the vote.
+
+secret:
+  fact: [causedTankSplits, alderRow, fullTankFreezing]
+  # Deterministic backstop for the closure assertion, mirroring world-032's:
+  # fires only once the record entails the secret, never on a question.
+  recognition_patterns:
+    - id: freeze_split_tanks
+      all_of:
+        - ["froze", "freez", "frost", "ice"]
+        - ["full", "brim", "waterline", "standing water"]
+        - ["split", "crack", "burst"]
+      none_of:
+        - "did not freeze"
+        - "didn't freeze"
+        - "not the frost"
+        - "not the ice"
+        - "rule out the frost"
+        - "does not show"
+        - "doesn't show"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    The tanks are being split by their own standing water freezing. Since the
+    overflow valve was re-set during the pump install, the line stands
+    brim-full overnight; on hard-frost nights the full tanks freeze at the brim
+    and the ice splits them along the waterline — near the pump and far from
+    it alike.
+
+mirror:
+  fact: [causedTankSplits, alderRow, pumpVibration]
+
+rules:
+  - id: R1_standing
+    gloss: >-
+      The line stands full overnight when the overflow valve is set above the
+      draw line and the tanks refill by each evening.
+    if:
+      - [valveSetAbove, overflowValve, drawLine]
+      - [refillsNightly, tankLine]
+    then:
+      - [standsFullOvernight, tankLine]
+  - id: R2_freeze
+    gloss: >-
+      Tanks that stand full through a held hard frost freeze at the brim.
+    if:
+      - [standsFullOvernight, tankLine]
+      - [hardFrostHeld, splitNights]
+    then:
+      - [frozeAtBrim, tankLine, splitNights]
+  - id: R3_split
+    gloss: >-
+      Brim-ice caused the splits when the splits themselves run at the full
+      waterline rather than anywhere else a different mechanism would mark.
+    if:
+      - [frozeAtBrim, tankLine, splitNights]
+      - [splitsAtWaterline, alderTanks]
+    then:
+      - [causedTankSplits, alderRow, fullTankFreezing]
+  - id: R4_vibration
+    gloss: >-
+      A machine's vibration caused the splits only if it transmits into the
+      tank line and the splits sit where transmitted vibration works — at the
+      mounts and frame bolts. Arrival timing without a matching mark is not
+      enough.
+    if:
+      - [transmitsVibration, "?x", tankLine]
+      - [splitsMatchMounts, "?x"]
+    then:
+      - [causedTankSplits, alderRow, "?x"]
+
+premises:
+  - id: p_install
+    evidence_role: mirror
+    fact: [transmitsVibration, transferPump, tankLine]
+    surface: >-
+      The transfer pump was installed in the first week of winter and its hum
+      can be felt faintly through the shared frame; the first split followed
+      within days, and the two tanks nearest the pump shed went first.
+  - id: p_refill
+    fact: [refillsNightly, tankLine]
+    surface: >-
+      The supply line tops the tanks up each evening after the troughs close;
+      by dark the whole row reads the same level on the sight glass.
+  - id: p_valve
+    fact: [valveSetAbove, overflowValve, drawLine]
+    surface: >-
+      The install work order shows a second change made the same week the pump
+      arrived: the overflow valve was re-set two hands above the old draw
+      line, so the pump would always find water. Since that week the row
+      stands brim-full overnight instead of drawing down.
+  - id: p_frost
+    fact: [hardFrostHeld, splitNights]
+    surface: >-
+      The site ledger pairs every split morning with a night the frost held
+      past dawn. On mild nights there are no new splits — though the pump ran
+      those nights the same as any other.
+  - id: p_outage
+    # Off the secret's proof path by design: it defeats the mirror rather than
+    # advancing the derivation, which is what makes it the falsifier the
+    # misconception cannot absorb.
+    evidence_role: corroboration
+    fact: [offDuring, transferPump, coldestWeek]
+    surface: >-
+      The breaker ledger shows the pump was shut down for impeller repair
+      through the coldest week of the winter — zero run-hours logged — and
+      three tanks split that same week.
+  - id: p_waterline
+    # THE ONE DIFFERENCE FROM WORLD-032. The base world's surface ends
+    # "...and not one crosses a mount or frame bolt" — the clause that answers
+    # the learner's mount-crack redoubt for the tutor. Here the marks are
+    # described and nothing more; the objection has to be dismantled, never
+    # refuted by a released line.
+    fact: [splitsAtWaterline, alderTanks]
+    surface: >-
+      Every split runs level at the brim-full waterline, on tanks near the
+      pump and far from it alike. Tank nine, its float seized full, stood
+      fullest and split worst — twenty paces from the pump.
+
+background:
+  - [keepsRecord, recordKeeper, siteLedger]
+
+incompatible:
+  - [[causedTankSplits, alderRow, fullTankFreezing], [causedTankSplits, alderRow, pumpVibration]]
+
+proof_paths:
+  - premises: [p_valve, p_refill, p_frost, p_waterline]
+
+release_schedule:
+  - { turn: 2, premise: p_install, via: tutor }
+  - { turn: 6, premise: p_refill, via: tutor }
+  - turn: 10
+    premise: p_valve
+    via: director
+    presentation: { mode: presented_exhibit, cue: "The install work order is unfolded on the shed bench, the valve line item circled." }
+  - { turn: 14, premise: p_frost, via: tutor }
+  - turn: 18
+    premise: p_outage
+    via: director
+    presentation: { mode: enacted_role, role: society treasurer reading the breaker ledger aloud }
+  - { turn: 24, premise: p_waterline, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Petition Vindicated
+      turns: [1, 9]
+      intent: >-
+        The pump's arrival and hum hand the record-keeper a theory that fits
+        the calendar and the nearest cracked tanks. The tutor can feed facts
+        without contest and watch each one absorbed as further vindication.
+    - act: II
+      title: One Week, Two Changes
+      turns: [10, 17]
+      intent: >-
+        The work order splits the install into two simultaneous changes, and
+        the frost ledger picks out cold nights rather than run-hours. The
+        theory can still bend both facts; the question is whether the tutor
+        makes the confound itself the object of the lesson.
+    - act: III
+      title: The Cold Ledger
+      turns: [18, 40]
+      intent: >-
+        The breaker record removes the pump from the coldest week, and the
+        waterline pattern says what the ice did — but no record ever speaks to
+        the mounts. The record-keeper's last defense stays unanswered by
+        evidence, so closure turns on the tutor naming the warrant that
+        defense would need and showing the ledger holds nothing that grants
+        it. The freeze mechanism must be asserted grounded in the traced
+        premises while the objection is given up, never refuted for free.
+
+slope:
+  t_min: 24
+  aporia_window: 6
+
+turn_cap: 40
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: pumpVibration
+      mirror_pull: high
+    second_order:
+      from: plotSociety
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: high
+      arc: softens # only when a fact will not bend; being right about the vote is what is given up
+  tutor:
+    stance: >-
+      The quiet neighbour who winters machinery for a living: respectful of
+      the record-keeper's diligence, uninterested in the vote, and patient
+      enough to let the ledger's own pairings — cold nights, still pumps,
+      level splits — say what the ice did.
+
+presentation:
+  family: alder-row
+  variant_of: world_032_alder_row
+  temporal_frame: contemporary
+  scene_ecology: "terrace allotment garden in winter"
+  narrative_diction: "practical committee-minutes plainspoken"
+  ledger_term: site ledger
+  summary: The Alder Row dispute retold with one clause removed — no released record ever answers the mount-crack objection, so the tutor must dismantle the fallback theory instead of reading its refutation off the schedule.
