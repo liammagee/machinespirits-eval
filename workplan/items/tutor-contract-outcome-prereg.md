@@ -213,3 +213,34 @@ for the gate result only: §6.23 of `paper-full-2.0.md` v3.0.234 carries the
 saturation finding and the instrument-fault record, labelled pre-registered
 gate-stage, licensing no comparison between tutor versions. The embargo line
 stands for everything the never-run contrast would have shown.
+
+---
+
+**Why Nocturne rests on 4, and the fix.** The fifth dialogue died at turn 16 of
+40 after 65 paid model calls, and the cause was the leak guard reading the
+tutor's quotation of the learner as the tutor's own claim. The reply opened
+`Your reading of “Liane's presence in the copy-room makes her a possible maker
+of the folio during that winter, but it provides no…” is the one I will answer
+now.` — the answer name and the conclusion verb both sit inside the marks, which
+is the shape the claim matcher counts, and Nocturne's `t_min` of 28 makes
+anything about Liane underivable at turn 16. The deterministic fallback quoted
+the learner too, so the guard rejected both and the run threw
+`terminal-fallback-failure.v1`.
+
+The marks now frame the span and the quoted words decide
+(`withoutQuotedNonClaims` in `tutorStubConclusionAssertion.js`). The arbiter is
+`tutorStubAssertedClaimText`, already used on the learner's own turn, so the
+tutor guard inherits the same four shapes: a hedged, questioned, denied or
+handed-off quotation reduces to nothing and comes off, and a flat verdict
+survives inside its marks. That keeps the Tideway A2 rule intact — echoing a
+learner's flat unsupported claim still counts as putting the conclusion back in
+the record, and a blanket quotation exemption would have reversed it silently.
+Only balanced double marks count; an unpaired mark leaves the text alone rather
+than blinding the guard to the rest of a reply.
+
+Proved by the verbatim turn-16 sentence in two places: the matcher
+(`services/__tests__/tutorStubConclusionAssertion.test.js`, false where it read
+true before) and the audit the pipeline actually calls
+(`tests/tutorStubResponseLeakAudit.test.js`, no `private_final_conclusion` row,
+with a control showing the same verdict still caught in the tutor's own voice).
+The fifth Nocturne dialogue is re-runnable, and still cannot change the call.

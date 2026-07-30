@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -37,24 +38,71 @@ test('every derivation world carries presentation metadata and variants name the
   }
 });
 
-test('the new non-period worlds lint clean', () => {
-  for (const stem of [
-    'world-023-greyfen-lab',
-    'world-024-emberwick-forum',
-    'world-025-tallow-street',
-    'world-026-skyway-bakery',
-    'world-027-gazette-recall',
-    'world-028-larkspur-fridge',
-    'world-029-riverside-clinic',
-    'world-030-rowan-flat',
-    'world-031-tideway-makerspace',
-  ]) {
-    const output = execFileSync(
-      process.execPath,
-      ['scripts/lint-derivation-world.js', '--world', `config/drama-derivation/${stem}.yaml`],
-      { cwd: ROOT, encoding: 'utf8' },
+// Every world file, not a hand-maintained list: world-032 was authored with a
+// 10-turn release gap and nothing caught it, because the list stopped at 031.
+// The catalog is the roster, the same way the authoring-quality gate reads it.
+function lintWorldFile(stem) {
+  return execFileSync(
+    process.execPath,
+    ['scripts/lint-derivation-world.js', '--world', `config/drama-derivation/${stem}.yaml`],
+    { cwd: ROOT, encoding: 'utf8' },
+  );
+}
+
+test('every world in the catalog lints clean (plot + release pacing)', () => {
+  const stems = fs
+    .readdirSync(WORLD_DIR)
+    .filter((file) => /^world-.*\.yaml$/u.test(file))
+    .map((file) => file.replace(/\.yaml$/u, ''))
+    .sort();
+  assert.ok(stems.length >= 33, 'world catalog shrank unexpectedly');
+  for (const stem of stems) assert.match(lintWorldFile(stem), /LINT PASS/u, `${stem} failed lint`);
+});
+
+test('the linter rejects a bare path instead of silently linting the default world', () => {
+  assert.throws(
+    () =>
+      execFileSync(
+        process.execPath,
+        ['scripts/lint-derivation-world.js', 'config/drama-derivation/world-032-alder-row.yaml'],
+        { cwd: ROOT, encoding: 'utf8', stdio: 'pipe' },
+      ),
+    (err) => {
+      assert.equal(err.status, 2);
+      assert.match(err.stderr, /usage error: bare path/u);
+      assert.doesNotMatch(err.stdout || '', /LINT PASS/u);
+      return true;
+    },
+  );
+});
+
+test('a release gap equal to the aporia window fails, matching the live stall detector', () => {
+  // detectStall() reads the last `window` turns, so a gap of exactly the window
+  // is already a flat window. Take a clean world and widen one step to the
+  // window: it must fail here, or an evenly-spread plan lints clean and stalls.
+  const source = fs.readFileSync(path.join(WORLD_DIR, 'world-032-alder-row.yaml'), 'utf8');
+  const widened = source.replace('{ turn: 9, premise: p_refill', '{ turn: 10, premise: p_refill');
+  assert.notEqual(widened, source, 'world-032 release schedule moved; update this fixture');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'derivation-gap-'));
+  const target = path.join(dir, 'world-999-gap-fixture.yaml');
+  try {
+    fs.writeFileSync(target, widened);
+    assert.throws(
+      () =>
+        execFileSync(process.execPath, ['scripts/lint-derivation-world.js', '--world', target], {
+          cwd: ROOT,
+          encoding: 'utf8',
+          stdio: 'pipe',
+        }),
+      (err) => {
+        assert.equal(err.status, 1);
+        assert.match(err.stderr, /gap error: no D decrease between turn 4 and 10/u);
+        assert.match(err.stdout, /LINT FAIL/u);
+        return true;
+      },
     );
-    assert.match(output, /LINT PASS/u, `${stem} failed lint`);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
   }
 });
 

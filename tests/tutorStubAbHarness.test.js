@@ -316,8 +316,7 @@ test('the due line carries the released finding on a due turn and nothing on a q
 test('the character shift casts a seeded part on shifted turns and nothing on the rest', () => {
   const abPlan = plan('character_shift_control', { scenarios: ['nocturne_full'] });
   const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
-  const byTurn = (armId, turn) =>
-    forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
+  const byTurn = (armId, turn) => forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
 
   // Turn 3's hash lands on shift; turn 2's lands on quiet. Both are fixed by
   // the turn id, so a rerun replays the same seeded draws.
@@ -351,8 +350,7 @@ test('the character shift casts a seeded part on shifted turns and nothing on th
 test('the radical shift casts a conduct card on the same turns the mild shift selects', () => {
   const abPlan = plan('character_shift_radical_control', { scenarios: ['nocturne_full'] });
   const forJob = (job) => prepareTutorStubAbJob(job, { root: ROOT });
-  const byTurn = (armId, turn) =>
-    forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
+  const byTurn = (armId, turn) => forJob(abPlan.jobs.find((entry) => entry.armId === armId && entry.turn === turn));
 
   // The radical arm rides the same coin as the mild one: turn 3 shifts,
   // turn 2 stays quiet and byte-identical to the baseline.

@@ -87,7 +87,9 @@ function resolveBounds({ args, world, bounds }) {
   const turnCap = args.turnCap ?? authored;
   if (!turnCap) throw new Error(`${world}: no turn_cap in the world file and no --turn-cap given`);
   if (tMin && turnCap < tMin) {
-    throw new Error(`${world}: cap ${turnCap} is below the world's t_min ${tMin} — the secret is not derivable by then`);
+    throw new Error(
+      `${world}: cap ${turnCap} is below the world's t_min ${tMin} — the secret is not derivable by then`,
+    );
   }
   return { turnCap, budget: args.budget ?? turnCap * CALLS_PER_TURN };
 }
@@ -311,12 +313,15 @@ function writeReport({ outDir, args, rows }) {
           'Aborted dialogues are excluded from the rate. Each stopped for a reason of the harness’s making, so counting one as a dialogue the tutor failed to close would put a crash in the gate’s denominator.',
           '',
           ...aborts.map(
-            (row) => `- ${row.world} #${row.k}: \`${row.stopReason || 'non-zero exit'}\` at turn ${row.turnCount ?? '—'} — \`${row.tracePath || 'no trace'}\``,
+            (row) =>
+              `- ${row.world} #${row.k}: \`${row.stopReason || 'non-zero exit'}\` at turn ${row.turnCount ?? '—'} — \`${row.tracePath || 'no trace'}\``,
           ),
         ].join('\n')
       : 'No aborted dialogues.',
     '',
-    report.errors ? `${report.errors} dialogue(s) left no readable trace — see results.jsonl.` : 'No unreadable dialogues.',
+    report.errors
+      ? `${report.errors} dialogue(s) left no readable trace — see results.jsonl.`
+      : 'No unreadable dialogues.',
     '',
   ].join('\n');
   fs.writeFileSync(path.join(outDir, 'report.md'), md);
