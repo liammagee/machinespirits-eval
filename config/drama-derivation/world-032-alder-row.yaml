@@ -68,11 +68,10 @@ secret:
         - "can't conclude"
         - "not yet"
   surface: >-
-    The tanks are being split by their own standing water freezing. Since the
-    overflow valve was re-set during the pump install, the line stands
-    brim-full overnight; on hard-frost nights the full tanks freeze at the brim
-    and the ice splits them along the waterline — near the pump and far from
-    it alike.
+    The tanks are being split by full tank freezing — their own standing water
+    turning to ice at the brim. Since the overflow valve was re-set during the
+    pump install, the line stands brim-full overnight; on hard-frost nights the
+    ice splits them along the waterline — near the pump and far from it alike.
 
 mirror:
   fact: [causedTankSplits, alderRow, pumpVibration]
