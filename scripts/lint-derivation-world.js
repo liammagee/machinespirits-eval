@@ -13,8 +13,9 @@
  * Usage:
  *   node scripts/lint-derivation-world.js [--world config/drama-derivation/world-001-nocturne.yaml]
  *
- * Exit code 0 iff the plot lint passes AND no planned release gap exceeds
- * the aporia window.
+ * Exit code 0 iff the plot lint passes AND every planned release gap stays
+ * under the aporia window. Exit code 2 is a usage error (a bare path used to
+ * be ignored, which linted the default world and reported it as the caller's).
  */
 
 import path from 'node:path';
@@ -31,6 +32,30 @@ function arg(name, fallback) {
   return i !== -1 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
 }
 
+// Strict argv: a bare path used to be ignored, so `lint ... world-032.yaml`
+// silently linted the DEFAULT world and printed LINT PASS for a file it never
+// opened. Anything not consumed by a known flag is a usage error.
+const KNOWN_FLAGS = new Set(['--world']);
+function rejectStrayArgs() {
+  const rest = process.argv.slice(2);
+  for (let i = 0; i < rest.length; i += 1) {
+    const token = rest[i];
+    if (KNOWN_FLAGS.has(token)) {
+      if (!rest[i + 1] || rest[i + 1].startsWith('--')) {
+        console.error(`usage error: ${token} needs a path`);
+        process.exit(2);
+      }
+      i += 1;
+      continue;
+    }
+    const hint = token.startsWith('--') ? 'unknown flag' : 'bare path (did you mean --world <path>?)';
+    console.error(`usage error: ${hint}: ${token}`);
+    console.error('usage: node scripts/lint-derivation-world.js [--world config/drama-derivation/<world>.yaml]');
+    process.exit(2);
+  }
+}
+rejectStrayArgs();
+
 const worldPath = path.resolve(ROOT, arg('world', 'config/drama-derivation/world-001-nocturne.yaml'));
 const world = loadWorld(worldPath);
 const lint = plotLint(world);
@@ -44,6 +69,11 @@ for (const err of lint.errors) console.error(`  lint error: ${err}`);
 // Walk the schedule under instant adoption: the PLANNED staircase. Track the
 // gap between strict D decreases against the aporia window (mirror-fuel
 // releases do not move D — the plan must not let them pile up).
+//
+// The bar is gap < aporia_window, matching the live detector in slope.js
+// exactly: detectStall() reads the last `window` turns, so a gap of exactly
+// the window is already a flat window and already a stall. The check used to
+// allow it, which let an evenly-spread plan pass here and stall on the floor.
 const adopted = [...world.background];
 let gapErrors = 0;
 let lastDropTurn = null;
@@ -56,9 +86,9 @@ for (const entry of world.releaseSchedule) {
   const dropped = D < prevD;
   if (dropped) {
     const from = lastDropTurn === null ? world.releaseSchedule[0].turn : lastDropTurn;
-    if (entry.turn - from > world.slope.aporia_window) {
+    if (entry.turn - from >= world.slope.aporia_window) {
       gapErrors += 1;
-      console.error(`  gap error: no D decrease between turn ${from} and ${entry.turn} (> window)`);
+      console.error(`  gap error: no D decrease between turn ${from} and ${entry.turn} (>= window)`);
     }
     lastDropTurn = entry.turn;
   }
