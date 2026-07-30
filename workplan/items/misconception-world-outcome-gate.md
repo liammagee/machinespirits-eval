@@ -55,3 +55,47 @@ it. Runs under `exports/tutor-stub-outcome/misconception-gate-*` via
 Standing limits: simulated learner (the defense is authored in the world's
 own voice and motivation, learner profile unchanged), one speaking family,
 outcome channel only, no human-learning claim.
+
+## Amendment, 2026-07-30 — the defense never ran
+
+Recorded mid-run at 2 of 5 closed, on grounds readable in the trace and
+independent of the tally. The bracketed limit above ("learner profile
+unchanged") was wrong: it assumed the world's authored voice would govern the
+learner. It does not. The learner receives two instruction sets, and the
+world's loses:
+
+- system, marked authoritative ("Apply this behavior brief to every public
+  learner turn"): the stock `diligent` brief — *accept the correction and try
+  the narrower warranted claim; revise explicitly when the evidence warrants*;
+- user prompt, under `# Public scene`: one line of the world's `learner_voice`.
+
+So the record-keeper conceded at turn 2 of d0 and the run measures a compliant
+learner in a confounded world. The `motivation.learner` block (mirror pull
+high, overreach high) reaches nothing at all here: it is read only behind
+`--character-arc`, wired through `scripts/run-derivation-loop.js` and absent
+from the tutor-stub path this pilot drives.
+
+The original ≥4-of-5 rule cannot be applied: its antecedent (a learner who
+defends the theory) was never satisfied, so a high tally says nothing about
+whether the world is stressful. Revised protocol:
+
+1. **misconception-gate-1 is re-read as the derivability control**, not the
+   stress gate. A high close rate here is the wanted result — it shows the
+   confound structure and the AND-chain are solvable, ruling out a broken
+   world as the explanation for any later 0-of-5.
+2. **The stress gate is re-run with `--learner-profile contradiction_keeper`**
+   (`exports/tutor-stub-outcome/misconception-gate-2`), whose brief matches
+   the authored voice: *restate the original claim after contrary evidence and
+   reframe the mismatch as an exception*. No code change — the flag already
+   threads through.
+3. **Verdict rule, unchanged in form, now on gate-2**: bare closes ≥ 4 of 5 →
+   the world is not stressful enough and gets revised; 0–3 → in the band, and
+   instrumented versions compete on it.
+
+One design tension to hold open rather than hide: `contradiction_keeper` also
+carries *resists resolving the case* / *do not jump to the final secret*, so a
+0-of-5 on gate-2 will be ambiguous between "the defense worked" and "this
+learner never closes anything." Gate-1's control tally does not settle that —
+it clears the world, not the profile. The profile's own closure rate on an
+already-cleared unconfounded world (world_030) is the reading that would, and
+is the next thing to run if gate-2 lands at 0.
