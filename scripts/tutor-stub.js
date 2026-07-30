@@ -7018,6 +7018,7 @@ const callTutor = createTutorStubTutorTurnPipeline({
   selectCommitteeCompositionQuestion,
   snapshotTutorStubPublicPremiseIds,
   speakerAdvisoryBlocks: SPEAKER_ADVISORY_BLOCKS,
+  styleGuardsAdvisory: process.env.TUTOR_STUB_STYLE_GUARDS_ADVISORY === '1',
   stateRunDebugId,
   streamAI,
   trimCommitteeFallback,

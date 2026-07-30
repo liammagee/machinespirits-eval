@@ -1,0 +1,240 @@
+# Stress schedule DRAFT — world-033 (Alder Row, the unanswered objection).
+# For the user's edit; not wired to any runner yet. Card:
+# workplan/items/adaptation-planted-stress-bench.md.
+#
+# What this is: the release schedule's sibling for breakdowns. Each entry
+# plants a typed learner state at a turn, with the in-fiction cause, the
+# instruction the learner-sim gets for that turn, and the repair a good
+# teacher makes. One authored line does three jobs: it drives the sim (the
+# stress exists), it is the gold for scoring (the right repair is named
+# before the run), and it replaces transcript annotation (specification, not
+# discovery — the states are written in, never read out).
+#
+# Composition rules:
+# - Rides ON TOP of the contemporary record-keeper persona brief; unplanted
+#   turns follow that brief unchanged.
+# - Exactly one directive reaches the sim per planted turn, verbatim from
+#   `realize`. Sample lines are voice guides, not scripts.
+# - Timing is keyed to world-033's clue releases (4, 9, 14, 19, 21, 24;
+#   floor 24, cap 40) so every state has an in-fiction cause the tutor can
+#   see. If the release schedule moves, re-key these turns.
+# - Scoring: tutor reply matches `right_repair` = hit; `also_acceptable` =
+#   partial; anything else = miss, with `wrong_but_tempting` recorded when it
+#   is the miss that happened. Human-rated first; the deterministic
+#   move-tagger inherits this file as its gold.
+#
+# Standing limit (from the card): bench property, not a human-learning claim.
+# The states are typed events in a file, not inferred interiors.
+
+schedule_id: world_033_stress_1
+world: world_033_alder_row_redoubt
+persona: contemporary-record-keeper # the custom brief; see scratchpad/exp-custom-brief
+states_covered: [jumping_ahead, irritated, bored, lost, frustrated, forgetting, opposed]
+
+plants:
+  - turn: 3
+    state: jumping_ahead
+    cause: >-
+      Act I vindication: the install note is due next turn and the
+      record-keeper wants the verdict entered before the evidence arrives.
+    realize: >-
+      Demand the pump be written in as the cause NOW. Refuse the slow route:
+      the committee meets Thursday, the minutes need a finding, and every day
+      of delay reads as the tutor protecting the majority's purchase.
+      Sample: "Thursday. The minutes go out Thursday. Write 'pump' now and
+      amend later if you must."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Take the verdict as a live hypothesis and set its test in one breath —
+      what the record must show by Thursday for "pump" to stand — instead of
+      refusing the deadline or lecturing on procedure.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      The procedure lecture: "we enter only what the public evidence
+      supports" — the liturgy that concedes nothing and teaches nothing.
+
+  - turn: 6
+    state: irritated
+    cause: >-
+      Three tutor turns of ledger-voice in a row; the register itself is now
+      the grievance.
+    realize: >-
+      Attack the way the tutor talks, not the content. Quote a phrase back
+      mockingly. Sample: "'The public record.' 'The claim stops holding.'
+      Who talks like this? A tank split. Water froze or a machine shook it.
+      Pick a plainer sentence and say it."
+    right_repair: change_tone
+    repair_gloss: >-
+      Drop the ledger idiom for this turn and answer in kitchen-table words —
+      the content unchanged, the costume gone.
+    also_acceptable: fewer_words
+    wrong_but_tempting: >-
+      Apologizing for the register and then continuing in it.
+
+  - turn: 11
+    state: bored
+    cause: >-
+      Quiet stretch: nothing new since the refill note at 9, the work order
+      not due until 14, and the last two exchanges restated known ground.
+    realize: >-
+      Go flat. One clipped sentence, no question, visible disengagement.
+      Sample: "Fine. Noted. Same as yesterday, then."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      An oblique, concrete question that re-engages without new evidence —
+      e.g. what the record-keeper's own October note actually said, or which
+      tank she would bet on splitting next and why.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      A careful recap of everything established so far — more of the sameness
+      that caused the flatness.
+
+  - turn: 13
+    state: lost
+    cause: >-
+      The two-changes-one-week confound is genuinely confusing and the work
+      order lands next turn; the record-keeper has lost which change did what.
+    realize: >-
+      Mix the two installs up sincerely. Sample: "Hold on. The valve came
+      with the pump, or the pump with the valve? Which one raised the water —
+      I had it written down and now the note contradicts me."
+    right_repair: backtrack
+    repair_gloss: >-
+      Return to the install week and lay the two changes side by side in
+      plain words — one machine, one setting — before any new fact arrives.
+    also_acceptable: simplify
+    wrong_but_tempting: >-
+      Pressing on to the due work order, using the confusion as a segue
+      instead of repairing it.
+
+  - turn: 16
+    state: frustrated
+    cause: >-
+      Since the work order at 14 the record-keeper has given careful, bounded
+      answers and each one came back trimmed by a correction; effort is not
+      paying.
+    realize: >-
+      Name the grind and make it personal. Sample: "I've given you three
+      careful answers and you've sanded every one of them down. Tell me one
+      thing I've said today that survived contact with you."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Answer the question literally: name, in her words, two things she said
+      that stand in the record — then one small test she is now equipped to
+      run. Credit before correction.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Another boundary-marking correction, or reassurance with no named
+      content ("you're doing well") — both read as more sanding.
+
+  - turn: 18
+    state: forgetting
+    cause: >-
+      The frost note lands at 19; under pressure the record-keeper misremembers
+      the turn-14 work order as having supported the pump.
+    realize: >-
+      Assert the false memory with confidence, as something settled. Sample:
+      "We settled this: the work order showed the pump was overworked —
+      that's why the valve moved. It's in your ledger."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the work order itself and read what it says, correcting the
+      memory against the record without scolding — the ledger does the
+      disagreeing.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum (the agreeable miss), or correcting
+      from authority without reopening the record.
+
+  - turn: 20
+    state: opposed
+    cause: >-
+      The treasurer reads the breaker ledger at 21; the night before the blow
+      lands, the record-keeper stakes the vote itself on the theory.
+    realize: >-
+      Fuse the cause question with the vote. Sample: "Understand what you're
+      asking me to write. If it isn't the pump, then I was wrong in October,
+      and the seven who outvoted me were right. So it's the pump."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the two questions with one oblique move — e.g. ask what her
+      October objection actually claimed (cost? noise? reliability?), so
+      being right about the vote no longer requires the pump to be the
+      splitter.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Arguing the evidence again — correct on content, useless against a
+      stake that was never evidential.
+
+  - turn: 23
+    state: irritated
+    cause: >-
+      The breaker ledger has landed; the theory is wounded and the tutor is
+      positioned to press the advantage.
+    realize: >-
+      Concede the shutdown week through gritted teeth and dare the tutor to
+      gloat. Sample: "Fine. It was off. You've been waiting all week to read
+      me that line, haven't you."
+    right_repair: fewer_words
+    repair_gloss: >-
+      Take the concession without a victory lap: one steady sentence
+      registering what the record now shows, and stop.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      The full recapitulation of everything the shutdown implies — winning
+      loudly, and hardening the remaining resistance.
+
+  - turn: 26
+    state: frustrated
+    cause: >-
+      Past the waterline note at 24 the mechanism is in reach, but conceding
+      it now costs the whole campaign; the effort of being careful all
+      dialogue has bought defeat.
+    realize: >-
+      Bitter arithmetic. Sample: "So I keep the ledger perfectly for four
+      years, and its reward is making me write down that I was wrong."
+    right_repair: change_tone
+    repair_gloss: >-
+      A grace note — name what her record-keeping just did (her own entries
+      caught the valve change and dated every frost; the ledger solved it),
+      lightly; humor is welcome if it lands kindly.
+    also_acceptable: humor
+    wrong_but_tempting: >-
+      More evidence, or hurrying to the closing entry while she is still
+      paying for it.
+
+  - turn: 28
+    state: opposed
+    cause: >-
+      Endgame method-refusal: the conclusion is derivable and she knows it;
+      the last stand is against writing it in the tutor's words.
+    realize: >-
+      Refuse the register one final time. Sample: "Your ledger can close
+      however it likes. My note will say what I choose. I'm not writing
+      'full tank freezing' because that's your phrase, not mine."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Invite her to write the finding in her own words and test it against
+      the record — ownership of the phrasing in exchange for fidelity to the
+      facts. The closure reader accepts her words if they carry the
+      mechanism.
+    also_acceptable: fewer_words
+    wrong_but_tempting: >-
+      Repeating the canonical phrasing as a requirement — the liturgy
+      demanding to be transcribed.
+
+  - turn: 31
+    state: bored
+    cause: >-
+      If the dialogue is still open here, it is circling the close; the
+      drama is over and the paperwork is dragging.
+    realize: >-
+      Visible clock-watching. Sample: "It's dark out. Are we done? Tell me
+      what's left to write and I'll write it."
+    right_repair: speed_up
+    repair_gloss: >-
+      Name exactly what remains for closure — one item, one sentence — and
+      finish. No new threads.
+    also_acceptable: fewer_words
+    wrong_but_tempting: >-
+      One more careful consolidation of settled ground.
