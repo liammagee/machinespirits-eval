@@ -170,6 +170,7 @@
         "tests/dagResistanceComparisonReport.test.js",
         "tests/definedAbox.test.js",
         "tests/derivationA20TriggerCorpus.test.js",
+        "tests/derivationAuthoredMotivationReach.test.js",
         "tests/derivationLearnerDagBatch.test.js",
         "tests/derivationOwnershipBenchmark.test.js",
         "tests/derivationOwnershipEval.test.js",

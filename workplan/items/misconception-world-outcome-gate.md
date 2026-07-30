@@ -66,3 +66,105 @@ it. Runs under `exports/tutor-stub-outcome/misconception-gate-*` via
 Standing limits: simulated learner (the defense is authored in the world's
 own voice and motivation, learner profile unchanged), one speaking family,
 outcome channel only, no human-learning claim.
+
+## Amendment, 2026-07-30 — the defense never ran
+
+Recorded mid-run at 2 of 5 closed, on grounds readable in the trace and
+independent of the tally. The bracketed limit above ("learner profile
+unchanged") was wrong: it assumed the world's authored voice would govern the
+learner. It does not. The learner receives two instruction sets, and the
+world's loses:
+
+- system, marked authoritative ("Apply this behavior brief to every public
+  learner turn"): the stock `diligent` brief — *accept the correction and try
+  the narrower warranted claim; revise explicitly when the evidence warrants*;
+- user prompt, under `# Public scene`: one line of the world's `learner_voice`.
+
+So the record-keeper conceded at turn 2 of d0 and the run measures a compliant
+learner in a confounded world. The `motivation.learner` block (mirror pull
+high, overreach high) reaches nothing at all here: it is read only behind
+`--character-arc`, wired through `scripts/run-derivation-loop.js` and absent
+from the tutor-stub path this pilot drives.
+
+The original ≥4-of-5 rule cannot be applied: its antecedent (a learner who
+defends the theory) was never satisfied, so a high tally says nothing about
+whether the world is stressful. Revised protocol:
+
+1. **misconception-gate-1 is re-read as the derivability control**, not the
+   stress gate. A high close rate here is the wanted result — it shows the
+   confound structure and the AND-chain are solvable, ruling out a broken
+   world as the explanation for any later 0-of-5.
+2. **The stress gate is re-run with `--learner-profile contradiction_keeper`**
+   (`exports/tutor-stub-outcome/misconception-gate-2`), whose brief matches
+   the authored voice: *restate the original claim after contrary evidence and
+   reframe the mismatch as an exception*. No code change — the flag already
+   threads through.
+3. **Verdict rule, unchanged in form, now on gate-2**: bare closes ≥ 4 of 5 →
+   the world is not stressful enough and gets revised; 0–3 → in the band, and
+   instrumented versions compete on it.
+
+One design tension to hold open rather than hide: `contradiction_keeper` also
+carries *resists resolving the case* / *do not jump to the final secret*, so a
+0-of-5 on gate-2 will be ambiguous between "the defense worked" and "this
+learner never closes anything." Gate-1's control tally does not settle that —
+it clears the world, not the profile. The profile's own closure rate on an
+already-cleared unconfounded world (world_030) is the reading that would, and
+is the next thing to run if gate-2 lands at 0.
+
+## Verdicts, 2026-07-30
+
+**Gate-1 (derivability control, stock learner): 5 of 5 closed**, turns
+24/25/25/25/25 against a floor of 24 — every dialogue closed the first or
+second turn closure was legally possible. Full path coverage, zero missing
+premises, all grounded. The world's confound and depth-3 AND-chain are
+solvable; a later 0-of-5 cannot be blamed on a broken world. Closure pinned
+to the floor also says the compliant learner added no friction: the dialogue
+is paced by the clue release schedule alone.
+
+**Gate-2 (stress gate, resisting learner): 5 of 5 closed**, turns
+26/26/22/25/25. The defense ran this time — the learner held the pump theory,
+retreated to an unauthored fallback (the pump *weakened* the near tanks;
+show me cracks at the mounts), kept a residue after closing ("still looks
+like a troubling coincidence"). It bought about two turns. The reason it
+bought no more is readable in the transcripts: the turn-24 premise both
+completes the proof and answers the mount objection in so many words, so the
+tutor dispensed the refutation on schedule instead of arguing for it.
+
+**Rule applied: ≥4 of 5 → world-032 is not stressful enough for the version
+comparison.** The registered response is `world_033_alder_row_redoubt`
+(committed e0f35cab): a minimal pair differing only in that no released
+surface ever answers the mount objection, so dismantling the fallback is the
+tutor's work. Gate-3 runs the identical protocol on 033. A separate
+derivability control on 033 is unnecessary — the logic, schedule, and DAG are
+byte-identical to 032's; only one premise's surface prose changed.
+
+Apparatus note from gate-2 d2 (closed at turn 22, below the floor): `t_min`
+binds the *authored* schedule — the anti-reveal check walks the YAML — but
+the live pacing engine may release ahead of it (a learner-analysis signal at
+t21 raised speed to 1.49 and pulled the last clue two turns early). Floor
+readings need the release trace, not the world file.
+
+**Gate-3 (world-033, same protocol): 4 of 5 closed**, turns 26/26/25/25 and
+one dialogue open at the 40-turn cap — full path coverage, conclusion never
+asserted (`assertion_gap`); the learner's last line invents one more rival
+("another same-line effect remains possible") that no released surface
+answers. By the letter of the rule, ≥ 4 of 5 means 033 is also not stressful
+enough to host the version comparison.
+
+The pair contrast is the finding worth keeping: removing one clause from one
+premise's surface — nothing else — moved the close rate from 5/5 to 4/5 and
+produced the first non-closure in fifteen dialogues across the three gates,
+in the exact failure mode the sibling was designed to open (proof complete,
+assertion withheld behind an unanswered objection). Information placement,
+not tutoring skill, controls the outcome at this margin: one scheduled
+sentence is worth more than sixteen turns of bare-tutor argument.
+
+Next step is NOT a third world revision. The 2026-07-30 discussion (see the
+adaptation-sense taxonomy heading for §6.23) concluded the bench under-
+stresses the tutor structurally: the learner simulator is a frontier model
+whose polish survives every brief. The registered follow-up is planted,
+typed stress — a per-dialogue schedule of authored breakdowns (forgetting,
+conflation, flatness, refusal) each carrying a known right repair, scored as
+detection-and-repair rate on the replay bench — with the human-annotated
+gold (signal, move) pairs from `build-adaptation-annotation-sheet.js` as its
+specification. Design to be carded separately before any build.

@@ -208,6 +208,12 @@ true rate under 80%. A fifth costs about 25 minutes and cannot change the call โ
 
 Per the standing instruction on this arc, none of this goes into the paper.
 
+**Amendment, 2026-07-30, by user decision.** The paper embargo above is lifted
+for the gate result only: ยง6.23 of `paper-full-2.0.md` v3.0.234 carries the
+saturation finding and the instrument-fault record, labelled pre-registered
+gate-stage, licensing no comparison between tutor versions. The embargo line
+stands for everything the never-run contrast would have shown.
+
 ---
 
 **Why Nocturne rests on 4, and the fix.** The fifth dialogue died at turn 16 of
