@@ -142,7 +142,7 @@ speaker could have come out the other side clean.
 Every arm reports `openClusters`, `toldClusters`, and the matching deltas, and
 the report tables lead with open. The told total stays visible on purpose: the
 gap between the two is the size of the bench's own bias, measured rather than
-asserted. Pooled over the recorded corpus the contract's headline −3.08 broken
+asserted. Pooled over the recorded corpus the contract's headline −3.07 broken
 rules per turn is −2.61 told and −0.47 open, so about 85% of it sits on rules
 the bare tutor was never in a position to win.
 
