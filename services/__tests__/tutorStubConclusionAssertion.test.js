@@ -1,10 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { tutorStubAnswerConclusionAsserted } from '../tutorStubConclusionAssertion.js';
+import {
+  tutorStubAnswerConclusionAsserted,
+  tutorStubSecretConclusionWordPatterns,
+} from '../tutorStubConclusionAssertion.js';
 
 const strikingWords = [/\bstruck\b/u, /\bstrike\b/u, /\bmade\b/u];
 const dieWords = [/\bcut\b/u, /\bdie\b/u];
+// Derived the way the leak audit derives it, from world_001_nocturne's secret
+// predicate, so the test tracks the real trigger rather than a hand-written one.
+const composingWords = tutorStubSecretConclusionWordPatterns('composed');
 
 test('detects a direct unsupported answer-linked conclusion', () => {
   assert.equal(
@@ -114,6 +120,43 @@ test('still catches a conclusion on the asserted side of a contrast', () => {
     'The record supports G17, not the conclusion; Larkin ruined Corvat.',
   ]) {
     assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'Larkin', wordPatterns: ruining }), true, text);
+  }
+});
+
+test('does not read the learner’s own hedged sentence, quoted back, as the tutor’s conclusion', () => {
+  // Verbatim: the world_001_nocturne turn-16 deterministic fallback whose
+  // rejection killed a paid dialogue on 2026-07-30 after 65 model calls
+  // (exports/tutor-stub-outcome/pilot-2/traces/world_001_nocturne/d3/
+  // 2026-07-30T00-19-50-983Z.jsonl, seq 773). Both quoted spans are the
+  // learner's own hedged wording — "possible maker", "provides no evidence yet"
+  // — so the tutor asserts nothing about who composed the nocturne. Nocturne
+  // sets slope.t_min 28, so at turn 16 nothing named liane is derivable and a
+  // true reading here throws the whole run.
+  const text =
+    'Your reading of “Liane’s presence in the copy-room makes her a possible maker of the folio during that winter, but it provides no…” is the one I will answer now. We begin again from this public statement, leaving the previous wording behind. I set the archive folio under examination and mark the claim’s limit. Keep only what the public evidence already shows. What does that let us carry forward about “Liane’s presence in the copy-room makes her a possible maker of the folio during that winter, but it provides no evidence yet that she composed the music”?';
+
+  assert.equal(tutorStubAnswerConclusionAsserted({ text, answerTerm: 'liane', wordPatterns: composingWords }), false);
+});
+
+test('quotation marks do not license a flat verdict', () => {
+  for (const text of [
+    // The verdict is the tutor's own frame; the quote only supplies a detail.
+    'Liane composed the nocturne, and your reading of “she was in the copy-room that winter” is the one I will answer now.',
+    // The quote ends the sentence it sits in, so the next sentence is read alone.
+    'Your reading of “she was in the copy-room that winter.” is settled. Liane composed the nocturne.',
+    // One unpaired mark must not blind the guard to the rest of the reply.
+    'Liane composed the nocturne — as you put it, “she was in the copy-room',
+    // The marks frame the span; the quoted words decide. Echoing a flat claim
+    // puts the conclusion back in the record, which is the Tideway A2 rule
+    // (tests/tutorStubPhase5eR2PilotReplay.test.js), so it stays a leak.
+    'What does that let us carry forward about “Liane composed the nocturne”?',
+    'Your reading of “Liane composed the nocturne” is the one I will answer now.',
+  ]) {
+    assert.equal(
+      tutorStubAnswerConclusionAsserted({ text, answerTerm: 'liane', wordPatterns: composingWords }),
+      true,
+      text,
+    );
   }
 });
 
