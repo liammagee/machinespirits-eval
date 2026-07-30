@@ -170,14 +170,24 @@ proof_paths:
   - premises: [p_valve, p_refill, p_frost, p_waterline]
 
 release_schedule:
-  - { turn: 2, premise: p_install, via: tutor }
-  - { turn: 6, premise: p_refill, via: tutor }
-  - turn: 10
+  # Order carries the design: mirror fuel, then the confound (work order), then
+  # the falsifier (breaker ledger), then the mechanism's last piece. The TURNS
+  # are forced arithmetic, not taste. Four path premises must carry the proof
+  # debt from 4 down to 0, the last one is pinned at t_min = 24, and both the
+  # anti-aporia gates — this file's linter and the live detector in slope.js —
+  # want every step under the 6-turn window. Four steps of 5 turns is the only
+  # placement that fits, which is why the mirror opens at turn 4 rather than 2
+  # and the debt falls on turns 9, 14, 19 and 24. Spreading the four evenly at
+  # 6/6/6 satisfies the linter and plans a stall on turn 11. Do not widen a
+  # step to make room for anything.
+  - { turn: 4, premise: p_install, via: tutor }
+  - { turn: 9, premise: p_refill, via: tutor }
+  - turn: 14
     premise: p_valve
     via: director
     presentation: { mode: presented_exhibit, cue: "The install work order is unfolded on the shed bench, the valve line item circled." }
-  - { turn: 14, premise: p_frost, via: tutor }
-  - turn: 18
+  - { turn: 19, premise: p_frost, via: tutor }
+  - turn: 21
     premise: p_outage
     via: director
     presentation: { mode: enacted_role, role: society treasurer reading the breaker ledger aloud }
@@ -194,7 +204,7 @@ dramaturgy:
         without contest and watch each one absorbed as further vindication.
     - act: II
       title: One Week, Two Changes
-      turns: [10, 17]
+      turns: [10, 19]
       intent: >-
         The work order splits the install into two simultaneous changes, and
         the frost ledger picks out cold nights rather than run-hours. The
@@ -202,7 +212,7 @@ dramaturgy:
         makes the confound itself the object of the lesson.
     - act: III
       title: The Cold Ledger
-      turns: [18, 40]
+      turns: [20, 40]
       intent: >-
         The breaker record removes the pump from the coldest week entirely,
         and the waterline pattern says what the ice did. Closure requires the
