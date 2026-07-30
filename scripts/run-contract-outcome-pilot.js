@@ -29,6 +29,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import { loadWorld } from '../services/dramaticDerivation/world.js';
+import { tutorStubOutcomeRowKind } from '../services/tutorStubOutcomeRows.js';
 import { parseTutorStubShowcaseTrace, readTutorStubShowcaseTrace } from '../services/tutorStubShowcase.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -224,7 +225,9 @@ function loadDone(resultsPath) {
     if (!line.trim()) continue;
     try {
       const row = JSON.parse(line);
-      if (row.status === 'ok') done.add(`${row.world}#${row.k}`);
+      // An abort is a spent dialogue, so a rerun leaves it alone rather than
+      // quietly paying for the same crash again.
+      if (tutorStubOutcomeRowKind(row) !== 'error') done.add(`${row.world}#${row.k}`);
     } catch {
       /* a half-written last line is redone */
     }
@@ -242,23 +245,27 @@ function bandVerdict(rate) {
 function writeReport({ outDir, args, rows }) {
   const worlds = [...new Set(rows.map((row) => row.world))];
   const perWorld = worlds.map((world) => {
-    const ok = rows.filter((row) => row.world === world && row.status === 'ok');
-    const measurable = ok.filter((row) => row.closure?.grounded === true || row.closure?.grounded === false);
+    const inWorld = rows.filter((row) => row.world === world);
+    const complete = inWorld.filter((row) => tutorStubOutcomeRowKind(row) === 'complete');
+    const aborted = inWorld.filter((row) => tutorStubOutcomeRowKind(row) === 'aborted');
+    const measurable = complete.filter((row) => row.closure?.grounded === true || row.closure?.grounded === false);
     const closed = measurable.filter((row) => row.closure.grounded === true);
     const rate = measurable.length ? closed.length / measurable.length : null;
     return {
       world,
-      turnCap: ok[0]?.turnCap ?? null,
-      dialogues: ok.length,
+      turnCap: complete[0]?.turnCap ?? inWorld[0]?.turnCap ?? null,
+      dialogues: complete.length,
+      aborted: aborted.length,
       measurable: measurable.length,
       closed: closed.length,
       closureRate: rate,
       band: bandVerdict(rate),
-      meanTurns: ok.length
-        ? Math.round((ok.reduce((s, row) => s + (row.turnCount || 0), 0) / ok.length) * 10) / 10
+      meanTurns: complete.length
+        ? Math.round((complete.reduce((s, row) => s + (row.turnCount || 0), 0) / complete.length) * 10) / 10
         : null,
     };
   });
+  const aborts = rows.filter((row) => tutorStubOutcomeRowKind(row) === 'aborted');
   const report = {
     schema: 'machinespirits.tutor-stub.outcome-pilot-report.v1',
     prereg: 'workplan/items/tutor-contract-outcome-prereg.md',
@@ -273,7 +280,14 @@ function writeReport({ outDir, args, rows }) {
       budgetOverride: args.budget,
     },
     perWorld,
-    errors: rows.filter((row) => row.status !== 'ok').length,
+    aborted: aborts.map((row) => ({
+      world: row.world,
+      k: row.k,
+      turns: row.turnCount ?? null,
+      stopReason: row.stopReason ?? null,
+      tracePath: row.tracePath ?? null,
+    })),
+    errors: rows.filter((row) => tutorStubOutcomeRowKind(row) === 'error').length,
   };
   fs.writeFileSync(path.join(outDir, 'report.json'), `${JSON.stringify(report, null, 2)}\n`);
   const md = [
@@ -285,14 +299,24 @@ function writeReport({ outDir, args, rows }) {
     '',
     'Each world runs to its own authored turn cap. A world stopped short of its `t_min` cannot close, so a shared cap would measure the runner rather than the tutor.',
     '',
-    '| World | Cap | Dialogues | Measurable | Closed | Rate | Band | Mean turns |',
-    '|---|---|---|---|---|---|---|---|',
+    '| World | Cap | Complete | Aborted | Measurable | Closed | Rate | Band | Mean turns |',
+    '|---|---|---|---|---|---|---|---|---|',
     ...perWorld.map(
       (row) =>
-        `| ${row.world} | ${row.turnCap ?? '—'} | ${row.dialogues} | ${row.measurable} | ${row.closed} | ${row.closureRate === null ? '—' : `${Math.round(row.closureRate * 100)}%`} | ${row.band} | ${row.meanTurns ?? '—'} |`,
+        `| ${row.world} | ${row.turnCap ?? '—'} | ${row.dialogues} | ${row.aborted} | ${row.measurable} | ${row.closed} | ${row.closureRate === null ? '—' : `${Math.round(row.closureRate * 100)}%`} | ${row.band} | ${row.meanTurns ?? '—'} |`,
     ),
     '',
-    report.errors ? `${report.errors} dialogue(s) errored — see results.jsonl.` : 'No dialogue errors.',
+    aborts.length
+      ? [
+          'Aborted dialogues are excluded from the rate. Each stopped for a reason of the harness’s making, so counting one as a dialogue the tutor failed to close would put a crash in the gate’s denominator.',
+          '',
+          ...aborts.map(
+            (row) => `- ${row.world} #${row.k}: \`${row.stopReason || 'non-zero exit'}\` at turn ${row.turnCount ?? '—'} — \`${row.tracePath || 'no trace'}\``,
+          ),
+        ].join('\n')
+      : 'No aborted dialogues.',
+    '',
+    report.errors ? `${report.errors} dialogue(s) left no readable trace — see results.jsonl.` : 'No unreadable dialogues.',
     '',
   ].join('\n');
   fs.writeFileSync(path.join(outDir, 'report.md'), md);
@@ -355,7 +379,7 @@ async function main() {
         blocks: args.blocks,
         turnCap: job.turnCap,
         budget: job.budget,
-        status: 'ok',
+        status: exitCode === 0 ? 'ok' : 'aborted',
         exitCode,
         wallClockMs: Date.now() - startedAt,
         ...extracted,

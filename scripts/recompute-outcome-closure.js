@@ -31,6 +31,7 @@ import YAML from 'yaml';
 
 import { matchAuthoredRecognitionClaim } from '../services/dramaticDerivation/answerSurface.js';
 import { tutorStubAssertedClaimText } from '../services/tutorStubConclusionAssertion.js';
+import { tutorStubOutcomeRowKind } from '../services/tutorStubOutcomeRows.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -68,7 +69,9 @@ function main() {
     .split('\n')
     .filter((line) => line.trim())
     .map((line) => JSON.parse(line))
-    .filter((row) => row.status === 'ok');
+    // Same rule the runner's report uses: a dialogue the harness killed is not
+    // one the tutor failed to close, so it stays out of the corrected table.
+    .filter((row) => tutorStubOutcomeRowKind(row) === 'complete');
 
   const corrected = rows.map((row) => {
     const engineClosed = row.closure?.grounded === true;

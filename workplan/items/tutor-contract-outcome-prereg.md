@@ -149,8 +149,61 @@ gate asked for a turn cap fixed per world at pilot, and the runner was not
 honouring the worlds' own caps at all. Greyfen (authored 14) and Rowan (12)
 ran above their floors and stay as recorded.
 
-**Re-pilot in flight, 2026-07-30.** 5 bare dialogues each on Nocturne (40
-turns) and Tallow (18), same speaker, learner and zero advisory blocks,
-into `exports/tutor-stub-outcome/pilot-2/`. Roughly 3 hours at the first
-pilot's ~40 seconds a turn; results append per dialogue and a rerun skips
-what is recorded, so a quota window pauses rather than restarts it.
+**Re-pilot, 2026-07-30** (`exports/tutor-stub-outcome/pilot-2/`). 5 bare
+dialogues each on Nocturne (cap 40) and Tallow (18), same speaker, learner and
+zero advisory blocks. Both floors were the cap and nothing else. Nocturne closed
+4 of the 4 dialogues that finished, at turns 34, 35, 33 and 35 — every one past
+turn 28, which is the first turn its author lets the answer be derivable, and
+all four legitimate (`grounded_asserted_secret`, record entails the secret).
+Tallow closed 5 of 5, at turns 13 to 15. The offline recompute finds nothing to
+correct in either world: the engine caught every closure the matcher would.
+
+**One dialogue crashed, and it was nearly counted as a failure to close.**
+Nocturne #3 exited non-zero at turn 15 with `guard_exhausted`. The tutor quoted
+the learner's own hedged line back ("Liane's presence in the copy-room makes her
+a possible maker…"), and the leak guard read the quoted name as the tutor
+stating the answer sixteen turns before the world permits it. The deterministic
+fallback tripped the same guard, so the run threw. The runner had recorded it
+`status: ok` because its trace parsed, which put a crash in the gate's
+denominator and by itself moved Nocturne from saturated to inside the band. The
+rule for what counts now lives in `services/tutorStubOutcomeRows.js`, read by
+both the runner and the offline recompute so the two cannot drift, and a test
+pins the legacy shape (`ok` plus a non-zero exit still reads as aborted).
+Aborted dialogues are named in the report rather than dropped. The leak guard
+itself is untouched — it killed 1 of 10 paid dialogues and wants its own fix.
+
+**Gate call: FAILED for saturation, in every world. This card closes here.**
+
+| World | Cap | Complete | Closed | Rate |
+|---|---|---|---|---|
+| Nocturne | 40 | 4 (+1 aborted) | 4 | 100% |
+| Greyfen | 12 | 5 | 5 | 100% |
+| Tallow | 18 | 5 | 5 | 100% |
+| Rowan Flat | 12 | 5 | 5 | 100% |
+
+Nineteen of nineteen finished dialogues closed. Given a world's own length, the
+bare frontier tutor gets this learner to the conclusion every time, so the
+primary endpoint has no room above it — a contract version can only show harm.
+The pre-registered remedy does not reach this: dropping all four worlds leaves
+no experiment, and re-picking a cap for saturation means moving it inside the
+closure window already observed (Nocturne 33–35, Tallow 13–15, Greyfen 9–12,
+Rowan 8–12). That would turn "does the learner reach the conclusion" into "does
+the learner reach it before turn N", tuned on the same data it would then be
+measured against. It is a different endpoint wearing the same name, so the one
+cap re-pick stays unspent.
+
+This is not the card's "no difference" branch — that branch is about a null
+contrast, and no contrast was run. The endpoint died before the comparison. The
+144-dialogue main run does not start.
+
+What survives is measured and not saturated: turns to closure spreads 8 to 35
+across worlds and 2 to 3 within one, and the share of the proof path the learner
+voices is untouched by any of this. Both are pre-registered secondaries. Making
+either the endpoint of record is a design change, so it is a new card, not an
+amendment here.
+
+Nocturne rests on 4 dialogues rather than 5; 4 of 4 alone would not rule out a
+true rate under 80%. A fifth costs about 25 minutes and cannot change the call —
+4/4 and 5/5 are both above the band, and three other worlds agree at 5/5.
+
+Per the standing instruction on this arc, none of this goes into the paper.
