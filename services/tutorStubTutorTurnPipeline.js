@@ -13,6 +13,16 @@ export const TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS = Object.freeze([
   'first_draft_contract',
 ]);
 
+// Opt-in experiment (2026-07-30): style guards fail open. When set to '1',
+// actorial part/tactic misses are advisory for every draft, so the model's
+// own reply ships unless a content or safety guard rejects it. Leak,
+// release-delivery, progression, and closure guards keep their catalog
+// dispositions — this flag reaches only the two allowActorialAdvisory
+// decisions below. Motivated by gate-3 d1, where 26 of 40 turns shipped the
+// deterministic fallback liturgy and the register-free templates erased the
+// character the guards were enforcing.
+const STYLE_GUARDS_ADVISORY = process.env.TUTOR_STUB_STYLE_GUARDS_ADVISORY === '1';
+
 export function createTutorStubTutorTurnPipeline(dependencies = {}) {
   const {
     PROGRAM2_COMMITTEE_SCHEMA,
@@ -1389,14 +1399,17 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       const originalDraftAudits = auditTutorDraft(response, { role: roleBase, attempt: 0 });
       let audits = withTutorDeliveryDecision(originalDraftAudits, {
         allowActorialAdvisory:
+          STYLE_GUARDS_ADVISORY ||
           learnerRequestedPlainStyle ||
           tutorStubActorialPerformanceMayBeAdvisory(
             originalDraftAudits.actorialRealizationAudit,
             originalDraftAudits.responseConfigurationAudit,
           ),
-        advisoryReason: learnerRequestedPlainStyle
-          ? 'explicit learner style request outranks optional actorial realization'
-          : 'the selected host part and every hard response check are visible; only the optional performance tactic remains below the deterministic threshold',
+        advisoryReason: STYLE_GUARDS_ADVISORY
+          ? 'style-guards-advisory experiment: actorial misses recorded, never vetoing delivery'
+          : learnerRequestedPlainStyle
+            ? 'explicit learner style request outranks optional actorial realization'
+            : 'the selected host part and every hard response check are visible; only the optional performance tactic remains below the deterministic threshold',
         role: roleBase,
         attempt: 0,
       });
@@ -1621,13 +1634,17 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
         auditConfiguration: simplifiedRecoveryConfiguration,
       });
       audits = withTutorDeliveryDecision(plainRecoveryDraftAudits, {
-        allowActorialAdvisory: tutorStubPlainRecoveryAllowsActorialAdvisory({
-          loopMode: state?.loopMode,
-          learnerRequestedPlainStyle,
-        }),
-        advisoryReason: learnerRequestedPlainStyle
-          ? 'explicit learner style request outranks optional actorial realization'
-          : 'diagnostic collection preserves a safe plain recovery while recording optional actorial misses',
+        allowActorialAdvisory:
+          STYLE_GUARDS_ADVISORY ||
+          tutorStubPlainRecoveryAllowsActorialAdvisory({
+            loopMode: state?.loopMode,
+            learnerRequestedPlainStyle,
+          }),
+        advisoryReason: STYLE_GUARDS_ADVISORY
+          ? 'style-guards-advisory experiment: actorial misses recorded, never vetoing delivery'
+          : learnerRequestedPlainStyle
+            ? 'explicit learner style request outranks optional actorial realization'
+            : 'diagnostic collection preserves a safe plain recovery while recording optional actorial misses',
         role: `${roleBase}_plain_recovery`,
         attempt: 1,
       });
