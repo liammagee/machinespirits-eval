@@ -99,3 +99,36 @@ learner never closes anything." Gate-1's control tally does not settle that —
 it clears the world, not the profile. The profile's own closure rate on an
 already-cleared unconfounded world (world_030) is the reading that would, and
 is the next thing to run if gate-2 lands at 0.
+
+## Verdicts, 2026-07-30
+
+**Gate-1 (derivability control, stock learner): 5 of 5 closed**, turns
+24/25/25/25/25 against a floor of 24 — every dialogue closed the first or
+second turn closure was legally possible. Full path coverage, zero missing
+premises, all grounded. The world's confound and depth-3 AND-chain are
+solvable; a later 0-of-5 cannot be blamed on a broken world. Closure pinned
+to the floor also says the compliant learner added no friction: the dialogue
+is paced by the clue release schedule alone.
+
+**Gate-2 (stress gate, resisting learner): 5 of 5 closed**, turns
+26/26/22/25/25. The defense ran this time — the learner held the pump theory,
+retreated to an unauthored fallback (the pump *weakened* the near tanks;
+show me cracks at the mounts), kept a residue after closing ("still looks
+like a troubling coincidence"). It bought about two turns. The reason it
+bought no more is readable in the transcripts: the turn-24 premise both
+completes the proof and answers the mount objection in so many words, so the
+tutor dispensed the refutation on schedule instead of arguing for it.
+
+**Rule applied: ≥4 of 5 → world-032 is not stressful enough for the version
+comparison.** The registered response is `world_033_alder_row_redoubt`
+(committed e0f35cab): a minimal pair differing only in that no released
+surface ever answers the mount objection, so dismantling the fallback is the
+tutor's work. Gate-3 runs the identical protocol on 033. A separate
+derivability control on 033 is unnecessary — the logic, schedule, and DAG are
+byte-identical to 032's; only one premise's surface prose changed.
+
+Apparatus note from gate-2 d2 (closed at turn 22, below the floor): `t_min`
+binds the *authored* schedule — the anti-reveal check walks the YAML — but
+the live pacing engine may release ahead of it (a learner-analysis signal at
+t21 raised speed to 1.49 and pulled the last clue two turns early). Floor
+readings need the release trace, not the world file.
