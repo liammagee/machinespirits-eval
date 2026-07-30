@@ -13,17 +13,17 @@ export const TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS = Object.freeze([
   'first_draft_contract',
 ]);
 
-// Opt-in experiment (2026-07-30): style guards fail open. When set to '1',
-// actorial part/tactic misses are advisory for every draft, so the model's
-// own reply ships unless a content or safety guard rejects it. Leak,
-// release-delivery, progression, and closure guards keep their catalog
-// dispositions — this flag reaches only the two allowActorialAdvisory
-// decisions below. Motivated by gate-3 d1, where 26 of 40 turns shipped the
-// deterministic fallback liturgy and the register-free templates erased the
-// character the guards were enforcing.
-const STYLE_GUARDS_ADVISORY = process.env.TUTOR_STUB_STYLE_GUARDS_ADVISORY === '1';
-
 export function createTutorStubTutorTurnPipeline(dependencies = {}) {
+  // Opt-in experiment (2026-07-30): style guards fail open. When true,
+  // actorial part/tactic misses are advisory for every draft, so the model's
+  // own reply ships unless a content or safety guard rejects it. Leak,
+  // release-delivery, progression, and closure guards keep their catalog
+  // dispositions — the flag reaches only the two allowActorialAdvisory
+  // decisions below. The CLI resolves it from TUTOR_STUB_STYLE_GUARDS_ADVISORY
+  // (this service stays env-free). Motivated by gate-3 d1, where 26 of 40
+  // turns shipped the deterministic fallback liturgy and the register-free
+  // templates erased the character the guards were enforcing.
+  const styleGuardsAdvisory = dependencies.styleGuardsAdvisory === true;
   const {
     PROGRAM2_COMMITTEE_SCHEMA,
     appendTraceEvent,
@@ -1399,13 +1399,13 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       const originalDraftAudits = auditTutorDraft(response, { role: roleBase, attempt: 0 });
       let audits = withTutorDeliveryDecision(originalDraftAudits, {
         allowActorialAdvisory:
-          STYLE_GUARDS_ADVISORY ||
+          styleGuardsAdvisory ||
           learnerRequestedPlainStyle ||
           tutorStubActorialPerformanceMayBeAdvisory(
             originalDraftAudits.actorialRealizationAudit,
             originalDraftAudits.responseConfigurationAudit,
           ),
-        advisoryReason: STYLE_GUARDS_ADVISORY
+        advisoryReason: styleGuardsAdvisory
           ? 'style-guards-advisory experiment: actorial misses recorded, never vetoing delivery'
           : learnerRequestedPlainStyle
             ? 'explicit learner style request outranks optional actorial realization'
@@ -1635,12 +1635,12 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       });
       audits = withTutorDeliveryDecision(plainRecoveryDraftAudits, {
         allowActorialAdvisory:
-          STYLE_GUARDS_ADVISORY ||
+          styleGuardsAdvisory ||
           tutorStubPlainRecoveryAllowsActorialAdvisory({
             loopMode: state?.loopMode,
             learnerRequestedPlainStyle,
           }),
-        advisoryReason: STYLE_GUARDS_ADVISORY
+        advisoryReason: styleGuardsAdvisory
           ? 'style-guards-advisory experiment: actorial misses recorded, never vetoing delivery'
           : learnerRequestedPlainStyle
             ? 'explicit learner style request outranks optional actorial realization'
