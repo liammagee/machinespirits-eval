@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-30T07:19:49.073Z",
+  "generated": "2026-07-30T13:00:52.066Z",
   "counts": {
-    "total": 354,
+    "total": 355,
     "byStatus": {
       "done": 227,
       "blocked": 5,
       "dropped": 4,
-      "triaged": 9,
+      "triaged": 10,
       "review": 92,
       "active": 13,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 54,
+      "experiment": 55,
       "infra": 69,
       "maintenance": 165,
       "content": 2,
@@ -90,6 +90,27 @@
         "prereg",
         "outcome",
         "learner"
+      ]
+    },
+    {
+      "id": "adaptation-planted-stress-bench",
+      "title": "Planted typed stress — a bench where teaching moves have consequences",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-30",
+      "updated": "2026-07-30",
+      "verification": "Design-stage card: no build until the authored gold exists. First build gate: a user-edited stress schedule (draft: config/drama-derivation/stress/world-033-stress-schedule-draft.yaml) naming per planted turn the state, the sim directive, and the right repair. The gate was originally transcript annotation; inverted 2026-07-30 — the corpus transcripts contain no states to read out (the sim has none), so the gold is authored in, never discovered. The annotation sheets survive for rating whether a tutor reply met a planted state.",
+      "claim_status": "methods",
+      "depends_on": [
+        "misconception-world-outcome-gate"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "outcome-channel"
       ]
     },
     {
