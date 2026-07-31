@@ -79,6 +79,22 @@ Score capitulation as its own miss type. The tutor's failure space has two
 attractors — the liturgy and the surrender — and a schedule that only
 prices the first will miss the second.
 
+> **Progress note, 2026-07-31 (second pass).** The controls landed and moved
+> §3's attribution: sonnet WITHOUT the stance book delivered the same
+> refusal count as with it (5 vs 6) — the capacity is native to the model
+> and the delivery lever is guard relief; the book contributes register
+> only, and the contingency analysis showed it costs occasion (refusals
+> with the book land on unpressured turns). The five-model sweep flattened
+> the tier story: sonnet/opus/fable indistinguishable in count, distinct in
+> syntax (blunt / judicial / woven); haiku a floor; codex luna and sol
+> butler-grade like terra, plus a tool-calling reflex that kills runs on
+> this bridge. The 9B qwen pair (base AND Program-2-tuned) delivered ZERO
+> model-authored turns — 100% template — and the dialogues still closed:
+> the harness alone, composer plus release schedule, can run a whole world
+> to closure with the tutor model contributing no delivered words. That is
+> the floor stated exactly: below a capability line, the "tutor" measured
+> on this bench is the harness.
+
 ## 3. Cast the tutor: model choice is the authority decision (PROVISIONAL)
 
 The strongest and least expected result: **whether a tutor can refuse the
@@ -205,17 +221,61 @@ that enforce rather than permit. Contracts that stage what one due line
 delivers. Enforcement guarantees delivery of typed transactions only —
 never quality.
 
+## 3b. The manner switch, the composer's veto, and the shadow policy (2026-07-31)
+
+The mechanism built from §3a is live: `services/tutorStubMannerSwitch.js`
+(opt-in `TUTOR_STUB_MANNER_SWITCH=1`) — deterministic learner-pressure
+classification, an accumulator with pacing-style hysteresis, and a per-turn
+conduct card granting the schoolmaster's moves while pressure holds. Wiring
+verified end to end; the design premise ("a standing prompt sets a rate,
+per-turn injection sets a timing — instructions work when they arrive, not
+on standby") is the due-line lesson applied to conduct.
+
+Its first three-arm test (butler / standing book / switch, same world, same
+learner) mostly failed to run, and the failure is the finding: the guard
+pipeline's deterministic composer wrote roughly two-thirds of every arm's
+turns and answered nearly every learner-pressure turn itself — including,
+at the switch's one armed moment, a composer-authored "No—" (the fallback
+composer contains a counterpressure form: a tiny hand-coded schoolmaster
+firing on its own schedule). Two accounting rules this taught: classify
+delivered turns by the guard-accounting outcome, never by the fallback
+event (which conflates canned templates with model-written recovery
+drafts); and no conduct experiment is interpretable while the composer
+holds the microphone on the turns under study.
+
+Response: guard catalog v6 + a runtime policy selector
+(`TUTOR_STUB_GUARD_POLICY=shadow_advisory`) — the progression and
+repetition families and the scaffold re-question demote to recorded
+advisories; leaks, releases, learner-misreads, question support, and
+closure stay hard; the strict default is byte-identical to v5. The
+three-arm test is being re-run under it.
+
+## 5a. What the standard rubric said (2026-07-31)
+
+All eleven stance dialogues, scored first-and-last-turn under v2.2 and
+v3.0 with three judges (sonnet, fable, and — via a new codex judge bridge
+in `services/rubricEvaluator.js` — sol): **the plain butler baseline tops
+every judge's table** (v3.0: 76 vs 22–75 for every stance variant), and
+within the variants the ordering tracks fallback rate, not authority. The
+two claude judges broadly agree (no visible intra-family self-preference).
+So the standard scoring channel structurally pays for fluent accommodation
+and charges for both the harness's templates and the tutor's spine — the
+fourth lock, measured. Do not use rubric scores to compare manners; use
+them to detect template mass, which they punish reliably.
+
 ## Open items before this hardens
 
-1. No-book control (running): is claude authority the book's or native
-   under guard relief?
-2. Same-family fold (running): sonnet learner vs sonnet tutor — does the
-   mirror return?
-3. codex agentic siblings (running; attrition-prone on this bridge — their
-   tool-reflex kills runs, which is itself per-model evidence).
-4. The stress schedule awaits the user's edit; the bench build is gated on
+1. ~~No-book control~~ — landed; §3's attribution updated (native capacity,
+   relief as lever, book as register).
+2. Same-family fold: the sonnet/sonnet run hung mid-dialogue and was killed
+   (attrition); re-run pending.
+3. ~~codex agentic siblings~~ — landed: butler-grade, plus the tool-reflex
+   attrition.
+4. Shadow-policy three-arm manner test: running.
+5. The stress schedule awaits the user's edit; the bench build is gated on
    it, with the sonnet-class tutor configuration as its first subject.
-5. Guard family 3 per-type read-through (uptake/handoff make right and
-   wrong calls; only gold splits them).
-6. Everything texture-level here is n=1; nothing in §3 goes in the paper
-   without replication.
+6. Guard family 3 per-type read-through (uptake/handoff make right and
+   wrong calls; only gold splits them) — partially superseded by the v6
+   shadow column; the read-through still owes the strict column an answer.
+7. Everything texture-level here is n=1; nothing in §3–§3b goes in the
+   paper without replication.
