@@ -155,6 +155,26 @@ narrowed the gap and confirmed its direction. The five remaining turn-3
 misses stand: refusing the tempo without setting the Thursday test is
 slow_down, as tagged.
 
+## v3 result (2026-08-01): GATE 5 PASSED at the floor reading
+
+Move cards replaced the manner card (five typed cards keyed to the
+classified pressure; fired per turn). k=3, same world, learner, judge, and
+scoring as the failed v2 attempt. **v3 switch: 15/29 right-repairs (52%;
+card-covered plants 12/19 = 63%) vs butler 10/24 adjudicated (42%) and
+v2-switch 9/24 (38%). All three dialogues closed grounded; zero delivered
+leaks; zero capitulations.** The comparison is taken at its weakest
+reading: v3's tally is pre-adjudication (its three t3 misses are the same
+disputed slow_down family the user previously flipped), so adjudication
+can only widen the margin.
+
+Claim licensed, with the standing limits attached verbatim: timed,
+typed move-injection lifts adjudicated repair delivery above the
+never-adapting baseline — n=3 per arm, one world, one learner persona,
+one tutor family, simulated learner, sol-tagged with the known t3 taste
+caveat. The uncovered-plant rate (3/10) and the bored/lost plants (no
+card by design — boredom is not pressure) mark the mechanism's current
+boundary.
+
 ## Standing constraints
 
 Overfitting ledger (HOW-TO-BUILD-A-TUTOR.md): vocabulary → held-out world;
