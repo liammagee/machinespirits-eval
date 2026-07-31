@@ -20,9 +20,22 @@
       "Bash(ioreg *)",
       "mcp__evaluations-db__read_query",
       "mcp__evaluations-db__list_tables",
-      "mcp__evaluations-db__describe_table"
+      "mcp__evaluations-db__describe_table",
+      "Bash(git fetch *)",
+      "Bash(node scripts/lint-derivation-world.js *)",
+      "Bash(node scripts/score-manner-trigger.js *)",
+      "mcp__ccd_session__mark_chapter",
+      "mcp__ccd_session__spawn_task",
+      "mcp__Claude_Browser__preview_list",
+      "mcp__Claude_Browser__get_page_text",
+      "mcp__ccd_session_mgmt__list_sessions",
+      "Bash(node scripts/summarize-tutor-stub-run.js *)",
+      "Bash(node scripts/review-stress-bench.js *)"
     ],
-    "deny": ["mcp__evaluations-db__write_query", "mcp__evaluations-db__create_table"]
+    "deny": [
+      "mcp__evaluations-db__write_query",
+      "mcp__evaluations-db__create_table"
+    ]
   },
   "hooks": {
     "UserPromptSubmit": [
@@ -62,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.js) ;; *) exit 0 ;; esac; DIR=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; case \"$f\" in /*) d=$(dirname \"$f\") ;; *) d=\"$DIR\" ;; esac; root=\"\"; while :; do if [ -f \"$d/eslint.config.js\" ]; then root=\"$d\"; break; fi; if [ \"$d\" = \"/\" ]; then break; fi; d=$(dirname \"$d\"); done; root=\"${root:-$DIR}\"; case \"$f\" in \"$root\"/*) ;; /*) exit 0 ;; esac; bin=\"\"; d=\"$root\"; while :; do if [ -x \"$d/node_modules/.bin/eslint\" ]; then bin=\"$d/node_modules/.bin\"; break; fi; if [ \"$d\" = \"/\" ]; then break; fi; d=$(dirname \"$d\"); done; if [ -z \"$bin\" ]; then echo \"Hook skipped lint on $f: no node_modules/.bin/eslint at or above $root — run npm install.\" >&2; exit 1; fi; cd \"$root\" 2>/dev/null || exit 0; out=$(\"$bin/eslint\" --fix \"$f\" 2>&1); rc=$?; if [ -x \"$bin/prettier\" ]; then \"$bin/prettier\" --write \"$f\" >/dev/null 2>&1; fi; if [ $rc -ne 0 ]; then echo \"Hook ran eslint --fix + prettier on $f, but ESLint errors remain (npm run lint / CI will fail) — fix these now:\" >&2; echo \"$out\" >&2; exit 2; fi; exit 0"
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.js) ;; *) exit 0 ;; esac; DIR=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; case \"$f\" in /*) d=$(dirname \"$f\") ;; *) d=\"$DIR\" ;; esac; root=\"\"; while :; do if [ -f \"$d/eslint.config.js\" ]; then root=\"$d\"; break; fi; if [ \"$d\" = \"/\" ]; then break; fi; d=$(dirname \"$d\"); done; root=\"${root:-$DIR}\"; case \"$f\" in \"$root\"/*) ;; /*) exit 0 ;; esac; bin=\"\"; d=\"$root\"; while :; do if [ -x \"$d/node_modules/.bin/eslint\" ]; then bin=\"$d/node_modules/.bin\"; break; fi; if [ \"$d\" = \"/\" ]; then break; fi; d=$(dirname \"$d\"); done; if [ -z \"$bin\" ]; then echo \"Hook skipped lint on $f: no node_modules/.bin/eslint at or above $root \u2014 run npm install.\" >&2; exit 1; fi; cd \"$root\" 2>/dev/null || exit 0; out=$(\"$bin/eslint\" --fix \"$f\" 2>&1); rc=$?; if [ -x \"$bin/prettier\" ]; then \"$bin/prettier\" --write \"$f\" >/dev/null 2>&1; fi; if [ $rc -ne 0 ]; then echo \"Hook ran eslint --fix + prettier on $f, but ESLint errors remain (npm run lint / CI will fail) \u2014 fix these now:\" >&2; echo \"$out\" >&2; exit 2; fi; exit 0"
           },
           {
             "type": "command",
