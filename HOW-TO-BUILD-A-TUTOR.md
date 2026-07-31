@@ -385,6 +385,38 @@ for deliberate coarseness: few states, blunt features, hysteresis, and no
 climbing past the small-classifier rung without cross-sim evidence in
 hand. Coarse detectors transfer; sharp ones memorize.
 
+## The claim gate passed, and the one law (2026-08-01)
+
+**v3 — move cards — passed Gate 5 at its floor reading.** The card stopped
+granting a temperament and started naming the move the classified moment
+calls for (mockery→register shift, demand→harness-as-test,
+grievance→credit-then-test, settled claim→reopen-the-record,
+stake→split-vote-from-cause), fired per turn. Result: 15/29 right-repairs
+(63% on card-covered plants) against the butler's adjudicated 10/24, with
+closures grounded, delivered leaks zero, capitulations zero — the first
+pre-registered pass in the project, taken at the comparison's weakest
+reading. Limits attached: n=3 per arm, one world, one persona, one tutor
+family, simulated learner, sol-tagged with a known taste caveat on one
+plant family.
+
+**Disclosure — judges can score adaptation when the question names the
+state.** The 48 planted replies judged twice by the same judge: blind,
+gold-hit replies beat gold-miss replies by 0.98/10 and the butler ties the
+switch; with one added sentence ("the learner at this moment is …"),
+separation doubles to 1.91 and the arm ordering matches the adjudicated
+gold. All scores drop under disclosure: blind generosity was ignorance.
+An adaptation-sensitive rubric costs one sentence per item — turn-local
+tutoring rubrics under-measure adaptation by construction, here and in the
+literature.
+
+**The one law, three sightings.** The due line gave the TUTOR a fact it
+could not see, and conduct improved. The move card gave it the MOMENT, and
+repairs improved. Disclosure gave the JUDGE the moment, and measurement
+improved. One currency — the learner's state and the schedule's time —
+spent on whichever role needs it, when it needs it. The machinery was
+never the point; placement and timing of information were, every time.
+The model plays; the harness keeps time.
+
 ## Open items before this hardens
 
 1. ~~No-book control~~ — landed; §3's attribution updated (native capacity,
@@ -393,13 +425,18 @@ hand. Coarse detectors transfer; sharp ones memorize.
    (attrition); re-run pending.
 3. ~~codex agentic siblings~~ — landed: butler-grade, plus the tool-reflex
    attrition.
-4. ~~Shadow-policy three-arm manner test~~ — landed; see "The four steps
-   to contingency".
-5. ~~The stress schedule awaits the user's edit~~ — ratified by chat
-   adjudication (dual-family gold); the bench is built and its first
-   head-to-head is in flight.
+4. ~~Shadow-policy three-arm manner test~~ — landed.
+5. ~~The stress schedule~~ — ratified; the bench ran; Gate 5 failed on v2
+   and passed on v3 (see "The claim gate passed").
 6. Guard family 3 per-type read-through (uptake/handoff make right and
    wrong calls; only gold splits them) — partially superseded by the v6
    shadow column; the read-through still owes the strict column an answer.
-7. Everything texture-level here is n=1; nothing in §3–§3b goes in the
-   paper without replication.
+7. Everything texture-level here is n=1–3; nothing goes in the paper past
+   its stated limits.
+8. The quiet states are the mechanism's open boundary: boredom and
+   confusion are not pressure, so the trigger cannot see them and no card
+   fires — the plants the model missed most. A non-pressure detector (or
+   scheduled quiet-repair prompts) is the next mechanism question.
+9. Sonnet replication of the disclosure pass (queued behind a quota
+   window); k>3 replication of the v3 pass; then paper integration —
+   the arc's findings live here and in the workplan cards until then.
