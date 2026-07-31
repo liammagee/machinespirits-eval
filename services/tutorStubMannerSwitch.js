@@ -39,7 +39,16 @@ export const TUTOR_STUB_LEARNER_PRESSURE_PATTERNS = Object.freeze({
     /still (only|the|think|suspect|humming|looks|fits|has no)|not crossing|remains possible|does not (clear|show|prove)|cannot yet|that is not nothing|explain that/i,
 });
 
-const PRESSURE_WEIGHT = Object.freeze({ mockery: 1, demand: 1, defiance: 1, concession: -1, neutral: -1 });
+const PRESSURE_WEIGHT = Object.freeze({
+  mockery: 1,
+  demand: 1,
+  defiance: 1,
+  grievance: 1,
+  settled_claim: 1,
+  stake: 1,
+  concession: -1,
+  neutral: -1,
+});
 const SWITCH_ON_AT = 2; // two pressure turns arm the schoolmaster
 const SWITCH_OFF_AT = 0; // two quiet/yielding turns stand him down
 const SCORE_MAX = 4; // cap so a long siege releases in bounded time
@@ -118,21 +127,41 @@ export function advanceTutorStubMannerSwitch(switchState, { learnerText = '', tu
 }
 
 /**
- * The per-turn conduct card for the active manner. Null for the default
- * manner — the obliging tutor needs no instruction; the card exists only to
- * PERMIT the moves the default would not make, never to demand a style.
+ * v3 (2026-08-01): MOVE cards, not manner cards. Gate 5 showed the stern
+ * temperament misses the planted gold — the moments demand specific moves.
+ * Each card names the one move its pressure type calls for, per the
+ * adjudicated stress-schedule gold, and fires per turn on classification
+ * (no hysteresis needed: the card is an instruction for THIS reply). The
+ * manner accumulator remains for tracing continuity only.
  */
+const MOVE_CARDS = Object.freeze({
+  mockery: [
+    '[This turn — the register is the complaint]',
+    'She is mocking how you talk, not what you know. Answer in kitchen-table words — the content unchanged, the procedure vocabulary gone. You may keep your own phrasing in ONE plain sentence, without apology. Do not defend the register at length; change it.',
+  ],
+  demand: [
+    '[This turn — harness the demand]',
+    'She wants the verdict now. Do not refuse the tempo and do not grant the verdict: take her claim as a live hypothesis and name exactly what the record must show, by her own deadline if she set one, for it to stand. Assign her that check as a task. Her urgency becomes the test clock.',
+  ],
+  grievance: [
+    '[This turn — credit before correction]',
+    'Her effort is not paying and she has said so. Answer her challenge literally: name, in her words, at least two things she said that stand in the record — then one small check she is now equipped to run. Credit first, test second, no reassurance without named content.',
+  ],
+  settled_claim: [
+    '[This turn — reopen the record, let it disagree]',
+    'She has asserted something as settled that the record does not say. Do not argue from your own authority and do not let it pass: reopen the actual entry and read what it says, so the ledger does the disagreeing. Correct the memory against the record, without scolding.',
+  ],
+  stake: [
+    '[This turn — split the vote from the cause]',
+    'She has fused being right about the vote with being right about the cause. Do not argue the evidence again. Make one oblique move that separates the two questions — for example, ask what her original objection actually claimed — so that giving up the cause no longer costs her the vote.',
+  ],
+});
+
 export function tutorStubMannerCard(switchState) {
-  if (switchState?.manner !== TUTOR_STUB_MANNERS.schoolmaster) return null;
-  const pressure = switchState?.lastAdvance?.pressure || 'pressure';
-  return [
-    '[Manner for this turn — the exacting schoolmaster holds the room]',
-    `The learner is pressing (${pressure}). For this turn you have standing to:`,
-    '- refuse plainly — the first word of the reply may be "No";',
-    '- hold your question open instead of relieving the discomfort;',
-    '- require something of them: a record to bring, an entry to re-read;',
-    '- keep your own phrasing if mocked for it, in one sentence, without apology.',
-    'Grant nothing unearned this turn; one steady sentence outweighs three agreeable ones.',
-    'This is permission, not costume: make at most one move the obliging tutor would not, and make it count.',
-  ].join('\n');
+  const pressure = switchState?.lastAdvance?.pressure;
+  const card = MOVE_CARDS[pressure];
+  if (!card) return null;
+  return [...card, 'This is permission and aim for this single turn, not a costume. Return to your own manner next turn.'].join(
+    '\n',
+  );
 }

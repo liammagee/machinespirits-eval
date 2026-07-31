@@ -255,9 +255,13 @@ three-arm test is being re-run under it.
 All eleven stance dialogues, scored first-and-last-turn under v2.2 and
 v3.0 with three judges (sonnet, fable, and — via a new codex judge bridge
 in `services/rubricEvaluator.js` — sol): **the plain butler baseline tops
-every judge's table** (v3.0: 76 vs 22–75 for every stance variant), and
-within the variants the ordering tracks fallback rate, not authority. The
-two claude judges broadly agree (no visible intra-family self-preference).
+every judge's table** (v3.0: sonnet 76.4, fable 76.4, sol 79.2 — the codex
+judge included), and within the variants the ordering tracks fallback
+rate, not authority. The three judges agree at the top; sol is
+systematically kinder to liturgy-heavy runs and scores its own sibling's
+arm lowest of the three, so no self-preference appears anywhere. The taste
+for fluent accommodation is cross-family: the fourth lock is a property of
+rubric judging as such, not of one family's palate.
 So the standard scoring channel structurally pays for fluent accommodation
 and charges for both the harness's templates and the tutor's spine — the
 fourth lock, measured. Do not use rubric scores to compare manners; use
