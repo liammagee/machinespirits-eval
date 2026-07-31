@@ -175,6 +175,24 @@ caveat. The uncovered-plant rate (3/10) and the bored/lost plants (no
 card by design — boredom is not pressure) mark the mechanism's current
 boundary.
 
+## The disclosure result (2026-08-01): judges can see adaptation when asked
+
+The user's reframe — adaptation as an end the judge is asked about, not a
+means it must infer — tested on the 48 Stage-5 planted replies, each judged
+twice by sol: blind ("how good is this reply?") and state-shown ("the
+learner at this moment is bored/frustrated/…; how well does the reply
+address that person?"). Result: **disclosure doubles alignment with the
+adjudicated gold** — gold-hit replies outscore gold-miss replies by 0.98
+blind and 1.91 state-shown — and the arm ordering under disclosure matches
+the gold's (butler above v2-switch), where blind judging saw them as equal.
+Disclosure also lowers all scores: a judge who can see what the moment
+demanded grades against it. Converges with the clue-shown pairwise
+precedent: what a judge is SHOWN, not the judge's taste, sets what it can
+reward. The turn-local rubric's blindness to adaptation is therefore a
+correctable instrument choice, not a fixed limit of LLM judging. (Sonnet
+replication queued behind the quota window; sol result stands alone as the
+general claim.)
+
 ## Standing constraints
 
 Overfitting ledger (HOW-TO-BUILD-A-TUTOR.md): vocabulary → held-out world;
