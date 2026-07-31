@@ -6157,19 +6157,27 @@ function updateReleasePacingForLearnerTurn({
   recordTrace = true,
 }) {
   updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recordTrace });
+  // Frozen pacing (TUTOR_STUB_RELEASE_PACING=fixed): the stress bench needs a
+  // controlled timetable — planted impatience otherwise reads as an accelerate
+  // signal and compresses the world, giving arms unequal plant exposure
+  // (observed 2026-07-31: a book arm closed at turn 15 and saw 4 of 11
+  // plants). Freezing blinds the pacing engine's signal inputs; the authored
+  // schedule runs at speed 1.
+  const pacingFrozen = process.env.TUTOR_STUB_RELEASE_PACING === 'fixed';
   const releasePacing = advanceTutorStubReleasePacing({
     pacing: state.releasePacing,
     world: state.world,
     turn: tutorTurn,
-    learnerText,
-    classification,
+    learnerText: pacingFrozen ? '' : learnerText,
+    classification: pacingFrozen ? null : classification,
     tutorLearnerDag,
-    conversationalCompletion: tutorLearnerDag?.conversationalCompletion || null,
+    conversationalCompletion: pacingFrozen ? null : tutorLearnerDag?.conversationalCompletion || null,
   });
   if (!releasePacing) return null;
   if (recordTrace) {
     appendTraceEvent(state.trace, {
       type: 'release_pacing_update',
+      ...(pacingFrozen ? { pacingFrozen: true } : {}),
       turn: tutorTurn,
       direction: releasePacing.direction,
       baseSpeed: releasePacing.baseSpeed,
