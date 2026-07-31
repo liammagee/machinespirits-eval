@@ -49,7 +49,28 @@ organic dialogues.
 latency ≤ 1 turn. If met, SKIP stages 2–4 (deliberate coarseness: do not
 train what patterns solve) and go to stage 5.
 
-## Stage 2 — labeled corpus (afternoon, cheap)
+## Results — Stages 0 and 1 (2026-08-01)
+
+**Gate 0 PASSED**: plants landed in all three bench arms (20 should-fire,
+6 quiet); scorecard (`scripts/score-manner-trigger.js`) deterministic.
+v1-builtin baseline: classification 6/20, arming 1/20, wrong-fires 0/6.
+
+One scorecard correction en route: the contemporary record-keeper presses
+ORGANICALLY, so her unplanted dialogues are not a negative set — her
+"false alarms" were real mockery and demands. The base rate moved to the
+CALM set (the five diligent-learner gate-1 dialogues).
+
+**Gate 1 PASSED** with `config/manner-trigger/v2.json` (miss-list-driven
+patterns, concession checked last so barbed concessions read as pressure,
+armAt 1): classification 17/20, arming 18/20, wrong-fires at quiet plants
+0/6, calm-set false alarms 1.80/dialogue (bar: ≤2). Threshold sweep
+recorded: armAt 2 gives 11/20 arming at 0.71 calm alarms
+(`v2-arm2.json`) — kept as the conservative alternative. Per the skip
+rule, stages 2–4 are NOT run: patterns solved it; nothing gets trained.
+CLI selection: `TUTOR_STUB_MANNER_TRIGGER=config/manner-trigger/v2.json`;
+the version travels in every trace advance.
+
+## Stage 2 — labeled corpus (afternoon, cheap) — SKIPPED (Gate 1 met)
 
 Only if Gate 1 fails. Harvest labeled utterances without full dialogues
 (context + plant directive → utterance): ≥ 30 per state per sim, two sim

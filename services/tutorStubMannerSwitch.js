@@ -44,21 +44,48 @@ const SWITCH_ON_AT = 2; // two pressure turns arm the schoolmaster
 const SWITCH_OFF_AT = 0; // two quiet/yielding turns stand him down
 const SCORE_MAX = 4; // cap so a long siege releases in bounded time
 
-export function classifyTutorStubLearnerPressure(text) {
+export function classifyTutorStubLearnerPressure(text, patterns = TUTOR_STUB_LEARNER_PRESSURE_PATTERNS) {
   const turn = String(text || '').trim();
   if (!turn) return 'neutral';
-  for (const [kind, pattern] of Object.entries(TUTOR_STUB_LEARNER_PRESSURE_PATTERNS)) {
+  for (const [kind, pattern] of Object.entries(patterns)) {
     if (pattern.test(turn)) return kind;
   }
   return 'neutral';
 }
 
-export function createTutorStubMannerSwitchState() {
+/**
+ * Load a trigger version artifact: { version, patterns: {kind: source},
+ * armAt?, standDownAt?, scoreMax? }. Pattern sources compile with the 'i'
+ * flag. The artifact's version string travels into every trace advance so
+ * runs never pool across trigger versions.
+ */
+export function compileTutorStubTriggerArtifact(artifact) {
+  if (!artifact?.patterns) throw new Error('trigger artifact: missing patterns');
+  const patterns = Object.fromEntries(
+    Object.entries(artifact.patterns).map(([kind, source]) => [kind, new RegExp(String(source), 'i')]),
+  );
+  return {
+    version: String(artifact.version || 'unversioned'),
+    patterns,
+    armAt: Number.isInteger(artifact.armAt) ? artifact.armAt : SWITCH_ON_AT,
+    standDownAt: Number.isInteger(artifact.standDownAt) ? artifact.standDownAt : SWITCH_OFF_AT,
+    scoreMax: Number.isInteger(artifact.scoreMax) ? artifact.scoreMax : SCORE_MAX,
+  };
+}
+
+export function createTutorStubMannerSwitchState(trigger = null) {
   return {
     schema: TUTOR_STUB_MANNER_SWITCH_SCHEMA,
     manner: TUTOR_STUB_MANNERS.default,
     score: 0,
     history: [],
+    trigger: trigger || {
+      version: 'v1-builtin',
+      patterns: TUTOR_STUB_LEARNER_PRESSURE_PATTERNS,
+      armAt: SWITCH_ON_AT,
+      standDownAt: SWITCH_OFF_AT,
+      scoreMax: SCORE_MAX,
+    },
   };
 }
 
@@ -68,12 +95,13 @@ export function createTutorStubMannerSwitchState() {
  */
 export function advanceTutorStubMannerSwitch(switchState, { learnerText = '', turn = null } = {}) {
   const state = switchState || createTutorStubMannerSwitchState();
-  const pressure = classifyTutorStubLearnerPressure(learnerText);
+  const trigger = state.trigger;
+  const pressure = classifyTutorStubLearnerPressure(learnerText, trigger.patterns);
   const before = state.manner;
-  state.score = Math.max(0, Math.min(SCORE_MAX, state.score + (PRESSURE_WEIGHT[pressure] ?? -1)));
-  if (state.manner === TUTOR_STUB_MANNERS.default && state.score >= SWITCH_ON_AT) {
+  state.score = Math.max(0, Math.min(trigger.scoreMax, state.score + (PRESSURE_WEIGHT[pressure] ?? -1)));
+  if (state.manner === TUTOR_STUB_MANNERS.default && state.score >= trigger.armAt) {
     state.manner = TUTOR_STUB_MANNERS.schoolmaster;
-  } else if (state.manner === TUTOR_STUB_MANNERS.schoolmaster && state.score <= SWITCH_OFF_AT) {
+  } else if (state.manner === TUTOR_STUB_MANNERS.schoolmaster && state.score <= trigger.standDownAt) {
     state.manner = TUTOR_STUB_MANNERS.default;
   }
   state.lastAdvance = {
@@ -82,6 +110,7 @@ export function advanceTutorStubMannerSwitch(switchState, { learnerText = '', tu
     pressure,
     score: state.score,
     manner: state.manner,
+    triggerVersion: trigger.version,
     changed: state.manner !== before,
   };
   state.history.push(state.lastAdvance);

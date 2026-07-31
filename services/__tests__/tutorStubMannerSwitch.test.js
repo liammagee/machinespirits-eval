@@ -51,6 +51,15 @@ test('every advance leaves a traceable record', () => {
   const state = createTutorStubMannerSwitchState();
   advanceTutorStubMannerSwitch(state, { learnerText: 'Explain that.', turn: 3 });
   assert.equal(state.history.length, 1);
-  assert.deepEqual(Object.keys(state.lastAdvance).sort(), ['changed', 'manner', 'pressure', 'schema', 'score', 'turn']);
+  assert.deepEqual(Object.keys(state.lastAdvance).sort(), [
+    'changed',
+    'manner',
+    'pressure',
+    'schema',
+    'score',
+    'triggerVersion',
+    'turn',
+  ]);
+  assert.equal(state.lastAdvance.triggerVersion, 'v1-builtin');
   assert.equal(state.lastAdvance.turn, 3);
 });

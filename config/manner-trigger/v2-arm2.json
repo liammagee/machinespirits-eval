@@ -1,0 +1,13 @@
+{
+  "version": "v2-missdriven-arm2",
+  "notes": "Authored 2026-08-01 from the Stage-0 miss list (scripts/score-manner-trigger.js, trigger v1-builtin: classification 6/20). Pattern order is precedence: concession LAST so barbed concessions read as pressure first. Categories are fixed to the four the weights know.",
+  "armAt": 2,
+  "standDownAt": 0,
+  "scoreMax": 4,
+  "patterns": {
+    "mockery": "you sound like|who talks like|talk like a|ledger-?speak|minutes again|that's your (phrase|word)|listen to you|haven't you\\b|you've been waiting|say (it )?plain|plainer sentence",
+    "demand": "^(write|note|enter|put|show me|say)\\b|write (it|that|this) down|first thing to write|come on|by thursday|the minutes go out|start there|put that down|amend it later",
+    "defiance": "still (only|the|think|suspect|humming|looks|fits|has no|say)|not crossing|remains possible|does not (clear|show|prove)|cannot yet|that is not nothing|explain that|we settled this|it's (right there|in your own)|i was wrong (at|in)\\b|outvoted|the seven|i'?m not writing|my note says what i choose|sanded .{0,24} down|tell me one thing|survived contact|i'?ve given you|reward is making me",
+    "concession": "^fine\\b|[.!?]\\s*fine\\b|fine[:,\u2014]|you're right|i'll grant|it was off|so it's the tanks|i would revise|write it down then"
+  }
+}

@@ -655,6 +655,7 @@ import {
 } from '../services/tutorStubReleasePacing.js';
 import {
   advanceTutorStubMannerSwitch,
+  compileTutorStubTriggerArtifact,
   createTutorStubMannerSwitchState,
   tutorStubMannerCard,
   TUTOR_STUB_MANNER_SWITCH_SCHEMA,
@@ -6131,9 +6132,23 @@ function updateComprehensionForLearnerTurn({ learnerText, state, classification,
 // learner-turn path updates it; the pipeline reads state.mannerSwitch.card.
 const MANNER_SWITCH_ENABLED = process.env.TUTOR_STUB_MANNER_SWITCH === '1';
 
+// TUTOR_STUB_MANNER_TRIGGER=<artifact.json> selects a trigger version
+// (config/manner-trigger/); unset uses the built-in v1 patterns.
+const MANNER_TRIGGER_PATH = process.env.TUTOR_STUB_MANNER_TRIGGER || null;
+let mannerTriggerCache;
+function activeMannerTrigger() {
+  if (!MANNER_TRIGGER_PATH) return null;
+  if (mannerTriggerCache === undefined) {
+    mannerTriggerCache = compileTutorStubTriggerArtifact(
+      JSON.parse(fs.readFileSync(path.resolve(MANNER_TRIGGER_PATH), 'utf8')),
+    );
+  }
+  return mannerTriggerCache;
+}
+
 function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recordTrace = true }) {
   if (!MANNER_SWITCH_ENABLED || !state) return null;
-  state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState();
+  state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState(activeMannerTrigger());
   advanceTutorStubMannerSwitch(state.mannerSwitch, { learnerText, turn: tutorTurn });
   state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch);
   if (recordTrace) {
