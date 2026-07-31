@@ -6,7 +6,15 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // version-3 trace cannot carry that row and its absence there means nothing.
 // 5 (2026-07-28): repetition gained tutor_turn_without_advance, a second
 // channel that fires on a stall the lexical similarity score never sees.
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 5;
+// 6 (2026-07-31): the shadow column widens — live_turn_progression_v1,
+// repetition, and human_scaffold.redundant_local_requestion read ADVISORY
+// under the shadow policy. The strict column is byte-identical to version 5,
+// so default-policy traces stay comparable; shadow-policy traces from
+// version 6 are NOT comparable with any earlier shadow reading. Motivated by
+// the 2026-07-31 three-arm manner test: those families templated two-thirds
+// of turns and answered nearly every learner-pressure turn themselves,
+// making tutor-conduct experiments unmeasurable under strict.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 6;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -55,9 +63,11 @@ const RULES = Object.freeze([
   rule({
     guard: 'live_turn_progression_v1',
     type: '*',
+    dispositions: STRICT_HARD_SHADOW_ADVISORY,
     category: 'conversational_integrity',
     rationale:
-      'The plain live response must answer the learner, respect terminal question ownership, and keep its typed public focus.',
+      'The plain live response must answer the learner, respect terminal question ownership, and keep its typed public focus. ' +
+      'Shadow (v6): recorded, not vetoing — under strict this family answered most learner-pressure turns with templates.',
   }),
   rule({
     guard: 'live_source_action_alignment_v1',
@@ -107,8 +117,9 @@ const RULES = Object.freeze([
   rule({
     guard: 'human_scaffold',
     type: 'redundant_local_requestion',
+    dispositions: STRICT_HARD_SHADOW_ADVISORY,
     category: 'conversational_integrity',
-    rationale: 'A locally resolved public question must not be demanded again.',
+    rationale: 'A locally resolved public question must not be demanded again. Shadow (v6): recorded, not vetoing.',
   }),
   ...[
     'proposed_move_misread_as_completed',
@@ -129,15 +140,20 @@ const RULES = Object.freeze([
     rule({
       guard: 'repetition',
       type,
+      dispositions: STRICT_HARD_SHADOW_ADVISORY,
       category: 'conversational_integrity',
-      rationale: 'Material tutor repetition must not trap the learner in a repeated exchange.',
+      rationale:
+        'Material tutor repetition must not trap the learner in a repeated exchange. Shadow (v6): recorded, not vetoing.',
     }),
   ),
   rule({
     guard: 'repetition',
     type: 'tutor_turn_without_advance',
+    dispositions: STRICT_HARD_SHADOW_ADVISORY,
     category: 'conversational_integrity',
-    rationale: 'A turn that restates the covered ground in fresh words traps the learner just as surely.',
+    rationale:
+      'A turn that restates the covered ground in fresh words traps the learner just as surely. ' +
+      'Shadow (v6): recorded, not vetoing; the windowed check already grades the strict channel.',
   }),
   ...[
     'premature_dialogue_close',

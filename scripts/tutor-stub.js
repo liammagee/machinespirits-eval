@@ -7049,6 +7049,7 @@ const callTutor = createTutorStubTutorTurnPipeline({
   snapshotTutorStubPublicPremiseIds,
   speakerAdvisoryBlocks: SPEAKER_ADVISORY_BLOCKS,
   styleGuardsAdvisory: process.env.TUTOR_STUB_STYLE_GUARDS_ADVISORY === '1',
+  guardBoundaryPolicy: process.env.TUTOR_STUB_GUARD_POLICY === 'shadow_advisory' ? 'shadow_advisory' : 'strict',
   stateRunDebugId,
   streamAI,
   trimCommitteeFallback,
