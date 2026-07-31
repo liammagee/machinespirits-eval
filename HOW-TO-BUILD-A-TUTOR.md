@@ -319,6 +319,68 @@ eleven planted moments, shadow policy — in flight as this section is
 written; scoring is trigger detection and repair delivery, separately, with
 liturgy and capitulation as named miss types.
 
+## The frontier, made small: tuning the trigger against planted gold
+
+What remains genuinely unsolved is one component: the switch's trigger —
+the decision "she is pushing now." It is a handful of hand-written
+patterns with guessed thresholds, and it is now a well-posed problem
+because the plants supply labeled moments: of the eleven authored states,
+how many did the trigger catch (recall), how often did it fire on quiet
+turns (false alarms), how late did it arm (latency). Two numbers and a
+lag, before and after every change.
+
+The technical ladder, cheapest first, climbing only as far as the numbers
+demand:
+
+0. **Dials**: sweep the arm/stand-down thresholds and edit patterns from
+   the miss list. Free, deterministic.
+1. **Small classifier**: logistic regression or a tiny tree over cheap
+   features (pattern hits, length vs her own running average, punctuation,
+   vocabulary echo). Trained on plant labels; runs in-process.
+2. **The 9B mini**: retrain the Program-2 fine-tune pipeline on
+   (utterance, state) pairs, served locally. It cannot speak through the
+   guards (the qwen floor) but classification is the seat it survived in —
+   and unlike the dead classifier arcs, the signal here exists by
+   construction.
+3. **Frontier few-shot**: only if the cheap layers stall.
+
+Corpus: plants make labels free — planted turns are positives, unplanted
+turns from the same runs are negatives, and labeled utterances can be
+harvested without full dialogues (context + directive → utterance).
+Integration: the switch takes a pluggable pressure classifier; each
+version ships as a config artifact with its training-set hash, every trace
+records the version, and runs never pool across versions (the guard
+catalog's discipline). Graduation is numeric — say nine of eleven held-out
+plants, at most two false alarms per dialogue, one turn of latency — and
+only then does the bench ask the separate question: does the tuned switch
+deliver repairs the butler misses?
+
+## Overfitting: four layers, unequal mitigations
+
+1. **Vocabulary** — the trigger memorizes the world's idiom ("write it
+   down") rather than pressure. Held-out worlds catch this; solid.
+2. **Author** — the sim performs the schedule-writer's prose style of
+   frustration, and a fitted trigger detects that style. Mitigation:
+   directives from several authors. Workable.
+3. **Simulator — the deep layer.** The labeled text is one model's
+   *performance* of the states; a fitted trigger detects
+   terra-doing-boredom, not boredom. Cross-sim gold (two or three
+   families) helps; transfer to humans is unprovable by construction until
+   human turns exist. The trigger inherits the simulation's expressive
+   range — the project's standing boundary, restated at the component
+   level.
+4. **Base rate** — planted dialogues are stress-dense, live ones sparse;
+   false-alarm calibration will not carry. Cheap fix: score false alarms
+   on the organic dialogues already on disk.
+
+Two structural comforts, not to be leaned on: the gold is authored, never
+model-derived, so the scorer is not a model grading itself; and the
+trigger's failure mode is benign — a mistimed permission slip degrades the
+system to the butler default rather than corrupting anything. Which argues
+for deliberate coarseness: few states, blunt features, hysteresis, and no
+climbing past the small-classifier rung without cross-sim evidence in
+hand. Coarse detectors transfer; sharp ones memorize.
+
 ## Open items before this hardens
 
 1. ~~No-book control~~ — landed; §3's attribution updated (native capacity,
