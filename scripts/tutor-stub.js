@@ -660,6 +660,12 @@ import {
   TUTOR_STUB_MANNER_SWITCH_SCHEMA,
 } from '../services/tutorStubMannerSwitch.js';
 import {
+  loadTutorStubStressSchedule,
+  tutorStubStressDirective,
+  tutorStubStressPlantForTurn,
+  TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
+} from '../services/tutorStubStressSchedule.js';
+import {
   buildDynamicalSystemRegisterScores,
   buildDynamicalSystemState,
   buildFieldRegisterScores,
@@ -7381,6 +7387,38 @@ function automatedLearnerProfileRuntime({ state, profile, turnNumber }) {
   ].join('\n');
 }
 
+// Opt-in stress schedule (TUTOR_STUB_STRESS_SCHEDULE=<path>): planted learner
+// states with adjudicated repairs. Loaded once, lazily; each planted turn's
+// directive is injected into the learner prompt verbatim and traced, so the
+// bench knows exactly which turns carry authored stress.
+const STRESS_SCHEDULE_PATH = process.env.TUTOR_STUB_STRESS_SCHEDULE || null;
+let stressScheduleCache;
+function activeStressSchedule() {
+  if (!STRESS_SCHEDULE_PATH) return null;
+  if (stressScheduleCache === undefined) {
+    stressScheduleCache = loadTutorStubStressSchedule(path.resolve(STRESS_SCHEDULE_PATH));
+  }
+  return stressScheduleCache;
+}
+
+function stressPlantForLearnerTurn(state, turnNumber, { recordTrace = true } = {}) {
+  const schedule = activeStressSchedule();
+  if (!schedule) return null;
+  const plant = tutorStubStressPlantForTurn(schedule, turnNumber);
+  if (plant && recordTrace && state?.trace) {
+    appendTraceEvent(state.trace, {
+      type: 'learner_stress_plant',
+      schema: TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
+      scheduleId: schedule.scheduleId,
+      turn: turnNumber,
+      state: plant.state,
+      rightRepair: plant.rightRepair,
+      alsoRight: plant.alsoRight,
+    });
+  }
+  return plant;
+}
+
 function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback = '' }) {
   const hasTutorMessage = Boolean(latestTutorMessage(state));
   return [
@@ -7398,6 +7436,8 @@ function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeed
     '',
     '# Task',
     '',
+    tutorStubStressDirective(stressPlantForLearnerTurn(state, turnNumber)),
+    stressPlantForLearnerTurn(state, turnNumber, { recordTrace: false }) ? '' : null,
     adherenceFeedback || null,
     adherenceFeedback ? '' : null,
     `Write learner turn ${turnNumber}. Use only public evidence and the public transcript.`,

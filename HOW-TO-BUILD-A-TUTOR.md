@@ -263,6 +263,62 @@ and charges for both the harness's templates and the tutor's spine — the
 fourth lock, measured. Do not use rubric scores to compare manners; use
 them to detect template mass, which they punish reliably.
 
+## The four steps to contingency (2026-07-31, three-arm result)
+
+The shadow-policy three-arm test delivered the first measurable contingency
+in the project: butler (4 refusals, 1 on pressure), standing book (11
+refusals including one at the learner's friendly opening — blanket
+firmness, and still 6 agreeable openings under real pressure), manner
+switch (5 refusals, armed once at her mockery, card-timed "No" inside the
+window, zero agreeable openings under pressure, and the fastest closure of
+any dialogue in the arc at 18 turns — n=1, a direction not a claim).
+
+Contingency needs four things at once, each proven necessary by its
+absence:
+
+1. **A learner who actually pushes** — no pressure, nothing to respond to
+   (the original corpus). The character brief supplies texture; the
+   ratified stress schedule supplies controlled timing and type.
+2. **A tutor model that carries the second manner** — casting; no range,
+   nothing to shift to.
+3. **Permission delivered at the moment, not in advance** — a standing
+   prompt sets a rate, per-turn injection sets a timing. The switch is the
+   due line applied to conduct.
+4. **A mouth that stays open at the pressured turns** — under strict
+   guards the composer answered exactly those turns itself; contingency
+   existed in drafts and died at delivery. The shadow policy returned the
+   microphone.
+
+Remove any one and the transcript reverts to patois.
+
+## Is the harness worth having? The two-natures verdict
+
+The harness has two halves, and the month priced each. The **timekeeping
+half** — world file, release schedule, due line, pacing, the switch's
+trigger, the plant schedule, the closure reader, the leak guard — is the
+entire value: it turns a chat model into an experiment, and at the extreme
+(the qwen floor) it can run a whole dialogue to closure alone. The
+**enforcement half** — costume checks, per-turn progression vetoes, the
+composer's mouth — subtracted value everywhere measured: it erased
+character under load, criminalized consolidation, enforced one family's
+prose as law, and answered the learner's hardest moments itself. Keep the
+stage manager and the bookkeeper; retire the co-author. The model never
+keeps time; the harness keeps time, and the model plays.
+
+## The stress bench (built and running, 2026-07-31)
+
+The ratified schedule now executes: `TUTOR_STUB_STRESS_SCHEDULE=<path>`
+loads the gold (`services/tutorStubStressSchedule.js`), injects each
+plant's directive into the learner-sim verbatim on its turn (the standing
+brief yields for that turn only), and traces every plant with its
+adjudicated repair. Smoke-verified: the Thursday demand arrives in her
+voice word for word. Provenance of the gold: fable drafted, sol wrote a
+blind second column, the user adjudicated the seven splits (rulings in the
+schedule header). First head-to-head — butler vs book vs switch on the
+eleven planted moments, shadow policy — in flight as this section is
+written; scoring is trigger detection and repair delivery, separately, with
+liturgy and capitulation as named miss types.
+
 ## Open items before this hardens
 
 1. ~~No-book control~~ — landed; §3's attribution updated (native capacity,
@@ -271,9 +327,11 @@ them to detect template mass, which they punish reliably.
    (attrition); re-run pending.
 3. ~~codex agentic siblings~~ — landed: butler-grade, plus the tool-reflex
    attrition.
-4. Shadow-policy three-arm manner test: running.
-5. The stress schedule awaits the user's edit; the bench build is gated on
-   it, with the sonnet-class tutor configuration as its first subject.
+4. ~~Shadow-policy three-arm manner test~~ — landed; see "The four steps
+   to contingency".
+5. ~~The stress schedule awaits the user's edit~~ — ratified by chat
+   adjudication (dual-family gold); the bench is built and its first
+   head-to-head is in flight.
 6. Guard family 3 per-type read-through (uptake/handoff make right and
    wrong calls; only gold splits them) — partially superseded by the v6
    shadow column; the read-through still owes the strict column an answer.
