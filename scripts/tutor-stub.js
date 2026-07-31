@@ -654,6 +654,12 @@ import {
   tutorStubReleaseScheduleExhausted,
 } from '../services/tutorStubReleasePacing.js';
 import {
+  advanceTutorStubMannerSwitch,
+  createTutorStubMannerSwitchState,
+  tutorStubMannerCard,
+  TUTOR_STUB_MANNER_SWITCH_SCHEMA,
+} from '../services/tutorStubMannerSwitch.js';
+import {
   buildDynamicalSystemRegisterScores,
   buildDynamicalSystemState,
   buildFieldRegisterScores,
@@ -6113,6 +6119,29 @@ function updateComprehensionForLearnerTurn({ learnerText, state, classification,
   };
 }
 
+// Opt-in manner switch (TUTOR_STUB_MANNER_SWITCH=1): butler ↔ exacting
+// schoolmaster, driven by deterministic learner-pressure classification with
+// pacing-style hysteresis. Advanced here beside release pacing so every
+// learner-turn path updates it; the pipeline reads state.mannerSwitch.card.
+const MANNER_SWITCH_ENABLED = process.env.TUTOR_STUB_MANNER_SWITCH === '1';
+
+function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recordTrace = true }) {
+  if (!MANNER_SWITCH_ENABLED || !state) return null;
+  state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState();
+  advanceTutorStubMannerSwitch(state.mannerSwitch, { learnerText, turn: tutorTurn });
+  state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch);
+  if (recordTrace) {
+    appendTraceEvent(state.trace, {
+      type: 'tutor_manner_switch',
+      schema: TUTOR_STUB_MANNER_SWITCH_SCHEMA,
+      turn: tutorTurn,
+      ...state.mannerSwitch.lastAdvance,
+      cardActive: Boolean(state.mannerSwitch.card),
+    });
+  }
+  return state.mannerSwitch;
+}
+
 function updateReleasePacingForLearnerTurn({
   learnerText,
   state,
@@ -6121,6 +6150,7 @@ function updateReleasePacingForLearnerTurn({
   tutorTurn,
   recordTrace = true,
 }) {
+  updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recordTrace });
   const releasePacing = advanceTutorStubReleasePacing({
     pacing: state.releasePacing,
     world: state.world,

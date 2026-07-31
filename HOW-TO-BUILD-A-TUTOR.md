@@ -111,6 +111,45 @@ stance book that grants permission to refuse, hold, and demand. Do not
 spend effort prompting authority into a family that lacks it; the prose
 degrades guard compliance and buys nothing (fallbacks 36% → 61%).
 
+## 3a. The target is the shift, not the manner (added 2026-07-31)
+
+Everything in §3 establishes *range* — a second manner exists and is
+reachable in the right family. Range is not the goal. A tutor locked in
+gravitas is exactly as rigid as one locked in service; what distinguishes a
+teacher is **contingency**: manner as a function of the learner's state,
+shifting when the state shifts.
+
+Measured on the stance sweep (deterministic, per-pressure manner deltas
+against each tutor's own neutral baseline —
+`scripts/analyze-stance-contingency.js`):
+
+- The identity book produced stance WITHOUT occasion: sonnet-with-book's
+  four refusals all landed on unpressured turns; sonnet-without-book's
+  refusals clustered at pressure. The standing book bought manner and
+  destroyed contingency — wardrobe, not adaptation.
+- fable showed the cleanest native contingency: refusal +1.00 under both
+  mockery and demand, agreeable elsewhere.
+- The butler's signature is also contingent, in the wrong direction: the
+  codex baseline, when mocked, INCREASES agreeable openers (+0.78) —
+  pressed, it bows deeper.
+- The guard pipeline masks exactly the turns that matter: pressure turns
+  are where drafts break rules, so templates disproportionately answer the
+  learner's hardest moments and delete the evidence of adaptation.
+
+The mechanism this yields is the **manner switch**
+(`services/tutorStubMannerSwitch.js`, opt-in `TUTOR_STUB_MANNER_SWITCH=1`):
+deterministic learner-pressure classification (mockery / demand / defiance /
+concession) feeding an accumulator with pacing-style hysteresis; while
+pressure holds, a per-turn conduct card — the one injection channel proven
+to move drafts — grants the schoolmaster's moves; sustained quiet stands
+him down. Permission-shaped: no guard checks that the manner was worn, and
+the card's own text caps it ("make at most one move the obliging tutor
+would not"). Every advance is traced (`tutor_manner_switch`), so the
+switch's timing is auditable against the learner's pressure trail. The
+stress schedule is its natural test harness: every plant is a known moment
+where the switch should fire — and the planted-repair scoring then asks
+whether the shift helped, which contingency alone cannot answer.
+
 ## 4. Guard the transactions, grade the judgments
 
 Full catalog and evidence: `docs/tutor-stub-guard-catalog.md`. The rule:

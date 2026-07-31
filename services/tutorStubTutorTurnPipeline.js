@@ -344,6 +344,10 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       pointOfActionAdvisory,
       tuningAdvisory,
       tutorFeedbackAdvisory,
+      // The manner switch's per-turn conduct card (tutorStubMannerSwitch.js):
+      // present only while the CLI-owned switch holds the schoolmaster manner.
+      // Permission-shaped; no guard anywhere checks that the manner was worn.
+      state?.mannerSwitch?.card || null,
       // Keep the executable contract nearest the learner line so later analysis
       // advisories cannot bury the actual speaking task.
       withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
