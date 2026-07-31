@@ -189,9 +189,12 @@ Disclosure also lowers all scores: a judge who can see what the moment
 demanded grades against it. Converges with the clue-shown pairwise
 precedent: what a judge is SHOWN, not the judge's taste, sets what it can
 reward. The turn-local rubric's blindness to adaptation is therefore a
-correctable instrument choice, not a fixed limit of LLM judging. (Sonnet
-replication queued behind the quota window; sol result stands alone as the
-general claim.)
+correctable instrument choice, not a fixed limit of LLM judging. Sonnet replication landed (24/48 valid pairs; the rest
+returned unparseable scores): blind gap 0.64 → shown gap 1.13, the same
+near-doubling — and sonnet's blind pass had PREFERRED the v2 switch (the
+wrong ordering per gold), correcting to the gold ordering under
+disclosure. Two judges, different blind errors, converging when shown the
+state.
 
 ## Standing constraints
 
