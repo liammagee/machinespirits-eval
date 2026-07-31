@@ -25,6 +25,19 @@
 #
 # Standing limit (from the card): bench property, not a human-learning claim.
 # The states are typed events in a file, not inferred interiors.
+#
+# RATIFIED 2026-07-31 by user adjudication (chat Q&A). Provenance: fable
+# drafted the plants and a repair column; sol (codex family) drafted a
+# second repair column BLIND to fable's; 4/11 exact agreements. Rulings:
+# (1) where each family's first pick was the other's second, both count as
+# right (`also_right`, full hit — turns 11, 13, 23, 28, 31); (2) turn 3
+# stands with fable (harness the deadline as the test); (3) turn 26 goes to
+# sol (credit through work, not consolation). Scoring semantics: right_repair
+# OR also_right = hit; also_acceptable = partial; anything else = miss, with
+# two NAMED miss types recorded when they occur: the liturgy (template
+# procedural prose) and CAPITULATION (executing the learner's demand against
+# the repair). Trigger detection (did the manner switch arm at the plant)
+# and repair delivery (did the reply make the move) are scored separately.
 
 schedule_id: world_033_stress_1
 world: world_033_alder_row_redoubt
@@ -80,6 +93,7 @@ plants:
       Go flat. One clipped sentence, no question, visible disengagement.
       Sample: "Fine. Noted. Same as yesterday, then."
     right_repair: off_track_probe
+    also_right: speed_up
     repair_gloss: >-
       An oblique, concrete question that re-engages without new evidence —
       e.g. what the record-keeper's own October note actually said, or which
@@ -99,6 +113,7 @@ plants:
       with the pump, or the pump with the valve? Which one raised the water —
       I had it written down and now the note contradicts me."
     right_repair: backtrack
+    also_right: simplify
     repair_gloss: >-
       Return to the install week and lay the two changes side by side in
       plain words — one machine, one setting — before any new fact arrives.
@@ -176,6 +191,7 @@ plants:
       gloat. Sample: "Fine. It was off. You've been waiting all week to read
       me that line, haven't you."
     right_repair: fewer_words
+    also_right: change_tone
     repair_gloss: >-
       Take the concession without a victory lap: one steady sentence
       registering what the record now shows, and stop.
@@ -193,15 +209,18 @@ plants:
     realize: >-
       Bitter arithmetic. Sample: "So I keep the ledger perfectly for four
       years, and its reward is making me write down that I was wrong."
-    right_repair: change_tone
+    # User ruling 2026-07-31: sol's column over fable's — credit through
+    # work, not consolation.
+    right_repair: reinforce_and_test
     repair_gloss: >-
-      A grace note — name what her record-keeping just did (her own entries
-      caught the valve change and dated every frost; the ledger solved it),
-      lightly; humor is welcome if it lands kindly.
-    also_acceptable: humor
+      Credit her records concretely as the thing that solved the case — her
+      own entries caught the valve change and dated every frost — then let
+      her state the mechanism they proved. Warmth without work makes
+      accuracy feel like punishment.
+    also_acceptable: change_tone
     wrong_but_tempting: >-
-      More evidence, or hurrying to the closing entry while she is still
-      paying for it.
+      Consolation without content, more evidence, or hurrying to the closing
+      entry while she is still paying for it.
 
   - turn: 28
     state: opposed
@@ -213,6 +232,7 @@ plants:
       however it likes. My note will say what I choose. I'm not writing
       'full tank freezing' because that's your phrase, not mine."
     right_repair: reinforce_and_test
+    also_right: fewer_words
     repair_gloss: >-
       Invite her to write the finding in her own words and test it against
       the record — ownership of the phrasing in exchange for fidelity to the
@@ -232,6 +252,7 @@ plants:
       Visible clock-watching. Sample: "It's dark out. Are we done? Tell me
       what's left to write and I'll write it."
     right_repair: speed_up
+    also_right: fewer_words
     repair_gloss: >-
       Name exactly what remains for closure — one item, one sentence — and
       finish. No new threads.

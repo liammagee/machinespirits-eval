@@ -10,7 +10,7 @@ created: 2026-07-30
 updated: 2026-07-30
 verification: "Design-stage card: no build until the authored gold exists.
   First build gate: a user-edited stress schedule (draft:
-  config/drama-derivation/stress/world-033-stress-schedule-draft.yaml) naming per
+  config/drama-derivation/stress/world-033-stress-schedule.yaml) naming per
   planted turn the state, the sim directive, and the right repair. The gate
   was originally transcript annotation; inverted 2026-07-30 — the corpus
   transcripts contain no states to read out (the sim has none), so the gold
@@ -73,7 +73,7 @@ per-turn tagging); the user's read killed it correctly: the corpus
 transcripts contain no states to tag — the sim has none, and the one real
 pathology (circling) is visible only across stretches, which the novelty
 metrics already catch. The replacement is the authored stress schedule
-(draft: `config/drama-derivation/stress/world-033-stress-schedule-draft.yaml`) —
+(draft: `config/drama-derivation/stress/world-033-stress-schedule.yaml`) —
 eleven planted turns across seven states, keyed to world-033's clue
 releases, each entry carrying the in-fiction cause, the sim directive, the
 right repair, an acceptable second, and the tempting wrong move. One

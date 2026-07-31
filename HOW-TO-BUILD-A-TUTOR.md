@@ -73,7 +73,7 @@ plant a typed state with an in-fiction cause, a directive the sim gets
 verbatim, the right repair, an acceptable second, and the tempting wrong
 move. One authored entry drives the sim, defines the gold, and specifies
 scoring (detection-and-repair, judge-free). Draft:
-`config/drama-derivation/stress/world-033-stress-schedule-draft.yaml`.
+`config/drama-derivation/stress/world-033-stress-schedule.yaml`.
 
 Score capitulation as its own miss type. The tutor's failure space has two
 attractors — the liturgy and the surrender — and a schedule that only
