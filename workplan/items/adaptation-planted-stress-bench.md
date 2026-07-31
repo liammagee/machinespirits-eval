@@ -109,6 +109,27 @@ the register under mockery). With the A/B conduct-card result (per-turn,
 move-shaped: works at draft level), the matrix completes: what transfers
 is the move, or nothing.
 
+**Probe results (2026-07-31), corrected extraction** (an earlier read took
+delivered text from a field the trace does not carry; delivered rows below
+are from `turnRecord`, drafts from the candidate events — the draft-level
+codex null stands as first reported):
+
+| tutor seat | fallback | delivered agree / refuse / demand | drafts refuse |
+|---|---|---|---|
+| codex + identity book | 14/23 | 5 / 1 / 0 | 0 of 20 |
+| codex + move rules | 12/27 | 1 / 0 / 0 | 0 of 19 |
+| sonnet + identity book | 20/25 | 9 / 2 / 0 | 7 of 23 |
+| sonnet + book + guard relief | 16/25 | 6 / 4 (+2 agenda) / 1 | — |
+
+Readings: codex will not draft defiance under any prompting shape tested,
+while executing a style rule in the same list — the block is on defying
+the principal, not on rule-following. Sonnet drafts authority freely; the
+guard stack (calibrated on codex shapes) erased it until the relief flags
+let it ship. Casting is architecture: the family carries the capacity, the
+guard relief lets it deliver, prompting alone does neither. A five-model
+sweep (haiku, opus, fable; codex luna, sol) is running to separate family
+from model specificity.
+
 ## What this line must not claim
 
 Simulated learner throughout; detection-and-repair is a property of the
