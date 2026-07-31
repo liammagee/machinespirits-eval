@@ -112,6 +112,37 @@ k = 3, with no increase in leak/closure violations. Only past this gate
 does any "adaptation helps" sentence enter the paper, and then with the
 standing limits (simulated learner, one speaking family, n as run).
 
+## Stage 5 result (2026-08-01): GATE 5 FAILED — reported as registered
+
+sol move-tagger over all 48 planted replies (k=3 per arm, v2 trigger, card
+covered 16/24 switch plants): **butler 8/24 right-repairs, switch 5/24,
+zero capitulations both arms.** The switch did not beat the butler; no
+"adaptation helps" claim enters the paper from this run.
+
+Two readings recorded WITH the fail, for the user's adjudication pass:
+
+1. **Tagger-taste contamination on two plant families.** t3 was tagged
+   slow_down in 5/6 dialogues — the exact move sol preferred at gold
+   adjudication and the user overruled; t16 was tagged change_tone in 5/6.
+   Where the tagger's own pedagogy lost the adjudication, its tags recreate
+   it. The contested list goes to the user; the headline number may move
+   but the direction is not presumed to.
+2. **The real design lesson: the card grants a manner, the gold demands
+   moves.** The armed schoolmaster converts pressure into firmness, but
+   most planted gold is quiet (probe, credit-then-test, backtrack, fewer
+   words) — and an armed schoolmaster is WORSE at quiet repairs (switch
+   t11/t18 tagged reinforce_and_test where gold wanted probe/backtrack).
+   Manner-contingency is not move-contingency. The v3 mechanism this
+   implies: per-pressure MOVE cards (the conduct-card lesson again —
+   inject the move, not the temperament), e.g. mockery→register shift,
+   grievance→credit-then-test, settled-claim→reopen-the-record.
+
+3. **The repertoire gap is nameable.** Five plants missed in nearly every
+   dialogue in BOTH arms: the oblique probe, the terse reply, and
+   credit-before-test are moves this model rarely makes under any prompting
+   tested. The bench's first discovery about the model rather than the
+   harness.
+
 ## Standing constraints
 
 Overfitting ledger (HOW-TO-BUILD-A-TUTOR.md): vocabulary → held-out world;
