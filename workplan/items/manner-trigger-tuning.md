@@ -143,6 +143,18 @@ Two readings recorded WITH the fail, for the user's adjudication pass:
    tested. The bench's first discovery about the model rather than the
    harness.
 
+## User adjudication (2026-08-01): six tags corrected, verdict unchanged
+
+The user ruled YES on the six-flip recommendation: five turn-16 replies
+re-marked as reinforce_and_test hits (the tagger under-read
+credit-then-test as change_tone: butler d1, d2; switch d0, d1, d2) and one
+turn-3 reply (switch d2, "Bring me that answer and I'll set pen to paper"
+— condition named, task assigned). **Final tally: butler 10/24, switch
+9/24. GATE 5 FAILS under every ruling considered** — the adjudication
+narrowed the gap and confirmed its direction. The five remaining turn-3
+misses stand: refusing the tempo without setting the Thursday test is
+slow_down, as tagged.
+
 ## Standing constraints
 
 Overfitting ledger (HOW-TO-BUILD-A-TUTOR.md): vocabulary → held-out world;
