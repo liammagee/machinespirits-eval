@@ -838,7 +838,27 @@ async function callJudgeModel(prompt, overrides = {}) {
     });
   }
 
+  if (provider === 'codex') {
+    return callCodexJudge(prompt, {
+      model,
+      spawnImpl: overrides.cliSpawnImpl,
+    });
+  }
+
   throw new Error(`Unsupported judge provider: ${provider}`);
+}
+
+export async function callCodexJudge(prompt, { model = null, spawnImpl } = {}) {
+  // Mirrors callClaudeCodeJudge: same bridge, same instrument boundary —
+  // user prompt only, ambient project context and tools disabled. Added
+  // 2026-07-31 for cross-family judge passes (a codex-family judge beside
+  // the claude-family ones on the same dialogues).
+  const result = await callAIWithCliBridge({ provider: 'codex', model }, '', prompt, 'rubric-judge', {
+    timeoutMs: 180_000,
+    spawnImpl,
+    preserveDefaultSystemPrompt: true,
+  });
+  return result.text;
 }
 
 export async function callClaudeCodeJudge(prompt, { model = null, spawnImpl } = {}) {
