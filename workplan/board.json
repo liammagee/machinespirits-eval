@@ -1,19 +1,19 @@
 {
-  "generated": "2026-07-30T13:00:52.066Z",
+  "generated": "2026-08-01T01:27:26.477Z",
   "counts": {
-    "total": 355,
+    "total": 357,
     "byStatus": {
       "done": 227,
       "blocked": 5,
       "dropped": 4,
+      "active": 15,
       "triaged": 10,
       "review": 92,
-      "active": 13,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 55,
+      "experiment": 57,
       "infra": 69,
       "maintenance": 165,
       "content": 2,
@@ -102,7 +102,7 @@
       "source": "manual",
       "created": "2026-07-30",
       "updated": "2026-07-30",
-      "verification": "Design-stage card: no build until the authored gold exists. First build gate: a user-edited stress schedule (draft: config/drama-derivation/stress/world-033-stress-schedule-draft.yaml) naming per planted turn the state, the sim directive, and the right repair. The gate was originally transcript annotation; inverted 2026-07-30 — the corpus transcripts contain no states to read out (the sim has none), so the gold is authored in, never discovered. The annotation sheets survive for rating whether a tutor reply met a planted state.",
+      "verification": "Design-stage card: no build until the authored gold exists. First build gate: a user-edited stress schedule (draft: config/drama-derivation/stress/world-033-stress-schedule.yaml) naming per planted turn the state, the sim directive, and the right repair. The gate was originally transcript annotation; inverted 2026-07-30 — the corpus transcripts contain no states to read out (the sim has none), so the gold is authored in, never discovered. The annotation sheets survive for rating whether a tutor reply met a planted state.",
       "claim_status": "methods",
       "depends_on": [
         "misconception-world-outcome-gate"
@@ -281,6 +281,27 @@
         "tutor-stub",
         "prereg",
         "outcome"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-r",
+      "title": "Plan 3.0 Phase R: replicate the move-card result — two worlds, k=5, two taggers, second family",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-01",
+      "updated": "2026-08-01",
+      "verification": "Gates R1–R4 quoted verbatim from ADAPTATION-PLAN-3.0.md; each recorded on this card with its numbers before the next starts. R2 is the claim gate: v3's right-repair margin over the butler holds pooled across both worlds at k=5, or the paper claim stays at its current scope.",
+      "claim_status": "methods",
+      "depends_on": [
+        "manner-trigger-tuning"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "replication"
       ]
     },
     {
@@ -560,6 +581,27 @@
       "tags": [
         "tutor-stub",
         "guards"
+      ]
+    },
+    {
+      "id": "manner-trigger-tuning",
+      "title": "Tune the manner switch's trigger against planted gold — staged, gated",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-31",
+      "updated": "2026-07-31",
+      "verification": "Each stage's gate is numeric and recorded in this card before the next stage starts. Trigger versions ship as config artifacts with training-set hashes; every trace records its trigger version; no pooling across versions.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-planted-stress-bench"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
       ]
     },
     {
