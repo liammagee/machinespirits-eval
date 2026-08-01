@@ -138,3 +138,25 @@ behind the butler's — coverage, not the cards, is the binding limit
 there. Claim upgrade licensed for §6.24: "two worlds, two personas,
 pooled k=5", carrying the per-world split and the coverage boundary
 verbatim.
+
+## Gate R3 result (2026-08-01): PASSED — fable confirms 88% of sol's hits
+
+Second-family tagger (fable via the claude CLI, same prompts, blind to
+sol's column) over all 145 landed planted replies. **Fable confirms
+78/89 of sol's hits (88%; bar ≥80%).** Raw move-label agreement 103/145
+(71%) on the 11-move vocabulary; mapped through the gold to hit/miss,
+118/145 (81%). Fable's independent column gives the same pooled
+direction: butler 45/72 (62%) vs switch 49/73 (67%). Notably fable
+does NOT reproduce the short-world reversal (w030: butler 20/30 vs
+switch 21/30) — the reversal is tagger-sensitive; the pooled margin's
+direction is not (sol raw +3.3, sol adjudicated +10.2, fable raw
++4.6). Top label disagreements are the already-adjudicated families
+(change_tone vs off_track_probe at the endgame; backtrack vs slow_down
+at the verdict demand).
+
+R3's other two items, closed by consistency: (1) ruling 2 applied back
+to R1's bare column flips its three t10 hits — bare 7/15 (47%), still
+inside the 20–80% band, R1 verdict unchanged; (2) the old stage-5 v3
+t3 misses fall under the user's standing world-033 ruling (refusing
+the tempo without setting the test = miss) — they stand, no new
+adjudication needed.
