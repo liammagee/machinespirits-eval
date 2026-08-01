@@ -33,7 +33,10 @@
       "Bash(node scripts/review-stress-bench.js *)",
       "Bash(node *)",
       "Bash(python3 *)",
-      "Bash(bash /private/tmp/claude-502/*)"
+      "Bash(bash /private/tmp/claude-502/*)",
+      "Bash(cat *)",
+      "Bash(npm run *)",
+      "Bash(git *)"
     ],
     "deny": [
       "mcp__evaluations-db__write_query",
