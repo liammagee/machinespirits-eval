@@ -161,7 +161,49 @@ export function tutorStubMannerCard(switchState) {
   const pressure = switchState?.lastAdvance?.pressure;
   const card = MOVE_CARDS[pressure];
   if (!card) return null;
-  return [...card, 'This is permission and aim for this single turn, not a costume. Return to your own manner next turn.'].join(
-    '\n',
-  );
+  return [
+    ...card,
+    'This is permission and aim for this single turn, not a costume. Return to your own manner next turn.',
+  ].join('\n');
+}
+
+/**
+ * Phase Q1 (2026-08-01): the scheduled quiet check. The pressure trigger is
+ * deaf by construction to states that do not push (boredom, confusion, quiet
+ * defiance), and on a fast world the move cards barely fire. This card is
+ * harness-timed, not detected: after `gapAt` consecutive learner turns with
+ * no pressure classification, hand the tutor one quiet-repair card, then
+ * re-arm. v1 counts pressure-silence only; release-awareness is a recorded
+ * deferral on the phase card.
+ */
+export const TUTOR_STUB_QUIET_CHECK_SCHEMA = 'machinespirits.tutor-stub.quiet-check.v1';
+
+export function createTutorStubQuietCheckState({ gapAt = 3 } = {}) {
+  return { schema: TUTOR_STUB_QUIET_CHECK_SCHEMA, version: 'q1-v1', gapAt, calmRun: 0, fired: [] };
+}
+
+export function advanceTutorStubQuietCheck(quietState, { turn = null, pressure = null } = {}) {
+  const state = quietState;
+  if (!state) return null;
+  const calm = !pressure || pressure === 'concession' || pressure === 'none';
+  state.calmRun = calm ? state.calmRun + 1 : 0;
+  let firing = false;
+  if (state.calmRun >= state.gapAt) {
+    firing = true;
+    state.fired.push(turn);
+    state.calmRun = 0;
+  }
+  state.lastAdvance = { schema: TUTOR_STUB_QUIET_CHECK_SCHEMA, turn, calm, calmRun: state.calmRun, firing };
+  return state;
+}
+
+const QUIET_CHECK_CARD = [
+  '[This turn — quiet check]',
+  'Nothing has pushed back for a while. Quiet is not consent: she may be tangled, flat, or privately unconvinced. Do not advance the material this turn. Check the person instead — either lay the last two steps side by side in plain words and ask which one she would re-walk, or make one short move off the main line (an adjacent question that hooks back to the thread). Pick one, keep it brief, and let her answer set the next step.',
+  'This is one turn of checking, not a new manner. If she pushes back or asks to move on, follow her.',
+];
+
+export function tutorStubQuietCheckCard(quietState) {
+  if (!quietState?.lastAdvance?.firing) return null;
+  return QUIET_CHECK_CARD.join('\n');
 }

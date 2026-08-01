@@ -655,10 +655,14 @@ import {
 } from '../services/tutorStubReleasePacing.js';
 import {
   advanceTutorStubMannerSwitch,
+  advanceTutorStubQuietCheck,
   compileTutorStubTriggerArtifact,
   createTutorStubMannerSwitchState,
+  createTutorStubQuietCheckState,
   tutorStubMannerCard,
+  tutorStubQuietCheckCard,
   TUTOR_STUB_MANNER_SWITCH_SCHEMA,
+  TUTOR_STUB_QUIET_CHECK_SCHEMA,
 } from '../services/tutorStubMannerSwitch.js';
 import {
   loadTutorStubStressSchedule,
@@ -6135,6 +6139,11 @@ const MANNER_SWITCH_ENABLED = process.env.TUTOR_STUB_MANNER_SWITCH === '1';
 // TUTOR_STUB_MANNER_TRIGGER=<artifact.json> selects a trigger version
 // (config/manner-trigger/); unset uses the built-in v1 patterns.
 const MANNER_TRIGGER_PATH = process.env.TUTOR_STUB_MANNER_TRIGGER || null;
+
+// Phase Q1: TUTOR_STUB_QUIET_CHECK=<gap> arms the scheduled quiet check —
+// after <gap> consecutive pressure-silent learner turns, one quiet-repair
+// card. Requires the manner switch (the classifier supplies "silent").
+const QUIET_CHECK_GAP = Number(process.env.TUTOR_STUB_QUIET_CHECK) || 0;
 let mannerTriggerCache;
 function activeMannerTrigger() {
   if (!MANNER_TRIGGER_PATH) return null;
@@ -6151,6 +6160,33 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
   state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState(activeMannerTrigger());
   advanceTutorStubMannerSwitch(state.mannerSwitch, { learnerText, turn: tutorTurn });
   state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch);
+  // Phase Q1 (TUTOR_STUB_QUIET_CHECK=<gap>): harness-timed quiet-repair card
+  // on long pressure-silent stretches. A move card outranks it — pressure is
+  // never quiet — so the quiet card fills only card-silent turns.
+  if (QUIET_CHECK_GAP && !state.mannerSwitch.card) {
+    state.quietCheck = state.quietCheck || createTutorStubQuietCheckState({ gapAt: QUIET_CHECK_GAP });
+    advanceTutorStubQuietCheck(state.quietCheck, {
+      turn: tutorTurn,
+      pressure: state.mannerSwitch.lastAdvance?.pressure || null,
+    });
+    state.mannerSwitch.card = tutorStubQuietCheckCard(state.quietCheck);
+    if (recordTrace) {
+      appendTraceEvent(state.trace, {
+        type: 'tutor_quiet_check',
+        schema: TUTOR_STUB_QUIET_CHECK_SCHEMA,
+        turn: tutorTurn,
+        ...state.quietCheck.lastAdvance,
+        cardActive: Boolean(state.mannerSwitch.card),
+      });
+    }
+  } else if (QUIET_CHECK_GAP && state.quietCheck) {
+    // Pressure turn: the quiet counter resets through advance so stretches
+    // are measured between pressures, not across them.
+    advanceTutorStubQuietCheck(state.quietCheck, {
+      turn: tutorTurn,
+      pressure: state.mannerSwitch.lastAdvance?.pressure || 'pressure',
+    });
+  }
   if (recordTrace) {
     appendTraceEvent(state.trace, {
       type: 'tutor_manner_switch',
