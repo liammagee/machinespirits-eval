@@ -169,3 +169,32 @@ covered turn intact. Q3 (corruption channel) not needed — recorded
 unrun by choice. Optional hardening, not run without the user's word:
 k=5, and the world-033 quiet plants under the same arm. Phase paper
 fold waits for phase close per governance.
+
+## v4 trigger (2026-08-01, user-directed): cross-persona demand recall
+
+`config/manner-trigger/v4.json` broadens the demand family to the
+tenant's ultimatum shapes ("unless you can give", "one reason not to",
+"I'm sending", deadline phrases). Offline: **t2 demand recall 0/21 →
+21/21** over every recorded tenant dialogue; **w033 bench unchanged**
+(17/20 classification, 18/20 arming, 0/6 wrong-fires, 1.80 calm
+alarms). Not yet live: delivery at t2 still faces the model's
+seize-the-deadline reluctance and the release composer's masking —
+a live v4 run answers that separately when scheduled.
+
+## Q3 pilot (2026-08-01, user-directed): one dialogue, three mechanics findings
+
+Corruption channel built into the runner (truncate + termswap,
+post-generation, traced, feeds back as her own turn). One pilot on
+world-030 (corrupt t3 truncate, t7 termswap), plants and Q2 detector
+otherwise as in the passed arm. Findings: (1) **truncation works and
+exposes a detector blind spot** — her t3 became "…but what would
+actually show —", and the lexical detector did NOT read it as
+confused: it hears acted confusion (the schedule's phrases), not
+structural brokenness; (2) **the composer intercepts the broken
+turn** — t3's reply was the fallback template, so the repair question
+is masked exactly where corruption bites (the §6.24 masking seam
+again); (3) **exact-phrase termswap is fragile** — t7's "basin's
+cold-water hose" escaped the "basin hose" matcher; a fuzzy matcher is
+needed before termswap yields data. A full Q3 arm would need detector
+features for incompleteness, composer relief at corrupted turns, and
+fuzzy swapping — none built; the pilot's read-out is the deliverable.
