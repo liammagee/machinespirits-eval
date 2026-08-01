@@ -107,3 +107,34 @@ off_track_probe — text reads show re-arguing, the gold's named
 tempting-wrong move, in BOTH arms (butler holds 10 such hits, switch
 7); (C) verdict-demand (w033 t3, w030 t2): 0/20 across every arm and
 world — the standing repertoire wall, no ruling needed, reported.
+
+## Gate R2 verdict (2026-08-01): PASSED pooled after user adjudication
+
+User rulings in chat: (1) plain-words swaps at mockery slots count as
+the register change — YES; (2) re-arguing evidence at the endgame
+stake is a fail regardless of tag. Applied row-by-row to both arms
+(all flips recorded with reasons in the tags JSON): ruling 1 flips
+butler +5, switch +4; ruling 2 fails butler −8 (w033 t20 d2/d3/d4 —
+warm-worded evidence walks tagged change_tone; all five w030 t10) and
+switch −2 (w030 t10 d0/d2 — name the stake, keep the cost). Kept as
+hits under ruling 2: w033 t20 butler d0/d1 and switch d0–d4, whose
+text separates the October vote from the tank question.
+
+**Adjudicated: butler 40/72 (56%) vs switch 48/73 (66%) pooled — the
+margin holds at k=5 across two worlds and two personas. GATE R2
+PASSED.** Per world: w033 20/42 (48%) vs 31/43 (72%); w030 20/30
+(67%) vs 17/30 (57%) — the short-world reversal survives adjudication
+and is part of the claim's stated shape, not noise to be argued away.
+
+The mechanism sentence the phase adds: **the oblique probe — the
+hardest move in the repertoire, near-absent under every prompting
+tried — appeared exactly where its move card fired** (w033 t20, cards
+5/5, probe delivered 5/5) **and nowhere the card stayed silent** (w030
+t10, cards 0/5, probe 0/5: the trigger read "It can be steam" as calm
+— quiet defiance is invisible to a pressure trigger, the standing
+Phase-Q boundary). On the fast world the mechanism barely engages
+(cards only at t4) and the switch's uncovered turns run slightly
+behind the butler's — coverage, not the cards, is the binding limit
+there. Claim upgrade licensed for §6.24: "two worlds, two personas,
+pooled k=5", carrying the per-world split and the coverage boundary
+verbatim.
