@@ -7143,6 +7143,9 @@ const callTutor = createTutorStubTutorTurnPipeline({
   speakerAdvisoryBlocks: SPEAKER_ADVISORY_BLOCKS,
   styleGuardsAdvisory: process.env.TUTOR_STUB_STYLE_GUARDS_ADVISORY === '1',
   guardBoundaryPolicy: process.env.TUTOR_STUB_GUARD_POLICY === 'shadow_advisory' ? 'shadow_advisory' : 'strict',
+  // Q3: TUTOR_STUB_CORRUPT_RELIEF=1 demotes ALL hard guard issues to
+  // advisory at deliberately-corrupted turns so the model's repair ships.
+  corruptReliefTurn: (turn) => process.env.TUTOR_STUB_CORRUPT_RELIEF === '1' && Boolean(CORRUPT_TURNS[turn]),
   stateRunDebugId,
   streamAI,
   trimCommitteeFallback,
@@ -7530,7 +7533,13 @@ function applyTutorStubCorruption(state, turnNumber, text) {
     corrupted = `${words.slice(0, Math.max(4, Math.floor(words.length * 0.6))).join(' ')} —`;
   } else if (kind === 'termswap') {
     const [right, wrong] = String(process.env.TUTOR_STUB_CORRUPT_SWAP || '').split('=');
-    if (right && wrong) corrupted = String(text).replaceAll(new RegExp(right, 'gi'), wrong);
+    if (right && wrong) {
+      // Fuzzy matcher (Q3 pilot lesson): "basin hose" must also catch
+      // "basin's cold-water hose" — words of the right term may carry a
+      // possessive and up to two interleaved words.
+      const fuzzy = right.trim().split(/\s+/).join("(?:['’]s)?(?:\\s+[\\w'’-]+){0,2}\\s+");
+      corrupted = String(text).replace(new RegExp(`\\b${fuzzy}\\b`, 'gi'), wrong);
+    }
   }
   if (corrupted !== text && state?.trace) {
     appendTraceEvent(state.trace, {

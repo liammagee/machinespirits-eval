@@ -1102,10 +1102,35 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
         boundaryPolicy: guardBoundaryPolicy,
         terminalFallback,
       });
+      // Q3 corrupt relief: at a deliberately-corrupted learner turn the
+      // experiment needs the MODEL's repair, not the composer's template —
+      // so every remaining hard issue is demoted to advisory for this one
+      // turn. Issues (including leaks) stay fully traced, just not blocked.
+      const corruptRelief =
+        !deliveryDecision.ok &&
+        typeof dependencies.corruptReliefTurn === 'function' &&
+        dependencies.corruptReliefTurn(tutorTurn);
+      if (corruptRelief) {
+        appendTraceEvent(trace, {
+          type: 'tutor_corrupt_relief',
+          role,
+          turn: tutorTurn,
+          attempt,
+          demotedHardIssues: deliveryDecision.hardIssues || [],
+        });
+      }
       const result = {
         ...audits,
-        deliveryOk: deliveryDecision.ok,
-        deliveryDecision,
+        deliveryOk: corruptRelief ? true : deliveryDecision.ok,
+        deliveryDecision: corruptRelief
+          ? {
+              ...deliveryDecision,
+              ok: true,
+              corruptRelief: true,
+              advisoryIssues: [...(deliveryDecision.advisoryIssues || []), ...(deliveryDecision.hardIssues || [])],
+              hardIssues: [],
+            }
+          : deliveryDecision,
       };
       if (deliveryDecision.ok && deliveryDecision.advisoryIssues.length) {
         appendTraceEvent(trace, {

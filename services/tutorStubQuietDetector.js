@@ -21,7 +21,14 @@
  * every detect record.
  */
 
-export const TUTOR_STUB_QUIET_DETECTOR_VERSION = 'qd-v0';
+export const TUTOR_STUB_QUIET_DETECTOR_VERSION = 'qd-v1';
+
+// qd-v1 (Q3 pilot lesson): a fourth type, `broken` — the turn is
+// structurally incomplete (trails off mid-clause) rather than lexically
+// confused. The lexical patterns hear acted confusion; this hears the
+// text itself failing. Checked first: a broken turn may contain anything.
+const BROKEN_TRAIL = /(—|–|-|\.\.\.|…)\s*$/;
+const BROKEN_FINAL_FUNCTION_WORD = /\b(and|but|so|then|what|which|the|a|an|to|of|with|would|actually|show|where)\s*$/i;
 
 const CONFUSED_PATTERNS = [
   /\bcan'?t tell\b/i,
@@ -86,6 +93,13 @@ export function detectTutorStubQuietState(state, text, { pressure = null } = {})
   const pressured = pressure && pressure !== 'neutral' && pressure !== 'concession' && pressure !== 'none';
   if (pressured) return { type: null, features };
 
+  const trimmed = s.trim();
+  if (
+    trimmed &&
+    (BROKEN_TRAIL.test(trimmed) || (!/[.!?"'”’]$/.test(trimmed) && BROKEN_FINAL_FUNCTION_WORD.test(trimmed)))
+  ) {
+    return { type: 'broken', features };
+  }
   if (CONFUSED_PATTERNS.some((p) => p.test(s))) return { type: 'confused', features };
   if (QUIET_DEFIANCE_PATTERNS.some((p) => p.test(s)) && !features.hasQuestion) {
     return { type: 'quiet_defiance', features };
@@ -116,6 +130,10 @@ const QUIET_STATE_CARDS = Object.freeze({
   flat: [
     '[This turn — she has gone flat]',
     'Short replies, no questions. Do not advance the material. Make one short move off the main line — an adjacent, concrete question with a hook back to the thread — and let her answer set the pace. Keep it brief.',
+  ],
+  broken: [
+    '[This turn — her last message arrived incomplete]',
+    'Her words cut off mid-thought. Do not guess the rest and do not answer what you imagine she meant. Say back the fragment you actually have, then ask her to finish the thought in her own words. Nothing new until she does.',
   ],
 });
 
