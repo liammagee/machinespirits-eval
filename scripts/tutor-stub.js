@@ -7506,6 +7506,44 @@ function stressPlantForLearnerTurn(state, turnNumber, { recordTrace = true } = {
   return plant;
 }
 
+// Phase Q3 (TUTOR_STUB_CORRUPT="<turn>:<kind>,..."): deterministic
+// post-generation corruption of the learner's reply — the corrupted text
+// becomes her turn everywhere (history, trace, the tutor's view), so she
+// must live with it. Kinds: `truncate` (cut mid-sentence at ~60% of words),
+// `termswap` (TUTOR_STUB_CORRUPT_SWAP="right term=wrong term"). Confusion
+// by construction, not by acting — isolates the repair question.
+const CORRUPT_TURNS = Object.fromEntries(
+  (process.env.TUTOR_STUB_CORRUPT || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => s.split(':'))
+    .map(([t, kind]) => [Number(t), kind]),
+);
+
+function applyTutorStubCorruption(state, turnNumber, text) {
+  const kind = CORRUPT_TURNS[turnNumber];
+  if (!kind) return text;
+  let corrupted = text;
+  if (kind === 'truncate') {
+    const words = String(text).split(/\s+/);
+    corrupted = `${words.slice(0, Math.max(4, Math.floor(words.length * 0.6))).join(' ')} —`;
+  } else if (kind === 'termswap') {
+    const [right, wrong] = String(process.env.TUTOR_STUB_CORRUPT_SWAP || '').split('=');
+    if (right && wrong) corrupted = String(text).replaceAll(new RegExp(right, 'gi'), wrong);
+  }
+  if (corrupted !== text && state?.trace) {
+    appendTraceEvent(state.trace, {
+      type: 'learner_corruption',
+      turn: turnNumber,
+      kind,
+      beforeChars: text.length,
+      afterChars: corrupted.length,
+    });
+  }
+  return corrupted;
+}
+
 function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback = '' }) {
   const hasTutorMessage = Boolean(latestTutorMessage(state));
   return [
@@ -7584,7 +7622,7 @@ async function generateAutomatedLearnerTurn({
   }
   return {
     ...raw,
-    text: cleanAutomatedLearnerReply(raw.text),
+    text: applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(raw.text)),
     promptSnapshot: {
       systemPrompt,
       userPrompt: prompt,
