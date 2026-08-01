@@ -30,7 +30,10 @@
       "mcp__Claude_Browser__get_page_text",
       "mcp__ccd_session_mgmt__list_sessions",
       "Bash(node scripts/summarize-tutor-stub-run.js *)",
-      "Bash(node scripts/review-stress-bench.js *)"
+      "Bash(node scripts/review-stress-bench.js *)",
+      "Bash(node *)",
+      "Bash(python3 *)",
+      "Bash(bash /private/tmp/claude-502/*)"
     ],
     "deny": [
       "mcp__evaluations-db__write_query",
