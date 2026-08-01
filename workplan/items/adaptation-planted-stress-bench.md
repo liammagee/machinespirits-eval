@@ -130,6 +130,19 @@ guard relief lets it deliver, prompting alone does neither. A five-model
 sweep (haiku, opus, fable; codex luna, sol) is running to separate family
 from model specificity.
 
+## The closing comparison (2026-08-01): the original question, on the new ruler
+
+The arc's opening question — what does the classical instrumentation buy
+against the bare tutor — rerun as the bench's final cells (stage-6, k=3,
+same frozen-pacing shadow configuration; sol-tagged raw, no adjudication):
+true bare (blocks none) 6/24 right-repairs at planted moments, 1
+capitulation; the FULL six-block stack 6/28, 2 capitulations, longer
+dialogues; the default trio (the Gate-5 baseline) 8/24 raw – 10/24
+adjudicated; v3 move cards 15/29. All arms closed 3/3. The §6.23 frozen-
+replay verdict replicates on live dialogues with adjudicated gold: the
+knowledge-shaped blocks are indistinguishable from nothing on repair
+delivery, and the timing-shaped mechanism nearly doubles it.
+
 ## What this line must not claim
 
 Simulated learner throughout; detection-and-repair is a property of the
