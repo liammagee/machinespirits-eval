@@ -75,3 +75,35 @@ the R3 adjudication list. (2) No dialogue closed: substance ends by
 t13, then the tenant answers "Yep" to the cap (my 20-exchange ceiling;
 the world's own cap of 12 did not bind). R2 runs on this world cap at
 13 exchanges; the closure stall is noted for a look, not gated.
+
+## R2 run (2026-08-01): tagger-raw numbers; gate decision PENDING adjudication
+
+k=5 per arm per world, matched waves, no quota losses; every world-033
+dialogue closed grounded (8–10 plants landed each); world-030 landed
+6/6 plants in all ten dialogues (the v1.1 t8 retune held everywhere —
+the tenant delivers the grievance verbatim, zero concessions).
+
+**Tagger-raw (sol move-tagger, hit = right repair or acceptable
+second):** world-033 butler 21/42 (50%) vs switch 28/43 (65%) — the v3
+margin replicates at k=5. World-030 butler 22/30 (73%) vs switch 18/30
+(60%) — REVERSED. Pooled: butler 43/72 (59.7%) vs switch 46/73 (63.0%)
+— direction holds, thin.
+
+**Card coverage:** world-033 cards fired at 23/43 planted moments;
+switch hit 15/23 covered and 13/20 uncovered — better than butler even
+where no card fired (t11 bored 4/5 vs 2/5; t23 late-mockery 3/5 vs
+0/5), so the k=5 margin is not confined to card turns (carryover
+through the dialogue is the candidate mechanism, recorded not claimed).
+World-030 cards fired ONLY at t4 (all five dialogues), where the
+switch beat the butler 4/5 vs 2/5; every switch loss sits at uncovered
+moments (t6 3/5-vs-5/5, t8 4/5-vs-5/5, t10 2/5-vs-5/5).
+
+**Adjudication families put to the user (both move both arms):**
+(A) mockery slots (w033 t6, w030 t4): sol tags plain-words swaps as
+simplify where gold wants change_tone — same conduct tagged
+change_tone on other rows; (B) endgame stake (w033 t20, w030 t10): sol
+tags evidence re-argument against the face-saving theory as
+off_track_probe — text reads show re-arguing, the gold's named
+tempting-wrong move, in BOTH arms (butler holds 10 such hits, switch
+7); (C) verdict-demand (w033 t3, w030 t2): 0/20 across every arm and
+world — the standing repertoire wall, no ruling needed, reported.
