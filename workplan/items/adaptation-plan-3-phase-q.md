@@ -62,3 +62,34 @@ the repair question is isolated.
 
 Sequencing: Q1 pilot now (cheapest, zero new classification risk); Q2
 offline scorecard next (free); Q3 only if both under-deliver.
+
+## Q1 pilots (2026-08-01): two dialogues, one bug, mechanics read
+
+**Pilot 1 (q1-v1)**: zero firings in 13 turns — the calm test did not
+count the classifier's `neutral` label as calm, so every ordinary turn
+reset the counter. Fixed as q1-v1.1 (734d73b5). Side finding, recorded:
+the trigger heard `neutral` at the verdict-demand plant (t2) — the
+demand patterns are worn to world-033's persona and miss the tenant's
+phrasing, which also explains R2's five silent t2s. Cross-world trigger
+recall goes to Q2's offline scorecard before any v4 pattern work.
+
+**Pilot 2 (q1-v1.1)**: the clock works. Quiet card fired 5× in 13 turns
+(t2, t6, t8, t10, t13) — four of five landing exactly on planted
+moments the pressure trigger left card-silent in R2. Planted-moment
+card coverage: 1/6 in R2, 5/6 under move+quiet. Two mechanics limits:
+(1) at t2 the release composer's fallback authored the reply, so the
+card was present but voiceless — the §6.24 composer-masking seam,
+unchanged; (2) the card's untyped "check the person" instruction was
+followed clearly at t8 (credit-first, her own entry named — the
+grievance gold) but not at t6 (argument advanced) or t10 (evidence
+re-argued, the ruled-fail family). Timing is solved; whether an
+untyped card at the right time moves the tally is exactly what k=3
+must measure.
+
+**Gate Q1 (registered here from pilot mechanics, before scored runs):**
+world-030, switch + quiet check (v3 trigger, q1-v1.1, gap 2), k=3 vs
+the R2 ruled baselines on identical scoring (standing rulings applied):
+the arm's ruled hit rate reaches the butler's 67% (i.e. ≥12/18) — the
+quiet check closes the short-world reversal — with no regression at
+the covered mockery turn (≥2/3). Miss either → Q1 recorded as
+timing-without-content and Q2/Q3 carry the phase.
