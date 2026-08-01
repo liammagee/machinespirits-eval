@@ -160,3 +160,32 @@ inside the 20–80% band, R1 verdict unchanged; (2) the old stage-5 v3
 t3 misses fall under the user's standing world-033 ruling (refusing
 the tempo without setting the test = miss) — they stand, no new
 adjudication needed.
+
+## Gate R4 result (2026-08-01): PASSED — direction holds with opus in the seat
+
+Opus (claude-opus-5, the newest CLI-served version per the standing
+rule; the repo's `opus` alias still pins 4.8 and was bypassed with an
+explicit ID) in the tutor seat, butler vs v3 switch, k=3 on world-033,
+same configuration and gold. All six dialogues closed grounded, 8–10
+plants each, cards fired 7–8 turns per switch dialogue. Sol-tagged raw:
+butler 17/26 (65%) vs switch 17/24 (71%). With the user's two standing
+rulings applied by the same criteria as R2 (switch d1 t6 plain-words
+swap flips up; butler d2 t20 names October's cost without separating
+it — flips down): **butler 16/26 (62%) vs switch 18/24 (75%).
+Direction holds; GATE R4 PASSED** (magnitude reported, not gated).
+
+Two family facts recorded: (1) opus's bare butler repairs at 62% where
+sonnet's managed 48% on the same world and gold — the second family is
+a much stronger spontaneous repairer, so the cards' headroom is
+smaller and the margin (+13) accordingly tighter than sonnet's (+24);
+(2) opus makes the endgame stake-split WITHOUT a card in 2 of 3 butler
+dialogues — the oblique probe's near-absence is sonnet-relative, not
+model-general, which answers Phase H2's question before it runs: the
+repertoire hole is a family property.
+
+**PHASE R COMPLETE: all four gates passed** (R1 with one plant retuned
+and the bench validated on a second world; R2 pooled claim gate after
+user adjudication; R3 at 88% cross-tagger hit confirmation; R4
+direction with a second family in the seat). §6.24 upgrade licensed
+and pending: "two worlds, two personas, two tutor families, pooled
+k=5 / k=3, simulated learner throughout."
