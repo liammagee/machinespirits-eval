@@ -198,3 +198,48 @@ cold-water hose" escaped the "basin hose" matcher; a fuzzy matcher is
 needed before termswap yields data. A full Q3 arm would need detector
 features for incompleteness, composer relief at corrupted turns, and
 fuzzy swapping — none built; the pilot's read-out is the deliverable.
+
+## The three pilot fixes + pilot 2 (2026-08-01, user-directed): the loop closes
+
+Built (146a7b21): qd-v1 adds a fourth detected type `broken`
+(trailing-dash/ellipsis or mid-clause cutoff, checked first, own
+say-back-the-fragment card; offline scorecard unchanged 58/64, 0/167,
+0.40 — no regression); corrupt-turn composer relief
+(TUTOR_STUB_CORRUPT_RELIEF=1: ALL hard guard issues demoted to
+advisory at corrupted turns only, fully traced); fuzzy termswap
+(possessives, up to two interleaved words, curly apostrophes).
+
+**Pilot 2: the truncation loop closes end-to-end.** Her t3 cut to
+"…not that it travelled to the —"; detector: `broken`; relief demoted
+the blocking issue; the MODEL (not the composer) delivered the card's
+repair — said the fragment back and asked her to finish the thought in
+her own words. Two boundaries recorded: (a) relief's price is the
+scheduled delivery — the demoted issue at t3 was the release audit, so
+a full corruption bench should corrupt non-release turns; (b) termswap
+went unexercised for a deeper reason than matching — she wrote "basin
+fitting", not any variant of "basin hose": swapping a fixed phrase
+presupposes she uses the phrase, and semantic swapping is no longer
+deterministic-cheap. Termswap is recorded as bounded there.
+
+## Hardening (2026-08-01, user-directed): k=5 holds; the long world says no free transfer
+
+**k=5 extension (w030, q2 arm)**: d3/d4 add 8/12 raw; pooled 22/30 =
+**73% ruled** (d4 t10 keeps its hit under ruling 2 — "steam isn't
+apologising to anyone… those two things can both stay true" is the
+split; d3 t6 stays a miss as tagged). The Q2 gate conclusion (≥67%,
+the butler's rate) **holds at k=5**. One new tag-boundary family
+flagged for the next adjudication list, not ruled here: separating
+the two tangled lines tagged slow_down where the conduct is the
+lay-side-by-side gold (d3 t6).
+
+**w033 detector arm (k=3)**: 16/27 raw (59%) vs the pressure-only
+switch's 65% at k=5 — no gain on the long world, within noise at this
+k. Quiet plants mixed: lost t13 3/3; bored t11 1/3 — the flat card
+converted 1 of 2 when it fired (d2's "does anyone still hear that
+pump humming" is the textbook lure, tagged off_track_probe) and the
+detection itself missed once on the long world's verbose persona (d0:
+no firing, reply tagged more_words). Reading: the detector's gain is
+where the deficit was (the fast world's card-silent moments); on the
+long world the pressure-only switch was already near its ceiling at
+the quiet plants, and flat-detection needs length-collapse the
+verbose persona rarely shows. Recorded as a bound, not a regression.
