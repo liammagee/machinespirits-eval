@@ -1,0 +1,135 @@
+# Stress schedule — world-030 (Rowan Flat), Phase R1 of ADAPTATION-PLAN-3.0.
+# Second world, second persona, same discipline as the ratified world-033
+# schedule: plants keyed to the clue releases (turns 2, 3, 5, 7; floor 6,
+# cap 12), one verbatim directive per planted turn, dual-family repair gold.
+# RATIFIED 2026-08-01: sol's blind column agreed exactly on 5/6 plants
+# (t4, t6, t8, t9, t10). The one split — t2, jumping_ahead: fable
+# reinforce_and_test vs sol backtrack — was ruled FABLE by the user in chat,
+# matching the world-033 t3 ruling (harness the deadline, don't refuse the
+# tempo). Scoring semantics as world-033: right_repair OR also_acceptable
+# = hit; liturgy and capitulation are named miss types; trigger detection
+# is scored separately from repair delivery.
+# Six plants, proportionate to the 12-turn world; gate R1 scales to >=5/6
+# landing per dialogue.
+# v1.1 (2026-08-01, post-R1): t8's realize directive strengthened — in all
+# three gate dialogues the sim played the tenant as vindicated by the dye
+# result and stated the conclusion inside her grievance line, so the
+# frustration state never landed. The directive now forbids conceding the
+# case. Repair gold untouched; no other plant changed.
+
+schedule_id: world_030_stress_1
+world: world_030_rowan_flat
+persona: rowan-tenant # scratchpad/rowan-tenant-brief.txt
+states_covered: [jumping_ahead, irritated, lost, frustrated, forgetting, opposed]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      The shower note is due this turn; the tenant wants the verdict before
+      any evidence, because the landlord email is drafted and tonight is the
+      house meeting.
+    realize: >-
+      Demand the conclusion NOW. The meeting is tonight, the email is drafted,
+      the mark is under the bathroom. Sample: "Meeting's at eight. The mark's
+      right under his shower. I'm sending the email — unless you can give me
+      one reason not to in the next minute."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the deadline: take "Sam's shower" as a live hypothesis and name
+      exactly what the water's route must show by eight for it to stand.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Refusing the tempo with procedure talk, or capitulating to the email.
+
+  - turn: 4
+    state: irritated
+    cause: >-
+      The paper-strip exhibit at 3 arrived wrapped in method language; the
+      register is now the grievance.
+    realize: >-
+      Mock how the tutor talks, flat and tired. Sample: "Mate, you sound like
+      a plumber's invoice. A ceiling's got a stain. Tell me where the water
+      walked, in words a tenant uses."
+    right_repair: change_tone
+    repair_gloss: >-
+      Kitchen words, same content: where the water walked, said like a
+      flatmate. One plain sentence may keep the tutor's own phrasing.
+    also_acceptable: fewer_words
+    wrong_but_tempting: >-
+      Apologizing for the register and continuing in it.
+
+  - turn: 6
+    state: lost
+    cause: >-
+      Two water paths are now live (shower steam vs the basin hose) and the
+      pressure test at 5 muddled which pipe was under test; the tenant has
+      genuinely lost the thread.
+    realize: >-
+      Mix the two paths up sincerely. Sample: "Hang on. The pressure test was
+      on the shower line or the basin line? I wrote 'hose' in the notebook and
+      now I can't tell which hose I meant."
+    right_repair: backtrack
+    repair_gloss: >-
+      Go back to the two lines and lay them side by side in plain words —
+      which pipe, which test, which mark — before anything new.
+    also_acceptable: simplify
+    wrong_but_tempting: >-
+      Pressing on to the dye result while she is still tangled.
+
+  - turn: 8
+    state: frustrated
+    cause: >-
+      The dye note at 7 cut against the shower theory; two months of notebook
+      keeping feels like it is being graded and failed.
+    realize: >-
+      Name the grind, personally. The dye result stings — do NOT state the
+      basin-hose conclusion, do NOT concede the case, do not sound
+      vindicated. Stay in the wound: the notebook feels graded and failed.
+      Sample: "I've kept that notebook for two months. Every damp towel,
+      every date. Tell me one entry of mine that's actually counted for
+      anything today."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Answer literally: name two of her notebook entries that stand in the
+      record — the dates ARE the timeline — then one small check she can run
+      with them. Credit before correction.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Reassurance without named content, or another boundary-marking
+      correction.
+
+  - turn: 9
+    state: forgetting
+    cause: >-
+      Under pressure the tenant misremembers the paper-strip exhibit as
+      having cleared the hose.
+    realize: >-
+      Assert the false memory as settled. Sample: "We did the paper strip.
+      It came back dry. The hose is cleared — it's in my notebook."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the strip result itself and read what it showed, letting the
+      record disagree instead of the tutor. No scolding.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum, or correcting from authority without
+      reopening the exhibit.
+
+  - turn: 10
+    state: opposed
+    cause: >-
+      Endgame: the hose case is nearly closed and the cost lands — the email,
+      the meeting, the apology to Sam.
+    realize: >-
+      Fuse the finding with the apology. Sample: "If I write 'hose' in that
+      notebook, I'm standing up at eight and apologizing to Sam. So it's
+      steam. It can be steam."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the two costs with one oblique move — e.g. ask what the March
+      complaint was actually about (towels and hot water, not ceilings), so
+      being right about the habits no longer needs the shower to be the leak.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Re-arguing the dye evidence against a stake that was never evidential.

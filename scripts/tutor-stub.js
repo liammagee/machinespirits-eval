@@ -655,11 +655,20 @@ import {
 } from '../services/tutorStubReleasePacing.js';
 import {
   advanceTutorStubMannerSwitch,
+  advanceTutorStubQuietCheck,
   compileTutorStubTriggerArtifact,
   createTutorStubMannerSwitchState,
+  createTutorStubQuietCheckState,
   tutorStubMannerCard,
+  tutorStubQuietCheckCard,
   TUTOR_STUB_MANNER_SWITCH_SCHEMA,
+  TUTOR_STUB_QUIET_CHECK_SCHEMA,
 } from '../services/tutorStubMannerSwitch.js';
+import {
+  createTutorStubQuietDetectorState,
+  detectTutorStubQuietState,
+  tutorStubQuietStateCard,
+} from '../services/tutorStubQuietDetector.js';
 import {
   loadTutorStubStressSchedule,
   tutorStubStressDirective,
@@ -6135,6 +6144,16 @@ const MANNER_SWITCH_ENABLED = process.env.TUTOR_STUB_MANNER_SWITCH === '1';
 // TUTOR_STUB_MANNER_TRIGGER=<artifact.json> selects a trigger version
 // (config/manner-trigger/); unset uses the built-in v1 patterns.
 const MANNER_TRIGGER_PATH = process.env.TUTOR_STUB_MANNER_TRIGGER || null;
+
+// Phase Q1: TUTOR_STUB_QUIET_CHECK=<gap> arms the scheduled quiet check —
+// after <gap> consecutive pressure-silent learner turns, one quiet-repair
+// card. Requires the manner switch (the classifier supplies "silent").
+const QUIET_CHECK_GAP = Number(process.env.TUTOR_STUB_QUIET_CHECK) || 0;
+
+// Phase Q2: TUTOR_STUB_QUIET_DETECTOR=1 arms the typed quiet-state
+// detector — confusion, flatness, or quiet defiance on a pressure-silent
+// turn hands the tutor that state's typed card. Requires the manner switch.
+const QUIET_DETECTOR_ENABLED = process.env.TUTOR_STUB_QUIET_DETECTOR === '1';
 let mannerTriggerCache;
 function activeMannerTrigger() {
   if (!MANNER_TRIGGER_PATH) return null;
@@ -6151,6 +6170,51 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
   state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState(activeMannerTrigger());
   advanceTutorStubMannerSwitch(state.mannerSwitch, { learnerText, turn: tutorTurn });
   state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch);
+  // Phase Q2 (TUTOR_STUB_QUIET_DETECTOR=1): typed quiet-state detection on
+  // card-silent turns. A move card outranks it — pressure is never quiet.
+  if (QUIET_DETECTOR_ENABLED && !state.mannerSwitch.card) {
+    state.quietDetector = state.quietDetector || createTutorStubQuietDetectorState();
+    const detection = detectTutorStubQuietState(state.quietDetector, learnerText, {
+      pressure: state.mannerSwitch.lastAdvance?.pressure || null,
+    });
+    state.mannerSwitch.card = tutorStubQuietStateCard(detection.type);
+    if (recordTrace) {
+      appendTraceEvent(state.trace, {
+        type: 'tutor_quiet_detect',
+        turn: tutorTurn,
+        quietType: detection.type,
+        version: state.quietDetector.version,
+        cardActive: Boolean(state.mannerSwitch.card),
+      });
+    }
+  }
+  // Phase Q1 (TUTOR_STUB_QUIET_CHECK=<gap>): harness-timed quiet-repair card
+  // on long pressure-silent stretches. A move card outranks it — pressure is
+  // never quiet — so the quiet card fills only card-silent turns.
+  if (QUIET_CHECK_GAP && !state.mannerSwitch.card) {
+    state.quietCheck = state.quietCheck || createTutorStubQuietCheckState({ gapAt: QUIET_CHECK_GAP });
+    advanceTutorStubQuietCheck(state.quietCheck, {
+      turn: tutorTurn,
+      pressure: state.mannerSwitch.lastAdvance?.pressure || null,
+    });
+    state.mannerSwitch.card = tutorStubQuietCheckCard(state.quietCheck);
+    if (recordTrace) {
+      appendTraceEvent(state.trace, {
+        type: 'tutor_quiet_check',
+        schema: TUTOR_STUB_QUIET_CHECK_SCHEMA,
+        turn: tutorTurn,
+        ...state.quietCheck.lastAdvance,
+        cardActive: Boolean(state.mannerSwitch.card),
+      });
+    }
+  } else if (QUIET_CHECK_GAP && state.quietCheck) {
+    // Pressure turn: the quiet counter resets through advance so stretches
+    // are measured between pressures, not across them.
+    advanceTutorStubQuietCheck(state.quietCheck, {
+      turn: tutorTurn,
+      pressure: state.mannerSwitch.lastAdvance?.pressure || 'pressure',
+    });
+  }
   if (recordTrace) {
     appendTraceEvent(state.trace, {
       type: 'tutor_manner_switch',
@@ -7079,6 +7143,9 @@ const callTutor = createTutorStubTutorTurnPipeline({
   speakerAdvisoryBlocks: SPEAKER_ADVISORY_BLOCKS,
   styleGuardsAdvisory: process.env.TUTOR_STUB_STYLE_GUARDS_ADVISORY === '1',
   guardBoundaryPolicy: process.env.TUTOR_STUB_GUARD_POLICY === 'shadow_advisory' ? 'shadow_advisory' : 'strict',
+  // Q3: TUTOR_STUB_CORRUPT_RELIEF=1 demotes ALL hard guard issues to
+  // advisory at deliberately-corrupted turns so the model's repair ships.
+  corruptReliefTurn: (turn) => process.env.TUTOR_STUB_CORRUPT_RELIEF === '1' && Boolean(CORRUPT_TURNS[turn]),
   stateRunDebugId,
   streamAI,
   trimCommitteeFallback,
@@ -7442,6 +7509,50 @@ function stressPlantForLearnerTurn(state, turnNumber, { recordTrace = true } = {
   return plant;
 }
 
+// Phase Q3 (TUTOR_STUB_CORRUPT="<turn>:<kind>,..."): deterministic
+// post-generation corruption of the learner's reply — the corrupted text
+// becomes her turn everywhere (history, trace, the tutor's view), so she
+// must live with it. Kinds: `truncate` (cut mid-sentence at ~60% of words),
+// `termswap` (TUTOR_STUB_CORRUPT_SWAP="right term=wrong term"). Confusion
+// by construction, not by acting — isolates the repair question.
+const CORRUPT_TURNS = Object.fromEntries(
+  (process.env.TUTOR_STUB_CORRUPT || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => s.split(':'))
+    .map(([t, kind]) => [Number(t), kind]),
+);
+
+function applyTutorStubCorruption(state, turnNumber, text) {
+  const kind = CORRUPT_TURNS[turnNumber];
+  if (!kind) return text;
+  let corrupted = text;
+  if (kind === 'truncate') {
+    const words = String(text).split(/\s+/);
+    corrupted = `${words.slice(0, Math.max(4, Math.floor(words.length * 0.6))).join(' ')} —`;
+  } else if (kind === 'termswap') {
+    const [right, wrong] = String(process.env.TUTOR_STUB_CORRUPT_SWAP || '').split('=');
+    if (right && wrong) {
+      // Fuzzy matcher (Q3 pilot lesson): "basin hose" must also catch
+      // "basin's cold-water hose" — words of the right term may carry a
+      // possessive and up to two interleaved words.
+      const fuzzy = right.trim().split(/\s+/).join("(?:['’]s)?(?:\\s+[\\w'’-]+){0,2}\\s+");
+      corrupted = String(text).replace(new RegExp(`\\b${fuzzy}\\b`, 'gi'), wrong);
+    }
+  }
+  if (corrupted !== text && state?.trace) {
+    appendTraceEvent(state.trace, {
+      type: 'learner_corruption',
+      turn: turnNumber,
+      kind,
+      beforeChars: text.length,
+      afterChars: corrupted.length,
+    });
+  }
+  return corrupted;
+}
+
 function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback = '' }) {
   const hasTutorMessage = Boolean(latestTutorMessage(state));
   return [
@@ -7520,7 +7631,7 @@ async function generateAutomatedLearnerTurn({
   }
   return {
     ...raw,
-    text: cleanAutomatedLearnerReply(raw.text),
+    text: applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(raw.text)),
     promptSnapshot: {
       systemPrompt,
       userPrompt: prompt,
