@@ -665,6 +665,11 @@ import {
   TUTOR_STUB_QUIET_CHECK_SCHEMA,
 } from '../services/tutorStubMannerSwitch.js';
 import {
+  createTutorStubQuietDetectorState,
+  detectTutorStubQuietState,
+  tutorStubQuietStateCard,
+} from '../services/tutorStubQuietDetector.js';
+import {
   loadTutorStubStressSchedule,
   tutorStubStressDirective,
   tutorStubStressPlantForTurn,
@@ -6144,6 +6149,11 @@ const MANNER_TRIGGER_PATH = process.env.TUTOR_STUB_MANNER_TRIGGER || null;
 // after <gap> consecutive pressure-silent learner turns, one quiet-repair
 // card. Requires the manner switch (the classifier supplies "silent").
 const QUIET_CHECK_GAP = Number(process.env.TUTOR_STUB_QUIET_CHECK) || 0;
+
+// Phase Q2: TUTOR_STUB_QUIET_DETECTOR=1 arms the typed quiet-state
+// detector — confusion, flatness, or quiet defiance on a pressure-silent
+// turn hands the tutor that state's typed card. Requires the manner switch.
+const QUIET_DETECTOR_ENABLED = process.env.TUTOR_STUB_QUIET_DETECTOR === '1';
 let mannerTriggerCache;
 function activeMannerTrigger() {
   if (!MANNER_TRIGGER_PATH) return null;
@@ -6160,6 +6170,24 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
   state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState(activeMannerTrigger());
   advanceTutorStubMannerSwitch(state.mannerSwitch, { learnerText, turn: tutorTurn });
   state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch);
+  // Phase Q2 (TUTOR_STUB_QUIET_DETECTOR=1): typed quiet-state detection on
+  // card-silent turns. A move card outranks it — pressure is never quiet.
+  if (QUIET_DETECTOR_ENABLED && !state.mannerSwitch.card) {
+    state.quietDetector = state.quietDetector || createTutorStubQuietDetectorState();
+    const detection = detectTutorStubQuietState(state.quietDetector, learnerText, {
+      pressure: state.mannerSwitch.lastAdvance?.pressure || null,
+    });
+    state.mannerSwitch.card = tutorStubQuietStateCard(detection.type);
+    if (recordTrace) {
+      appendTraceEvent(state.trace, {
+        type: 'tutor_quiet_detect',
+        turn: tutorTurn,
+        quietType: detection.type,
+        version: state.quietDetector.version,
+        cardActive: Boolean(state.mannerSwitch.card),
+      });
+    }
+  }
   // Phase Q1 (TUTOR_STUB_QUIET_CHECK=<gap>): harness-timed quiet-repair card
   // on long pressure-silent stretches. A move card outranks it — pressure is
   // never quiet — so the quiet card fills only card-silent turns.

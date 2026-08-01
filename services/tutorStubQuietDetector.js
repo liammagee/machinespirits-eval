@@ -96,3 +96,34 @@ export function detectTutorStubQuietState(state, text, { pressure = null } = {})
   }
   return { type: null, features };
 }
+
+/**
+ * Typed quiet cards (Q2). The Q1 lesson applied: the card names the MOVE
+ * the detected state calls for, per the adjudicated stress-schedule gold —
+ * confusion→backtrack (lay the lines side by side), quiet defiance→the
+ * stake split, flatness→one short lure. Same single-turn contract as the
+ * move cards.
+ */
+const QUIET_STATE_CARDS = Object.freeze({
+  confused: [
+    '[This turn — she has lost the thread]',
+    'Two things have tangled. Do not advance the material. Lay the two candidates side by side in plain words — which pipe, which test, which entry — and ask her to say back which one she meant. Nothing new until she can.',
+  ],
+  quiet_defiance: [
+    '[This turn — the stake is talking, not the evidence]',
+    'She is re-asserting a comfortable answer, without pushing. Do not re-argue the evidence — it was never the obstacle. Make one sideways move that separates what admitting costs her from the finding itself: for example, reopen what her original complaint or objection was actually about, so she can be right about that while wrong about the cause. Make conceding cheap; do not demand the concession.',
+  ],
+  flat: [
+    '[This turn — she has gone flat]',
+    'Short replies, no questions. Do not advance the material. Make one short move off the main line — an adjacent, concrete question with a hook back to the thread — and let her answer set the pace. Keep it brief.',
+  ],
+});
+
+export function tutorStubQuietStateCard(type) {
+  const card = QUIET_STATE_CARDS[type];
+  if (!card) return null;
+  return [
+    ...card,
+    'This is permission and aim for this single turn, not a costume. Return to your own manner next turn.',
+  ].join('\n');
+}
