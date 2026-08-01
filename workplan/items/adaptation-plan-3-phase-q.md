@@ -116,3 +116,28 @@ mechanism datum: a typed card where the trigger fires works; an
 untyped card at the right time does not. What Q2 must add is exactly
 the type — detect WHICH quiet state, then hand the matching typed
 card (confusion→backtrack/simplify; quiet-defiance→the stake split).
+
+## Q2 offline scorecard (2026-08-01): qd-v0 graduates on the recorded bench
+
+Detector built (`services/tutorStubQuietDetector.js`, qd-v0: three
+typed quiet states — confused / flat / quiet_defiance — patterns plus
+length-collapse against the learner's own trailing mean; a
+pressure-classified turn is never quiet, the trigger owns it).
+Scorecard (`scripts/score-quiet-detector.js`) replayed over 64 quiet
+plants, 167 pressure plants, and the 5-dialogue calm set:
+**should-detect 58/64 any-type and 58/64 right-type (every detection
+was the right type); wrong-fires at pressure plants 0/167; calm false
+alarms 0.40/dialogue** (pressure-trigger bar was ≤2).
+
+Overfitting caveat, recorded with the number: qd-v0's patterns are
+drawn from the two schedules' realize texts (e.g. "it can be" quotes
+the world-030 sample line), so recall on THIS bench is inflated by
+construction — the vocabulary layer of the standing ledger. The clean
+parts are the zero pressure-collisions and the calm base rate, which
+patterns cannot inherit from the schedules. Held-out reading requires
+a third world or paraphrased directives (R-style port, later).
+
+Next (paid, on the user's word): Q2 k=3 on world-030 — detector hands
+TYPED quiet cards (confused→lay-the-two-lines-side-by-side;
+quiet_defiance→split-the-stake; flat→one short lure) with the same
+registered gate as Q1: ruled ≥12/18, t4 no regression.
