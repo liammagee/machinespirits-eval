@@ -93,3 +93,26 @@ the arm's ruled hit rate reaches the butler's 67% (i.e. ≥12/18) — the
 quiet check closes the short-world reversal — with no regression at
 the covered mockery turn (≥2/3). Miss either → Q1 recorded as
 timing-without-content and Q2/Q3 carry the phase.
+
+## Gate Q1 result (2026-08-01): FAILED — timing without typing is not enough
+
+k=3 fresh dialogues, sol-tagged, standing rulings applied by the R2
+criteria (d2 t4 plain-words swap flips up; d0 t10 defers the apology
+but re-argues the evidence — the names-the-stake-keeps-the-cost shape
+— flips down): **ruled 10/18 (56%) vs the registered bar 12/18 (67%).
+t4 held 3/3 (no-regression clause met). GATE Q1 FAILS**; per the
+registered fail branch Q1 is recorded as timing-without-content and
+Q2/Q3 carry the phase.
+
+The per-slot split is the finding. Quiet cards reached the deficit
+moments consistently (t2/t6/t8/t10 in two dialogues of three; t2/t6/t9
+in the third). Outcomes divide by whether the moment's gold repair
+coincides with the card's generic "check the person": the grievance
+turn went 3/3 (its gold — credit before test — IS a person-check; the
+pilot's one success generalized), and t9's record-reopening held 3/3;
+but the demand (0/3), the confusion (1/3), and the stake (ruled 0/3)
+need typed moves the untyped card cannot name. Mirror-image of R2's
+mechanism datum: a typed card where the trigger fires works; an
+untyped card at the right time does not. What Q2 must add is exactly
+the type — detect WHICH quiet state, then hand the matching typed
+card (confusion→backtrack/simplify; quiet-defiance→the stake split).
