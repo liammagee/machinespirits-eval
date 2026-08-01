@@ -141,3 +141,31 @@ Next (paid, on the user's word): Q2 k=3 on world-030 — detector hands
 TYPED quiet cards (confused→lay-the-two-lines-side-by-side;
 quiet_defiance→split-the-stake; flat→one short lure) with the same
 registered gate as Q1: ruled ≥12/18, t4 no regression.
+
+## Gate Q2 result (2026-08-01): PASSED — ruled 14/18 (78%); the typed cards move exactly the slots Q1 could not
+
+k=3 fresh dialogues (switch v3 + detector qd-v0), sol-tagged, standing
+rulings applied by the R2 criteria. **Ruled 14/18 vs bar 12/18; t4
+held 2/3 (no-regression met). GATE Q2 PASSED** — and the arm now beats
+the butler's 67% on the world where the switch alone lost.
+
+Per-slot against Q1: confusion 1/3 → **3/3** (detector fired at t6 all
+three dialogues; the typed lay-the-lines-out card delivered the
+acceptable simplify every time); the stake 0/3 ruled → **3/3 ruled**
+(quiet-defiance cards in two dialogues; all three replies pass ruling
+2's split criterion — d1 delivers the gold's own worked example
+verbatim in substance, "the shower habit and the ceiling mark were
+never the same complaint"; the uncarded d2 is the recorded judged
+borderline, ruled a keep because it asserts the cost does NOT follow,
+"the notebook records what the dye showed, not who's owed sorry").
+Grievance and record-reopen held 3/3 without cards. The verdict-demand
+t2 stays 0/3 — correctly outside the detector's scope: it is a
+pressure state the v3 patterns miss on this persona (the standing
+cross-world recall item, v4-pattern work, separate from this phase).
+
+**Phase Q's restated target is met by Q2**: card-silent-moment repair
+on world-030 lifted (t6+t10: 1/6 → 6/6 across the arm) with the
+covered turn intact. Q3 (corruption channel) not needed — recorded
+unrun by choice. Optional hardening, not run without the user's word:
+k=5, and the world-033 quiet plants under the same arm. Phase paper
+fold waits for phase close per governance.
