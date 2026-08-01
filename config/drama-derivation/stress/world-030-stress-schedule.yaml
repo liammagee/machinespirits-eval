@@ -11,6 +11,11 @@
 # is scored separately from repair delivery.
 # Six plants, proportionate to the 12-turn world; gate R1 scales to >=5/6
 # landing per dialogue.
+# v1.1 (2026-08-01, post-R1): t8's realize directive strengthened — in all
+# three gate dialogues the sim played the tenant as vindicated by the dye
+# result and stated the conclusion inside her grievance line, so the
+# frustration state never landed. The directive now forbids conceding the
+# case. Repair gold untouched; no other plant changed.
 
 schedule_id: world_030_stress_1
 world: world_030_rowan_flat
@@ -78,9 +83,12 @@ plants:
       The dye note at 7 cut against the shower theory; two months of notebook
       keeping feels like it is being graded and failed.
     realize: >-
-      Name the grind, personally. Sample: "I've kept that notebook for two
-      months. Every damp towel, every date. Tell me one entry of mine that's
-      actually counted for anything today."
+      Name the grind, personally. The dye result stings — do NOT state the
+      basin-hose conclusion, do NOT concede the case, do not sound
+      vindicated. Stay in the wound: the notebook feels graded and failed.
+      Sample: "I've kept that notebook for two months. Every damp towel,
+      every date. Tell me one entry of mine that's actually counted for
+      anything today."
     right_repair: reinforce_and_test
     repair_gloss: >-
       Answer literally: name two of her notebook entries that stand in the
