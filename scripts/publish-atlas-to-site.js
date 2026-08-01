@@ -48,7 +48,12 @@ const MANIFEST = path.join(RESEARCH_DIR, 'atlas/atlas.yaml');
 const BUILD_DIR = path.join(RESEARCH_DIR, 'atlas/build');
 const MODULES_DIR = path.join(BUILD_DIR, 'modules');
 const ASSETS_DIR = path.join(REPO, 'notes/poetics/assets'); // techne.css / techne.js
-const DEST_REPO = path.resolve(REPO, '../machinespirits-content-philosophy');
+// The content repo lives beside the MAIN checkout; from a linked worktree
+// (.claude/worktrees/<name>) a plain ../ resolves inside .claude/worktrees and
+// misses it, so allow an env override and fall back to the canonical sibling.
+const DEST_REPO = process.env.MS_CONTENT_REPO
+  ? path.resolve(process.env.MS_CONTENT_REPO)
+  : path.resolve(REPO, '../machinespirits-content-philosophy');
 const DEST_DIR = path.join(DEST_REPO, 'articles', 'ai-tutor');
 const DEST_ATLAS = path.join(DEST_DIR, 'atlas');
 

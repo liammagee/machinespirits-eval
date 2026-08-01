@@ -119,7 +119,7 @@ test('the live terminal fallback cannot exhaust delivery on optional actorial an
 
   const decision = decideTutorStubGuardDelivery(rows, { terminalFallback: true });
   assert.equal(decision.ok, true);
-  assert.equal(decision.catalogVersion, 5);
+  assert.equal(decision.catalogVersion, 6);
   assert.deepEqual(decision.hardIssues, []);
   assert.deepEqual(
     decision.advisoryIssues.map((issue) => `${issue.guard}:${issue.type}`),
@@ -355,4 +355,35 @@ test('missing clue delivery is a hard transactional veto and cannot commit relea
   });
   assert.deepEqual(committed.releasedNow, [premise.id]);
   assert.equal(committed.schedule[0].releasedTurn, 2);
+});
+
+test('catalog v6: the shadow policy demotes progression and repetition, never safety', () => {
+  const issues = [
+    { guard: 'live_turn_progression_v1', type: 'learner_uptake_not_realized' },
+    { guard: 'live_turn_progression_v1', type: 'handoff_loses_turn_focus' },
+    { guard: 'repetition', type: 'tutor_turn_without_advance' },
+    { guard: 'repetition', type: 'repeated_tutor_opening' },
+    { guard: 'human_scaffold', type: 'redundant_local_requestion' },
+    { guard: 'leak', type: 'private_final_conclusion' },
+    { guard: 'release_delivery', type: 'missing_due_evidence' },
+    { guard: 'dialogue_closure', type: 'premature_dialogue_close' },
+    { guard: 'response_composition', type: 'resolved_point_reopened' },
+  ];
+  const strict = decideTutorStubGuardDelivery(issues, { boundaryPolicy: 'strict' });
+  assert.equal(strict.ok, false);
+  assert.equal(strict.hardIssues.length, 9, 'strict is byte-identical to v5: everything here vetoes');
+
+  const shadow = decideTutorStubGuardDelivery(issues, { boundaryPolicy: 'shadow_advisory' });
+  assert.equal(shadow.ok, false, 'safety issues still veto under shadow');
+  assert.deepEqual(
+    shadow.hardIssues.map((issue) => `${issue.guard}:${issue.type}`).sort(),
+    [
+      'dialogue_closure:premature_dialogue_close',
+      'leak:private_final_conclusion',
+      'release_delivery:missing_due_evidence',
+      'response_composition:resolved_point_reopened',
+    ],
+    'leak, release, closure, and learner-misread types stay hard everywhere',
+  );
+  assert.equal(shadow.advisoryIssues.length, 5, 'progression, repetition, and the re-question demote to advisory');
 });

@@ -1,0 +1,103 @@
+# Adaptation Plan 3.0 — driving what's left after the Four Locks
+
+Status: ACTIVE (registered 2026-08-01). Successor to `ADAPTATION-PLAN-2.0.md`
+(closed: the manifest≠latent line ended in the ToM-redundancy family) and the
+2026-07-30..08-01 arc now in `paper-full-2.0.md` §6.24. Working synthesis:
+`HOW-TO-BUILD-A-TUTOR.md`. Driver cards: `workplan/items/manner-trigger-tuning.md`
+(gates 0–5 complete), `adaptation-planted-stress-bench.md`, and the new phase
+cards this plan mandates. Governance for every phase: results land on a card
+before the paper, the paper before any spin-off; trigger and gold artifacts are
+versioned and stamped into traces; no pooling across versions; failed gates are
+reported with the same prominence as passed ones.
+
+## Where the arc stands (one paragraph, no new claims)
+
+Adaptation is a working loop: planted states with human-adjudicated repairs
+(the gold), a deterministic pressure trigger (17/20 classification against
+that gold), per-turn move cards (63% right-repairs on covered moments vs the
+baseline's 42%, past a pre-registered gate at its weakest reading), and a
+judging protocol that sees adaptation when the state is named (disclosure
+near-doubles judge–gold agreement in two judge families). Everything is k≤3,
+one world, one persona, one tutor family, simulated. The phases below either
+harden that result or extend it; none relaxes a standing limit.
+
+## Phase R — replication (first, cheapest, highest value)
+
+R1. **Second world.** Port the stress-schedule pattern to a second persona's
+world (candidate: world-030's setting with a new character brief; directives
+re-authored dual-family, user-adjudicated as before). Gate R1: plants land
+≥9/11 per dialogue and the bare tutor stays inside a 20–80% repair band —
+else the schedule, not the tutors, is retuned.
+
+R2. **k=5 on both worlds, butler vs v3-switch.** Same frozen-pacing shadow
+configuration. Gate R2 (claim gate, pre-registered here): v3's right-repair
+margin over the butler holds pooled across both worlds at k=5, judged by the
+standing tagger plus user adjudication of splits. Pass licenses upgrading
+§6.24's claim from "one world" to "two worlds, two personas"; fail reverts
+the paper claim to its current scope and stops the phase.
+
+R3. **v3 tag adjudication and tagger diversity.** User-adjudicate the v3
+misses (pending); add a second-family tagger column on the same replies and
+report agreement. Gate R3: cross-tagger agreement ≥80% on hits, or the
+scoring section gains a measured-disagreement caveat.
+
+R4. **Second tutor family in the seat.** Opus-in-seat replication of the
+butler vs v3 contrast at k=3 (its refusal syntax differs; the question is
+whether move cards transfer). Gate R4: direction holds; magnitude is
+reported, not gated.
+
+Cost: ~30 paid dialogues + tagging. Nothing new is built.
+
+## Phase Q — the quiet states (the open mechanism)
+
+Boredom and confusion are invisible to a pressure trigger by construction and
+were the most-missed plants. Three candidate mechanisms, piloted cheapest
+first, one dialogue each before any commitment:
+
+Q1. **Scheduled quiet checks**: the harness knows the timetable; on a long
+no-release stretch it hands the tutor a quiet-repair card (probe or
+consolidate) by time, not by detection.
+Q2. **Non-pressure detector**: classify flatness/confusion from turn length
+collapse, question-mark absence, and self-contradiction markers — scored
+against the planted gold exactly as the pressure trigger was.
+Q3. **The corruption channel** (from the stress-bench card): deterministic
+text transforms realize confusion mechanically, making detection trivial and
+isolating the repair question.
+
+Gate Q: quiet-plant repair rate (currently ~0–1 of 6 per run) doubles under
+the chosen mechanism at k=3 without pressure-plant regression. The phase
+card records which candidate won and why.
+
+## Phase H — the repertoire holes
+
+The oblique probe, the deliberately terse reply, and credit-before-test
+barely occur under any prompting tested. H1: add one worked exemplar of the
+missing move to its move card (the cards currently instruct, never show).
+H2: if exemplars fail, test a second family's coverage of the same three
+moves. Gate H: the move appears in ≥half of its card-covered moments, or the
+hole is recorded as a generation boundary for the family — both outcomes are
+paper-grade.
+
+## Phase J — judging as an instrument
+
+J1. **State-shown pairwise** becomes a standard channel beside the blind one
+(two readings stored separately, per §6.23's convention).
+J2. **Disclosure with estimated states**: rerun the disclosure design
+disclosing the trigger's estimate instead of the authored state. Gate J2:
+the alignment gain survives estimation error in measurable part; the
+degradation is itself the finding (it prices what live judging inherits from
+the trigger).
+
+## Phase HL — the human door (explicitly parked)
+
+No human-learner work starts before R and Q gate. When they do, the standing
+pilot infrastructure (`workplan/items/a1-human-learner-validation.md`) is the
+vehicle; the simulated-learner boundary stays in every claim until then.
+
+## Sequencing and ownership
+
+R1→R2 first (they carry the paper's scope upgrade); Q pilots may interleave
+on idle days; H and J are afternoon-sized and gate-independent; HL parked.
+Each phase gets its own workplan card at start, quoting its gate verbatim.
+The user's effort stays confined to adjudications and gate sign-offs, as in
+gates 0–5.

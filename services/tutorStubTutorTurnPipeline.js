@@ -24,6 +24,12 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
   // turns shipped the deterministic fallback liturgy and the register-free
   // templates erased the character the guards were enforcing.
   const styleGuardsAdvisory = dependencies.styleGuardsAdvisory === true;
+  // Guard boundary policy (catalog v6): 'strict' is the delivery contract;
+  // 'shadow_advisory' demotes the progression/repetition families to recorded
+  // advisories while leaks, releases, learner-misreads, and closure stay hard.
+  // The CLI resolves TUTOR_STUB_GUARD_POLICY; this service stays env-free, and
+  // every delivery decision records the policy it was made under.
+  const guardBoundaryPolicy = dependencies.guardBoundaryPolicy === 'shadow_advisory' ? 'shadow_advisory' : 'strict';
   const {
     PROGRAM2_COMMITTEE_SCHEMA,
     appendTraceEvent,
@@ -344,6 +350,10 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       pointOfActionAdvisory,
       tuningAdvisory,
       tutorFeedbackAdvisory,
+      // The manner switch's per-turn conduct card (tutorStubMannerSwitch.js):
+      // present only while the CLI-owned switch holds the schoolmaster manner.
+      // Permission-shaped; no guard anywhere checks that the manner was worn.
+      state?.mannerSwitch?.card || null,
       // Keep the executable contract nearest the learner line so later analysis
       // advisories cannot bury the actual speaking task.
       withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
@@ -1089,6 +1099,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     ) {
       const deliveryDecision = tutorStubGuardDeliveryDecision(tutorStubGuardIssueRows(audits), {
         allowActorialAdvisory,
+        boundaryPolicy: guardBoundaryPolicy,
         terminalFallback,
       });
       const result = {

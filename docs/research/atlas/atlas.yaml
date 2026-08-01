@@ -414,3 +414,32 @@ modules:
       tutor family, simulated learners, and no human-learning or deployment claim.
     sections: ["6.20", "6.21", "6.22"]
     cross_refs: ["advice-versus-enforcement", "composition-small-kernel", "human-learning-translation", "provable-discourse"]
+
+  - id: adaptation-four-locks
+    n: 17
+    title: "The Four Locks: Pricing Instrumentation, Casting the Seats, and Making Adaptation Measurable"
+    family: ontology-state
+    status: scope-bound
+    claim: >-
+      A frozen-replay pricing found exactly one advisory block pays on a plan-blind
+      reading (one sentence of hidden state), and its free-running outcome trial died
+      at a saturated gate. The follow-on arc located four structural locks — a
+      stateless learner, guard enforcement that authors the tutor's hardest turns, a
+      tutor seat whose refusal capacity is family-fixed, and turn-local judging that
+      cannot see a cross-turn relation — and opened each with a priced mechanism. A
+      pre-registered claim gate then failed for a temperament mechanism and passed at
+      its weakest reading for per-turn move injection; naming the learner's state to a
+      judge near-doubled its agreement with authored gold in two judge families.
+    abstract: >-
+      One clause of information placement moved bare-tutor closure more than any
+      tutoring behaviour observed (5/5 to 4/5 on a minimal-pair world). Planted,
+      typed learner states with human-adjudicated repairs made repair delivery a
+      measured quantity; a deterministic pressure trigger graduated from 6/20 to
+      17/20 against that gold in one tuning pass. The move-card mechanism delivered
+      63% right-repairs on covered moments against the baseline's 42%, with closures
+      and leak discipline intact — k=3, one world, one persona, simulated learner,
+      no human-learning claim. The disclosure result is the instrument finding:
+      turn-local rubrics under-measure adaptation by construction, and one added
+      sentence repairs half the deficit.
+    sections: ["6.23", "6.24"]
+    cross_refs: ["advice-versus-enforcement", "program2-trained-move", "rubrics-as-instruments", "model-dependence"]

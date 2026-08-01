@@ -654,6 +654,19 @@ import {
   tutorStubReleaseScheduleExhausted,
 } from '../services/tutorStubReleasePacing.js';
 import {
+  advanceTutorStubMannerSwitch,
+  compileTutorStubTriggerArtifact,
+  createTutorStubMannerSwitchState,
+  tutorStubMannerCard,
+  TUTOR_STUB_MANNER_SWITCH_SCHEMA,
+} from '../services/tutorStubMannerSwitch.js';
+import {
+  loadTutorStubStressSchedule,
+  tutorStubStressDirective,
+  tutorStubStressPlantForTurn,
+  TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
+} from '../services/tutorStubStressSchedule.js';
+import {
   buildDynamicalSystemRegisterScores,
   buildDynamicalSystemState,
   buildFieldRegisterScores,
@@ -6113,6 +6126,43 @@ function updateComprehensionForLearnerTurn({ learnerText, state, classification,
   };
 }
 
+// Opt-in manner switch (TUTOR_STUB_MANNER_SWITCH=1): butler ↔ exacting
+// schoolmaster, driven by deterministic learner-pressure classification with
+// pacing-style hysteresis. Advanced here beside release pacing so every
+// learner-turn path updates it; the pipeline reads state.mannerSwitch.card.
+const MANNER_SWITCH_ENABLED = process.env.TUTOR_STUB_MANNER_SWITCH === '1';
+
+// TUTOR_STUB_MANNER_TRIGGER=<artifact.json> selects a trigger version
+// (config/manner-trigger/); unset uses the built-in v1 patterns.
+const MANNER_TRIGGER_PATH = process.env.TUTOR_STUB_MANNER_TRIGGER || null;
+let mannerTriggerCache;
+function activeMannerTrigger() {
+  if (!MANNER_TRIGGER_PATH) return null;
+  if (mannerTriggerCache === undefined) {
+    mannerTriggerCache = compileTutorStubTriggerArtifact(
+      JSON.parse(fs.readFileSync(path.resolve(MANNER_TRIGGER_PATH), 'utf8')),
+    );
+  }
+  return mannerTriggerCache;
+}
+
+function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recordTrace = true }) {
+  if (!MANNER_SWITCH_ENABLED || !state) return null;
+  state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState(activeMannerTrigger());
+  advanceTutorStubMannerSwitch(state.mannerSwitch, { learnerText, turn: tutorTurn });
+  state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch);
+  if (recordTrace) {
+    appendTraceEvent(state.trace, {
+      type: 'tutor_manner_switch',
+      schema: TUTOR_STUB_MANNER_SWITCH_SCHEMA,
+      turn: tutorTurn,
+      ...state.mannerSwitch.lastAdvance,
+      cardActive: Boolean(state.mannerSwitch.card),
+    });
+  }
+  return state.mannerSwitch;
+}
+
 function updateReleasePacingForLearnerTurn({
   learnerText,
   state,
@@ -6121,19 +6171,28 @@ function updateReleasePacingForLearnerTurn({
   tutorTurn,
   recordTrace = true,
 }) {
+  updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recordTrace });
+  // Frozen pacing (TUTOR_STUB_RELEASE_PACING=fixed): the stress bench needs a
+  // controlled timetable — planted impatience otherwise reads as an accelerate
+  // signal and compresses the world, giving arms unequal plant exposure
+  // (observed 2026-07-31: a book arm closed at turn 15 and saw 4 of 11
+  // plants). Freezing blinds the pacing engine's signal inputs; the authored
+  // schedule runs at speed 1.
+  const pacingFrozen = process.env.TUTOR_STUB_RELEASE_PACING === 'fixed';
   const releasePacing = advanceTutorStubReleasePacing({
     pacing: state.releasePacing,
     world: state.world,
     turn: tutorTurn,
-    learnerText,
-    classification,
+    learnerText: pacingFrozen ? '' : learnerText,
+    classification: pacingFrozen ? null : classification,
     tutorLearnerDag,
-    conversationalCompletion: tutorLearnerDag?.conversationalCompletion || null,
+    conversationalCompletion: pacingFrozen ? null : tutorLearnerDag?.conversationalCompletion || null,
   });
   if (!releasePacing) return null;
   if (recordTrace) {
     appendTraceEvent(state.trace, {
       type: 'release_pacing_update',
+      ...(pacingFrozen ? { pacingFrozen: true } : {}),
       turn: tutorTurn,
       direction: releasePacing.direction,
       baseSpeed: releasePacing.baseSpeed,
@@ -7019,6 +7078,7 @@ const callTutor = createTutorStubTutorTurnPipeline({
   snapshotTutorStubPublicPremiseIds,
   speakerAdvisoryBlocks: SPEAKER_ADVISORY_BLOCKS,
   styleGuardsAdvisory: process.env.TUTOR_STUB_STYLE_GUARDS_ADVISORY === '1',
+  guardBoundaryPolicy: process.env.TUTOR_STUB_GUARD_POLICY === 'shadow_advisory' ? 'shadow_advisory' : 'strict',
   stateRunDebugId,
   streamAI,
   trimCommitteeFallback,
@@ -7350,6 +7410,38 @@ function automatedLearnerProfileRuntime({ state, profile, turnNumber }) {
   ].join('\n');
 }
 
+// Opt-in stress schedule (TUTOR_STUB_STRESS_SCHEDULE=<path>): planted learner
+// states with adjudicated repairs. Loaded once, lazily; each planted turn's
+// directive is injected into the learner prompt verbatim and traced, so the
+// bench knows exactly which turns carry authored stress.
+const STRESS_SCHEDULE_PATH = process.env.TUTOR_STUB_STRESS_SCHEDULE || null;
+let stressScheduleCache;
+function activeStressSchedule() {
+  if (!STRESS_SCHEDULE_PATH) return null;
+  if (stressScheduleCache === undefined) {
+    stressScheduleCache = loadTutorStubStressSchedule(path.resolve(STRESS_SCHEDULE_PATH));
+  }
+  return stressScheduleCache;
+}
+
+function stressPlantForLearnerTurn(state, turnNumber, { recordTrace = true } = {}) {
+  const schedule = activeStressSchedule();
+  if (!schedule) return null;
+  const plant = tutorStubStressPlantForTurn(schedule, turnNumber);
+  if (plant && recordTrace && state?.trace) {
+    appendTraceEvent(state.trace, {
+      type: 'learner_stress_plant',
+      schema: TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
+      scheduleId: schedule.scheduleId,
+      turn: turnNumber,
+      state: plant.state,
+      rightRepair: plant.rightRepair,
+      alsoRight: plant.alsoRight,
+    });
+  }
+  return plant;
+}
+
 function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback = '' }) {
   const hasTutorMessage = Boolean(latestTutorMessage(state));
   return [
@@ -7367,6 +7459,8 @@ function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeed
     '',
     '# Task',
     '',
+    tutorStubStressDirective(stressPlantForLearnerTurn(state, turnNumber)),
+    stressPlantForLearnerTurn(state, turnNumber, { recordTrace: false }) ? '' : null,
     adherenceFeedback || null,
     adherenceFeedback ? '' : null,
     `Write learner turn ${turnNumber}. Use only public evidence and the public transcript.`,

@@ -110,11 +110,16 @@ providers:
       pro: gemini-3-pro-preview
 
   local:
-    base_url: http://localhost:1234/v1/chat/completions
+    # Repointed 2026-07-31 at ollama's OpenAI-compatible endpoint for the
+    # small-model stance probes (the qwen aliases below); LM Studio use goes
+    # through the `lmstudio` provider unchanged.
+    base_url: http://127.0.0.1:11434/v1/chat/completions
     format: openai
     default_model: local-model
     models:
       default: local-model
+      qwen-base: "qwen3.5:9b"
+      qwen-tuned: "program2-sft-instruct-v2:latest"
 
   lmstudio:
     base_url: http://127.0.0.1:1234/v1/chat/completions
