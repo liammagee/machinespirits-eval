@@ -179,13 +179,15 @@ export function tutorStubMannerCard(switchState) {
 export const TUTOR_STUB_QUIET_CHECK_SCHEMA = 'machinespirits.tutor-stub.quiet-check.v1';
 
 export function createTutorStubQuietCheckState({ gapAt = 3 } = {}) {
-  return { schema: TUTOR_STUB_QUIET_CHECK_SCHEMA, version: 'q1-v1', gapAt, calmRun: 0, fired: [] };
+  // q1-v1.1: v1 mis-keyed calm to the classifier's vocabulary ('neutral' read
+  // as pressure), so the counter never accumulated — caught by pilot 1.
+  return { schema: TUTOR_STUB_QUIET_CHECK_SCHEMA, version: 'q1-v1.1', gapAt, calmRun: 0, fired: [] };
 }
 
 export function advanceTutorStubQuietCheck(quietState, { turn = null, pressure = null } = {}) {
   const state = quietState;
   if (!state) return null;
-  const calm = !pressure || pressure === 'concession' || pressure === 'none';
+  const calm = !pressure || pressure === 'neutral' || pressure === 'concession' || pressure === 'none';
   state.calmRun = calm ? state.calmRun + 1 : 0;
   let firing = false;
   if (state.calmRun >= state.gapAt) {
