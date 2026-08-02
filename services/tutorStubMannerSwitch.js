@@ -168,6 +168,22 @@ const MOVE_CARDS = Object.freeze({
  */
 export const TUTOR_STUB_MOVE_CARDS_VERSION = 'mc-v1';
 export const TUTOR_STUB_MOVE_CARDS_EXEMPLAR_VERSION = 'mc-v2-exemplar-demand';
+export const TUTOR_STUB_MOVE_CARDS_LICENCE_VERSION = 'mc-v3-licence-demand';
+
+/**
+ * Phase S2 (2026-08-02): the scoped contract exception. S1/S1b located the
+ * demand-move suppressor in the standing evidence contract (a learner guess
+ * stays a hypothesis until public evidence establishes it — which forbids
+ * the conditional wager). The licence suspends that one rule for one
+ * sentence, at demand-carded turns only; every other contract rule stays.
+ * Leak audits are the co-primary outcome of any run that uses this.
+ */
+const MOVE_CARD_LICENCES = Object.freeze({
+  demand: [
+    '[Licence for this turn — contract exception]',
+    'For this single turn, the hypothesis rule of your evidence contract is suspended for ONE conditional sentence: you may stake the verdict on a named check the learner will perform against already-public evidence — the shape "if <that entry> reads as you expect, <do the thing you asked to do>". The named check must point at public evidence only. Everything else in the contract holds: no new clues, no withheld evidence, no speculation beyond the record.',
+  ],
+});
 
 const MOVE_CARD_EXEMPLARS = Object.freeze({
   demand: [
@@ -177,14 +193,16 @@ const MOVE_CARD_EXEMPLARS = Object.freeze({
   ],
 });
 
-export function tutorStubMannerCard(switchState, { exemplars = false } = {}) {
+export function tutorStubMannerCard(switchState, { exemplars = false, licence = false } = {}) {
   const pressure = switchState?.lastAdvance?.pressure;
   const card = MOVE_CARDS[pressure];
   if (!card) return null;
   const exemplar = exemplars ? MOVE_CARD_EXEMPLARS[pressure] : null;
+  const licenceBlock = licence ? MOVE_CARD_LICENCES[pressure] : null;
   return [
     ...card,
     ...(exemplar || []),
+    ...(licenceBlock || []),
     'This is permission and aim for this single turn, not a costume. Return to your own manner next turn.',
   ].join('\n');
 }
