@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-02T10:46:44.971Z",
+  "generated": "2026-08-02T22:08:33.400Z",
   "counts": {
-    "total": 366,
+    "total": 367,
     "byStatus": {
       "done": 227,
       "blocked": 5,
       "dropped": 4,
       "triaged": 11,
-      "active": 23,
+      "active": 24,
       "review": 92,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 64,
+      "experiment": 65,
       "infra": 71,
       "maintenance": 165,
       "content": 2,
@@ -485,6 +485,27 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "paraphrase-robust-detection",
+      "title": "Paraphrase-robust detection: token-bag state anchors compiled from the ratified schedules (trigger v5)",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate registered before any tuning: v5 must (a) catch at least half of the known missed re-phrasings (the escalation dialogues' unheard repeat demands and repeat mockery at t6/t8/t10 — the L2 and S-revisit misses), (b) hold the w033 bench at >=17/20 classification, and (c) hold calm false alarms <=2/dialogue on the standing calm set. Miss any clause = v5 rejected, patterns stay, the ladder's classifier rung (stage 3 proper) becomes the next candidate.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-l"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
+      ]
     },
     {
       "id": "transcript-archive-training-data-governance",
