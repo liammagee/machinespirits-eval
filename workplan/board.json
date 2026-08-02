@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-02T07:42:09.424Z",
+  "generated": "2026-08-02T10:46:44.971Z",
   "counts": {
-    "total": 363,
+    "total": 366,
     "byStatus": {
       "done": 227,
       "blocked": 5,
       "dropped": 4,
       "triaged": 11,
-      "active": 20,
+      "active": 23,
       "review": 92,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 63,
-      "infra": 69,
+      "experiment": 64,
+      "infra": 71,
       "maintenance": 165,
       "content": 2,
       "ops": 8,
@@ -650,6 +650,27 @@
       ]
     },
     {
+      "id": "adaptation-plan-3-phase-p",
+      "title": "Plan 3.0 Phase P: the in-seat dose profiler, the voice-change probe, and the routing note",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gates registered before any run. Gate P1: the in-seat probe must reproduce two live anchors — sonnet demand at doses 1-3 stays at/near zero (the S2c/S2d nulls) and opus stake at dose 0 hits at least half (R4) — before any new cell earns a reading; each model x move then gets a recorded minimum in-seat dose or a recorded wall. Gate P2: measurement, not pass/fail — spliced-window voice-change detection rate vs intact-window false-alarm rate; the difference is the router's visibility price. P3 is written only from P1+P2 numbers.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-l"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
+      ]
+    },
+    {
       "id": "drama-world-public-object-reachability",
       "title": "Make each drama world's declared public object reachable in its own deterministic text",
       "status": "active",
@@ -707,6 +728,46 @@
       "tags": [
         "tutor-stub",
         "guards"
+      ]
+    },
+    {
+      "id": "harness-untangling-clue-insertion",
+      "title": "Untangling 1: insert the due clue into the model's reply instead of replacing the reply",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate registered before any change: (a) flag off — behavior byte-identical, hermetic suite green; (b) flag on, k=3 live — at release turns where the draft fails ONLY the release-delivery family, the delivered reply is the model draft with the due clue sentence inserted (traced), template whole-reply replacements at those turns fall to zero, release audits pass on the composed reply, leaks stay zero.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-p"
+      ],
+      "tags": [
+        "tutor-stub",
+        "harness"
+      ]
+    },
+    {
+      "id": "harness-untangling-contract-split",
+      "title": "Untangling 2: split the standing text into a safety contract and a teaching charter",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate registered before any change: stage 1 — the two documents concatenated reproduce the current speaker prompt BYTE-EXACTLY (unit test pins it); no behavior change is permitted at this stage. Stage 2 (later, separately gated) — divergence: teaching-charter edits must leave a frozen-replay leak probe at zero, and safety edits must leave the repertoire scorecard unchanged.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-s"
+      ],
+      "tags": [
+        "tutor-stub",
+        "harness"
       ]
     },
     {
