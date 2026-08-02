@@ -62,3 +62,31 @@ wager-shy below full dose, inverting the families' usual order);
 stake — sonnet 3/5 dose-0, 5/5 dose-1; opus 4/5 dose-0, 5/5 dose-1.
 Stake is cheap for both; the wager is dose-expensive for both with
 family-specific curves. Replies: `exports/p1-dose-profiler-replies.json`.
+
+## P2 result (2026-08-02): a single swapped turn is inaudible; the composer is the audible seam
+
+Six opus-voiced swaps into recorded sonnet dialogues, judged as windows
+ending at the swap beside intact twins. **Spliced flagged 3/6, intact
+flagged 3/6, swap turn located 0/6** — detection equals the false-alarm
+floor. Twice the judge flagged the SAME turn in both twins (a turn
+already odd in the original): the audible voice breaks in our dialogues
+are the composer's template turns, not model swaps. Limits: n=6, one
+judge, style-only question. The router's feared visibility cost is not
+measurable at this power; the measured voice seam is the fallback
+composer — which the first engineering untangling removes.
+
+## P3 — the routing note (written from P1+P2, closing the phase)
+
+When a move is missing, the levers in cost order: (1) READING ORDER —
+P1's anchor split shows the same dose succeeds or fails by where the
+card sits relative to the learner's line; fix assembly before spending
+anything else. (2) DOSE — stake-class moves are dose-cheap for both
+families (0-1); wager-class is dose-expensive with FAMILY-SPECIFIC
+curves that invert the families' usual order (sonnet 0/0/3/5, opus
+0/0/0/4 across doses) — so casting judgments must be per-move, never
+per-"strength". (3) CAST PER DIALOGUE — choose the seat by profile
+when a persona's expected states align with a family's cheap column.
+(4) SWITCH MID-DIALOGUE — no measured visibility cost at current
+power, but no measured need either: no move has yet shown a wall at
+every dose in correct reading order. The router build stays
+unjustified until one does. PHASE P COMPLETE.
