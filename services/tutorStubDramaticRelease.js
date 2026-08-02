@@ -122,6 +122,42 @@ function clueBearingSentenceMatches(text, surface, { exemptExactTexts = [] } = {
 }
 
 /**
+ * Untangling 1, span replacement (card: harness-untangling-clue-insertion):
+ * compose a delivered reply from a draft that paraphrases due clues. For
+ * each due entry, the FIRST clue-bearing sentence (located by the same
+ * matcher the duplicate guard uses) is replaced by the exact host-rendered
+ * source; further bearing sentences are dropped; entries the draft never
+ * touches are appended. Output is whitespace-normalized (sentence-level
+ * recomposition).
+ */
+export function composeTutorStubClueSpanReplacement({ text = '', entries = [], renderedTexts = [] } = {}) {
+  const sentences = sentenceRows(text);
+  const consumed = new Array(sentences.length).fill(null);
+  const appended = [];
+  entries.forEach((entry, index) => {
+    const rendered = renderedTexts[index];
+    if (!rendered) return;
+    const matches = clueBearingSentenceMatches(text, entry?.surface || '');
+    if (!matches.length) {
+      appended.push(rendered);
+      return;
+    }
+    let first = true;
+    for (const match of matches) {
+      const at = sentences.findIndex((sentence, j) => consumed[j] === null && sentence === match);
+      if (at < 0) continue;
+      consumed[at] = first ? rendered : 'drop';
+      first = false;
+    }
+    if (first) appended.push(rendered);
+  });
+  const kept = sentences
+    .map((sentence, j) => (consumed[j] === null ? sentence : consumed[j] === 'drop' ? null : consumed[j]))
+    .filter(Boolean);
+  return [...kept, ...appended].join(' ');
+}
+
+/**
  * Detect repeated delivery of evidence due in this response only. A later
  * turn may legitimately recall an already-public clue; this guard is scoped
  * to the active release frame so it cannot reject that ordinary restatement.

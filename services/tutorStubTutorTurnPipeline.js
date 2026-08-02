@@ -2225,9 +2225,19 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
           .map((entry, index) => dependencies.renderTutorStubDueSource(entry, index)?.text || '')
           .filter(Boolean);
         if (clueSentences.length) {
+          // Span replacement: swap the draft's paraphrase sentences for the
+          // exact renderings (append only where the draft never touched the
+          // clue) — blind appending double-delivers and the duplicate guard
+          // rightly rejects it.
           const insertionResponse = {
             ...response,
-            text: `${String(response.text).trim()}\n\n${clueSentences.join(' ')}`,
+            text: dependencies.composeClueSpanReplacement({
+              text: String(response.text).trim(),
+              entries: dueRows,
+              renderedTexts: dueRows.map(
+                (entry, index) => dependencies.renderTutorStubDueSource(entry, index)?.text || '',
+              ),
+            }),
           };
           const insertionAttempt = attempts.length;
           const insertionAudits = withTutorDeliveryDecision(

@@ -673,6 +673,7 @@ import {
   tutorStubQuietStateCard,
 } from '../services/tutorStubQuietDetector.js';
 import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
+import { composeTutorStubClueSpanReplacement } from '../services/tutorStubDramaticRelease.js';
 import {
   loadTutorStubStressSchedule,
   tutorStubStressDirective,
