@@ -103,3 +103,33 @@ the finding:**
   A v2 battery needs k≥3 per cell and a revised anchor protocol that
   probes the seat channel (full pipeline single-turn replay), since
   seat and bare-probe channels measurably differ.
+
+## v2 battery (2026-08-02): the bare-probe instrument saturates — the casting sheet must be built in the seat
+
+90 probes (3 models × 10 moments × 3 real butler-dialogue prefixes),
+sol-tagged in 6 batches. Two results, both about the instrument:
+
+1. **Anchor 1 now fails to reproduce entirely**: every demand probe
+   hits at k=3, all models, both worlds — the bare model with the card
+   makes the deadline move (or its ratified second) easily. This
+   strengthens v1's conclusion to its final form: **the demand
+   boundary lives in the seat, not the model.** The Gate-H verdict
+   stands for the seat; the bare channel cannot even see the hole.
+2. **Within-family model differences are invisible in this channel.**
+   Row-level: within a prefix, sonnet/opus/fable converge on
+   near-identical replies and share one tag; across prefixes the tag
+   swings (w030 stake: probe at p0, slow_down at p1, backtrack at p2 —
+   with p1/p2 texts that read as ruled-pass stake splits, the known
+   R3 label families again). Variance is prefix- and tagger-driven;
+   model identity contributes almost nothing. The claude family
+   converges under a strong card in a clean single turn.
+
+**Verdict: the cheap bare-probe profiler cannot discriminate within
+the claude family and therefore cannot build the casting sheet.** The
+between-model facts that matter (opus's unaided stake split, sonnet's
+in-seat demand hole, bare-repair rates 62% vs 48%) all came from the
+SEAT channel; v3 of the profiler must replay through the full pipeline
+(seat-channel single-turn replay: frozen state + contracts + guards +
+accumulated voice, regenerate one tutor turn per model). No new model
+cell is claimed from v2. The k=3 battery's tag data is archived
+(`exports/profiler-v2-tags.json`).
