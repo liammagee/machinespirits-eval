@@ -2485,7 +2485,12 @@ function printDirectorNotesIssuedSoFar(state) {
 }
 
 function worldSpeakerDagPrompt(world) {
-  return projectTutorStubWorldSpeakerDagPrompt(world, { ledgerTerm: worldLedgerTerm(world) });
+  return projectTutorStubWorldSpeakerDagPrompt(world, {
+    ledgerTerm: worldLedgerTerm(world),
+    // Phase S2c: TUTOR_STUB_CONTRACT_LICENCE=1 places the demand-card
+    // exception inside the standing contract (the placement law).
+    demandLicence: process.env.TUTOR_STUB_CONTRACT_LICENCE === '1',
+  });
 }
 
 const { responseChoiceModeRules } = createTutorStubPromptBlockModel({ worldLedgerTerm, worldFlavourPhrase });
