@@ -42,3 +42,24 @@ bags key on what survives paraphrase. Versioned artifact
 (config/manner-trigger/v5.json) with the compiler script committed;
 offline scorecard extended to include the escalation dialogues as the
 held-out paraphrase set.
+
+## Verdict (2026-08-03): v5 passes its letter and fails its purpose — not adopted as robustness
+
+Built and swept. At threshold 5 all three registered clauses pass:
+missed re-phrasings 13/13, w033 bench 17/20 (= v4), calm alarms
+1.80/dialogue (= v4), quiet wrong-fires 0/6. **But the leave-one-out
+check — bags compiled from only the two ratified schedules, tested on
+the escalation re-phrasings — scores 0/13.** The bags memorize
+authored directive lines; at the calm-safe threshold they generalize
+to nothing. The 13/13 is real only because the escalation schedule
+fed the compiler.
+
+Disposition: v5 (artifact + compiler + bag support in the classifier,
+all committed and versioned) is retained as OPERATIONAL COVERAGE of
+the authored schedules — re-runs of the dose ladder and the repeat
+demands will now be heard, which unblocks those benches — and is NOT
+the paraphrase-robustness answer. Per the card's fail branch, the
+ladder's stage-3 classifier (cheap features, trained on one schedule
+set, evaluated on a held-out schedule AND world) is the next
+candidate, for a fresh session. The leave-one-out protocol used here
+is the evaluation standard that candidate must pass.
