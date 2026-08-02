@@ -1,6 +1,6 @@
 # Adaptation Plan 3.0 — driving what's left after the Four Locks
 
-Status: ACTIVE (registered 2026-08-01). Successor to `ADAPTATION-PLAN-2.0.md`
+Status: ACTIVE (registered 2026-08-01; status line updated 2026-08-02). Phases R, Q, H, J, L: COMPLETE (all gates ruled, results in §6.24 through v3.0.243). Phase S: CLOSED by stopping rule at the frozen-live boundary. OUTSTANDING: Phase P (P1 in-seat dose profiler, P2 voice-discontinuity probe, P3 routing note — registered, unstarted); Phase L extensions (third persona in an existing world to deconfound persona from world; paraphrase-robust re-detection before the palette grows); engineering untanglings (composer clue-insertion instead of reply replacement; safety/pedagogy contract split); opus replication of the Phase S structure (codex done); a live-wager revisit now has a stated reason if wanted (L2's first-encounter finding — history, not licence, may be the lever). Phase HL: PARKED pending the human-door conversation. Successor to `ADAPTATION-PLAN-2.0.md`
 (closed: the manifest≠latent line ended in the ToM-redundancy family) and the
 2026-07-30..08-01 arc now in `paper-full-2.0.md` §6.24. Working synthesis:
 `HOW-TO-BUILD-A-TUTOR.md`. Driver cards: `workplan/items/manner-trigger-tuning.md`
