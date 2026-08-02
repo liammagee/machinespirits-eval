@@ -123,6 +123,29 @@ model, same card, same moment. Pending: S2c — runner-side contract
 hook (env-gated) + live k=3 with full leak/closure audits to confirm
 under real delivery; replies archived (`exports/s2b-replies.json`).
 
+## S2d and PHASE CLOSE (2026-08-02): final slot changes nothing; the phase closes under the stopping rule
+
+S2d (licence in contract AND card AND the card moved to the final
+advisory slot, below the first-draft contract): **0/3 wagers, drafts
+included; leaks 0.** Combined live record with licences active: 0/9
+wagers, 0 leak failures across ~76 delivered turns.
+
+**Phase S closed by the declared stopping rule** (user's anti-creep
+call, 2026-08-02: S2d is the last variant regardless of outcome).
+Channel-scoped closing statement: the demand wager is fully
+recoverable in frozen replay (6/6 with the in-contract exception) and
+was not recovered live under any placement or position tried; the
+live suppression is distributed across the first-draft context as a
+whole (position and placement both excluded as single causes). The
+laws that survive the phase: the placement law (S2 vs S2b — an
+exception must live at the rule's level; necessary, not sufficient
+live) and the channel law (frozen replay and the live seat are
+different instruments — proven twice independently today). Further
+wager work is OPTIMIZATION and starts only with a stated reason. No
+gated result anywhere depends on this slot: the demand move scored
+zero in every gated arm, so it sits in all standing tallies as a
+constant.
+
 ## S2c live (2026-08-02): leaks stay zero; the wager does NOT survive live assembly
 
 k=3 with BOTH placements active (contract hook + card licence,
