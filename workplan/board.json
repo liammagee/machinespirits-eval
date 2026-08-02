@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-02T06:34:47.527Z",
+  "generated": "2026-08-02T07:42:09.424Z",
   "counts": {
-    "total": 362,
+    "total": 363,
     "byStatus": {
       "done": 227,
       "blocked": 5,
       "dropped": 4,
       "triaged": 11,
-      "active": 19,
+      "active": 20,
       "review": 92,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 62,
+      "experiment": 63,
       "infra": 69,
       "maintenance": 165,
       "content": 2,
@@ -626,6 +626,27 @@
         "tutor-stub",
         "adaptation",
         "judging"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-l",
+      "title": "Plan 3.0 Phase L: learner profiles — recovery from behavior, then dose-by-profile",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate L1 quoted verbatim from ADAPTATION-PLAN-3.0.md, registered BEFORE any number was computed: leave-one-out nearest-centroid persona classification >=80% over the recorded corpus AND separation stabilizes within the first half of a dialogue; else profile-recovery is recorded as not-yet-measurable at current detection quality. Persona-plus-world confound stated up front.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-j"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "learner-profile"
       ]
     },
     {
