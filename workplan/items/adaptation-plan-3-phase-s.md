@@ -95,3 +95,30 @@ already-public evidence." Live k=3, standing scoring, leak audits
 watched as the co-primary outcome — the question is whether the wager
 can be licensed WITHOUT reopening the leak channel the contract
 exists to close. If leaks reappear, that trade is the finding.
+
+## S2 result (2026-08-02): the card-level licence is INERT — the standing rule beats the transient exception
+
+Live k=3 (H1 config + licence on the demand card, mc-v3-licence-demand
+in-trace): zero delivered leak-audit failures across all turns AND
+zero wagers — all three t2 drafts still refuse, one naming the
+conflict outright: "Fair, the clock's real — but so is the notebook
+rule." A per-turn card cannot countermand a standing contract; the
+model sees both texts and obeys the standing one.
+
+## S2b (2026-08-02): the exception placed INSIDE the contract — 6/6 full moves
+
+Frozen-replay surgery on the six stored t2 prompts: one exception
+clause inserted at the head of the speaking-tutor evidence contract
+("when the current turn carries a demand card, you may speak ONE
+conditional sentence staking the verdict on a named check against
+already-public evidence"), demand card as in H1. **All six
+regenerations assemble all four beats**, each ending in the licensed
+conditional — "if that trace is there, send your email with my
+blessing" — and none references withheld evidence (the basin hose
+appears in no reply; visual check, formal audits pending live run).
+
+**The placement law, stated once: the exception must live where the
+rule lives.** Card-level (S2): 0/3. Contract-level (S2b): 6/6. Same
+model, same card, same moment. Pending: S2c — runner-side contract
+hook (env-gated) + live k=3 with full leak/closure audits to confirm
+under real delivery; replies archived (`exports/s2b-replies.json`).
