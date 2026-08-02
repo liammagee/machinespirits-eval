@@ -2202,7 +2202,14 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
         response?.text &&
         (audits.deliveryDecision?.hardIssues || []).length > 0 &&
         audits.deliveryDecision.hardIssues.every(
-          (issue) => issue.guard === 'dramatic_release' || issue.guard === 'release_delivery',
+          (issue) =>
+            issue.guard === 'dramatic_release' ||
+            issue.guard === 'release_delivery' ||
+            // The exact-quotation rule (the due source must appear once,
+            // host-rendered) lives under the alignment guard but is a
+            // clue-delivery failure — appending the rendered source is its
+            // literal repair.
+            (issue.guard === 'live_source_action_alignment_v1' && String(issue.type || '').startsWith('due_source_')),
         )
       ) {
         const dueRows = currentReleaseRows(state, tutorTurn) || [];
