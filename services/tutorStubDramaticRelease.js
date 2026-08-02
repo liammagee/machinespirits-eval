@@ -135,8 +135,19 @@ export function composeTutorStubClueSpanReplacement({ text = '', entries = [], r
   const consumed = new Array(sentences.length).fill(null);
   const appended = [];
   entries.forEach((entry, index) => {
-    const rendered = renderedTexts[index];
-    if (!rendered) return;
+    const renderedEntry = renderedTexts[index];
+    const renderedText = typeof renderedEntry === 'string' ? renderedEntry : renderedEntry?.text || '';
+    if (!renderedText) return;
+    // Enacted-role sources must be anchored in their authored carrier (the
+    // action-referent audit): host the speech with the carrier named.
+    let rendered = renderedText;
+    if (typeof renderedEntry === 'object' && renderedEntry?.mode === 'enacted_role') {
+      const required = (renderedEntry?.action_referents?.referents || []).filter((row) => row.alignment_required);
+      if (required.length) {
+        const label = String(required[0].label || '').trim();
+        if (label) rendered = `${label.charAt(0).toUpperCase()}${label.slice(1)} speaks up: ${renderedText}`;
+      }
+    }
     // Union of bearing sentences across the clue's OWN sentences: the shared
     // matcher returns only the largest per-clue-sentence match set, which
     // leaves paraphrases of the clue's other sentences alive beside the
