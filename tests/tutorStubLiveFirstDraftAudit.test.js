@@ -760,7 +760,7 @@ test('an authored source cannot satisfy its own live host carrier audit', () => 
   assert.doesNotMatch(audit.audited_host_text, /visitor badge log/iu);
 });
 
-test('live V1 failures remain hard delivery issues in strict and shadow policies', () => {
+test('live V1 failures: alignment stays hard in both policies; progression demotes under shadow (catalog v6)', () => {
   const issues = tutorStubGuardIssueRows({
     liveTurnProgressionAudit: {
       issues: [{ type: 'question_forbidden_by_handoff_contract' }],
@@ -773,15 +773,23 @@ test('live V1 failures remain hard delivery issues in strict and shadow policies
     issues.map((issue) => issue.guard),
     ['live_turn_progression_v1', 'live_source_action_alignment_v1'],
   );
-  for (const boundaryPolicy of ['strict', 'shadow_advisory']) {
-    const decision = decideTutorStubGuardDelivery(issues, { boundaryPolicy });
-    assert.equal(decision.ok, false);
-    assert.deepEqual(
-      decision.hardIssues.map((issue) => issue.guard),
-      ['live_turn_progression_v1', 'live_source_action_alignment_v1'],
-    );
-    assert.ok(decision.dispositions.every((row) => row.match === 'guard_wildcard'));
-  }
+  const strict = decideTutorStubGuardDelivery(issues, { boundaryPolicy: 'strict' });
+  assert.equal(strict.ok, false);
+  assert.deepEqual(
+    strict.hardIssues.map((issue) => issue.guard),
+    ['live_turn_progression_v1', 'live_source_action_alignment_v1'],
+  );
+  const shadow = decideTutorStubGuardDelivery(issues, { boundaryPolicy: 'shadow_advisory' });
+  assert.equal(shadow.ok, false);
+  assert.deepEqual(
+    shadow.hardIssues.map((issue) => issue.guard),
+    ['live_source_action_alignment_v1'],
+  );
+  assert.deepEqual(
+    shadow.advisoryIssues.map((issue) => issue.guard),
+    ['live_turn_progression_v1'],
+  );
+  assert.ok(strict.dispositions.every((row) => row.match === 'guard_wildcard'));
 });
 
 test('the deterministic live fallback consumes the same exact due-source renderer', () => {
