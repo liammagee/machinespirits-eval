@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-02T02:32:34.616Z",
+  "generated": "2026-08-02T06:34:47.527Z",
   "counts": {
-    "total": 360,
+    "total": 362,
     "byStatus": {
       "done": 227,
       "blocked": 5,
       "dropped": 4,
       "triaged": 11,
-      "active": 17,
+      "active": 19,
       "review": 92,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 60,
+      "experiment": 62,
       "infra": 69,
       "maintenance": 165,
       "content": 2,
@@ -347,6 +347,27 @@
       ]
     },
     {
+      "id": "adaptation-plan-3-phase-s",
+      "title": "Plan 3.0 Phase S: seat release — name what suppresses the move the bare model can make",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate S1 quoted from ADAPTATION-PLAN-3.0.md: some ablation recovers the demand move in ≥half its regenerations while the control stays at zero — the suppressor is named; no recovery under any ablation = the suppression is distributed, recorded as a bound. S2 runs only if S1 names a suppressor.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-model-profiler"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
+      ]
+    },
+    {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
       "status": "active",
@@ -584,6 +605,27 @@
         "tutor-stub",
         "adaptation",
         "manner-switch"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-j",
+      "title": "Plan 3.0 Phase J: judging as an instrument — state-shown standard, disclosure with estimated states",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate J2 quoted from ADAPTATION-PLAN-3.0.md: the alignment gain survives estimation error in measurable part; the degradation is itself the finding (it prices what live judging inherits from the trigger).",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-q"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "judging"
       ]
     },
     {
