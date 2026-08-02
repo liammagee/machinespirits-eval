@@ -66,6 +66,7 @@ For the arc specifically: `npm run poetics:package-arc`.
 - **Layout**: `section.s` (a numbered section) → `.diag` grid of `.ml` (the giant `.s__num`), `.body`, `.mr` (a marginal `.note`). `.shell` wraps the sections; `.hero` is the masthead.
 - **Headings**: `.s__kicker` (mono eyebrow), `.s__h` (serif heading; `<em>` inside goes brick-red).
 - **Components**: `.claim` (`.claim__no` / `.claim__h` / `.claim__body` / `.claim__counter`), `.note` (`.note--moss/--ochre/--ink` + `.note__lbl`), `.pq` (pull-quote + `<cite>`), `.chip` (`.chip--moss/--ochre/--brick/--ink`), `.callout`, `.timeline`, `.ladder`, `.spec`/`.spec-box`, `.ev-grid`/`.ev-card[data-status][data-tags]`, `.deeplink`, `.glossary`/`.gl-row`, `.accordion`.
+- **Generated comparisons**: `.lanes` (side-by-side grid; column count via `--lanes-n`, collapses to one column under 760px) of `.lane` cards (`.lane--pass`, `.lane__head`, `.lane__reply`, `.lane__why`, `.lane__empty`), plus `.scoreboard` (per-class tally table). Emitted by `scripts/render-stress-comparison.js`; hand-authored docs may use them too.
 - **Selectors are class-based** (`.s`, `.gl-term`) not tag-based — so components keep working regardless of the underlying tag.
 
 ## Opt-in JS features (markup that turns each on)

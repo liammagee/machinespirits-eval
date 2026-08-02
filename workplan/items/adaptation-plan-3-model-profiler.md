@@ -133,3 +133,21 @@ SEAT channel; v3 of the profiler must replay through the full pipeline
 accumulated voice, regenerate one tutor turn per model). No new model
 cell is claimed from v2. The k=3 battery's tag data is archived
 (`exports/profiler-v2-tags.json`).
+
+## Opus family check (2026-08-03): the licence frees opus completely
+
+Mirror of the codex check — the same 6 recorded demand seats (v4live +
+h1, d0-2), 3 prompt versions each, 18 frozen regenerations on
+claude-opus-5. Control (unchanged seat prompt): 0/6 — the
+evidence-contract suppression replicates exactly. In-contract
+exception: **6/6 full conditional wagers** ("Before eight, check that
+entry for anything tracing water from the screen to the ceiling; if
+it's there, send the email"). Bare scene frame: 5/6 explicit
+send-conditionals, the sixth staking the outcome without the send
+("Either way you know by eight"). Against codex under the same
+licence (assigned-check 6/6 but full verdict 1/6): degree is
+family-specific, and opus is the family the licence fully unlocks.
+Routing consequence: opus-in-seat at first demands with the
+in-contract exception is the live candidate — frozen channel only,
+the live-seat test untried (the channel law stands). Replies:
+`exports/opus-check-replies.json`.

@@ -1546,3 +1546,15 @@
     :root[data-skin="machine-spirits"] .diag > .mr { border-left-color: var(--brick); }
     :root[data-skin="machine-spirits"] .hero__lede { box-shadow: 8px 8px 0 color-mix(in srgb, var(--brick) 22%, transparent); }
   }
+
+/* ---- Swimlane comparison (generated docs; scripts/render-stress-comparison.js) ---- */
+.lanes{display:grid;grid-template-columns:repeat(var(--lanes-n,2),minmax(0,1fr));gap:1rem;margin:1.2rem 0}
+@media(max-width:760px){.lanes{grid-template-columns:1fr}}
+.lane{border:1px solid var(--line,rgba(120,120,120,.35));border-radius:8px;padding:.9rem 1rem;overflow-wrap:anywhere}
+.lane--pass{border-color:rgba(90,140,90,.6)}
+.lane__head{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.5rem}
+.lane__reply{margin:.4rem 0;font-size:.95em}
+.lane__why{font-size:.8em;opacity:.75;margin:.4rem 0 0}
+.lane__empty{opacity:.5;text-align:center;margin:1rem 0}
+.scoreboard{border-collapse:collapse;margin:1rem 0}
+.scoreboard td,.scoreboard th{border:1px solid var(--line,rgba(120,120,120,.35));padding:.35rem .8rem;text-align:center}
