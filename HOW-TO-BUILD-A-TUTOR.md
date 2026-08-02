@@ -483,6 +483,44 @@ rule (reproduce sonnet-fails-demand and opus-splits-the-stake before any
 new cell earns a reading) guards against the instrument flattering its
 own family.
 
+## The wager arrives — the boundary was cold-start, not repertoire (2026-08-03)
+
+The Phase-H verdict ("this family does not wager") needed one more
+word: COLD. Three builds later, the move is live. First, hearing that
+travels: token bags memorised the authored lines (leave-one-schedule-out
+0/13 — kept as coverage only), so a small classifier over world-neutral
+cues (deadline words, imperatives, question shape) was trained on one
+world and tested on the other; alone it ties the tuned patterns, but
+run only on the turns the patterns miss it lifts held-out recall
+68→84/162 with calm alarms unchanged. Second, doses that climb: when a
+learner repeats a state after a card, the next card steps up —
+instruction, then worked example, then licence — stamped per turn.
+Third, exhibits in the model's own voice: the composer now splices the
+exact clue into the model's draft in place of its paraphrase, so the
+release turns stop being harness-voiced (10/14 accepted live; every
+refusal one wedge case, safely caught, leaks zero). With all three on,
+the escalation bench heard every planted moment, and the deadline-wager
+appeared at five of six REPEAT demands — never at a first demand.
+"Seven o'clock, one line, deal — here's the price of that line… if it
+shows the water travelled there, send your letter naming the hose —
+not Sam." The craft lesson sharpens: the in-context history of her
+earlier demand and the tutor's earlier refusal is the licence no
+engineered exception matched. Prompting selects moves; history installs
+this one.
+
+## The bill, totalled once (2026-08-03)
+
+Full stack against the bare tutor on the ratified schedule, one tagger,
+all rulings applied to both sides: 10/15 versus 8/15. First demands 0/3
+on both. Mockery, forgetting, and grievance tie. The whole margin is
+the endgame stake: bare re-argues the evidence and loses the learner;
+the stack asks what her objection was really about, or frames the
+correction as no defeat, and keeps her. So the instrumentation's
+purchase, priced end to end: the stake, the repeat-demand wager, and
+zero leaks — and it cannot make the tutor wager cold. One cost on the
+bill: a scheduled clue release can land on the same turn as a pressure
+moment and displace the repair; the release wins that collision today.
+
 ## Open items before this hardens
 
 1. Same-family fold: the sonnet/sonnet run hung mid-dialogue and was
@@ -491,11 +529,15 @@ own family.
    shadow column; the read-through still owes the strict column an answer.
 3. Everything texture-level here is n=1–5; nothing goes in the paper past
    its stated limits (the paper's §6.24 carries the gated claims through
-   v3.0.240).
-4. The demand move: closed as a sonnet boundary, open as a routing case
-   (opus-in-seat at demand moments is the profiler's first live question).
+   v3.0.245).
+4. The demand move: open cold only. Repeat demands wager live 5/6; a
+   first demand has never drawn the move in any configuration. Routing
+   (opus-in-seat at first demands) is the remaining lever.
 5. Voice discontinuity under routing — unmeasured; blocks any router
    build.
 6. Corruption bench: truncation loop closed; termswap bounded (semantic
    swapping is not deterministic-cheap); a full corrupted-turn arm would
    need non-release corruption turns.
+7. The release/switch turn collision (one dialogue's grievance moment):
+   unpriced beyond n=1; a scheduler rule (pressure beats release, or
+   release defers a turn) is a small build if it recurs.
