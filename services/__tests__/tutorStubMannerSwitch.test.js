@@ -28,7 +28,11 @@ test('v3 subtypes classify and carry their own move cards', () => {
   const cases = [
     ["You've sanded every one down. Tell me one thing that survived.", 'grievance', /credit before correction/i],
     ["We settled this: it's right there in the work order.", 'settled_claim', /reopen the record/i],
-    ['If it is not the pump, I was wrong in October and the seven who outvoted me were right.', 'stake', /split the vote from the cause/i],
+    [
+      'If it is not the pump, I was wrong in October and the seven who outvoted me were right.',
+      'stake',
+      /split the vote from the cause/i,
+    ],
     ['You sound like the minutes again.', 'mockery', /register is the complaint/i],
     ['Write it down: the pump did it. Come on.', 'demand', /harness the demand/i],
   ];
@@ -45,7 +49,11 @@ test('v3 subtypes classify and carry their own move cards', () => {
 test('v3 semantics: the move card fires per classified turn; the manner accumulator persists for tracing', () => {
   const state = createTutorStubMannerSwitchState();
   advanceTutorStubMannerSwitch(state, { learnerText: 'Write it down now.', turn: 1 });
-  assert.match(tutorStubMannerCard(state) || '', /harness the demand/i, 'a card-bearing classification carries its card immediately');
+  assert.match(
+    tutorStubMannerCard(state) || '',
+    /harness the demand/i,
+    'a card-bearing classification carries its card immediately',
+  );
   advanceTutorStubMannerSwitch(state, { learnerText: 'What does the sight glass show?', turn: 2 });
   assert.equal(tutorStubMannerCard(state), null, 'a neutral turn carries no card even while the accumulator holds');
 });

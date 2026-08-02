@@ -67,6 +67,7 @@
         "services/__tests__/tutorStubGuardDisposition.test.js",
         "services/__tests__/tutorStubGuardRecovery.test.js",
         "services/__tests__/tutorStubJson.test.js",
+        "services/__tests__/tutorStubMannerSwitch.test.js",
         "services/__tests__/tutorStubOpening.test.js",
         "services/__tests__/tutorStubPerformanceAdjudication.test.js",
         "services/__tests__/tutorStubPerformanceObligationContract.test.js",
