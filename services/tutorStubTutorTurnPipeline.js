@@ -2268,6 +2268,15 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
                   guard: issue.guard,
                   type: issue.type,
                 })),
+            composedText: insertionAudits.deliveryOk ? null : insertionResponse.text,
+            boundaries: insertionAudits.deliveryOk
+              ? null
+              : (insertionAudits.liveSourceActionAlignmentAudit?.pre_source_boundaries || []).map((b) => ({
+                  source: b.source,
+                  ok: b.alignment_ok,
+                  host: b.audited_host_text,
+                  required: (b.sources || []).flatMap((s2) => (s2.required || []).map((r) => r.label)),
+                })),
           });
           if (insertionAudits.deliveryOk) {
             attachTutorDraftAudits(insertionResponse, insertionAudits);

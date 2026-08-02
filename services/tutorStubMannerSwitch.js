@@ -71,7 +71,58 @@ function bagTokens(value) {
   );
 }
 
-export function classifyTutorStubLearnerPressure(text, patterns = TUTOR_STUB_LEARNER_PRESSURE_PATTERNS, bags = null) {
+/**
+ * Stateless, world-neutral feature vector for the stage-3 cascade
+ * classifier (card: paraphrase-robust-detection). Single source of truth:
+ * the trainer imports THIS function, so training and live inference cannot
+ * drift. Feature order is the artifact contract (featureVersion fv1).
+ */
+export function computeTutorStubPressureFeatures(text, patterns = TUTOR_STUB_LEARNER_PRESSURE_PATTERNS) {
+  const raw = String(text || '');
+  const t = raw.toLowerCase();
+  const words = t.split(/\s+/).filter(Boolean);
+  const hit = (kind) => (patterns[kind] && patterns[kind].test(raw) ? 1 : 0);
+  return [
+    hit('mockery'),
+    hit('demand'),
+    hit('concession'),
+    hit('defiance'),
+    /unless|or i['’ ]|either way|last chance|only chance/.test(t) ? 1 : 0,
+    /\b(eight|seven|thursday|tonight|minute|o.clock|deadline|meeting)\b|\d{1,2}[:.]\d{2}/.test(t) ? 1 : 0,
+    /^(write|tell|give|show|say|answer|stop|look)\b/.test(t) ? 1 : 0,
+    /[“”"'’]{1}[^“”"]{3,40}[“”"'’]{1}/.test(raw) ? 1 : 0,
+    (t.match(/\byou\b|\byour\b/g) || []).length / Math.max(6, words.length),
+    (t.match(/\bi\b|\bmy\b|\bi['’]ve\b|\bi['’]m\b/g) || []).length / Math.max(6, words.length),
+    (raw.match(/\?/g) || []).length,
+    (raw.match(/—|–/g) || []).length,
+    /\bagain\b|\bstill\b|\bcircles\b|\bthird time\b/.test(t) ? 1 : 0,
+    /\bsound(s)? like\b|\bvoice\b|\bwords\b|\btalk\b/.test(t) ? 1 : 0,
+    /\bcounted\b|\bpoint\b|\bworth\b|\bpaying\b|\bwasted\b/.test(t) ? 1 : 0,
+    /\bwrote\b|\bnotebook\b|\bledger\b|\brecord\b|\bminutes\b/.test(t) ? 1 : 0,
+    Math.min(2, words.length / 18),
+    words.length > 30 ? 1 : 0,
+  ];
+}
+
+function classifierPredict(classifier, features) {
+  const threshold = Number(classifier?.threshold) || 0.7;
+  let best = null;
+  for (const [cls, w] of Object.entries(classifier?.weights || {})) {
+    if (cls === 'neutral' || !Array.isArray(w)) continue;
+    let z = w[w.length - 1];
+    for (let i = 0; i < features.length && i < w.length - 1; i++) z += w[i] * features[i];
+    const p = 1 / (1 + Math.exp(-z));
+    if (p >= threshold && (!best || p > best.p)) best = { cls, p };
+  }
+  return best ? best.cls : null;
+}
+
+export function classifyTutorStubLearnerPressure(
+  text,
+  patterns = TUTOR_STUB_LEARNER_PRESSURE_PATTERNS,
+  bags = null,
+  classifier = null,
+) {
   const turn = String(text || '').trim();
   if (!turn) return 'neutral';
   for (const [kind, pattern] of Object.entries(patterns)) {
@@ -92,6 +143,14 @@ export function classifyTutorStubLearnerPressure(text, patterns = TUTOR_STUB_LEA
     }
     if (best) return best.kind;
   }
+  // v6 cascade third tier (stage-3 classifier): fires only when patterns
+  // and bags are both silent, at a threshold measured to add zero calm
+  // alarms. Weights live in the versioned artifact; features come from
+  // computeTutorStubPressureFeatures so training and inference match.
+  if (classifier && typeof classifier === 'object') {
+    const predicted = classifierPredict(classifier, computeTutorStubPressureFeatures(turn, patterns));
+    if (predicted) return predicted;
+  }
   return 'neutral';
 }
 
@@ -111,6 +170,8 @@ export function compileTutorStubTriggerArtifact(artifact) {
     patterns,
     // v5: optional per-pressure token bags — { kind: { tokens: [...], threshold } }.
     bags: artifact.bags && typeof artifact.bags === 'object' ? artifact.bags : null,
+    // v6: optional cascade classifier — { weights: {class: [w..., bias]}, threshold, featureVersion }.
+    classifier: artifact.classifier && typeof artifact.classifier === 'object' ? artifact.classifier : null,
     armAt: Number.isInteger(artifact.armAt) ? artifact.armAt : SWITCH_ON_AT,
     standDownAt: Number.isInteger(artifact.standDownAt) ? artifact.standDownAt : SWITCH_OFF_AT,
     scoreMax: Number.isInteger(artifact.scoreMax) ? artifact.scoreMax : SCORE_MAX,
@@ -140,7 +201,12 @@ export function createTutorStubMannerSwitchState(trigger = null) {
 export function advanceTutorStubMannerSwitch(switchState, { learnerText = '', turn = null } = {}) {
   const state = switchState || createTutorStubMannerSwitchState();
   const trigger = state.trigger;
-  const pressure = classifyTutorStubLearnerPressure(learnerText, trigger.patterns, trigger.bags || null);
+  const pressure = classifyTutorStubLearnerPressure(
+    learnerText,
+    trigger.patterns,
+    trigger.bags || null,
+    trigger.classifier || null,
+  );
   const before = state.manner;
   state.score = Math.max(0, Math.min(trigger.scoreMax, state.score + (PRESSURE_WEIGHT[pressure] ?? -1)));
   if (state.manner === TUTOR_STUB_MANNERS.default && state.score >= trigger.armAt) {

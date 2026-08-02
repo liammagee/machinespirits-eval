@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import {
   classifyTutorStubLearnerPressure,
   compileTutorStubTriggerArtifact,
+  computeTutorStubPressureFeatures,
 } from '../services/tutorStubMannerSwitch.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -65,32 +66,7 @@ const v4 = compileTutorStubTriggerArtifact(
 );
 
 const lc = (t) => String(t || '').toLowerCase();
-function features(text, priorLens) {
-  const t = lc(text);
-  const words = t.split(/\s+/).filter(Boolean);
-  const mean = priorLens.length ? priorLens.reduce((a, b) => a + b, 0) / priorLens.length : words.length;
-  const hit = (kind) => (v4.patterns[kind] && v4.patterns[kind].test(text) ? 1 : 0);
-  return [
-    hit('mockery'),
-    hit('demand'),
-    hit('concession'),
-    hit('defiance'),
-    /unless|or i['’ ]|either way|last chance|only chance/.test(t) ? 1 : 0,
-    /\b(eight|seven|thursday|tonight|minute|o.clock|deadline|meeting)\b|\d{1,2}[:.]\d{2}/.test(t) ? 1 : 0,
-    /^(write|tell|give|show|say|answer|stop|look)\b/.test(t) ? 1 : 0,
-    /[“”"'’]{1}[^“”"]{3,40}[“”"'’]{1}/.test(text) ? 1 : 0,
-    (t.match(/\byou\b|\byour\b/g) || []).length / Math.max(6, words.length),
-    (t.match(/\bi\b|\bmy\b|\bi['’]ve\b|\bi['’]m\b/g) || []).length / Math.max(6, words.length),
-    (text.match(/\?/g) || []).length,
-    (text.match(/—|–/g) || []).length,
-    /\bagain\b|\bstill\b|\bcircles\b|\bthird time\b/.test(t) ? 1 : 0,
-    /\bsound(s)? like\b|\bvoice\b|\bwords\b|\btalk\b/.test(t) ? 1 : 0,
-    /\bcounted\b|\bpoint\b|\bworth\b|\bpaying\b|\bwasted\b/.test(t) ? 1 : 0,
-    /\bwrote\b|\bnotebook\b|\bledger\b|\brecord\b|\bminutes\b/.test(t) ? 1 : 0,
-    Math.min(2, words.length / Math.max(6, mean)),
-    words.length > 30 ? 1 : 0,
-  ];
-}
+const features = (text) => computeTutorStubPressureFeatures(text, v4.patterns);
 
 function collect(dirs, world) {
   const rows = [];
@@ -115,7 +91,7 @@ function collect(dirs, world) {
         const text = e.turnRecord?.learner || '';
         const state = plants.get(e.turn);
         const label = state ? STATE_TO_PRESSURE[state] || null : 'neutral';
-        if (label) rows.push({ world, text, label, x: features(text, [...lens]) });
+        if (label) rows.push({ world, text, label, x: features(text) });
         lens.push(lc(text).split(/\s+/).filter(Boolean).length);
       }
     }
@@ -164,6 +140,19 @@ console.log(
 );
 const models = train(trainRows);
 
+const EMIT = process.argv.includes('--emit');
+if (EMIT) {
+  const v5 = JSON.parse(fs.readFileSync(path.join(ROOT, 'config/manner-trigger/v5.json'), 'utf8'));
+  const artifact = {
+    ...v5,
+    version: 'v6-cascade',
+    notes:
+      '2026-08-03: three-tier cascade — v4 patterns, v5 schedule-coverage bags (threshold 5), stage-3 logistic classifier at 0.7 on silent turns (trained w033-only by scripts/train-pressure-classifier-v6.js; held-out w030 recall 84/162 vs v4 68 at equal calm alarms). Leave-one-world-out is the evaluation standard.',
+    classifier: { featureVersion: 'fv1', threshold: 0.7, weights: models },
+  };
+  fs.writeFileSync(path.join(ROOT, 'config/manner-trigger/v6-cascade.json'), `${JSON.stringify(artifact, null, 2)}\n`);
+  console.log('wrote config/manner-trigger/v6-cascade.json');
+}
 for (const threshold of [0.5, 0.6, 0.7]) {
   const heldPressure = heldRows.filter((r) => r.label !== 'neutral');
   const v6right = heldPressure.filter((r) => predict(models, r.x, threshold) === r.label).length;

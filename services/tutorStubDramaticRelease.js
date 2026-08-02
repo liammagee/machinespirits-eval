@@ -145,17 +145,15 @@ export function composeTutorStubClueSpanReplacement({ text = '', entries = [], r
       const role = String(renderedEntry?.role || '').trim();
       const surface = String(renderedEntry?.surface || '').trim();
       const required = (renderedEntry?.action_referents?.referents || []).filter((row) => row.alignment_required);
-      if (role && surface) {
-        // The seat's own recipe (read from the recorded prompt): the full
-        // carrier phrase in the host entrance immediately before the exact
-        // source words, evidence as first-person quoted speech, no role
-        // label inside the quote.
-        rendered = `I turn to the ${role}; “Here’s what I’m reading: ${surface}”`;
-      } else if (required.length) {
-        const label = String(required[0].label || '').trim();
-        if (label && !new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(text)) {
-          rendered = `I turn to ${label}: ${renderedText}`;
-        }
+      // The audit reads ONLY the last sentence before the exact source
+      // occurrence (the pre-source host boundary), so the anchor must be its
+      // own sentence directly ahead of the rendered text — presence anywhere
+      // else in the draft does not count.
+      const anchor = role ? `the ${role}` : required.length ? String(required[0].label || '').trim() : '';
+      if (anchor && surface) {
+        rendered = `I turn to ${anchor}. ${renderedText}`;
+      } else if (anchor) {
+        rendered = `I turn to ${anchor}. ${renderedText}`;
       }
     }
     // Union of bearing sentences across the clue's OWN sentences: the shared
