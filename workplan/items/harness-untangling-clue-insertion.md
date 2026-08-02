@@ -80,3 +80,20 @@ prompt snapshot — diff the composition's rendered object against the
 recorded contract source at t5 directly instead of reconstructing
 entry shapes. Until then the composer remains the delivery path for
 enacted-role releases only, which is safe and traced.
+
+## Enacted-role diff follow-up (2026-08-03): recipe recovered, still refused; the audit's span parser is the true lever
+
+The recorded prompt yielded the seat's own recipe (full carrier phrase
+in the host entrance immediately before the exact source words;
+first-person quoted speech; no role label) and the composition now
+produces exactly that shape — and the referent audit still reports the
+anchor missing (eighth iteration). The constraint that remains
+unmodeled is the audit's SPAN semantics ("nearest pre-source host
+boundary"): where the boundary parser draws the host sentence relative
+to the semicolon-joined composition is not guessable from prompts.
+FINAL close under the stopping rule: enacted-role releases stay
+composer-owned (safe, traced); the one precise lever for fresh eyes is
+reading the boundary logic in the alignment audit implementation
+(services/tutorStubDueSourceRenderer.js, the alignment section) and
+matching the composition to the PARSER, not the prose. Presented
+exhibits — including every first-demand turn — remain model-voiced.
