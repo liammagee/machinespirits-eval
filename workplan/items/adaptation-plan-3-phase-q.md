@@ -243,3 +243,16 @@ where the deficit was (the fast world's card-silent moments); on the
 long world the pressure-only switch was already near its ceiling at
 the quiet plants, and flat-detection needs length-collapse the
 verbose persona rarely shows. Recorded as a bound, not a regression.
+
+## Ruling 3 (2026-08-02, user): conduct beats the slow_down label at confusion moments
+
+"Lay the two lines side by side" passes the confusion moment even when
+the tagger files it as slow_down — judged by conduct, applied to every
+stored row whose grader note describes the untangling (5 rows across 4
+tag files, both arms eligible). Tally effects, no gate flips: R2
+pooled butler 40/72 → 42/72 (58%) vs switch 48/73 (66%) — the claim
+gate's margin narrows to +7.4 points and holds; Gate Q1 11/18, still
+failed at bar 12; Q2 k=5 pooled 23/30 (77%), strengthened. The three
+standing rulings now cover: plain-words swaps at mockery (pass),
+evidence re-arguing at the endgame stake (fail), and side-by-side
+untangling at confusion (pass).
