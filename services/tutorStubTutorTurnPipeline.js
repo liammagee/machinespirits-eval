@@ -353,10 +353,14 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       // The manner switch's per-turn conduct card (tutorStubMannerSwitch.js):
       // present only while the CLI-owned switch holds the schoolmaster manner.
       // Permission-shaped; no guard anywhere checks that the manner was worn.
-      state?.mannerSwitch?.card || null,
+      // Phase S2d: with cardFinalSlot, the card moves BELOW the first-draft
+      // contract — the last instruction before the learner's line — because
+      // live drafts obeyed the contract over a licence positioned earlier.
+      dependencies.cardFinalSlot ? null : state?.mannerSwitch?.card || null,
       // Keep the executable contract nearest the learner line so later analysis
       // advisories cannot bury the actual speaking task.
       withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
+      dependencies.cardFinalSlot ? state?.mannerSwitch?.card || null : null,
     ]
       .filter(Boolean)
       .map((text) => sanitizeTutorStubSpeakerAdvisory({ world: dag ? world : null, tutorTurn, text }));

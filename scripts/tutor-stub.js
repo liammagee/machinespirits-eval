@@ -663,6 +663,7 @@ import {
   tutorStubQuietCheckCard,
   TUTOR_STUB_MANNER_SWITCH_SCHEMA,
   TUTOR_STUB_MOVE_CARDS_EXEMPLAR_VERSION,
+  TUTOR_STUB_MOVE_CARDS_LICENCE_VERSION,
   TUTOR_STUB_MOVE_CARDS_VERSION,
   TUTOR_STUB_QUIET_CHECK_SCHEMA,
 } from '../services/tutorStubMannerSwitch.js';
@@ -2484,7 +2485,12 @@ function printDirectorNotesIssuedSoFar(state) {
 }
 
 function worldSpeakerDagPrompt(world) {
-  return projectTutorStubWorldSpeakerDagPrompt(world, { ledgerTerm: worldLedgerTerm(world) });
+  return projectTutorStubWorldSpeakerDagPrompt(world, {
+    ledgerTerm: worldLedgerTerm(world),
+    // Phase S2c: TUTOR_STUB_CONTRACT_LICENCE=1 places the demand-card
+    // exception inside the standing contract (the placement law).
+    demandLicence: process.env.TUTOR_STUB_CONTRACT_LICENCE === '1',
+  });
 }
 
 const { responseChoiceModeRules } = createTutorStubPromptBlockModel({ worldLedgerTerm, worldFlavourPhrase });
@@ -6161,6 +6167,10 @@ const QUIET_DETECTOR_ENABLED = process.env.TUTOR_STUB_QUIET_DETECTOR === '1';
 // move's shape to cards that carry one (currently: demand). The cards
 // version travels in every switch trace so arms never pool across it.
 const CARD_EXEMPLARS_ENABLED = process.env.TUTOR_STUB_CARD_EXEMPLARS === '1';
+
+// Phase S2: TUTOR_STUB_CARD_LICENCE=1 adds the scoped contract exception to
+// cards that carry one (currently: demand). Leak audits are co-primary.
+const CARD_LICENCE_ENABLED = process.env.TUTOR_STUB_CARD_LICENCE === '1';
 let mannerTriggerCache;
 function activeMannerTrigger() {
   if (!MANNER_TRIGGER_PATH) return null;
@@ -6176,7 +6186,10 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
   if (!MANNER_SWITCH_ENABLED || !state) return null;
   state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState(activeMannerTrigger());
   advanceTutorStubMannerSwitch(state.mannerSwitch, { learnerText, turn: tutorTurn });
-  state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch, { exemplars: CARD_EXEMPLARS_ENABLED });
+  state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch, {
+    exemplars: CARD_EXEMPLARS_ENABLED,
+    licence: CARD_LICENCE_ENABLED,
+  });
   // Phase Q2 (TUTOR_STUB_QUIET_DETECTOR=1): typed quiet-state detection on
   // card-silent turns. A move card outranks it — pressure is never quiet.
   if (QUIET_DETECTOR_ENABLED && !state.mannerSwitch.card) {
@@ -6229,7 +6242,11 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
       turn: tutorTurn,
       ...state.mannerSwitch.lastAdvance,
       cardActive: Boolean(state.mannerSwitch.card),
-      cardsVersion: CARD_EXEMPLARS_ENABLED ? TUTOR_STUB_MOVE_CARDS_EXEMPLAR_VERSION : TUTOR_STUB_MOVE_CARDS_VERSION,
+      cardsVersion: CARD_LICENCE_ENABLED
+        ? TUTOR_STUB_MOVE_CARDS_LICENCE_VERSION
+        : CARD_EXEMPLARS_ENABLED
+          ? TUTOR_STUB_MOVE_CARDS_EXEMPLAR_VERSION
+          : TUTOR_STUB_MOVE_CARDS_VERSION,
     });
   }
   return state.mannerSwitch;

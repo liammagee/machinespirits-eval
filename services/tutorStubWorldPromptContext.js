@@ -28,11 +28,20 @@ export function projectTutorStubWorldPublicPrompt(world, { audienceLines = [] } 
   ].filter(Boolean);
 }
 
-export function projectTutorStubWorldSpeakerDagPrompt(world, { ledgerTerm = 'evidence record' } = {}) {
+export function projectTutorStubWorldSpeakerDagPrompt(
+  world,
+  { ledgerTerm = 'evidence record', demandLicence = false } = {},
+) {
   if (!world) return [];
   return [
     '',
     '# Speaking-tutor evidence contract',
+    // Phase S2c: the placement law — a per-turn card cannot countermand a
+    // standing rule, so the exception lives here, in the contract itself,
+    // and DELEGATES to the card. Opt-in via the caller (env in the CLI).
+    demandLicence
+      ? 'Exception, licensed per turn: when the current turn carries a demand card, you may speak ONE conditional sentence that stakes the verdict on a named check the learner will perform against already-public evidence ("if that entry reads as you expect, send it"). This exception never introduces new or withheld evidence.'
+      : null,
     '',
     'A private deterministic planner owns the answer, proof path, future evidence, and release schedule.',
     'You are the speaking tutor. You receive only the public scene, public rule glosses, public dialogue, and evidence available through the current turn.',
