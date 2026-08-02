@@ -38,9 +38,11 @@ const STOP = new Set(
   ),
 );
 const tokens = (value) =>
-  (String(value || '')
-    .toLowerCase()
-    .match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{1,}/gu) || [])
+  (
+    String(value || '')
+      .toLowerCase()
+      .match(/[\p{L}\p{N}][\p{L}\p{N}'’-]{1,}/gu) || []
+  )
     .map((t) => t.replace(/[’']/gu, ''))
     .filter((t) => t.length > 2 && !STOP.has(t));
 
