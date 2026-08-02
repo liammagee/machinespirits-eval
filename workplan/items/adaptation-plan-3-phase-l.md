@@ -129,3 +129,5 @@ Sam"). One borderline stands unruled (d1 t10: assigns a check at the
 deadline but the check is "integrate the clue you omitted" — closer
 to evidence re-arguing; left a miss). Cold-start law confirmed at
 full hearing: first demands never wager, second demands mostly do.
+
+Ruling in (user, 2026-08-03): d1 t10 is a miss. Tally final at 12/15.
