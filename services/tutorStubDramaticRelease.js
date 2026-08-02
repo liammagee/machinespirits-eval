@@ -137,7 +137,15 @@ export function composeTutorStubClueSpanReplacement({ text = '', entries = [], r
   entries.forEach((entry, index) => {
     const rendered = renderedTexts[index];
     if (!rendered) return;
-    const matches = clueBearingSentenceMatches(text, entry?.surface || '');
+    // Union of bearing sentences across the clue's OWN sentences: the shared
+    // matcher returns only the largest per-clue-sentence match set, which
+    // leaves paraphrases of the clue's other sentences alive beside the
+    // inserted exact text — the duplicate guard rightly rejects that.
+    const union = new Set();
+    for (const clueSentence of sentenceRows(entry?.surface || '')) {
+      for (const match of clueBearingSentenceMatches(text, clueSentence)) union.add(match);
+    }
+    const matches = [...union];
     if (!matches.length) {
       appended.push(rendered);
       return;
