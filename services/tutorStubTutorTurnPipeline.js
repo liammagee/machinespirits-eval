@@ -2191,6 +2191,64 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
         }
       }
 
+      // Untangling 1 (card: harness-untangling-clue-insertion): when every
+      // remaining hard issue is the release family and a model draft exists,
+      // keep the draft and append the due clue's rendered sentences instead
+      // of replacing the whole reply. Env-gated via dependencies.clueInsertion;
+      // the wholesale fallback remains for every other failure family and as
+      // the audit-fail fallback for the composition itself.
+      if (
+        dependencies.clueInsertion &&
+        response?.text &&
+        (audits.deliveryDecision?.hardIssues || []).length > 0 &&
+        audits.deliveryDecision.hardIssues.every(
+          (issue) => issue.guard === 'dramatic_release' || issue.guard === 'release_delivery',
+        )
+      ) {
+        const dueRows = currentReleaseRows(state, tutorTurn) || [];
+        const clueSentences = dueRows
+          .map((entry, index) => dependencies.renderTutorStubDueSource(entry, index)?.text || '')
+          .filter(Boolean);
+        if (clueSentences.length) {
+          const insertionResponse = {
+            ...response,
+            text: `${String(response.text).trim()}\n\n${clueSentences.join(' ')}`,
+          };
+          const insertionAttempt = attempts.length;
+          const insertionAudits = withTutorDeliveryDecision(
+            auditTutorDraft(insertionResponse, { role: `${roleBase}_clue_insertion`, attempt: insertionAttempt }),
+            { role: `${roleBase}_clue_insertion`, attempt: insertionAttempt },
+          );
+          appendTraceEvent(trace, {
+            type: 'tutor_clue_insertion',
+            role: roleBase,
+            turn: tutorTurn,
+            attempt: insertionAttempt,
+            accepted: insertionAudits.deliveryOk,
+            clueSentences: clueSentences.length,
+          });
+          if (insertionAudits.deliveryOk) {
+            attachTutorDraftAudits(insertionResponse, insertionAudits);
+            insertionResponse.repaired = true;
+            insertionResponse.clueInserted = true;
+            if (insertionResponse.bufferedStream) insertionResponse.guardedStreamReplay = true;
+            return attachTutorGuardAccounting({
+              response: insertionResponse,
+              state,
+              trace,
+              tutorTurn,
+              role: roleBase,
+              guards,
+              attempts,
+              repairsApplied,
+              finalSource: 'clue_insertion',
+              outcome: 'clue_inserted_draft_delivered',
+              finalAudits: insertionAudits,
+            });
+          }
+        }
+      }
+
       const closureFallbackSelected = Boolean(
         closureGuardEnabled && (dialogueClosureFrame.mandatory || audits.closureAudit.closesDialogue),
       );
