@@ -356,15 +356,23 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       // Phase S2d: with cardFinalSlot, the card moves BELOW the first-draft
       // contract — the last instruction before the learner's line — because
       // live drafts obeyed the contract over a licence positioned earlier.
-      dependencies.cardFinalSlot ? null : state?.mannerSwitch?.card || null,
+      // Phase S revisit: with cardAfterLearner, the card leaves the advisory
+      // block entirely and follows the learner's line (see promptParts).
+      dependencies.cardFinalSlot || dependencies.cardAfterLearner ? null : state?.mannerSwitch?.card || null,
       // Keep the executable contract nearest the learner line so later analysis
       // advisories cannot bury the actual speaking task.
       withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
-      dependencies.cardFinalSlot ? state?.mannerSwitch?.card || null : null,
+      dependencies.cardFinalSlot && !dependencies.cardAfterLearner ? state?.mannerSwitch?.card || null : null,
     ]
       .filter(Boolean)
       .map((text) => sanitizeTutorStubSpeakerAdvisory({ world: dag ? world : null, tutorTurn, text }));
-    const promptParts = [...speakerAdvisoryParts, learnerPrompt].filter(Boolean);
+    const promptParts = [
+      ...speakerAdvisoryParts,
+      learnerPrompt,
+      // Phase S revisit (P1's reading-order finding): the card as the very
+      // last thing the model reads, after the learner's line.
+      dependencies.cardAfterLearner ? state?.mannerSwitch?.card || null : null,
+    ].filter(Boolean);
     const userPrompt = promptParts.join('\n\n');
     const machineAdvisoryParts = [...speakerAdvisoryParts].filter(Boolean);
     // Stamp the prompt shape on the turn. Without this a transcript cannot say
@@ -2186,6 +2194,77 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
               finalSource: 'self_correction_candidate',
               outcome: disclosed ? 'guarded_self_correction_disclosed' : 'guarded_self_correction_pass_accepted',
               finalAudits: disclosureAudits,
+            });
+          }
+        }
+      }
+
+      // Untangling 1 (card: harness-untangling-clue-insertion): when every
+      // remaining hard issue is the release family and a model draft exists,
+      // keep the draft and append the due clue's rendered sentences instead
+      // of replacing the whole reply. Env-gated via dependencies.clueInsertion;
+      // the wholesale fallback remains for every other failure family and as
+      // the audit-fail fallback for the composition itself.
+      if (
+        dependencies.clueInsertion &&
+        response?.text &&
+        (audits.deliveryDecision?.hardIssues || []).length > 0 &&
+        audits.deliveryDecision.hardIssues.every(
+          (issue) =>
+            issue.guard === 'dramatic_release' ||
+            issue.guard === 'release_delivery' ||
+            // The exact-quotation rule (the due source must appear once,
+            // host-rendered) lives under the alignment guard but is a
+            // clue-delivery failure — appending the rendered source is its
+            // literal repair.
+            (issue.guard === 'live_source_action_alignment_v1' && String(issue.type || '').startsWith('due_source_')),
+        )
+      ) {
+        const dueRows = currentReleaseRows(state, tutorTurn) || [];
+        const clueSentences = dueRows
+          .map((entry, index) => dependencies.renderTutorStubDueSource(entry, index)?.text || '')
+          .filter(Boolean);
+        if (clueSentences.length) {
+          const insertionResponse = {
+            ...response,
+            text: `${String(response.text).trim()}\n\n${clueSentences.join(' ')}`,
+          };
+          const insertionAttempt = attempts.length;
+          const insertionAudits = withTutorDeliveryDecision(
+            auditTutorDraft(insertionResponse, { role: `${roleBase}_clue_insertion`, attempt: insertionAttempt }),
+            { role: `${roleBase}_clue_insertion`, attempt: insertionAttempt },
+          );
+          appendTraceEvent(trace, {
+            type: 'tutor_clue_insertion',
+            role: roleBase,
+            turn: tutorTurn,
+            attempt: insertionAttempt,
+            accepted: insertionAudits.deliveryOk,
+            clueSentences: clueSentences.length,
+            failedHard: insertionAudits.deliveryOk
+              ? []
+              : (insertionAudits.deliveryDecision?.hardIssues || []).map((issue) => ({
+                  guard: issue.guard,
+                  type: issue.type,
+                })),
+          });
+          if (insertionAudits.deliveryOk) {
+            attachTutorDraftAudits(insertionResponse, insertionAudits);
+            insertionResponse.repaired = true;
+            insertionResponse.clueInserted = true;
+            if (insertionResponse.bufferedStream) insertionResponse.guardedStreamReplay = true;
+            return attachTutorGuardAccounting({
+              response: insertionResponse,
+              state,
+              trace,
+              tutorTurn,
+              role: roleBase,
+              guards,
+              attempts,
+              repairsApplied,
+              finalSource: 'clue_insertion',
+              outcome: 'clue_inserted_draft_delivered',
+              finalAudits: insertionAudits,
             });
           }
         }

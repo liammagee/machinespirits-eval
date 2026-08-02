@@ -672,6 +672,7 @@ import {
   detectTutorStubQuietState,
   tutorStubQuietStateCard,
 } from '../services/tutorStubQuietDetector.js';
+import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
 import {
   loadTutorStubStressSchedule,
   tutorStubStressDirective,
@@ -7194,6 +7195,13 @@ const callTutor = createTutorStubTutorTurnPipeline({
   // Q3: TUTOR_STUB_CORRUPT_RELIEF=1 demotes ALL hard guard issues to
   // advisory at deliberately-corrupted turns so the model's repair ships.
   corruptReliefTurn: (turn) => process.env.TUTOR_STUB_CORRUPT_RELIEF === '1' && Boolean(CORRUPT_TURNS[turn]),
+  // Untangling 1: TUTOR_STUB_CLUE_INSERTION=1 keeps the model draft at
+  // release-only failures and appends the due clue's rendered sentences.
+  clueInsertion: process.env.TUTOR_STUB_CLUE_INSERTION === '1',
+  // Phase S revisit: TUTOR_STUB_CARD_AFTER_LEARNER=1 places the manner card
+  // after the learner's line — the last thing the model reads (P1 finding).
+  cardAfterLearner: process.env.TUTOR_STUB_CARD_AFTER_LEARNER === '1',
+  renderTutorStubDueSource,
   stateRunDebugId,
   streamAI,
   trimCommitteeFallback,

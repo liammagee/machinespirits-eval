@@ -56,6 +56,7 @@
         "services/__tests__/tutorStubClipboard.test.js",
         "services/__tests__/tutorStubComprehensionState.test.js",
         "services/__tests__/tutorStubConclusionAssertion.test.js",
+        "services/__tests__/tutorStubContractSplit.test.js",
         "services/__tests__/tutorStubConversationalCompletion.test.js",
         "services/__tests__/tutorStubCounterpressure.test.js",
         "services/__tests__/tutorStubDagFactDropout.test.js",
