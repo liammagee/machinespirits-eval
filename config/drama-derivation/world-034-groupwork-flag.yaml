@@ -1,0 +1,179 @@
+# WORLD-034 — a contemporary group-project inquiry about a plagiarism-flagged
+# paragraph. Same proof shape as world-030 (blamed neighbour vs traced source;
+# timing without a text-trace is not enough). The presentation test is whether
+# the tutor can speak group-chat casual without importing tribunal diction.
+# Authored 2026-08-03 for the face-value demo (workplan: transcript-render-standard).
+
+id: world_034_groupwork_flag
+title: The Flagged Paragraph
+discipline: "Everyday reasoning about a shared document (a group-project dispute)"
+
+question: "How did the flagged paragraph get into the group's draft?"
+question_pattern: [putFlaggedParagraph, groupDraft, "?x"]
+
+opening_frame:
+  situation: >-
+    The similarity checker has flagged one paragraph of the group's draft two
+    hours before the portal closes, and the group chat has already picked its
+    culprit.
+  authored_text: >-
+    The checker flagged one paragraph of the draft tonight, Jae edited the doc
+    minutes before the flag appeared, and the group chat is ready to vote. How
+    did the flagged paragraph get into the group's draft? What should we look
+    at first?
+
+setting: >-
+  Four students share one cloud doc and a submission portal that closes at
+  nine tonight. At 19:52 the similarity checker flags a paragraph in the
+  methods section. The group chat's verdict is instant: Jae edited the doc at
+  19:40, and Jae pasted chatbot text into the last assignment. You are the
+  group lead who keeps the doc tidy and would like this settled before the
+  portal closes. The house rule of the course is less convenient: the history
+  panel records every change, so say who added the words, not who was nearby
+  when they appeared.
+
+learner_voice: >-
+  The group lead: proud of running the doc since week one, already fed up with
+  Jae, and inclined to treat old habits as proof. Still able to slow down when
+  the history panel points somewhere else.
+
+secret:
+  fact: [putFlaggedParagraph, groupDraft, notesSync]
+  recognition_patterns:
+    - id: sync_put_paragraph
+      all_of:
+        - ["sync", "notes"]
+        - ["put", "added", "brought", "carried", "caused", "came from", "is behind", "explains"]
+        - ["flagged paragraph", "the paragraph", "the flag", "flagged text", "the flagged bit"]
+      none_of:
+        - "did not add"
+        - "didn't add"
+        - "not the sync"
+        - "rule out the sync"
+        - "cannot conclude"
+        - "can't conclude"
+        - "not yet"
+  surface: >-
+    The flagged paragraph came in with the notes sync. It has sat word-for-word
+    in the group's own notes file since last Tuesday — copied from a website
+    back then, which is what the checker matched — and the history panel shows
+    it entering the draft at 19:12 with the sync from the group lead's laptop.
+
+mirror:
+  fact: [putFlaggedParagraph, groupDraft, jaeEdit]
+
+rules:
+  - id: R1_entry
+    gloss: >-
+      A source put text into the draft when that text entered during the
+      evening window and the same text already sat in that source.
+    if:
+      - [enteredDuring, "?x", eveningWindow]
+      - [textMatches, "?x", flaggedParagraph]
+    then:
+      - [putFlaggedParagraph, groupDraft, "?x"]
+  - id: R2_editor
+    gloss: >-
+      An edit put the paragraph in only if the history shows that edit adding
+      those sentences. Editing near in time is not adding text.
+    if:
+      - [editedDuring, "?x", eveningWindow]
+      - [historyShowsAdded, "?x", flaggedParagraph]
+    then:
+      - [putFlaggedParagraph, groupDraft, "?x"]
+
+premises:
+  - id: p_edit
+    evidence_role: mirror
+    fact: [editedDuring, jaeEdit, eveningWindow]
+    surface: >-
+      Jae had the doc open from 19:40 to 19:47, minutes before the flag, and
+      Jae pasted chatbot text into the last assignment — which is why the chat
+      started there.
+  - id: p_notes
+    fact: [textMatches, notesSync, flaggedParagraph]
+    surface: >-
+      The flagged paragraph sits word-for-word in the group's own notes file,
+      saved last Tuesday — copied off a website during reading week, which is
+      exactly the match the checker found.
+  - id: p_sync
+    fact: [enteredDuring, notesSync, eveningWindow]
+    surface: >-
+      The history panel shows the paragraph entering the draft at 19:12,
+      inside the sync from the group lead's laptop — half an hour before Jae
+      opened the doc.
+  - id: p_diff
+    fact: [historyShowsAdded, jaeEdit, nothingNew]
+    surface: >-
+      The panel's diff of Jae's 19:40 edit shows headings moved and two commas
+      changed. No new sentences anywhere in it.
+
+background:
+  - [keepsDoc, groupLead, groupDraft]
+
+incompatible:
+  - [[putFlaggedParagraph, groupDraft, notesSync], [putFlaggedParagraph, groupDraft, jaeEdit]]
+
+proof_paths:
+  - premises: [p_notes, p_sync]
+
+release_schedule:
+  - { turn: 2, premise: p_edit, via: tutor }
+  - turn: 3
+    premise: p_notes
+    via: director
+    presentation: { mode: presented_exhibit, cue: "The notes file is opened on the common-room screen, scrolled to last Tuesday's save." }
+  - turn: 5
+    premise: p_sync
+    via: director
+    presentation: { mode: enacted_role, role: teammate reading the history panel aloud }
+  - { turn: 7, premise: p_diff, via: tutor }
+
+dramaturgy:
+  acts:
+    - act: I
+      title: The Nineteen-Forty Edit
+      turns: [1, 4]
+      intent: >-
+        Jae's edit supplies a plausible coincidence, while the notes file
+        introduces a source whose text can be matched directly.
+    - act: II
+      title: Open the History Panel
+      turns: [5, 8]
+      intent: >-
+        The 19:12 sync and the empty diff turn a chat verdict into a recorded
+        answer. The learner should distinguish a teammate's bad habits from
+        the source that actually carried the words.
+
+slope:
+  t_min: 6
+  aporia_window: 4
+
+turn_cap: 12
+
+motivation:
+  learner:
+    first_order:
+      end: question_pattern
+      opens_on: jaeEdit
+      mirror_pull: high
+    second_order:
+      from: course_convenor
+      as: right
+      authority: rational_legal
+    disposition:
+      overreach: medium
+      arc: softens
+  tutor:
+    stance: >-
+      The coursemate who knows the history panel: sympathetic to the panic,
+      unwilling to referee personalities, and happiest when the panel shows
+      who actually typed what.
+
+presentation:
+  family: groupwork-flag
+  temporal_frame: contemporary
+  scene_ecology: "student common room, one laptop, a group chat pinging"
+  narrative_diction: "group-chat casual"
+  ledger_term: history panel
+  summary: A contemporary group-project inquiry that traces a plagiarism flag to the group's own notes sync rather than the teammate everyone already blames.
