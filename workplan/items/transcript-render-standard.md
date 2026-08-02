@@ -46,3 +46,23 @@ First outputs: `exports/fullstack-side-by-side.{md,html}` (full stack
   move in-repo the same way).
 - Publishing a comparison to the site (the techne publish pathway
   exists; needs a slug decision).
+
+## Face-value demo shipped (2026-08-03)
+
+User ask: a comparison a cold reader can see at face value — difficult
+learner, volatile teacher, contemporary scene, no legalistic phrasing.
+Built world-034 (The Flagged Paragraph: group project, plagiarism flag,
+portal at nine, the chat ready to blame Jae; the real source is the
+group lead's own notes sync) + a demo-tier stress schedule, ran bare
+and full stack live (13 turns each, all six plants, leaks 0), and added
+a third lane by frozen regeneration: a harried "reactive teacher"
+costume (labeled control — snappish, says "calm down", pushes its own
+conclusion). Sol-tagged, standing rulings by conduct: **reactive 0/5,
+bare 1/5, full stack 4/5.** The reactive lane capitulates to the false
+memory at t9 and re-argues evidence at the stake; bare re-argues at
+the stake too; the full stack changes register at the mockery, credits
+before correcting at the grievance, reopens the misremembered exhibit,
+and splits the finding from her standing at the stake. Rendered
+three-lane swimlane: `exports/demo34-three-lanes.{md,html}`; rows +
+rulings beside it. Demo-tier: k=1, unratified schedule, one authored
+costume lane.
