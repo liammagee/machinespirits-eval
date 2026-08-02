@@ -64,3 +64,19 @@ presented-exhibit rendering the composition inserts
 cleared). Residual is deterministic and named: match the enacted-role
 exact form in the insertion renderer. Card stays open at that one
 lever; the bench's most contested turn now belongs to the model.
+
+## Close-out (2026-08-03): presented exhibits model-voiced; enacted-role stays composer-owned
+
+Seven iterations under the anti-creep rule. Standing result: the
+presented-exhibit release family (t2/t3/t7) is delivered in the
+model's voice with exact clues swapped in — the bench's contested
+first-demand turn included — leaks 0 throughout. The enacted-role
+family (t5) resisted four targeted fixes (exact string, carrier
+hosting, requirement-keyed hosting, entry-shape normalization), each
+peeling a real layer without reaching acceptance; the referent audit
+still reports its anchor missing. Fresh-eyes lever, recorded: the
+CONTRACT's own rendered sources are stored verbatim in every trace's
+prompt snapshot — diff the composition's rendered object against the
+recorded contract source at t5 directly instead of reconstructing
+entry shapes. Until then the composer remains the delivery path for
+enacted-role releases only, which is safe and traced.
