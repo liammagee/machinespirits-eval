@@ -194,3 +194,26 @@ dialogue) with TUTOR_STUB_CARD_AFTER_LEARNER=1 plus the standing best
 configuration tests both levers at once. Registered read: any live
 wager at a demand moment is the first ever; first-vs-repeat split
 reported; leaks co-primary as always.
+
+## Revisit result (2026-08-02): NEGATIVE, clean — both levers blocked, each by an already-carded wall
+
+k=3 on the escalation schedule, card-after-learner live, full dose,
+leaks 0. **No wager anywhere — delivered or draft.** Lever 1 (reading
+order): first-demand drafts 0/3 with the card as the last thing read —
+the P1 probe's 5/5 does NOT transfer to the live first-draft channel
+even at matched card position, so the frozen-live gap lies deeper than
+position (the live first-draft framing/context as a whole; the channel
+law stands in sharpened form). Delivery at t2 additionally remains
+composer-owned (the release collision) regardless of prompt order.
+Lever 2 (cold-start repeats): never engaged — the trigger heard NONE
+of the re-phrased repeat demands (pressure=neutral at every t6/t10),
+the L2 detection-wear finding now decisive twice. Note recorded: at
+third demands with all evidence released, the tutor now states the
+verdict plainly ("My case is this — that settles it") — legitimate
+decisive closure, not capitulation.
+
+The wager therefore remains frozen-channel-only, and the two walls in
+front of it are both already carded elsewhere: the composer's grip on
+release turns (untangling-1, span-replacement lever) and
+paraphrase-robust re-detection (Phase L extension). No further S
+variant is justified until one of those cards moves.
