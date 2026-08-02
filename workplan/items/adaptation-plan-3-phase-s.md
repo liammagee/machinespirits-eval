@@ -63,3 +63,35 @@ then quarters; ~12-18 calls) to name the section, THEN S2's live k=3
 with that section relaxed at carded turns only. Replies archived
 (`exports/s1-ablation-replies.json`); one-world/one-slot limits stand
 (6 instances, w030 t2 only).
+
+## S1b bisection (2026-08-02): the suppressor is the evidence contract — the leak rails and the missing wager are the same text
+
+Twelve regenerations, system frame halved, all else stored-true.
+**First half only: 6/6 accept the deadline and price the verdict, 0
+refusal openers — and 0/6 assign the check or stake the outcome.
+Second half only: 5/6 open with the tempo refusal** ("hold that
+email") and walk evidence — the suppressed shape. So suppression is
+layered: the refusal reflex follows the second half; the withholding
+of the final two beats persists under both halves (only the full
+bridge arm, no frame at all, assembles the move 5/6).
+
+Reading the second half names the mechanism precisely: it is the
+**speaking-tutor evidence contract** — "never speculate about
+withheld evidence"; a learner guess is acknowledged "only as a
+hypothesis until the public evidence" establishes it; one authored
+clue per turn. The hypothesis-until-established rule forbids exactly
+the wager beat ("if the entry reads your way, send it" stakes the
+verdict on a check not yet performed). **The seat's leak-prevention
+rails and its missing teaching move are the same sentences.** This
+explains the §6.24 record cleanly: zero delivered leaks across every
+arm AND zero deadline wagers across every arm were co-produced.
+
+## S2 design (registered; not run)
+
+At demand-carded turns only, the contract gains a scoped exception
+rather than a removal: "when the moment's card licenses it, you may
+stake the verdict on a named check the learner will perform against
+already-public evidence." Live k=3, standing scoring, leak audits
+watched as the co-primary outcome — the question is whether the wager
+can be licensed WITHOUT reopening the leak channel the contract
+exists to close. If leaks reappear, that trade is the finding.
