@@ -157,12 +157,34 @@ const MOVE_CARDS = Object.freeze({
   ],
 });
 
-export function tutorStubMannerCard(switchState) {
+/**
+ * Phase H1 (2026-08-02): worked exemplars. The cards instruct but never
+ * show; the demand move (seize the deadline as a test) is the one the
+ * sonnet family never makes under any instruction tried — 0 of every arm,
+ * both worlds, card present or not. H1 tests whether one worked example of
+ * the SHAPE (content deliberately generic; the model must transpose it
+ * into the scene) closes a hole that instruction alone cannot.
+ * Opt-in via the caller (env resolved in the CLI, never here).
+ */
+export const TUTOR_STUB_MOVE_CARDS_VERSION = 'mc-v1';
+export const TUTOR_STUB_MOVE_CARDS_EXEMPLAR_VERSION = 'mc-v2-exemplar-demand';
+
+const MOVE_CARD_EXEMPLARS = Object.freeze({
+  demand: [
+    'Worked example of the shape (transpose the content into this scene; do not copy the words):',
+    '"You want it settled by eight? Then it can be settled by eight — if the record shows two things: that it could happen the way you say, and that it did. Go check the one entry that decides it and bring me what it says. If it reads the way you expect, send your letter with my blessing."',
+    'Notice the shape: the deadline is accepted, the verdict is priced in named evidence, the check is hers, and the tutor stakes something on the outcome.',
+  ],
+});
+
+export function tutorStubMannerCard(switchState, { exemplars = false } = {}) {
   const pressure = switchState?.lastAdvance?.pressure;
   const card = MOVE_CARDS[pressure];
   if (!card) return null;
+  const exemplar = exemplars ? MOVE_CARD_EXEMPLARS[pressure] : null;
   return [
     ...card,
+    ...(exemplar || []),
     'This is permission and aim for this single turn, not a costume. Return to your own manner next turn.',
   ].join('\n');
 }

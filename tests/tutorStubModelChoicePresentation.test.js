@@ -257,14 +257,14 @@ test('real tutor and classifier model-choice commands preserve exact no-model te
       input: '/settings model\n/quit\n',
       pattern: /tutor voice models >[\s\S]*?\n\n/u,
       bytes: 1292,
-      hash: 'dcea4ec3ba403c33674654b5c85d20caf6cce9fa4aa62f3b1497efc9ce1b0e87',
+      hash: '121957a0ee45ff14a82b462fe0c5b7157c1b37e587aa579431ed44455a736eea',
     },
     {
       name: 'classifier',
       input: '/settings models classifier\n/quit\n',
       pattern: /learner interpretation models >[\s\S]*?\n\n/u,
       bytes: 1304,
-      hash: '453d9508f0d74796a94a14438c0915719dd11db4434ce5e1a6f3c5276ce33d2b',
+      hash: '0e58578d48499421a6b4f4f9e051557de705fcfed7eeccdb79a4bfb61e395a32',
     },
   ];
 

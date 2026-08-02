@@ -662,6 +662,8 @@ import {
   tutorStubMannerCard,
   tutorStubQuietCheckCard,
   TUTOR_STUB_MANNER_SWITCH_SCHEMA,
+  TUTOR_STUB_MOVE_CARDS_EXEMPLAR_VERSION,
+  TUTOR_STUB_MOVE_CARDS_VERSION,
   TUTOR_STUB_QUIET_CHECK_SCHEMA,
 } from '../services/tutorStubMannerSwitch.js';
 import {
@@ -6154,6 +6156,11 @@ const QUIET_CHECK_GAP = Number(process.env.TUTOR_STUB_QUIET_CHECK) || 0;
 // detector — confusion, flatness, or quiet defiance on a pressure-silent
 // turn hands the tutor that state's typed card. Requires the manner switch.
 const QUIET_DETECTOR_ENABLED = process.env.TUTOR_STUB_QUIET_DETECTOR === '1';
+
+// Phase H1: TUTOR_STUB_CARD_EXEMPLARS=1 appends a worked example of the
+// move's shape to cards that carry one (currently: demand). The cards
+// version travels in every switch trace so arms never pool across it.
+const CARD_EXEMPLARS_ENABLED = process.env.TUTOR_STUB_CARD_EXEMPLARS === '1';
 let mannerTriggerCache;
 function activeMannerTrigger() {
   if (!MANNER_TRIGGER_PATH) return null;
@@ -6169,7 +6176,7 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
   if (!MANNER_SWITCH_ENABLED || !state) return null;
   state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState(activeMannerTrigger());
   advanceTutorStubMannerSwitch(state.mannerSwitch, { learnerText, turn: tutorTurn });
-  state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch);
+  state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch, { exemplars: CARD_EXEMPLARS_ENABLED });
   // Phase Q2 (TUTOR_STUB_QUIET_DETECTOR=1): typed quiet-state detection on
   // card-silent turns. A move card outranks it — pressure is never quiet.
   if (QUIET_DETECTOR_ENABLED && !state.mannerSwitch.card) {
@@ -6222,6 +6229,7 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
       turn: tutorTurn,
       ...state.mannerSwitch.lastAdvance,
       cardActive: Boolean(state.mannerSwitch.card),
+      cardsVersion: CARD_EXEMPLARS_ENABLED ? TUTOR_STUB_MOVE_CARDS_EXEMPLAR_VERSION : TUTOR_STUB_MOVE_CARDS_VERSION,
     });
   }
   return state.mannerSwitch;

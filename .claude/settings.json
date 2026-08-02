@@ -38,10 +38,7 @@
       "Bash(npm run *)",
       "Bash(git *)"
     ],
-    "deny": [
-      "mcp__evaluations-db__write_query",
-      "mcp__evaluations-db__create_table"
-    ]
+    "deny": ["mcp__evaluations-db__write_query", "mcp__evaluations-db__create_table"]
   },
   "hooks": {
     "UserPromptSubmit": [
