@@ -147,12 +147,20 @@ export function composeTutorStubClueSpanReplacement({ text = '', entries = [], r
       const required = (renderedEntry?.action_referents?.referents || []).filter((row) => row.alignment_required);
       // The audit reads ONLY the last sentence before the exact source
       // occurrence (the pre-source host boundary), so the anchor must be its
-      // own sentence directly ahead of the rendered text — presence anywhere
-      // else in the draft does not count.
-      const anchor = role ? `the ${role}` : required.length ? String(required[0].label || '').trim() : '';
-      if (anchor && surface) {
-        rendered = `I turn to ${anchor}. ${renderedText}`;
-      } else if (anchor) {
+      // own sentence directly ahead of the rendered text. Read role and
+      // referents from the FRAME ENTRY (they live there — the rendered
+      // object carries no role field; nine iterations of reading the wrong
+      // object end here).
+      const entryRole = String(entry?.role || role || '').trim();
+      const entryRequired = (entry?.action_referents?.referents || [])
+        .filter((row) => row.alignment_required)
+        .concat(required);
+      const anchor = entryRequired.length
+        ? String(entryRequired[0].label || '').trim()
+        : entryRole
+          ? `the ${entryRole}`
+          : '';
+      if (anchor) {
         rendered = `I turn to ${anchor}. ${renderedText}`;
       }
     }
