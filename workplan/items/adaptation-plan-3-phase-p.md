@@ -42,3 +42,23 @@ intact windows.
 
 P3: the routing design note, written from the two numbers — when to dose,
 when to cast up front, when (if ever) to switch mid-dialogue.
+
+## P1 result (2026-08-02): dose matrix measured; anchor SPLIT localizes the live suppression to reading order
+
+60 in-seat regenerations (butler-arm stored prompts, dose composed
+identically per level, marker-screened with sample reads). Anchors:
+dose-0/1 sonnet demand 0/5 wager (live nulls reproduce) and opus stake
+dose-0 4/5 (R4 reproduces) — but **sonnet demand dose-3 = 5/5 wagers
+in-seat vs 0/9 live**, and dose-2 3/5. The one assembly difference:
+this probe appends the card AFTER the learner's line (absolute final
+position); live assembly places it before. Per the gate, divergent
+cells earn no dose readings; the divergence itself localizes the live
+wager suppression to reading order — a second stated revisit lever
+for Phase S (one-line runner change: card below the learner prompt).
+
+Matrix as measured in THIS channel (marker counts, not beat rulings):
+demand — sonnet 0/0/3/5 across doses 0-3, opus 0/0/0/4 (opus MORE
+wager-shy below full dose, inverting the families' usual order);
+stake — sonnet 3/5 dose-0, 5/5 dose-1; opus 4/5 dose-0, 5/5 dose-1.
+Stake is cheap for both; the wager is dose-expensive for both with
+family-specific curves. Replies: `exports/p1-dose-profiler-replies.json`.
