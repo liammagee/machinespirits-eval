@@ -68,3 +68,38 @@ building the router.
 Stage 0 is an afternoon and free; Stage 1 is one attended batch on the
 CLI bridges; Stage 2 is a design note gated on Stage 1's numbers.
 Nothing here starts without the user's word beyond Stage 0.
+
+## Stage 0 + Stage 1 results (2026-08-02)
+
+Stage 0 shipped: `exports/model-move-profile-v0.md`, every cell with
+run + tag-file provenance.
+
+**Stage 1 smoke ran (30 probes: sonnet/opus/fable × 5 carded moves × 2
+worlds, real butler-trace prefixes, card present, single turn,
+sol-tagged). The smoke gate returns a SPLIT verdict, and the split is
+the finding:**
+
+- **Anchor 2 reproduces.** Opus splits the stake, both worlds, and the
+  texts are genuine reopen-the-original-objection moves, not evidence
+  re-argument. So do fable's and sonnet's — all six stake probes pass
+  ruling 2 on their text. With the card, in a single-turn probe, the
+  stake split is universal across the claude family.
+- **Anchor 1 does NOT reproduce cleanly — instrument divergence.**
+  Sonnet's fast-world demand probe fails as expected (slow_down), but
+  its long-world demand probe delivers most of the full move —
+  "Thursday, then — so let's make Thursday work for you… it has to
+  survive one test before you write it. Here's the task, and it's
+  yours" — deadline accepted, verdict priced, check assigned (tagged
+  speed_up, a hit via the ratified acceptable-second). **The Gate-H
+  boundary is therefore seat-conditioned, not bare-model:** stripped
+  of the pipeline's contracts, guards, and its own accumulated butler
+  voice, sonnet-with-card can produce the move it never produced in
+  the seat. Gate H's verdict stands for the full seat (where tutoring
+  happens); its mechanism reading narrows from "the model cannot" to
+  "the seat suppresses" — pending-paper note.
+- Per the anchors rule, **no new cell earns a claim from this smoke**
+  (n=1 per cell throughout; fable's column is suggestive — stake ✓✓,
+  mockery plain-words swaps in the ruling-1 family — and unclaimed).
+  A v2 battery needs k≥3 per cell and a revised anchor protocol that
+  probes the seat channel (full pipeline single-turn replay), since
+  seat and bare-probe channels measurably differ.
