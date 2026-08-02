@@ -84,3 +84,15 @@ npm run paper:comics -- --out-dir public/eval/generated/paper-comics/paper-2-0-v
 ```
 
 Pass args after `--`: `npm run analyze:traces -- <runId>`
+
+### judge-planted-replies.js (Phase J1 — the disclosure instrument as a standing channel)
+
+Judges every planted moment's delivered reply in the given trace dirs on
+1-10, under one of three channels stored separately: `blind` (no state),
+`authored` (the planted state named — §6.24 disclosure), `estimated` (the
+live trigger's classification named — what deployed judging inherits).
+
+```
+node scripts/judge-planted-replies.js --dirs <traceDir[,traceDir...]> \
+  [--channel blind|authored|estimated] [--judge codex.gpt-5.6-sol] [--out file.json]
+```
