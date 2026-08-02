@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "July 2026"
-version: "3.0.241"
+version: "3.0.242"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -4557,6 +4557,10 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.242** (2026-08-02)
+
+:   **§6.24 addenda — Phase J complete; ruling 3; codex family check.** Phase J: state-shown judging shipped as a standing three-channel instrument (blind/authored/estimated); on identical rows the judge–gold gap runs 1.63 blind → 3.91 authored-disclosure → 2.03 estimated-disclosure (v2-trigger estimates; 28/48 moments and all quiet plants read "neutral") — Gate J2 passed at its letter, the ~82% degradation priced as what live judging inherits from detection silence; floor re-measurable at any detection version. Ruling 3 (conduct beats the slow_down label at confusion moments): five rows flip, no gate changes; R2's pooled margin narrows to +7.4 and holds. Codex check (18 frozen regenerations): the evidence-contract suppression and bridge release replicate structurally in a second family; the in-contract exception yields the assigned-check beats 6/6 and the conditional verdict 1/6 — degree is family-specific, structure is not. No DB, rubric, abstract, or headline-N changes; no sections renumbered.
 
 **v3.0.241** (2026-08-02)
 

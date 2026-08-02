@@ -165,3 +165,20 @@ carry it in the first-draft contract itself. The frozen-live gap is
 now the phase's open edge; every claim above stays scoped to its
 channel (frozen replay ≠ live seat — measured twice today from
 opposite directions).
+
+## Codex family check (2026-08-02, user-directed): the structure replicates; the degree is family-specific
+
+Eighteen frozen regenerations, gpt-5.6-terra in the seat, three arms.
+**Control 0/6** — the evidence contract suppresses codex exactly as it
+suppresses sonnet ("suspicion is not yet a finding"); the suppression
+is not one family's obedience quirk. **Bridge: the wager comes freely**
+("You can send it at eight if the notebook shows a water path…").
+**In-contract exception: 6/6 assign the check by her deadline ("Before
+eight, check for a traced path"), 1/6 completes the conditional
+verdict.** Where frozen sonnet went 6/6 full under the same exception,
+codex reaches three beats reliably and the stake rarely — the
+exception's dose requirement differs by family; the
+suppressed-then-releasable structure does not. Upgrades the S-arc
+claims from sonnet-specific to two-family structural, with per-family
+degree as the profiler's dose dimension. Replies:
+`exports/codex-check-replies.json`.
