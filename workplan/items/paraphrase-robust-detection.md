@@ -81,3 +81,16 @@ the cascade as a versioned artifact (weights + threshold in
 config/manner-trigger/v6-cascade.json) with classifier support in the
 trigger service, then the live re-runs the dose ladder and repeat
 demands have been waiting on.
+
+## Cascade shipped + live re-runs (2026-08-03): 15/15 heard on both benches
+
+The v6 cascade artifact shipped (`config/manner-trigger/v6-cascade.json`;
+patterns → schedule bags → stage-3 classifier at 0.7 on silent turns)
+and both waiting benches re-ran live under it. Escalation bench
+(l2v6-k3): every planted moment heard 15/15, doses stamped 1→2→3 as
+authored, ruled tally 12/15 (80%) — see the phase-l card for the wager
+result the hearing unlocked. Full-stack bench (fullstack-k3, ratified
+schedule): 15/15 pressure plants heard, zero leaks. Detection is no
+longer the binding limit on either bench; the l2 wear finding (5/13
+uncarded) is repaired in place. Tags archived `exports/l2v6-tags.json`,
+`exports/fullstack-tags.json`. Card closes.

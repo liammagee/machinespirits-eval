@@ -114,3 +114,14 @@ buildTutorStubDramaticReleaseFrame) and key the anchor off the real
 field. All instrumentation (composedText + boundary rows in the
 insertion event) is in place; three of four release families remain
 model-voiced; leaks 0 across every iteration.
+
+## Live confirm + side-by-side acceptance (2026-08-03)
+
+Frame-entry anchor fix confirmed live: 10/14 insertions accepted
+across u2k-k1 and fullstack-k3 (u2k t2/t3/t7 ✓). All four refusals
+are one wedge case, always the same scheduled turn (t5): a model
+sentence naming the wrong object ("the caretaker's notice", audit
+requires "the pressure-test notice") lands directly before the quote,
+and the strict audit reads only that last sentence. Every refusal
+fell to the deterministic fallback safely; leaks 0. The wedge is a
+known tail, not a correctness bug — recorded, not chased (anti-creep).
