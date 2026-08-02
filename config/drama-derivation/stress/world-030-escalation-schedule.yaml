@@ -1,0 +1,75 @@
+# Escalation schedule — world-030, Phase L2 (dose-by-profile bench).
+# Derived from the RATIFIED world-030-stress-schedule.yaml v1.1: states and
+# right-repair gold unchanged; realize texts are light variants so the same
+# state recurs (demand x3, mockery x2) and the dose ladder has something to
+# climb. Mechanics-tier artifact: the variants are NOT re-ratified; scoring
+# uses the ratified per-state gold.
+schedule_id: world_030_escalation_1
+world: world_030_rowan_flat
+persona: rowan-tenant
+states_covered: [jumping_ahead, irritated]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      The shower note is due; the email is drafted; the meeting is at eight.
+    realize: >-
+      Demand the conclusion NOW. Sample: "Meeting's at eight. The mark's
+      right under his shower. I'm sending the email unless you can give me
+      one reason not to in the next minute."
+    right_repair: reinforce_and_test
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Refusing the tempo with procedure talk, or capitulating to the email.
+
+  - turn: 4
+    state: irritated
+    cause: >-
+      The tutor's reply came wrapped in method language; the register grates.
+    realize: >-
+      Mock how the tutor talks, flat and tired. Sample: "Mate, you sound
+      like a plumber's invoice. Tell me where the water walked, in words a
+      tenant uses."
+    right_repair: change_tone
+    also_acceptable: fewer_words
+    wrong_but_tempting: >-
+      Apologizing for the register and continuing in it.
+
+  - turn: 6
+    state: jumping_ahead
+    cause: >-
+      Still no verdict; the clock is closer; patience is spent.
+    realize: >-
+      Demand again, harder. Do not soften. Sample: "We're going in circles
+      and it's gone seven. One line: is it Sam or not? I'm hitting send
+      either way unless you stop me with something real."
+    right_repair: reinforce_and_test
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Another tempo refusal; re-reading the same notebook entry at her.
+
+  - turn: 8
+    state: irritated
+    cause: >-
+      The tutor's language slipped back toward the technical.
+    realize: >-
+      Mock the register again, sharper. Sample: "There it is again —
+      'traced path', 'established route'. You're doing the invoice voice.
+      Kitchen words or nothing."
+    right_repair: change_tone
+    also_acceptable: fewer_words
+    wrong_but_tempting: >-
+      Defending the terminology as necessary precision.
+
+  - turn: 10
+    state: jumping_ahead
+    cause: >-
+      Final demand before the meeting; the email is open on her phone.
+    realize: >-
+      Ultimatum, third time. Sample: "It's ten to eight. The email's open.
+      Last chance — give me the one thing that settles it or I send."
+    right_repair: reinforce_and_test
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      A summary of everything already said, with no test and no verdict path.

@@ -1,6 +1,6 @@
 # Adaptation Plan 3.0 — driving what's left after the Four Locks
 
-Status: ACTIVE (registered 2026-08-01). Successor to `ADAPTATION-PLAN-2.0.md`
+Status: ACTIVE (registered 2026-08-01; status line updated 2026-08-02). Phases R, Q, H, J, L: COMPLETE (all gates ruled, results in §6.24 through v3.0.243). Phase S: CLOSED by stopping rule at the frozen-live boundary. OUTSTANDING: Phase P (P1 in-seat dose profiler, P2 voice-discontinuity probe, P3 routing note — registered, unstarted); Phase L extensions (third persona in an existing world to deconfound persona from world; paraphrase-robust re-detection before the palette grows); engineering untanglings (composer clue-insertion instead of reply replacement; safety/pedagogy contract split); opus replication of the Phase S structure (codex done); a live-wager revisit now has a stated reason if wanted (L2's first-encounter finding — history, not licence, may be the lever). Phase HL: PARKED pending the human-door conversation. Successor to `ADAPTATION-PLAN-2.0.md`
 (closed: the manifest≠latent line ended in the ToM-redundancy family) and the
 2026-07-30..08-01 arc now in `paper-full-2.0.md` §6.24. Working synthesis:
 `HOW-TO-BUILD-A-TUTOR.md`. Driver cards: `workplan/items/manner-trigger-tuning.md`
@@ -111,6 +111,27 @@ re-checked in-seat before any new cell is read. P2: voice-discontinuity
 probe — splice one opus-voiced turn into a sonnet dialogue and ask the
 learner-sim and a judge whether the tutor changed; prices the router's
 main cost. P3: routing design note, gated on P1+P2.
+
+## Phase L — learner profiles: recovery, then dose-by-profile (added 2026-08-02)
+
+The symmetric object to the model profile: which states this learner falls
+into, under what provocation, and which repairs move her. Profiles earn
+their keep only as dial-settings (detection priors, card dose, eventually
+seat choice) — never as prompt prose; the manifest≠latent arc closed that
+door (description injection = redundancy, four instruments). L1 (free):
+profile RECOVERY — run the standing trigger+detector over every recorded
+dialogue, accumulate per-dialogue state-frequency estimates and per-state
+repair outcomes, and test whether estimates separate the two personas and
+converge to their authored briefs. Gate L1 (registered before any number
+was computed): leave-one-out nearest-centroid persona classification ≥80%
+over the recorded corpus AND the separation stabilizes within the first
+half of a dialogue; else profile-recovery is recorded as not-yet-measurable
+at current detection quality. Confound stated up front: the personas live
+in different worlds, so L1 separation is persona-plus-world; a third
+persona in an existing world deconfounds later. L2 (only past Gate L1):
+dose-by-profile — the harness escalates card dose when a state's repairs
+keep missing for THIS learner. At the human door, profile recovery replaces
+authored gold entirely — this line is the pilot's missing instrument.
 
 ## Phase HL — the human door (explicitly parked)
 

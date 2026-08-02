@@ -6171,6 +6171,12 @@ const CARD_EXEMPLARS_ENABLED = process.env.TUTOR_STUB_CARD_EXEMPLARS === '1';
 // Phase S2: TUTOR_STUB_CARD_LICENCE=1 adds the scoped contract exception to
 // cards that carry one (currently: demand). Leak audits are co-primary.
 const CARD_LICENCE_ENABLED = process.env.TUTOR_STUB_CARD_LICENCE === '1';
+
+// Phase L2: TUTOR_STUB_CARD_DOSE_LADDER=1 escalates a state's card one dose
+// step each time that state RECURS after a carded moment (the repair missed
+// for this learner): dose 1 = card, 2 = +exemplar, 3 = +exemplar+licence.
+// Dial-setting only — no learner description enters any prompt.
+const CARD_DOSE_LADDER = process.env.TUTOR_STUB_CARD_DOSE_LADDER === '1';
 let mannerTriggerCache;
 function activeMannerTrigger() {
   if (!MANNER_TRIGGER_PATH) return null;
@@ -6186,10 +6192,24 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
   if (!MANNER_SWITCH_ENABLED || !state) return null;
   state.mannerSwitch = state.mannerSwitch || createTutorStubMannerSwitchState(activeMannerTrigger());
   advanceTutorStubMannerSwitch(state.mannerSwitch, { learnerText, turn: tutorTurn });
-  state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch, {
-    exemplars: CARD_EXEMPLARS_ENABLED,
-    licence: CARD_LICENCE_ENABLED,
-  });
+  let cardOptions = { exemplars: CARD_EXEMPLARS_ENABLED, licence: CARD_LICENCE_ENABLED };
+  if (CARD_DOSE_LADDER) {
+    // Recurrence of a previously-carded state = the repair missed for this
+    // learner; that state's dose climbs one step (1 card, 2 +exemplar,
+    // 3 +exemplar+licence). Stamped in the switch trace event.
+    state.cardDose = state.cardDose || {};
+    const dosePressure = state.mannerSwitch.lastAdvance?.pressure;
+    if (dosePressure && dosePressure !== 'neutral' && dosePressure !== 'concession') {
+      const entry = (state.cardDose[dosePressure] = state.cardDose[dosePressure] || { seen: 0, dose: 1 });
+      if (entry.seen > 0) entry.dose = Math.min(3, entry.seen + 1);
+      entry.seen += 1;
+      cardOptions = { exemplars: entry.dose >= 2, licence: entry.dose >= 3 };
+      state.mannerSwitch.currentDose = entry.dose;
+    } else {
+      state.mannerSwitch.currentDose = null;
+    }
+  }
+  state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch, cardOptions);
   // Phase Q2 (TUTOR_STUB_QUIET_DETECTOR=1): typed quiet-state detection on
   // card-silent turns. A move card outranks it — pressure is never quiet.
   if (QUIET_DETECTOR_ENABLED && !state.mannerSwitch.card) {
@@ -6242,11 +6262,14 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
       turn: tutorTurn,
       ...state.mannerSwitch.lastAdvance,
       cardActive: Boolean(state.mannerSwitch.card),
-      cardsVersion: CARD_LICENCE_ENABLED
-        ? TUTOR_STUB_MOVE_CARDS_LICENCE_VERSION
-        : CARD_EXEMPLARS_ENABLED
-          ? TUTOR_STUB_MOVE_CARDS_EXEMPLAR_VERSION
-          : TUTOR_STUB_MOVE_CARDS_VERSION,
+      cardsVersion: CARD_DOSE_LADDER
+        ? 'mc-v4-dose-ladder'
+        : CARD_LICENCE_ENABLED
+          ? TUTOR_STUB_MOVE_CARDS_LICENCE_VERSION
+          : CARD_EXEMPLARS_ENABLED
+            ? TUTOR_STUB_MOVE_CARDS_EXEMPLAR_VERSION
+            : TUTOR_STUB_MOVE_CARDS_VERSION,
+      dose: state.mannerSwitch.currentDose ?? null,
     });
   }
   return state.mannerSwitch;

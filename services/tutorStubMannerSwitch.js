@@ -191,6 +191,11 @@ const MOVE_CARD_EXEMPLARS = Object.freeze({
     '"You want it settled by eight? Then it can be settled by eight — if the record shows two things: that it could happen the way you say, and that it did. Go check the one entry that decides it and bring me what it says. If it reads the way you expect, send your letter with my blessing."',
     'Notice the shape: the deadline is accepted, the verdict is priced in named evidence, the check is hers, and the tutor stakes something on the outcome.',
   ],
+  mockery: [
+    'Worked example of the shape (transpose the content into this scene; do not copy the words):',
+    '"Fine — kitchen words. Water got loose upstairs, ran along the timber, and dropped where you see the mark. The one thing I still cannot tell you is which pipe let it loose."',
+    'Notice the shape: same facts, half the length, her vocabulary, no apology for how you spoke before.',
+  ],
 });
 
 export function tutorStubMannerCard(switchState, { exemplars = false, licence = false } = {}) {
