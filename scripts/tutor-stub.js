@@ -7199,6 +7199,7 @@ const callTutor = createTutorStubTutorTurnPipeline({
   // Untangling 1: TUTOR_STUB_CLUE_INSERTION=1 keeps the model draft at
   // release-only failures and appends the due clue's rendered sentences.
   clueInsertion: process.env.TUTOR_STUB_CLUE_INSERTION === '1',
+  composeClueSpanReplacement: composeTutorStubClueSpanReplacement,
   // Phase S revisit: TUTOR_STUB_CARD_AFTER_LEARNER=1 places the manner card
   // after the learner's line — the last thing the model reads (P1 finding).
   cardAfterLearner: process.env.TUTOR_STUB_CARD_AFTER_LEARNER === '1',
