@@ -2220,7 +2220,11 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
             (issue.guard === 'live_source_action_alignment_v1' && String(issue.type || '').startsWith('due_source_')),
         )
       ) {
-        const dueRows = currentReleaseRows(state, tutorTurn) || [];
+        // Use the release FRAME's entries — the same objects the contract
+        // rendered — so enacted-role sources produce the exact expected form.
+        const dueRows = dramaticReleaseFrame?.entries?.length
+          ? dramaticReleaseFrame.entries
+          : currentReleaseRows(state, tutorTurn) || [];
         const clueSentences = dueRows
           .map((entry, index) => dependencies.renderTutorStubDueSource(entry, index)?.text || '')
           .filter(Boolean);
