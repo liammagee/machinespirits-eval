@@ -178,3 +178,20 @@ carries the card (tutorStubTutorTurnPipeline.js); the sonnet benches
 share the gap, so their turn-2 lanes were card-less too (their
 first-demand walls at t2 rest on the H/S-phase evidence, where cards
 were present). Re-run launched under the fix.
+
+## Live-seat run 2 (2026-08-03): CLEAN — opus wagers at the first demand, live
+
+Under the recovery-card fix (card verified present in every delivered
+turn-2 prompt): **full deadline-wager at 2 of 3 first demands, all
+four beats** ("Send it if the record backs it — that's your call, and
+your minute is real… if it's there, send the email"); the third
+carries every beat but the staked send ("Eight it is — but the email
+needs a path, not just a position"). Leaks 0 across 39 turns, all
+three dialogues full-length. The sonnet contrast at the same moment
+with the same card: 0, in every configuration ever run (Phase H:
+card fires 3/3, delivery 0/3). Verdict: the first-demand wall is
+family-relative, and routing that one turn to an opus seat clears it
+LIVE — the frozen prediction (6/6 licensed) survives the live channel
+once the harness actually delivers the instruction. Scope: k=3, one
+world, one persona; voice-discontinuity cost of mid-dialogue routing
+still unmeasured. Traces: exports/tutor-stub-outcome/opus-seat2-k3.
