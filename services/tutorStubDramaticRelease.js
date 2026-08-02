@@ -141,11 +141,13 @@ export function composeTutorStubClueSpanReplacement({ text = '', entries = [], r
     // Enacted-role sources must be anchored in their authored carrier (the
     // action-referent audit): host the speech with the carrier named.
     let rendered = renderedText;
-    if (typeof renderedEntry === 'object' && renderedEntry?.mode === 'enacted_role') {
+    if (typeof renderedEntry === 'object') {
       const required = (renderedEntry?.action_referents?.referents || []).filter((row) => row.alignment_required);
       if (required.length) {
         const label = String(required[0].label || '').trim();
-        if (label) rendered = `${label.charAt(0).toUpperCase()}${label.slice(1)} speaks up: ${renderedText}`;
+        if (label && !new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(text)) {
+          rendered = `${label.charAt(0).toUpperCase()}${label.slice(1)} speaks up: ${renderedText}`;
+        }
       }
     }
     // Union of bearing sentences across the clue's OWN sentences: the shared
