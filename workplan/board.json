@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-01T13:25:42.958Z",
+  "generated": "2026-08-02T02:32:34.616Z",
   "counts": {
-    "total": 358,
+    "total": 360,
     "byStatus": {
       "done": 227,
       "blocked": 5,
       "dropped": 4,
-      "active": 16,
-      "triaged": 10,
+      "triaged": 11,
+      "active": 17,
       "review": 92,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 58,
+      "experiment": 60,
       "infra": 69,
       "maintenance": 165,
       "content": 2,
@@ -90,6 +90,27 @@
         "prereg",
         "outcome",
         "learner"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-model-profiler",
+      "title": "Model profiler: which model owns which teaching move — and when to switch",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Design-stage card. Smoke gate (registered before any paid probe): the profile must reproduce the two anchors already established by full runs — sonnet fails the demand move with the card present; opus makes the stake split unaided — from frozen single-turn replays, before any new model or move earns a claim.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-h"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
       ]
     },
     {
@@ -542,6 +563,27 @@
         "model-routing",
         "discourse-plane",
         "mixed-mode"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-h",
+      "title": "Plan 3.0 Phase H: the repertoire holes — can a worked example teach the move?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate H quoted verbatim from ADAPTATION-PLAN-3.0.md: the move appears in ≥half of its card-covered moments, or the hole is recorded as a generation boundary for the family — both outcomes are paper-grade.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-q"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
       ]
     },
     {
