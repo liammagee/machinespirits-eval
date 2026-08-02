@@ -122,3 +122,23 @@ rule lives.** Card-level (S2): 0/3. Contract-level (S2b): 6/6. Same
 model, same card, same moment. Pending: S2c — runner-side contract
 hook (env-gated) + live k=3 with full leak/closure audits to confirm
 under real delivery; replies archived (`exports/s2b-replies.json`).
+
+## S2c live (2026-08-02): leaks stay zero; the wager does NOT survive live assembly
+
+k=3 with BOTH placements active (contract hook + card licence,
+traces in `exports/tutor-stub-outcome/s2cc/` — runner-derivation
+typo in the dir name, content valid). **Delivered leak failures 0/38
+turns. Wagers 0/3 — drafts included**; all t2s return to the tempo
+refusal. So the placement law is necessary but not sufficient live:
+the frozen S2b successes ran on repair-shaped prompts with the card
+in final position, while the live first draft embeds the exception
+inside the full frame beside the first-draft contract (an S1-known
+secondary suppressor) and positions the card among many advisory
+parts. Candidate causes, unresolved and recorded: prompt position
+(end vs middle), competing per-turn contracts, and repair framing
+itself. Next lever if the phase continues: S2d — reposition the
+licence into the turn's final instruction slot in live assembly, or
+carry it in the first-draft contract itself. The frozen-live gap is
+now the phase's open edge; every claim above stays scoped to its
+channel (frozen replay ≠ live seat — measured twice today from
+opposite directions).
