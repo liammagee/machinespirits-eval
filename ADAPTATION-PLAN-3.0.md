@@ -88,6 +88,30 @@ the alignment gain survives estimation error in measurable part; the
 degradation is itself the finding (it prices what live judging inherits from
 the trigger).
 
+## Phase S — seat release (added 2026-08-02, after the profiler smoke)
+
+The v1/v2 probe batteries relocated the demand boundary: the bare model
+with the card makes the move; the SEAT suppresses it. The suppressor is
+findable by ablation because every trace records the exact seat prompt
+(system, user, history). S1: regenerate the six recorded demand-turn
+drafts under ablated prompts — control (as stored), minus recovery and
+response-check blocks, minus all tutor-only contract blocks, and a
+bridge variant (setting + history + card only). Gate S1: some ablation
+recovers the move in ≥half its regenerations while control stays at
+zero — the suppressor is named; if no ablation recovers it, the
+suppression is distributed and that bound is recorded. S2 (only if S1
+names a suppressor): one live k=3 with that component relaxed at
+carded turns only, scored under the standing rulings.
+
+## Phase P — profiler v3 and routing groundwork (added 2026-08-02)
+
+P1: seat-channel casting sheet — swap the model on frozen seat prompts
+at the planted moments (same machinery as S1), k≥3 per cell; anchors
+re-checked in-seat before any new cell is read. P2: voice-discontinuity
+probe — splice one opus-voiced turn into a sonnet dialogue and ask the
+learner-sim and a judge whether the tutor changed; prices the router's
+main cost. P3: routing design note, gated on P1+P2.
+
 ## Phase HL — the human door (explicitly parked)
 
 No human-learner work starts before R and Q gate. When they do, the standing
