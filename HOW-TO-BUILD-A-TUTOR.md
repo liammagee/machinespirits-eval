@@ -417,26 +417,85 @@ spent on whichever role needs it, when it needs it. The machinery was
 never the point; placement and timing of information were, every time.
 The model plays; the harness keeps time.
 
+## The replication, and what travels (2026-08-01, Phase R)
+
+Port everything to a second world and persona before believing anything.
+What traveled: the gold-authoring method (a second blind family agreed 5/6
+on the new world; the one split was the same pedagogical argument as
+before, ruled the same way); the pooled claim (butler 40/72 vs switch
+48/73 at k=5, both worlds, rulings applied to both sides); the direction
+under a second tagger family (88% hit confirmation) and a second tutor
+family (opus, k=3). What did NOT travel automatically: the effect's
+location. On a fast, evidence-dense world the pressure trigger barely
+arms, and the switch ran behind the butler there until the quiet-state
+work below. Rule of thumb this hardened into: **each instrument's gain
+lives exactly where its deficit was — moving the instrument does not move
+the gain.** Measure per world, per persona, per family; pooled numbers
+carry per-world shapes.
+
+## The quiet states: timing and typing are separately necessary (2026-08-01, Phase Q)
+
+Boredom, confusion, and quiet defiance carry no pressure markers, so the
+trigger is deaf to them by construction. Two candidates, both gated at
+the same bar. A **clock** (after N calm turns, hand an untyped
+"check the person" card) solved timing outright — the cards landed on the
+deficit moments — and FAILED the gate 10/18: outcomes split by whether the
+moment's gold happens to be a person-check. A **typed detector** (three
+quiet states from patterns plus reply-length collapse, each handing its
+own move card) PASSED 14/18 (78%) and held at k=5 — the endgame stake,
+unwinnable in every earlier arm, went 3/3 with replies that split the
+learner's face-saving cost from the finding. Read with the v2/v3 lesson
+this is one law measured from four sides now: **a typed card at a
+detected moment works; an untyped card at the right moment does not;
+a typed card at the wrong moment (v2's temperament) hurts.** Both the
+detection and the type must be right, and they fail independently.
+
+## The boundary: prompting selects moves, it does not install them (2026-08-02, v4 + Phase H)
+
+One move survived everything: seizing the learner's deadline as a test
+("Eight o'clock? Fine — if the entry reads your way, send it"). We fixed
+the trigger's hearing (v4: her ultimatum-shaped demand, 0/21→21/21
+offline, fires 3/3 live) — delivery stayed zero, which cleanly relocated
+the failure from detection to generation. Then the last lever: a worked
+example of the move ON the card. Drafts moved beat by beat toward the
+shape — deadline accepted, decisive evidence named as a question — but the
+final beat, surrendering the verdict to the learner's own check, never
+came. Gate H took its pre-registered boundary branch. The craft lesson:
+**a model's repertoire is a property you test for, not a target you
+prompt toward.** Cards and detectors draw out moves the model has;
+opus makes the sibling move unaided; sonnet does not have this one.
+Corollary for builders: the assistant training that makes a model a
+butler also makes it clutch the verdict — some teaching is a wager, and
+this family does not wager.
+
+## Casting as a practice: the profile and the router (opened 2026-08-02)
+
+The consequence of family-relative repertoires: a tutor needing the full
+repertoire may need a CAST — and the switch machinery is already the
+casting director's bell. The trigger and detector name the moment; today
+they route a card to one model; the same signal could route the turn to
+the model whose measured profile owns that move. The missing artifact is
+the casting sheet (per-model, per-move, with provenance) and one unpriced
+cost: whether the learner notices the tutor change voice mid-scene.
+Stage 0 (mine the existing runs — most of the sheet already exists) and a
+frozen single-turn probe battery are on the profiler card; the anchors
+rule (reproduce sonnet-fails-demand and opus-splits-the-stake before any
+new cell earns a reading) guards against the instrument flattering its
+own family.
+
 ## Open items before this hardens
 
-1. ~~No-book control~~ — landed; §3's attribution updated (native capacity,
-   relief as lever, book as register).
-2. Same-family fold: the sonnet/sonnet run hung mid-dialogue and was killed
-   (attrition); re-run pending.
-3. ~~codex agentic siblings~~ — landed: butler-grade, plus the tool-reflex
-   attrition.
-4. ~~Shadow-policy three-arm manner test~~ — landed.
-5. ~~The stress schedule~~ — ratified; the bench ran; Gate 5 failed on v2
-   and passed on v3 (see "The claim gate passed").
-6. Guard family 3 per-type read-through (uptake/handoff make right and
-   wrong calls; only gold splits them) — partially superseded by the v6
+1. Same-family fold: the sonnet/sonnet run hung mid-dialogue and was
+   killed (attrition); re-run pending.
+2. Guard family 3 per-type read-through — partially superseded by the v6
    shadow column; the read-through still owes the strict column an answer.
-7. Everything texture-level here is n=1–3; nothing goes in the paper past
-   its stated limits.
-8. The quiet states are the mechanism's open boundary: boredom and
-   confusion are not pressure, so the trigger cannot see them and no card
-   fires — the plants the model missed most. A non-pressure detector (or
-   scheduled quiet-repair prompts) is the next mechanism question.
-9. Sonnet replication of the disclosure pass (queued behind a quota
-   window); k>3 replication of the v3 pass; then paper integration —
-   the arc's findings live here and in the workplan cards until then.
+3. Everything texture-level here is n=1–5; nothing goes in the paper past
+   its stated limits (the paper's §6.24 carries the gated claims through
+   v3.0.240).
+4. The demand move: closed as a sonnet boundary, open as a routing case
+   (opus-in-seat at demand moments is the profiler's first live question).
+5. Voice discontinuity under routing — unmeasured; blocks any router
+   build.
+6. Corruption bench: truncation loop closed; termswap bounded (semantic
+   swapping is not deterministic-cheap); a full corrupted-turn arm would
+   need non-release corruption turns.
