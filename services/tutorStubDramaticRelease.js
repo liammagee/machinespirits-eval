@@ -146,7 +146,7 @@ export function composeTutorStubClueSpanReplacement({ text = '', entries = [], r
       if (required.length) {
         const label = String(required[0].label || '').trim();
         if (label && !new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(text)) {
-          rendered = `${label.charAt(0).toUpperCase()}${label.slice(1)} speaks up: ${renderedText}`;
+          rendered = `I turn to ${label}: ${renderedText}`;
         }
       }
     }

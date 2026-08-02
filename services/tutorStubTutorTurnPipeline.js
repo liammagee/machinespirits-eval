@@ -2222,9 +2222,16 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       ) {
         // Use the release FRAME's entries — the same objects the contract
         // rendered — so enacted-role sources produce the exact expected form.
-        const dueRows = dramaticReleaseFrame?.entries?.length
+        const dueRowsRaw = dramaticReleaseFrame?.entries?.length
           ? dramaticReleaseFrame.entries
           : currentReleaseRows(state, tutorTurn) || [];
+        // Normalize presentation-nested mode/role to the top-level shape the
+        // renderer and referent compiler read.
+        const dueRows = dueRowsRaw.map((entry) =>
+          entry?.presentation?.mode && !entry?.mode
+            ? { ...entry, mode: entry.presentation.mode, role: entry.presentation.role ?? entry.role }
+            : entry,
+        );
         const clueSentences = dueRows
           .map((entry, index) => dependencies.renderTutorStubDueSource(entry, index)?.text || '')
           .filter(Boolean);
