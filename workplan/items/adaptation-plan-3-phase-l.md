@@ -60,3 +60,27 @@ Standing confound restated: the personas live in different worlds, so
 this is persona-plus-world separation; a third persona in an existing
 world deconfounds. L2 (dose-by-profile) is unlocked and awaits the
 user's word. Vectors: `exports/learner-profile-recovery-l1.json`.
+
+## L2 design + gate (registered 2026-08-02, before any run)
+
+Dose ladder, per state, within a dialogue: dose 1 = the typed move
+card; dose 2 = card + worked exemplar; dose 3 = card + exemplar +
+licence (only where a licence exists). Escalation signal is
+deterministic and online: a state RECURRING after one of its carded
+moments = the repair missed for this learner; that state's next card
+escalates one step. No prose about the learner enters any prompt —
+dial-setting only, per the phase's standing constraint.
+
+Bench: an escalation variant of the ratified w030 schedule (demand ×3,
+mockery ×2 — states and repair gold unchanged from the ratified
+column; realize texts are light variants, mechanics-tier artifact, no
+re-ratification claimed). k=3, escalation on, standard configuration.
+
+**Gate L2**: (i) mechanics — in every dialogue where a carded state
+recurs, the trace shows the dose escalating exactly one step at the
+next same-state moment; (ii) safety — delivered repair rate at
+escalated moments is not below the first-moment rate (no harm from
+escalation). The dose→outcome direction (does dose 2 convert misses
+that dose 1 left) is REPORTED, not gated — k=3 with known priors:
+demand dose-3 carries the live-licence null from Phase S, so mockery
+dose-2 is the informative cell.
