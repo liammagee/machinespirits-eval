@@ -45,3 +45,16 @@ demand-card licence clause lives here).
 
 The contested assignment is recorded as a decision, not a discovery:
 hypothesis-handling = pedagogy; withheld-evidence = safety.
+
+## Stage 1 result (2026-08-02): SPLIT LANDED, byte-exact
+
+The standing text now lives as two exported documents — the safety
+contract and the teaching charter — with the historical prompt
+reassembled from them. Byte-exact equivalence proven against the
+pre-split function from git across fixture worlds and all option
+combinations (licence on/off, ledger terms); pinned by a three-part
+unit test (assembly shape, licence slot, document ownership: the
+hypothesis rule is charter-only, the withheld-evidence rule is
+safety-only). Hermetic manifest updated. Stage 2 (divergence under
+its own gates) is now possible: pedagogy edits without touching the
+leak rails, and the reverse.

@@ -28,20 +28,22 @@ export function projectTutorStubWorldPublicPrompt(world, { audienceLines = [] } 
   ].filter(Boolean);
 }
 
-export function projectTutorStubWorldSpeakerDagPrompt(
-  world,
-  { ledgerTerm = 'evidence record', demandLicence = false } = {},
-) {
+/**
+ * Untangling 2 (card: harness-untangling-contract-split): the standing text
+ * split into two documents — the SAFETY CONTRACT (what may never be said;
+ * the leak rails) and the TEACHING CHARTER (which moves are licensed when;
+ * where pedagogy exceptions live). Phase S proved the unsplit block did
+ * both jobs in the same sentences. Stage 1 (this change): the concatenation
+ * reproduces the old prompt byte-exactly — pinned by test; divergence is a
+ * later, separately-gated stage. The contested assignment is a recorded
+ * decision on the card: hypothesis-handling = pedagogy (it authors the
+ * wager suppression); withheld-evidence = safety.
+ */
+export function projectTutorStubSafetyContract(world) {
   if (!world) return [];
   return [
     '',
     '# Speaking-tutor evidence contract',
-    // Phase S2c: the placement law — a per-turn card cannot countermand a
-    // standing rule, so the exception lives here, in the contract itself,
-    // and DELEGATES to the card. Opt-in via the caller (env in the CLI).
-    demandLicence
-      ? 'Exception, licensed per turn: when the current turn carries a demand card, you may speak ONE conditional sentence that stakes the verdict on a named check the learner will perform against already-public evidence ("if that entry reads as you expect, send it"). This exception never introduces new or withheld evidence.'
-      : null,
     '',
     'A private deterministic planner owns the answer, proof path, future evidence, and release schedule.',
     'You are the speaking tutor. You receive only the public scene, public rule glosses, public dialogue, and evidence available through the current turn.',
@@ -53,6 +55,18 @@ export function projectTutorStubWorldSpeakerDagPrompt(
     'Speaking conduct:',
     '- Work only from evidence already public or explicitly made available in the current turn context.',
     '- Speak in ordinary scene language. Never invent formal notation, internal identifiers, paths, or hidden bookkeeping.',
+  ];
+}
+
+export function projectTutorStubTeachingCharter(world, { ledgerTerm = 'evidence record', demandLicence = false } = {}) {
+  if (!world) return [];
+  return [
+    // Phase S2c: the placement law — a per-turn card cannot countermand a
+    // standing rule, so the exception lives in the standing text and
+    // DELEGATES to the card. Opt-in via the caller (env in the CLI).
+    demandLicence
+      ? 'Exception, licensed per turn: when the current turn carries a demand card, you may speak ONE conditional sentence that stakes the verdict on a named check the learner will perform against already-public evidence ("if that entry reads as you expect, send it"). This exception never introduces new or withheld evidence.'
+      : null,
     `- Treat the ${ledgerTerm} as the learner's public reasoning record, not a second task. If the learner states a warranted inference from staged evidence, that one utterance counts as both the deduction and the ${ledgerTerm} entry.`,
     '- Do not demand every obvious intermediate step from the learner. If an ordinary listener would supply the bridge from public evidence, carry it internally and keep the conversation moving.',
     "- Ask for an explicit missing bridge only when the learner's leap would close the case, contradict public evidence, rely on unstaged evidence, or name a suspect without licensed support.",
@@ -61,4 +75,18 @@ export function projectTutorStubWorldSpeakerDagPrompt(
     '- The one-new-clue limit constrains your staging, not the learner’s reasoning. A learner may connect several already-public premises or supply several supported intermediate conclusions in one turn.',
     '- When the learner makes a warranted multi-premise or multi-step advance, credit the whole chain. Do not make them restate its parts one by one; match their pace and test only the next unresolved edge.',
   ].filter(Boolean);
+}
+
+export function projectTutorStubWorldSpeakerDagPrompt(
+  world,
+  { ledgerTerm = 'evidence record', demandLicence = false } = {},
+) {
+  if (!world) return [];
+  // Stage-1 assembly: safety + charter reproduce the pre-split prompt
+  // byte-exactly (the licence line, when present, keeps its historical slot
+  // directly under the section header).
+  const safety = projectTutorStubSafetyContract(world);
+  const charter = projectTutorStubTeachingCharter(world, { ledgerTerm, demandLicence: false });
+  const licenceLine = demandLicence ? projectTutorStubTeachingCharter(world, { ledgerTerm, demandLicence })[0] : null;
+  return [safety[0], safety[1], licenceLine, ...safety.slice(2), ...charter].filter(Boolean);
 }
