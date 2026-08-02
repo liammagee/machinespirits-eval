@@ -63,3 +63,21 @@ ladder's stage-3 classifier (cheap features, trained on one schedule
 set, evaluated on a held-out schedule AND world) is the next
 candidate, for a fresh session. The leave-one-out protocol used here
 is the evaluation standard that candidate must pass.
+
+## Stage-3 result (2026-08-03): the classifier alone TIES; the cascade PASSES the gate
+
+Trainer/evaluator committed (`scripts/train-pressure-classifier-v6.js`):
+one-vs-rest logistic over world-neutral cheap features (pattern hits,
+closed-class ultimatum/deadline/imperative cues, style counts), trained
+on w033's 675 recorded turns only, evaluated leave-one-world-out on
+w030's 394 plus the calm set. Alone: 67/162 held-out pressure recall vs
+v4's 68 at equal calm alarms (1.80) — a tie; the ladder's stop rule
+would apply. **In cascade** (patterns first; classifier only on
+pattern-silent turns at threshold 0.7, where its calm alarms are 0.00):
+**held-out recall 84/162 vs v4's 68 — sixteen new catches — at
+unchanged calm alarms and +4/232 held-out neutral false-fires. Gate 3
+met by the cascade configuration.** Next (small, fresh session): ship
+the cascade as a versioned artifact (weights + threshold in
+config/manner-trigger/v6-cascade.json) with classifier support in the
+trigger service, then the live re-runs the dose ladder and repeat
+demands have been waiting on.
