@@ -32,3 +32,20 @@ uses), re-audit, and deliver the composition. Env-gated
 (TUTOR_STUB_CLUE_INSERTION=1), traced as clueInserted, wholesale
 fallback retained for every other failure family and as the audit-fail
 fallback.
+
+## Status (2026-08-02): fires correctly; composition conflicts with duplicate-delivery; next lever named
+
+Three iterations. (1) Flag-off gate PASSED (hermetic suite green,
+byte-identical path). (2) First live k=3: insertion never fired — the
+clue-delivery failure lives under the alignment guard's exact-quotation
+rule, not the release guards; eligibility widened (one dialogue's t2
+draft passed unaided — first ever). (3) Second live k=3 + diagnostic:
+insertion fires at every eligible turn (7/7) and every composition is
+rejected as `duplicate_clue_delivery` — good drafts PARAPHRASE the due
+clue, so appending the exact rendering delivers it twice. Blind
+appending is the wrong composition. **Next lever, named: span
+replacement** — the duplicate detector already locates clue content in
+the draft; the repair is swapping the paraphrase span for the exact
+rendering rather than appending. Card stays open at that lever; the
+wholesale composer remains the delivery path meanwhile. Leaks 0
+throughout all iterations.

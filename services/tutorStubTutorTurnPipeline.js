@@ -2233,6 +2233,12 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
             attempt: insertionAttempt,
             accepted: insertionAudits.deliveryOk,
             clueSentences: clueSentences.length,
+            failedHard: insertionAudits.deliveryOk
+              ? []
+              : (insertionAudits.deliveryDecision?.hardIssues || []).map((issue) => ({
+                  guard: issue.guard,
+                  type: issue.type,
+                })),
           });
           if (insertionAudits.deliveryOk) {
             attachTutorDraftAudits(insertionResponse, insertionAudits);
