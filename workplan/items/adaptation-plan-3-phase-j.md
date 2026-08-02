@@ -35,3 +35,27 @@ state. Comparison against the authored-disclosure gaps (sol 1.91,
 sonnet 1.13). The gap between authored- and estimated-disclosure
 prices exactly what live judging inherits from trigger error — a
 number the router and any deployment will need.
+
+## Results (2026-08-02): J1 shipped; Gate J2 passes with the degradation priced
+
+J1: `scripts/judge-planted-replies.js` — blind / authored / estimated
+channels, stored separately; registered in ANALYSIS-SCRIPTS.md.
+
+J2 (sol judge, stage-5 48-reply corpus, disclosed state = the v2
+trigger's in-trace classification): on the 29 rows where all three
+channels scored, judge–gold gaps are **blind 1.63, authored-disclosure
+3.91, estimated-disclosure 2.03**. GATE J2 PASSES at its letter — the
+gain survives estimation in measurable part (+0.40 over blind) — and
+the degradation is the priced finding: ~82% of the authored gain is
+lost at v2-trigger estimation quality, because 28/48 moments (and all
+12 quiet plants) were estimated "neutral"/"concession" — live judging
+inherits blindness exactly where detection is silent. Bound stated:
+this prices the v2 trigger; today's v4 + typed quiet detector would
+gloss more moments correctly, so the number is a floor, re-measurable
+with the standing script at any detection version. (The card's earlier
+0.98/1.91 headline used all valid pairs per channel; the three-way
+comparison above uses identical rows — both readings stored in
+`exports/tutor-stub-outcome/j2-estimated-disclosure.json`.)
+
+PHASE J COMPLETE: state-shown judging is a standing instrument, and
+what deployment inherits from detection error is now a number.
