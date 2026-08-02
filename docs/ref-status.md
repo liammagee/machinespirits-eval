@@ -10,14 +10,14 @@ Archived refs are historical provenance, not live workplan items.
 | Surface | Declared version | Latest canonical tag | State |
 | --- | ---: | --- | --- |
 | Repository/package | `0.6.0` | `release/v0.6.0` | aligned |
-| Canonical paper | `3.0.243` | `paper/v3.0.243` | aligned |
+| Canonical paper | `3.0.244` | `paper/v3.0.244` | aligned |
 | Legacy mixed `v*` namespace | — | `v3.0.92` | frozen; do not add new tags here |
 
 The repository and paper versions are intentionally independent. See [Tagging and Version Protocol](tagging-and-version-protocol.md).
 
 ## Archive refs
 
-Inventory: 14 archives; 7 paired; 7 grandfathered tag-only; 0 validation errors.
+Inventory: 14 archives; 7 paired; 7 grandfathered tag-only; 1 validation errors.
 
 | Archive ID | Browsable branch | Immutable tag | Target | State | Note |
 | --- | --- | --- | --- | --- | --- |
@@ -40,4 +40,6 @@ Inspect a full archive annotation with `git show refs/tags/<tag-name>`.
 
 ## Validation
 
-No blocking ref-integrity errors were found. Legacy tag-only archives remain explicitly grandfathered.
+The registry has blocking errors:
+
+- refs/tags/paper/v3.0.244: managed tags must be annotated
