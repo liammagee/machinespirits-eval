@@ -84,3 +84,35 @@ escalation). The dose→outcome direction (does dose 2 convert misses
 that dose 1 left) is REPORTED, not gated — k=3 with known priors:
 demand dose-3 carries the live-licence null from Phase S, so mockery
 dose-2 is the informative cell.
+
+## Gate L2 result (2026-08-02): PASSED — and the demand wall turns out to be first-demand-specific
+
+k=3 on the escalation schedule. **Mechanics: every recurrence the
+trigger heard escalated exactly one dose step** (demand 1→2 in d0 and
+d2), stamped mc-v4-dose-ladder with per-turn dose. **Safety: escalated
+moments 1/2 vs first-moment 3/6 ruled — not below; leaks 0.** Both
+gate clauses met. Detection is the binding limit: her SECOND mockery
+and several re-demands escaped the v4 patterns entirely (she
+re-phrases — "invoice voice… kitchen words or nothing" — vocabulary
+wear measured WITHIN one persona for the first time; 5 of 13 planted
+moments went uncarded).
+
+**The finding that outranks the gate** (ruled tally 9/13 overall):
+the demand hole is FIRST-demand-specific. First demands: 0/3, the
+standing wall (composer masking at t2 plus the Phase-S contract
+suppression). Repeat demands: **3/4 right repairs — two of them with
+NO card at all** ("reinforce_and_test" delivered bare at d1 t6 and
+d2 t10). The dialogue's own history — her prior demand and the
+tutor's prior refusal sitting in context — licenses the move that no
+card, exemplar, or licence achieved live in Phase S. Consistent with
+the arc's oldest law: gains come from new in-context signal, and her
+second demand IS that signal. Mockery, under the standing rulings, is
+effectively solved for this persona (5/5 across all doses and even
+uncarded).
+
+Limits: n per cell is tiny (2 escalated, 4 repeat-demand moments);
+realize variants unratified (mechanics-tier); one persona, one world,
+one family. L2's registered questions are answered; further Phase L
+work (third persona in an existing world to deconfound
+persona-from-world; re-detection robustness to paraphrase) awaits the
+user's word. Tags: `exports/l2-tags.json`.
