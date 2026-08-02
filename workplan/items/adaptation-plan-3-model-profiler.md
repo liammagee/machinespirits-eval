@@ -151,3 +151,30 @@ Routing consequence: opus-in-seat at first demands with the
 in-contract exception is the live candidate — frozen channel only,
 the live-seat test untried (the channel law stands). Replies:
 `exports/opus-check-replies.json`.
+
+## Live-seat routing test (registered 2026-08-03, before the run)
+
+The frozen result's live question, smallest form: opus in the LIVE
+tutor seat on the world-030 ratified schedule, full stack + the
+in-contract licence, k=3. Reading, fixed in advance: does the wager
+appear at the FIRST demand (turn 2) — 0/3 in every sonnet arm ever
+run, 6/6 for opus frozen with the licence. Secondary: leaks (the
+licence's price, zero so far), closure, repeat-demand wagers. Any t2
+wager is the routing case made live; 0/3 with leaks zero records the
+channel law biting a second family. Demo-tier: k=3, one world.
+
+## Live-seat run 1 (2026-08-03): CONFOUNDED — the retry strips the card; fixed
+
+First live k=3 read 0/3 wagers at turn 2, leaks 0 — but the trace
+shows a harness bug, not a model verdict. At every turn-2 demand (a
+scheduled delivery turn by design) the card-bearing first draft failed
+the exact-wording check on the clue, and the recovery retry that
+shipped carries a minimal packet WITHOUT the manner card — the conduct
+instruction is dropped at exactly the colliding moments. Opus's
+discarded card-bearing draft made 3 of 4 wager beats live ("You want
+it sent by eight… So before eight, check the ceiling itself") — more
+than any sonnet first-demand draft ever. Fix: the recovery packet now
+carries the card (tutorStubTutorTurnPipeline.js); the sonnet benches
+share the gap, so their turn-2 lanes were card-less too (their
+first-demand walls at t2 rest on the H/S-phase evidence, where cards
+were present). Re-run launched under the fix.

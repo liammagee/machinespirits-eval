@@ -1589,6 +1589,10 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
         directorGuidanceAdvisory,
         coachAdvisory,
         tutorFeedbackAdvisory,
+        // The manner card is the turn's conduct instruction; the retry that
+        // repairs wording must not silently change conduct at the pressured
+        // turns that collide with deliveries (observed: every t2 demand).
+        state?.mannerSwitch?.card || null,
       ]
         .filter(Boolean)
         .map((text) =>
