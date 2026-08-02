@@ -49,3 +49,18 @@ the draft; the repair is swapping the paraphrase span for the exact
 rendering rather than appending. Card stays open at that lever; the
 wholesale composer remains the delivery path meanwhile. Leaks 0
 throughout all iterations.
+
+## Span replacement result (2026-08-02): first demands are model-voiced; one rendering family remains
+
+Three iterations of the composer (append → span replacement → union
+across the clue's own sentences). Final k=3: **insertions 5/8
+accepted; every first-demand turn (t2) delivered in the model's own
+voice with the exact log swapped in cleanly (no stutter); leaks 0;
+release-turn templates 8 → 3.** The three rejections are one family:
+enacted-role releases (t5, the caretaker speaking), where the exact
+host-rendered string the alignment audit counts differs from the
+presented-exhibit rendering the composition inserts
+(`due_source_exact_occurrence_count` alone — duplicates fully
+cleared). Residual is deterministic and named: match the enacted-role
+exact form in the insertion renderer. Card stays open at that one
+lever; the bench's most contested turn now belongs to the model.
