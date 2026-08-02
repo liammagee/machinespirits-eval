@@ -143,7 +143,6 @@ export function composeTutorStubClueSpanReplacement({ text = '', entries = [], r
     let rendered = renderedText;
     if (typeof renderedEntry === 'object') {
       const role = String(renderedEntry?.role || '').trim();
-      const surface = String(renderedEntry?.surface || '').trim();
       const required = (renderedEntry?.action_referents?.referents || []).filter((row) => row.alignment_required);
       // The audit reads ONLY the last sentence before the exact source
       // occurrence (the pre-source host boundary), so the anchor must be its
