@@ -2220,14 +2220,35 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
             (issue.guard === 'live_source_action_alignment_v1' && String(issue.type || '').startsWith('due_source_')),
         )
       ) {
-        const dueRows = currentReleaseRows(state, tutorTurn) || [];
+        // Use the release FRAME's entries — the same objects the contract
+        // rendered — so enacted-role sources produce the exact expected form.
+        const dueRowsRaw = dramaticReleaseFrame?.entries?.length
+          ? dramaticReleaseFrame.entries
+          : currentReleaseRows(state, tutorTurn) || [];
+        // Normalize presentation-nested mode/role to the top-level shape the
+        // renderer and referent compiler read.
+        const dueRows = dueRowsRaw.map((entry) =>
+          entry?.presentation?.mode && !entry?.mode
+            ? { ...entry, mode: entry.presentation.mode, role: entry.presentation.role ?? entry.role }
+            : entry,
+        );
         const clueSentences = dueRows
           .map((entry, index) => dependencies.renderTutorStubDueSource(entry, index)?.text || '')
           .filter(Boolean);
         if (clueSentences.length) {
+          // Span replacement: swap the draft's paraphrase sentences for the
+          // exact renderings (append only where the draft never touched the
+          // clue) — blind appending double-delivers and the duplicate guard
+          // rightly rejects it.
           const insertionResponse = {
             ...response,
-            text: `${String(response.text).trim()}\n\n${clueSentences.join(' ')}`,
+            text: dependencies.composeClueSpanReplacement({
+              text: String(response.text).trim(),
+              entries: dueRows,
+              renderedTexts: dueRows.map(
+                (entry, index) => dependencies.renderTutorStubDueSource(entry, index)?.text || '',
+              ),
+            }),
           };
           const insertionAttempt = attempts.length;
           const insertionAudits = withTutorDeliveryDecision(
@@ -2246,6 +2267,15 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
               : (insertionAudits.deliveryDecision?.hardIssues || []).map((issue) => ({
                   guard: issue.guard,
                   type: issue.type,
+                })),
+            composedText: insertionAudits.deliveryOk ? null : insertionResponse.text,
+            boundaries: insertionAudits.deliveryOk
+              ? null
+              : (insertionAudits.liveSourceActionAlignmentAudit?.pre_source_boundaries || []).map((b) => ({
+                  source: b.source,
+                  ok: b.alignment_ok,
+                  host: b.audited_host_text,
+                  required: (b.sources || []).flatMap((s2) => (s2.required || []).map((r) => r.label)),
                 })),
           });
           if (insertionAudits.deliveryOk) {

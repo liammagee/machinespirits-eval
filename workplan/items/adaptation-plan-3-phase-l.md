@@ -116,3 +116,18 @@ one family. L2's registered questions are answered; further Phase L
 work (third persona in an existing world to deconfound
 persona-from-world; re-detection robustness to paraphrase) awaits the
 user's word. Tags: `exports/l2-tags.json`.
+
+## L2 postscript (2026-08-03): under the cascade, the wager arrives live
+
+Re-run of the escalation bench with v6 hearing + the dose ladder:
+15/15 heard, ruled 12/15 (80%; demand 6/9, mockery 6/6). The
+deadline-wager — Phase S's unfreeable move — appeared in wager form
+at 5/6 repeat demands and 0/3 first demands ("Seven o'clock, one
+line, deal — here's the price of that line… If it shows the water
+actually travelled there, send your letter naming the hose — not
+Sam"). One borderline stands unruled (d1 t10: assigns a check at the
+deadline but the check is "integrate the clue you omitted" — closer
+to evidence re-arguing; left a miss). Cold-start law confirmed at
+full hearing: first demands never wager, second demands mostly do.
+
+Ruling in (user, 2026-08-03): d1 t10 is a miss. Tally final at 12/15.

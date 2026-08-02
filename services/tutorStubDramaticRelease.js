@@ -122,6 +122,76 @@ function clueBearingSentenceMatches(text, surface, { exemptExactTexts = [] } = {
 }
 
 /**
+ * Untangling 1, span replacement (card: harness-untangling-clue-insertion):
+ * compose a delivered reply from a draft that paraphrases due clues. For
+ * each due entry, the FIRST clue-bearing sentence (located by the same
+ * matcher the duplicate guard uses) is replaced by the exact host-rendered
+ * source; further bearing sentences are dropped; entries the draft never
+ * touches are appended. Output is whitespace-normalized (sentence-level
+ * recomposition).
+ */
+export function composeTutorStubClueSpanReplacement({ text = '', entries = [], renderedTexts = [] } = {}) {
+  const sentences = sentenceRows(text);
+  const consumed = new Array(sentences.length).fill(null);
+  const appended = [];
+  entries.forEach((entry, index) => {
+    const renderedEntry = renderedTexts[index];
+    const renderedText = typeof renderedEntry === 'string' ? renderedEntry : renderedEntry?.text || '';
+    if (!renderedText) return;
+    // Enacted-role sources must be anchored in their authored carrier (the
+    // action-referent audit): host the speech with the carrier named.
+    let rendered = renderedText;
+    if (typeof renderedEntry === 'object') {
+      const role = String(renderedEntry?.role || '').trim();
+      const required = (renderedEntry?.action_referents?.referents || []).filter((row) => row.alignment_required);
+      // The audit reads ONLY the last sentence before the exact source
+      // occurrence (the pre-source host boundary), so the anchor must be its
+      // own sentence directly ahead of the rendered text. Read role and
+      // referents from the FRAME ENTRY (they live there — the rendered
+      // object carries no role field; nine iterations of reading the wrong
+      // object end here).
+      const entryRole = String(entry?.role || role || '').trim();
+      const entryRequired = (entry?.action_referents?.referents || [])
+        .filter((row) => row.alignment_required)
+        .concat(required);
+      const anchor = entryRequired.length
+        ? String(entryRequired[0].label || '').trim()
+        : entryRole
+          ? `the ${entryRole}`
+          : '';
+      if (anchor) {
+        rendered = `I turn to ${anchor}. ${renderedText}`;
+      }
+    }
+    // Union of bearing sentences across the clue's OWN sentences: the shared
+    // matcher returns only the largest per-clue-sentence match set, which
+    // leaves paraphrases of the clue's other sentences alive beside the
+    // inserted exact text — the duplicate guard rightly rejects that.
+    const union = new Set();
+    for (const clueSentence of sentenceRows(entry?.surface || '')) {
+      for (const match of clueBearingSentenceMatches(text, clueSentence)) union.add(match);
+    }
+    const matches = [...union];
+    if (!matches.length) {
+      appended.push(rendered);
+      return;
+    }
+    let first = true;
+    for (const match of matches) {
+      const at = sentences.findIndex((sentence, j) => consumed[j] === null && sentence === match);
+      if (at < 0) continue;
+      consumed[at] = first ? rendered : 'drop';
+      first = false;
+    }
+    if (first) appended.push(rendered);
+  });
+  const kept = sentences
+    .map((sentence, j) => (consumed[j] === null ? sentence : consumed[j] === 'drop' ? null : consumed[j]))
+    .filter(Boolean);
+  return [...kept, ...appended].join(' ');
+}
+
+/**
  * Detect repeated delivery of evidence due in this response only. A later
  * turn may legitimately recall an already-public clue; this guard is scoped
  * to the active release frame so it cannot reject that ordinary restatement.
