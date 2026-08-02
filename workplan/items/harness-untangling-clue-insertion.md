@@ -97,3 +97,20 @@ reading the boundary logic in the alignment audit implementation
 (services/tutorStubDueSourceRenderer.js, the alignment section) and
 matching the composition to the PARSER, not the prose. Presented
 exhibits — including every first-demand turn — remain model-voiced.
+
+## Definitive close (2026-08-03, ninth iteration): the anchor branch never fires — the frame entry's shape is the last unknown
+
+Instrumented diagnostics settled the mechanism: the audit reads only
+the single sentence before the exact source, the required anchor is
+"the pressure-test notice", and in every failing run that sentence is
+the DRAFT's own (e.g. "Let me check the notice pinned by the
+caretaker" — has notice and caretaker, lacks the hyphenated
+pressure-test token). The composer's anchor-prepend branch never
+fires because the release frame's entry objects expose neither
+role nor compiled referents under the names the composer reads —
+their true shape is the one remaining unknown. Fresh-eyes first
+move, one line: log a single frame entry object (or read
+buildTutorStubDramaticReleaseFrame) and key the anchor off the real
+field. All instrumentation (composedText + boundary rows in the
+insertion event) is in place; three of four release families remain
+model-voiced; leaks 0 across every iteration.
