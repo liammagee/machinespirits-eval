@@ -142,8 +142,16 @@ export function composeTutorStubClueSpanReplacement({ text = '', entries = [], r
     // action-referent audit): host the speech with the carrier named.
     let rendered = renderedText;
     if (typeof renderedEntry === 'object') {
+      const role = String(renderedEntry?.role || '').trim();
+      const surface = String(renderedEntry?.surface || '').trim();
       const required = (renderedEntry?.action_referents?.referents || []).filter((row) => row.alignment_required);
-      if (required.length) {
+      if (role && surface) {
+        // The seat's own recipe (read from the recorded prompt): the full
+        // carrier phrase in the host entrance immediately before the exact
+        // source words, evidence as first-person quoted speech, no role
+        // label inside the quote.
+        rendered = `I turn to the ${role}; “Here’s what I’m reading: ${surface}”`;
+      } else if (required.length) {
         const label = String(required[0].label || '').trim();
         if (label && !new RegExp(label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i').test(text)) {
           rendered = `I turn to ${label}: ${renderedText}`;
