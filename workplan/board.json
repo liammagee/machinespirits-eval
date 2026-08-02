@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-02T22:08:33.400Z",
+  "generated": "2026-08-02T22:57:02.201Z",
   "counts": {
-    "total": 367,
+    "total": 368,
     "byStatus": {
-      "done": 227,
+      "done": 228,
       "blocked": 5,
       "dropped": 4,
       "triaged": 11,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 50,
       "experiment": 65,
-      "infra": 71,
+      "infra": 72,
       "maintenance": 165,
       "content": 2,
       "ops": 8,
@@ -12188,6 +12188,18 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "transcript-render-standard",
+      "title": "Standard transcript rows + side-by-side renderer (md/HTML swimlanes)",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-03",
+      "updated": "2026-08-03",
+      "verification": "Renderer re-run on the fullstack/bare inputs reproduces the ruled totals 10/15 vs 8/15 exactly; HTML checked in the browser pane (scoreboard, 15 moment sections, 30 lanes, ruled chips)."
     },
     {
       "id": "tutor-shell-misses-skin-attribute",
