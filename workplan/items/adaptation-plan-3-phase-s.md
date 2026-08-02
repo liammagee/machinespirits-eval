@@ -182,3 +182,15 @@ suppressed-then-releasable structure does not. Upgrades the S-arc
 claims from sonnet-specific to two-family structural, with per-family
 degree as the profiler's dose dimension. Replies:
 `exports/codex-check-replies.json`.
+
+## Revisit (2026-08-02, registered before the run): the two stated reasons arrive together
+
+The stopping rule required a stated reason to reopen the wager; two
+exist: (1) P1's reading-order finding — the identical dose succeeds
+5/5 with the card AFTER the learner's line and 0/9 live with it
+before; (2) L2's cold-start finding — repeat demands license the move
+in-context. One k=3 on the escalation schedule (demand ×3 per
+dialogue) with TUTOR_STUB_CARD_AFTER_LEARNER=1 plus the standing best
+configuration tests both levers at once. Registered read: any live
+wager at a demand moment is the first ever; first-vs-repeat split
+reported; leaks co-primary as always.

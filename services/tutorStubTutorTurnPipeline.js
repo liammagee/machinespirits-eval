@@ -356,15 +356,23 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
       // Phase S2d: with cardFinalSlot, the card moves BELOW the first-draft
       // contract — the last instruction before the learner's line — because
       // live drafts obeyed the contract over a licence positioned earlier.
-      dependencies.cardFinalSlot ? null : state?.mannerSwitch?.card || null,
+      // Phase S revisit: with cardAfterLearner, the card leaves the advisory
+      // block entirely and follows the learner's line (see promptParts).
+      dependencies.cardFinalSlot || dependencies.cardAfterLearner ? null : state?.mannerSwitch?.card || null,
       // Keep the executable contract nearest the learner line so later analysis
       // advisories cannot bury the actual speaking task.
       withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
-      dependencies.cardFinalSlot ? state?.mannerSwitch?.card || null : null,
+      dependencies.cardFinalSlot && !dependencies.cardAfterLearner ? state?.mannerSwitch?.card || null : null,
     ]
       .filter(Boolean)
       .map((text) => sanitizeTutorStubSpeakerAdvisory({ world: dag ? world : null, tutorTurn, text }));
-    const promptParts = [...speakerAdvisoryParts, learnerPrompt].filter(Boolean);
+    const promptParts = [
+      ...speakerAdvisoryParts,
+      learnerPrompt,
+      // Phase S revisit (P1's reading-order finding): the card as the very
+      // last thing the model reads, after the learner's line.
+      dependencies.cardAfterLearner ? state?.mannerSwitch?.card || null : null,
+    ].filter(Boolean);
     const userPrompt = promptParts.join('\n\n');
     const machineAdvisoryParts = [...speakerAdvisoryParts].filter(Boolean);
     // Stamp the prompt shape on the turn. Without this a transcript cannot say
