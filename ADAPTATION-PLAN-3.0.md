@@ -112,6 +112,27 @@ probe — splice one opus-voiced turn into a sonnet dialogue and ask the
 learner-sim and a judge whether the tutor changed; prices the router's
 main cost. P3: routing design note, gated on P1+P2.
 
+## Phase L — learner profiles: recovery, then dose-by-profile (added 2026-08-02)
+
+The symmetric object to the model profile: which states this learner falls
+into, under what provocation, and which repairs move her. Profiles earn
+their keep only as dial-settings (detection priors, card dose, eventually
+seat choice) — never as prompt prose; the manifest≠latent arc closed that
+door (description injection = redundancy, four instruments). L1 (free):
+profile RECOVERY — run the standing trigger+detector over every recorded
+dialogue, accumulate per-dialogue state-frequency estimates and per-state
+repair outcomes, and test whether estimates separate the two personas and
+converge to their authored briefs. Gate L1 (registered before any number
+was computed): leave-one-out nearest-centroid persona classification ≥80%
+over the recorded corpus AND the separation stabilizes within the first
+half of a dialogue; else profile-recovery is recorded as not-yet-measurable
+at current detection quality. Confound stated up front: the personas live
+in different worlds, so L1 separation is persona-plus-world; a third
+persona in an existing world deconfounds later. L2 (only past Gate L1):
+dose-by-profile — the harness escalates card dose when a state's repairs
+keep missing for THIS learner. At the human door, profile recovery replaces
+authored gold entirely — this line is the pilot's missing instrument.
+
 ## Phase HL — the human door (explicitly parked)
 
 No human-learner work starts before R and Q gate. When they do, the standing
