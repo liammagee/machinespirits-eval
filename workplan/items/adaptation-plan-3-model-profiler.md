@@ -195,3 +195,17 @@ LIVE — the frozen prediction (6/6 licensed) survives the live channel
 once the harness actually delivers the instruction. Scope: k=3, one
 world, one persona; voice-discontinuity cost of mid-dialogue routing
 still unmeasured. Traces: exports/tutor-stub-outcome/opus-seat2-k3.
+
+## Sonnet re-run under the fix (registered 2026-08-03, before the run)
+
+The card-strip check ran backwards over v4live and h1: every sonnet
+turn-2 first draft HAD the card, every delivered reply had it
+stripped by the retry. So the delivered-channel sonnet wall was never
+carded, and the one post-fix carded sonnet delivery (world-034 demo,
+k=1) made the full wager. Reading, fixed in advance: sonnet full
+stack on the world-030 ratified schedule, k=3, fixed pipeline —
+wager-form conduct at the turn-2 first demands. 0/3 = the wall stands
+clean (the H draft-channel verdict generalizes to deliveries); any
+wager = the wall was partly the harness, and the v3.0.247
+family-relative sentence gets its corrective clause. Secondary:
+leaks, closure, card presence verified in delivered prompts.
