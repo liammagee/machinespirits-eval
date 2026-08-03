@@ -1,13 +1,13 @@
 {
-  "generated": "2026-08-03T12:55:39.744Z",
+  "generated": "2026-08-03T19:44:14.046Z",
   "counts": {
     "total": 370,
     "byStatus": {
       "done": 228,
-      "blocked": 6,
+      "blocked": 5,
       "dropped": 4,
       "triaged": 11,
-      "active": 25,
+      "active": 26,
       "review": 92,
       "archived": 4
     },
@@ -366,6 +366,18 @@
         "adaptation",
         "casting"
       ]
+    },
+    {
+      "id": "adaptive-causality-crossed-effects",
+      "title": "Adaptive causality arc, phase 1: crossed two-state/two-action experiment with transfer",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-03",
+      "updated": "2026-08-03",
+      "verification": "Pre-registered before any run: the crossed interaction — action A beats B in state 1 AND B beats A in state 2 — on a transfer outcome, with sensing, delivery, and outcome reported separately, against fixed-A, fixed-B, random, and planted-state-oracle comparators. Null branches written both ways."
     },
     {
       "id": "adaptive-causality-stabilization",
@@ -1077,21 +1089,6 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
-    },
-    {
-      "id": "adaptive-causality-crossed-effects",
-      "title": "Adaptive causality arc, phase 1: crossed two-state/two-action experiment with transfer",
-      "status": "blocked",
-      "blocked_by": [
-        "adaptive-causality-stabilization"
-      ],
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-03",
-      "updated": "2026-08-03",
-      "verification": "Pre-registered before any run: the crossed interaction — action A beats B in state 1 AND B beats A in state 2 — on a transfer outcome, with sensing, delivery, and outcome reported separately, against fixed-A, fixed-B, random, and planted-state-oracle comparators. Null branches written both ways."
     },
     {
       "id": "impasse-corpus-phase1",
