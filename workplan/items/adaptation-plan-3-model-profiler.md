@@ -227,3 +227,19 @@ wager" tracked card delivery, not conversation history — repeat
 demands were exactly the turns whose cards survived. Open: the
 licence/dose interaction (l2v6's dose-2 wagers vs H's licence-free
 draft boundary) is not yet separated.
+
+## Licence/card separation (2026-08-03): free probe + registered licence-off run
+
+Free probe over every Phase-S live trace (s2, s2cc, s2d, srevisit):
+all nine first demands were repaired turns whose delivered prompts
+carry the LICENCE (system prompt, never stripped) and NOT the card —
+and srevisit's repeat demands went uncarded by the pre-v6 trigger. So
+history already holds one cell: **licence without card, live = 0
+wagers (9+ moments, sonnet).** The S-phase "channel law" re-reads as
+card delivery: frozen replays appended the card, live deliveries lost
+it. Registered before launch: the remaining cell — CARD without
+standing licence (contract licence off, dose-1 card at t2), sonnet,
+world-030 ratified, k=3. Wagers vanish = both parts necessary
+(licence permits, card names the moment). Wagers survive = licence
+dead weight post-fix and the S2 placement-law story needs its own
+correction.
