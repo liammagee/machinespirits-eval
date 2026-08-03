@@ -270,3 +270,29 @@ dialogues under every policy) and the conduct result. What falls: any
 claimed transfer lever. Transfer variation across dialogues remains
 unexplained at this k — recorded as the open bound, not a hypothesis
 queue (anti-creep).
+
+## Probe-stability check registered (2026-08-04, before running): is the variance in the answer?
+
+One citing dialogue (fixedB-d0) and one silent one (fixedA-d0), each
+probed 5 times. Readings fixed now: both dialogues flipping between
+runs at middling rates = the variance is answer-time sampling — the
+claim becomes "taught learners cite at ~1/3 probability, cold at 0,"
+with nothing to isolate at the dialogue level; stable repeats (citer
+>=4/5, silent <=1/5) = the dialogue stores the difference and the
+learner-side usage analysis is licensed next.
+
+## Probe-stability result (2026-08-04): the variance was the answer, not the dialogue
+
+Five repeats each on the strongest observed contrast (fixedB-d0, the
+citer: 5/5; fixedA-d0, originally silent: 4/5). The registered
+sampling branch fires, with a refinement: per-dialogue citation
+propensity is HIGH (~0.9 on this pair, one drawn from each extreme),
+so the original single-probe readings (9/15) UNDERSTATED transfer and
+manufactured the arm differences the causal test rightly refused to
+confirm. Corrected transfer picture: taught flat-share learners cite
+the taught method at high probability; cold learners 0/10; the assay
+world's 0/15 (fifteen independent samples) stands as the
+thin-analogy bound. Nothing to isolate at the dialogue or move level
+— the teaching effect is robust and uniform; the instrument's
+one-shot use was the noise source. Standing rule recorded: transfer
+probes report multi-sample rates per dialogue, never single draws.
