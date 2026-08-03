@@ -1,20 +1,20 @@
 {
-  "generated": "2026-07-30T03:14:12.313Z",
+  "generated": "2026-08-02T22:57:02.201Z",
   "counts": {
-    "total": 353,
+    "total": 368,
     "byStatus": {
-      "done": 227,
+      "done": 228,
       "blocked": 5,
       "dropped": 4,
-      "triaged": 8,
+      "triaged": 11,
+      "active": 24,
       "review": 92,
-      "active": 13,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 53,
-      "infra": 69,
+      "experiment": 65,
+      "infra": 72,
       "maintenance": 165,
       "content": 2,
       "ops": 8,
@@ -68,6 +68,70 @@
         "tutor-stub",
         "prereg",
         "outcome"
+      ]
+    },
+    {
+      "id": "tutor-fallible-learner-closure-prereg",
+      "title": "Pre-registration: restore variance to legitimate closure with a learner that can fail",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-30",
+      "updated": "2026-07-30",
+      "verification": "Phase A runs bare-tutor only and is exploratory. Before the first paid Phase B call: the in-band cells and their profiles are frozen in a dated log entry here, and a 5-dialogue contract smoke on one in-band cell shows zero aborted dialogues. The run itself is attended and checkpointed.",
+      "claim_status": "methods",
+      "depends_on": [
+        "tutor-contract-outcome-prereg"
+      ],
+      "tags": [
+        "tutor-stub",
+        "prereg",
+        "outcome",
+        "learner"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-model-profiler",
+      "title": "Model profiler: which model owns which teaching move — and when to switch",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Design-stage card. Smoke gate (registered before any paid probe): the profile must reproduce the two anchors already established by full runs — sonnet fails the demand move with the card present; opus makes the stake split unaided — from frozen single-turn replays, before any new model or move earns a claim.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-h"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
+      ]
+    },
+    {
+      "id": "adaptation-planted-stress-bench",
+      "title": "Planted typed stress — a bench where teaching moves have consequences",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-30",
+      "updated": "2026-07-30",
+      "verification": "Design-stage card: no build until the authored gold exists. First build gate: a user-edited stress schedule (draft: config/drama-derivation/stress/world-033-stress-schedule.yaml) naming per planted turn the state, the sim directive, and the right repair. The gate was originally transcript annotation; inverted 2026-07-30 — the corpus transcripts contain no states to read out (the sim has none), so the gold is authored in, never discovered. The annotation sheets survive for rating whether a tutor reply met a planted state.",
+      "claim_status": "methods",
+      "depends_on": [
+        "misconception-world-outcome-gate"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "outcome-channel"
       ]
     },
     {
@@ -241,6 +305,69 @@
       ]
     },
     {
+      "id": "adaptation-plan-3-phase-q",
+      "title": "Plan 3.0 Phase Q: the quiet states — repair what the pressure trigger cannot hear",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-01",
+      "updated": "2026-08-01",
+      "verification": "Registered gate quoted from ADAPTATION-PLAN-3.0.md: quiet-plant repair rate (currently ~0–1 of 6 per run) doubles under the chosen mechanism at k=3 without pressure-plant regression. Re-baselining note below recorded BEFORE any run: R2 made the registered numbers stale; the numeric bar for the k=3 run is restated after the one-dialogue pilots, from mechanics only.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-r"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-r",
+      "title": "Plan 3.0 Phase R: replicate the move-card result — two worlds, k=5, two taggers, second family",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-01",
+      "updated": "2026-08-01",
+      "verification": "Gates R1–R4 quoted verbatim from ADAPTATION-PLAN-3.0.md; each recorded on this card with its numbers before the next starts. R2 is the claim gate: v3's right-repair margin over the butler holds pooled across both worlds at k=5, or the paper claim stays at its current scope.",
+      "claim_status": "methods",
+      "depends_on": [
+        "manner-trigger-tuning"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "replication"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-s",
+      "title": "Plan 3.0 Phase S: seat release — name what suppresses the move the bare model can make",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate S1 quoted from ADAPTATION-PLAN-3.0.md: some ablation recovers the demand move in ≥half its regenerations while the control stays at zero — the suppressor is named; no recovery under any ablation = the suppression is distributed, recorded as a bound. S2 runs only if S1 names a suppressor.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-model-profiler"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
+      ]
+    },
+    {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
       "status": "active",
@@ -360,6 +487,27 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "paraphrase-robust-detection",
+      "title": "Paraphrase-robust detection: token-bag state anchors compiled from the ratified schedules (trigger v5)",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate registered before any tuning: v5 must (a) catch at least half of the known missed re-phrasings (the escalation dialogues' unheard repeat demands and repeat mockery at t6/t8/t10 — the L2 and S-revisit misses), (b) hold the w033 bench at >=17/20 classification, and (c) hold calm false alarms <=2/dialogue on the standing calm set. Miss any clause = v5 rejected, patterns stay, the ladder's classifier rung (stage 3 proper) becomes the next candidate.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-l"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
+      ]
+    },
+    {
       "id": "transcript-archive-training-data-governance",
       "title": "Govern transcript archives, ratings, and reusable training corpora",
       "status": "active",
@@ -460,6 +608,90 @@
       ]
     },
     {
+      "id": "adaptation-plan-3-phase-h",
+      "title": "Plan 3.0 Phase H: the repertoire holes — can a worked example teach the move?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate H quoted verbatim from ADAPTATION-PLAN-3.0.md: the move appears in ≥half of its card-covered moments, or the hole is recorded as a generation boundary for the family — both outcomes are paper-grade.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-q"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-j",
+      "title": "Plan 3.0 Phase J: judging as an instrument — state-shown standard, disclosure with estimated states",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate J2 quoted from ADAPTATION-PLAN-3.0.md: the alignment gain survives estimation error in measurable part; the degradation is itself the finding (it prices what live judging inherits from the trigger).",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-q"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "judging"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-l",
+      "title": "Plan 3.0 Phase L: learner profiles — recovery from behavior, then dose-by-profile",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate L1 quoted verbatim from ADAPTATION-PLAN-3.0.md, registered BEFORE any number was computed: leave-one-out nearest-centroid persona classification >=80% over the recorded corpus AND separation stabilizes within the first half of a dialogue; else profile-recovery is recorded as not-yet-measurable at current detection quality. Persona-plus-world confound stated up front.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-j"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "learner-profile"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-p",
+      "title": "Plan 3.0 Phase P: the in-seat dose profiler, the voice-change probe, and the routing note",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gates registered before any run. Gate P1: the in-seat probe must reproduce two live anchors — sonnet demand at doses 1-3 stays at/near zero (the S2c/S2d nulls) and opus stake at dose 0 hits at least half (R4) — before any new cell earns a reading; each model x move then gets a recorded minimum in-seat dose or a recorded wall. Gate P2: measurement, not pass/fail — spliced-window voice-change detection rate vs intact-window false-alarm rate; the difference is the router's visibility price. P3 is written only from P1+P2 numbers.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-l"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
+      ]
+    },
+    {
       "id": "drama-world-public-object-reachability",
       "title": "Make each drama world's declared public object reachable in its own deterministic text",
       "status": "active",
@@ -517,6 +749,67 @@
       "tags": [
         "tutor-stub",
         "guards"
+      ]
+    },
+    {
+      "id": "harness-untangling-clue-insertion",
+      "title": "Untangling 1: insert the due clue into the model's reply instead of replacing the reply",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate registered before any change: (a) flag off — behavior byte-identical, hermetic suite green; (b) flag on, k=3 live — at release turns where the draft fails ONLY the release-delivery family, the delivered reply is the model draft with the due clue sentence inserted (traced), template whole-reply replacements at those turns fall to zero, release audits pass on the composed reply, leaks stay zero.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-p"
+      ],
+      "tags": [
+        "tutor-stub",
+        "harness"
+      ]
+    },
+    {
+      "id": "harness-untangling-contract-split",
+      "title": "Untangling 2: split the standing text into a safety contract and a teaching charter",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-02",
+      "verification": "Gate registered before any change: stage 1 — the two documents concatenated reproduce the current speaker prompt BYTE-EXACTLY (unit test pins it); no behavior change is permitted at this stage. Stage 2 (later, separately gated) — divergence: teaching-charter edits must leave a frozen-replay leak probe at zero, and safety edits must leave the repertoire scorecard unchanged.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-s"
+      ],
+      "tags": [
+        "tutor-stub",
+        "harness"
+      ]
+    },
+    {
+      "id": "manner-trigger-tuning",
+      "title": "Tune the manner switch's trigger against planted gold — staged, gated",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-31",
+      "updated": "2026-07-31",
+      "verification": "Each stage's gate is numeric and recorded in this card before the next stage starts. Trigger versions ship as config artifacts with training-set hashes; every trace records its trigger version; no pooling across versions.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-planted-stress-bench"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
       ]
     },
     {
@@ -11895,6 +12188,18 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "transcript-render-standard",
+      "title": "Standard transcript rows + side-by-side renderer (md/HTML swimlanes)",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-03",
+      "updated": "2026-08-03",
+      "verification": "Renderer re-run on the fullstack/bare inputs reproduces the ruled totals 10/15 vs 8/15 exactly; HTML checked in the browser pane (scoreboard, 15 moment sections, 30 lanes, ruled chips)."
     },
     {
       "id": "tutor-shell-misses-skin-attribute",
