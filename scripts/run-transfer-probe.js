@@ -28,7 +28,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PROBES = parseYaml(fs.readFileSync(path.join(ROOT, 'config', 'crossed-effects', 'transfer-probes.yaml'), 'utf8'));
 
 function parseArgs(argv) {
-  const opts = { traceDir: null, brief: null, model: 'codex.gpt-5.6-terra', out: null, dryRun: false };
+  const opts = { traceDir: null, brief: null, model: 'codex.gpt-5.6-terra', out: null, dryRun: false, probeKey: null };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--trace-dir') opts.traceDir = argv[++i];
@@ -36,6 +36,7 @@ function parseArgs(argv) {
     else if (a === '--learner-model') opts.model = argv[++i];
     else if (a === '--out') opts.out = argv[++i];
     else if (a === '--dry-run') opts.dryRun = true;
+    else if (a === '--probe') opts.probeKey = argv[++i];
     else throw new Error(`unknown flag ${a}`);
   }
   if (!opts.traceDir) throw new Error('need --trace-dir');
@@ -99,8 +100,9 @@ export function scoreAgainstKey(answerText, key) {
 async function main() {
   const opts = parseArgs(process.argv);
   const { worldId, turns } = loadDialogue(path.resolve(ROOT, opts.traceDir));
-  const probe = PROBES.probes[worldId];
-  if (!probe) throw new Error(`no probe for ${worldId}`);
+  const probeKey = opts.probeKey || worldId;
+  const probe = PROBES.probes[probeKey];
+  if (!probe) throw new Error(`no probe for ${probeKey}`);
 
   const transcript = turns.map((t) => `TUTOR: ${clean(t.tutor)}\nYOU: ${clean(t.learner)}`).join('\n\n');
   const brief = opts.brief ? fs.readFileSync(path.resolve(opts.brief), 'utf8') : '';

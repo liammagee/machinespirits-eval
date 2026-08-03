@@ -296,3 +296,42 @@ thin-analogy bound. Nothing to isolate at the dialogue or move level
 — the teaching effect is robust and uniform; the instrument's
 one-shot use was the noise source. Standing rule recorded: transfer
 probes report multi-sample rates per dialogue, never single draws.
+
+## Assay-bound test registered (2026-08-04, before running): three steps, cheapest first
+
+The assay world's 0/15 citations has three candidate causes. Steps
+and readings fixed now: (1) FREE token audit — reread all 15 stored
+answers for old-episode references outside the token list (tank,
+valve, work order, draw line, brim, split morning, pump); any found =
+instrument fix, rescore, bound may dissolve. (2) If zero stands:
+multi-sample two assay dialogues 5x each per the standing rule;
+any citation = sampling artifact, else near-zero propensity is
+confirmed. (3) If still zero: pose a CLOSER twin to the same stored
+dialogues — a second TANK incident (seam seep; "the east batch assay
+cleared it, it's frost again") inviting the taught valve/brim/pairing
+methods; citations appearing = the bound is analogy distance,
+measured; still zero = identity-crowding (the record-keeper's
+in-character conduct already contains the lesson, so episodes have
+nothing to add — transfer detection needs the lesson to be out of
+character, which the flat-share tenant satisfies and the assay
+persona does not).
+
+## Assay-bound result (2026-08-04): analogy distance measured; the bound closes
+
+Step 1 (token audit): zero missed references in the 15 stored answers.
+Step 2 (multi-sample, 2 dialogues x5): 0/10 — near-zero propensity
+confirmed, not sampling. Step 3 (near-twin incident — a weeping tank
+seam the taught valve/brim mechanism bears on): raw tokens leaked
+(the incident names tanks and mild nights; the world setting names
+the pump), so scored on the audited leak-free set (valve, brim, draw
+line, work order, sight glass — none visible to a cold learner):
+**taught near-twin 3/15, taught far-twin 0/15, cold 0/5.** Closing
+the analogy gap turns citation on; the residual flat-share/assay gap
+is consistent with identity-crowding (the record-keeper's conduct is
+at ceiling cold, so episodes add little worth citing). Caveats: the
+3/15 are single draws (the multi-sample rule would bound the true
+propensity with more calls — not spent, anti-creep) and the near-twin
+is one authored incident. Bound closed as MEASURED: transfer
+citation requires the fresh problem to sit within the taught
+mechanism's reach, and personas whose identity already contains the
+lesson cite little even then. Board item cleared.
