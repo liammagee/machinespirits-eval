@@ -171,3 +171,35 @@ optimization is licensed by conduct but pointless for transfer until
 the transfer gap is understood. k=3 per cell, simulated learner, two
 worlds, my conduct adjudication (rulings applied consistently with
 the R2/R3/J family; per-row audit trail saved).
+
+## Follow-up registered (2026-08-04, before any run): the cold-probe baseline
+
+The world transfer gap (assay 11/15 vs flat-share 1/15) has a
+persona-identity suspect: the assay persona IS a record-keeper —
+fetching the leaf may be in-character with no teaching at all (one
+recorded case: an assay dialogue whose exhibit moment was ruled a
+MISS still passed its probe). Test, instrument-first and cheap: pose
+each world's probe to its persona COLD — brief + opening frame, no
+dialogue — k=5 per world. Readings fixed now: assay cold-pass >= 3/5
+means the probe measures persona, not teaching (the crossed transfer
+column re-reads as identity; a persona-swap design becomes mandatory
+before any world-teaching claim); assay cold <= 1/5 AND flat cold
+<= 1/5 means the dialogues genuinely taught and the world gap is real
+teaching-context variance (persona-swap then separates costume from
+identity as the paid follow-up).
+
+## Cold-probe result (2026-08-04): the registered persona branch fires
+
+Assay persona cold 4/5; flat-share persona cold 0/5. Both match their
+post-dialogue rates (11/15, 1/15) within noise. Verdict per the
+registered reading: **the transfer probe measures persona identity,
+not teaching** — "the world teaches durably" is dead, and so is any
+claim that the dialogues produced measurable transfer: cold baseline
+equals taught rate in both worlds. The pilot's apparent
+discrimination was one dialogue against one dialogue. The crossed
+experiment's conduct result stands untouched (in-dialogue, delivery-
+verified); its transfer column re-reads as: no teaching transfer
+detectable by this instrument. The next transfer instrument must be
+persona-baselined by construction (cold rate measured first, effect =
+lift over cold) — registered as the requirement before any transfer
+claim. Results: exports/crossed-effects/cold-probe-results.json.
