@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-03T19:44:14.046Z",
+  "generated": "2026-08-03T22:17:04.952Z",
   "counts": {
-    "total": 370,
+    "total": 371,
     "byStatus": {
       "done": 228,
       "blocked": 5,
       "dropped": 4,
       "triaged": 11,
-      "active": 26,
+      "active": 27,
       "review": 92,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 66,
+      "experiment": 67,
       "infra": 73,
       "maintenance": 165,
       "content": 2,
@@ -378,6 +378,18 @@
       "created": "2026-08-03",
       "updated": "2026-08-03",
       "verification": "Pre-registered before any run: the crossed interaction — action A beats B in state 1 AND B beats A in state 2 — on a transfer outcome, with sensing, delivery, and outcome reported separately, against fixed-A, fixed-B, random, and planted-state-oracle comparators. Null branches written both ways."
+    },
+    {
+      "id": "adaptive-causality-routing",
+      "title": "Adaptive causality arc, phase 2: routing — close the sensing floor",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-04",
+      "updated": "2026-08-04",
+      "verification": "Registered before builds: R1 gate = stake-fusion detection on held-out recorded plants improves over the v6 cascade with calm alarms unchanged (leave-one-world-out standard); R2 gate = live router k=3 on world-030 detects 3/3 stake plants and conduct matches the oracle arm. Null branches written both ways."
     },
     {
       "id": "adaptive-causality-stabilization",
