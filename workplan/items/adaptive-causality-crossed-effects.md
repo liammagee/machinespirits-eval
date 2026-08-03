@@ -134,3 +134,40 @@ ACTIVE. Instrument ready: probes v1.2 + deterministic scorer piloted
 for discrimination; sensing floor measured; assignment knob stamped.
 Next: the 30-dialogue main run (5 policies x 2 worlds x k=3) plus 30
 probe calls, attended.
+
+## Main-run result (2026-08-04): CROSSED ON CONDUCT, FLAT ON TRANSFER — the registered PARTIAL
+
+30/30 dialogues, balanced waves, leaks 0; delivery verified 59/60
+carded (the 1 miss = the known w030 stake sensing gap); stamps match
+the sealed manifest. Sol raw tags obscured the effect (label follows
+surface pace/length); the rulings-by-conduct pass (28/60 overrides,
+per-row verdicts in exports/crossed-effects/conduct-tags.json) shows
+it plainly:
+
+- Misremembered exhibit: right card 6/6, wrong card 3/6 (both worlds
+  agree). Wrong-card failures are exactly the predicted conduct: the
+  stake card pivots to her objection and the false memory stands.
+- Endgame stake: right card 5/6, wrong card 0/6 (both worlds). Every
+  wrong-card reply re-argues the record at a stake that was never
+  evidential — ruling 2's fail mode, produced on demand by the wrong
+  instruction.
+- Oracle 6/6 + 6/6; router 6/6 + 5/6 (its whole gap = one sensing
+  miss + one conduct miss); random tracks its sealed coins.
+
+TRANSFER (primary, the reopen-the-record lesson): flat by policy
+(2-3/6 everywhere) — the conduct advantage does not carry to the
+fresh incident. The dominant unregistered signal is the WORLD: the
+assay world transfers 11/15, the flat-share 1/15. Registered verdict:
+**PARTIAL — "adaptation moves conduct, not learning," with the bound
+stated.** Two more recorded observations: (1) the raw-tag
+router-beats-oracle artifact at the stake dissolved under rulings
+(oracle 6/6) — label noise, not timing; (2) the world effect on
+transfer is the next experiment's natural target (what about the
+assay world makes the lesson stick?).
+
+Per the registered gate order: the crossed conduct effect PASSES its
+half (the repertoire is real and state-contingent); routing
+optimization is licensed by conduct but pointless for transfer until
+the transfer gap is understood. k=3 per cell, simulated learner, two
+worlds, my conduct adjudication (rulings applied consistently with
+the R2/R3/J family; per-row audit trail saved).
