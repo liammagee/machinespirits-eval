@@ -66,3 +66,20 @@ and splits the finding from her standing at the stake. Rendered
 three-lane swimlane: `exports/demo34-three-lanes.{md,html}`; rows +
 rulings beside it. Demo-tier: k=1, unratified schedule, one authored
 costume lane.
+
+## Demo regenerated under the repaired world (2026-08-03)
+
+Fresh k=1 pair on the gate-passing world-034 (notes t3, diff-read t5,
+sync t6), volatile lane rebuilt from the new bare seats, same tagger
+and conduct rulings: **reactive 1/5, bare 4/5, full stack 5/5.** Two
+notes. First: the full stack's turn-2 reply makes the FULL wager from
+the sonnet seat, live — "does Jae's entry show the flagged paragraph's
+actual words under that edit? If it does, send it" — the first sonnet
+first-demand wager ever recorded; turn 2 collides with a clue
+delivery, and the recovery-card fix is what lets the card survive the
+retry there. Second: this bare dialogue was unusually strong (4/5 vs
+its 8/15 world-030 record; its own t2 harnessed the deadline raw), so
+the demo's between-lane gap is narrower than the k=3 benches — k=1
+each way, demo-tier, read the lanes not the totals. First bare regen
+folded at turn 7 before the late plants (one-dialogue variance;
+re-rolled, all six landed). Files: exports/demo34b-three-lanes.{md,html}.
