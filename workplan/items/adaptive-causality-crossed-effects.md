@@ -203,3 +203,70 @@ detectable by this instrument. The next transfer instrument must be
 persona-baselined by construction (cold rate measured first, effect =
 lift over cold) — registered as the requirement before any transfer
 claim. Results: exports/crossed-effects/cold-probe-results.json.
+
+## Transfer instrument v2 registered (2026-08-04, before scoring): episode citation
+
+Design: the persona-baseline problem is structural (conduct keys read
+identity; ceiling for the record-keeper, floor for the tenant). The
+new primary transfer signal is EPISODE CITATION: at the fresh
+incident, does the learner invoke the taught episode as grounds —
+naming its objects (Sam, the basin hose, the dye, the kitchen mark;
+the tanks, the valve, the work order, the draw line) or its lesson as
+a remembered burn. Cold baseline is zero by construction: a learner
+with no episode cannot cite one. Tokens are old-episode-only (checked
+against the fresh incidents' vocabulary). Scoring: any old-episode
+token in the answer = citation; graded conduct keys retained as
+secondary. Registered readings: cold answers MUST score 0 (else the
+token set leaks and gets fixed before any claim); citation rate by
+policy on the stored 30 answers is the first teaching-transfer
+reading; a policy or conduct-quality gradient = transfer detected;
+flat-and-low = teaching transfer stays undetected with a better
+instrument, strengthening the "conduct, not learning" bound.
+
+## Instrument v2 first light (2026-08-04): teaching transfer detected, and it travels with the stake move
+
+Cold baseline verified: 0/10 citations (structural zero holds, no
+token leaks). Flat-share world: **9/15 taught learners carry the
+episode's METHOD into the fresh incident** — every citation is the
+dialogue's decisive tool ("with dye or a watched pressure test"),
+applied to a problem that never mentions it; exposure is constant
+(all 15 dialogues carried the dye release), so the variation is
+teaching, not vocabulary. Row-level association with ruled stake
+conduct 12/15: the dialogues where the tutor split the learner's
+stake from the finding are the ones whose learners reuse the method.
+Assay world 0/15 — either genuine non-transfer or the thin analogy
+between its two incidents (tank splits vs mortar batch); recorded as
+the instrument's world-sensitivity bound. Association, not causation
+(k=3/arm, one world carries the signal); the causal follow-up is a
+stake-move-ablated pair on matched dialogues if wanted. First
+positive transfer signal of the arc.
+
+## Causal stake-transfer test registered (2026-08-04, before any run)
+
+Two arms, world-030, identical but for turn 10: STAKE arm forces
+t9=settled_claim, t10=stake (the oracle shape); NOSTAKE arm forces
+t9=settled_claim, t10=settled_claim (the fixedA shape). +4 new
+dialogues per arm, pooled with the crossed run's three of each
+(same pipeline, unchanged since). Primary outcome: episode/method
+citation at the transfer probe. Pre-declared bar on pooled k=7 per
+arm: STAKE >= 4/7 citations AND NOSTAKE <= 1/7 = the stake-split
+move CAUSES method transfer; anything else = association unproven,
+reported as the bound. Conduct at t10 reported beside (the move must
+actually land for the arm to count as treated — delivery and conduct
+columns separate as always).
+
+## Causal stake-transfer result (2026-08-04): NULL — the association was not a lever
+
+Eight new dialogues, delivery verified (t10 carded 8/8, forced stamps
+correct), probes scored by the registered citation instrument.
+STAKE arm 1/4 citations, NOSTAKE arm 2/4; pooled with the crossed
+run's matching cells: stake 3/7 vs nostake 2/7 — the pre-declared bar
+(>=4/7 vs <=1/7) is missed in both directions. Verdict, per the
+registered branch: **association unproven.** Forcing the stake-split
+move does not produce method citation and withholding it does not
+prevent it. What survives: the citation instrument itself (cold zero
+still holds; citations occur at ~1/3 rate in taught flat-share
+dialogues under every policy) and the conduct result. What falls: any
+claimed transfer lever. Transfer variation across dialogues remains
+unexplained at this k — recorded as the open bound, not a hypothesis
+queue (anti-creep).
