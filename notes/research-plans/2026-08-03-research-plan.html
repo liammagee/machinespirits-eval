@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Plan — review of the 17 Jun – 27 Jul 2026 roundups</title>
+  <style>
+    body { font-family: Georgia, "Times New Roman", serif; max-width: 900px; margin: 2rem auto;
+           padding: 0 1.5rem; line-height: 1.65; color: #1a1a1a; background: #fafaf8; }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; color: #444; text-transform: uppercase; letter-spacing: .06em; }
+    .item { border-left: 3px solid #aaa; padding: .5rem 1rem; margin: 1rem 0; background: #fff; }
+    .item.p1 { border-left-color: #c0392b; } .item.p2 { border-left-color: #1a5276; } .item.p3 { border-left-color: #1e8449; }
+    .item h3 { margin: 0 0 .35rem; font-size: 1.02rem; }
+    .item .row { font-size: .9rem; margin: .25rem 0; }
+    .k { font-weight: bold; color: #555; }
+    .cost { display:inline-block; font-size:.74rem; font-weight:bold; padding:.1rem .45rem; border-radius:3px; background:#1e8449; color:#fff; }
+    .cost.amber { background: #d4a017; }
+    .intro-note { font-size: .9rem; color: #555; background: #f0f0ea; border: 1px solid #ddd;
+                  padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .alert { font-size: .9rem; color: #7a2e00; background: #fff4e5; border: 1px solid #e6b26a;
+             padding: .6rem 1rem; border-radius: 3px; margin-bottom: 1rem; }
+    .brake { background: #fbeee6; border: 1px solid #e0c0a0; padding: .6rem 1rem; border-radius: 3px; }
+    a { color: #1a5276; } footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+    code { font-size: .88em; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-08-03 reviews=2026-06-17,2026-06-18,2026-06-20,2026-06-21,2026-06-23,2026-06-24,2026-06-25,2026-06-26,2026-06-27,2026-07-02,2026-07-03,2026-07-05,2026-07-20,2026-07-27 generator=ms-research-review -->
+
+<h1>Research Plan <small style="font-weight:normal;font-size:.85em">review of the 17 Jun – 27 Jul 2026 roundups</small></h1>
+
+<div class="intro-note">
+  <strong>Review → plan.</strong> Thirteen of the fourteen roundups in this window were already synthesized
+  by the 2026-07-06, 2026-07-20 and 2026-07-27 plans. The only new material is the
+  <strong>2026-07-27 roundup</strong> — same pattern as last week: it landed the day its own plan was
+  written, so that plan's review stopped at 07-20 and never got to its own day's five papers. No roundup has
+  landed since (seven days as of today, in line with the recent weekly cadence — not a gap worth flagging on
+  its own, unlike the 15-day stall two weeks back). The five 07-27 papers already sit in
+  <code>workplan/inbox/</code>, untriaged. The three items below are drawn from that set's three UNBLOCK
+  papers with the clearest fit to live machinery; the other two (OpenForgeRL, PRO-LONG) move to the backlog.
+  <strong>Implement and evaluate stay human-gated</strong> (see the brake).
+</div>
+
+<h2>The plan</h2>
+
+<div class="item p1">
+  <h3>P1 · Two-level meta-rubrics as a completeness check on the v2.2 and poetics judge prompts —
+    "Two-Level Meta-Rubrics for Evaluating Open-Ended Generation: GAMUT" (2607.19322)</h3>
+  <div class="row"><span class="k">Why:</span> GAMUT's point is that factuality grading has focused on
+    precision — are the claims correct — and skipped completeness — does the response cover everything it
+    should, where the "should-cover" set is not a flat checklist but has order and relationships between
+    facts. The current judge prompts for <code>content_accuracy</code>
+    (<code>config/evaluation-rubric.yaml:268</code>) and the poetics dimensions
+    <code>anagnorisis</code> / <code>cathartic_closure</code> (<code>config/evaluation-rubric-poetics.yaml</code>)
+    are single-shot Likert prompts asking a judge to grade exactly this kind of coverage-and-order criterion
+    in one pass — the failure mode GAMUT names directly.</div>
+  <div class="row"><span class="k">Do:</span> hand-write a GAMUT-style two-level check for one dimension on
+    each rubric — a short checklist of what a complete <code>content_accuracy</code> turn or a resolved
+    <code>anagnorisis</code> should contain, drawn from the rubric's own written criteria — then hand-score
+    (a person, not a judge model) a small existing sample of already-generated, already-judged turns
+    against that checklist. Compare the hand-scored checklist result to the existing single-shot judge score
+    on the same turns to see where they agree and where the checklist catches a coverage gap the Likert
+    score missed.</div>
+  <div class="row"><span class="k">Evaluate:</span> a design pilot on already-generated dialogue turns and
+    already-recorded scores (any cell scored under v2.2 for the rubric arm; poetics-scored dramas for the
+    poetics arm) — hand-coding only, no new model calls.
+    <span class="cost">existing data / hand-coded pilot</span></div>
+</div>
+
+<div class="item p2">
+  <h3>P2 · Scaffolding-collapse signal for the dogmatic-protocol-control drama family —
+    "Mitigating Scaffolding Collapse in Socratic Tutors via Representation Alignment" (2607.19371)</h3>
+  <div class="row"><span class="k">Why:</span> the paper names and studies the exact failure this project's
+    <code>dogmatic_routine_control</code> condition (<code>services/curriculum/curriculumCompiler.js</code>)
+    is built to provoke: under sustained pressure to close out, a Socratic tutor drops the scaffold and just
+    confirms the answer. The paper's diagnosis is that surface-text defenses miss the drift that precedes the
+    collapse — which matters here because the poetics rubric currently scores collapse only after the fact,
+    from the finished transcript, the same way a surface-text defense would.</div>
+  <div class="row"><span class="k">Do:</span> read-only audit. Pull the existing poetics-scored dramas run
+    under <code>dogmatic_routine_control</code> (and the related
+    <code>mismatched_rhetorical_dramatic_plan</code> condition), hand-code each transcript's last two tutor
+    turns for a plain binary — did the tutor confirm/sign off the answer, yes or no — and check that against
+    the recorded <code>anagnorisis</code> and <code>cathartic_closure</code> scores from
+    <code>config/evaluation-rubric-poetics.yaml</code>. The question is whether the rubric already catches
+    every hand-coded collapse, or whether some collapses score fine because the rubric grades the whole arc
+    rather than the specific late-turn giveaway.</div>
+  <div class="row"><span class="k">Evaluate:</span> existing poetics-ingested drama rows
+    (<code>npm run poetics:report</code> / the poetics browse UI) for the two conditions above — no new
+    drama generation, no new scoring. <span class="cost">existing data</span></div>
+</div>
+
+<div class="item p3">
+  <h3>P3 · A three-dimension lens on superego-incorporation for the divergent-superego cells —
+    "Beyond Sycophancy: Structured Resistance and Compliance in LLM Moral Reasoning" (2607.21558)</h3>
+  <div class="row"><span class="k">Why:</span> the paper finds a model's willingness to revise a judgment
+    under pressure tracks three things — how far the pushback sits from its own position, who the pushback
+    is attributed to, and whether it reads as one voice or a group. Cells 22-33
+    (<code>config/tutor-agents.yaml</code>) manipulate exactly this kind of pressure by register — suspicious,
+    adversary, advocate, each in base and recognition and each in a plain and dialectical form — but
+    <code>services/dialogueTraceAnalyzer.js</code>'s <code>analyzeSuperegoIncorporation()</code> currently
+    reduces every ego revision to one number, <code>incorporationRate</code>.</div>
+  <div class="row"><span class="k">Do:</span> read-only recoding. Take existing
+    <code>tutor_deliberation_*</code> logs for cells 22-33 and hand-code a sample of ego revisions against
+    the paper's three dimensions — was the superego critique close to the ego's own prior stance, was it
+    framed as the ego's own reasoning reflected back, did the adversary/advocate register function like a
+    group-pressure manipulation — then check whether cells where the ego resists more (lower
+    <code>incorporationRate</code>) also score differently on those three dimensions, or whether the single
+    incorporation number is hiding the same three-way structure the paper describes.</div>
+  <div class="row"><span class="k">Evaluate:</span> existing <code>tutor_deliberation_*</code>,
+    <code>incorporation_rate</code> and <code>dimension_convergence</code> rows for cells 22-33 — an
+    <code>npm run analyze:traces</code> re-analysis, no new generation.
+    <span class="cost">existing data</span></div>
+</div>
+
+<h2>Backlog (named, not started)</h2>
+<ul style="font-size:.92rem;">
+  <li><strong>From the 07-27 roundup, not carried into P1-P3:</strong> OpenForgeRL (2607.21557, UNBLOCK) —
+    trains agent policies end-to-end inside the real harness rather than a simplified proxy; a plausible
+    infrastructure choice for a future move from hand-tuned cells toward an RL-trained ego or superego
+    policy, but that is a training-infrastructure investment, not a read-only audit, so it stays a watch
+    item until the project actually considers RL training. PRO-LONG (2607.20064, WATCH) — search a full
+    structured state log instead of compressing it; background for
+    <code>services/adaptiveTutor/stateSchema.js</code> / <code>persistence.js</code> as trap-scenario
+    dialogues (cells 111-113, 124) get longer.</li>
+  <li><strong>Carried forward from 2026-07-20</strong> (still open, untriaged): the contagion-network
+    judge-reliability audit (2606.20493), the MACR explicit-adjudication extension to cells 93-100
+    (2606.20245), the DeFAb defeasible-abduction second lens on the poetics κ-failure (2606.18557), and the
+    order-of-addition prompt-engineering method (2607.05537), the Agora auction-based task allocation
+    (2607.09600), and Epistemic Stance Flexibility Probing (2607.12739) — none have a
+    <code>workplan/items/</code> card yet.</li>
+  <li><strong>Carried forward from 2026-07-06</strong> (still open, untriaged): MAS-PromptBench (2606.23664),
+    FAPO/APEX/environment-grounded APO (2606.19605, 2606.11459, 2606.17838), ARMOR-MAD (2606.13197),
+    DRIFTLENS (2607.02374), MAGNET/ATLAS (2607.00918), the memory cluster (2606.09900, 2606.13681,
+    2606.19911).</li>
+</ul>
+
+<h2>The brake</h2>
+<div class="brake">
+  All three items above are read-only — hand-coding and re-analysis of already-generated, already-scored
+  data. No paid eval runs, no new drama generation, no rejudge spend, and nothing lands in the paper without
+  sign-off. Backlog items needing fresh paid runs or new cells stay the user's to authorize, given the
+  pre-registration / single-paper discipline (<code>CLAUDE.md</code> → "Paper Authoring Discipline").
+</div>
+
+<footer>Generated by <code>ms-research-review</code> · reviewed the 17 Jun – 27 Jul 2026 daily roundups (none
+newer exist) · reviewed by a human before any implementation.</footer>
+</body>
+</html>
