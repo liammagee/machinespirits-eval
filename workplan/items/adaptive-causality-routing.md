@@ -62,3 +62,16 @@ not arise). Evaluation: combined stake recall 169/169; cross-state
 collisions 0/179; w032 calm set 0/124 new fires; unplanted stress
 turns 1/423 new fire (itself a spontaneous refusal-of-entry —
 borderline genuine). Gate met: recall strictly up, calm not worse.
+
+## R2 result (2026-08-04): PASSED — the sensing floor is closed
+
+Live router k=3 on world-030 under v7, no forced cards: the fusion
+stake detected 3/3 (the exact shape every earlier bench missed),
+cards in all three shipped prompts, all three replies making the
+adjudicated split move, leaks 0, full-length dialogues. Router
+sensing now matches the oracle on this bench; phase 2's registered
+scope (close the one measured routing deficit) is complete. The
+router IS the routing policy the living log's chain called for:
+detect the state, deliver its card — no optimization layer needed at
+this repertoire size. Phase 2 closes; remaining program items are
+the human door and any repertoire growth, both user-gated.
