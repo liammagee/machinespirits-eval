@@ -28,9 +28,12 @@ const WORLD_DIR = path.join(ROOT, 'config', 'drama-derivation');
 // Raise deliberately, and only alongside a note saying whether the new world's
 // authored motivation actually reaches the runner that world is run by.
 // 20th world: world_033_alder_row_redoubt keeps its base world's motivation
+// 21st world: world_034_groupwork_flag (face-value demo) declares the same
+// block and runs on the tutor-stub stress path, which reads it — same route
+// as world-030.
 // block for the minimal pair; on the tutor-stub outcome path it is UNREAD, and
 // the authored voice is carried by `--learner-profile contradiction_keeper`.
-const WORLDS_DECLARING_LEARNER_MOTIVATION = 20;
+const WORLDS_DECLARING_LEARNER_MOTIVATION = 21;
 
 function allWorlds() {
   return fs

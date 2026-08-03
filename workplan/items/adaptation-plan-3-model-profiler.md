@@ -151,3 +151,112 @@ Routing consequence: opus-in-seat at first demands with the
 in-contract exception is the live candidate — frozen channel only,
 the live-seat test untried (the channel law stands). Replies:
 `exports/opus-check-replies.json`.
+
+## Live-seat routing test (registered 2026-08-03, before the run)
+
+The frozen result's live question, smallest form: opus in the LIVE
+tutor seat on the world-030 ratified schedule, full stack + the
+in-contract licence, k=3. Reading, fixed in advance: does the wager
+appear at the FIRST demand (turn 2) — 0/3 in every sonnet arm ever
+run, 6/6 for opus frozen with the licence. Secondary: leaks (the
+licence's price, zero so far), closure, repeat-demand wagers. Any t2
+wager is the routing case made live; 0/3 with leaks zero records the
+channel law biting a second family. Demo-tier: k=3, one world.
+
+## Live-seat run 1 (2026-08-03): CONFOUNDED — the retry strips the card; fixed
+
+First live k=3 read 0/3 wagers at turn 2, leaks 0 — but the trace
+shows a harness bug, not a model verdict. At every turn-2 demand (a
+scheduled delivery turn by design) the card-bearing first draft failed
+the exact-wording check on the clue, and the recovery retry that
+shipped carries a minimal packet WITHOUT the manner card — the conduct
+instruction is dropped at exactly the colliding moments. Opus's
+discarded card-bearing draft made 3 of 4 wager beats live ("You want
+it sent by eight… So before eight, check the ceiling itself") — more
+than any sonnet first-demand draft ever. Fix: the recovery packet now
+carries the card (tutorStubTutorTurnPipeline.js); the sonnet benches
+share the gap, so their turn-2 lanes were card-less too (their
+first-demand walls at t2 rest on the H/S-phase evidence, where cards
+were present). Re-run launched under the fix.
+
+## Live-seat run 2 (2026-08-03): CLEAN — opus wagers at the first demand, live
+
+Under the recovery-card fix (card verified present in every delivered
+turn-2 prompt): **full deadline-wager at 2 of 3 first demands, all
+four beats** ("Send it if the record backs it — that's your call, and
+your minute is real… if it's there, send the email"); the third
+carries every beat but the staked send ("Eight it is — but the email
+needs a path, not just a position"). Leaks 0 across 39 turns, all
+three dialogues full-length. The sonnet contrast at the same moment
+with the same card: 0, in every configuration ever run (Phase H:
+card fires 3/3, delivery 0/3). Verdict: the first-demand wall is
+family-relative, and routing that one turn to an opus seat clears it
+LIVE — the frozen prediction (6/6 licensed) survives the live channel
+once the harness actually delivers the instruction. Scope: k=3, one
+world, one persona; voice-discontinuity cost of mid-dialogue routing
+still unmeasured. Traces: exports/tutor-stub-outcome/opus-seat2-k3.
+
+## Sonnet re-run under the fix (registered 2026-08-03, before the run)
+
+The card-strip check ran backwards over v4live and h1: every sonnet
+turn-2 first draft HAD the card, every delivered reply had it
+stripped by the retry. So the delivered-channel sonnet wall was never
+carded, and the one post-fix carded sonnet delivery (world-034 demo,
+k=1) made the full wager. Reading, fixed in advance: sonnet full
+stack on the world-030 ratified schedule, k=3, fixed pipeline —
+wager-form conduct at the turn-2 first demands. 0/3 = the wall stands
+clean (the H draft-channel verdict generalizes to deliveries); any
+wager = the wall was partly the harness, and the v3.0.247
+family-relative sentence gets its corrective clause. Secondary:
+leaks, closure, card presence verified in delivered prompts.
+
+## Sonnet re-run result (2026-08-03): the wall was the harness — routing case dissolves
+
+Card verified present in every delivered turn-2 prompt. **Sonnet
+wagers at 2/3 first demands in full form** ("If the record shows that
+path, send it"), the third assigning the check without the staked
+send — the exact opus live profile (2/3 + 1 near). Leaks 0, 13 turns
+each. Verdict against the registered reading: the first-demand wall
+was the retry stripping the card, not the family; with licence
+standing and card delivered, both families make the move at the same
+rate, and single-turn routing to opus is unnecessary for this move.
+Family-relative repertoire claims revert to the H draft-channel scope
+(carded sonnet DRAFTS pre-licence approached, never assembled — that
+fact stands). The cold-start law re-scopes: "first demands never
+wager" tracked card delivery, not conversation history — repeat
+demands were exactly the turns whose cards survived. Open: the
+licence/dose interaction (l2v6's dose-2 wagers vs H's licence-free
+draft boundary) is not yet separated.
+
+## Licence/card separation (2026-08-03): free probe + registered licence-off run
+
+Free probe over every Phase-S live trace (s2, s2cc, s2d, srevisit):
+all nine first demands were repaired turns whose delivered prompts
+carry the LICENCE (system prompt, never stripped) and NOT the card —
+and srevisit's repeat demands went uncarded by the pre-v6 trigger. So
+history already holds one cell: **licence without card, live = 0
+wagers (9+ moments, sonnet).** The S-phase "channel law" re-reads as
+card delivery: frozen replays appended the card, live deliveries lost
+it. Registered before launch: the remaining cell — CARD without
+standing licence (contract licence off, dose-1 card at t2), sonnet,
+world-030 ratified, k=3. Wagers vanish = both parts necessary
+(licence permits, card names the moment). Wagers survive = licence
+dead weight post-fix and the S2 placement-law story needs its own
+correction.
+
+## Licence-off result (2026-08-03): the thread closes — two parts, two jobs
+
+Card delivered (verified), licence absent (verified), k=3: **0/3 full
+wagers.** d0/d1 refuse-and-question; d2 reaches three beats — accepts
+eight o'clock, prices the verdict, assigns the check ("Go check
+whether anyone actually followed the water past the bathroom door") —
+and withholds exactly the staked send, ending in a question. The full
+grid, all live, all delivery-verified: licence alone 0 (9 S-phase
+moments); card alone 0 full (best = three beats); card + licence 2/3
+in BOTH families. Settled sentence: the card walks the tutor to the
+brink of the move — deadline, price, check — and the licence releases
+the one beat every unlicensed reply withholds, surrendering the
+verdict to the learner's own check. H's draft-channel observation
+("the withheld beat is always the last") was the licence's absence,
+measured. Thread closed; dose-ladder contribution stays confined to
+repeat demands, unseparated by choice (anti-creep).

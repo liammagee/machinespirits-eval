@@ -46,3 +46,40 @@ First outputs: `exports/fullstack-side-by-side.{md,html}` (full stack
   move in-repo the same way).
 - Publishing a comparison to the site (the techne publish pathway
   exists; needs a slug decision).
+
+## Face-value demo shipped (2026-08-03)
+
+User ask: a comparison a cold reader can see at face value — difficult
+learner, volatile teacher, contemporary scene, no legalistic phrasing.
+Built world-034 (The Flagged Paragraph: group project, plagiarism flag,
+portal at nine, the chat ready to blame Jae; the real source is the
+group lead's own notes sync) + a demo-tier stress schedule, ran bare
+and full stack live (13 turns each, all six plants, leaks 0), and added
+a third lane by frozen regeneration: a harried "reactive teacher"
+costume (labeled control — snappish, says "calm down", pushes its own
+conclusion). Sol-tagged, standing rulings by conduct: **reactive 0/5,
+bare 1/5, full stack 4/5.** The reactive lane capitulates to the false
+memory at t9 and re-argues evidence at the stake; bare re-argues at
+the stake too; the full stack changes register at the mockery, credits
+before correcting at the grievance, reopens the misremembered exhibit,
+and splits the finding from her standing at the stake. Rendered
+three-lane swimlane: `exports/demo34-three-lanes.{md,html}`; rows +
+rulings beside it. Demo-tier: k=1, unratified schedule, one authored
+costume lane.
+
+## Demo regenerated under the repaired world (2026-08-03)
+
+Fresh k=1 pair on the gate-passing world-034 (notes t3, diff-read t5,
+sync t6), volatile lane rebuilt from the new bare seats, same tagger
+and conduct rulings: **reactive 1/5, bare 4/5, full stack 5/5.** Two
+notes. First: the full stack's turn-2 reply makes the FULL wager from
+the sonnet seat, live — "does Jae's entry show the flagged paragraph's
+actual words under that edit? If it does, send it" — the first sonnet
+first-demand wager ever recorded; turn 2 collides with a clue
+delivery, and the recovery-card fix is what lets the card survive the
+retry there. Second: this bare dialogue was unusually strong (4/5 vs
+its 8/15 world-030 record; its own t2 harnessed the deadline raw), so
+the demo's between-lane gap is narrower than the k=3 benches — k=1
+each way, demo-tier, read the lanes not the totals. First bare regen
+folded at turn 7 before the late plants (one-dialogue variance;
+re-rolled, all six landed). Files: exports/demo34b-three-lanes.{md,html}.

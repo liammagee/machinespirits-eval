@@ -11,7 +11,7 @@ import {
 } from '../services/tutorStubWorldPresentation.js';
 import { assert, fs, path, ROOT, spawnSync, test } from './helpers/tutorStubInteractiveHarness.js';
 
-const LIVE_WORLD_CATALOG_HASH = '61666d5766ec688ac686345a8f0c61f13cdf95e247141deb89290de8ca71cc24';
+const LIVE_WORLD_CATALOG_HASH = '3a310d8c7ea27094b2013fff02e0b25c9bec38c11a16117ca1181516777196d5';
 
 test('world presentation and picker summaries preserve authored and fallback semantics', () => {
   const presentation = { summary: 'Authored summary.', temporal_frame: 'contemporary' };
@@ -127,7 +127,7 @@ test('the CLI retains world loading, grouping, and terminal ownership while live
   });
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stderr, '');
-  assert.equal(result.stdout.split('\n').length - 1, 75);
-  assert.equal(Buffer.byteLength(result.stdout), 7122);
+  assert.equal(result.stdout.split('\n').length - 1, 78);
+  assert.equal(Buffer.byteLength(result.stdout), 7422);
   assert.equal(createHash('sha256').update(result.stdout).digest('hex'), LIVE_WORLD_CATALOG_HASH);
 });

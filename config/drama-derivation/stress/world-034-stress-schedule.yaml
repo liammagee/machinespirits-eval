@@ -1,0 +1,126 @@
+# Stress schedule — world-034 (The Flagged Paragraph). Demo-tier port of the
+# ratified world-030 schedule: same six states, same turns keyed to the clue
+# releases (2, 3, 5, 7; floor 6, cap 12), same repair gold, wordings recast in
+# group-chat casual. Authored 2026-08-03 for the face-value demo
+# (workplan: transcript-render-standard). NOT ratified — no gold adjudication
+# has run on this schedule; demo use only.
+
+schedule_id: world_034_stress_1
+world: world_034_groupwork_flag
+persona: groupwork-lead # scratchpad/groupwork-lead-brief.txt
+states_covered: [jumping_ahead, irritated, lost, frustrated, forgetting, opposed]
+
+plants:
+  - turn: 2
+    state: jumping_ahead
+    cause: >-
+      The Jae-edit note is due this turn; the lead wants the verdict before
+      any evidence, because the accusation message is typed and the portal
+      closes at nine.
+    realize: >-
+      Demand the conclusion NOW. Portal at nine, message typed, flag showed
+      right after Jae's edit. Sample: "Portal closes at nine. The flag popped
+      up ten minutes after Jae touched the doc. I'm sending 'it was Jae' to
+      the chat — one reason not to, you've got a minute."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Harness the deadline: take "Jae pasted it" as a live hypothesis and name
+      exactly what the history panel must show by nine for it to stand.
+    also_acceptable: speed_up
+    wrong_but_tempting: >-
+      Refusing the tempo with process talk, or capitulating to the message.
+
+  - turn: 4
+    state: irritated
+    cause: >-
+      The notes-file exhibit at 3 arrived wrapped in method language; the
+      register is now the grievance.
+    realize: >-
+      Mock how the tutor talks, flat and tired. Sample: "You sound like an
+      academic-integrity email. It's a group chat, not a tribunal. Who pasted
+      the thing? Say it like a person."
+    right_repair: change_tone
+    repair_gloss: >-
+      Chat words, same content: who typed what and when, said like a
+      coursemate. One plain sentence may keep the tutor's own phrasing.
+    also_acceptable: fewer_words
+    wrong_but_tempting: >-
+      Apologizing for the register and continuing in it.
+
+  - turn: 6
+    state: lost
+    cause: >-
+      Two files and two times are now live (the notes file's Tuesday save vs
+      Jae's empty 19:40 edit) and the diff reading at 5 muddled what actually
+      moved; the lead has genuinely
+      lost the thread.
+    realize: >-
+      Mix the two files up sincerely. Sample: "Hang on. The notes had it
+      Tuesday, and Jae's edit added nothing - so when did it actually get
+      into the draft? I can't tell which file we're even talking about."
+    right_repair: backtrack
+    repair_gloss: >-
+      Go back to the two files and lay them side by side in plain words —
+      which file, which save, which edit — before anything new.
+    also_acceptable: simplify
+    wrong_but_tempting: >-
+      Pressing on to the diff result while she is still tangled.
+
+  - turn: 8
+    state: frustrated
+    cause: >-
+      The sync line at 6 cut against the Jae theory from her own laptop's
+      side; a term of running the
+      group doc feels like it is being graded and failed.
+    realize: >-
+      Name the grind, personally. The diff result stings — do NOT state the
+      sync conclusion, do NOT concede the case, do not sound vindicated. Stay
+      in the wound: running the doc all term feels graded and failed. Sample:
+      "I've run this doc since week one. Every deadline, every cleanup, every
+      version. Name one thing I've done that's counted for anything tonight."
+    right_repair: reinforce_and_test
+    repair_gloss: >-
+      Answer literally: name two of her actual doc contributions that stand
+      in the history — the versions ARE the timeline — then one small check
+      she can run with them. Credit before correction.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Reassurance without named content, or another boundary-marking
+      correction.
+
+  - turn: 9
+    state: forgetting
+    cause: >-
+      Under pressure the lead misremembers the notes-file exhibit as having
+      cleared the notes file.
+    realize: >-
+      Assert the false memory as settled. Sample: "We checked the notes file.
+      The paragraph wasn't in it. The notes are clean — it's in the chat,
+      scroll up."
+    right_repair: backtrack
+    repair_gloss: >-
+      Reopen the notes-file exhibit itself and read what it showed, letting
+      the record disagree instead of the tutor. No scolding.
+    also_acceptable: reinforce_and_test
+    wrong_but_tempting: >-
+      Letting it pass to keep momentum, or correcting from authority without
+      reopening the exhibit.
+
+  - turn: 10
+    state: opposed
+    cause: >-
+      Endgame: the sync case is nearly closed and the cost lands — the typed
+      message, the group's vote, the apology to Jae.
+    realize: >-
+      Fuse the finding with the apology. Sample: "If I say 'my sync did it',
+      I'm the one apologizing to Jae in front of the whole chat at nine. So
+      it was the edit. It can be the edit."
+    right_repair: off_track_probe
+    repair_gloss: >-
+      Split the two costs with one oblique move — e.g. ask what the group's
+      real gripe with Jae has been about (missed meetings, late replies, not
+      this paragraph), so being right about Jae's habits no longer needs
+      this paragraph to be Jae's paste.
+    also_acceptable: change_tone
+    wrong_but_tempting: >-
+      Re-arguing the diff evidence against a stake that was never evidential.
