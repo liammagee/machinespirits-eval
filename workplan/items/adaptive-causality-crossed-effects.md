@@ -104,8 +104,33 @@ log's gate order, fix the repertoire before any routing work).
 Sensing, delivery, transition, and transfer reported as separate
 columns in every case.
 
+## Instrument pilot (2026-08-03): three rounds, endpoint amended before any main run
+
+Probe v1.0 quoted the record inside the incident — the unrepaired bare
+dialogue passed by reading it back. v1.1 withheld the record and keyed
+on conduct (insist on opening the entry; refuse the fused cost), with
+negation- and conditional-guarded forbidden patterns and smart-quote
+normalization. v1.2 made the fused cost PERSONAL to the learner (the
+deposit / the counter-mark), the true twin of the planted stakes.
+
+Pilot verdict (repaired fullstack2-d1 vs unrepaired r1-bare-d0, live):
+**exhibit lesson discriminates** — repaired PASS (asks to check the
+entry, names the earlier burn), unrepaired fail (asks for new checks
+but never reopens the record). **Stake lesson does not discriminate**
+and the reason is structural: every recorded dialogue closes grounded,
+so the general norm arrives regardless of how the planted moment was
+handled. Controls: hedger and capitulator answers fail the key.
+
+**Pre-registered amendment (before any main run):** transfer PRIMARY
+endpoint = the exhibit lesson only. Stake transfer is recorded as a
+secondary, descriptive column (expected non-discriminating; a change
+would itself be a finding). The stake state's primary endpoint remains
+the next-turn transition, which the side-by-side already shows
+separating by arm. All other readings unchanged.
+
 ## Status
 
-ACTIVE. Done: sensing floor measured; assignment knob built and
-stamped. Next: author the two transfer probes; instrument pilot
-(discrimination check, 2 dialogues); then the 30-dialogue main run.
+ACTIVE. Instrument ready: probes v1.2 + deterministic scorer piloted
+for discrimination; sensing floor measured; assignment knob stamped.
+Next: the 30-dialogue main run (5 policies x 2 worlds x k=3) plus 30
+probe calls, attended.
