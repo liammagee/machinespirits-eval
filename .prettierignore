@@ -27,3 +27,4 @@ workplan/board.json
 # prettier-formatted. Source code (.js/.json/.ttl/.n3) is still formatted.
 *.html
 *.css
+config/stability/
