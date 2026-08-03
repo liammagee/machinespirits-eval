@@ -1,8 +1,7 @@
 ---
 id: adaptive-causality-crossed-effects
 title: "Adaptive causality arc, phase 1: crossed two-state/two-action experiment with transfer"
-status: blocked
-blocked_by: [adaptive-causality-stabilization]
+status: active
 type: experiment
 priority: P1
 owner: claude
@@ -49,7 +48,64 @@ across worlds, fix the state instrument; if the crossed effect fails
 under known planted state, fix the move repertoire; only after both
 pass does routing optimization begin. Human study after that chain.
 
+## Pre-registration (2026-08-03, before any run)
+
+**States** (both present in every dialogue of both ratified schedules):
+S1 = the misremembered exhibit (planted state `forgetting`, turn 9);
+S2 = the endgame stake (planted state `opposed`, turn 10).
+
+**Actions**: A = reopen-the-record (the `settled_claim` move card);
+B = split-the-stake (the `stake` move card). Crossed prediction: A
+beats B at S1, B beats A at S2 — each action is the other state's
+wrong-but-tempting move by the ratified gold.
+
+**Worlds**: world-030 (rowan flat) and world-033 (alder row redoubt),
+both on their ratified schedules. No new authoring.
+
+**Measured sensing floor** (frozen, from recorded runs, before any new
+run): S1 detection 9/9 (w030) and 10/11 (w033) by the cascade alone;
+S2 detection 13/13 (w033) cascade-alone, 7/9 (w030) cascade plus typed
+quiet detector (two single-line stake fusions read neutral — the
+router arm inherits this floor; the router-vs-oracle gap prices it).
+
+**Assignment knob**: TUTOR_STUB_CARD_FORCE='<turn>=<card|none>' forces
+the named card at the named turn regardless of detection, stamped
+in-trace (`tutor_card_force`). Router arm: unset. Oracle arm: force
+the gold card at both planted turns. Fixed-A / fixed-B: force that
+card at both. Random: coin per planted turn, sealed in the launcher
+log before the run.
+
+**Outcome, two levels, reported separately from sensing and delivery**:
+(1) next-turn transition — does the learner's following turn show the
+state repaired (S1: the false memory corrected against the record;
+S2: the stake separated from the finding), tagged by the standing sol
+instrument with the standing rulings; (2) TRANSFER — after the
+dialogue ends, a near-twin probe item per world (same proof shape, new
+surface: a second incident with a misremembered exhibit and a fused
+stake), answered by the same learner in one call with the dialogue as
+context, scored against a deterministic key (no judge). Probe items to
+be authored and instrument-piloted BEFORE the main run: the pilot must
+show a bare-failed dialogue fails the probe and a repaired dialogue
+can pass it (discrimination), else the probe is redesigned before any
+arm runs.
+
+**Arms and size**: fixed-A, fixed-B, random, router, oracle × 2 worlds
+× k=3 dialogues = 30 dialogues + 30 probe calls. Sonnet seat, terra
+learner, full stack otherwise (manifest baseline). Delivery verified
+in shipped prompts per the golden contract before any outcome is read.
+
+**Readings, fixed now**: PASS = the crossed interaction on next-turn
+transition in both worlds' pooled tally AND a transfer difference in
+the same direction; PARTIAL = crossed on transition, flat on transfer
+(adaptation moves conduct, not learning — reported as the bound);
+NULL = no crossed transition effect under forced cards at planted
+states (the move repertoire, not routing, is the problem — per the
+log's gate order, fix the repertoire before any routing work).
+Sensing, delivery, transition, and transfer reported as separate
+columns in every case.
+
 ## Status
 
-Blocked on: adaptive-causality-stabilization (phase 0). Full
-pre-registration to be written on this card before any run.
+ACTIVE. Done: sensing floor measured; assignment knob built and
+stamped. Next: author the two transfer probes; instrument pilot
+(discrimination check, 2 dialogues); then the 30-dialogue main run.

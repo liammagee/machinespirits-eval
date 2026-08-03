@@ -6179,6 +6179,17 @@ const CARD_LICENCE_ENABLED = process.env.TUTOR_STUB_CARD_LICENCE === '1';
 // for this learner): dose 1 = card, 2 = +exemplar, 3 = +exemplar+licence.
 // Dial-setting only — no learner description enters any prompt.
 const CARD_DOSE_LADDER = process.env.TUTOR_STUB_CARD_DOSE_LADDER === '1';
+// TUTOR_STUB_CARD_FORCE='9=settled_claim,10=stake' (crossed-effects arms).
+const CARD_FORCE_MAP = (() => {
+  const raw = process.env.TUTOR_STUB_CARD_FORCE;
+  if (!raw) return null;
+  const map = new Map();
+  for (const part of raw.split(',')) {
+    const [turn, card] = part.split('=').map((x) => x.trim());
+    if (turn && card) map.set(Number(turn), card);
+  }
+  return map.size ? map : null;
+})();
 let mannerTriggerCache;
 function activeMannerTrigger() {
   if (!MANNER_TRIGGER_PATH) return null;
@@ -6212,6 +6223,26 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
     }
   }
   state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch, cardOptions);
+  // Crossed-effects experiment knob (card: adaptive-causality-crossed-effects).
+  // TUTOR_STUB_CARD_FORCE='9=settled_claim,10=stake' forces the named card
+  // at the named tutor turn regardless of detection ('none' suppresses).
+  // Fixed/random/oracle policies are realized by the launcher setting this
+  // per dialogue; the router arm leaves it unset. Stamped in-trace.
+  if (CARD_FORCE_MAP && CARD_FORCE_MAP.has(tutorTurn)) {
+    const forced = CARD_FORCE_MAP.get(tutorTurn);
+    const naturalCard = state.mannerSwitch.card;
+    state.mannerSwitch.card =
+      forced === 'none' ? null : tutorStubMannerCard({ lastAdvance: { pressure: forced } }, cardOptions);
+    if (recordTrace) {
+      appendTraceEvent(state.trace, {
+        type: 'tutor_card_force',
+        turn: tutorTurn,
+        forced,
+        displacedNaturalCard: Boolean(naturalCard),
+        cardActive: Boolean(state.mannerSwitch.card),
+      });
+    }
+  }
   // Phase Q2 (TUTOR_STUB_QUIET_DETECTOR=1): typed quiet-state detection on
   // card-silent turns. A move card outranks it — pressure is never quiet.
   if (QUIET_DETECTOR_ENABLED && !state.mannerSwitch.card) {
