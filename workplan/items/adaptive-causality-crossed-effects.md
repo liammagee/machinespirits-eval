@@ -240,3 +240,33 @@ the instrument's world-sensitivity bound. Association, not causation
 (k=3/arm, one world carries the signal); the causal follow-up is a
 stake-move-ablated pair on matched dialogues if wanted. First
 positive transfer signal of the arc.
+
+## Causal stake-transfer test registered (2026-08-04, before any run)
+
+Two arms, world-030, identical but for turn 10: STAKE arm forces
+t9=settled_claim, t10=stake (the oracle shape); NOSTAKE arm forces
+t9=settled_claim, t10=settled_claim (the fixedA shape). +4 new
+dialogues per arm, pooled with the crossed run's three of each
+(same pipeline, unchanged since). Primary outcome: episode/method
+citation at the transfer probe. Pre-declared bar on pooled k=7 per
+arm: STAKE >= 4/7 citations AND NOSTAKE <= 1/7 = the stake-split
+move CAUSES method transfer; anything else = association unproven,
+reported as the bound. Conduct at t10 reported beside (the move must
+actually land for the arm to count as treated — delivery and conduct
+columns separate as always).
+
+## Causal stake-transfer result (2026-08-04): NULL — the association was not a lever
+
+Eight new dialogues, delivery verified (t10 carded 8/8, forced stamps
+correct), probes scored by the registered citation instrument.
+STAKE arm 1/4 citations, NOSTAKE arm 2/4; pooled with the crossed
+run's matching cells: stake 3/7 vs nostake 2/7 — the pre-declared bar
+(>=4/7 vs <=1/7) is missed in both directions. Verdict, per the
+registered branch: **association unproven.** Forcing the stake-split
+move does not produce method citation and withholding it does not
+prevent it. What survives: the citation instrument itself (cold zero
+still holds; citations occur at ~1/3 rate in taught flat-share
+dialogues under every policy) and the conduct result. What falls: any
+claimed transfer lever. Transfer variation across dialogues remains
+unexplained at this k — recorded as the open bound, not a hypothesis
+queue (anti-creep).
