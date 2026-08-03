@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-02T22:57:02.201Z",
+  "generated": "2026-08-03T12:55:39.744Z",
   "counts": {
-    "total": 368,
+    "total": 370,
     "byStatus": {
       "done": 228,
-      "blocked": 5,
+      "blocked": 6,
       "dropped": 4,
       "triaged": 11,
-      "active": 24,
+      "active": 25,
       "review": 92,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 65,
-      "infra": 72,
+      "experiment": 66,
+      "infra": 73,
       "maintenance": 165,
       "content": 2,
       "ops": 8,
@@ -366,6 +366,18 @@
         "adaptation",
         "casting"
       ]
+    },
+    {
+      "id": "adaptive-causality-stabilization",
+      "title": "Adaptive causality arc, phase 0: stabilization pass on the v0.7.0 baseline",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-03",
+      "updated": "2026-08-03",
+      "verification": "Exit criteria from notes/2026-08-03-adaptive-causality-living-log.md §Proposed stabilization phase, as corrected by the same file's correction entry: boundary closed (open PRs resolved), baseline manifest generated and reproducible, golden delivery-contract test green, plan/status docs reconciled, CI green on the baseline."
     },
     {
       "id": "codebase-refactoring-program",
@@ -1065,6 +1077,21 @@
         "critical"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "adaptive-causality-crossed-effects",
+      "title": "Adaptive causality arc, phase 1: crossed two-state/two-action experiment with transfer",
+      "status": "blocked",
+      "blocked_by": [
+        "adaptive-causality-stabilization"
+      ],
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-03",
+      "updated": "2026-08-03",
+      "verification": "Pre-registered before any run: the crossed interaction — action A beats B in state 1 AND B beats A in state 2 — on a transfer outcome, with sensing, delivery, and outcome reported separately, against fixed-A, fixed-B, random, and planted-state-oracle comparators. Null branches written both ways."
     },
     {
       "id": "impasse-corpus-phase1",
