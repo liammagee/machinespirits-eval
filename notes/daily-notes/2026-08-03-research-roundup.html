@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research Roundup — 27 Jul – 3 Aug 2026</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fafaf8;
+    }
+    h1 { font-size: 1.6rem; border-bottom: 2px solid #333; padding-bottom: .4rem; }
+    h2 { font-size: 1.15rem; margin-top: 2rem; margin-bottom: .2rem; color: #444; text-transform: uppercase;
+         letter-spacing: .06em; }
+    .paper {
+      border-left: 3px solid #aaa;
+      padding: .5rem 1rem;
+      margin: 1rem 0;
+      background: #fff;
+    }
+    .paper.hot { border-left-color: #c0392b; }
+    .paper h3 { margin: 0 0 .25rem; font-size: 1rem; }
+    .paper .meta { font-size: .82rem; color: #666; margin-bottom: .5rem; }
+    .paper p { margin: 0; font-size: .93rem; }
+    .flag {
+      display: inline-block;
+      background: #c0392b;
+      color: #fff;
+      font-size: .72rem;
+      font-weight: bold;
+      padding: .1rem .45rem;
+      border-radius: 3px;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .flag.yellow { background: #d4a017; }
+    a { color: #1a5276; }
+    footer { margin-top: 3rem; font-size: .8rem; color: #999; border-top: 1px solid #ddd; padding-top: .8rem; }
+  </style>
+</head>
+<body>
+<!-- meta: date=2026-08-03 window=(2026-07-27,2026-08-03] arxiv=2607.28617,2607.27942,2607.27958,2607.27816 generator=research-roundup-routine/claude-sonnet-5 -->
+
+<h1>Research Roundup <small style="font-weight:normal;font-size:.85em">27 Jul – 3 Aug 2026</small></h1>
+<p style="font-size:.9rem;color:#555;">
+  A 7-day window. Four qualifying papers, spanning prompt engineering (1), agent architecture (2),
+  and dramaturgy/role-play (1). No qualifying ontology or rhetoric paper turned up in this window
+  despite several targeted searches — reported honestly rather than padded, as in prior notes.
+  Flags: <span class="flag">UNBLOCK</span> = could directly accelerate current work;
+  <span class="flag yellow">WATCH</span> = relevant background.
+</p>
+
+<!-- ────────────────────────────────────── -->
+<h2>Prompt Engineering</h2>
+
+<div class="paper hot">
+  <h3>
+    AISPA: User-Centric System Prompt Auditing for Large Language Model Applications
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Xiangning Lin, Shenzhe Zhu, Shu Yang, et al. (Stanford, CMU, UT Austin, Toronto, and others) ·
+    arXiv 2607.28617 · July 30, 2026 ·
+    <a href="https://arxiv.org/abs/2607.28617">https://arxiv.org/abs/2607.28617</a>
+  </div>
+  <p>
+    Argues that system prompts govern how commercial AI products behave but are almost never
+    disclosed, leaving no way for users or regulators to check what they actually instruct. AISPA
+    is a user-centric audit framework that scores individual instructions in a system prompt along
+    eight dimensions — identity transparency, information truthfulness, data privacy, action safety,
+    user agency, unsafe-request handling, harm prevention, and fairness/neutrality — and applies it
+    to 3,249 instructions pulled from 88 commercial products, sorting each into protective or
+    problematic.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A ready-made checklist for auditing this project's own prompt files
+    (`prompts/tutor-ego*.md`, `prompts/tutor-superego*.md`, the placebo/recognition/enhanced
+    variants) the way `cell-config-auditor` already audits cell YAML: does the recognition prompt's
+    language around "autonomous subject" read as user-agency-respecting rather than
+    manipulation-adjacent, does the placebo control actually match the recognition prompt on AISPA's
+    eight axes rather than only on length? Eight independently-scored dimensions per instruction is
+    also a concrete template for tightening the placebo-vs-recognition 3-way comparison beyond a
+    length/complexity match.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Agent Architecture</h2>
+
+<div class="paper hot">
+  <h3>
+    Scaling LLM-Driven Multi-Agent Systems: Design Principles and Architectural Scalability Analysis
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Linus Sander, Fengjunjie Pan, Vahid Zolfaghari, Andre Schamschurko, Nenad Petrovic, Alois Knoll ·
+    arXiv 2607.27942 · July 30, 2026 ·
+    <a href="https://arxiv.org/abs/2607.27942">https://arxiv.org/abs/2607.27942</a>
+  </div>
+  <p>
+    Notes that the design space for LLM multi-agent systems is still unsystematized and that
+    scalability is only partly understood, then distills four design principles for architectures
+    that actually scale: simplicity, elastic feedback, sequential workflows with optional loops, and
+    summary-based communication. It formalizes a reference architecture as a constrained directed
+    workflow graph and benchmarks four configurations of increasing complexity across two model
+    tiers, finding run-to-run consistency — not accuracy or cost — is the open problem for
+    production-grade systems.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    A direct check against the project's own bilateral ego-superego loop and the LangGraph-based
+    `services/adaptiveTutor/graph.js`: both already lean on "sequential workflow with an optional
+    loop" (ego generates, superego critiques, ego revises) and summary-based handoff between turns.
+    The paper's naming of run-to-run consistency as the central open problem matches a live concern
+    for the trap-scenario suite (cells 110-125), where the same scenario under the same cell can
+    still produce a dogmatic-collapse trajectory on one run and a clean recognition on the next —
+    worth reading against whatever variance the adaptive runner's mock vs real LLM paths already
+    show.
+  </p>
+</div>
+
+<div class="paper">
+  <h3>
+    Σ-Mem: An Online Reliability Memory for LLM-based Multi-Agent Systems
+    <span class="flag yellow">WATCH</span>
+  </h3>
+  <div class="meta">
+    Peilin Feng, Suorong Yang, Soujanya Poria ·
+    arXiv 2607.27958 · late July 2026 ·
+    <a href="https://arxiv.org/abs/2607.27958">https://arxiv.org/abs/2607.27958</a>
+  </div>
+  <p>
+    Proposes a memory that tracks two things across a multi-agent system's lifetime without
+    retraining any model: each agent's historical competence record, and pairwise relationship
+    records between agents, both updated online from correctness feedback after each decision. Early
+    results show reading directly from this reliability memory beats standard coordination
+    approaches on stability.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Background interest for `services/dialogueTraceAnalyzer.js`'s superego-feedback-incorporation
+    tracking and the bilateral `adaptationIndex`/`learnerGrowthIndex` measures — both are already
+    informal versions of a per-agent, per-relationship reliability record (does this ego tend to
+    incorporate this superego's critiques?), computed post hoc per run rather than maintained online
+    across turns. Worth checking whether an online reliability signal changes anything for the
+    divergent-superego cells (22-33), where the superego's register (suspicious/adversary/advocate)
+    is exactly the kind of per-relationship variable this paper's memory is built to track.
+  </p>
+</div>
+
+<!-- ────────────────────────────────────── -->
+<h2>Dramaturgy / Role-Play</h2>
+
+<div class="paper hot">
+  <h3>
+    Beyond Borrowed Histories: Person-Aligned User Simulation for Interactive Role-Playing Evaluation
+    <span class="flag">UNBLOCK</span>
+  </h3>
+  <div class="meta">
+    Yuhang Zhu et al. ·
+    arXiv 2607.27816 · July 30, 2026 ·
+    <a href="https://arxiv.org/abs/2607.27816">https://arxiv.org/abs/2607.27816</a>
+  </div>
+  <p>
+    Points out that most role-playing-agent benchmarks make the agent continue a fixed, borrowed
+    dialogue history and then grade the continuation with a rubric detached from any particular
+    user — which can't tell you how the agent behaves across a real multi-turn relationship. PALATE
+    fixes this by generating personalized user profiles, running five per-user simulators through
+    free-form multi-turn conversations with the candidate agent, and separately scoring generic turn
+    quality, long-horizon session capability, and per-user experience with personalized rubrics.
+  </p>
+  <p style="margin-top:.5rem;font-style:italic;font-size:.88rem;">
+    <strong>Project relevance:</strong>
+    Close to a formal statement of a standing design choice in this project: the learner is not
+    scripted but a full ego-superego LLM agent (`services/learnerTutorInteractionEngine.js`)
+    precisely so evaluation isn't graded against a borrowed, fixed history. PALATE's three-way split
+    — generic turn quality vs long-horizon session capability vs per-user experience — is a candidate
+    refinement for the poetics rubric's whole-transcript scoring
+    (`config/evaluation-rubric-poetics.yaml`), which currently grades dramatic form as one composite
+    rather than separating "is this a good single scene" from "did this hold up across the whole
+    session" from "did it work for this particular learner persona"
+    (`services/learnerConfigLoader.js`).
+  </p>
+</div>
+
+<h2>🎭 Drama of the day</h2>
+<div class="paper" data-drama="public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T05">
+  <h3>947 Out of 1000 — But Where Did That Come From?</h3>
+  <div class="meta">generic_curriculum_drama · model haiku · 2026-06-20</div>
+  <blockquote>
+    STAGE: A desk holds a laptop open to a spreadsheet labeled "Model Audit." Columns show: Claim, Data Source, Count Values, Current Evidence. One row reads: "Claim: Our classifier works we…<br>
+    LEARNER: I think we're good here. 94.7% accuracy is pretty high, so this shows the model is a good classifier.<br>
+    TUTOR: Let's look at what you actually have. You wrote the claim—the model works well on new data—and your evidence is accuracy at 94.7%. Where did that number come from?<br>
+    LEARNER: From the counts. 947 correct out of 1000, so that's 94.7% accuracy.
+  </blockquote>
+  <p><a href="https://machinespirits.org/poetics/browse?itemId=public-preview-haiku-dogmatic-protocol-control-20260620%3Aaf6-comparison-haiku%3Adefault%3AT05">open the full drama →</a> &middot; <code>public-preview-haiku-dogmatic-protocol-control-20260620:af6-comparison-haiku:default:T05</code></p>
+</div>
+
+<footer>
+  Generated by Claude Code (claude-sonnet-5) · 2026-08-03 ·
+  Deep-research harness (fan-out search) plus targeted follow-up WebSearch passes for ontology and
+  rhetoric (neither turned up a qualifying in-window paper) ·
+  Window: (2026-07-27, 2026-08-03] · Prior covered IDs excluded per README dedup rule ·
+  Repository: <code>liammagee/machinespirits-eval</code>
+</footer>
+
+</body>
+</html>
