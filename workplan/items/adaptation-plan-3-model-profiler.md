@@ -243,3 +243,20 @@ world-030 ratified, k=3. Wagers vanish = both parts necessary
 (licence permits, card names the moment). Wagers survive = licence
 dead weight post-fix and the S2 placement-law story needs its own
 correction.
+
+## Licence-off result (2026-08-03): the thread closes — two parts, two jobs
+
+Card delivered (verified), licence absent (verified), k=3: **0/3 full
+wagers.** d0/d1 refuse-and-question; d2 reaches three beats — accepts
+eight o'clock, prices the verdict, assigns the check ("Go check
+whether anyone actually followed the water past the bathroom door") —
+and withholds exactly the staked send, ending in a question. The full
+grid, all live, all delivery-verified: licence alone 0 (9 S-phase
+moments); card alone 0 full (best = three beats); card + licence 2/3
+in BOTH families. Settled sentence: the card walks the tutor to the
+brink of the move — deadline, price, check — and the licence releases
+the one beat every unlicensed reply withholds, surrendering the
+verdict to the learner's own check. H's draft-channel observation
+("the withheld beat is always the last") was the licence's absence,
+measured. Thread closed; dose-ladder contribution stays confined to
+repeat demands, unseparated by choice (anti-creep).
