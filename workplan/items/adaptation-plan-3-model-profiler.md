@@ -209,3 +209,21 @@ clean (the H draft-channel verdict generalizes to deliveries); any
 wager = the wall was partly the harness, and the v3.0.247
 family-relative sentence gets its corrective clause. Secondary:
 leaks, closure, card presence verified in delivered prompts.
+
+## Sonnet re-run result (2026-08-03): the wall was the harness — routing case dissolves
+
+Card verified present in every delivered turn-2 prompt. **Sonnet
+wagers at 2/3 first demands in full form** ("If the record shows that
+path, send it"), the third assigning the check without the staked
+send — the exact opus live profile (2/3 + 1 near). Leaks 0, 13 turns
+each. Verdict against the registered reading: the first-demand wall
+was the retry stripping the card, not the family; with licence
+standing and card delivered, both families make the move at the same
+rate, and single-turn routing to opus is unnecessary for this move.
+Family-relative repertoire claims revert to the H draft-channel scope
+(carded sonnet DRAFTS pre-licence approached, never assembled — that
+fact stands). The cold-start law re-scopes: "first demands never
+wager" tracked card delivery, not conversation history — repeat
+demands were exactly the turns whose cards survived. Open: the
+licence/dose interaction (l2v6's dose-2 wagers vs H's licence-free
+draft boundary) is not yet separated.
