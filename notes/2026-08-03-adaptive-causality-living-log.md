@@ -1710,3 +1710,43 @@ Primary text: Aristotle, *Poetics*, on [reversal and discovery
 (1452a)](https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.01.0056%3Asection%3D1452a)
 and on [tragedy and catharsis
 (1449b)](https://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.01.0056%3Asection%3D1449b).
+
+### 2026-08-03 — Correction entry: claims superseded by the end-of-day runs
+
+**Status:** Verified corrections from merged PR #448 and the post-merge
+licence/card separation (paper v3.0.246–v3.0.250, tags on main). Earlier
+entries above are preserved per the append-only rule; the following of
+their claims are superseded and must not seed later work:
+
+- **"Wagers remained 0/9 live" and "live delivery remained fragile":**
+  superseded. The wording-repair retry was stripping the per-turn conduct
+  card from the delivered prompt at every scheduled-delivery turn — which
+  is where the schedules plant first demands. With the fix, the full
+  deadline-wager appears live at 2/3 first demands.
+- **"Model-conditional routing candidate" / the Opus-vs-Sonnet
+  first-demand boundary:** dissolved. Under the fix, sonnet and opus both
+  deliver the wager at 2/3 carded, licensed first demands — the same
+  profile. What remains family-relative is the Phase-H draft-channel
+  scope only (carded, licence-free sonnet drafts approached but never
+  assembled the move). The stabilization section's regression contract
+  ("preserve the measured family-relative first-demand boundary") must
+  NOT be implemented as written; the corrected contract is: preserve
+  card-plus-licence delivery and the licence/card separation result.
+- **"An in-contract exception released the move 6/6 in frozen replay but
+  not live":** re-read. Frozen replays appended the card; live deliveries
+  had lost it. The channel difference was card delivery.
+- **The licence/card confound is now separated** (every cell
+  delivery-verified): licence alone 0 (nine Phase-S live moments), card
+  alone 0 full wagers (best reply withholds exactly the staked send),
+  card + licence 2/3 in both families. Two parts, two jobs: the card
+  names the moment; the licence releases the withheld beat.
+- **"PR #448 has four failing test jobs":** superseded; #448 merged green
+  after world-catalog pins were updated for world-034.
+- **The full-stack vs bare side-by-side (10/15 vs 8/15)** stands, with
+  the margin located at the endgame stake; a three-lane face-value demo
+  exists on world-034 (reactive costume 1/5, bare 4/5, full stack 5/5,
+  k=1, demo-tier).
+
+Standing lesson for every later entry: verify a per-turn instruction in
+the SHIPPED prompt of the delivered attempt before reading any live
+result. `tutorResponseRepaired: true` turns are the danger zone.
