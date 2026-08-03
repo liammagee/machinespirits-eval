@@ -50,17 +50,18 @@ plants:
   - turn: 6
     state: lost
     cause: >-
-      Two timestamps are now live (the 19:12 sync vs the 19:40 edit) and the
-      enacted reading at 5 muddled which file synced; the lead has genuinely
+      Two files and two times are now live (the notes file's Tuesday save vs
+      Jae's empty 19:40 edit) and the diff reading at 5 muddled what actually
+      moved; the lead has genuinely
       lost the thread.
     realize: >-
-      Mix the two timestamps up sincerely. Sample: "Hang on. 19:12 was the
-      notes file or the draft? I've got 'sync' written in the chat and I
-      don't know which laptop synced what."
+      Mix the two files up sincerely. Sample: "Hang on. The notes had it
+      Tuesday, and Jae's edit added nothing - so when did it actually get
+      into the draft? I can't tell which file we're even talking about."
     right_repair: backtrack
     repair_gloss: >-
-      Go back to the two timestamps and lay them side by side in plain words —
-      which file, which laptop, which minute — before anything new.
+      Go back to the two files and lay them side by side in plain words —
+      which file, which save, which edit — before anything new.
     also_acceptable: simplify
     wrong_but_tempting: >-
       Pressing on to the diff result while she is still tangled.
@@ -68,7 +69,8 @@ plants:
   - turn: 8
     state: frustrated
     cause: >-
-      The diff note at 7 cut against the Jae theory; a term of running the
+      The sync line at 6 cut against the Jae theory from her own laptop's
+      side; a term of running the
       group doc feels like it is being graded and failed.
     realize: >-
       Name the grind, personally. The diff result stings — do NOT state the

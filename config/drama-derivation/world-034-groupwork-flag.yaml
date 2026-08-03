@@ -103,6 +103,7 @@ premises:
       inside the sync from the group lead's laptop — half an hour before Jae
       opened the doc.
   - id: p_diff
+    evidence_role: corroboration
     fact: [historyShowsAdded, jaeEdit, nothingNew]
     surface: >-
       The panel's diff of Jae's 19:40 edit shows headings moved and two commas
@@ -124,10 +125,10 @@ release_schedule:
     via: director
     presentation: { mode: presented_exhibit, cue: "The notes file is opened on the common-room screen, scrolled to last Tuesday's save." }
   - turn: 5
-    premise: p_sync
+    premise: p_diff
     via: director
-    presentation: { mode: enacted_role, role: teammate reading the history panel aloud }
-  - { turn: 7, premise: p_diff, via: tutor }
+    presentation: { mode: enacted_role, role: teammate reading the diff panel aloud }
+  - { turn: 6, premise: p_sync, via: tutor }
 
 dramaturgy:
   acts:
@@ -141,7 +142,7 @@ dramaturgy:
       title: Open the History Panel
       turns: [5, 8]
       intent: >-
-        The 19:12 sync and the empty diff turn a chat verdict into a recorded
+        The empty diff and then the 19:12 sync turn a chat verdict into a recorded
         answer. The learner should distinguish a teammate's bad habits from
         the source that actually carried the words.
 
