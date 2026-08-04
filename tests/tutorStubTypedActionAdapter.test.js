@@ -20,10 +20,52 @@ import {
   tutorStubMoveFamilyForAction,
 } from '../services/adaptiveTutor/tutorStubActionAdapter.js';
 import { actionRecord } from '../scripts/export-adaptive-state-benchmark.js';
+import { createTutorStubTypedActionPlanningRuntime } from '../services/tutorStubTypedActionPlanningRuntime.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NEXT_PUBLIC_LEARNER_OBSERVATION =
   'I am not sure because I do not understand the basic concept behind the public mark.';
+
+test('typed-action planning runtime preserves the disabled boundary without mutating state', () => {
+  const runtime = createTutorStubTypedActionPlanningRuntime({
+    C: {},
+    answerTermForWorld() {},
+    appendTraceEvent() {
+      throw new Error('not expected');
+    },
+    buildTutorDagSnapshot() {},
+    currentReleaseRows: () => [],
+    explicitPerformanceActorialPartSelection() {},
+    explicitPerformanceDirectiveValue() {},
+    jsonClone: structuredClone,
+    policySamplingContext() {},
+    randomPerformanceActorialPartSelection() {},
+    registerTemperatureApplies: () => false,
+    stateRunDebugId: () => 'run',
+    writeLine() {
+      throw new Error('not expected');
+    },
+  });
+  const state = { typedActions: { enabled: false } };
+
+  assert.equal(runtime.closePriorTypedAction({ state, learnerText: 'public', turn: 1 }), null);
+  assert.deepEqual(runtime.planTypedAction({ state, registerSelection: { selected_register: 'plain' } }), {
+    registerSelection: { selected_register: 'plain' },
+    decision: null,
+    priorOutcome: null,
+  });
+});
+
+test('entrypoint delegates typed-action planning rather than retaining local implementations', () => {
+  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTypedActionPlanningRuntime.js'), 'utf8');
+
+  assert.match(cliSource, /createTutorStubTypedActionPlanningRuntime/u);
+  assert.doesNotMatch(cliSource, /function planTypedAction/u);
+  assert.doesNotMatch(cliSource, /function closePriorTypedAction/u);
+  assert.match(runtimeSource, /function planTypedAction/u);
+  assert.match(runtimeSource, /function closePriorTypedAction/u);
+});
 
 function fixtureBelief() {
   return estimateLearnerStateBelief({

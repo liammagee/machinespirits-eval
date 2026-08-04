@@ -9,7 +9,7 @@ source: review
 created: 2026-07-29
 updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-debug-report-presentation
+branch: codex/refactor-tutor-stub-automated-learner-typed-action
 claim_status: planned
 depends_on: []
 links:
@@ -17,6 +17,7 @@ links:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
     - scripts/tutor-stub.js
+    - services/tutorStubAutomatedLearnerGenerationRuntime.js
     - services/tutorStubCharacterControlController.js
     - services/tutorStubClarificationTranslationRuntime.js
     - services/tutorStubCliArguments.js
@@ -52,6 +53,7 @@ links:
     - services/tutorStubTraceRuntime.js
     - services/tutorStubTutorPromptContext.js
     - services/tutorStubTurnOrchestration.js
+    - services/tutorStubTypedActionPlanningRuntime.js
     - services/tutorStubVoiceController.js
     - services/tutorStubWorldPresentation.js
     - services/tutorStubTutorTurnPipeline.js
@@ -69,6 +71,7 @@ links:
     - 474
     - 475
     - 476
+    - 478
   items:
     - codebase-refactoring-program
 tags:
@@ -376,3 +379,29 @@ Boundary reassessment after cycle 11:
   current `origin/main` at `74ab5721` after PR #477 landed. Repeated the focused,
   static, and full hermetic gates against that exact composition; the counts
   above are the post-restack results.
+- 2026-08-04 — Opened macro cycle 13 as PR #478 at `a36d2ce5`; initial CI is
+  running after the hermetic-contract, validation, and risk-coverage jobs
+  passed. Started macro cycle 14 in the isolated stacked
+  `codex/refactor-tutor-stub-automated-learner-typed-action` worktree from that
+  exact commit. Until #478 merges, cycle 14 is explicitly based on and depends
+  on its presentation-runtime extraction.
+- 2026-08-04 — Macro cycle 14 moved automated-learner prompt construction,
+  profile enforcement, stress/corruption controls, provider calls, and mixed
+  learner artifacts into `tutorStubAutomatedLearnerGenerationRuntime.js`, and
+  moved learner-belief, scaffold lifecycle, intervention closure, typed action
+  selection, provenance, and trace assembly into
+  `tutorStubTypedActionPlanningRuntime.js`. `scripts/tutor-stub.js` fell from
+  6,694 to 5,740 lines, a 954-line net reduction; the cycles 12–14 rolling
+  average is 858 lines per PR and remains above the 750-line stop floor. Both
+  new owners remain below the 900-line anti-monolith ceiling.
+- 2026-08-04 — Cycle 14 verification passes 100/100 focused profile,
+  typed-action, orchestration, interaction-controller, facade, discourse, and
+  QA assertions plus the complete zero-skip hermetic root and tutor-core
+  phases (core: 137/137). Lint, Prettier, manifest, workplan source (397
+  items), ref governance, syntax, whitespace, and the static import graph pass
+  with zero cycles across 494 files; no model calls were authorized for this
+  structural extraction.
+- 2026-08-04 — PR #478 merged with every CI job green. Fast-forwarded the
+  uncommitted cycle 14 worktree to post-merge `origin/main` at `c34870a3` and
+  restored the extraction without conflict; the 100/100 focused suite and
+  source/import/diff gates pass again on that exact composition.

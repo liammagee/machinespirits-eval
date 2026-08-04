@@ -61,6 +61,7 @@ hook:
     - scripts/tutor-pr-benchmark-hook.js
     - services/cliProviderBridge.js
     - services/tokenUsage.js
+    - services/tutorStubAutomatedLearnerGenerationRuntime.js
     - services/tutorStubCliArguments.js
     - services/tutorStubClarificationTranslationRuntime.js
     - services/tutorStubCharacterControlController.js
@@ -96,6 +97,7 @@ hook:
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
+    - services/tutorStubTypedActionPlanningRuntime.js
     - services/tutorStubTutorPromptContext.js
     - services/tutorStubTutorTurnPipeline.js
     - services/tutorStubTurnOrchestration.js

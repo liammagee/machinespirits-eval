@@ -6,7 +6,50 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+test('automated-learner generation runtime owns profile resolution and corruption configuration', () => {
+  const runtime = createTutorStubAutomatedLearnerGenerationRuntime({
+    appendTraceEvent() {},
+    callPromptModel() {
+      throw new Error('not expected');
+    },
+    classificationFromCombinedAnalysis() {
+      throw new Error('not expected');
+    },
+    env: { TUTOR_STUB_CORRUPT: '2:truncate' },
+    extractCombinedLearnerAnalysis() {
+      throw new Error('not expected');
+    },
+    learnerProfileContract() {
+      throw new Error('not expected');
+    },
+    learnerProfileIds: () => ['diligent'],
+    learnerProfilePrompt: (id) => `profile:${id}`,
+    negativeFloorRegisters: [],
+  });
+
+  assert.equal(runtime.automatedLearnerProfileId('Diligent'), 'diligent');
+  assert.equal(runtime.resolveAutomatedLearnerProfile('diligent'), 'profile:diligent');
+  assert.equal(runtime.automatedLearnerCorruptionEnabled(2), true);
+  assert.equal(runtime.automatedLearnerCorruptionEnabled(1), false);
+});
+
+test('entrypoint delegates automated learner generation rather than retaining local implementations', () => {
+  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const runtimeSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubAutomatedLearnerGenerationRuntime.js'),
+    'utf8',
+  );
+
+  assert.match(cliSource, /createTutorStubAutomatedLearnerGenerationRuntime/u);
+  assert.doesNotMatch(cliSource, /async function generateAutomatedLearnerTurn/u);
+  assert.doesNotMatch(cliSource, /async function generateMixedLearnerArtifacts/u);
+  assert.match(runtimeSource, /async function generateAutomatedLearnerTurn/u);
+  assert.match(runtimeSource, /async function enforceAutomatedLearnerProfile/u);
+});
 
 function turnEvent(
   turn,
