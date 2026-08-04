@@ -59,11 +59,9 @@ const DATE = '2026-05-26';
 
 function defaultDestinationRepo() {
   try {
-    const commonGitDir = execFileSync(
-      'git',
-      ['-C', REPO, 'rev-parse', '--path-format=absolute', '--git-common-dir'],
-      { encoding: 'utf8' },
-    ).trim();
+    const commonGitDir = execFileSync('git', ['-C', REPO, 'rev-parse', '--path-format=absolute', '--git-common-dir'], {
+      encoding: 'utf8',
+    }).trim();
     return resolve(dirname(commonGitDir), '../machinespirits-content-philosophy');
   } catch {
     return resolve(REPO, '../machinespirits-content-philosophy');

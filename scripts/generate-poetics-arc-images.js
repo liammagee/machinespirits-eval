@@ -401,7 +401,7 @@ function inferVisualMetaphor(section) {
   // arc note (the section ids in 2026-05-26-paper-to-dramatic-recognition-arc.html).
   const byId = {
     'starting-point':
-      'a perfectly horizontal black average line, unmistakably level from left edge to right edge, crossing an off-white Swiss grid; beneath that flat summary, a compact tutor-learner scene reaches one local stuck point and a single red path breaks sharply downward outside the average line\'s frame—the aggregate is flat while the decisive hinge is visibly missed; do not tilt the ruler or imply an upward trend',
+      "a perfectly horizontal black average line, unmistakably level from left edge to right edge, crossing an off-white Swiss grid; beneath that flat summary, a compact tutor-learner scene reaches one local stuck point and a single red path breaks sharply downward outside the average line's frame—the aggregate is flat while the decisive hinge is visibly missed; do not tilt the ruler or imply an upward trend",
     'the-stage':
       'a tutoring table staged as three crisp beats on a black ruled grid—block, turn, checked result—with a red checker stamp landing only on the final beat and the tutor and learner visible throughout',
     derivation:
@@ -419,7 +419,7 @@ function inferVisualMetaphor(section) {
     verdict:
       'three square evidence cards locked to one grid—a check, a boundary bracket, and an open ring—while a heavy red stamp marks the narrow claim CONDUCT ONLY; the paired tutor and learner remain outside any imagined mind-reading apparatus',
     'after-the-verdict':
-      'an elaborate black strategy gearbox and classifier bank bolted onto the tutor\'s route, with local dials visibly moving, while the red proof-outcome line remains flat and stops short of the checked answer; beside it, a smaller simple proof-control loop continues as the retained baseline—the machinery changes conduct but does not improve the proof',
+      "an elaborate black strategy gearbox and classifier bank bolted onto the tutor's route, with local dials visibly moving, while the red proof-outcome line remains flat and stops short of the checked answer; beside it, a smaller simple proof-control loop continues as the retained baseline—the machinery changes conduct but does not improve the proof",
   };
   if (byId[id]) return byId[id];
   if (text.includes('guard') || text.includes('world')) return byId['the-guards'];
@@ -457,8 +457,7 @@ function buildAlt(section, metaphor) {
       'An early red clue breaks a numbered proof schedule, and a compact repair rule restores the missing fact before the route continues to turn twenty.',
     'the-guards':
       'Visible and hidden-state sensors guide red paths through different proof geometries, succeeding in one shape and stopping at a boundary in another.',
-    verdict:
-      'Three evidence cards sit above a tutor and learner under a red CONDUCT ONLY stamp that limits the claim.',
+    verdict: 'Three evidence cards sit above a tutor and learner under a red CONDUCT ONLY stamp that limits the claim.',
     'after-the-verdict':
       'An elaborate strategy machine moves many local gauges but stops short of the proof finish, while the smaller baseline control loop reaches a checked result.',
   };
