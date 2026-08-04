@@ -521,23 +521,90 @@ zero leaks — and it cannot make the tutor wager cold. One cost on the
 bill: a scheduled clue release can land on the same turn as a pressure
 moment and displace the repair; the release wins that collision today.
 
+## The wall comes down — it was ours (2026-08-03/04)
+
+The cold-start boundary, the family difference, and the frozen-versus-
+live gap all fell to one bug: the retry that repairs a reply's wording
+was silently deleting the turn's conduct card, at exactly the turns
+where schedules plant first demands. With the card actually delivered
+and the licence standing, sonnet AND opus wager at two of three first
+demands. Then the licence and the card separated cleanly: licence
+alone zero (nine delivery-checked moments), card alone zero full
+wagers (the best reply withholds exactly the staked send), together
+two of three in both families. Two parts, two jobs: the card names
+the moment; the licence releases the beat every unlicensed reply
+holds back. Craft lesson, now a standing rule and a regression test:
+verify every per-turn instruction in the prompt that actually
+shipped, retries included. The config saying "carded" means nothing.
+
+## The playbook, proven (2026-08-04)
+
+Every entry then went through the same crossed discipline: force the
+right card at the planted moment in one arm and the state's named
+tempting error in the other, verify delivery, rule conduct, per-row
+audit. Results: the misremembered exhibit, the stake, the demand,
+mockery, grievance, and flat boredom all passed (the bored contrast
+the cleanest of the program: lure 5/5 against recap 0/5). The lost
+thread went the other way twice and earned a different label:
+robust-native — at genuine confusion this model's default conduct IS
+the gold, and no card, right or wrong, moves it; keep the hearing,
+claim nothing for the instruction. The licence was promoted on a
+learner outcome: with it, learners at first demands engage the
+assigned check (commit to the condition, or come back reporting the
+notebook read) four of six against one of six without; its leak price
+re-measured at zero. Detection closed its last holes from the
+archive's own misses: the stake fusion ("If I write X, I'm
+apologising at eight — so it's steam") and wordy boredom ("Fine.
+Same as yesterday."), each a closed-class shape, each held-out
+tested. The router that results — hear the state, hand over its card
+— matches an oracle told the answer. No learned layer earns a place.
+
+## What lasts, and what doesn't (2026-08-04)
+
+Teaching transfer got its own instruments, and they cost three
+corrections to get right. A quiz that contains its answer measures
+nothing. A quiz a persona can pass from identity measures the
+character sheet (the record-keeper passes cold; measure lift over the
+persona's COLD rate, always). And a one-draw probe measures a coin
+flip (probe multi-sample, always). Through the fixed instruments:
+taught learners carry a lesson's METHOD to a fresh problem at high,
+uniform probability — citing the dye test on a damp patch no probe
+mentioned — against a structurally zero cold baseline. Nothing we
+control moves that rate: not the stake move (a twelve-of-fifteen
+association died its same-night causal test), not policy, not
+dialogue texture. And the fresh problem must sit close enough to the
+taught mechanism: analogy distance took citation from three-of-
+fifteen to zero on the same dialogues. The tutor owns the moment;
+what makes the lesson last is not yet in the tutor's hands.
+
+## The admission rule, stated plainly
+
+The playbook grows only against a priced deficit: a measured failure,
+counted on a bench, at a kind of moment the current entries handle
+badly. An idea, a theory, a beautiful figure from the catalogue — none
+of these is a ticket. The wager waited weeks as an idea and entered
+in a day once its deficit was counted. Each admitted entry then pays
+the full price: named state, named move, crossed test against the
+tempting error, delivery verified, calm set checked, and any licence
+priced against the safety rail it cuts into. The two composition
+tendencies govern the whole table: same-kind parts overlap and add
+to less; cue-and-right pairs multiply zeros into a working move. And
+the recurring total: re-run bare-versus-full, so the growing code
+stays priced against the simplest tutor that could sit in the chair.
+
 ## Open items before this hardens
 
-1. Same-family fold: the sonnet/sonnet run hung mid-dialogue and was
-   killed (attrition); re-run pending.
-2. Guard family 3 per-type read-through — partially superseded by the v6
-   shadow column; the read-through still owes the strict column an answer.
-3. Everything texture-level here is n=1–5; nothing goes in the paper past
-   its stated limits (the paper's §6.24 carries the gated claims through
-   v3.0.245).
-4. The demand move: open cold only. Repeat demands wager live 5/6; a
-   first demand has never drawn the move in any configuration. Routing
-   (opus-in-seat at first demands) is the remaining lever.
-5. Voice discontinuity under routing — unmeasured; blocks any router
-   build.
-6. Corruption bench: truncation loop closed; termswap bounded (semantic
-   swapping is not deterministic-cheap); a full corrupted-turn arm would
-   need non-release corruption turns.
-7. The release/switch turn collision (one dialogue's grievance moment):
-   unpriced beyond n=1; a scheduler rule (pressure beats release, or
-   release defers a turn) is a small build if it recurs.
+1. The human door: a human learner in the seat the simulated one
+   holds — the only remaining program item, user-gated (consent,
+   transfer outcomes, conservative stopping rules per the living log).
+2. The t31 endgame-drag moment has gold (finish fast) but no matching
+   card; unforced by choice. A "close it" card is a candidate only if
+   a bench prices the deficit.
+3. The staked-send beat's isolated effect: per-protocol n=2 anecdote;
+   would need forced-wager delivery, a build we do not have.
+4. The release/switch turn collision (n=1): a scheduler rule if it
+   recurs.
+5. The composer's t5 wedge case (a model sentence naming the wrong
+   object directly before the quote): recorded, safely fallback-caught.
+6. Multi-sample transfer rates and cold-persona baselines are now
+   standing instrument rules for anything that claims learning.
