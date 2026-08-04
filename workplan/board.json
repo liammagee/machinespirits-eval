@@ -1,23 +1,23 @@
 {
-  "generated": "2026-08-04T08:04:41.717Z",
+  "generated": "2026-08-04T10:15:56.223Z",
   "counts": {
-    "total": 375,
+    "total": 397,
     "byStatus": {
-      "done": 339,
+      "done": 360,
       "blocked": 6,
       "dropped": 4,
-      "triaged": 10,
+      "triaged": 11,
       "active": 8,
       "archived": 4,
       "review": 4
     },
     "byType": {
-      "research": 50,
+      "research": 71,
       "experiment": 69,
       "infra": 73,
       "maintenance": 165,
       "content": 3,
-      "ops": 9,
+      "ops": 10,
       "paper": 6
     }
   },
@@ -112,6 +112,34 @@
         "adaptation",
         "casting"
       ]
+    },
+    {
+      "id": "audit-tutor-prompts-for-user-agency-and-control-parity",
+      "title": "Audit tutor prompts for user agency and control parity",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "daily-routine",
+      "created": "2026-08-03",
+      "updated": "2026-08-04",
+      "verification": "Every active tutor ego and superego prompt variant is scored on a frozen user-agency and control checklist; recognition and placebo prompts are compared on the same dimensions; discrepancies, exclusions, and any proposed prompt changes are reported without modifying an experimental prompt before a prospective decision.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-08-03-research-roundup.html"
+        ],
+        "items": [
+          "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro"
+        ]
+      },
+      "tags": [
+        "prompts",
+        "user-agency",
+        "placebo-control",
+        "audit"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "decide-rich-learner-memory-service-retention",
@@ -842,7 +870,7 @@
       "created": "2026-07-29",
       "updated": "2026-08-04",
       "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
-      "branch": "codex/refactor-tutor-stub-subsystem-facades",
+      "branch": "codex/refactor-tutor-stub-learner-analysis-presentation",
       "claim_status": "planned",
       "depends_on": [],
       "links": {
@@ -854,6 +882,9 @@
           "services/tutorStubCommandRuntime.js",
           "services/tutorStubCliArguments.js",
           "services/tutorStubLaunchRuntime.js",
+          "services/tutorStubLearnerAnalysisRuntime.js",
+          "services/tutorStubLearnerEvidenceRuntime.js",
+          "services/tutorStubInterimController.js",
           "services/tutorStubModelPickerController.js",
           "services/tutorStubResponsePolicy.js",
           "services/tutorStubScenarioController.js",
@@ -864,7 +895,8 @@
           "services/tutorStubVoiceController.js",
           "services/tutorStubTutorTurnPipeline.js",
           "tests/tutorStubTutorTurnPipeline.test.js",
-          "tests/tutorStubEntrypointFacades.test.js"
+          "tests/tutorStubEntrypointFacades.test.js",
+          "tests/tutorStubLearnerAnalysisRuntime.test.js"
         ],
         "prs": [
           426,
@@ -873,7 +905,8 @@
           429,
           430,
           431,
-          471
+          471,
+          474
         ],
         "items": [
           "codebase-refactoring-program"
@@ -9537,6 +9570,35 @@
       }
     },
     {
+      "id": "adaptive-personality-literature-triage",
+      "title": "Behavior-Adaptive Conversational Agents: Toward a Fluid Personality Framework",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-03",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-03-research-roundup.html"
+        ],
+        "items": [
+          "negative-register-effect-estimation-grid",
+          "refresh-weber-id-charisma-recognition-thread"
+        ]
+      },
+      "tags": [
+        "literature",
+        "charisma",
+        "register"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
       "id": "adaptive-tutor-copilot-shadow-pilot",
       "title": "Adaptive tutor co-pilot shadow and guarded human pilot",
       "status": "done",
@@ -9571,6 +9633,66 @@
         "transfer"
       ],
       "milestone": "human-pilot-prep"
+    },
+    {
+      "id": "adaptive-tutoring-router-literature-triage",
+      "title": "Learning to Prompt: Improving Student Engagement with Adaptive LLM-based High-School Tutoring",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-23",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-23-research-roundup.html"
+        ],
+        "items": [
+          "a1-human-learner-validation",
+          "tutor-stub-latency-routing-optimization",
+          "tutor-stub-transition-reward-model"
+        ]
+      },
+      "tags": [
+        "literature",
+        "adaptive-tutor",
+        "simulated-learner"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
+      "id": "agent-communication-protocol-taxonomy-literature-triage",
+      "title": "A Technical Taxonomy of LLM Agent Communication Protocols",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-23",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-23-research-roundup.html"
+        ],
+        "items": [
+          "version-symmetric-trace-transformation-pipeline",
+          "refactor-adaptive-trace-projection",
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "literature",
+        "multi-agent",
+        "protocols"
+      ],
+      "milestone": "literature-triage"
     },
     {
       "id": "arcane-do-role-playing-language-agents-stay-in-character-at",
@@ -9853,6 +9975,66 @@
       ]
     },
     {
+      "id": "character-grounded-story-generation-literature-triage",
+      "title": "From Personas to Plot: Character-Grounded Multi-Agent Story Generation for Long-Form Narratives",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-03",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-03-research-roundup.html"
+        ],
+        "items": [
+          "scenario-presentation-variety",
+          "character-development-capacity",
+          "proof-dag-dramatic-derivation-assessment"
+        ]
+      },
+      "tags": [
+        "literature",
+        "poetics",
+        "world-state"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
+      "id": "character-variety-literature-triage",
+      "title": "CASPER in the Machine: Insights into Character Variety in LLM-Generated Stories",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-02",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-02-research-roundup.html"
+        ],
+        "items": [
+          "scenario-presentation-variety",
+          "character-development-capacity",
+          "arcane-do-role-playing-language-agents-stay-in-character-at"
+        ]
+      },
+      "tags": [
+        "literature",
+        "poetics",
+        "character"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
       "id": "charisma-desire-generalizability-matrix",
       "title": "Route charisma/desire by engagement register",
       "status": "done",
@@ -10039,6 +10221,35 @@
       "milestone": "paper-2-evidence-cleanup"
     },
     {
+      "id": "cognitive-model-prompting-literature-triage",
+      "title": "Using Cognitive Models to Improve Language Model Simulation of Human Persuasion Games",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-07",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-20-research-roundup.html"
+        ],
+        "items": [
+          "audit-tutor-prompts-for-user-agency-and-control-parity",
+          "synthesize-theoretical-insights"
+        ]
+      },
+      "tags": [
+        "literature",
+        "recognition",
+        "prompts"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
       "id": "committee-architecture-offshoot-doc",
       "title": "Committee-architecture design document (Program-2 offshoot)",
       "status": "done",
@@ -10118,6 +10329,26 @@
           "tests/tutorStubCommandRegistry.test.js"
         ]
       }
+    },
+    {
+      "id": "consolidate-daily-research-inbox",
+      "title": "Consolidate the daily-research capture inbox",
+      "status": "done",
+      "type": "ops",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-04",
+      "updated": "2026-08-04",
+      "verification": "All 66 research captures were reviewed: one distinct audit was promoted, 54 were folded into existing work with a recorded decision, and 11 background-only captures were dropped; workplan/inbox is README-only and the source check passes without duplicate items.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "methods",
+      "tags": [
+        "workplan",
+        "literature",
+        "triage"
+      ],
+      "milestone": "literature-triage"
     },
     {
       "id": "consolidate-logs-db-private-archive",
@@ -10435,6 +10666,36 @@
       "claim_status": "future"
     },
     {
+      "id": "evaluator-bias-propagation-literature-triage",
+      "title": "Contagion Networks: Evaluator Bias Propagation in Multi-Agent LLM Systems",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-07",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-20-research-roundup.html"
+        ],
+        "items": [
+          "the-confident-liar-diagnosing-multi-agent-debate-with-log-pr",
+          "rubric-v3-calibration-and-held-out-acceptance",
+          "test-canonical-posthoc-analysis-pipeline"
+        ]
+      },
+      "tags": [
+        "literature",
+        "judge-reliability",
+        "multi-agent"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
       "id": "evidence-use-bridge-rubric-v2",
       "title": "Version the evidence_use rubric so the bridge definition can change without mixing instruments",
       "status": "done",
@@ -10662,6 +10923,36 @@
       "milestone": "poetics-followups"
     },
     {
+      "id": "harness-native-rl-literature-triage",
+      "title": "OpenForgeRL: Train Harness-native Agents in Any Environment",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-27",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-27-research-roundup.html"
+        ],
+        "items": [
+          "tutor-stub-transition-reward-model",
+          "adaptive-curriculum-memory-controller",
+          "program-2-committee-floor-ablation"
+        ]
+      },
+      "tags": [
+        "literature",
+        "reinforcement-learning",
+        "harness"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
       "id": "implement-messages-style-internal-history-probe",
       "title": "Implement messages-style ego/superego history probe",
       "status": "done",
@@ -10693,6 +10984,35 @@
         "token-budget"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "knowledge-conflict-resolution-literature-triage",
+      "title": "Navigating Unreliable Parametric and Contextual Knowledge: Explicit Knowledge Conflict Resolution for LLM Infe",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-07",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-21-research-roundup.html"
+        ],
+        "items": [
+          "the-self-correction-illusion-llms-correct-others-but-not-the",
+          "recode-superego-incorporation-as-a-framing-trajectory"
+        ]
+      },
+      "tags": [
+        "literature",
+        "superego",
+        "conflict-resolution"
+      ],
+      "milestone": "literature-triage"
     },
     {
       "id": "lean-semantic-web-proof-dag-validation",
@@ -10882,6 +11202,65 @@
       "claim_status": "methods"
     },
     {
+      "id": "memory-induced-reasoning-drift-literature-triage",
+      "title": "DRIFTLENS: Measuring Memory-Induced Reasoning Drift in Personalized Language Models",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-05",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-05-research-roundup.html"
+        ],
+        "items": [
+          "recode-superego-incorporation-as-a-framing-trajectory",
+          "longitudinal-drift-adaptation"
+        ]
+      },
+      "tags": [
+        "literature",
+        "prompt-erosion",
+        "drift"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
+      "id": "meta-rubric-completeness-literature-triage",
+      "title": "Two-Level Meta-Rubrics for Evaluating Open-Ended Generation: GAMUT, a Benchmark for Factual Completeness",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-27",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-27-research-roundup.html"
+        ],
+        "items": [
+          "rubric-v3-prospective-measurement-suite",
+          "rubric-v3-calibration-and-held-out-acceptance",
+          "tutor-instrumentation-showcase"
+        ]
+      },
+      "tags": [
+        "literature",
+        "rubric",
+        "completeness"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
       "id": "migrate-adaptive-dag-runtime-to-langgraph-1-4-without-longit",
       "title": "Migrate adaptive DAG runtime to LangGraph 1.4 without longitudinal drift",
       "status": "done",
@@ -10914,6 +11293,94 @@
         "drama-derivation",
         "outcome-channel"
       ]
+    },
+    {
+      "id": "multi-agent-prompt-optimization-literature-triage",
+      "title": "MAS-PromptBench: When Does Prompt Optimization Improve Multi-Agent LLM Systems?",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-02",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-02-research-roundup.html"
+        ],
+        "items": [
+          "environment-grounded-automated-prompt-optimization-for-llm-g",
+          "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati"
+        ]
+      },
+      "tags": [
+        "literature",
+        "prompt-optimization",
+        "superego"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
+      "id": "multi-agent-scalability-literature-triage",
+      "title": "Scaling LLM-Driven Multi-Agent Systems: Design Principles and Architectural Scalability Analysis",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-08-03",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and 2026-08-03 roundup note were reviewed against the active refactoring, latency-routing, and committee-ablation cards; each executable concern is already represented and no duplicate architecture task was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-08-03-research-roundup.html"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "tutor-stub-latency-routing-optimization",
+          "program-2-committee-floor-ablation"
+        ]
+      },
+      "tags": [
+        "literature",
+        "multi-agent",
+        "scalability"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
+      "id": "multi-step-prompt-optimization-literature-triage",
+      "title": "FAPO: Fully Autonomous Prompt Optimization of Multi-Step LLM Pipelines",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-23",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-23-research-roundup.html"
+        ],
+        "items": [
+          "environment-grounded-automated-prompt-optimization-for-llm-g",
+          "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati"
+        ]
+      },
+      "tags": [
+        "literature",
+        "prompt-optimization",
+        "multi-agent"
+      ],
+      "milestone": "literature-triage"
     },
     {
       "id": "normalize-provenance-validator-data-paths",
@@ -10999,6 +11466,35 @@
       "milestone": "paper-2-evidence-cleanup"
     },
     {
+      "id": "person-aligned-user-simulation-literature-triage",
+      "title": "Beyond Borrowed Histories: Person-Aligned User Simulation for Interactive Role-Playing Evaluation",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-08-03",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and 2026-08-03 roundup note were reviewed against the current simulated-learner and human-validation cards; the applicable boundary is recorded without creating a new empirical claim or duplicate experiment.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-08-03-research-roundup.html"
+        ],
+        "items": [
+          "a1-human-learner-validation",
+          "adaptive-causality-crossed-effects"
+        ]
+      },
+      "tags": [
+        "literature",
+        "simulated-learner",
+        "external-validity"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
       "id": "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro",
       "title": "PerspectiveGap: A Benchmark for Multi-Agent Orchestration Prompting",
       "status": "done",
@@ -11054,6 +11550,35 @@
         "instrument",
         "fine-tune"
       ]
+    },
+    {
+      "id": "private-public-agent-divergence-literature-triage",
+      "title": "What LLM Agents Say When No One Is Watching: Social Structure and Latent Objective Emergence in Multi-Agent De",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-05",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-05-research-roundup.html"
+        ],
+        "items": [
+          "recode-superego-incorporation-as-a-framing-trajectory",
+          "version-symmetric-trace-transformation-pipeline"
+        ]
+      },
+      "tags": [
+        "literature",
+        "deliberation",
+        "public-private"
+      ],
+      "milestone": "literature-triage"
     },
     {
       "id": "program-2-phase5f-fresh-transfer-world",
@@ -11295,6 +11820,35 @@
       ]
     },
     {
+      "id": "reliability-memory-literature-triage",
+      "title": "Sigma-Mem: An Online Reliability Memory for LLM-based Multi-Agent Systems",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-08-03",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and 2026-08-03 roundup note were reviewed against the retained learner-memory decision and transcript-governance work; the paper is recorded as background and no competing memory service was introduced.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-08-03-research-roundup.html"
+        ],
+        "items": [
+          "decide-rich-learner-memory-service-retention",
+          "transcript-archive-training-data-governance"
+        ]
+      },
+      "tags": [
+        "literature",
+        "memory",
+        "reliability"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
       "id": "repair-codex-session-capacity-and-cursors",
       "title": "Repair Codex session capacity and stale-cursor semantics",
       "status": "done",
@@ -11374,6 +11928,37 @@
         "mechanism-test"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "scaffolding-collapse-literature-triage",
+      "title": "Mitigating Scaffolding Collapse in Socratic Tutors via Representation Alignment",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-27",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-27-research-roundup.html"
+        ],
+        "items": [
+          "guard-ladder-ships-canned-text-on-most-turns",
+          "harness-untangling-clue-insertion",
+          "harness-untangling-contract-split",
+          "tutor-redeclares-close-lifecycle-has-not-accepted"
+        ]
+      },
+      "tags": [
+        "literature",
+        "scaffolding",
+        "closure"
+      ],
+      "milestone": "literature-triage"
     },
     {
       "id": "scenario-presentation-variety",
@@ -11581,6 +12166,35 @@
       ]
     },
     {
+      "id": "structured-resistance-literature-triage",
+      "title": "Beyond Sycophancy: Structured Resistance and Compliance in LLM Moral Reasoning",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-27",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-27-research-roundup.html"
+        ],
+        "items": [
+          "recode-superego-incorporation-as-a-framing-trajectory",
+          "negative-register-effect-estimation-grid"
+        ]
+      },
+      "tags": [
+        "literature",
+        "superego",
+        "resistance"
+      ],
+      "milestone": "literature-triage"
+    },
+    {
       "id": "synthesize-theoretical-insights",
       "title": "Synthesize the theory↔project relationship (Hegel/Freud/Weber/Aristotle) into a refreshable reference surface",
       "status": "done",
@@ -11649,6 +12263,35 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "transactive-memory-literature-triage",
+      "title": "Multi-Agent Transactive Memory",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-06-24",
+      "updated": "2026-08-04",
+      "verification": "The arXiv source and roundup note were reviewed against the linked project work; the consolidation decision is recorded and no duplicate experiment, implementation, or claim was created.",
+      "branch": "codex/consolidate-workplan-inbox",
+      "claim_status": "future",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-06-24-research-roundup.html"
+        ],
+        "items": [
+          "decide-rich-learner-memory-service-retention",
+          "transcript-archive-training-data-governance"
+        ]
+      },
+      "tags": [
+        "literature",
+        "memory",
+        "multi-agent"
+      ],
+      "milestone": "literature-triage"
     },
     {
       "id": "tutor-eval-instrument-dashboard",
