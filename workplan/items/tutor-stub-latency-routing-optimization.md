@@ -1,17 +1,18 @@
 ---
 id: tutor-stub-latency-routing-optimization
 title: "Optimize tutor-stub foreground latency with attributable routing experiments"
-status: active
+status: triaged
 type: experiment
 priority: P1
-owner: codex
+owner: unassigned
 source: manual
 created: 2026-07-24
-updated: 2026-07-24
+updated: 2026-08-05
 verification: "A frozen object/meta/mixed transcript matrix reports first-draft acceptance, recovery/fallback rate, foreground p50/p95 latency, model-call latency, token use, and tutor-quality/safety outcomes for isolated effort, role-routing, prompt-compaction, and prefetch-policy contrasts; no candidate becomes a default without preserving the instructional-meta regression and public-safety gates."
-branch: codex/tutor-stub-latency-routing
 claim_status: exploratory
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/201
   notes:
     - notes/2026-07-24-tutor-stub-latency-and-discourse-plane.md
   items:
@@ -96,3 +97,9 @@ During analysis, the benchmark's safety summary was found to expect the legacy
 `auditOk`. The parser now accepts both trace shapes, the regression fixture uses
 the current shape, and the saved report was reparsed locally without another
 external-model call.
+
+2026-08-05 Codex: Reconciled after confirming PR #201 merged and its branch is
+no longer active. The one-draw matrix did not justify a default change; repeated
+draws remain contingent on repairing or explicitly rescoring the mixed-plane
+classifier contract. Returned to triage rather than presenting dormant paid
+follow-up work as active execution.

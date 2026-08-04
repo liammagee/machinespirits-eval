@@ -7,12 +7,13 @@ priority: P1
 owner: human
 source: manual
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-08-05
 verification: "N/A aggregation and contextual rejudge identity tests pass; 15-item Claude/Codex development packet analyzed against predeclared gates; thresholds committed before held-out scoring; two independent human coder sheets prepared; held-out and separate instrument reports completed without promoting v3.0 before human acceptance."
-branch: codex/rubric-v3-measurement-suite
 depends_on:
   - rubric-v3-prospective-measurement-suite
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/310
   notes:
     - docs/rubric-v3-measurement-suite.md
   exports:
@@ -50,3 +51,7 @@ Running log:
   three frozen derived runs. Judge reliability was promising, but every
   instrument retained a dominant first factor; dimensional independence is not
   established. Card moved to review with human labelling as the remaining gate.
+- 2026-08-05: Reconciled after confirming PR #310 merged with the machine
+  checks green. The card correctly remains in review: both independent human
+  coder sheets are still blank, and promotion is explicitly gated on their
+  acceptance rather than on PR state.

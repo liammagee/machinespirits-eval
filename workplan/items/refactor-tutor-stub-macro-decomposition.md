@@ -9,7 +9,6 @@ source: review
 created: 2026-07-29
 updated: 2026-08-05
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-interactive-application
 claim_status: planned
 depends_on: []
 links:
@@ -84,8 +83,10 @@ links:
     - 478
     - 479
     - 482
+    - 484
   items:
     - codebase-refactoring-program
+    - refactor-tutor-stub-extracted-owner-boundaries
 tags:
   - refactoring
   - tutor-stub
@@ -458,3 +459,14 @@ Boundary reassessment after cycle 11:
   manifest, workplan source (397 items), ref governance, syntax, whitespace,
   and the static import graph pass with zero cycles across 506 files; no model
   calls were authorized for this structural extraction.
+- 2026-08-05 — PR #484 merged with every CI and shared surface-acceptance job
+  green. On the resulting `origin/main`, the entrypoint is 2,657 lines; its
+  functional body begins after roughly 612 lines of import declarations, so the
+  executable composition body is approximately 2,045 lines and has reached the
+  card's near-2,000 architectural destination. The merged cycle branch is no
+  longer recorded as active.
+- 2026-08-05 — The card remains active only for its no-replacement-monolith
+  boundary: `tutorStubTutorTurnPipeline.js` is 2,581 lines and
+  `tutorStubResponsePolicy.js` is 1,975. Their decomposition is now isolated in
+  `refactor-tutor-stub-extracted-owner-boundaries`; do not resume by shaving
+  imports or moving composition into another facade.

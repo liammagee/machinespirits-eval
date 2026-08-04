@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-fallback-register-and-uptake-guard
 title: Tutor-stub fallback register and learner-uptake guard
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: claude
@@ -16,6 +16,8 @@ verification: A contemporary-diction world speaks its own props in its own
 branch: claude/tutor-stub-uptake-guard
 claim_status: scope-bound
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/251
   code:
     - services/tutorStubSceneDiction.js
     - services/tutorStubDramaticRelease.js
@@ -371,3 +373,6 @@ Log:
   re-run. The one gap left open — worlds whose declared object was unreachable —
   was re-carded to `drama-world-public-object-reachability`, and that card
   closed on 2026-08-04. Nothing remains here.
+- 2026-08-05 — Reconciled as done after confirming PR #251 is merged, its CI
+  suite passed, every implementation step and residual is closed in the log,
+  and the separately carded public-object reachability gap is also done.
