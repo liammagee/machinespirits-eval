@@ -1,10 +1,10 @@
 {
-  "generated": "2026-08-04T05:10:57.548Z",
+  "generated": "2026-08-04T05:15:57.347Z",
   "counts": {
-    "total": 374,
+    "total": 375,
     "byStatus": {
       "done": 242,
-      "blocked": 5,
+      "blocked": 6,
       "dropped": 4,
       "triaged": 11,
       "review": 92,
@@ -17,7 +17,7 @@
       "infra": 73,
       "maintenance": 165,
       "content": 3,
-      "ops": 8,
+      "ops": 9,
       "paper": 6
     }
   },
@@ -1015,6 +1015,40 @@
         "lambda"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "publish-ideal-tutor-blueprint",
+      "title": "Publish the ideal-tutor blueprint to the public content site",
+      "status": "blocked",
+      "type": "ops",
+      "priority": "P2",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-08-04",
+      "updated": "2026-08-04",
+      "blocked_by": "Human authorization to execute the outward production deployment from the staged content repository.",
+      "verification": "The current ideal-tutor blueprint passes its provenance check, the content-repository publish succeeds, and https://machinespirits.org/content/articles/ai-tutor/tutor-blueprint.html serves the self-contained recipe page rather than the site's missing-route response; record the content commit and deployment run before marking done.",
+      "links": {
+        "notes": [
+          "notes/poetics/ideal-tutor-blueprint.html",
+          "DEPLOYMENT.md"
+        ],
+        "code": [
+          "notes/poetics/publish-blueprint-to-site.js"
+        ],
+        "prs": [
+          461,
+          464,
+          466
+        ]
+      },
+      "tags": [
+        "poetics",
+        "techne",
+        "publishing",
+        "blueprint"
+      ],
+      "milestone": "paper-2-0"
     },
     {
       "id": "program-2-transfer-apparatus-hardening",
@@ -10569,6 +10603,9 @@
         "notes": [
           "notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",
           "notes/poetics/images/2026-05-26-paper-to-dramatic-recognition-arc-image-prompts.txt"
+        ],
+        "prs": [
+          462
         ]
       },
       "tags": [
