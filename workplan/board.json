@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T06:19:15.550Z",
+  "generated": "2026-08-04T07:49:34.429Z",
   "counts": {
     "total": 375,
     "byStatus": {
@@ -7,9 +7,9 @@
       "blocked": 6,
       "dropped": 4,
       "triaged": 10,
-      "active": 10,
+      "active": 8,
       "archived": 4,
-      "review": 2
+      "review": 4
     },
     "byType": {
       "research": 50,
@@ -439,41 +439,6 @@
       ]
     },
     {
-      "id": "tutor-stub-fallback-register-and-uptake-guard",
-      "title": "Tutor-stub fallback register and learner-uptake guard",
-      "status": "active",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-07-26",
-      "updated": "2026-07-27",
-      "verification": "A contemporary-diction world speaks its own props in its own register while every period and undeclared world keeps byte-identical deterministic text; the learner-uptake guard admits a genuinely responsive uptake that shares no tokens with the accepted meaning; targeted and hermetic suites pass without model calls.",
-      "branch": "claude/tutor-stub-uptake-guard",
-      "claim_status": "scope-bound",
-      "links": {
-        "code": [
-          "services/tutorStubSceneDiction.js",
-          "services/tutorStubDramaticRelease.js",
-          "services/tutorStubResponseComposition.js",
-          "services/tutorStubTurnProgressionContract.js",
-          "scripts/tutor-stub.js",
-          "tests/tutorStubSceneDiction.test.js",
-          "services/tutorStubConversationalCompletion.js",
-          "tests/tutorStubUptakeGuardLinkage.test.js",
-          "services/tutorStubSelfCorrectionDisclosure.js",
-          "services/tutorStubGuardDisposition.js",
-          "tests/tutorStubSelfCorrectionDisclosure.test.js"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "presentation",
-        "guards"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
       "id": "tutor-stub-latency-routing-optimization",
       "title": "Optimize tutor-stub foreground latency with attributable routing experiments",
       "status": "active",
@@ -511,7 +476,7 @@
       "owner": "claude",
       "source": "review",
       "created": "2026-07-28",
-      "updated": "2026-07-28",
+      "updated": "2026-08-04",
       "verification": "A turn that quotes an exhibit containing a question mark is audited against the whole quoted sentence rather than the fragment after the internal `?`, with the real campus turn-1 string pinned as the case; a closing turn is not asked to put the handoff target terms in the sentence that declares the close; and the self-correction pass either changes the finding that triggered it or does not run, checked against the six turns in the 2026-07-28 run where it ran and changed nothing.",
       "links": {
         "code": [
@@ -536,26 +501,6 @@
       ]
     },
     {
-      "id": "harness-untangling-clue-insertion",
-      "title": "Untangling 1: insert the due clue into the model's reply instead of replacing the reply",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gate registered before any change: (a) flag off — behavior byte-identical, hermetic suite green; (b) flag on, k=3 live — at release turns where the draft fails ONLY the release-delivery family, the delivered reply is the model draft with the due clue sentence inserted (traced), template whole-reply replacements at those turns fall to zero, release audits pass on the composed reply, leaks stay zero.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-p"
-      ],
-      "tags": [
-        "tutor-stub",
-        "harness"
-      ]
-    },
-    {
       "id": "harness-untangling-contract-split",
       "title": "Untangling 2: split the standing text into a safety contract and a teaching charter",
       "status": "active",
@@ -564,7 +509,7 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-08-02",
-      "updated": "2026-08-02",
+      "updated": "2026-08-04",
       "verification": "Gate registered before any change: stage 1 — the two documents concatenated reproduce the current speaker prompt BYTE-EXACTLY (unit test pins it); no behavior change is permitted at this stage. Stage 2 (later, separately gated) — divergence: teaching-charter edits must leave a frozen-replay leak probe at zero, and safety edits must leave the repertoire scorecard unchanged.",
       "claim_status": "methods",
       "depends_on": [
@@ -662,7 +607,7 @@
       "owner": "claude",
       "source": "review",
       "created": "2026-07-28",
-      "updated": "2026-07-28",
+      "updated": "2026-08-04",
       "verification": "A response that declares the case closed while `dialogueClosure.lifecycle.phase` is still `open` raises an issue instead of passing unread, with the real Riverside turn-5 string pinned as the case and the other 35 showcase turns pinned as passing; a live run then shows the regenerated turn is not a second closing declaration; a turn taken after the lifecycle has closed is left alone.",
       "links": {
         "code": [
@@ -676,7 +621,8 @@
         ],
         "items": [
           "tutor-instrumentation-showcase",
-          "showcase-turn-cap-untied-to-release-schedule"
+          "showcase-turn-cap-untied-to-release-schedule",
+          "guard-ladder-ships-canned-text-on-most-turns"
         ]
       },
       "tags": [
@@ -974,6 +920,61 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "tutor-stub-fallback-register-and-uptake-guard",
+      "title": "Tutor-stub fallback register and learner-uptake guard",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-08-04",
+      "verification": "A contemporary-diction world speaks its own props in its own register while every period and undeclared world keeps byte-identical deterministic text; the learner-uptake guard admits a genuinely responsive uptake that shares no tokens with the accepted meaning; targeted and hermetic suites pass without model calls.",
+      "branch": "claude/tutor-stub-uptake-guard",
+      "claim_status": "scope-bound",
+      "links": {
+        "code": [
+          "services/tutorStubSceneDiction.js",
+          "services/tutorStubDramaticRelease.js",
+          "services/tutorStubResponseComposition.js",
+          "services/tutorStubTurnProgressionContract.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubSceneDiction.test.js",
+          "services/tutorStubConversationalCompletion.js",
+          "tests/tutorStubUptakeGuardLinkage.test.js",
+          "services/tutorStubSelfCorrectionDisclosure.js",
+          "services/tutorStubGuardDisposition.js",
+          "tests/tutorStubSelfCorrectionDisclosure.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "presentation",
+        "guards"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "harness-untangling-clue-insertion",
+      "title": "Untangling 1: insert the due clue into the model's reply instead of replacing the reply",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gate registered before any change: (a) flag off — behavior byte-identical, hermetic suite green; (b) flag on, k=3 live — at release turns where the draft fails ONLY the release-delivery family, the delivered reply is the model draft with the due clue sentence inserted (traced), template whole-reply replacements at those turns fall to zero, release audits pass on the composed reply, leaks stay zero.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-p"
+      ],
+      "tags": [
+        "tutor-stub",
+        "harness"
+      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
