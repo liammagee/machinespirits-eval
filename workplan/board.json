@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-04T22:58:36.019Z",
+  "generated": "2026-08-04T23:37:04.491Z",
   "counts": {
     "total": 398,
     "byStatus": {
-      "done": 367,
+      "done": 369,
       "blocked": 7,
       "dropped": 4,
-      "triaged": 5,
-      "active": 8,
+      "triaged": 3,
+      "active": 9,
       "archived": 4,
-      "review": 3
+      "review": 2
     },
     "byType": {
       "research": 71,
@@ -22,59 +22,6 @@
     }
   },
   "items": [
-    {
-      "id": "tutor-contract-outcome-prereg",
-      "title": "Pre-registration: does the per-turn contract change legitimate closure?",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-29",
-      "updated": "2026-07-30",
-      "verification": "Before any paid dialogue: the closure detector is hand-audited against the pilot transcripts and its misses are fixed or the endpoint is re-specified; the pilot gate (bare closure in the 20–80% band per world) is met or the world/turn-cap is re-picked and the change logged here before proceeding. The run itself is attended and checkpointed.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-instrumentation-ab-harness",
-        "tutor-eval-instrument-dashboard"
-      ],
-      "tags": [
-        "tutor-stub",
-        "prereg",
-        "outcome"
-      ]
-    },
-    {
-      "id": "tutor-stub-latency-routing-optimization",
-      "title": "Optimize tutor-stub foreground latency with attributable routing experiments",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-24",
-      "updated": "2026-08-05",
-      "verification": "A frozen object/meta/mixed transcript matrix reports first-draft acceptance, recovery/fallback rate, foreground p50/p95 latency, model-call latency, token use, and tutor-quality/safety outcomes for isolated effort, role-routing, prompt-compaction, and prefetch-policy contrasts; no candidate becomes a default without preserving the instructional-meta regression and public-safety gates.",
-      "claim_status": "exploratory",
-      "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/201"
-        ],
-        "notes": [
-          "notes/2026-07-24-tutor-stub-latency-and-discourse-plane.md"
-        ],
-        "items": [
-          "tutor-stub-dialogue-first-terminal-presentation"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "latency",
-        "model-routing",
-        "discourse-plane",
-        "mixed-mode"
-      ]
-    },
     {
       "id": "adaptation-plan-3-model-profiler",
       "title": "Model profiler: which model owns which teaching move — and when to switch",
@@ -433,6 +380,38 @@
         "prereg",
         "outcome",
         "learner"
+      ]
+    },
+    {
+      "id": "tutor-stub-latency-routing-optimization",
+      "title": "Optimize tutor-stub foreground latency with attributable routing experiments",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-24",
+      "updated": "2026-08-05",
+      "branch": "codex/tutor-stub-latency-routing-optimization",
+      "verification": "A frozen object/meta/mixed transcript matrix reports first-draft acceptance, recovery/fallback rate, foreground p50/p95 latency, model-call latency, token use, and tutor-quality/safety outcomes for isolated effort, role-routing, prompt-compaction, and prefetch-policy contrasts; no candidate becomes a default without preserving the instructional-meta regression and public-safety gates.",
+      "claim_status": "exploratory",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/201"
+        ],
+        "notes": [
+          "notes/2026-07-24-tutor-stub-latency-and-discourse-plane.md"
+        ],
+        "items": [
+          "tutor-stub-dialogue-first-terminal-presentation"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "latency",
+        "model-routing",
+        "discourse-plane",
+        "mixed-mode"
       ]
     },
     {
@@ -866,42 +845,6 @@
       "tags": [
         "tutor-stub",
         "harness"
-      ]
-    },
-    {
-      "id": "recode-superego-incorporation-as-a-framing-trajectory",
-      "title": "Recode superego incorporation as a framing trajectory",
-      "status": "review",
-      "type": "research",
-      "priority": "P3",
-      "owner": "codex",
-      "source": "daily-routine",
-      "created": "2026-07-20",
-      "updated": "2026-08-05",
-      "branch": "codex/recode-superego-framing-trajectory",
-      "verification": "A deterministic sample of cell 21 and cells 48-49 dialogue traces is coded against a versioned framing-trajectory codebook, compared with the recomputed incorporationRate proxy, and accompanied by an explicit audit of historical dimension_convergence availability; the report preserves trace hashes and states whether the measures agree without mutating source data.",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": [
-          "notes/daily-notes/2026-07-20-research-roundup.html",
-          "notes/research-plans/2026-07-27-research-plan.html",
-          "notes/2026-08-05-superego-framing-trajectory-recoding.md"
-        ],
-        "code": [
-          "services/superegoFramingTrajectoryAnalyzer.js",
-          "scripts/analyze-superego-framing-trajectory.js",
-          "tests/superegoFramingTrajectoryAnalyzer.test.js",
-          "tests/superegoFramingTrajectoryCli.test.js"
-        ],
-        "data": [
-          "config/analysis/superego-framing-trajectory-codebook-v1.json",
-          "data/paper2/superego-framing-trajectory-coding-v1.json"
-        ]
-      },
-      "tags": [
-        "writing-pad",
-        "prompt-erosion",
-        "deliberation"
       ]
     },
     {
@@ -8452,6 +8395,35 @@
       ]
     },
     {
+      "id": "tutor-contract-outcome-prereg",
+      "title": "Pre-registration: does the per-turn contract change legitimate closure?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-29",
+      "updated": "2026-08-05",
+      "verification": "The closure detector and per-world cap handling were repaired and checked against the paid pilot transcripts; the corrected gate found 19/19 finished bare dialogues closing, so the registered 20–80% eligibility band failed for saturation, the 144-dialogue comparison did not start, and Paper 2.0 section 6.23 preserves that gate-stage result without making a contract-effect claim.",
+      "claim_status": "killed",
+      "depends_on": [
+        "tutor-instrumentation-ab-harness",
+        "tutor-eval-instrument-dashboard"
+      ],
+      "tags": [
+        "tutor-stub",
+        "prereg",
+        "outcome"
+      ],
+      "links": {
+        "paper": "docs/research/paper-full-2.0.md",
+        "exports": [
+          "exports/tutor-stub-outcome/pilot-1/",
+          "exports/tutor-stub-outcome/pilot-2/"
+        ]
+      }
+    },
+    {
       "id": "tutor-pr-benchmark-calibration-harness",
       "title": "Refresh and calibrate the tutor PR benchmark rubric",
       "status": "done",
@@ -13097,6 +13069,45 @@
       ],
       "milestone": "board-pm",
       "branch": "claude/funny-jones-1cc324"
+    },
+    {
+      "id": "recode-superego-incorporation-as-a-framing-trajectory",
+      "title": "Recode superego incorporation as a framing trajectory",
+      "status": "done",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-20",
+      "updated": "2026-08-05",
+      "branch": "codex/recode-superego-framing-trajectory",
+      "verification": "A deterministic sample of cell 21 and cells 48-49 dialogue traces is coded against a versioned framing-trajectory codebook, compared with the recomputed incorporationRate proxy, and accompanied by an explicit audit of historical dimension_convergence availability; the report preserves trace hashes and states whether the measures agree without mutating source data.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-20-research-roundup.html",
+          "notes/research-plans/2026-07-27-research-plan.html",
+          "notes/2026-08-05-superego-framing-trajectory-recoding.md"
+        ],
+        "code": [
+          "services/superegoFramingTrajectoryAnalyzer.js",
+          "scripts/analyze-superego-framing-trajectory.js",
+          "tests/superegoFramingTrajectoryAnalyzer.test.js",
+          "tests/superegoFramingTrajectoryCli.test.js"
+        ],
+        "data": [
+          "config/analysis/superego-framing-trajectory-codebook-v1.json",
+          "data/paper2/superego-framing-trajectory-coding-v1.json"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/492"
+        ]
+      },
+      "tags": [
+        "writing-pad",
+        "prompt-erosion",
+        "deliberation"
+      ]
     },
     {
       "id": "repetition-audit-misses-reworded-stall",
