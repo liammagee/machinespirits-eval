@@ -1,13 +1,13 @@
 ---
 id: tutor-fallible-learner-closure-prereg
 title: "Pre-registration: restore variance to legitimate closure with a learner that can fail"
-status: triaged
+status: active
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-30
-updated: 2026-07-30
+updated: 2026-08-05
 verification: "Phase A runs bare-tutor only and is exploratory. Before the
   first paid Phase B call: the in-band cells and their profiles are frozen in
   a dated log entry here, and a 5-dialogue contract smoke on one in-band cell
@@ -103,3 +103,14 @@ personas, not measured human difficulties; criterial endpoints; no claim
 about human learning; a null is stack-bounded until replicated on another
 model. Nothing enters the paper before Phase B completes and survives this
 card's own verdict rule.
+
+## Log
+
+**2026-08-05 — Phase A started.** Plan as registered, no amendments: 4
+candidate profiles (memory_limited, false_memory, premature_closure,
+low_agency) × 2 short worlds (world_030_rowan_flat, world_023_greyfen_lab)
+× 5 bare dialogues, `run-contract-outcome-pilot.js --blocks none`, parent
+defaults carried unchanged (codex gpt-5.6-terra both seats, medium effort,
+authored caps, offline recompute as audit). Outputs under
+`exports/tutor-stub-outcome/fallible-phaseA/<profile>--<world>/`. Attended,
+one to two cells at a time, resumable per cell.
