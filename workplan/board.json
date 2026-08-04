@@ -1,13 +1,13 @@
 {
-  "generated": "2026-08-04T01:52:49.095Z",
+  "generated": "2026-08-04T04:08:08.946Z",
   "counts": {
     "total": 373,
     "byStatus": {
-      "done": 233,
+      "done": 234,
       "blocked": 5,
       "dropped": 4,
       "triaged": 11,
-      "active": 24,
+      "active": 23,
       "review": 92,
       "archived": 4
     },
@@ -910,51 +910,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "codex/program2-committee-floor-ablation"
-    },
-    {
-      "id": "program-2-phase5f-fresh-transfer-world",
-      "title": "Program-2 Phase 5f: clean post-hardening transfer world",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-28",
-      "updated": "2026-07-28",
-      "branch": "codex/program-2-phase5f-cohort",
-      "verification": "A3 sealed 4/4 rows on their first attempt with no final attrition, full coverage by turn 16, hard safety passing, and all 31 gate-grade decisions clean. The prospective source-only cohort amendment now freezes 10 committee plus 8 fresh controls, the inherited >=15 opportunities/arm and >=5/profile-arm terminal density floor, a Phase 5f-native analyzer, and an A3-bound 11-check pilot bundle. Deterministic tests cover the zero-opportunity apparatus-pilot certificate exception while preserving the cohort live-futility gate. No paid cohort, certificate, transfer estimate, or external-payload authorization is included; after merge the exact clean-main artifacts must be generated and separately authorized.",
-      "claim_status": "planned",
-      "depends_on": [
-        "program-2-transfer-apparatus-hardening"
-      ],
-      "links": {
-        "notes": [
-          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md",
-          "PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md"
-        ],
-        "items": [
-          "program-2-phase5d-second-transfer-world",
-          "program-2-transfer-apparatus-hardening"
-        ],
-        "code": [
-          "scripts/run-program2-live-pilot.js",
-          "scripts/analyze-program2-live-pilot-5f.mjs",
-          "scripts/build-program2-phase5f-pilot-bundle.mjs",
-          "config/adaptive-tutor-evidence/program-2-phase5f-world-selection.json",
-          "config/adaptive-tutor-evidence/program-2-phase5f-pilot-gates.json",
-          "config/adaptive-tutor-evidence/program-2-phase5f-gates.json"
-        ],
-        "prs": [
-          382
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "move-library",
-        "cross-world-transfer"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "tutor-instrumentation-ab-harness",
@@ -11125,6 +11080,53 @@
         "instrument",
         "fine-tune"
       ]
+    },
+    {
+      "id": "program-2-phase5f-fresh-transfer-world",
+      "title": "Program-2 Phase 5f: clean post-hardening transfer world",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-29",
+      "branch": "codex/program-2-phase5f-closeout",
+      "verification": "The separately authorized, clean-main terminal cohort stopped at its frozen live-futility boundary after 14/18 sealed dialogues (8 committee, 6 fresh controls, zero final attrition, one recovered retry): every profile-arm cell had 0 eligible warrant_skip opportunities, so E1e and its interval were undefined and the Phase 5f analyzer returned not_estimable/insufficient_opportunities. Coverage and hard safety were 1.000 in both arms; the A3-bound pilot bundle passed all 11 checks; no seam review, replacement cohort, or further repair was run.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "program-2-transfer-apparatus-hardening"
+      ],
+      "links": {
+        "notes": [
+          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md",
+          "PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md"
+        ],
+        "items": [
+          "program-2-phase5d-second-transfer-world",
+          "program-2-transfer-apparatus-hardening"
+        ],
+        "code": [
+          "scripts/run-program2-live-pilot.js",
+          "scripts/analyze-program2-live-pilot-5f.mjs",
+          "scripts/build-program2-phase5f-pilot-bundle.mjs",
+          "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+          "config/adaptive-tutor-evidence/program-2-phase5f-world-selection.json",
+          "config/adaptive-tutor-evidence/program-2-phase5f-pilot-gates.json",
+          "config/adaptive-tutor-evidence/program-2-phase5f-gates.json"
+        ],
+        "prs": [
+          382,
+          433
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "move-library",
+        "cross-world-transfer"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "proof-dag-dramatic-derivation-assessment",
