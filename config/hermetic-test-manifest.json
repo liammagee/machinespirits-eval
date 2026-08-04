@@ -555,6 +555,7 @@
         "tests/tutorStubTurnAttempt.test.js",
         "tests/tutorStubTurnFailureBackfill.test.js",
         "tests/tutorStubTurnFailureIngest.test.js",
+        "tests/tutorStubTurnOrchestration.test.js",
         "tests/tutorStubTurnProgressionContract.test.js",
         "tests/tutorStubTutorPromptContext.test.js",
         "tests/tutorStubTutorTurnPipeline.test.js",

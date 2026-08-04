@@ -260,6 +260,7 @@ test('the CLI retains snapshot state access, terminal writes, and every runtime 
     path.join(ROOT, 'services', 'tutorStubTechnicalAnalysisPresentation.js'),
     'utf8',
   );
+  const turnOrchestrationSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTurnOrchestration.js'), 'utf8');
   const snapshotSlice = cliSource.slice(
     cliSource.indexOf('function buildTutorDagSnapshot'),
     cliSource.indexOf('function oneLine'),
@@ -273,7 +274,11 @@ test('the CLI retains snapshot state access, terminal writes, and every runtime 
   assert.match(snapshotSlice, /projectTutorStubDagSnapshotLines/u);
   assert.match(snapshotSlice, /console\.log\(line\)/u);
   assert.doesNotMatch(snapshotSlice, /proof leaves released/u);
-  assert.equal(cliSource.match(/printTutorDagSnapshot\(/gu)?.length, 4);
+  const runtimeCallerCount =
+    (cliSource.match(/printTutorDagSnapshot\(/gu)?.length || 0) +
+    (turnOrchestrationSource.match(/printTutorDagSnapshot\(/gu)?.length || 0);
+  assert.equal(runtimeCallerCount, 4);
+  assert.match(turnOrchestrationSource, /printTutorDagSnapshot\(response\.dagSnapshot\)/u);
   assert.match(
     technicalAnalysisSource,
     /import \{ projectTutorStubDagSnapshotLines \} from '\.\/tutorStubDagSnapshotPresentation\.js';/u,

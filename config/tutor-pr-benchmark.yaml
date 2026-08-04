@@ -68,6 +68,7 @@ hook:
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
+    - services/tutorStubTurnOrchestration.js
     - services/tutorStubModelPickerController.js
     - services/tutorStubResponsePolicy.js
     - services/tutorStubVoiceController.js
