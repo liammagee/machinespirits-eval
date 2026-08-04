@@ -122,7 +122,6 @@ import {
   mixedLearnerGhostText,
   mixedLearnerSuggestionMove,
   mixedLearnerTutorPrefetchDecision,
-  parseMixedLearnerArtifacts,
   refreshMixedLearnerPrompt,
   renderMixedLearnerGhostText,
 } from '../services/mixedLearnerArtifacts.js';
@@ -262,7 +261,6 @@ import {
   buildTutorStubResponseConfiguration,
   normalizeTutorStubActorialPartId,
   selectTutorStubActorialPart,
-  selectTutorStubActorialPerformance,
   tutorStubConfigurableActorialPartIds,
   tutorStubRandomizableActorialPartIds,
 } from '../services/tutorStubResponseConfiguration.js';
@@ -381,6 +379,8 @@ import { createTutorStubLearnerAnalysisRuntime } from '../services/tutorStubLear
 import { createTutorStubPublicPresentationRuntime } from '../services/tutorStubPublicPresentationRuntime.js';
 import { createTutorStubDebugReportRuntime } from '../services/tutorStubDebugReportRuntime.js';
 import { createTutorStubLaunchSummaryPresentation } from '../services/tutorStubLaunchSummaryPresentation.js';
+import { createTutorStubAutomatedLearnerGenerationRuntime } from '../services/tutorStubAutomatedLearnerGenerationRuntime.js';
+import { createTutorStubTypedActionPlanningRuntime } from '../services/tutorStubTypedActionPlanningRuntime.js';
 import { createTutorStubClarificationTranslationRuntime } from '../services/tutorStubClarificationTranslationRuntime.js';
 import { createTutorStubOpeningRuntime } from '../services/tutorStubOpeningRuntime.js';
 import { createTutorStubPromptTransport } from '../services/tutorStubPromptTransport.js';
@@ -636,12 +636,6 @@ import {
 import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
 import { composeTutorStubClueSpanReplacement } from '../services/tutorStubDramaticRelease.js';
 import {
-  loadTutorStubStressSchedule,
-  tutorStubStressDirective,
-  tutorStubStressPlantForTurn,
-  TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
-} from '../services/tutorStubStressSchedule.js';
-import {
   buildDynamicalSystemRegisterScores,
   buildDynamicalSystemState,
   buildFieldRegisterScores,
@@ -704,23 +698,7 @@ import {
 import { sampleTutorStubPolicyDistribution } from '../services/tutorStubPolicySampler.js';
 import { captureGitProvenanceSummary, hashCanonicalJson } from '../services/experimentRunArtifacts.js';
 import { buildTutorStubStateObservation } from '../services/adaptiveTutor/tutorStubStateAdapter.js';
-import {
-  ADAPTATION_ACTIONS,
-  estimateLearnerStateBelief,
-  selectPedagogicalAction,
-} from '../services/adaptiveTutor/actionPolicy.js';
-import { createAdaptationContract } from '../services/adaptiveTutor/adaptationContract.js';
-import { appendPendingIntervention, closePendingIntervention } from '../services/adaptiveTutor/interventionLedger.js';
-import {
-  buildTutorStubTypedActionDecision,
-  tutorStubMoveFamilyForAction,
-} from '../services/adaptiveTutor/tutorStubActionAdapter.js';
-import {
-  advanceScaffoldLifecycle,
-  allowedMoveFamiliesForScaffoldPhase,
-  createScaffoldLifecycle,
-  SCAFFOLD_LIFECYCLE_SCHEMA,
-} from '../services/adaptiveTutor/scaffoldLifecycle.js';
+import { createScaffoldLifecycle, SCAFFOLD_LIFECYCLE_SCHEMA } from '../services/adaptiveTutor/scaffoldLifecycle.js';
 import {
   createTutorStubTutorTurnPipeline,
   TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS,
@@ -748,7 +726,6 @@ const DAG_MODES = ['strict_dag', 'human_scaffold', 'defeasible_human_scaffold'];
 const HUMAN_DISCOURSE_FRAME_SCHEMA = 'machinespirits.tutor-stub.human-discourse-frame.v1';
 const TUTOR_GUARD_ACCOUNTING_SCHEMA = 'machinespirits.tutor-stub.guard-accounting.v1';
 const TUTOR_TYPED_ACTION_CONFIG_SCHEMA = 'machinespirits.tutor-stub.typed-action-runtime-config.v1';
-const TUTOR_TYPED_ACTION_OUTCOME_SCHEMA = 'machinespirits.tutor-stub.typed-action-outcome.v1';
 const DEFAULT_TUTOR_MODEL_REF = 'codex.gpt-5.6-terra';
 const DEFAULT_INTERPRETATION_MODEL_REF = 'codex.gpt-5.6-sol';
 const DEFAULT_AUTO_LEARNER_MODEL_REF = 'codex.gpt-5.6-terra';
@@ -937,17 +914,6 @@ const LEARNER_RECORD_SYSTEM_PROMPT = [
   'Use only the learner input, the public transcript, public rules, and staged public evidence supplied in the prompt.',
   'Do not infer private mental states, unstaged evidence, concealed answers, proof paths, or release schedules beyond the staged list.',
   'Return one JSON object only. No prose outside JSON.',
-].join('\n');
-
-const AUTO_LEARNER_SYSTEM_PROMPT = [
-  'You are an automated learner in an experimental tutoring dialogue.',
-  'You see only the public transcript and the latest tutor message.',
-  'Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
-  "The private behavior brief supplied below defines how this learner responds. It takes priority over generic helpfulness, smooth progress, and the tutor's request for a useful answer.",
-  'Preserve its recurring behavior and repair pattern. Do not silently become a generic diligent learner after correction.',
-  'When the active profile permits progress, you may connect several already-public premises and state a supported follow-up conclusion in one concise turn. Never invent or anticipate unstaged evidence.',
-  'Reply as the learner only. No role label, no analysis, no JSON.',
-  'Keep the reply concise: usually one sentence, one question, or one warranted evidence claim.',
 ].join('\n');
 
 const CLARIFIER_SYSTEM_PROMPT = [
@@ -1399,6 +1365,27 @@ const { generateTutorClarification, generateTutorStubCurriculumTranslation, gene
   });
 
 const {
+  automatedLearnerCorruptionEnabled,
+  automatedLearnerProfileId,
+  buildMixedLearnerArtifactsPrompt,
+  deterministicAutomatedLearnerFallback,
+  enforceAutomatedLearnerProfile,
+  generateAutomatedLearnerTurn,
+  generateMixedLearnerArtifacts,
+  mixedLearnerArtifactsSystemPrompt,
+  resolveAutomatedLearnerProfile,
+} = createTutorStubAutomatedLearnerGenerationRuntime({
+  appendTraceEvent,
+  callPromptModel,
+  classificationFromCombinedAnalysis: (...values) => classificationFromCombinedAnalysis(...values),
+  extractCombinedLearnerAnalysis: (...values) => extractCombinedLearnerAnalysis(...values),
+  learnerProfileContract,
+  learnerProfileIds,
+  learnerProfilePrompt,
+  negativeFloorRegisters: NEGATIVE_FLOOR_REGISTERS,
+});
+
+const {
   evaluatePendingRegisterEfficacy,
   explicitPerformanceActorialPartSelection,
   explicitPerformanceDirectiveValue,
@@ -1573,6 +1560,23 @@ const { printTutorStubLaunchSummary } = createTutorStubLaunchSummaryPresentation
   traceDisplayPath,
   writeLine: (...values) => console.log(...values),
 });
+
+const { closePriorTypedAction, planTypedAction, tutorDialogueClosureFrameForTurn } =
+  createTutorStubTypedActionPlanningRuntime({
+    C,
+    answerTermForWorld,
+    appendTraceEvent,
+    buildTutorDagSnapshot,
+    currentReleaseRows,
+    explicitPerformanceActorialPartSelection,
+    explicitPerformanceDirectiveValue,
+    jsonClone,
+    policySamplingContext,
+    randomPerformanceActorialPartSelection,
+    registerTemperatureApplies,
+    stateRunDebugId,
+    writeLine: (...values) => console.log(...values),
+  });
 
 // Opt-in manner switch (TUTOR_STUB_MANNER_SWITCH=1): butler ↔ exacting
 // schoolmaster, driven by deterministic learner-pressure classification with
@@ -1935,7 +1939,7 @@ const callTutor = createTutorStubTutorTurnPipeline({
   guardBoundaryPolicy: process.env.TUTOR_STUB_GUARD_POLICY === 'shadow_advisory' ? 'shadow_advisory' : 'strict',
   // Q3: TUTOR_STUB_CORRUPT_RELIEF=1 demotes ALL hard guard issues to
   // advisory at deliberately-corrupted turns so the model's repair ships.
-  corruptReliefTurn: (turn) => process.env.TUTOR_STUB_CORRUPT_RELIEF === '1' && Boolean(CORRUPT_TURNS[turn]),
+  corruptReliefTurn: (turn) => process.env.TUTOR_STUB_CORRUPT_RELIEF === '1' && automatedLearnerCorruptionEnabled(turn),
   // Untangling 1: TUTOR_STUB_CLUE_INSERTION=1 keeps the model draft at
   // release-only failures and appends the due clue's rendered sentences.
   clueInsertion: process.env.TUTOR_STUB_CLUE_INSERTION === '1',
@@ -1976,964 +1980,6 @@ const callTutor = createTutorStubTutorTurnPipeline({
 
 function saveTranscript(filePath, transcript) {
   fs.writeFileSync(filePath, `${JSON.stringify(transcript, null, 2)}\n`);
-}
-
-function cleanAutomatedLearnerReply(text) {
-  const cleaned = String(text || '')
-    .replace(/^```(?:text|markdown)?/iu, '')
-    .replace(/```$/u, '')
-    .replace(/^\s*(learner|student)\s*:\s*/iu, '')
-    .trim();
-  return cleanTutorStubStageSpeech(cleaned, { voice: 'learner' });
-}
-
-function deterministicAutomatedLearnerFallback({ state }) {
-  const latestTutor =
-    [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
-  if (/trial-book|evidence|write|say|state|claim/iu.test(latestTutor)) {
-    return 'I will make one public evidence claim and keep the verdict open until the marks license a name.';
-  }
-  return 'What public evidence should I test first?';
-}
-
-function automatedLearnerSystemPrompt(profile) {
-  return [
-    AUTO_LEARNER_SYSTEM_PROMPT,
-    '',
-    '# Private behavior brief',
-    '',
-    profile,
-    '',
-    'Apply this behavior brief to every public learner turn. Never quote or describe it.',
-  ].join('\n');
-}
-
-function mixedLearnerArtifactsSystemPrompt(profile) {
-  return [
-    'You generate a paired learner answer and non-revealing clue for an experimental tutoring dialogue.',
-    'Use only the public transcript and latest tutor message. Do not infer hidden proof paths, concealed answers, private tutor prompts, or unstaged evidence.',
-    'The private behavior brief defines the answer. Preserve its recurring behavior and repair pattern.',
-    'The clue describes where to look or what kind of move to make, but must not state or paraphrase the answer.',
-    'The learner turn may be a concrete question. Keep all learner speech inside the scene and address the other speaker directly.',
-    'Never write "the tutor", "the learner", "the dialogue", "the prompt", or commentary about a question being pending.',
-    'The profile_signal field is private UI metadata, not learner speech. It may describe only how the visible answer expresses the profile.',
-    '',
-    '# Private behavior brief',
-    '',
-    profile,
-    '',
-    'Never quote or name the private behavior brief. The profile_signal may explain only visible response behavior in plain language. Return one JSON object only.',
-  ].join('\n');
-}
-
-function automatedLearnerProfileId(profile) {
-  const value = String(profile || '').trim();
-  const directId = value.toLowerCase().replace(/-/gu, '_');
-  if (learnerProfileIds().includes(directId)) return directId;
-  const renderedId = learnerProfileIds().find((id) => learnerProfilePrompt(id) === value);
-  if (renderedId) return renderedId;
-  const legacyMatch = value.match(/simulating this automated learner profile:\s*([a-z0-9_-]+)/iu);
-  return legacyMatch ? legacyMatch[1].toLowerCase().replace(/-/gu, '_') : null;
-}
-
-function resolveAutomatedLearnerProfile(profile) {
-  const value = String(profile || '').trim();
-  const profileId = value.toLowerCase().replace(/-/gu, '_');
-  return learnerProfileIds().includes(profileId) ? learnerProfilePrompt(profileId) : value;
-}
-
-function explicitRecollectionFrame(text) {
-  return /\b(?:(?:we|i)\s+(?:already\s+)?(?:saw|read|heard|recorded|remember(?:ed)?|recall(?:ed)?)|the\s+(?:record|trial-book|book)\s+(?:already\s+)?(?:said|showed|recorded|proved))\b/iu.test(
-    String(text || ''),
-  );
-}
-
-function automatedLearnerMarkerValue(turn, field) {
-  const classifier = turn?.classification?.turn || {};
-  const fields = {
-    requestType: classifier.request_type,
-    discourseMove: classifier.discourse_move,
-    evidenceUse: classifier.evidence_use,
-    epistemicStance: classifier.epistemic_stance,
-    agency: classifier.agency,
-    explicitRecollection: explicitRecollectionFrame(turn?.learner),
-  };
-  return fields[field] ?? null;
-}
-
-function automatedLearnerMarkerMatches(turn, clause) {
-  return clause.every((group) => (group.values || []).includes(automatedLearnerMarkerValue(turn, group.field)));
-}
-
-function publicTutorPressure(text) {
-  return /\b(miraculously|marvelous|wonderful|conveniently|apparently|nice trick|escape route|safe performance|hiding behind|not doing the work|lets you avoid|pressing|do not stall|don['’]t stall|fog and vibes|answer vending machine|mob|jab|jabs)\b/iu.test(
-    String(text || ''),
-  );
-}
-
-function negativeRegisterPressure(selection) {
-  return NEGATIVE_FLOOR_REGISTERS.includes(selection?.selected_register);
-}
-
-function automatedLearnerProfileRuntimeState({ state, profile, turnNumber }) {
-  const profileId = automatedLearnerProfileId(profile);
-  const contract = learnerProfileContract(profileId);
-  const observability = contract?.observabilityContract;
-  if (!contract || !observability) return null;
-  const policy = state.register?.policy || 'unknown';
-  const eligiblePolicies = observability.eligiblePolicies || ['*'];
-  const policyEligible = eligiblePolicies.includes('*') || eligiblePolicies.includes(policy);
-  const latestTutor =
-    [...(state.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
-  const currentStimulusEligible =
-    observability.eligibility === 'public_tutor_pressure'
-      ? publicTutorPressure(latestTutor) || negativeRegisterPressure(state.turns?.at(-1)?.registerSelection)
-      : true;
-  const eligible = policyEligible && currentStimulusEligible;
-  const clauses = observability.markerClauses || [];
-  const completedTurns = state.turns || [];
-  const openingTutor = state.history?.[0]?.role === 'assistant' ? state.history[0].content : '';
-  const priorTurns = policyEligible
-    ? completedTurns.filter((turn, index) => {
-        if (observability.eligibility !== 'public_tutor_pressure') return true;
-        const stimulus = index === 0 ? openingTutor : completedTurns[index - 1]?.tutor;
-        const stimulusSelection = index === 0 ? null : completedTurns[index - 1]?.registerSelection;
-        return publicTutorPressure(stimulus) || negativeRegisterPressure(stimulusSelection);
-      })
-    : [];
-  const observed = priorTurns.filter((turn) =>
-    clauses.some((clause) => clause.length && automatedLearnerMarkerMatches(turn, clause)),
-  ).length;
-  const mustShowByTurn = Number(observability.mustShowByTurn || 0);
-  const targetRate = Number(observability.minEligibleRate || 0);
-  const eligibleOpportunities = priorTurns.length + (eligible ? 1 : 0);
-  const targetCount =
-    eligible && (!mustShowByTurn || turnNumber >= mustShowByTurn) ? Math.ceil(eligibleOpportunities * targetRate) : 0;
-  const deadlineDue = eligible && mustShowByTurn > 0 && turnNumber >= mustShowByTurn && observed === 0;
-  const requiredNow = Boolean(eligible && (deadlineDue || observed < targetCount));
-  return {
-    profileId,
-    contract,
-    observability,
-    eligible,
-    priorEligibleTurns: priorTurns.length,
-    observed,
-    targetCount,
-    mustShowByTurn,
-    requiredNow,
-  };
-}
-
-function automatedLearnerProfileRuntime({ state, profile, turnNumber }) {
-  const runtime = automatedLearnerProfileRuntimeState({ state, profile, turnNumber });
-  if (!runtime) return '';
-  return [
-    '# Private behavior cue',
-    '',
-    `The latest public tutor move ${runtime.eligible ? 'does' : 'does not'} trigger the recurring behavior in the brief.`,
-    runtime.requiredNow
-      ? `This turn MUST visibly perform the recurring behavior: ${runtime.contract.intent.failureOperator}. Do not combine it with a fully repaired or fully warranted answer in the same turn.`
-      : 'This turn may repair or progress if the behavior brief permits, but the recurring behavior remains active later.',
-    'This cue is private. Never mention briefs, triggers, profiles, markers, or experimental conditions publicly.',
-  ].join('\n');
-}
-
-// Opt-in stress schedule (TUTOR_STUB_STRESS_SCHEDULE=<path>): planted learner
-// states with adjudicated repairs. Loaded once, lazily; each planted turn's
-// directive is injected into the learner prompt verbatim and traced, so the
-// bench knows exactly which turns carry authored stress.
-const STRESS_SCHEDULE_PATH = process.env.TUTOR_STUB_STRESS_SCHEDULE || null;
-let stressScheduleCache;
-function activeStressSchedule() {
-  if (!STRESS_SCHEDULE_PATH) return null;
-  if (stressScheduleCache === undefined) {
-    stressScheduleCache = loadTutorStubStressSchedule(path.resolve(STRESS_SCHEDULE_PATH));
-  }
-  return stressScheduleCache;
-}
-
-function stressPlantForLearnerTurn(state, turnNumber, { recordTrace = true } = {}) {
-  const schedule = activeStressSchedule();
-  if (!schedule) return null;
-  const plant = tutorStubStressPlantForTurn(schedule, turnNumber);
-  if (plant && recordTrace && state?.trace) {
-    appendTraceEvent(state.trace, {
-      type: 'learner_stress_plant',
-      schema: TUTOR_STUB_STRESS_SCHEDULE_SCHEMA,
-      scheduleId: schedule.scheduleId,
-      turn: turnNumber,
-      state: plant.state,
-      rightRepair: plant.rightRepair,
-      alsoRight: plant.alsoRight,
-    });
-  }
-  return plant;
-}
-
-// Phase Q3 (TUTOR_STUB_CORRUPT="<turn>:<kind>,..."): deterministic
-// post-generation corruption of the learner's reply — the corrupted text
-// becomes her turn everywhere (history, trace, the tutor's view), so she
-// must live with it. Kinds: `truncate` (cut mid-sentence at ~60% of words),
-// `termswap` (TUTOR_STUB_CORRUPT_SWAP="right term=wrong term"). Confusion
-// by construction, not by acting — isolates the repair question.
-const CORRUPT_TURNS = Object.fromEntries(
-  (process.env.TUTOR_STUB_CORRUPT || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .map((s) => s.split(':'))
-    .map(([t, kind]) => [Number(t), kind]),
-);
-
-function applyTutorStubCorruption(state, turnNumber, text) {
-  const kind = CORRUPT_TURNS[turnNumber];
-  if (!kind) return text;
-  let corrupted = text;
-  if (kind === 'truncate') {
-    const words = String(text).split(/\s+/);
-    corrupted = `${words.slice(0, Math.max(4, Math.floor(words.length * 0.6))).join(' ')} —`;
-  } else if (kind === 'termswap') {
-    const [right, wrong] = String(process.env.TUTOR_STUB_CORRUPT_SWAP || '').split('=');
-    if (right && wrong) {
-      // Fuzzy matcher (Q3 pilot lesson): "basin hose" must also catch
-      // "basin's cold-water hose" — words of the right term may carry a
-      // possessive and up to two interleaved words.
-      const fuzzy = right.trim().split(/\s+/).join("(?:['’]s)?(?:\\s+[\\w'’-]+){0,2}\\s+");
-      corrupted = String(text).replace(new RegExp(`\\b${fuzzy}\\b`, 'gi'), wrong);
-    }
-  }
-  if (corrupted !== text && state?.trace) {
-    appendTraceEvent(state.trace, {
-      type: 'learner_corruption',
-      turn: turnNumber,
-      kind,
-      beforeChars: text.length,
-      afterChars: corrupted.length,
-    });
-  }
-  return corrupted;
-}
-
-function buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback = '' }) {
-  const hasTutorMessage = Boolean(latestTutorMessage(state));
-  return [
-    automatedLearnerProfileRuntime({ state, profile, turnNumber }),
-    '',
-    '# Public scene',
-    '',
-    publicWorldSummary(state.world),
-    '',
-    '# Dialogue context',
-    '',
-    hasTutorMessage
-      ? 'The public dialogue precedes this task as native chat messages. Tutor speech is `user`; your own earlier learner speech is `assistant`. In a long run, an explicit omission marker may replace older turns while preserving the latest tutor-led window.'
-      : 'There is no prior tutor message. Start by asking or stating what you would investigate first.',
-    '',
-    '# Task',
-    '',
-    tutorStubStressDirective(stressPlantForLearnerTurn(state, turnNumber)),
-    stressPlantForLearnerTurn(state, turnNumber, { recordTrace: false }) ? '' : null,
-    adherenceFeedback || null,
-    adherenceFeedback ? '' : null,
-    `Write learner turn ${turnNumber}. Use only public evidence and the public transcript.`,
-    'First preserve the private behavior brief. A required distortion, omitted warrant, refusal, resistance, or withheld evidence step takes priority over generic progress.',
-    `Only when the profile permits progress: if the tutor asks for a ${worldLedgerTerm(state?.world)} line, write one concise public evidence claim and treat it as both deduction and book entry.`,
-    'Only when the profile permits progress: if several already-public premises form a warranted chain, you may state the connected premises and their supported follow-up conclusion in the same concise turn. Do not stop artificially after one step, but never add unstaged evidence.',
-    'Only when the profile permits a help request: if you are stuck, ask one concrete question about what evidence would count.',
-    'Write only speech the learner could say aloud inside the scene. Address the other speaker as "you"; never refer to "the tutor", "the learner", "the dialogue", or "the prompt".',
-  ].join('\n');
-}
-
-async function generateAutomatedLearnerTurn({
-  state,
-  resolved,
-  profile,
-  turnNumber,
-  adherenceFeedback = '',
-  stream = null,
-  cliEffort = null,
-  signal = null,
-}) {
-  const prompt = buildAutomatedLearnerPrompt({ state, profile, turnNumber, adherenceFeedback });
-  const systemPrompt = automatedLearnerSystemPrompt(profile);
-  const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
-  const call = () =>
-    callPromptModel({
-      prompt,
-      messageHistory,
-      resolved,
-      systemPrompt,
-      role: 'tutor_stub_auto_learner',
-      maxTokens: 900,
-      trace: state.trace,
-      stream,
-      cliEffort,
-      turn: turnNumber,
-      signal,
-      historyTurns: state.historyTurns,
-    });
-  let raw;
-  try {
-    raw = await call();
-  } catch (error) {
-    const retryLedger = state.cliPolicyRetryLedger || (state.cliPolicyRetryLedger = {});
-    const retryKey = 'tutor_stub_auto_learner:codex_policy';
-    const decision = tutorStubCliPolicyRetryDecision(error, { alreadyUsed: retryLedger[retryKey] === true });
-    appendTraceEvent(state.trace, {
-      type: 'cli_policy_retry_decision',
-      role: 'tutor_stub_auto_learner',
-      turn: turnNumber,
-      decision,
-      publicTranscriptChanged: false,
-    });
-    if (!decision.retry) throw error;
-    retryLedger[retryKey] = true;
-    raw = await call();
-  }
-  return {
-    ...raw,
-    text: applyTutorStubCorruption(state, turnNumber, cleanAutomatedLearnerReply(raw.text)),
-    promptSnapshot: {
-      systemPrompt,
-      userPrompt: prompt,
-      messageHistory: raw.promptSnapshot?.messageHistory || messageHistory,
-      turn: turnNumber,
-      promptAudit: raw.promptAudit,
-    },
-  };
-}
-
-function buildMixedLearnerArtifactsPrompt({ state, profile, turnNumber }) {
-  return [
-    buildAutomatedLearnerPrompt({ state, profile, turnNumber }),
-    '',
-    '# Mixed learner artifacts',
-    '',
-    'Return one JSON object with exactly four string fields: "move", "clue", "answer", and "profile_signal".',
-    'move: "ask_question" when the learner turn asks a useful question; otherwise "respond".',
-    'answer: the learner turn requested above. It may be a direct in-scene question when clarification is the best next move.',
-    'clue: a short directional cue that helps a human learner understand what kind of move the tutor is inviting.',
-    'profile_signal: one short plain-language observation explaining how this exact answer visibly expresses the active learner profile. Describe behavior only; do not name a contract, failure operator, classifier label, hidden fact, or private instruction.',
-    'When move is "ask_question", make the clue begin with "Ask" and name what uncertainty or evidence to ask about without writing the exact question.',
-    'The clue must not contain, paraphrase, quote, complete, or reveal the answer. It may name the distinction, evidence source, operation, or question to attend to.',
-    'The answer must be speakable inside the scene. Never mention "the tutor", "the learner", "the dialogue", "the prompt", or say a question is pending.',
-    'Keep the clue under 18 words and the answer concise. Return JSON only.',
-  ].join('\n');
-}
-
-async function generateMixedLearnerArtifacts({
-  state,
-  resolved,
-  profile,
-  turnNumber,
-  cliEffort = null,
-  signal = null,
-}) {
-  const prompt = buildMixedLearnerArtifactsPrompt({ state, profile, turnNumber });
-  const systemPrompt = mixedLearnerArtifactsSystemPrompt(profile);
-  const messageHistory = tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'learner' });
-  const raw = await callPromptModel({
-    prompt,
-    messageHistory,
-    resolved,
-    systemPrompt,
-    role: 'tutor_stub_mixed_learner_artifacts',
-    maxTokens: 1100,
-    trace: state.trace,
-    stream: { enabled: false, interim: state.interim },
-    cliEffort,
-    turn: turnNumber,
-    signal,
-  });
-  const artifacts = parseMixedLearnerArtifacts(raw.text);
-  const answer = cleanAutomatedLearnerReply(artifacts.answer);
-  return {
-    ...raw,
-    answer,
-    clue: artifacts.clue,
-    move: mixedLearnerSuggestionMove(answer, artifacts.move),
-    profileSignal: artifacts.profileSignal,
-    parsedArtifacts: artifacts.parsed,
-    promptSnapshot: {
-      systemPrompt,
-      userPrompt: prompt,
-      messageHistory,
-      turn: turnNumber,
-      promptAudit: raw.promptAudit,
-    },
-  };
-}
-
-function automatedLearnerDraftMatchesRuntime({ text, raw, state, runtime }) {
-  if (!runtime?.requiredNow) return true;
-  const classification = classificationFromCombinedAnalysis(raw, state);
-  const syntheticTurn = { learner: text, classification };
-  return (runtime.observability.markerClauses || []).some(
-    (clause) => clause.length > 0 && automatedLearnerMarkerMatches(syntheticTurn, clause),
-  );
-}
-
-function automatedLearnerRepairInstruction(profileId) {
-  if (profileId === 'answer_seeking') {
-    return 'Keep seeking supplied wording, but respond to the current public clue. Either ask for the next line using one concrete clue term, or copy part of the line just offered as a tentative entry. Do not repeat an earlier learner sentence verbatim.';
-  }
-  if (profileId === 'proof_skipper') {
-    return 'State an unsupported downstream attribution, source, actor, or public-record judgment as if the clue were sufficient; do not merely restate the clue. Remove because, since, so, therefore, if, then, would need, would want, and any sentence that explains or requests the missing bridge. Do not hedge or ask a question.';
-  }
-  if (profileId === 'false_memory') {
-    return 'Begin naturally with "We already saw", "I remember", "The record said", or an equivalent explicit recollection, then state one concrete observation that the public record did not actually establish. Misquote the clue itself rather than drawing a bad inference from a true clue. Do not hedge, describe a future test, or correct the distortion in this turn.';
-  }
-  if (profileId === 'affective_resistant') {
-    return "Object to the tutor's pressure only. Do not add a clue, public-record line, warrant, inference, or useful evidence step in the same turn.";
-  }
-  return 'Make the required failure public and unmistakable without repairing it in the same turn.';
-}
-
-async function enforceAutomatedLearnerProfile({
-  state,
-  resolved,
-  profile,
-  turnNumber,
-  generated,
-  cliEffort = null,
-  signal = null,
-  isCurrent = null,
-}) {
-  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
-  const runtime = automatedLearnerProfileRuntimeState({ state, profile, turnNumber });
-  const canPreclassify = Boolean(state.classifier.enabled && state.learnerDag.enabled && state.world);
-  if (!runtime?.requiredNow || !canPreclassify || !generated.text) {
-    return { generated, precomputedRaw: null, repaired: false, passed: null };
-  }
-
-  const maxRepairs = 2;
-  let candidate = generated;
-  let raw = null;
-  let passed = false;
-  let repairs = 0;
-  while (repairs <= maxRepairs) {
-    raw = await extractCombinedLearnerAnalysis({
-      learnerText: candidate.text,
-      state,
-      tutorTurn: turnNumber,
-      preflightSource: 'automated_learner_profile_adherence',
-      signal,
-    });
-    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
-    passed = automatedLearnerDraftMatchesRuntime({ text: candidate.text, raw, state, runtime });
-    if (passed || repairs === maxRepairs) break;
-    appendTraceEvent(state.trace, {
-      type: 'auto_learner_profile_repair_requested',
-      turn: turnNumber,
-      profile: runtime.profileId,
-      attempt: repairs + 1,
-      failureOperator: runtime.contract.intent.failureOperator,
-      draft: candidate.text,
-    });
-    const repaired = await generateAutomatedLearnerTurn({
-      state,
-      resolved,
-      profile,
-      turnNumber,
-      adherenceFeedback: `Your previous draft was too normalized and did not visibly perform the required failure operator (${runtime.contract.intent.failureOperator}). Rewrite the learner turn. ${automatedLearnerRepairInstruction(runtime.profileId)} Keep it natural and concise.`,
-      stream: { enabled: false, interim: state.interim },
-      cliEffort,
-      signal,
-    });
-    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
-    if (repaired.text) candidate = repaired;
-    repairs += 1;
-  }
-  appendTraceEvent(state.trace, {
-    type: 'auto_learner_profile_adherence',
-    turn: turnNumber,
-    profile: runtime.profileId,
-    required: true,
-    passed,
-    repaired: repairs > 0,
-    repairAttempts: repairs,
-  });
-  return { generated: candidate, precomputedRaw: raw, repaired: repairs > 0, passed };
-}
-
-function tutorDialogueClosureFrameForTurn({ state, tutorTurn, tutorLearnerDag }) {
-  const tutorDagSnapshot = buildTutorDagSnapshot(state, tutorTurn);
-  return {
-    tutorDagSnapshot,
-    frame: buildTutorStubDialogueClosureFrame({
-      lifecycle: state.dialogueClosure,
-      learnerDagModel: tutorLearnerDag?.model || tutorLearnerDag || null,
-      tutorDagSnapshot,
-      answerTerm: answerTermForWorld(state.world),
-    }),
-  };
-}
-
-function typedActionStateBelief({ state, learnerText, stateObservation, turn }) {
-  const dialogue = state.turns.flatMap((row) => [
-    { role: 'learner', content: row.learner || '' },
-    { role: 'tutor', content: row.tutor || '' },
-  ]);
-  dialogue.push({ role: 'learner', content: learnerText });
-  const belief = estimateLearnerStateBelief({
-    dialogue,
-    interventionLedger: state.typedActions.ledger,
-    turnIndex: turn,
-  });
-  belief.axes = {
-    ...belief.axes,
-    proof: stateObservation.axes.proof,
-    release: stateObservation.axes.release,
-    ownership: stateObservation.axes.ownership,
-    conceptual_mastery: stateObservation.axes.conceptual_mastery,
-    metacognitive_accuracy: stateObservation.axes.metacognitive_accuracy,
-    affective_readiness: stateObservation.axes.affective_readiness,
-  };
-  return belief;
-}
-
-function advanceRuntimeScaffoldLifecycle(state, event) {
-  if (!state.typedActions?.enabled) return null;
-  const result = advanceScaffoldLifecycle(state.typedActions.scaffoldLifecycle, event);
-  state.typedActions.scaffoldLifecycle = result.lifecycle;
-  appendTraceEvent(state.trace, {
-    type: 'tutor_scaffold_lifecycle_transition',
-    turn: event.turn,
-    transition: result.transition,
-    lifecycle: result.lifecycle,
-  });
-  return result;
-}
-
-function scaffoldLifecycleActionGate(lifecycle) {
-  const phase = lifecycle?.phase || 'diagnose';
-  const allowedMoveFamilies = allowedMoveFamiliesForScaffoldPhase(phase);
-  const allowedActionTypes = ADAPTATION_ACTIONS.filter((action) =>
-    allowedMoveFamilies.includes(tutorStubMoveFamilyForAction(action.action_type)),
-  ).map((action) => action.action_type);
-  if (!allowedActionTypes.length) {
-    throw new Error(`typed scaffold lifecycle phase ${phase} has no permitted pedagogical actions`);
-  }
-  return {
-    phase,
-    allowedMoveFamilies,
-    allowedActionTypes,
-    policySpec: {
-      id: `tutor-stub-scaffold-lifecycle-${phase}`,
-      version: '1.0',
-      module_id: `scaffold_lifecycle:${phase}`,
-      spec_hash: `scaffold-lifecycle.v1:${phase}:${allowedActionTypes.join(',')}`,
-      action_policy: {
-        allowed_action_families: allowedActionTypes,
-        preferred_action_families: allowedActionTypes,
-        disallowed_action_families: ADAPTATION_ACTIONS.map((action) => action.action_type).filter(
-          (actionType) => !allowedActionTypes.includes(actionType),
-        ),
-      },
-    },
-  };
-}
-
-function closePriorTypedAction({ state, learnerText, turn }) {
-  if (!state.typedActions?.enabled) return null;
-  const result = closePendingIntervention({
-    ledger: state.typedActions.ledger,
-    learnerTurn: learnerText,
-    turnIndex: turn,
-    config: { semanticOutcomeObserver: true },
-  });
-  state.typedActions.ledger = result.ledger;
-  if (!result.closedRecord) return null;
-  const envelope = {
-    schema: TUTOR_TYPED_ACTION_OUTCOME_SCHEMA,
-    contract_id: result.closedRecord.contract_id,
-    decision_turn: result.closedRecord.turn_index,
-    observation_turn: turn,
-    public_learner_observation: learnerText,
-    outcome: result.closedRecord.outcome,
-    observed_transition: result.closedRecord.observed_transition,
-    evidence: result.closedRecord.evidence,
-    evidence_contract: result.closedRecord.evidence_contract || null,
-    policy_update: result.closedRecord.policy_update || null,
-    closed_record: result.closedRecord,
-  };
-  const lifecycle = advanceRuntimeScaffoldLifecycle(state, {
-    kind: 'closed_public_outcome',
-    turn,
-    outcome: envelope,
-  });
-  envelope.scaffold_lifecycle_transition = lifecycle?.transition || null;
-  envelope.scaffold_lifecycle = lifecycle?.lifecycle || null;
-  const priorTurn = [...state.turns]
-    .reverse()
-    .find((row) => Number(row.turn) === Number(result.closedRecord.turn_index));
-  if (priorTurn?.typedActionDecision) priorTurn.typedActionOutcomeAfterNextLearner = jsonClone(envelope);
-  appendTraceEvent(state.trace, {
-    type: 'tutor_typed_action_outcome_closed',
-    turn,
-    decisionTurn: result.closedRecord.turn_index,
-    outcome: envelope,
-  });
-  return envelope;
-}
-
-function typedActionRegisterSelection({
-  state,
-  learnerText,
-  classification,
-  tutorLearnerDag,
-  registerSelection,
-  decision,
-}) {
-  const register =
-    registerSelection?.engagement_stance ||
-    registerSelection?.selected_register ||
-    decision.register_selection.engagement_stance ||
-    'precise';
-  const baseConfiguration =
-    registerSelection?.response_configuration ||
-    buildTutorStubResponseConfiguration({
-      engagementStance: register,
-      legacySelectedRegister: register,
-      temperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-      policy: state.register?.policy || 'typed_action',
-      learnerText,
-      classification,
-      tutorLearnerDag,
-      comprehension: tutorStubComprehensionFeatures(state.comprehension, { turn: state.turns.length + 1 }),
-      world: state.world,
-    });
-  const patch = decision.response_configuration_patch;
-  const actorialInputs = {
-    engagementStance: register,
-    stanceDistribution:
-      baseConfiguration.engagement_stance_distribution || registerSelection?.engagement_stance_distribution || null,
-    actionFamily: patch.action_family,
-    temperature: state.register?.temperature ?? DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-    classification,
-    tutorLearnerDag,
-    comprehension: tutorStubComprehensionFeatures(state.comprehension, { turn: state.turns.length + 1 }),
-    world: state.world,
-    dueEvidence: currentReleaseRows(state, state.turns.length + 1),
-    recentActorialParts: (state.register?.history || [])
-      .filter((entry) => Number(entry.turn) < state.turns.length + 1)
-      .map((entry) => entry.actorial_part || entry.response_configuration?.actorial_part)
-      .filter(Boolean),
-  };
-  let actorialPart = selectTutorStubActorialPart(actorialInputs);
-  const explicitRegister = explicitPerformanceDirectiveValue(state, 'register');
-  const explicitCharacter = explicitPerformanceDirectiveValue(state, 'character');
-  const lightAdaptation = registerSelection?.light_adaptation || baseConfiguration.light_adaptation || null;
-  const lightAdaptationTriggered = lightAdaptation?.triggered === true;
-  const randomStanceEnabled =
-    state.randomPerformance?.enabled === true && !explicitRegister && !lightAdaptationTriggered;
-  const randomCharacterEnabled =
-    state.randomPerformance?.enabled === true && !explicitCharacter && !lightAdaptationTriggered;
-  if (lightAdaptationTriggered) {
-    actorialPart = randomPerformanceActorialPartSelection({
-      state,
-      inputs: actorialInputs,
-      baseSelection: actorialPart,
-      lightAdaptation,
-    });
-  } else if (explicitCharacter) {
-    actorialPart = explicitPerformanceActorialPartSelection({
-      inputs: actorialInputs,
-      baseSelection: actorialPart,
-      character: explicitCharacter,
-    });
-  } else if (randomCharacterEnabled) {
-    actorialPart = randomPerformanceActorialPartSelection({
-      state,
-      inputs: actorialInputs,
-      baseSelection: actorialPart,
-    });
-  } else if (
-    registerTemperatureApplies(state.register?.policy) &&
-    actorialPart.distribution.length &&
-    actorialPart.locked !== true
-  ) {
-    const sampledPart = sampleTutorStubPolicyDistribution(
-      actorialPart.distribution.map((row) => ({
-        register: row.part,
-        weight: row.weight,
-        probability: row.probability,
-      })),
-      policySamplingContext(state, 'typed_action_actorial_part'),
-    );
-    actorialPart = selectTutorStubActorialPart({
-      ...actorialInputs,
-      selectedPartOverride: sampledPart.entry?.register || actorialPart.id,
-    });
-    actorialPart.random = sampledPart.audit;
-  }
-  const responseConfiguration = {
-    ...jsonClone(baseConfiguration),
-    action_family: patch.action_family,
-    actorial_part: actorialPart.id,
-    actorial_part_label: actorialPart.label,
-    actorial_part_selection: actorialPart,
-    actorial_performance: selectTutorStubActorialPerformance({
-      engagementStance: register,
-      actorialPart: actorialPart.id,
-    }),
-    support_level: patch.support_level,
-    task_id: patch.task_id,
-    knowledge_component: patch.knowledge_component,
-    item_difficulty: patch.item_difficulty,
-    typed_action_schema: decision.schema,
-    light_adaptation: lightAdaptation
-      ? {
-          ...lightAdaptation,
-          engagement_stance_random: lightAdaptationTriggered ? registerSelection?.random || null : null,
-          actorial_part_random: lightAdaptationTriggered ? actorialPart.random || null : null,
-          applied: lightAdaptationTriggered,
-          applied_axes: lightAdaptationTriggered
-            ? ['engagement_stance', actorialPart.locked === true ? null : 'actorial_part'].filter(Boolean)
-            : [],
-        }
-      : null,
-    random_performance: state.randomPerformance?.enabled
-      ? {
-          schema: 'machinespirits.tutor-stub.random-performance-selection.v1',
-          enabled: randomStanceEnabled || randomCharacterEnabled,
-          configured: true,
-          active_axes: [
-            randomStanceEnabled ? 'engagement_stance' : null,
-            randomCharacterEnabled ? 'actorial_part' : null,
-          ].filter(Boolean),
-          explicitly_directed_axes: [
-            explicitRegister ? 'engagement_stance' : null,
-            explicitCharacter ? 'actorial_part' : null,
-          ].filter(Boolean),
-          assessment_influence: {
-            engagement_stance: false,
-            actorial_part: false,
-            other_axes: true,
-          },
-          stance_random: randomStanceEnabled ? registerSelection?.random || null : null,
-          actorial_part_random: randomCharacterEnabled ? actorialPart.random || null : null,
-          hard_constraints_preserved: ['dialogue_closure', 'evidence_release', 'response_safety'],
-        }
-      : baseConfiguration.random_performance || null,
-    performance_directives:
-      explicitRegister || explicitCharacter
-        ? {
-            schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
-            precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
-            register: explicitRegister
-              ? {
-                  value: explicitRegister,
-                  applied: !lightAdaptationTriggered,
-                  outcome: lightAdaptationTriggered ? 'overridden_by_light_adaptation' : 'applied',
-                  assessment_influence: false,
-                }
-              : null,
-            character: explicitCharacter
-              ? {
-                  value: explicitCharacter,
-                  applied: !lightAdaptationTriggered && actorialPart.explicit_directive?.applied !== false,
-                  outcome: lightAdaptationTriggered
-                    ? 'overridden_by_light_adaptation'
-                    : actorialPart.explicit_directive?.outcome || 'applied',
-                  assessment_influence: false,
-                }
-              : null,
-            hard_constraints_preserved: [
-              'dialogue_closure',
-              'authored_evidence_source',
-              'evidence_release',
-              'response_safety',
-            ],
-          }
-        : baseConfiguration.performance_directives || null,
-    selection_reasons: {
-      ...(baseConfiguration.selection_reasons || {}),
-      action_family: `Selected by the opt-in typed pedagogical-action policy as ${decision.chosen_action.action_type}.`,
-      actorial_part: actorialPart.reason,
-      support_level: 'Selected independently from move family, engagement stance, and task.',
-      task: 'Supplied by the explicit typed-action task configuration.',
-    },
-  };
-  const definition = getEngagementStanceDefinition(register) || {};
-  const effective = {
-    ...(registerSelection ? jsonClone(registerSelection) : {}),
-    schema: registerSelection?.schema || 'machinespirits.tutor-stub.response-configuration-selection.v5',
-    policy: registerSelection?.policy || state.register?.policy || 'typed_action',
-    turn: registerSelection?.turn || state.turns.length + 1,
-    engagement_stance: register,
-    selected_register: register,
-    selected_mode: register,
-    legacy_selected_register: registerSelection?.legacy_selected_register || register,
-    action_family: patch.action_family,
-    support_level: patch.support_level,
-    task_id: patch.task_id,
-    knowledge_component: patch.knowledge_component,
-    item_difficulty: patch.item_difficulty,
-    addressee_profile: responseConfiguration.addressee_profile,
-    audience_register: responseConfiguration.audience_register,
-    register_pragmatics: responseConfiguration.register_pragmatics,
-    lexical_accessibility: responseConfiguration.lexical_accessibility,
-    scene_immersion: responseConfiguration.scene_immersion,
-    actorial_part: responseConfiguration.actorial_part,
-    actorial_part_label: responseConfiguration.actorial_part_label,
-    actorial_part_selection: responseConfiguration.actorial_part_selection,
-    actorial_performance: responseConfiguration.actorial_performance,
-    unresolved_terms: responseConfiguration.unresolved_terms,
-    light_adaptation: responseConfiguration.light_adaptation,
-    performance_directives: responseConfiguration.performance_directives,
-    valence: registerSelection?.valence || definition.valence || null,
-    request_type:
-      registerSelection?.request_type ||
-      classification?.turn?.request_type ||
-      classification?.turn?.discourse_move ||
-      'unknown',
-    reviewer_signal:
-      registerSelection?.reviewer_signal || classification?.turn?.pedagogical_need || 'typed pedagogical action',
-    register_reason: registerSelection?.register_reason || 'Default precise stance for the typed-action runtime.',
-    response_configuration: responseConfiguration,
-    typed_action_decision: decision,
-    source: registerSelection?.source || 'typed_action_runtime',
-  };
-  if (state.register?.enabled) {
-    if (state.register.history.length && state.register.history.at(-1)?.turn === effective.turn) {
-      state.register.history[state.register.history.length - 1] = effective;
-    } else {
-      state.register.history.push(effective);
-    }
-    state.register.current = effective;
-  }
-  return effective;
-}
-
-function planTypedAction({
-  state,
-  learnerText,
-  stateObservation,
-  turn,
-  classification,
-  tutorLearnerDag,
-  registerSelection,
-}) {
-  if (!state.typedActions?.enabled) {
-    return { registerSelection, decision: null, priorOutcome: null };
-  }
-  const priorOutcome = closePriorTypedAction({ state, learnerText, turn });
-  const stateBelief = typedActionStateBelief({ state, learnerText, stateObservation, turn });
-  const lifecycleBeforeDecision = jsonClone(state.typedActions.scaffoldLifecycle);
-  const lifecycleGate = scaffoldLifecycleActionGate(lifecycleBeforeDecision);
-  const selection = selectPedagogicalAction({
-    stateBelief,
-    interventionLedger: state.typedActions.ledger,
-    mode: 'closed_loop',
-    config: {
-      maxActionCandidates: ADAPTATION_ACTIONS.length,
-      worldAdaptationSpec: lifecycleGate.policySpec,
-    },
-  });
-  const considered = new Set(selection.candidateActions.map((candidate) => candidate.action_type));
-  const vetoes = ADAPTATION_ACTIONS.filter((action) => !considered.has(action.action_type)).map((action) => {
-    const moveFamily = tutorStubMoveFamilyForAction(action.action_type);
-    const lifecycleVeto = !lifecycleGate.allowedMoveFamilies.includes(moveFamily);
-    return {
-      action_type: action.action_type,
-      move_family: moveFamily,
-      stage: lifecycleVeto ? 'scaffold_lifecycle_gate' : 'state_conditioned_candidate_generation',
-      disposition: lifecycleVeto ? 'vetoed' : 'not_considered',
-      reason: lifecycleVeto
-        ? `Move family ${moveFamily} is not permitted during scaffold phase ${lifecycleGate.phase}.`
-        : 'The current public learner-state hypotheses did not place this action in the policy candidate set.',
-    };
-  });
-  const register = registerSelection?.engagement_stance || registerSelection?.selected_register || 'precise';
-  let decision = buildTutorStubTypedActionDecision({
-    selection,
-    stateBelief,
-    task: state.typedActions.config.task,
-    register,
-    supportLevel: state.typedActions.config.supportLevel,
-    selectionProbability: 1,
-    vetoes,
-    modelVersion: 'programmatic/adaptive-action-policy',
-  });
-  const contractId = `${stateRunDebugId(state)}-typed-action-t${turn}`;
-  const contract = createAdaptationContract({
-    contractId,
-    dialogueId: stateRunDebugId(state),
-    turnIndex: turn,
-    stateBelief,
-    selectedAction: decision.chosen_action,
-    candidateActions: selection.candidateActions,
-    gateResult: { allowed: true, violations: [], repairs: [] },
-    policyMode: 'closed_loop',
-    worldAdaptationSpec: selection.worldAdaptationSpec,
-  });
-  decision = jsonClone({
-    ...decision,
-    contract_id: contractId,
-    decision_provenance: {
-      timing: 'after_current_public_learner_observation_before_tutor_output',
-      public_observation_schema: stateObservation.schema,
-      public_only: true,
-      selection_method: 'deterministic_closed_loop_argmax',
-      propensity: {
-        selected_action_probability: 1,
-        method: 'deterministic_policy',
-      },
-      candidate_universe: ADAPTATION_ACTIONS.map((action) => action.action_type),
-      considered_candidates: selection.candidateActions.map((candidate) => candidate.action_type),
-      vetoed_or_not_considered: vetoes.map((row) => row.action_type),
-      task_axis_source: 'explicit_typed_action_config',
-      register_axis_source: registerSelection ? 'existing_tutor_stub_register_policy' : 'typed_action_precise_fallback',
-      support_axis_source:
-        state.typedActions.config.supportLevel === null ? 'action_default' : 'explicit_typed_action_config',
-      scaffold_lifecycle_gate: {
-        phase: lifecycleGate.phase,
-        allowed_move_families: lifecycleGate.allowedMoveFamilies,
-        allowed_action_types: lifecycleGate.allowedActionTypes,
-        policy_spec: lifecycleGate.policySpec,
-      },
-    },
-    adaptation_contract: contract,
-  });
-  const lifecycleDecision = advanceRuntimeScaffoldLifecycle(state, {
-    kind: 'typed_action_decision',
-    turn,
-    decision,
-  });
-  decision = jsonClone({
-    ...decision,
-    scaffold_lifecycle: {
-      before: lifecycleBeforeDecision,
-      transition: lifecycleDecision.transition,
-      after: lifecycleDecision.lifecycle,
-    },
-  });
-  const pending = appendPendingIntervention(state.typedActions.ledger, contract);
-  state.typedActions.ledger = pending.ledger;
-  state.typedActions.currentDecision = decision;
-  const effectiveRegisterSelection = typedActionRegisterSelection({
-    state,
-    learnerText,
-    classification,
-    tutorLearnerDag,
-    registerSelection,
-    decision,
-  });
-  appendTraceEvent(state.trace, {
-    type: 'tutor_typed_action_decision',
-    turn,
-    phase: 'before_tutor_output',
-    stateObservation,
-    decision,
-    pendingIntervention: pending.pendingIntervention,
-  });
-  console.log(
-    `${C.cyan}typed action >${C.reset} ${decision.chosen_action.action_type}; move ${
-      decision.chosen_action.move_family
-    }; support ${decision.chosen_action.support_level}; task ${decision.chosen_action.task_id}; stance ${register}`,
-  );
-  return { registerSelection: effectiveRegisterSelection, decision, priorOutcome };
 }
 
 const { runAutomatedLearnerDialogue, runOneTurn } = createTutorStubTurnOrchestration({
