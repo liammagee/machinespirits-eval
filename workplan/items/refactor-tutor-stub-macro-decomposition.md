@@ -183,3 +183,14 @@ Log:
   assertions plus the zero-skip hermetic suite at 7,676/7,676 root and 137/137
   tutor-core tests.
 - 2026-07-29 — Opened macro cycle 6 as stacked PR #431.
+- 2026-08-04 — Refreshed PR #431 onto the final current-main stack, including
+  Paper v3.0.262. Current turn, feedback, timing, passthrough, DAG, dramatic
+  release, manner-switch, and golden-delivery contracts pass 162/162; the fully
+  composed five-PR head passes the zero-skip hermetic suite at 7,741/7,741 root
+  plus 137/137 tutor-core tests. The extraction still removes 1,199 entrypoint
+  lines (16,201 to 15,002), with zero static cycles across 464 files.
+- 2026-08-04 — Restacked PR #431 onto the post-merge refresh of PR #430. Its
+  non-workplan extraction patch remains byte-equivalent; a current broad turn
+  recheck passes 138/138, all static gates remain green across 374 workplan
+  items with zero cycles across 464 files, and the entrypoint reduction remains
+  1,199 lines.
