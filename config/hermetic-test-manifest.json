@@ -408,6 +408,7 @@
         "tests/turnPlanSampler.test.js",
         "tests/tutorPrBenchmarkCalibration.test.js",
         "tests/tutorPrBenchmarkRubric.test.js",
+        "tests/tutorPromptAgencyAudit.test.js",
         "tests/tutorStubAbHarness.test.js",
         "tests/tutorStubAbmPanel.test.js",
         "tests/tutorStubAutoEvalEvidence.test.js",

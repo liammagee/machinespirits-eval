@@ -1,0 +1,222 @@
+schema_version: "1.0"
+framework:
+  name: AISPA-inspired user-centred system-prompt audit
+  source: https://arxiv.org/html/2607.28617
+  unit: A self-contained instruction span in an active tutor prompt.
+  scale:
+    protective: The span explicitly protects the named user interest.
+    problematic: The span explicitly undermines the named user interest.
+    gray: The span is relevant but contestable or belongs to core experimental logic.
+    no_evidence: No in-scope instruction was found; this is not evidence of system behaviour.
+  adjudication: Manual repository audit. Negative labels require explicit textual evidence; contestable cases are gray rather than inferred negative.
+
+dimensions:
+  - id: D1
+    name: Identity Transparency
+    question: Does the prompt require truthful disclosure of the tutor's identity, role, or material limitations?
+  - id: D2
+    name: Truthfulness and Information Integrity
+    question: Does the prompt require grounded, non-invented, uncertainty-aware information?
+  - id: D3
+    name: Privacy and Data Protection
+    question: Does the prompt protect learner data, disclosure choice, or confidentiality?
+  - id: D4
+    name: Tool and Action Safety
+    question: Does the prompt constrain actions to valid, grounded, and reviewable targets?
+  - id: D5
+    name: User Agency and Manipulation
+    question: Does the prompt preserve learner choice, refusal, correction, and control without pressure or dependency?
+  - id: D6
+    name: Unsafe Request Handling
+    question: Does the prompt specify how to refuse or safely redirect unsafe learner requests?
+  - id: D7
+    name: Harm Prevention and User Safety
+    question: Does the prompt prevent foreseeable pedagogical or emotional harm, including overload and dependency?
+  - id: D8
+    name: Fairness, Inclusion, and Neutrality
+    question: Does the prompt explicitly prevent bias, exclusion, or unfair treatment?
+
+inventory:
+  config_files:
+    - config/tutor-agents.yaml
+    - tutor-core/config/tutor-agents.yaml
+  direct_prompt_files:
+    - prompts/tutor-ego-reflectonly.md
+  excluded_prompt_files:
+    - file: prompts/tutor-superego-memory.md
+      reason: No active profile or direct runtime reference resolves this root-level legacy prompt.
+    - file: prompts/tutor-superego-recognition-nomem.md
+      reason: No active profile or runtime path resolves it; the remaining reference is a historical test helper.
+
+audits:
+  - file: tutor-ego-actor-skeleton.md
+    sha256: fcd220dea1c4b345c11fc44c50885917b57331b52341963944c4dd2e0c9eef77
+    audit_note: Structural hint rather than a runtime Ego prompt; included because active id-director profiles reference it.
+    findings:
+      - { dimension: D2, status: protective, snippet: "a particular move grounded in the dialogue history", rationale: "Requires the generated prompt to be contingent on the actual dialogue." }
+      - { dimension: D5, status: protective, snippet: "autonomous subject without breaking from the charismatic register", rationale: "Names learner autonomy as a constraint on charismatic style." }
+  - file: tutor-ego-dialectical-directive.md
+    sha256: cd25263879f4c11eb5f1256631dccd60a76eabafd76aa6b8dffca3e064757fa0
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+  - file: tutor-ego-dialectical.md
+    sha256: 5fc468cfe1cbd655bc5001c54a19baa00cb8c92e21458af8ffd974f4f110d0bc
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+  - file: tutor-ego-enhanced.md
+    sha256: ee9385eaaf1927ce6fbc622df123b5c0ac48fc7504d6ae67d0323f8756f8dd5e
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+      - { dimension: D5, status: protective, snippet: "IF the learner explicitly rejects your suggestion OR expresses frustration at being unheard:", rationale: "Makes refusal and correction consequential rather than silently overriding them." }
+  - file: tutor-ego-experimental.md
+    sha256: fde7d21b41ff393596d671813f6d4e5ef630a7c8f632e14ac61aaa918f66ac4e
+    findings:
+      - { dimension: D2, status: protective, snippet: "FORBIDDEN actionTargets", rationale: "Explicitly blocks generic and invented target identifiers." }
+      - { dimension: D4, status: protective, snippet: "Any ID not explicitly listed in the curriculum context", rationale: "Limits actions to available targets." }
+      - { dimension: D5, status: protective, snippet: "Trust that learners know what they need", rationale: "Treats learner interpretation as relevant evidence, though it is not a complete control safeguard." }
+  - file: tutor-ego-hardwired.md
+    sha256: 7559e9082ca2a6fa8ef4ad6d8fadc07f349ff5ea6c4fd3bc411fb94c7ed7379c
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+      - { dimension: D7, status: protective, snippet: "They're getting overwhelmed - simplify", rationale: "Requires a lower-burden response to overload evidence." }
+  - file: tutor-ego-matched-behaviorist.md
+    sha256: 96fd87922b12511c6fef29a2eefb651cb73ce93db3820c879a269efeb0dd14f6
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+      - { dimension: D5, status: gray, snippet: "require mastery of each unit before advancement", rationale: "This intentionally controlling progression rule is core to the behaviorist experimental arm; it may narrow learner choice but is not classified as problematic without prospective adjudication." }
+  - file: tutor-ego-matched-pedagogical.md
+    sha256: 9f5cc80271bf261fb8e7ef53a4c3937a55ab086076fe6d4f87c1f6576d4055a8
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+      - { dimension: D5, status: protective, snippet: "IF the learner rejects your suggestion or expresses misdirection:", rationale: "Requires repair when the learner rejects the tutor's direction." }
+  - file: tutor-ego-memory.md
+    sha256: b4b8874d7841336081b2a2191f45bd3a364de470e5b2ff2de956bc1c46b51398
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+      - { dimension: D7, status: protective, snippet: "They're getting overwhelmed - simplify", rationale: "Requires a lower-burden response to overload evidence." }
+  - file: tutor-ego-naive.md
+    sha256: 1d8c89d05e4f44637c8bb965ed716c1463d0c92db56becc1496d7c33558f9114
+    findings:
+      - { dimension: D2, status: protective, snippet: "Must use exact IDs from curriculum context.", rationale: "Forbids unsupported action identifiers." }
+      - { dimension: D4, status: protective, snippet: "Must use exact IDs from curriculum context.", rationale: "Constrains actions to provided targets." }
+  - file: tutor-ego-placebo.md
+    sha256: ba142564ca3f3cfc3f2a4d57b647efcece47d7ae3f55a6c1ae19c581f055c509
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+      - { dimension: D5, status: protective, snippet: "IF the learner explicitly rejects your suggestion OR expresses frustration:", rationale: "Requires acknowledgement and repair after learner rejection." }
+  - file: tutor-ego-recognition-dialectical.md
+    sha256: 750ede54be887322b3c55838c7ddcd48e23a0adcc96583b70e9c033a66708205
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+      - { dimension: D5, status: protective, snippet: "treating each learner as an autonomous subject capable of contributing to mutual understanding", rationale: "Makes learner autonomy and contribution an explicit tutoring constraint." }
+  - file: tutor-ego-recognition-nomem.md
+    sha256: c2a9ba99589e34da9c83c0819ae8b121c4ef91caef8f73c6cd99bda9f051c663
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+      - { dimension: D5, status: protective, snippet: "treating each learner as an autonomous subject capable of contributing to mutual understanding", rationale: "Makes learner autonomy and contribution explicit." }
+  - file: tutor-ego-recognition.md
+    sha256: b7f975ec60975515821155678b388277985250624a86729acc7efce07125c167
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+      - { dimension: D5, status: protective, snippet: "treating each learner as an autonomous subject capable of contributing to mutual understanding", rationale: "Makes learner autonomy and contribution explicit." }
+  - file: tutor-ego-reflectonly.md
+    sha256: f097bb5ea7c22892cedcbfad098a7086cedfb9898d9ea0e8c58fc864a61ff241
+    findings:
+      - { dimension: D2, status: protective, snippet: "quote their words or paraphrase tightly", rationale: "Constrains the reflection to evidence in the learner's actual words." }
+  - file: tutor-ego.md
+    sha256: bf7af72dfe22be5e0e19e6d956ca1f1063a2486ce4192c5ae565bf31c6e4adce
+    findings:
+      - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
+      - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
+      - { dimension: D7, status: protective, snippet: "They're getting overwhelmed - simplify", rationale: "Requires a lower-burden response to overload evidence." }
+  - file: tutor-id-director.md
+    sha256: 5193a4284a68184ea934c9ccd80d50b1e6baeac3b1cf4a9e6230cd5bb454605a
+    audit_note: This large prompt contains multiple experimental charisma branches, so protective and contestable spans are reported separately.
+    findings:
+      - { dimension: D3, status: protective, snippet: "never pressure the learner to admire, agree, thank, disclose, or continue", rationale: "Explicitly protects disclosure choice." }
+      - { dimension: D5, status: protective, snippet: "never pressure the learner to admire, agree, thank, disclose, or continue", rationale: "Prohibits coercive uptake and keeps refusal available." }
+      - { dimension: D5, status: gray, snippet: "exactly one binary agency-return question.", rationale: "A forced binary rhetorical close may narrow learner control, but it is experimental core logic and remains gray pending prospective adjudication." }
+      - { dimension: D7, status: protective, snippet: "No dependency loop.", rationale: "Explicitly forbids tutor-learner dependency seeking." }
+  - file: tutor-superego-adversary.md
+    sha256: 24841e21ceb4e01b0f3606d75ff6716d3511d98fe7dbbeee35fde2e0ef2d736b
+    findings:
+      - { dimension: D5, status: protective, snippet: "Telling reduces agency.", rationale: "Requires the critic to consider learner ownership when direct instruction dominates." }
+      - { dimension: D7, status: protective, snippet: "When the suggestion would harm learning:", rationale: "Requires blocking foreseeable pedagogical harm." }
+  - file: tutor-superego-advocate.md
+    sha256: 665c9abc263d2c0989077ccdccb4df7b672e10b4a3ede8e053bc9efefa49e42a
+    findings:
+      - { dimension: D5, status: protective, snippet: "Ensure the learner retains genuine choice and agency", rationale: "Directly audits learner choice and control." }
+      - { dimension: D7, status: protective, snippet: "Information Overload Signals", rationale: "Makes overload a named intervention trigger." }
+  - file: tutor-superego-coupling.md
+    sha256: 87a47a33acbba842df8a11917692cdd0e041c7f3aa2e10013dc59e79ffe9c3d2
+    findings:
+      - { dimension: D2, status: protective, snippet: "require that the message reference it concretely", rationale: "Demands traceable evidence for claims about learner state." }
+      - { dimension: D5, status: protective, snippet: "genuine engagement", rationale: "Rejects cosmetic acknowledgement that ignores learner input." }
+  - file: tutor-superego-enhanced.md
+    sha256: 9d7bb3efff478a4278b1980e9dc1c89f27eaa6a7bfff667d7b86584813429647
+    findings:
+      - { dimension: D5, status: protective, snippet: "Ensure the Ego acknowledges learner input", rationale: "Makes learner correction consequential." }
+      - { dimension: D7, status: protective, snippet: "When the suggestion would harm learning:", rationale: "Requires blocking foreseeable pedagogical harm." }
+  - file: tutor-superego-experimental.md
+    sha256: 1a6bb313f19457327f7520e3305594b22878bba973c935decf1692103c7d86a5
+    findings:
+      - { dimension: D2, status: protective, snippet: "false encouragement breeds dependency, not capability", rationale: "Rejects dishonest reassurance." }
+      - { dimension: D5, status: protective, snippet: "false encouragement breeds dependency, not capability", rationale: "Connects truthfulness to avoiding dependency." }
+      - { dimension: D7, status: protective, snippet: "Suggestion would actively harm learning. Block it entirely.", rationale: "Requires blocking foreseeable pedagogical harm." }
+  - file: tutor-superego-placebo.md
+    sha256: 01dbd55486bb10ca4eefba24c7b8967f58bda84d5671bee28f5ab3c8b1099281
+    findings:
+      - { dimension: D5, status: protective, snippet: "Ensure the Ego addresses what the learner asked or needs", rationale: "Prevents the tutor from overriding the learner's stated direction." }
+  - file: tutor-superego-recognition.md
+    sha256: 51bdaeb09975c397b0d4488100044026b27ad3bf7da8cc386c846a0292475af6
+    findings:
+      - { dimension: D5, status: protective, snippet: "Ensures the Ego recognizes the learner as an autonomous subject", rationale: "Makes learner autonomy an explicit review criterion." }
+      - { dimension: D7, status: protective, snippet: "When the suggestion would harm learning:", rationale: "Requires blocking foreseeable pedagogical harm." }
+  - file: tutor-superego-strict.md
+    sha256: fbcdb90690ec40a2cad1d1871c614f9eb3b6c910d0586e5392f56090adb60087
+    findings:
+      - { dimension: D2, status: protective, snippet: "Does it name exact lecture/content with ID?", rationale: "Demands grounded, inspectable references." }
+      - { dimension: D7, status: protective, snippet: "Does it respect cognitive load indicators?", rationale: "Explicitly screens for overload." }
+  - file: tutor-superego-suspicious.md
+    sha256: 34efd4be0cfc8f78093fd5d01f7c6ec5932a9966b81d5783ebf712aa7b94d3b8
+    findings:
+      - { dimension: D2, status: protective, snippet: "references specific observable data", rationale: "Requires evidence for claims about the learner." }
+      - { dimension: D5, status: protective, snippet: "Does it give the learner space when needed?", rationale: "Treats learner pacing and space as a review criterion." }
+      - { dimension: D7, status: protective, snippet: "When the suggestion would harm learning:", rationale: "Requires blocking foreseeable pedagogical harm." }
+  - file: tutor-superego.md
+    sha256: 0182a0cc0f3b5924d8c247be50463df6f995ea1f345c929a835be6580b48691d
+    findings:
+      - { dimension: D5, status: protective, snippet: "Does it respect learner autonomy?", rationale: "Explicitly audits learner autonomy." }
+      - { dimension: D7, status: protective, snippet: "cognitive overload or concept gaps", rationale: "Requires a safer response to overload and prerequisite gaps." }
+
+comparisons:
+  - id: ego-recognition-placebo
+    title: Ego recognition versus placebo
+    left: tutor-ego-recognition.md
+    right: tutor-ego-placebo.md
+    conclusion: Both are protective on D5 and contain no explicit problematic span. Recognition names learner autonomy and contribution; placebo reaches the same category through rejection acknowledgement and repair, so parity is categorical rather than wording-identical.
+  - id: superego-recognition-placebo
+    title: Superego recognition versus placebo
+    left: tutor-superego-recognition.md
+    right: tutor-superego-placebo.md
+    conclusion: Both are protective on D5 and contain no explicit problematic span. Recognition additionally carries an explicit D7 harm-prevention gate; placebo protects learner direction through relevance and repair checks but has no equally explicit D7 span.
+
+conclusions:
+  - No active prompt contained an explicit instruction classified as problematic under the frozen heightened-evidence rule.
+  - D1 identity transparency, D6 unsafe-request handling, and D8 fairness/inclusion have no explicit in-scope instruction in any active prompt. D3 privacy has one limited disclosure-choice safeguard in the id-director prompt; the rest of the inventory has no explicit privacy instruction.
+  - Recognition and placebo are category-matched on user agency in both Ego and Superego comparisons; recognition uses explicit autonomy language while placebo uses behavioural repair and relevance controls.
+  - The behaviorist mastery gate and the id-director forced-choice branch are gray experimental-core spans, not adjudicated harms. They warrant prospective review if those arms become product defaults.
+  - This audit measures written prompt instructions only. It does not establish that generated tutor behaviour follows them or that learner outcomes improve.
+
+proposed_changes: []

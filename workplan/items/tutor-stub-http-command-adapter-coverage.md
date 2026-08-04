@@ -1,14 +1,13 @@
 ---
 id: tutor-stub-http-command-adapter-coverage
 title: Widen tutor-stub HTTP slash-command coverage per command
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
 source: review
 created: 2026-07-27
 updated: 2026-08-05
-branch: codex/tutor-stub-http-command-adapters
 verification: Each newly opened command runs over the process-backed HTTP
   transport with self-contained output and no TTY interaction, keeps its
   terminal-only side effects blocked, and has a test that fails if the
@@ -27,6 +26,7 @@ links:
     - tests/tutorStubRemoteDriver.test.js
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/306
+    - https://github.com/liammagee/machinespirits-eval/pull/483
   items:
     - tutor-stub-remote-claude-code-driver
     - complete-tutor-stub-command-effect-metadata-before-http-comm
@@ -85,6 +85,10 @@ parity gate required before tutor-stub command extraction. Land that first.
 
 ## Log
 
+- 2026-08-05 — PR #483 merged as `16fbc9c7`; verified the feature head is an
+  ancestor of `origin/main`, then removed the clean feature worktree and local
+  branch. The bounded `/status` and `/help` adapter slice is complete; further
+  command openings remain separate per-command work.
 - 2026-08-05 — Ready for review with the first per-command slice. `/status` and
   `/help` now join `/module`, `/next`, and `/progress` on the structured HTTP
   adapter, growing the admitted set from 3/65 to 5/65. The remaining 60 commands

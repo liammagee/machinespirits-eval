@@ -319,6 +319,8 @@
     "ontology:elk": "node scripts/run-elk-reasoner.js",
     "audit:message-chain": "node scripts/audit-message-chain.js",
     "audit:message-chain:json": "node scripts/audit-message-chain.js --json",
+    "audit:tutor-prompt-agency": "node scripts/audit-tutor-prompt-agency.js --json",
+    "audit:tutor-prompt-agency:report": "node scripts/audit-tutor-prompt-agency.js --write-report",
     "audit:plan3-synthetic-closure": "node scripts/plan3-synthetic-closure-audits.js",
     "probe:plan3-outcome-selected": "node scripts/run-plan3-outcome-selected-best-of-k.js",
     "probe:plan3-ess": "node scripts/run-plan3-ess-learner-2x2.js",
