@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T20:19:42.047Z",
+  "generated": "2026-08-04T20:20:18.006Z",
   "counts": {
     "total": 397,
     "byStatus": {
@@ -388,9 +388,9 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-29",
-      "updated": "2026-08-04",
+      "updated": "2026-08-05",
       "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
-      "branch": "codex/refactor-tutor-stub-automated-learner-typed-action",
+      "branch": "codex/refactor-tutor-stub-terminal-host-context",
       "claim_status": "planned",
       "depends_on": [],
       "links": {
@@ -400,6 +400,8 @@
         "code": [
           "scripts/tutor-stub.js",
           "services/tutorStubAutomatedLearnerGenerationRuntime.js",
+          "services/tutorStubApplicationState.js",
+          "services/tutorStubApplicationTraceContext.js",
           "services/tutorStubCharacterControlController.js",
           "services/tutorStubClarificationTranslationRuntime.js",
           "services/tutorStubCliArguments.js",
@@ -415,12 +417,15 @@
           "services/tutorStubInteractiveTurnController.js",
           "services/tutorStubInterimController.js",
           "services/tutorStubLaunchRuntime.js",
+          "services/tutorStubLaunchApplicationContext.js",
+          "services/tutorStubLaunchPresentation.js",
           "services/tutorStubLaunchSummaryPresentation.js",
           "services/tutorStubLearnerAnalysisRuntime.js",
           "services/tutorStubLearnerDagState.js",
           "services/tutorStubLearnerEvidenceRuntime.js",
           "services/tutorStubLiveSettingsController.js",
           "services/tutorStubMixedLearnerController.js",
+          "services/tutorStubNonInteractiveApplication.js",
           "services/tutorStubModelPickerController.js",
           "services/tutorStubPerformanceControlController.js",
           "services/tutorStubOpeningRuntime.js",
@@ -431,8 +436,11 @@
           "services/tutorStubResponsePolicy.js",
           "services/tutorStubScenarioController.js",
           "services/tutorStubSessionOrchestration.js",
+          "services/tutorStubSessionApplicationContext.js",
+          "services/tutorStubSessionApplicationRuntime.js",
           "services/tutorStubSessionStateRuntime.js",
           "services/tutorStubTraceRuntime.js",
+          "services/tutorStubTerminalHost.js",
           "services/tutorStubTutorPromptContext.js",
           "services/tutorStubTurnOrchestration.js",
           "services/tutorStubTypedActionPlanningRuntime.js",
@@ -454,7 +462,9 @@
           474,
           475,
           476,
-          478
+          478,
+          479,
+          482
         ],
         "items": [
           "codebase-refactoring-program"
