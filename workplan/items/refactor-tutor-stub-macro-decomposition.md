@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-macro-decomposition
 title: Decompose tutor-stub into cohesive runtime subsystems
-status: review
+status: active
 type: maintenance
 priority: P1
 owner: codex
@@ -9,7 +9,7 @@ source: review
 created: 2026-07-29
 updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-learner-analysis-presentation
+branch: codex/refactor-tutor-stub-mixed-learner-control
 claim_status: planned
 depends_on: []
 links:
@@ -17,13 +17,25 @@ links:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
     - scripts/tutor-stub.js
-    - services/tutorStubCommandRuntime.js
+    - services/tutorStubCharacterControlController.js
     - services/tutorStubCliArguments.js
+    - services/tutorStubCommandRuntime.js
+    - services/tutorStubFeedbackTuningController.js
+    - services/tutorStubInteractiveAutomationController.js
+    - services/tutorStubInteractiveDialogueController.js
+    - services/tutorStubInteractiveDirectorController.js
+    - services/tutorStubInteractiveInputPresentation.js
+    - services/tutorStubInteractiveLearnerRuntime.js
+    - services/tutorStubInteractiveSessionController.js
+    - services/tutorStubInteractiveTurnController.js
+    - services/tutorStubInterimController.js
     - services/tutorStubLaunchRuntime.js
     - services/tutorStubLearnerAnalysisRuntime.js
     - services/tutorStubLearnerEvidenceRuntime.js
-    - services/tutorStubInterimController.js
+    - services/tutorStubLiveSettingsController.js
+    - services/tutorStubMixedLearnerController.js
     - services/tutorStubModelPickerController.js
+    - services/tutorStubPerformanceControlController.js
     - services/tutorStubResponsePolicy.js
     - services/tutorStubScenarioController.js
     - services/tutorStubSessionOrchestration.js
@@ -79,6 +91,13 @@ Planned order:
 6. Turn processing and automated-learner orchestration.
 7. Subsystem facades and entrypoint/import consolidation.
 8. Learner analysis, public-evidence projection, and interim presentation.
+9. Interactive mixed-learner control.
+10. Interactive session commands and mode/reset/auto orchestration.
+11. Final application composition and boundary reassessment.
+12. Prompt transport, opening realization, and recovery/accounting boundary.
+13. Public debug, field, report, and closeout presentation boundary.
+14. Automated-learner and typed-action planning boundary.
+15. Terminal host plus shared application-context consolidation.
 
 The near-2,000-line acceptance criterion remains the architectural destination;
 it is not a claim that cycle 7 alone can close the card. After cycle 7, continue
@@ -251,3 +270,51 @@ Log:
   syntax, and the static import graph pass with zero cycles across 470 files;
   no model calls were authorized for this structural extraction.
 - 2026-08-04 — Opened macro cycle 8 as PR #474.
+- 2026-08-04 — Started cycles 9–11 from current `origin/main` in the isolated
+  `codex/refactor-tutor-stub-mixed-learner-control` worktree: mixed-learner
+  control first, interactive session orchestration second, then final
+  application composition and a measured reassessment of the near-2,000-line
+  destination.
+- 2026-08-04 — Macro cycle 9 moved speculative mixed-learner analysis and tutor
+  prefetch, cache and attempt-state ownership, profile/suggestion/clue
+  presentation, initial mixed setup, and `/use` acceptance behind two bounded
+  owners (836 and 594 source lines). `scripts/tutor-stub.js` fell from 13,011 to
+  11,810 lines, a 1,201-line net reduction.
+- 2026-08-04 — Macro cycle 10 moved session closeout and curriculum/mode/coach
+  commands, director and proof-DAG controls, `/auto` and `/demo` scheduling,
+  clarification/translation/reset/opening orchestration, and the pending-auto
+  queue behind four bounded controllers (457–556 source lines). The entrypoint
+  fell from 11,810 to 10,427 lines, a 1,383-line net reduction.
+- 2026-08-04 — Macro cycle 11 moved live settings, feedback and tuning,
+  stochastic/light performance controls, tutor and learner character control,
+  compound-turn processing, learner provenance, and mixed/slash input
+  presentation behind six bounded controllers (228–632 source lines). The
+  entrypoint fell from 10,427 to 8,315 lines, a 2,112-line net reduction; the
+  cycles 9–11 rolling average is 1,565 lines and remains above the 750-line
+  stop floor. All new owners remain below the 900-line anti-monolith ceiling.
+
+Boundary reassessment after cycle 11:
+
+- The entrypoint has fallen from 23,299 lines at macro-series start to 8,315
+  lines (14,984 removed, 64.3%). Cycles 9–11 alone removed 4,696 lines (36.1%
+  of their 13,011-line starting point).
+- The remaining 6,315-line gap to 2,000 is concentrated rather than dispersed:
+  about 3,565 lines of top-level prompt/model, debug/report, automated-learner,
+  and typed-action functions, plus about 3,860 lines in `main()` that now mostly
+  compose explicit controllers and host the terminal lifecycle.
+- The near-2,000 target remains useful and achievable; it does not need to be
+  weakened. Four further cohesive boundaries are visible: prompt transport and
+  opening/recovery, public debug/report presentation, automated learner plus
+  typed-action planning, and a final terminal-host/application-context pass.
+  At the observed 1,565-line rolling rate this is approximately four macro
+  cycles, with a fifth allowed if dependency consolidation needs a separate
+  parity-preserving step.
+- Cycles 9–11 verification passes 84/84 focused mixed-learner, settings,
+  character, performance, terminal, turn, reset, auto/demo, and ownership
+  assertions. A second 73/73 boundary and exact-byte regression set caught and
+  repaired one moved relative import plus stale source-ownership expectations.
+  The zero-skip hermetic suite passes 7,748/7,748 root tests and 137/137
+  tutor-core tests. Repository-wide lint, Prettier, manifest, workplan source
+  (397 items), ref governance, syntax, whitespace, and the static import graph
+  all pass with zero cycles across 482 files; no model calls were authorized for
+  these structural extractions.

@@ -319,6 +319,10 @@ test('the entrypoint binds learner evidence and prompt-pipeline owners while ret
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorPromptContext.js'), 'utf8');
   const pipelineSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorTurnPipeline.js'), 'utf8');
   const evidenceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerEvidenceRuntime.js'), 'utf8');
+  const learnerRuntimeSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveLearnerRuntime.js'),
+    'utf8',
+  );
   const learnerDagWrapper = cliSource.slice(
     cliSource.indexOf('function tutorLearnerDagModelContext'),
     cliSource.indexOf('function humanDiscourseTutorContext'),
@@ -344,9 +348,10 @@ test('the entrypoint binds learner evidence and prompt-pipeline owners while ret
   assert.match(cliSource, /function dagTurnContext/u);
   assert.match(cliSource, /createTutorStubTutorTurnPipeline/u);
   assert.match(pipelineSource, /return async function callTutor/u);
-  assert.match(cliSource, /learnerDag: tutorLearnerDagModelContext/u);
-  assert.match(cliSource, /humanDiscourse: humanDiscourseTutorContext/u);
-  assert.match(cliSource, /dialogueClosure: dialogueClosureTutorContext/u);
+  assert.match(cliSource, /createTutorStubInteractiveLearnerRuntime/u);
+  assert.match(learnerRuntimeSource, /learnerDag: tutorLearnerDagModelContext/u);
+  assert.match(learnerRuntimeSource, /humanDiscourse: humanDiscourseTutorContext/u);
+  assert.match(learnerRuntimeSource, /dialogueClosure: dialogueClosureTutorContext/u);
   assert.doesNotMatch(cliSource, /\[Tutor-only redacted learner-DAG model\]/u);
   assert.doesNotMatch(cliSource, /\[Tutor-only human discourse scaffold\]/u);
   assert.doesNotMatch(cliSource, /\[Tutor-only dialogue closure\]/u);

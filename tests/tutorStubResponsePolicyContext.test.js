@@ -170,6 +170,10 @@ test('an explicit response configuration remains authoritative over selection fa
 test('the CLI retains authorial ledger resolution, runtime call sites, and prompt ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubResponsePolicyContext.js'), 'utf8');
+  const learnerRuntimeSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveLearnerRuntime.js'),
+    'utf8',
+  );
   const wrapper = cliSource.slice(
     cliSource.indexOf('function responseConfigurationContext'),
     cliSource.indexOf('function tutorPromptSurfaceKey'),
@@ -178,7 +182,8 @@ test('the CLI retains authorial ledger resolution, runtime call sites, and promp
   assert.match(cliSource, /from '\.\.\/services\/tutorStubResponsePolicyContext\.js';/u);
   assert.match(wrapper, /projectTutorStubResponsePolicyContext/u);
   assert.match(wrapper, /ledgerTerm: worldLedgerTerm\(world\)/u);
-  assert.match(cliSource, /register: responseConfigurationContext\(registerSelection/u);
+  assert.match(cliSource, /createTutorStubInteractiveLearnerRuntime/u);
+  assert.match(learnerRuntimeSource, /register: responseConfigurationContext\(registerSelection/u);
   assert.match(serviceSource, /normalizeTutorStubResponseConfiguration/u);
   assert.match(serviceSource, /tutorStubResponseConfigurationPrompt/u);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);

@@ -294,14 +294,16 @@ test('the CLI retains role and entry resolution, slash dispatch, picker behavior
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubModelChoicePresentation.js'), 'utf8');
   const commandSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCommandRuntime.js'), 'utf8');
-  const choiceSlice = cliSource.slice(
-    cliSource.indexOf('function printModelChoices'),
-    cliSource.indexOf('function pickLiveNumericSettingValue'),
+  const controllerSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLiveSettingsController.js'), 'utf8');
+  const choiceSlice = controllerSource.slice(
+    controllerSource.indexOf('function printModelChoices'),
+    controllerSource.indexOf('function pickLiveNumericSettingValue'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubModelChoicePresentation\.js';/u);
   assert.match(cliSource, /from '\.\.\/services\/tutorStubCommandRuntime\.js';/u);
   assert.match(cliSource, /createTutorStubModelSelection/u);
+  assert.match(cliSource, /createTutorStubLiveSettingsController/u);
   assert.doesNotMatch(
     cliSource,
     /function (?:assertSupportedModelRefs|tutorModelChoiceEntries|resolveTutorModelSelection)\(/u,

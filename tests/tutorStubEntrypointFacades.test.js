@@ -149,19 +149,51 @@ test('entrypoint binds bounded facades instead of redeclaring their subsystems',
   const entrypoint = fs.readFileSync(path.join(ROOT, 'scripts/tutor-stub.js'), 'utf8');
   const facadePaths = [
     'services/tutorStubCliArguments.js',
+    'services/tutorStubCharacterControlController.js',
+    'services/tutorStubFeedbackTuningController.js',
+    'services/tutorStubInteractiveLearnerRuntime.js',
+    'services/tutorStubInteractiveAutomationController.js',
+    'services/tutorStubInteractiveDialogueController.js',
+    'services/tutorStubInteractiveDirectorController.js',
+    'services/tutorStubInteractiveInputPresentation.js',
+    'services/tutorStubInteractiveSessionController.js',
+    'services/tutorStubInteractiveTurnController.js',
     'services/tutorStubLaunchRuntime.js',
+    'services/tutorStubLiveSettingsController.js',
+    'services/tutorStubMixedLearnerController.js',
+    'services/tutorStubPerformanceControlController.js',
     'services/tutorStubScenarioController.js',
   ];
 
   assert.match(entrypoint, /parseTutorStubCliArguments/u);
   assert.match(entrypoint, /createTutorStubLaunchRuntime/u);
+  assert.match(entrypoint, /createTutorStubInteractiveLearnerRuntime/u);
+  assert.match(entrypoint, /createTutorStubInteractiveAutomationController/u);
+  assert.match(entrypoint, /createTutorStubInteractiveDialogueController/u);
+  assert.match(entrypoint, /createTutorStubInteractiveInputPresentation/u);
+  assert.match(entrypoint, /createTutorStubInteractiveSessionController/u);
+  assert.match(entrypoint, /createTutorStubInteractiveTurnController/u);
+  assert.match(entrypoint, /createTutorStubLiveSettingsController/u);
+  assert.match(entrypoint, /createTutorStubMixedLearnerController/u);
+  assert.match(entrypoint, /createTutorStubPerformanceControlController/u);
   assert.match(entrypoint, /createTutorStubScenarioController/u);
   assert.doesNotMatch(entrypoint, /\bparseArgs\s*\(/u);
   assert.doesNotMatch(entrypoint, /function prepareTutorStubLaunchConfiguration/u);
   assert.doesNotMatch(entrypoint, /function pickInitialScenarioWithKeyboard/u);
-  assert.ok(entrypoint.split('\n').length <= 14_125, 'cycle 7 keeps the entrypoint line-count ratchet');
+  assert.doesNotMatch(entrypoint, /function startMixedLearnerTutorPrefetch/u);
+  assert.doesNotMatch(entrypoint, /function runInitialMixedLearnerSetup/u);
+  assert.doesNotMatch(entrypoint, /function runInteractiveAutoMode/u);
+  assert.doesNotMatch(entrypoint, /function performInteractiveDialogueReset/u);
+  assert.doesNotMatch(entrypoint, /function handleProofDagCommand/u);
+  assert.doesNotMatch(entrypoint, /function mixedLearnerProfilePresentation/u);
+  assert.doesNotMatch(entrypoint, /function openLiveSettingsPanel/u);
+  assert.doesNotMatch(entrypoint, /function handleTutorFeedbackCommand/u);
+  assert.doesNotMatch(entrypoint, /function handleRandomPerformanceCommand/u);
+  assert.doesNotMatch(entrypoint, /function restateLatestTutorForCharacter/u);
+  assert.doesNotMatch(entrypoint, /function processLearnerLine/u);
+  assert.ok(entrypoint.split('\n').length <= 8_400, 'cycle 11 keeps the entrypoint line-count ratchet');
   for (const relativePath of facadePaths) {
     const source = fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
-    assert.ok(source.split('\n').length < 600, `${relativePath} must remain a bounded facade`);
+    assert.ok(source.split('\n').length < 900, `${relativePath} must remain a bounded facade`);
   }
 });

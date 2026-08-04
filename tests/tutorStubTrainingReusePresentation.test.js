@@ -156,12 +156,14 @@ test('real candidate, opt-out, and fail-closed status commands preserve exact no
 test('the CLI retains reuse resolution, state, persistence, trace, and terminal ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTrainingReusePresentation.js'), 'utf8');
-  const reuseSlice = cliSource.slice(
-    cliSource.indexOf('function trainingReuseStatusLines'),
-    cliSource.indexOf('function printDialogueSettings'),
+  const controllerSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLiveSettingsController.js'), 'utf8');
+  const reuseSlice = controllerSource.slice(
+    controllerSource.indexOf('function trainingReuseStatusLines'),
+    controllerSource.indexOf('function printDialogueSettings'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubTrainingReusePresentation\.js';/u);
+  assert.match(cliSource, /createTutorStubLiveSettingsController/u);
   assert.match(reuseSlice, /state\.trainingReuse/u);
   assert.match(reuseSlice, /tutorStubTrainingReuseLabel/u);
   assert.match(reuseSlice, /displayDiagnosticLabel/u);
