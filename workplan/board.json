@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-04T21:27:15.213Z",
+  "generated": "2026-08-04T21:34:54.250Z",
   "counts": {
     "total": 398,
     "byStatus": {
-      "done": 364,
+      "done": 365,
       "blocked": 7,
       "dropped": 4,
-      "triaged": 10,
+      "triaged": 9,
+      "review": 3,
       "active": 6,
-      "archived": 4,
-      "review": 3
+      "archived": 4
     },
     "byType": {
       "research": 71,
@@ -149,34 +149,6 @@
         "adaptation",
         "casting"
       ]
-    },
-    {
-      "id": "audit-tutor-prompts-for-user-agency-and-control-parity",
-      "title": "Audit tutor prompts for user agency and control parity",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-08-03",
-      "updated": "2026-08-04",
-      "verification": "Every active tutor ego and superego prompt variant is scored on a frozen user-agency and control checklist; recognition and placebo prompts are compared on the same dimensions; discrepancies, exclusions, and any proposed prompt changes are reported without modifying an experimental prompt before a prospective decision.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "notes/daily-notes/2026-08-03-research-roundup.html"
-        ],
-        "items": [
-          "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro"
-        ]
-      },
-      "tags": [
-        "prompts",
-        "user-agency",
-        "placebo-control",
-        "audit"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "decide-rich-learner-memory-service-retention",
@@ -918,6 +890,41 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
+      "id": "audit-tutor-prompts-for-user-agency-and-control-parity",
+      "title": "Audit tutor prompts for user agency and control parity",
+      "status": "review",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-08-03",
+      "updated": "2026-08-05",
+      "branch": "codex/audit-tutor-prompt-agency-parity",
+      "verification": "Every active tutor ego and superego prompt variant is scored on a frozen user-agency and control checklist; recognition and placebo prompts are compared on the same dimensions; discrepancies, exclusions, and any proposed prompt changes are reported without modifying an experimental prompt before a prospective decision.",
+      "claim_status": "scope-bound",
+      "links": {
+        "code": [
+          "config/tutor-prompt-agency-audit-v1.yaml",
+          "scripts/audit-tutor-prompt-agency.js",
+          "tests/tutorPromptAgencyAudit.test.js"
+        ],
+        "notes": [
+          "notes/daily-notes/2026-08-03-research-roundup.html",
+          "notes/2026-08-05-tutor-prompt-agency-control-audit.md"
+        ],
+        "items": [
+          "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro"
+        ]
+      },
+      "tags": [
+        "prompts",
+        "user-agency",
+        "placebo-control",
+        "audit"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "harness-untangling-clue-insertion",
       "title": "Untangling 1: insert the due clue into the model's reply instead of replacing the reply",
       "status": "review",
@@ -941,48 +948,6 @@
         "tutor-stub",
         "harness"
       ]
-    },
-    {
-      "id": "tutor-stub-http-command-adapter-coverage",
-      "title": "Widen tutor-stub HTTP slash-command coverage per command",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-27",
-      "updated": "2026-08-05",
-      "branch": "codex/tutor-stub-http-command-adapters",
-      "verification": "Each newly opened command runs over the process-backed HTTP transport with self-contained output and no TTY interaction, keeps its terminal-only side effects blocked, and has a test that fails if the declaration is flipped without the command behaving.",
-      "depends_on": [
-        "automate-browser-and-packaged-electron-tutor-stub-acceptance"
-      ],
-      "links": {
-        "code": [
-          "services/tutorStubCommandRegistry.js",
-          "services/tutorStubProcessSessionFactory.js",
-          "services/tutorStubTerminalText.js",
-          "services/evalSurfaces.js",
-          "scripts/tutor-stub-remote.js",
-          "desktop/tutorStubAcceptanceScenario.mjs",
-          "tests/tutorStubProcessSessionHttp.test.js",
-          "tests/tutorStubRemoteDriver.test.js"
-        ],
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/306"
-        ],
-        "items": [
-          "tutor-stub-remote-claude-code-driver",
-          "complete-tutor-stub-command-effect-metadata-before-http-comm",
-          "automate-browser-and-packaged-electron-tutor-stub-acceptance"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "runtime",
-        "api"
-      ],
-      "milestone": "distribution"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -12550,6 +12515,48 @@
         "authoring"
       ],
       "branch": "codex/tutor-stub-curriculum-mastery-runtime"
+    },
+    {
+      "id": "tutor-stub-http-command-adapter-coverage",
+      "title": "Widen tutor-stub HTTP slash-command coverage per command",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-08-05",
+      "verification": "Each newly opened command runs over the process-backed HTTP transport with self-contained output and no TTY interaction, keeps its terminal-only side effects blocked, and has a test that fails if the declaration is flipped without the command behaving.",
+      "depends_on": [
+        "automate-browser-and-packaged-electron-tutor-stub-acceptance"
+      ],
+      "links": {
+        "code": [
+          "services/tutorStubCommandRegistry.js",
+          "services/tutorStubProcessSessionFactory.js",
+          "services/tutorStubTerminalText.js",
+          "services/evalSurfaces.js",
+          "scripts/tutor-stub-remote.js",
+          "desktop/tutorStubAcceptanceScenario.mjs",
+          "tests/tutorStubProcessSessionHttp.test.js",
+          "tests/tutorStubRemoteDriver.test.js"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/306",
+          "https://github.com/liammagee/machinespirits-eval/pull/483"
+        ],
+        "items": [
+          "tutor-stub-remote-claude-code-driver",
+          "complete-tutor-stub-command-effect-metadata-before-http-comm",
+          "automate-browser-and-packaged-electron-tutor-stub-acceptance"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "runtime",
+        "api"
+      ],
+      "milestone": "distribution"
     },
     {
       "id": "tutor-stub-remote-claude-code-driver",
