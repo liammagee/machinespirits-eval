@@ -64,13 +64,16 @@ hook:
     - services/tutorStubFrozenReplay.js
     - services/tutorStubPrBenchmark.js
     - services/tutorStubPrBenchmarkHook.js
+    - services/tutorStubCliArguments.js
     - services/tutorStubCommandRuntime.js
+    - services/tutorStubLaunchRuntime.js
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
     - services/tutorStubTurnOrchestration.js
     - services/tutorStubModelPickerController.js
     - services/tutorStubResponsePolicy.js
+    - services/tutorStubScenarioController.js
     - services/tutorStubVoiceController.js
     - services/tutorStubTutorTurnPipeline.js
   path_prefixes:
