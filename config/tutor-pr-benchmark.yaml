@@ -69,6 +69,7 @@ hook:
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
     - services/tutorStubModelPickerController.js
+    - services/tutorStubResponsePolicy.js
     - services/tutorStubVoiceController.js
     - services/tutorStubTutorTurnPipeline.js
   path_prefixes:

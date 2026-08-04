@@ -524,6 +524,7 @@
         "tests/tutorStubResponseGuard.test.js",
         "tests/tutorStubResponseLeakAudit.test.js",
         "tests/tutorStubResponsePolicyContext.test.js",
+        "tests/tutorStubResponsePolicyRuntime.test.js",
         "tests/tutorStubResumeHandoff.test.js",
         "tests/tutorStubRoleHistory.test.js",
         "tests/tutorStubScaffoldState.test.js",

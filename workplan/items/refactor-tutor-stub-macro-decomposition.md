@@ -9,7 +9,7 @@ source: review
 created: 2026-07-29
 updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-interaction-controllers
+branch: codex/refactor-tutor-stub-response-policy
 claim_status: planned
 depends_on: []
 links:
@@ -19,6 +19,7 @@ links:
     - scripts/tutor-stub.js
     - services/tutorStubCommandRuntime.js
     - services/tutorStubModelPickerController.js
+    - services/tutorStubResponsePolicy.js
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
@@ -30,6 +31,7 @@ links:
     - 427
     - 428
     - 429
+    - 430
   items:
     - codebase-refactoring-program
 tags:
@@ -146,3 +148,26 @@ Log:
   controller and voice recheck passes 35/35, all static gates remain green
   across 374 workplan items with zero cycles across 462 files, and the
   entrypoint reduction remains 1,266 lines.
+- 2026-07-29 — Macro cycle 5 moved engagement-stance selection, field/state/
+  trajectory/dynamical policies, explicit and stochastic character
+  directives, overlay composition, sampling, and final response-configuration
+  normalization behind one policy boundary. The entrypoint fell from 17,678
+  to 15,847 lines, a 1,831-line net reduction; the rolling three-cycle average
+  is 1,362 lines per PR.
+- 2026-07-29 — Cycle 5 verification passes 226 focused policy, configuration,
+  field, state, trajectory, dynamical, character, and stochastic-adaptation
+  assertions plus the zero-skip hermetic suite at 7,675/7,675 root and 137/137
+  tutor-core tests.
+- 2026-08-04 — Refreshed PR #430 onto the updated PR #429 base. The newer
+  manner-switch, quiet, stress, dramatic-release, and speaker-advisory paths
+  remain in their current owners while the response-policy boundary replays
+  intact. A broad focused set passes 400/400, the zero-skip hermetic suite
+  passes 7,740/7,740 root plus 137/137 tutor-core tests, and the extraction
+  still removes 1,831 entrypoint lines (18,032 to 16,201), with zero static
+  cycles across 463 files.
+- 2026-08-04 — Restacked PR #430 onto the post-merge refresh of PR #429,
+  resolving only the additive workplan history. Its non-workplan extraction
+  patch remains byte-equivalent; a broader current policy recheck passes
+  452/452, all static gates remain green across 374 workplan items with zero
+  cycles across 463 files, and the entrypoint reduction remains 1,831 lines.
+- 2026-07-29 — Opened macro cycle 5 as stacked PR #430.
