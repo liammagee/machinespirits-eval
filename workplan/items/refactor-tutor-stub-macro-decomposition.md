@@ -38,6 +38,7 @@ links:
     - 429
     - 430
     - 431
+    - 471
   items:
     - codebase-refactoring-program
 tags:
@@ -226,3 +227,4 @@ Log:
   surfaces retain exact help, world-list, learner-profile, and canonical
   curriculum-catalogue bytes; no model calls were authorized for this
   structural extraction.
+- 2026-08-04 — Opened macro cycle 7 as PR #471.
