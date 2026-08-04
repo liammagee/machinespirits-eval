@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-02
+updated: 2026-08-04
 verification: "Gate registered before any change: stage 1 — the two documents
   concatenated reproduce the current speaker prompt BYTE-EXACTLY (unit test
   pins it); no behavior change is permitted at this stage. Stage 2 (later,
@@ -58,3 +58,15 @@ hypothesis rule is charter-only, the withheld-evidence rule is
 safety-only). Hermetic manifest updated. Stage 2 (divergence under
 its own gates) is now possible: pedagogy edits without touching the
 leak rails, and the reverse.
+
+## Place in the sequence (2026-08-04)
+
+Last of the five safety/closure cards, and gated rather than
+scheduled (the sequence is written out in
+`guard-ladder-ships-canned-text-on-most-turns`). Stage 2 has no
+candidate edit yet: possible is not pending. The likeliest source of
+one is the sequence's shared paid run — if it shows the standing
+text itself steering the tutor wrong, that edit runs here under the
+stage-2 gates (charter edits with the leak probe at zero, safety
+edits with the scorecard unchanged). Until an edit is actually
+wanted, this card carries no runnable work.

@@ -1,13 +1,13 @@
 ---
 id: harness-untangling-clue-insertion
 title: "Untangling 1: insert the due clue into the model's reply instead of replacing the reply"
-status: active
+status: review
 type: infra
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-02
+updated: 2026-08-04
 verification: "Gate registered before any change: (a) flag off — behavior
   byte-identical, hermetic suite green; (b) flag on, k=3 live — at release
   turns where the draft fails ONLY the release-delivery family, the
@@ -125,3 +125,15 @@ requires "the pressure-test notice") lands directly before the quote,
 and the strict audit reads only that last sentence. Every refusal
 fell to the deterministic fallback safely; leaks 0. The wedge is a
 known tail, not a correctness bug — recorded, not chased (anti-creep).
+
+## Moved to review (2026-08-04)
+
+Step 2 of the five-card safety/closure sequence (written out in
+`guard-ladder-ships-canned-text-on-most-turns`). The final close
+above stands: presented-exhibit releases — every first-demand turn
+included — are delivered in the model's voice; enacted-role releases
+stay composer-owned by decision; the t5 wedge is recorded. No lever
+is open. One instruction for the sequence's shared paid run: leave
+`TUTOR_STUB_CLUE_INSERTION` off there, so the fallback-rate change
+that run measures is attributable to the guard fixes alone and not
+to insertion converting fallback turns.

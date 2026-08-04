@@ -1,13 +1,13 @@
 ---
 id: tutor-stub-fallback-register-and-uptake-guard
 title: Tutor-stub fallback register and learner-uptake guard
-status: active
+status: review
 type: maintenance
 priority: P1
 owner: claude
 source: review
 created: 2026-07-26
-updated: 2026-07-27
+updated: 2026-08-04
 verification: A contemporary-diction world speaks its own props in its own
   register while every period and undeclared world keeps byte-identical
   deterministic text; the learner-uptake guard admits a genuinely responsive
@@ -364,3 +364,10 @@ Log:
   A gap is left open and is an authoring matter rather than a code one: 18 of the
   32 worlds declare no public object at all, so they now say "public record"
   whatever the learner says. That absence is what the leak was covering for.
+- 2026-08-04 — Moved to review as step 1 of the five-card safety/closure
+  sequence (the sequence is written out in
+  `guard-ladder-ships-canned-text-on-most-turns`). Every step and residual above
+  is landed, tested without model calls, and confirmed on a paid world-030
+  re-run. The one gap left open — worlds whose declared object was unreachable —
+  was re-carded to `drama-world-public-object-reachability`, and that card
+  closed on 2026-08-04. Nothing remains here.

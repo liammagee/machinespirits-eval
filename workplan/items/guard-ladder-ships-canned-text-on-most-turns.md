@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: >-
   A turn that quotes an exhibit containing a question mark is audited against the
   whole quoted sentence rather than the fragment after the internal `?`, with the
@@ -152,6 +152,33 @@ where the replay predicted (campus 1 and 9, riverside 3 and 5, unless the
 turn-focus fixes take campus 1 and riverside 5 out first); whether the two passes
 that still run land this time; and whether the brief's "keep what already worked"
 line stops the shortening.
+
+## Sequence for the safety/closure cards (2026-08-04)
+
+Five active cards were circling the same machinery. Reduced to an order, with
+this card holding the plan:
+
+1. `tutor-stub-fallback-register-and-uptake-guard` — finished; moved to review.
+   Its residuals all landed and its leftover authoring gap closed under
+   `drama-world-public-object-reachability` on 2026-08-04.
+2. `harness-untangling-clue-insertion` — finished under its stopping rule;
+   moved to review. The t5 wedge is recorded, not chased.
+3. **One paid run serves the two remaining guard cards.** Re-run the showcase
+   pair (campus and riverside, instrumented, same model and settings as
+   2026-07-28) on the post-fix tree, with `TUTOR_STUB_CLUE_INSERTION` off so
+   the fallback-rate change is attributable to the guard fixes alone. Read off
+   it: the fallback rate against 6 of 10 and 3 of 5; the skip and landing
+   behaviour above; and — for
+   `tutor-redeclares-close-lifecycle-has-not-accepted` — what the regenerated
+   turn looks like when `premature_dialogue_close` fires.
+4. Close this card and the re-declared-close card on that run's evidence. The
+   t6 closure-regex widening stays a separate change afterwards, with the
+   earned path re-checked.
+5. `harness-untangling-contract-split` goes last and is gated, not scheduled:
+   stage 2 opens when the run (or anything else) surfaces a standing-text edit
+   actually worth making. Until then it carries no runnable work.
+
+No card blocks another except through the one run in step 3.
 
 ## What was wrong in the first reading
 
