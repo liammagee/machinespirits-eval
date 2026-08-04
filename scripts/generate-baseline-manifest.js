@@ -68,6 +68,10 @@ const PINS = [
     claim: 'Program-2 committee mini/composer dispatch, fallback battery, resampling, and trace envelope',
   },
   {
+    file: 'services/tutorStubTutorDeliveryRuntime.js',
+    claim: 'delivery decisions, safe uptake preservation, fallback composition, and recovery response envelopes',
+  },
+  {
     file: 'services/tutorStubTutorDraftAudit.js',
     claim: 'delivery guard battery, dispositions, and audit trace shape',
   },

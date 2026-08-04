@@ -42,7 +42,7 @@
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
       "claim": "recovery/committee orchestration and insertion interception",
-      "sha256": "5fc696f27d0af5c19be47b15f531a12f874535aefef77fcc2e0468bcb71f1fc5"
+      "sha256": "8a6272947c32a71c9240c56faa2ba0e4e02e14fe025282c050bb500de8c7151d"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
@@ -58,6 +58,11 @@
       "file": "services/tutorStubTutorCommitteeRuntime.js",
       "claim": "Program-2 committee mini/composer dispatch, fallback battery, resampling, and trace envelope",
       "sha256": "5b138faca1599cd57804c7bcf14d14df4aad21484d551745552d05f94fb35047"
+    },
+    {
+      "file": "services/tutorStubTutorDeliveryRuntime.js",
+      "claim": "delivery decisions, safe uptake preservation, fallback composition, and recovery response envelopes",
+      "sha256": "1863417dee483bf54093fa7f848757ea1470b95b725a7dc7a2713f9dabb407da"
     },
     {
       "file": "services/tutorStubTutorDraftAudit.js",
