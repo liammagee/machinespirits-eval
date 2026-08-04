@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-04T20:20:18.006Z",
+  "generated": "2026-08-04T21:03:33.056Z",
   "counts": {
     "total": 397,
     "byStatus": {
-      "done": 361,
+      "done": 363,
       "blocked": 6,
       "dropped": 4,
-      "triaged": 9,
-      "review": 5,
+      "triaged": 8,
       "active": 8,
-      "archived": 4
+      "archived": 4,
+      "review": 4
     },
     "byType": {
       "research": 71,
@@ -177,43 +177,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
-    },
-    {
-      "id": "tutor-stub-http-command-adapter-coverage",
-      "title": "Widen tutor-stub HTTP slash-command coverage per command",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-27",
-      "updated": "2026-07-27",
-      "verification": "Each newly opened command runs over the process-backed HTTP transport with self-contained output and no TTY interaction, keeps its terminal-only side effects blocked, and has a test that fails if the declaration is flipped without the command behaving.",
-      "depends_on": [
-        "automate-browser-and-packaged-electron-tutor-stub-acceptance"
-      ],
-      "links": {
-        "code": [
-          "services/tutorStubCommandRegistry.js",
-          "services/tutorStubProcessSessionFactory.js",
-          "services/evalSurfaces.js",
-          "scripts/tutor-stub-remote.js"
-        ],
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/306"
-        ],
-        "items": [
-          "tutor-stub-remote-claude-code-driver",
-          "complete-tutor-stub-command-effect-metadata-before-http-comm",
-          "automate-browser-and-packaged-electron-tutor-stub-acceptance"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "runtime",
-        "api"
-      ],
-      "milestone": "distribution"
     },
     {
       "id": "recode-superego-incorporation-as-a-framing-trajectory",
@@ -872,36 +835,6 @@
       "milestone": "paper-2-0"
     },
     {
-      "id": "automate-browser-and-packaged-electron-tutor-stub-acceptance",
-      "title": "Automate browser and packaged Electron tutor-stub acceptance",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-23",
-      "updated": "2026-08-05",
-      "branch": "codex/browser-electron-tutor-acceptance",
-      "verification": "CI launches the real shared tutor surface with a fake provider in both web and packaged Electron hosts and exercises create, turn, reset, interrupt, finalize, export provenance, keyboard, text fallback, and accessibility contracts.",
-      "depends_on": [
-        "tutor-stub-unified-session-surface"
-      ],
-      "links": {
-        "prs": [
-          481
-        ],
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "tutor-stub-headless-session-transport",
-          "tutor-stub-process-session-factory",
-          "tutor-stub-unified-session-surface"
-        ]
-      }
-    },
-    {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
       "title": "Calibrate rubric v3.0 and run held-out acceptance",
       "status": "review",
@@ -996,34 +929,46 @@
       ]
     },
     {
-      "id": "measure-silent-drop-rate-in-the-grounding-validator",
-      "title": "Measure the silent-drop rate in the evidence-ledger grounding validator",
+      "id": "tutor-stub-http-command-adapter-coverage",
+      "title": "Widen tutor-stub HTTP slash-command coverage per command",
       "status": "review",
-      "type": "research",
+      "type": "infra",
       "priority": "P2",
       "owner": "codex",
-      "source": "daily-routine",
-      "created": "2026-07-20",
-      "updated": "2026-08-04",
-      "branch": "codex/measure-grounding-validator-silent-drop",
-      "verification": "Existing cell-127/128 traces are audited without model calls; exact legacy silent-drop attribution is reported as unidentifiable when raw proposals are absent, observed terminal appearances/transitions are checked against the same-turn evidence ledger and thresholds, cell 127 is compared with the correct cell 126 ablation through scripts/analyze-strategy-shift.js, and prospective proposal/drop/citation events are exercised by tests plus a mock smoke.",
-      "claim_status": "scope-bound",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-08-05",
+      "branch": "codex/tutor-stub-http-command-adapters",
+      "verification": "Each newly opened command runs over the process-backed HTTP transport with self-contained output and no TTY interaction, keeps its terminal-only side effects blocked, and has a test that fails if the declaration is flipped without the command behaving.",
+      "depends_on": [
+        "automate-browser-and-packaged-electron-tutor-stub-acceptance"
+      ],
       "links": {
-        "notes": [
-          "notes/daily-notes/2026-07-20-research-roundup.html",
-          "notes/research-plans/2026-07-27-research-plan.html",
-          "notes/2026-08-04-grounding-validator-silent-drop-audit.md"
+        "code": [
+          "services/tutorStubCommandRegistry.js",
+          "services/tutorStubProcessSessionFactory.js",
+          "services/tutorStubTerminalText.js",
+          "services/evalSurfaces.js",
+          "scripts/tutor-stub-remote.js",
+          "desktop/tutorStubAcceptanceScenario.mjs",
+          "tests/tutorStubProcessSessionHttp.test.js",
+          "tests/tutorStubRemoteDriver.test.js"
         ],
-        "paper": [
-          "docs/research/paper-full-2.0.md#695-stage-3-result-validator-enabled-architecture-reshapes-terminal-status-distribution"
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/306"
+        ],
+        "items": [
+          "tutor-stub-remote-claude-code-driver",
+          "complete-tutor-stub-command-effect-metadata-before-http-comm",
+          "automate-browser-and-packaged-electron-tutor-stub-acceptance"
         ]
       },
       "tags": [
-        "adaptive-tutor",
-        "grounding",
-        "a14"
+        "tutor-stub",
+        "runtime",
+        "api"
       ],
-      "milestone": "adaptive-tutor-evidence-v1"
+      "milestone": "distribution"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -1403,6 +1348,36 @@
         "ledger",
         "adversarial-learner"
       ]
+    },
+    {
+      "id": "automate-browser-and-packaged-electron-tutor-stub-acceptance",
+      "title": "Automate browser and packaged Electron tutor-stub acceptance",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-23",
+      "updated": "2026-08-05",
+      "branch": "codex/browser-electron-tutor-acceptance",
+      "verification": "CI launches the real shared tutor surface with a fake provider in both web and packaged Electron hosts and exercises create, turn, reset, interrupt, finalize, export provenance, keyboard, text fallback, and accessibility contracts.",
+      "depends_on": [
+        "tutor-stub-unified-session-surface"
+      ],
+      "links": {
+        "prs": [
+          481
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "tutor-stub-headless-session-transport",
+          "tutor-stub-process-session-factory",
+          "tutor-stub-unified-session-surface"
+        ]
+      }
     },
     {
       "id": "blueprint-composition",
@@ -11232,6 +11207,39 @@
         "register",
         "mirror"
       ]
+    },
+    {
+      "id": "measure-silent-drop-rate-in-the-grounding-validator",
+      "title": "Measure the silent-drop rate in the evidence-ledger grounding validator",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-20",
+      "updated": "2026-08-05",
+      "branch": "codex/measure-grounding-validator-silent-drop",
+      "verification": "Existing cell-127/128 traces are audited without model calls; exact legacy silent-drop attribution is reported as unidentifiable when raw proposals are absent, observed terminal appearances/transitions are checked against the same-turn evidence ledger and thresholds, cell 127 is compared with the correct cell 126 ablation through scripts/analyze-strategy-shift.js, and prospective proposal/drop/citation events are exercised by tests plus a mock smoke.",
+      "claim_status": "scope-bound",
+      "links": {
+        "prs": [
+          480
+        ],
+        "notes": [
+          "notes/daily-notes/2026-07-20-research-roundup.html",
+          "notes/research-plans/2026-07-27-research-plan.html",
+          "notes/2026-08-04-grounding-validator-silent-drop-audit.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#695-stage-3-result-validator-enabled-architecture-reshapes-terminal-status-distribution"
+        ]
+      },
+      "tags": [
+        "adaptive-tutor",
+        "grounding",
+        "a14"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "measuring-whether-llm-tutors-teach-or-solve-a-diagnostic-for",
