@@ -34,12 +34,18 @@ const PINS = [
     claim: 'detection cascade (held-out 84/162 at unchanged calm alarms; leave-one-world-out standard)',
   },
   {
+    file: 'config/manner-trigger/v7-cascade.json',
+    claim:
+      'v6 + stake-fusion patterns (corpus recall 169/169, collisions 0/179, calm 0/124 — card adaptive-causality-routing)',
+  },
+  {
     file: 'services/tutorStubMannerSwitch.js',
     claim: 'move cards + exemplars + licences; classifier features fv1; dose options',
   },
   {
     file: 'services/tutorStubQuietDetector.js',
-    claim: 'typed quiet states qd-v1 (14/18, k=5 22/30; no free long-world transfer)',
+    claim:
+      'typed quiet states qd-v2 (qd-v1 record 14/18, k=5 22/30, plus wordy-flat shapes: replayed flat recall 66/66, collisions 0, calm 0 — card adaptive-causality-repertoire)',
   },
   {
     file: 'services/tutorStubDramaticRelease.js',

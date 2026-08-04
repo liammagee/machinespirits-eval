@@ -20,14 +20,19 @@
       "sha256": "12a796eab1768b0fea906d3dd50ca2fa4a588f1267511c6d1ed17c24cb2a23f2"
     },
     {
+      "file": "config/manner-trigger/v7-cascade.json",
+      "claim": "v6 + stake-fusion patterns (corpus recall 169/169, collisions 0/179, calm 0/124 — card adaptive-causality-routing)",
+      "sha256": "2cdb1c171454fbf068a77b56638dd1ec24b88d8a0d7b1e96309ccbabea4c3f5d"
+    },
+    {
       "file": "services/tutorStubMannerSwitch.js",
       "claim": "move cards + exemplars + licences; classifier features fv1; dose options",
       "sha256": "2faaf0dcb4af5611c418f0fbaab6510bb73ae97e2d4e3659b2f66a2bd162192b"
     },
     {
       "file": "services/tutorStubQuietDetector.js",
-      "claim": "typed quiet states qd-v1 (14/18, k=5 22/30; no free long-world transfer)",
-      "sha256": "318da00fff7fc8049fc21640f2978cc119ff3a45a53a5dd126e3df66656ec6c4"
+      "claim": "typed quiet states qd-v2 (qd-v1 record 14/18, k=5 22/30, plus wordy-flat shapes: replayed flat recall 66/66, collisions 0, calm 0 — card adaptive-causality-repertoire)",
+      "sha256": "de4980e4961030e31ae87ce29a7580069740418280f23b435f552710ab9b0a43"
     },
     {
       "file": "services/tutorStubDramaticRelease.js",
