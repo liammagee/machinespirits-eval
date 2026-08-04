@@ -77,11 +77,19 @@ const CLI_PROVIDER_TEST_ENV_KEYS = Object.freeze([
   'FAKE_CODEX_ANALYSIS_DELAY_MS',
   'FAKE_CODEX_FIXTURE_MODE',
 ]);
+const CLI_PROVIDER_SURFACE_ACCEPTANCE_ENV_KEYS = Object.freeze([
+  'FAKE_CODEX_LOG',
+  'ACCEPTANCE_PRIVATE_PROMPT_CANARY',
+  'ACCEPTANCE_CREDENTIAL_CANARY',
+]);
 
 export function buildCliProviderEnv(provider, sourceEnv = process.env) {
   const env = {};
   const keys = [...CLI_PROVIDER_COMMON_ENV_KEYS, ...(CLI_PROVIDER_ENV_KEYS[provider] || [])];
   if (sourceEnv?.NODE_TEST_CONTEXT) keys.push(...CLI_PROVIDER_TEST_ENV_KEYS);
+  if (sourceEnv?.TUTOR_STUB_SURFACE_ACCEPTANCE === '1') {
+    keys.push(...CLI_PROVIDER_SURFACE_ACCEPTANCE_ENV_KEYS);
+  }
   for (const key of keys) {
     if (sourceEnv?.[key] !== undefined) env[key] = String(sourceEnv[key]);
   }

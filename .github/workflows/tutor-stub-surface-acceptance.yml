@@ -1,0 +1,85 @@
+name: Tutor-stub surface acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/tutor-stub-surface-acceptance.yml"
+      - "desktop/**"
+      - "electron-builder.yml"
+      - "fixtures/tutor-stub-surface-acceptance/**"
+      - "package.json"
+      - "package-lock.json"
+      - "public/tutor/**"
+      - "routes/tutorStubSessionRoutes.js"
+      - "scripts/run-tutor-stub-surface-acceptance.mjs"
+      - "scripts/tutor-stub-acceptance-server.mjs"
+      - "scripts/tutor-stub.js"
+      - "services/cliProviderBridge.js"
+      - "services/evalSurfaces.js"
+      - "services/tutorStubProcessSessionFactory.js"
+      - "services/tutorStubSessionHost.js"
+      - "services/tutorStubSurfaceAcceptanceContract.js"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/tutor-stub-surface-acceptance.yml"
+      - "desktop/**"
+      - "electron-builder.yml"
+      - "fixtures/tutor-stub-surface-acceptance/**"
+      - "package.json"
+      - "package-lock.json"
+      - "public/tutor/**"
+      - "routes/tutorStubSessionRoutes.js"
+      - "scripts/run-tutor-stub-surface-acceptance.mjs"
+      - "scripts/tutor-stub-acceptance-server.mjs"
+      - "scripts/tutor-stub.js"
+      - "services/cliProviderBridge.js"
+      - "services/evalSurfaces.js"
+      - "services/tutorStubProcessSessionFactory.js"
+      - "services/tutorStubSessionHost.js"
+      - "services/tutorStubSurfaceAcceptanceContract.js"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  web-and-packaged-electron:
+    name: Shared web and packaged Electron tutor surface
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            desktop/package-lock.json
+
+      - run: npm ci
+      - run: npm run desktop:install
+
+      - name: Exercise the real shared web tutor surface
+        run: npm run tutor:stub:acceptance:web
+
+      - name: Rebuild native modules for the pinned Electron ABI
+        run: npm run desktop:rebuild
+
+      - name: Build the packaged Electron application
+        run: npm run desktop:pack
+
+      - name: Exercise the packaged Electron tutor surface
+        run: npm run tutor:stub:acceptance:packaged
+
+      - name: Upload browser traces, screenshots, exports, and host logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tutor-stub-surface-acceptance
+          path: .test-tmp/tutor-stub-surface-acceptance
+          if-no-files-found: error

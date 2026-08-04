@@ -100,6 +100,14 @@ export function createTutorStubSessionHost({ createSession, maxSessions = 32 } =
       } catch (error) {
         if (error?.fatalSession === true) evict(id, entry, error.code || 'fatal_session_error');
         if (error instanceof TutorStubSessionHostError) throw error;
+        if (error?.code === 'session_terminated') {
+          throw new TutorStubSessionHostError(
+            'session_interrupted',
+            `tutor-stub session ${entry.runtime.id} was interrupted`,
+            409,
+            { cause: error },
+          );
+        }
         if (/while status is/u.test(String(error?.message || ''))) {
           throw new TutorStubSessionHostError(
             'session_state_conflict',

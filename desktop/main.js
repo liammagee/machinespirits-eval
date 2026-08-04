@@ -26,6 +26,10 @@ import { buildCSP, shouldOpenExternally, loopbackAuthHeaders, basicAuthHeader } 
 import { createCredentialStore, shouldLoadStoredCredentials } from './credentials.js';
 
 app.setName('Scriptorium');
+if (process.env.TUTOR_STUB_ACCEPTANCE_USER_DATA) {
+  fs.mkdirSync(process.env.TUTOR_STUB_ACCEPTANCE_USER_DATA, { recursive: true });
+  app.setPath('userData', process.env.TUTOR_STUB_ACCEPTANCE_USER_DATA);
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -33,7 +37,8 @@ const SERVER_ENTRY = path.join(__dirname, 'server-entry.mjs');
 
 const SMOKE = process.env.MS_DESKTOP_SMOKE === '1';
 const SHOTS = process.env.MS_DESKTOP_SHOTS === '1';
-const HEADLESS = SMOKE || SHOTS;
+const TUTOR_ACCEPTANCE = process.env.MS_TUTOR_STUB_ACCEPTANCE === '1';
+const HEADLESS = SMOKE || SHOTS || TUTOR_ACCEPTANCE;
 const HOME_ROUTE = process.env.MS_HOME || '/browse';
 const DEFAULT_BOUNDS = { width: 1440, height: 920 };
 
@@ -106,22 +111,31 @@ function startServer(env) {
   });
 }
 
-function stopServer() {
-  if (!serverChild) return;
+function stopServer({ waitForExit = false, timeoutMs = 3_000 } = {}) {
+  if (!serverChild) return Promise.resolve({ graceful: true, code: 0, signal: null });
   const child = serverChild;
   serverChild = null;
+  const exited = new Promise((resolve) => {
+    child.once('exit', (code, signal) => resolve({ graceful: signal == null, code, signal: signal || null }));
+  });
   try {
     child.postMessage({ type: 'shutdown' });
   } catch {
     /* ignore */
   }
-  setTimeout(() => {
+  const forceTimer = setTimeout(() => {
     try {
       child?.kill();
     } catch {
       /* ignore */
     }
   }, 1500);
+  forceTimer.unref?.();
+  if (!waitForExit) {
+    void exited.finally(() => clearTimeout(forceTimer));
+    return Promise.resolve({ graceful: null, code: null, signal: null });
+  }
+  return withTimeout(exited, timeoutMs, 'desktop server shutdown').finally(() => clearTimeout(forceTimer));
 }
 
 // --- Session hardening: CSP, loopback-token injection, native save dialog -----
@@ -454,9 +468,64 @@ if (hasLock) {
       console.log(`[desktop] server listening at ${loopbackBase}`);
       console.log(`[desktop] userData: ${paths.userData}`);
 
+      if (TUTOR_ACCEPTANCE) {
+        const artifactDir = process.env.TUTOR_STUB_ACCEPTANCE_ARTIFACT_DIR;
+        const resultPath = process.env.TUTOR_STUB_ACCEPTANCE_RESULT;
+        const expectedPath =
+          process.env.TUTOR_STUB_ACCEPTANCE_EXPECTED_CONTRACT ||
+          path.join(REPO_ROOT, 'fixtures', 'tutor-stub-surface-acceptance', 'expected-contract.json');
+        try {
+          if (!artifactDir || !resultPath) throw new Error('acceptance artifact and result paths are required');
+          if (!authToken) throw new Error('packaged tutor acceptance requires MS_DESKTOP_TOKEN=1');
+          const [{ runTutorStubSurfaceAcceptance }, expectedContract] = await Promise.all([
+            import('./tutorStubAcceptanceScenario.mjs'),
+            Promise.resolve(JSON.parse(fs.readFileSync(expectedPath, 'utf8'))),
+          ]);
+          const result = await runTutorStubSurfaceAcceptance({
+            baseUrl: loopbackBase,
+            hostKind: 'packaged-electron',
+            artifactDir,
+            expectedContract,
+            httpHeaders: authHeaders(),
+            authRequired: true,
+            credentialCanary: process.env.ACCEPTANCE_CREDENTIAL_CANARY || '',
+            privatePromptCanary: process.env.ACCEPTANCE_PRIVATE_PROMPT_CANARY || '',
+            providerEventPath: process.env.FAKE_CODEX_LOG || '',
+            traceRootPath: process.env.TUTOR_STUB_TRACE_DIR || '',
+          });
+          const shutdown = await stopServer({ waitForExit: true });
+          if (!shutdown.graceful || shutdown.code !== 0) {
+            throw new Error(`desktop server did not shut down gracefully: ${JSON.stringify(shutdown)}`);
+          }
+          result.host.gracefulShutdown = true;
+          fs.writeFileSync(resultPath, `${JSON.stringify(result, null, 2)}\n`, 'utf8');
+          app.exit(0);
+        } catch (error) {
+          console.error('\n[desktop] TUTOR ACCEPTANCE FAILED:\n' + (error?.stack || error) + '\n');
+          try {
+            if (artifactDir) {
+              fs.mkdirSync(artifactDir, { recursive: true });
+              fs.writeFileSync(
+                path.join(artifactDir, 'packaged-failure.json'),
+                `${JSON.stringify({ error: error?.stack || String(error) }, null, 2)}\n`,
+              );
+            }
+          } catch {
+            /* stdout still carries the primary failure */
+          }
+          try {
+            await stopServer({ waitForExit: true });
+          } catch {
+            /* the original acceptance failure is primary */
+          }
+          app.exit(1);
+        }
+        return;
+      }
+
       if (SHOTS) {
         await captureShots(loopbackBase);
-        stopServer();
+        await stopServer({ waitForExit: true });
         app.exit(0);
         return;
       }
@@ -470,7 +539,7 @@ if (hasLock) {
       console.log('------------------------------------------------------');
       console.log(`  ${pass}/${results.length} checks passed`);
       console.log('======================================================\n');
-      stopServer();
+      await stopServer({ waitForExit: true });
       app.exit(pass === results.length ? 0 : 1);
       return;
     }
