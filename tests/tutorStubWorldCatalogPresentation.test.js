@@ -107,19 +107,22 @@ test('world family grouping preserves family order, base selection, identity, an
   assert.deepEqual(groupTutorStubWorldEntries(), []);
 });
 
-test('the CLI retains world loading, grouping, and terminal ownership while live catalogue output stays byte-identical', () => {
+test('the scenario controller owns world loading, grouping, and terminal output while the catalogue stays byte-identical', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
-  const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubWorldPresentation.js'), 'utf8');
-  const printSlice = cliSource.slice(
-    cliSource.indexOf('function printWorlds'),
-    cliSource.indexOf('\nfunction printCurriculumModules', cliSource.indexOf('function printWorlds')),
+  const controllerSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubScenarioController.js'), 'utf8');
+  const presentationSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubWorldPresentation.js'), 'utf8');
+  const printSlice = controllerSource.slice(
+    controllerSource.indexOf('function printWorlds'),
+    controllerSource.indexOf('\n  function printCurriculumModules', controllerSource.indexOf('function printWorlds')),
   );
 
+  assert.match(cliSource, /createTutorStubScenarioController/u);
+  assert.doesNotMatch(cliSource, /function printWorlds/u);
   assert.match(printSlice, /groupedWorldEntries/u);
   assert.match(printSlice, /projectTutorStubWorldCatalogLines/u);
   assert.match(printSlice, /console\.log/u);
   assert.doesNotMatch(printSlice, /temporal_frame|narrative_diction|familyNote|worldPickerSummary/u);
-  assert.doesNotMatch(serviceSource, /\b(?:console|fs|process|fetch)\s*\./u);
+  assert.doesNotMatch(presentationSource, /\b(?:console|fs|process|fetch)\s*\./u);
 
   const result = spawnSync(process.execPath, ['scripts/tutor-stub.js', '--list-worlds'], {
     cwd: ROOT,

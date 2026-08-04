@@ -42,23 +42,29 @@ test('curriculum catalogue projection preserves headers, optional state, orderin
   assert.deepEqual(projectTutorStubCurriculumCatalogLines(), []);
 });
 
-test('the CLI retains catalogue loading and terminal ownership while canonical output stays byte-identical', () => {
+test('the scenario controller owns catalogue loading and terminal output while canonical output stays byte-identical', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
-  const serviceSource = fs.readFileSync(
+  const controllerSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubScenarioController.js'), 'utf8');
+  const presentationSource = fs.readFileSync(
     path.join(ROOT, 'services', 'curriculum', 'tutorStubCurriculumCatalogPresentation.js'),
     'utf8',
   );
-  const catalogSlice = cliSource.slice(
-    cliSource.indexOf('function printCurriculumModules'),
-    cliSource.indexOf('\nfunction printAutomatedLearnerProfiles', cliSource.indexOf('function printCurriculumModules')),
+  const catalogSlice = controllerSource.slice(
+    controllerSource.indexOf('function printCurriculumModules'),
+    controllerSource.indexOf(
+      '\n  function printAutomatedLearnerProfiles',
+      controllerSource.indexOf('function printCurriculumModules'),
+    ),
   );
 
+  assert.match(cliSource, /createTutorStubScenarioController/u);
+  assert.doesNotMatch(cliSource, /function printCurriculumModules/u);
   assert.match(catalogSlice, /loadTutorStubCurriculum/u);
   assert.match(catalogSlice, /listTutorStubCurriculumModules/u);
   assert.match(catalogSlice, /projectTutorStubCurriculumCatalogLines/u);
   assert.match(catalogSlice, /console\.log/u);
   assert.doesNotMatch(catalogSlice, /\.priority|\.status|\.owner|source:/u);
-  assert.doesNotMatch(serviceSource, /\b(?:console|fs|path|process|fetch)\s*\./u);
+  assert.doesNotMatch(presentationSource, /\b(?:console|fs|path|process|fetch)\s*\./u);
 
   const result = spawnSync(
     process.execPath,

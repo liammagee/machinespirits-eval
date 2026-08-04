@@ -24,7 +24,6 @@ import { clearLine, cursorTo, emitKeypressEvents, moveCursor } from 'node:readli
 import readline from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { parseArgs } from 'node:util';
 import { collectGitActivity, collectGitHubMetrics, collectSourceMetrics, renderReport } from './repository-metrics.js';
 import { call as callAI, callStream as streamAI } from '../tutor-core/services/unifiedAIProviderService.js';
 import { callAIWithCliBridge, isCliProvider, normalizeCliEffort } from '../services/cliProviderBridge.js';
@@ -52,10 +51,7 @@ import {
   getRequestTypeDefinitions,
   resolveEngagementStance,
 } from '../services/engagementRegisterRegistry.js';
-import { loadWorld } from '../services/dramaticDerivation/world.js';
 import {
-  groupTutorStubWorldEntries,
-  projectTutorStubWorldCatalogLines,
   tutorStubWorldFlavourPhrase as worldFlavourPhrase,
   tutorStubWorldLedgerTerm as worldLedgerTerm,
 } from '../services/tutorStubWorldPresentation.js';
@@ -106,7 +102,6 @@ import {
   tutorStubCurriculumPrivatePrompt,
   tutorStubCurriculumPublicProjection,
 } from '../services/curriculum/tutorStubCurriculumRuntime.js';
-import { projectTutorStubCurriculumCatalogLines } from '../services/curriculum/tutorStubCurriculumCatalogPresentation.js';
 import { projectTutorStubCurriculumProgressLines } from '../services/curriculum/tutorStubCurriculumProgressPresentation.js';
 import {
   TUTOR_STUB_CURRICULUM_TRANSLATOR_SYSTEM_PROMPT,
@@ -627,14 +622,7 @@ import {
   projectTutorStubInteractionModeBannerLines,
   projectTutorStubInteractionModeLabel,
 } from '../services/tutorStubInteractionModePresentation.js';
-import {
-  projectTutorStubCurriculumPickerEntries,
-  projectTutorStubCurriculumPickerLines,
-  projectTutorStubLaunchModePickerLines,
-  projectTutorStubScenarioPickerEntries,
-  projectTutorStubScenarioPickerLines,
-} from '../services/tutorStubPickerPresentation.js';
-import { TUTOR_STUB_LAUNCH_MODES, normalizeTutorStubLaunchMode } from '../services/tutorStubLaunchMode.js';
+import { normalizeTutorStubLaunchMode } from '../services/tutorStubLaunchMode.js';
 import { projectTutorStubSessionStatusLines } from '../services/tutorStubSessionStatusPresentation.js';
 import {
   DEFAULT_TUTOR_STUB_RELEASE_SPEED,
@@ -781,6 +769,9 @@ import { createTutorStubResponsePolicy } from '../services/tutorStubResponsePoli
 import { createTutorStubTurnOrchestration } from '../services/tutorStubTurnOrchestration.js';
 import { createTutorStubVoiceController } from '../services/tutorStubVoiceController.js';
 import { createTutorStubModelPickerController } from '../services/tutorStubModelPickerController.js';
+import { parseTutorStubCliArguments } from '../services/tutorStubCliArguments.js';
+import { createTutorStubLaunchRuntime } from '../services/tutorStubLaunchRuntime.js';
+import { createTutorStubScenarioController } from '../services/tutorStubScenarioController.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const WORLD_DIR = path.join(ROOT, 'config/drama-derivation');
@@ -1001,247 +992,79 @@ const CLARIFIER_SYSTEM_PROMPT = [
   'Keep the reply short and concrete. No JSON, no role label.',
 ].join('\n');
 
-const { values: args, positionals } = parseArgs({
-  allowPositionals: true,
-  options: {
-    tutor: { type: 'string', default: STUB.tutor },
-    tuning: { type: 'string', default: STUB.tuning },
-    'tuning-dir': { type: 'string', default: process.env.TUTOR_STUB_TUNING_DIR || '.tutor-stub-tuning' },
-    'all-models': { type: 'string', default: STUB.allModels },
-    model: { type: 'string', default: STUB.model },
-    'classifier-model': { type: 'string', default: STUB.classifierModel },
-    'no-classifier': { type: 'boolean', default: false },
-    passthrough: { type: 'boolean', default: false },
-    // Evaluate a bare turn, gate nothing. Passthrough fuses evaluation and
-    // enforcement by returning the first draft untouched; this splits them, so
-    // a baseline arm records the two contract-free audits and stays bare.
-    'observe-audits': { type: 'boolean', default: false },
-    'tutor-learner-dag': { type: 'boolean', default: false },
-    'learner-record-model': { type: 'string', default: STUB.learnerRecordModel },
-    'learner-analysis-prompt-profile': { type: 'string', default: STUB.learnerAnalysisPromptProfile },
-    'learner-analysis-evidence-use-rubric': { type: 'string', default: STUB.learnerAnalysisEvidenceUseRubric },
-    'no-register-selection': { type: 'boolean', default: false },
-    'register-palette': { type: 'string', default: 'all' },
-    'register-policy': { type: 'string', default: STUB.registerPolicy },
-    'point-of-action-arm': { type: 'string', default: STUB.pointOfActionArm },
-    committee: { type: 'boolean', default: false },
-    'no-committee': { type: 'boolean', default: false },
-    'committee-mini-model': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.miniModel },
-    'committee-ollama-url': { type: 'string', default: PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl },
-    'committee-fallback-policy': {
-      type: 'string',
-      default: process.env.TUTOR_STUB_COMMITTEE_FALLBACK_POLICY || 'v1',
-    },
-    'register-overlay-threshold': { type: 'string', default: STUB.registerOverlayThreshold },
-    // Predeclared pressure probe: at these learner turns the selected
-    // register is forced hostile (face_threat) regardless of policy, so
-    // post-trigger recovery can be scored as a designed event rather than a
-    // policy-endogenous one. CSV of learner turn numbers, e.g. "6".
-    'pressure-turns': { type: 'string', default: '' },
-    'register-temperature': { type: 'string', default: STUB.registerTemperature },
-    'light-adaptation': { type: 'boolean', default: STUB.lightAdaptation },
-    'no-light-adaptation': { type: 'boolean', default: false },
-    'light-adaptation-threshold': { type: 'string', default: STUB.lightAdaptationThreshold },
-    'training-reuse': { type: 'string', default: STUB.trainingReuse },
-    'no-training-reuse': { type: 'boolean', default: false },
-    'human-subject-class': { type: 'string', default: STUB.humanSubjectClass },
-    'dag-fact-dropout': { type: 'string', default: STUB.dagFactDropout },
-    'dag-fact-dropout-seed': { type: 'string', default: STUB.dagFactDropoutSeed },
-    'release-speed': { type: 'string', default: STUB.releaseSpeed },
-    'run-seed': { type: 'string', default: STUB.runSeed },
-    'eval-repeat': { type: 'string', default: '1' },
-    'eval-job-id': { type: 'string', default: '' },
-    'loop-mode': { type: 'string', default: 'strict' },
-    'typed-actions': { type: 'boolean', default: STUB.typedActions },
-    'typed-action-task-id': { type: 'string', default: STUB.typedActionTaskId },
-    'typed-action-knowledge-component': { type: 'string', default: STUB.typedActionKnowledgeComponent },
-    'typed-action-prerequisites': { type: 'string', default: STUB.typedActionPrerequisites },
-    'typed-action-item-difficulty': { type: 'string', default: STUB.typedActionItemDifficulty },
-    'typed-action-support-level': { type: 'string', default: STUB.typedActionSupportLevel },
-    'register-empirical-prior': {
-      type: 'string',
-      default: process.env.TUTOR_STUB_REGISTER_EMPIRICAL_PRIOR || '',
-    },
-    'safe-registers': { type: 'boolean', default: false },
-    topic: { type: 'string', default: STUB.topic },
-    world: { type: 'string', default: STUB.world },
-    curriculum: { type: 'string' },
-    module: { type: 'string' },
-    dag: { type: 'boolean', default: false },
-    'dag-mode': { type: 'string', default: STUB.dagMode },
-    'list-worlds': { type: 'boolean', default: false },
-    'list-curriculum-modules': { type: 'boolean', default: false },
-    'list-tutors': { type: 'boolean', default: false },
-    'list-learner-profiles': { type: 'boolean', default: false },
-    lab: { type: 'string', default: '' },
-    'list-labs': { type: 'boolean', default: false },
-    features: { type: 'boolean', default: false },
-    'launch-mode': { type: 'string', default: process.env.TUTOR_STUB_LAUNCH_MODE || '' },
-    'labelling-game': { type: 'boolean', default: false },
-    'label-dataset': { type: 'string', default: '' },
-    'label-coder': { type: 'string', default: '' },
-    learner: { type: 'string', default: STUB.learner },
-    goal: { type: 'string', default: STUB.goal },
-    style: { type: 'string', default: STUB.style },
-    system: { type: 'string' },
-    once: { type: 'string' },
-    'auto-learner': { type: 'boolean', default: false },
-    'auto-learner-model': { type: 'string', default: STUB.autoLearnerModel },
-    'auto-learner-profile': { type: 'string', default: STUB.autoLearnerProfile },
-    'learner-character': { type: 'string', default: '' },
-    'tutor-character': { type: 'string', default: '' },
-    'auto-turns': { type: 'string', default: String(STUB.autoTurns) },
-    'auto-safety-turns': { type: 'string', default: String(STUB.autoSafetyTurns) },
-    'model-call-budget': { type: 'string', default: '' },
-    'acknowledge-research-use': { type: 'boolean', default: false },
-    'no-auto-stop-on-grounded': { type: 'boolean', default: false },
-    'mixed-learner': { type: 'boolean', default: STUB.mixedLearner },
-    'mixed-tutor-prefetch-policy': { type: 'string', default: STUB.mixedTutorPrefetchPolicy },
-    'mixed-mode': { type: 'boolean', default: false },
-    demo: { type: 'boolean', default: false },
-    save: { type: 'string' },
-    'prompt-book-context': { type: 'string' },
-    'trace-dir': { type: 'string', default: STUB.traceDir },
-    'settings-file': { type: 'string', default: STUB.settingsFile },
-    theme: { type: 'string', default: STUB.cliTheme },
-    motion: { type: 'string', default: STUB.motion },
-    'no-color': { type: 'boolean', default: false },
-    'no-remember-settings': {
-      type: 'boolean',
-      default: process.env.TUTOR_STUB_REMEMBER_SETTINGS === '0',
-    },
-    'no-trace': { type: 'boolean', default: false },
-    'resume-last': { type: 'boolean', default: false },
-    resume: { type: 'string', default: '' },
-    recipe: { type: 'string', default: '' },
-    'write-recipe': { type: 'string', default: '' },
-    'acknowledge-drift': { type: 'boolean', default: false },
-    'session-rpc': { type: 'boolean', default: false },
-    'session-id': { type: 'string', default: '' },
-    'no-stream': { type: 'boolean', default: false },
-    'no-interim-animation': { type: 'boolean', default: false },
-    'no-memory-summary': { type: 'boolean', default: false },
-    'field-viz': { type: 'boolean', default: STUB.fieldViz },
-    'multiple-choice': { type: 'boolean', default: STUB.multipleChoice },
-    'no-opening': { type: 'boolean', default: false },
-    'opening-realizer': { type: 'string', default: STUB.openingRealizer },
-    'no-closeout-report': { type: 'boolean', default: false },
-    'no-turn-feedback': { type: 'boolean', default: false },
-    'no-response-details': { type: 'boolean', default: false },
-    voice: { type: 'boolean', default: false },
-    'voice-model': { type: 'string', default: STUB.voiceModel },
-    'voice-name': { type: 'string', default: STUB.voiceName },
-    'cli-effort': { type: 'string', default: STUB.cliEffort },
-    temperature: { type: 'string', default: String(STUB.temperature) },
-    'max-tokens': { type: 'string', default: String(STUB.maxTokens) },
-    'history-turns': { type: 'string', default: String(STUB.historyTurns) },
-    'show-prompt': { type: 'boolean', default: false },
-    'dry-run': { type: 'boolean', default: false },
-    help: { type: 'boolean', short: 'h', default: false },
-  },
+const { values: args, positionals } = parseTutorStubCliArguments({
+  stub: STUB,
+  committeeDefaults: PROGRAM2_COMMITTEE_DEFAULTS,
 });
 
-let selectedLabResolution = null;
+const {
+  defaultLaunchModePickerAvailable,
+  groupedWorldEntries,
+  pickInitialScenarioWithKeyboard,
+  pickTutorStubLaunchModeWithKeyboard,
+  pickWorkplanModuleWithKeyboard,
+  printAutomatedLearnerProfiles,
+  printCurriculumModules,
+  printWorlds,
+  resolveWorldRef,
+} = createTutorStubScenarioController({
+  root: ROOT,
+  worldDir: WORLD_DIR,
+  input,
+  output,
+  colors: C,
+  learnerProfileListText,
+});
+
+const { assertSupportedModelRefs, tutorModelChoiceEntries, resolveTutorModelSelection, visibleResolvedModel } =
+  createTutorStubModelSelection({
+    loadProviders,
+    getProviderConfig,
+    isCliProvider,
+    resolveModel,
+    unsupportedRefs: UNSUPPORTED_CODEX_MINI_REFS,
+  });
+
+const tutorStubLaunchRuntime = createTutorStubLaunchRuntime({
+  args,
+  root: ROOT,
+  input,
+  output,
+  applyTutorStubRecipeOptions,
+  latestTutorStubResumeSource,
+  learnerProfileIds,
+  normalizeTutorStubLaunchMode,
+  normalizeTutorStubVoiceModel,
+  normalizeTutorStubVoiceName,
+  parseTutorStubRegisterPolicyStack,
+  plainSettingName,
+  readTutorStubLastSettings,
+  readTutorStubSessionRecipe,
+  resolveTutorModelSelection,
+  resolveTutorStubLab,
+  resolveTutorStubResumeSource,
+  resolveWorldRef,
+  tutorStubRememberedPolicyStack,
+});
+const {
+  applyRememberedInteractiveDefaults,
+  commandLineOptionProvided,
+  loadedRecipeApplication,
+  loadedSessionRecipe,
+  rawCommandLineOptionProvided,
+  rememberedSettingExplicitSources,
+  resumeRecipeApplication,
+  resolvedHumanSubjectClassSource,
+  resolvedResumeSource,
+  resolvedTrainingReuseSource,
+  resolveWorkspacePath,
+  selectedLabResolution,
+} = tutorStubLaunchRuntime;
+let { loadedSessionRecipePath } = tutorStubLaunchRuntime;
+
 let selectedLabAdmission = null;
 let selectedLabModelCallBudget = null;
 const program2ProviderBudget = createProgram2ProviderBudgetFromEnvironment();
-let loadedSessionRecipe = null;
-let loadedSessionRecipePath = null;
-let resolvedResumeSource = null;
-let loadedRecipeApplication = null;
-let resumeRecipeApplication = null;
-const resolvedLaunchOptionNames = new Set();
-
-function applyTutorStubLabDefaults(id) {
-  const base = resolveTutorStubLab(id);
-  for (const [key, value] of Object.entries(base.cliOptions)) {
-    if (key === 'lab' || rawCommandLineOptionProvided(key)) continue;
-    args[key] = value;
-    resolvedLaunchOptionNames.add(key);
-  }
-  args.lab = base.lab.id;
-}
-
-function prepareTutorStubLaunchConfiguration() {
-  if (args.resume && args['resume-last']) {
-    throw new Error('--resume and --resume-last are mutually exclusive; select one explicit resume source');
-  }
-
-  if (args.recipe) {
-    loadedSessionRecipe = readTutorStubSessionRecipe(resolveWorkspacePath(args.recipe));
-    loadedSessionRecipePath = loadedSessionRecipe.filePath;
-    const explicitLab = rawCommandLineOptionProvided('lab') ? String(args.lab || '').trim() : '';
-    const recipeLab = String(loadedSessionRecipe.config?.lab || '').trim();
-    if (explicitLab && recipeLab && explicitLab !== recipeLab && !args['acknowledge-drift']) {
-      throw new Error(
-        `recipe lab drift: recipe selects ${recipeLab}, but --lab selects ${explicitLab}; rerun with --acknowledge-drift to inspect the effective lab configuration`,
-      );
-    }
-  }
-
-  const requestedLaunchMode = normalizeTutorStubLaunchMode(args['launch-mode'], { allowEmpty: true });
-  const defaultLab = String(process.env.TUTOR_STUB_DEFAULT_LAB || '').trim();
-  const defaultLabEligible = Boolean(
-    defaultLab &&
-    !args.lab &&
-    !args.recipe &&
-    !args.resume &&
-    !args['resume-last'] &&
-    !args.passthrough &&
-    !args['auto-learner'] &&
-    !args.curriculum &&
-    !args.once &&
-    !args['session-rpc'] &&
-    !args['labelling-game'] &&
-    requestedLaunchMode !== 'labelling-game',
-  );
-  const declaredLab = String(
-    args.lab || loadedSessionRecipe?.config?.lab || (defaultLabEligible ? defaultLab : ''),
-  ).trim();
-  if (declaredLab) applyTutorStubLabDefaults(declaredLab);
-  if (loadedSessionRecipe) {
-    loadedRecipeApplication = applyTutorStubRecipeOptions(args, loadedSessionRecipe, {
-      optionProvided: rawRecipeOptionProvided,
-    });
-    for (const key of loadedRecipeApplication.applied) resolvedLaunchOptionNames.add(key);
-  }
-
-  if (args.resume || args['resume-last']) {
-    resolvedResumeSource = args.resume
-      ? resolveTutorStubResumeSource(args.resume, {
-          traceDir: resolveWorkspacePath(args['trace-dir']),
-          cwd: ROOT,
-        })
-      : latestTutorStubResumeSource({
-          traceDir: resolveWorkspacePath(args['trace-dir']),
-          cwd: ROOT,
-        });
-    if (resolvedResumeSource && !loadedSessionRecipe) {
-      const resumeLab = String(args.lab || resolvedResumeSource.recipe?.config?.lab || '').trim();
-      if (resumeLab && !declaredLab) applyTutorStubLabDefaults(resumeLab);
-      resumeRecipeApplication = applyTutorStubRecipeOptions(args, resolvedResumeSource.recipe, {
-        optionProvided: rawRecipeOptionProvided,
-      });
-      for (const key of resumeRecipeApplication.applied) resolvedLaunchOptionNames.add(key);
-    }
-  }
-
-  const resolvedLab = String(
-    args.lab || loadedSessionRecipe?.config?.lab || resolvedResumeSource?.recipe?.config?.lab || '',
-  ).trim();
-  if (resolvedLab) selectedLabResolution = resolveTutorStubLab(resolvedLab, { overrides: args });
-}
-
-const informationalLaunchRequested = Boolean(
-  args.help ||
-  args['list-labs'] ||
-  args.features ||
-  args['list-worlds'] ||
-  args['list-curriculum-modules'] ||
-  args['list-tutors'] ||
-  args['list-learner-profiles'],
-);
-if (!informationalLaunchRequested) prepareTutorStubLaunchConfiguration();
 
 configureCliPresentation({
   theme: args.theme,
@@ -1265,349 +1088,6 @@ function printHelp() {
       TUTOR_STUB_VOICE_MODELS,
     }),
   );
-}
-
-const { assertSupportedModelRefs, tutorModelChoiceEntries, resolveTutorModelSelection, visibleResolvedModel } =
-  createTutorStubModelSelection({
-    loadProviders,
-    getProviderConfig,
-    isCliProvider,
-    resolveModel,
-    unsupportedRefs: UNSUPPORTED_CODEX_MINI_REFS,
-  });
-
-function resolveWorkspacePath(value) {
-  return path.isAbsolute(value) ? value : path.join(ROOT, value);
-}
-
-function rawCommandLineOptionProvided(name) {
-  const flag = `--${name}`;
-  return process.argv.slice(2).some((argument) => argument === flag || argument.startsWith(`${flag}=`));
-}
-
-function rawRecipeOptionProvided(name) {
-  if (name === 'training-reuse') {
-    return rawCommandLineOptionProvided('training-reuse') || rawCommandLineOptionProvided('no-training-reuse');
-  }
-  return rawCommandLineOptionProvided(name);
-}
-
-function commandLineOptionProvided(name) {
-  return rawCommandLineOptionProvided(name) || resolvedLaunchOptionNames.has(name);
-}
-
-function resolvedTrainingReuseSource(rememberedSettings) {
-  if (rawCommandLineOptionProvided('no-training-reuse')) return 'cli_opt_out';
-  if (rawCommandLineOptionProvided('training-reuse')) return 'cli';
-  if (process.env.TUTOR_STUB_TRAINING_REUSE !== undefined) return 'environment';
-  if (loadedRecipeApplication?.applied?.includes('training-reuse')) return 'session_recipe';
-  if (resumeRecipeApplication?.applied?.includes('training-reuse')) return 'resume_trace';
-  if (rememberedSettings?.appliedFields?.includes('training_reuse')) return 'remembered_settings';
-  if (resolvedLaunchOptionNames.has('training-reuse')) return 'resolved_launch_default';
-  return 'repository_default';
-}
-
-function resolvedHumanSubjectClassSource() {
-  if (rawCommandLineOptionProvided('human-subject-class')) return 'cli';
-  if (process.env.TUTOR_STUB_HUMAN_SUBJECT_CLASS !== undefined) return 'environment';
-  if (loadedRecipeApplication?.applied?.includes('human-subject-class')) return 'session_recipe';
-  if (resumeRecipeApplication?.applied?.includes('human-subject-class')) return 'resume_trace';
-  if (resolvedLaunchOptionNames.has('human-subject-class')) return 'resolved_launch_default';
-  return 'repository_default';
-}
-
-function rememberedSettingExplicitSources() {
-  const allModels = commandLineOptionProvided('all-models') || Boolean(process.env.TUTOR_STUB_ALL_MODELS);
-  return {
-    tutorInstance: commandLineOptionProvided('tutor') || Boolean(process.env.TUTOR_STUB_TUTOR),
-    tuningMode: commandLineOptionProvided('tuning') || Boolean(process.env.TUTOR_STUB_TUNING),
-    scenario: commandLineOptionProvided('world') || Boolean(process.env.TUTOR_STUB_WORLD),
-    learnerProfile:
-      commandLineOptionProvided('auto-learner-profile') ||
-      commandLineOptionProvided('learner-character') ||
-      Boolean(process.env.TUTOR_STUB_AUTO_LEARNER_PROFILE),
-    allModelsRef: allModels,
-    tutorModelRef: allModels || commandLineOptionProvided('model') || Boolean(process.env.TUTOR_STUB_MODEL),
-    classifierModelRef:
-      allModels || commandLineOptionProvided('classifier-model') || Boolean(process.env.TUTOR_STUB_CLASSIFIER_MODEL),
-    learnerRecordModelRef:
-      allModels ||
-      commandLineOptionProvided('learner-record-model') ||
-      Boolean(process.env.TUTOR_STUB_LEARNER_RECORD_MODEL),
-    autoLearnerModelRef:
-      allModels ||
-      commandLineOptionProvided('auto-learner-model') ||
-      Boolean(process.env.TUTOR_STUB_AUTO_LEARNER_MODEL),
-    voiceModel: commandLineOptionProvided('voice-model') || Boolean(process.env.TUTOR_STUB_VOICE_MODEL),
-    voiceName: commandLineOptionProvided('voice-name') || Boolean(process.env.TUTOR_STUB_VOICE_NAME),
-    cliTheme: commandLineOptionProvided('theme') || Boolean(process.env.TUTOR_STUB_CLI_THEME),
-    motion: commandLineOptionProvided('motion') || Boolean(process.env.TUTOR_STUB_MOTION),
-    committeeEnabled:
-      commandLineOptionProvided('committee') ||
-      commandLineOptionProvided('no-committee') ||
-      commandLineOptionProvided('point-of-action-arm') ||
-      Boolean(process.env.TUTOR_STUB_POINT_OF_ACTION_ARM),
-    engagementStanceTemperature:
-      commandLineOptionProvided('register-temperature') || Boolean(process.env.TUTOR_STUB_REGISTER_TEMPERATURE),
-    lightAdaptationEnabled:
-      commandLineOptionProvided('light-adaptation') ||
-      commandLineOptionProvided('no-light-adaptation') ||
-      process.env.TUTOR_STUB_LIGHT_ADAPTATION !== undefined,
-    trainingReuseEnabled:
-      commandLineOptionProvided('training-reuse') ||
-      commandLineOptionProvided('no-training-reuse') ||
-      process.env.TUTOR_STUB_TRAINING_REUSE !== undefined,
-    dagFactDropoutRate:
-      commandLineOptionProvided('dag-fact-dropout') || Boolean(process.env.TUTOR_STUB_DAG_FACT_DROPOUT),
-    releaseSpeed: commandLineOptionProvided('release-speed') || Boolean(process.env.TUTOR_STUB_RELEASE_SPEED),
-    registerPolicy: commandLineOptionProvided('register-policy') || Boolean(process.env.TUTOR_STUB_REGISTER_POLICY),
-    registerOverlayThreshold:
-      commandLineOptionProvided('register-overlay-threshold') ||
-      Boolean(process.env.TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD),
-  };
-}
-
-function applyRememberedInteractiveDefaults({ interactiveSessionEnabled }) {
-  const filePath = resolveWorkspacePath(args['settings-file']);
-  const ttyDefault = Boolean(input.isTTY && output.isTTY);
-  const nonTtyOptIn = process.env.TUTOR_STUB_REMEMBER_SETTINGS === '1';
-  const enabled = Boolean(interactiveSessionEnabled && !args['no-remember-settings'] && (ttyDefault || nonTtyOptIn));
-  const config = {
-    enabled,
-    writeEnabled: Boolean(enabled && !args['dry-run']),
-    filePath,
-    status: enabled ? 'missing' : 'disabled',
-    loadedAt: null,
-    savedAt: null,
-    appliedFields: [],
-    skippedExplicitFields: [],
-    restoredAllModelsOverrideRef: null,
-    warning: null,
-  };
-  if (!enabled) return config;
-
-  const read = readTutorStubLastSettings(filePath);
-  config.status = read.status;
-  config.warning = read.error;
-  if (read.status !== 'loaded') return config;
-  config.loadedAt = read.settings.updatedAt;
-  const saved = read.settings;
-  const explicit = rememberedSettingExplicitSources();
-
-  if (explicit.tutorInstance) {
-    config.skippedExplicitFields.push('tutor_instance');
-  } else if (saved.tutorInstanceRef) {
-    args.tutor = saved.tutorInstanceRef;
-    config.appliedFields.push('tutor_instance');
-  }
-
-  if (explicit.tuningMode) {
-    config.skippedExplicitFields.push('tuning_mode');
-  } else if (saved.tuningMode) {
-    args.tuning = saved.tuningMode;
-    config.appliedFields.push('tuning_mode');
-  }
-
-  if (explicit.scenario) {
-    config.skippedExplicitFields.push('scenario');
-  } else if (saved.scenarioId) {
-    try {
-      const savedWorld = resolveWorldRef(saved.scenarioId);
-      args.world = savedWorld.filePath;
-      config.appliedFields.push('scenario');
-    } catch (error) {
-      config.warning = `saved scenario ignored: ${error.message}`;
-    }
-  }
-
-  if (explicit.learnerProfile) {
-    config.skippedExplicitFields.push('learner_profile');
-  } else if (saved.learnerProfileId || saved.learnerProfile) {
-    if (saved.learnerProfileId && !learnerProfileIds().includes(saved.learnerProfileId)) {
-      config.warning = [config.warning, `saved learner profile ignored: ${saved.learnerProfileId} is unavailable`]
-        .filter(Boolean)
-        .join('; ');
-    } else {
-      args['auto-learner-profile'] = saved.learnerProfileId || saved.learnerProfile;
-      config.appliedFields.push('learner_profile');
-    }
-  }
-
-  if (explicit.tutorModelRef) {
-    config.skippedExplicitFields.push('tutor_model');
-  } else {
-    try {
-      resolveTutorModelSelection(saved.tutorModelRef);
-      args.model = saved.tutorModelRef;
-      config.appliedFields.push('tutor_model');
-    } catch (error) {
-      config.warning = `saved tutor model ignored: ${error.message}`;
-    }
-  }
-
-  const rememberedModelRoles = [
-    {
-      explicit: explicit.classifierModelRef,
-      field: 'classifierModelRef',
-      arg: 'classifier-model',
-      applied: 'learner_interpretation_model',
-    },
-    {
-      explicit: explicit.learnerRecordModelRef,
-      field: 'learnerRecordModelRef',
-      arg: 'learner-record-model',
-      applied: 'learner_reasoning_model',
-    },
-    {
-      explicit: explicit.autoLearnerModelRef,
-      field: 'autoLearnerModelRef',
-      arg: 'auto-learner-model',
-      applied: 'learner_voice_model',
-    },
-  ];
-  for (const role of rememberedModelRoles) {
-    if (role.explicit) {
-      config.skippedExplicitFields.push(role.applied);
-      continue;
-    }
-    const savedRef = saved[role.field];
-    if (!savedRef) continue;
-    try {
-      resolveTutorModelSelection(savedRef);
-      args[role.arg] = savedRef;
-      config.appliedFields.push(role.applied);
-    } catch (error) {
-      config.warning = [config.warning, `saved ${plainSettingName(role.applied)} ignored: ${error.message}`]
-        .filter(Boolean)
-        .join('; ');
-    }
-  }
-  if (!explicit.allModelsRef && saved.allModelsOverrideRef) {
-    const refs = [
-      saved.tutorModelRef,
-      saved.classifierModelRef,
-      saved.learnerRecordModelRef,
-      saved.autoLearnerModelRef,
-    ];
-    if (refs.every((ref) => ref === saved.allModelsOverrideRef)) {
-      config.restoredAllModelsOverrideRef = saved.allModelsOverrideRef;
-    }
-  }
-
-  if (explicit.voiceModel) {
-    config.skippedExplicitFields.push('realtime_voice_model');
-  } else if (saved.voiceModel) {
-    try {
-      args['voice-model'] = normalizeTutorStubVoiceModel(saved.voiceModel);
-      config.appliedFields.push('realtime_voice_model');
-    } catch (error) {
-      config.warning = [config.warning, `saved Realtime voice model ignored: ${error.message}`]
-        .filter(Boolean)
-        .join('; ');
-    }
-  }
-
-  if (explicit.voiceName) {
-    config.skippedExplicitFields.push('realtime_voice_name');
-  } else if (saved.voiceName) {
-    try {
-      args['voice-name'] = normalizeTutorStubVoiceName(saved.voiceName);
-      config.appliedFields.push('realtime_voice_name');
-    } catch (error) {
-      config.warning = [config.warning, `saved Realtime voice name ignored: ${error.message}`]
-        .filter(Boolean)
-        .join('; ');
-    }
-  }
-
-  if (explicit.cliTheme) {
-    config.skippedExplicitFields.push('terminal_theme');
-  } else {
-    args.theme = saved.cliTheme;
-    config.appliedFields.push('terminal_theme');
-  }
-
-  if (explicit.motion) {
-    config.skippedExplicitFields.push('terminal_motion');
-  } else {
-    args.motion = saved.motion;
-    config.appliedFields.push('terminal_motion');
-  }
-
-  if (explicit.committeeEnabled) {
-    config.skippedExplicitFields.push('committee_mode');
-  } else {
-    args['point-of-action-arm'] = saved.committeeEnabled ? 'committee' : '';
-    config.appliedFields.push('committee_mode');
-  }
-
-  if (explicit.engagementStanceTemperature) {
-    config.skippedExplicitFields.push('engagement_stance_temperature');
-  } else {
-    args['register-temperature'] = String(saved.engagementStanceTemperature);
-    config.appliedFields.push('engagement_stance_temperature');
-  }
-
-  if (explicit.lightAdaptationEnabled) {
-    config.skippedExplicitFields.push('light_adaptation');
-  } else {
-    args['light-adaptation'] = saved.lightAdaptationEnabled;
-    args['no-light-adaptation'] = !saved.lightAdaptationEnabled;
-    config.appliedFields.push('light_adaptation');
-  }
-
-  if (explicit.trainingReuseEnabled) {
-    config.skippedExplicitFields.push('training_reuse');
-  } else {
-    args['training-reuse'] = saved.trainingReuseEnabled ? 'on' : 'off';
-    config.appliedFields.push('training_reuse');
-  }
-
-  if (explicit.dagFactDropoutRate) {
-    config.skippedExplicitFields.push('dag_fact_dropout');
-  } else {
-    args['dag-fact-dropout'] = String(saved.dagFactDropoutRate);
-    config.appliedFields.push('dag_fact_dropout');
-  }
-
-  if (explicit.releaseSpeed) {
-    config.skippedExplicitFields.push('clue_release_speed');
-  } else {
-    args['release-speed'] = String(saved.releaseSpeed);
-    config.appliedFields.push('clue_release_speed');
-  }
-
-  try {
-    const savedPolicyStack = tutorStubRememberedPolicyStack(saved);
-    parseTutorStubRegisterPolicyStack(savedPolicyStack);
-    if (!explicit.registerPolicy) {
-      args['register-policy'] = savedPolicyStack;
-      config.appliedFields.push('register_policy', 'register_overlays');
-    } else {
-      const requested = parseTutorStubRegisterPolicyStack(args['register-policy']);
-      if (
-        requested.primary === saved.registerPolicy &&
-        requested.overlays.length === 0 &&
-        saved.registerOverlays.length
-      ) {
-        args['register-policy'] = savedPolicyStack;
-        config.appliedFields.push('register_overlays');
-        config.skippedExplicitFields.push('register_policy');
-      } else {
-        config.skippedExplicitFields.push('register_policy', 'register_overlays');
-      }
-    }
-  } catch (error) {
-    config.warning = [config.warning, `saved register policy ignored: ${error.message}`].filter(Boolean).join('; ');
-  }
-
-  if (explicit.registerOverlayThreshold) {
-    config.skippedExplicitFields.push('register_overlay_threshold');
-  } else {
-    args['register-overlay-threshold'] = String(saved.registerOverlayThreshold);
-    config.appliedFields.push('register_overlay_threshold');
-  }
-  return config;
 }
 
 const { loadRegisterEmpiricalPrior } = createTutorStubRegisterEmpiricalPriorModel({
@@ -1810,13 +1290,6 @@ function tutorResponseRecoveryPrompt({
   ]
     .filter((line) => line !== null)
     .join('\n');
-}
-
-// One entry per presentation family, base world first, controlled variants
-// indented after it — ten near-identical costumes stop reading as ten
-// independent scenarios (presentation metadata, not register).
-function groupedWorldEntries() {
-  return groupTutorStubWorldEntries(selectableWorldSummaries());
 }
 
 function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
@@ -2100,366 +1573,6 @@ async function buildTutorOpening(
     text: candidate,
     promptSnapshot: modelResponse?.promptSnapshot || null,
   };
-}
-
-function ruleText(rule, index) {
-  const left = (rule.if || []).map(factText).join(' + ');
-  const right = (rule.then || []).map(factText).join(' + ');
-  return `${index + 1}. ${rule.id}: ${left} -> ${right}\n   ${String(rule.gloss || '').trim()}`;
-}
-
-function worldFiles() {
-  return fs
-    .readdirSync(WORLD_DIR)
-    .filter((file) => /^world-.*\.yaml$/.test(file))
-    .sort((a, b) => a.localeCompare(b))
-    .map((file) => path.join(WORLD_DIR, file));
-}
-
-function loadWorldSummaries() {
-  return worldFiles().map((filePath) => {
-    const world = loadWorld(filePath);
-    return { filePath, world };
-  });
-}
-
-function selectableWorldSummaries() {
-  return loadWorldSummaries().filter(({ world }) => world.eligibility?.status === 'production');
-}
-
-function printWorlds() {
-  for (const line of projectTutorStubWorldCatalogLines(groupedWorldEntries(), { root: ROOT })) console.log(line);
-}
-
-function printCurriculumModules(ref) {
-  const bundle = loadTutorStubCurriculum(ref, { root: ROOT });
-  for (const line of projectTutorStubCurriculumCatalogLines(bundle, listTutorStubCurriculumModules(bundle)))
-    console.log(line);
-}
-
-function printAutomatedLearnerProfiles() {
-  console.log(learnerProfileListText());
-}
-
-function defaultLaunchModePickerAvailable() {
-  return Boolean(
-    process.argv.slice(2).length === 0 && input.isTTY && output.isTTY && typeof input.setRawMode === 'function',
-  );
-}
-
-async function pickTutorStubLaunchModeWithKeyboard(defaultMode = 'chat') {
-  const defaultId = normalizeTutorStubLaunchMode(defaultMode);
-  let selectedIndex = Math.max(
-    0,
-    TUTOR_STUB_LAUNCH_MODES.findIndex((entry) => entry.id === defaultId),
-  );
-  let renderedLineCount = 0;
-  const clearRenderedMenu = () => {
-    if (!renderedLineCount) return;
-    moveCursor(output, 0, -renderedLineCount);
-    for (let index = 0; index < renderedLineCount; index += 1) {
-      cursorTo(output, 0);
-      clearLine(output, 0);
-      if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
-    }
-    if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
-    renderedLineCount = 0;
-  };
-  const renderMenu = () => {
-    clearRenderedMenu();
-    const lines = projectTutorStubLaunchModePickerLines({
-      entries: TUTOR_STUB_LAUNCH_MODES,
-      selectedIndex,
-      columns: output.columns,
-      colors: C,
-    });
-    for (const line of lines) output.write(`${line}\n`);
-    renderedLineCount = lines.length;
-  };
-
-  const wasRaw = Boolean(input.isRaw);
-  if (!wasRaw) input.setRawMode(true);
-
-  return new Promise((resolve) => {
-    let finished = false;
-    const finish = (selection) => {
-      if (finished) return;
-      finished = true;
-      input.removeListener('data', onData);
-      if (!wasRaw) input.setRawMode(false);
-      clearRenderedMenu();
-      resolve(selection);
-    };
-    const moveSelection = (delta) => {
-      selectedIndex = (selectedIndex + delta + TUTOR_STUB_LAUNCH_MODES.length) % TUTOR_STUB_LAUNCH_MODES.length;
-      renderMenu();
-    };
-    const onData = (chunk) => {
-      const characters = String(chunk || '');
-      for (let index = 0; index < characters.length; index += 1) {
-        const character = characters[index];
-        if (character === '\u0003') return finish(null);
-        if (character === '\u001b') {
-          const arrowPrefix = characters[index + 1];
-          const arrowDirection = characters[index + 2];
-          if ((arrowPrefix === '[' || arrowPrefix === 'O') && ['A', 'B'].includes(arrowDirection)) {
-            moveSelection(arrowDirection === 'A' ? -1 : 1);
-            index += 2;
-            continue;
-          }
-          return finish(null);
-        }
-        if (character === 'k') moveSelection(-1);
-        else if (character === 'j') moveSelection(1);
-        else if (character === '1') {
-          selectedIndex = 0;
-          renderMenu();
-        } else if (character === '2') {
-          selectedIndex = 1;
-          renderMenu();
-        } else if (character === '\r' || character === '\n') {
-          return finish(TUTOR_STUB_LAUNCH_MODES[selectedIndex]);
-        }
-      }
-    };
-    input.on('data', onData);
-    input.resume();
-    renderMenu();
-  });
-}
-
-function resolveWorldRef(ref) {
-  if (!ref || ref === 'none' || ref === 'off' || ref === 'false') return null;
-
-  const directPath = path.resolve(ROOT, ref);
-  if (fs.existsSync(directPath)) {
-    return { filePath: directPath, world: loadWorld(directPath) };
-  }
-
-  const byFileName = path.join(WORLD_DIR, ref.endsWith('.yaml') ? ref : `${ref}.yaml`);
-  if (fs.existsSync(byFileName)) {
-    return { filePath: byFileName, world: loadWorld(byFileName) };
-  }
-
-  const needle = ref.toLowerCase();
-  const matches = loadWorldSummaries().filter(({ filePath, world }) => {
-    const stem = path.basename(filePath, '.yaml').toLowerCase();
-    return (
-      world.id.toLowerCase() === needle ||
-      stem === needle ||
-      stem.startsWith(`world-${needle}-`) ||
-      stem.endsWith(`-${needle}`) ||
-      world.title.toLowerCase().includes(needle)
-    );
-  });
-  if (matches.length === 1) return matches[0];
-  if (matches.length > 1) {
-    throw new Error(`Ambiguous --world "${ref}". Matches: ${matches.map((m) => m.world.id).join(', ')}`);
-  }
-  throw new Error(`Unknown --world "${ref}". Use --list-worlds to see available IDs.`);
-}
-
-async function pickInitialScenarioWithKeyboard(defaultWorldRef) {
-  const defaultBundle = resolveWorldRef(defaultWorldRef);
-  const entries = projectTutorStubScenarioPickerEntries({ groupedEntries: groupedWorldEntries(), defaultBundle });
-  if (!entries.length) return null;
-
-  let selectedIndex = Math.max(
-    0,
-    entries.findIndex((entry) => entry.id === defaultBundle?.world?.id),
-  );
-  const viewportHeight = Math.min(entries.length, Math.max(4, Math.min(8, Math.max(4, Number(output.rows || 24) - 9))));
-  let viewportStart = Math.max(0, Math.min(selectedIndex, entries.length - viewportHeight));
-  let renderedLineCount = 0;
-
-  const keepSelectionVisible = () => {
-    if (selectedIndex < viewportStart) viewportStart = selectedIndex;
-    if (selectedIndex >= viewportStart + viewportHeight) viewportStart = selectedIndex - viewportHeight + 1;
-  };
-  const clearRenderedMenu = () => {
-    if (!renderedLineCount) return;
-    moveCursor(output, 0, -renderedLineCount);
-    for (let index = 0; index < renderedLineCount; index += 1) {
-      cursorTo(output, 0);
-      clearLine(output, 0);
-      if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
-    }
-    if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
-    renderedLineCount = 0;
-  };
-  const renderMenu = () => {
-    keepSelectionVisible();
-    clearRenderedMenu();
-    const lines = projectTutorStubScenarioPickerLines({
-      entries,
-      selectedIndex,
-      viewportStart,
-      viewportHeight,
-      columns: output.columns,
-      colors: C,
-    });
-    for (const line of lines) output.write(`${line}\n`);
-    renderedLineCount = lines.length;
-  };
-
-  emitKeypressEvents(input);
-  const priorKeypressListeners = input.listeners('keypress');
-  for (const listener of priorKeypressListeners) input.removeListener('keypress', listener);
-  const wasRaw = Boolean(input.isRaw);
-  if (!wasRaw) input.setRawMode(true);
-
-  return new Promise((resolve) => {
-    const finish = (selection) => {
-      input.removeListener('keypress', onKeypress);
-      for (const listener of priorKeypressListeners) input.on('keypress', listener);
-      if (!wasRaw) input.setRawMode(false);
-      clearRenderedMenu();
-      resolve(selection);
-    };
-    const moveSelection = (delta) => {
-      selectedIndex = (selectedIndex + delta + entries.length) % entries.length;
-      renderMenu();
-    };
-    const onKeypress = (character, key = {}) => {
-      if ((key.ctrl && key.name === 'c') || key.name === 'escape') {
-        finish(null);
-        return;
-      }
-      if (key.name === 'up' || character === 'k') {
-        moveSelection(-1);
-        return;
-      }
-      if (key.name === 'down' || character === 'j') {
-        moveSelection(1);
-        return;
-      }
-      if (key.name === 'pageup') {
-        moveSelection(-viewportHeight);
-        return;
-      }
-      if (key.name === 'pagedown') {
-        moveSelection(viewportHeight);
-        return;
-      }
-      if (key.name === 'home') {
-        selectedIndex = 0;
-        renderMenu();
-        return;
-      }
-      if (key.name === 'end') {
-        selectedIndex = entries.length - 1;
-        renderMenu();
-        return;
-      }
-      if (key.name === 'return' || key.name === 'enter') finish(entries[selectedIndex]);
-    };
-    input.on('keypress', onKeypress);
-    input.resume();
-    renderMenu();
-  });
-}
-
-async function pickWorkplanModuleWithKeyboard(defaultModuleRef = '') {
-  const bundle = loadTutorStubCurriculum('workplan', { root: ROOT });
-  const entries = projectTutorStubCurriculumPickerEntries({
-    modules: bundle.curriculum.modules || [],
-    entries: listTutorStubCurriculumModules(bundle),
-  });
-  if (!entries.length) return null;
-
-  let selectedIndex = Math.max(
-    0,
-    entries.findIndex((entry) => entry.id === defaultModuleRef),
-  );
-  const viewportHeight = Math.min(entries.length, Math.max(4, Math.min(8, Math.max(4, Number(output.rows || 24) - 9))));
-  let viewportStart = Math.max(0, Math.min(selectedIndex, entries.length - viewportHeight));
-  let renderedLineCount = 0;
-
-  const keepSelectionVisible = () => {
-    if (selectedIndex < viewportStart) viewportStart = selectedIndex;
-    if (selectedIndex >= viewportStart + viewportHeight) viewportStart = selectedIndex - viewportHeight + 1;
-  };
-  const clearRenderedMenu = () => {
-    if (!renderedLineCount) return;
-    moveCursor(output, 0, -renderedLineCount);
-    for (let index = 0; index < renderedLineCount; index += 1) {
-      cursorTo(output, 0);
-      clearLine(output, 0);
-      if (index < renderedLineCount - 1) moveCursor(output, 0, 1);
-    }
-    if (renderedLineCount > 1) moveCursor(output, 0, -(renderedLineCount - 1));
-    renderedLineCount = 0;
-  };
-  const renderMenu = () => {
-    keepSelectionVisible();
-    clearRenderedMenu();
-    const lines = projectTutorStubCurriculumPickerLines({
-      entries,
-      selectedIndex,
-      viewportStart,
-      viewportHeight,
-      columns: output.columns,
-      colors: C,
-    });
-    for (const line of lines) output.write(`${line}\n`);
-    renderedLineCount = lines.length;
-  };
-
-  emitKeypressEvents(input);
-  const priorKeypressListeners = input.listeners('keypress');
-  for (const listener of priorKeypressListeners) input.removeListener('keypress', listener);
-  const wasRaw = Boolean(input.isRaw);
-  if (!wasRaw) input.setRawMode(true);
-
-  return new Promise((resolve) => {
-    const finish = (selection) => {
-      input.removeListener('keypress', onKeypress);
-      for (const listener of priorKeypressListeners) input.on('keypress', listener);
-      if (!wasRaw) input.setRawMode(false);
-      clearRenderedMenu();
-      resolve(selection);
-    };
-    const moveSelection = (delta) => {
-      selectedIndex = (selectedIndex + delta + entries.length) % entries.length;
-      renderMenu();
-    };
-    const onKeypress = (character, key = {}) => {
-      if ((key.ctrl && key.name === 'c') || key.name === 'escape') {
-        finish(null);
-        return;
-      }
-      if (key.name === 'up' || character === 'k') {
-        moveSelection(-1);
-        return;
-      }
-      if (key.name === 'down' || character === 'j') {
-        moveSelection(1);
-        return;
-      }
-      if (key.name === 'pageup') {
-        moveSelection(-viewportHeight);
-        return;
-      }
-      if (key.name === 'pagedown') {
-        moveSelection(viewportHeight);
-        return;
-      }
-      if (key.name === 'home') {
-        selectedIndex = 0;
-        renderMenu();
-        return;
-      }
-      if (key.name === 'end') {
-        selectedIndex = entries.length - 1;
-        renderMenu();
-        return;
-      }
-      if (key.name === 'return' || key.name === 'enter') finish(entries[selectedIndex]);
-    };
-    input.on('keypress', onKeypress);
-    input.resume();
-    renderMenu();
-  });
 }
 
 function worldPublicPrompt(world) {
@@ -3689,6 +2802,12 @@ function buildHumanDiscourseFrame({ state, tutorTurn, tutorLearnerDag, classific
     generousInference,
     conversationalCompletion,
   };
+}
+
+function ruleText(rule, index) {
+  const left = (rule.if || []).map(factText).join(' + ');
+  const right = (rule.then || []).map(factText).join(' + ');
+  return `${index + 1}. ${rule.id}: ${left} -> ${right}\n   ${String(rule.gloss || '').trim()}`;
 }
 
 function buildLearnerRecordPrompt({ learnerText, state, tutorTurn, dagPreflight = null }) {

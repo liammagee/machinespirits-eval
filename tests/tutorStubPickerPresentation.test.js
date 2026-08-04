@@ -213,17 +213,22 @@ test('curriculum picker projection preserves state and optional verification det
   );
 });
 
-test('the CLI retains picker state, key handling, terminal writes, and entry ownership', () => {
+test('the scenario controller owns picker state, key handling, and terminal writes behind the CLI boundary', () => {
   const source = fs.readFileSync(path.join(ROOT, 'scripts/tutor-stub.js'), 'utf8');
-  const service = fs.readFileSync(path.join(ROOT, 'services/tutorStubPickerPresentation.js'), 'utf8');
+  const controller = fs.readFileSync(path.join(ROOT, 'services/tutorStubScenarioController.js'), 'utf8');
+  const presentation = fs.readFileSync(path.join(ROOT, 'services/tutorStubPickerPresentation.js'), 'utf8');
 
-  assert.match(source, /async function pickTutorStubLaunchModeWithKeyboard/u);
-  assert.match(source, /async function pickInitialScenarioWithKeyboard/u);
-  assert.match(source, /async function pickWorkplanModuleWithKeyboard/u);
-  assert.match(source, /const moveSelection = \(delta\) =>/u);
-  assert.match(source, /input\.on\('keypress', onKeypress\)/u);
-  assert.match(source, /for \(const line of lines\) output\.write/u);
-  assert.match(source, /groupedEntries: groupedWorldEntries\(\)/u);
-  assert.match(source, /const bundle = loadTutorStubCurriculum\('workplan'/u);
-  assert.doesNotMatch(service, /node:readline|process|console\.|output\.|input\./u);
+  assert.match(source, /createTutorStubScenarioController/u);
+  assert.doesNotMatch(source, /function pickTutorStubLaunchModeWithKeyboard/u);
+  assert.doesNotMatch(source, /function pickInitialScenarioWithKeyboard/u);
+  assert.doesNotMatch(source, /function pickWorkplanModuleWithKeyboard/u);
+  assert.match(controller, /function pickTutorStubLaunchModeWithKeyboard/u);
+  assert.match(controller, /function pickInitialScenarioWithKeyboard/u);
+  assert.match(controller, /function pickWorkplanModuleWithKeyboard/u);
+  assert.match(controller, /const moveSelection = \(delta\) =>/u);
+  assert.match(controller, /input\.on\('keypress', onKeypress\)/u);
+  assert.match(controller, /for \(const line of lines\) output\.write/u);
+  assert.match(controller, /groupedEntries: groupedWorldEntries\(\)/u);
+  assert.match(controller, /const bundle = loadTutorStubCurriculum\('workplan'/u);
+  assert.doesNotMatch(presentation, /node:readline|process|console\.|output\.|input\./u);
 });

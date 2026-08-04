@@ -9,7 +9,7 @@ source: review
 created: 2026-07-29
 updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-turn-orchestration
+branch: codex/refactor-tutor-stub-subsystem-facades
 claim_status: planned
 depends_on: []
 links:
@@ -18,8 +18,11 @@ links:
   code:
     - scripts/tutor-stub.js
     - services/tutorStubCommandRuntime.js
+    - services/tutorStubCliArguments.js
+    - services/tutorStubLaunchRuntime.js
     - services/tutorStubModelPickerController.js
     - services/tutorStubResponsePolicy.js
+    - services/tutorStubScenarioController.js
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
@@ -27,6 +30,7 @@ links:
     - services/tutorStubVoiceController.js
     - services/tutorStubTutorTurnPipeline.js
     - tests/tutorStubTutorTurnPipeline.test.js
+    - tests/tutorStubEntrypointFacades.test.js
   prs:
     - 426
     - 427
@@ -68,6 +72,15 @@ Planned order:
 5. Response-configuration policy subsystem.
 6. Turn processing and automated-learner orchestration.
 7. Subsystem facades and entrypoint/import consolidation.
+
+The near-2,000-line acceptance criterion remains the architectural destination;
+it is not a claim that cycle 7 alone can close the card. After cycle 7, continue
+with the remaining cohesive ownership boundaries—learner analysis and interim
+presentation, interactive mixed-learner control, interactive session commands,
+and final application composition—while enforcing the same rolling-size and
+no-replacement-monolith gates. Revise the size target only through an explicit
+workplan decision backed by a boundary analysis, not because the series is
+longer than first estimated.
 
 Log:
 
@@ -194,3 +207,22 @@ Log:
   recheck passes 138/138, all static gates remain green across 374 workplan
   items with zero cycles across 464 files, and the entrypoint reduction remains
   1,199 lines.
+- 2026-08-04 — Started macro cycle 7 from current `origin/main` in the isolated
+  `codex/refactor-tutor-stub-subsystem-facades` worktree. The near-2,000-line
+  acceptance criterion is retained; cycle 7 is an intermediate entrypoint
+  consolidation, not the end of the decomposition series.
+- 2026-08-04 — Cycle 7 moved CLI argument parsing, launch/resume/remembered-
+  settings precedence, and scenario/curriculum catalogue and keyboard selection
+  behind three bounded facades (137, 423, and 293 source lines). The entrypoint
+  fell from 15,002 to 14,121 lines, an 881-line net reduction; the rolling
+  three-cycle average is 1,304 lines per PR and remains above the 750-line stop
+  floor. Focused argument, launch, picker, world-catalogue, recipe, and
+  remembered-settings verification passes 43/43, including byte-identical live
+  catalogue output.
+- 2026-08-04 — Cycle 7 verification passes the zero-skip hermetic suite at
+  7,744/7,744 root tests plus 137/137 tutor-core tests. Lint, Prettier, manifest,
+  workplan source (375 items), ref governance, syntax, and the static import
+  graph all pass with zero cycles across 467 files. The unchanged informational
+  surfaces retain exact help, world-list, learner-profile, and canonical
+  curriculum-catalogue bytes; no model calls were authorized for this
+  structural extraction.
