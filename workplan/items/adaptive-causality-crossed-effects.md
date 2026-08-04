@@ -1,7 +1,7 @@
 ---
 id: adaptive-causality-crossed-effects
 title: "Adaptive causality arc, phase 1: crossed two-state/two-action experiment with transfer"
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude

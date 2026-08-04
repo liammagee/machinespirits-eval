@@ -1,7 +1,7 @@
 ---
 id: adaptive-causality-wager-promotion
 title: "Adaptive causality: wager promotion — does the staked send move the learner?"
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
