@@ -53,7 +53,7 @@ const PINS = [
   },
   {
     file: 'services/tutorStubTutorTurnPipeline.js',
-    claim: 'recovery/committee orchestration and insertion interception',
+    claim: 'tutor-turn coordination, clue-insertion interception, and terminal fallback',
   },
   {
     file: 'services/tutorStubTutorTurnPreparation.js',
@@ -70,6 +70,10 @@ const PINS = [
   {
     file: 'services/tutorStubTutorDeliveryRuntime.js',
     claim: 'delivery decisions, safe uptake preservation, fallback composition, and recovery response envelopes',
+  },
+  {
+    file: 'services/tutorStubTutorRepairRuntime.js',
+    claim: 'host-part, simplified model, composition, question, source-voice, and self-correction repair ladder',
   },
   {
     file: 'services/tutorStubTutorDraftAudit.js',
