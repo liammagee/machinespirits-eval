@@ -112,4 +112,14 @@ Log:
   regression set also covers the early non-interactive, passthrough, and
   metered-lab lifecycle paths that caught and closed two initialization-order
   regressions during extraction.
+- 2026-08-04 — Refreshed PR #428 onto the updated PR #427 base. Session, trace,
+  transcript, resume, training-reuse, passthrough, HTTP, and Program 2 focused
+  contracts pass 95/95; the zero-skip hermetic suite passes 7,736/7,736 root
+  plus 137/137 tutor-core tests. The extraction still removes 988 lines from
+  the entrypoint (20,286 to 19,298), with zero static cycles across 460 files.
+- 2026-08-04 — After PR #427 merged, rebased PR #428 onto current
+  `origin/main`. The session-orchestration runtime patch remains byte-equivalent;
+  a current focused recheck passes 87/87, all static gates remain green across
+  374 workplan items with zero cycles across 460 files, and the entrypoint
+  reduction remains 988 lines.
 - 2026-07-29 — Opened macro cycle 3 as stacked PR #428.
