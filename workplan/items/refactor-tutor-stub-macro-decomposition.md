@@ -9,7 +9,7 @@ source: review
 created: 2026-07-29
 updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-subsystem-facades
+branch: codex/refactor-tutor-stub-learner-analysis-presentation
 claim_status: planned
 depends_on: []
 links:
@@ -20,6 +20,9 @@ links:
     - services/tutorStubCommandRuntime.js
     - services/tutorStubCliArguments.js
     - services/tutorStubLaunchRuntime.js
+    - services/tutorStubLearnerAnalysisRuntime.js
+    - services/tutorStubLearnerEvidenceRuntime.js
+    - services/tutorStubInterimController.js
     - services/tutorStubModelPickerController.js
     - services/tutorStubResponsePolicy.js
     - services/tutorStubScenarioController.js
@@ -31,6 +34,7 @@ links:
     - services/tutorStubTutorTurnPipeline.js
     - tests/tutorStubTutorTurnPipeline.test.js
     - tests/tutorStubEntrypointFacades.test.js
+    - tests/tutorStubLearnerAnalysisRuntime.test.js
   prs:
     - 426
     - 427
@@ -73,6 +77,7 @@ Planned order:
 5. Response-configuration policy subsystem.
 6. Turn processing and automated-learner orchestration.
 7. Subsystem facades and entrypoint/import consolidation.
+8. Learner analysis, public-evidence projection, and interim presentation.
 
 The near-2,000-line acceptance criterion remains the architectural destination;
 it is not a claim that cycle 7 alone can close the card. After cycle 7, continue
@@ -228,3 +233,19 @@ Log:
   curriculum-catalogue bytes; no model calls were authorized for this
   structural extraction.
 - 2026-08-04 — Opened macro cycle 7 as PR #471.
+- 2026-08-04 — Started macro cycle 8 from current `origin/main` in the isolated
+  `codex/refactor-tutor-stub-learner-analysis-presentation` worktree. The slice
+  assigns public learner-evidence and preflight projection, learner-analysis
+  orchestration, and interim terminal lifecycle to separate bounded owners.
+- 2026-08-04 — Macro cycle 8 moved combined/separate learner classification and
+  learner-DAG orchestration, public evidence/preflight and human-discourse frame
+  construction, and interim animation lifecycle behind three bounded owners
+  (877, 266, and 247 source lines). `scripts/tutor-stub.js` fell from 14,121 to
+  13,011 lines, a 1,110-line reduction; the rolling three-cycle average is 1,063
+  lines per PR and remains above the 750-line stop floor.
+- 2026-08-04 — Cycle 8 verification passes 131 focused runtime, exact-byte,
+  human-discourse, interim, interactive, and ownership assertions plus the
+  zero-skip hermetic suite at 7,748/7,748 root tests and 137/137 tutor-core
+  tests. Lint, Prettier, manifest, workplan source (375 items), ref governance,
+  syntax, and the static import graph pass with zero cycles across 470 files;
+  no model calls were authorized for this structural extraction.

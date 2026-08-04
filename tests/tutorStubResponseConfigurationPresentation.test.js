@@ -165,24 +165,25 @@ test('real technical-debug process preserves exact response-configuration termin
   }
 });
 
-test('the CLI retains response-policy normalization, debug gating, call sites, and terminal ownership', () => {
+test('the learner-analysis runtime owns response-policy presentation and delegates terminal output', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerAnalysisRuntime.js'), 'utf8');
   const serviceSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubResponseConfigurationPresentation.js'),
     'utf8',
   );
-  const normalizationSlice = cliSource.slice(
-    cliSource.indexOf('function responseConfigurationPresentation'),
-    cliSource.indexOf('function responseConfigurationContext'),
+  const normalizationSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function responseConfigurationPresentation'),
+    runtimeSource.indexOf('async function analyzeLearnerTurnCombined'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubResponseConfigurationPresentation\.js';/u);
-  assert.match(cliSource, /printAutomaticTechnicalDetails\(state, \(\) =>\s*printResponseConfigurationSelection/u);
+  assert.match(runtimeSource, /printAutomaticTechnicalDetails\(state, \(\) =>\s*printResponseConfigurationSelection/u);
   assert.match(normalizationSlice, /formatSignedInterimNumber/u);
   assert.match(normalizationSlice, /formatEngagementStanceDistribution/u);
   assert.match(normalizationSlice, /displayDiagnosticLabel/u);
   assert.match(normalizationSlice, /projectTutorStubResponseConfigurationLines/u);
-  assert.match(normalizationSlice, /console\.log\(line\)/u);
+  assert.match(normalizationSlice, /printLine\(line\)/u);
   assert.match(serviceSource, /effectivePolicy === 'state'/u);
   assert.match(serviceSource, /selection\.light_adaptation\?\.triggered/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);

@@ -669,23 +669,26 @@ test('interim frame rendering preserves phase compaction and terminal width boun
   assert.match(wide, /\.\.\.$/u);
 });
 
-test('the CLI and learning summary share pure interim copy while retaining runtime and report ownership', () => {
+test('the interim controller and learning summary share pure copy while retaining runtime and report ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const learningSummarySource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearningSummary.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubInterimPresentation.js'), 'utf8');
+  const controllerSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubInterimController.js'), 'utf8');
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubInterimPresentation\.js';/u);
+  assert.match(cliSource, /from '\.\.\/services\/tutorStubInterimController\.js';/u);
+  assert.match(controllerSource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.match(learningSummarySource, /from '\.\/tutorStubInterimPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
     /function (?:createInterimState|getInterimState|previousLearnerDagModel|formatSignedInterimNumber|compactInterimStateSummary|compactInterimFieldSummary|compactPendingObjectiveSummary|compactPendingLearnerSummary|compactPendingLearnerDagSummary|compactPendingDagMovementSummary|compactLearnerRecordUpdateSummary|compactPendingRegisterSummary|interimLevel|plainInterimBottleneck|compactInterimCliHintPanels)\s*\(/u,
   );
   assert.doesNotMatch(learningSummarySource, /function plainInterimBottleneck\s*\(/u);
-  assert.match(cliSource, /function renderInterimStatus\s*\(/u);
-  assert.match(cliSource, /function startInterimAnimation\s*\(/u);
-  assert.match(cliSource, /function stopInterimAnimation\s*\(/u);
+  assert.doesNotMatch(cliSource, /function (?:renderInterimStatus|startInterimAnimation|stopInterimAnimation)\s*\(/u);
+  assert.match(controllerSource, /function renderInterimStatus\s*\(/u);
+  assert.match(controllerSource, /function startInterimAnimation\s*\(/u);
+  assert.match(controllerSource, /function stopInterimAnimation\s*\(/u);
   assert.doesNotMatch(cliSource, /function interimToneColor\s*\(/u);
-  assert.match(cliSource, /projectTutorStubInterimPanels\s*\(\{/u);
-  assert.match(cliSource, /renderTutorStubInterimFrame\s*\(\{/u);
+  assert.match(controllerSource, /projectTutorStubInterimPanels\s*\(\{/u);
+  assert.match(controllerSource, /renderTutorStubInterimFrame\s*\(\{/u);
   assert.doesNotMatch(serviceSource, /\b(?:fs|console|process|fetch|setInterval|clearInterval|Date\.now)\s*[.(]/u);
 });
