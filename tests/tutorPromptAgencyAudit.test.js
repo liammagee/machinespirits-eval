@@ -21,7 +21,10 @@ test('prompt agency audit covers every active prompt on all eight dimensions', (
   assert.equal(audit.summary.problematic, 0);
   assert.equal(audit.summary.gray, 2);
   for (const prompt of audit.prompts) {
-    assert.deepEqual(Object.keys(prompt.scores), audit.dimensions.map(({ id }) => id));
+    assert.deepEqual(
+      Object.keys(prompt.scores),
+      audit.dimensions.map(({ id }) => id),
+    );
   }
 });
 
@@ -30,10 +33,7 @@ test('recognition and placebo remain category-matched on learner agency', () => 
 
   for (const comparison of audit.comparisons) {
     const agency = comparison.dimensions.find(({ dimension }) => dimension === 'D5');
-    assert.deepEqual(
-      agency,
-      { dimension: 'D5', left: 'protective', right: 'protective', parity: true },
-    );
+    assert.deepEqual(agency, { dimension: 'D5', left: 'protective', right: 'protective', parity: true });
   }
 
   const superego = audit.comparisons.find(({ id }) => id === 'superego-recognition-placebo');
@@ -62,11 +62,10 @@ test('audit fails closed when an audited prompt changes without ledger review', 
   fs.mkdirSync(path.join(root, 'config'), { recursive: true });
   fs.mkdirSync(path.join(root, 'tutor-core', 'config'), { recursive: true });
   fs.cpSync(path.join(REPO_ROOT, 'prompts'), path.join(root, 'prompts'), { recursive: true });
-  fs.cpSync(path.join(REPO_ROOT, 'tutor-core', 'prompts'), path.join(root, 'tutor-core', 'prompts'), { recursive: true });
-  fs.copyFileSync(
-    path.join(REPO_ROOT, 'config', 'tutor-agents.yaml'),
-    path.join(root, 'config', 'tutor-agents.yaml'),
-  );
+  fs.cpSync(path.join(REPO_ROOT, 'tutor-core', 'prompts'), path.join(root, 'tutor-core', 'prompts'), {
+    recursive: true,
+  });
+  fs.copyFileSync(path.join(REPO_ROOT, 'config', 'tutor-agents.yaml'), path.join(root, 'config', 'tutor-agents.yaml'));
   fs.copyFileSync(
     path.join(REPO_ROOT, 'tutor-core', 'config', 'tutor-agents.yaml'),
     path.join(root, 'tutor-core', 'config', 'tutor-agents.yaml'),
