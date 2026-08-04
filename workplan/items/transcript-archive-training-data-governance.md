@@ -1,7 +1,7 @@
 ---
 id: transcript-archive-training-data-governance
 title: Govern transcript archives, ratings, and reusable training corpora
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -16,6 +16,8 @@ verification: A clean-room build resolves every source through the private asset
   inputs.
 claim_status: methods
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/477
   notes:
     - docs/transcript-archive-and-training-data-management.md
     - PROGRAM-2-FINETUNE-PLAN.md
@@ -78,3 +80,6 @@ projection, tuning candidate, guard pass, or rating as an implicit license.
   inherited holdouts before the Python training stack loads. Focused tests
   cover refusal before approval, acceptance after scoped approval, revocation,
   tamper detection, restore/seal verification, and tutor-stub integration.
+- 2026-08-04: PR #477 merged as `797ea044`; verification passed and the card
+  closed. The private approval registry remains empty by design, so this
+  governance boundary authorizes no training on its own.
