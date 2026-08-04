@@ -670,6 +670,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       adaptationAudit: feedbackAdaptationAudit,
       provenance: {
         runId: stateRunDebugId(state),
+        sourceAssetId: state.trace?.assetId || null,
         trace: state.trace?.filePath ? path.relative(ROOT, state.trace.filePath) : null,
         worldId: state.world?.id || null,
         learnerProfileId: state.learnerProfileId || null,

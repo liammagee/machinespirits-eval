@@ -44,14 +44,20 @@ export function createTutorStubTraceRuntime(dependencies = {}) {
     if (!enabled) return { enabled: false };
     const dir = resolveWorkspacePath(traceDir);
     const runId = safeTimestampForFile();
+    const assetId = `tutor-stub-trace:${runId}`;
     const filePath = path.join(dir, `${runId}.jsonl`);
     fs.mkdirSync(dir, { recursive: true });
-    const enrichedMetadata = { ...(metadata || {}), provenance: captureTraceProvenance(metadata) };
+    const enrichedMetadata = {
+      ...(metadata || {}),
+      sourceAssetId: assetId,
+      provenance: captureTraceProvenance(metadata),
+    };
     const trace = {
       enabled: true,
       dir,
       filePath,
       runId,
+      assetId,
       seq: 0,
       metadata: enrichedMetadata,
     };

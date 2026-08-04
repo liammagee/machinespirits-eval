@@ -1,7 +1,9 @@
 # Transcript archive and training-data management
 
-Status: proposed operating policy, 2026-07-25. This document governs future
-collection and reuse. It does not retrospectively license any existing data.
+Status: operational policy and tooling, 2026-08-04. This document governs
+future collection and reuse. The implementation does not retrospectively
+license any existing data: approvals remain separate, private, append-only
+records scoped to an exact corpus hash, purpose, and model.
 
 ## Decisions
 
@@ -48,13 +50,20 @@ This design got several things right: immutable source traces, original-versus-
 repair separation, deterministic dialogue grouping, exact hashes, pinned base
 models, completion-only loss, and held-out local evaluation.
 
-It also exposes the first governance repair. The tracked v1 manifest reports
-868 train-split general positives, while the frozen TRL export has 865 SFT
-rows. The runbook names a small formatter, but no corresponding exporter is
-tracked on `main`. The frozen files and hashes prove what was trained; they do
-not explain or reproduce the three-row delta or the complete serialization.
-Future reuse of v1 must first land a deterministic exporter and reconcile that
-delta without changing the historical files.
+The first governance repair is now reproducible. The tracked v1 manifest
+reports 868 train-split general positives, while the frozen TRL export has 865
+SFT rows. `scripts/program2-export-trl-v1.mjs` reconstructs the original
+Task-A-first ordering and exact Python JSONL serialization, then records the
+three excluded rows in
+`config/data-governance/program2-v1-trl-exclusions.json`. No contemporaneous
+rationale for those three exclusions survives, so the ledger says that
+plainly rather than inventing one. A clean rebuild reproduces the frozen
+hashes exactly: instruct
+`e89f3ac443ea612f64be0be8388174852006903df5a725f7e41c9a56bb1de6b6`,
+base `5b1718ea3b7882b7fd03d22d9f6ea2bb79c5f842438061719dd23995af92cf9f`,
+and KTO `d8e29db88947d1d948ff688073d417800eb57452e9405045a9a9edc2836ae927`.
+The rebuild also emits a separate row-level lineage ledger; it does not alter
+the historical training files.
 
 ### The separate archived v2 corpus
 
@@ -409,7 +418,67 @@ Add these management rules:
 4. Bring home the adapter/model, logs, and environment record; hash and
    register them before deleting cloud storage.
 
+## Operational commands
+
+All commands below are zero-model operations. Private registries live under
+`MS_DATA_HOME/catalog` (normally `~/.machinespirits-data/catalog`); tracked
+files contain schemas, code, logical paths, and redacted summaries only.
+
+```bash
+export MS_DATA_HOME="${MS_DATA_HOME:-$HOME/.machinespirits-data}"
+
+# Create append-only private registries and seed conservative exclusions.
+npm run data:governance -- init --root "$MS_DATA_HOME/catalog"
+npm run data:governance -- seed-holdouts \
+  --seed config/data-governance/default-holdouts.json \
+  --registry "$MS_DATA_HOME/catalog/holdouts.jsonl"
+npm run data:governance -- seed-program2-split-holdouts \
+  --splits "$MS_DATA_HOME/program-2/datasets/v1/splits.json" \
+  --registry "$MS_DATA_HOME/catalog/holdouts.jsonl"
+
+# Register and verify the historical Program-2 estate in place.
+npm run data:governance -- register-retrospective \
+  --catalog config/data-assets/program-2-v1-retrospective.json \
+  --registry "$MS_DATA_HOME/catalog/assets.jsonl"
+npm run data:governance -- audit-retrospective \
+  --catalog config/data-assets/program-2-v1-retrospective.json
+
+# Rebuild the exact historical TRL files plus reconciliation and lineage.
+npm run program2:export-trl-v1 -- \
+  --input "$MS_DATA_HOME/program-2/datasets/v1" \
+  --out "$MS_DATA_HOME/program-2/datasets/trl-v1-rebuilt"
+
+# Extract private rating candidates. Missing asset or holdout registries stop.
+npm run tutor:stub:export-rating-candidates -- \
+  --input .tutor-stub-traces \
+  --assets "$MS_DATA_HOME/catalog/assets.jsonl" \
+  --holdouts "$MS_DATA_HOME/catalog/holdouts.jsonl" \
+  --out "$MS_DATA_HOME/tutor-stub/training-candidates/review-v1"
+```
+
+The ratings export is deliberately only `candidate_not_approved`. It requires
+the source trace to be sealed and catalogued, joins immediate and enriched
+feedback by stable rating ID, groups splits by source run, strips comments,
+rejects exact/normalized/near duplicates, and keeps subjective helpfulness,
+objective progress, and next-response adaptation in separate fields.
+
+The Program-2 SFT and KTO entrypoints now require `--corpus-manifest`,
+`--approval-registry`, and `--holdout-registry`. They invoke the same exact-
+hash admission check before importing the training stack or touching a model.
+`--governance-check-only` provides a free smoke test. A revoked approval, a
+different purpose/model, any held-out ancestor, a missing registry, or one
+changed corpus byte stops the run.
+
 ## Implementation plan
+
+Implementation status, 2026-08-04: P0-P3's source controls are implemented.
+The private catalog was initialized without moving bulk data; nine Program-2
+assets and 21 initial holdout records were registered. The retrospective audit
+verified the sealed Step-4 source, v1 and TRL corpora, four adapter roots,
+floor/live evaluation roots, and the archived-v2 checksum. Automated tests
+cover atomic seal/restore, tamper detection, grouped lineage, owner opt-out,
+external/unknown exclusion, held-out descendants, exact and near duplicates,
+approval revocation, and unapproved-versus-approved training admission.
 
 ### P0 — make existing Program-2 reproducible
 
@@ -421,6 +490,10 @@ Add these management rules:
 - Add retrospective private asset records for Step 4, dataset v1, TRL v1, the
   four adapters, floor/live evaluations, and the archived v2 corpus.
 
+Complete: the exact three historical hashes reproduce, the exception and row-
+lineage ledgers are emitted, and the redacted/private retrospective catalogs
+cover all named assets.
+
 ### P1 — introduce the catalog and sealing contract
 
 - Add the three data-governance schemas and validators.
@@ -430,6 +503,10 @@ Add these management rules:
   parse/completeness checks, and verification after copy.
 - Seed the global holdout registry from Program-2, V-series transfer worlds,
   paper evaluation sets, and pilot data.
+
+Complete: schemas, conservative validators, private registry initialization,
+atomic copy-and-verify sealing, in-place inventories, default protected asset
+seeds, and all 16 Program-2 dev/heldout dialogue groups are implemented.
 
 ### P2 — governed ratings corpus
 
@@ -448,6 +525,9 @@ Add these management rules:
 - Test grouped splits, lineage inheritance, exact/near-duplicate rejection,
   heldout contamination, revocation, and malformed/incomplete traces.
 
+Complete: the zero-call exporter is candidate-only and fail-closed on missing
+catalog, reuse, safety, lineage, or holdout evidence.
+
 ### P3 — training and retention gates
 
 - Require corpus/training manifest hashes in future training entrypoints and
@@ -459,6 +539,12 @@ Add these management rules:
   source corpus cannot be resolved.
 - Perform a restore drill for one source archive, one corpus, one DB snapshot,
   and one adapter.
+
+The exact Program-2 corpus rebuild and automated seal/restore drill are
+complete, and current Program-2 source/corpus/adapter/evaluation checksums are
+auditable. The broader periodic estate audit and physical relocation of
+disposable toolchains remain routine archive housekeeping, not a prerequisite
+for using the new admission boundary.
 
 ## Completion gate
 

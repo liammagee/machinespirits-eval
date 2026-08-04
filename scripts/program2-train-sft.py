@@ -6,16 +6,17 @@ every training-relevant value below is frozen by the pre-registration —
 changing any of them re-opens the freeze.
 
 Usage:
-    python program2-train-sft.py --variant instruct --data-dir data
-    python program2-train-sft.py --variant base --data-dir data
-    python program2-train-sft.py --variant instruct --smoke   # 20-step stack proof
+    python program2-train-sft.py --variant instruct --data-dir data \
+      --corpus-manifest data/corpus-manifest.json \
+      --approval-registry catalog/approvals.jsonl \
+      --holdout-registry catalog/holdouts.jsonl
+
+Every invocation, including --smoke, passes the zero-model governance gate.
 """
 
 import argparse
-
-from datasets import load_dataset
-from peft import LoraConfig
-from trl import SFTConfig, SFTTrainer
+import pathlib
+import subprocess
 
 FROZEN = {
     "instruct": {
@@ -37,8 +38,38 @@ def main() -> None:
     parser.add_argument("--variant", choices=["instruct", "base"], required=True)
     parser.add_argument("--data-dir", default="data")
     parser.add_argument("--smoke", action="store_true", help="20-step stack proof, not a licensed run")
+    parser.add_argument("--corpus-manifest", required=True)
+    parser.add_argument("--approval-registry", required=True)
+    parser.add_argument("--holdout-registry", required=True)
+    parser.add_argument("--governance-check-only", action="store_true")
     args = parser.parse_args()
     frozen = FROZEN[args.variant]
+
+    root = pathlib.Path(__file__).resolve().parent.parent
+    subprocess.run(
+        [
+            "node",
+            str(root / "scripts" / "data-governance.js"),
+            "admit",
+            "--manifest",
+            args.corpus_manifest,
+            "--approvals",
+            args.approval_registry,
+            "--holdouts",
+            args.holdout_registry,
+            "--purpose",
+            "program2-sft",
+            "--model",
+            frozen["model"],
+        ],
+        check=True,
+    )
+    if args.governance_check_only:
+        return
+
+    from datasets import load_dataset
+    from peft import LoraConfig
+    from trl import SFTConfig, SFTTrainer
 
     data = load_dataset("json", data_files={"train": f"{args.data_dir}/{frozen['data']}"})
 
