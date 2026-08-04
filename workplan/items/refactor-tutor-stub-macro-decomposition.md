@@ -89,7 +89,7 @@ Log:
   the zero-skip hermetic suite at 7,667/7,667 root plus 137/137 tutor-core
   tests, and every static gate with zero import cycles across 450 files.
 - 2026-07-29 — Opened macro cycle 2 as PR #427.
-- 2026-08-04 — Refreshed PR #427 onto current `origin/main` after 212 intervening
+- 2026-08-04 — Refreshed PR #427 onto current `origin/main` after 228 intervening
   commits. The same command-runtime boundary now retains the newer manner-switch,
   quiet-detector, stress-schedule, dramatic-release, and speaker-advisory work;
   `scripts/tutor-stub.js` falls from 21,485 to 20,286 lines. Focused current-main
