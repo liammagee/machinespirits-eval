@@ -1662,22 +1662,22 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('theory synthesis note not found');
     res.type('html').sendFile(notePath);
   });
-  // GET /blueprint frames the build-steps surface — an evidence-ordered recipe
-  // for the ideal AI tutor (what to put in, in what order, what to skip, what
-  // stays open). Like /theory and /summary it is a reference surface that
-  // ORIGINATES no claims: every number inherits from paper-full-2.0.md, and the
-  // steps were synthesised across the codebase and claim-audited against the
-  // paper. Its assets/* resolve against /assets.
+  // GET /blueprint frames the build-recipe surface — a step-by-step recipe for
+  // the ideal AI tutor (kernel · world · cast · adapt · measure) whose steps
+  // POINT at the paper, the arc files, and the atlas for the evidence instead
+  // of restating it. Like /theory and /summary it is a reference surface that
+  // ORIGINATES no claims: every number inherits from paper-full-2.0.md and the
+  // page is claim-audited against it. Its assets/* resolve against /assets.
   app.get('/blueprint', (_req, res) =>
     res.type('html').send(
       framedNoteHtml({
         active: 'blueprint',
-        sub: 'how to build the ideal AI tutor — the build steps the evidence supports, what to skip &amp; what stays open',
+        sub: 'how to build the ideal AI tutor — a step-by-step recipe, the skip-list &amp; what stays open',
         src: '/blueprint-doc',
         title: 'How to build the ideal AI tutor · the blueprint',
         hint: orientBand(
           'blueprint',
-          'the build steps for an AI tutor — prompt, then critic, model-fit, measurement, and what the data says to skip',
+          'a step-by-step recipe for an AI tutor — kernel, world, cast, adapt, measure — each step pointing at the paper, arc files & atlas',
           'project writing; the working surfaces are on the rail above',
         ),
       }),
@@ -2312,7 +2312,7 @@ const NAV = [
     'blueprint',
     '/blueprint',
     'the blueprint',
-    'How to build the ideal AI tutor — an evidence-ordered build recipe (prompt · critic · model-fit · measurement), what the data says to skip, &amp; what stays an open question',
+    'How to build the ideal AI tutor — a step-by-step recipe (kernel · world · cast · adapt · measure) pointing at the paper, arc files &amp; atlas for the evidence, plus the skip-list &amp; open questions',
   ],
   [
     'model-upgrade',
