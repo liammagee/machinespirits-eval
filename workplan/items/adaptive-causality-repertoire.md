@@ -1,7 +1,7 @@
 ---
 id: adaptive-causality-repertoire
 title: "Adaptive causality arc, phase 3: prove the outstanding playbook entries"
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude

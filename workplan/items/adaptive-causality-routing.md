@@ -1,7 +1,7 @@
 ---
 id: adaptive-causality-routing
 title: "Adaptive causality arc, phase 2: routing — close the sensing floor"
-status: active
+status: done
 type: experiment
 priority: P1
 owner: claude

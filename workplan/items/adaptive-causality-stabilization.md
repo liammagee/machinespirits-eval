@@ -1,7 +1,7 @@
 ---
 id: adaptive-causality-stabilization
 title: "Adaptive causality arc, phase 0: stabilization pass on the v0.7.0 baseline"
-status: active
+status: done
 type: infra
 priority: P1
 owner: claude
