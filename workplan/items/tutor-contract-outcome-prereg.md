@@ -1,19 +1,20 @@
 ---
 id: tutor-contract-outcome-prereg
 title: "Pre-registration: does the per-turn contract change legitimate closure?"
-status: triaged
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-29
-updated: 2026-07-30
-verification: "Before any paid dialogue: the closure detector is hand-audited
-  against the pilot transcripts and its misses are fixed or the endpoint is
-  re-specified; the pilot gate (bare closure in the 20–80% band per world) is
-  met or the world/turn-cap is re-picked and the change logged here before
-  proceeding. The run itself is attended and checkpointed."
-claim_status: methods
+updated: 2026-08-05
+verification: "The closure detector and per-world cap handling were repaired
+  and checked against the paid pilot transcripts; the corrected gate found
+  19/19 finished bare dialogues closing, so the registered 20–80% eligibility
+  band failed for saturation, the 144-dialogue comparison did not start, and
+  Paper 2.0 section 6.23 preserves that gate-stage result without making a
+  contract-effect claim."
+claim_status: killed
 depends_on:
   - tutor-instrumentation-ab-harness
   - tutor-eval-instrument-dashboard
@@ -21,7 +22,19 @@ tags:
   - tutor-stub
   - prereg
   - outcome
+links:
+  paper: docs/research/paper-full-2.0.md
+  exports:
+    - exports/tutor-stub-outcome/pilot-1/
+    - exports/tutor-stub-outcome/pilot-2/
 ---
+
+**Closeout, 2026-08-05.** The card is done with a killed endpoint, not a null
+treatment result. The corrected eligibility pilot saturated at 19/19 closures
+among finished bare dialogues. Because the registered comparison had no
+measurable headroom, the main contract-versus-bare run never began. The gate
+finding is already scoped in Paper 2.0 section 6.23; any turns-to-closure study
+remains a separate parked design.
 
 Registered before the first paid call. Amendments after the pilot gate must be
 logged in this file with dates; amendments after the main run starts are not

@@ -1,7 +1,7 @@
 ---
 id: recode-superego-incorporation-as-a-framing-trajectory
 title: Recode superego incorporation as a framing trajectory
-status: review
+status: done
 type: research
 priority: P3
 owner: codex
@@ -29,6 +29,8 @@ links:
   data:
     - config/analysis/superego-framing-trajectory-codebook-v1.json
     - data/paper2/superego-framing-trajectory-coding-v1.json
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/492
 tags:
   - writing-pad
   - prompt-erosion
@@ -72,6 +74,11 @@ incorporation the proxy misses, which would be worth reporting on its own.
 
 ## Log
 
+- 2026-08-05 — Closed after PR #492 merged as `dc684140`. The committed
+  codebook, trace-pinned coding ledger, deterministic report, read-only CLI,
+  and 42 focused tests satisfy the card's registered verification. The 6/12
+  semantic split remains explicitly exploratory and does not replace the
+  production metric; independent coding is a separate future validation gate.
 - 2026-08-05 — Ready for review. The zero-model analyzer found 135 historical
   rows, 132 unique dialogues with 132/132 trace availability, 465 superego
   checks, and 185 immediate revision-demanding cases eligible for semantic

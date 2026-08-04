@@ -1,13 +1,14 @@
 ---
 id: tutor-stub-latency-routing-optimization
 title: "Optimize tutor-stub foreground latency with attributable routing experiments"
-status: triaged
+status: active
 type: experiment
 priority: P1
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-07-24
 updated: 2026-08-05
+branch: codex/tutor-stub-latency-routing-optimization
 verification: "A frozen object/meta/mixed transcript matrix reports first-draft acceptance, recovery/fallback rate, foreground p50/p95 latency, model-call latency, token use, and tutor-quality/safety outcomes for isolated effort, role-routing, prompt-compaction, and prefetch-policy contrasts; no candidate becomes a default without preserving the instructional-meta regression and public-safety gates."
 claim_status: exploratory
 links:
@@ -103,3 +104,30 @@ no longer active. The one-draw matrix did not justify a default change; repeated
 draws remain contingent on repairing or explicitly rescoring the mixed-plane
 classifier contract. Returned to triage rather than presenting dormant paid
 follow-up work as active execution.
+
+2026-08-05 Codex: Reactivated from current `origin/main` after closing the
+merged superego-framing analysis and the saturated contract-outcome endpoint.
+The first slice is model-free: make the mixed-plane benchmark contract
+internally coherent and re-score the frozen matrix before any repeated paid
+draws or default-routing proposal.
+
+2026-08-05 Codex: Repaired the measurement prerequisite without model calls.
+The v1 resolver did not recognize the frozen mixed turn's imperative “explain
+baseline in plain English” form or its separate object-level proposal, so all
+variants were structurally liable to read the case as object. Discourse-plane
+v2 adds clause-aware, bounded surface recognition; benchmark config validation
+now fails closed unless every declared plane resolves deterministically; dry
+runs expose the contract; and report v2 separates the plane used at runtime
+from current zero-model rescoring. The focused latency/discourse suite passes
+21/21 and the wider tutor-stub human-discourse CLI suite passes 43/43. This
+clears the measurement gate only. Repeated paid draws and any default change
+remain outstanding and separately gated.
+
+2026-08-05 Codex: Froze the next paid step without launching it:
+`config/tutor-stub-latency-benchmark-v2-screen.yaml` is a 36-job screen (three
+draws each for object, instructional-meta, and mixed turns across baseline,
+low effort, Terra analysis, and analysis-only tutor prefetch). The regressive
+`compact_v1` prompt is excluded rather than paid for again. This screen is not
+a promotion run: it can reject candidates or nominate one for confirmation,
+but cannot by itself change the default. External model calls remain
+unauthorized in this branch.

@@ -214,3 +214,30 @@ workplan item, then:
    token use, and pedagogical quality on the same frozen set.
 6. Evaluate reasoning effort, role-model routing, prompt compaction, and
    prefetch policy independently so their effects remain attributable.
+
+## 2026-08-05 mixed-plane benchmark repair
+
+The first one-draw optimization matrix exposed a measurement defect before it
+exposed a routing winner: every variant called the mixed fixture `object`. The
+fixture itself combines an imperative wording repair (“explain baseline in
+plain English”) with a separate subject-matter proposal. The v1 deterministic
+contract recognized neither that imperative form nor a second clause after the
+repair, so the benchmark could not identify the case it declared as `mixed`.
+
+The v2 discourse-plane contract now recognizes bounded imperative wording
+repairs, examines separated clauses for an independent object-level
+contribution, and preserves pure subject-matter explanation requests as
+`object`. Benchmark configuration validation resolves every frozen case before
+launch and fails closed if its declared object/meta/mixed label is not
+deterministically recoverable. Dry runs expose that contract.
+
+Latency reports now keep two readings separate: `runtimeObservedPlane` records
+what the historical execution actually used, while `observedPlane` and
+`planeContractSchema` report a current, zero-model rescore from the frozen
+learner turn. `runtimePlaneAccuracy` therefore remains historical evidence;
+`planeAccuracy` under v2 says whether the measurement contract can now
+distinguish the cases. Rescoring does not retroactively claim that an old tutor
+response was generated under the repaired mixed path.
+
+This removes the measurement prerequisite for repeated draws. It does not make
+any latency candidate a default and does not authorize new model calls.
