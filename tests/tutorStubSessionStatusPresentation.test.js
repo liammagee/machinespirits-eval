@@ -193,12 +193,17 @@ test('the CLI retains status state derivation, helper calls, slash dispatch, and
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubSessionStatusPresentation.js'), 'utf8');
   const commandSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCommandRuntime.js'), 'utf8');
-  const statusSlice = cliSource.slice(
-    cliSource.indexOf('function printInteractiveStatus'),
-    cliSource.indexOf('function cliDirectorApplicationContext'),
+  const controllerSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveSessionController.js'),
+    'utf8',
+  );
+  const statusSlice = controllerSource.slice(
+    controllerSource.indexOf('function printInteractiveStatus'),
+    controllerSource.indexOf('function queueCoachGuidance'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubSessionStatusPresentation\.js';/u);
+  assert.match(cliSource, /createTutorStubInteractiveSessionController/u);
   assert.match(statusSlice, /state\.passthrough\?\.enabled/u);
   assert.match(statusSlice, /tutorStubDagFactDropoutSnapshot/u);
   assert.match(statusSlice, /tutorStubReleasePacingSnapshot/u);

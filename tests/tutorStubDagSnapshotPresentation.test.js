@@ -261,6 +261,10 @@ test('the CLI retains snapshot state access, terminal writes, and every runtime 
     'utf8',
   );
   const turnOrchestrationSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTurnOrchestration.js'), 'utf8');
+  const interactiveTurnSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveTurnController.js'),
+    'utf8',
+  );
   const snapshotSlice = cliSource.slice(
     cliSource.indexOf('function buildTutorDagSnapshot'),
     cliSource.indexOf('function oneLine'),
@@ -276,7 +280,8 @@ test('the CLI retains snapshot state access, terminal writes, and every runtime 
   assert.doesNotMatch(snapshotSlice, /proof leaves released/u);
   const runtimeCallerCount =
     (cliSource.match(/printTutorDagSnapshot\(/gu)?.length || 0) +
-    (turnOrchestrationSource.match(/printTutorDagSnapshot\(/gu)?.length || 0);
+    (turnOrchestrationSource.match(/printTutorDagSnapshot\(/gu)?.length || 0) +
+    (interactiveTurnSource.match(/printTutorDagSnapshot\(/gu)?.length || 0);
   assert.equal(runtimeCallerCount, 4);
   assert.match(turnOrchestrationSource, /printTutorDagSnapshot\(response\.dagSnapshot\)/u);
   assert.match(

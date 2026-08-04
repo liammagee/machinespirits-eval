@@ -61,24 +61,36 @@ hook:
     - scripts/tutor-pr-benchmark-hook.js
     - services/cliProviderBridge.js
     - services/tokenUsage.js
-    - services/tutorStubFrozenReplay.js
-    - services/tutorStubPrBenchmark.js
-    - services/tutorStubPrBenchmarkHook.js
     - services/tutorStubCliArguments.js
+    - services/tutorStubCharacterControlController.js
     - services/tutorStubCommandRuntime.js
+    - services/tutorStubFeedbackTuningController.js
+    - services/tutorStubFrozenReplay.js
+    - services/tutorStubInterimController.js
+    - services/tutorStubInteractiveAutomationController.js
+    - services/tutorStubInteractiveDialogueController.js
+    - services/tutorStubInteractiveDirectorController.js
+    - services/tutorStubInteractiveInputPresentation.js
+    - services/tutorStubInteractiveLearnerRuntime.js
+    - services/tutorStubInteractiveSessionController.js
+    - services/tutorStubInteractiveTurnController.js
     - services/tutorStubLaunchRuntime.js
     - services/tutorStubLearnerAnalysisRuntime.js
     - services/tutorStubLearnerEvidenceRuntime.js
-    - services/tutorStubInterimController.js
+    - services/tutorStubLiveSettingsController.js
+    - services/tutorStubModelPickerController.js
+    - services/tutorStubMixedLearnerController.js
+    - services/tutorStubPerformanceControlController.js
+    - services/tutorStubPrBenchmark.js
+    - services/tutorStubPrBenchmarkHook.js
+    - services/tutorStubResponsePolicy.js
+    - services/tutorStubScenarioController.js
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
-    - services/tutorStubTurnOrchestration.js
-    - services/tutorStubModelPickerController.js
-    - services/tutorStubResponsePolicy.js
-    - services/tutorStubScenarioController.js
-    - services/tutorStubVoiceController.js
     - services/tutorStubTutorTurnPipeline.js
+    - services/tutorStubTurnOrchestration.js
+    - services/tutorStubVoiceController.js
   path_prefixes:
     - config/drama-derivation/
     - prompts/

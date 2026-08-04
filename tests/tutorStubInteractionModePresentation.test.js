@@ -141,12 +141,17 @@ test('real startup and mode-switch commands preserve exact no-model terminal blo
 test('the CLI retains interaction state, prompt, trace, automation, and terminal ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubInteractionModePresentation.js'), 'utf8');
-  const modeSlice = cliSource.slice(
-    cliSource.indexOf('function interactionModeLabel'),
-    cliSource.indexOf('function printInteractiveStatus'),
+  const controllerSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveSessionController.js'),
+    'utf8',
+  );
+  const modeSlice = controllerSource.slice(
+    controllerSource.indexOf('function interactionModeLabel'),
+    controllerSource.indexOf('function printInteractiveStatus'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubInteractionModePresentation\.js';/u);
+  assert.match(cliSource, /createTutorStubInteractiveSessionController/u);
   assert.match(modeSlice, /state\.interaction\?\.mode/u);
   assert.match(modeSlice, /mixedLearner\.enabled/u);
   assert.match(modeSlice, /projectTutorStubInteractionModeLabel/u);

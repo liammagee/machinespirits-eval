@@ -84,11 +84,19 @@ test('the CLI retains public projection, return values, and terminal ownership w
     path.join(ROOT, 'services', 'curriculum', 'tutorStubCurriculumProgressPresentation.js'),
     'utf8',
   );
-  const progressSlice = cliSource.slice(
-    cliSource.indexOf('function printCurriculumProgress'),
-    cliSource.indexOf('\n  function activateCurriculumModule', cliSource.indexOf('function printCurriculumProgress')),
+  const controllerSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveSessionController.js'),
+    'utf8',
+  );
+  const progressSlice = controllerSource.slice(
+    controllerSource.indexOf('function printCurriculumProgress'),
+    controllerSource.indexOf(
+      '\n  function activateCurriculumModule',
+      controllerSource.indexOf('function printCurriculumProgress'),
+    ),
   );
 
+  assert.match(cliSource, /createTutorStubInteractiveSessionController/u);
   assert.match(progressSlice, /curriculumProgressSnapshot/u);
   assert.match(progressSlice, /projectTutorStubCurriculumProgressLines/u);
   assert.match(progressSlice, /console\.log/u);

@@ -247,12 +247,14 @@ test('the CLI retains settings state derivation, helper calls, command ownership
     path.join(ROOT, 'services', 'tutorStubDialogueSettingsPresentation.js'),
     'utf8',
   );
-  const settingsSlice = cliSource.slice(
-    cliSource.indexOf('function trainingReuseStatusLines'),
-    cliSource.indexOf('function printModelChoices'),
+  const controllerSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLiveSettingsController.js'), 'utf8');
+  const settingsSlice = controllerSource.slice(
+    controllerSource.indexOf('function trainingReuseStatusLines'),
+    controllerSource.indexOf('function printModelChoices'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubDialogueSettingsPresentation\.js';/u);
+  assert.match(cliSource, /createTutorStubLiveSettingsController/u);
   assert.match(settingsSlice, /state\.trainingReuse/u);
   assert.match(settingsSlice, /tutorStubTrainingReuseLabel/u);
   assert.match(settingsSlice, /displayDiagnosticLabel/u);
@@ -269,7 +271,7 @@ test('the CLI retains settings state derivation, helper calls, command ownership
   assert.match(settingsSlice, /console\.log\(line\)/u);
   assert.doesNotMatch(settingsSlice, /one model for all roles/u);
   assert.doesNotMatch(settingsSlice, /advanced overrides/u);
-  assert.match(cliSource, /printDialogueSettings\(\)/u);
+  assert.match(controllerSource, /printDialogueSettings\(\)/u);
   assert.match(serviceSource, /export function projectTutorStubDialogueSettingsLines/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);
