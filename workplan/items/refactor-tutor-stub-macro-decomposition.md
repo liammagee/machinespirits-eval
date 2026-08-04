@@ -136,3 +136,13 @@ Log:
   7,673/7,673 root and 137/137 tutor-core tests. Direct boundary tests pin the
   disabled voice projection, four-role model catalog, and TTY picker ownership.
 - 2026-07-29 — Opened macro cycle 4 as stacked PR #429.
+- 2026-08-04 — Refreshed PR #429 onto the updated PR #428 base without a source
+  conflict. Current controller, model, picker, profile, character, and voice
+  contracts pass 41/41; the zero-skip hermetic suite passes 7,738/7,738 root
+  plus 137/137 tutor-core tests. The extraction still removes 1,266 entrypoint
+  lines (19,298 to 18,032), with zero static cycles across 462 files.
+- 2026-08-04 — Restacked PR #429 onto the post-merge refresh of PR #428. The
+  non-workplan extraction patch remains byte-equivalent; a current focused
+  controller and voice recheck passes 35/35, all static gates remain green
+  across 374 workplan items with zero cycles across 462 files, and the
+  entrypoint reduction remains 1,266 lines.
