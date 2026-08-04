@@ -41,3 +41,7 @@ Log:
 - 2026-08-04 — Resolved the newest four: three folded into existing work as
   reviewed literature records; AISPA promoted to a distinct prompt-parity
   audit. Remaining queue: 62 captures (17 `[UNBLOCK]`, 45 `[WATCH]`).
+- 2026-08-04 — Resolved all 17 remaining `[UNBLOCK]` captures. Each mapped to
+  existing implementation, research, or measurement work, so no duplicate
+  executable card was promoted. The source and decision are preserved in 17
+  completed literature-triage records. Remaining queue: 45 `[WATCH]` captures.
