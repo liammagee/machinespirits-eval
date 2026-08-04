@@ -1,10 +1,13 @@
 <!doctype html>
 <!--
-  ideal-tutor-blueprint.html — the build steps for the ideal AI tutor, in one place.
+  ideal-tutor-blueprint.html — how to build the ideal AI tutor, as a recipe.
 
-  A reference surface, NOT a source of new claims. Every number traces to a
-  section of docs/research/paper-full-2.0.md (the § pointers in the margins),
-  and the build steps were synthesised from that paper and audited against it.
+  A reference surface, NOT a source of new claims. Recipe edition (2026-08-04):
+  each step gives the instruction and then POINTS at its evidence — the paper §
+  (docs/research/paper-full-2.0.md), the arc file that carries the working craft
+  detail, and the atlas module (docs/research/atlas/atlas.yaml) that tells the
+  story in plain language. Numbers on this page are kept to the few that anchor
+  a decision; everything else is a pointer.
   Edit the prose by hand; the .html IS the source (no build step).
   Design lives in assets/techne.css; behaviour in assets/techne.js.
 -->
@@ -14,7 +17,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
 <title>How to build the ideal AI tutor · the blueprint</title>
-<meta name="description" content="An evidence-ordered build blueprint for an AI tutor: what the data supports putting in, what to skip, and what stays an open question — every step cited to docs/research/paper-full-2.0.md." />
+<meta name="description" content="A step-by-step recipe for building an adaptive AI tutor from first principles — each step cited to docs/research/paper-full-2.0.md, the arc files, and the research atlas rather than restated." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
@@ -28,15 +31,14 @@
     <span class="rail__title">How to build the ideal AI tutor</span>
     <span class="rail__dot" aria-hidden="true"></span>
     <nav class="rail__nav" aria-label="Section navigation">
-      <a href="#prompt">Prompt</a>
-      <a href="#critic">Critic</a>
-      <a href="#fit">Fit</a>
-      <a href="#measure">Measure</a>
+      <a href="#kernel">Kernel</a>
+      <a href="#world">World</a>
+      <a href="#cast">Cast</a>
       <a href="#adapt">Adapt</a>
-      <a href="#frontier">Frontier</a>
+      <a href="#measure">Measure</a>
       <a href="#skip">Skip</a>
       <a href="#open">Open</a>
-      <a href="#map">Map</a>
+      <a href="#shelf">Shelf</a>
     </nav>
     <div class="rail__actions">
       <button class="rail__btn" id="themeToggle" type="button">Dark</button>
@@ -49,286 +51,233 @@
 
   <section class="hero">
     <!-- BLUEPRINT:PROVENANCE:START -->
-    <div class="hero__rune"><span>§</span> Build blueprint · inherits <code>paper-full-2.0.md</code> v3.0.173 (June 2026) · refreshed 2026-06-25 · commit fcf08f27</div>
+    <div class="hero__rune"><span>§</span> Build blueprint · inherits <code>paper-full-2.0.md</code> v3.0.261 (July 2026) · refreshed 2026-08-04 · commit 809d9e47</div>
     <!-- BLUEPRINT:PROVENANCE:END -->
     <h1 class="hero__h1">How to build the <span class="em">ideal AI tutor</span></h1>
-    <p class="hero__subtitle">An evidence-ordered build sequence — what to put in, in what order, what to leave out, and what no one has shown yet. Drawn entirely from this project's findings, with every step cited to the paper.</p>
+    <p class="hero__subtitle">A recipe: the shortest evidence-backed path from first principles to a working adaptive tutor. Every step points at the paper section that licenses it, the arc file that carries the working detail, and the atlas module that tells the story plainly — instead of restating them.</p>
     <div class="hero__lede">
       <div>
-        <p>The single highest-leverage move in building an AI tutor is a prompt-level one, and it is the same on every model tested: write the tutor's system prompt around an <em>intersubjective-pedagogy stance</em> — treat the learner as an active thinking subject and build on what <em>this</em> learner actually said before responding. That one change produces a very large, cross-model quality gain (judge-pooled <code>d ≈ 1.63</code>), and it works by <em>lifting the floor</em> — removing the catastrophic answers and making the tutor reliably adequate — not by raising the ceiling. Everything below is downstream of getting that right: add a critic where the model is weak enough to need it, match the scaffolding to the model, measure honestly, and resist the elaborations the data has already ruled out. Read this as a recipe, not a result; the results live in the paper.</p>
+        <p>The path, in one paragraph. Write the tutor's system prompt around an <em>intersubjective stance</em> — meet what this learner actually said — and stop at a three-part kernel, because stacking validated mechanisms adds nothing. Author the knowledge as a <em>world file</em> with a per-turn release schedule, and hand the tutor only the facts it cannot see. Cast both seats deliberately: a learner with a position to lose and states authored in per turn; a tutor model checked for the moves you need. Make adaptation criterial — a deterministic trigger, a typed move card at the detected moment, a licence where your own rules suppress the move — never advisory. Disclose state as legal moves, freshly computed, not as a scoreboard. Measure on judge-free outcome channels first, and tell the judge what the moment demanded before asking it to score. The rest of this page is those eight steps with their references.</p>
       </div>
     </div>
   </section>
 
   <div class="shell">
 
-    <!-- HOW TO READ ---------------------------------------------------------->
+    <!-- 00 · HOW TO READ ------------------------------------------------------>
     <section class="s" id="read">
       <div class="diag">
         <div class="ml"><h2 class="s__num">00<span class="glyph">·</span></h2></div>
         <div class="body">
           <p class="s__kicker">How to read this page</p>
-          <h2 class="s__h">A build recipe whose every step is <em>chipped</em> with how far the evidence goes.</h2>
-          <p>Each step carries a status chip. They are not decoration — they tell you how much weight a step can bear before it needs re-checking on your own setup.</p>
+          <h2 class="s__h">Do the step; follow the pointers when you need the why.</h2>
+          <p>Each step gives the instruction, one or two anchoring figures, and a <strong>Read</strong> line with three kinds of pointer:</p>
           <ul>
-            <li><span class="chip chip--moss"><span class="chip__dot"></span> supported</span> &nbsp;replicated across the three tested generation models and three independent judges.</li>
-            <li><span class="chip chip--ochre"><span class="chip__dot"></span> model-dependent · bounded</span> &nbsp;real, but holds only within conditions (a capability range, a single-turn setting, a narrow scope) you must respect.</li>
-            <li><span class="chip chip--brick"><span class="chip__dot"></span> research-only · skip · null</span> &nbsp;either experimental and not yet settled, or something the data shows is <em>not</em> worth building.</li>
-            <li><span class="chip chip--ink"><span class="chip__dot"></span> open</span> &nbsp;a genuine unknown — most of all, whether any of this helps a <em>human</em> learn.</li>
+            <li><strong>§</strong> — the section of <code data-ref="docs/research/paper-full-2.0.md">paper-full-2.0.md</code> that licenses the step. The paper is canonical; this page originates no claims.</li>
+            <li><strong>arc</strong> — the working file where the craft detail lives: build rules, failure modes, exact configs. Chief among them <code data-ref="HOW-TO-BUILD-A-TUTOR.md">HOW-TO-BUILD-A-TUTOR.md</code>, the live synthesis of the tutor-stub arc (the paper's §6.24 names it as such).</li>
+            <li><strong>atlas</strong> — the module of <code data-ref="docs/research/atlas/atlas.yaml">atlas.yaml</code> that tells the same story in plain language, with a claim-status label and a PDF per module (hub: <code>geist-atlas.html</code> on machinespirits.org).</li>
           </ul>
+          <p>Status chips mark how much weight a step bears: <span class="chip chip--moss"><span class="chip__dot"></span> supported</span> replicated across models and judges; <span class="chip chip--ochre"><span class="chip__dot"></span> bounded</span> real within stated conditions; <span class="chip chip--brick"><span class="chip__dot"></span> development-tier</span> proven on one bench, small n, simulated learners.</p>
           <div class="claim">
             <span class="claim__no">★</span>
-            <h3 class="claim__h">One caveat sits over the whole page <span class="chip chip--ink">read first</span></h3>
-            <div class="claim__body"><p>Every quality number here is an <em>LLM judge</em> scoring a tutor that talked to a <em>simulated</em> learner. The mechanisms are about what the tutor <em>produces</em>, which is observable whoever the learner is — but whether better tutor output causes better human learning is untested, and is the headline open question (§8.1).</p></div>
-          </div>
-          <div class="claim">
-            <span class="claim__no">✓</span>
-            <h3 class="claim__h">This recipe has now been run as one tutor <span class="chip chip--moss">§6.14</span></h3>
-            <div class="claim__body"><p>The blueprint's minimalism is no longer inference — it is a pre-registered result. The validated mechanisms were composed into one runnable tutor (blueprint cells 199–200) and tested against the strongest single-mechanism cells: the three-layer <em>kernel</em> (stance in the prompt, within-dialogue memory, register routing) matches the full stack on every measured surface, stacking neither helps nor harms, and the one suspected interaction cost dissolved at its pre-registered boundary (a frustration-subtype caveat is retained). The design rule the paper draws (§7.11): <em>instructions converge on the model's existing competence; only new machine-checkable signal accumulates.</em> Build the kernel; add machinery only against a demonstrated failure.</p></div>
+            <h3 class="claim__h">The caveat over the whole page <span class="chip chip--ink">read first</span></h3>
+            <div class="claim__body"><p>Every quality number here is an LLM judge or a deterministic checker scoring a tutor that talked to a <em>simulated</em> learner. The recipe builds a demonstrably better-behaved tutor; whether that causes better <em>human</em> learning is untested and is the standing open question. <strong>Read.</strong> §8.1–§8.2 · atlas <em>human-learning-translation</em>.</p></div>
           </div>
         </div>
         <div class="mr">
-          <p class="note note--moss"><span class="note__lbl">discipline</span> This surface originates no claims. Every figure is inherited from <code>paper-full-2.0.md</code> at the version stamped above, and the steps were audited against it before publishing.</p>
+          <p class="note note--moss"><span class="note__lbl">discipline</span> New empirical claims land in <code>paper-full-2.0.md</code> first; this surface only inherits. Audited against v3.0.261 before publishing.</p>
         </div>
       </div>
     </section>
 
-    <!-- 01 · PROMPT ---------------------------------------------------------->
-    <section class="s" id="prompt">
+    <!-- 01 · KERNEL ----------------------------------------------------------->
+    <section class="s" id="kernel">
       <div class="diag">
         <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">Start at the prompt — the strongest, model-invariant lever</p>
-          <h2 class="s__h">Before any architecture, get the <em>stance</em> into the system prompt.</h2>
-          <p>The first three steps are all prompt-level, and the first one is the whole ballgame. None of it needs a second agent.</p>
+          <p class="s__kicker">Steps 1–3 · the kernel</p>
+          <h2 class="s__h">One prompt, three parts, and a critic only where the model needs it.</h2>
 
           <div class="claim">
             <span class="claim__no">1</span>
-            <h3 class="claim__h">Write an intersubjective-pedagogy system prompt <span class="chip chip--moss"><span class="chip__dot"></span> supported</span></h3>
+            <h3 class="claim__h">Write the stance into the system prompt <span class="chip chip--moss"><span class="chip__dot"></span> supported</span></h3>
             <div class="claim__body">
-              <p><strong>Do.</strong> Instruct the tutor to treat the learner as an autonomous thinking subject and to engage the learner's specific contribution before responding. Encode three operational rules: (a) if the learner offers an interpretation, find what is valid in it before complicating or correcting; (b) if the learner is confused but engaged, pose a question rather than resolving prematurely; (c) if the learner rejects a suggestion or shows frustration, name what you got wrong and acknowledge the rupture before offering a corrected path. The reference text is Appendix&nbsp;A of the paper; the working implementation is <code>tutor-ego-recognition.md</code> and cells&nbsp;5–8.</p>
-              <p><strong>Why.</strong> This is the largest reliable effect in the entire study and it needs no extra agents: judge-pooled <code>d ≈ 1.63</code> (up to <code>1.84–1.92</code> per model, unanimous across all 9 judge&nbsp;×&nbsp;run cells), replicating across five content domains (<code>d = 1.45</code> math to <code>2.71</code> philosophy) and a peer-support coaching domain (<code>1.57</code>). It is <em>floor-lifting</em>: on DeepSeek the worst-response floor rises from <code>5.4</code> to about <code>22</code> while the ceiling moves only <code>52.5 → 71.0</code>, and the biggest gains land on the weakest baseline dimensions (productive difficulty <code>+1.33</code>, elicitation <code>+1.18</code>). It works without a superego.</p>
-              <p><strong>Caveat.</strong> This makes the tutor reliably <em>adequate</em>, not brilliant — do not promise excellent answers. The Sonnet judge runs ~20% hotter than the panel, so treat single-judge figures as an upper bound; the magnitude is a "very large" class, not a portable constant — re-measure per domain and model.</p>
+              <p><strong>Do.</strong> Copy the intersubjective-pedagogy prompt — treat the learner as a thinking subject; engage what <em>this</em> learner said before responding; find what is valid in a wrong interpretation; pose a question when the learner is confused but engaged; name your own misstep on rupture. The verbatim text is Appendix&nbsp;A of the paper and <code data-ref="prompts/tutor-ego-recognition.md">prompts/tutor-ego-recognition.md</code>. Ground it in any constructivist tradition you can write concretely (the traditions are interchangeable); never in drill/transmission framing, which scores <em>below</em> a generic baseline. Do not mandate empathy markers — within any condition, surface markers correlate negatively with quality.</p>
+              <p><strong>Anchor.</strong> The largest reliable effect in the programme: judge-pooled <code>d ≈ 1.63</code>, unanimous across three models and three judges, and it works by lifting the floor, not the ceiling.</p>
+              <p><strong>Read.</strong> §6.1 (the effect and its shape) · §8.3 (the pooled estimate and its judge band) · §7.9 (orientation, not vocabulary) · §7.10 (substance over costume) · Appendix A (prompt text) · atlas <em>recognition-calibration</em> · cells 5–8 in <code data-ref="config/tutor-agents.yaml">config/tutor-agents.yaml</code>.</p>
             </div>
           </div>
 
           <div class="claim">
             <span class="claim__no">2</span>
-            <h3 class="claim__h">Ground it in <em>any</em> constructivist tradition — never behaviourist <span class="chip chip--moss"><span class="chip__dot"></span> supported</span></h3>
+            <h3 class="claim__h">Stop at the three-part kernel <span class="chip chip--moss"><span class="chip__dot"></span> supported</span></h3>
             <div class="claim__body">
-              <p><strong>Do.</strong> Author the stance against whichever named constructivist theory you can write most concretely — Vygotsky's zone of proximal development, Piaget's assimilation/accommodation, Kapur's productive failure, Chi's ICAP, VanLehn's step-level scaffolding, Graesser's affective tutoring. They are interchangeable. Do <em>not</em> build it around drill / reinforcement / mastery-gating / transmission framing, and do not spend effort chasing Hegelian "recognition" vocabulary as if the words were the lever.</p>
-              <p><strong>Why.</strong> A length-matched constructivist prompt with all recognition wording stripped out scores indistinguishably from the recognition prompt (within-family pooled <code>d = 0.14–0.19</code>; A10 <code>0.17</code>, A10b <code>0.15</code>; below the pre-registered <code>|d| &lt; 0.2</code> threshold). The active ingredient is the <em>orientation</em>, not the vocabulary. A length-matched behaviourist prompt scores <code>d = 0.89</code> <em>below</em> a generic baseline — the between-family gap (<code>d = 1.38</code>) is roughly nine times the within-family residual. A careful prompt in the wrong family is worse than a short generic one.</p>
-              <p><strong>Caveat.</strong> The behaviourist backfire is the strong-model statement; on a weaker model it softened to merely inert (<code>d = −0.02</code>). Safe floor: the wrong family is "at best inert." Cite the pooled within-family band, not a single judge's reading.</p>
+              <p><strong>Do.</strong> Build exactly: the stance (step 1) + within-dialogue memory + register routing. Add further machinery only against a demonstrated, priced failure. The pre-registered composition test (cells 199–200) found the full mechanism stack never beats this kernel on any measured surface; the design rule is that repeated instructions converge on competence the model already has, and only new machine-checkable signal accumulates.</p>
+              <p><strong>Read.</strong> §6.14 (the composition gate) · §7.11 (why sub-additive; the cue-and-right codicil) · pre-registration <code data-ref="notes/2026-07-02-blueprint-composition-plan.md">notes/2026-07-02-blueprint-composition-plan.md</code> · module registry <code data-ref="config/tutor-blueprint.yaml">config/tutor-blueprint.yaml</code> · atlas <em>composition-small-kernel</em> · runnable arms <code>cell_199_blueprint_kernel_verified</code> / <code>cell_200_blueprint_full_verified</code>.</p>
             </div>
           </div>
 
           <div class="claim">
             <span class="claim__no">3</span>
-            <h3 class="claim__h">Let the stance drive real moves; never hard-mandate empathy markers <span class="chip chip--ochre"><span class="chip__dot"></span> model-dependent</span></h3>
+            <h3 class="claim__h">Size the critic and the scaffolding to the model <span class="chip chip--ochre"><span class="chip__dot"></span> model-dependent</span></h3>
             <div class="claim__body">
-              <p><strong>Do.</strong> Have the tutor genuinely diagnose where the learner's thinking is and hand initiative back — often, in an open reply, via a question. Log question-marks-per-turn as a cheap live proxy that the stance is firing. Do <em>not</em> add rules like "always paraphrase the learner" or "always validate," and do not force the final turn of a dialogue to end on a question.</p>
-              <p><strong>Why.</strong> A calibrated tutor asks far more questions (<code>5.4×</code> more, pooled <code>0.12 → 0.67</code> per turn; up to <code>19.8×</code> on the weakest model), and question frequency mediates 42% of the first-turn and 91% of the holistic effect (Sobel <code>p &lt; .001</code>). But you cannot fake it: within any one prompt condition, surface acknowledgement markers correlate <em>negatively</em> with quality (<code>r = −0.18</code> to <code>−0.38</code>) — verbose empathy shows up more in weaker answers. The judge rewards substance, not costume.</p>
-              <p><strong>Caveat.</strong> "End on a question" is a within-cell mediator only in single-turn replies (5/5 tested); in multi-turn dialogue it reverses sign (4/5), because ending the last turn on a question reads as leaving things unresolved. Question-asking is one channel of the stance, not the stance itself.</p>
+              <p><strong>Do.</strong> On a weak or cheap model, add the critic loop — ego drafts, superego reviews reject-by-default, ego revises with final authority — and heavier step-by-step scaffolding. On a capable model, ship the stance single-agent and keep prompts light: the critic's benefit collapses once the stance is in (base deltas <code>+9</code> to <code>+27</code> points across the tested models; near zero under the stance on strong models, <code>+12.3</code> only on the weakest), and heavy prompts tuned on a weak model actively harm a strong one.</p>
+              <p><strong>Read.</strong> §6.2 (what the critic catches) · §6.4 (universal substitution) · §6.6, §8.3 (model dependence and its limits) · §7.8 (scaffolding inverted-U; destructive transfer) · atlas <em>superego-error-correction</em>, <em>model-dependence</em> · loop code <code data-ref="tutor-core/services/tutorDialogueEngine.js">tutorDialogueEngine.js</code>, mirrored in <code data-ref="services/learnerTutorInteractionEngine.js">learnerTutorInteractionEngine.js</code>.</p>
             </div>
           </div>
         </div>
         <div class="mr">
-          <p class="note note--moss"><span class="note__lbl">§6.1.1–.2 · §6.1.5–.6</span> Calibration: the recognition effect, floor-lifting pattern, and cross-domain replication.</p>
-          <p class="note"><span class="note__lbl">§7.9 · A10/A10b</span> The matched-specificity family control — orientation, not vocabulary.</p>
-          <p class="note"><span class="note__lbl">§7.10 · §6.1.8</span> Question-asking as mediator; the negative marker correlation (substance over costume).</p>
-          <p class="note note--ink"><span class="note__lbl">Appendix A</span> The recognition ego &amp; superego prompt text, verbatim.</p>
+          <p class="note note--moss"><span class="note__lbl">fast path</span> Steps 1–2 alone give you the validated tutor. Steps 4–8 are what make it <em>adaptive</em> and <em>measurable</em>.</p>
+          <p class="note"><span class="note__lbl">run it</span> <code>node scripts/eval-cli.js run --profiles cell_199_blueprint_kernel_verified --runs 1</code> on the CLI-bridge stack.</p>
         </div>
       </div>
     </section>
 
-    <!-- 02 · CRITIC ---------------------------------------------------------->
-    <section class="s" id="critic">
+    <!-- 02 · WORLD ------------------------------------------------------------>
+    <section class="s" id="world">
       <div class="diag">
         <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">Add a critic — then know when to remove it</p>
-          <h2 class="s__h">A second agent that the first can refuse, used only where the model needs it.</h2>
-          <p>The error-correction architecture is real and worth building — but on a capable model a good prompt makes it nearly redundant. Treat the prompt and the critic as <em>substitutes</em>, not an additive stack.</p>
+          <p class="s__kicker">Step 4 · the world</p>
+          <h2 class="s__h">Author the knowledge as a world; hand facts over per turn.</h2>
 
           <div class="claim">
             <span class="claim__no">4</span>
-            <h3 class="claim__h">Build ego → superego → ego-revision, with the ego as final author <span class="chip chip--moss"><span class="chip__dot"></span> supported</span></h3>
+            <h3 class="claim__h">Put the material in a world file with a release schedule and a due line <span class="chip chip--brick"><span class="chip__dot"></span> development-tier</span></h3>
             <div class="claim__body">
-              <p><strong>Do.</strong> Run one tutor turn as: the ego drafts; a bounded review loop (cap ≈ 2 rounds) where a superego returns <code>{approved, interventionType, feedback, suggestedChanges}</code>; on non-approval the ego revises. Give the <em>ego</em> final authority — the superego never writes learner-facing text, and even on "approved with suggestions" the ego does one last incorporation pass. Make the superego <em>reject-by-default</em> against named criteria (specificity, evidence, appropriateness, tone). Add two early-exit valves: approval, and a similarity-convergence check that stops the loop when a revision is ≥ ~0.8 similar to the prior draft. Mirror the same shape on the learner side.</p>
-              <p><strong>Why.</strong> A critic catches pedagogical failures the tutor alone misses: under a bare prompt the superego adds <code>+9.0</code> (DeepSeek), <code>+15.0</code> (Haiku), <code>+26.9</code> (Gemini&nbsp;Flash) points, with an 86.7% rejection rate and ~1.82 revision rounds per turn. The load-bearing part is genuine revision-<em>receptivity</em>, not just having a critic — which is why reject-by-default and the ego's retained authority matter.</p>
-              <p><strong>Caveat.</strong> "We added a critic" is not error correction — measure rejection rate and round counts and confirm revisions change strategy. The cost is real: a 10-turn multi-agent dialogue is ~225,000 input tokens over 64 API calls.</p>
-            </div>
-          </div>
-
-          <div class="claim">
-            <span class="claim__no">5</span>
-            <h3 class="claim__h">Pick one primary mechanism by model capability <span class="chip chip--ochre"><span class="chip__dot"></span> model-dependent</span></h3>
-            <div class="claim__body">
-              <p><strong>Do.</strong> On a capable model (roughly Haiku-4.5-class or above), ship single-agent recognition and <em>drop</em> the superego to save its latency and tokens. On a weaker or cheaper model — or for emotionally intense moments — keep it.</p>
-              <p><strong>Why.</strong> Once a strong recognition prompt is in place, the critic's base-prompt benefit collapses: the architecture delta goes from <code>+9.0 / +15.0 / +26.9</code> (base) to <code>+0.2 / −0.7 / +12.3</code> (recognition). A dedicated isolation run shows the superego adds <code>d = 1.13</code> under base but <code>d = 0.08</code> (n.s.) under recognition — calibration pre-empts ~88% of the critic's contribution, with a stable 15–17% additivity deficit. The residual stays large only on the weakest model (Gemini&nbsp;Flash <code>+12.3</code>), where base quality is low enough that calibration leaves failures uncorrected.</p>
-              <p><strong>Caveat.</strong> This is calibrated on three at-least-moderately-capable models; it is robust in <em>direction</em> but judge-sensitive in magnitude. Re-run the substitution check whenever you change the base model — the very-weak and frontier tiers are untested.</p>
+              <p><strong>Do.</strong> Write what is to be taught as a world: facts, their dependency structure, and a per-turn schedule of what opens when. Each turn, hand the tutor a <em>due line</em> — the newly opened finding, release decision left to the speaker, nothing on quiet turns. Hand over only what the model cannot see; everything inferable from the visible transcript it already infers. And leave the refutation of the learner's fallback <em>off</em> the schedule — if the schedule answers every objection on time, you are measuring the schedule, not the tutor.</p>
+              <p><strong>Anchor.</strong> Instrumentation pricing found exactly one advisory block pays on a plan-blind reading, and one sentence of hidden state carries its whole effect; in the misconception pair, moving one clause of one clue changed the close rate more than any tutoring behaviour observed in the arc.</p>
+              <p><strong>Read.</strong> §6.23 (the pricing and the due-line control) · §6.24 (the misconception pair) · arc <code data-ref="HOW-TO-BUILD-A-TUTOR.md">HOW-TO-BUILD-A-TUTOR.md</code> §1 · harness doc <code data-ref="docs/tutor-instrumentation-ab.md">docs/tutor-instrumentation-ab.md</code> · authoring guide <code data-ref="docs/tutor-stub-prompt-and-world-authoring.md">docs/tutor-stub-prompt-and-world-authoring.md</code> · example pair <code data-ref="config/drama-derivation/world-033-alder-row-redoubt.yaml">world-032/033-alder-row</code>.</p>
             </div>
           </div>
         </div>
         <div class="mr">
-          <p class="note note--moss"><span class="note__lbl">§3.2 · §6.2.1–.2</span> Mechanism 2 (error correction): superego benefit under base, rejection &amp; revision rates.</p>
-          <p class="note note--ochre"><span class="note__lbl">§6.4.1–.2 · §9</span> "Universal substitution" — the critic's value collapses under recognition, with a model-dependent residual.</p>
-          <p class="note"><span class="note__lbl">code</span> <code>tutorDialogueEngine.js</code> — the loop, the reject-default rubric, the ego-final incorporation pass.</p>
+          <p class="note note--brick"><span class="note__lbl">the law</span> §6.24 states the arc's one law: information placement and timing — the learner's state, the schedule's time — spent on whichever role needs it, at the turn it applies. The model plays; the harness keeps time.</p>
         </div>
       </div>
     </section>
 
-    <!-- 03 · FIT ------------------------------------------------------------->
-    <section class="s" id="fit">
+    <!-- 03 · CAST ------------------------------------------------------------->
+    <section class="s" id="cast">
       <div class="diag">
         <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">Fit the system to the model — and set the right expectation</p>
-          <h2 class="s__h">Scaffolding is an inverted U; the win lands on the tutor, not (usually) the learner.</h2>
+          <p class="s__kicker">Step 5 · the cast and the harness</p>
+          <h2 class="s__h">Cast both seats deliberately; keep the harness a timekeeper, never a co-author.</h2>
+
+          <div class="claim">
+            <span class="claim__no">5</span>
+            <h3 class="claim__h">Cast the learner with stakes, the tutor for its moves, and check what actually ships <span class="chip chip--brick"><span class="chip__dot"></span> development-tier</span></h3>
+            <div class="claim__body">
+              <p><strong>Do.</strong> Four rules, one per lock. (a) <em>Learner:</em> a one-paragraph character brief with a position to lose, a vernacular, and concessions that cost — then author affective states <em>in</em> per turn via a stress schedule (typed state, in-fiction cause, verbatim directive, adjudicated right repair); never try to read states out of transcripts, there is nothing there to tag. (b) <em>Tutor:</em> a model's repertoire is a property you test for, not a target you prompt toward — probe the family for the moves your bench needs before building mechanism around their absence. (c) <em>Guards:</em> binary for contracts (evidence leaks, clue bookkeeping, closure), advisory for style and progression; never enforce character at the mouth, and never let the fallback composer answer the pressured turns — that is where adaptation lives or dies. (d) <em>Delivery:</em> verify every per-turn instruction in the prompt that actually shipped, retries included — the arc's hardest "family boundary" dissolved when a retry path was found silently dropping the conduct card.</p>
+              <p><strong>Read.</strong> §6.24 (the four locks; Phases S/H/L) · arc <code data-ref="HOW-TO-BUILD-A-TUTOR.md">HOW-TO-BUILD-A-TUTOR.md</code> §§2–4 and "The wall comes down" · guard catalog <code data-ref="docs/tutor-stub-guard-catalog.md">docs/tutor-stub-guard-catalog.md</code> · stress-schedule gold <code data-ref="config/drama-derivation/stress/world-033-stress-schedule.yaml">world-033-stress-schedule.yaml</code> · atlas <em>ontology-state-interior</em> (why richer learner models fail), <em>advice-versus-enforcement</em>.</p>
+            </div>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">two natures</span> The harness's timekeeping half (schedule, due line, pacing, closure reader, leak guard) is the entire value; its enforcement half (costume vetoes, progression vetoes, the composer's mouth) subtracted value everywhere measured — <code>HOW-TO-BUILD-A-TUTOR.md</code>, "Is the harness worth having?".</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 · ADAPT ------------------------------------------------------------>
+    <section class="s" id="adapt">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Steps 6–7 · adaptation</p>
+          <h2 class="s__h">Hear the state, hand the move, at the turn — and disclose state as legal moves.</h2>
 
           <div class="claim">
             <span class="claim__no">6</span>
-            <h3 class="claim__h">Match scaffolding weight to model capability <span class="chip chip--ochre"><span class="chip__dot"></span> model-dependent</span></h3>
+            <h3 class="claim__h">Make adaptation criterial: trigger + typed card + licence <span class="chip chip--brick"><span class="chip__dot"></span> development-tier</span></h3>
             <div class="claim__body">
-              <p><strong>Do.</strong> Author two prompt tiers and select by capability. <em>Heavy</em> (weak models): explicit step-by-step elicitation rules, diagnostic-probe algorithms, anti-patterns, worked examples. <em>Light</em> (strong models): a terse identity, one or two heuristics, and tonal permission to use abilities the model already has. Architect the prompt as a function of <code>model → tier</code>, swappable at deploy time; co-design the tutor and learner-role prompts together rather than editing one side alone.</p>
-              <p><strong>Why.</strong> The peak of the scaffolding-vs-quality curve depends on the model. A weak 9B model more than doubled on a hard scenario with ~300 lines of rules (<code>35.0 → 75.0</code>, +114%); the <em>same</em> heavy treatment degraded a strong model (Haiku <code>90.0 → 73–85</code>), which only improved with a light ~60-line edit (to <code>95.0</code>). Transfer is asymmetrically destructive: a heavy prompt tuned on the weak model regressed the strong one to <code>62.2</code> — <code>27.8</code> points <em>below</em> its own untuned baseline (a "cognitive straitjacket").</p>
-              <p><strong>Caveat.</strong> Small-N, single-scenario, two-model evidence — a clear direction, not a benchmarked law. The capability threshold is bracketed (between a 9B model and Haiku 4.5), not point-located. An automatic capability-keyed selector is motivated but unproven engineering. This is <em>prompt</em>-level scaffolding — do not confuse it with the learner-profiling "prosthesis" (see Skip), which does not help weak models.</p>
+              <p><strong>Do.</strong> Do not ask the tutor to "be adaptive," and do not bet on it warming up across a session — within-session improvement is a clean, well-powered null (all slopes <code>d ≤ 0.15</code>, powered for <code>0.27</code>); advisory steering makes conduct <em>worse</em>. Instead: (a) a deterministic <em>trigger</em> classifies the learner's turn (pressure states by pattern + cascade classifier; quiet states — boredom, confusion, quiet defiance — by their own typed detector, since they carry no pressure markers); (b) at a detected moment, inject a <em>typed move card</em> naming the move that state calls for, per turn, permission-shaped; (c) where a standing safety rule suppresses a needed move, carve the exception into the rule itself as a <em>licence</em> — cue and right are separately zero and work only paired. Timing and typing are separately necessary: a typed card at a detected moment works; an untyped card at the right moment fails; a typed card at the wrong moment hurts.</p>
+              <p><strong>Anchor.</strong> The pre-registered claim gate passed on move cards (right-repairs 15/29 vs the never-adapting baseline's 10/24) after failing on temperament cards; replicated across a second world, persona, tagger family, and tutor family; the crossed experiment then showed state-matched moves are <em>causal</em> for conduct (right card 6/6 and 5/6 where the wrong card manufactures the characteristic error).</p>
+              <p><strong>Read.</strong> §6.3 (the slope null — front-load turn 1) · §6.24 (claim gate, Phases Q/R, the crossed experiment) · §7.11 (cue-and-right codicil) · §7.12 (the consolidated boundary map: advice fails, structure works) · arc <code data-ref="HOW-TO-BUILD-A-TUTOR.md">HOW-TO-BUILD-A-TUTOR.md</code> (the playbook, the admission rule) · plan <code data-ref="ADAPTATION-PLAN-3.0.md">ADAPTATION-PLAN-3.0.md</code> · code <code data-ref="services/tutorStubMannerSwitch.js">tutorStubMannerSwitch.js</code>, <code data-ref="services/tutorStubQuietDetector.js">tutorStubQuietDetector.js</code> · atlas <em>adaptive-null</em>, <em>adaptation-four-locks</em>.</p>
             </div>
           </div>
 
           <div class="claim">
             <span class="claim__no">7</span>
-            <h3 class="claim__h">You are building a better <em>tutor</em>; learner gains appear mainly on weak models <span class="chip chip--ochre"><span class="chip__dot"></span> bounded</span></h3>
+            <h3 class="claim__h">Disclose state action-shaped and freshly conditioned <span class="chip chip--brick"><span class="chip__dot"></span> development-tier</span></h3>
             <div class="claim__body">
-              <p><strong>Do.</strong> Instrument and reward tutor-side behaviour (elicitation, question-asking, building on input). Do not use a short-window simulated-learner score as your headline metric. If learner benefit is the goal, expect it mainly on weak/cheap models, and validate with real, capacity-limited novices on understanding and transfer — not satisfaction.</p>
-              <p><strong>Why.</strong> Both supported mechanisms act on tutor <em>production</em>, not learner <em>reception</em>. On strong models the tutor effect is 7–12× the learner effect (tutor <code>d ≈ 1.85</code> vs learner <code>0.16–0.25</code>), and dialogue quality tracks the tutor almost perfectly (<code>r &gt; 0.99</code>) — the recognition prompt is only in the tutor's context. But on a weaker model (Gemini&nbsp;Flash) recognition produces a <em>large</em> learner effect (<code>d ≈ 1.2</code>, ratio 1.6:1), because a weak base tutor produces output so poor the learner has nothing to engage until recognition rescues it. That is the strongest signal real learners may benefit.</p>
-              <p><strong>Caveat.</strong> About half the 7–12× ratio is inflated by the content-weighted rubric (the holistic gap is ~56% smaller), though the direction survives. Do not claim short-session learning gains from a synthetic-learner uplift on a strong model.</p>
+              <p><strong>Do.</strong> When the harness owns ground truth the tutor cannot see, disclose it as the <em>legality projection</em> — what may I do right now — recomputed at every read. Never a raw scoreboard (it loses to playing blind: the model's own re-derivation wins the argument against a state dump), and never persisted advice (state-shaped memory gets no uptake; action-shaped memory gets uptake <em>including when stale</em>, which is worse).</p>
+              <p><strong>Read.</strong> §6.15 (the adversarial-game result: format, not information, is the bottleneck) · pre-registration and results <code data-ref="AGON-GAME-PLAN.md">AGON-GAME-PLAN.md</code> · referee and arms <code data-ref="services/agon">services/agon/</code> · the same boundary from the speaking seat: §6.23's due line.</p>
             </div>
           </div>
         </div>
         <div class="mr">
-          <p class="note note--ochre"><span class="note__lbl">§7.8.1 · §7.8.3–.4</span> The prosthesis-to-straitjacket inversion and the destructive cross-model transfer.</p>
-          <p class="note note--moss"><span class="note__lbl">§6.5.1–.2 · §7.2</span> The tutor-learner asymmetry, and where it narrows on weak models.</p>
-          <p class="note note--ink"><span class="note__lbl">§8.1 · §9</span> Human-learner validation is the outstanding test.</p>
+          <p class="note note--brick"><span class="note__lbl">§7.12</span> The one-page version of where adaptation can live: every rung that delivers <em>information</em> fails to change behaviour; deterministic triggers + non-inferable signal + structural delivery is the shape of everything that survived.</p>
         </div>
       </div>
     </section>
 
-    <!-- 04 · MEASURE --------------------------------------------------------->
+    <!-- 05 · MEASURE ----------------------------------------------------------->
     <section class="s" id="measure">
-      <div class="diag">
-        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
-        <div class="body">
-          <p class="s__kicker">Build the observability spine</p>
-          <h2 class="s__h">A per-turn rubric, symmetric traces, and a multi-judge panel.</h2>
-
-          <div class="claim">
-            <span class="claim__no">8</span>
-            <h3 class="claim__h">Score every turn; log every step symmetrically; never trust one judge <span class="chip chip--moss"><span class="chip__dot"></span> supported</span></h3>
-            <div class="claim__body">
-              <p><strong>Do.</strong> Score each tutor turn with a rubric whose dimensions map onto the prompt's rules (the v2.2 rubric: pedagogical craft 0.20; perception, elicitation, adaptive responsiveness, recognition quality 0.15 each; productive difficulty 0.10; epistemic integrity and content accuracy 0.05 each). Emit a structured trace for every step with symmetric labels on both sides (tutor <code>context_input → ego/generate → superego/review → final_output</code>, mirrored for the learner). Use a pre-registered multi-judge panel and report per-judge effect sizes.</p>
-              <p><strong>Why.</strong> Mapping dimension names to prompt rules (Recognition Rule → <code>recognition_quality</code>; Productive Struggle → <code>productive_difficulty</code>) is what lets you verify the prompt does what it claims. All quality numbers are LLM-as-judge, which can reward surface markers and disagree in magnitude — direction is unanimous across three judges but means differ (Sonnet <code>1.88</code>, GPT-5.4 <code>1.56</code>, Gemini&nbsp;Pro <code>1.44</code>). A panel with per-judge reporting stops you optimising toward the judge that rewards empathy-as-costume.</p>
-              <p><strong>Caveat.</strong> Despite eight named dimensions, one factor explains ~80.7% of variance (only content accuracy separates as a second facet). Treat the rubric as "overall quality + a content-accuracy modifier," not a panel of independently tunable skills.</p>
-            </div>
-          </div>
-        </div>
-        <div class="mr">
-          <p class="note note--moss"><span class="note__lbl">§5.2.2</span> The v2.2 rubric, dimensions and weights.</p>
-          <p class="note"><span class="note__lbl">§8.2 · §8.3</span> LLM-as-judge limits; the cross-judge magnitude split.</p>
-          <p class="note note--ink"><span class="note__lbl">code</span> <code>evaluation-rubric.yaml</code>; symmetric trace labels in the interaction engines.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 05 · ADAPT ----------------------------------------------------------->
-    <section class="s" id="adapt">
       <div class="diag">
         <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">Adaptation — front-load turn 1; govern conduct with checks, not advice</p>
-          <h2 class="s__h">The tutor does not "warm up." Get the first turn right.</h2>
+          <p class="s__kicker">Step 8 · measurement</p>
+          <h2 class="s__h">Measure on channels the defaults cannot win.</h2>
 
           <div class="claim">
-            <span class="claim__no">9</span>
-            <h3 class="claim__h">Spend on turn 1; for a real adaptive rule, use a checkable trigger at the point of action <span class="chip chip--ochre"><span class="chip__dot"></span> bounded</span></h3>
+            <span class="claim__no">8</span>
+            <h3 class="claim__h">Judge-free outcomes first; disclose the moment to any judge you keep <span class="chip chip--ochre"><span class="chip__dot"></span> bounded</span></h3>
             <div class="claim__body">
-              <p><strong>Do.</strong> Get the first turn right rather than betting the tutor improves across the session. If you have a specific, checkable conduct rule (change tactic when the learner stalls; re-teach a forgotten item), encode it as a criterial, arithmetic trigger evaluated each turn with authority to revise the draft in place — e.g. "same rhetorical device on the last two turns and drafting a third → force a change this turn," or "if the learner names a loss, re-teach it next turn before any new content." Relocate the check into the tutor's own superego. Do <em>not</em> rely on soft guidance ("be adaptive," "pace yourself").</p>
-              <p><strong>Why.</strong> Within a short session, adaptive responsiveness is a clean, well-powered <em>null</em>: recognition raises the level the tutor starts at, not the rate it improves (tutor slope <code>d = 0.03</code>, N=432 with 80% power for <code>d ≥ 0.27</code>; all factors <code>d ≤ 0.15</code>). One exploratory 10-turn effect failed pre-registered replication, and a memory-augmented self-rewriting critic also produced a slope null. By contrast, dispositional advice backfires (advisory notes worsened device lock-in to 94% vs 81% control), while a criterial within-turn watcher broke 14/14 due interventions with 0 mismatches over 82 turns. Gains come from new checkable structure at the point of action.</p>
-              <p><strong>Caveat.</strong> A conduct watcher is a <em>ceiling on degenerate repetition</em>, not a source of invention — the disposition still lives in the base policy. All conduct-governance results are <code>n = 1</code>-per-arm descriptive verdicts on a single formal-proof drama stack, with formal (not human-learning) success criteria.</p>
+              <p><strong>Do.</strong> (a) Score outcomes deterministically where possible: machine-checked closure, keyed demonstrations, planted-repair hits — and expect saturation with a diligent simulated learner (a bare frontier tutor closed 19/19 solvable worlds), so put outcome variance in the <em>learner</em>. (b) Keep a rubric panel for quality, but multi-judge, cross-family, per-judge reported — and know its construction: turn-local rubrics score a reply as a timeless artifact and structurally under-measure adaptation. One added sentence naming the learner's state roughly doubles judge–gold agreement; use rubric scores to detect template mass, never to compare manners. (c) Log symmetric per-step traces on both seats so every mechanism claim can be traced, and pin provenance hashes.</p>
+              <p><strong>Read.</strong> §5.2 (rubric v2.2/v3.0), §4.3–§4.5 (traces, provenance, scoring) · §6.24 (lock four + the disclosure result) · §6.23 (the outcome-saturation pilot) · §8.2 (judge limits) · arc <code data-ref="HOW-TO-BUILD-A-TUTOR.md">HOW-TO-BUILD-A-TUTOR.md</code> §§5–5a · atlas <em>rubrics-as-instruments</em>, <em>provable-discourse</em> · pipeline <code>node scripts/eval-cli.js evaluate &lt;runId&gt;</code> with <code data-ref="config/evaluation-rubric.yaml">evaluation-rubric.yaml</code>.</p>
             </div>
           </div>
         </div>
         <div class="mr">
-          <p class="note note--brick"><span class="note__lbl">§6.3.1–.2 · A16</span> The adaptive-responsiveness null and its failed replication.</p>
-          <p class="note note--ochre"><span class="note__lbl">§6.13.3–.4 · §6.13.9</span> Advice backfires; a criterial watcher and a one-step repair rule hold.</p>
+          <p class="note note--moss"><span class="note__lbl">three self-preferences</span> The judge prefers its family's prose; guards prefer their calibration family's shapes; the model prefers its trained role. Control all three or the bench reads the uncontrolled two as quality — <code>HOW-TO-BUILD-A-TUTOR.md</code> §5.</p>
         </div>
       </div>
     </section>
 
-    <!-- 06 · FRONTIER -------------------------------------------------------->
-    <section class="s" id="frontier">
+    <!-- 06 · SKIP -------------------------------------------------------------->
+    <section class="s" id="skip">
       <div class="diag">
         <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">The frontier — promising, not settled</p>
-          <h2 class="s__h">Two architectures worth a prototype, clearly flagged research-only.</h2>
-
-          <div class="claim">
-            <span class="claim__no">10</span>
-            <h3 class="claim__h">Optionally prototype id-director charisma and conduct-governance guards <span class="chip chip--brick"><span class="chip__dot"></span> research-only</span></h3>
-            <div class="claim__body">
-              <p><strong>Do.</strong> For anti-routinising / charismatic teaching, prototype per-turn persona re-authoring (a back-stage "id" rewrites the tutor's whole prompt each turn) — but pick <em>one</em> specialisation (recognition or charisma; the maximally-both tutor is not achievable) and give the persona author ~600–1200 tokens, never terse. For reliable pacing in a structured curriculum, ship one robust obligation-tracking baseline (hidden state + an explicit unmet-prerequisite "proof-debt" graph), match the pacing signal to the task's structure, and keep conduct / ownership overlays as audit tools, not runtime authorities. Add a <em>state-scramble placebo</em> to your harness (permute the agent's internal state estimate; confirm performance collapses) to prove an "adaptive" controller actually depends on its state.</p>
-              <p><strong>Why.</strong> The id-director topology yields clean design points (a recognition-tuned id wins recognition quality at <code>80.6</code>; a charisma-tuned id wins charisma at <code>71.0</code>; terse 200–400-token prompts fail both), and its charismatic lift is scenario-conditional (a 57-point gap on hard disclosures vs 4 on sympathetic ones). For conduct, a typed action-contract controller preserved correct strategy shifts (10/10) while raising judged quality (<code>+21.3</code> tutor last-turn; <code>+11.7</code> composite quality) on a held-out simulated suite, and the state-scramble placebo collapsed shift to 0/6 and 0/8 — proving genuine state-dependence. A static hidden+proof-debt baseline reached 91.7% world-mean success, matching the oracle, where a clever channel selector reached 75%.</p>
-              <p><strong>Caveat.</strong> The id-director family is single-judge, single model-pair, outside the validated core. Every conduct-governance positive is simulated, single-stack, <code>n = 1</code>-per-arm, formally verified, with the destination fixed by the release schedule — none is evidence of human learning. There is provably <em>no</em> single-channel pacing guard safe across problem shapes, and intervention frequency does not predict success. Present all of this as experimental, not best practice.</p>
-            </div>
-          </div>
-        </div>
-        <div class="mr">
-          <p class="note note--brick"><span class="note__lbl">§6.7 · §8.9</span> Id-director charisma family — scenario-conditional, scoped.</p>
-          <p class="note note--brick"><span class="note__lbl">§6.12.3 · §6.13.14–.15</span> Typed action contracts; the proof-debt baseline; no geometry-universal guard.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 07 · SKIP ------------------------------------------------------------>
-    <section class="s" id="skip">
-      <div class="diag">
-        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
-        <div class="body">
           <p class="s__kicker">The skip list</p>
-          <h2 class="s__h">What the data says is <em>not</em> worth building.</h2>
-          <p>A blueprint earns its keep as much by what it leaves out. Each of these is a documented null or a backfire — listed so the budget goes elsewhere.</p>
+          <h2 class="s__h">Documented nulls and backfires — spend the budget elsewhere.</h2>
           <ul>
-            <li><strong>A multi-layer "Writing Pad" episodic memory.</strong> A controlled ablation flipped it off and the recognition effect did not shrink — if anything it was larger without the pad (<code>d = 0.56</code> on vs <code>0.74</code> off; pad effect <code>+3.2</code> in the wrong direction). The orientation lives in the prompt, not a memory architecture. <span class="chip chip--brick"><span class="chip__dot"></span> §6.6.9</span></li>
-            <li><strong>A bidirectional learner-profiling agent ("cognitive prosthesis").</strong> Tested across six models over a ~26-point capability range: neutral on exactly one (<code>d = 0.05</code>) and substantially harmful on the other five (<code>d = −1.29</code> to <code>−2.59</code>). Two equally weak models gave opposite results — low capability does not predict benefit. <span class="chip chip--brick"><span class="chip__dot"></span> §6.6.10</span></li>
-            <li><strong>Any feature whose value is the tutor visibly "learning the student" across a 3–5 turn session.</strong> Adaptive responsiveness is a clean, well-powered null (slope <code>d = 0.03</code>). Recognition sets the level, not the rate. Get turn 1 right instead. <span class="chip chip--brick"><span class="chip__dot"></span> §6.3.2</span></li>
-            <li><strong>Explicit Theory-of-Mind modules or richer learner-state schemas on a capable base model.</strong> Across multiple instruments these added no discrimination, and a richer schema sometimes did slightly worse. A capable model already infers learner state from context; bolting on a module re-encodes what it has. <span class="chip chip--brick"><span class="chip__dot"></span> §6.8.5–.6 · §6.10</span></li>
-            <li><strong>Hard-coded intersubjective surface markers</strong> (mandated paraphrase, "your X," "always validate") as a cheap stand-in for the stance. Within every condition, more markers correlate with <em>worse</em> answers (<code>r = −0.18</code> to <code>−0.38</code>). The judge rewards substance, not costume. <span class="chip chip--brick"><span class="chip__dot"></span> §6.1.8 · §7.10</span></li>
-            <li><strong>Product logic that branches on "genuinely reasoned" vs "just complied," read from text.</strong> A pre-registered gate failed decisively (Cohen's <code>κ = 0.084</code> vs a ≥0.60 bar); two careful annotators read the same revisions oppositely, and the label reduced to a length cue. It needs a counterfactual replay, not a finer reading. <span class="chip chip--brick"><span class="chip__dot"></span> §6.12</span></li>
-            <li><strong>An LLM "aha-moment" detector used as a proxy for whether a student learned.</strong> A dramatic-recognition instrument over-attributed recognition roughly threefold — fooled by the <em>vocabulary</em> of a breakthrough, not the fact of one. It scores the look of learning, not learning. <span class="chip chip--brick"><span class="chip__dot"></span> §9 sidecar</span></li>
-            <li><strong>Stacking the prompt and the critic and budgeting for additive gains on a capable model.</strong> They are substitutes: under a strong recognition prompt the critic is essentially neutral (Haiku <code>−0.7</code> ≈ zero; DeepSeek <code>+0.2</code>). You mostly pay tokens and latency to rewrite already-good output. <span class="chip chip--brick"><span class="chip__dot"></span> §6.4.1–.2</span></li>
+            <li><strong>Multi-layer episodic memory ("Writing Pad")</strong> — controlled ablation: not load-bearing; the stance lives in the prompt. <span class="chip chip--brick"><span class="chip__dot"></span> §6.6.9</span></li>
+            <li><strong>Learner-profiling prosthesis</strong> — six models: neutral once, harmful five times; capability does not predict benefit. <span class="chip chip--brick"><span class="chip__dot"></span> §6.6.10</span></li>
+            <li><strong>Theory-of-mind modules and richer learner-state schemas</strong> — no discrimination added on a capable model; richer sometimes worse. <span class="chip chip--brick"><span class="chip__dot"></span> §6.8.5–.6 · §6.10</span></li>
+            <li><strong>Features whose value is the tutor visibly "learning the student" within a session</strong> — the slope null; get turn 1 right. <span class="chip chip--brick"><span class="chip__dot"></span> §6.3</span></li>
+            <li><strong>Mandated empathy/paraphrase markers</strong> — more markers, worse answers, within every condition. <span class="chip chip--brick"><span class="chip__dot"></span> §6.1.8 · §7.10</span></li>
+            <li><strong>Stacking prompt + critic on a capable model and budgeting for addition</strong> — they substitute; the kernel result closes it. <span class="chip chip--brick"><span class="chip__dot"></span> §6.4 · §6.14</span></li>
+            <li><strong>Standing advice in any wrapper</strong> — persisted playbooks, coached consolidation into memory, point-of-action side-coaching: consumed wrongly, or not at all. <span class="chip chip--brick"><span class="chip__dot"></span> §6.15 · §6.16 · §7.12</span></li>
+            <li><strong>Profile-keyed register/style selection and uncued character shifts</strong> — no confirmed profile-contingent benefit; an unoccasioned costume prices negative twice. <span class="chip chip--brick"><span class="chip__dot"></span> §6.17 · §6.23</span></li>
+            <li><strong>A better hidden-state sensor</strong> — on the tested substrate the "hidden" state was recoverable from public history with zero uncertainty; build a genuinely ambiguous substrate first. <span class="chip chip--brick"><span class="chip__dot"></span> §6.19</span></li>
+            <li><strong>Enforcement at the mouth</strong> — costume vetoes and progression vetoes erase character under load and answer the learner's hardest turns with templates; enforcement buys typed transactions, never quality. <span class="chip chip--brick"><span class="chip__dot"></span> §6.24 · §6.18</span></li>
+            <li><strong>Product logic reading "genuinely reasoned" vs "complied" off text</strong> — unannotatable (κ = 0.084); two careful annotators read the same revisions oppositely. <span class="chip chip--brick"><span class="chip__dot"></span> §6.12</span></li>
           </ul>
+          <p>The general form of most of these: <em>re-derivation instruments die</em> — anything that tells the model what the visible transcript already shows. See the condensed graveyard in <code data-ref="HOW-TO-BUILD-A-TUTOR.md">HOW-TO-BUILD-A-TUTOR.md</code> §6 and the atlas modules <em>ontology-state-interior</em>, <em>advice-versus-enforcement</em>, <em>transparent-sensor-boundary</em>.</p>
         </div>
         <div class="mr">
-          <p class="note note--brick"><span class="note__lbl">read me as</span> a set of saved budgets. None of these is "impossible" — each is "shown not to carry the headline gain," so spend first principal elsewhere.</p>
+          <p class="note note--brick"><span class="note__lbl">read me as</span> saved budgets. None is "impossible"; each is "shown not to carry the gain" on this evidence.</p>
         </div>
       </div>
     </section>
 
-    <!-- 08 · OPEN ------------------------------------------------------------>
+    <!-- 07 · OPEN --------------------------------------------------------------->
     <section class="s" id="open">
       <div class="diag">
-        <div class="ml"><h2 class="s__num">08<span class="glyph">·</span></h2></div>
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
         <div class="body">
           <p class="s__kicker">What stays open</p>
           <h2 class="s__h">The unknowns a builder must keep in view.</h2>
           <ul>
-            <li><strong>Does better tutor output cause better <em>human</em> learning?</strong> Every result is on simulated learners. The mechanisms trace tutor production, which is observable whoever the learner is, but pedagogical value — understanding and transfer, not satisfaction — is untested. The weak-model learner effect (<code>d ≈ 1.2</code>) is the strongest hint that capacity-limited real learners might benefit. <span class="chip chip--ink">§8.1 · §6.5.1</span></li>
-            <li><strong>Do the findings survive model swaps and capability extremes?</strong> Results are tied to specific model versions and three named judges. The supported prompt/architecture mechanisms should travel, but very weak and frontier tiers are untested — re-run the calibration and substitution checks on any new model. <span class="chip chip--ink">§8.3 · §6.6.5</span></li>
-            <li><strong>Where exactly is the capability threshold</strong> that flips heavy scaffolding from helpful to harmful (and where a critic still earns its keep)? Both are bracketed, not point-located. Calibrate per model until finer sampling locates them. <span class="chip chip--ink">§7.8.3 · §9</span></li>
-            <li><strong>Is the quality gain worth its cost in deployment?</strong> A 10-turn multi-agent dialogue runs ~225,000 input tokens over 64 calls. The architecture was built for observability, not deployment; the break-even is undetermined (single-agent recognition on a strong model is the favourable case). <span class="chip chip--ink">§8.7 · §4.2</span></li>
-            <li><strong>Is there a form-versus-learning gap?</strong> Does a judge that rewards the look of good tutoring track actual learning, or reward costume? The aha-detector over-attributed ~3×, and the reasoned-vs-complied distinction was unannotatable (<code>κ = 0.084</code>). Human expert coding of a subsample is the outstanding validation. <span class="chip chip--ink">§8.2 · §6.12</span></li>
-            <li><strong>Can adaptive conduct be governed generally,</strong> or only on a fixed-destination formal instrument? The bounded positives are simulated, single-stack, with formal success criteria and the destination fixed by the schedule, and no single-channel guard is safe across geometries. Generalisation to open-ended tutoring with real learners is unestablished. <span class="chip chip--ink">§6.12.3 · §6.13.15</span></li>
+            <li><strong>Human learning.</strong> Everything above is simulated-learner evidence. The human pilot is built and waits on approval and materials. <span class="chip chip--ink">§8.1 · atlas <em>human-learning-translation</em> · <code data-ref="routes/pilotRoutes.js">routes/pilotRoutes.js</code></span></li>
+            <li><strong>Conduct is causal; learning is not yet in the tutor's hands.</strong> State-matched moves cause better conduct, and taught learners do carry a method to close analogues — but no move-level lever for that transfer survived its causal test, and analogy distance bounds it. <span class="chip chip--ink">§6.24 (crossed experiment)</span></li>
+            <li><strong>Outcome contrasts need a fallible learner.</strong> Diligent simulated learners saturate solvable worlds; the registered fallible-learner design holds that door. <span class="chip chip--ink">§6.23 · board card <code>tutor-fallible-learner-closure-prereg</code></span></li>
+            <li><strong>Model transience and thresholds.</strong> Results are pinned to named versions; the capability lines (critic worth keeping, scaffolding flip, refusal floor) are bracketed, not located — re-run the calibration checks on any new model. <span class="chip chip--ink">§8.3 · §7.8.3</span></li>
+            <li><strong>Cost.</strong> The observability architecture is expensive (a 10-turn multi-agent dialogue ≈ 225k input tokens); the deployment break-even is undetermined. <span class="chip chip--ink">§8.7</span></li>
+            <li><strong>Form vs learning.</strong> Whether a judge that rewards the look of good tutoring tracks learning at all awaits human expert coding. <span class="chip chip--ink">§8.2</span></li>
           </ul>
         </div>
         <div class="mr">
@@ -337,54 +286,53 @@
       </div>
     </section>
 
-    <!-- 09 · MAP ------------------------------------------------------------->
-    <section class="s" id="map">
+    <!-- 08 · SHELF -------------------------------------------------------------->
+    <section class="s" id="shelf">
       <div class="diag">
         <div class="ml"><h2 class="s__num">✦<span class="glyph">·</span></h2></div>
         <div class="body">
-          <p class="s__kicker">Cross-reference</p>
-          <h2 class="s__h">Step → where it lives in the code.</h2>
-          <p>The build steps as a gallery — colour tracks the chip (green is supported, amber is qualified, red is research-only or skip, ink is the map itself). The <code>data-ref</code> paths point at the working implementation.</p>
+          <p class="s__kicker">The reference shelf</p>
+          <h2 class="s__h">Where everything on this page actually lives.</h2>
           <div class="ev-grid">
-            <article class="ev-card" data-status="strong" data-tags="prompt">
-              <span class="chip chip--moss"><span class="chip__dot"></span> Steps 1–3</span>
-              <h3>The recognition prompt</h3>
-              <p>The stance itself: <code data-ref="prompts/tutor-ego-recognition.md">tutor-ego-recognition.md</code>, wired by the recognition cells in <code data-ref="config/tutor-agents.yaml">tutor-agents.yaml</code> (cells 5–8).</p>
+            <article class="ev-card" data-status="strong" data-tags="paper">
+              <span class="chip chip--moss"><span class="chip__dot"></span> canonical</span>
+              <h3>The paper</h3>
+              <p><code data-ref="docs/research/paper-full-2.0.md">paper-full-2.0.md</code> — every claim, number, and § cited here. Build the PDF with <code>./build.sh paper2</code> in <code>docs/research/</code>.</p>
             </article>
-            <article class="ev-card" data-status="strong" data-tags="critic">
-              <span class="chip chip--moss"><span class="chip__dot"></span> Steps 4–5</span>
-              <h3>Ego → superego → revise</h3>
-              <p>The loop, the reject-by-default rubric and the ego's final-authority pass: <code data-ref="tutor-core/services/tutorDialogueEngine.js">tutorDialogueEngine.js</code>.</p>
+            <article class="ev-card" data-status="strong" data-tags="atlas">
+              <span class="chip chip--moss"><span class="chip__dot"></span> plain language</span>
+              <h3>The atlas</h3>
+              <p><code data-ref="docs/research/atlas/atlas.yaml">atlas.yaml</code> — 17 modules projecting the paper into short claim-status stories with PDFs; hub published as <code>geist-atlas.html</code>. <code>npm run atlas:build</code>.</p>
             </article>
-            <article class="ev-card" data-status="strong" data-tags="critic">
-              <span class="chip chip--moss"><span class="chip__dot"></span> Step 4</span>
-              <h3>The bilateral learner</h3>
-              <p>The learner's mirrored ego → superego → adjudication loop: <code data-ref="services/learnerTutorInteractionEngine.js">learnerTutorInteractionEngine.js</code>.</p>
+            <article class="ev-card" data-status="output" data-tags="arc">
+              <span class="chip chip--ink"><span class="chip__dot"></span> live arc</span>
+              <h3>The build guide</h3>
+              <p><code data-ref="HOW-TO-BUILD-A-TUTOR.md">HOW-TO-BUILD-A-TUTOR.md</code> — the working synthesis behind steps 4–8: worlds, casting, guards, the playbook, the admission rule. Cited by §6.24; must not be cited past the paper.</p>
             </article>
-            <article class="ev-card" data-status="strong" data-tags="measure">
-              <span class="chip chip--moss"><span class="chip__dot"></span> Step 8</span>
-              <h3>The per-turn rubric</h3>
-              <p>The v2.2 eight-dimension rubric whose names map onto the prompt rules: <code data-ref="config/evaluation-rubric.yaml">evaluation-rubric.yaml</code>.</p>
+            <article class="ev-card" data-status="output" data-tags="arc">
+              <span class="chip chip--ink"><span class="chip__dot"></span> arc plans</span>
+              <h3>Pre-registrations</h3>
+              <p><code data-ref="AGON-GAME-PLAN.md">AGON-GAME-PLAN.md</code> (step 7) · <code data-ref="ADAPTATION-PLAN-3.0.md">ADAPTATION-PLAN-3.0.md</code> (step 6) · <code data-ref="notes/2026-07-02-blueprint-composition-plan.md">blueprint-composition-plan</code> (step 2) · <code data-ref="DRAMATIC-RECOGNITION-PLAN.md">DRAMATIC-RECOGNITION-PLAN.md</code> (the poetics line).</p>
             </article>
-            <article class="ev-card" data-status="output" data-tags="measure">
-              <span class="chip chip--ink"><span class="chip__dot"></span> Step 8</span>
-              <h3>Transformation indices</h3>
-              <p>Turn-over-turn adaptation, learner growth and bilateral change: <code data-ref="services/turnComparisonAnalyzer.js">turnComparisonAnalyzer.js</code>.</p>
+            <article class="ev-card" data-status="strong" data-tags="code">
+              <span class="chip chip--moss"><span class="chip__dot"></span> kernel code</span>
+              <h3>The validated tutor</h3>
+              <p><code data-ref="prompts/tutor-ego-recognition.md">tutor-ego-recognition.md</code> · <code data-ref="tutor-core/services/tutorDialogueEngine.js">tutorDialogueEngine.js</code> · <code data-ref="config/tutor-blueprint.yaml">tutor-blueprint.yaml</code> · cells 199–200 in <code data-ref="config/tutor-agents.yaml">tutor-agents.yaml</code>.</p>
             </article>
-            <article class="ev-card" data-status="risk" data-tags="frontier">
-              <span class="chip chip--brick"><span class="chip__dot"></span> Step 10</span>
-              <h3>Id-director charisma</h3>
-              <p>Per-turn persona re-authoring: <code data-ref="services/idDirectorEngine.js">idDirectorEngine.js</code>, scored on its own <code data-ref="config/evaluation-rubric-charisma.yaml">charisma rubric v1.0</code>.</p>
+            <article class="ev-card" data-status="risk" data-tags="code">
+              <span class="chip chip--brick"><span class="chip__dot"></span> adaptive bench</span>
+              <h3>The adaptive tutor</h3>
+              <p><code data-ref="services/tutorStubMannerSwitch.js">tutorStubMannerSwitch.js</code> · <code data-ref="services/tutorStubQuietDetector.js">tutorStubQuietDetector.js</code> · <code data-ref="docs/tutor-stub-guard-catalog.md">guard catalog</code> · hands-on: <code data-ref="docs/tutor-stub-cli.md">docs/tutor-stub-cli.md</code>.</p>
             </article>
-            <article class="ev-card" data-status="risk" data-tags="frontier">
-              <span class="chip chip--brick"><span class="chip__dot"></span> Steps 9–10</span>
-              <h3>Conduct-governance guards</h3>
-              <p>The externalised-state runner and proof-debt pacing: <code data-ref="services/adaptiveTutor">services/adaptiveTutor/</code> on <code data-ref="config/adaptive-trap-scenarios.yaml">adaptive-trap-scenarios.yaml</code>.</p>
+            <article class="ev-card" data-status="risk" data-tags="code">
+              <span class="chip chip--brick"><span class="chip__dot"></span> zero-judge</span>
+              <h3>The agon referee</h3>
+              <p><code data-ref="services/agon">services/agon/</code> with <code data-ref="scripts/agon-run.js">agon-run.js</code> — the programme's judge-free adaptation measure; runs under <code>exports/agon/</code>.</p>
             </article>
             <article class="ev-card" data-status="boundary" data-tags="map">
-              <span class="chip chip--ink"><span class="chip__dot"></span> The map</span>
-              <h3>Cell → architecture</h3>
-              <p>Every cell's architecture is declared in <code data-ref="config/tutor-agents.yaml">tutor-agents.yaml</code>; every number inherits from <code data-ref="docs/research/paper-full-2.0.md">paper-full-2.0.md</code>.</p>
+              <span class="chip chip--ink"><span class="chip__dot"></span> companions</span>
+              <h3>Sibling surfaces</h3>
+              <p><code>/theory</code> (the theory behind the machine) · <code>/summary</code> (the synthesis note) · this page at <code>/blueprint</code> via <code>npm run poetics:serve</code>.</p>
             </article>
           </div>
         </div>
@@ -394,7 +342,7 @@
   </div><!-- /shell -->
 
   <footer class="colophon">
-    <p><span class="label">Colophon</span> &nbsp; A build blueprint, not a source of claims — every number inherits from <code>docs/research/paper-full-2.0.md</code> at the version stamped above, synthesised across the codebase and audited against the paper before publishing. Companion surfaces: <code>/theory</code> (the theory behind the machine) and <code>/summary</code> (the synthesis note). Typeset in Fraunces, Source Serif 4, JetBrains Mono; design <code>assets/techne.css</code>, behaviour <code>assets/techne.js</code>.</p>
+    <p><span class="label">Colophon</span> &nbsp; A build recipe, not a source of claims — every step inherits from <code>docs/research/paper-full-2.0.md</code> at the version stamped above, and points at the arc files and atlas modules rather than restating them. Companion surfaces: <code>/theory</code> and <code>/summary</code>. Typeset in Fraunces, Source Serif 4, JetBrains Mono; design <code>assets/techne.css</code>, behaviour <code>assets/techne.js</code>.</p>
   </footer>
 
 </main>
