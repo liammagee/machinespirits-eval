@@ -29,6 +29,7 @@
      node notes/poetics/publish-arc-to-site.js --dry-run       # print plan, write nothing
      node notes/poetics/publish-arc-to-site.js --publish       # stage + run ./publish (DEPLOYS LIVE)
      node notes/poetics/publish-arc-to-site.js --slug NAME     # output basename (default below)
+     node notes/poetics/publish-arc-to-site.js --dest-repo DIR # override content-philosophy checkout
      node notes/poetics/publish-arc-to-site.js --live-base URL # point :3466 links at a real browser
      node notes/poetics/publish-arc-to-site.js --no-publicize  # copy verbatim (live layer left localhost)
 */
@@ -39,12 +40,9 @@ import { execFileSync } from 'node:child_process';
 import { bundleStandalone } from './package-standalone.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url)); // notes/poetics
-const REPO = resolve(HERE, '../..'); // machinespirits-eval-dramatic
+const REPO = resolve(HERE, '../..'); // current machinespirits-eval checkout or worktree
 const SRC = join(HERE, '2026-05-26-paper-to-dramatic-recognition-arc.html');
 const IMG_SRC = join(HERE, 'images');
-const DEST_REPO = resolve(REPO, '../machinespirits-content-philosophy');
-const DEST_DIR = join(DEST_REPO, 'articles', 'ai-tutor');
-const DEST_IMG = join(DEST_DIR, 'images');
 
 const args = process.argv.slice(2);
 const has = (f) => args.includes(f);
@@ -58,6 +56,23 @@ const PUBLICIZE = !has('--no-publicize');
 const SLUG = val('--slug', 'dramatic-recognition-arc');
 const LIVE_BASE = val('--live-base', '');
 const DATE = '2026-05-26';
+
+function defaultDestinationRepo() {
+  try {
+    const commonGitDir = execFileSync(
+      'git',
+      ['-C', REPO, 'rev-parse', '--path-format=absolute', '--git-common-dir'],
+      { encoding: 'utf8' },
+    ).trim();
+    return resolve(dirname(commonGitDir), '../machinespirits-content-philosophy');
+  } catch {
+    return resolve(REPO, '../machinespirits-content-philosophy');
+  }
+}
+
+const DEST_REPO = resolve(val('--dest-repo', process.env.MACHINESPIRITS_CONTENT_REPO || defaultDestinationRepo()));
+const DEST_DIR = join(DEST_REPO, 'articles', 'ai-tutor');
+const DEST_IMG = join(DEST_DIR, 'images');
 
 const DEST_HTML = join(DEST_DIR, `${SLUG}.html`);
 const DEST_MD = join(DEST_DIR, `${SLUG}.md`);
