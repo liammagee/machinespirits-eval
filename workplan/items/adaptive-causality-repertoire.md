@@ -8,11 +8,24 @@ owner: claude
 source: manual
 created: 2026-08-04
 updated: 2026-08-04
-verification: "Registered before any run: per-state crossed contrast (right
-  card vs named-tempting-wrong card forced at planted targets), both worlds,
-  k=6 per side per state pooled. PASS = right >= 4/6 AND wrong <= 2/6 on
-  ruled conduct; direction-only and null branches written. Delivery verified
-  in shipped prompts; standing rulings by conduct with per-row audit."
+verification: "Terminal (PRs #457-459, paper v3.0.258/259/261): right vs
+  named-wrong contrast, 48/48 delivery-verified — demand 5/6 vs 1/6,
+  mockery 6/6 vs 2/6, grievance 6/6 vs 2/6, all PASS at the registered
+  bar. Lost-thread retest with a non-overlapping wrong card ruled
+  ROBUST-NATIVE: the model untangles 5/6 despite the adversarial card, so
+  default conduct is the gold and the confused card is not claimed as
+  causal. Flat/bored crossed test right 5/5 vs wrong 0/5, with qd-v2
+  detection closing the wordy-boredom misses (replayed recall 66/66,
+  collisions 0, calm 0, held-out shadow 10/10; manifest pins updated).
+  Final census: six entries causally proven, one robust-native. k=3 per
+  arm per world; flat/bored carries a one-world bound."
+claim_status: scope-bound
+links:
+  prs:
+    - 457
+    - 458
+    - 459
+    - 460
 ---
 
 # Adaptive causality, phase 3: the outstanding entries

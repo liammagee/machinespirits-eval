@@ -7,12 +7,19 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-08-03
-updated: 2026-08-03
-verification: "Exit criteria from notes/2026-08-03-adaptive-causality-living-log.md
-  §Proposed stabilization phase, as corrected by the same file's correction
-  entry: boundary closed (open PRs resolved), baseline manifest generated
-  and reproducible, golden delivery-contract test green, plan/status docs
-  reconciled, CI green on the baseline."
+updated: 2026-08-04
+verification: "Closed via PR #452: v0.7.0 baseline manifest shipped
+  (config/stability/baseline-v0.7.0.json — 14 pinned artifacts, each with
+  sha256 and the claim it supports, plus a --check mode CI can run) and the
+  golden delivery-contract test green (card footer and licence present in
+  every shipped prompt, retries included, deterministic, no model calls);
+  living-log correction entry appended, ADAPTATION-PLAN-3.0 status
+  reconciled; CI green on merge."
+claim_status: methods
+links:
+  prs:
+    - 452
+    - 460
 ---
 
 # Adaptive causality, phase 0: stabilization

@@ -8,12 +8,20 @@ owner: claude
 source: manual
 created: 2026-08-04
 updated: 2026-08-04
-verification: "Registered before scoring: learner's next turn after the t2
-  demand, two outcomes (check-engagement; send-deferral), WAGER arm
-  (licence on) vs HARNESS arm (licence off), pooled k=6/arm (3 recorded +
-  3 fresh under v7). PASS = wager >= 4/6 and harness <= 2/6 on
-  check-engagement; leak column re-priced per licence rule. Null and
-  reversed branches recorded as bounds."
+verification: "Terminal (PR #459, paper v3.0.260): pooled k=6/arm at the
+  world-030 first demand — check-engagement WAGER 4/6 vs HARNESS 1/6, PASS
+  at the registered bar; send-deferral 6/6 in both arms, so the three-beat
+  harness already buys deferral and the licence's measurable purchase is
+  engagement. Manipulation check: staked sends 2/6 with the licence, 0/6
+  without, and two of the licence arm's engagement wins followed unstaked
+  replies — the promotion attaches to the licence, the fourth beat itself
+  unisolated (n=2, recorded as anecdote, not claim). Leaks 0 across every
+  licensed turn."
+claim_status: scope-bound
+links:
+  prs:
+    - 459
+    - 460
 ---
 
 # Wager promotion

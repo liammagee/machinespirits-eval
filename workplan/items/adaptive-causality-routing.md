@@ -8,11 +8,19 @@ owner: claude
 source: manual
 created: 2026-08-04
 updated: 2026-08-04
-verification: "Registered before builds: R1 gate = stake-fusion detection on
-  held-out recorded plants improves over the v6 cascade with calm alarms
-  unchanged (leave-one-world-out standard); R2 gate = live router k=3 on
-  world-030 detects 3/3 stake plants and conduct matches the oracle arm.
-  Null branches written both ways."
+verification: "Terminal (PR #456, paper v3.0.257): R1 — corpus of 169
+  recorded stake plants harvested; the v7 cascade closes all 8 recorded
+  misses with two world-neutral closed-class shapes; recall 169/169,
+  cross-state collisions 0/179, calm set 0/124 new fires, unplanted turns
+  1/423. R2 — live router k=3 on world-030: the fusion stake detected 3/3,
+  cards in all three shipped prompts, split move made 3/3, leaks 0. Router
+  sensing matches the oracle on this bench; detector plus card table is the
+  whole routing policy at this repertoire size. One world live, k=3."
+claim_status: scope-bound
+links:
+  prs:
+    - 456
+    - 460
 ---
 
 # Adaptive causality, phase 2: routing
