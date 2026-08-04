@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T21:03:33.056Z",
+  "generated": "2026-08-04T21:07:31.609Z",
   "counts": {
     "total": 397,
     "byStatus": {
@@ -353,7 +353,7 @@
       "created": "2026-07-29",
       "updated": "2026-08-05",
       "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
-      "branch": "codex/refactor-tutor-stub-terminal-host-context",
+      "branch": "codex/refactor-tutor-stub-interactive-application",
       "claim_status": "planned",
       "depends_on": [],
       "links": {
@@ -372,6 +372,8 @@
           "services/tutorStubDebugReportRuntime.js",
           "services/tutorStubFeedbackTuningController.js",
           "services/tutorStubInteractiveAutomationController.js",
+          "services/tutorStubInteractiveApplicationComposition.js",
+          "services/tutorStubInteractiveCommandComposition.js",
           "services/tutorStubInteractiveDialogueController.js",
           "services/tutorStubInteractiveDirectorController.js",
           "services/tutorStubInteractiveInputPresentation.js",
