@@ -283,6 +283,7 @@
         "tests/goldenDeliveryContract.test.js",
         "tests/greenroomGate0.test.js",
         "tests/greenroomStore.test.js",
+        "tests/groundingValidatorAudit.test.js",
         "tests/hamartiaRepairDetector.test.js",
         "tests/hermeticTestRunner.test.js",
         "tests/hiddenProofDebtFailureAudit.test.js",

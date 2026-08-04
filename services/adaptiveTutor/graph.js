@@ -89,6 +89,7 @@ import {
 } from './actionPolicy.js';
 import { validateProofReleaseOwnershipGate, repairActionFromGate } from './proofReleaseOwnershipGate.js';
 import { appendPendingIntervention, closePendingIntervention } from './interventionLedger.js';
+import { evaluateGroundingValidatorDecisions } from './groundingValidatorAudit.js';
 import {
   realizeStagedFollowup,
   realizeTutorUtterance,
@@ -628,14 +629,24 @@ async function hypothesisUpdater(state) {
 //     expires_after_turns, and changes only the status. The LLM doesn't
 //     own the hypothesis fields — it owns the verdict.
 //   - Validator output is filtered against the current `tentative` set; a
-//     decision about an id the validator hallucinates is silently dropped
-//     (same posture as obs_id filtering in the updater).
+//     decision about an id the validator hallucinates is not applied. Every
+//     proposal now emits a grounding_validator_decision_audit adaptationTrace
+//     event, so the historical silent-drop failure mode is prospectively
+//     measurable without changing the policy.
 //   - new_status must be either `validated` or `contradicted` — leaving a
 //     hypothesis as-is is expressed by NOT emitting a decision for it,
 //     mirroring the SILENCE convention in the updater.
 async function groundingValidator(state) {
   const tentative = (state.hypotheses || []).filter((h) => h.status === 'tentative');
-  if (tentative.length === 0) return {};
+  if (tentative.length === 0) {
+    const { auditEvents } = evaluateGroundingValidatorDecisions({
+      decisions: [],
+      tentativeHypotheses: [],
+      validatedEvidence: state.evidenceLog || [],
+      turn: state.turn,
+    });
+    return { adaptationTrace: auditEvents };
+  }
 
   const validatedEvidence = (state.evidenceLog || []).filter((e) => e.validated);
   const proposed = await callRole('groundingValidator', {
@@ -644,17 +655,17 @@ async function groundingValidator(state) {
     turn: state.turn,
   });
 
-  const tentativeById = new Map(tentative.map((h) => [h.hypothesis_id, h]));
-  const updates = (proposed?.decisions || [])
-    .map((d) => {
-      const h = tentativeById.get(d?.hypothesis_id);
-      if (!h) return null;
-      if (d.new_status !== 'validated' && d.new_status !== 'contradicted') return null;
-      return { ...h, status: d.new_status };
-    })
-    .filter(Boolean);
+  const { appliedUpdates, auditEvents } = evaluateGroundingValidatorDecisions({
+    decisions: proposed?.decisions || [],
+    tentativeHypotheses: tentative,
+    validatedEvidence,
+    turn: state.turn,
+  });
 
-  return updates.length > 0 ? { hypotheses: updates } : {};
+  return {
+    ...(appliedUpdates.length > 0 ? { hypotheses: appliedUpdates } : {}),
+    adaptationTrace: auditEvents,
+  };
 }
 
 function scriptedLearnerTurn({ hidden, turn, actionType } = {}) {
