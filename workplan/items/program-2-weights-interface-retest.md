@@ -1,7 +1,7 @@
 ---
 id: program-2-weights-interface-retest
 title: "Price the fine-tune with a weights by interface retest"
-status: active
+status: blocked
 type: experiment
 priority: P2
 owner: codex
@@ -14,6 +14,7 @@ links:
   paper: §6.21
   notes:
     - PROGRAM-2-WEIGHTS-INTERFACE-RETEST-PREREGISTRATION.md
+    - notes/program-2/2026-08-05-weights-interface-retest-pilot-stop.md
   items:
     - program-2-committee-floor-ablation
     - program-2-context-vs-weights-finetune
@@ -25,6 +26,7 @@ tags:
   - interface
 milestone: adaptive-tutor-evidence-v1
 branch: codex/program2-weights-interface-retest
+blocked_by: "Amendment 1 design choice and fresh authorization for a replacement external pilot"
 ---
 
 Correct the two historical identification failures without reusing their rows:
@@ -40,3 +42,15 @@ cue-blind enforcement tests, and the full hermetic suite passed. The user
 explicitly authorized the named Anthropic and OpenAI destinations and private
 payload scope for the excluded eight-dialogue pilot. The confirmatory cohort
 remains unauthorized pending the sealed pilot bundle and its frozen gates.
+
+2026-08-05 — The authorized excluded pilot ran and the frozen futility gate
+stopped it after 2/8 sealed jobs. One row fell below the turn-22 learner-coverage
+floor because the last public premise was released on that same tutor turn and
+was integrated at turn 23. More importantly, both rows recorded zero eligible
+committee opportunities and zero committee moments: co-fired warrant candidates
+lost detector priority, while later assigned warrant triggers failed the active
+handoff eligibility contract. The result is incomplete and under-informative;
+there is no primary estimate and no treatment-effect reading. A replacement is
+blocked on a preregistered Amendment 1 with separate release/uptake horizons,
+handoff-compatible treatment exposure, a non-vacuous opportunity gate, new
+bindings, and fresh external-run authorization.
