@@ -137,6 +137,8 @@ tests/desktop*.test.js # parity + sync-contract + paths + security + menu + wind
 | `npm run desktop:test` | all desktop tests (parity, sync-contract, paths, …) | Electron's Node (this worktree) |
 | `npm run desktop:smoke` | boots the real app in Electron, hits every surface + SSE + CSP | Electron |
 | `npm run desktop:pack` then run the `.app` with `MS_DESKTOP_SMOKE=1` | the **packaged** app boots from the asar | Electron |
+| `npm run tutor:stub:acceptance:web` | shared `/tutor` DOM + real process-session transport + fake provider | Node server + Electron renderer |
+| `npm run tutor:stub:acceptance:packaged` | the same tutor scenario in the built app, with CSP/auth/shutdown assertions | packaged Electron |
 | `npm test` (fresh checkout / CI) | desktop tests on the Node ABI | Node |
 
 ## The native-ABI worktree caveat

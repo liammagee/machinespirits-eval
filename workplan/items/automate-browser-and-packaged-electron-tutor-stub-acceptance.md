@@ -1,13 +1,14 @@
 ---
 id: automate-browser-and-packaged-electron-tutor-stub-acceptance
 title: Automate browser and packaged Electron tutor-stub acceptance
-status: triaged
+status: review
 type: infra
 priority: P1
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-23
-updated: 2026-07-24
+updated: 2026-08-05
+branch: codex/browser-electron-tutor-acceptance
 verification: CI launches the real shared tutor surface with a fake provider in
   both web and packaged Electron hosts and exercises create, turn, reset,
   interrupt, finalize, export provenance, keyboard, text fallback, and
@@ -15,6 +16,8 @@ verification: CI launches the real shared tutor surface with a fake provider in
 depends_on:
   - tutor-stub-unified-session-surface
 links:
+  prs:
+    - 481
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
@@ -63,3 +66,40 @@ Acceptance:
   `--test-force-exit`.
 - The card records exact test files, commands, host versions, artifacts, and
   runtime before it is marked active or used as an R3 dependency gate.
+
+## Log
+
+- 2026-08-05 — Activated in an isolated worktree from current `origin/main`.
+  The completed unified-session dependency already records manual/focused web
+  and packaged-host smokes; this card turns that contract into one repeatable,
+  deterministic parity gate with failure artifacts and named CI commands.
+- 2026-08-05 — Implemented one host-neutral scenario in
+  `desktop/tutorStubAcceptanceScenario.mjs`, thin web and packaged adapters,
+  the deterministic `fixtures/tutor-stub-surface-acceptance/` provider/public
+  contract, and `.github/workflows/tutor-stub-surface-acceptance.yml`. Named
+  commands are `npm run tutor:stub:acceptance:web` and
+  `npm run tutor:stub:acceptance:packaged`; local reproduction and ABI order are
+  recorded in `desktop/README.md` and `desktop/ARCHITECTURE.md`.
+- 2026-08-05 — The gate also hardened interruption itself: POSIX process-backed
+  tutor sessions now own an isolated process group and signal the tutor plus
+  its active model-CLI descendants; the expected abandoned HTTP step is
+  projected as a bounded `session_interrupted` conflict instead of an internal
+  server failure.
+- 2026-08-05 — Verification passed with Electron 43.2.0 / Chromium
+  150.0.7871.129: 18/18 focused process/contract tests in 2.84s, lint clean,
+  web acceptance in 4.632s, and packaged-Electron acceptance in 6.206s. Each
+  host created and reconnected an active session, resumed the exact saved trace,
+  and observed two fake-provider requests but only one completion: the delayed
+  request was in flight before interruption and never completed or entered the
+  fresh session. Both exports excluded credential/private-prompt canaries; the
+  packaged host additionally proved CSP injection, unauthenticated 401,
+  authenticated UI operation, and graceful embedded-server exit. Paid model
+  calls: 0.
+- 2026-08-05 — Run artifacts live under the ignored
+  `.test-tmp/tutor-stub-surface-acceptance/<host>-<timestamp>-<pid>/` directory:
+  `result.json`, `public-session.json`, `provider-events.jsonl`,
+  `browser-trace.json`, screenshot, and host log. CI uploads that tree only on
+  failure. Local verified runs were
+  `web-2026-08-04T14-41-48-434Z-75963` and
+  `packaged-electron-2026-08-04T14-43-09-807Z-77218`; the apparent date offset
+  is UTC artifact naming for the 2026-08-05 Melbourne workday.

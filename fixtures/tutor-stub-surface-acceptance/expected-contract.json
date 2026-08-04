@@ -1,0 +1,46 @@
+{
+  "surface": {
+    "path": "/tutor",
+    "title": "Tutor studio · Machine Spirits",
+    "sharedShell": true,
+    "sessionMode": "passthrough"
+  },
+  "lifecycle": {
+    "created": true,
+    "reconnected": true,
+    "savedTraceResumed": true,
+    "learnerTurnCompleted": true,
+    "terminalCommandRejected": true,
+    "publicTraceExported": true,
+    "reset": true,
+    "interrupted": true,
+    "lateResultSuppressed": true,
+    "freshSessionFinalized": true
+  },
+  "accessibility": {
+    "statusRole": "status",
+    "statusLive": "polite",
+    "transcriptRole": "log",
+    "transcriptLabel": "Public tutor conversation",
+    "messageInputName": "Your message",
+    "keyboardHint": true,
+    "textFallback": true,
+    "reducedMotion": true,
+    "forcedColors": true
+  },
+  "privacy": {
+    "publicExportSchema": "machinespirits.tutor-stub.public-session-export.v1",
+    "rawAudioIncluded": false,
+    "credentialsIncluded": false,
+    "privateModelTraceIncluded": false,
+    "credentialCanaryAbsent": true,
+    "privatePromptCanaryAbsent": true,
+    "ansiAbsent": true
+  },
+  "boundaries": {
+    "crossOriginMutationStatus": 403,
+    "crossOriginMutationCode": "cross_origin_request_denied",
+    "terminalCommandStatus": 409,
+    "terminalCommandCode": "command_transport_unavailable"
+  }
+}

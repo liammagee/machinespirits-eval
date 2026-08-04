@@ -71,6 +71,8 @@ background process on an ephemeral loopback port; you never manage a port.
 | `npm run desktop:rebuild` | Recompile native modules (`better-sqlite3`, `node-pty`) for Electron's ABI. Run once after `npm install`. |
 | `npm run desktop:pack` | Build an unpacked `.app` into `dist-desktop/` (fast; for local use/verification). |
 | `npm run desktop:dist` | Build a `.dmg` installer into `dist-desktop/`. |
+| `npm run tutor:stub:acceptance:web` | Drive the real shared `/tutor` page through a deterministic fake Codex executable. No credentials or paid calls. |
+| `npm run tutor:stub:acceptance:packaged` | Drive the same scenario through the built `Scriptorium.app`, including its CSP, loopback token, and graceful server shutdown. |
 
 ---
 
@@ -138,6 +140,30 @@ background process on an ephemeral loopback port; you never manage a port.
 ---
 
 ## Troubleshooting
+
+### Reproducing the tutor-surface acceptance gate
+
+Use an isolated desktop worktree because the packaged lane rebuilds native
+modules for Electron's ABI:
+
+```bash
+npm ci
+npm run desktop:install
+npm run tutor:stub:acceptance:web
+npm run desktop:rebuild
+npm run desktop:pack
+npm run tutor:stub:acceptance:packaged
+```
+
+Both hosts run `desktop/tutorStubAcceptanceScenario.mjs`: keyboard create,
+reload/reconnect, learner turn, terminal-command rejection, learner-safe export,
+exact saved-trace resume, reset, interruption of a delayed reply, fresh create,
+and finalize. The fake
+provider is `fixtures/tutor-stub-surface-acceptance/fake-codex.mjs`; it never
+contacts a provider. Run artifacts are written beneath
+`.test-tmp/tutor-stub-surface-acceptance/`, including `result.json`, the public
+export, provider-event private projection, browser trace, screenshot, and host
+log. CI uploads that directory only when the gate fails.
 
 - **Window shows "Could not start the local server" / `NODE_MODULE_VERSION`
   mismatch.** The native modules aren't built for Electron. Run

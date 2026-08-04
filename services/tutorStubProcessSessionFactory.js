@@ -279,6 +279,26 @@ export function tutorStubProcessEnvironment(env, { electronRunAsNode = false } =
   };
 }
 
+/**
+ * Stop the process-backed tutor and any model CLI it currently owns.
+ *
+ * POSIX children start in their own process group, so interrupt/finalize can
+ * signal the whole tree instead of orphaning an in-flight provider CLI. Test
+ * doubles and Windows retain the direct-child fallback.
+ */
+export function terminateTutorStubProcessTree(child, signal = 'SIGTERM', { killProcess = process.kill } = {}) {
+  if (!child || child.exitCode !== null || child.signalCode !== null) return false;
+  if (process.platform !== 'win32' && Number.isInteger(child.pid) && child.pid > 0) {
+    try {
+      killProcess(-child.pid, signal);
+      return true;
+    } catch (error) {
+      if (error?.code !== 'ESRCH') throw error;
+    }
+  }
+  return child.kill(signal);
+}
+
 function appendDiagnostic(current, chunk, max = 24_000) {
   const next = `${current}${chunk}`;
   return next.length > max ? next.slice(-max) : next;
@@ -583,6 +603,7 @@ export function createTutorStubProcessSessionFactory({
           cwd: tutorStubProcessWorkingDirectory(root),
           env: tutorStubProcessEnvironment(env, { electronRunAsNode }),
           stdio: ['ignore', 'pipe', 'pipe', 'pipe', 'pipe'],
+          detached: process.platform !== 'win32',
         });
         commandStream = child.stdio[3];
         const responseStream = child.stdio[4];
@@ -724,9 +745,9 @@ export function createTutorStubProcessSessionFactory({
         settleClosed({ reason, code: null, signal: null });
         return closed;
       }
-      if (child.exitCode === null && child.signalCode === null) child.kill('SIGTERM');
+      terminateTutorStubProcessTree(child, 'SIGTERM');
       const forceTimer = setTimeout(() => {
-        if (child?.exitCode === null && child?.signalCode === null) child.kill('SIGKILL');
+        terminateTutorStubProcessTree(child, 'SIGKILL');
       }, 1_000);
       forceTimer.unref?.();
       void closed.finally(() => clearTimeout(forceTimer));

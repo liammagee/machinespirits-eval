@@ -551,6 +551,7 @@
         "tests/tutorStubSpeakerPublicPremise.test.js",
         "tests/tutorStubStrictDagAuditState.test.js",
         "tests/tutorStubStructuredFirstDraft.test.js",
+        "tests/tutorStubSurfaceAcceptance.test.js",
         "tests/tutorStubTechnicalAnalysisPresentation.test.js",
         "tests/tutorStubTechnicalDebugPresentation.test.js",
         "tests/tutorStubTextProjection.test.js",
