@@ -14,6 +14,8 @@ links:
   notes:
     - notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
     - notes/poetics/images/2026-05-26-paper-to-dramatic-recognition-arc-image-prompts.txt
+  prs:
+    - 462
 tags:
   - poetics
   - techne
