@@ -43,6 +43,7 @@ links:
     - 430
     - 431
     - 471
+    - 474
   items:
     - codebase-refactoring-program
 tags:
@@ -249,3 +250,4 @@ Log:
   tests. Lint, Prettier, manifest, workplan source (375 items), ref governance,
   syntax, and the static import graph pass with zero cycles across 470 files;
   no model calls were authorized for this structural extraction.
+- 2026-08-04 — Opened macro cycle 8 as PR #474.
