@@ -96,3 +96,19 @@ right side. k=3 per world = 6 new dialogues. Bar unchanged: right
 >= 3/6 again = the state is robust to mismatched cards (the model
 untangles regardless) and the entry is recorded as such — a finding,
 not a failure.
+
+## Lost-thread retest result (2026-08-04): ROBUST — the registered second branch
+
+Six new dialogues, demand card forced at the lost turn 6/6
+(delivery-verified), gold elsewhere, leaks 0. Ruled conduct: **5/6
+side-by-side untangling despite the adversarial card** (rows in
+exports/crossed-effects/lostretest-tags.json; the one miss leads with
+case-pressing and only acknowledges the ambiguity). With the right
+arm's 6/6, the verdict is the pre-declared robustness branch: at a
+genuine confusion moment this model's DEFAULT conduct is the gold —
+no card, right or wrong, moves it. The lost-thread entry is recorded
+as HANDLED NATIVELY: detection/typing stays (it feeds the routing
+table and the judge-disclosure channel), but the confused card is not
+load-bearing at the current stack and is not claimed as causal.
+Playbook final: five entries causally proven, one robust-native,
+flat/bored conduct-evidenced only. Phase 3 closes.
