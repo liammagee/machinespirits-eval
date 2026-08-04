@@ -8,6 +8,7 @@ All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/pape
 |--------|------|------|-------------|----------------|--------------------|
 | `analyze-eval-results.js` | `[--help] [--run-id <id>] [--judge <model>]` | No | ANOVA, effect sizes, marginal means across factorial conditions | 6.1-6.4 | `tutor_first_turn_score` populated |
 | `analyze-mechanism-traces.js` | `<runId> [--output <path>] [--json] [--verbose]` | No | Process measures: RevDelta, EgoSpec, AdaptDelta, RunVar from dialogue logs | 6.2 | Dialogue logs in `logs/tutor-dialogues/` |
+| `analyze-superego-framing-trajectory.js` | `[--db <path>] [--logs <dir>] [--codebook <path>] [--coding <path>] [--output <path>] [--json] [--prepare-candidates <path>]` | No | Reproducible single-coder framing-trajectory diagnostic for cells 21/48/49; compares semantic reframe/restatement codes with the structural incorporation proxy and reports historical metric missingness | Workplan `recode-superego-incorporation-as-a-framing-trajectory` | Frozen evaluation DB, tutor dialogue logs, versioned codebook and coding ledger |
 | `analyze-trajectory-curves.js` | `<runId...> \| --all-multiturn [--json <path>] [--min-turns N]` | No | Per-dimension turn-by-turn trajectory analysis (learner + tutor) | 6.12.1-6.12.2 | `learner_scores` JSON, multi-turn rows |
 | `analyze-within-test-change.js` | `[<runId...>] [--db <path>] [--json <path>] [--dry-run] [--smoke-test]` | No | Symmetric first-to-last change (rubric + text-proxy trajectories) | 6.15 | Multi-turn rows, dialogue logs |
 | `analyze-learning-stagnation.js` | `[<runId...>] [--db <path>] [--logs <dir>]` | No | Learning stagnation detection across multi-turn dialogues | 6.15 | Multi-turn rows, dialogue logs |
@@ -67,6 +68,7 @@ All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/pape
 npm run analyze:effects        # analyze-eval-results.js
 npm run analyze:costs          # analyze-eval-costs.js
 npm run analyze:traces         # analyze-mechanism-traces.js (needs <runId> arg)
+npm run analyze:superego-framing -- --db <db> --logs <tutor-dialogues>
 npm run analyze:reliability    # analyze-judge-reliability.js
 npm run analyze:trajectories   # analyze-trajectory-curves.js (needs <runId> or --all-multiturn)
 npm run analyze:change         # analyze-within-test-change.js

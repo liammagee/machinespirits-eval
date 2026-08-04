@@ -1,14 +1,13 @@
 ---
 id: decide-rich-learner-memory-service-retention
 title: Decide and verify the retained rich learner-memory service
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: codex
 source: review
 created: 2026-07-22
 updated: 2026-08-05
-branch: codex/decide-rich-learner-memory-retention
 verification: The rich learner-memory service has an explicit supported or
   quarantined status; if supported, hermetic schema and CRUD tests cover its
   public contract and import-time storage is safely relocated.
@@ -24,6 +23,8 @@ links:
     - scripts/smoke-rich-memory-arc.js
     - tests/learnerMemoryService.test.js
     - tests/memoryArchitectureSeam.test.js
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/489
 tags:
   - learner-memory
   - architecture
@@ -51,6 +52,10 @@ Acceptance:
 
 ## Log
 
+- 2026-08-05 — PR #489 merged as `65e1a6a5`; focused verification and CI
+  accepted the quarantine boundary, explicit lifecycle, contract tests, and
+  documented tutor–learner symmetry rule. Removed the merged worktree and local
+  branch; the remote branch had already been deleted.
 - 2026-08-05 — Recorded the tutor–learner symmetry boundary for any future
   promotion: reuse one memory substrate and lifecycle (snapshot, retrieve,
   inject, update, decay, consolidate, provenance), but give learner and tutor

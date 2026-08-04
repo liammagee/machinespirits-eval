@@ -118,6 +118,7 @@
     "program2:gate-grade:check": "node scripts/grade-point-of-action-gate.js --check",
     "analyze:costs": "node scripts/analyze-eval-costs.js",
     "analyze:traces": "node scripts/analyze-mechanism-traces.js",
+    "analyze:superego-framing": "node scripts/analyze-superego-framing-trajectory.js",
     "analyze:tutor-stub-fields": "node scripts/analyze-tutor-stub-field-traces.js",
     "analyze:tutor-stub-auto-evals": "node scripts/analyze-tutor-stub-auto-evals.js",
     "analyze:tutor-stub-profile-discrimination": "node scripts/analyze-tutor-stub-profile-discrimination.js",

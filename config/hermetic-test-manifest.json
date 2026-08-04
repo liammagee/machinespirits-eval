@@ -398,6 +398,8 @@
         "tests/streamingReporter.test.js",
         "tests/structureLearnerContext.test.js",
         "tests/superego-guard.test.js",
+        "tests/superegoFramingTrajectoryAnalyzer.test.js",
+        "tests/superegoFramingTrajectoryCli.test.js",
         "tests/superegoTaxonomyProvenance.test.js",
         "tests/teachingDramaAxiomProtocol.test.js",
         "tests/timingPairGenerator.test.js",
