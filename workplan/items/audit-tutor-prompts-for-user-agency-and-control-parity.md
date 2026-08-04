@@ -1,14 +1,13 @@
 ---
 id: audit-tutor-prompts-for-user-agency-and-control-parity
 title: Audit tutor prompts for user agency and control parity
-status: review
+status: done
 type: research
 priority: P2
 owner: codex
 source: daily-routine
 created: 2026-08-03
 updated: 2026-08-05
-branch: codex/audit-tutor-prompt-agency-parity
 verification: Every active tutor ego and superego prompt variant is scored on a frozen user-agency and control checklist; recognition and placebo prompts are compared on the same dimensions; discrepancies, exclusions, and any proposed prompt changes are reported without modifying an experimental prompt before a prospective decision.
 claim_status: scope-bound
 links:
@@ -19,6 +18,8 @@ links:
   notes:
     - notes/daily-notes/2026-08-03-research-roundup.html
     - notes/2026-08-05-tutor-prompt-agency-control-audit.md
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/485
   items:
     - perspectivegap-a-benchmark-for-multi-agent-orchestration-pro
 tags:
@@ -41,6 +42,10 @@ prospective decision because historical evaluation prompts must not drift.
 
 ## Log
 
+- 2026-08-05 — PR #485 merged as `947da2d0`; the human merge accepted the
+  bounded prompt-level result and its explicit non-behavioural claim boundary.
+  Verified the feature head is contained in `origin/main`, then removed the
+  clean feature worktree and local branch.
 - 2026-08-05 — Ready for review. The frozen audit derives 27 active prompt
   files from both tutor registries plus the direct reflection path and scores
   all 216 prompt-by-dimension cells. Results: 64 protective, 2 gray, 0

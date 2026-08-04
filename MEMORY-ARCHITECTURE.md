@@ -1,6 +1,6 @@
 # Memory Architecture
 
-**Status (2026-06-25, branch `claude/memory`): Shape B — two pads behind a documented seam, with the rich store deliberately retained.**
+**Status (2026-08-05): Shape B — two live pads behind a documented seam, with the rich store retained as a quarantined experimental reserve.**
 
 This note is the durable map of how learner and tutor *memory* is captured in this
 repo, why there is more than one store, and the near-term posture we have chosen.
@@ -19,7 +19,7 @@ companion note [`MEMORY-MECHANISMS.md`](MEMORY-MECHANISMS.md).
 |---|---|---|---|
 | `writingPadService` (+ `memoryDynamicsService`, migration `008_writing_pad_schema.sql`) | `tutor-core/services/` | tutor-core dialogue engine; activated by passing `learnerId` from `evaluationRunner` | **live** — in-dialogue pad on the standard eval path |
 | `tutorWritingPad.js` + `learnerWritingPad.js` | `services/memory/` | `learnerTutorInteractionEngine` (per-turn writes), `idDirectorEngine`, `scripts/generate-pedagogical-dramas.js` | **live** — the bilateral-engine pads |
-| `learnerMemoryService.js` | `services/memory/` | **no live consumer** (only its own tests) | **retained reserve** — see §4 |
+| `learnerMemoryService.js` | `services/memory/` | no production consumer; explicit rich-memory experiment/smoke only | **quarantined experimental reserve** — see §4 |
 
 Capture **does** fire on the bilateral path: `learnerTutorInteractionEngine`
 snapshots both pads before/after an interaction, injects their narrative summaries
@@ -60,22 +60,32 @@ Three shapes were considered:
 cross-session direction (does richer learner state pay across sessions? cf. the A7
 longitudinal result) proves out. Nothing here forecloses A.
 
-## 4. `learnerMemoryService` is retained on purpose
+## 4. `learnerMemoryService` is a quarantined experimental reserve
 
-It has no live consumer today, but it is **not dead code to be pruned** — it is the
-richest representation in the codebase and the most likely canonical core for a future
-memory architecture (Shape A). Deletion is **deferred** until the eventual shape is
-settled. The file carries a header note pointing here so no future worker mistakes it
-for an accidental orphan.
+It has no production consumer, but it is **not dead code to be pruned**. The two
+explicit consumers are `scripts/run-rich-memory-arc-experiment.js` and
+`scripts/smoke-rich-memory-arc.js`; a static seam test rejects production-runtime
+imports and any additional experiment consumer that has not been reviewed. This is
+therefore a quarantine decision, not a promise that the large module is a supported
+application service.
+
+The reserve remains because it is the richest representation in the codebase and a
+candidate canonical core for a future memory architecture (Shape A). Importing it is
+now filesystem-pure. Experiment owners must call `openLearnerMemoryStore()` and
+`closeLearnerMemoryStore()` explicitly; legacy method calls lazy-open only for API
+compatibility. `LEARNER_MEMORY_DB_PATH` or `EVAL_WRITING_PAD_DIR` relocates storage.
+The service rejects attempts to switch paths while a connection is open and exposes
+its maturity, path, schema version, and open state through
+`getLearnerMemoryStoreStatus()`.
 
 **Revived 2026-06-25:** its DB import (a `getDb` from the pre-in-housing
 `services/dbService.js`) had broken when `dbService` moved into `tutor-core/`, leaving
-the module unimportable. It is now self-contained — its own `learner-memory.db`
-honouring `EVAL_WRITING_PAD_DIR`, seam-safe (no `tutor-core` import), with the `users(id)`
-FK enforcement disabled (no users table in standalone mode) and a long-dormant
-double-quoted `datetime("now")` SQL bug fixed. It runs and accumulates across sessions
-under a hermetic smoke; still no production consumer until the cross-session harness
-(step 1 of #3) wires it in.
+the module unimportable. It is self-contained and seam-safe (no `tutor-core` import),
+with the `users(id)` FK enforcement disabled because the standalone experimental store
+has no users table. The 2026-08-05 retention pass made connection creation lazy, added
+explicit close/reopen behavior, pinned schema/CRUD/retrieval/decay coverage, and limited
+the legacy incompatible-schema reset to the known missing-column failure. The reserve
+remains outside production even though the experiment apparatus can execute it.
 
 ## 5. Enforced invariants
 
@@ -86,6 +96,8 @@ their own sides:
    (`services/memory/**`) — protects re-extractability.
 2. No eval-layer memory store (`services/memory/**`) imports `tutor-core/**` — keeps
    the eval pads standalone.
+3. No production runtime imports `learnerMemoryService`; only the two named experiment
+   scripts may consume the quarantined reserve.
 
 If a future change deliberately unifies the stores (Shape A or C), update this note
 and that test together.
@@ -100,6 +112,13 @@ and that test together.
   available.
 
 Until then: two pads, one seam, one reserve.
+
+**Promotion/deletion gate.** Promote only through a prospective architecture decision
+that names the rich store canonical, supplies a retained-data migration, adds production
+integration tests, and updates the seam. Delete only if another canonical shape covers
+the required concept, episode, thread, preference, and milestone data—or those
+capabilities are explicitly abandoned—and the two experiment consumers and any retained
+store files have a documented archive/migration path.
 
 ## 7. Cross-session experiment (#3): apparatus validated; first powered screen = null
 

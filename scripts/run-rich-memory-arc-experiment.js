@@ -33,7 +33,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { execSync } from 'node:child_process';
-import Anthropic from '@anthropic-ai/sdk';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -100,6 +99,7 @@ fs.mkdirSync(process.env.EVAL_WRITING_PAD_DIR, { recursive: true });
 // Generation/scoring run via the eval-cli subprocess (see sh()); only the rich store
 // is used in-process here, to build the injection narrative and write back between sessions.
 const mem = await import(path.join(ROOT, 'services/memory/learnerMemoryService.js'));
+mem.openLearnerMemoryStore();
 
 const LEVELS = ['exposed', 'developing', 'proficient', 'mastered'];
 const EPISODE_TYPES = new Set([
@@ -112,7 +112,17 @@ const EPISODE_TYPES = new Set([
   'emotional',
   'metacognitive',
 ]);
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+let anthropic = null;
+if (REAL) {
+  try {
+    const { default: Anthropic } = await import('@anthropic-ai/sdk');
+    anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  } catch (error) {
+    throw new Error('The --real rich-memory experiment requires optional peer @anthropic-ai/sdk@0.71.2.', {
+      cause: error,
+    });
+  }
+}
 
 // Load a session transcript (tutor suggestion + learner reply per turn) from its dialogue
 // log, found via the row's dialogue_id. Returns null if unavailable.
@@ -380,6 +390,7 @@ const reportPath = path.join(STORE_DIR, 'report.json');
 fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
 console.log(`\nreport: ${reportPath}`);
 
+mem.closeLearnerMemoryStore();
 if (!REAL) {
   fs.rmSync(STORE_DIR, { recursive: true, force: true });
   console.log(

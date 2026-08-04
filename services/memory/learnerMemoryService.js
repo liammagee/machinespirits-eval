@@ -12,14 +12,12 @@
  * This service provides the foundation for cross-session continuity
  * and multi-agent deliberation context.
  *
- * RETENTION NOTE (2026-06-25): This is the richest memory representation in the
- * repo (concept-mastery ladder, episodic memory with embeddings, spaced-repetition
- * review, threads, milestones). It currently has NO live consumer outside its own
- * tests — but it is DELIBERATELY RETAINED, not dead code. It is the likely canonical
- * core for a future "rich-canonical" memory architecture (Shape A). Do NOT delete it
- * to tidy up; deletion is deferred until the memory architecture's eventual shape is
- * settled. See MEMORY-ARCHITECTURE.md (§4) and the seam guard in
- * tests/memoryArchitectureSeam.test.js.
+ * RETENTION NOTE (2026-08-05): this is a quarantined experimental reserve, not
+ * a supported production memory service. Its only permitted runtime consumers
+ * are the explicit rich-memory experiment and smoke scripts. It remains the
+ * richest candidate representation for a future "rich-canonical" architecture,
+ * so it is retained behind an explicit, lazy storage lifecycle rather than
+ * deleted or imported by production paths. See MEMORY-ARCHITECTURE.md (§4).
  */
 
 import crypto from 'crypto';
@@ -28,22 +26,105 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Self-contained SQLite store (seam-safe — services/memory/ must NOT import
-// tutor-core/, see tests/memoryArchitectureSeam.test.js). Mirrors the sibling
-// Writing Pads: its own DB file, relocatable via EVAL_WRITING_PAD_DIR for
-// hermetic runs. (Previously wired to the shared LMS/auth DB via a getDb import
-// that broke during the tutor-core in-housing; revived standalone here for the
-// cross-session memory experiments — see MEMORY-ARCHITECTURE.md. The users(id)
-// foreign keys in the schema below are disabled via PRAGMA foreign_keys = OFF:
-// this standalone store has no users table, only synthetic learner ids.)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = process.env.EVAL_WRITING_PAD_DIR
-  ? path.resolve(process.env.EVAL_WRITING_PAD_DIR)
-  : path.join(__dirname, '..', '..', 'data');
-if (process.env.EVAL_WRITING_PAD_DIR) fs.mkdirSync(DATA_DIR, { recursive: true });
-const db = new Database(path.join(DATA_DIR, 'learner-memory.db'));
-db.pragma('foreign_keys = OFF'); // no users table in standalone mode; the users(id) FKs are decorative
+
+export const LEARNER_MEMORY_SERVICE_STATUS = Object.freeze({
+  maturity: 'quarantined_experimental_reserve',
+  productionConsumer: false,
+  permittedRuntimeConsumers: Object.freeze([
+    'scripts/run-rich-memory-arc-experiment.js',
+    'scripts/smoke-rich-memory-arc.js',
+  ]),
+  promotionGate:
+    'A prospective architecture decision must name this service as canonical, migrate retained data, and add production integration tests.',
+});
+
+export const LEARNER_MEMORY_SCHEMA_VERSION = 1;
+
+let dbConnection = null;
+let activeDbPath = null;
+
+/**
+ * Resolve the reserve store without touching the filesystem.
+ */
+export const resolveLearnerMemoryDbPath = ({ dbPath, dataDir } = {}) => {
+  if (dbPath) return dbPath === ':memory:' ? dbPath : path.resolve(dbPath);
+  if (process.env.LEARNER_MEMORY_DB_PATH) {
+    return path.resolve(process.env.LEARNER_MEMORY_DB_PATH);
+  }
+  const resolvedDataDir = dataDir
+    ? path.resolve(dataDir)
+    : process.env.EVAL_WRITING_PAD_DIR
+      ? path.resolve(process.env.EVAL_WRITING_PAD_DIR)
+      : path.join(__dirname, '..', '..', 'data');
+  return path.join(resolvedDataDir, 'learner-memory.db');
+};
+
+/**
+ * Open the quarantined reserve explicitly. Existing API calls retain lazy-open
+ * compatibility, but importing this module alone never creates a directory or DB.
+ */
+export const openLearnerMemoryStore = (options = {}) => {
+  const requestedPath =
+    dbConnection && Object.keys(options).length === 0 ? activeDbPath : resolveLearnerMemoryDbPath(options);
+  if (dbConnection) {
+    if (requestedPath !== activeDbPath) {
+      throw new Error(
+        `Learner memory store is already open at ${activeDbPath}; close it before opening ${requestedPath}`,
+      );
+    }
+    return getLearnerMemoryStoreStatus();
+  }
+
+  if (requestedPath !== ':memory:') {
+    fs.mkdirSync(path.dirname(requestedPath), { recursive: true });
+  }
+  const connection = new Database(requestedPath);
+  try {
+    connection.pragma('foreign_keys = OFF');
+    initializeSchema(connection);
+  } catch (error) {
+    connection.close();
+    throw error;
+  }
+  dbConnection = connection;
+  activeDbPath = requestedPath;
+  return getLearnerMemoryStoreStatus();
+};
+
+export const closeLearnerMemoryStore = () => {
+  if (!dbConnection) return false;
+  dbConnection.close();
+  dbConnection = null;
+  activeDbPath = null;
+  return true;
+};
+
+export const getLearnerMemoryStoreStatus = () => ({
+  ...LEARNER_MEMORY_SERVICE_STATUS,
+  schemaVersion: LEARNER_MEMORY_SCHEMA_VERSION,
+  open: Boolean(dbConnection),
+  dbPath: activeDbPath,
+});
+
+function getDatabase() {
+  if (!dbConnection) openLearnerMemoryStore();
+  return dbConnection;
+}
+
+// Keep the legacy function bodies small while routing every operation through
+// the lazy lifecycle above. The proxy itself has no filesystem side effects.
+const db = new Proxy(
+  {},
+  {
+    get(_target, property) {
+      const connection = getDatabase();
+      const value = connection[property];
+      return typeof value === 'function' ? value.bind(connection) : value;
+    },
+  },
+);
 
 // ============================================================================
 // Database Schema
@@ -261,28 +342,24 @@ const createSchemaSQL = `
   CREATE INDEX IF NOT EXISTS idx_agent_cost_log_timestamp ON agent_cost_log(timestamp);
 `;
 
-// Try to create schema; if mismatch, drop and recreate
-try {
-  db.exec(createSchemaSQL);
-
-  // Verify schema has correct columns (may exist with old column names)
-  const testQuery = db.prepare(`SELECT learner_id FROM tutor_session_summaries LIMIT 0`);
-  testQuery.run(); // Will throw if learner_id column doesn't exist
-} catch (err) {
-  if (err.message?.includes('no such column') || err.message?.includes('SQLITE_ERROR')) {
+function initializeSchema(connection) {
+  try {
+    connection.exec(createSchemaSQL);
+    connection.prepare('SELECT learner_id FROM tutor_session_summaries LIMIT 0').get();
+  } catch (error) {
+    if (!error.message?.includes('no such column')) throw error;
     console.log('[LearnerMemory] Schema mismatch detected, recreating tables...');
     for (const table of LEARNER_MEMORY_TABLES) {
       try {
-        db.exec(`DROP TABLE IF EXISTS ${table}`);
+        connection.exec(`DROP TABLE IF EXISTS ${table}`);
       } catch {
         /* ignore */
       }
     }
-    db.exec(createSchemaSQL);
+    connection.exec(createSchemaSQL);
     console.log('[LearnerMemory] Tables recreated successfully');
-  } else {
-    throw err;
   }
+  connection.pragma(`user_version = ${LEARNER_MEMORY_SCHEMA_VERSION}`);
 }
 
 // ============================================================================
@@ -854,7 +931,7 @@ export const updateThread = (threadId, data) => {
   }
 
   updates.push("last_touched = datetime('now')");
-  updates.push('updated_at = datetime("now")');
+  updates.push("updated_at = datetime('now')");
   params.push(threadId);
 
   db.prepare(
@@ -1360,6 +1437,10 @@ export const checkDatabaseHealth = () => {
 };
 
 export default {
+  openLearnerMemoryStore,
+  closeLearnerMemoryStore,
+  getLearnerMemoryStoreStatus,
+  resolveLearnerMemoryDbPath,
   getOrCreateLearnerMemory,
   updateLastSession,
   getConceptState,
