@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-08-05
 updated: 2026-08-05
-branch: codex/refactor-tutor-stub-repair-fallback-owner
+branch: codex/refactor-tutor-stub-repair-ladder-owner
 verification: The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.
 claim_status: planned
 depends_on: []
@@ -20,6 +20,7 @@ links:
     - services/tutorStubTutorCommitteeRuntime.js
     - services/tutorStubTutorDeliveryRuntime.js
     - services/tutorStubTutorDraftAudit.js
+    - services/tutorStubTutorRepairRuntime.js
     - services/tutorStubResponsePolicy.js
     - scripts/tutor-stub.js
   items:
@@ -101,3 +102,14 @@ Log:
   hermetic suite also passes on the rebased slice (7,780/7,780 root and 137/137
   tutor-core tests; zero failures and zero skips). The model and mechanical
   repair ladder remains the next extraction inside this item.
+- 2026-08-05 — Opened delivery-runtime PR #490 at `17026f99`, then extracted
+  the complete model/mechanical ladder on the stacked continuation: host-part,
+  simplified model, composition, question-support, source-voice, and final
+  self-correction repairs now live in a 685-line owner. The compatibility
+  pipeline falls from 1,589 to 942 lines, so both it and the new owner are below
+  the 1,200-line ceiling. Clue insertion and deterministic terminal fallback
+  remain together for the next explicit boundary. Verified with 342/342
+  repair/delivery parity tests, the complete hermetic suite (7,787/7,787 root
+  and 137/137 tutor-core tests; zero failures and zero skips), ESLint,
+  Prettier, workplan and stability-manifest checks, and a zero-cycle import
+  graph across 513 files.

@@ -41,8 +41,8 @@
     },
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
-      "claim": "recovery/committee orchestration and insertion interception",
-      "sha256": "8a6272947c32a71c9240c56faa2ba0e4e02e14fe025282c050bb500de8c7151d"
+      "claim": "tutor-turn coordination, clue-insertion interception, and terminal fallback",
+      "sha256": "f6bc7ceff8a20125a33ab3a16fe38e073d1ff3ea7006e9e9150f4ae82753c068"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
@@ -63,6 +63,11 @@
       "file": "services/tutorStubTutorDeliveryRuntime.js",
       "claim": "delivery decisions, safe uptake preservation, fallback composition, and recovery response envelopes",
       "sha256": "1863417dee483bf54093fa7f848757ea1470b95b725a7dc7a2713f9dabb407da"
+    },
+    {
+      "file": "services/tutorStubTutorRepairRuntime.js",
+      "claim": "host-part, simplified model, composition, question, source-voice, and self-correction repair ladder",
+      "sha256": "b259faa7bdfd3025a3ee6dcdd94631e6ff9ad070bd9e0a2f5fee1bc35a574b86"
     },
     {
       "file": "services/tutorStubTutorDraftAudit.js",
