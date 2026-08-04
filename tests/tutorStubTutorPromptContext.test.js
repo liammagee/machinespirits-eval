@@ -314,10 +314,11 @@ test('dialogue-closure context pins final check-in, mandatory, and available bra
   );
 });
 
-test('the CLI retains state construction and wrappers while the tutor-turn pipeline owns prompt assembly', () => {
+test('the entrypoint binds learner evidence and prompt-pipeline owners while retaining thin context wrappers', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorPromptContext.js'), 'utf8');
   const pipelineSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorTurnPipeline.js'), 'utf8');
+  const evidenceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerEvidenceRuntime.js'), 'utf8');
   const learnerDagWrapper = cliSource.slice(
     cliSource.indexOf('function tutorLearnerDagModelContext'),
     cliSource.indexOf('function humanDiscourseTutorContext'),
@@ -337,7 +338,9 @@ test('the CLI retains state construction and wrappers while the tutor-turn pipel
   assert.match(closureWrapper, /projectTutorStubDialogueClosureContext/u);
   assert.match(cliSource, /function tutorPromptSurfaceKey/u);
   assert.match(cliSource, /function createLearnerDagState/u);
-  assert.match(cliSource, /function buildHumanDiscourseFrame/u);
+  assert.doesNotMatch(cliSource, /function buildHumanDiscourseFrame/u);
+  assert.match(evidenceSource, /function buildHumanDiscourseFrame/u);
+  assert.match(cliSource, /createTutorStubLearnerEvidenceRuntime/u);
   assert.match(cliSource, /function dagTurnContext/u);
   assert.match(cliSource, /createTutorStubTutorTurnPipeline/u);
   assert.match(pipelineSource, /return async function callTutor/u);

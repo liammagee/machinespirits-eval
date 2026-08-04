@@ -473,6 +473,7 @@
         "tests/tutorStubLatencyBenchmark.test.js",
         "tests/tutorStubLaunchMode.test.js",
         "tests/tutorStubLearnerAdvance.test.js",
+        "tests/tutorStubLearnerAnalysisRuntime.test.js",
         "tests/tutorStubLearnerClassification.test.js",
         "tests/tutorStubLearnerClassificationPresentation.test.js",
         "tests/tutorStubLearnerDagPresentation.test.js",

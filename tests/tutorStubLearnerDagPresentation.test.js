@@ -153,20 +153,22 @@ test('real technical-debug process preserves exact learner-DAG terminal bytes', 
   }
 });
 
-test('the CLI retains learner-DAG construction, debug gating, call sites, and terminal ownership', () => {
+test('the learner-analysis runtime owns learner-DAG construction and delegates terminal output', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerAnalysisRuntime.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerDagPresentation.js'), 'utf8');
-  const printSlice = cliSource.slice(
-    cliSource.indexOf('function printTutorLearnerDagModel'),
-    cliSource.indexOf('function printResponseConfigurationSelection'),
+  const printSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printTutorLearnerDagModel'),
+    runtimeSource.indexOf('async function buildTutorLearnerDagForTurn'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubLearnerDagPresentation\.js';/u);
-  assert.match(cliSource, /function buildTutorLearnerDagForTurn/u);
-  assert.match(cliSource, /buildTutorLearnerDagModel/u);
-  assert.match(cliSource, /printAutomaticTechnicalDetails\(state, \(\) => printTutorLearnerDagModel\(result\)\)/u);
+  assert.doesNotMatch(cliSource, /function buildTutorLearnerDagForTurn/u);
+  assert.match(runtimeSource, /function buildTutorLearnerDagForTurn/u);
+  assert.match(runtimeSource, /buildTutorLearnerDagModel/u);
+  assert.match(runtimeSource, /printAutomaticTechnicalDetails\(state, \(\) => printTutorLearnerDagModel\(result\)\)/u);
   assert.match(printSlice, /projectTutorStubLearnerDagLines/u);
-  assert.match(printSlice, /console\.log\(line\)/u);
+  assert.match(printSlice, /printLine\(line\)/u);
   assert.doesNotMatch(printSlice, /missingPremiseBuckets|dagFactDropout|supportedMoveCount/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);

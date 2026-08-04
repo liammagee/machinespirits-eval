@@ -67,6 +67,9 @@ hook:
     - services/tutorStubCliArguments.js
     - services/tutorStubCommandRuntime.js
     - services/tutorStubLaunchRuntime.js
+    - services/tutorStubLearnerAnalysisRuntime.js
+    - services/tutorStubLearnerEvidenceRuntime.js
+    - services/tutorStubInterimController.js
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js

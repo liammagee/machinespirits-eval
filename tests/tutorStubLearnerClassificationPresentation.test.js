@@ -154,26 +154,32 @@ test('real technical-debug process preserves exact learner-classifier terminal b
   }
 });
 
-test('the CLI retains learner classification semantics, debug gating, call sites, and terminal ownership', () => {
+test('the learner-analysis runtime owns classification semantics and delegates terminal output', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLearnerAnalysisRuntime.js'), 'utf8');
   const serviceSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubLearnerClassificationPresentation.js'),
     'utf8',
   );
-  const printSlice = cliSource.slice(
-    cliSource.indexOf('function printClassification'),
-    cliSource.indexOf('function floorClassifierScore'),
+  const printSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printClassification'),
+    runtimeSource.indexOf('const applyLearnerAdvanceAssessment'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubLearnerClassificationPresentation\.js';/u);
-  assert.match(cliSource, /async function classifyLearnerInput/u);
-  assert.match(cliSource, /parseClassifierJson/u);
-  assert.match(cliSource, /printAutomaticTechnicalDetails\(state, \(\) => printClassification\(classification\)\)/u);
+  assert.match(cliSource, /createTutorStubLearnerAnalysisRuntime/u);
+  assert.doesNotMatch(cliSource, /async function classifyLearnerInput/u);
+  assert.match(runtimeSource, /async function classifyLearnerInput/u);
+  assert.match(runtimeSource, /parseClassifierJson/u);
+  assert.match(
+    runtimeSource,
+    /printAutomaticTechnicalDetails\(state, \(\) => printClassification\(classification\)\)/u,
+  );
   assert.match(printSlice, /scoreValue\(turn\.scores\?\.conceptual_engagement\)/u);
   assert.match(printSlice, /pedagogical_need \|\| overall\.next_best_tutor_move/u);
   assert.match(printSlice, /classification\.error \|\| classification\.parseError/u);
   assert.match(printSlice, /projectTutorStubLearnerClassificationLines/u);
-  assert.match(printSlice, /console\.log\(line\)/u);
+  assert.match(printSlice, /printLine\(line\)/u);
   assert.doesNotMatch(cliSource, /function classifierWorldContext/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);
