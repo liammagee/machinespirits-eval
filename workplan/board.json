@@ -1,27 +1,59 @@
 {
-  "generated": "2026-08-04T21:07:31.609Z",
+  "generated": "2026-08-04T21:27:15.213Z",
   "counts": {
-    "total": 397,
+    "total": 398,
     "byStatus": {
-      "done": 363,
-      "blocked": 6,
+      "done": 364,
+      "blocked": 7,
       "dropped": 4,
-      "triaged": 8,
-      "active": 8,
+      "triaged": 10,
+      "active": 6,
       "archived": 4,
-      "review": 4
+      "review": 3
     },
     "byType": {
       "research": 71,
       "experiment": 69,
       "infra": 73,
-      "maintenance": 165,
+      "maintenance": 166,
       "content": 3,
       "ops": 10,
       "paper": 6
     }
   },
   "items": [
+    {
+      "id": "refactor-tutor-stub-extracted-owner-boundaries",
+      "title": "Split oversized tutor-stub pipeline and response-policy owners",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/tutorStubTutorTurnPipeline.js",
+          "services/tutorStubResponsePolicy.js",
+          "scripts/tutor-stub.js"
+        ],
+        "items": [
+          "refactor-tutor-stub-macro-decomposition",
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "boundaries",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
     {
       "id": "tutor-contract-outcome-prereg",
       "title": "Pre-registration: does the per-turn contract change legitimate closure?",
@@ -64,6 +96,37 @@
         "prereg",
         "outcome",
         "learner"
+      ]
+    },
+    {
+      "id": "tutor-stub-latency-routing-optimization",
+      "title": "Optimize tutor-stub foreground latency with attributable routing experiments",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-07-24",
+      "updated": "2026-08-05",
+      "verification": "A frozen object/meta/mixed transcript matrix reports first-draft acceptance, recovery/fallback rate, foreground p50/p95 latency, model-call latency, token use, and tutor-quality/safety outcomes for isolated effort, role-routing, prompt-compaction, and prefetch-policy contrasts; no candidate becomes a default without preserving the instructional-meta regression and public-safety gates.",
+      "claim_status": "exploratory",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/201"
+        ],
+        "notes": [
+          "notes/2026-07-24-tutor-stub-latency-and-discourse-plane.md"
+        ],
+        "items": [
+          "tutor-stub-dialogue-first-terminal-presentation"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "latency",
+        "model-routing",
+        "discourse-plane",
+        "mixed-mode"
       ]
     },
     {
@@ -232,7 +295,7 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-24",
-      "updated": "2026-07-28",
+      "updated": "2026-08-05",
       "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
       "claim_status": "planned",
       "depends_on": [],
@@ -330,7 +393,9 @@
           "tutor-stub-unified-session-surface",
           "normalize-provenance-validator-data-paths",
           "tutor-stub-first-draft-series",
-          "adaptive-eval-immutable-provenance"
+          "adaptive-eval-immutable-provenance",
+          "refactor-tutor-stub-macro-decomposition",
+          "refactor-tutor-stub-extracted-owner-boundaries"
         ]
       },
       "tags": [
@@ -353,7 +418,6 @@
       "created": "2026-07-29",
       "updated": "2026-08-05",
       "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
-      "branch": "codex/refactor-tutor-stub-interactive-application",
       "claim_status": "planned",
       "depends_on": [],
       "links": {
@@ -429,10 +493,12 @@
           476,
           478,
           479,
-          482
+          482,
+          484
         ],
         "items": [
-          "codebase-refactoring-program"
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-extracted-owner-boundaries"
         ]
       },
       "tags": [
@@ -442,35 +508,6 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "tutor-stub-latency-routing-optimization",
-      "title": "Optimize tutor-stub foreground latency with attributable routing experiments",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-24",
-      "updated": "2026-07-24",
-      "verification": "A frozen object/meta/mixed transcript matrix reports first-draft acceptance, recovery/fallback rate, foreground p50/p95 latency, model-call latency, token use, and tutor-quality/safety outcomes for isolated effort, role-routing, prompt-compaction, and prefetch-policy contrasts; no candidate becomes a default without preserving the instructional-meta regression and public-safety gates.",
-      "branch": "codex/tutor-stub-latency-routing",
-      "claim_status": "exploratory",
-      "links": {
-        "notes": [
-          "notes/2026-07-24-tutor-stub-latency-and-discourse-plane.md"
-        ],
-        "items": [
-          "tutor-stub-dialogue-first-terminal-presentation"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "latency",
-        "model-routing",
-        "discourse-plane",
-        "mixed-mode"
-      ]
     },
     {
       "id": "guard-ladder-ships-canned-text-on-most-turns",
@@ -523,53 +560,6 @@
       "tags": [
         "tutor-stub",
         "harness"
-      ]
-    },
-    {
-      "id": "negative-register-effect-estimation-grid",
-      "title": "Estimate negative-register effects with stance-fidelity gating",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-03",
-      "updated": "2026-07-26",
-      "branch": "codex/negative-register-effect-estimation-grid",
-      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
-      "claim_status": "future",
-      "links": {
-        "notes": [
-          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
-          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md",
-          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
-        ],
-        "paper": [
-          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
-          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
-        ],
-        "exports": [
-          "exports/charisma-desire-breakthrough-matrix-summary.md",
-          "exports/charisma-desire-breakthrough-matrix.json",
-          "exports/negative-register-corrosive-exemplar-results.md"
-        ],
-        "runs": [
-          "eval-2026-07-02-e7b15809",
-          "eval-2026-07-02-7e461a5c",
-          "eval-2026-07-02-5c4d52e6"
-        ],
-        "items": [
-          "register-taxonomy-negative-registers"
-        ]
-      },
-      "depends_on": [
-        "register-taxonomy-negative-registers"
-      ],
-      "tags": [
-        "registers",
-        "negative-registers",
-        "effect-estimation",
-        "stance-fidelity"
       ]
     },
     {
@@ -759,6 +749,56 @@
       "blocked_by": "tutor-stub-transition-reward-model ended with a killed claim; no supported learned-ranking prerequisite"
     },
     {
+      "id": "negative-register-effect-estimation-grid",
+      "title": "Estimate negative-register effects with stance-fidelity gating",
+      "status": "blocked",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-08-05",
+      "blocked_by": "Explicit operator authorization for the frozen 45-row model-consuming generation and judging run",
+      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
+      "claim_status": "future",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/252"
+        ],
+        "notes": [
+          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
+          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md",
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
+          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
+        ],
+        "exports": [
+          "exports/charisma-desire-breakthrough-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-matrix.json",
+          "exports/negative-register-corrosive-exemplar-results.md"
+        ],
+        "runs": [
+          "eval-2026-07-02-e7b15809",
+          "eval-2026-07-02-7e461a5c",
+          "eval-2026-07-02-5c4d52e6"
+        ],
+        "items": [
+          "register-taxonomy-negative-registers"
+        ]
+      },
+      "depends_on": [
+        "register-taxonomy-negative-registers"
+      ],
+      "tags": [
+        "registers",
+        "negative-registers",
+        "effect-estimation",
+        "stance-fidelity"
+      ]
+    },
+    {
       "id": "program-2-second-trigger-family-stall",
       "title": "Program-2: second trigger family — stall-breaking specialist (stagnant_repeat)",
       "status": "blocked",
@@ -845,13 +885,15 @@
       "owner": "human",
       "source": "manual",
       "created": "2026-07-27",
-      "updated": "2026-07-27",
+      "updated": "2026-08-05",
       "verification": "N/A aggregation and contextual rejudge identity tests pass; 15-item Claude/Codex development packet analyzed against predeclared gates; thresholds committed before held-out scoring; two independent human coder sheets prepared; held-out and separate instrument reports completed without promoting v3.0 before human acceptance.",
-      "branch": "codex/rubric-v3-measurement-suite",
       "depends_on": [
         "rubric-v3-prospective-measurement-suite"
       ],
       "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/310"
+        ],
         "notes": [
           "docs/rubric-v3-measurement-suite.md"
         ],
@@ -876,41 +918,6 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "tutor-stub-fallback-register-and-uptake-guard",
-      "title": "Tutor-stub fallback register and learner-uptake guard",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-07-26",
-      "updated": "2026-08-04",
-      "verification": "A contemporary-diction world speaks its own props in its own register while every period and undeclared world keeps byte-identical deterministic text; the learner-uptake guard admits a genuinely responsive uptake that shares no tokens with the accepted meaning; targeted and hermetic suites pass without model calls.",
-      "branch": "claude/tutor-stub-uptake-guard",
-      "claim_status": "scope-bound",
-      "links": {
-        "code": [
-          "services/tutorStubSceneDiction.js",
-          "services/tutorStubDramaticRelease.js",
-          "services/tutorStubResponseComposition.js",
-          "services/tutorStubTurnProgressionContract.js",
-          "scripts/tutor-stub.js",
-          "tests/tutorStubSceneDiction.test.js",
-          "services/tutorStubConversationalCompletion.js",
-          "tests/tutorStubUptakeGuardLinkage.test.js",
-          "services/tutorStubSelfCorrectionDisclosure.js",
-          "services/tutorStubGuardDisposition.js",
-          "tests/tutorStubSelfCorrectionDisclosure.test.js"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "presentation",
-        "guards"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
       "id": "harness-untangling-clue-insertion",
       "title": "Untangling 1: insert the due clue into the model's reply instead of replacing the reply",
       "status": "review",
@@ -919,12 +926,17 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-08-02",
-      "updated": "2026-08-04",
+      "updated": "2026-08-05",
       "verification": "Gate registered before any change: (a) flag off — behavior byte-identical, hermetic suite green; (b) flag on, k=3 live — at release turns where the draft fails ONLY the release-delivery family, the delivered reply is the model draft with the due clue sentence inserted (traced), template whole-reply replacements at those turns fall to zero, release audits pass on the composed reply, leaks stay zero.",
       "claim_status": "methods",
       "depends_on": [
         "adaptation-plan-3-phase-p"
       ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/444"
+        ]
+      },
       "tags": [
         "tutor-stub",
         "harness"
@@ -8697,6 +8709,44 @@
         "discourse-plane",
         "director"
       ]
+    },
+    {
+      "id": "tutor-stub-fallback-register-and-uptake-guard",
+      "title": "Tutor-stub fallback register and learner-uptake guard",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-26",
+      "updated": "2026-08-04",
+      "verification": "A contemporary-diction world speaks its own props in its own register while every period and undeclared world keeps byte-identical deterministic text; the learner-uptake guard admits a genuinely responsive uptake that shares no tokens with the accepted meaning; targeted and hermetic suites pass without model calls.",
+      "branch": "claude/tutor-stub-uptake-guard",
+      "claim_status": "scope-bound",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/251"
+        ],
+        "code": [
+          "services/tutorStubSceneDiction.js",
+          "services/tutorStubDramaticRelease.js",
+          "services/tutorStubResponseComposition.js",
+          "services/tutorStubTurnProgressionContract.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubSceneDiction.test.js",
+          "services/tutorStubConversationalCompletion.js",
+          "tests/tutorStubUptakeGuardLinkage.test.js",
+          "services/tutorStubSelfCorrectionDisclosure.js",
+          "services/tutorStubGuardDisposition.js",
+          "tests/tutorStubSelfCorrectionDisclosure.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "presentation",
+        "guards"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "tutor-stub-first-draft-series",
