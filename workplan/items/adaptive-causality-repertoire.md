@@ -112,3 +112,46 @@ table and the judge-disclosure channel), but the confused card is not
 load-bearing at the current stack and is not claimed as causal.
 Playbook final: five entries causally proven, one robust-native,
 flat/bored conduct-evidenced only. Phase 3 closes.
+
+## Flat/bored promotion registered (2026-08-04, before any run or build)
+
+The last entry, two pieces. (1) CROSSED TEST at w033 t11 (the ratified
+mid-dialogue bored plant; t31's endgame-drag gold has no matching
+card and is excluded rather than forced falsely): RIGHT arm forces
+quiet:flat (the short lure) at t11, WRONG arm forces settled_claim
+(record-reopening = the schedule's named wrong, "a careful recap of
+settled ground"); all other targets natural; k=5 per arm, one world
+(bound stated — w030's ratified schedule has no bored plant).
+Bar, proportional to the family standard: right >= 4/5 AND wrong
+<= 2/5 on ruled conduct (t11 gold: off_track_probe/speed_up — the
+oblique lure). (2) DETECTION FIX qd-v2 for wordy boredom: flat =
+length-collapse OR (assent-without-content opener AND low novel-token
+ratio vs the prior tutor turn), closed-class and world-neutral;
+offline gates: recall on the archived wordy-bored misses strictly up,
+no regression on short-bored, calm alarms not worse, zero pressure
+collisions. The crossed run's own t11/t31 lines then serve as fresh
+held-out shadow data for the detector.
+
+## Flat/bored promotion result (2026-08-04): PASS both halves — the playbook is complete
+
+**Crossed test** (w033 t11, 10 dialogues, delivery 10/10, leaks 0):
+ruled conduct **right 5/5 vs wrong 0/5** — clears the registered bar
+decisively. Every right-arm reply re-engages with a concrete oblique
+question ("what does the shed keep those tanks standing on, wood or
+stone?"); every wrong-arm reply performs the named wrong verbatim
+(reopening settled entries at a bored learner). Per-row audit in
+exports/crossed-effects/flatpromo-tags.json. One-world bound stated
+(w030's ratified schedule has no bored plant).
+
+**Detection fix qd-v2**: the 11-miss corpus closed with two
+closed-class shapes (assent-sameness; clock-watching) — replayed
+recall 66/66 (from 55), pressure collisions 0, calm fires 0/124, and
+held-out shadow recall on the fresh run's own bored plants 10/10.
+Baseline manifest pins updated deliberately (15 pins).
+
+**Final playbook census**: SIX entries causally proven (exhibit,
+stake, demand, mockery, grievance, flat/bored), ONE robust-native
+(the lost thread), the licence promoted at first demands with its
+price measured, detection editions v7 + qd-v2 with corpus-wide and
+held-out evidence. Repertoire growth for this generation is DONE;
+further entries wait for priced deficits per the small-kernel rule.

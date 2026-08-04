@@ -21,7 +21,7 @@
  * every detect record.
  */
 
-export const TUTOR_STUB_QUIET_DETECTOR_VERSION = 'qd-v1';
+export const TUTOR_STUB_QUIET_DETECTOR_VERSION = 'qd-v2';
 
 // qd-v1 (Q3 pilot lesson): a fourth type, `broken` — the turn is
 // structurally incomplete (trails off mid-clause) rather than lexically
@@ -58,6 +58,11 @@ const wordCount = (text) =>
     .trim()
     .split(/\s+/)
     .filter(Boolean).length;
+
+const FLAT_ASSENT_SAMENESS =
+  /^(?:fine|sure|right|noted|as you like|if you say so)\b[.,][\s\S]{0,120}(?:same (?:as|level|cold|full)|still (?:humm|sitt|stand|the same)|same \w+ every)/i;
+const FLAT_CLOCK_WATCHING =
+  /(?:are we (?:done|finished)|what(?:['\u2019]s| is) left to (?:write|do)|it['\u2019]?s (?:dark|late) out)/i;
 
 export function createTutorStubQuietDetectorState({ flatRatio = 0.45, historyWindow = 3 } = {}) {
   return {
@@ -108,6 +113,15 @@ export function detectTutorStubQuietState(state, text, { pressure = null } = {})
   if ((collapsed || features.assent) && !features.hasQuestion && words <= 12) {
     return { type: 'flat', features };
   }
+  // qd-v2 (2026-08-04, card adaptive-causality-repertoire): wordy flatness.
+  // Two closed-class shapes from the 11-miss corpus
+  // (exports/crossed-effects/flat-plant-corpus.json): the assent-opener
+  // sameness line ("Fine. ... Same as yesterday.") that stays above the
+  // length floor, and the clock-watching closer ("Are we done? Tell me
+  // what's left to write"), whose question marks defeated the no-question
+  // rule. Both world-neutral; pressure outranks (this runs card-silent only).
+  if (FLAT_ASSENT_SAMENESS.test(s) && !features.hasQuestion) return { type: 'flat', features };
+  if (FLAT_CLOCK_WATCHING.test(s)) return { type: 'flat', features };
   return { type: null, features };
 }
 
