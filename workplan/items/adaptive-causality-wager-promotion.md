@@ -52,6 +52,30 @@ reversed or null = the fourth beat buys nothing measurable in the
 learner and the harness form stays the default (the licence then has
 no standing justification at first demands — recorded as the bound).
 
-## Results
+## Results (2026-08-04): PASS at the bar — the licence moves the learner; the beat stays unisolated
 
-(pending)
+12 cells (6 recorded + 6 fresh under v7), leaks 0 across every
+licensed turn (the licence's price re-verified at zero). Registered
+intention-to-treat outcome, per-cell audit in
+exports/crossed-effects/wagerpromo-cells.json:
+
+- **Check-engagement: WAGER 4/6 vs HARNESS 1/6 — PASS** (bar >=4 vs
+  <=2). Licence-arm learners commit to the condition ("the email
+  stays a draft unless we can show water got from that screen to the
+  ceiling") or REPORT the check performed ("Notebook's blank on a
+  trace from the screen"); harness-arm learners ask what would count.
+- Send-deferral: 6/6 in BOTH arms — no discrimination; the three-beat
+  harness already achieves deferral everywhere. The licence's
+  measurable purchase is engagement, not restraint.
+- **Manipulation check: staked sends 2/6 in the licence arm, 0/6
+  without.** Wager production at first demands is flaky, and two of
+  the licence arm's engagement wins followed UNSTAKED replies — so
+  the promotion attaches to the LICENCE (the standing permission
+  sharpens the whole reply), not cleanly to the fourth beat. The
+  staked-send beat per se: per-protocol n=2, both the strongest
+  ownership responses — recorded as anecdote, not claim.
+
+Verdict: the wager entry is PROMOTED as "licence-on at first
+demands," with the beat-level question left open and priced (it
+would need forced-wager delivery, a build we do not have). Board
+item closes.
