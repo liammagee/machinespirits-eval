@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-04T13:54:21.242Z",
+  "generated": "2026-08-04T20:19:42.047Z",
   "counts": {
     "total": 397,
     "byStatus": {
       "done": 361,
       "blocked": 6,
       "dropped": 4,
-      "triaged": 10,
+      "triaged": 9,
+      "review": 5,
       "active": 8,
-      "archived": 4,
-      "review": 4
+      "archived": 4
     },
     "byType": {
       "research": 71,
@@ -22,32 +22,6 @@
     }
   },
   "items": [
-    {
-      "id": "automate-browser-and-packaged-electron-tutor-stub-acceptance",
-      "title": "Automate browser and packaged Electron tutor-stub acceptance",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-23",
-      "updated": "2026-07-24",
-      "verification": "CI launches the real shared tutor surface with a fake provider in both web and packaged Electron hosts and exercises create, turn, reset, interrupt, finalize, export provenance, keyboard, text fallback, and accessibility contracts.",
-      "depends_on": [
-        "tutor-stub-unified-session-surface"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "tutor-stub-headless-session-transport",
-          "tutor-stub-process-session-factory",
-          "tutor-stub-unified-session-surface"
-        ]
-      }
-    },
     {
       "id": "tutor-contract-outcome-prereg",
       "title": "Pre-registration: does the per-turn contract change legitimate closure?",
@@ -886,6 +860,36 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "automate-browser-and-packaged-electron-tutor-stub-acceptance",
+      "title": "Automate browser and packaged Electron tutor-stub acceptance",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-23",
+      "updated": "2026-08-05",
+      "branch": "codex/browser-electron-tutor-acceptance",
+      "verification": "CI launches the real shared tutor surface with a fake provider in both web and packaged Electron hosts and exercises create, turn, reset, interrupt, finalize, export provenance, keyboard, text fallback, and accessibility contracts.",
+      "depends_on": [
+        "tutor-stub-unified-session-surface"
+      ],
+      "links": {
+        "prs": [
+          481
+        ],
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "tutor-stub-headless-session-transport",
+          "tutor-stub-process-session-factory",
+          "tutor-stub-unified-session-surface"
+        ]
+      }
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
