@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
 branch: codex/refactor-tutor-stub-command-router
 claim_status: planned
@@ -89,3 +89,10 @@ Log:
   the zero-skip hermetic suite at 7,667/7,667 root plus 137/137 tutor-core
   tests, and every static gate with zero import cycles across 450 files.
 - 2026-07-29 — Opened macro cycle 2 as PR #427.
+- 2026-08-04 — Refreshed PR #427 onto current `origin/main` after 212 intervening
+  commits. The same command-runtime boundary now retains the newer manner-switch,
+  quiet-detector, stress-schedule, dramatic-release, and speaker-advisory work;
+  `scripts/tutor-stub.js` falls from 21,485 to 20,286 lines. Focused current-main
+  contracts pass 56/56, the zero-skip hermetic suite passes 7,732/7,732 root plus
+  137/137 tutor-core tests, and all static gates remain green with zero cycles
+  across 457 files.
