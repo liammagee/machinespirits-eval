@@ -81,6 +81,7 @@ links:
     - 476
     - 478
     - 479
+    - 482
   items:
     - codebase-refactoring-program
 tags:
@@ -435,3 +436,5 @@ Boundary reassessment after cycle 11:
   Lint, Prettier, manifest, workplan source (397 items), ref governance,
   syntax, whitespace, and the static import graph pass with zero cycles across
   503 files; no model calls were authorized for this structural extraction.
+- 2026-08-05 — Opened macro cycle 15 as PR #482 at `dd1c62eb`; initial CI
+  inspection follows the source-card link commit.
