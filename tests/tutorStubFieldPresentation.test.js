@@ -159,18 +159,21 @@ test('field SVG serialization is byte-stable and keeps its accessibility and esc
   assert.equal(svg.endsWith('</svg>\n'), true);
 });
 
-test('the CLI delegates pure field presentation while retaining I/O and the distinct auto-eval renderer', () => {
+test('the debug-report runtime retains field I/O while the auto-eval renderer stays distinct', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubFieldPresentation.js'), 'utf8');
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
   const autoEvalSource = fs.readFileSync(path.join(ROOT, 'scripts', 'run-tutor-stub-auto-eval.js'), 'utf8');
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubFieldPresentation\.js';/u);
+  assert.match(cliSource, /createTutorStubDebugReportRuntime/u);
+  assert.match(runtimeSource, /from '\.\/tutorStubFieldPresentation\.js';/u);
   assert.doesNotMatch(
     cliSource,
     /function (?:fieldDelta|fieldBar|escapeXml|signedFieldDelta|summarizeFieldShift|describeFieldShift|fieldPolyline|fieldTurnMarkers|renderLightweightFieldSvg)\s*\(/u,
   );
-  assert.match(cliSource, /function writeFieldVisualization\s*\(/u);
-  assert.match(cliSource, /function printFieldVisualization\s*\(/u);
+  assert.doesNotMatch(cliSource, /function writeFieldVisualization\s*\(/u);
+  assert.match(runtimeSource, /function writeFieldVisualization\s*\(/u);
+  assert.match(runtimeSource, /function printFieldVisualization\s*\(/u);
   assert.match(autoEvalSource, /function renderLightweightFieldSvg\s*\(/u);
   assert.doesNotMatch(serviceSource, /\b(?:fs|console|process|fetch)\s*\./u);
 });

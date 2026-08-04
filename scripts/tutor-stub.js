@@ -263,7 +263,6 @@ import {
   normalizeTutorStubActorialPartId,
   selectTutorStubActorialPart,
   selectTutorStubActorialPerformance,
-  summarizeTutorStubResponseConfigurationAudits,
   tutorStubConfigurableActorialPartIds,
   tutorStubRandomizableActorialPartIds,
 } from '../services/tutorStubResponseConfiguration.js';
@@ -364,32 +363,13 @@ import {
 import {
   TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA,
   buildTutorStubLearningSummary as buildDialogueLearningSummary,
-  tutorStubDialogueCaseStatus as dialogueCaseStatus,
 } from '../services/tutorStubLearningSummary.js';
 import {
-  buildTutorStubExplanatoryDebugFrame as explanatoryDebugFrame,
-  buildTutorStubExplanatoryDebugPrompt as explanatoryDebugPrompt,
-  cleanTutorStubExplanatoryDebugProse as cleanExplanatoryDebugProse,
-  fallbackTutorStubExplanatoryDebugProse as fallbackExplanatoryDebugProse,
-  tutorStubRegisterPolicyCalculation as registerPolicyCalculation,
-} from '../services/tutorStubExplanatoryDebug.js';
-import {
   tutorStubDisplayDiagnosticLabel as displayDiagnosticLabel,
-  tutorStubPlainList as plainList,
   tutorStubPlainPolicyLabel as plainPolicyLabel,
   tutorStubPlainSettingName as plainSettingName,
   tutorStubPlainStrategyText as plainStrategyText,
-  tutorStubResponseMetadataLine as metadataLine,
 } from '../services/tutorStubResponseDetails.js';
-import { projectTutorStubTurnAnalysisLines } from '../services/tutorStubTurnAnalysisPresentation.js';
-import { projectTutorStubTechnicalAnalysisLines } from '../services/tutorStubTechnicalAnalysisPresentation.js';
-import { projectTutorStubTechnicalDebugLines } from '../services/tutorStubTechnicalDebugPresentation.js';
-import {
-  compactTutorStubCloseoutCounts as compactCounts,
-  countTutorStubCloseoutRows as countBy,
-  summarizeTutorStubGuardAccounting as summarizeTutorGuardAccounting,
-} from '../services/tutorStubCloseoutProjection.js';
-import { projectTutorStubCloseoutReportLines } from '../services/tutorStubCloseoutReportPresentation.js';
 import {
   createTutorStubInterimController,
   createTutorStubInterimState as createInterimState,
@@ -398,6 +378,9 @@ import {
 } from '../services/tutorStubInterimController.js';
 import { createTutorStubLearnerEvidenceRuntime } from '../services/tutorStubLearnerEvidenceRuntime.js';
 import { createTutorStubLearnerAnalysisRuntime } from '../services/tutorStubLearnerAnalysisRuntime.js';
+import { createTutorStubPublicPresentationRuntime } from '../services/tutorStubPublicPresentationRuntime.js';
+import { createTutorStubDebugReportRuntime } from '../services/tutorStubDebugReportRuntime.js';
+import { createTutorStubLaunchSummaryPresentation } from '../services/tutorStubLaunchSummaryPresentation.js';
 import { createTutorStubClarificationTranslationRuntime } from '../services/tutorStubClarificationTranslationRuntime.js';
 import { createTutorStubOpeningRuntime } from '../services/tutorStubOpeningRuntime.js';
 import { createTutorStubPromptTransport } from '../services/tutorStubPromptTransport.js';
@@ -449,7 +432,6 @@ import {
   normalizeTutorStubVoiceName,
 } from '../services/tutorStubVoiceBridge.js';
 import { copyTutorStubTextToClipboard, formatTutorStubDebugClipboardText } from '../services/tutorStubClipboard.js';
-import { loadTutorStubReleaseNotes, normalizeTutorStubReleaseNotesHours } from '../services/tutorStubReleaseNotes.js';
 import {
   clearTutorStubTurnFeedbackRating,
   clearTutorStubTurnFeedbackTarget,
@@ -465,7 +447,6 @@ import {
   tutorStubTurnFeedbackPrompt,
   tutorStubTurnFeedbackRegisterPrompt,
 } from '../services/tutorStubTurnFeedback.js';
-import { buildTutorStubTurnTiming, formatTutorStubTurnTiming } from '../services/tutorStubTurnTiming.js';
 import {
   auditTutorStubFeedbackAdaptation,
   buildTutorStubFeedbackAdaptationPlan,
@@ -542,7 +523,6 @@ import { createTutorStubLearnerDagState as createLearnerDagState } from '../serv
 import {
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
-  tutorStubCommandHelpRows,
   tutorStubCommandReturnsToScene,
   tutorStubCommandSummary,
   tutorStubCommandTokens,
@@ -567,10 +547,8 @@ import {
 import {
   assertTutorStubCapabilityCompatibility,
   resolveTutorStubCapabilities,
-  tutorStubCapabilityFeatureRows,
 } from '../services/tutorStubCapabilities.js';
 import {
-  MAX_TUTOR_STUB_MODEL_CALL_BUDGET,
   assertTutorStubLabRequirements,
   createTutorStubModelCallBudget,
   formatTutorStubLabList,
@@ -605,19 +583,10 @@ import {
   createTutorStubCliPresentation,
   normalizeTutorStubCliMotion,
   normalizeTutorStubCliThemeId,
-  tutorStubCliMasthead,
   tutorStubCliPresentationSnapshot,
   tutorStubCliThemeOptions,
   tutorStubCliThemePreview,
 } from '../services/tutorStubCliTheme.js';
-import { renderTutorStubCliHelp } from '../services/tutorStubCliHelp.js';
-import { projectTutorStubFeatureMapLines } from '../services/tutorStubFeatureMap.js';
-import { projectTutorStubInteractiveHelpLines } from '../services/tutorStubInteractiveHelp.js';
-import { projectTutorStubReleaseNotesLines } from '../services/tutorStubReleaseNotesPresentation.js';
-import {
-  projectTutorStubDagSnapshot,
-  projectTutorStubDagSnapshotLines,
-} from '../services/tutorStubDagSnapshotPresentation.js';
 import {
   projectTutorStubProofDagArtifactPaths,
   projectTutorStubProofDagSemanticLayerLines,
@@ -685,7 +654,6 @@ import {
   latestRegisterEfficacy,
   latestRegisterSelection,
   normalizeEngagementStanceDistribution,
-  normalizeStoredRegisterEfficacy,
   normalizeStoredRegisterSelection,
   numberOr,
   preferredLegacyRegister,
@@ -703,11 +671,6 @@ import {
   buildTutorStubLightweightDialogueField as buildLightweightDialogueField,
   projectTutorStubLightweightFieldTurn as lightweightFieldTurn,
 } from '../services/tutorStubFieldTurnProjection.js';
-import {
-  projectTutorStubFieldVisualizationLines,
-  projectTutorStubLightweightFieldLines,
-  renderTutorStubLightweightFieldSvg as renderLightweightFieldSvg,
-} from '../services/tutorStubFieldPresentation.js';
 import {
   applyTutorStubPointOfActionConstraint,
   auditTutorStubPointOfActionCompliance,
@@ -1076,24 +1039,6 @@ configureCliPresentation({
   noColor: args['no-color'],
 });
 
-function printHelp() {
-  console.log(
-    renderTutorStubCliHelp({
-      STUB,
-      PROGRAM2_COMMITTEE_DEFAULTS,
-      MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-      MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-      MIN_TUTOR_STUB_RELEASE_SPEED,
-      MAX_TUTOR_STUB_RELEASE_SPEED,
-      MAX_TUTOR_STUB_MODEL_CALL_BUDGET,
-      TUTOR_STUB_CLI_THEME_IDS,
-      TUTOR_STUB_CLI_MOTION_IDS,
-      DEFAULT_INTERACTIVE_DEMO_TURNS,
-      TUTOR_STUB_VOICE_MODELS,
-    }),
-  );
-}
-
 const { loadRegisterEmpiricalPrior } = createTutorStubRegisterEmpiricalPriorModel({
   resolveWorkspacePath,
   defaultPath: path.join(ROOT, '.tutor-stub-auto-eval/register-empirical-priors.json'),
@@ -1149,41 +1094,23 @@ const tutorStubRecipeModelIdentity = createTutorStubRecipeModelIdentityResolver(
   visibleResolvedModel,
 });
 
-function printResponseDetails(meta, state, { suffix = '' } = {}) {
-  if (!state?.responseDetails?.enabled) return false;
-  console.log(`${C.dim}${metadataLine(meta)}${suffix}${C.reset}`);
-  const timingLine = formatTutorStubTurnTiming(meta?.turnTiming);
-  if (timingLine) console.log(`${C.dim}${timingLine}${C.reset}`);
-  console.log('');
-  return true;
-}
-
-function recordTutorStubTurnTiming({
-  response,
-  state,
-  tutorTurn,
-  classification = null,
-  tutorLearnerDag = null,
-  timingContext = null,
-}) {
-  if (!timingContext?.startedAtMs) return null;
-  const turnTiming = buildTutorStubTurnTiming({
-    ...timingContext,
-    completedAtMs: Date.now(),
-    classification,
-    tutorLearnerDag,
-    response,
-  });
-  response.turnTiming = turnTiming;
-  appendTraceEvent(state.trace, {
-    type: 'turn_timing_breakdown',
-    turn: tutorTurn,
-    turnId: turnDebugId(state, tutorTurn),
-    timing: turnTiming,
-    publicTranscriptChanged: false,
-  });
-  return turnTiming;
-}
+const {
+  buildTutorDagSnapshot,
+  printInteractiveHelp,
+  printTutorDagSnapshot,
+  printTutorStubFeatureMap,
+  printTutorStubReleaseNotes,
+  printHelp,
+} = createTutorStubPublicPresentationRuntime({
+  C,
+  DEFAULT_INTERACTIVE_DEMO_TURNS,
+  PROGRAM2_COMMITTEE_DEFAULTS,
+  ROOT,
+  STUB,
+  committedReleaseRows,
+  nextReleaseRow,
+  writeLine: (...values) => console.log(...values),
+});
 
 const normalizeDagMode = (value) => normalizeTutorStubDagMode(value, { modes: DAG_MODES });
 
@@ -1611,6 +1538,42 @@ const {
   updateReleasePacingForLearnerTurn,
 });
 
+const {
+  printCurrentTurnAnalysis,
+  printDialogueCloseout,
+  printExplanatoryDebugTurn,
+  printFieldVisualization,
+  printLightweightDialogueField,
+  printResponseDetails,
+  recordTutorStubTurnTiming,
+  writeFieldVisualization,
+} = createTutorStubDebugReportRuntime({
+  C,
+  ROOT,
+  STUB,
+  appendTraceEvent,
+  assertTutorStubTurnAttemptCurrent,
+  callPromptModel,
+  formatEngagementStanceDistribution,
+  getInterimState,
+  jsonClone,
+  printWithConcurrentTerminal,
+  resolveWorkspacePath,
+  startInterimAnimation,
+  stopInterimAnimation,
+  traceDisplayPath,
+  writeLine: (...values) => console.log(...values),
+});
+
+const { printTutorStubLaunchSummary } = createTutorStubLaunchSummaryPresentation({
+  C,
+  ROOT,
+  getCliPresentation: () => cliPresentation,
+  output,
+  traceDisplayPath,
+  writeLine: (...values) => console.log(...values),
+});
+
 // Opt-in manner switch (TUTOR_STUB_MANNER_SWITCH=1): butler ↔ exacting
 // schoolmaster, driven by deterministic learner-pressure classification with
 // pacing-style hysteresis. Advanced here beside release pacing so every
@@ -1834,408 +1797,8 @@ function responseConfigurationContext(
   });
 }
 
-function buildTutorDagSnapshot(state, tutorTurn) {
-  if (!state.dag || !state.world || !state.tutorDag) return null;
-  return projectTutorStubDagSnapshot({
-    dag: state.tutorDag,
-    world: state.world,
-    tutorTurn,
-    releasedRows: committedReleaseRows(state, tutorTurn),
-    nextRelease: nextReleaseRow(state),
-  });
-}
-
-function printTutorDagSnapshot(snapshot) {
-  for (const line of projectTutorStubDagSnapshotLines({ snapshot, colors: C })) console.log(line);
-}
-
-function printTutorStubFeatureMap(state = null) {
-  const featureRows = tutorStubCapabilityFeatureRows(state?.capabilities || null);
-  let activeContext = null;
-  if (state) {
-    const mode = state.passthrough?.enabled ? 'passthrough' : state.interaction?.mode || 'learner';
-    const content = state.curriculum?.module?.title
-      ? `curriculum: ${state.curriculum.module.title}`
-      : state.world?.title
-        ? `scenario: ${state.world.title}`
-        : `topic: ${state.topic}`;
-    const hiddenAlwaysOnCapabilities = new Set(['public_dialogue', 'presentation', 'transcript']);
-    const activeMechanisms = (state.capabilities?.active || [])
-      .filter((id) => !hiddenAlwaysOnCapabilities.has(id))
-      .map((id) => state.capabilities.capabilities[id]?.label)
-      .filter(Boolean);
-    activeContext = { mode, content, mechanisms: activeMechanisms };
-  }
-  const lines = projectTutorStubFeatureMapLines({ featureRows, activeContext, colors: C });
-  for (const line of lines) console.log(line);
-}
-
-function printInteractiveHelp(state = null) {
-  const mode = state?.passthrough?.enabled ? 'passthrough' : 'normal';
-  const commandOptions = { mode, capabilities: state?.capabilities || null };
-  const commandAvailability =
-    mode === 'normal'
-      ? Object.fromEntries(
-          ['/feedback', '/committee', '/random', '/suggest', '/board', '/proof'].map((token) => [
-            token,
-            tutorStubCommandAvailable(token, commandOptions),
-          ]),
-        )
-      : {};
-  const lines = projectTutorStubInteractiveHelpLines({
-    mode,
-    helpRows: tutorStubCommandHelpRows(commandOptions),
-    commandAvailability,
-    learningSummaryActive: Boolean(state?.capabilities?.capabilities?.learning_summary?.active),
-    colors: C,
-  });
-  for (const line of lines) {
-    console.log(line);
-  }
-}
-
-function printTutorStubReleaseNotes(hoursArg = '') {
-  const hours = normalizeTutorStubReleaseNotesHours(hoursArg);
-  const notes = loadTutorStubReleaseNotes({ cwd: ROOT, hours });
-  const lines = projectTutorStubReleaseNotesLines({ notes, colors: C });
-  for (const line of lines) console.log(line);
-  return notes;
-}
-
 function registerTemperatureApplies(policy) {
   return REGISTER_TEMPERATURE_POLICIES.has(String(policy || ''));
-}
-
-function printCurrentTurnAnalysis(state, { technical = false } = {}) {
-  if (technical) return printCurrentTurnTechnicalAnalysis(state);
-  const turn = state.turns[state.turns.length - 1] || null;
-  const registerSelection = turn ? normalizeStoredRegisterSelection(turn.registerSelection || null) : null;
-  const previousEfficacy = turn ? normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null) : null;
-  const lines = projectTutorStubTurnAnalysisLines({
-    turn,
-    registerSelection,
-    previousEfficacy,
-    policy: registerSelection?.primary_policy || state.register?.policy || 'off',
-    distribution: formatEngagementStanceDistribution(registerSelection?.distribution, { limit: 4 }),
-    colors: C,
-  });
-  for (const line of lines) console.log(line);
-}
-
-function printExplanatoryDebugTechnical(state, { force = false, terminalWrapped = false } = {}) {
-  if (!force && !state.explanatoryDebug?.enabled) return false;
-  if (!terminalWrapped && state.concurrentTerminal?.enabled) {
-    return printWithConcurrentTerminal(state, () =>
-      printExplanatoryDebugTechnical(state, { force, terminalWrapped: true }),
-    );
-  }
-  const turn = state.turns.at(-1) || null;
-  if (!turn) {
-    for (const line of projectTutorStubTechnicalDebugLines({ colors: C })) console.log(line);
-    return false;
-  }
-
-  const previousTurn = state.turns.at(-2) || null;
-  const selection = normalizeStoredRegisterSelection(turn.registerSelection || null);
-  const previousSelection = normalizeStoredRegisterSelection(previousTurn?.registerSelection || null);
-  const policyCalculation = registerPolicyCalculation(selection);
-  const field = buildLightweightDialogueField(state.turns);
-  const fieldRow = field.rows.at(-1) || null;
-  const currentRegister = selection?.engagement_stance || selection?.selected_register || 'off';
-  const previousRegister = previousSelection?.engagement_stance || previousSelection?.selected_register || 'none';
-  const registerChanged = previousRegister !== 'none' && previousRegister !== currentRegister;
-  const activatedPolicy = selection?.activated_policy || selection?.primary_policy || selection?.policy || 'off';
-  const lines = projectTutorStubTechnicalDebugLines({
-    turn,
-    turnIdentifier: turn.turnId || turnDebugId(state, turn.turn),
-    selection,
-    previousSelection,
-    policyCalculation,
-    field,
-    distribution: formatEngagementStanceDistribution(selection?.distribution, { limit: 4 }),
-    registerPolicy: state.register?.policy || 'off',
-    registerTemperature: state.register?.temperature ?? null,
-    colors: C,
-  });
-  for (const line of lines) console.log(line);
-  appendTraceEvent(state.trace, {
-    type: 'explanatory_debug_output',
-    format: 'technical',
-    turn: turn.turn,
-    turnId: turn.turnId || null,
-    field: fieldRow,
-    register: {
-      previous: previousRegister,
-      selected: currentRegister,
-      changed: registerChanged,
-      policy: selection?.policy || state.register?.policy || 'off',
-      activatedPolicy,
-    },
-  });
-  return true;
-}
-
-function explanatoryDebugModel(state) {
-  if (state.learnerDag?.enabled && state.learnerDag.resolved) return state.learnerDag.resolved;
-  if (state.classifier?.enabled && state.classifier.resolved) return state.classifier.resolved;
-  return state.resolved;
-}
-
-async function printExplanatoryDebugTurn(
-  state,
-  { force = false, format = null, signal = null, isCurrent = null } = {},
-) {
-  if (!force && !state.explanatoryDebug?.enabled) return false;
-  const selectedFormat = format || state.explanatoryDebug?.format || 'prose';
-  if (selectedFormat === 'technical') return printExplanatoryDebugTechnical(state, { force: true });
-
-  const turn = state.turns.at(-1) || null;
-  if (!turn) {
-    console.log(`${C.brightBlue}${C.bold}debug >${C.reset} no completed turns yet\n`);
-    return false;
-  }
-
-  const frame = explanatoryDebugFrame(state, turn);
-  const resolved = explanatoryDebugModel(state);
-  let response = null;
-  let prose = '';
-  let generated = true;
-  const existingInterim = Boolean(getInterimState(state)?.active);
-  if (!existingInterim) startInterimAnimation(state, 'explaining turn', { tutorTurn: turn.turn });
-  try {
-    response = await callPromptModel({
-      prompt: explanatoryDebugPrompt(frame),
-      resolved,
-      systemPrompt:
-        'You explain a tutoring harness to its operator. Be exact, terse, and readable. This is private meta-commentary, not dialogue in the scene.',
-      role: 'tutor_stub_explanatory_debug',
-      maxTokens: 220,
-      trace: state.trace,
-      stream: { enabled: false, interim: state.interim },
-      cliEffort: state.cliEffort,
-      turn: turn.turn,
-      signal,
-    });
-    assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
-    prose = cleanExplanatoryDebugProse(response.text);
-    if (!prose) throw new Error('empty explanatory debug response');
-  } catch (error) {
-    if (error?.name === 'AbortError') throw error;
-    generated = false;
-    prose = fallbackExplanatoryDebugProse(frame);
-    appendTraceEvent(state.trace, {
-      type: 'explanatory_debug_fallback',
-      turn: turn.turn,
-      turnId: turn.turnId || null,
-      error: error.message,
-    });
-  } finally {
-    if (!existingInterim) stopInterimAnimation(state);
-  }
-
-  assertTutorStubTurnAttemptCurrent({ signal, isCurrent });
-  printWithConcurrentTerminal(state, () => {
-    console.log(`${C.brightBlue}${C.bold}debug >${C.reset} turn ${turn.turn} · prose${generated ? '' : ' fallback'}`);
-    console.log(`${C.dim}${prose}${C.reset}`);
-    console.log(`${C.dim}  technical evidence: /debug technical · stop: /debug off${C.reset}\n`);
-  });
-  appendTraceEvent(state.trace, {
-    type: 'explanatory_debug_output',
-    format: 'prose',
-    generated,
-    turn: turn.turn,
-    turnId: turn.turnId || null,
-    text: prose,
-    provider: response?.provider || resolved?.provider || null,
-    model: response?.model || resolved?.model || null,
-    latencyMs: response?.latencyMs || null,
-    usage: response?.usage || null,
-    frame,
-  });
-  return true;
-}
-
-function printCurrentTurnTechnicalAnalysis(state) {
-  const turn = state.turns[state.turns.length - 1] || null;
-  const registerSelection = turn ? normalizeStoredRegisterSelection(turn.registerSelection || null) : null;
-  const previousEfficacy = turn ? normalizeStoredRegisterEfficacy(turn.previousRegisterEfficacy || null) : null;
-  const field = turn ? buildLightweightDialogueField(state.turns) : null;
-  const lines = projectTutorStubTechnicalAnalysisLines({
-    turn,
-    turnIdentifier: turn ? turn.turnId || turnDebugId(state, turn.turn) : null,
-    registerSelection,
-    previousEfficacy,
-    distribution: formatEngagementStanceDistribution(registerSelection?.distribution, { limit: 7 }),
-    tracePath: turn ? traceDisplayPath(state.trace) : '',
-    field,
-    classifierEnabled: Boolean(state.classifier?.enabled),
-    learnerDagEnabled: Boolean(state.learnerDag?.enabled),
-    registerEnabled: Boolean(state.register?.enabled),
-    registerTemperature: state.register?.temperature ?? null,
-    tutorDagEnabled: Boolean(state.dag),
-    colors: C,
-  });
-  for (const line of lines) console.log(line);
-}
-
-function printLightweightDialogueField(state) {
-  const field = state.turns.length ? buildLightweightDialogueField(state.turns) : null;
-  for (const line of projectTutorStubLightweightFieldLines(field, { colors: C })) console.log(line);
-  return field;
-}
-
-function fieldVizBasePath(state) {
-  const viz = state.fieldViz || {};
-  const dir = viz.dir || resolveWorkspacePath(STUB.traceDir);
-  const runId = viz.runId || state.trace?.runId || safeTimestampForFile();
-  viz.dir = dir;
-  viz.runId = runId;
-  state.fieldViz = viz;
-  fs.mkdirSync(dir, { recursive: true });
-  return path.join(dir, `${runId}-field`);
-}
-
-function writeFieldVisualization(state, { reason = 'field_viz', force = false } = {}) {
-  if (!force && !state.fieldViz?.enabled) return null;
-  if (!state.turns.length) return null;
-  const field = buildLightweightDialogueField(state.turns);
-  const basePath = fieldVizBasePath(state);
-  const svgPath = `${basePath}.svg`;
-  const jsonPath = `${basePath}.json`;
-  fs.writeFileSync(svgPath, renderLightweightFieldSvg(field, { title: 'Tutor Stub Interaction Field' }));
-  fs.writeFileSync(jsonPath, `${JSON.stringify(field, null, 2)}\n`);
-  const result = {
-    field,
-    svgPath,
-    jsonPath,
-    svgDisplayPath: path.relative(ROOT, svgPath),
-    jsonDisplayPath: path.relative(ROOT, jsonPath),
-  };
-  state.fieldViz.lastWrite = {
-    svg: result.svgDisplayPath,
-    json: result.jsonDisplayPath,
-    turnCount: field.turnCount,
-  };
-  appendTraceEvent(state.trace, {
-    type: 'field_visualization_write',
-    reason,
-    svg: result.svgDisplayPath,
-    json: result.jsonDisplayPath,
-    turnCount: field.turnCount,
-    summary: field.summary,
-  });
-  return result;
-}
-
-function printFieldVisualization(state, { reason = 'viz' } = {}) {
-  if (!state.turns.length) {
-    for (const line of projectTutorStubFieldVisualizationLines(null, { colors: C })) console.log(line);
-    return null;
-  }
-  const result = writeFieldVisualization(state, { reason, force: true });
-  if (!result) return null;
-  for (const line of projectTutorStubFieldVisualizationLines(result, { colors: C })) console.log(line);
-  return result;
-}
-
-function printDialogueCloseout(state, { reason = 'report', trace = state.trace } = {}) {
-  const tracePath = traceDisplayPath(trace);
-  if (!state.turns.length) {
-    for (const line of projectTutorStubCloseoutReportLines({ reason, tracePath, colors: C })) console.log(line);
-    return null;
-  }
-
-  const field = buildLightweightDialogueField(state.turns);
-  const last = state.turns[state.turns.length - 1] || {};
-  const assessment = last.tutorLearnerDagModel?.assessment || {};
-  const metrics = last.tutorLearnerDagModel?.metrics || {};
-  const registerCounts = compactCounts(
-    countBy(
-      state.turns,
-      (turn) => normalizeStoredRegisterSelection(turn.registerSelection)?.selected_register || 'none',
-    ),
-  );
-  const bottleneckCounts = compactCounts(
-    countBy(state.turns, (turn) => turn.tutorLearnerDagModel?.assessment?.bottleneck || 'unknown'),
-  );
-  const responseConfigurationVisibility = summarizeTutorStubResponseConfigurationAudits(
-    state.turns.map((turn) => turn.responseConfigurationAudit),
-  );
-  const guardAccounting = summarizeTutorGuardAccounting(state.turns, {
-    policy: state.experiment?.policy || state.register?.policy || null,
-    profile: state.experiment?.profile || null,
-  });
-  const payload = {
-    schema: 'machinespirits.tutor-stub.closeout-report.v1',
-    reason,
-    turnCount: state.turns.length,
-    trace: tracePath,
-    trainingReuse: jsonClone(state.trainingReuse),
-    finalStatus: dialogueCaseStatus(last),
-    finalAssessment: {
-      bottleneck: assessment.bottleneck || null,
-      bestPathCoverage: assessment.bestPathCoverage ?? null,
-      finalSecretEntailed: assessment.finalSecretEntailed === true,
-      assertedSecret: assessment.assertedSecret === true,
-      missingPremiseCount: Number(metrics.missingPremiseCount ?? assessment.missingPremiseCount ?? 0),
-    },
-    humanDiscourse: {
-      config: state.humanDiscourse || null,
-      finalFrame: last.humanDiscourseFrame || null,
-      finalStatus: last.humanDiscourseFrame?.warrantPremiseAudit?.proofStatus || null,
-      proofDebtStatus: last.humanDiscourseFrame?.proofDebt?.status || null,
-      sideArcCount: state.turns.filter((turn) => turn.humanDiscourseFrame?.sideArc?.detected).length,
-      openProofDebtCount: state.turns.reduce(
-        (sum, turn) => sum + Number(turn.humanDiscourseFrame?.proofDebt?.counts?.open || 0),
-        0,
-      ),
-      elidedBridgeCount: state.turns.reduce(
-        (sum, turn) => sum + Number(turn.humanDiscourseFrame?.proofDebt?.counts?.elided || 0),
-        0,
-      ),
-      questionSupportModes: Object.fromEntries(
-        countBy(state.turns, (turn) => turn.humanDiscourseFrame?.questionSupport?.modality || 'none'),
-      ),
-      questionSupportRepairCount: state.turns.filter(
-        (turn) => turn.tutorResponseRepaired && turn.humanDiscourseFrame?.questionSupport?.guardRequired,
-      ).length,
-    },
-    comprehension: tutorStubComprehensionSnapshot(state.comprehension, {
-      turn: state.turns.length + 1,
-    }),
-    releasePacing: tutorStubReleasePacingSnapshot(state.releasePacing, state.world),
-    responseConfigurationVisibility,
-    guardAccounting,
-    dialogueClosure: last.dialogueClosure?.lifecycle || state.dialogueClosure || null,
-    field: field.summary,
-    finalTurn: {
-      turnId: last.turnId || turnDebugId(state, last.turn),
-      learner: last.learner || '',
-      tutor: last.tutor || '',
-      engagementStance:
-        normalizeStoredRegisterSelection(last.registerSelection)?.engagement_stance ||
-        normalizeStoredRegisterSelection(last.registerSelection)?.selected_register ||
-        null,
-      register: normalizeStoredRegisterSelection(last.registerSelection)?.selected_register || null,
-      responseConfiguration: last.responseConfiguration || null,
-      responseConfigurationAudit: last.responseConfigurationAudit || null,
-      leakOk: last.tutorLeakAudit?.ok ?? null,
-      closure: last.dialogueClosure || null,
-    },
-    learning: buildDialogueLearningSummary(state, { reason, trace: traceDisplayPath(state.trace) }),
-  };
-
-  const lines = projectTutorStubCloseoutReportLines({
-    reason,
-    tracePath,
-    payload,
-    lastTurn: last,
-    registerCounts,
-    bottleneckCounts,
-    colors: C,
-  });
-  for (const line of lines) console.log(line);
-  return payload;
 }
 
 function dagTurnContext(state, tutorTurn, tutorLearnerDagModel = null) {
@@ -5556,243 +5119,63 @@ async function main() {
       state: sessionRuntimeStateSnapshot(),
     });
   }
-  if (output.isTTY) {
-    console.log(
-      `\n${tutorStubCliMasthead(
-        {
-          eyebrow: 'MACHINE SPIRITS · LIVE INQUIRY',
-          title: worldBundle?.world?.title || 'Tutor studio',
-          subtitle: `${state.tuning.activeRef} · ${cliPresentation.themeLabel} · ${cliPresentation.motion} motion`,
-          width: Math.min(output.columns || 68, 76),
-        },
-        cliPresentation,
-      )}`,
-    );
-  }
-  console.log(
-    `${output.isTTY ? '' : '\n'}${C.accent2}tutor-stub${C.reset} ${C.bold}${state.tuning.activeRef}${C.reset} ${C.dim}· ${args.model} -> ${visibleModel.provider}/${visibleModel.model} · tuning ${state.tuning.mode}${C.reset}`,
-  );
-  if (passthroughEnabled) {
-    console.log(`${C.brightCyan}${C.bold}passthrough >${C.reset} pure speaker chat · one model call per turn`);
-    console.log(`${C.dim}request: unchanged system setup + full public history + latest learner message${C.reset}`);
-    if (observedAuditsEnabled) {
-      console.log(
-        `${C.dim}observed audits: leak and repetition are evaluated and recorded after each turn; nothing is gated, repaired or replaced${C.reset}`,
-      );
-    }
-    console.log(
-      `${C.dim}setup: ${worldBundle ? `${worldBundle.world.id} — ${worldBundle.world.title}` : effectiveTopic}${C.reset}`,
-    );
-    console.log(`${C.dim}technical trace: ${trace.enabled ? traceDisplayPath(trace) : 'off'}${C.reset}`);
-    console.log(`${C.dim}type a message to begin · /settings model changes the speaker · /quit exits${C.reset}\n`);
-  } else {
-    if (allModelsOverride) {
-      console.log(
-        `${C.dim}one model for every role: ${allModelsOverride.modelRef} (tutor, learner analysis, reasoning tracker, and automated/suggested learner)${C.reset}`,
-      );
-    }
-    if (rememberedSettings.status === 'loaded' && rememberedSettings.appliedFields.length) {
-      console.log(
-        `${C.dim}saved settings: restored ${plainList(rememberedSettings.appliedFields.map(plainSettingName))} from the last interactive session${C.reset}`,
-      );
-    } else if (rememberedSettings.warning) {
-      console.log(`${C.yellow}saved settings warning:${C.reset} ${rememberedSettings.warning}`);
-    }
-    if (classifierEnabled && combinedLearnerAnalysisEnabled) {
-      console.log(
-        `${C.dim}learner analysis: one combined reading via ${args['learner-record-model']} → ${visibleLearnerRecordModel.provider}/${visibleLearnerRecordModel.model}${C.reset}`,
-      );
-    } else if (classifierEnabled) {
-      console.log(
-        `${C.dim}learner analysis: ${args['classifier-model']} → ${visibleClassifierModel.provider}/${visibleClassifierModel.model}${C.reset}`,
-      );
-    } else {
-      console.log(`${C.dim}learner analysis: off${C.reset}`);
-    }
-    if (tutorLearnerDagEnabled) {
-      console.log(
-        `${C.dim}learner reasoning tracker: on via ${args['learner-record-model']} → ${visibleLearnerRecordModel.provider}/${visibleLearnerRecordModel.model}${C.reset}`,
-      );
-    } else if (args['tutor-learner-dag'] && !worldBundle) {
-      console.log(`${C.dim}learner reasoning tracker: unavailable because no scenario is active${C.reset}`);
-    } else {
-      console.log(`${C.dim}learner reasoning tracker: off${C.reset}`);
-    }
-    console.log(
-      `${C.dim}reasoning mode: ${displayDiagnosticLabel(dagMode)} (${humanDiscourseConfig.phase}; ${
-        humanDiscourseConfig.behaviorChange ? 'human-friendly inference active' : 'strict proof audit'
-      })${C.reset}`,
-    );
-    if (autoLearnerEnabled) {
-      const autoTurnSummary = autoTurns === null ? `until grounded; safety ${autoSafetyTurns}` : `${autoTurns}`;
-      console.log(
-        `${C.dim}automated learner: ${args['auto-learner-model']} → ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; ${autoTurnSummary}; stop when complete: ${autoStopOnGrounded ? 'yes' : 'no'}${C.reset}`,
-      );
-    } else if (mixedLearnerEnabled) {
-      console.log(
-        `${C.dim}learner suggestions: on via ${args['auto-learner-model']} → ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}; use /clue, Tab, /suggest, /use, or /regen${C.reset}`,
-      );
-    } else if (mixedLearnerRequested) {
-      console.log(`${C.dim}learner suggestions: off while the automated learner is running${C.reset}`);
-    } else if (interactiveSessionEnabled && visibleAutoLearnerModel) {
-      console.log(
-        `${C.dim}interactive roles: learner + private coach; /auto hands off to ${visibleAutoLearnerModel.provider}/${visibleAutoLearnerModel.model}${C.reset}`,
-      );
-    } else {
-      console.log(`${C.dim}automated learner: off${C.reset}`);
-    }
-    if (typedActionConfig.enabled) {
-      console.log(
-        `${C.dim}typed pedagogical actions: on | task ${typedActionTask.taskId} | knowledge component ${
-          typedActionTask.knowledgeComponent
-        } | difficulty ${typedActionTask.itemDifficulty} | support ${
-          typedActionSupportLevel === null ? 'action default' : typedActionSupportLevel
-        }${C.reset}`,
-      );
-    }
-    if (registerSelectionEnabled) {
-      console.log(
-        `${C.dim}teaching style: ${plainPolicyLabel(state.register.policy)} | available stances [${registerPalette.join(', ')}] | policy ${tutorStubRegisterPolicyStackId(
-          state.register.policy,
-          state.register.overlays,
-        )} | override sensitivity ${state.register.overlayThreshold} | style range ${state.register.temperature}${C.reset}`,
-      );
-      if (
-        empiricalDynamicalSystemRegisterSelectionEnabled ||
-        continuousEmpiricalDynamicalSystemRegisterSelectionEnabled ||
-        registerEmpiricalPrior.status === 'loaded'
-      ) {
-        const priorPath = registerEmpiricalPrior.filePath
-          ? path.relative(ROOT, registerEmpiricalPrior.filePath)
-          : 'none';
-        console.log(
-          `${C.dim}cross-run style evidence: ${
-            registerEmpiricalPrior.status === 'loaded_holdout_not_passed'
-              ? 'available but not steering (independent-run check not passed)'
-              : registerEmpiricalPrior.status === 'loaded_legacy_requires_rebuild'
-                ? 'legacy artifact not steering (rebuild to add deduplication and independent-run checks)'
-                : registerEmpiricalPrior.status
-          }${priorPath ? ` | ${priorPath}` : ''}${C.reset}`,
-        );
-      }
-      if (continuousRegisterSelectionEnabled) {
-        console.log(
-          `${C.dim}style blend sources: ${
-            continuousUnsafeRegisterAnchorsEnabled ? 'active palette' : 'safe router-selectable only'
-          }${C.reset}`,
-        );
-      }
-    } else {
-      console.log(`${C.dim}teaching-style selection: off${C.reset}`);
-    }
-    if (trace.enabled) {
-      console.log(`${C.dim}technical trace: ${traceDisplayPath(trace)}${C.reset}`);
-    } else {
-      console.log(`${C.dim}technical trace: off${C.reset}`);
-    }
-    if (streamEnabled) {
-      const streamBits = [
-        tutorStreamState === 'live' ? 'tutor live' : null,
-        tutorStreamState === 'buffered_for_concurrent_input' ? 'tutor buffered while command line is live' : null,
-        tutorStreamState === 'guarded_after_audit' ? 'tutor guarded-after-audit' : null,
-        tutorStreamState === 'cli_events' ? 'tutor CLI events' : null,
-        classifierResolved && providerSupportsStreaming(classifierResolved) ? 'learner analysis' : null,
-        learnerRecordResolved && providerSupportsStreaming(learnerRecordResolved) ? 'reasoning tracker' : null,
-        classifierResolved && providerSupportsEventStreaming(classifierResolved) ? 'learner-analysis events' : null,
-        learnerRecordResolved && providerSupportsEventStreaming(learnerRecordResolved)
-          ? 'reasoning-tracker events'
-          : null,
-      ].filter(Boolean);
-      const streamSummary = streamBits.length
-        ? `on for ${streamBits.join(', ')}`
-        : tutorStreamState === 'unavailable_cli_buffered'
-          ? 'requested, but tutor provider is CLI-buffered'
-          : 'requested, but selected providers are CLI-buffered';
-      console.log(`${C.dim}live output: ${streamSummary}${C.reset}`);
-    } else {
-      console.log(`${C.dim}live output: off${C.reset}`);
-    }
-    console.log(
-      `${C.dim}terminal appearance: ${cliPresentation.themeLabel} · ${cliPresentation.motion} motion · ${cliPresentation.colorMode}; /theme and /motion change it live${C.reset}`,
-    );
-    console.log(
-      `${C.dim}progress display: ${
-        interimAnimationEnabled
-          ? output.isTTY && cliPresentation.motion !== 'off'
-            ? `on (${cliPresentation.motion})`
-            : 'off in this terminal'
-          : 'off'
-      }${C.reset}`,
-    );
-    console.log(
-      `${C.dim}interaction chart: ${
-        fieldVisualizationEnabled ? `on -> ${path.relative(ROOT, traceDir)}` : 'off (/viz writes on demand)'
-      }${C.reset}`,
-    );
-    console.log(`${C.dim}opening scene: ${openingEnabled && !firstMessage ? 'on' : 'off'}${C.reset}`);
-    console.log(`${C.dim}terminal summary at the end: ${closeoutReportEnabled ? 'on' : 'off'}${C.reset}`);
-    console.log(
-      `${C.dim}optional tutor thumbs feedback: ${turnFeedbackEnabled ? 'on' : 'off'}${autoLearnerEnabled ? ' (automated learner)' : ''}${C.reset}`,
-    );
-    console.log(
-      `${C.dim}compact response + timing details: ${responseDetailsEnabled ? 'on' : 'off'} · /details changes this for the session${C.reset}`,
-    );
-    if (learningSummaryReportConfig.enabled) {
-      console.log(
-        `${C.dim}learning summary: automatic HTML on conclusion${
-          process.env.TUTOR_STUB_SUMMARY_OPEN === '0' ? '; browser launch off' : '; opens in an interactive terminal'
-        }${C.reset}`,
-      );
-    }
-    console.log(
-      `${C.dim}natural ending: ${dialogueClosureConfig.enabled ? `on; ${dialogueClosureConfig.allowCheckIn ? 'one optional final check-in' : 'close without a check-in'}` : 'off'}${C.reset}`,
-    );
-    if (cliEffort) {
-      console.log(`${C.dim}cli effort: ${cliEffort}${C.reset}`);
-    }
-    if (resumedDialogue) {
-      console.log(
-        `${C.dim}resume: loaded ${resumedDialogue.turns} turn(s) from ${path.relative(ROOT, resumedDialogue.source)}${C.reset}`,
-      );
-      if (resumedDialogue.learnerDag.skipped) {
-        console.log(
-          `${C.dim}resume: rebuilt ${resumedDialogue.learnerDag.replayed} reasoning snapshot(s) and reused ${resumedDialogue.learnerDag.skipped}${C.reset}`,
-        );
-      }
-      if (resumedDialogue.typedActions.enabled) {
-        console.log(
-          `${C.dim}resume: typed actions restored ${resumedDialogue.typedActions.ledgerRecords} ledger record(s); phase ${
-            resumedDialogue.typedActions.phase
-          }; pending ${resumedDialogue.typedActions.pendingContractId || 'none'}${C.reset}`,
-        );
-      }
-      for (const warning of resumedDialogue.warnings) {
-        console.log(`${C.red}resume warning${C.reset}${C.dim}: ${warning}${C.reset}`);
-      }
-      if (state.dialogueClosure?.phase === 'awaiting_checkin') {
-        console.log(
-          `${C.cyan}resume closure >${C.reset} the saved dialogue had already stated its verdict; one final learner check-in remains`,
-        );
-      } else if (state.dialogueClosure?.phase === 'closed') {
-        console.log(`${C.cyan}resume closure >${C.reset} the saved dialogue is already closed`);
-      }
-    } else if (resumeRequested) {
-      console.log(`${C.dim}resume: no completed dialogue found in ${path.relative(ROOT, traceDir)}${C.reset}`);
-    }
-    if (temperature !== effectiveTemperature) {
-      console.log(
-        `${C.dim}temperature: requested ${temperature}; using ${effectiveTemperature} because ${visibleModel.model} only supports the default${C.reset}`,
-      );
-    }
-    if (worldBundle) {
-      console.log(
-        `${C.dim}scenario: ${worldBundle.world.id} — ${worldBundle.world.title}${args.dag ? ' | proof map on' : ' | proof map off'}${C.reset}`,
-      );
-    }
-    console.log(
-      `${C.dim}topic: ${effectiveTopic} | type / for commands | /reset to recover | /quit to exit${C.reset}\n`,
-    );
-  }
+  printTutorStubLaunchSummary({
+    state,
+    worldBundle,
+    args,
+    visibleModel,
+    passthroughEnabled,
+    observedAuditsEnabled,
+    effectiveTopic,
+    trace,
+    allModelsOverride,
+    rememberedSettings,
+    classifierEnabled,
+    combinedLearnerAnalysisEnabled,
+    visibleLearnerRecordModel,
+    visibleClassifierModel,
+    tutorLearnerDagEnabled,
+    humanDiscourseConfig,
+    dagMode,
+    autoLearnerEnabled,
+    autoTurns,
+    autoSafetyTurns,
+    autoStopOnGrounded,
+    visibleAutoLearnerModel,
+    mixedLearnerEnabled,
+    mixedLearnerRequested,
+    interactiveSessionEnabled,
+    typedActionConfig,
+    typedActionTask,
+    typedActionSupportLevel,
+    registerSelectionEnabled,
+    registerPalette,
+    empiricalDynamicalSystemRegisterSelectionEnabled,
+    continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
+    registerEmpiricalPrior,
+    continuousRegisterSelectionEnabled,
+    continuousUnsafeRegisterAnchorsEnabled,
+    streamEnabled,
+    tutorStreamState,
+    classifierResolved,
+    learnerRecordResolved,
+    interimAnimationEnabled,
+    fieldVisualizationEnabled,
+    traceDir,
+    openingEnabled,
+    firstMessage,
+    closeoutReportEnabled,
+    turnFeedbackEnabled,
+    responseDetailsEnabled,
+    learningSummaryReportConfig,
+    summaryBrowserLaunchEnabled: process.env.TUTOR_STUB_SUMMARY_OPEN !== '0',
+    dialogueClosureConfig,
+    cliEffort,
+    resumedDialogue,
+    resumeRequested,
+    temperature,
+    effectiveTemperature,
+  });
 
   if (autoLearnerEnabled) {
     const result = await runAutomatedLearnerDialogue({

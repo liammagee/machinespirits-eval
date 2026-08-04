@@ -9,7 +9,7 @@ source: review
 created: 2026-07-29
 updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-prompt-transport
+branch: codex/refactor-tutor-stub-debug-report-presentation
 claim_status: planned
 depends_on: []
 links:
@@ -21,6 +21,7 @@ links:
     - services/tutorStubClarificationTranslationRuntime.js
     - services/tutorStubCliArguments.js
     - services/tutorStubCommandRuntime.js
+    - services/tutorStubDebugReportRuntime.js
     - services/tutorStubFeedbackTuningController.js
     - services/tutorStubInteractiveAutomationController.js
     - services/tutorStubInteractiveDialogueController.js
@@ -31,6 +32,7 @@ links:
     - services/tutorStubInteractiveTurnController.js
     - services/tutorStubInterimController.js
     - services/tutorStubLaunchRuntime.js
+    - services/tutorStubLaunchSummaryPresentation.js
     - services/tutorStubLearnerAnalysisRuntime.js
     - services/tutorStubLearnerDagState.js
     - services/tutorStubLearnerEvidenceRuntime.js
@@ -41,6 +43,7 @@ links:
     - services/tutorStubOpeningRuntime.js
     - services/tutorStubPromptTransport.js
     - services/tutorStubPublicHistory.js
+    - services/tutorStubPublicPresentationRuntime.js
     - services/tutorStubRecoveryAccountingRuntime.js
     - services/tutorStubResponsePolicy.js
     - services/tutorStubScenarioController.js
@@ -65,6 +68,7 @@ links:
     - 471
     - 474
     - 475
+    - 476
   items:
     - codebase-refactoring-program
 tags:
@@ -348,3 +352,27 @@ Boundary reassessment after cycle 11:
   manifest, workplan source (397 items), ref governance, syntax, and the static
   import graph pass with zero cycles across 487 files; no model calls were
   authorized for this structural extraction.
+- 2026-08-04 — Opened macro cycle 12 as PR #476; merged at `d5a6dd04`.
+- 2026-08-04 — Started macro cycle 13 from current `origin/main` in the
+  isolated `codex/refactor-tutor-stub-debug-report-presentation` worktree. This
+  slice assigns startup/help, public debug, field visualization, and closeout
+  report effects to bounded presentation owners while retaining the existing
+  pure projection services and explicit terminal/filesystem adapters.
+- 2026-08-04 — Macro cycle 13 moved launch-summary rendering, help/features/
+  release-notes and tutor-DAG presentation, response timing/details,
+  explanatory and technical debug, field visualization writes, and closeout
+  report assembly behind three bounded owners (122, 321, and 435 source
+  lines). `scripts/tutor-stub.js` fell from 7,311 to 6,694 lines, a 617-line net
+  reduction; the cycles 11–13 rolling average is 1,244 lines per PR and remains
+  above the 750-line stop floor. All new owners remain below the 900-line
+  anti-monolith ceiling.
+- 2026-08-04 — Cycle 13 verification passes 82/82 focused help, launch,
+  debug, report, field, exact-byte, live CLI, and ownership assertions plus the
+  zero-skip hermetic suite at 7,757/7,757 root tests and 137/137 tutor-core
+  tests. Lint, Prettier, manifest, workplan source (397 items), ref governance,
+  syntax, whitespace, and the static import graph pass with zero cycles across
+  492 files; no model calls were authorized for this structural extraction.
+- 2026-08-04 — Restacked the uncommitted cycle 13 patch without conflict onto
+  current `origin/main` at `74ab5721` after PR #477 landed. Repeated the focused,
+  static, and full hermetic gates against that exact composition; the counts
+  above are the post-restack results.

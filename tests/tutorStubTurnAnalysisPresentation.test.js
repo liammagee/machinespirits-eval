@@ -182,21 +182,23 @@ test('turn-analysis projection retains question-support wording and prior-effica
   assert.match(neutral, /plain: did not yet produce clear reasoning progress/u);
 });
 
-test('the real CLI keeps normalization, technical dispatch, and terminal ownership around the projector', async () => {
+test('the debug-report runtime keeps normalization, technical dispatch, and terminal ownership around the projector', async () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTurnAnalysisPresentation.js'), 'utf8');
-  const printSlice = cliSource.slice(
-    cliSource.indexOf('function printCurrentTurnAnalysis'),
-    cliSource.indexOf('function debugNumber'),
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
+  const printSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printCurrentTurnAnalysis'),
+    runtimeSource.indexOf('function printExplanatoryDebugTechnical'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubTurnAnalysisPresentation\.js';/u);
+  assert.match(cliSource, /createTutorStubDebugReportRuntime/u);
+  assert.match(runtimeSource, /from '\.\/tutorStubTurnAnalysisPresentation\.js';/u);
   assert.match(printSlice, /if \(technical\) return printCurrentTurnTechnicalAnalysis\(state\)/u);
   assert.match(printSlice, /normalizeStoredRegisterSelection/u);
   assert.match(printSlice, /normalizeStoredRegisterEfficacy/u);
   assert.match(printSlice, /formatEngagementStanceDistribution/u);
   assert.match(printSlice, /projectTutorStubTurnAnalysisLines/u);
-  assert.match(printSlice, /for \(const line of lines\) console\.log\(line\)/u);
+  assert.match(printSlice, /for \(const line of lines\) writeLine\(line\)/u);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);
 
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-turn-analysis-presentation-'));

@@ -230,15 +230,18 @@ test('guard accounting aggregates repairs, latency, audit issues, spans, and dyn
   });
 });
 
-test('the CLI delegates pure closeout helpers while retaining report assembly and terminal output', () => {
+test('the debug-report runtime assembles closeout reports from pure helpers', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCloseoutProjection.js'), 'utf8');
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubCloseoutProjection\.js';/u);
+  assert.match(cliSource, /createTutorStubDebugReportRuntime/u);
+  assert.match(runtimeSource, /from '\.\/tutorStubCloseoutProjection\.js';/u);
   assert.doesNotMatch(
     cliSource,
     /function (?:countBy|compactCounts|plainCloseoutReason|plainCloseoutStatus|summarizeTutorGuardAccounting)\s*\(/u,
   );
-  assert.match(cliSource, /function printDialogueCloseout\s*\(/u);
+  assert.doesNotMatch(cliSource, /function printDialogueCloseout\s*\(/u);
+  assert.match(runtimeSource, /function printDialogueCloseout\s*\(/u);
   assert.doesNotMatch(serviceSource, /\b(?:fs|console|process|fetch)\s*\./u);
 });

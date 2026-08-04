@@ -100,19 +100,21 @@ test('grouped release-note projection pins singular labels, visibility limits, a
   assert.deepEqual(input, before, 'grouped release-note projection must not mutate its inputs');
 });
 
-test('the CLI retains Git loading, time-window normalization, terminal writes, and return value', () => {
+test('the public presentation runtime retains Git loading, time-window normalization, terminal writes, and return value', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubReleaseNotesPresentation.js'), 'utf8');
-  const releaseNotesSlice = cliSource.slice(
-    cliSource.indexOf('function printTutorStubReleaseNotes'),
-    cliSource.indexOf('function registerTemperatureApplies'),
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubPublicPresentationRuntime.js'), 'utf8');
+  const releaseNotesSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printTutorStubReleaseNotes'),
+    runtimeSource.indexOf('\n  return {', runtimeSource.indexOf('function printTutorStubReleaseNotes')),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubReleaseNotesPresentation\.js';/u);
+  assert.match(cliSource, /createTutorStubPublicPresentationRuntime/u);
+  assert.match(runtimeSource, /from '\.\/tutorStubReleaseNotesPresentation\.js';/u);
   assert.match(releaseNotesSlice, /normalizeTutorStubReleaseNotesHours/u);
   assert.match(releaseNotesSlice, /loadTutorStubReleaseNotes\(\{ cwd: ROOT, hours \}\)/u);
   assert.match(releaseNotesSlice, /projectTutorStubReleaseNotesLines/u);
-  assert.match(releaseNotesSlice, /console\.log\(line\)/u);
+  assert.match(releaseNotesSlice, /writeLine\(line\)/u);
   assert.match(releaseNotesSlice, /return notes/u);
   assert.doesNotMatch(releaseNotesSlice, /This view is rebuilt from Git each time/u);
   assert.match(serviceSource, /export function projectTutorStubReleaseNotesLines/u);

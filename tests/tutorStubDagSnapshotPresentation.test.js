@@ -253,9 +253,10 @@ test('a live technical session preserves the exact Marrick tutor-DAG terminal bl
   }
 });
 
-test('the CLI retains snapshot state access, terminal writes, and every runtime caller', () => {
+test('the public presentation runtime retains snapshot state access, terminal writes, and every runtime caller', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDagSnapshotPresentation.js'), 'utf8');
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubPublicPresentationRuntime.js'), 'utf8');
   const technicalAnalysisSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubTechnicalAnalysisPresentation.js'),
     'utf8',
@@ -265,21 +266,24 @@ test('the CLI retains snapshot state access, terminal writes, and every runtime 
     path.join(ROOT, 'services', 'tutorStubInteractiveTurnController.js'),
     'utf8',
   );
-  const snapshotSlice = cliSource.slice(
-    cliSource.indexOf('function buildTutorDagSnapshot'),
-    cliSource.indexOf('function oneLine'),
+  const snapshotSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function buildTutorDagSnapshot'),
+    runtimeSource.indexOf('function printTutorStubFeatureMap'),
   );
 
-  assert.match(cliSource, /projectTutorStubDagSnapshot,/u);
+  assert.match(cliSource, /createTutorStubPublicPresentationRuntime/u);
+  assert.doesNotMatch(cliSource, /function buildTutorDagSnapshot/u);
+  assert.match(runtimeSource, /projectTutorStubDagSnapshot,/u);
   assert.match(snapshotSlice, /function buildTutorDagSnapshot\(state, tutorTurn\)/u);
   assert.match(snapshotSlice, /committedReleaseRows\(state, tutorTurn\)/u);
   assert.match(snapshotSlice, /nextReleaseRow\(state\)/u);
   assert.match(snapshotSlice, /projectTutorStubDagSnapshot\(/u);
   assert.match(snapshotSlice, /projectTutorStubDagSnapshotLines/u);
-  assert.match(snapshotSlice, /console\.log\(line\)/u);
+  assert.match(snapshotSlice, /writeLine\(line\)/u);
   assert.doesNotMatch(snapshotSlice, /proof leaves released/u);
   const runtimeCallerCount =
     (cliSource.match(/printTutorDagSnapshot\(/gu)?.length || 0) +
+    (runtimeSource.match(/printTutorDagSnapshot\(/gu)?.length || 0) +
     (turnOrchestrationSource.match(/printTutorDagSnapshot\(/gu)?.length || 0) +
     (interactiveTurnSource.match(/printTutorDagSnapshot\(/gu)?.length || 0);
   assert.equal(runtimeCallerCount, 4);

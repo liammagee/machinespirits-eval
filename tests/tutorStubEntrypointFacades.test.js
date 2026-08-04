@@ -150,6 +150,7 @@ test('entrypoint binds bounded facades instead of redeclaring their subsystems',
   const facadePaths = [
     'services/tutorStubCliArguments.js',
     'services/tutorStubClarificationTranslationRuntime.js',
+    'services/tutorStubDebugReportRuntime.js',
     'services/tutorStubCharacterControlController.js',
     'services/tutorStubFeedbackTuningController.js',
     'services/tutorStubInteractiveLearnerRuntime.js',
@@ -160,12 +161,14 @@ test('entrypoint binds bounded facades instead of redeclaring their subsystems',
     'services/tutorStubInteractiveSessionController.js',
     'services/tutorStubInteractiveTurnController.js',
     'services/tutorStubLaunchRuntime.js',
+    'services/tutorStubLaunchSummaryPresentation.js',
     'services/tutorStubLearnerDagState.js',
     'services/tutorStubLiveSettingsController.js',
     'services/tutorStubMixedLearnerController.js',
     'services/tutorStubOpeningRuntime.js',
     'services/tutorStubPerformanceControlController.js',
     'services/tutorStubPromptTransport.js',
+    'services/tutorStubPublicPresentationRuntime.js',
     'services/tutorStubRecoveryAccountingRuntime.js',
     'services/tutorStubScenarioController.js',
   ];
@@ -176,6 +179,7 @@ test('entrypoint binds bounded facades instead of redeclaring their subsystems',
   assert.match(entrypoint, /createTutorStubOpeningRuntime/u);
   assert.match(entrypoint, /createTutorStubRecoveryAccountingRuntime/u);
   assert.match(entrypoint, /createTutorStubClarificationTranslationRuntime/u);
+  assert.match(entrypoint, /createTutorStubDebugReportRuntime/u);
   assert.match(entrypoint, /createTutorStubInteractiveLearnerRuntime/u);
   assert.match(entrypoint, /createTutorStubInteractiveAutomationController/u);
   assert.match(entrypoint, /createTutorStubInteractiveDialogueController/u);
@@ -186,6 +190,8 @@ test('entrypoint binds bounded facades instead of redeclaring their subsystems',
   assert.match(entrypoint, /createTutorStubMixedLearnerController/u);
   assert.match(entrypoint, /createTutorStubPerformanceControlController/u);
   assert.match(entrypoint, /createTutorStubScenarioController/u);
+  assert.match(entrypoint, /createTutorStubLaunchSummaryPresentation/u);
+  assert.match(entrypoint, /createTutorStubPublicPresentationRuntime/u);
   assert.doesNotMatch(entrypoint, /\bparseArgs\s*\(/u);
   assert.doesNotMatch(entrypoint, /function prepareTutorStubLaunchConfiguration/u);
   assert.doesNotMatch(entrypoint, /function pickInitialScenarioWithKeyboard/u);
@@ -204,7 +210,12 @@ test('entrypoint binds bounded facades instead of redeclaring their subsystems',
   assert.doesNotMatch(entrypoint, /async function buildTutorOpening/u);
   assert.doesNotMatch(entrypoint, /function tutorResponseRecoveryPrompt/u);
   assert.doesNotMatch(entrypoint, /async function generateTutorClarification/u);
-  assert.ok(entrypoint.split('\n').length <= 7_350, 'cycle 12 keeps the entrypoint line-count ratchet');
+  assert.doesNotMatch(entrypoint, /function printTutorStubFeatureMap/u);
+  assert.doesNotMatch(entrypoint, /function printResponseDetails/u);
+  assert.doesNotMatch(entrypoint, /function printExplanatoryDebugTurn/u);
+  assert.doesNotMatch(entrypoint, /function printDialogueCloseout/u);
+  assert.doesNotMatch(entrypoint, /terminal summary at the end:/u);
+  assert.ok(entrypoint.split('\n').length <= 6_700, 'cycle 13 keeps the entrypoint line-count ratchet');
   for (const relativePath of facadePaths) {
     const source = fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
     assert.ok(source.split('\n').length < 900, `${relativePath} must remain a bounded facade`);

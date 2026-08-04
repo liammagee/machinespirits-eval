@@ -71,20 +71,22 @@ test('session feature-map projection pins active context without owning state re
   assert.deepEqual(input, before, 'session projection must not mutate its inputs');
 });
 
-test('the CLI retains capability, state, and terminal ownership while delegating only line projection', () => {
+test('the public presentation runtime owns capability context and terminal projection', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubFeatureMap.js'), 'utf8');
-  const featureMapSlice = cliSource.slice(
-    cliSource.indexOf('function printTutorStubFeatureMap'),
-    cliSource.indexOf('function printInteractiveHelp'),
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubPublicPresentationRuntime.js'), 'utf8');
+  const featureMapSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printTutorStubFeatureMap'),
+    runtimeSource.indexOf('function printInteractiveHelp'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubFeatureMap\.js';/u);
+  assert.match(cliSource, /createTutorStubPublicPresentationRuntime/u);
+  assert.match(runtimeSource, /from '\.\/tutorStubFeatureMap\.js';/u);
   assert.match(featureMapSlice, /tutorStubCapabilityFeatureRows/u);
   assert.match(featureMapSlice, /state\.curriculum/u);
   assert.match(featureMapSlice, /state\.capabilities\.capabilities/u);
   assert.match(featureMapSlice, /projectTutorStubFeatureMapLines/u);
-  assert.match(featureMapSlice, /console\.log\(line\)/u);
+  assert.match(featureMapSlice, /writeLine\(line\)/u);
   assert.doesNotMatch(featureMapSlice, /quick starts/u);
   assert.match(serviceSource, /export function projectTutorStubFeatureMapLines/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);

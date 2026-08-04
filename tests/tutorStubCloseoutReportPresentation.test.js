@@ -147,19 +147,22 @@ test('closeout report projection preserves no-turn and sparse omission contracts
   assert.match(lines.at(-1), /x{217}\.\.\.\n$/u);
 });
 
-test('the CLI retains report assembly and effects while live closeout output stays byte-identical', () => {
+test('the debug-report runtime retains report assembly and effects while live closeout output stays byte-identical', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCloseoutReportPresentation.js'), 'utf8');
-  const closeoutSlice = cliSource.slice(
-    cliSource.indexOf('function printDialogueCloseout'),
-    cliSource.indexOf('\nfunction dagTurnContext', cliSource.indexOf('function printDialogueCloseout')),
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
+  const closeoutSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printDialogueCloseout'),
+    runtimeSource.indexOf('\n  return {', runtimeSource.indexOf('function printDialogueCloseout')),
   );
 
-  assert.match(cliSource, /projectTutorStubCloseoutReportLines/u);
+  assert.match(cliSource, /createTutorStubDebugReportRuntime/u);
+  assert.doesNotMatch(cliSource, /function printDialogueCloseout/u);
+  assert.match(runtimeSource, /projectTutorStubCloseoutReportLines/u);
   assert.match(closeoutSlice, /buildLightweightDialogueField/u);
   assert.match(closeoutSlice, /buildDialogueLearningSummary/u);
   assert.match(closeoutSlice, /traceDisplayPath/u);
-  assert.match(closeoutSlice, /for \(const line of lines\) console\.log\(line\)/u);
+  assert.match(closeoutSlice, /for \(const line of lines\) writeLine\(line\)/u);
   assert.match(closeoutSlice, /return payload/u);
   assert.doesNotMatch(closeoutSlice, /reasoning progress:|response checks:|sticking points seen:/u);
   assert.doesNotMatch(serviceSource, /\b(?:console|fs|process|fetch)\s*\./u);
