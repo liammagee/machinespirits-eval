@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-04T22:48:44.336Z",
+  "generated": "2026-08-04T22:58:36.019Z",
   "counts": {
     "total": 398,
     "byStatus": {
-      "done": 366,
+      "done": 367,
       "blocked": 7,
       "dropped": 4,
-      "triaged": 6,
+      "triaged": 5,
       "active": 8,
-      "review": 3,
-      "archived": 4
+      "archived": 4,
+      "review": 3
     },
     "byType": {
       "research": 71,
@@ -129,30 +129,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
-    },
-    {
-      "id": "recode-superego-incorporation-as-a-framing-trajectory",
-      "title": "Recode superego incorporation as a framing trajectory",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "daily-routine",
-      "created": "2026-07-20",
-      "updated": "2026-07-28",
-      "verification": "A sample of cell 21 and cells 48-49 tutor_deliberation logs hand-coded against the five-stage framing trajectory, reporting for each superego check whether the next ego turn reframes or only restates, set against the existing incorporationRate and dimension_convergence values for the same rows through an analyze:traces re-analysis; the write-up says whether the two measures agree or the trajectory coding catches incorporation the text proxy misses.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "notes/daily-notes/2026-07-20-research-roundup.html",
-          "notes/research-plans/2026-07-27-research-plan.html"
-        ]
-      },
-      "tags": [
-        "writing-pad",
-        "prompt-erosion",
-        "deliberation"
-      ]
     },
     {
       "id": "tutor-contract-turns-to-closure-prereg",
@@ -306,7 +282,7 @@
       "source": "review",
       "created": "2026-08-05",
       "updated": "2026-08-05",
-      "branch": "codex/refactor-tutor-stub-repair-fallback-owner",
+      "branch": "codex/refactor-tutor-stub-repair-ladder-owner",
       "verification": "The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.",
       "claim_status": "planned",
       "depends_on": [],
@@ -318,6 +294,7 @@
           "services/tutorStubTutorCommitteeRuntime.js",
           "services/tutorStubTutorDeliveryRuntime.js",
           "services/tutorStubTutorDraftAudit.js",
+          "services/tutorStubTutorRepairRuntime.js",
           "services/tutorStubResponsePolicy.js",
           "scripts/tutor-stub.js"
         ],
@@ -867,41 +844,6 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "decide-rich-learner-memory-service-retention",
-      "title": "Decide and verify the retained rich learner-memory service",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-08-05",
-      "branch": "codex/decide-rich-learner-memory-retention",
-      "verification": "The rich learner-memory service has an explicit supported or quarantined status; if supported, hermetic schema and CRUD tests cover its public contract and import-time storage is safely relocated.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "notes": [
-          "MEMORY-ARCHITECTURE.md",
-          "MEMORY-MECHANISMS.md"
-        ],
-        "code": [
-          "services/memory/learnerMemoryService.js",
-          "scripts/run-rich-memory-arc-experiment.js",
-          "scripts/smoke-rich-memory-arc.js",
-          "tests/learnerMemoryService.test.js",
-          "tests/memoryArchitectureSeam.test.js"
-        ]
-      },
-      "tags": [
-        "learner-memory",
-        "architecture",
-        "sqlite",
-        "testing"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
       "id": "harness-untangling-clue-insertion",
       "title": "Untangling 1: insert the due clue into the model's reply instead of replacing the reply",
       "status": "review",
@@ -924,6 +866,42 @@
       "tags": [
         "tutor-stub",
         "harness"
+      ]
+    },
+    {
+      "id": "recode-superego-incorporation-as-a-framing-trajectory",
+      "title": "Recode superego incorporation as a framing trajectory",
+      "status": "review",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-07-20",
+      "updated": "2026-08-05",
+      "branch": "codex/recode-superego-framing-trajectory",
+      "verification": "A deterministic sample of cell 21 and cells 48-49 dialogue traces is coded against a versioned framing-trajectory codebook, compared with the recomputed incorporationRate proxy, and accompanied by an explicit audit of historical dimension_convergence availability; the report preserves trace hashes and states whether the measures agree without mutating source data.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/daily-notes/2026-07-20-research-roundup.html",
+          "notes/research-plans/2026-07-27-research-plan.html",
+          "notes/2026-08-05-superego-framing-trajectory-recoding.md"
+        ],
+        "code": [
+          "services/superegoFramingTrajectoryAnalyzer.js",
+          "scripts/analyze-superego-framing-trajectory.js",
+          "tests/superegoFramingTrajectoryAnalyzer.test.js",
+          "tests/superegoFramingTrajectoryCli.test.js"
+        ],
+        "data": [
+          "config/analysis/superego-framing-trajectory-codebook-v1.json",
+          "data/paper2/superego-framing-trajectory-coding-v1.json"
+        ]
+      },
+      "tags": [
+        "writing-pad",
+        "prompt-erosion",
+        "deliberation"
       ]
     },
     {
@@ -10646,6 +10624,43 @@
       ],
       "branch": "codex/geist-positioning",
       "milestone": "board-pm"
+    },
+    {
+      "id": "decide-rich-learner-memory-service-retention",
+      "title": "Decide and verify the retained rich learner-memory service",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-22",
+      "updated": "2026-08-05",
+      "verification": "The rich learner-memory service has an explicit supported or quarantined status; if supported, hermetic schema and CRUD tests cover its public contract and import-time storage is safely relocated.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "MEMORY-ARCHITECTURE.md",
+          "MEMORY-MECHANISMS.md"
+        ],
+        "code": [
+          "services/memory/learnerMemoryService.js",
+          "scripts/run-rich-memory-arc-experiment.js",
+          "scripts/smoke-rich-memory-arc.js",
+          "tests/learnerMemoryService.test.js",
+          "tests/memoryArchitectureSeam.test.js"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/489"
+        ]
+      },
+      "tags": [
+        "learner-memory",
+        "architecture",
+        "sqlite",
+        "testing"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "drama-world-public-object-reachability",
