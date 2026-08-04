@@ -174,15 +174,20 @@ test('the CLI retains authorial ledger resolution, runtime call sites, and promp
     path.join(ROOT, 'services', 'tutorStubInteractiveLearnerRuntime.js'),
     'utf8',
   );
+  const compositionSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveApplicationComposition.js'),
+    'utf8',
+  );
   const wrapper = cliSource.slice(
     cliSource.indexOf('function responseConfigurationContext'),
-    cliSource.indexOf('function tutorPromptSurfaceKey'),
+    cliSource.indexOf('function registerTemperatureApplies'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubResponsePolicyContext\.js';/u);
   assert.match(wrapper, /projectTutorStubResponsePolicyContext/u);
   assert.match(wrapper, /ledgerTerm: worldLedgerTerm\(world\)/u);
-  assert.match(cliSource, /createTutorStubInteractiveLearnerRuntime/u);
+  assert.match(cliSource, /createTutorStubInteractiveApplicationComposition/u);
+  assert.match(compositionSource, /createTutorStubInteractiveLearnerRuntime/u);
   assert.match(learnerRuntimeSource, /register: responseConfigurationContext\(registerSelection/u);
   assert.match(serviceSource, /normalizeTutorStubResponseConfiguration/u);
   assert.match(serviceSource, /tutorStubResponseConfigurationPrompt/u);

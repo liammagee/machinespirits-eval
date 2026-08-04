@@ -247,14 +247,19 @@ test('the CLI retains settings state derivation, helper calls, command ownership
     path.join(ROOT, 'services', 'tutorStubDialogueSettingsPresentation.js'),
     'utf8',
   );
+  const compositionSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveCommandComposition.js'),
+    'utf8',
+  );
   const controllerSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubLiveSettingsController.js'), 'utf8');
   const settingsSlice = controllerSource.slice(
     controllerSource.indexOf('function trainingReuseStatusLines'),
     controllerSource.indexOf('function printModelChoices'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubDialogueSettingsPresentation\.js';/u);
-  assert.match(cliSource, /createTutorStubLiveSettingsController/u);
+  assert.match(cliSource, /createTutorStubInteractiveCommandComposition/u);
+  assert.match(compositionSource, /from '\.\/tutorStubDialogueSettingsPresentation\.js';/u);
+  assert.match(compositionSource, /createTutorStubLiveSettingsController/u);
   assert.match(settingsSlice, /state\.trainingReuse/u);
   assert.match(settingsSlice, /tutorStubTrainingReuseLabel/u);
   assert.match(settingsSlice, /displayDiagnosticLabel/u);

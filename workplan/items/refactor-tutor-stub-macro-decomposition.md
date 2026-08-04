@@ -9,7 +9,7 @@ source: review
 created: 2026-07-29
 updated: 2026-08-05
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-terminal-host-context
+branch: codex/refactor-tutor-stub-interactive-application
 claim_status: planned
 depends_on: []
 links:
@@ -27,6 +27,8 @@ links:
     - services/tutorStubDebugReportRuntime.js
     - services/tutorStubFeedbackTuningController.js
     - services/tutorStubInteractiveAutomationController.js
+    - services/tutorStubInteractiveApplicationComposition.js
+    - services/tutorStubInteractiveCommandComposition.js
     - services/tutorStubInteractiveDialogueController.js
     - services/tutorStubInteractiveDirectorController.js
     - services/tutorStubInteractiveInputPresentation.js
@@ -438,3 +440,21 @@ Boundary reassessment after cycle 11:
   503 files; no model calls were authorized for this structural extraction.
 - 2026-08-05 — Opened macro cycle 15 as PR #482 at `dd1c62eb`; initial CI
   inspection follows the source-card link commit.
+- 2026-08-05 — PR #482 merged at `47ec7513`. Started macro cycle 16 from the
+  post-merge `origin/main` head `ed8cb948` in the isolated
+  `codex/refactor-tutor-stub-interactive-application` worktree.
+- 2026-08-05 — Macro cycle 16 moved terminal, voice, learner, model-picker,
+  mixed-learner, session, settings, feedback, performance, character, command,
+  and interactive-turn assembly behind two explicit composition owners (848
+  and 762 source lines). `scripts/tutor-stub.js` fell from 3,568 to 2,657
+  lines, a 911-line net reduction; the cycles 14–16 rolling average is 1,346
+  lines per PR and remains above the 750-line stop floor. Both new owners stay
+  below the 900-line anti-monolith ceiling.
+- 2026-08-05 — Cycle 16 verification passes 213/213 focused interactive,
+  session, command, character, settings, lab, discourse, and facade assertions,
+  plus 50/50 presentation/ownership regressions after updating stale caller
+  inventories to the composition owners. The complete zero-skip hermetic suite
+  passes 7,775/7,775 root tests and 137/137 tutor-core tests. Lint, Prettier,
+  manifest, workplan source (397 items), ref governance, syntax, whitespace,
+  and the static import graph pass with zero cycles across 506 files; no model
+  calls were authorized for this structural extraction.

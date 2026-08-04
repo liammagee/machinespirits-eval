@@ -156,6 +156,10 @@ test('real /proof paths and learner inspection commands preserve exact no-model 
 test('the CLI retains command execution, formal checks, trace writes, and terminal ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubProofCommandPresentation.js'), 'utf8');
+  const compositionSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveApplicationComposition.js'),
+    'utf8',
+  );
   const controllerSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubInteractiveDirectorController.js'),
     'utf8',
@@ -169,8 +173,9 @@ test('the CLI retains command execution, formal checks, trace writes, and termin
     controllerSource.indexOf('function handleDirectorGuidanceCommand'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubProofCommandPresentation\.js';/u);
-  assert.match(cliSource, /createTutorStubInteractiveSessionController/u);
+  assert.match(cliSource, /createTutorStubInteractiveApplicationComposition/u);
+  assert.match(compositionSource, /from '\.\/tutorStubProofCommandPresentation\.js';/u);
+  assert.match(compositionSource, /createTutorStubInteractiveSessionController/u);
   assert.match(sessionControllerSource, /createTutorStubInteractiveDirectorController/u);
   assert.match(proofSlice, /projectTutorStubProofDagArtifactPaths/u);
   assert.match(proofSlice, /projectTutorStubProofDagSemanticLayerLines/u);

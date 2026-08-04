@@ -72,7 +72,9 @@ hook:
     - services/tutorStubFeedbackTuningController.js
     - services/tutorStubFrozenReplay.js
     - services/tutorStubInterimController.js
+    - services/tutorStubInteractiveApplicationComposition.js
     - services/tutorStubInteractiveAutomationController.js
+    - services/tutorStubInteractiveCommandComposition.js
     - services/tutorStubInteractiveDialogueController.js
     - services/tutorStubInteractiveDirectorController.js
     - services/tutorStubInteractiveInputPresentation.js
