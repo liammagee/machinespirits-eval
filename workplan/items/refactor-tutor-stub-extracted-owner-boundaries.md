@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-08-05
 updated: 2026-08-05
-branch: codex/refactor-tutor-stub-extracted-owner-boundaries
+branch: codex/refactor-tutor-stub-committee-repair-owner
 verification: The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.
 claim_status: planned
 depends_on: []
@@ -17,6 +17,7 @@ links:
     - services/tutorStubTutorTurnPipeline.js
     - services/tutorStubTutorTurnPreparation.js
     - services/tutorStubTutorAttemptRuntime.js
+    - services/tutorStubTutorCommitteeRuntime.js
     - services/tutorStubTutorDraftAudit.js
     - services/tutorStubResponsePolicy.js
     - scripts/tutor-stub.js
@@ -81,3 +82,11 @@ Log:
   board refresh. On that exact updated base, 96/96 focused-plus-baseline tests,
   the synchronized hermetic manifest, all static gates, and the complete
   zero-skip hermetic suite passed again.
+- 2026-08-05 — Opened first-pass PR #487 at `ce771831`, then started the
+  committee/repair continuation on a separate stacked branch. The first seam
+  moved the complete Program-2 committee mini/composer, fallback-battery,
+  resampling, budget, and trace runtime into a 245-line owner; the compatibility
+  pipeline is now 1,705 LOC. Its 19th stability pin and source-boundary ceiling
+  check are in place, with 46/46 focused tests, ESLint, Prettier, diff checks,
+  the zero-cycle graph, and the complete hermetic suite passing with zero
+  skips. Repair orchestration remains the next seam in this pass.
