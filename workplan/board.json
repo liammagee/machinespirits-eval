@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T10:15:56.223Z",
+  "generated": "2026-08-04T12:31:19.495Z",
   "counts": {
     "total": 397,
     "byStatus": {
@@ -7,9 +7,9 @@
       "blocked": 6,
       "dropped": 4,
       "triaged": 11,
-      "active": 8,
+      "active": 9,
       "archived": 4,
-      "review": 4
+      "review": 3
     },
     "byType": {
       "research": 71,
@@ -426,6 +426,80 @@
         "testing",
         "coverage",
         "dead-code",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-macro-decomposition",
+      "title": "Decompose tutor-stub into cohesive runtime subsystems",
+      "status": "active",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-29",
+      "updated": "2026-08-04",
+      "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
+      "branch": "codex/refactor-tutor-stub-mixed-learner-control",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/tutor-stub.js",
+          "services/tutorStubCharacterControlController.js",
+          "services/tutorStubCliArguments.js",
+          "services/tutorStubCommandRuntime.js",
+          "services/tutorStubFeedbackTuningController.js",
+          "services/tutorStubInteractiveAutomationController.js",
+          "services/tutorStubInteractiveDialogueController.js",
+          "services/tutorStubInteractiveDirectorController.js",
+          "services/tutorStubInteractiveInputPresentation.js",
+          "services/tutorStubInteractiveLearnerRuntime.js",
+          "services/tutorStubInteractiveSessionController.js",
+          "services/tutorStubInteractiveTurnController.js",
+          "services/tutorStubInterimController.js",
+          "services/tutorStubLaunchRuntime.js",
+          "services/tutorStubLearnerAnalysisRuntime.js",
+          "services/tutorStubLearnerEvidenceRuntime.js",
+          "services/tutorStubLiveSettingsController.js",
+          "services/tutorStubMixedLearnerController.js",
+          "services/tutorStubModelPickerController.js",
+          "services/tutorStubPerformanceControlController.js",
+          "services/tutorStubResponsePolicy.js",
+          "services/tutorStubScenarioController.js",
+          "services/tutorStubSessionOrchestration.js",
+          "services/tutorStubSessionStateRuntime.js",
+          "services/tutorStubTraceRuntime.js",
+          "services/tutorStubTurnOrchestration.js",
+          "services/tutorStubVoiceController.js",
+          "services/tutorStubTutorTurnPipeline.js",
+          "tests/tutorStubTutorTurnPipeline.test.js",
+          "tests/tutorStubEntrypointFacades.test.js",
+          "tests/tutorStubLearnerAnalysisRuntime.test.js"
+        ],
+        "prs": [
+          426,
+          427,
+          428,
+          429,
+          430,
+          431,
+          471,
+          474,
+          475
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "macro-decomposition",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -858,67 +932,6 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
-    },
-    {
-      "id": "refactor-tutor-stub-macro-decomposition",
-      "title": "Decompose tutor-stub into cohesive runtime subsystems",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-29",
-      "updated": "2026-08-04",
-      "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
-      "branch": "codex/refactor-tutor-stub-learner-analysis-presentation",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
-        ],
-        "code": [
-          "scripts/tutor-stub.js",
-          "services/tutorStubCommandRuntime.js",
-          "services/tutorStubCliArguments.js",
-          "services/tutorStubLaunchRuntime.js",
-          "services/tutorStubLearnerAnalysisRuntime.js",
-          "services/tutorStubLearnerEvidenceRuntime.js",
-          "services/tutorStubInterimController.js",
-          "services/tutorStubModelPickerController.js",
-          "services/tutorStubResponsePolicy.js",
-          "services/tutorStubScenarioController.js",
-          "services/tutorStubSessionOrchestration.js",
-          "services/tutorStubSessionStateRuntime.js",
-          "services/tutorStubTraceRuntime.js",
-          "services/tutorStubTurnOrchestration.js",
-          "services/tutorStubVoiceController.js",
-          "services/tutorStubTutorTurnPipeline.js",
-          "tests/tutorStubTutorTurnPipeline.test.js",
-          "tests/tutorStubEntrypointFacades.test.js",
-          "tests/tutorStubLearnerAnalysisRuntime.test.js"
-        ],
-        "prs": [
-          426,
-          427,
-          428,
-          429,
-          430,
-          431,
-          471,
-          474
-        ],
-        "items": [
-          "codebase-refactoring-program"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "tutor-stub",
-        "macro-decomposition",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
