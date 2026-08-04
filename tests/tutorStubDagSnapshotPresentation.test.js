@@ -266,6 +266,10 @@ test('the public presentation runtime retains snapshot state access, terminal wr
     path.join(ROOT, 'services', 'tutorStubInteractiveTurnController.js'),
     'utf8',
   );
+  const nonInteractiveSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubNonInteractiveApplication.js'),
+    'utf8',
+  );
   const snapshotSlice = runtimeSource.slice(
     runtimeSource.indexOf('function buildTutorDagSnapshot'),
     runtimeSource.indexOf('function printTutorStubFeatureMap'),
@@ -285,7 +289,8 @@ test('the public presentation runtime retains snapshot state access, terminal wr
     (cliSource.match(/printTutorDagSnapshot\(/gu)?.length || 0) +
     (runtimeSource.match(/printTutorDagSnapshot\(/gu)?.length || 0) +
     (turnOrchestrationSource.match(/printTutorDagSnapshot\(/gu)?.length || 0) +
-    (interactiveTurnSource.match(/printTutorDagSnapshot\(/gu)?.length || 0);
+    (interactiveTurnSource.match(/printTutorDagSnapshot\(/gu)?.length || 0) +
+    (nonInteractiveSource.match(/printTutorDagSnapshot\(/gu)?.length || 0);
   assert.equal(runtimeCallerCount, 4);
   assert.match(turnOrchestrationSource, /printTutorDagSnapshot\(response\.dagSnapshot\)/u);
   assert.match(

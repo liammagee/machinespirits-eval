@@ -396,6 +396,7 @@ import { createTutorStubFeedbackTuningController } from '../services/tutorStubFe
 import { createTutorStubPerformanceControlController } from '../services/tutorStubPerformanceControlController.js';
 import { createTutorStubCharacterControlController } from '../services/tutorStubCharacterControlController.js';
 import { createTutorStubInteractiveTurnController } from '../services/tutorStubInteractiveTurnController.js';
+import { createTutorStubTerminalHost } from '../services/tutorStubTerminalHost.js';
 import {
   listTutorStubTutorInstances,
   resolveTutorStubTutorInstance,
@@ -716,6 +717,13 @@ import { createTutorStubVoiceController } from '../services/tutorStubVoiceContro
 import { createTutorStubModelPickerController } from '../services/tutorStubModelPickerController.js';
 import { parseTutorStubCliArguments } from '../services/tutorStubCliArguments.js';
 import { createTutorStubLaunchRuntime } from '../services/tutorStubLaunchRuntime.js';
+import { createTutorStubLaunchApplicationContext } from '../services/tutorStubLaunchApplicationContext.js';
+import { createTutorStubApplicationTraceContext } from '../services/tutorStubApplicationTraceContext.js';
+import { createTutorStubApplicationState } from '../services/tutorStubApplicationState.js';
+import { runTutorStubNonInteractiveApplication } from '../services/tutorStubNonInteractiveApplication.js';
+import { runTutorStubLaunchPresentation } from '../services/tutorStubLaunchPresentation.js';
+import { createTutorStubSessionApplicationContext } from '../services/tutorStubSessionApplicationContext.js';
+import { createTutorStubSessionApplicationRuntime } from '../services/tutorStubSessionApplicationRuntime.js';
 import { createTutorStubScenarioController } from '../services/tutorStubScenarioController.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -2134,1923 +2142,331 @@ async function main() {
     noColor: args['no-color'],
   });
 
-  const explicitPointOfActionArm =
-    commandLineOptionProvided('point-of-action-arm') || Boolean(process.env.TUTOR_STUB_POINT_OF_ACTION_ARM);
-  if (args.committee && args['no-committee']) {
-    throw new Error('--committee and --no-committee cannot be used together');
-  }
-  if (
-    args.committee &&
-    explicitPointOfActionArm &&
-    normalizeTutorStubPointOfActionArm(args['point-of-action-arm']) !== 'committee'
-  ) {
-    throw new Error('--committee conflicts with the explicit --point-of-action-arm value');
-  }
-  if (args['no-committee'] && explicitPointOfActionArm) {
-    throw new Error('--no-committee conflicts with --point-of-action-arm');
-  }
-  if (args.committee) args['point-of-action-arm'] = 'committee';
-  if (args['no-committee']) args['point-of-action-arm'] = '';
-
-  const passthroughEnabled = Boolean(args.passthrough);
-  const observedAuditsEnabled = Boolean(args['observe-audits']);
-  if (observedAuditsEnabled && !passthroughEnabled) {
-    // A guarded run already evaluates all seven audits and records them as
-    // guard results. Accepting the flag there would write a second, weaker copy
-    // of two of them under a name that promises no enforcement, which is a
-    // reading hazard rather than a feature.
-    throw new Error(
-      '--observe-audits requires --passthrough: a guarded run already records these audits as enforced guard results',
-    );
-  }
-  if (passthroughEnabled) {
-    args.dag = false;
-    args['tutor-learner-dag'] = false;
-    args['no-classifier'] = true;
-    args['no-register-selection'] = true;
-    args['typed-actions'] = false;
-    args['point-of-action-arm'] = '';
-    // Passthrough defaults to pure human chat, but an evaluation harness needs a
-    // genuinely bare arm that still talks to itself: passthrough is the only
-    // mode that bypasses the guard suite, first-draft recovery and the closure
-    // lifecycle, and a bare arm is useless as a comparison if nobody answers it.
-    // An explicit --auto-learner therefore survives; everything else passthrough
-    // strips stays stripped, and the automated-learner labs still gate the flag.
-    if (!commandLineOptionProvided('auto-learner')) args['auto-learner'] = false;
-    args['mixed-learner'] = false;
-    args['mixed-mode'] = false;
-    args['no-memory-summary'] = true;
-    args['multiple-choice'] = false;
-    args['no-opening'] = true;
-    args['no-closeout-report'] = true;
-    args['no-turn-feedback'] = true;
-    args['no-interim-animation'] = true;
-    args['field-viz'] = false;
-    args.tuning = 'off';
-  }
-
-  let tutorInstance = resolveTutorStubTutorInstance(args.tutor);
-  let tuningMode = normalizeTutorStubTuningMode(args.tuning);
-  if (!commandLineOptionProvided('model') && !process.env.TUTOR_STUB_MODEL && tutorInstance.modelDefaults.tutor) {
-    args.model = tutorInstance.modelDefaults.tutor;
-  }
-  if (
-    !commandLineOptionProvided('classifier-model') &&
-    !process.env.TUTOR_STUB_CLASSIFIER_MODEL &&
-    tutorInstance.modelDefaults.interpretation
-  ) {
-    args['classifier-model'] = tutorInstance.modelDefaults.interpretation;
-  }
-  if (
-    !commandLineOptionProvided('learner-record-model') &&
-    !process.env.TUTOR_STUB_LEARNER_RECORD_MODEL &&
-    tutorInstance.modelDefaults.interpretation
-  ) {
-    args['learner-record-model'] = tutorInstance.modelDefaults.interpretation;
-  }
-  if (
-    !commandLineOptionProvided('auto-learner-model') &&
-    !process.env.TUTOR_STUB_AUTO_LEARNER_MODEL &&
-    tutorInstance.modelDefaults.learner
-  ) {
-    args['auto-learner-model'] = tutorInstance.modelDefaults.learner;
-  }
-
-  let allModelsOverrideRef = String(args['all-models'] || '').trim() || null;
-  if (allModelsOverrideRef) {
-    args.model = allModelsOverrideRef;
-    args['classifier-model'] = allModelsOverrideRef;
-    args['learner-record-model'] = allModelsOverrideRef;
-    args['auto-learner-model'] = allModelsOverrideRef;
-  }
-  if (commandLineOptionProvided('learner-character')) {
-    if (
-      commandLineOptionProvided('auto-learner-profile') &&
-      String(args['auto-learner-profile']).trim() !== String(args['learner-character']).trim()
-    ) {
-      throw new Error('--learner-character conflicts with --auto-learner-profile');
-    }
-    args['auto-learner-profile'] = args['learner-character'];
-  }
-  const interactiveSessionIntent = Boolean(!args['auto-learner'] && !args.once && !positionals.join(' ').trim());
-  const explicitRememberedSources = rememberedSettingExplicitSources();
-  const rememberedSettings = applyRememberedInteractiveDefaults({
-    interactiveSessionEnabled: interactiveSessionIntent,
-  });
-  if (
-    interactiveSessionIntent &&
-    !passthroughEnabled &&
-    !explicitRememberedSources.committeeEnabled &&
-    !rememberedSettings.appliedFields.includes('committee_mode')
-  ) {
-    args['point-of-action-arm'] = 'committee';
-  }
-  const committeeFallbackPolicyExplicit =
-    commandLineOptionProvided('committee-fallback-policy') || Boolean(process.env.TUTOR_STUB_COMMITTEE_FALLBACK_POLICY);
-  if ((args.committee || (interactiveSessionIntent && !passthroughEnabled)) && !committeeFallbackPolicyExplicit) {
-    args['committee-fallback-policy'] = DEFAULT_INTERACTIVE_COMMITTEE_FALLBACK_POLICY;
-  }
-  args['committee-fallback-policy'] = String(args['committee-fallback-policy'] || '')
-    .trim()
-    .toLowerCase();
-  if (!['v1', 'v2'].includes(args['committee-fallback-policy'])) {
-    throw new Error('--committee-fallback-policy must be v1 or v2');
-  }
-  if (args.module && !args.curriculum) {
-    throw new Error('--module requires --curriculum <workplan|path>');
-  }
-  let curriculumBundle = null;
-  let curriculumRuntime = null;
-  if (args.curriculum) {
-    if (args.system) throw new Error('--curriculum cannot be combined with --system because --system replaces it');
-    if (args.dag || args['tutor-learner-dag']) {
-      throw new Error(
-        'A canonical curriculum module is not a proof DAG. Remove --dag/--tutor-learner-dag, or hand-author and validate a dramatic-derivation world for this module.',
-      );
-    }
-    if (commandLineOptionProvided('world') && !['none', 'off', 'false'].includes(String(args.world).toLowerCase())) {
-      throw new Error(
-        '--curriculum cannot be combined with an active --world; use the curriculum module or a separately authored world',
-      );
-    }
-    curriculumBundle = tutorStubCurriculumBundle(args.curriculum, args.module, { root: ROOT });
-    curriculumRuntime = createTutorStubCurriculumRuntime(curriculumBundle, { moduleId: curriculumBundle.module.id });
-    // A remembered scenario must not silently costume or constrain reflective
-    // curriculum work. The curriculum source is complete public context and
-    // intentionally runs without a scenario proof DAG.
-    args.world = 'none';
-  }
-  args.theme = normalizeTutorStubCliThemeId(args.theme, { strict: true });
-  args.motion = normalizeTutorStubCliMotion(args.motion, { strict: true });
-  configureCliPresentation({
-    theme: args.theme,
-    motion: args.motion,
-    noColor: args['no-color'],
-  });
-  tutorInstance = resolveTutorStubTutorInstance(args.tutor);
-  tuningMode = normalizeTutorStubTuningMode(args.tuning);
-  if (!allModelsOverrideRef && rememberedSettings.restoredAllModelsOverrideRef) {
-    allModelsOverrideRef = rememberedSettings.restoredAllModelsOverrideRef;
-  }
-  const allModelsOverride = allModelsOverrideRef
-    ? {
-        schema: 'machinespirits.tutor-stub.all-models-override.v1',
-        modelRef: allModelsOverrideRef,
-        source:
-          rememberedSettings.restoredAllModelsOverrideRef === allModelsOverrideRef
-            ? 'remembered_settings'
-            : commandLineOptionProvided('all-models')
-              ? 'cli'
-              : 'environment',
-        precedence: 'overrides_all_role_specific_model_settings',
-        roles: ['tutor', 'classifier', 'learner_dag_analysis', 'automated_or_mixed_learner'],
-      }
-    : null;
-  args['auto-learner-profile'] = resolveAutomatedLearnerProfile(args['auto-learner-profile']);
-
-  const temperature = parseNumber(args.temperature, '--temperature', { min: 0, max: 2 });
-  const voiceModel = normalizeTutorStubVoiceModel(args['voice-model']);
-  const voiceName = normalizeTutorStubVoiceName(args['voice-name']);
-  const voiceLaunchRequested = Boolean(args.voice);
-  const registerTemperature = normalizeTutorStubEngagementStanceTemperature(args['register-temperature'], {
-    label: '--register-temperature',
-  });
-  // Recipe replay marks captured options as resolved launch sources, including
-  // an explicitly captured `light-adaptation: false`. Treat the boolean value,
-  // not mere option presence, as the opt-in/opt-out signal so passthrough
-  // recipes remain valid and deterministic.
-  const lightAdaptationCliOptIn = commandLineOptionProvided('light-adaptation') && Boolean(args['light-adaptation']);
-  const lightAdaptationCliOptOut =
-    commandLineOptionProvided('no-light-adaptation') && Boolean(args['no-light-adaptation']);
-  if (lightAdaptationCliOptIn && lightAdaptationCliOptOut) {
-    throw new Error('--light-adaptation cannot be combined with --no-light-adaptation');
-  }
-  const lightAdaptationRemembered = rememberedSettings.appliedFields.includes('light_adaptation');
-  const lightAdaptationRequested = lightAdaptationCliOptOut
-    ? false
-    : lightAdaptationCliOptIn
-      ? true
-      : lightAdaptationRemembered
-        ? Boolean(args['light-adaptation'])
-        : process.env.TUTOR_STUB_LIGHT_ADAPTATION !== undefined
-          ? STUB.lightAdaptation
-          : interactiveSessionIntent && !passthroughEnabled;
-  const lightAdaptationAvailable = Boolean(!passthroughEnabled && !args['no-register-selection']);
-  const lightAdaptationEnabled = Boolean(lightAdaptationRequested && lightAdaptationAvailable);
-  // Session recipes and config hashes record the effective value rather than
-  // the raw parser default, so relaunches reproduce this mode boundary.
-  args['light-adaptation'] = lightAdaptationEnabled;
-  args['no-light-adaptation'] = !lightAdaptationEnabled;
-  const lightAdaptationThreshold = normalizeTutorStubLightAdaptationThreshold(args['light-adaptation-threshold']);
-  const lightAdaptationExplicitOptIn = lightAdaptationCliOptIn || process.env.TUTOR_STUB_LIGHT_ADAPTATION === '1';
-  if (lightAdaptationExplicitOptIn && passthroughEnabled) {
-    throw new Error('--light-adaptation is unavailable in --passthrough because learner assessment is disabled');
-  }
-  if (lightAdaptationExplicitOptIn && args['no-register-selection']) {
-    throw new Error('--light-adaptation requires teaching-style selection; remove --no-register-selection');
-  }
-  const dagFactDropoutRate = normalizeTutorStubDagFactDropoutRate(args['dag-fact-dropout'], {
-    label: '--dag-fact-dropout',
-  });
-  const dagFactDropoutSeed = normalizeTutorStubDagFactDropoutSeed(args['dag-fact-dropout-seed'], {
-    label: '--dag-fact-dropout-seed',
-  });
-  const releaseSpeed = normalizeTutorStubReleaseSpeed(args['release-speed'], {
-    label: '--release-speed',
-  });
-  const loopMode = normalizeTutorStubLoopMode(args['loop-mode'], { label: '--loop-mode' });
-  const openingRealizer = String(args['opening-realizer'] || 'model')
-    .trim()
-    .toLowerCase();
-  if (!['model', 'deterministic'].includes(openingRealizer)) {
-    throw new Error('--opening-realizer must be model or deterministic');
-  }
-  const experimentRunSeed = normalizeTutorStubDagFactDropoutSeed(args['run-seed'], {
-    label: '--run-seed',
-  });
-  const experimentRepeat = parsePositiveInt(args['eval-repeat'], '--eval-repeat');
-  const typedActionsEnabled = Boolean(args['typed-actions']);
-  const typedActionSupportLevel = parseOptionalBoundedInt(
-    args['typed-action-support-level'],
-    '--typed-action-support-level',
-    { min: 0, max: 3 },
-  );
-  const typedActionTask = {
-    taskId: String(args['typed-action-task-id'] || '').trim(),
-    knowledgeComponent: String(args['typed-action-knowledge-component'] || '').trim(),
-    prerequisitePath: commaSeparatedStrings(args['typed-action-prerequisites']),
-    itemDifficulty: parseNumber(args['typed-action-item-difficulty'], '--typed-action-item-difficulty', {
-      min: 0,
-      max: 1,
-    }),
-  };
-  if (typedActionsEnabled && (!typedActionTask.taskId || !typedActionTask.knowledgeComponent)) {
-    throw new Error('--typed-actions requires non-empty task id and knowledge component');
-  }
-  const typedActionConfig = {
-    schema: TUTOR_TYPED_ACTION_CONFIG_SCHEMA,
-    enabled: typedActionsEnabled,
-    defaultOff: true,
-    policyMode: 'closed_loop',
-    decisionTiming: 'after_current_public_learner_observation_before_tutor_output',
-    outcomeHorizon: 'next_public_learner_observation',
-    selectionMethod: 'deterministic_closed_loop_argmax',
-    selectionProbability: 1,
-    scaffoldLifecycle: {
-      enabled: typedActionsEnabled,
-      schema: SCAFFOLD_LIFECYCLE_SCHEMA,
-      phases: ['diagnose', 'support', 'observe_uptake', 'fade', 'independent_work', 'transfer', 'recover'],
-      drivenBy: ['typed_action_decision', 'closed_public_outcome'],
-    },
-    supportLevel: typedActionSupportLevel,
-    task: typedActionTask,
-  };
-  const dagFactDropoutConfig = {
-    schema: TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
-    rate: dagFactDropoutRate,
-    seed: dagFactDropoutSeed,
-    enabled: dagFactDropoutRate > 0,
-    graceTurns: 2,
-    maxConcurrent: 2,
-    eligibleFacts: 'adopted_public_premises_only',
-    backgroundFactsImmune: true,
-    visibility: 'conduct',
-  };
-  const releasePacingConfig = {
-    schema: 'machinespirits.tutor-stub.release-pacing.v1',
-    baseSpeed: releaseSpeed,
-    adaptive: true,
-    range: [MIN_TUTOR_STUB_RELEASE_SPEED, MAX_TUTOR_STUB_RELEASE_SPEED],
-    directLearnerRequests: true,
-    maxReleaseBatchesPerTutorTurn: 1,
-  };
-  const maxTokens = parsePositiveInt(args['max-tokens'], '--max-tokens');
-  const historyTurns = parsePositiveInt(args['history-turns'], '--history-turns');
-  const memorySummaryEnabled = Boolean(STUB.memorySummary && !args['no-memory-summary']);
-  const autoLearnerEnabled = Boolean(args['auto-learner']);
-  const mixedLearnerRequested = Boolean(args['mixed-learner'] || args['mixed-mode']);
-  const mixedLearnerEnabled = Boolean(mixedLearnerRequested && !autoLearnerEnabled);
-  const interactiveSessionEnabled = interactiveSessionIntent;
-  const turnFeedbackEnabled = Boolean(
-    STUB.turnFeedback && !args['no-turn-feedback'] && interactiveSessionEnabled && !autoLearnerEnabled,
-  );
-  const responseDetailsEnabled = Boolean(STUB.responseDetails && !args['no-response-details']);
-  const learnerSuggestionEnabled = Boolean(
-    !passthroughEnabled && (autoLearnerEnabled || mixedLearnerEnabled || interactiveSessionEnabled),
-  );
-  // Suggesting learner turns to a human is a harness feature and stays off under
-  // passthrough. Resolving a learner model is not the same question: if the
-  // automated learner is going to speak, it needs a model whatever the tutor is
-  // running. Keeping these separate is what lets an evaluation harness point a
-  // learner at a bare tutor.
-  const learnerModelRequired = Boolean(learnerSuggestionEnabled || autoLearnerEnabled);
-  const autoTurns = parseAutoTurns(args['auto-turns']);
-  const autoSafetyTurns = parsePositiveInt(args['auto-safety-turns'], '--auto-safety-turns');
-  const autoStopOnGrounded = !args['no-auto-stop-on-grounded'];
-  if (autoLearnerEnabled && autoTurns === null && !autoStopOnGrounded) {
-    throw new Error(
-      '--auto-turns until-grounded requires grounded-closure stopping; remove --no-auto-stop-on-grounded',
-    );
-  }
-  const launchWorldBundle = resolveWorldRef(args.world);
-  const rememberedScenarioAvailable = rememberedSettings.appliedFields.includes('scenario');
-  const existingScenarioAvailable = Boolean(explicitRememberedSources.scenario || rememberedScenarioAvailable);
-  const initialScenarioPickerEnabled = Boolean(
-    interactiveSessionEnabled &&
-    STUB.opening &&
-    !args['no-opening'] &&
-    !resumeRequested &&
-    launchWorldBundle &&
-    !existingScenarioAvailable,
-  );
-  const initialScenarioKeyboardMenuActive = Boolean(
-    initialScenarioPickerEnabled &&
-    !args['dry-run'] &&
-    input.isTTY &&
-    output.isTTY &&
-    typeof input.setRawMode === 'function',
-  );
-  let initialScenarioSelection = null;
-  if (initialScenarioKeyboardMenuActive) {
-    const defaultScenarioId = launchWorldBundle.world.id;
-    console.log(`${C.cyan}Pick a scenario${C.reset}`);
-    console.log(
-      `${C.dim}  ↑/↓ scroll · Enter select · highlighted scenario described below · Esc quit · ${defaultScenarioId} selected by default${C.reset}`,
-    );
-    const selection = await pickInitialScenarioWithKeyboard(args.world);
-    if (!selection) {
-      console.log(`${C.dim}scenario picker cancelled${C.reset}`);
-      return;
-    }
-    args.world = selection.filePath;
-    initialScenarioSelection = {
-      scenarioId: selection.id,
-      title: selection.title,
-      defaultScenarioId,
-      usedDefault: selection.id === defaultScenarioId,
-      selectionMethod: 'keyboard_menu',
-    };
-    console.log(`${C.cyan}scenario >${C.reset} ${selection.id} — ${selection.title}\n`);
-  }
-  const worldBundle = resolveWorldRef(args.world);
-  const directorContext = buildDirectorInitialContext(worldBundle?.world || null);
-  const effectiveTopic =
-    curriculumBundle && args.topic === STUB.topic
-      ? curriculumBundle.module.title
-      : worldBundle && args.topic === STUB.topic
-        ? worldBundle.world.title
-        : args.topic;
-  const dagMode = normalizeDagMode(args['dag-mode']);
-  const pointOfActionArm = normalizeTutorStubPointOfActionArm(args['point-of-action-arm']);
-  const multipleChoiceEnabled = Boolean(args['multiple-choice']);
-  assertSupportedModelRefs({
-    '--model': args.model,
-    '--classifier-model': args['classifier-model'],
-    '--learner-record-model': args['learner-record-model'],
-    '--auto-learner-model': args['auto-learner-model'],
-  });
-  let systemPrompt = loadSystemPrompt({
-    worldBundle,
-    curriculumBundle,
-    dag: args.dag,
-    topic: effectiveTopic,
-    multipleChoice: multipleChoiceEnabled,
-  });
-  const tuning = createTutorStubTuningRuntime({
-    instance: tutorInstance,
-    mode: tuningMode,
-    dir: args['tuning-dir'],
-    write: !args['dry-run'],
-  });
-  systemPrompt = `${systemPrompt}\n\n${tutorStubTutorInstancePrompt(tutorInstance)}`;
-  const reviewedTutorMemory = tutorStubTuningPrompt(tuning);
-  if (reviewedTutorMemory) systemPrompt = `${systemPrompt}\n\n${reviewedTutorMemory}`;
-  // Green Room prompt-book injection (GREEN-ROOM-PLAN.md §0.1.6): a static,
-  // per-performance role memory appended to the tutor system prompt. Frozen
-  // for the whole run; craft guidance only — never overrides world rules or
-  // the release schedule.
-  if (args['prompt-book-context']) {
-    const promptBookText = fs.readFileSync(path.resolve(args['prompt-book-context']), 'utf8');
-    systemPrompt = `${systemPrompt}\n\n[Prompt book — your durable role memory from prior performances. Honour its notes as craft guidance; it never overrides world rules or the release schedule.]\n${promptBookText}\n[End prompt book]`;
-    console.log(`[greenroom] prompt book injected: ${promptBookText.length} chars from ${args['prompt-book-context']}`);
-  }
-  if (pointOfActionArm === 'standing_book') {
-    const standingBook = tutorStubPointOfActionStandingBook();
-    systemPrompt = `${systemPrompt}\n\n${standingBook}`;
-    console.log(`[step4] standing point-of-action book injected: ${standingBook.length} chars`);
-  }
-  if (curriculumBundle && curriculumRuntime) {
-    systemPrompt = `${systemPrompt}\n\n${delimitedPrompt(
-      CURRICULUM_PHASE_PROMPT_START,
-      tutorStubCurriculumPrivatePrompt(curriculumBundle, curriculumRuntime),
-      CURRICULUM_PHASE_PROMPT_END,
-    )}`;
-  }
-  const promptArchitecture = tutorStubPromptArchitecture({
-    dagEnabled: Boolean(args.dag && worldBundle),
-  });
-  promptArchitecture.audit.baseSystem = auditTutorStubPrompt({
-    surface: 'tutor_system',
-    systemPrompt,
-    instructionTexts: [systemPrompt],
-  });
-  promptArchitecture.audit.baseSpeakerPrivilege = auditTutorStubSpeakerPrivilege({
-    world: args.dag ? worldBundle?.world || null : null,
-    tutorTurn: 0,
-    systemPrompt,
-  });
-  if (!promptArchitecture.audit.baseSystem.ok) {
-    throw new Error(
-      `Base prompt audit failed: ${promptArchitecture.audit.baseSystem.violations
-        .map((violation) => violation.code)
-        .join(', ')}`,
-    );
-  }
-  if (!promptArchitecture.audit.baseSpeakerPrivilege.ok) {
-    throw new Error(
-      `Base speaking-tutor prompt crossed the private-planner boundary: ${promptArchitecture.audit.baseSpeakerPrivilege.issues
-        .map((issue) => `${issue.code}:${issue.source}`)
-        .join(', ')}`,
-    );
-  }
-  const tutorDag = args.dag && worldBundle ? buildTutorDesireDag(worldBundle.world) : null;
-  const resolved = resolveModel(args.model);
-  const providerConfig = getProviderConfig(resolved.provider);
-  let autoLearnerResolved = learnerModelRequired ? resolveModel(args['auto-learner-model']) : null;
-  let autoLearnerProviderConfig = autoLearnerResolved ? getProviderConfig(autoLearnerResolved.provider) : null;
-  const classifierEnabled = !args['no-classifier'];
-  const tutorLearnerDagEnabled = Boolean(args['tutor-learner-dag'] && worldBundle);
-  const humanDiscourseConfig = buildHumanDiscourseRunConfig({
-    dagMode,
-    dagEnabled: args.dag,
-    tutorLearnerDagEnabled,
-  });
-  const humanDiscoursePreviewFrame = buildHumanDiscourseFrame({
-    state: {
-      world: worldBundle?.world || null,
-      dag: args.dag,
-      dagMode,
-      humanDiscourse: humanDiscourseConfig,
-      turns: [],
-    },
-    tutorTurn: 1,
-    tutorLearnerDag: null,
-    classification: null,
-    learnerText: '',
-  });
-  const combinedLearnerAnalysisEnabled = Boolean(classifierEnabled && tutorLearnerDagEnabled);
-  const registerPolicyStack = parseTutorStubRegisterPolicyStack(args['register-policy']);
-  const registerPolicy = registerPolicyStack.primary;
-  const registerPolicyOverlays = registerPolicyStack.overlays;
-  const registerOverlayThreshold = normalizeTutorStubRegisterOverlayThreshold(args['register-overlay-threshold'], {
-    label: '--register-overlay-threshold',
-  });
-  const experimentConfig = {
-    schema: 'machinespirits.tutor-stub.experiment-identity.v1',
-    runSeed: experimentRunSeed,
-    profile: automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
-    policy: registerPolicy,
-    repeat: experimentRepeat,
-    jobId: String(args['eval-job-id'] || '').trim() || null,
-    dagFactDropoutSeed,
-    independentSeeds: true,
-  };
-  const registerEmpiricalPrior = loadRegisterEmpiricalPrior(args['register-empirical-prior'], {
-    policy: registerPolicy,
-  });
-  const registerPaletteMode =
-    registerPolicy === 'negative' ? 'negative' : args['safe-registers'] ? 'safe' : args['register-palette'];
-  const registerPalette = buildRegisterPalette(registerPaletteMode);
-  const randomRegisterSelectionEnabled = registerPolicy === 'random';
-  const negativeRegisterSelectionEnabled = registerPolicy === 'negative';
-  const fieldRegisterSelectionEnabled = registerPolicy === 'field';
-  const trajectoryRegisterSelectionEnabled = registerPolicy === 'trajectory';
-  const dynamicalSystemRegisterSelectionEnabled = registerPolicy === 'dynamical_system';
-  const empiricalDynamicalSystemRegisterSelectionEnabled = registerPolicy === 'empirical_dynamical_system';
-  const continuousDynamicalSystemRegisterSelectionEnabled = registerPolicy === 'continuous_dynamical_system';
-  const continuousEmpiricalDynamicalSystemRegisterSelectionEnabled =
-    registerPolicy === 'continuous_empirical_dynamical_system';
-  const continuousRegisterSelectionEnabled = Boolean(
-    continuousDynamicalSystemRegisterSelectionEnabled || continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
-  );
-  const continuousUnsafeRegisterAnchorsEnabled = Boolean(
-    continuousRegisterSelectionEnabled &&
-    !args['safe-registers'] &&
-    /(^|,)(all|simulated|negative|negative-floor|ironic|sarcastic|face_threat)(,|$)/iu.test(
-      String(args['register-palette'] || ''),
-    ),
-  );
-  const stateRegisterSelectionEnabled = registerPolicy === 'state';
-  const registerSelectionEnabled = Boolean(
-    !args['no-register-selection'] &&
-    registerPalette.length &&
-    (combinedLearnerAnalysisEnabled ||
-      randomRegisterSelectionEnabled ||
-      negativeRegisterSelectionEnabled ||
-      lightAdaptationEnabled),
-  );
-  const requestedTutorCharacter = resolveTutorStubCharacterChoice(args['tutor-character']);
-  const initialTutorCharacter =
-    requestedTutorCharacter.raw && !requestedTutorCharacter.clearing ? requestedTutorCharacter.id : null;
-  if (initialTutorCharacter && !requestedTutorCharacter.options.includes(initialTutorCharacter)) {
-    throw new Error(`--tutor-character must be one of ${requestedTutorCharacter.options.join(', ')}, or auto`);
-  }
-  if (initialTutorCharacter && !registerSelectionEnabled) {
-    throw new Error(
-      '--tutor-character requires adaptive delivery; remove --no-register-selection and enable learner analysis',
-    );
-  }
-  let classifierResolved =
-    classifierEnabled && !combinedLearnerAnalysisEnabled ? resolveModel(args['classifier-model']) : null;
-  let classifierProviderConfig = classifierResolved ? getProviderConfig(classifierResolved.provider) : null;
-  let learnerRecordResolved = tutorLearnerDagEnabled ? resolveModel(args['learner-record-model']) : null;
-  let learnerRecordProviderConfig = learnerRecordResolved ? getProviderConfig(learnerRecordResolved.provider) : null;
-  const firstMessage = args.once || positionals.join(' ').trim() || '';
-  if (
-    rawCommandLineOptionProvided('training-reuse') &&
-    rawCommandLineOptionProvided('no-training-reuse') &&
-    args['no-training-reuse']
-  ) {
-    throw new Error('--training-reuse cannot be combined with --no-training-reuse');
-  }
-  const requestedTrainingReuse = args['no-training-reuse']
-    ? 'off'
-    : normalizeTutorStubTrainingReuseSetting(args['training-reuse'], { label: '--training-reuse' });
-  const humanSubjectClass = normalizeTutorStubHumanSubjectClass(args['human-subject-class'], {
-    label: '--human-subject-class',
-  });
-  const trainingReuseConfig = resolveTutorStubTrainingReuse({
-    requested: requestedTrainingReuse,
-    source: resolvedTrainingReuseSource(rememberedSettings),
-    humanSubjectClass,
-    humanSubjectClassSource: resolvedHumanSubjectClassSource(),
-    humanInputExpected: Boolean(interactiveSessionIntent || firstMessage),
-  });
-  // Recipes store the canonical requested value. The effective status remains
-  // fail-closed for external/unknown users and is recorded separately.
-  args['training-reuse'] = trainingReuseConfig.requested;
-  args['human-subject-class'] = trainingReuseConfig.declaredHumanSubjectClass;
-  let visibleModel = visibleResolvedModel(resolved, providerConfig);
-  let visibleAutoLearnerModel = autoLearnerResolved
-    ? visibleResolvedModel(autoLearnerResolved, autoLearnerProviderConfig)
-    : null;
-  let visibleClassifierModel = classifierResolved
-    ? visibleResolvedModel(classifierResolved, classifierProviderConfig)
-    : null;
-  let visibleLearnerRecordModel = learnerRecordResolved
-    ? visibleResolvedModel(learnerRecordResolved, learnerRecordProviderConfig)
-    : null;
-  let visibleClassifierConfig = classifierEnabled
-    ? combinedLearnerAnalysisEnabled
-      ? {
-          combined: true,
-          classifierModelRef: args['classifier-model'],
-          modelRef: args['learner-record-model'],
-          resolved: visibleLearnerRecordModel,
-        }
-      : {
-          modelRef: args['classifier-model'],
-          resolved: visibleClassifierModel,
-        }
-    : { enabled: false };
-  const effectiveTemperature = effectiveTemperatureForModel(resolved, temperature);
-  const traceEnabled = !args['no-trace'];
-  const traceDir = resolveWorkspacePath(args['trace-dir']);
-  const streamEnabled = Boolean(STUB.stream && !args['no-stream']);
-  const interimAnimationEnabled = Boolean(STUB.interimAnimation && !args['no-interim-animation']);
-  const fieldVisualizationEnabled = Boolean(args['field-viz']);
-  const openingEnabled = Boolean(STUB.opening && !args['no-opening']);
-  const openingFramePreview = buildTutorStubOpeningFrame({
-    world: worldBundle?.world || null,
-    openingEvidence: worldBundle
-      ? worldBundle.world.releaseSchedule
-          .filter((entry) => Number(entry.turn) === 1)
-          .map((entry) => ({
-            premise: entry.premise,
-            via: entry.via,
-            surface: worldBundle.world.premiseById.get(entry.premise)?.surface || '',
-          }))
-      : [],
-  });
-  const closeoutReportEnabled = Boolean(STUB.closeoutReport && !args['no-closeout-report']);
-  const dialogueClosureConfig = createTutorStubDialogueClosureLifecycle({
-    enabled: Boolean(
-      args.dag && worldBundle && (!autoLearnerEnabled || (tutorLearnerDagEnabled && autoStopOnGrounded)),
-    ),
-    allowCheckIn: Boolean(!autoLearnerEnabled && !firstMessage),
-    allowAuthoredDagClosure: Boolean(!autoLearnerEnabled),
-  });
-  const cliEffort = normalizeCliEffort(args['cli-effort']);
-  const learnerAnalysisPromptProfile = normalizeTutorStubPublicLearnerAnalysisPromptProfile(
-    args['learner-analysis-prompt-profile'],
-  );
-  const learnerAnalysisEvidenceUseRubric = normalizeTutorStubEvidenceUseRubric(
-    args['learner-analysis-evidence-use-rubric'],
-  );
-  const mixedTutorPrefetchPolicy = String(args['mixed-tutor-prefetch-policy'] || 'always')
-    .trim()
-    .toLowerCase();
-  if (!['always', 'analysis_only'].includes(mixedTutorPrefetchPolicy)) {
-    throw new Error('--mixed-tutor-prefetch-policy must be always or analysis_only');
-  }
-  const tutorStreamState = !streamEnabled
-    ? 'off'
-    : providerSupportsEventStreaming(resolved)
-      ? 'cli_events'
-      : !providerSupportsStreaming(resolved)
-        ? 'unavailable_cli_buffered'
-        : args.dag && worldBundle
-          ? 'guarded_after_audit'
-          : interactiveSessionEnabled
-            ? 'buffered_for_concurrent_input'
-            : 'live';
-  const resumeCandidate = resolvedResumeSource;
-  const rememberedDialogueSettingsAvailable = rememberedSettings.status === 'loaded';
-  const initialProfilePromptEnabled = Boolean(
-    mixedLearnerEnabled &&
-    !explicitRememberedSources.learnerProfile &&
-    !rememberedSettings.appliedFields.includes('learner_profile'),
-  );
-  const initialTemperaturePromptEnabled = Boolean(
-    registerSelectionEnabled &&
-    registerTemperatureApplies(registerPolicy) &&
-    !rememberedDialogueSettingsAvailable &&
-    !explicitRememberedSources.engagementStanceTemperature,
-  );
-  const initialDropoutPromptEnabled = Boolean(
-    tutorLearnerDagEnabled && !rememberedDialogueSettingsAvailable && !explicitRememberedSources.dagFactDropoutRate,
-  );
-  const initialReleaseSpeedPromptEnabled = Boolean(
-    worldBundle && !rememberedDialogueSettingsAvailable && !explicitRememberedSources.releaseSpeed,
-  );
-  const initialMixedLearnerSetupEnabled = Boolean(
-    mixedLearnerEnabled &&
-    openingEnabled &&
-    !firstMessage &&
-    !resumeCandidate &&
-    (initialProfilePromptEnabled ||
-      initialTemperaturePromptEnabled ||
-      initialDropoutPromptEnabled ||
-      initialReleaseSpeedPromptEnabled),
-  );
-  const instantExistingScenarioOpening = Boolean(
-    interactiveSessionEnabled &&
-    openingEnabled &&
-    !firstMessage &&
-    !resumeRequested &&
-    rememberedScenarioAvailable &&
-    rememberedDialogueSettingsAvailable &&
-    !initialMixedLearnerSetupEnabled,
-  );
-  const startupOpeningRealizer =
-    openingFramePreview.realization === 'authored_world_opening'
-      ? 'authored_world_opening'
-      : instantExistingScenarioOpening
-        ? 'deterministic'
-        : openingRealizer;
-  const openingConfig = {
-    enabled: openingEnabled,
-    printedByDefault: Boolean(openingEnabled && !firstMessage),
-    schema: openingFramePreview.schema,
-    realization:
-      startupOpeningRealizer === 'authored_world_opening'
-        ? startupOpeningRealizer
-        : startupOpeningRealizer === 'model'
-          ? 'speaking_tutor_model'
-          : instantExistingScenarioOpening
-            ? 'remembered_scenario_instant_opening'
-            : 'world_grounded_deterministic',
-    speakingModelRef: startupOpeningRealizer === 'model' ? args.model : null,
-    authoredTextAvailable: Boolean(openingFramePreview.authoredText),
-    requirements: TUTOR_STUB_OPENING_REQUIREMENTS,
-    safetyAudit: true,
-    fallback: 'world_grounded_safe_fallback',
-    startup: {
-      mode: instantExistingScenarioOpening ? 'instant_existing_scenario' : 'normal',
-      restoredScenario: rememberedScenarioAvailable,
-      blocksOnOpeningModel: startupOpeningRealizer === 'model',
-      blocksOnMixedPrefetch: Boolean(mixedLearnerEnabled && !instantExistingScenarioOpening),
-    },
-  };
-  const initialScenarioPickerConfig = {
-    enabled: initialScenarioPickerEnabled,
-    defaultScenarioId: launchWorldBundle?.world?.id || null,
-    selectedScenarioId: worldBundle?.world?.id || null,
-    keyboardMenu: true,
-    activeInThisTerminal: initialScenarioKeyboardMenuActive,
-    navigation: ['up', 'down', 'pageup', 'pagedown', 'home', 'end', 'enter'],
-    descriptionFields: ['question', 'setting', 'discipline'],
-    nonTtyFallback: '--world',
-    selection: initialScenarioSelection,
-    reason: initialScenarioPickerEnabled
-      ? 'no_saved_or_explicit_scenario'
-      : existingScenarioAvailable
-        ? 'existing_scenario_restored_or_explicit'
-        : resumeRequested
-          ? 'resume_requested'
-          : 'not_interactive_opening',
-  };
-  const mixedLearnerStartupPrompts = {
-    enabled: initialMixedLearnerSetupEnabled,
-    // Model selection was removed from first-run setup (2026-07-12): the
-    // launch/default model is used and stays changeable via `/settings model`.
-    order: [
-      ...(initialProfilePromptEnabled ? ['learner_profile'] : []),
-      ...(initialTemperaturePromptEnabled ? ['engagement_stance_temperature'] : []),
-      ...(initialDropoutPromptEnabled ? ['dag_fact_dropout'] : []),
-      ...(initialReleaseSpeedPromptEnabled ? ['clue_release_speed'] : []),
-    ],
-    tutorModel: {
-      enabled: false,
-      firstRunSelection: false,
-      default: args.model,
-      recommended: STUB.model,
-      liveCommand: '/settings model <provider.alias>',
-    },
-    engagementStanceTemperature: {
-      enabled: initialTemperaturePromptEnabled,
-      default: registerTemperature,
-      recommended: DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
-      range: [MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE, MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE],
-    },
-    dagFactDropout: {
-      enabled: initialDropoutPromptEnabled,
-      default: dagFactDropoutRate,
-      recommended: DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
-      range: [0, 1],
-      seed: dagFactDropoutSeed,
-    },
-    clueReleaseSpeed: {
-      enabled: initialReleaseSpeedPromptEnabled,
-      default: releaseSpeed,
-      recommended: DEFAULT_TUTOR_STUB_RELEASE_SPEED,
-      range: [MIN_TUTOR_STUB_RELEASE_SPEED, MAX_TUTOR_STUB_RELEASE_SPEED],
-      adaptive: true,
-    },
-  };
-  const interactiveRoleModes = {
-    enabled: Boolean(interactiveSessionEnabled && !passthroughEnabled),
-    default: 'learner',
-    modes: ['learner', 'coach', 'auto'],
-    commands: {
-      learner: ['/mode learner'],
-      coach: ['/mode coach [guidance]', '/coach [guidance]'],
-      auto: ['/mode auto [turns]', '/auto [turns]'],
-      demo: ['/demo [turns]'],
-      status: '/status',
-    },
-    coach: {
-      private: true,
-      appliesTo: 'next_tutor_turn',
-      publicTranscriptChanged: false,
-      evidenceAndSafetyGuardsRemainActive: true,
-    },
-    auto: {
-      modelRef: args['auto-learner-model'],
-      resolved: visibleAutoLearnerModel,
-      profileId: automatedLearnerProfileId(args['auto-learner-profile']),
-      defaultTurns: autoTurns ?? 'until-grounded',
-      safetyTurns: autoSafetyTurns,
-      stopOnGrounded: autoStopOnGrounded,
-    },
-    demo: {
-      launchRequested: Boolean(args.demo),
-      command: '/demo [turns]',
-      defaultTurns: DEFAULT_INTERACTIVE_DEMO_TURNS,
-      maxTurns: MAX_INTERACTIVE_DEMO_TURNS,
-      sequence: ['bounded_live_dialogue', 'plain_analysis', 'transcript_html', 'compact_outcome_report'],
-      returnsControl: true,
-    },
-    concurrentCommandSurface: {
-      enabled: interactiveSessionEnabled,
-      activityLine: 'above_prompt',
-      inputLine: 'persistent_bottom_line',
-      acceptsCommandsDuringTutorTurn: true,
-      acceptsCommandsDuringAutoMode: true,
-      streamingDisplay: 'buffered_while_command_line_is_live',
-    },
-    compoundLearnerTurns: {
-      schema: 'machinespirits.tutor-stub.compound-learner-turn.v1',
-      enabled: interactiveSessionEnabled,
-      boundary: 'until_tutor_response_is_displayed',
-      additionalMessages: 'abort_or_invalidate_then_regenerate',
-      tracePreservesTypedMessages: true,
-      analysisAndTutorView: 'one_compound_learner_turn',
-    },
-    learnerResponseProvenance: {
-      schema: TUTOR_STUB_LEARNER_RESPONSE_PROVENANCE_SCHEMA,
-      categories: ['human', 'ai', 'hybrid', 'unknown'],
-      recordedOn: ['learner_message_fragment', 'completed_turn', 'trace_event', 'html_transcript', 'learning_summary'],
-      humanSources: ['terminal', 'voice_transcription', 'command_line_argument'],
-      aiSources: ['automated_learner', 'mixed_suggestion_accepted'],
-      hybridSource: 'mixed_suggestion_edited',
-      compoundAggregation: true,
-    },
-  };
-  const turnFeedbackConfig = {
-    schema: 'machinespirits.tutor-stub.turn-feedback-config.v1',
-    enabled: turnFeedbackEnabled,
-    defaultOn: true,
-    optional: true,
-    scope: 'human_learner_mode',
-    ratings: ['up', 'down'],
-    commands: ['/up [reason]', '/down [reason] [comment]', '/feedback up|down|clear|on|off'],
-    reasons: Object.keys(TUTOR_STUB_FEEDBACK_REASONS),
-    keyboardShortcuts: {
-      scope: 'empty_input_line_with_pending_rating',
-      immediate: true,
-      leftArrow: 'down',
-      rightArrow: 'up',
-      escape: 'disable_for_session',
-    },
-    learnerMessageField: 'tutorFeedback',
-    automatedLearner: 'disabled',
-    tutorSelfAssessment: true,
-    liveAdaptation: {
-      horizon: 'next_tutor_response_only',
-      private: true,
-      observableChangeAudited: true,
-      safetyPrecedence: true,
-    },
-    learningRecord: {
-      schema: 'machinespirits.tutor-stub.feedback-observation.v1',
-      joinsRatedResponseToLearnerReplyAndNextTutorOutcome: true,
-      separatesSubjectiveHelpfulnessFromObjectiveProgress: true,
-      causalClaim: false,
-    },
-  };
-  const responseDetailsConfig = {
-    schema: 'machinespirits.tutor-stub.response-details.v1',
-    enabled: responseDetailsEnabled,
-    defaultOn: true,
-    scope: 'terminal_session',
-    order: 'before_tutor_speech',
-    timingSchema: 'machinespirits.tutor-stub.turn-timing.v1',
-    timingScope: 'foreground_wait_from_accepted_learner_input',
-    command: '/details on|off|status',
-    launchFlag: '--no-response-details',
-    environment: 'TUTOR_STUB_RESPONSE_DETAILS=0',
-    publicTranscriptChanged: false,
-  };
-  const explanatoryDebugConfig = {
-    enabledByDefault: false,
-    defaultFormat: 'prose',
-    command: '/debug on [prose|technical]|off|show [prose|technical]|technical',
-    prose: {
-      generatedBy: 'llm',
-      targetWords: '45-80',
-      maxSentences: 3,
-    },
-    technicalSections: ['learner_analysis', 'field_calculations', 'register_consequence'],
-    automaticAfterCompletedTurn: true,
-  };
-  const learningSummaryReportConfig = {
-    enabled: Boolean(!passthroughEnabled && (autoLearnerEnabled || firstMessage || interactiveSessionEnabled)),
-    automaticOnConversationEnd: true,
-    requiresCompletedTurn: true,
-    format: 'html',
-    publicEvidenceOnly: true,
-    launchInInteractiveTty: process.env.TUTOR_STUB_SUMMARY_OPEN !== '0',
-  };
-  const rememberedSettingsConfig = {
-    enabled: rememberedSettings.enabled,
-    writeEnabled: Boolean(rememberedSettings.writeEnabled && !passthroughEnabled),
-    file: path.relative(ROOT, rememberedSettings.filePath),
-    status: rememberedSettings.status,
-    loadedAt: rememberedSettings.loadedAt,
-    appliedFields: [...rememberedSettings.appliedFields],
-    skippedExplicitFields: [...rememberedSettings.skippedExplicitFields],
-    warning: rememberedSettings.warning,
-    scope: 'human_interactive_sessions_only',
-    precedence: 'explicit_cli_or_environment_then_remembered_then_repository_default',
-  };
-  const learnerDagPreflightConfig = {
-    schema: TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
-    enabled: tutorLearnerDagEnabled,
-    timing: 'before_first_learner_analysis_model_call',
-    inputs: ['prior_public_learner_record', 'committed_public_evidence', 'public_rules'],
-    output: ['eligible_public_premise_ids', 'possible_next_derivations'],
-    semanticMapping: 'analysis_model_maps_free_text_to_candidate_updates',
-    commitAuthority: 'deterministic_postprocessor_after_model',
-  };
-  const passthroughConfig = {
-    schema: 'machinespirits.tutor-stub.passthrough.v1',
-    enabled: passthroughEnabled,
-    modelCallsPerTurn: passthroughEnabled ? 1 : null,
-    requestSurface: passthroughEnabled ? ['system_setup', 'full_public_history', 'latest_learner_message'] : null,
-    // Observation is not a bypass reversal: every entry in `bypassed` below
-    // stays bypassed with this on. The audits run after the draft is final and
-    // cannot send it back, so the call count and request surface are unchanged.
-    observedAudits: observedAuditsEnabled,
-    bypassed: passthroughEnabled
-      ? [
-          'learner_classifier',
-          'learner_dag',
-          'register_selection',
-          'human_discourse_scaffold',
-          'response_composition',
-          'response_checks_and_repair',
-          'release_planner',
-          'dialogue_closure',
-          'mixed_prefetch',
-          'tutor_feedback',
-          'learning_summary',
-        ]
-      : [],
-  };
-  const capabilitySnapshot = resolveTutorStubCapabilities({
-    passthrough: passthroughEnabled,
-    interactive: interactiveSessionEnabled,
-    world: Boolean(worldBundle),
-    curriculum: Boolean(curriculumBundle),
-    dag: Boolean(args.dag && worldBundle),
-    learnerDag: tutorLearnerDagEnabled,
-    classifier: classifierEnabled,
-    registerSelection: registerSelectionEnabled,
-    mixedLearner: mixedLearnerEnabled,
-    autoLearner: autoLearnerEnabled,
-    demo: Boolean(args.demo),
-    turnFeedback: turnFeedbackEnabled,
-    tuning: tuningMode !== 'off',
-    voice: voiceLaunchRequested,
-    trace: traceEnabled,
-    fieldVisualization: fieldVisualizationEnabled,
-    learningSummary: learningSummaryReportConfig.enabled,
-    responseChecks: !passthroughEnabled,
-  });
-  assertTutorStubCapabilityCompatibility(capabilitySnapshot);
-  const selectedLabMetadata = selectedLabResolution
-    ? {
-        ...tutorStubLabTraceMetadata(selectedLabResolution),
-        resolvedCapabilities: [...capabilitySnapshot.active],
-        admission: selectedLabAdmission,
-      }
-    : null;
-  const sessionRecipe = buildTutorStubSessionRecipe({
+  const launchApplicationContext = await createTutorStubLaunchApplicationContext({
+    C,
+    DEFAULT_INTERACTIVE_COMMITTEE_FALLBACK_POLICY,
+    MAX_TUTOR_STUB_RELEASE_SPEED,
+    MIN_TUTOR_STUB_RELEASE_SPEED,
+    ROOT,
+    SCAFFOLD_LIFECYCLE_SCHEMA,
+    STUB,
+    TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
+    TUTOR_TYPED_ACTION_CONFIG_SCHEMA,
+    applyRememberedInteractiveDefaults,
     args,
-    lab: selectedLabResolution?.lab?.id || null,
-    identity: {
-      schema: TUTOR_STUB_SESSION_RUNTIME_SCHEMA,
-      world: worldBundle?.world?.id ? { id: worldBundle.world.id } : curriculumBundle ? { id: null } : null,
-      prompt: {
-        systemPromptHash: hashCanonicalJson({ systemPrompt }),
-        tutorRolePromptHash: tutorInstance.rolePromptHash,
-      },
-      tutor: {
-        ref: tuning.activeRef,
-        rolePromptHash: tutorInstance.rolePromptHash,
-      },
-      models: {
-        tutor: tutorStubRecipeModelIdentity(args.model, visibleModel),
-        classifier: tutorStubRecipeModelIdentity(args['classifier-model'], visibleClassifierModel),
-        reasoning: tutorStubRecipeModelIdentity(args['learner-record-model'], visibleLearnerRecordModel),
-        learner: tutorStubRecipeModelIdentity(args['auto-learner-model'], visibleAutoLearnerModel),
-      },
-    },
+    assertSupportedModelRefs,
+    buildDirectorInitialContext,
+    commaSeparatedStrings,
+    commandLineOptionProvided,
+    configureCliPresentation,
+    createTutorStubCurriculumRuntime,
+    input,
+    normalizeDagMode,
+    normalizeTutorStubCliMotion,
+    normalizeTutorStubCliThemeId,
+    normalizeTutorStubDagFactDropoutRate,
+    normalizeTutorStubDagFactDropoutSeed,
+    normalizeTutorStubEngagementStanceTemperature,
+    normalizeTutorStubLightAdaptationThreshold,
+    normalizeTutorStubLoopMode,
+    normalizeTutorStubPointOfActionArm,
+    normalizeTutorStubReleaseSpeed,
+    normalizeTutorStubTuningMode,
+    normalizeTutorStubVoiceModel,
+    normalizeTutorStubVoiceName,
+    output,
+    parseAutoTurns,
+    parseNumber,
+    parseOptionalBoundedInt,
+    parsePositiveInt,
+    pickInitialScenarioWithKeyboard,
+    positionals,
+    rememberedSettingExplicitSources,
+    resolveAutomatedLearnerProfile,
+    resolveTutorStubTutorInstance,
+    resolveWorldRef,
+    resumeRequested,
+    tutorStubCurriculumBundle,
   });
-  const recipeDrift = loadedSessionRecipe
-    ? compareTutorStubResumeRecipe(loadedSessionRecipe, sessionRecipe, {
-        extraDrift: (loadedRecipeApplication?.explicitOverrides || []).map((entry) => ({
-          ...entry,
-          axis: `option.${entry.axis}`,
-        })),
-      })
-    : null;
-  if (recipeDrift) {
-    assertTutorStubResumeCompatibility(recipeDrift, {
-      acknowledgeDrift: args['acknowledge-drift'],
-      context: 'recipe',
-    });
-  }
-  const resumeDrift = resumeCandidate
-    ? compareTutorStubResumeRecipe(resumeCandidate.recipe, sessionRecipe, {
-        extraDrift: (resumeRecipeApplication?.explicitOverrides || []).map((entry) => ({
-          ...entry,
-          axis: `option.${entry.axis}`,
-        })),
-      })
-    : null;
-  if (resumeDrift) {
-    assertTutorStubResumeCompatibility(resumeDrift, { acknowledgeDrift: args['acknowledge-drift'] });
-  }
-  const loadedRecipeProvenance = loadedSessionRecipe
-    ? {
-        source: path.relative(ROOT, loadedSessionRecipe.filePath),
-        drift: recipeDrift,
-        driftAcknowledged: Boolean(args['acknowledge-drift'] && !recipeDrift?.ok),
-      }
-    : null;
-  if (args['write-recipe']) {
-    loadedSessionRecipePath = writeTutorStubSessionRecipe({
-      recipe: sessionRecipe,
-      filePath: resolveWorkspacePath(args['write-recipe']),
-    });
-  }
-
-  if (args['show-prompt']) {
-    console.log(`${C.dim}--- system prompt ---${C.reset}`);
-    console.log(systemPrompt);
-    console.log(`${C.dim}--- end system prompt ---${C.reset}\n`);
-  }
-
-  if (args['dry-run']) {
-    console.log(
-      JSON.stringify(
-        {
-          modelRef: args.model,
-          resolved: visibleModel,
-          tutorInstance: {
-            id: tutorInstance.id,
-            title: tutorInstance.title,
-            requestedRef: args.tutor,
-            activeRef: tuning.activeRef,
-            sourceVersion: tutorInstance.sourceVersion,
-            rolePromptPath: path.relative(ROOT, tutorInstance.rolePromptPath),
-            rolePromptHash: tutorInstance.rolePromptHash,
-            policyPack: tutorInstance.policyPack,
-            modelDefaults: tutorInstance.modelDefaults,
-          },
-          tuning: tutorStubTuningSnapshot(tuning),
-          allModelsOverride,
-          voice: {
-            schema: 'machinespirits.tutor-stub.voice-runtime.v1',
-            launchRequested: voiceLaunchRequested,
-            model: voiceModel,
-            voice: voiceName,
-            transcriptionModel: 'gpt-realtime-whisper',
-            apiKeyConfigured: Boolean(process.env.OPENAI_API_KEY),
-            automaticRealtimeResponses: false,
-            authority: 'existing_cli_analysis_dag_register_guard_pipeline',
-          },
-          rememberedSettings: rememberedSettingsConfig,
-          trainingReuse: trainingReuseConfig,
-          lab: selectedLabMetadata,
-          sessionRecipe,
-          recipeFile: loadedSessionRecipePath ? path.relative(ROOT, loadedSessionRecipePath) : null,
-          recipeSource: loadedRecipeProvenance,
-          resume: resumeCandidate
-            ? {
-                source: path.relative(ROOT, resumeCandidate.filePath),
-                runId: resumeCandidate.runId,
-                turns: resumeCandidate.turns.length,
-                migration: resumeCandidate.migration,
-                drift: resumeDrift,
-                driftAcknowledged: Boolean(args['acknowledge-drift'] && !resumeDrift?.ok),
-              }
-            : { requested: resumeRequested, found: false },
-          passthrough: passthroughConfig,
-          capabilities: capabilitySnapshot,
-          sessionRuntime: {
-            schema: TUTOR_STUB_SESSION_RUNTIME_SCHEMA,
-            version: TUTOR_STUB_SESSION_RUNTIME_VERSION,
-            lifecycle: ['create', 'load', 'resume', 'step', 'reset', 'finalize'],
-            stateIsolation: 'per_runtime_instance',
-            commandHandlers: 'registry_owned',
-            traceEvents: 'versioned_session_event_envelopes',
-          },
-          topic: effectiveTopic,
-          curriculum: curriculumBundle
-            ? {
-                id: curriculumBundle.curriculum.id,
-                title: curriculumBundle.curriculum.title,
-                sourceRef: curriculumBundle.sourceRef,
-                sourceHash: curriculumBundle.curriculum.source?.source_hash || null,
-                moduleId: curriculumBundle.module.id,
-                moduleTitle: curriculumBundle.module.title,
-                mode: 'public_reflective_non_dag',
-                completionAuthority: curriculumRuntime.completionAuthority,
-              }
-            : null,
-          world: worldBundle
-            ? {
-                id: worldBundle.world.id,
-                title: worldBundle.world.title,
-                file: path.relative(ROOT, worldBundle.filePath),
-                dag: args.dag,
-              }
-            : null,
-          scenarioPicker: initialScenarioPickerConfig,
-          humanDiscourse: humanDiscourseConfig,
-          humanDiscoursePreviewFrame,
-          comprehensionSideState: {
-            enabled: true,
-            schema: 'machinespirits.tutor-stub.comprehension-side-state.v1',
-            sources: ['learner_turn', 'slash_explain'],
-            advancesLearnerDag: false,
-          },
-          dagFactDropout: dagFactDropoutConfig,
-          releasePacing: releasePacingConfig,
-          loopExecution: {
-            mode: loopMode,
-            fixedPublicSafeQuarantine: loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
-            recoverableFailurePolicy:
-              loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE
-                ? 'rollback_turn_state_commit_mechanical_quarantine_and_continue'
-                : 'fail_fast',
-          },
-          experiment: experimentConfig,
-          typedPedagogicalActions: typedActionConfig,
-          responseConfiguration: {
-            schema: 'machinespirits.tutor-stub.response-configuration.v3',
-            primaryStanceField: 'engagement_stance',
-            independentAxes: [
-              'engagement_stance',
-              'action_family',
-              'addressee_profile',
-              'lexical_accessibility',
-              'scene_immersion',
-              'actorial_part',
-            ],
-            temperatureScope: 'engagement_stance_and_actorial_part',
-            transcriptVisibilityAudit: true,
-          },
-          randomPerformance: {
-            available: registerSelectionEnabled,
-            enabled: false,
-            slashCommand: '/random',
-            scope: ['engagement_stance', 'actorial_part'],
-            assessmentInfluence: false,
-            preservedControls: ['action_family', 'evidence_release', 'dialogue_closure', 'response_safety'],
-          },
-          lightAdaptation: {
-            schema: TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
-            available: registerSelectionEnabled,
-            enabled: lightAdaptationEnabled,
-            threshold: lightAdaptationThreshold,
-            slashCommand: '/light on|off|status',
-            settingsCommand: '/settings light on|off|status',
-            defaultScope: 'adaptive_interactive_sessions',
-            rememberedPreference: true,
-            trigger: 'continued_learner_confusion_or_frustration',
-            scope: ['engagement_stance', 'actorial_part'],
-            selectionMethod: 'seeded_uniform_excluding_previous',
-            preservedControls: [
-              'action_family',
-              'authored_evidence_source',
-              'evidence_release',
-              'dialogue_closure',
-              'response_safety',
-            ],
-          },
-          performanceDirectives: {
-            available: registerSelectionEnabled,
-            sessionOnly: true,
-            register: null,
-            character: initialTutorCharacter,
-            slashCommands: ['/register', '/character'],
-            precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
-          },
-          promptArchitecture,
-          learnerAnalysisPromptProfile,
-          learnerAnalysisEvidenceUseRubric,
-          directorContext,
-          temperature: effectiveTemperature,
-          requestedTemperature: temperature,
-          cliEffort: cliEffort || null,
-          classifier: visibleClassifierConfig,
-          tutorLearnerDag: tutorLearnerDagEnabled
-            ? {
-                modelRef: args['learner-record-model'],
-                resolved: visibleLearnerRecordModel,
-                combinedClassifier: combinedLearnerAnalysisEnabled,
-                preflight: learnerDagPreflightConfig,
-                multiPremiseAdvance: {
-                  enabled: true,
-                  schema: 'machinespirits.tutor-stub.learner-advance.v1',
-                  validation: 'staged_public_evidence_and_public_rules',
-                  downstream: [
-                    'classification',
-                    'field',
-                    'trajectory',
-                    'register',
-                    'response_configuration',
-                    'reports',
-                  ],
-                },
-              }
-            : { enabled: false, requested: Boolean(args['tutor-learner-dag']) },
-          autoLearner: autoLearnerEnabled
-            ? {
-                enabled: true,
-                modelRef: args['auto-learner-model'],
-                resolved: visibleAutoLearnerModel,
-                maxTurns: autoTurns ?? 'until-grounded',
-                untilGrounded: autoTurns === null,
-                safetyTurns: autoTurns === null ? autoSafetyTurns : null,
-                stopOnGrounded: autoStopOnGrounded,
-                profileId: automatedLearnerProfileId(args['auto-learner-profile']),
-                profile: args['auto-learner-profile'],
-              }
-            : { enabled: false },
-          mixedLearner: mixedLearnerEnabled
-            ? {
-                enabled: true,
-                modelRef: args['auto-learner-model'],
-                resolved: visibleAutoLearnerModel,
-                profileId: automatedLearnerProfileId(args['auto-learner-profile']),
-                profile: args['auto-learner-profile'],
-                clue: '/clue or /hint',
-                accept: 'Tab on an empty learner prompt, /use, or /accept',
-                inspect: '/suggest',
-                regenerate: '/regen',
-                tutorPrefetchPolicy: mixedTutorPrefetchPolicy,
-                profilePresentation: {
-                  promptLabel: true,
-                  intendedPattern: true,
-                  visibleExpression: 'profile_signal',
-                  readyAnnouncement: 'once_per_profile',
-                  firstTutorOrdering: 'ready_profile_then_director_then_tutor',
-                  initialPicker: {
-                    enabled: initialMixedLearnerSetupEnabled,
-                    defaultProfileId: automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
-                    keyboardMenu: true,
-                    navigation: ['up', 'down', 'enter'],
-                    nonTtyFallback: 'typed_profile_id',
-                  },
-                },
-                startupPrompts: mixedLearnerStartupPrompts,
-              }
-            : { enabled: false, requested: mixedLearnerRequested },
-          interactiveRoleModes,
-          turnFeedback: turnFeedbackConfig,
-          responseDetails: responseDetailsConfig,
-          explanatoryDebug: explanatoryDebugConfig,
-          learningSummaryReport: learningSummaryReportConfig,
-          registerSelection: registerSelectionEnabled
-            ? {
-                enabled: true,
-                palette: registerPalette,
-                policy: registerPolicyStack.id,
-                primaryPolicy: registerPolicy,
-                overlayPolicies: registerPolicyOverlays,
-                overlayThreshold: registerOverlayThreshold,
-                temperature: registerTemperature,
-                engagementStanceTemperature: registerTemperature,
-                temperatureScope: 'engagement_stance_and_actorial_part',
-                combinedLearnerAnalysis: combinedLearnerAnalysisEnabled,
-                localFieldPolicy: fieldRegisterSelectionEnabled,
-                localTrajectoryPolicy: trajectoryRegisterSelectionEnabled,
-                localDynamicalSystemPolicy: dynamicalSystemRegisterSelectionEnabled,
-                localEmpiricalDynamicalSystemPolicy: empiricalDynamicalSystemRegisterSelectionEnabled,
-                localContinuousDynamicalSystemPolicy: continuousDynamicalSystemRegisterSelectionEnabled,
-                localContinuousEmpiricalDynamicalSystemPolicy:
-                  continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
-                continuousUnsafeRegisterAnchors: continuousUnsafeRegisterAnchorsEnabled,
-                localStatePolicy: stateRegisterSelectionEnabled,
-                random: randomRegisterSelectionEnabled,
-                negative: negativeRegisterSelectionEnabled,
-                empiricalPrior: {
-                  status: registerEmpiricalPrior.status,
-                  path: registerEmpiricalPrior.filePath ? path.relative(ROOT, registerEmpiricalPrior.filePath) : null,
-                  observationCount: registerEmpiricalPrior.prior?.source?.observationCount ?? null,
-                },
-              }
-            : { enabled: false },
-          pointOfAction: pointOfActionArm
-            ? {
-                enabled: true,
-                arm: pointOfActionArm,
-                detectorVersion: 'step4-frozen-2026-07-14.v1',
-                eligibleTurns: [3, 24],
-                triggerPriority: ['stagnant_repeat', 'warrant_skip'],
-                committee:
-                  pointOfActionArm === 'committee'
-                    ? {
-                        model: args['committee-mini-model'],
-                        fallbackPolicy: args['committee-fallback-policy'],
-                        control: '/committee on|off|status',
-                      }
-                    : null,
-              }
-            : { enabled: false },
-          maxTokens,
-          historyTurns,
-          speakerHistory: {
-            mode: 'full_public_replay',
-            perspectives: ['tutor', 'learner'],
-            roles: ['system', 'user', 'assistant'],
-            directApiTransport: 'native_messages',
-            cliTransport: 'flattened_at_bridge_boundary',
-            automatedLearnerBudgetFallback: {
-              enabled: true,
-              trigger: 'prompt_audit_budget_violation',
-              mode: 'budget_window_public_replay',
-              recentTurns: historyTurns,
-              publicOnly: true,
-            },
-          },
-          memorySummary: {
-            enabled: memorySummaryEnabled,
-            rawRecentTurns: historyTurns,
-            publicSummary: memorySummaryEnabled,
-            scope: 'auxiliary_analysis_prompts',
-          },
-          trace: traceEnabled
-            ? {
-                enabled: true,
-                dir: path.relative(ROOT, traceDir),
-              }
-            : { enabled: false },
-          stream: {
-            enabled: streamEnabled,
-            tutor: tutorStreamState,
-            tutorLive: tutorStreamState === 'live',
-            tutorGuardedAfterAudit: tutorStreamState === 'guarded_after_audit',
-            classifier:
-              streamEnabled && classifierResolved
-                ? providerSupportsStreaming(classifierResolved) || providerSupportsEventStreaming(classifierResolved)
-                : false,
-            learnerAnalysis:
-              streamEnabled && learnerRecordResolved
-                ? providerSupportsStreaming(learnerRecordResolved) ||
-                  providerSupportsEventStreaming(learnerRecordResolved)
-                : false,
-          },
-          opening: openingConfig,
-          closeoutReport: { enabled: closeoutReportEnabled },
-          dialogueClosure: dialogueClosureConfig,
-          multipleChoice: { enabled: multipleChoiceEnabled },
-          interimAnimation: {
-            enabled: interimAnimationEnabled,
-            activeInThisTerminal: Boolean(interimAnimationEnabled && output.isTTY && cliPresentation.motion !== 'off'),
-          },
-          presentation: tutorStubCliPresentationSnapshot(cliPresentation),
-          fieldVisualization: {
-            enabled: fieldVisualizationEnabled,
-            dir: path.relative(ROOT, traceDir),
-            automaticAfterTurns: fieldVisualizationEnabled,
-            slashCommand: '/viz',
-          },
-          resumeLast: resumeRequested
-            ? resumeCandidate
-              ? {
-                  source: path.relative(ROOT, resumeCandidate.filePath),
-                  turns: resumeCandidate.turns.length,
-                  world: resumeCandidate.metadata?.world || null,
-                }
-              : { requested: true, found: false, traceDir: path.relative(ROOT, traceDir) }
-            : { requested: false },
-          systemPrompt,
-          firstMessage: firstMessage || null,
-        },
-        null,
-        2,
-      ),
-    );
-    return;
-  }
-
-  if (!resolved.isConfigured && !isCliProvider(resolved.provider)) {
-    const envName = providerConfig.api_key_env || 'provider API key';
-    throw new Error(`${args.model} is not configured. Set ${envName} or choose a CLI-backed model.`);
-  }
-  if (
-    classifierEnabled &&
-    !combinedLearnerAnalysisEnabled &&
-    !classifierResolved.isConfigured &&
-    !isCliProvider(classifierResolved.provider)
-  ) {
-    const envName = classifierProviderConfig.api_key_env || 'provider API key';
-    throw new Error(`${args['classifier-model']} is not configured. Set ${envName} or choose a CLI-backed classifier.`);
-  }
-  if (tutorLearnerDagEnabled && !learnerRecordResolved.isConfigured && !isCliProvider(learnerRecordResolved.provider)) {
-    const envName = learnerRecordProviderConfig.api_key_env || 'provider API key';
-    throw new Error(
-      `${args['learner-record-model']} is not configured. Set ${envName} or choose a CLI-backed learner-record model.`,
-    );
-  }
-  if (learnerModelRequired && !autoLearnerResolved.isConfigured && !isCliProvider(autoLearnerResolved.provider)) {
-    const envName = autoLearnerProviderConfig.api_key_env || 'provider API key';
-    throw new Error(
-      `${args['auto-learner-model']} is not configured. Set ${envName} or choose a CLI-backed automated learner model.`,
-    );
-  }
-
-  const trace = createTraceState({
-    enabled: traceEnabled,
-    traceDir: args['trace-dir'],
-    metadata: {
-      modelRef: args.model,
-      resolved: visibleModel,
-      tutorInstance: {
-        schema: tutorInstance.schema,
-        id: tutorInstance.id,
-        title: tutorInstance.title,
-        requestedRef: args.tutor,
-        activeRef: tuning.activeRef,
-        rolePromptPath: path.relative(ROOT, tutorInstance.rolePromptPath),
-        rolePromptHash: tutorInstance.rolePromptHash,
-        policyPack: tutorInstance.policyPack,
-      },
-      tuning: tutorStubTuningSnapshot(tuning),
-      allModelsOverride,
-      rememberedSettings: rememberedSettingsConfig,
-      trainingReuse: trainingReuseConfig,
-      lab: selectedLabMetadata,
-      sessionRecipe,
-      recipeFile: loadedSessionRecipePath ? path.relative(ROOT, loadedSessionRecipePath) : null,
-      recipeSource: loadedRecipeProvenance,
-      resume: resumeCandidate
-        ? {
-            source: path.relative(ROOT, resumeCandidate.filePath),
-            runId: resumeCandidate.runId,
-            turns: resumeCandidate.turns.length,
-            migration: resumeCandidate.migration,
-            drift: resumeDrift,
-            driftAcknowledged: Boolean(args['acknowledge-drift'] && !resumeDrift?.ok),
-          }
-        : { requested: resumeRequested, found: false },
-      passthrough: passthroughConfig,
-      capabilities: capabilitySnapshot,
-      humanDiscourse: humanDiscourseConfig,
-      scenarioPicker: initialScenarioPickerConfig,
-      comprehensionSideState: {
-        enabled: true,
-        schema: 'machinespirits.tutor-stub.comprehension-side-state.v1',
-        sources: ['learner_turn', 'slash_explain'],
-        advancesLearnerDag: false,
-      },
-      dagFactDropout: dagFactDropoutConfig,
-      releasePacing: releasePacingConfig,
-      loopExecution: {
-        mode: loopMode,
-        fixedPublicSafeQuarantine: loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
-        recoverableFailurePolicy:
-          loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE
-            ? 'rollback_turn_state_commit_mechanical_quarantine_and_continue'
-            : 'fail_fast',
-      },
-      experiment: experimentConfig,
-      typedPedagogicalActions: typedActionConfig,
-      responseConfiguration: {
-        schema: 'machinespirits.tutor-stub.response-configuration.v3',
-        primaryStanceField: 'engagement_stance',
-        independentAxes: [
-          'engagement_stance',
-          'action_family',
-          'addressee_profile',
-          'lexical_accessibility',
-          'scene_immersion',
-          'actorial_part',
-        ],
-        temperatureScope: 'engagement_stance_and_actorial_part',
-        transcriptVisibilityAudit: true,
-      },
-      randomPerformance: {
-        available: registerSelectionEnabled,
-        enabled: false,
-        slashCommand: '/random',
-        scope: ['engagement_stance', 'actorial_part'],
-        assessmentInfluence: false,
-        preservedControls: ['action_family', 'evidence_release', 'dialogue_closure', 'response_safety'],
-      },
-      lightAdaptation: {
-        schema: TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
-        available: registerSelectionEnabled,
-        enabled: lightAdaptationEnabled,
-        threshold: lightAdaptationThreshold,
-        slashCommand: '/light on|off|status',
-        settingsCommand: '/settings light on|off|status',
-        defaultScope: 'adaptive_interactive_sessions',
-        rememberedPreference: true,
-        trigger: 'continued_learner_confusion_or_frustration',
-        scope: ['engagement_stance', 'actorial_part'],
-        selectionMethod: 'seeded_uniform_excluding_previous',
-        preservedControls: [
-          'action_family',
-          'authored_evidence_source',
-          'evidence_release',
-          'dialogue_closure',
-          'response_safety',
-        ],
-      },
-      performanceDirectives: {
-        available: registerSelectionEnabled,
-        sessionOnly: true,
-        register: null,
-        character: initialTutorCharacter,
-        slashCommands: ['/register', '/character'],
-        precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
-      },
-      pointOfAction: pointOfActionArm
-        ? {
-            enabled: true,
-            arm: pointOfActionArm,
-            detectorVersion: 'step4-frozen-2026-07-14.v1',
-            eligibleTurns: [3, 24],
-            triggerPriority: ['stagnant_repeat', 'warrant_skip'],
-            committee:
-              pointOfActionArm === 'committee'
-                ? {
-                    model: args['committee-mini-model'],
-                    fallbackPolicy: args['committee-fallback-policy'],
-                    control: '/committee on|off|status',
-                  }
-                : null,
-          }
-        : { enabled: false },
-      promptArchitecture,
-      classifier: visibleClassifierConfig,
-      tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
-      learnerDagPreflight: learnerDagPreflightConfig,
-      autoLearner: autoLearnerEnabled
-        ? {
-            enabled: true,
-            modelRef: args['auto-learner-model'],
-            resolved: visibleAutoLearnerModel,
-            maxTurns: autoTurns ?? 'until-grounded',
-            untilGrounded: autoTurns === null,
-            safetyTurns: autoTurns === null ? autoSafetyTurns : null,
-            stopOnGrounded: autoStopOnGrounded,
-            profileId: automatedLearnerProfileId(args['auto-learner-profile']),
-            profile: args['auto-learner-profile'],
-          }
-        : { enabled: false },
-      mixedLearner: mixedLearnerEnabled
-        ? {
-            enabled: true,
-            modelRef: args['auto-learner-model'],
-            resolved: visibleAutoLearnerModel,
-            profileId: automatedLearnerProfileId(args['auto-learner-profile']),
-            profile: args['auto-learner-profile'],
-            clue: '/clue or /hint',
-            accept: 'Tab on an empty learner prompt, /use, or /accept',
-            inspect: '/suggest',
-            regenerate: '/regen',
-            profilePresentation: {
-              promptLabel: true,
-              intendedPattern: true,
-              visibleExpression: 'profile_signal',
-              readyAnnouncement: 'once_per_profile',
-              firstTutorOrdering: 'ready_profile_then_director_then_tutor',
-              initialPicker: {
-                enabled: initialMixedLearnerSetupEnabled,
-                defaultProfileId: automatedLearnerProfileId(args['auto-learner-profile']) || 'custom',
-                keyboardMenu: true,
-                navigation: ['up', 'down', 'enter'],
-                nonTtyFallback: 'typed_profile_id',
-              },
-            },
-            startupPrompts: mixedLearnerStartupPrompts,
-          }
-        : { enabled: false, requested: mixedLearnerRequested },
-      learnerResponseProvenance: interactiveRoleModes.learnerResponseProvenance,
-      interactiveRoleModes,
-      turnFeedback: turnFeedbackConfig,
-      responseDetails: responseDetailsConfig,
-      explanatoryDebug: explanatoryDebugConfig,
-      learningSummaryReport: learningSummaryReportConfig,
-      registerSelection: registerSelectionEnabled
-        ? {
-            enabled: true,
-            palette: registerPalette,
-            policy: registerPolicyStack.id,
-            primaryPolicy: registerPolicy,
-            overlayPolicies: registerPolicyOverlays,
-            overlayThreshold: registerOverlayThreshold,
-            temperature: registerTemperature,
-            engagementStanceTemperature: registerTemperature,
-            temperatureScope: 'engagement_stance_and_actorial_part',
-            combinedLearnerAnalysis: combinedLearnerAnalysisEnabled,
-            localFieldPolicy: fieldRegisterSelectionEnabled,
-            localTrajectoryPolicy: trajectoryRegisterSelectionEnabled,
-            localDynamicalSystemPolicy: dynamicalSystemRegisterSelectionEnabled,
-            localEmpiricalDynamicalSystemPolicy: empiricalDynamicalSystemRegisterSelectionEnabled,
-            localContinuousDynamicalSystemPolicy: continuousDynamicalSystemRegisterSelectionEnabled,
-            localContinuousEmpiricalDynamicalSystemPolicy: continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
-            continuousUnsafeRegisterAnchors: continuousUnsafeRegisterAnchorsEnabled,
-            localStatePolicy: stateRegisterSelectionEnabled,
-            random: randomRegisterSelectionEnabled,
-            negative: negativeRegisterSelectionEnabled,
-            empiricalPrior: {
-              status: registerEmpiricalPrior.status,
-              path: registerEmpiricalPrior.filePath ? path.relative(ROOT, registerEmpiricalPrior.filePath) : null,
-              observationCount: registerEmpiricalPrior.prior?.source?.observationCount ?? null,
-            },
-          }
-        : { enabled: false },
-      cliEffort: cliEffort || null,
-      learnerAnalysisPromptProfile,
-      learnerAnalysisEvidenceUseRubric,
-      mixedTutorPrefetchPolicy,
-      stream: {
-        enabled: streamEnabled,
-        tutor: tutorStreamState,
-        tutorLive: tutorStreamState === 'live',
-        tutorBufferedForConcurrentInput: tutorStreamState === 'buffered_for_concurrent_input',
-        tutorGuardedAfterAudit: tutorStreamState === 'guarded_after_audit',
-        classifier:
-          streamEnabled && classifierResolved
-            ? providerSupportsStreaming(classifierResolved) || providerSupportsEventStreaming(classifierResolved)
-            : false,
-        learnerAnalysis:
-          streamEnabled && learnerRecordResolved
-            ? providerSupportsStreaming(learnerRecordResolved) || providerSupportsEventStreaming(learnerRecordResolved)
-            : false,
-      },
-      memorySummary: {
-        enabled: memorySummaryEnabled,
-        rawRecentTurns: historyTurns,
-        publicSummary: memorySummaryEnabled,
-        scope: 'auxiliary_analysis_prompts',
-      },
-      speakerHistory: {
-        mode: 'full_public_replay',
-        perspectives: ['tutor', 'learner'],
-        roles: ['system', 'user', 'assistant'],
-        directApiTransport: 'native_messages',
-        cliTransport: 'flattened_at_bridge_boundary',
-        automatedLearnerBudgetFallback: {
-          enabled: true,
-          trigger: 'prompt_audit_budget_violation',
-          mode: 'budget_window_public_replay',
-          recentTurns: historyTurns,
-          publicOnly: true,
-        },
-      },
-      opening: openingConfig,
-      closeoutReport: { enabled: closeoutReportEnabled },
-      dialogueClosure: dialogueClosureConfig,
-      multipleChoice: { enabled: multipleChoiceEnabled },
-      interimAnimation: {
-        enabled: interimAnimationEnabled,
-        activeInThisTerminal: Boolean(interimAnimationEnabled && output.isTTY && cliPresentation.motion !== 'off'),
-      },
-      presentation: tutorStubCliPresentationSnapshot(cliPresentation),
-      fieldVisualization: {
-        enabled: fieldVisualizationEnabled,
-        dir: path.relative(ROOT, traceDir),
-        automaticAfterTurns: fieldVisualizationEnabled,
-        slashCommand: '/viz',
-      },
-      resumeLast: resumeRequested
-        ? resumeCandidate
-          ? {
-              source: path.relative(ROOT, resumeCandidate.filePath),
-              turns: resumeCandidate.turns.length,
-              world: resumeCandidate.metadata?.world || null,
-            }
-          : { requested: true, found: false, traceDir: path.relative(ROOT, traceDir) }
-        : { requested: false },
-      world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
-      curriculum: curriculumBundle
-        ? {
-            id: curriculumBundle.curriculum.id,
-            title: curriculumBundle.curriculum.title,
-            sourceRef: curriculumBundle.sourceRef,
-            sourceHash: curriculumBundle.curriculum.source?.source_hash || null,
-            moduleId: curriculumBundle.module.id,
-            moduleTitle: curriculumBundle.module.title,
-            mode: 'public_reflective_non_dag',
-            completionAuthority: curriculumRuntime.completionAuthority,
-          }
-        : null,
-      firstMessage: firstMessage || null,
-    },
-  });
-  if (initialScenarioSelection) {
-    appendTraceEvent(trace, {
-      type: 'initial_scenario_selected',
-      ...initialScenarioSelection,
-    });
-  }
-  appendTraceEvent(trace, {
-    type: 'capability_snapshot_resolved',
-    schema: capabilitySnapshot.schema,
-    registryVersion: capabilitySnapshot.registryVersion,
-    mode: capabilitySnapshot.mode,
-    active: capabilitySnapshot.active,
-    available: capabilitySnapshot.available,
-    compatibility: capabilitySnapshot.compatibility,
-    publicTranscriptChanged: false,
-  });
-  const interim = createInterimState({ enabled: interimAnimationEnabled });
-
-  const state = {
-    topic: effectiveTopic,
-    systemPrompt,
-    promptArchitecture,
-    tutorInstance,
-    tuning,
-    learnerProfileId: automatedLearnerProfileId(args['auto-learner-profile']),
-    learnerProfile: args['auto-learner-profile'],
-    modelRef: args.model,
-    resolved,
-    modelRouting: {
-      schema: 'machinespirits.tutor-stub.model-routing.v1',
-      allRolesOverrideRef: allModelsOverrideRef,
-    },
-    rememberedSettings: {
-      ...rememberedSettingsConfig,
-      filePath: rememberedSettings.filePath,
-      savedAt: rememberedSettings.savedAt,
-    },
-    trainingReuse: trainingReuseConfig,
-    presentation: tutorStubCliPresentationSnapshot(cliPresentation),
-    responseDetails: { ...responseDetailsConfig },
-    capabilities: capabilitySnapshot,
-    lab: selectedLabMetadata,
-    sessionRecipe,
-    recipeSource: loadedRecipeProvenance,
-    resume: resumeCandidate
-      ? {
-          source: resumeCandidate.filePath,
-          runId: resumeCandidate.runId,
-          migration: resumeCandidate.migration,
-          drift: resumeDrift,
-          driftAcknowledged: Boolean(args['acknowledge-drift'] && !resumeDrift?.ok),
-        }
-      : null,
-    passthrough: passthroughConfig,
-    learnerResponseProvenance: interactiveRoleModes.learnerResponseProvenance,
-    turnFailureFeedbackRecords: [],
-    requestedTemperature: temperature,
-    temperature: effectiveTemperature,
-    maxTokens,
-    historyTurns,
-    learnerAnalysisPromptProfile,
-    learnerAnalysisEvidenceUseRubric,
-    mixedTutorPrefetchPolicy,
-    tutorContext: {
-      schema: 'machinespirits.tutor-stub.tutor-context-policy.v2',
-      historyMode: 'full_public_replay',
-      activatedBy: 'session_start',
-      activatedAtTurn: null,
-      modelRef: args.model,
-    },
-    memory: {
-      enabled: memorySummaryEnabled,
-    },
-    curriculum: curriculumBundle
-      ? {
-          id: curriculumBundle.curriculum.id,
-          title: curriculumBundle.curriculum.title,
-          sourceRef: curriculumBundle.sourceRef,
-          sourceHash: curriculumBundle.curriculum.source?.source_hash || null,
-          module: curriculumBundle.module,
-          mode: 'public_reflective_non_dag',
-          runtime: curriculumRuntime,
-        }
-      : null,
-    world: worldBundle?.world || null,
-    openingRealization: null,
-    resumeHandoff: null,
-    openingRealizer,
-    directorContext,
-    directorOpeningPresented: false,
-    directorGuidance: createTutorStubDirectorGuidanceState(),
-    dag: args.dag,
+  if (!launchApplicationContext) return;
+  const {
+    autoLearnerEnabled,
+    autoSafetyTurns,
+    autoStopOnGrounded,
+    autoTurns,
+    curriculumBundle,
+    curriculumRuntime,
+    dagFactDropoutRate,
+    dagFactDropoutSeed,
     dagMode,
-    humanDiscourse: humanDiscourseConfig,
-    dialogueClosure: { ...dialogueClosureConfig },
-    tutorDag,
-    classifier: {
-      enabled: classifierEnabled,
-      modelRef: args['classifier-model'],
-      resolved: classifierResolved,
-      combined: combinedLearnerAnalysisEnabled,
-    },
-    learnerDag: createLearnerDagState({
-      enabled: tutorLearnerDagEnabled,
-      modelRef: args['learner-record-model'],
-      resolved: learnerRecordResolved,
-      world: worldBundle?.world || null,
-      dropout: {
-        rate: dagFactDropoutRate,
-        seed: dagFactDropoutSeed,
-      },
-    }),
-    autoLearner: {
-      modelRef: args['auto-learner-model'],
-      resolved: autoLearnerResolved,
-      providerConfig: autoLearnerProviderConfig,
-    },
-    comprehension: createTutorStubComprehensionState(),
-    releasePacing: createTutorStubReleasePacingState({
-      world: worldBundle?.world || null,
-      speed: releaseSpeed,
-    }),
-    loopMode,
-    diagnosticCollection: {
-      enabled: loopMode === TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
-      firstQuarantinedTurn: null,
-      quarantinedTurns: [],
-    },
-    register: {
-      enabled: registerSelectionEnabled,
-      palette: registerPalette,
-      policy: registerPolicy,
-      overlays: [...registerPolicyOverlays],
-      overlayThreshold: registerOverlayThreshold,
-      temperature: registerTemperature,
-      continuousUnsafe: continuousUnsafeRegisterAnchorsEnabled,
-      empiricalPrior: registerEmpiricalPrior.prior,
-      empiricalPriorStatus: registerEmpiricalPrior.status,
-      empiricalPriorPath: registerEmpiricalPrior.filePath,
-      current: null,
-      history: [],
-    },
-    randomPerformance: {
-      schema: 'machinespirits.tutor-stub.random-performance-mode.v1',
-      enabled: false,
-      scope: ['engagement_stance', 'actorial_part'],
-      assessmentInfluence: false,
-      sessionOnly: true,
-    },
-    lightAdaptation: {
-      schema: TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
-      enabled: lightAdaptationEnabled,
-      threshold: lightAdaptationThreshold,
-      scope: ['engagement_stance', 'actorial_part'],
-      trigger: 'continued_learner_confusion_or_frustration',
-      selectionMethod: 'seeded_uniform_excluding_previous',
-      rememberedPreference: true,
-    },
-    performanceDirectives: {
-      schema: 'machinespirits.tutor-stub.explicit-performance-directives.v1',
-      register: null,
-      character: initialTutorCharacter,
-      sessionOnly: true,
-      precedence: 'light_adaptation_then_explicit_axis_then_random_axis_then_adaptive_policy',
-    },
-    pointOfAction: {
-      enabled: Boolean(pointOfActionArm),
-      arm: pointOfActionArm,
-      current: null,
-      history: [],
-    },
-    committee: {
-      enabled: pointOfActionArm === 'committee',
-      miniModel: args['committee-mini-model'],
-      ollamaUrl: args['committee-ollama-url'],
-      fallbackPolicy: args['committee-fallback-policy'] === 'v2' ? 'v2' : 'v1',
-      numCtx: PROGRAM2_COMMITTEE_DEFAULTS.numCtx,
-      timeoutMs: PROGRAM2_COMMITTEE_DEFAULTS.timeoutMs,
-    },
-    experiment: experimentConfig,
-    typedActions: {
-      enabled: typedActionConfig.enabled,
-      config: typedActionConfig,
-      ledger: [],
-      currentDecision: null,
-      scaffoldLifecycle: createScaffoldLifecycle(),
-    },
-    trace,
-    debugRunId: trace.runId || safeTimestampForFile(),
-    printedDebugIds: new Set(),
-    interim,
-    stream: {
-      enabled: streamEnabled,
-      interim,
-    },
-    fieldViz: {
-      enabled: fieldVisualizationEnabled,
-      dir: traceDir,
-      runId: trace.runId || safeTimestampForFile(),
-    },
+    directorContext,
+    effectiveTopic,
+    existingScenarioAvailable,
+    experimentRepeat,
+    experimentRunSeed,
+    explicitRememberedSources,
+    initialScenarioKeyboardMenuActive,
+    initialScenarioPickerEnabled,
+    initialScenarioSelection,
+    interactiveSessionEnabled,
+    interactiveSessionIntent,
+    launchWorldBundle,
+    learnerModelRequired,
+    learnerSuggestionEnabled,
+    lightAdaptationEnabled,
+    mixedLearnerEnabled,
+    multipleChoiceEnabled,
+    observedAuditsEnabled,
+    openingRealizer,
+    passthroughEnabled,
+    pointOfActionArm,
+    registerTemperature,
+    releaseSpeed,
+    rememberedScenarioAvailable,
+    rememberedSettings,
+    responseDetailsEnabled,
+    temperature,
+    tuningMode,
+    turnFeedbackEnabled,
+    tutorInstance,
+    typedActionConfig,
+    voiceLaunchRequested,
+    worldBundle,
+  } = launchApplicationContext;
+
+  const sessionApplicationContext = createTutorStubSessionApplicationContext({
+    CURRICULUM_PHASE_PROMPT_END,
+    CURRICULUM_PHASE_PROMPT_START,
+    DEFAULT_INTERACTIVE_DEMO_TURNS,
+    DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
+    DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+    DEFAULT_TUTOR_STUB_RELEASE_SPEED,
+    MAX_INTERACTIVE_DEMO_TURNS,
+    MAX_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+    MAX_TUTOR_STUB_RELEASE_SPEED,
+    MIN_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
+    MIN_TUTOR_STUB_RELEASE_SPEED,
+    ROOT,
+    STUB,
+    TUTOR_STUB_FEEDBACK_REASONS,
+    TUTOR_STUB_LEARNER_DAG_PREFLIGHT_SCHEMA,
+    TUTOR_STUB_LEARNER_RESPONSE_PROVENANCE_SCHEMA,
+    TUTOR_STUB_OPENING_REQUIREMENTS,
+    TUTOR_STUB_SESSION_RUNTIME_SCHEMA,
+    args,
+    assertTutorStubCapabilityCompatibility,
+    assertTutorStubResumeCompatibility,
+    auditTutorStubPrompt,
+    auditTutorStubSpeakerPrivilege,
+    autoLearnerEnabled,
+    autoSafetyTurns,
+    autoStopOnGrounded,
+    autoTurns,
+    automatedLearnerProfileId,
+    buildHumanDiscourseFrame,
+    buildHumanDiscourseRunConfig,
+    buildRegisterPalette,
+    buildTutorDesireDag,
+    buildTutorStubOpeningFrame,
+    buildTutorStubSessionRecipe,
+    compareTutorStubResumeRecipe,
+    createTutorStubDialogueClosureLifecycle,
+    createTutorStubTuningRuntime,
+    curriculumBundle,
+    curriculumRuntime,
+    dagFactDropoutRate,
+    dagFactDropoutSeed,
+    dagMode,
+    delimitedPrompt,
+    effectiveTemperatureForModel,
+    effectiveTopic,
+    existingScenarioAvailable,
+    experimentRepeat,
+    experimentRunSeed,
+    explicitRememberedSources,
+    fs,
+    getProviderConfig,
+    hashCanonicalJson,
+    initialScenarioKeyboardMenuActive,
+    initialScenarioPickerEnabled,
+    initialScenarioSelection,
+    interactiveSessionEnabled,
+    interactiveSessionIntent,
+    launchWorldBundle,
+    learnerModelRequired,
+    lightAdaptationEnabled,
+    loadRegisterEmpiricalPrior,
+    loadSystemPrompt,
+    loadedRecipeApplication,
+    loadedSessionRecipe,
+    mixedLearnerEnabled,
+    multipleChoiceEnabled,
+    normalizeCliEffort,
+    normalizeTutorStubEvidenceUseRubric,
+    normalizeTutorStubHumanSubjectClass,
+    normalizeTutorStubPublicLearnerAnalysisPromptProfile,
+    normalizeTutorStubRegisterOverlayThreshold,
+    normalizeTutorStubTrainingReuseSetting,
+    observedAuditsEnabled,
+    openingRealizer,
+    parseTutorStubRegisterPolicyStack,
+    passthroughEnabled,
+    path,
+    pointOfActionArm,
+    positionals,
+    providerSupportsEventStreaming,
+    providerSupportsStreaming,
+    rawCommandLineOptionProvided,
+    registerTemperature,
+    registerTemperatureApplies,
+    releaseSpeed,
+    rememberedScenarioAvailable,
+    rememberedSettings,
+    resolveModel,
+    resolveTutorStubCapabilities,
+    resolveTutorStubCharacterChoice,
+    resolveTutorStubTrainingReuse,
+    resolveWorkspacePath,
+    resolvedHumanSubjectClassSource,
+    resolvedResumeSource,
+    resolvedTrainingReuseSource,
+    responseDetailsEnabled,
+    resumeRecipeApplication,
+    resumeRequested,
+    selectedLabAdmission,
+    selectedLabResolution,
+    temperature,
+    tuningMode,
+    turnFeedbackEnabled,
+    tutorInstance,
+    tutorStubCurriculumPrivatePrompt,
+    tutorStubLabTraceMetadata,
+    tutorStubPointOfActionStandingBook,
+    tutorStubPromptArchitecture,
+    tutorStubRecipeModelIdentity,
+    tutorStubTuningPrompt,
+    tutorStubTutorInstancePrompt,
+    visibleResolvedModel,
+    voiceLaunchRequested,
+    worldBundle,
+  });
+  let {
+    autoLearnerProviderConfig,
+    autoLearnerResolved,
+    learnerRecordResolved,
+    visibleAutoLearnerModel,
+    visibleClassifierConfig,
+    visibleClassifierModel,
+    visibleLearnerRecordModel,
+    visibleModel,
+  } = sessionApplicationContext;
+  const {
+    classifierEnabled,
     cliEffort,
-    multipleChoice: multipleChoiceEnabled,
-    interaction: {
-      mode: 'learner',
-      previousMode: 'learner',
-      autoRunning: false,
-    },
-    turnFeedback: createTutorStubTurnFeedbackState({
-      enabled: turnFeedbackEnabled,
-      automatedLearner: autoLearnerEnabled,
-    }),
-    explanatoryDebug: {
-      enabled: false,
-      format: 'prose',
-    },
-    voice: {
-      schema: 'machinespirits.tutor-stub.voice-runtime.v1',
-      enabled: false,
-      model: voiceModel,
-      voice: voiceName,
-      transcriptionModel: 'gpt-realtime-whisper',
-      bridge: null,
-      lastStartedAt: null,
-      lastStoppedAt: null,
-      deliveries: [],
-      interruptions: 0,
-    },
-    coach: {
-      pending: [],
-      history: [],
-    },
-    history: [],
-    turns: [],
-  };
+    closeoutReportEnabled,
+    combinedLearnerAnalysisEnabled,
+    continuousUnsafeRegisterAnchorsEnabled,
+    dialogueClosureConfig,
+    initialDropoutPromptEnabled,
+    initialMixedLearnerSetupEnabled,
+    initialProfilePromptEnabled,
+    initialReleaseSpeedPromptEnabled,
+    initialTemperaturePromptEnabled,
+    instantExistingScenarioOpening,
+    learningSummaryReportConfig,
+    openingEnabled,
+    registerEmpiricalPrior,
+    registerOverlayThreshold,
+    registerPalette,
+    registerPolicy,
+    registerPolicyOverlays,
+    registerSelectionEnabled,
+    responseDetailsConfig,
+    traceDir,
+    tutorLearnerDagEnabled,
+  } = sessionApplicationContext;
+
+  const launchPresentationResult = runTutorStubLaunchPresentation({
+    launchApplicationContext,
+    sessionApplicationContext,
+    C,
+    ROOT,
+    TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
+    TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
+    TUTOR_STUB_SESSION_RUNTIME_SCHEMA,
+    TUTOR_STUB_SESSION_RUNTIME_VERSION,
+    args,
+    automatedLearnerProfileId,
+    cliPresentation,
+    isCliProvider,
+    loadedSessionRecipe,
+    loadedSessionRecipePath,
+    output,
+    providerSupportsEventStreaming,
+    providerSupportsStreaming,
+    resolveWorkspacePath,
+    resumeRequested,
+    tutorStubCliPresentationSnapshot,
+    tutorStubTuningSnapshot,
+    writeTutorStubSessionRecipe,
+  });
+  loadedSessionRecipePath = launchPresentationResult.loadedSessionRecipePath;
+  const { loadedRecipeProvenance } = launchPresentationResult;
+  if (launchPresentationResult.completed) return;
+  const { interim, trace } = createTutorStubApplicationTraceContext({
+    launchApplicationContext,
+    sessionApplicationContext,
+    ROOT,
+    TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
+    TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
+    appendTraceEvent,
+    args,
+    automatedLearnerProfileId,
+    cliPresentation,
+    createInterimState,
+    createTraceState,
+    loadedRecipeProvenance,
+    loadedSessionRecipePath,
+    output,
+    providerSupportsEventStreaming,
+    providerSupportsStreaming,
+    resumeRequested,
+    tutorStubCliPresentationSnapshot,
+    tutorStubTuningSnapshot,
+  });
+
+  const state = createTutorStubApplicationState({
+    launchApplicationContext,
+    sessionApplicationContext,
+    PROGRAM2_COMMITTEE_DEFAULTS,
+    TUTOR_STUB_DIAGNOSTIC_COLLECTION_MODE,
+    TUTOR_STUB_LIGHT_ADAPTATION_SCHEMA,
+    args,
+    automatedLearnerProfileId,
+    cliPresentation,
+    createLearnerDagState,
+    createScaffoldLifecycle,
+    createTutorStubComprehensionState,
+    createTutorStubDirectorGuidanceState,
+    createTutorStubReleasePacingState,
+    createTutorStubTurnFeedbackState,
+    interim,
+    loadedRecipeProvenance,
+    rememberedSettings,
+    safeTimestampForFile,
+    trace,
+    tutorStubCliPresentationSnapshot,
+  });
 
   const {
     forgetRememberedInteractiveSettings,
-    handleUnknownSessionCommand,
     persistCurrentInteractiveSettings,
-    recordSessionRuntimeEvent,
-    rejectUnavailableSessionCommand,
-    sessionRuntimeStateSnapshot,
-  } = createTutorStubSessionStateRuntime({
+    resumedDialogue,
+    sessionRuntime,
+    writeFinalLearningSummary,
+  } = createTutorStubSessionApplicationRuntime({
+    launchApplicationContext,
+    sessionApplicationContext,
     C,
     DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_RATE,
     DEFAULT_TUTOR_STUB_ENGAGEMENT_STANCE_TEMPERATURE,
@@ -4058,393 +2474,96 @@ async function main() {
     DEFAULT_TUTOR_STUB_RELEASE_SPEED,
     ROOT,
     STUB,
-    appendTraceEvent,
-    args,
-    clearStatusLine,
-    clearTutorStubLastSettings,
-    curriculumBundle,
-    getCliPresentation: () => cliPresentation,
-    jsonClone,
-    path,
-    state,
-    tutorStubCurriculumPublicProjection,
-    voiceModel,
-    voiceName,
-    writeTutorStubLastSettings,
-  });
-
-  const { writeFinalLearningSummary } = createTutorStubLearningSummaryRuntime({
-    C,
-    ROOT,
     TUTOR_STUB_LEARNING_SUMMARY_HTML_SCHEMA,
     appendTraceEvent,
     args,
     buildDialogueLearningSummary,
+    clearStatusLine,
+    clearTutorStubLastSettings,
+    createTutorStubCommandHandlers,
+    createTutorStubLearningSummaryRuntime,
+    createTutorStubSessionRuntime,
+    createTutorStubSessionStateRuntime,
+    executeSlashCommand,
+    getCliPresentation: () => cliPresentation,
+    jsonClone,
     launchTutorStubTranscriptHtml,
-    learningSummaryReportConfig,
     listTutorStubTuningCandidates,
     output,
-    path,
+    performInteractiveDialogueReset: (...parameters) => performInteractiveDialogueReset(...parameters),
+    performInteractiveFinalize: (...parameters) => performInteractiveFinalize(...parameters),
+    printTutorStubLaunchSummary,
+    rememberedSettings,
+    restoreDialogueFromTrace,
+    restoreTutorStubReleasePacingFromTurns,
+    resumeRequested,
+    routeLearnerText: (...parameters) => routeLearnerText(...parameters),
     state,
-    traceDir,
+    trace,
     traceDisplayPath,
+    tutorStubCurriculumPublicProjection,
     tutorStubRegisterPolicyStackId,
     tutorStubTuningSnapshot,
+    writeTutorStubLastSettings,
     writeTutorStubLearningSummaryHtml,
   });
 
-  const sessionRuntime = createTutorStubSessionRuntime({
-    id: args['session-id'] || state.debugRunId,
-    capabilities: state.capabilities,
-    initialState: sessionRuntimeStateSnapshot(),
-    commandHandlers: createTutorStubCommandHandlers(executeSlashCommand),
-    onEvent: recordSessionRuntimeEvent,
-    adapters: {
-      snapshot: sessionRuntimeStateSnapshot,
-      step: ({ payload }) =>
-        routeLearnerText(payload.input, {
-          source: payload.context?.source || 'runtime',
-          provenance: payload.context?.provenance || null,
-          awaitCompletion: Boolean(payload.context?.awaitCompletion),
-        }),
-      reset: ({ payload }) => performInteractiveDialogueReset(payload),
-      finalize: ({ payload }) => performInteractiveFinalize(payload.reason),
-      commandUnavailable: rejectUnavailableSessionCommand,
-      unknownCommand: handleUnknownSessionCommand,
-    },
-  });
-  sessionRuntime.load({ source: 'cli_launch', state: sessionRuntimeStateSnapshot() });
-
-  const resumedDialogue = resumeRequested
-    ? restoreDialogueFromTrace(state, resumeCandidate, {
-        currentWorld: worldBundle?.world || null,
-        restoreOpening: Boolean(args['session-rpc']),
-      })
-    : null;
-  if (resumedDialogue) {
-    restoreTutorStubReleasePacingFromTurns({
-      pacing: state.releasePacing,
-      world: state.world,
-      turns: state.turns,
-    });
-    state.turnFeedback.history = state.turns
-      .map((turn) => {
-        const feedback = turn.learnerInput?.tutorFeedback || null;
-        return feedback?.requested
-          ? {
-              ...jsonClone(feedback),
-              learnerTurn: turn.turn,
-              learnerTurnId: turn.turnId || null,
-              restored: true,
-            }
-          : null;
-      })
-      .filter(Boolean);
-    appendTraceEvent(state.trace, {
-      type: 'resume_loaded',
-      source: path.relative(ROOT, resumedDialogue.source),
-      turns: resumedDialogue.turns,
-      register: resumedDialogue.register,
-      directorGuidance: resumedDialogue.directorGuidance,
-      learnerDag: resumedDialogue.learnerDag,
-      typedActions: resumedDialogue.typedActions,
-      dialogueClosure: resumedDialogue.dialogueClosure,
-      warnings: resumedDialogue.warnings,
-    });
-  } else if (resumeRequested) {
-    appendTraceEvent(state.trace, {
-      type: 'resume_empty',
-      traceDir: path.relative(ROOT, traceDir),
-    });
-  }
-  if (resumeRequested) {
-    sessionRuntime.resume({
-      source: resumedDialogue ? path.relative(ROOT, resumedDialogue.source) : null,
-      found: Boolean(resumedDialogue),
-      turns: resumedDialogue?.turns || 0,
-      state: sessionRuntimeStateSnapshot(),
-    });
-  }
-  printTutorStubLaunchSummary({
-    state,
-    worldBundle,
+  const nonInteractiveCompleted = await runTutorStubNonInteractiveApplication({
+    launchApplicationContext,
+    sessionApplicationContext,
+    C,
+    analyzeLearnerTurn,
+    appendTraceEvent,
+    appendTutorStubTurnFailureTraceRecords,
     args,
-    visibleModel,
-    passthroughEnabled,
-    observedAuditsEnabled,
-    effectiveTopic,
-    trace,
-    allModelsOverride,
-    rememberedSettings,
-    classifierEnabled,
-    combinedLearnerAnalysisEnabled,
-    visibleLearnerRecordModel,
-    visibleClassifierModel,
-    tutorLearnerDagEnabled,
-    humanDiscourseConfig,
-    dagMode,
-    autoLearnerEnabled,
-    autoTurns,
-    autoSafetyTurns,
-    autoStopOnGrounded,
-    visibleAutoLearnerModel,
-    mixedLearnerEnabled,
-    mixedLearnerRequested,
-    interactiveSessionEnabled,
-    typedActionConfig,
-    typedActionTask,
-    typedActionSupportLevel,
-    registerSelectionEnabled,
-    registerPalette,
-    empiricalDynamicalSystemRegisterSelectionEnabled,
-    continuousEmpiricalDynamicalSystemRegisterSelectionEnabled,
-    registerEmpiricalPrior,
-    continuousRegisterSelectionEnabled,
-    continuousUnsafeRegisterAnchorsEnabled,
-    streamEnabled,
-    tutorStreamState,
-    classifierResolved,
-    learnerRecordResolved,
-    interimAnimationEnabled,
-    fieldVisualizationEnabled,
-    traceDir,
-    openingEnabled,
-    firstMessage,
-    closeoutReportEnabled,
-    turnFeedbackEnabled,
-    responseDetailsEnabled,
-    learningSummaryReportConfig,
-    summaryBrowserLaunchEnabled: process.env.TUTOR_STUB_SUMMARY_OPEN !== '0',
-    dialogueClosureConfig,
-    cliEffort,
-    resumedDialogue,
-    resumeRequested,
-    temperature,
-    effectiveTemperature,
+    automaticTechnicalDetailsEnabled,
+    buildTutorInterimContext,
+    createTutorStubLearnerResponseProvenance,
+    printDialogueCloseout,
+    printDirectorPreludeBeforeFirstTutor,
+    printExplanatoryDebugTurn,
+    printResponseDetails,
+    printTutorDagSnapshot,
+    printTutorResponse,
+    runAutomatedLearnerDialogue,
+    runOneTurn,
+    saveTranscript,
+    startInterimAnimation,
+    state,
+    stopInterimAnimation,
+    traceDisplayPath,
+    tutorStubComprehensionSnapshot,
+    tutorStubDagFactDropoutSnapshot,
+    tutorStubRegisterPolicyStackId,
+    writeFieldVisualization,
+    writeFinalLearningSummary,
   });
-
-  if (autoLearnerEnabled) {
-    const result = await runAutomatedLearnerDialogue({
-      state,
-      firstMessage,
-      openingEnabled,
-      autoLearnerResolved,
-      autoLearnerProfile: args['auto-learner-profile'],
-      autoTurns,
-      autoSafetyTurns,
-      autoStopOnGrounded,
-      cliEffort,
-    });
-    appendTraceEvent(state.trace, { type: 'run_end', reason: result.reason, turns: state.turns.length });
-    appendTutorStubTurnFailureTraceRecords(state, { sealed: true });
-    if (args.save) {
-      saveTranscript(args.save, {
-        ...visibleModel,
-        classifier: classifierEnabled ? visibleClassifierConfig : null,
-        tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
-        dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag.dropout),
-        autoLearner: {
-          enabled: true,
-          modelRef: args['auto-learner-model'],
-          resolved: visibleAutoLearnerModel,
-          maxTurns: autoTurns ?? 'until-grounded',
-          untilGrounded: autoTurns === null,
-          safetyTurns: autoTurns === null ? autoSafetyTurns : null,
-          stopOnGrounded: autoStopOnGrounded,
-          profile: args['auto-learner-profile'],
-        },
-        registerSelection: registerSelectionEnabled
-          ? {
-              enabled: true,
-              palette: registerPalette,
-              policy: tutorStubRegisterPolicyStackId(state.register.policy, state.register.overlays),
-              primaryPolicy: state.register.policy,
-              overlayPolicies: state.register.overlays,
-              overlayThreshold: state.register.overlayThreshold,
-              temperature: state.register.temperature,
-              history: state.register.history,
-            }
-          : null,
-        dialogueClosure: state.dialogueClosure,
-        comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: state.turns.length + 1 }),
-        directorContext,
-        trace: traceDisplayPath(state.trace),
-        fieldVisualization: state.fieldViz?.lastWrite || null,
-        world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
-        turns: state.turns,
-      });
-    }
-    if (closeoutReportEnabled) {
-      const report = printDialogueCloseout(state, { reason: result.reason, trace: state.trace });
-      appendTraceEvent(state.trace, { type: 'closeout_report', reason: result.reason, report });
-    }
-    try {
-      writeFinalLearningSummary(result.reason);
-    } catch (error) {
-      console.log(`${C.red}learning summary error:${C.reset} ${error.message}\n`);
-      appendTraceEvent(state.trace, { type: 'learning_summary_error', reason: result.reason, error: error.message });
-    }
-    return;
-  }
-
-  if (firstMessage) {
-    const startedAtMs = Date.now();
-    const analysisStartedAtMs = Date.now();
-    const analysis = state.passthrough?.enabled
-      ? {
-          classification: null,
-          tutorLearnerDag: null,
-          registerSelection: null,
-          previousRegisterEfficacy: null,
-        }
-      : await analyzeLearnerTurn(firstMessage, state);
-    const analysisCompletedAtMs = Date.now();
-    const { classification, tutorLearnerDag, registerSelection, previousRegisterEfficacy } = analysis;
-    startInterimAnimation(
-      state,
-      state.passthrough?.enabled ? 'calling speaker' : 'calling tutor',
-      state.passthrough?.enabled
-        ? { learnerText: firstMessage, tutorTurn: 1 }
-        : buildTutorInterimContext({
-            learnerText: firstMessage,
-            state,
-            classification,
-            tutorLearnerDag,
-            registerSelection,
-            previousRegisterEfficacy,
-          }),
-    );
-    let response;
-    const tutorStartedAtMs = Date.now();
-    try {
-      response = await runOneTurn(
-        firstMessage,
-        state,
-        classification,
-        tutorLearnerDag,
-        registerSelection,
-        previousRegisterEfficacy,
-        null,
-        {
-          learnerResponseProvenance: createTutorStubLearnerResponseProvenance({
-            authorship: 'human',
-            origin: 'launch_first_message',
-            inputMethod: 'command_line_argument',
-            humanInLoop: true,
-          }),
-          turnTiming: {
-            startedAtMs,
-            analysisStartedAtMs,
-            analysisCompletedAtMs,
-            tutorStartedAtMs,
-            analysisSource: state.passthrough?.enabled ? 'disabled' : 'foreground',
-            tutorSource: 'foreground',
-          },
-        },
-      );
-    } finally {
-      stopInterimAnimation(state);
-    }
-    if (automaticTechnicalDetailsEnabled(state)) printTutorDagSnapshot(response.dagSnapshot);
-    printResponseDetails(response, state);
-    if (!state.passthrough?.enabled) {
-      printDirectorPreludeBeforeFirstTutor(state, { reason: 'first_message_response' });
-    }
-    printTutorResponse(response, state.stream);
-    await printExplanatoryDebugTurn(state);
-    writeFieldVisualization(state, { reason: 'once' });
-    appendTraceEvent(state.trace, { type: 'run_end', reason: 'once', turns: state.turns.length });
-    appendTutorStubTurnFailureTraceRecords(state, { sealed: true });
-    if (args.save) {
-      saveTranscript(args.save, {
-        ...visibleModel,
-        classifier: classifierEnabled ? visibleClassifierConfig : null,
-        tutorLearnerDag: tutorLearnerDagEnabled ? visibleLearnerRecordModel : null,
-        dagFactDropout: tutorStubDagFactDropoutSnapshot(state.learnerDag.dropout),
-        registerSelection: registerSelectionEnabled
-          ? {
-              enabled: true,
-              palette: registerPalette,
-              policy: tutorStubRegisterPolicyStackId(state.register.policy, state.register.overlays),
-              primaryPolicy: state.register.policy,
-              overlayPolicies: state.register.overlays,
-              overlayThreshold: state.register.overlayThreshold,
-              temperature: state.register.temperature,
-              history: state.register.history,
-            }
-          : null,
-        dialogueClosure: state.dialogueClosure,
-        comprehension: tutorStubComprehensionSnapshot(state.comprehension, { turn: state.turns.length + 1 }),
-        directorContext,
-        trace: traceDisplayPath(state.trace),
-        fieldVisualization: state.fieldViz?.lastWrite || null,
-        world: worldBundle ? { id: worldBundle.world.id, title: worldBundle.world.title, dag: args.dag } : null,
-        turns: state.turns,
-      });
-    }
-    if (closeoutReportEnabled) {
-      const report = printDialogueCloseout(state, { reason: 'once', trace: state.trace });
-      appendTraceEvent(state.trace, { type: 'closeout_report', reason: 'once', report });
-    }
-    try {
-      writeFinalLearningSummary('once');
-    } catch (error) {
-      console.log(`${C.red}learning summary error:${C.reset} ${error.message}\n`);
-      appendTraceEvent(state.trace, { type: 'learning_summary_error', reason: 'once', error: error.message });
-    }
-    return;
-  }
-
-  const mixedLearner = {
-    enabled: mixedLearnerEnabled,
-    resolved: autoLearnerResolved,
-    profile: args['auto-learner-profile'],
-    defaultProfile: args['auto-learner-profile'],
-    profileId: automatedLearnerProfileId(args['auto-learner-profile']),
-    seq: 0,
-    pending: null,
-    suggestion: null,
-    draftInsertion: null,
-    error: null,
-    artifactAbortController: null,
-    analysisCache: null,
-    readyAnnouncementProfileKey: null,
-    promptHistory: [],
-    cacheStats: {
-      analysisStarted: 0,
-      analysisHits: 0,
-      analysisMisses: 0,
-      tutorStarted: 0,
-      tutorHits: 0,
-      tutorMisses: 0,
-      discarded: 0,
-      errors: 0,
-    },
-  };
-
-  const {
-    mixedLearnerCompletionForLine,
-    mixedLearnerProfilePresentation,
-    mixedLearnerPromptText,
-    printMixedLearnerProfilePresentation,
-    slashCommandCompletionForLine,
-    slashCommandPaletteForLine,
-  } = createTutorStubInteractiveInputPresentation({
+  if (nonInteractiveCompleted) return;
+  const terminalHost = createTutorStubTerminalHost({
     C,
     ROOT,
     TUTOR_STUB_FEEDBACK_REASONS,
+    autoLearnerProfile: args['auto-learner-profile'],
+    autoLearnerResolved,
+    automatedLearnerProfileId,
+    createTutorStubConcurrentTerminal,
+    createTutorStubInteractiveInputPresentation,
+    createTutorStubLineSelection,
     groupedWorldEntries,
     humanDirectedRegisterPalette,
-    isProcessingTurn: () => processingTurn,
+    input,
     learnerProfileContract,
     learnerProfileIds,
     learnerProfileSpeakerLabel,
     listTutorStubCurriculumModules,
     listTutorStubLabs,
     loadTutorStubCurriculum,
-    mixedLearner,
+    mixedLearnerEnabled,
+    mixedLearnerGhostText,
     oneLine,
     output,
+    readline,
+    renderMixedLearnerGhostText,
     state,
     tutorModelChoiceEntries,
     tutorStubCanonicalCommandToken,
@@ -4454,80 +2573,16 @@ async function main() {
     tutorStubConfigurableActorialPartIds,
     tutorStubStaticCommandCompletions,
   });
-
-  let initialSetupStage = 'off';
-  const rl = readline.createInterface({
-    input,
-    output,
-    prompt: mixedLearnerPromptText(),
-    completer(line) {
-      if (initialSetupStage === 'profile') {
-        const raw = String(line || '');
-        const normalized = raw.trim().toLowerCase().replace(/-/gu, '_');
-        const candidates = ['list', 'stress', 'all', ...learnerProfileIds()];
-        const matches = candidates.filter((candidate) => candidate.startsWith(normalized));
-        return [matches.length ? matches : candidates, raw];
-      }
-      if (initialSetupStage === 'model') {
-        const raw = String(line || '');
-        const normalized = raw.trim().toLowerCase();
-        const candidates = tutorModelChoiceEntries(state.modelRef).map((entry) => entry.ref);
-        const matches = candidates.filter((candidate) => candidate.toLowerCase().startsWith(normalized));
-        return [matches.length ? matches : candidates, raw];
-      }
-      const mixedCompletion = mixedLearnerCompletionForLine(line);
-      if (mixedCompletion) return [[mixedCompletion], line];
-      const completion = slashCommandCompletionForLine(line, { fallback: true });
-      return [completion.candidates, completion.replacement];
-    },
-  });
-  const lineSelection = createTutorStubLineSelection({ rl, output });
-  const concurrentTerminal = createTutorStubConcurrentTerminal({
+  const {
+    concurrentTerminal,
+    mixedLearner,
+    mixedLearnerProfilePresentation,
+    mixedLearnerPromptText,
+    pendingLearnerLines,
+    printMixedLearnerProfilePresentation,
+    resolveInteractive,
     rl,
-    output,
-    decorateLine: () => {
-      lineSelection.decorateLine();
-      renderMixedLearnerGhostText({
-        rl,
-        output,
-        text: mixedLearnerGhostText({
-          enabled: mixedLearner.enabled,
-          suggestion: mixedLearner.suggestion,
-          line: rl.line,
-          processingTurn,
-          interactionMode: state.interaction?.mode,
-          interfaceBlocked:
-            exiting ||
-            initialSetupStage !== 'off' ||
-            scenarioPickerActive ||
-            awaitingAnotherScenario ||
-            interactiveDemoRunning,
-        }),
-        style: (text) => `${C.dim}${text}${C.reset}`,
-      });
-    },
-  });
-  state.concurrentTerminal = concurrentTerminal;
-  state.interim.concurrentTerminal = concurrentTerminal;
-  let slashPaletteRefreshHandle = null;
-  let onInteractiveKeypress = null;
-  let processingTurn = false;
-  let clarificationInFlight = null;
-  let translationInFlight = null;
-  let scenarioPickerActive = false;
-  let awaitingAnotherScenario = false;
-  let interactiveDemoRunning = false;
-  let exiting = false;
-  let finalized = false;
-  const pendingLearnerLines = [];
-  let activeLearnerTurn = null;
-  let activeAutoRun = null;
-  let pendingAutoRequest = null;
-  let pendingAutoRequestSequence = 0;
-  let resolveInteractive = null;
-  const interactiveDone = new Promise((resolve) => {
-    resolveInteractive = resolve;
-  });
+  } = terminalHost;
 
   const { handleVoiceCommand, publishAcceptedTutorToVoice, stopVoiceBridge, voiceRuntimeSnapshot } =
     createTutorStubVoiceController({
@@ -4536,9 +2591,9 @@ async function main() {
       appendTraceEvent,
       clearStatusLine,
       createTutorStubVoiceBridge,
-      getActiveAutoRun: () => activeAutoRun,
-      getActiveLearnerTurn: () => activeLearnerTurn,
-      isProcessingTurn: () => processingTurn,
+      getActiveAutoRun: terminalHost.getActiveAutoRun,
+      getActiveLearnerTurn: terminalHost.getActiveLearnerTurn,
+      isProcessingTurn: terminalHost.isProcessingTurn,
       latestTutorMessage,
       normalizeTutorStubVoiceModel,
       normalizeTutorStubVoiceName,
@@ -4587,8 +2642,8 @@ async function main() {
     getReadline: () => rl,
     humanDiscourseTutorContext,
     invalidateMixedLearnerCache,
-    isExiting: () => exiting,
-    isProcessingTurn: () => processingTurn,
+    isExiting: terminalHost.isExiting,
+    isProcessingTurn: terminalHost.isProcessingTurn,
     learnerDagPreflightForTurn,
     learnerPublicEvidenceState,
     learnerRecordFromCombinedAnalysis,
@@ -4677,11 +2732,11 @@ async function main() {
     resolveTutorStubTrainingReuse,
     setModelBinding(name, value) {
       if (name === 'visibleModel') visibleModel = value;
-      else if (name === 'classifierResolved') classifierResolved = value;
-      else if (name === 'classifierProviderConfig') classifierProviderConfig = value;
+      else if (name === 'classifierResolved') sessionApplicationContext.classifierResolved = value;
+      else if (name === 'classifierProviderConfig') sessionApplicationContext.classifierProviderConfig = value;
       else if (name === 'visibleClassifierModel') visibleClassifierModel = value;
       else if (name === 'learnerRecordResolved') learnerRecordResolved = value;
-      else if (name === 'learnerRecordProviderConfig') learnerRecordProviderConfig = value;
+      else if (name === 'learnerRecordProviderConfig') sessionApplicationContext.learnerRecordProviderConfig = value;
       else if (name === 'visibleLearnerRecordModel') visibleLearnerRecordModel = value;
       else if (name === 'autoLearnerResolved') autoLearnerResolved = value;
       else if (name === 'autoLearnerProviderConfig') autoLearnerProviderConfig = value;
@@ -4731,8 +2786,8 @@ async function main() {
     initialReleaseSpeedPromptEnabled,
     initialTemperaturePromptEnabled,
     input,
-    isExiting: () => exiting,
-    isProcessingTurn: () => processingTurn,
+    isExiting: terminalHost.isExiting,
+    isProcessingTurn: terminalHost.isProcessingTurn,
     learnerProfileDescription,
     learnerProfileIds,
     learnerProfileListText,
@@ -4756,9 +2811,7 @@ async function main() {
     requestExit: (...parameters) => requestExit(...parameters),
     resetMixedLearnerSuggestion,
     rl,
-    setInitialSetupStage: (stage) => {
-      initialSetupStage = stage;
-    },
+    setInitialSetupStage: terminalHost.setInitialSetupStage,
     setTutorStubReleaseSpeed,
     startMixedLearnerPrefetch,
     state,
@@ -4809,9 +2862,9 @@ async function main() {
     finalizeInteractive: (...parameters) => finalizeInteractive(...parameters),
     getCliPresentation: () => cliPresentation,
     input,
-    isAwaitingAnotherScenario: () => awaitingAnotherScenario,
-    isExiting: () => exiting,
-    isProcessingTurn: () => processingTurn,
+    isAwaitingAnotherScenario: terminalHost.isAwaitingAnotherScenario,
+    isExiting: terminalHost.isExiting,
+    isProcessingTurn: terminalHost.isProcessingTurn,
     jsonClone,
     launchTutorStubTranscriptHtml,
     learnerRecordResolved,
@@ -4848,18 +2901,10 @@ async function main() {
     resolveWorldRef,
     resumedDialogue,
     rl,
-    setAwaitingAnotherScenario: (value) => {
-      awaitingAnotherScenario = value;
-    },
-    setExiting: (value) => {
-      exiting = value;
-    },
-    setInitialSetupStage: (value) => {
-      initialSetupStage = value;
-    },
-    setScenarioPickerActive: (value) => {
-      scenarioPickerActive = value;
-    },
+    setAwaitingAnotherScenario: terminalHost.setAwaitingAnotherScenario,
+    setExiting: terminalHost.setExiting,
+    setInitialSetupStage: terminalHost.setInitialSetupStage,
+    setScenarioPickerActive: terminalHost.setScenarioPickerActive,
     spawnSync,
     state,
     stateRunDebugId,
@@ -4931,17 +2976,17 @@ async function main() {
     displayDiagnosticLabel,
     explicitPerformanceDirectiveValue,
     getActorialPartDefinitions,
-    getActiveAutoRun: () => activeAutoRun,
-    getActiveLearnerTurn: () => activeLearnerTurn,
-    getClarificationInFlight: () => clarificationInFlight,
+    getActiveAutoRun: terminalHost.getActiveAutoRun,
+    getActiveLearnerTurn: terminalHost.getActiveLearnerTurn,
+    getClarificationInFlight: terminalHost.getClarificationInFlight,
     getCliPresentation: () => cliPresentation,
     getInterimState,
-    getPendingAutoRequest: () => pendingAutoRequest,
-    getTranslationInFlight: () => translationInFlight,
-    isAwaitingAnotherScenario: () => awaitingAnotherScenario,
-    isExiting: () => exiting,
-    isFinalized: () => finalized,
-    isProcessingTurn: () => processingTurn,
+    getPendingAutoRequest: terminalHost.getPendingAutoRequest,
+    getTranslationInFlight: terminalHost.getTranslationInFlight,
+    isAwaitingAnotherScenario: terminalHost.isAwaitingAnotherScenario,
+    isExiting: terminalHost.isExiting,
+    isFinalized: terminalHost.isFinalized,
+    isProcessingTurn: terminalHost.isProcessingTurn,
     jsonClone,
     latestTutorMessage,
     learnerProfileDescription,
@@ -4973,24 +3018,12 @@ async function main() {
     selectTutorStubCurriculumModule,
     selectTutorStubCurriculumRuntimeModule,
     sessionRuntime,
-    setActiveAutoRun: (value) => {
-      activeAutoRun = value;
-    },
-    setAwaitingAnotherScenario: (value) => {
-      awaitingAnotherScenario = value;
-    },
-    setClarificationInFlight: (value) => {
-      clarificationInFlight = value;
-    },
-    setExiting: (value) => {
-      exiting = value;
-    },
-    setFinalized: (value) => {
-      finalized = value;
-    },
-    setTranslationInFlight: (value) => {
-      translationInFlight = value;
-    },
+    setActiveAutoRun: terminalHost.setActiveAutoRun,
+    setAwaitingAnotherScenario: terminalHost.setAwaitingAnotherScenario,
+    setClarificationInFlight: terminalHost.setClarificationInFlight,
+    setExiting: terminalHost.setExiting,
+    setFinalized: terminalHost.setFinalized,
+    setTranslationInFlight: terminalHost.setTranslationInFlight,
     setTutorStubDirectorGuidance,
     spawnSync,
     startInterimAnimation,
@@ -5033,22 +3066,19 @@ async function main() {
       clearStatusLine,
       clearTutorStubTurnFeedbackTarget,
       cliEffort,
-      getActiveAutoRun: () => activeAutoRun,
-      getActiveLearnerTurn: () => activeLearnerTurn,
-      getPendingAutoRequest: () => pendingAutoRequest,
+      getActiveAutoRun: terminalHost.getActiveAutoRun,
+      getActiveLearnerTurn: terminalHost.getActiveLearnerTurn,
+      getPendingAutoRequest: terminalHost.getPendingAutoRequest,
       interactionModeLabel,
-      isAwaitingAnotherScenario: () => awaitingAnotherScenario,
+      isAwaitingAnotherScenario: terminalHost.isAwaitingAnotherScenario,
       isCliProvider,
-      isExiting: () => exiting,
-      isInteractiveDemoRunning: () => interactiveDemoRunning,
-      isProcessingTurn: () => processingTurn,
+      isExiting: terminalHost.isExiting,
+      isInteractiveDemoRunning: terminalHost.isInteractiveDemoRunning,
+      isProcessingTurn: terminalHost.isProcessingTurn,
       latestTutorMessage,
       mixedLearner,
       mixedLearnerPromptText,
-      nextPendingAutoRequestSequence: () => {
-        pendingAutoRequestSequence += 1;
-        return pendingAutoRequestSequence;
-      },
+      nextPendingAutoRequestSequence: terminalHost.nextPendingAutoRequestSequence,
       offerAnotherScenario,
       openingEnabled,
       path,
@@ -5059,19 +3089,11 @@ async function main() {
       resetMixedLearnerSuggestion,
       rl,
       runAutomatedLearnerDialogue,
-      setActiveAutoRun: (value) => {
-        activeAutoRun = value;
-      },
+      setActiveAutoRun: terminalHost.setActiveAutoRun,
       setInteractionMode,
-      setInteractiveDemoRunning: (value) => {
-        interactiveDemoRunning = value;
-      },
-      setPendingAutoRequest: (value) => {
-        pendingAutoRequest = value;
-      },
-      setProcessingTurn: (value) => {
-        processingTurn = value;
-      },
+      setInteractiveDemoRunning: terminalHost.setInteractiveDemoRunning,
+      setPendingAutoRequest: terminalHost.setPendingAutoRequest,
+      setProcessingTurn: terminalHost.setProcessingTurn,
       state,
       stateRunDebugId,
       tutorStubRegisterPolicyStackId,
@@ -5100,13 +3122,13 @@ async function main() {
     generateTutorClarification,
     generateTutorStubCurriculumTranslation,
     generateTutorStubTutorOutputTranslation,
-    getActiveAutoRun: () => activeAutoRun,
-    getActiveLearnerTurn: () => activeLearnerTurn,
-    getClarificationInFlight: () => clarificationInFlight,
-    getPendingAutoRequest: () => pendingAutoRequest,
-    getTranslationInFlight: () => translationInFlight,
-    isExiting: () => exiting,
-    isProcessingTurn: () => processingTurn,
+    getActiveAutoRun: terminalHost.getActiveAutoRun,
+    getActiveLearnerTurn: terminalHost.getActiveLearnerTurn,
+    getClarificationInFlight: terminalHost.getClarificationInFlight,
+    getPendingAutoRequest: terminalHost.getPendingAutoRequest,
+    getTranslationInFlight: terminalHost.getTranslationInFlight,
+    isExiting: terminalHost.isExiting,
+    isProcessingTurn: terminalHost.isProcessingTurn,
     latestTutorMessage,
     mixedLearnerPromptText,
     normalizeTutorStubCurriculumTranslationLevels,
@@ -5125,24 +3147,12 @@ async function main() {
     resetMixedLearnerSuggestion,
     rl,
     sessionRuntime,
-    setActiveAutoRun: (value) => {
-      activeAutoRun = value;
-    },
-    setActiveLearnerTurn: (value) => {
-      activeLearnerTurn = value;
-    },
-    setAwaitingAnotherScenario: (value) => {
-      awaitingAnotherScenario = value;
-    },
-    setClarificationInFlight: (value) => {
-      clarificationInFlight = value;
-    },
-    setProcessingTurn: (value) => {
-      processingTurn = value;
-    },
-    setTranslationInFlight: (value) => {
-      translationInFlight = value;
-    },
+    setActiveAutoRun: terminalHost.setActiveAutoRun,
+    setActiveLearnerTurn: terminalHost.setActiveLearnerTurn,
+    setAwaitingAnotherScenario: terminalHost.setAwaitingAnotherScenario,
+    setClarificationInFlight: terminalHost.setClarificationInFlight,
+    setProcessingTurn: terminalHost.setProcessingTurn,
+    setTranslationInFlight: terminalHost.setTranslationInFlight,
     startMixedLearnerPrefetch,
     state,
     stateRunDebugId,
@@ -5180,7 +3190,7 @@ async function main() {
     explicitPerformanceDirectiveValue,
     getCliPresentation: () => cliPresentation,
     getCommandRuntime: () => commandRuntime,
-    isExiting: () => exiting,
+    isExiting: terminalHost.isExiting,
     liveModelRoleDefinitions,
     liveModelRoleRef,
     liveModelRoleSnapshot,
@@ -5227,8 +3237,8 @@ async function main() {
     displayDiagnosticLabel,
     findTutorStubFeedbackTargetTurn,
     hashCanonicalJson,
-    isExiting: () => exiting,
-    isProcessingTurn: () => processingTurn,
+    isExiting: terminalHost.isExiting,
+    isProcessingTurn: terminalHost.isProcessingTurn,
     jsonClone,
     latestTutorMessage,
     listTutorStubTuningCandidates,
@@ -5275,7 +3285,7 @@ async function main() {
     getActorialPartDefinitions,
     getEngagementStanceDefinition,
     humanDirectedRegisterPalette,
-    isProcessingTurn: () => processingTurn,
+    isProcessingTurn: terminalHost.isProcessingTurn,
     latestTutorMessage,
     liveSettingsPickerAvailable,
     mixedLearner,
@@ -5306,8 +3316,8 @@ async function main() {
     getActorialPartDefinitions,
     handleExplicitPerformanceDirectiveCommand,
     handleMixedLearnerProfileCommand,
-    isExiting: () => exiting,
-    isProcessingTurn: () => processingTurn,
+    isExiting: terminalHost.isExiting,
+    isProcessingTurn: terminalHost.isProcessingTurn,
     jsonClone,
     latestTutorFeedbackTarget,
     latestTutorMessage,
@@ -5377,7 +3387,7 @@ async function main() {
     handleTutorFeedbackCommand,
     handleTutorTuningCommand,
     handleVoiceCommand,
-    isAwaitingAnotherScenario: () => awaitingAnotherScenario,
+    isAwaitingAnotherScenario: terminalHost.isAwaitingAnotherScenario,
     latestTutorMessage,
     liveModelRoleDefinitions,
     liveSettingsPickerAvailable,
@@ -5474,11 +3484,11 @@ async function main() {
       createTutorStubLearnerResponseProvenance,
       deterministicTutorStubClosureResponse,
       discardPendingInteractiveAuto,
-      getActiveAutoRun: () => activeAutoRun,
-      getActiveLearnerTurn: () => activeLearnerTurn,
-      getPendingAutoRequest: () => pendingAutoRequest,
-      isExiting: () => exiting,
-      isProcessingTurn: () => processingTurn,
+      getActiveAutoRun: terminalHost.getActiveAutoRun,
+      getActiveLearnerTurn: terminalHost.getActiveLearnerTurn,
+      getPendingAutoRequest: terminalHost.getPendingAutoRequest,
+      isExiting: terminalHost.isExiting,
+      isProcessingTurn: terminalHost.isProcessingTurn,
       jsonClone,
       mixedLearner,
       offerAnotherScenario,
@@ -5500,12 +3510,8 @@ async function main() {
       resumeInterimAnimation,
       runOneTurn,
       sessionRuntime,
-      setActiveLearnerTurn: (value) => {
-        activeLearnerTurn = value;
-      },
-      setProcessingTurn: (value) => {
-        processingTurn = value;
-      },
+      setActiveLearnerTurn: terminalHost.setActiveLearnerTurn,
+      setProcessingTurn: terminalHost.setProcessingTurn,
       startInterimAnimation,
       startMixedLearnerPrefetch,
       startPendingInteractiveAuto,
@@ -5520,218 +3526,40 @@ async function main() {
       writeFieldVisualization,
     });
 
-  const initialSetupCompleted = await runInitialMixedLearnerSetup();
-  if (!initialSetupCompleted) {
-    await interactiveDone;
-    return;
-  }
-  persistCurrentInteractiveSettings(resumedDialogue ? 'resume_loaded' : 'session_ready');
-
-  if (args['session-rpc']) {
-    const rpcInput = fs.createReadStream('', { fd: 3, autoClose: false });
-    const rpcOutput = fs.createWriteStream('', { fd: 4, autoClose: false });
-    try {
-      const opening = await emitOpeningPrompt('session_rpc_start', {
-        display: false,
-        realizer: 'deterministic',
-        deterministicSource: 'session_rpc',
-      });
-      const resumeHandoff = opening ? null : emitResumeHandoff('session_rpc_start', { display: false });
-      if ((opening || resumeHandoff) && sessionRuntime.status === 'active') {
-        sessionRuntime.sync(opening ? 'opening_committed' : 'resume_handoff_committed');
-      }
-      await runTutorStubSessionRpc({ input: rpcInput, output: rpcOutput, runtime: sessionRuntime });
-    } finally {
-      if (sessionRuntime.status === 'active') await sessionRuntime.finalize('session_rpc_closed');
-      rl.close();
-      rpcInput.destroy();
-      rpcOutput.end();
-    }
-    return;
-  }
-
-  if (input.isTTY && output.isTTY) {
-    emitKeypressEvents(input, rl);
-    onInteractiveKeypress = (character, key) => {
-      if (key?.name === 'tab') {
-        const completion = mixedLearnerCompletionForLine(rl.line);
-        if (completion && mixedLearner.suggestion?.text) {
-          mixedLearner.draftInsertion = {
-            insertedAt: new Date().toISOString(),
-            lineBeforeInsertion: rl.line,
-            completion,
-            suggestion: jsonClone(mixedLearner.suggestion),
-          };
-          appendTraceEvent(state.trace, {
-            type: 'mixed_learner_suggestion_inserted',
-            turn: mixedLearner.suggestion.turn,
-            turnId: mixedLearner.suggestion.turnId,
-            requestId: mixedLearner.suggestion.requestId,
-            inputMethod: 'tab_completion',
-            publicTranscriptChanged: false,
-          });
-        }
-      }
-      const feedbackInterfaceBlocked = Boolean(
-        exiting || initialSetupStage !== 'off' || scenarioPickerActive || awaitingAnotherScenario,
-      );
-      const pendingTutorFeedback = tutorStubTurnFeedbackEnvelope(state.turnFeedback);
-      const escapeDismissesFeedback = tutorStubTurnFeedbackEscapeDismissal({
-        line: rl.line,
-        key,
-        feedback: pendingTutorFeedback,
-        interactiveMode: state.interaction?.mode,
-        interfaceBlocked: feedbackInterfaceBlocked,
-        selectionActive: lineSelection.snapshot().active,
-      });
-      if (escapeDismissesFeedback) {
-        lineSelection.clear();
-        handleTutorFeedbackCommand('off', { source: 'empty_prompt_escape' });
-        promptIfIdle();
-        return;
-      }
-      const arrowRating = tutorStubTurnFeedbackArrowRating({
-        line: rl.line,
-        key,
-        feedback: pendingTutorFeedback,
-        busy: processingTurn,
-        interactiveMode: state.interaction?.mode,
-        interfaceBlocked: feedbackInterfaceBlocked,
-      });
-      if (arrowRating) {
-        lineSelection.clear();
-        handleTutorFeedbackCommand(arrowRating, {
-          source: key.name === 'right' ? 'empty_prompt_right_arrow' : 'empty_prompt_left_arrow',
-        });
-        promptIfIdle();
-        return;
-      }
-      lineSelection.handleKeypress(character, key);
-      if (slashPaletteRefreshHandle) clearImmediate(slashPaletteRefreshHandle);
-      slashPaletteRefreshHandle = setImmediate(() => {
-        slashPaletteRefreshHandle = null;
-        if (exiting || initialSetupStage !== 'off') return;
-        const paletteChanged = concurrentTerminal.setPalette(slashCommandPaletteForLine(rl.line));
-        if (!paletteChanged) concurrentTerminal.show();
-      });
-    };
-    input.on('keypress', onInteractiveKeypress);
-  }
-
-  printInteractionModeBanner({ detail: false });
-
-  rl.on('line', (line) => {
-    lineSelection.clear();
-    concurrentTerminal.acceptLine();
-    if (scenarioPickerActive) return;
-    const trimmed = line.trim();
-    const draftInsertion = mixedLearner.draftInsertion;
-    mixedLearner.draftInsertion = null;
-    const draftProvenance = trimmed ? mixedDraftLearnerResponseProvenance(draftInsertion, trimmed) : null;
-    if (trimmed === '👍' || trimmed === '👎') {
-      handleTutorFeedbackCommand(trimmed === '👍' ? 'up' : 'down', {
-        duringTurn: processingTurn,
-        source: 'emoji_line',
-      });
-      promptIfIdle();
-      return;
-    }
-    if (awaitingAnotherScenario && !trimmed) {
-      requestExit('dialogue_grounded_closure');
-      return;
-    }
-    if (awaitingAnotherScenario && !trimmed.startsWith('/')) {
-      const answer = trimmed.toLowerCase();
-      if (['n', 'no', 'no thanks', 'quit', 'exit'].includes(answer)) {
-        requestExit('dialogue_grounded_closure');
-        return;
-      }
-      if (['y', 'yes', 'another', 'another scenario'].includes(answer)) {
-        void chooseAnotherScenario('', { reason: 'next_scenario_after_closure' }).finally(() => {
-          if (!exiting) promptIfIdle();
-        });
-        return;
-      }
-      console.log(`${C.dim}type y to choose another scenario, or press Enter to finish${C.reset}`);
-      promptIfIdle();
-      return;
-    }
-    if (!trimmed) {
-      promptIfIdle();
-      return;
-    }
-    const slashResult = handleSlashCommand(trimmed, { duringTurn: processingTurn });
-    if (slashResult) {
-      if (typeof slashResult.then === 'function') {
-        if (!slashResult.tutorStubBlocksPrompt) promptIfIdle();
-        void slashResult.finally(() => {
-          promptIfIdle();
-        });
-      } else {
-        promptIfIdle();
-      }
-      return;
-    }
-    sessionRuntime.step(trimmed, {
-      kind: 'learner',
-      context: { source: 'terminal', provenance: draftProvenance },
-    });
-    promptIfIdle();
+  await terminalHost.run({
+    appendTraceEvent,
+    args,
+    chooseAnotherScenario,
+    emitKeypressEvents,
+    emitOpeningPrompt,
+    emitResumeHandoff,
+    finalizeInteractive,
+    fs,
+    handleSlashCommand,
+    handleTutorFeedbackCommand,
+    handleVoiceCommand,
+    instantExistingScenarioOpening,
+    jsonClone,
+    mixedDraftLearnerResponseProvenance,
+    persistCurrentInteractiveSettings,
+    printInteractionModeBanner,
+    printInteractiveTutorOpening,
+    promptIfIdle,
+    requestExit,
+    resumedDialogue,
+    runInitialMixedLearnerSetup,
+    runInteractiveDemo,
+    runTutorStubSessionRpc,
+    sessionRuntime,
+    startInterimAnimation,
+    startMixedLearnerPrefetch,
+    stopInterimAnimation,
+    stopVoiceBridge,
+    tutorStubTurnFeedbackArrowRating,
+    tutorStubTurnFeedbackEnvelope,
+    tutorStubTurnFeedbackEscapeDismissal,
+    voiceLaunchRequested,
   });
-
-  rl.on('SIGINT', () => {
-    stopInterimAnimation(state);
-    console.log();
-    requestExit('sigint');
-  });
-
-  rl.on('close', () => {
-    exiting = true;
-    stopInterimAnimation(state);
-    void stopVoiceBridge('terminal_closed');
-    if (slashPaletteRefreshHandle) clearImmediate(slashPaletteRefreshHandle);
-    if (onInteractiveKeypress) input.removeListener('keypress', onInteractiveKeypress);
-    concurrentTerminal.close();
-    if (!finalized) finalizeInteractive('exit');
-    resolveInteractive();
-  });
-
-  const deferOpeningForMixedPrelude = Boolean(mixedLearner.enabled && !instantExistingScenarioOpening);
-  const opening = await emitOpeningPrompt('start', {
-    display: !deferOpeningForMixedPrelude,
-    realizer: instantExistingScenarioOpening ? 'deterministic' : null,
-    deterministicSource: instantExistingScenarioOpening ? 'remembered_scenario_instant_opening' : null,
-  });
-  if (opening) {
-    const openingPrefetch = startMixedLearnerPrefetch('opening', {
-      refreshPrompt: !deferOpeningForMixedPrelude,
-    });
-    if (deferOpeningForMixedPrelude) {
-      if (openingPrefetch) {
-        startInterimAnimation(state, 'preparing scenario', { tutorTurn: state.turns.length + 1 });
-        try {
-          await openingPrefetch;
-        } finally {
-          stopInterimAnimation(state);
-        }
-      }
-      printInteractiveTutorOpening(opening);
-    }
-  } else if (resumedDialogue) {
-    const resumeHandoff = emitResumeHandoff('interactive_start');
-    if (resumeHandoff) startMixedLearnerPrefetch('resume_handoff');
-  }
-
-  if (voiceLaunchRequested && !exiting) {
-    await handleVoiceCommand('on', { source: 'launch_flag' });
-  }
-
-  if (args.demo && !exiting) {
-    await runInteractiveDemo('', { source: 'launch_flag' });
-  }
-
-  promptIfIdle();
-  await interactiveDone;
 }
 
 main().catch((err) => {

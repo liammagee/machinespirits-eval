@@ -7,9 +7,9 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-29
-updated: 2026-08-04
+updated: 2026-08-05
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-automated-learner-typed-action
+branch: codex/refactor-tutor-stub-terminal-host-context
 claim_status: planned
 depends_on: []
 links:
@@ -18,6 +18,8 @@ links:
   code:
     - scripts/tutor-stub.js
     - services/tutorStubAutomatedLearnerGenerationRuntime.js
+    - services/tutorStubApplicationState.js
+    - services/tutorStubApplicationTraceContext.js
     - services/tutorStubCharacterControlController.js
     - services/tutorStubClarificationTranslationRuntime.js
     - services/tutorStubCliArguments.js
@@ -33,12 +35,15 @@ links:
     - services/tutorStubInteractiveTurnController.js
     - services/tutorStubInterimController.js
     - services/tutorStubLaunchRuntime.js
+    - services/tutorStubLaunchApplicationContext.js
+    - services/tutorStubLaunchPresentation.js
     - services/tutorStubLaunchSummaryPresentation.js
     - services/tutorStubLearnerAnalysisRuntime.js
     - services/tutorStubLearnerDagState.js
     - services/tutorStubLearnerEvidenceRuntime.js
     - services/tutorStubLiveSettingsController.js
     - services/tutorStubMixedLearnerController.js
+    - services/tutorStubNonInteractiveApplication.js
     - services/tutorStubModelPickerController.js
     - services/tutorStubPerformanceControlController.js
     - services/tutorStubOpeningRuntime.js
@@ -49,8 +54,11 @@ links:
     - services/tutorStubResponsePolicy.js
     - services/tutorStubScenarioController.js
     - services/tutorStubSessionOrchestration.js
+    - services/tutorStubSessionApplicationContext.js
+    - services/tutorStubSessionApplicationRuntime.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
+    - services/tutorStubTerminalHost.js
     - services/tutorStubTutorPromptContext.js
     - services/tutorStubTurnOrchestration.js
     - services/tutorStubTypedActionPlanningRuntime.js
@@ -72,6 +80,8 @@ links:
     - 475
     - 476
     - 478
+    - 479
+    - 482
   items:
     - codebase-refactoring-program
 tags:
@@ -405,3 +415,26 @@ Boundary reassessment after cycle 11:
   uncommitted cycle 14 worktree to post-merge `origin/main` at `c34870a3` and
   restored the extraction without conflict; the 100/100 focused suite and
   source/import/diff gates pass again on that exact composition.
+- 2026-08-04 — Opened macro cycle 14 as PR #479; it merged at `0b092ac4`.
+  Started macro cycle 15 from current `origin/main` at `38d3e391` in the
+  isolated `codex/refactor-tutor-stub-terminal-host-context` worktree. This
+  final planned boundary separates terminal lifecycle ownership from shared
+  application composition while preserving the existing controller contracts.
+- 2026-08-04 — Macro cycle 15 moved launch-option normalization, model/prompt
+  and capability assembly, dry-run and provider preflight, trace construction,
+  mutable application state, session restoration and launch reporting,
+  non-interactive dispatch, and readline lifecycle ownership behind eight
+  bounded application modules (228–815 source lines). `scripts/tutor-stub.js`
+  fell from 5,740 to 3,568 lines, a 2,172-line net reduction; the cycles 13–15
+  rolling average is 1,248 lines per PR and remains above the 750-line stop
+  floor. Every new owner remains below the 900-line anti-monolith ceiling.
+- 2026-08-04 — Cycle 15 verification passes 102/102 focused profile,
+  typed-action, orchestration, terminal, discourse, QA, live CLI, and ownership
+  assertions plus the zero-skip hermetic suite at 7,769/7,769 root tests and
+  137/137 tutor-core tests. The full gate caught and closed both a stale
+  DAG-snapshot caller inventory and a live theme/motion persistence closure.
+  Lint, Prettier, manifest, workplan source (397 items), ref governance,
+  syntax, whitespace, and the static import graph pass with zero cycles across
+  503 files; no model calls were authorized for this structural extraction.
+- 2026-08-05 — Opened macro cycle 15 as PR #482 at `dd1c62eb`; initial CI
+  inspection follows the source-card link commit.
