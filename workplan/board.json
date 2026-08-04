@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-04T05:36:51.494Z",
+  "generated": "2026-08-04T06:02:49.602Z",
   "counts": {
     "total": 375,
     "byStatus": {
-      "done": 242,
+      "done": 252,
       "blocked": 6,
       "dropped": 4,
-      "triaged": 11,
-      "review": 92,
-      "active": 16,
+      "triaged": 10,
+      "review": 89,
+      "active": 10,
       "archived": 4
     },
     "byType": {
@@ -111,27 +111,6 @@
         "tutor-stub",
         "adaptation",
         "casting"
-      ]
-    },
-    {
-      "id": "adaptation-planted-stress-bench",
-      "title": "Planted typed stress — a bench where teaching moves have consequences",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-30",
-      "updated": "2026-07-30",
-      "verification": "Design-stage card: no build until the authored gold exists. First build gate: a user-edited stress schedule (draft: config/drama-derivation/stress/world-033-stress-schedule.yaml) naming per planted turn the state, the sim directive, and the right repair. The gate was originally transcript annotation; inverted 2026-07-30 — the corpus transcripts contain no states to read out (the sim has none), so the gold is authored in, never discovered. The annotation sheets survive for rating whether a tutor reply met a planted state.",
-      "claim_status": "methods",
-      "depends_on": [
-        "misconception-world-outcome-gate"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "outcome-channel"
       ]
     },
     {
@@ -424,27 +403,6 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "paraphrase-robust-detection",
-      "title": "Paraphrase-robust detection: token-bag state anchors compiled from the ratified schedules (trigger v5)",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gate registered before any tuning: v5 must (a) catch at least half of the known missed re-phrasings (the escalation dialogues' unheard repeat demands and repeat mockery at t6/t8/t10 — the L2 and S-revisit misses), (b) hold the w033 bench at >=17/20 classification, and (c) hold calm false alarms <=2/dialogue on the standing calm set. Miss any clause = v5 rejected, patterns stay, the ladder's classifier rung (stage 3 proper) becomes the next candidate.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-l"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "manner-switch"
-      ]
-    },
-    {
       "id": "transcript-archive-training-data-governance",
       "title": "Govern transcript archives, ratings, and reusable training corpora",
       "status": "active",
@@ -545,33 +503,6 @@
       ]
     },
     {
-      "id": "drama-world-public-object-reachability",
-      "title": "Make each drama world's declared public object reachable in its own deterministic text",
-      "status": "active",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-07-27",
-      "updated": "2026-07-27",
-      "verification": "Every world's deterministic fallback names that world's own public object rather than the generic 'public record', unprompted wording is pinned by test for all 32 worlds, and the change to the 17 affected worlds is enumerated rather than incidental; targeted and hermetic suites pass without model calls.",
-      "branch": "claude/world-public-objects-reachable",
-      "links": {
-        "code": [
-          "services/tutorStubResponseComposition.js",
-          "services/tutorStubSceneDiction.js",
-          "config/drama-derivation/"
-        ],
-        "tests": [
-          "tests/tutorStubResponseComposition.test.js",
-          "tests/tutorStubSceneDiction.test.js"
-        ],
-        "items": [
-          "tutor-stub-fallback-register-and-uptake-guard"
-        ]
-      }
-    },
-    {
       "id": "guard-ladder-ships-canned-text-on-most-turns",
       "title": "The guard ladder ships canned text on most instrumented turns",
       "status": "active",
@@ -642,48 +573,6 @@
       "tags": [
         "tutor-stub",
         "harness"
-      ]
-    },
-    {
-      "id": "manner-trigger-tuning",
-      "title": "Tune the manner switch's trigger against planted gold — staged, gated",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-31",
-      "updated": "2026-07-31",
-      "verification": "Each stage's gate is numeric and recorded in this card before the next stage starts. Trigger versions ship as config artifacts with training-set hashes; every trace records its trigger version; no pooling across versions.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-planted-stress-bench"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "manner-switch"
-      ]
-    },
-    {
-      "id": "misconception-world-outcome-gate",
-      "title": "Misconception world — can any tutor close against a structured wrong theory?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-30",
-      "updated": "2026-07-30",
-      "verification": "`node scripts/lint-derivation-world.js --world config/drama-derivation/world-032-alder-row.yaml` reports LINT PASS (the --world flag is required; a bare path is now a usage error rather than a silent lint of world-001), and `node scripts/run-contract-outcome-pilot.js --dry-run --worlds world_032_alder_row --n 5` plans five dialogues at the world's own cap 40 / floor 24. `tests/derivationWorldPresentation.test.js` lints the whole world catalog, so no new world can skip the pacing gate.",
-      "claim_status": "scope-bound",
-      "links": {
-        "notes": []
-      },
-      "tags": [
-        "tutor-stub",
-        "drama-derivation",
-        "outcome-channel"
       ]
     },
     {
@@ -763,60 +652,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "codex/program2-committee-floor-ablation"
-    },
-    {
-      "id": "tutor-instrumentation-ab-harness",
-      "title": "Instrumentation A/B — bare tutor vs instrumented tutor on one frozen dialogue",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-29",
-      "verification": "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call plan; the baseline arm's projected request is exactly the learner utterance with zero advisory chars; the plan control's projected request is the learner utterance plus one fixed 995-char plan, identical on every turn; every arm is audited with the recorded run's guard set and pinning is an identity on the fixtures; a paid run writes report.json, report.md, and a swimlane diff whose failure-cluster deltas separate the arms; `node scripts/judge-tutor-stub-ab-pairs.js --mock` exercises the whole blind-judging path with no model calls, and `--limit 0` re-summarises a recorded corpus without judging anything; every rule the bench has ever raised carries an explicit open/told class with a stated reason, held against a checked-in table by `tests/tutorStubAbHarness.test.js`, and `node scripts/rescore-tutor-stub-ab-open-rules.js --pooled` re-splits the whole recorded corpus with the API keys blanked.",
-      "claim_status": "scope-bound",
-      "links": {
-        "notes": [
-          "docs/tutor-instrumentation-ab.md"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "instrument",
-        "frozen-replay"
-      ],
-      "branch": "claude/tutor-instrumentation-ab"
-    },
-    {
-      "id": "tutor-instrumentation-showcase",
-      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-26",
-      "updated": "2026-07-28",
-      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way; each scoring pass (`npm run tutor:stub:showcase:rubric`, `npm run tutor:stub:showcase:pr-benchmark`) writes its own artifact beside report.json and re-renders transcripts.html, so a run scored by both instruments, by one, or by neither shows the scores it actually has and names the axes nobody asked; `--rubric-version 3.0` writes `rubric-v3.0.json` beside the v2.2 artifact rather than over it, with the page rendering the two versions as separate labelled blocks that are never averaged; and a page carrying two scored versions also carries the instrument-contrast panel — spread, within-version dimension redundancy, turn-by-turn divergence, a per-dimension radar, and the whole-transcript instrument it declines to run — alongside a jump menu whose every entry resolves to a section the page rendered and a type control that scales the whole document from one root font size.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-instrumentation-ab-harness"
-      ],
-      "links": {
-        "notes": [
-          "docs/tutor-instrumentation-showcase.md"
-        ],
-        "items": [
-          "tutor-instrumentation-ab-harness"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "instrument",
-        "demo"
-      ],
-      "branch": "worktree-showcase-readability-and-rubric-contrast"
     },
     {
       "id": "tutor-redeclares-close-lifecycle-has-not-accepted",
@@ -1049,45 +884,6 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
-    },
-    {
-      "id": "program-2-transfer-apparatus-hardening",
-      "title": "Program-2 transfer apparatus hardening after Phase 5e A4",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-28",
-      "updated": "2026-07-28",
-      "branch": "codex/program-2-phase5e-r2-replication",
-      "verification": "Without model calls, frozen A1-A4 and Phase 5f A2 prefixes plus non-Skyway fixtures prove queued recovery for every released-but-unheld best-path premise, rejection of closure while strict DAG premises remain missing, idempotent one-time due-clue delivery, preservation of cue-bearing committee content, recognition of authored entailed-answer paraphrases, and a fail-closed unsupported-answer recovery that does not echo the proposed conclusion. Focused, derivation-quality, hermetic-manifest, lint, and workplan source gates must pass before a replacement certificate is prepared.",
-      "claim_status": "methods",
-      "links": {
-        "notes": [
-          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md"
-        ],
-        "items": [
-          "program-2-phase5d-second-transfer-world",
-          "program-2-phase5f-fresh-transfer-world"
-        ],
-        "code": [
-          "services/tutorStubResponseConfiguration.js",
-          "services/tutorStubTurnProgressionContract.js",
-          "services/tutorStubDialogueClosure.js",
-          "services/tutorStubDramaticRelease.js",
-          "services/program2CommitteeEngine.js",
-          "scripts/tutor-stub.js",
-          "tests/tutorStubPhase5eR2PilotReplay.test.js"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "program-2",
-        "apparatus",
-        "guards"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "refactor-tutor-stub-classifier-world-context",
@@ -4591,27 +4387,6 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "tutor-stub-leak-audit-false-positives",
-      "title": "Leak audits fire on hedges and stage directions — every recorded A/B leak was a false alarm",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-29",
-      "updated": "2026-07-29",
-      "verification": "A unit test asserts the conclusion check treats `X, not Y` as withholding, the way it already treats `does not` and `not yet`; a unit test asserts `I trace the winter-to-thaw entry with my finger` raises no evidence correspondence; replaying the nine recorded leak turns through the A/B bench reads zero leaks; the seven turns that never leaked still read zero.",
-      "claim_status": "scope-bound",
-      "depends_on": [
-        "tutor-instrumentation-ab-harness"
-      ],
-      "tags": [
-        "tutor-stub",
-        "instrument",
-        "frozen-replay"
-      ]
-    },
-    {
       "id": "big-picture-state-of-the-nation-skill-and-board-traceability",
       "title": "Big-picture state-of-the-nation skill and board traceability",
       "status": "review",
@@ -4634,30 +4409,6 @@
         "governance",
         "skill"
       ]
-    },
-    {
-      "id": "fix-rubric-dimension-count-claims",
-      "title": "Fix the off-by-one in both v2.2 rubric dimension-count claims",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-07-28",
-      "updated": "2026-07-28",
-      "verification": "`npm run paper:provable-discourse` reports 134 pass / 29 warn / 0 fail with both claims at actual=8 and actual=5; a negative test (delete one dimension) now fails the claim where it previously passed; `npm run paper:provable-discourse:test` passes 69/69 (needs a writable LOGS_ROOT); `npm run lint` and `npm run refs:check` are clean.",
-      "links": {
-        "items": [
-          "repoint-learner-deliberation-claim-fingerprint"
-        ]
-      },
-      "tags": [
-        "provable-discourse",
-        "rubrics",
-        "paper-2"
-      ],
-      "milestone": "paper-2-evidence-cleanup",
-      "branch": "worktree-rubric-dim-count-fix"
     },
     {
       "id": "tutor-eval-instrument-dashboard",
@@ -6108,6 +5859,27 @@
       "milestone": "paper-2-0"
     },
     {
+      "id": "paraphrase-robust-detection",
+      "title": "Paraphrase-robust detection: token-bag state anchors compiled from the ratified schedules (trigger v5)",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gate registered before any tuning: v5 must (a) catch at least half of the known missed re-phrasings (the escalation dialogues' unheard repeat demands and repeat mockery at t6/t8/t10 — the L2 and S-revisit misses), (b) hold the w033 bench at >=17/20 classification, and (c) hold calm false alarms <=2/dialogue on the standing calm set. Miss any clause = v5 rejected, patterns stay, the ladder's classifier rung (stage 3 proper) becomes the next candidate.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-l"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
+      ]
+    },
+    {
       "id": "plan-mode-stocktake",
       "title": "Plan-mode stock-take — dialogic between-scene reorientation (course-changing outer loop)",
       "status": "done",
@@ -6202,6 +5974,45 @@
         "provenance",
         "budget",
         "stop-loss"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "program-2-transfer-apparatus-hardening",
+      "title": "Program-2 transfer apparatus hardening after Phase 5e A4",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-08-04",
+      "branch": "codex/program-2-phase5e-r2-replication",
+      "verification": "Without model calls, frozen A1-A4 and Phase 5f A2 prefixes plus non-Skyway fixtures prove queued recovery for every released-but-unheld best-path premise, rejection of closure while strict DAG premises remain missing, idempotent one-time due-clue delivery, preservation of cue-bearing committee content, recognition of authored entailed-answer paraphrases, and a fail-closed unsupported-answer recovery that does not echo the proposed conclusion. Focused, derivation-quality, hermetic-manifest, lint, and workplan source gates must pass before a replacement certificate is prepared.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md"
+        ],
+        "items": [
+          "program-2-phase5d-second-transfer-world",
+          "program-2-phase5f-fresh-transfer-world"
+        ],
+        "code": [
+          "services/tutorStubResponseConfiguration.js",
+          "services/tutorStubTurnProgressionContract.js",
+          "services/tutorStubDialogueClosure.js",
+          "services/tutorStubDramaticRelease.js",
+          "services/program2CommitteeEngine.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubPhase5eR2PilotReplay.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "program-2",
+        "apparatus",
+        "guards"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
     },
@@ -9071,6 +8882,27 @@
       ]
     },
     {
+      "id": "tutor-stub-leak-audit-false-positives",
+      "title": "Leak audits fire on hedges and stage directions — every recorded A/B leak was a false alarm",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-29",
+      "updated": "2026-08-04",
+      "verification": "A unit test asserts the conclusion check treats `X, not Y` as withholding, the way it already treats `does not` and `not yet`; a unit test asserts `I trace the winter-to-thaw entry with my finger` raises no evidence correspondence; replaying the nine recorded leak turns through the A/B bench reads zero leaks; the seven turns that never leaked still read zero.",
+      "claim_status": "scope-bound",
+      "depends_on": [
+        "tutor-instrumentation-ab-harness"
+      ],
+      "tags": [
+        "tutor-stub",
+        "instrument",
+        "frozen-replay"
+      ]
+    },
+    {
       "id": "tutor-stub-learner-budget-overflow",
       "title": "Fix the auto-learner prompt-budget overflow in long dialogues",
       "status": "done",
@@ -9777,6 +9609,27 @@
         "tutor-stub",
         "adaptation",
         "casting"
+      ]
+    },
+    {
+      "id": "adaptation-planted-stress-bench",
+      "title": "Planted typed stress — a bench where teaching moves have consequences",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-30",
+      "updated": "2026-08-04",
+      "verification": "Design-stage card: no build until the authored gold exists. First build gate: a user-edited stress schedule (draft: config/drama-derivation/stress/world-033-stress-schedule.yaml) naming per planted turn the state, the sim directive, and the right repair. The gate was originally transcript annotation; inverted 2026-07-30 — the corpus transcripts contain no states to read out (the sim has none), so the gold is authored in, never discovered. The annotation sheets survive for rating whether a tutor reply met a planted state.",
+      "claim_status": "scope-bound",
+      "depends_on": [
+        "misconception-world-outcome-gate"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "outcome-channel"
       ]
     },
     {
@@ -10595,6 +10448,33 @@
       "milestone": "board-pm"
     },
     {
+      "id": "drama-world-public-object-reachability",
+      "title": "Make each drama world's declared public object reachable in its own deterministic text",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-27",
+      "updated": "2026-08-04",
+      "verification": "Every world's deterministic fallback names that world's own public object rather than the generic 'public record', unprompted wording is pinned by test for all 32 worlds, and the change to the 17 affected worlds is enumerated rather than incidental; targeted and hermetic suites pass without model calls.",
+      "branch": "claude/world-public-objects-reachable",
+      "links": {
+        "code": [
+          "services/tutorStubResponseComposition.js",
+          "services/tutorStubSceneDiction.js",
+          "config/drama-derivation/"
+        ],
+        "tests": [
+          "tests/tutorStubResponseComposition.test.js",
+          "tests/tutorStubSceneDiction.test.js"
+        ],
+        "items": [
+          "tutor-stub-fallback-register-and-uptake-guard"
+        ]
+      }
+    },
+    {
       "id": "dramatic-recognition-arc-editorial-refresh",
       "title": "Review and republish the dramatic-recognition arc",
       "status": "done",
@@ -10734,6 +10614,30 @@
         "statistics",
         "meta"
       ]
+    },
+    {
+      "id": "fix-rubric-dimension-count-claims",
+      "title": "Fix the off-by-one in both v2.2 rubric dimension-count claims",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-08-04",
+      "verification": "`npm run paper:provable-discourse` reports 134 pass / 29 warn / 0 fail with both claims at actual=8 and actual=5; a negative test (delete one dimension) now fails the claim where it previously passed; `npm run paper:provable-discourse:test` passes 69/69 (needs a writable LOGS_ROOT); `npm run lint` and `npm run refs:check` are clean.",
+      "links": {
+        "items": [
+          "repoint-learner-deliberation-claim-fingerprint"
+        ]
+      },
+      "tags": [
+        "provable-discourse",
+        "rubrics",
+        "paper-2"
+      ],
+      "milestone": "paper-2-evidence-cleanup",
+      "branch": "worktree-rubric-dim-count-fix"
     },
     {
       "id": "from-holistic-evaluation-to-structured-criteria-rubrics-acro",
@@ -10998,6 +10902,27 @@
       ]
     },
     {
+      "id": "manner-trigger-tuning",
+      "title": "Tune the manner switch's trigger against planted gold — staged, gated",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-31",
+      "updated": "2026-08-04",
+      "verification": "Each stage's gate is numeric and recorded in this card before the next stage starts. Trigger versions ship as config artifacts with training-set hashes; every trace records its trigger version; no pooling across versions.",
+      "claim_status": "scope-bound",
+      "depends_on": [
+        "adaptation-planted-stress-bench"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
+      ]
+    },
+    {
       "id": "marrick-confront-window",
       "title": "Opening the confront window: an intermediate-fact incompatible partner",
       "status": "done",
@@ -11055,6 +10980,27 @@
       "updated": "2026-07-26",
       "verification": "LangGraph 1.4 or newer passes the DAG longitudinal contract, the full hermetic suite, and a production audit with no LangGraph/UUID advisory",
       "branch": "codex/migrate-adaptive-dag-langgraph-1-4"
+    },
+    {
+      "id": "misconception-world-outcome-gate",
+      "title": "Misconception world — can any tutor close against a structured wrong theory?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-30",
+      "updated": "2026-08-04",
+      "verification": "`node scripts/lint-derivation-world.js --world config/drama-derivation/world-032-alder-row.yaml` reports LINT PASS (the --world flag is required; a bare path is now a usage error rather than a silent lint of world-001), and `node scripts/run-contract-outcome-pilot.js --dry-run --worlds world_032_alder_row --n 5` plans five dialogues at the world's own cap 40 / floor 24. `tests/derivationWorldPresentation.test.js` lints the whole world catalog, so no new world can skip the pacing gate.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": []
+      },
+      "tags": [
+        "tutor-stub",
+        "drama-derivation",
+        "outcome-channel"
+      ]
     },
     {
       "id": "normalize-provenance-validator-data-paths",
@@ -11790,6 +11736,60 @@
         "paper-positioning"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "tutor-instrumentation-ab-harness",
+      "title": "Instrumentation A/B — bare tutor vs instrumented tutor on one frozen dialogue",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-08-04",
+      "verification": "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call plan; the baseline arm's projected request is exactly the learner utterance with zero advisory chars; the plan control's projected request is the learner utterance plus one fixed 995-char plan, identical on every turn; every arm is audited with the recorded run's guard set and pinning is an identity on the fixtures; a paid run writes report.json, report.md, and a swimlane diff whose failure-cluster deltas separate the arms; `node scripts/judge-tutor-stub-ab-pairs.js --mock` exercises the whole blind-judging path with no model calls, and `--limit 0` re-summarises a recorded corpus without judging anything; every rule the bench has ever raised carries an explicit open/told class with a stated reason, held against a checked-in table by `tests/tutorStubAbHarness.test.js`, and `node scripts/rescore-tutor-stub-ab-open-rules.js --pooled` re-splits the whole recorded corpus with the API keys blanked.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "docs/tutor-instrumentation-ab.md"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "instrument",
+        "frozen-replay"
+      ],
+      "branch": "claude/tutor-instrumentation-ab"
+    },
+    {
+      "id": "tutor-instrumentation-showcase",
+      "title": "Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-26",
+      "updated": "2026-08-04",
+      "verification": "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call plan whose arms hold learner parity in every preset; a paid run writes report.json, report.md, and a turn-aligned two-column transcripts.html; each arm's resolution verdict comes from the stub's own closure lifecycle, and guard coverage is read from the stub's `tutor_response_guard_accounting` rows rather than from the audit records the turn carries either way; each scoring pass (`npm run tutor:stub:showcase:rubric`, `npm run tutor:stub:showcase:pr-benchmark`) writes its own artifact beside report.json and re-renders transcripts.html, so a run scored by both instruments, by one, or by neither shows the scores it actually has and names the axes nobody asked; `--rubric-version 3.0` writes `rubric-v3.0.json` beside the v2.2 artifact rather than over it, with the page rendering the two versions as separate labelled blocks that are never averaged; and a page carrying two scored versions also carries the instrument-contrast panel — spread, within-version dimension redundancy, turn-by-turn divergence, a per-dimension radar, and the whole-transcript instrument it declines to run — alongside a jump menu whose every entry resolves to a section the page rendered and a type control that scales the whole document from one root font size.",
+      "claim_status": "methods",
+      "depends_on": [
+        "tutor-instrumentation-ab-harness"
+      ],
+      "links": {
+        "notes": [
+          "docs/tutor-instrumentation-showcase.md"
+        ],
+        "items": [
+          "tutor-instrumentation-ab-harness"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "instrument",
+        "demo"
+      ],
+      "branch": "worktree-showcase-readability-and-rubric-contrast"
     },
     {
       "id": "tutor-pr-benchmark-hook-warning-attribution",
