@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: >-
   A response that declares the case closed while `dialogueClosure.lifecycle.phase`
   is still `open` raises an issue instead of passing unread, with the real
@@ -26,6 +26,7 @@ links:
   items:
     - tutor-instrumentation-showcase
     - showcase-turn-cap-untied-to-release-schedule
+    - guard-ladder-ships-canned-text-on-most-turns
 tags:
   - tutor-stub
   - closure
@@ -136,6 +137,13 @@ trace cannot carry the new row and its absence there means nothing.
 The guard fires; what a regenerated turn actually looks like is unverified. That
 needs a paid run — the deterministic half is done, the behavioural half is not.
 Do not claim the redundant-close arc is fixed until a run shows it.
+
+That run is shared, not this card's own: step 3 of the safety/closure sequence
+written out in `guard-ladder-ships-canned-text-on-most-turns` re-runs the
+showcase pair once and serves both cards. This card's question on that run is
+single: when `premature_dialogue_close` fires, is the regenerated turn something
+other than a second closing declaration. The t6 regex near-miss below stays out
+of that run and is decided afterwards.
 
 The classifier lag is untouched and was left that way deliberately. Making the
 tutor robust to a late accept is the durable fix; tuning the classifier to accept
