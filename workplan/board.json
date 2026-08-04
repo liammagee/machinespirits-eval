@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T22:01:44.537Z",
+  "generated": "2026-08-04T22:18:10.803Z",
   "counts": {
     "total": 398,
     "byStatus": {
@@ -357,7 +357,7 @@
       "source": "review",
       "created": "2026-08-05",
       "updated": "2026-08-05",
-      "branch": "codex/refactor-tutor-stub-extracted-owner-boundaries",
+      "branch": "codex/refactor-tutor-stub-committee-repair-owner",
       "verification": "The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.",
       "claim_status": "planned",
       "depends_on": [],
@@ -366,6 +366,7 @@
           "services/tutorStubTutorTurnPipeline.js",
           "services/tutorStubTutorTurnPreparation.js",
           "services/tutorStubTutorAttemptRuntime.js",
+          "services/tutorStubTutorCommitteeRuntime.js",
           "services/tutorStubTutorDraftAudit.js",
           "services/tutorStubResponsePolicy.js",
           "scripts/tutor-stub.js"
