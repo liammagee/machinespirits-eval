@@ -1,17 +1,18 @@
 # Cartoon Image Prompts
 
 Source HTML: notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html
-Generated at: 2026-07-23T03:49:19.748Z
-Panel count: 9
+Generated at: 2026-08-04T02:52:39.896Z
+Panel count: 10
 Format: png
 House style: docs/design/machinespirits-house-style.md
 Prompt style: machinespirits-poetics-editorial-cartoon-v2
+Prompt lineage: each code block preserves the panel-total line from the run that generated its shipped PNG.
 
 ## Text Analysis
 
 Title: How a tutor learned to change course
 Description: The earlier study found no average change in how tutors adapted. This follow-up asks a more ordinary question: when a learner gets stuck, can the tutor notice, change course, and help them reach an answer that can be checked?
-Top terms: tutor, learner, rule, proof, answer, turn, lesson, move, hidden, check, completed, without, conduct, across, change, changed, paper, rhetorical
+Top terms: tutor, learner, rule, proof, answer, turn, lesson, move, hidden, check, completed, without, changed, conduct, across, change, panel, paper
 
 Selected sections:
 - 01 #starting-point: The average stayed flat. We wanted to know what happened at the stuck point. -> notes/poetics/images/dramatic-recognition-arc-01.png
@@ -23,6 +24,7 @@ Selected sections:
 - 07 #calendar-repair: One sensible early clue broke the lesson. One small rule repaired it. -> notes/poetics/images/dramatic-recognition-arc-07.png
 - 08 #the-guards: Two pacing rules helped. Which one helped depended on the shape of the lesson. -> notes/poetics/images/dramatic-recognition-arc-08.png
 - 09 #verdict: The tutor can govern parts of its conduct. The claim stays deliberately small. -> notes/poetics/images/dramatic-recognition-arc-09.png
+- 10 #after-the-verdict: We added more strategy machinery. It changed the tutor's behaviour, but it still did not make the tutor better at the proof. -> notes/poetics/images/dramatic-recognition-arc-10.png
 
 ## Prompts
 
@@ -31,15 +33,15 @@ Selected sections:
 Target image: notes/poetics/images/dramatic-recognition-arc-01.png
 HTML src: images/dramatic-recognition-arc-01.png
 Caption: Where we began: Paper 2.0 compared tutors prompted in different ways.
-Alt: Editorial cartoon for The average stayed flat. We wanted to know what happened at the stuck point.: a long black average-slope ruler crossing an off-white Swiss grid while one dec...
-Visual metaphor: a long black average-slope ruler crossing an off-white Swiss grid while one decisive lesson hinge falls just outside its frame; a single red -18-degree cut marks the missed turning point beside the paired tutor and learner figures
+Alt: A horizontal black average line stays flat above a tutor and learner while a red path drops sharply at the local stuck point the average misses.
+Visual metaphor: a perfectly horizontal black average line, unmistakably level from left edge to right edge, crossing an off-white Swiss grid; beneath that flat summary, a compact tutor-learner scene reaches one local stuck point and a single red path breaks sharply downward outside the average line's frame—the aggregate is flat while the decisive hinge is visibly missed; do not tilt the ruler or imply an upward trend
 
 ```
 You are Codex running inside the Machine Spirits evaluation repository.
 Create one cartoon image file for the dramatic-recognition arc note.
 
 Target file: notes/poetics/images/dramatic-recognition-arc-01.png
-Panel: 1 of 9
+Panel: 1 of 10
 Target article section: #starting-point
 Section heading: The average stayed flat. We wanted to know what happened at the stuck point.
 Article title: How a tutor learned to change course
@@ -62,7 +64,7 @@ Textual context to complement:
 Paper 2.0 compared tutors prompted in different ways. Some were asked to treat the learner as a thinking partner; some used a draft-and-critique process; others did neither. Across a whole conversation, none of these changes made the tutor improve more from turn to turn. When a learner is stuck on one point, does the tutor try a genuinely different move, or repeat the old one in new words?
 
 Image concept:
-a long black average-slope ruler crossing an off-white Swiss grid while one decisive lesson hinge falls just outside its frame; a single red -18-degree cut marks the missed turning point beside the paired tutor and learner figures
+a perfectly horizontal black average line, unmistakably level from left edge to right edge, crossing an off-white Swiss grid; beneath that flat summary, a compact tutor-learner scene reaches one local stuck point and a single red path breaks sharply downward outside the average line's frame—the aggregate is flat while the decisive hinge is visibly missed; do not tilt the ruler or imply an upward trend
 
 Caption this image will carry in the page:
 Where we began: Paper 2.0 compared tutors prompted in different ways.
@@ -82,7 +84,7 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-02.png
 HTML src: images/dramatic-recognition-arc-02.png
 Caption: Changing the question: The challenge was to make each beat visible without claiming we could infer a hidden mental state.
-Alt: Editorial cartoon for We made the turning point the whole experiment.: a tutoring table staged as three crisp beats on a black ruled grid—block, turn, checked result—with a red ch...
+Alt: A tutor and learner face a three-beat proof diagram: block, changed path, and a final checked result.
 Visual metaphor: a tutoring table staged as three crisp beats on a black ruled grid—block, turn, checked result—with a red checker stamp landing only on the final beat and the tutor and learner visible throughout
 
 ```
@@ -133,7 +135,7 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-03.png
 HTML src: images/dramatic-recognition-arc-03.png
 Caption: A lesson we can check: As the learner establishes each fact, the remaining distance to the answer gets shorter.
-Alt: Editorial cartoon for The tutor cannot give away the answer. It has to help the learner reach it.: a proof map of black nodes and sharp rules that the learner crosses one supporte...
+Alt: A red route crosses a proof graph one verified node at a time toward D equals zero while the answer remains covered.
 Visual metaphor: a proof map of black nodes and sharp rules that the learner crosses one supported step at a time; one red path advances toward a small D→0 register while the answer node remains covered by an opaque black square
 
 ```
@@ -184,7 +186,7 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-04.png
 HTML src: images/dramatic-recognition-arc-04.png
 Caption: The first surprise: Left to itself, the tutor fell into a rut.
-Alt: Editorial cartoon for “Be gentler” did not help. A clear rule did.: the same black rhetorical mask repeating down a rigid film strip; a pale manner note leaves the strip unchanged...
+Alt: A repeated mask fills a film strip until a red device card redirects the final frame into a different rhetorical move.
 Visual metaphor: the same black rhetorical mask repeating down a rigid film strip; a pale manner note leaves the strip unchanged, while one red device card cuts across it and rotates the next mask into a genuinely different move
 
 ```
@@ -235,7 +237,7 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-05.png
 HTML src: images/dramatic-recognition-arc-05.png
 Caption: Moving the rule inside: An outside director could make the tutor name its move, but we wanted the tutor to carry the rule itself.
-Alt: Editorial cartoon for A small internal check made the tutor break its own habit.: an empty director chair outside the square frame while a compact black-and-red gate inside the tu...
+Alt: An empty director chair sits outside the tutor while an internal red gate blocks and reroutes the third repeated move.
 Visual metaphor: an empty director chair outside the square frame while a compact black-and-red gate inside the tutor outline catches the third repeated gesture and reroutes it before the speech arrow reaches the learner
 
 ```
@@ -286,7 +288,7 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-06.png
 HTML src: images/dramatic-recognition-arc-06.png
 Caption: The learner who forgets: The simulated learner usually said enough for the tutor to infer what was happening.
-Alt: Editorial cartoon for The tutor did not need more skill. It needed to notice the loss.: two matched tutor panels facing the same learner ledger as one established node fades: the...
+Alt: A visible decay ledger lets one tutor restore a faded proof node while a blacked-out evidence channel prevents the other tutor from targeting the loss.
 Visual metaphor: two matched tutor panels facing the same learner ledger as one established node fades: the first has an open evidence window and restores the node with a red repair bracket; the second has that channel replaced by a blank black square and cannot target the repair
 
 ```
@@ -337,7 +339,7 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-07.png
 HTML src: images/dramatic-recognition-arc-07.png
 Caption: Handing over the calendar: We then let the tutor decide when to release clues.
-Alt: Editorial cartoon for One sensible early clue broke the lesson. One small rule repaired it.: a clue calendar drawn as a clean Swiss grid: one red clue tile moves a single cell too...
+Alt: An early red clue breaks a numbered proof schedule, and a compact repair rule restores the missing fact before the route continues to turn twenty.
 Visual metaphor: a clue calendar drawn as a clean Swiss grid: one red clue tile moves a single cell too early and breaks the black proof line; a compact next-step rule snaps the missing fact back into place before the line continues
 
 ```
@@ -388,7 +390,7 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-08.png
 HTML src: images/dramatic-recognition-arc-08.png
 Caption: Does the rule travel: Without help, the tutor's timing was unreliable: it completed only 4 of 10 proofs across two replication sets.
-Alt: Editorial cartoon for Two pacing rules helped. Which one helped depended on the shape of the lesson.: a split black-rule composition with two sensors labelled V and H: V reads the...
+Alt: Visible and hidden-state sensors guide red paths through different proof geometries, succeeding in one shape and stopping at a boundary in another.
 Visual metaphor: a split black-rule composition with two sensors labelled V and H: V reads the conversation surface, H reads the explicit proof-state depth; each red selection path succeeds on one small lesson geometry and stops at a black boundary on another, with no overall winner
 
 ```
@@ -439,7 +441,7 @@ Return a short final note listing the created file.
 Target image: notes/poetics/images/dramatic-recognition-arc-09.png
 HTML src: images/dramatic-recognition-arc-09.png
 Caption: What we can honestly say: The tutor can govern parts of its conduct.
-Alt: Editorial cartoon for The tutor can govern parts of its conduct. The claim stays deliberately small.: three square evidence cards locked to one grid—a check, a boundary bracket, a...
+Alt: Three evidence cards sit above a tutor and learner under a red CONDUCT ONLY stamp that limits the claim.
 Visual metaphor: three square evidence cards locked to one grid—a check, a boundary bracket, and an open ring—while a heavy red stamp marks the narrow claim CONDUCT ONLY; the paired tutor and learner remain outside any imagined mind-reading apparatus
 
 ```
@@ -474,6 +476,57 @@ three square evidence cards locked to one grid—a check, a boundary bracket, an
 
 Caption this image will carry in the page:
 What we can honestly say: The tutor can govern parts of its conduct.
+
+Composition requirements:
+- Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.
+- Show one dominant tutor-learner mechanism, measurement apparatus, or evidence/control-loop metaphor; subordinate every decorative element to it.
+- Use zero in-image title text unless the concept would otherwise be ambiguous. Keep any necessary labels sparse and exact: at most two, each five words or fewer.
+- Preserve high figure/ground contrast and structural readability at thumbnail size and without colour.
+- Avoid photorealism, 3D rendering, corporate-vector stock style, copyrighted characters, generic AI circuitry, screenshots, dense prose, and decorative pseudo-diagrams.
+
+Return a short final note listing the created file.
+```
+
+### Prompt 10 - #after-the-verdict
+
+Target image: notes/poetics/images/dramatic-recognition-arc-10.png
+HTML src: images/dramatic-recognition-arc-10.png
+Caption: What happened next: It changed the tutor's behaviour, but it still did not make the tutor better at the proof.
+Alt: An elaborate strategy machine moves many local gauges but stops short of the proof finish, while the smaller baseline control loop reaches a checked result.
+Visual metaphor: an elaborate black strategy gearbox and classifier bank bolted onto the tutor's route, with local dials visibly moving, while the red proof-outcome line remains flat and stops short of the checked answer; beside it, a smaller simple proof-control loop continues as the retained baseline—the machinery changes conduct but does not improve the proof
+
+```
+You are Codex running inside the Machine Spirits evaluation repository.
+Create one cartoon image file for the dramatic-recognition arc note.
+
+Target file: notes/poetics/images/dramatic-recognition-arc-10.png
+Panel: 10 of 10
+Target article section: #after-the-verdict
+Section heading: We added more strategy machinery. It changed the tutor's behaviour, but it still did not make the tutor better at the proof.
+Article title: How a tutor learned to change course
+
+Create a valid PNG image at notes/poetics/images/dramatic-recognition-arc-10.png. If you need to draft vector art first, convert it so the final file at that path is a real PNG.
+Do not edit the HTML file. Do not create unrelated files. Overwrite the target file if it already exists.
+
+Art direction:
+House-style source: docs/design/machinespirits-house-style.md
+Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
+- Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
+- Make the composition visibly structural: a restrained 60px Swiss grid, 15px micro-grid details, strong square black rules, generous negative space, and at most one -18-degree red slash or cut. Prefer one legible mechanism over a crowded detective-board collage.
+- Combine dry hand-inked editorial drawing and restrained monochrome grain with crisp geometric blocks, arrows, crop marks, and registers. Noir means hard black shadow, one controlled cone of light, and decisive contrast—not murky brown haze everywhere.
+- Keep tutor and learner as a consistent pair of simple diagrammatic figures. Distinguish their roles with silhouette, label, border, or shape as well as colour. Never use copyrighted characters or generic humanoid robots.
+- Treat red as an action verb, not decoration: it marks the hinge, reroute, repair, selected path, or claim boundary in the panel.
+- Avoid embedded prose. If lettering is essential, use at most two labels of five words or fewer: very heavy tight system sans for a single display word, or small uppercase widely tracked monospace for evidence labels. No faux handwriting, pulp typewriter headings, or generated gibberish.
+- The image must read at 480px wide and remain intelligible in greyscale. It is an article illustration, not a screenshot, poster, dashboard, or mood-only scene.
+
+Textual context to complement:
+It changed the tutor's behaviour, but it still did not make the tutor better at the proof. After finding a reliable pacing baseline, we tested whether the tutor should also choose a strategy, hold it for a scene, and review it afterward. But the same arm completed fewer proofs — a grounded rate of 0.25 rather than 0.50 — and produced more stalled endings. We then tried a gentler version: ask the tutor to pause between scenes and reconsider its course.
+
+Image concept:
+an elaborate black strategy gearbox and classifier bank bolted onto the tutor's route, with local dials visibly moving, while the red proof-outcome line remains flat and stops short of the checked answer; beside it, a smaller simple proof-control loop continues as the retained baseline—the machinery changes conduct but does not improve the proof
+
+Caption this image will carry in the page:
+What happened next: It changed the tutor's behaviour, but it still did not make the tutor better at the proof.
 
 Composition requirements:
 - Landscape editorial illustration at 1600 × 1000 or the same 16:10 ratio, with a clean crop-safe outer margin.

@@ -61,6 +61,18 @@ node notes/poetics/package-standalone.js notes/poetics/my-note.html
 ```
 For the arc specifically: `npm run poetics:package-arc`.
 
+## Publish the arc
+
+```bash
+npm run poetics:publish-arc -- --dry-run
+npm run poetics:publish-arc -- --publish
+```
+
+The publisher resolves `machinespirits-content-philosophy` beside the primary
+Git checkout, so it is safe to run from a linked worktree. Use
+`--dest-repo <path>` (or `MACHINESPIRITS_CONTENT_REPO`) only to override that
+canonical destination deliberately.
+
 ## Component vocabulary (CSS classes in techne.css)
 
 - **Layout**: `section.s` (a numbered section) → `.diag` grid of `.ml` (the giant `.s__num`), `.body`, `.mr` (a marginal `.note`). `.shell` wraps the sections; `.hero` is the masthead.
