@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-04T00:08:26.857Z",
+  "generated": "2026-08-04T01:37:55.030Z",
   "counts": {
-    "total": 372,
+    "total": 373,
     "byStatus": {
       "done": 228,
       "blocked": 5,
       "dropped": 4,
       "triaged": 11,
-      "active": 28,
+      "active": 29,
       "review": 92,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 68,
+      "experiment": 69,
       "infra": 73,
       "maintenance": 165,
       "content": 2,
@@ -738,6 +738,18 @@
         "adaptation",
         "casting"
       ]
+    },
+    {
+      "id": "adaptive-causality-wager-promotion",
+      "title": "Adaptive causality: wager promotion — does the staked send move the learner?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-04",
+      "updated": "2026-08-04",
+      "verification": "Registered before scoring: learner's next turn after the t2 demand, two outcomes (check-engagement; send-deferral), WAGER arm (licence on) vs HARNESS arm (licence off), pooled k=6/arm (3 recorded + 3 fresh under v7). PASS = wager >= 4/6 and harness <= 2/6 on check-engagement; leak column re-priced per licence rule. Null and reversed branches recorded as bounds."
     },
     {
       "id": "drama-world-public-object-reachability",
