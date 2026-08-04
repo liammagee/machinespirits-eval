@@ -7,12 +7,27 @@ priority: P1
 owner: claude
 source: manual
 created: 2026-08-03
-updated: 2026-08-03
-verification: "Pre-registered before any run: the crossed interaction —
-  action A beats B in state 1 AND B beats A in state 2 — on a transfer
-  outcome, with sensing, delivery, and outcome reported separately, against
-  fixed-A, fixed-B, random, and planted-state-oracle comparators. Null
-  branches written both ways."
+updated: 2026-08-04
+verification: "Terminal (PRs #453-455, paper v3.0.251-256): crossed
+  interaction present on ruled conduct in both worlds (exhibit right card
+  6/6 vs wrong 3/6; stake 5/6 vs 0/6; oracle 12/12, router 11/12) — the
+  registered PARTIAL: adaptation moves conduct, not learning. The transfer
+  column was then corrected twice: cold baselines showed the v1 probe read
+  persona identity, and the v2 episode-citation instrument (cold 0/10)
+  found teaching transfer robust and uniform once multi-sampled — the
+  single-draw probes had manufactured the arm differences. Stake-move
+  causal test null (pooled 3/7 vs 2/7 against the 4-vs-1 bar); the assay
+  world's zero closed as measured analogy distance plus identity crowding
+  (near-twin 3/15, far-twin 0/15, cold 0/5). Standing rules recorded:
+  multi-sample probes, cold baselines before any transfer claim. k=3 per
+  cell, two worlds, simulated learner."
+claim_status: scope-bound
+links:
+  prs:
+    - 453
+    - 454
+    - 455
+    - 460
 ---
 
 # Adaptive causality, phase 1: the crossed experiment
