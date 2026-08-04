@@ -6232,7 +6232,11 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
     const forced = CARD_FORCE_MAP.get(tutorTurn);
     const naturalCard = state.mannerSwitch.card;
     state.mannerSwitch.card =
-      forced === 'none' ? null : tutorStubMannerCard({ lastAdvance: { pressure: forced } }, cardOptions);
+      forced === 'none'
+        ? null
+        : forced.startsWith('quiet:')
+          ? tutorStubQuietStateCard(forced.slice(6))
+          : tutorStubMannerCard({ lastAdvance: { pressure: forced } }, cardOptions);
     if (recordTrace) {
       appendTraceEvent(state.trace, {
         type: 'tutor_card_force',
