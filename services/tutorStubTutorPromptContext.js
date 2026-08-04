@@ -1,4 +1,4 @@
-function tutorPromptSurfaceKey(value) {
+export function tutorPromptSurfaceKey(value) {
   return String(value || '')
     .replace(/\s+/gu, ' ')
     .trim();

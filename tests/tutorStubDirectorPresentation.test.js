@@ -178,17 +178,19 @@ test('real director context and reprise retain their exact no-model terminal byt
 test('the CLI retains director-state derivation, withholding, traces, terminal writes, and command ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDirectorPresentation.js'), 'utf8');
+  const openingSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubOpeningRuntime.js'), 'utf8');
   const commandSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCommandRuntime.js'), 'utf8');
-  const preludeSlice = cliSource.slice(
-    cliSource.indexOf('function printDirectorPreludeBeforeFirstTutor'),
-    cliSource.indexOf('const directorNotesIssuedSoFar'),
+  const preludeSlice = openingSource.slice(
+    openingSource.indexOf('function printDirectorPreludeBeforeFirstTutor'),
+    openingSource.indexOf('const directorNotesIssuedSoFar'),
   );
-  const notesSlice = cliSource.slice(
-    cliSource.indexOf('const directorNotesIssuedSoFar'),
-    cliSource.indexOf('function worldSpeakerDagPrompt'),
+  const notesSlice = openingSource.slice(
+    openingSource.indexOf('const directorNotesIssuedSoFar'),
+    openingSource.indexOf('function worldSpeakerDagPrompt'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubDirectorPresentation\.js';/u);
+  assert.match(cliSource, /from '\.\.\/services\/tutorStubOpeningRuntime\.js';/u);
   assert.match(preludeSlice, /state\.directorOpeningPresented = true/u);
   assert.match(preludeSlice, /appendTraceEvent/u);
   assert.match(notesSlice, /createTutorStubDirectorNotesModel/u);

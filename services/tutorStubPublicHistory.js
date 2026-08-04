@@ -149,6 +149,17 @@ export function buildTutorStubTutorMessageContext(messages, { modelRef = null, a
   };
 }
 
+export function latestTutorStubMessage(state) {
+  return [...(state?.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
+}
+
+export function tutorStubTutorMessageContext(state, history) {
+  return buildTutorStubTutorMessageContext(history, {
+    modelRef: state?.modelRef || null,
+    activatedBy: state?.tutorContext?.activatedBy || 'session_start',
+  });
+}
+
 export function renderTutorStubRawPublicTurnTranscript(turns, limit) {
   const publicTurns = Array.isArray(turns) ? turns : [];
   const safeLimit = Math.max(0, Number(limit) || 0);
@@ -225,4 +236,21 @@ export function projectTutorStubCompactPublicTranscript(
     rawTranscript,
     '[End raw recent public transcript]',
   ].join('\n\n');
+}
+
+export function compactTutorStubPublicTranscriptForPrompt(
+  state,
+  limit,
+  { includeAnalysis = true, defaultHistoryTurns = 0 } = {},
+) {
+  return projectTutorStubCompactPublicTranscript(state?.turns || [], limit, {
+    memoryEnabled: Boolean(state?.memory?.enabled),
+    historyTurns: state?.historyTurns ?? defaultHistoryTurns,
+    includeAnalysis,
+  });
+}
+
+export function createCompactTutorStubPublicTranscriptForPrompt({ defaultHistoryTurns = 0 } = {}) {
+  return (state, limit, options = {}) =>
+    compactTutorStubPublicTranscriptForPrompt(state, limit, { defaultHistoryTurns, ...options });
 }
