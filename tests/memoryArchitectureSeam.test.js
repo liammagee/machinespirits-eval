@@ -79,3 +79,30 @@ test('services/memory/ stores do not import tutor-core/ (eval pads stay standalo
       `See MEMORY-ARCHITECTURE.md §2/§5.`,
   );
 });
+
+test('the rich learner-memory reserve stays quarantined from production runtime imports', () => {
+  const productionRoots = ['services', 'routes', 'public', 'desktop', 'tutor-core'];
+  const offenders = [];
+  for (const root of productionRoots) {
+    for (const file of collectSources(path.join(ROOT, root))) {
+      if (file.endsWith(path.join('services', 'memory', 'learnerMemoryService.js'))) continue;
+      if (fs.readFileSync(file, 'utf8').includes('learnerMemoryService')) {
+        offenders.push(path.relative(ROOT, file));
+      }
+    }
+  }
+  assert.deepEqual(
+    offenders,
+    [],
+    `The rich memory reserve is not a production service. Unexpected runtime references:\n  ${offenders.join('\n  ')}`,
+  );
+
+  const experimentConsumers = collectSources(path.join(ROOT, 'scripts'))
+    .filter((file) => fs.readFileSync(file, 'utf8').includes('learnerMemoryService'))
+    .map((file) => path.relative(ROOT, file))
+    .sort();
+  assert.deepEqual(experimentConsumers, [
+    'scripts/run-rich-memory-arc-experiment.js',
+    'scripts/smoke-rich-memory-arc.js',
+  ]);
+});

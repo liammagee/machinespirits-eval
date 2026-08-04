@@ -109,10 +109,12 @@ if set (else `data/`). Disable both with `EVAL_WRITING_PAD_DISABLED=1` (the modu
 
 ## 3. Rich reserve (`learnerMemoryService`)
 
-The richest representation in the repo, and the likely base for a future "rich-canonical"
-architecture (Shape A). It has **no production consumer** today — it is wired only into the
-cross-session experiment (#3) and its own tests — but it is deliberately retained, not dead
-code (see the header note in the file and `MEMORY-ARCHITECTURE.md` §4).
+The richest representation in the repo, and a candidate base for a future
+"rich-canonical" architecture (Shape A). It is a **quarantined experimental reserve**,
+not a supported production service: only the cross-session experiment and hermetic smoke
+may import it, with contract/seam tests pinning that boundary. Importing the module is
+filesystem-pure; experiment owners explicitly open and close its SQLite lifecycle (legacy
+API calls lazy-open for compatibility). See `MEMORY-ARCHITECTURE.md` §4.
 
 **Schema** — ten tables (`learnerMemoryService.js:65+`), the load-bearing ones being:
 - `concept_states` — a **mastery ladder**: `level` in `unencountered` → `exposed` →
@@ -136,11 +138,14 @@ surface concepts whose memory should be refreshed.
 last session's summary, its unresolved question, active threads, concepts due for review, and
 a learning-style line derived from preferences — and returns it with a rough token count.
 
-**Storage**: its own `learner-memory.db` in `EVAL_WRITING_PAD_DIR` (else `data/`). It is
-self-contained and **seam-safe** — `services/memory/**` must not import `tutor-core/**`
-(enforced by `tests/memoryArchitectureSeam.test.js`); the `users(id)` foreign keys in the
-schema are decorative and disabled via `PRAGMA foreign_keys = OFF` (no users table in
-standalone mode).
+**Storage/lifecycle**: its own `learner-memory.db` in `LEARNER_MEMORY_DB_PATH`, then
+`EVAL_WRITING_PAD_DIR`, then `data/`. No path is created until
+`openLearnerMemoryStore()` or the first legacy API call. Call
+`closeLearnerMemoryStore()` before cleanup or path changes. It is self-contained and
+**seam-safe** — `services/memory/**` must not import `tutor-core/**` (enforced by
+`tests/memoryArchitectureSeam.test.js`); the `users(id)` foreign keys in the schema are
+decorative and disabled via `PRAGMA foreign_keys = OFF` (no users table in standalone
+mode).
 
 ---
 

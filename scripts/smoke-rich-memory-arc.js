@@ -43,6 +43,7 @@ process.env.EVAL_WRITING_PAD_DIR = TMP;
 delete process.env.EVAL_WRITING_PAD_DISABLED;
 
 const mem = await import('../services/memory/learnerMemoryService.js');
+mem.openLearnerMemoryStore();
 
 const CONCEPTS = ['fractions', 'ratios', 'decimals', 'proportions', 'percentages'];
 const LEVELS = ['exposed', 'developing', 'proficient', 'mastered'];
@@ -121,6 +122,7 @@ const lateCtx = mem.buildContextInjection(learnerId);
 if (!/due for review/i.test(lateCtx.narrativeSummary || ''))
   failures.push('expected spaced-repetition ("due for review") to surface in the injected narrative');
 
+mem.closeLearnerMemoryStore();
 if (!KEEP) fs.rmSync(TMP, { recursive: true, force: true });
 
 if (failures.length) {
