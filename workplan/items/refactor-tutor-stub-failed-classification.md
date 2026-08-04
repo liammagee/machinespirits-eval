@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-failed-classification
 title: Refactor tutor-stub failed classification fallback
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: eight focused classification assertions including the live terminal contract, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve conservative turn/overall fallbacks, route metadata, latency, usage, and fresh defaults
 branch: codex/refactor-tutor-stub-failed-classification
 claim_status: planned

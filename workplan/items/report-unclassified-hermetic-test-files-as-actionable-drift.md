@@ -2,13 +2,13 @@
 id: report-unclassified-hermetic-test-files-as-actionable-drift
 title: Report unclassified hermetic test files as actionable drift, not an
   internal failure
-status: review
+status: done
 type: infra
 priority: P3
 owner: claude
 source: manual
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-08-04
 verification: >-
   With an unclassified `routes/*.test.js` on disk, `npm run test:manifest`
   prints "Unable to synchronize hermetic test manifest: classified test manifest
@@ -30,7 +30,8 @@ verification: >-
   all pass.
 branch: claude/zealous-heyrovsky-357f4b
 links:
-  prs: []
+  prs:
+    - 324
   notes: []
   items:
     - hermetic-test-manifest-scanner-must-skip-gitignored-paths-ne
@@ -108,3 +109,5 @@ past the new catch.
   unscanned was the part worth the effort: both arrive as one list from the same
   set difference, and collapsing them would have printed "drop the entry" at
   someone whose real problem is a file git is ignoring.
+- 2026-08-04 — Review confirmed PR #324 merged the implementation; the focused
+  manifest suite still reports unclassified files as actionable drift.

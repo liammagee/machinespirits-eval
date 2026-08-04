@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-world-grouping
 title: Refactor tutor-stub world family grouping
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: World family keys and base-first grouping remain deep-equal while
   identity, immutability, catalogue hash, picker, focused, hermetic, manifest,
   static, and source-only gates pass.

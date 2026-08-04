@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-director-notes-model
 title: Refactor tutor-stub director notes model
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 7/7 including byte-exact live Marrick fixtures plus full hermetic root and tutor-core zero-skip contracts preserve opening withholding and issued scene notes; every static and source-only gate passes; strong benchmark same-response re-audit records 0 regressions and 0 safety changes
 branch: codex/refactor-tutor-stub-director-notes-model
 claim_status: planned

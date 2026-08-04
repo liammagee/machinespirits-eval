@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-debug-line-printers
 title: Refactor tutor-stub debug line printers
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 12 focused debug-identity assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve technical gating, turn/opening IDs, duplicate suppression, return values, and live color updates
 branch: codex/refactor-tutor-stub-debug-line-printers
 claim_status: planned

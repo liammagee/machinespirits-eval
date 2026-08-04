@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-fact-matching
 title: Refactor tutor-stub fact matching
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 5/5 plus full hermetic root and tutor-core zero-skip contracts preserve symbolic formatting, normalization, regex safety, and canonical fact equality; every static and source-only gate passes
 branch: codex/refactor-tutor-stub-fact-matching
 claim_status: planned

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-public-evidence
 title: Refactor tutor-stub public evidence model
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 7/7 plus full hermetic root and tutor-core zero-skip contracts preserve release selection, closure, answer terms, and guard-visible text; every static and source-only gate passes
 branch: codex/refactor-tutor-stub-public-evidence
 claim_status: planned

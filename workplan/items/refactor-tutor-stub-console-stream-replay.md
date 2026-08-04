@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-console-stream-replay
 title: Refactor tutor-stub console stream replay
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 8 focused speaker-transport assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve token boundaries, whitespace, nested interim selection, finish result, and empty-text behavior
 branch: codex/refactor-tutor-stub-console-stream-replay
 claim_status: planned

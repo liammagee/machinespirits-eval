@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-director-guidance-restoration
 title: Refactor tutor-stub director guidance restoration
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 15 focused command/director assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve latest-snapshot precedence, clear boundary, cloning, empty reset, restored flag, revision, and active status
 branch: codex/refactor-tutor-stub-director-guidance-restoration
 claim_status: planned

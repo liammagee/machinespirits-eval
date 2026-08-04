@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-side-arc-state
 title: Refactor tutor-stub side-arc state projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 49/49; hermetic root 7444/7444 across 549 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass
 branch: codex/refactor-tutor-stub-side-arc-state
 claim_status: planned

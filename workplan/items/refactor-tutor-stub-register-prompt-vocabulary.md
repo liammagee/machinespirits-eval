@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-register-prompt-vocabulary
 title: Refactor tutor-stub register prompt vocabulary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 26 focused register-palette and policy assertions, the zero-skip hermetic suite (7516 root plus tutor-core 137/137), and every static/source-only gate preserve stance summaries, request-type rows, JSON formatting, defaults, and fallbacks
 branch: codex/refactor-tutor-stub-register-prompt-vocabulary
 claim_status: planned

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-generous-fallback
 title: Refactor tutor-stub generous-inference fallback
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 14/14 plus full hermetic root and tutor-core zero-skip contracts preserve due, latest, and no-evidence fallback bytes; every static and source-only gate passes; strong benchmark same-response re-audit records 0 regressions and 0 safety changes
 branch: codex/refactor-tutor-stub-generous-fallback
 claim_status: planned

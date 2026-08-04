@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-turn-attempt-guard
 title: Refactor tutor-stub turn-attempt guard
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 3 focused turn-attempt assertions, synchronized hermetic manifest, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve error identity, signal precedence, callback short-circuiting, call count, and no-op behavior
 branch: codex/refactor-tutor-stub-turn-attempt-guard
 claim_status: planned

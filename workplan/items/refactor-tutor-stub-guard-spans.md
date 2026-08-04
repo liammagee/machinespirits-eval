@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-guard-spans
 title: Refactor tutor-stub guard spans
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 26/26; hermetic root 7431/7431 across 546 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass
 branch: codex/refactor-tutor-stub-guard-spans
 claim_status: planned

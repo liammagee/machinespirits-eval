@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-strict-dag-audit
 title: Refactor tutor-stub strict DAG audit state
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 48/48; hermetic root 7450/7450 across 551 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass
 branch: codex/refactor-tutor-stub-strict-dag-audit
 claim_status: planned

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-one-line-projection
 title: Refactor tutor-stub one-line projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 5/5 plus full hermetic root and tutor-core zero-skip contracts preserve whitespace, budget, truncation, and fallback bytes across every existing caller; every static and source-only gate passes
 branch: codex/refactor-tutor-stub-one-line-projection
 claim_status: planned

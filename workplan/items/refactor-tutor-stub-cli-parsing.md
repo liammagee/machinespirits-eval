@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-cli-parsing
 title: Refactor tutor-stub CLI parsing
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 6/6 CLI parsing fixtures plus full hermetic root and tutor-core zero-skip contracts preserve coercion, bounds, auto-turn aliases, lists, and error wording; every static and source-only gate passes
 branch: codex/refactor-tutor-stub-cli-parsing
 claim_status: planned

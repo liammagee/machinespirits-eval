@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-world-vocabulary
 title: Refactor tutor-stub world presentation vocabulary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: Authored ledger and narrative-flavour labels remain byte-exact
   across direct, prompt, response-policy, focused, hermetic, static, manifest,
   and source-only gates.
@@ -18,6 +18,7 @@ depends_on:
 links:
   prs:
     - 342
+    - 349
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -71,3 +72,5 @@ Log:
   the zero-cycle ratchet across 420 files also pass.
 - 2026-07-28 — Opened dependent PR #342 on PR #341's branch with no managed ref
   or version impact.
+- 2026-08-04 — Review confirmed the stacked implementation reached `main`
+  through consolidated PR #349 after dependent PR #342 was closed unmerged.

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-learner-public-evidence-state
 title: Refactor tutor-stub learner public evidence state
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 9 focused public-evidence assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve staged-evidence and release-ledger aliases, shared-reference behavior, and empty-input behavior
 branch: codex/refactor-tutor-stub-learner-public-evidence-state
 claim_status: planned

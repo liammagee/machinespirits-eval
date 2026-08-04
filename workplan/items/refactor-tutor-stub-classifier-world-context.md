@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-classifier-world-context
 title: Refactor tutor-stub classifier world context
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: five focused learner-classifier assertions including the live terminal contract, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve fallback, public fields, optional discipline, setting trimming, and hidden-DAG disclosure
 branch: codex/refactor-tutor-stub-classifier-world-context
 claim_status: planned

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-stack-recovery
 title: Recover orphaned tutor-stub refactor stack
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: The seven preserved slices pass focused, full hermetic, manifest,
   static, source-only workplan, ref-status, syntax, and diff gates on current
   origin/main ancestry.

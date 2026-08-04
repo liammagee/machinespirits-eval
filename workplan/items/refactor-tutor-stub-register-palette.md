@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-register-palette
 title: Refactor tutor-stub register palette
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: Register palette modes and diagnostics remain exact across
   direct, live, focused, hermetic, manifest, static, and source-only gates.
 branch: codex/refactor-tutor-stub-register-palette

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-recipe-model-identity
 title: Refactor tutor-stub recipe model identity
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 15/15 recipe fixtures including three model-identity contracts plus full hermetic root and tutor-core zero-skip contracts preserve URL sanitization, lazy route resolution, identity fields, and routing hashes; every static and source-only gate passes
 branch: codex/refactor-tutor-stub-recipe-model-identity
 claim_status: planned

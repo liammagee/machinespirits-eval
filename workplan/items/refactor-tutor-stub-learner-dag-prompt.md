@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-learner-dag-prompt
 title: Refactor tutor-stub learner-DAG prompt summary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: five focused learner-DAG assertions including the live terminal contract, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve null fallback, bounded history, record fields, and JSON shape
 branch: codex/refactor-tutor-stub-learner-dag-prompt
 claim_status: planned

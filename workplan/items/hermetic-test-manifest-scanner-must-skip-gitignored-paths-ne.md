@@ -1,13 +1,13 @@
 ---
 id: hermetic-test-manifest-scanner-must-skip-gitignored-paths-ne
 title: Skip gitignored paths when scanning for hermetic test-manifest drift
-status: review
+status: done
 type: infra
 priority: P3
 owner: claude
 source: manual
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-08-04
 verification: >-
   With two nested `.claude/worktrees/<name>/` checkouts on disk, `npm run
   test:manifest` reports 88 KB of false drift before the change and
@@ -24,7 +24,8 @@ verification: >-
   lint, prettier, refs:check, lint:cycles, and workplan validation pass.
 branch: claude/zealous-heyrovsky-357f4b
 links:
-  prs: []
+  prs:
+    - 305
   notes: []
   items:
     - hermetic-tap-summary-on-forced-exit
@@ -127,3 +128,5 @@ untouched, and worth a separate look.
   repository came first and is what made the swap safe to make: had the two
   enumerations disagreed anywhere but `.claude/`, the right fix would have been
   the narrower denylist entry instead.
+- 2026-08-04 — Review confirmed PR #305 merged the implementation; the focused
+  manifest suite still passes the ignored-worktree and genuine-drift cases.

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-interim-dag-movement
 title: Refactor tutor-stub interim DAG movement summary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 17 focused interim-presentation assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve feature deltas, direction/plurality, turn selection, conclusion states, and no-movement fallback
 branch: codex/refactor-tutor-stub-interim-dag-movement
 claim_status: planned
