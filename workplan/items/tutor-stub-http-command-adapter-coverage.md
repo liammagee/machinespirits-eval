@@ -1,13 +1,14 @@
 ---
 id: tutor-stub-http-command-adapter-coverage
 title: Widen tutor-stub HTTP slash-command coverage per command
-status: triaged
+status: review
 type: infra
 priority: P2
-owner: unassigned
+owner: codex
 source: review
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-08-05
+branch: codex/tutor-stub-http-command-adapters
 verification: Each newly opened command runs over the process-backed HTTP
   transport with self-contained output and no TTY interaction, keeps its
   terminal-only side effects blocked, and has a test that fails if the
@@ -18,8 +19,12 @@ links:
   code:
     - services/tutorStubCommandRegistry.js
     - services/tutorStubProcessSessionFactory.js
+    - services/tutorStubTerminalText.js
     - services/evalSurfaces.js
     - scripts/tutor-stub-remote.js
+    - desktop/tutorStubAcceptanceScenario.mjs
+    - tests/tutorStubProcessSessionHttp.test.js
+    - tests/tutorStubRemoteDriver.test.js
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/306
   items:
@@ -33,8 +38,8 @@ tags:
 milestone: distribution
 ---
 
-Only 3 of 65 slash commands run over the process-backed HTTP transport:
-`/module`, `/next`, `/progress`. The other 62 are rejected with
+Before this slice, only 3 of 65 slash commands ran over the process-backed HTTP
+transport: `/module`, `/next`, `/progress`. The other 62 were rejected with
 `command_transport_unavailable` and reason `adapter_unavailable`.
 
 Measured on 2026-07-27, the admitted set is the same whether the mount allows
@@ -77,3 +82,25 @@ check and a one-line change). Do not flip in bulk.
 
 `automate-browser-and-packaged-electron-tutor-stub-acceptance` calls itself the
 parity gate required before tutor-stub command extraction. Land that first.
+
+## Log
+
+- 2026-08-05 — Ready for review with the first per-command slice. `/status` and
+  `/help` now join `/module`, `/next`, and `/progress` on the structured HTTP
+  adapter, growing the admitted set from 3/65 to 5/65. The remaining 60 commands
+  still fail closed; `/settings` is pinned as a representative terminal-only
+  rejection. HTTP output is sanitized once at the process-session boundary, so
+  browser and remote clients receive self-contained text without ANSI, OSC, or
+  carriage-return controls while the CLI retains its terminal presentation.
+  The focused registry/HTTP/remote/contract suite passed 51/51, including proof
+  that the commands add no learner/tutor turn or public-message state. The
+  shared real browser and unsigned packaged-Electron acceptance lanes then
+  drove both new commands through the keyboard UI, retained the 409
+  terminal-only boundary, and passed on
+  Electron 43.2.0 / Chromium 150.0.7871.129 in 5.164s and 6.779s respectively.
+  Both used the deterministic fake provider and made 0 paid model calls.
+- 2026-08-05 — Activated from `origin/main` after PR #481 merged and the shared
+  web/packaged acceptance gate passed. The first bounded slice is `/status` and
+  `/help`: both are read-only, self-contained terminal projections with no
+  picker or keypress path. All commands with browser, voice, relaunch, picker,
+  file-write, model-call, session-clear, or process-exit risk remain blocked.

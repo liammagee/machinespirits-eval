@@ -1,13 +1,13 @@
 ---
 id: measure-silent-drop-rate-in-the-grounding-validator
 title: Measure the silent-drop rate in the evidence-ledger grounding validator
-status: review
+status: done
 type: research
 priority: P2
 owner: codex
 source: daily-routine
 created: 2026-07-20
-updated: 2026-08-04
+updated: 2026-08-05
 branch: codex/measure-grounding-validator-silent-drop
 verification: >-
   Existing cell-127/128 traces are audited without model calls; exact legacy
@@ -18,6 +18,8 @@ verification: >-
   proposal/drop/citation events are exercised by tests plus a mock smoke.
 claim_status: scope-bound
 links:
+  prs:
+    - 480
   notes:
     - notes/daily-notes/2026-07-20-research-roundup.html
     - notes/research-plans/2026-07-27-research-plan.html
@@ -77,6 +79,10 @@ sign-off first.
 
 ## Log
 
+- 2026-08-05 — PR #480 merged as `bd56f2f5`; the verified scope-bound result,
+  prospective audit events, analyzer, tests, and no-cost mock smoke are now on
+  `main`. The merged worktree and local/remote feature branches were removed
+  after ancestry and clean-worktree verification.
 - 2026-08-04 — Ready for review. The zero-model audit covered all 67 completed
   cell-127/128 dialogues (134 original/counterfactual branches; no trace
   attrition). Historical raw decisions are absent, so the exact silent-drop

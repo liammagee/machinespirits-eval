@@ -278,10 +278,10 @@ test('the CLI imports rather than redeclares director-guidance restoration', () 
   assert.doesNotMatch(source, /function restoreDirectorGuidanceState\(/u);
 });
 
-test('v9 command registry freezes the slash-token and execution-effect surfaces', () => {
+test('v10 command registry freezes the slash-token and execution-effect surfaces', () => {
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.schema, TUTOR_STUB_COMMAND_REGISTRY_SCHEMA);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.version, TUTOR_STUB_COMMAND_REGISTRY_VERSION);
-  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 9);
+  assert.equal(TUTOR_STUB_COMMAND_REGISTRY_VERSION, 10);
   assert.equal(TUTOR_STUB_COMMAND_REGISTRY.commands.length, 48);
   assert.equal(TUTOR_STUB_NORMAL_SLASH_COMMANDS.length, 65);
   assert.equal(TUTOR_STUB_PASSTHROUGH_SLASH_COMMANDS.length, 23);
@@ -493,9 +493,11 @@ test('transport metadata classifies picker, browser, voice, and relaunch side ef
   assert.equal(tutorStubCommandTransportMetadata('/module').processHttp, 'adapter_available');
   assert.equal(tutorStubCommandTransportMetadata('/next').processHttp, 'adapter_available');
   assert.equal(tutorStubCommandTransportMetadata('/progress').processHttp, 'adapter_available');
+  assert.equal(tutorStubCommandTransportMetadata('/status').processHttp, 'adapter_available');
+  assert.equal(tutorStubCommandTransportMetadata('/help').processHttp, 'adapter_available');
   assert.deepEqual(tutorStubCommandTransportMetadata('/proof').effects, []);
   assert.deepEqual(tutorStubCommandTransportMetadata('/lab').effects, ['relaunch_instruction']);
-  assert.equal(tutorStubCommandTransportMetadata('/status').processHttp, 'blocked_pending_adapter');
+  assert.equal(tutorStubCommandTransportMetadata('/settings').processHttp, 'blocked_pending_adapter');
   assert.equal(tutorStubCommandTransportMetadata('/not-a-command'), null);
 });
 
@@ -585,23 +587,16 @@ test('execution effects conservatively classify every command before transport e
 });
 
 test('process HTTP admission fails closed for missing metadata and disallowed effects', () => {
-  assert.deepEqual(tutorStubCommandTransportAdmission('/status'), {
+  assert.deepEqual(tutorStubCommandTransportAdmission('/features'), {
     allowed: false,
     reason: 'adapter_unavailable',
-    commandId: 'status',
+    commandId: 'features',
     activeEffects: [],
     disallowedEffects: [],
     detail: null,
   });
 
-  const structuredStatus = {
-    ...resolveTutorStubCommand('/status'),
-    transport: {
-      ...resolveTutorStubCommand('/status').transport,
-      processHttp: 'adapter_available',
-      noninteractiveAdapter: 'structured',
-    },
-  };
+  const structuredStatus = resolveTutorStubCommand('/status');
   assert.equal(evaluateTutorStubCommandTransportAdmission(structuredStatus).allowed, true);
   assert.equal(
     evaluateTutorStubCommandTransportAdmission({

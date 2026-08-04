@@ -143,6 +143,7 @@ test('session pointer round-trips through the env-overridable state dir', () => 
 test('strips terminal control sequences from command output', () => {
   const esc = String.fromCharCode(27);
   assert.equal(stripTerminalControl(`${esc}[2Kcourse progress${esc}[0m`), 'course progress');
+  assert.equal(stripTerminalControl(`status\r${esc}]0;private title\u0007\nready`), 'status\nready');
   assert.equal(stripTerminalControl('plain text'), 'plain text');
   assert.equal(stripTerminalControl(null), '');
 });
@@ -155,7 +156,7 @@ test('cmd parses --list and a command token', () => {
 
 test('admissible commands are exactly those with a structured adapter', () => {
   const admissible = remoteAdmissibleCommands();
-  assert.ok(admissible.length > 0, 'expected at least one adapter-backed command');
+  assert.deepEqual(admissible.toSorted(), ['/help', '/module', '/next', '/progress', '/status']);
   for (const token of admissible) {
     const definition = resolveTutorStubCommand(token);
     assert.equal(definition.transport.processHttp, 'adapter_available');

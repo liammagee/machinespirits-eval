@@ -7,8 +7,8 @@ import {
 import { TUTOR_STUB_CURRICULUM_TRANSLATION_LEVELS } from './tutorStubCurriculumTranslation.js';
 import { TUTOR_STUB_VOICE_MODELS } from './tutorStubVoiceBridge.js';
 
-export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v9';
-export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 9;
+export const TUTOR_STUB_COMMAND_REGISTRY_SCHEMA = 'machinespirits.tutor-stub.command-registry.v10';
+export const TUTOR_STUB_COMMAND_REGISTRY_VERSION = 10;
 export const TUTOR_STUB_COMMAND_MODES = Object.freeze(['normal', 'passthrough']);
 export const TUTOR_STUB_COMMAND_TRANSPORT_EFFECTS = Object.freeze([
   'terminal_picker',
@@ -673,7 +673,13 @@ const COMMANDS = [
     },
     transportEffects: ['terminal_picker'],
   }),
-  command({ id: 'status', token: '/status', passthroughOrder: 4, sceneReturnOrder: 6 }),
+  command({
+    id: 'status',
+    token: '/status',
+    passthroughOrder: 4,
+    sceneReturnOrder: 6,
+    noninteractiveAdapter: 'structured',
+  }),
   command({ id: 'features', token: '/features', passthroughOrder: 5, sceneReturnOrder: 7 }),
   command({
     id: 'release_notes',
@@ -762,7 +768,13 @@ const COMMANDS = [
   command({ id: 'use', token: '/use', aliases: ['/accept'] }),
   command({ id: 'regen', token: '/regen' }),
   command({ id: 'reset', token: '/reset', aliases: ['/clear'], passthroughOrder: 12 }),
-  command({ id: 'help', token: '/help', passthroughOrder: 13, sceneReturnOrder: 0 }),
+  command({
+    id: 'help',
+    token: '/help',
+    passthroughOrder: 13,
+    sceneReturnOrder: 0,
+    noninteractiveAdapter: 'structured',
+  }),
   command({ id: 'quit', token: '/quit', aliases: ['/exit'], passthroughOrder: 14 }),
   command({
     id: 'lab',

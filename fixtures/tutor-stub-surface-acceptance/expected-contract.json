@@ -10,6 +10,8 @@
     "reconnected": true,
     "savedTraceResumed": true,
     "learnerTurnCompleted": true,
+    "statusCommandCompleted": true,
+    "helpCommandCompleted": true,
     "terminalCommandRejected": true,
     "publicTraceExported": true,
     "reset": true,
@@ -35,6 +37,7 @@
     "privateModelTraceIncluded": false,
     "credentialCanaryAbsent": true,
     "privatePromptCanaryAbsent": true,
+    "commandOutputAnsiAbsent": true,
     "ansiAbsent": true
   },
   "boundaries": {

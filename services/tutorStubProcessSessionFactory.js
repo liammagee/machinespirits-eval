@@ -12,6 +12,7 @@ import { createTutorStubSessionHost, TutorStubSessionHostError } from './tutorSt
 import { normalizeTutorStubResumeTrace } from './tutorStubSessionRecipe.js';
 import { TUTOR_STUB_SESSION_RPC_SCHEMA, TUTOR_STUB_SESSION_RPC_VERSION } from './tutorStubSessionRpc.js';
 import { TUTOR_STUB_SESSION_RUNTIME_SCHEMA, TUTOR_STUB_SESSION_RUNTIME_VERSION } from './tutorStubSessionRuntime.js';
+import { stripTutorStubTerminalControl } from './tutorStubTerminalText.js';
 
 export const TUTOR_STUB_PROCESS_SESSION_SCHEMA = 'machinespirits.tutor-stub.process-session.v1';
 export const TUTOR_STUB_PROCESS_SESSION_VERSION = 1;
@@ -826,7 +827,7 @@ export function createTutorStubProcessSessionFactory({
             command: {
               id: admission.commandId || null,
               input: String(input || '').trim(),
-              output: output.trim(),
+              output: stripTutorStubTerminalControl(output).trim(),
             },
           };
         }

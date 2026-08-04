@@ -1,7 +1,7 @@
 ---
 id: automate-browser-and-packaged-electron-tutor-stub-acceptance
 title: Automate browser and packaged Electron tutor-stub acceptance
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -103,3 +103,6 @@ Acceptance:
   `web-2026-08-04T14-41-48-434Z-75963` and
   `packaged-electron-2026-08-04T14-43-09-807Z-77218`; the apparent date offset
   is UTC artifact naming for the 2026-08-05 Melbourne workday.
+- 2026-08-05 — PR #481 merged as `e5fbca0f`; all required GitHub checks passed.
+  The merged worktree and local/remote feature branches were removed after
+  ancestry and clean-worktree verification.

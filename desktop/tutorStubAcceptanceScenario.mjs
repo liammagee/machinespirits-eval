@@ -343,6 +343,26 @@ export async function runTutorStubSurfaceAcceptance({
     if (reconnectedId !== firstSessionId) throw new Error('page reload reconnected to a different session');
     record('session-reconnected');
 
+    await keyboardSendMessage(win, '/status');
+    await waitFor(
+      win,
+      `document.querySelector('#app-status')?.textContent === '/status complete.' && document.querySelector('#transcript')?.textContent.includes('session status >') && document.querySelector('#transcript')?.textContent.includes('speaker model:')`,
+      'HTTP status command',
+    );
+    const statusCommandOutput = await evaluate(win, `document.querySelector('#transcript')?.textContent || ''`);
+    const statusCommandPlain = !statusCommandOutput.includes('\u001b') && !statusCommandOutput.includes('\r');
+    record('status-command-completed', { plainText: statusCommandPlain });
+
+    await keyboardSendMessage(win, '/help');
+    await waitFor(
+      win,
+      `document.querySelector('#app-status')?.textContent === '/help complete.' && document.querySelector('#transcript')?.textContent.includes('passthrough commands')`,
+      'HTTP help command',
+    );
+    const helpCommandOutput = await evaluate(win, `document.querySelector('#transcript')?.textContent || ''`);
+    const helpCommandPlain = !helpCommandOutput.includes('\u001b') && !helpCommandOutput.includes('\r');
+    record('help-command-completed', { plainText: helpCommandPlain });
+
     await keyboardSendMessage(win, '/settings');
     await waitFor(
       win,
@@ -477,6 +497,9 @@ export async function runTutorStubSurfaceAcceptance({
         reconnected: reconnectedId === firstSessionId,
         savedTraceResumed: resumed.payload.session.state.turnCount === 1,
         learnerTurnCompleted: afterTurn.payload.session.state.turnCount === 1,
+        statusCommandCompleted:
+          statusCommandOutput.includes('session status >') && statusCommandOutput.includes('speaker model:'),
+        helpCommandCompleted: helpCommandOutput.includes('passthrough commands'),
         terminalCommandRejected: terminalCommand.status === 409,
         publicTraceExported: fs.existsSync(publicExportPath),
         reset: reset.payload.session.counters.resets === 1,
@@ -502,6 +525,7 @@ export async function runTutorStubSurfaceAcceptance({
         privateModelTraceIncluded: privacy.privateModelTraceIncluded,
         credentialCanaryAbsent,
         privatePromptCanaryAbsent,
+        commandOutputAnsiAbsent: statusCommandPlain && helpCommandPlain,
         ansiAbsent: !publicExportText.includes('\u001b['),
       },
       boundaries: {
