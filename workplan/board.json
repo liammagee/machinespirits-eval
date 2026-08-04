@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-04T22:18:10.803Z",
+  "generated": "2026-08-04T22:25:09.270Z",
   "counts": {
     "total": 398,
     "byStatus": {
-      "done": 365,
+      "done": 366,
       "blocked": 7,
       "dropped": 4,
-      "triaged": 8,
-      "review": 3,
+      "triaged": 7,
       "active": 7,
+      "review": 3,
       "archived": 4
     },
     "byType": {
@@ -117,35 +117,6 @@
         "adaptation",
         "casting"
       ]
-    },
-    {
-      "id": "decide-rich-learner-memory-service-retention",
-      "title": "Decide and verify the retained rich learner-memory service",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "The rich learner-memory service has an explicit supported or quarantined status; if supported, hermetic schema and CRUD tests cover its public contract and import-time storage is safely relocated.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "notes": [
-          "MEMORY-ARCHITECTURE.md"
-        ],
-        "code": [
-          "services/memory/learnerMemoryService.js"
-        ]
-      },
-      "tags": [
-        "learner-memory",
-        "architecture",
-        "sqlite",
-        "testing"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "program-2-iterated-exhaust-retrain",
@@ -895,37 +866,37 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "audit-tutor-prompts-for-user-agency-and-control-parity",
-      "title": "Audit tutor prompts for user agency and control parity",
+      "id": "decide-rich-learner-memory-service-retention",
+      "title": "Decide and verify the retained rich learner-memory service",
       "status": "review",
-      "type": "research",
+      "type": "maintenance",
       "priority": "P2",
       "owner": "codex",
-      "source": "daily-routine",
-      "created": "2026-08-03",
+      "source": "review",
+      "created": "2026-07-22",
       "updated": "2026-08-05",
-      "branch": "codex/audit-tutor-prompt-agency-parity",
-      "verification": "Every active tutor ego and superego prompt variant is scored on a frozen user-agency and control checklist; recognition and placebo prompts are compared on the same dimensions; discrepancies, exclusions, and any proposed prompt changes are reported without modifying an experimental prompt before a prospective decision.",
-      "claim_status": "scope-bound",
+      "branch": "codex/decide-rich-learner-memory-retention",
+      "verification": "The rich learner-memory service has an explicit supported or quarantined status; if supported, hermetic schema and CRUD tests cover its public contract and import-time storage is safely relocated.",
+      "claim_status": "planned",
+      "depends_on": [],
       "links": {
-        "code": [
-          "config/tutor-prompt-agency-audit-v1.yaml",
-          "scripts/audit-tutor-prompt-agency.js",
-          "tests/tutorPromptAgencyAudit.test.js"
-        ],
         "notes": [
-          "notes/daily-notes/2026-08-03-research-roundup.html",
-          "notes/2026-08-05-tutor-prompt-agency-control-audit.md"
+          "MEMORY-ARCHITECTURE.md",
+          "MEMORY-MECHANISMS.md"
         ],
-        "items": [
-          "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro"
+        "code": [
+          "services/memory/learnerMemoryService.js",
+          "scripts/run-rich-memory-arc-experiment.js",
+          "scripts/smoke-rich-memory-arc.js",
+          "tests/learnerMemoryService.test.js",
+          "tests/memoryArchitectureSeam.test.js"
         ]
       },
       "tags": [
-        "prompts",
-        "user-agency",
-        "placebo-control",
-        "audit"
+        "learner-memory",
+        "architecture",
+        "sqlite",
+        "testing"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -9849,6 +9820,43 @@
         "trap-scenarios"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "audit-tutor-prompts-for-user-agency-and-control-parity",
+      "title": "Audit tutor prompts for user agency and control parity",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "daily-routine",
+      "created": "2026-08-03",
+      "updated": "2026-08-05",
+      "verification": "Every active tutor ego and superego prompt variant is scored on a frozen user-agency and control checklist; recognition and placebo prompts are compared on the same dimensions; discrepancies, exclusions, and any proposed prompt changes are reported without modifying an experimental prompt before a prospective decision.",
+      "claim_status": "scope-bound",
+      "links": {
+        "code": [
+          "config/tutor-prompt-agency-audit-v1.yaml",
+          "scripts/audit-tutor-prompt-agency.js",
+          "tests/tutorPromptAgencyAudit.test.js"
+        ],
+        "notes": [
+          "notes/daily-notes/2026-08-03-research-roundup.html",
+          "notes/2026-08-05-tutor-prompt-agency-control-audit.md"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/485"
+        ],
+        "items": [
+          "perspectivegap-a-benchmark-for-multi-agent-orchestration-pro"
+        ]
+      },
+      "tags": [
+        "prompts",
+        "user-agency",
+        "placebo-control",
+        "audit"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "auto-drop-daily-routine",
