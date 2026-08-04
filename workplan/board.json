@@ -1,13 +1,13 @@
 {
-  "generated": "2026-08-04T22:35:39.372Z",
+  "generated": "2026-08-04T22:48:44.336Z",
   "counts": {
     "total": 398,
     "byStatus": {
       "done": 366,
       "blocked": 7,
       "dropped": 4,
-      "triaged": 7,
-      "active": 7,
+      "triaged": 6,
+      "active": 8,
       "review": 3,
       "archived": 4
     },
@@ -42,28 +42,6 @@
         "tutor-stub",
         "prereg",
         "outcome"
-      ]
-    },
-    {
-      "id": "tutor-fallible-learner-closure-prereg",
-      "title": "Pre-registration: restore variance to legitimate closure with a learner that can fail",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-30",
-      "updated": "2026-07-30",
-      "verification": "Phase A runs bare-tutor only and is exploratory. Before the first paid Phase B call: the in-band cells and their profiles are frozen in a dated log entry here, and a 5-dialogue contract smoke on one in-band cell shows zero aborted dialogues. The run itself is attended and checkpointed.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-contract-outcome-prereg"
-      ],
-      "tags": [
-        "tutor-stub",
-        "prereg",
-        "outcome",
-        "learner"
       ]
     },
     {
@@ -457,6 +435,28 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "tutor-fallible-learner-closure-prereg",
+      "title": "Pre-registration: restore variance to legitimate closure with a learner that can fail",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-30",
+      "updated": "2026-08-05",
+      "verification": "Phase A runs bare-tutor only and is exploratory. Before the first paid Phase B call: the in-band cells and their profiles are frozen in a dated log entry here, and a 5-dialogue contract smoke on one in-band cell shows zero aborted dialogues. The run itself is attended and checkpointed.",
+      "claim_status": "methods",
+      "depends_on": [
+        "tutor-contract-outcome-prereg"
+      ],
+      "tags": [
+        "tutor-stub",
+        "prereg",
+        "outcome",
+        "learner"
+      ]
     },
     {
       "id": "guard-ladder-ships-canned-text-on-most-turns",
