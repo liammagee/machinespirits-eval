@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T13:04:23.545Z",
+  "generated": "2026-08-04T13:14:50.968Z",
   "counts": {
     "total": 397,
     "byStatus": {
@@ -7,9 +7,9 @@
       "blocked": 6,
       "dropped": 4,
       "triaged": 11,
-      "active": 9,
+      "active": 8,
       "archived": 4,
-      "review": 3
+      "review": 4
     },
     "byType": {
       "research": 71,
@@ -513,42 +513,6 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "transcript-archive-training-data-governance",
-      "title": "Govern transcript archives, ratings, and reusable training corpora",
-      "status": "active",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "branch": "codex/transcript-archive-management-plan",
-      "source": "manual",
-      "created": "2026-07-25",
-      "updated": "2026-07-25",
-      "verification": "A clean-room build resolves every source through the private asset catalog, reproduces or exception-documents Program-2 v1, honors sole-owner opt-outs while excluding external/unknown human data and holdouts, emits row-level lineage and immutable manifests, and refuses unapproved training inputs.",
-      "claim_status": "methods",
-      "links": {
-        "notes": [
-          "docs/transcript-archive-and-training-data-management.md",
-          "PROGRAM-2-FINETUNE-PLAN.md",
-          "PROGRAM-2-PHASE2-PREREGISTRATION.md"
-        ],
-        "items": [
-          "program-2-context-vs-weights-finetune",
-          "consolidate-logs-db-private-archive",
-          "adaptive-eval-immutable-provenance",
-          "impasse-corpus-phase1",
-          "a1-human-learner-validation"
-        ]
-      },
-      "tags": [
-        "data-governance",
-        "transcripts",
-        "fine-tuning",
-        "tutor-stub",
-        "provenance",
-        "privacy"
-      ]
-    },
-    {
       "id": "tutor-stub-latency-routing-optimization",
       "title": "Optimize tutor-stub foreground latency with attributable routing experiments",
       "status": "active",
@@ -979,6 +943,42 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "transcript-archive-training-data-governance",
+      "title": "Govern transcript archives, ratings, and reusable training corpora",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "branch": "codex/transcript-archive-training-data-governance",
+      "source": "manual",
+      "created": "2026-07-25",
+      "updated": "2026-08-04",
+      "verification": "A clean-room build resolves every source through the private asset catalog, reproduces or exception-documents Program-2 v1, honors sole-owner opt-outs while excluding external/unknown human data and holdouts, emits row-level lineage and immutable manifests, and refuses unapproved training inputs.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "docs/transcript-archive-and-training-data-management.md",
+          "PROGRAM-2-FINETUNE-PLAN.md",
+          "PROGRAM-2-PHASE2-PREREGISTRATION.md"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune",
+          "consolidate-logs-db-private-archive",
+          "adaptive-eval-immutable-provenance",
+          "impasse-corpus-phase1",
+          "a1-human-learner-validation"
+        ]
+      },
+      "tags": [
+        "data-governance",
+        "transcripts",
+        "fine-tuning",
+        "tutor-stub",
+        "provenance",
+        "privacy"
+      ]
     },
     {
       "id": "tutor-stub-fallback-register-and-uptake-guard",
