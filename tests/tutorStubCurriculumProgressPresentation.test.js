@@ -84,6 +84,10 @@ test('the CLI retains public projection, return values, and terminal ownership w
     path.join(ROOT, 'services', 'curriculum', 'tutorStubCurriculumProgressPresentation.js'),
     'utf8',
   );
+  const compositionSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveApplicationComposition.js'),
+    'utf8',
+  );
   const controllerSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubInteractiveSessionController.js'),
     'utf8',
@@ -96,7 +100,8 @@ test('the CLI retains public projection, return values, and terminal ownership w
     ),
   );
 
-  assert.match(cliSource, /createTutorStubInteractiveSessionController/u);
+  assert.match(cliSource, /createTutorStubInteractiveApplicationComposition/u);
+  assert.match(compositionSource, /createTutorStubInteractiveSessionController/u);
   assert.match(progressSlice, /curriculumProgressSnapshot/u);
   assert.match(progressSlice, /projectTutorStubCurriculumProgressLines/u);
   assert.match(progressSlice, /console\.log/u);

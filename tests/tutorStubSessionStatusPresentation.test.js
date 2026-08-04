@@ -191,6 +191,10 @@ test('real normal and passthrough /status commands preserve exact no-model termi
 
 test('the CLI retains status state derivation, helper calls, slash dispatch, and terminal ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  const compositionSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveApplicationComposition.js'),
+    'utf8',
+  );
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubSessionStatusPresentation.js'), 'utf8');
   const commandSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCommandRuntime.js'), 'utf8');
   const controllerSource = fs.readFileSync(
@@ -202,8 +206,9 @@ test('the CLI retains status state derivation, helper calls, slash dispatch, and
     controllerSource.indexOf('function queueCoachGuidance'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubSessionStatusPresentation\.js';/u);
-  assert.match(cliSource, /createTutorStubInteractiveSessionController/u);
+  assert.match(cliSource, /createTutorStubInteractiveApplicationComposition/u);
+  assert.match(compositionSource, /from '\.\/tutorStubSessionStatusPresentation\.js';/u);
+  assert.match(compositionSource, /createTutorStubInteractiveSessionController/u);
   assert.match(statusSlice, /state\.passthrough\?\.enabled/u);
   assert.match(statusSlice, /tutorStubDagFactDropoutSnapshot/u);
   assert.match(statusSlice, /tutorStubReleasePacingSnapshot/u);

@@ -323,11 +323,15 @@ test('the entrypoint binds learner evidence and prompt-context owners without lo
     path.join(ROOT, 'services', 'tutorStubInteractiveLearnerRuntime.js'),
     'utf8',
   );
+  const compositionSource = fs.readFileSync(
+    path.join(ROOT, 'services', 'tutorStubInteractiveApplicationComposition.js'),
+    'utf8',
+  );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubTutorPromptContext\.js';/u);
   assert.match(cliSource, /projectTutorStubLearnerDagModelContext as tutorLearnerDagModelContext/u);
   assert.match(cliSource, /projectTutorStubHumanDiscourseContext as humanDiscourseTutorContext/u);
-  assert.match(cliSource, /projectTutorStubDialogueClosureContext as dialogueClosureTutorContext/u);
+  assert.match(compositionSource, /projectTutorStubDialogueClosureContext as dialogueClosureTutorContext/u);
   assert.match(cliSource, /\btutorPromptSurfaceKey,/u);
   assert.match(cliSource, /createTutorStubLearnerDagState as createLearnerDagState/u);
   assert.doesNotMatch(cliSource, /function tutorLearnerDagModelContext/u);
@@ -341,7 +345,8 @@ test('the entrypoint binds learner evidence and prompt-context owners without lo
   assert.match(cliSource, /function dagTurnContext/u);
   assert.match(cliSource, /createTutorStubTutorTurnPipeline/u);
   assert.match(pipelineSource, /return async function callTutor/u);
-  assert.match(cliSource, /createTutorStubInteractiveLearnerRuntime/u);
+  assert.match(cliSource, /createTutorStubInteractiveApplicationComposition/u);
+  assert.match(compositionSource, /createTutorStubInteractiveLearnerRuntime/u);
   assert.match(learnerRuntimeSource, /learnerDag: tutorLearnerDagModelContext/u);
   assert.match(learnerRuntimeSource, /humanDiscourse: humanDiscourseTutorContext/u);
   assert.match(learnerRuntimeSource, /dialogueClosure: dialogueClosureTutorContext/u);
