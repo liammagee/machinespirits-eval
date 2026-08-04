@@ -9,7 +9,7 @@ source: review
 created: 2026-07-29
 updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-mixed-learner-control
+branch: codex/refactor-tutor-stub-prompt-transport
 claim_status: planned
 depends_on: []
 links:
@@ -18,6 +18,7 @@ links:
   code:
     - scripts/tutor-stub.js
     - services/tutorStubCharacterControlController.js
+    - services/tutorStubClarificationTranslationRuntime.js
     - services/tutorStubCliArguments.js
     - services/tutorStubCommandRuntime.js
     - services/tutorStubFeedbackTuningController.js
@@ -31,18 +32,25 @@ links:
     - services/tutorStubInterimController.js
     - services/tutorStubLaunchRuntime.js
     - services/tutorStubLearnerAnalysisRuntime.js
+    - services/tutorStubLearnerDagState.js
     - services/tutorStubLearnerEvidenceRuntime.js
     - services/tutorStubLiveSettingsController.js
     - services/tutorStubMixedLearnerController.js
     - services/tutorStubModelPickerController.js
     - services/tutorStubPerformanceControlController.js
+    - services/tutorStubOpeningRuntime.js
+    - services/tutorStubPromptTransport.js
+    - services/tutorStubPublicHistory.js
+    - services/tutorStubRecoveryAccountingRuntime.js
     - services/tutorStubResponsePolicy.js
     - services/tutorStubScenarioController.js
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
+    - services/tutorStubTutorPromptContext.js
     - services/tutorStubTurnOrchestration.js
     - services/tutorStubVoiceController.js
+    - services/tutorStubWorldPresentation.js
     - services/tutorStubTutorTurnPipeline.js
     - tests/tutorStubTutorTurnPipeline.test.js
     - tests/tutorStubEntrypointFacades.test.js
@@ -322,3 +330,21 @@ Boundary reassessment after cycle 11:
   calibration warning; the nearest saved baseline re-audits identically with
   0 improved and 0 regressed, so the report-only hook allowed the push.
 - 2026-08-04 — Opened macro cycles 9–11 as PR #475.
+- 2026-08-04 — Started macro cycle 12 from current `origin/main` in the
+  isolated `codex/refactor-tutor-stub-prompt-transport` worktree. This slice
+  assigns prompt transport, opening realization, and recovery/accounting to
+  bounded owners while preserving the existing tutor-turn pipeline boundary.
+- 2026-08-04 — Macro cycle 12 moved provider and CLI prompt dispatch,
+  streaming presentation, opening realization and director notes, response
+  recovery and guard accounting, clarification and translation calls, and
+  adjacent public prompt-context/state helpers behind five bounded owners
+  (22–355 source lines). `scripts/tutor-stub.js` fell from 8,315 to 7,311
+  lines, a 1,004-line net reduction; the cycles 10–12 rolling average is 1,500
+  lines per PR and remains above the 750-line stop floor.
+- 2026-08-04 — Cycle 12 verification passes 100/100 focused transport,
+  prompt-audit, guard, opening/director, history/context, Program 2 budget,
+  benchmark-hook, and ownership assertions plus the zero-skip hermetic suite
+  at 7,748/7,748 root tests and 137/137 tutor-core tests. Lint, Prettier,
+  manifest, workplan source (397 items), ref governance, syntax, and the static
+  import graph pass with zero cycles across 487 files; no model calls were
+  authorized for this structural extraction.

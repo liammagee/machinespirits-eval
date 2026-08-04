@@ -9,7 +9,7 @@
  * - no cell registry
  * - no rubric scoring
  *
- * Edit the STUB defaults or buildSystemPrompt() below, then run:
+ * Edit the STUB defaults or the opening runtime prompt builder, then run:
  *   npm run tutor:stub
  *   npm run tutor:stub -- --model openai.mini
  *   npm run tutor:stub -- --model openrouter.sonnet-5
@@ -36,7 +36,6 @@ import {
 } from '../services/traceSchema.js';
 import { runLabellingGameCli } from '../services/labellingGameCli.js';
 import { buildTutorDesireDag } from '../services/dramaticDerivation/beliefDesire.js';
-import { factKey } from '../services/dramaticDerivation/chainer.js';
 import { buildLearnerDag, buildLearnerDagSnapshot } from '../services/dramaticDerivation/learnerDag.js';
 import {
   buildLearnerProxyDagMemory,
@@ -52,6 +51,7 @@ import {
   resolveEngagementStance,
 } from '../services/engagementRegisterRegistry.js';
 import {
+  projectTutorStubPublicWorldSummary as publicWorldSummary,
   tutorStubWorldFlavourPhrase as worldFlavourPhrase,
   tutorStubWorldLedgerTerm as worldLedgerTerm,
 } from '../services/tutorStubWorldPresentation.js';
@@ -237,7 +237,6 @@ import {
   DEFAULT_TUTOR_STUB_DAG_FACT_DROPOUT_SEED,
   TUTOR_STUB_DAG_FACT_DROPOUT_SCHEMA,
   applyTutorStubDagFactDropout,
-  createTutorStubDagFactDropoutState,
   normalizeTutorStubDagFactDropoutRate,
   normalizeTutorStubDagFactDropoutSeed,
   projectTutorStubDagMemoryReliability,
@@ -399,6 +398,10 @@ import {
 } from '../services/tutorStubInterimController.js';
 import { createTutorStubLearnerEvidenceRuntime } from '../services/tutorStubLearnerEvidenceRuntime.js';
 import { createTutorStubLearnerAnalysisRuntime } from '../services/tutorStubLearnerAnalysisRuntime.js';
+import { createTutorStubClarificationTranslationRuntime } from '../services/tutorStubClarificationTranslationRuntime.js';
+import { createTutorStubOpeningRuntime } from '../services/tutorStubOpeningRuntime.js';
+import { createTutorStubPromptTransport } from '../services/tutorStubPromptTransport.js';
+import { createTutorStubRecoveryAccountingRuntime } from '../services/tutorStubRecoveryAccountingRuntime.js';
 import { createTutorStubInteractiveLearnerRuntime } from '../services/tutorStubInteractiveLearnerRuntime.js';
 import { createTutorStubInteractiveInputPresentation } from '../services/tutorStubInteractiveInputPresentation.js';
 import { createTutorStubMixedLearnerController } from '../services/tutorStubMixedLearnerController.js';
@@ -479,9 +482,10 @@ import {
   tutorStubOpeningSystemPrompt,
 } from '../services/tutorStubOpening.js';
 import {
-  buildTutorStubTutorMessageContext,
   compactTutorStubPublicMessagesForBudget,
-  projectTutorStubCompactPublicTranscript,
+  createCompactTutorStubPublicTranscriptForPrompt,
+  latestTutorStubMessage as latestTutorMessage,
+  tutorStubTutorMessageContext as tutorMessageContext,
   tutorStubPublicMessagesForSpeaker,
 } from '../services/tutorStubPublicHistory.js';
 import { buildTutorStubLearnerAdvance } from '../services/tutorStubLearnerAdvance.js';
@@ -528,11 +532,13 @@ import { replayTutorStubLearnerDagFromTurns } from '../services/tutorStubLearner
 import { assertTutorStubTurnAttemptCurrent } from '../services/tutorStubTurnAttempt.js';
 import { restoreTutorStubTypedActionState as restoreTypedActionState } from '../services/tutorStubTypedActionRestoration.js';
 import {
-  projectTutorStubDialogueClosureContext,
-  projectTutorStubHumanDiscourseContext,
-  projectTutorStubLearnerClassifierContext,
-  projectTutorStubLearnerDagModelContext,
+  projectTutorStubDialogueClosureContext as dialogueClosureTutorContext,
+  projectTutorStubHumanDiscourseContext as humanDiscourseTutorContext,
+  projectTutorStubLearnerClassifierContext as classifierTutorContext,
+  projectTutorStubLearnerDagModelContext as tutorLearnerDagModelContext,
+  tutorPromptSurfaceKey,
 } from '../services/tutorStubTutorPromptContext.js';
+import { createTutorStubLearnerDagState as createLearnerDagState } from '../services/tutorStubLearnerDagState.js';
 import {
   tutorStubCanonicalCommandToken,
   tutorStubCommandAvailable,
@@ -1137,604 +1143,6 @@ const publicEvidenceModel = createTutorStubPublicEvidenceModel({ committedReleas
 const { answerTermForWorld } = publicEvidenceModel;
 const { auditTutorResponseLeak } = createTutorStubResponseLeakAudit({ publicEvidenceModel });
 
-function tutorResponseRecoveryPrompt({
-  publicPacket = [],
-  hardIssues = [],
-  leakAudit = null,
-  scaffoldAudit = null,
-  questionSupportAudit = null,
-  dramaticReleaseAudit = null,
-  actorialRealizationAudit = null,
-  responseConfigurationAudit = null,
-  responseConfiguration = null,
-  responseCompositionAudit = null,
-  liveTurnProgressionAudit = null,
-  liveSourceActionAlignmentAudit = null,
-  repetitionAudit = null,
-  closureAudit = null,
-  dialogueClosureFrame = null,
-  minimalRecoveryPrompt = '',
-}) {
-  const partCue = {
-    scene_partner:
-      'Use a first-person shared-scene action such as making room beside a named public object for the learner.',
-    examiner:
-      'Use a first-person examining action such as holding, turning, comparing, or testing a named public object.',
-    record_keeper:
-      'Use a first-person record action such as opening, reading, marking, or entering a named public record.',
-    advocate:
-      'Put a bounded public case in your own voice and explicitly invite the learner to break, test, or challenge it.',
-    skeptic:
-      'Voice a first-person objection or hold the live claim against a named public fact before stating its limit.',
-    foreperson: 'Enter the supported finding in your own voice and close the inquiry without another proof question.',
-  }[responseConfiguration?.actorial_part];
-  const tacticCue = {
-    unadorned_report: 'Keep that action direct, short, and unadorned.',
-    evidentiary_boundary:
-      'State both the exact support and its limit with words such as only, not yet, or does not establish.',
-    rapid_handoff: 'Move straight from the public object or line to one short question.',
-    shared_scene_invitation: 'Make physical room beside the public object and invite the learner’s reading.',
-    measured_testimony: 'Let the public words stand while refusing to force a stronger judgment.',
-    dramatic_counterpressure:
-      'Press the public evidence against the room’s easy verdict, then hand its test to the learner.',
-    exposed_mismatch: 'Expose the mismatch through the public object rather than explaining the irony.',
-    dry_counterexample: 'Use the public object as a dry counterexample and leave a concrete repair path.',
-    adversarial_pressure: 'Put direct pressure on the claim, not on the learner, and name the public test.',
-  }[responseConfiguration?.actorial_performance?.id];
-  const rows = (guard, issues, { includeReason = true } = {}) =>
-    (issues || [])
-      .map(
-        (issue, index) =>
-          `${index + 1}. ${guard}:${issue.type}${includeReason && issue.reason ? ` - ${issue.reason}` : ''}`,
-      )
-      .join('\n');
-  const hardIssueKeys = new Set((hardIssues || []).map((issue) => `${issue.guard || ''}:${issue.type || ''}`));
-  const hardFor = (guard, issues) =>
-    (issues || []).filter((issue) => hardIssueKeys.has(`${guard}:${issue.type || ''}`));
-  // Leak reasons can contain a concealed answer term. The recovery model needs
-  // the failure class, not the private string that triggered it.
-  const leakIssues = hardFor('leak', leakAudit?.leaks);
-  const scaffoldIssues = hardFor('human_scaffold', scaffoldAudit?.issues);
-  const questionSupportIssues = hardFor('question_support', questionSupportAudit?.issues);
-  const dramaticReleaseIssues = hardFor('dramatic_release', dramaticReleaseAudit?.issues);
-  const actorialRealizationIssues = hardFor('actorial_realization', actorialRealizationAudit?.issues);
-  const responseCompositionIssues = hardFor('response_composition', responseCompositionAudit?.issues);
-  const liveTurnProgressionIssues = hardFor('live_turn_progression_v1', liveTurnProgressionAudit?.issues);
-  const liveSourceActionAlignmentIssues = hardFor(
-    'live_source_action_alignment_v1',
-    liveSourceActionAlignmentAudit?.issues,
-  );
-  const repetitionIssues = hardFor('repetition', repetitionAudit?.issues);
-  const closureIssues = hardFor('dialogue_closure', closureAudit?.issues);
-  const leakRows = rows('leak', leakIssues, { includeReason: false });
-  const scaffoldRows = rows('human_scaffold', scaffoldIssues);
-  const questionSupportRows = rows('question_support', questionSupportIssues);
-  const dramaticReleaseRows = rows('dramatic_release', dramaticReleaseIssues);
-  const actorialRealizationRows = rows('actorial_realization', actorialRealizationIssues);
-  const missingConfigurationAxes = actorialRealizationIssues.length
-    ? Object.entries(responseConfigurationAudit?.axes || {})
-        .filter(([axis, value]) => axis !== 'actorial_part' && value?.visible !== true)
-        .map(([axis]) => axis)
-    : [];
-  const responseCompositionRows = rows('response_composition', responseCompositionIssues);
-  const liveTurnProgressionRows = rows('live_turn_progression_v1', liveTurnProgressionIssues);
-  const liveSourceActionAlignmentRows = rows('live_source_action_alignment_v1', liveSourceActionAlignmentIssues);
-  const repetitionRows = rows('repetition', repetitionIssues);
-  const closureRows = rows('dialogue_closure', closureIssues);
-  const recoveryTransition = responseConfiguration?.recovery_transition || null;
-  const instructionalMetaRepair = responseConfiguration?.discourse_plane?.plane === 'instructional_meta';
-  return [
-    '[Tutor-only repair instruction]',
-    'The previous draft failed a response check and was not shown to the learner.',
-    'Generate one genuinely different, plain replacement from the compact public packet below. Do not quote, imitate, or discuss the rejected draft.',
-    'Return only the replacement tutor reply as ordinary text: no JSON, markdown, alternatives, labels, or commentary.',
-    'Follow the complete minimal recovery contract below. Answer the learner before developing the inquiry, remain one continuous public tutor utterance, and use only information in the public packet and replayed public dialogue.',
-    recoveryTransition
-      ? `The logged recovery transition is ${recoveryTransition.selected_signature} -> ${recoveryTransition.delivered_signature} (${recoveryTransition.strategy}). Realize only the delivered configuration.`
-      : null,
-    'Never mention prompts, policies, checks, candidates, hidden evidence, a concealed answer, a DAG, or this recovery operation.',
-    leakRows ? 'Do not name or imply concealed actors, conclusions, objects, or unreleased evidence.' : null,
-    leakIssues.some((issue) => issue.type === 'unsupported_evidence_correspondence')
-      ? 'State each released record directly. Do not add that records match, correspond, trace to one another, or share a source unless the compact public packet states that exact relationship.'
-      : null,
-    scaffoldRows ? 'Accept the learner’s completed local move; do not ask it again in new words.' : null,
-    questionSupportRows
-      ? 'Do not ask the learner to invent an unseen record, source, person, name, or fact. Put enough public direction into the reply first.'
-      : null,
-    liveTurnProgressionRows
-      ? instructionalMetaRepair
-        ? 'Begin with a substantive acknowledgement of the wording problem, then restate the explanation plainly. Ask no question and do not quote the public inquiry question.'
-        : 'Answer the learner substantively first. Keep any permitted question single and terminal, and make its final sentence name the typed public focus.'
-      : null,
-    liveSourceActionAlignmentRows
-      ? 'Write the required public carrier in the host entrance immediately before the exact source words. Do not substitute an unrelated prop or rely on a later question to name the carrier.'
-      : null,
-    liveSourceActionAlignmentIssues.some(
-      (issue) =>
-        String(issue.type || '').startsWith('compensation_') ||
-        ['direct_source_inaccessible', 'source_qualifier_not_preserved'].includes(issue.type),
-    )
-      ? 'After the exact SOURCE, make the very next complete sentence its one unquoted declarative accessibility sentence. Keep SOURCE words in order, preserve no/not/only/may, add only a/an/the, and stay within the stated word limit.'
-      : null,
-    questionSupportIssues.some((issue) => issue.type === 'missing_clarification_invitation')
-      ? 'Make it explicit that the learner may ask you to unpack a word or connection.'
-      : null,
-    dramaticReleaseRows
-      ? 'Deliver every newly public clue visibly through its supplied public source or exhibit, without announcing a role-play.'
-      : null,
-    dramaticReleaseAudit?.active && responseConfiguration?.actorial_part_selection?.authored_role
-      ? `The required newly public clue source is ${responseConfiguration.actorial_part_selection.authored_role}; put its supplied evidence in first-person quoted speech without a role label.`
-      : null,
-    dramaticReleaseAudit?.active
-      ? 'Never say “let’s role-play,” “I’ll be,” “I’ll take the part,” “speaking as,” or “back to us.”'
-      : null,
-    actorialRealizationRows
-      ? `Visibly perform ${responseConfiguration?.actorial_part_label || responseConfiguration?.actorial_part || 'the delivered public part'} without a role label or stage direction. Host-part contract: ${responseConfiguration?.actorial_part_selection?.contract || 'take the delivered public part through concrete first-person action or speech'}`
-      : null,
-    actorialRealizationRows
-      ? `Performance contract: ${responseConfiguration?.actorial_performance?.contract || 'make the selected tactic transcript-visible through concrete action or direct speech'}`
-      : null,
-    actorialRealizationRows && partCue ? `Concrete host-part cue: ${partCue}` : null,
-    actorialRealizationRows && tacticCue ? `Concrete performance cue: ${tacticCue}` : null,
-    questionSupportIssues.some((issue) => issue.type === 'missing_bounded_choice')
-      ? 'Offer an unmistakable two-way public choice. If the minimal recovery contract permits a question, you may ask “Which should we test first: A) this public clue, or B) that public clue?” If it forbids questions, state the options declaratively, for example “Choose one way forward: A) inspect this public clue, or B) leave the conclusion open.” Do not disguise the choice as open recall.'
-      : null,
-    missingConfigurationAxes.length
-      ? `Make these delivered configuration axes plainly visible: ${missingConfigurationAxes.join(', ')}.`
-      : null,
-    responseCompositionRows
-      ? 'Respond to the learner’s actual contribution first, then develop the inquiry in the same voice and paragraph.'
-      : null,
-    responseCompositionIssues.some((issue) => issue.type === 'resolved_point_reopened')
-      ? 'The learner already answered the immediately preceding local question. Credit or qualify that answer once, then move to a genuinely new public clue or implication; do not ask the same distinction again.'
-      : null,
-    responseCompositionIssues.some((issue) => issue.type === 'unsupported_endorsement_request')
-      ? 'Do not ask the learner to endorse a stronger proposition than their answer and the public evidence support.'
-      : null,
-    responseConfiguration?.surface_budgets?.max_average_sentence_words
-      ? `Keep average sentence length at or below ${responseConfiguration.surface_budgets.max_average_sentence_words} words.`
-      : null,
-    repetitionRows ? 'Do not repeat a recent tutor reply or restate the same question in different words.' : null,
-    closureRows
-      ? 'Explicitly say that the case, book, or inquiry is closed. Do not reopen the proof or ask another evidentiary question.'
-      : null,
-    closureRows && dialogueClosureFrame?.allowCheckIn
-      ? 'You may ask exactly one optional final check-in about whether a link should be revisited; ask no other question.'
-      : null,
-    closureRows && !dialogueClosureFrame?.allowCheckIn
-      ? 'Do not ask any question. This is the terminal tutor turn.'
-      : null,
-    minimalRecoveryPrompt,
-    '',
-    '[Compact public recovery packet]',
-    ...(Array.isArray(publicPacket) ? publicPacket : [publicPacket]).filter(Boolean),
-    '[End compact public recovery packet]',
-    '',
-    '[Response-check failures]',
-    ...[
-      leakRows,
-      scaffoldRows,
-      questionSupportRows,
-      dramaticReleaseRows,
-      actorialRealizationRows,
-      responseCompositionRows,
-      repetitionRows,
-      closureRows,
-    ].filter(Boolean),
-    '[End response-check failures]',
-    '[End tutor-only repair instruction]',
-  ]
-    .filter((line) => line !== null)
-    .join('\n');
-}
-
-function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
-  return projectTutorStubGuardAttemptEnvelope({
-    kind,
-    attempt,
-    response,
-    audits,
-    issues: audits ? tutorStubGuardIssueRows(audits) : [],
-    repairedSpans,
-  });
-}
-
-function buildTutorGuardAccounting({
-  response,
-  state,
-  tutorTurn,
-  guards,
-  attempts,
-  repairsApplied,
-  finalSource,
-  finalAudits = null,
-  outcome,
-}) {
-  const finalText = String(response?.text || '');
-  const generationCalls = [
-    ...new Map(
-      (attempts || [])
-        .map((attemptRow) => attemptRow?.generation)
-        .filter((generation) => generation?.callId)
-        .map((generation) => [generation.callId, generation]),
-    ).values(),
-  ];
-  const totalUsage = generationCalls.reduce(
-    (totals, generation) => {
-      const usage = generation.usage || {};
-      totals.inputTokens += Number(usage.inputTokens || 0);
-      totals.outputTokens += Number(usage.outputTokens || 0);
-      totals.totalTokens += Number(
-        usage.totalTokens || Number(usage.inputTokens || 0) + Number(usage.outputTokens || 0),
-      );
-      totals.cost += Number(usage.cost || 0);
-      return totals;
-    },
-    { inputTokens: 0, outputTokens: 0, totalTokens: 0, cost: 0 },
-  );
-  const generation = {
-    modelCallCount: generationCalls.length,
-    originalCandidateLatencyMs: Number(generationCalls[0]?.latencyMs || 0),
-    recoveryLatencyMs: generationCalls.slice(1).reduce((sum, call) => sum + Number(call.latencyMs || 0), 0),
-    totalModelLatencyMs: generationCalls.reduce((sum, call) => sum + Number(call.latencyMs || 0), 0),
-    tokenUsageAvailable:
-      generationCalls.length > 0 && generationCalls.every((call) => call.tokenUsageAvailable === true),
-    usage: totalUsage,
-    calls: generationCalls,
-  };
-  return jsonClone({
-    schema: TUTOR_GUARD_ACCOUNTING_SCHEMA,
-    turn: tutorTurn,
-    policy: state?.experiment?.policy || state?.register?.policy || null,
-    profile: state?.experiment?.profile || null,
-    guards,
-    outcome,
-    originalCandidate: attempts[0] || null,
-    attempts,
-    repairsApplied,
-    generation,
-    finalDelivery: {
-      source: finalSource,
-      provider: response?.provider || null,
-      model: response?.model || null,
-      deliveryConfiguration: jsonClone(response?.deliveryResponseConfiguration || null),
-      configurationTransition: jsonClone(response?.responseConfigurationTransition || null),
-      deterministicFallback: Boolean(response?.deterministicFallback),
-      deterministicClosure: Boolean(response?.deterministicClosure),
-      candidate: {
-        start: 0,
-        end: finalText.length,
-        text: finalText,
-        offsetEncoding: 'utf16_code_units',
-      },
-      audits: finalAudits,
-      auditOk: finalAudits?.deliveryOk ?? finalAudits?.ok ?? null,
-    },
-  });
-}
-
-function attachTutorGuardAccounting({
-  response,
-  state,
-  trace,
-  tutorTurn,
-  role = 'tutor_stub_tutor',
-  guards,
-  attempts,
-  repairsApplied,
-  finalSource,
-  finalAudits = null,
-  outcome,
-}) {
-  const accounting = buildTutorGuardAccounting({
-    response,
-    state,
-    tutorTurn,
-    guards,
-    attempts,
-    repairsApplied,
-    finalSource,
-    finalAudits,
-    outcome,
-  });
-  response.guardAccounting = accounting;
-  response.finalCandidateLatencyMs = Number(response.latencyMs || 0);
-  if (accounting.generation?.modelCallCount) {
-    response.latencyMs = accounting.generation.totalModelLatencyMs;
-    response.usage = accounting.generation.usage;
-    response.tokenUsageAvailable = accounting.generation.tokenUsageAvailable;
-  }
-  appendTraceEvent(trace, {
-    type: 'tutor_response_guard_accounting',
-    role,
-    turn: tutorTurn,
-    accounting,
-  });
-  return response;
-}
-
-async function buildTutorOpening(
-  state,
-  { signal = null, realizer = state.openingRealizer, deterministicSource = 'world_grounded_deterministic' } = {},
-) {
-  const world = state.world;
-  if (!world) {
-    const curriculumModule = state.curriculum?.module || null;
-    const text = [
-      curriculumModule
-        ? `Let's take up ${curriculumModule.title}.`
-        : `Let's start ${state.topic ? `with ${state.topic}` : 'there'}.`,
-      curriculumModule?.essential_question || null,
-      curriculumModule
-        ? 'What is your current model of the decision, or the first assumption you want us to test?'
-        : 'Say your first idea, or name the one point you want to test first.',
-    ]
-      .filter(Boolean)
-      .join(' ');
-    return {
-      text,
-      source: 'deterministic_topic_fallback',
-      frame: buildTutorStubOpeningFrame(),
-      audit: null,
-      model: null,
-    };
-  }
-
-  const frame = buildTutorStubOpeningFrame({
-    world,
-    openingEvidence: currentReleaseRows(state, 1),
-  });
-  const openingSystemPrompt = tutorStubOpeningSystemPrompt();
-  const openingUserPrompt = tutorStubOpeningPrompt(frame);
-  const speakerPrivilegeAudit = auditTutorStubSpeakerPrivilege({
-    world,
-    tutorTurn: 1,
-    systemPrompt: openingSystemPrompt,
-    privateAdvisory: openingUserPrompt,
-  });
-  appendTraceEvent(state.trace, {
-    type: 'tutor_opening_speaker_privilege_audit',
-    turn: 0,
-    audit: speakerPrivilegeAudit,
-  });
-  if (!speakerPrivilegeAudit.ok) {
-    throw new Error(
-      `Tutor opening frame crossed the private-planner boundary: ${speakerPrivilegeAudit.issues
-        .map((issue) => `${issue.code}:${issue.source}`)
-        .join(', ')}`,
-    );
-  }
-  const authoredText = String(frame.authoredText || '').trim();
-  let candidate = authoredText;
-  let source = authoredText ? 'authored_world_opening' : 'speaking_tutor_model';
-  let modelResponse = null;
-  let generationError = null;
-
-  if (!candidate && realizer === 'deterministic') {
-    candidate = deterministicTutorStubOpening(frame);
-    source = deterministicSource;
-  }
-
-  if (!candidate) {
-    startInterimAnimation(state, 'opening the scene', { tutorTurn: 0 });
-    try {
-      modelResponse = await callPromptModel({
-        prompt: openingUserPrompt,
-        resolved: state.resolved,
-        systemPrompt: openingSystemPrompt,
-        role: 'tutor_stub_opening',
-        maxTokens: Math.min(700, state.maxTokens || 700),
-        trace: state.trace,
-        stream: { enabled: false, interim: state.interim },
-        cliEffort: state.cliEffort,
-        turn: 0,
-        signal,
-      });
-      candidate = cleanTutorStubStageSpeech(modelResponse.text);
-    } catch (error) {
-      if (error?.name === 'AbortError') throw error;
-      generationError = error.message;
-      appendTraceEvent(state.trace, {
-        type: 'tutor_opening_realization_error',
-        turn: 0,
-        provider: state.resolved.provider,
-        model: state.resolved.model,
-        error: error.message,
-      });
-    } finally {
-      stopInterimAnimation(state);
-    }
-  }
-
-  const leakAudit = auditTutorResponseLeak({
-    text: candidate,
-    world,
-    tutorTurn: 1,
-    learnerText: '',
-    state,
-  });
-  let audit = auditTutorStubOpening({ text: candidate, frame, leakAudit });
-  if (!audit.ok) {
-    const rejectedSource = source;
-    candidate = deterministicTutorStubOpening(frame);
-    source = 'world_grounded_safe_fallback';
-    const fallbackLeakAudit = auditTutorResponseLeak({
-      text: candidate,
-      world,
-      tutorTurn: 1,
-      learnerText: '',
-      state,
-    });
-    const fallbackAudit = auditTutorStubOpening({ text: candidate, frame, leakAudit: fallbackLeakAudit });
-    appendTraceEvent(state.trace, {
-      type: 'tutor_opening_candidate_rejected',
-      turn: 0,
-      source: rejectedSource,
-      audit,
-      fallbackAudit,
-    });
-    audit = fallbackAudit;
-    if (!audit.ok) {
-      throw new Error(
-        `Tutor opening failed its public-safe requirements: ${audit.issues.map((issue) => issue.type).join(', ')}`,
-      );
-    }
-  }
-
-  const realization = {
-    schema: 'machinespirits.tutor-stub.opening-realization.v1',
-    source,
-    frame,
-    requirements: TUTOR_STUB_OPENING_REQUIREMENTS,
-    audit,
-    speakerPrivilegeAudit,
-    generationError,
-    model: modelResponse
-      ? {
-          provider: modelResponse.provider,
-          model: modelResponse.model,
-          latencyMs: modelResponse.latencyMs,
-          usage: modelResponse.usage,
-          effort: modelResponse.effort || modelResponse.reasoningEffort || null,
-        }
-      : null,
-  };
-  appendTraceEvent(state.trace, {
-    type: 'tutor_opening_realization',
-    turn: 0,
-    realization,
-  });
-  return {
-    ...realization,
-    text: candidate,
-    promptSnapshot: modelResponse?.promptSnapshot || null,
-  };
-}
-
-function worldPublicPrompt(world) {
-  return projectTutorStubWorldPublicPrompt(world, { audienceLines: dramaticAudiencePromptLines(world) });
-}
-
-function buildDirectorInitialContext(world) {
-  return buildTutorStubDirectorInitialContext(world, { audienceLines: dramaticAudiencePromptLines(world) });
-}
-
-function printDirectorInitialContext(context) {
-  for (const line of projectTutorStubDirectorContextLines(context, { colors: C })) console.log(line);
-}
-
-function printDirectorPreludeBeforeFirstTutor(state, { reason = 'first_tutor_message' } = {}) {
-  if (!state?.directorContext || state.directorOpeningPresented) return false;
-  state.directorOpeningPresented = true;
-  appendTraceEvent(state.trace, {
-    type: 'director_opening_prelude',
-    reason,
-    context: state.directorContext,
-  });
-  printDirectorInitialContext(state.directorContext);
-  return true;
-}
-
-const directorNotesIssuedSoFar = createTutorStubDirectorNotesModel({
-  committedReleaseRows,
-});
-
-function printDirectorNotesIssuedSoFar(state) {
-  const notes = directorNotesIssuedSoFar(state);
-  for (const line of projectTutorStubDirectorNotesLines(notes, { colors: C })) console.log(line);
-  return notes;
-}
-
-function worldSpeakerDagPrompt(world) {
-  return projectTutorStubWorldSpeakerDagPrompt(world, {
-    ledgerTerm: worldLedgerTerm(world),
-    // Phase S2c: TUTOR_STUB_CONTRACT_LICENCE=1 places the demand-card
-    // exception inside the standing contract (the placement law).
-    demandLicence: process.env.TUTOR_STUB_CONTRACT_LICENCE === '1',
-  });
-}
-
-const { responseChoiceModeRules } = createTutorStubPromptBlockModel({ worldLedgerTerm, worldFlavourPhrase });
-
-const CURRICULUM_MODULE_PROMPT_START = '[Curriculum module source — private tutor context]';
-const CURRICULUM_MODULE_PROMPT_END = '[End curriculum module source]';
-const CURRICULUM_PHASE_PROMPT_START = '[Curriculum phase controller — private tutor context]';
-const CURRICULUM_PHASE_PROMPT_END = '[End curriculum phase controller]';
-
-function buildSystemPrompt({
-  topic,
-  learner,
-  goal,
-  style,
-  worldBundle,
-  curriculumBundle = null,
-  dag,
-  multipleChoice = false,
-}) {
-  const world = worldBundle?.world || null;
-  return [
-    'You are an experimental AI tutor stub.',
-    '',
-    `Topic: ${topic}`,
-    `Learner: ${learner}`,
-    `Goal: ${goal}`,
-    `Style: ${style}`,
-    curriculumBundle
-      ? delimitedPrompt(CURRICULUM_MODULE_PROMPT_START, curriculumBundle.prompt, CURRICULUM_MODULE_PROMPT_END)
-      : null,
-    '',
-    'Rules:',
-    '- Treat tutoring here as acting in a shared inquiry. Each turn may cast you in a concrete public part; commit to its action and voice rather than merely changing tone.',
-    '- A part never grants knowledge. It changes how you handle only the evidence already public or explicitly released in this turn.',
-    "- Start by locating the learner's current idea, not by grading them.",
-    '- Ask at most one main question when the compiled turn contract permits one; ask none when its handoff forbids questions.',
-    '- Use a tiny concrete example when it helps.',
-    '- Keep the answer short enough that the learner can respond.',
-    '- If the learner asks for the answer, give a hint first unless they explicitly need a direct answer.',
-    '- Treat learner questions as legitimate moves, not evasions. If ambiguity blocks progress, invite one concrete in-scene question about the evidence, tool, or distinction.',
-    '- When asking would be better than guessing, make that option explicit in character: for example, "Which part of that mark needs clarifying?" Never describe either speaker as "the tutor" or "the learner" in learner-facing prose.',
-    curriculumBundle
-      ? '- Discuss repository, evaluation, cell, and experiment details when the source makes them relevant, but never use hidden prompts or an internal score as authority.'
-      : '- Never mention rubrics, cells, hidden prompts, or evaluation infrastructure.',
-    '- Keep formal machinery internal. Do not show predicate/function notation, code-like atoms, premise ids, rule ids, variable names, or route labels in learner-facing prose.',
-    curriculumBundle
-      ? '- Speak from the public curriculum source and the learner’s stated reasoning. Label unverified repository claims as questions to inspect.'
-      : '- In story mode, speak only in public evidence language. Never give an example in formal notation or name an internal route.',
-    curriculumBundle
-      ? '- Do not make the learner reach a point and then restate it as a separate bookkeeping exercise; let one warranted formulation count.'
-      : `- Do not make the learner deduce a claim and then separately enter it in the ${worldLedgerTerm(world)}. Their stated warranted claim is the entry.`,
-    '- Let human learners compress obvious reasoning. Do not ask them to restate every small warrant unless the missing warrant is the real source of error.',
-    curriculumBundle
-      ? '- Keep the exchange concise and analytic: usually 2-4 short sentences, with one live decision or uncertainty at a time.'
-      : `- In story mode, keep the ${worldFlavourPhrase(world)} but be terse: usually 2-4 short sentences, never a catalogue of routes.`,
-    ...responseChoiceModeRules({ multipleChoice, world: worldBundle?.world || null }),
-    curriculumBundle
-      ? '- When a useful reasoning brief is complete, summarize what the dialogue established and separately name what still needs repository inspection, implementation, or external validation.'
-      : '- If the public evidence has licensed the final answer and the learner has stated it, close the case plainly: say the verdict is now licensed, name the two proof supports in public language, and stop asking for another investigative branch.',
-    curriculumBundle
-      ? '- Never invent repository state, test results, run outcomes, or completion evidence. Ask what must be inspected when the source does not settle it.'
-      : '- Never supply the answer or a named suspect from hidden story knowledge. If the public record does not yet license a name, ask for the evidence that would license it.',
-    ...worldPublicPrompt(world),
-    ...(dag ? worldSpeakerDagPrompt(world) : []),
-  ].join('\n');
-}
-
-function loadSystemPrompt({ worldBundle, curriculumBundle = null, dag, topic, multipleChoice = false }) {
-  if (!args.system) {
-    return buildSystemPrompt({
-      topic,
-      learner: args.learner,
-      goal: args.goal,
-      style: args.style,
-      worldBundle,
-      curriculumBundle,
-      dag,
-      multipleChoice,
-    });
-  }
-  return fs.readFileSync(args.system, 'utf8');
-}
-
 const tutorStubRecipeModelIdentity = createTutorStubRecipeModelIdentityResolver({
   resolveModel,
   getProviderConfig,
@@ -1891,296 +1299,9 @@ function engagementStanceSelectionPolicyPrompt(state) {
   return lines.join('\n');
 }
 
-async function callPromptModel({
-  prompt: promptInput,
-  messageHistory = [],
-  resolved,
-  systemPrompt: systemPromptInput,
-  role,
-  maxTokens = 700,
-  trace = null,
-  stream = null,
-  cliEffort = null,
-  turn = null,
-  signal = null,
-  historyTurns = null,
-}) {
-  let prompt = promptInput;
-  let systemPrompt = systemPromptInput;
-  const startedAt = new Date().toISOString();
-  const shouldStream = Boolean(stream?.enabled && !stream?.deferOutput && providerSupportsStreaming(resolved));
-  let publicMessageHistory = (Array.isArray(messageHistory) ? messageHistory : []).map((message) => ({
-    role: message?.role === 'assistant' ? 'assistant' : 'user',
-    content: String(message?.content || ''),
-  }));
-  let promptAudit = auditTutorStubPrompt({
-    surface: tutorStubPromptSurfaceForRole(role),
-    systemPrompt,
-    userPrompt: prompt,
-    messageHistory: publicMessageHistory,
-  });
-  const budgetViolationCodes = new Set(['character_budget_exceeded', 'approximate_token_budget_exceeded']);
-  const hasBudgetViolation = promptAudit.violations.some((violation) => budgetViolationCodes.has(violation.code));
-  if (role === 'tutor_stub_auto_learner' && hasBudgetViolation && historyTurns !== null) {
-    const originalAudit = promptAudit;
-    const nonHistoryText = [systemPrompt, prompt].filter(Boolean).join('\n\n');
-    const historyBoundaryChars = nonHistoryText ? 2 : 0;
-    const compaction = compactTutorStubPublicMessagesForBudget(publicMessageHistory, {
-      maxHistoryChars: Math.max(0, originalAudit.budget.maxChars - nonHistoryText.length - historyBoundaryChars),
-      recentTurns: historyTurns,
-    });
-    if (compaction.applied) {
-      publicMessageHistory = compaction.messages;
-      const recoveredAudit = auditTutorStubPrompt({
-        surface: tutorStubPromptSurfaceForRole(role),
-        systemPrompt,
-        userPrompt: prompt,
-        messageHistory: publicMessageHistory,
-      });
-      const budgetRecovered = recoveredAudit.violations.every((violation) => !budgetViolationCodes.has(violation.code));
-      appendTraceEvent(trace, {
-        type: 'prompt_audit_recovery',
-        role,
-        turn,
-        recovery: {
-          applied: budgetRecovered,
-          method: 'budget_window_public_history',
-          historyMode: compaction.historyMode,
-          availableMessageCount: compaction.availableMessageCount,
-          replayedMessageCount: compaction.replayedMessageCount,
-          omittedMessageCount: compaction.omittedMessageCount,
-          originalHistoryChars: compaction.originalChars,
-          replayedHistoryChars: compaction.replayedChars,
-          recentTurns: compaction.recentTurns,
-          maxHistoryChars: compaction.maxHistoryChars,
-          originalViolations: originalAudit.violations,
-        },
-        audit: recoveredAudit,
-      });
-      if (budgetRecovered) {
-        promptAudit = {
-          ...recoveredAudit,
-          recovery: {
-            applied: true,
-            method: 'budget_window_public_history',
-            omittedMessageCount: compaction.omittedMessageCount,
-          },
-        };
-      }
-    }
-  }
-  // Backport of the Phase 5b Amendment-1 pinned-runtime patch
-  // (committee-runtime-main-reconciliation): endgame dialogue naturally
-  // repeats the verdict sentence across prompt sections, and a duplicate-only
-  // audit failure is recoverable by deduplication — exactly as
-  // invokeTutorAttempt already recovers — instead of a fatal that kills a
-  // nearly-complete dialogue.
-  const duplicateOnlyPromptFailure =
-    !promptAudit.ok &&
-    promptAudit.duplicateInstructionLines?.length > 0 &&
-    promptAudit.violations.every((violation) => violation.code === 'duplicate_instruction_lines');
-  if (duplicateOnlyPromptFailure) {
-    const originalAudit = promptAudit;
-    const recovery = recoverTutorStubDuplicateInstructionLines({
-      texts: [systemPrompt, prompt],
-      duplicateInstructionLines: originalAudit.duplicateInstructionLines,
-    });
-    [systemPrompt, prompt] = recovery.texts;
-    const recoveredAudit = auditTutorStubPrompt({
-      surface: tutorStubPromptSurfaceForRole(role),
-      systemPrompt,
-      userPrompt: prompt,
-      messageHistory: publicMessageHistory,
-    });
-    appendTraceEvent(trace, {
-      type: 'prompt_audit_recovery',
-      role,
-      turn,
-      recovery: {
-        applied: recovery.applied && recoveredAudit.ok,
-        method: 'deduplicate_exact_instruction_lines',
-        originalDuplicateInstructionLines: originalAudit.duplicateInstructionLines,
-        removedPromptLineCount: recovery.removedLines.length,
-      },
-      audit: recoveredAudit,
-    });
-    if (recoveredAudit.ok) promptAudit = { ...recoveredAudit, recovery: { applied: true } };
-  }
-  const requestMessages = [...publicMessageHistory, { role: 'user', content: prompt }];
-  if (!promptAudit.ok) {
-    appendTraceEvent(trace, {
-      type: 'prompt_audit_failed',
-      role,
-      turn,
-      audit: promptAudit,
-    });
-    throw new Error(
-      `Prompt audit failed for ${role}: ${promptAudit.violations.map((violation) => violation.code).join(', ')}`,
-    );
-  }
-  reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });
-  reserveTutorStubMeteredModelCall({ trace, role, turn });
-  try {
-    let response;
-    if (isCliProvider(resolved.provider)) {
-      const onEvent =
-        resolved.provider === 'codex'
-          ? (event) => {
-              const item = event?.item || {};
-              appendTraceEvent(trace, {
-                type: 'cli_stream_event',
-                role,
-                turn,
-                eventType: event?.type || 'unknown',
-                itemType: item?.type || null,
-              });
-              if (!stream?.enabled) return;
-              const active = getInterimState(stream?.interim)?.active;
-              if (!active) return;
-              const phase =
-                event?.type === 'thread.started'
-                  ? 'starting Codex'
-                  : event?.type === 'turn.started'
-                    ? 'model working'
-                    : event?.type === 'item.started' && item?.type
-                      ? item.type.replaceAll('_', ' ')
-                      : event?.type === 'item.completed' && item?.type === 'agent_message'
-                        ? 'finalizing result'
-                        : null;
-              if (phase) active.phase = `${active.basePhase || active.phase} · ${phase}`;
-            }
-          : null;
-      const result = await callAIWithCliBridge(
-        { provider: resolved.provider, model: resolved.model },
-        systemPrompt,
-        prompt,
-        role,
-        { messageHistory: publicMessageHistory, effort: cliEffort, onEvent, signal },
-      );
-      response = {
-        text: result.text,
-        provider: result.provider,
-        model: result.model,
-        latencyMs: result.latencyMs,
-        usage: {
-          inputTokens: result.inputTokens || 0,
-          outputTokens: result.outputTokens || 0,
-          totalTokens: (result.inputTokens || 0) + (result.outputTokens || 0),
-          cost: result.cost || 0,
-        },
-        effort: result.effort || result.reasoningEffort || null,
-        reasoningEffort: result.reasoningEffort || result.effort || null,
-        tokenUsageAvailable: result.tokenUsageAvailable,
-        streamedEvents: result.streamedEvents || 0,
-        invalidStreamLines: result.invalidStreamLines || 0,
-        outputSource: result.outputSource || null,
-      };
-    } else if (shouldStream) {
-      const temperature = effectiveTemperatureForModel(resolved, 0.1);
-      const sink = createConsoleTokenSink(role, stream?.interim);
-      let final = null;
-      for await (const chunk of streamAI({
-        provider: resolved.provider,
-        model: resolved.model,
-        systemPrompt,
-        messages: requestMessages,
-        preset: 'socratic',
-        config: { temperature, maxTokens },
-      })) {
-        if (chunk.type === 'text_delta') {
-          sink.write(chunk.content);
-        } else if (chunk.type === 'done') {
-          final = chunk;
-        }
-      }
-      const streamed = sink.finish();
-      response = {
-        text: final?.content || '',
-        provider: final?.provider || resolved.provider,
-        model: final?.model || resolved.model,
-        latencyMs: final?.latencyMs || 0,
-        usage: final?.usage || null,
-        streamed,
-      };
-    } else {
-      const temperature = effectiveTemperatureForModel(resolved, 0.1);
-      const result = await callAI({
-        provider: resolved.provider,
-        model: resolved.model,
-        systemPrompt,
-        messages: requestMessages,
-        preset: 'socratic',
-        config: { temperature, maxTokens },
-      });
-      response = {
-        text: result.content,
-        provider: result.provider,
-        model: result.model,
-        latencyMs: result.latencyMs,
-        usage: result.usage,
-      };
-    }
-
-    response.promptSnapshot = {
-      systemPrompt,
-      userPrompt: prompt,
-      messageHistory: publicMessageHistory,
-      role,
-      promptAudit,
-    };
-    appendTraceEvent(trace, {
-      type: 'model_call',
-      role,
-      turn,
-      startedAt,
-      provider: response.provider,
-      model: response.model,
-      request: {
-        systemPrompt,
-        prompt,
-        messageHistory: publicMessageHistory,
-        messages: requestMessages,
-        maxTokens,
-        cliEffort,
-        promptAudit,
-      },
-      response: {
-        text: response.text,
-        latencyMs: response.latencyMs,
-        usage: response.usage,
-        streamed: Boolean(response.streamed),
-        effort: response.effort || response.reasoningEffort || null,
-        streamedEvents: response.streamedEvents || 0,
-        invalidStreamLines: response.invalidStreamLines || 0,
-        outputSource: response.outputSource || null,
-      },
-    });
-    response.promptAudit = promptAudit;
-    return response;
-  } catch (err) {
-    appendTraceEvent(trace, {
-      type: err?.name === 'AbortError' ? 'model_call_aborted' : 'model_call_error',
-      role,
-      turn,
-      startedAt,
-      provider: resolved.provider,
-      model: resolved.model,
-      request: {
-        systemPrompt,
-        prompt,
-        messageHistory: publicMessageHistory,
-        messages: requestMessages,
-        maxTokens,
-        promptAudit,
-      },
-      error: err.message,
-      ...(err?.code === 'CLI_PROVIDER_POLICY_VIOLATION'
-        ? { cliPolicyViolation: tutorStubCliPolicyRetryDecision(err, { alreadyUsed: true }) }
-        : {}),
-    });
-    throw err;
-  }
-}
+const compactPublicTranscriptForPrompt = createCompactTutorStubPublicTranscriptForPrompt({
+  defaultHistoryTurns: STUB.historyTurns,
+});
 
 const {
   buildTutorInterimContext,
@@ -2251,35 +1372,104 @@ const {
   tutorStubTraceDisplayPath,
 });
 
-function streamLabel(role) {
-  return renderTutorStubStreamLabel(role, C);
-}
+const { callPromptModel, createConsoleTokenSink, printTutorResponse } = createTutorStubPromptTransport({
+  C,
+  appendTraceEvent,
+  auditTutorStubPrompt,
+  callAI,
+  callAIWithCliBridge,
+  clearStatusLine,
+  compactTutorStubPublicMessagesForBudget,
+  createTutorStubConsoleTokenSink,
+  effectiveTemperatureForModel,
+  getInterimState,
+  isCliProvider,
+  providerSupportsStreaming,
+  recoverTutorStubDuplicateInstructionLines,
+  renderTutorStubStreamLabel,
+  replayTutorStubTextAsConsoleStream,
+  reserveProgram2ProviderBudget,
+  reserveTutorStubMeteredModelCall,
+  stopInterimAnimation,
+  streamAI,
+  tutorStubCliPolicyRetryDecision,
+  tutorStubPromptSurfaceForRole,
+  write: (text) => process.stdout.write(text),
+});
 
-function createConsoleTokenSink(role, interim = null) {
-  return createTutorStubConsoleTokenSink({
-    role,
-    interim,
-    resolveInterimState: getInterimState,
-    stopInterimAnimation,
-    clearStatusLine,
-    write: (text) => process.stdout.write(text),
-    renderLabel: streamLabel,
+const {
+  attachTutorGuardAccounting,
+  buildTutorGuardAccounting,
+  tutorGuardAttemptEnvelope,
+  tutorResponseRecoveryPrompt,
+} = createTutorStubRecoveryAccountingRuntime({
+  TUTOR_GUARD_ACCOUNTING_SCHEMA,
+  appendTraceEvent,
+  jsonClone,
+  projectTutorStubGuardAttemptEnvelope,
+  tutorStubGuardIssueRows,
+});
+
+const {
+  CURRICULUM_MODULE_PROMPT_END,
+  CURRICULUM_MODULE_PROMPT_START,
+  CURRICULUM_PHASE_PROMPT_END,
+  CURRICULUM_PHASE_PROMPT_START,
+  buildDirectorInitialContext,
+  buildTutorOpening,
+  directorNotesIssuedSoFar,
+  loadSystemPrompt,
+  printDirectorNotesIssuedSoFar,
+  printDirectorPreludeBeforeFirstTutor,
+} = createTutorStubOpeningRuntime({
+  C,
+  TUTOR_STUB_OPENING_REQUIREMENTS,
+  appendTraceEvent,
+  args,
+  auditTutorResponseLeak,
+  auditTutorStubOpening,
+  auditTutorStubSpeakerPrivilege,
+  buildTutorStubDirectorInitialContext,
+  buildTutorStubOpeningFrame,
+  callPromptModel,
+  cleanTutorStubStageSpeech,
+  committedReleaseRows,
+  contractLicenceEnabled: process.env.TUTOR_STUB_CONTRACT_LICENCE === '1',
+  createTutorStubDirectorNotesModel,
+  createTutorStubPromptBlockModel,
+  currentReleaseRows,
+  delimitedPrompt,
+  deterministicTutorStubOpening,
+  dramaticAudiencePromptLines,
+  fs,
+  projectTutorStubDirectorContextLines,
+  projectTutorStubDirectorNotesLines,
+  projectTutorStubWorldPublicPrompt,
+  projectTutorStubWorldSpeakerDagPrompt,
+  startInterimAnimation,
+  stopInterimAnimation,
+  tutorStubOpeningPrompt,
+  tutorStubOpeningSystemPrompt,
+  worldFlavourPhrase,
+  worldLedgerTerm,
+});
+
+const { generateTutorClarification, generateTutorStubCurriculumTranslation, generateTutorStubTutorOutputTranslation } =
+  createTutorStubClarificationTranslationRuntime({
+    CLARIFIER_SYSTEM_PROMPT,
+    TUTOR_STUB_CURRICULUM_TRANSLATOR_SYSTEM_PROMPT,
+    TUTOR_STUB_TUTOR_OUTPUT_TRANSLATOR_SYSTEM_PROMPT,
+    buildTutorStubCurriculumTranslationPrompt,
+    buildTutorStubTutorOutputTranslationPrompt,
+    callPromptModel,
+    cleanTutorStubClarificationSpeech,
+    compactPublicTranscriptForPrompt,
+    latestTutorMessage,
+    parseTutorStubCurriculumTranslation,
+    parseTutorStubTutorOutputTranslation,
+    publicWorldSummary,
+    tutorStubComprehensionPrompt,
   });
-}
-
-function replayTextAsConsoleStream(role, text, stream = null) {
-  return replayTutorStubTextAsConsoleStream(role, text, stream, { createSink: createConsoleTokenSink });
-}
-
-function printTutorResponse(response, stream = null) {
-  if (response.guardedStreamReplay) {
-    response.streamed = replayTextAsConsoleStream('tutor_stub_tutor', response.text, stream);
-    return;
-  }
-  if (!response.streamed) {
-    console.log(`${C.brightMagenta}${C.bold}tutor >${C.reset} ${response.text.trim()}`);
-  }
-}
 
 const {
   evaluatePendingRegisterEfficacy,
@@ -2642,63 +1832,6 @@ function responseConfigurationContext(
     world,
     ledgerTerm: worldLedgerTerm(world),
   });
-}
-
-function tutorPromptSurfaceKey(value) {
-  return String(value || '')
-    .replace(/\s+/gu, ' ')
-    .trim();
-}
-
-function tutorLearnerDagModelContext(result, { releasedEvidence = [] } = {}) {
-  return projectTutorStubLearnerDagModelContext(result, { releasedEvidence });
-}
-
-function humanDiscourseTutorContext(frame, { includeQuestionSupport = true, includeDefaultResponseShape = true } = {}) {
-  return projectTutorStubHumanDiscourseContext(frame, { includeQuestionSupport, includeDefaultResponseShape });
-}
-
-function dialogueClosureTutorContext(frame) {
-  return projectTutorStubDialogueClosureContext(frame);
-}
-
-function createLearnerDagState({ enabled, modelRef = null, resolved, world, dropout = null }) {
-  const board = new Map();
-  if (world) {
-    for (const fact of world.background || []) board.set(factKey(fact), fact);
-  }
-  return {
-    enabled,
-    modelRef,
-    resolved,
-    dropout: createTutorStubDagFactDropoutState(dropout || {}),
-    record: {
-      board,
-      voiced: [],
-      voicedKeys: new Set(),
-      hypotheses: [],
-      snapshots: [],
-    },
-  };
-}
-
-function tutorMessageContext(state, history) {
-  return buildTutorStubTutorMessageContext(history, {
-    modelRef: state?.modelRef || null,
-    activatedBy: state?.tutorContext?.activatedBy || 'session_start',
-  });
-}
-
-function compactPublicTranscriptForPrompt(state, limit, { includeAnalysis = true } = {}) {
-  return projectTutorStubCompactPublicTranscript(state?.turns || [], limit, {
-    memoryEnabled: Boolean(state?.memory?.enabled),
-    historyTurns: state?.historyTurns ?? STUB.historyTurns,
-    includeAnalysis,
-  });
-}
-
-function classifierTutorContext(classification) {
-  return projectTutorStubLearnerClassifierContext(classification);
 }
 
 function buildTutorDagSnapshot(state, tutorTurn) {
@@ -3280,143 +2413,6 @@ const callTutor = createTutorStubTutorTurnPipeline({
 
 function saveTranscript(filePath, transcript) {
   fs.writeFileSync(filePath, `${JSON.stringify(transcript, null, 2)}\n`);
-}
-
-function publicWorldSummary(world) {
-  if (!world) return 'No detective-story world is active; respond to the tutor topic directly.';
-  return [
-    `World: ${world.id} - ${world.title}`,
-    `Discipline: ${world.discipline || 'investigation'}`,
-    `Public question: ${world.question || world.publicQuestion || 'unknown'}`,
-    'Opening situation:',
-    String(world.openingFrame?.situation || world.setting || world.opening || world.openingSituation || '').trim() ||
-      '(none supplied)',
-    world.learnerVoice ? `Learner voice: ${world.learnerVoice}` : null,
-    ...dramaticAudiencePromptLines(world),
-  ]
-    .filter(Boolean)
-    .join('\n');
-}
-
-function latestTutorMessage(state) {
-  return [...(state?.history || [])].reverse().find((message) => message.role === 'assistant')?.content || '';
-}
-
-function buildTutorClarificationPrompt({ state, term = '' }) {
-  const latestTutor = latestTutorMessage(state);
-  const requestedTerm = String(term || '').trim();
-  const comprehensionContext = tutorStubComprehensionPrompt(state.comprehension, {
-    turn: state.turns.length,
-  });
-  return [
-    '# Public scene',
-    '',
-    publicWorldSummary(state.world),
-    '',
-    '# Public transcript',
-    '',
-    compactPublicTranscriptForPrompt(state, state.historyTurns, { includeAnalysis: false }),
-    '',
-    '# Latest line to clarify',
-    '',
-    latestTutor || '(No tutor message is available yet.)',
-    '',
-    '# Learner clarification request',
-    '',
-    requestedTerm
-      ? `Explain this term or phrase from the line above: "${requestedTerm}".`
-      : 'No term was supplied. Pick up to three likely confusing words or phrases from the latest tutor message and explain them.',
-    comprehensionContext || null,
-    '',
-    '# Output rules',
-    '',
-    '- Use only public wording already in the transcript.',
-    '- Do not add new evidence, new suspects, hidden conclusions, or next proof steps.',
-    '- Prefer one short paragraph, or at most three bullets.',
-    '- If the requested term is not in the latest tutor message or public transcript, say so briefly and ask which phrase the learner means.',
-    '- If the latest line ended with a question, explain the wording and then restate that live question directly. Never say that a tutor question is "pending".',
-  ]
-    .filter((line) => line !== null)
-    .join('\n');
-}
-
-function cleanClarificationReply(text, latestTutor = '') {
-  const cleaned = String(text || '')
-    .replace(/^```(?:text|markdown)?/iu, '')
-    .replace(/```$/u, '')
-    .replace(/^\s*(clarify|clarification|explain|explanation)\s*:\s*/iu, '')
-    .trim();
-  return cleanTutorStubClarificationSpeech(cleaned, latestTutor);
-}
-
-async function generateTutorClarification({ state, term = '', resolved, cliEffort = null, signal = null }) {
-  const raw = await callPromptModel({
-    prompt: buildTutorClarificationPrompt({ state, term }),
-    resolved,
-    systemPrompt: CLARIFIER_SYSTEM_PROMPT,
-    role: 'tutor_stub_clarifier',
-    maxTokens: 500,
-    trace: state.trace,
-    stream: { enabled: false },
-    cliEffort,
-    turn: state.turns.length,
-    signal,
-  });
-  return {
-    ...raw,
-    text: cleanClarificationReply(raw.text, latestTutorMessage(state)),
-  };
-}
-
-async function generateTutorStubCurriculumTranslation({ state, levels, signal = null }) {
-  const request = buildTutorStubCurriculumTranslationPrompt({
-    module: state.curriculum?.module,
-    levels,
-  });
-  const requestedMaxTokens = levels.length === 1 ? 1_600 : 3_800;
-  const raw = await callPromptModel({
-    prompt: request.prompt,
-    resolved: state.resolved,
-    systemPrompt: TUTOR_STUB_CURRICULUM_TRANSLATOR_SYSTEM_PROMPT,
-    role: 'tutor_stub_curriculum_translator',
-    maxTokens: Math.min(Number(state.maxTokens) || requestedMaxTokens, requestedMaxTokens),
-    trace: state.trace,
-    stream: { enabled: false },
-    cliEffort: state.cliEffort,
-    turn: state.turns.length,
-    signal,
-  });
-  return {
-    ...raw,
-    translation: parseTutorStubCurriculumTranslation(raw.text, {
-      module: state.curriculum.module,
-      levels,
-    }),
-  };
-}
-
-async function generateTutorStubTutorOutputTranslation({ state, sourceText, levels, signal = null }) {
-  const request = buildTutorStubTutorOutputTranslationPrompt({ text: sourceText, levels });
-  const requestedMaxTokens = levels.length === 1 ? 900 : 2_400;
-  const raw = await callPromptModel({
-    prompt: request.prompt,
-    resolved: state.resolved,
-    systemPrompt: TUTOR_STUB_TUTOR_OUTPUT_TRANSLATOR_SYSTEM_PROMPT,
-    role: 'tutor_stub_turn_translator',
-    maxTokens: Math.min(Number(state.maxTokens) || requestedMaxTokens, requestedMaxTokens),
-    trace: state.trace,
-    stream: { enabled: false },
-    cliEffort: state.cliEffort,
-    turn: state.turns.length,
-    signal,
-  });
-  return {
-    ...raw,
-    translation: parseTutorStubTutorOutputTranslation(raw.text, {
-      sourceText: request.sourceText,
-      levels,
-    }),
-  };
 }
 
 function cleanAutomatedLearnerReply(text) {

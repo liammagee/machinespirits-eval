@@ -149,6 +149,7 @@ test('entrypoint binds bounded facades instead of redeclaring their subsystems',
   const entrypoint = fs.readFileSync(path.join(ROOT, 'scripts/tutor-stub.js'), 'utf8');
   const facadePaths = [
     'services/tutorStubCliArguments.js',
+    'services/tutorStubClarificationTranslationRuntime.js',
     'services/tutorStubCharacterControlController.js',
     'services/tutorStubFeedbackTuningController.js',
     'services/tutorStubInteractiveLearnerRuntime.js',
@@ -159,14 +160,22 @@ test('entrypoint binds bounded facades instead of redeclaring their subsystems',
     'services/tutorStubInteractiveSessionController.js',
     'services/tutorStubInteractiveTurnController.js',
     'services/tutorStubLaunchRuntime.js',
+    'services/tutorStubLearnerDagState.js',
     'services/tutorStubLiveSettingsController.js',
     'services/tutorStubMixedLearnerController.js',
+    'services/tutorStubOpeningRuntime.js',
     'services/tutorStubPerformanceControlController.js',
+    'services/tutorStubPromptTransport.js',
+    'services/tutorStubRecoveryAccountingRuntime.js',
     'services/tutorStubScenarioController.js',
   ];
 
   assert.match(entrypoint, /parseTutorStubCliArguments/u);
   assert.match(entrypoint, /createTutorStubLaunchRuntime/u);
+  assert.match(entrypoint, /createTutorStubPromptTransport/u);
+  assert.match(entrypoint, /createTutorStubOpeningRuntime/u);
+  assert.match(entrypoint, /createTutorStubRecoveryAccountingRuntime/u);
+  assert.match(entrypoint, /createTutorStubClarificationTranslationRuntime/u);
   assert.match(entrypoint, /createTutorStubInteractiveLearnerRuntime/u);
   assert.match(entrypoint, /createTutorStubInteractiveAutomationController/u);
   assert.match(entrypoint, /createTutorStubInteractiveDialogueController/u);
@@ -191,7 +200,11 @@ test('entrypoint binds bounded facades instead of redeclaring their subsystems',
   assert.doesNotMatch(entrypoint, /function handleRandomPerformanceCommand/u);
   assert.doesNotMatch(entrypoint, /function restateLatestTutorForCharacter/u);
   assert.doesNotMatch(entrypoint, /function processLearnerLine/u);
-  assert.ok(entrypoint.split('\n').length <= 8_400, 'cycle 11 keeps the entrypoint line-count ratchet');
+  assert.doesNotMatch(entrypoint, /async function callPromptModel/u);
+  assert.doesNotMatch(entrypoint, /async function buildTutorOpening/u);
+  assert.doesNotMatch(entrypoint, /function tutorResponseRecoveryPrompt/u);
+  assert.doesNotMatch(entrypoint, /async function generateTutorClarification/u);
+  assert.ok(entrypoint.split('\n').length <= 7_350, 'cycle 12 keeps the entrypoint line-count ratchet');
   for (const relativePath of facadePaths) {
     const source = fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
     assert.ok(source.split('\n').length < 900, `${relativePath} must remain a bounded facade`);

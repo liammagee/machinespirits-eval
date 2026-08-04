@@ -417,10 +417,10 @@ test('paid launch metadata cannot overwrite the certificate-bound launch plan', 
 });
 
 test('tutor runtime reserves the Program 2 budget before both external dispatch paths', () => {
-  const cliSource = fs.readFileSync(path.join(ROOT, 'scripts/tutor-stub.js'), 'utf8');
+  const transportSource = fs.readFileSync(path.join(ROOT, 'services/tutorStubPromptTransport.js'), 'utf8');
   const pipelineSource = fs.readFileSync(path.join(ROOT, 'services/tutorStubTutorTurnPipeline.js'), 'utf8');
   assert.equal(
-    [cliSource, pipelineSource].reduce(
+    [transportSource, pipelineSource].reduce(
       (count, source) =>
         count +
         (source.match(/reserveProgram2ProviderBudget\(\{ maxTokens, trace, role, turn(?:: tutorTurn)? \}\);/gu)
@@ -430,7 +430,7 @@ test('tutor runtime reserves the Program 2 budget before both external dispatch 
     2,
   );
   for (const { source, reservation } of [
-    { source: cliSource, reservation: 'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });' },
+    { source: transportSource, reservation: 'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn });' },
     {
       source: pipelineSource,
       reservation: 'reserveProgram2ProviderBudget({ maxTokens, trace, role, turn: tutorTurn });',

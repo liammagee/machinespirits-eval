@@ -62,6 +62,7 @@ hook:
     - services/cliProviderBridge.js
     - services/tokenUsage.js
     - services/tutorStubCliArguments.js
+    - services/tutorStubClarificationTranslationRuntime.js
     - services/tutorStubCharacterControlController.js
     - services/tutorStubCommandRuntime.js
     - services/tutorStubFeedbackTuningController.js
@@ -76,21 +77,27 @@ hook:
     - services/tutorStubInteractiveTurnController.js
     - services/tutorStubLaunchRuntime.js
     - services/tutorStubLearnerAnalysisRuntime.js
+    - services/tutorStubLearnerDagState.js
     - services/tutorStubLearnerEvidenceRuntime.js
     - services/tutorStubLiveSettingsController.js
     - services/tutorStubModelPickerController.js
     - services/tutorStubMixedLearnerController.js
+    - services/tutorStubOpeningRuntime.js
     - services/tutorStubPerformanceControlController.js
+    - services/tutorStubPromptTransport.js
     - services/tutorStubPrBenchmark.js
     - services/tutorStubPrBenchmarkHook.js
+    - services/tutorStubRecoveryAccountingRuntime.js
     - services/tutorStubResponsePolicy.js
     - services/tutorStubScenarioController.js
     - services/tutorStubSessionOrchestration.js
     - services/tutorStubSessionStateRuntime.js
     - services/tutorStubTraceRuntime.js
+    - services/tutorStubTutorPromptContext.js
     - services/tutorStubTutorTurnPipeline.js
     - services/tutorStubTurnOrchestration.js
     - services/tutorStubVoiceController.js
+    - services/tutorStubWorldPresentation.js
   path_prefixes:
     - config/drama-derivation/
     - prompts/

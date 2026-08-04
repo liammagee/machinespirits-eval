@@ -206,24 +206,17 @@ test('the CLI keeps state defaults and call sites while services own pure projec
   const publicSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubPublicHistory.js'), 'utf8');
   const tutorOnlySource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorPromptContext.js'), 'utf8');
   const pipelineSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorTurnPipeline.js'), 'utf8');
-  const messageWrapper = cliSource.slice(
-    cliSource.indexOf('function tutorMessageContext'),
-    cliSource.indexOf('function compactPublicTranscriptForPrompt'),
-  );
-  const memoryWrappers = cliSource.slice(
-    cliSource.indexOf('function compactPublicTranscriptForPrompt'),
-    cliSource.indexOf('function dagNodeFact'),
-  );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubPublicHistory\.js';/u);
   assert.match(cliSource, /from '\.\.\/services\/tutorStubTutorPromptContext\.js';/u);
-  assert.match(messageWrapper, /buildTutorStubTutorMessageContext/u);
-  assert.match(messageWrapper, /state\?\.modelRef \|\| null/u);
-  assert.match(messageWrapper, /state\?\.tutorContext\?\.activatedBy \|\| 'session_start'/u);
-  assert.match(memoryWrappers, /projectTutorStubCompactPublicTranscript/u);
-  assert.match(memoryWrappers, /state\?\.historyTurns \?\? STUB\.historyTurns/gu);
-  assert.match(memoryWrappers, /Boolean\(state\?\.memory\?\.enabled\)/u);
-  assert.match(memoryWrappers, /projectTutorStubLearnerClassifierContext/u);
+  assert.match(publicSource, /function tutorStubTutorMessageContext/u);
+  assert.match(publicSource, /state\?\.modelRef \|\| null/u);
+  assert.match(publicSource, /state\?\.tutorContext\?\.activatedBy \|\| 'session_start'/u);
+  assert.match(publicSource, /function compactTutorStubPublicTranscriptForPrompt/u);
+  assert.match(publicSource, /state\?\.historyTurns \?\? defaultHistoryTurns/gu);
+  assert.match(publicSource, /Boolean\(state\?\.memory\?\.enabled\)/u);
+  assert.match(tutorOnlySource, /function projectTutorStubLearnerClassifierContext/u);
+  assert.match(cliSource, /defaultHistoryTurns: STUB\.historyTurns/u);
   assert.match(cliSource, /createTutorStubTutorTurnPipeline/u);
   assert.match(pipelineSource, /return async function callTutor/u);
   assert.match(pipelineSource, /tutorMessageContext\(state, history\)/u);

@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { dramaticAudiencePromptLines } from './tutorStubRegisterPragmatics.js';
 
 // Authorial presentation describes the world's scenario ecology and narrative
 // diction. It is deliberately separate from tutor register and engagement
@@ -23,6 +24,22 @@ export function tutorStubWorldLedgerTerm(world) {
 export function tutorStubWorldFlavourPhrase(world) {
   const diction = tutorStubWorldPresentation(world).narrative_diction;
   return diction ? `${diction} flavour` : "world's authored diction";
+}
+
+export function projectTutorStubPublicWorldSummary(world) {
+  if (!world) return 'No detective-story world is active; respond to the tutor topic directly.';
+  return [
+    `World: ${world.id} - ${world.title}`,
+    `Discipline: ${world.discipline || 'investigation'}`,
+    `Public question: ${world.question || world.publicQuestion || 'unknown'}`,
+    'Opening situation:',
+    String(world.openingFrame?.situation || world.setting || world.opening || world.openingSituation || '').trim() ||
+      '(none supplied)',
+    world.learnerVoice ? `Learner voice: ${world.learnerVoice}` : null,
+    ...dramaticAudiencePromptLines(world),
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 export function tutorStubWorldFamilyKey(world) {
