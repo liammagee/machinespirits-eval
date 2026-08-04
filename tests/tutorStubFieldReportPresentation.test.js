@@ -106,18 +106,26 @@ test('field and visualization reports preserve no-turn, path, newline, fallback,
   assert.equal(lines.at(-2).endsWith(`${'x'.repeat(93)}...`), true);
 });
 
-test('the CLI retains field calculation, visualization effects, and trace ownership while live reports stay byte-identical', async () => {
+test('the debug-report runtime retains field calculation, visualization effects, and trace ownership while live reports stay byte-identical', async () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubFieldPresentation.js'), 'utf8');
-  const fieldSlice = cliSource.slice(
-    cliSource.indexOf('function printLightweightDialogueField'),
-    cliSource.indexOf('\nfunction fieldVizBasePath', cliSource.indexOf('function printLightweightDialogueField')),
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
+  const fieldSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printLightweightDialogueField'),
+    runtimeSource.indexOf(
+      '\n  function fieldVizBasePath',
+      runtimeSource.indexOf('function printLightweightDialogueField'),
+    ),
   );
-  const visualizationSlice = cliSource.slice(
-    cliSource.indexOf('function printFieldVisualization'),
-    cliSource.indexOf('\nfunction printDialogueCloseout', cliSource.indexOf('function printFieldVisualization')),
+  const visualizationSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printFieldVisualization'),
+    runtimeSource.indexOf(
+      '\n  function printDialogueCloseout',
+      runtimeSource.indexOf('function printFieldVisualization'),
+    ),
   );
 
+  assert.match(cliSource, /createTutorStubDebugReportRuntime/u);
   assert.match(fieldSlice, /buildLightweightDialogueField/u);
   assert.match(fieldSlice, /projectTutorStubLightweightFieldLines/u);
   assert.doesNotMatch(fieldSlice, /mean speed|move \/ register \/ bottleneck|toFixed/u);

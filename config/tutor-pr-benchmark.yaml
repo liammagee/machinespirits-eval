@@ -65,6 +65,7 @@ hook:
     - services/tutorStubClarificationTranslationRuntime.js
     - services/tutorStubCharacterControlController.js
     - services/tutorStubCommandRuntime.js
+    - services/tutorStubDebugReportRuntime.js
     - services/tutorStubFeedbackTuningController.js
     - services/tutorStubFrozenReplay.js
     - services/tutorStubInterimController.js
@@ -76,6 +77,7 @@ hook:
     - services/tutorStubInteractiveSessionController.js
     - services/tutorStubInteractiveTurnController.js
     - services/tutorStubLaunchRuntime.js
+    - services/tutorStubLaunchSummaryPresentation.js
     - services/tutorStubLearnerAnalysisRuntime.js
     - services/tutorStubLearnerDagState.js
     - services/tutorStubLearnerEvidenceRuntime.js
@@ -87,6 +89,7 @@ hook:
     - services/tutorStubPromptTransport.js
     - services/tutorStubPrBenchmark.js
     - services/tutorStubPrBenchmarkHook.js
+    - services/tutorStubPublicPresentationRuntime.js
     - services/tutorStubRecoveryAccountingRuntime.js
     - services/tutorStubResponsePolicy.js
     - services/tutorStubScenarioController.js

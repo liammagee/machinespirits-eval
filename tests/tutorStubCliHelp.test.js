@@ -76,12 +76,15 @@ test('launch help projection is byte-stable and uses every supplied runtime defa
   assert.deepEqual(HELP_FIXTURE, before, 'help projection must not mutate defaults or catalogs');
 });
 
-test('the CLI delegates launch help projection while retaining terminal output ownership', () => {
+test('the CLI delegates launch help effects to the public presentation runtime', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCliHelp.js'), 'utf8');
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubPublicPresentationRuntime.js'), 'utf8');
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubCliHelp\.js';/u);
-  assert.match(cliSource, /console\.log\(\s*renderTutorStubCliHelp\(\{/u);
+  assert.match(cliSource, /createTutorStubPublicPresentationRuntime/u);
+  assert.doesNotMatch(cliSource, /from '\.\.\/services\/tutorStubCliHelp\.js';/u);
+  assert.match(runtimeSource, /from '\.\/tutorStubCliHelp\.js';/u);
+  assert.match(runtimeSource, /writeLine\(\s*renderTutorStubCliHelp\(\{/u);
   assert.doesNotMatch(cliSource, /console\.log\(`Usage:/u);
   assert.match(serviceSource, /return `Usage:/u);
   assert.doesNotMatch(serviceSource, /\b(?:fs|console|process|fetch|setInterval|clearInterval|Date\.now)\s*[.(]/u);

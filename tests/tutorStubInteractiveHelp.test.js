@@ -112,19 +112,21 @@ test('passthrough interactive help projection preserves compact rows and ignores
   assert.match(output, /<reset>\n\n$/u);
 });
 
-test('the CLI retains registry and terminal ownership while delegating only line projection', () => {
+test('the public presentation runtime owns command-registry context and terminal projection', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubInteractiveHelp.js'), 'utf8');
-  const interactiveHelpSlice = cliSource.slice(
-    cliSource.indexOf('function printInteractiveHelp'),
-    cliSource.indexOf('function printTutorStubReleaseNotes'),
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubPublicPresentationRuntime.js'), 'utf8');
+  const interactiveHelpSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printInteractiveHelp'),
+    runtimeSource.indexOf('function printTutorStubReleaseNotes'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubInteractiveHelp\.js';/u);
+  assert.match(cliSource, /createTutorStubPublicPresentationRuntime/u);
+  assert.match(runtimeSource, /from '\.\/tutorStubInteractiveHelp\.js';/u);
   assert.match(interactiveHelpSlice, /tutorStubCommandAvailable/u);
   assert.match(interactiveHelpSlice, /tutorStubCommandHelpRows/u);
   assert.match(interactiveHelpSlice, /projectTutorStubInteractiveHelpLines/u);
-  assert.match(interactiveHelpSlice, /console\.log\(line\)/u);
+  assert.match(interactiveHelpSlice, /writeLine\(line\)/u);
   assert.doesNotMatch(interactiveHelpSlice, /Tutor ratings are optional/u);
   assert.match(serviceSource, /export function projectTutorStubInteractiveHelpLines/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);

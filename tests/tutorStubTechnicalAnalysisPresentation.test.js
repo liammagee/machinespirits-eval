@@ -308,25 +308,27 @@ test('technical-analysis projection preserves empty and sparse fallback contract
   assert.doesNotMatch(output, /field state:|trace:/u);
 });
 
-test('the CLI retains live preparation and terminal ownership around the technical projector', async () => {
+test('the debug-report runtime retains live preparation and terminal ownership around the technical projector', async () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(
     path.join(ROOT, 'services', 'tutorStubTechnicalAnalysisPresentation.js'),
     'utf8',
   );
-  const printSlice = cliSource.slice(
-    cliSource.indexOf('function printCurrentTurnTechnicalAnalysis'),
-    cliSource.indexOf('function printLightweightDialogueField'),
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
+  const printSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printCurrentTurnTechnicalAnalysis'),
+    runtimeSource.indexOf('function printLightweightDialogueField'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubTechnicalAnalysisPresentation\.js';/u);
+  assert.match(cliSource, /createTutorStubDebugReportRuntime/u);
+  assert.match(runtimeSource, /from '\.\/tutorStubTechnicalAnalysisPresentation\.js';/u);
   assert.match(printSlice, /normalizeStoredRegisterSelection/u);
   assert.match(printSlice, /normalizeStoredRegisterEfficacy/u);
   assert.match(printSlice, /buildLightweightDialogueField/u);
   assert.match(printSlice, /traceDisplayPath/u);
   assert.match(printSlice, /formatEngagementStanceDistribution/u);
   assert.match(printSlice, /projectTutorStubTechnicalAnalysisLines/u);
-  assert.match(printSlice, /for \(const line of lines\) console\.log\(line\)/u);
+  assert.match(printSlice, /for \(const line of lines\) writeLine\(line\)/u);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);
 
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-technical-analysis-presentation-'));

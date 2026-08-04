@@ -224,12 +224,14 @@ test('explanatory debug fallback distinguishes initial, held, and changed stance
   );
 });
 
-test('tutor-stub imports the shared explanatory-debug helpers and retains no local copies', () => {
-  const source = fs.readFileSync('scripts/tutor-stub.js', 'utf8');
-  assert.match(source, /services\/tutorStubExplanatoryDebug\.js/u);
-  assert.doesNotMatch(source, /function explanatoryDebugFrame\s*\(/u);
-  assert.doesNotMatch(source, /function explanatoryDebugPrompt\s*\(/u);
-  assert.doesNotMatch(source, /function cleanExplanatoryDebugProse\s*\(/u);
-  assert.doesNotMatch(source, /function fallbackExplanatoryDebugProse\s*\(/u);
-  assert.doesNotMatch(source, /function registerPolicyCalculation\s*\(/u);
+test('the debug-report runtime imports the shared explanatory-debug helpers and retains no local copies', () => {
+  const cliSource = fs.readFileSync('scripts/tutor-stub.js', 'utf8');
+  const runtimeSource = fs.readFileSync('services/tutorStubDebugReportRuntime.js', 'utf8');
+  assert.match(cliSource, /services\/tutorStubDebugReportRuntime\.js/u);
+  assert.match(runtimeSource, /\.\/tutorStubExplanatoryDebug\.js/u);
+  assert.doesNotMatch(runtimeSource, /function explanatoryDebugFrame\s*\(/u);
+  assert.doesNotMatch(runtimeSource, /function explanatoryDebugPrompt\s*\(/u);
+  assert.doesNotMatch(runtimeSource, /function cleanExplanatoryDebugProse\s*\(/u);
+  assert.doesNotMatch(runtimeSource, /function fallbackExplanatoryDebugProse\s*\(/u);
+  assert.doesNotMatch(runtimeSource, /function registerPolicyCalculation\s*\(/u);
 });

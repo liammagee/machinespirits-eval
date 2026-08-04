@@ -186,15 +186,17 @@ test('technical-debug projection preserves no-turn and sparse fallback contracts
   assert.match(held, /overlay result: no overlay crossed 0\.7; primary retained/u);
 });
 
-test('the CLI retains gating, live preparation, trace persistence, and terminal ownership', async () => {
+test('the debug-report runtime retains gating, live preparation, trace persistence, and terminal ownership', async () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTechnicalDebugPresentation.js'), 'utf8');
-  const printSlice = cliSource.slice(
-    cliSource.indexOf('function printExplanatoryDebugTechnical'),
-    cliSource.indexOf('function explanatoryDebugModel'),
+  const runtimeSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDebugReportRuntime.js'), 'utf8');
+  const printSlice = runtimeSource.slice(
+    runtimeSource.indexOf('function printExplanatoryDebugTechnical'),
+    runtimeSource.indexOf('function explanatoryDebugModel'),
   );
 
-  assert.match(cliSource, /from '\.\.\/services\/tutorStubTechnicalDebugPresentation\.js';/u);
+  assert.match(cliSource, /createTutorStubDebugReportRuntime/u);
+  assert.match(runtimeSource, /from '\.\/tutorStubTechnicalDebugPresentation\.js';/u);
   assert.match(printSlice, /state\.explanatoryDebug\?\.enabled/u);
   assert.match(printSlice, /printWithConcurrentTerminal/u);
   assert.match(printSlice, /normalizeStoredRegisterSelection/u);
@@ -202,7 +204,7 @@ test('the CLI retains gating, live preparation, trace persistence, and terminal 
   assert.match(printSlice, /buildLightweightDialogueField/u);
   assert.match(printSlice, /formatEngagementStanceDistribution/u);
   assert.match(printSlice, /projectTutorStubTechnicalDebugLines/u);
-  assert.match(printSlice, /for \(const line of lines\) console\.log\(line\)/u);
+  assert.match(printSlice, /for \(const line of lines\) writeLine\(line\)/u);
   assert.match(printSlice, /appendTraceEvent\(state\.trace/u);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);
 
