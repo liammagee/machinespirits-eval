@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T04:08:08.946Z",
+  "generated": "2026-08-04T04:30:45.761Z",
   "counts": {
     "total": 373,
     "byStatus": {
@@ -5062,8 +5062,17 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-08-03",
-      "updated": "2026-08-03",
-      "verification": "Pre-registered before any run: the crossed interaction — action A beats B in state 1 AND B beats A in state 2 — on a transfer outcome, with sensing, delivery, and outcome reported separately, against fixed-A, fixed-B, random, and planted-state-oracle comparators. Null branches written both ways."
+      "updated": "2026-08-04",
+      "verification": "Terminal (PRs #453-455, paper v3.0.251-256): crossed interaction present on ruled conduct in both worlds (exhibit right card 6/6 vs wrong 3/6; stake 5/6 vs 0/6; oracle 12/12, router 11/12) — the registered PARTIAL: adaptation moves conduct, not learning. The transfer column was then corrected twice: cold baselines showed the v1 probe read persona identity, and the v2 episode-citation instrument (cold 0/10) found teaching transfer robust and uniform once multi-sampled — the single-draw probes had manufactured the arm differences. Stake-move causal test null (pooled 3/7 vs 2/7 against the 4-vs-1 bar); the assay world's zero closed as measured analogy distance plus identity crowding (near-twin 3/15, far-twin 0/15, cold 0/5). Standing rules recorded: multi-sample probes, cold baselines before any transfer claim. k=3 per cell, two worlds, simulated learner.",
+      "claim_status": "scope-bound",
+      "links": {
+        "prs": [
+          453,
+          454,
+          455,
+          460
+        ]
+      }
     },
     {
       "id": "adaptive-causality-repertoire",
@@ -5075,7 +5084,16 @@
       "source": "manual",
       "created": "2026-08-04",
       "updated": "2026-08-04",
-      "verification": "Registered before any run: per-state crossed contrast (right card vs named-tempting-wrong card forced at planted targets), both worlds, k=6 per side per state pooled. PASS = right >= 4/6 AND wrong <= 2/6 on ruled conduct; direction-only and null branches written. Delivery verified in shipped prompts; standing rulings by conduct with per-row audit."
+      "verification": "Terminal (PRs #457-459, paper v3.0.258/259/261): right vs named-wrong contrast, 48/48 delivery-verified — demand 5/6 vs 1/6, mockery 6/6 vs 2/6, grievance 6/6 vs 2/6, all PASS at the registered bar. Lost-thread retest with a non-overlapping wrong card ruled ROBUST-NATIVE: the model untangles 5/6 despite the adversarial card, so default conduct is the gold and the confused card is not claimed as causal. Flat/bored crossed test right 5/5 vs wrong 0/5, with qd-v2 detection closing the wordy-boredom misses (replayed recall 66/66, collisions 0, calm 0, held-out shadow 10/10; manifest pins updated). Final census: six entries causally proven, one robust-native. k=3 per arm per world; flat/bored carries a one-world bound.",
+      "claim_status": "scope-bound",
+      "links": {
+        "prs": [
+          457,
+          458,
+          459,
+          460
+        ]
+      }
     },
     {
       "id": "adaptive-causality-routing",
@@ -5087,7 +5105,14 @@
       "source": "manual",
       "created": "2026-08-04",
       "updated": "2026-08-04",
-      "verification": "Registered before builds: R1 gate = stake-fusion detection on held-out recorded plants improves over the v6 cascade with calm alarms unchanged (leave-one-world-out standard); R2 gate = live router k=3 on world-030 detects 3/3 stake plants and conduct matches the oracle arm. Null branches written both ways."
+      "verification": "Terminal (PR #456, paper v3.0.257): R1 — corpus of 169 recorded stake plants harvested; the v7 cascade closes all 8 recorded misses with two world-neutral closed-class shapes; recall 169/169, cross-state collisions 0/179, calm set 0/124 new fires, unplanted turns 1/423. R2 — live router k=3 on world-030: the fusion stake detected 3/3, cards in all three shipped prompts, split move made 3/3, leaks 0. Router sensing matches the oracle on this bench; detector plus card table is the whole routing policy at this repertoire size. One world live, k=3.",
+      "claim_status": "scope-bound",
+      "links": {
+        "prs": [
+          456,
+          460
+        ]
+      }
     },
     {
       "id": "adaptive-causality-stabilization",
@@ -5098,8 +5123,15 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-08-03",
-      "updated": "2026-08-03",
-      "verification": "Exit criteria from notes/2026-08-03-adaptive-causality-living-log.md §Proposed stabilization phase, as corrected by the same file's correction entry: boundary closed (open PRs resolved), baseline manifest generated and reproducible, golden delivery-contract test green, plan/status docs reconciled, CI green on the baseline."
+      "updated": "2026-08-04",
+      "verification": "Closed via PR #452: v0.7.0 baseline manifest shipped (config/stability/baseline-v0.7.0.json — 14 pinned artifacts, each with sha256 and the claim it supports, plus a --check mode CI can run) and the golden delivery-contract test green (card footer and licence present in every shipped prompt, retries included, deterministic, no model calls); living-log correction entry appended, ADAPTATION-PLAN-3.0 status reconciled; CI green on merge.",
+      "claim_status": "methods",
+      "links": {
+        "prs": [
+          452,
+          460
+        ]
+      }
     },
     {
       "id": "admin-chat-drama-launcher-simplification",
@@ -9710,7 +9742,14 @@
       "source": "manual",
       "created": "2026-08-04",
       "updated": "2026-08-04",
-      "verification": "Registered before scoring: learner's next turn after the t2 demand, two outcomes (check-engagement; send-deferral), WAGER arm (licence on) vs HARNESS arm (licence off), pooled k=6/arm (3 recorded + 3 fresh under v7). PASS = wager >= 4/6 and harness <= 2/6 on check-engagement; leak column re-priced per licence rule. Null and reversed branches recorded as bounds."
+      "verification": "Terminal (PR #459, paper v3.0.260): pooled k=6/arm at the world-030 first demand — check-engagement WAGER 4/6 vs HARNESS 1/6, PASS at the registered bar; send-deferral 6/6 in both arms, so the three-beat harness already buys deferral and the licence's measurable purchase is engagement. Manipulation check: staked sends 2/6 with the licence, 0/6 without, and two of the licence arm's engagement wins followed unstaked replies — the promotion attaches to the licence, the fourth beat itself unisolated (n=2, recorded as anecdote, not claim). Leaks 0 across every licensed turn.",
+      "claim_status": "scope-bound",
+      "links": {
+        "prs": [
+          459,
+          460
+        ]
+      }
     },
     {
       "id": "adaptive-tutor-copilot-shadow-pilot",
