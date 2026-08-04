@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T13:17:27.785Z",
+  "generated": "2026-08-04T13:35:42.301Z",
   "counts": {
     "total": 397,
     "byStatus": {
@@ -441,7 +441,7 @@
       "created": "2026-07-29",
       "updated": "2026-08-04",
       "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
-      "branch": "codex/refactor-tutor-stub-prompt-transport",
+      "branch": "codex/refactor-tutor-stub-debug-report-presentation",
       "claim_status": "planned",
       "depends_on": [],
       "links": {
@@ -454,6 +454,7 @@
           "services/tutorStubClarificationTranslationRuntime.js",
           "services/tutorStubCliArguments.js",
           "services/tutorStubCommandRuntime.js",
+          "services/tutorStubDebugReportRuntime.js",
           "services/tutorStubFeedbackTuningController.js",
           "services/tutorStubInteractiveAutomationController.js",
           "services/tutorStubInteractiveDialogueController.js",
@@ -464,6 +465,7 @@
           "services/tutorStubInteractiveTurnController.js",
           "services/tutorStubInterimController.js",
           "services/tutorStubLaunchRuntime.js",
+          "services/tutorStubLaunchSummaryPresentation.js",
           "services/tutorStubLearnerAnalysisRuntime.js",
           "services/tutorStubLearnerDagState.js",
           "services/tutorStubLearnerEvidenceRuntime.js",
@@ -474,6 +476,7 @@
           "services/tutorStubOpeningRuntime.js",
           "services/tutorStubPromptTransport.js",
           "services/tutorStubPublicHistory.js",
+          "services/tutorStubPublicPresentationRuntime.js",
           "services/tutorStubRecoveryAccountingRuntime.js",
           "services/tutorStubResponsePolicy.js",
           "services/tutorStubScenarioController.js",
@@ -498,7 +501,8 @@
           431,
           471,
           474,
-          475
+          475,
+          476
         ],
         "items": [
           "codebase-refactoring-program"
