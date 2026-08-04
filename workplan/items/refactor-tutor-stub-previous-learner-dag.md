@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-previous-learner-dag
 title: Refactor tutor-stub previous learner-DAG lookup
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 13 focused interim-presentation assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve immediate preceding-turn selection, current-turn exclusion, undefined-model behavior, unbounded lookup, and empty state
 branch: codex/refactor-tutor-stub-previous-learner-dag
 claim_status: planned

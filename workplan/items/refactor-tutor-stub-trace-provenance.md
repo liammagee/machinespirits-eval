@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-trace-provenance
 title: Refactor tutor-stub trace provenance
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 7 focused trace-schema assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve schema, config hash, Git summary, repository-root forwarding, independent failure capture, and non-blocking behavior
 branch: codex/refactor-tutor-stub-trace-provenance
 claim_status: planned

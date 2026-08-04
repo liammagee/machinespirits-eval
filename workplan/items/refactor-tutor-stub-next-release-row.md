@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-next-release-row
 title: Refactor tutor-stub next release row projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 14 focused release-pacing assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve pending, exhausted, missing-world, normalized-number, trimmed-surface, fact, and release-source behavior
 branch: codex/refactor-tutor-stub-next-release-row
 claim_status: planned

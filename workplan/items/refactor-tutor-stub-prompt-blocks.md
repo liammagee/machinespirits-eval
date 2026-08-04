@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-prompt-blocks
 title: Refactor tutor-stub prompt blocks
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 6/6 prompt-block fixtures plus full hermetic root and tutor-core zero-skip contracts preserve delimit/replace and multiple-choice guidance bytes; every static and source-only gate passes
 branch: codex/refactor-tutor-stub-prompt-blocks
 claim_status: planned

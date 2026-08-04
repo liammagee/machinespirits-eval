@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-register-prior-loading
 title: Refactor tutor-stub register prior loading
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 27 focused assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate pass while preserving opt-outs, path resolution, schemas, deployment statuses, and errors
 branch: codex/refactor-tutor-stub-register-prior-loading
 claim_status: scope-bound

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-interim-learner-record
 title: Refactor tutor-stub interim learner-record summary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 18 focused interim-presentation assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve turn fallback, adoption/retraction plurality, bounded derivations, hypothesis, answer, rejection, and empty handling
 branch: codex/refactor-tutor-stub-interim-learner-record
 claim_status: planned

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-dag-memory-reliability
 title: Refactor tutor-stub DAG memory reliability projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 41/41; hermetic root 7452/7452 across 551 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass
 branch: codex/refactor-tutor-stub-dag-memory-reliability
 claim_status: planned

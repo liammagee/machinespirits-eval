@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-technical-debug-predicate
 title: Refactor tutor-stub technical debug predicate
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 8 focused debug-identity assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve missing state, disabled debug, missing and non-technical formats, and enabled technical behavior
 branch: codex/refactor-tutor-stub-technical-debug-predicate
 claim_status: planned

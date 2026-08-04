@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-learner-dag-replay
 title: Refactor tutor-stub learner-DAG replay
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 4 focused learner-DAG replay assertions, synchronized hermetic manifest, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve gates, update projection, turn/text/dropout semantics, evidence merge, model state/cloning, counts, and empty-turn behavior
 branch: codex/refactor-tutor-stub-learner-dag-replay
 claim_status: planned

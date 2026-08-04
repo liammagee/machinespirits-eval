@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-model-temperature
 title: Refactor tutor-stub model temperature policy
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 3/3 model-temperature fixtures plus full hermetic root and tutor-core zero-skip contracts preserve fixed OpenAI GPT-5 temperature and requested-temperature pass-through; every static and source-only gate passes
 branch: codex/refactor-tutor-stub-model-temperature
 claim_status: planned

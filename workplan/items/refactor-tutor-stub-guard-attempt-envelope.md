@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-guard-attempt-envelope
 title: Refactor tutor-stub guard attempt envelope
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 16/16; hermetic root 7435/7435 across 547 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass
 branch: codex/refactor-tutor-stub-guard-attempt-envelope
 claim_status: planned

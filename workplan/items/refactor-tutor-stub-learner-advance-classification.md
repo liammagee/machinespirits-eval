@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-learner-advance-classification
 title: Refactor tutor-stub learner-advance classification
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: nine focused learner-advance and classification assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve score floors, no-op paths, accelerated movement labels, evidence use, agency, and reasons
 branch: codex/refactor-tutor-stub-learner-advance-classification
 claim_status: planned

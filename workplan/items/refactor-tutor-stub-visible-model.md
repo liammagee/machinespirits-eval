@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-visible-model
 title: Refactor tutor-stub visible model projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 25 focused model-selection and recipe assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve visible provider, model, configuration, endpoint, API-key, and CLI-route metadata
 branch: codex/refactor-tutor-stub-visible-model
 claim_status: planned

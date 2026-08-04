@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-streaming-capability
 title: Refactor tutor-stub streaming capability
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 4 focused speaker-transport assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve direct token streaming, CLI exclusion, Codex event streaming, and missing-provider behavior
 branch: codex/refactor-tutor-stub-streaming-capability
 claim_status: planned

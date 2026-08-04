@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-picker-presentation
 title: Refactor tutor-stub picker presentation
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: Launch, scenario, and curriculum picker lines remain exact while
   direct immutable projection, live PTY, focused, hermetic, manifest, static,
   and source-only gates pass.

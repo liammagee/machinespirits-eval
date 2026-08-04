@@ -1,13 +1,13 @@
 ---
 id: workplan-commit-trailer-check
 title: Commit-trailer check for work pushed straight to main
-status: review
+status: done
 type: infra
 priority: P2
 owner: claude
 source: manual
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-08-04
 verification: >-
   `npm run wp:commit-link` reads a commit message with the same grammar
   `wp:pr-link` reads a PR body, accepting `Workplan-item:` and `Workplan item:`
@@ -20,6 +20,8 @@ verification: >-
 claim_status: planned
 branch: claude/workplan-commit-trailer-check
 links:
+  prs:
+    - 299
   code:
     - scripts/check-commit-workplan-trailer.js
     - scripts/lib/workplanLink.js
@@ -92,3 +94,7 @@ it stops the board publishing.
 mirrored into `CLAUDE.md` and `AGENTS.md`, since a convention no agent reads is
 not implemented. The fourteen historical commits are left as they are; they are
 already recorded on the parent card.
+
+**Review closeout, 2026-08-04.** PR #299 merged the checker, workflow, shared
+grammar, documentation, and tests. The current 22-case workplan suite passes,
+including all seven commit-link assertions.

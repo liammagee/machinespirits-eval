@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-interim-clue-progress
 title: Refactor tutor-stub interim clue progress summary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 22 focused interim-presentation assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve supplied snapshots, lazy construction, release timing, exhausted scheduling, and null handling
 branch: codex/refactor-tutor-stub-interim-clue-progress
 claim_status: planned

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-current-debug-selection
 title: Refactor tutor-stub current debug selection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 11 focused debug-identity assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve run, opening, completed-turn, active-turn, selected-ID, trace-path, and displayed last-turn precedence
 branch: codex/refactor-tutor-stub-current-debug-selection
 claim_status: planned

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-technical-debug-print-gate
 title: Refactor tutor-stub technical debug print gate
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 10 focused debug-identity assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve disabled/enabled dispatch, state and callback identity, call count, and return values
 branch: codex/refactor-tutor-stub-technical-debug-print-gate
 claim_status: planned

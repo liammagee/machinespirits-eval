@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-interim-evidence-timing
 title: Refactor tutor-stub interim evidence timing summary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 21 focused interim-presentation assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve current, prior, future, exhausted, and unavailable evidence branches
 branch: codex/refactor-tutor-stub-interim-evidence-timing
 claim_status: planned

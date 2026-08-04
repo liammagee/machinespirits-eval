@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-second-loop-recovery
 title: Recover tutor-stub second refactor loop onto main
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: the eight reviewed missing slices replay cleanly onto current main; full hermetic root and tutor-core contracts pass with zero skips, together with source-only workplan, manifest, lint, format, cycle, refs, syntax, commit-link, and diff gates
 branch: codex/refactor-tutor-stub-second-loop-recovery
 claim_status: planned

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-model-choice-catalog
 title: Refactor tutor-stub model-choice catalogue
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: Model admission, exclusions, access labels, fallback, ordering,
   and exact terminal blocks remain unchanged across direct, live, focused,
   hermetic, manifest, static, and source-only gates.
@@ -18,6 +18,7 @@ depends_on:
 links:
   prs:
     - 344
+    - 349
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -76,3 +77,5 @@ Log:
   the zero-cycle ratchet across 421 files also pass.
 - 2026-07-28 — Opened dependent PR #344 on PR #343's branch with no managed ref
   or version impact.
+- 2026-08-04 — Review confirmed the stacked implementation reached `main`
+  through consolidated PR #349 after dependent PR #344 was closed unmerged.

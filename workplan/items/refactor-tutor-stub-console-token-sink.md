@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-console-token-sink
 title: Refactor tutor-stub console token sink
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 7 focused speaker-transport assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve direct writes, one-time setup, newline handling, empty finish, concurrent buffering, and atomic terminal print behavior
 branch: codex/refactor-tutor-stub-console-token-sink
 claim_status: planned

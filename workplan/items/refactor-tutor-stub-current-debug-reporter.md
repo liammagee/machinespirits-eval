@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-current-debug-reporter
 title: Refactor tutor-stub current debug reporter
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 14 focused debug-identity assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve the clipboard envelope and payload, line writes, selected IDs, and public return shape
 branch: codex/refactor-tutor-stub-current-debug-reporter
 claim_status: planned

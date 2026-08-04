@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-state-debug-identity
 title: Refactor tutor-stub state debug identity
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 7 focused debug-identity assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve explicit and trace run IDs, no-trace fallback, precedence, turn normalization, and padding
 branch: codex/refactor-tutor-stub-state-debug-identity
 claim_status: planned

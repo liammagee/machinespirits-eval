@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-typed-action-decision-lookup
 title: Refactor tutor-stub typed-action decision lookup
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 3 focused typed-action lookup assertions, synchronized hermetic manifest, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve modern, legacy, and register precedence, reference identity, invalid filtering, contract-ID requirement, and null fallback
 branch: codex/refactor-tutor-stub-typed-action-decision-lookup
 claim_status: planned

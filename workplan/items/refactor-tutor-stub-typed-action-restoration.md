@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-typed-action-restoration
 title: Refactor tutor-stub typed-action restoration
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 7 focused typed-action restoration assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve disabled/empty states, clear boundary, event/turn precedence, closed dominance, cloning, pending/provenance/lifecycle failures, state updates, and summary fields
 branch: codex/refactor-tutor-stub-typed-action-restoration
 claim_status: planned

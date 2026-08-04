@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-interim-learner-dag-summary
 title: Refactor tutor-stub interim learner-DAG summary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 14 focused interim-presentation assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve model precedence, turn/count fields, missing-premise fallback, bottleneck copy, and null handling
 branch: codex/refactor-tutor-stub-interim-learner-dag-summary
 claim_status: planned

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-stream-label
 title: Refactor tutor-stub stream label
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 5 focused speaker-transport assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve tutor, learner-analysis, learner-DAG, classifier, fallback, and color copy
 branch: codex/refactor-tutor-stub-stream-label
 claim_status: planned

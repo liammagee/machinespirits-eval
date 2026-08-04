@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-interim-state-holder
 title: Refactor tutor-stub interim state holder
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 12 focused interim-presentation assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve initial shape, direct/nested resolution, precedence, and null handling
 branch: codex/refactor-tutor-stub-interim-state-holder
 claim_status: planned

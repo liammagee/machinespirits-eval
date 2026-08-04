@@ -1,13 +1,13 @@
 ---
 id: tutor-eval-instrument-dashboard
 title: One map and one page for every tutor-scoring instrument
-status: review
+status: done
 type: infra
 priority: P2
 owner: claude
 source: manual
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-08-04
 verification: "`node scripts/build-tutor-stub-ab-dashboard.js` runs on file reads
   alone, reports the run and lane counts, and writes
   `exports/tutor-stub-ab/dashboard.html`; unit tests assert the merge attaches a
@@ -18,6 +18,14 @@ verification: "`node scripts/build-tutor-stub-ab-dashboard.js` runs on file read
 claim_status: methods
 depends_on:
   - tutor-instrumentation-ab-harness
+links:
+  prs:
+    - 434
+  code:
+    - .claude/skills/ms-eval-instruments/SKILL.md
+    - scripts/build-tutor-stub-ab-dashboard.js
+    - services/tutorStubAbDashboardHtml.js
+    - services/__tests__/tutorStubAbDashboardHtml.test.js
 tags:
   - tutor-stub
   - tooling
@@ -45,3 +53,7 @@ calls, no DB access.
 
 Not claimed: any new result. The page presents the channels' existing
 verdicts side by side and never combines them.
+
+**Review closeout, 2026-08-04.** PR #434 merged the instrument map and dashboard.
+The focused three-case dashboard suite passes, and a zero-model rebuild over the
+available local A/B corpus reports 3 runs and 10 version-by-model lanes.

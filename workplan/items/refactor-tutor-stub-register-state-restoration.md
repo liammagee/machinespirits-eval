@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-register-state-restoration
 title: Refactor tutor-stub register state restoration
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 4 focused register-restoration assertions, synchronized hermetic manifest, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve disabled no-op, filtering, replacement, efficacy attachment, sorting, cloning, empty reset, restored count, and current selection
 branch: codex/refactor-tutor-stub-register-state-restoration
 claim_status: planned

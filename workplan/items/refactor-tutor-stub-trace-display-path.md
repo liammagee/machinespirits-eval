@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-trace-display-path
 title: Refactor tutor-stub trace display path
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 8 focused trace-schema assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve disabled-trace null handling, repository-root forwarding, file-path forwarding, and relative display output
 branch: codex/refactor-tutor-stub-trace-display-path
 claim_status: planned

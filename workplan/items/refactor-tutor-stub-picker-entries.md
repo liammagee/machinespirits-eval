@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-picker-entries
 title: Refactor tutor-stub picker entry projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: Scenario and curriculum picker entries remain deep-equal while
   direct identity, fallback, live PTY, focused, hermetic, manifest, static, and
   source-only gates pass.

@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-human-discourse-config
 title: Refactor tutor-stub human discourse config
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: All three human-discourse mode envelopes remain exact across
   direct, live, focused, hermetic, manifest, static, and source-only gates.
 branch: codex/refactor-tutor-stub-human-discourse-config
@@ -17,6 +17,7 @@ depends_on:
 links:
   prs:
     - 348
+    - 349
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
@@ -71,3 +72,5 @@ Log:
   and the focused/static gates then passed cleanly.
 - 2026-07-28 — Opened dependent PR #348 on PR #347's branch; managed refs are
   unchanged.
+- 2026-08-04 — Review confirmed the stacked implementation reached `main`
+  through consolidated PR #349 after dependent PR #348 was closed unmerged.

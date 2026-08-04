@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-warrant-audit-projection
 title: Refactor tutor-stub warrant audit projection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 48/48; hermetic root 7447/7447 across 550 files and tutor-core 137/137, zero skips; source-only workplan, manifest, lint, format, cycle, refs, syntax, and diff gates pass
 branch: codex/refactor-tutor-stub-warrant-audit-projection
 claim_status: planned

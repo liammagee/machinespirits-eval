@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-model-selection
 title: Refactor tutor-stub model selection
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: focused 9/9 model-choice fixtures including byte-exact live CLI blocks plus full hermetic root and tutor-core zero-skip contracts preserve unsupported aliases, catalogue construction, availability checks, and error wording; every static and source-only gate passes
 branch: codex/refactor-tutor-stub-model-selection
 claim_status: planned

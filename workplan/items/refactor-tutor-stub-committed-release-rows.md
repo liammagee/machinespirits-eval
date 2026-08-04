@@ -1,13 +1,13 @@
 ---
 id: refactor-tutor-stub-committed-release-rows
 title: Refactor tutor-stub committed release rows
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 verification: 15 focused release-pacing assertions, the zero-skip hermetic suite (including tutor-core 137/137), and every static/source-only gate preserve pacing schedules, turn bounds, public projection, legacy fallback, and missing-world behavior
 branch: codex/refactor-tutor-stub-committed-release-rows
 claim_status: planned

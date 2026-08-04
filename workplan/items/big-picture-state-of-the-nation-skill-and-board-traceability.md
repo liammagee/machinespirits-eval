@@ -1,13 +1,13 @@
 ---
 id: big-picture-state-of-the-nation-skill-and-board-traceability
 title: Big-picture state-of-the-nation skill and board traceability
-status: review
+status: done
 type: ops
 priority: P2
 owner: claude
 source: manual
 created: 2026-07-26
-updated: 2026-07-27
+updated: 2026-08-04
 verification: >-
   `/ms-big-picture` runs read-only and free (no eval runs, no paid API calls, no
   test suite), reports the fixed six-part shape against live board, git, gh and
@@ -18,6 +18,9 @@ verification: >-
 claim_status: planned
 branch: claude/big-picture-skill-and-board-hygiene
 links:
+  prs:
+    - 294
+    - 300
   code:
     - .claude/skills/ms-big-picture/SKILL.md
 tags:
@@ -96,3 +99,8 @@ The general shape is worth recording: **a sweep plus a gate in one PR is not
 atomic against concurrent merges.** The sweep is a snapshot, the gate is a rule,
 and anything merging in between satisfies neither. The gate is the durable half
 and it worked — it caught in CI exactly what the sweep could not have seen.
+
+**Review closeout, 2026-08-04.** PR #294 delivered the read-only skill and board
+audit, PR #300 repaired the permission-sweep race, and the resulting skill remains
+on `main`. The follow-up direct-push traceability gap is separately implemented
+and verified by [[workplan-commit-trailer-check]].
