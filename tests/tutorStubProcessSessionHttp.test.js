@@ -685,6 +685,36 @@ test('HTTP learner step traverses the real CLI tutor runtime through a fake mode
     ['assistant', 'user', 'assistant', 'user', 'assistant'],
   );
 
+  const statusCommand = await request(base, '/sessions/real-http-session/steps', {
+    method: 'POST',
+    body: { input: '/status', kind: 'command' },
+  });
+  assert.equal(statusCommand.status, 200, JSON.stringify(statusCommand.body));
+  assert.equal(statusCommand.body.result.accepted, true);
+  assert.equal(statusCommand.body.result.command.id, 'status');
+  assert.equal(statusCommand.body.result.command.input, '/status');
+  assert.match(statusCommand.body.result.command.output, /model routing:/u);
+  assert.match(statusCommand.body.result.command.output, /conversation:/u);
+  assert.equal(statusCommand.body.result.command.output.includes(String.fromCharCode(27)), false);
+  assert.equal(statusCommand.body.result.command.output.includes('\r'), false);
+  assert.equal(statusCommand.body.session.state.turnCount, 2);
+  assert.equal(statusCommand.body.session.state.publicMessageCount, 5);
+
+  const helpCommand = await request(base, '/sessions/real-http-session/steps', {
+    method: 'POST',
+    body: { input: '/help', kind: 'command' },
+  });
+  assert.equal(helpCommand.status, 200, JSON.stringify(helpCommand.body));
+  assert.equal(helpCommand.body.result.accepted, true);
+  assert.equal(helpCommand.body.result.command.id, 'help');
+  assert.equal(helpCommand.body.result.command.input, '/help');
+  assert.match(helpCommand.body.result.command.output, /type \/ to browse/u);
+  assert.match(helpCommand.body.result.command.output, /understand/u);
+  assert.equal(helpCommand.body.result.command.output.includes(String.fromCharCode(27)), false);
+  assert.equal(helpCommand.body.result.command.output.includes('\r'), false);
+  assert.equal(helpCommand.body.session.state.turnCount, 2);
+  assert.equal(helpCommand.body.session.state.publicMessageCount, 5);
+
   const command = await request(base, '/sessions/real-http-session/steps', {
     method: 'POST',
     body: { input: '/settings', kind: 'command' },

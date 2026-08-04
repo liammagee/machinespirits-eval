@@ -30,6 +30,7 @@ import {
   TUTOR_STUB_NORMAL_SLASH_COMMANDS,
   tutorStubCommandTransportAdmission,
 } from '../services/tutorStubCommandRegistry.js';
+import { stripTutorStubTerminalControl } from '../services/tutorStubTerminalText.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -172,10 +173,7 @@ export function extractDialogue(session) {
  * is built dynamically to keep a control character out of the literal
  * (no-control-regex).
  */
-export function stripTerminalControl(value) {
-  const ansi = new RegExp(`${String.fromCharCode(27)}\\[[0-9;?]*[ -/]*[@-~]`, 'gu');
-  return String(value || '').replace(ansi, '');
-}
+export const stripTerminalControl = stripTutorStubTerminalControl;
 
 /** The transport reports failures as an {error:{code,message}} envelope. */
 export function describeError(payload, fallback = 'tutor-stub request failed') {
