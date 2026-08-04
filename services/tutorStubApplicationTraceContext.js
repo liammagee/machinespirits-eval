@@ -227,6 +227,7 @@ export function createTutorStubApplicationTraceContext({
               pointOfActionArm === 'committee'
                 ? {
                     model: args['committee-mini-model'],
+                    spanInterface: args['committee-span-interface'],
                     fallbackPolicy: args['committee-fallback-policy'],
                     control: '/committee on|off|status',
                   }

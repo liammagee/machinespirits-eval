@@ -42,7 +42,7 @@
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
       "claim": "tutor-turn coordination, clue-insertion interception, and terminal fallback",
-      "sha256": "f6bc7ceff8a20125a33ab3a16fe38e073d1ff3ea7006e9e9150f4ae82753c068"
+      "sha256": "f8b2ff27e96e86a325bb847fd227f53ae222ee3f32c57d29ab7b91952a040c60"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
@@ -57,7 +57,7 @@
     {
       "file": "services/tutorStubTutorCommitteeRuntime.js",
       "claim": "Program-2 committee mini/composer dispatch, fallback battery, resampling, and trace envelope",
-      "sha256": "5b138faca1599cd57804c7bcf14d14df4aad21484d551745552d05f94fb35047"
+      "sha256": "4cc6a4832d84ebc78daee7e9f84c15b04e55f57955690f793860c06e7990ebf7"
     },
     {
       "file": "services/tutorStubTutorDeliveryRuntime.js",

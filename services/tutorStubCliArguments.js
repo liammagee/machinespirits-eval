@@ -32,6 +32,7 @@ export function parseTutorStubCliArguments({
       'no-committee': { type: 'boolean', default: false },
       'committee-mini-model': { type: 'string', default: committeeDefaults.miniModel },
       'committee-ollama-url': { type: 'string', default: committeeDefaults.ollamaUrl },
+      'committee-span-interface': { type: 'string', default: 'v1' },
       'committee-fallback-policy': {
         type: 'string',
         default: env.TUTOR_STUB_COMMITTEE_FALLBACK_POLICY || 'v1',

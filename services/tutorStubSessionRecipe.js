@@ -23,6 +23,7 @@ export const TUTOR_STUB_RECIPE_OPTION_KEYS = Object.freeze([
   'point-of-action-arm',
   'committee-mini-model',
   'committee-ollama-url',
+  'committee-span-interface',
   'committee-fallback-policy',
   'register-overlay-threshold',
   'pressure-turns',

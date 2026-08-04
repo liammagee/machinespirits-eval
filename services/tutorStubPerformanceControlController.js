@@ -251,6 +251,7 @@ export function createTutorStubPerformanceControlController(dependencies) {
       enabled,
       effectiveTurn,
       miniModel: state.committee.miniModel,
+      spanInterface: state.committee.spanInterface,
       fallbackPolicy: state.committee.fallbackPolicy,
       cacheRefresh: {
         priorStateCleared: Boolean(invalidated?.hadState),

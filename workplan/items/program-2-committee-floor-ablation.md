@@ -1,29 +1,30 @@
 ---
 id: program-2-committee-floor-ablation
 title: "Price the fine-tune: live committee with the untuned mini"
-status: active
+status: dropped
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-07-22
-updated: 2026-07-26
-verification: "The exact Phase 5b design with one variable changed — the untuned same-lineage floor model (program2-floor-instruct-q8) in the mini seat, fallback policy v2 — run under a small frozen prereg (12 committee-floor dialogues + stationarity-pooled controls, seeds and bars fixed before launch), yields a pooled warrant-compliance rate whose comparison against both the pooled control (0.150) and the trained-mini committee reference (0.386, 5b §8) cleanly attributes the live gain between harness and weights."
-claim_status: planned
+updated: 2026-08-05
+verification: "The historical committee-floor and first weights-by-interface attempts are inventoried as under-informative, their traces are excluded from confirmatory pooling, and the corrected successor is tracked by program-2-weights-interface-retest."
+claim_status: killed
 links:
   paper: §6.21
   notes:
     - PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md
+    - PROGRAM-2-WEIGHTS-INTERFACE-RETEST-PREREGISTRATION.md
     - notes/program-2/2026-07-20-phase5-live-pilot-results.md
   items:
     - program-2-context-vs-weights-finetune
+    - program-2-weights-interface-retest
 tags:
   - tutor-stub
   - fine-tune
   - committee
   - ablation
 milestone: adaptive-tutor-evidence-v1
-branch: codex/program2-committee-floor-ablation
 ---
 
 The one factorial cell the live program never ran: every live committee
@@ -52,3 +53,10 @@ scope unless separately preregistered. Expect more battery interventions
 per moment (the untuned model's known question-discipline weakness is
 exactly what the battery repairs), so record the fallbackResolution
 distribution as a primary descriptive alongside E1.
+
+2026-08-05 — Dropped as a confirmatory design. The historical floor comparison
+was under-informative because the question-only interface discarded cue-bearing
+material and fallback-v2 repaired the two weight conditions differently. Its
+successor also froze an impossible turn-16 Marrick coverage gate. Both archives
+remain diagnostic only; [[program-2-weights-interface-retest]] owns the corrected
+turn-22, cue-blind 2 x 2 test.

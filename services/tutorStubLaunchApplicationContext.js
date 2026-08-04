@@ -159,8 +159,14 @@ export async function createTutorStubLaunchApplicationContext({
   args['committee-fallback-policy'] = String(args['committee-fallback-policy'] || '')
     .trim()
     .toLowerCase();
-  if (!['v1', 'v2'].includes(args['committee-fallback-policy'])) {
-    throw new Error('--committee-fallback-policy must be v1 or v2');
+  if (!['v1', 'v2', 'cue_blind'].includes(args['committee-fallback-policy'])) {
+    throw new Error('--committee-fallback-policy must be v1, v2, or cue_blind');
+  }
+  args['committee-span-interface'] = String(args['committee-span-interface'] || '')
+    .trim()
+    .toLowerCase();
+  if (!['v1', 'v2'].includes(args['committee-span-interface'])) {
+    throw new Error('--committee-span-interface must be v1 or v2');
   }
   if (args.module && !args.curriculum) {
     throw new Error('--module requires --curriculum <workplan|path>');

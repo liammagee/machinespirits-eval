@@ -147,6 +147,7 @@ test('recipe captures semantic committee, pressure, light-adaptation, and evalua
   const semantic = {
     'committee-mini-model': 'llama3.2:3b',
     'committee-ollama-url': 'http://127.0.0.1:11434',
+    'committee-span-interface': 'v2',
     'committee-fallback-policy': 'v2',
     'pressure-turns': '3,6',
     'light-adaptation': true,

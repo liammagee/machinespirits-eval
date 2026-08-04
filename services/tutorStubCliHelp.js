@@ -59,11 +59,14 @@ Options:
   --committee-ollama-url <url>
                          local ollama endpoint for the committee mini
                          (default: ${PROGRAM2_COMMITTEE_DEFAULTS.ollamaUrl})
-  --committee-fallback-policy <v1|v2>
+  --committee-span-interface <v1|v2>
+                         v1 retains all question sentences; v2 selects one
+                         cue-preserving, non-generative span
+  --committee-fallback-policy <v1|v2|cue_blind>
                          v1 ships the greedy mini reply unchecked (Phase 5);
                          v2 applies the fallback battery: greedy check, two
-                         resamples, cue-preserving trim (Phase 5b); human chat
-                         defaults to v2 while explicit eval arms retain v1
+                         resamples, cue-preserving trim (Phase 5b); cue_blind
+                         is reserved for the weights x interface experiment
   --classifier-model <ref>
                          learner-input classifier model (default: ${STUB.classifierModel})
   --no-classifier        skip the upfront learner-input classifier

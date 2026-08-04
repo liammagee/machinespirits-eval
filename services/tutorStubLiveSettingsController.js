@@ -137,6 +137,7 @@ export function createTutorStubLiveSettingsController(dependencies) {
         committee: {
           enabled: state.committee?.enabled,
           miniModel: state.committee?.miniModel,
+          spanInterface: state.committee?.spanInterface,
           fallbackPolicy: state.committee?.fallbackPolicy,
         },
         publicMessageCount: tutorStubPublicMessagesForSpeaker(state.history, { speaker: 'tutor' }).length,

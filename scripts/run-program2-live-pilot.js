@@ -32,7 +32,14 @@ import {
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_LEGACY,
   normalizeTutorStubEvidenceUseRubric,
 } from '../services/tutorStubPublicLearnerAnalysis.js';
-import { PROGRAM2_COMMITTEE_DEFAULTS, runCommitteeBattery } from '../services/program2CommitteeEngine.js';
+import {
+  PROGRAM2_COMMITTEE_DEFAULTS,
+  extractCommitteeSpanV1,
+  extractCuePreservingCommitteeSpanV2,
+  resolveCueBlindCommitteeDelivery,
+  runCommitteeBattery,
+  runCueBlindCommitteeBattery,
+} from '../services/program2CommitteeEngine.js';
 import { loadProgram2Phase5eRows } from '../services/program2Phase5ePilotBundle.js';
 import {
   evaluateProgram2LiveFutility,
@@ -177,6 +184,9 @@ function commandForJob(
     fallbackPolicy = null,
     world = PHASE5_LIVE_PILOT_SPEC.world,
     evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
+    committeeMiniModel = PHASE5_LIVE_PILOT_SPEC.committeeMiniModel,
+    committeeSpanInterface = null,
+    learnerLabel = null,
   } = {},
 ) {
   const traceDir = path.join(outputRoot, 'traces', job.id);
@@ -239,16 +249,17 @@ function commandForJob(
     '--point-of-action-arm',
     job.arm,
     '--committee-mini-model',
-    PHASE5_LIVE_PILOT_SPEC.committeeMiniModel,
+    committeeMiniModel,
     '--committee-ollama-url',
     PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl,
+    ...(committeeSpanInterface ? ['--committee-span-interface', committeeSpanInterface] : []),
     ...(fallbackPolicy ? ['--committee-fallback-policy', fallbackPolicy] : []),
     ...evidenceUseRubricArgs,
     '--dag',
     '--no-stream',
     '--no-interim-animation',
     '--learner',
-    `Program-2 Phase 5 ${job.profile} repeat ${job.repeat}/${PHASE5_LIVE_PILOT_SPEC.repeats}.`,
+    learnerLabel || `Program-2 Phase 5 ${job.profile} repeat ${job.repeat}/${PHASE5_LIVE_PILOT_SPEC.repeats}.`,
   ];
 }
 
@@ -326,6 +337,163 @@ export function buildPhase5bLivePilotPlan({
     outputRoot,
     ordering: 'seeded Fisher-Yates over 12 committee-v2 + 6 silent_control cells',
     jobs,
+  };
+}
+
+export const WEIGHTS_INTERFACE_RETEST_SPEC = Object.freeze({
+  schema: 'machinespirits.tutor-stub.program2-weights-interface-retest-plan.v1',
+  pilotSchema: 'machinespirits.tutor-stub.program2-weights-interface-retest-pilot-plan.v1',
+  preregistration: 'PROGRAM-2-WEIGHTS-INTERFACE-RETEST-PREREGISTRATION.md',
+  runSeed: 20260805,
+  bootstrapSeed: 20260806,
+  repeats: 6,
+  primaryHorizon: 22,
+  fallbackPolicy: 'cue_blind',
+  weights: Object.freeze({
+    trained: PROGRAM2_COMMITTEE_DEFAULTS.miniModel,
+    untuned: 'program2-floor-instruct-q8',
+  }),
+  interfaces: Object.freeze(['v1', 'v2']),
+  conditions: Object.freeze(['trained_v1', 'trained_v2', 'untuned_v1', 'untuned_v2']),
+  pilotBundle: 'exports/program2-weights-interface-retest-pilot/pilot-bundle.json',
+  pilotGateSpec: 'config/adaptive-tutor-evidence/program-2-weights-interface-retest-pilot-gates.json',
+  cohortGateSpec: 'config/adaptive-tutor-evidence/program-2-weights-interface-retest-gates.json',
+});
+
+function weightsInterfaceRetestCells({ pilot = false } = {}) {
+  const repeats = pilot ? [1] : Array.from({ length: WEIGHTS_INTERFACE_RETEST_SPEC.repeats }, (_, i) => i + 1);
+  const cells = [];
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    for (const repeat of repeats) {
+      const blockKey = `${profile}:r${repeat}`;
+      for (const weight of Object.keys(WEIGHTS_INTERFACE_RETEST_SPEC.weights)) {
+        for (const spanInterface of WEIGHTS_INTERFACE_RETEST_SPEC.interfaces) {
+          cells.push({
+            repeat,
+            profile,
+            arm: 'committee',
+            weight,
+            spanInterface,
+            condition: `${weight}_${spanInterface}`,
+            blockKey,
+          });
+        }
+      }
+    }
+  }
+  return cells;
+}
+
+function buildWeightsInterfaceRetestPlanDefinition({ outputRoot, pilot }) {
+  const prefix = pilot ? 'p2wi-retest-pilot' : 'p2wi-retest';
+  const cells = deterministicShuffle(weightsInterfaceRetestCells({ pilot }), WEIGHTS_INTERFACE_RETEST_SPEC.runSeed);
+  const jobs = cells.map((cell, index) => {
+    const id = [
+      `${prefix}-${String(index + 1).padStart(2, '0')}`,
+      cell.profile,
+      cell.condition,
+      `r${cell.repeat}`,
+    ].join('-');
+    const job = { ordinal: index + 1, id, tutorFamily: PHASE5_LIVE_PILOT_SPEC.tutorFamily, ...cell };
+    return {
+      ...job,
+      command: commandForJob(job, outputRoot, {
+        runSeed: WEIGHTS_INTERFACE_RETEST_SPEC.runSeed,
+        fallbackPolicy: WEIGHTS_INTERFACE_RETEST_SPEC.fallbackPolicy,
+        committeeMiniModel: WEIGHTS_INTERFACE_RETEST_SPEC.weights[cell.weight],
+        committeeSpanInterface: cell.spanInterface,
+        learnerLabel:
+          `Program-2 weights by interface retest ${cell.profile} ` +
+          `repeat ${cell.repeat}/${WEIGHTS_INTERFACE_RETEST_SPEC.repeats}.`,
+      }),
+    };
+  });
+  return {
+    ...PHASE5_LIVE_PILOT_SPEC,
+    ...WEIGHTS_INTERFACE_RETEST_SPEC,
+    schema: pilot ? WEIGHTS_INTERFACE_RETEST_SPEC.pilotSchema : WEIGHTS_INTERFACE_RETEST_SPEC.schema,
+    primaryHorizon: WEIGHTS_INTERFACE_RETEST_SPEC.primaryHorizon,
+    pilotExcluded: pilot,
+    pilotBundle: pilot ? null : WEIGHTS_INTERFACE_RETEST_SPEC.pilotBundle,
+    certificateGateSpec: pilot
+      ? WEIGHTS_INTERFACE_RETEST_SPEC.pilotGateSpec
+      : WEIGHTS_INTERFACE_RETEST_SPEC.cohortGateSpec,
+    committeeMiniModels: Object.values(WEIGHTS_INTERFACE_RETEST_SPEC.weights),
+    detectorVersion: TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+    outputRoot,
+    ordering: `seeded Fisher-Yates over ${jobs.length} balanced weights x interface jobs`,
+    blocking: 'all four jobs in a block share profile, repeat, run seed, horizon, and non-treatment runtime seams',
+    jobs,
+  };
+}
+
+export function buildWeightsInterfaceRetestPlan({ outputRoot = 'exports/program2-weights-interface-retest' } = {}) {
+  return buildWeightsInterfaceRetestPlanDefinition({ outputRoot, pilot: false });
+}
+
+export function buildWeightsInterfaceRetestPilotPlan({
+  outputRoot = 'exports/program2-weights-interface-retest-pilot',
+} = {}) {
+  return buildWeightsInterfaceRetestPlanDefinition({ outputRoot, pilot: true });
+}
+
+export function validateWeightsInterfaceRetestPlan(plan, { pilot = false } = {}) {
+  const errors = [];
+  const expectedJobs = pilot ? 8 : 48;
+  if (plan.jobs.length !== expectedJobs) errors.push(`expected ${expectedJobs} jobs, found ${plan.jobs.length}`);
+  if (plan.primaryHorizon !== 22) errors.push(`expected reachable horizon 22, found ${plan.primaryHorizon}`);
+  const cellCounts = new Map();
+  const blocks = new Map();
+  for (const job of plan.jobs) {
+    const cellKey = `${job.profile}|${job.condition}`;
+    cellCounts.set(cellKey, (cellCounts.get(cellKey) || 0) + 1);
+    const block = blocks.get(job.blockKey) || [];
+    block.push(job);
+    blocks.set(job.blockKey, block);
+    if (flagValue(job.command, '--point-of-action-arm') !== 'committee') errors.push(`${job.id} arm mismatch`);
+    if (flagValue(job.command, '--committee-fallback-policy') !== 'cue_blind') {
+      errors.push(`${job.id} is not cue-blind`);
+    }
+    if (flagValue(job.command, '--committee-span-interface') !== job.spanInterface) {
+      errors.push(`${job.id} span-interface mismatch`);
+    }
+    if (flagValue(job.command, '--committee-mini-model') !== WEIGHTS_INTERFACE_RETEST_SPEC.weights[job.weight]) {
+      errors.push(`${job.id} mini-model mismatch`);
+    }
+    if (flagValue(job.command, '--run-seed') !== String(WEIGHTS_INTERFACE_RETEST_SPEC.runSeed)) {
+      errors.push(`${job.id} run-seed mismatch`);
+    }
+    if (flagValue(job.command, '--model') !== PHASE5_LIVE_PILOT_SPEC.tutorFamily) {
+      errors.push(`${job.id} tutor-family mismatch`);
+    }
+    for (const flag of ['--classifier-model', '--learner-record-model', '--auto-learner-model']) {
+      if (flagValue(job.command, flag) !== PHASE5_LIVE_PILOT_SPEC.supportingModel) {
+        errors.push(`${job.id} changed fixed supporting seam ${flag}`);
+      }
+    }
+  }
+  for (const [blockKey, rows] of blocks) {
+    const conditions = new Set(rows.map((job) => job.condition));
+    if (rows.length !== 4 || WEIGHTS_INTERFACE_RETEST_SPEC.conditions.some((condition) => !conditions.has(condition))) {
+      errors.push(`${blockKey} is not a complete four-cell block`);
+    }
+  }
+  const expectedBlocks = PHASE5_LIVE_PILOT_SPEC.profiles.length * (pilot ? 1 : WEIGHTS_INTERFACE_RETEST_SPEC.repeats);
+  if (blocks.size !== expectedBlocks) errors.push(`expected ${expectedBlocks} blocks, found ${blocks.size}`);
+  const expectedCellCount = pilot ? 1 : WEIGHTS_INTERFACE_RETEST_SPEC.repeats;
+  for (const profile of PHASE5_LIVE_PILOT_SPEC.profiles) {
+    for (const condition of WEIGHTS_INTERFACE_RETEST_SPEC.conditions) {
+      if (cellCounts.get(`${profile}|${condition}`) !== expectedCellCount) {
+        errors.push(`${profile} ${condition} cell count mismatch`);
+      }
+    }
+  }
+  return {
+    ok: errors.length === 0,
+    errors,
+    jobCount: plan.jobs.length,
+    balancedCellCount: cellCounts.size,
+    completeBlockCount: blocks.size,
   };
 }
 
@@ -959,6 +1127,27 @@ export function runPhase5ZeroModelFixtures() {
       runCommitteeBattery({ composedText: 'No question here.', span }).pass === false &&
       runCommitteeBattery({ composedText: `${span} And the seal?`, span }).failedCheck === 'exactly_one_question',
   });
+  const v1 = extractCommitteeSpanV1('Which record matters? Which rule connects it?');
+  const v2 = extractCuePreservingCommitteeSpanV2('The record is public. What follows? Which hunch wins?');
+  const cueBlindBattery = runCueBlindCommitteeBattery({
+    composedText: `Stay with the page. ${v2.span}`,
+    span: v2.span,
+    publicEvidenceSafe: true,
+    noNewPremise: true,
+  });
+  const cueBlindFallback = resolveCueBlindCommitteeDelivery({
+    miniText: 'Original mini reply without a valid question.',
+    spanResult: { status: 'no_span', span: null },
+  });
+  checks.push({
+    name: 'weights_interface_retest_cue_blind_paths',
+    ok:
+      v1.span === 'Which record matters? Which rule connects it?' &&
+      v2.span === 'The record is public. What follows?' &&
+      cueBlindBattery.pass === true &&
+      cueBlindFallback.fallbackSource === 'original_greedy_mini' &&
+      cueBlindFallback.miniResamples === 0,
+  });
   return { ok: checks.every((check) => check.ok), checks };
 }
 
@@ -1048,7 +1237,7 @@ async function main() {
   });
   if (values.help) {
     console.log(
-      'Usage: node scripts/run-program2-live-pilot.js [--dry-run | --prepare-certificate | --launch-approved --expected-sha <sha> --launch-certificate <file>] [--plan 5|5b|5c|5e-pilot|5e|5f-pilot|5f-pilot-a2|5f-pilot-a3|5f] [--output-dir <dir>] [--limit-jobs N]',
+      'Usage: node scripts/run-program2-live-pilot.js [--dry-run | --prepare-certificate | --launch-approved --expected-sha <sha> --launch-certificate <file>] [--plan 5|5b|5c|5e-pilot|5e|5f-pilot|5f-pilot-a2|5f-pilot-a3|5f|weights-interface-retest-pilot|weights-interface-retest] [--output-dir <dir>] [--limit-jobs N]',
     );
     console.log('\nPaid launch prerequisite: generate a fresh certificate with npm run program2:certify-launch.');
     console.log(
@@ -1118,10 +1307,22 @@ async function main() {
       validate: validatePhase5fLivePilotPlan,
       certificatePhase: 'cohort',
     },
+    'weights-interface-retest-pilot': {
+      root: 'exports/program2-weights-interface-retest-pilot',
+      build: buildWeightsInterfaceRetestPilotPlan,
+      validate: (plan) => validateWeightsInterfaceRetestPlan(plan, { pilot: true }),
+      certificatePhase: 'pilot',
+    },
+    'weights-interface-retest': {
+      root: 'exports/program2-weights-interface-retest',
+      build: buildWeightsInterfaceRetestPlan,
+      validate: (plan) => validateWeightsInterfaceRetestPlan(plan),
+      certificatePhase: 'cohort',
+    },
   };
   if (!planTable[planKey]) {
     throw new Error(
-      `unknown --plan ${planKey} (expected 5, 5b, 5c, 5e-pilot, 5e, 5f-pilot, 5f-pilot-a2, 5f-pilot-a3, or 5f)`,
+      `unknown --plan ${planKey} (expected 5, 5b, 5c, 5e-pilot, 5e, 5f-pilot, 5f-pilot-a2, 5f-pilot-a3, 5f, weights-interface-retest-pilot, or weights-interface-retest)`,
     );
   }
   const defaultRoot = launch || prepareCertificate ? planTable[planKey].root : `${planTable[planKey].root}-dry-run`;
@@ -1221,8 +1422,13 @@ async function main() {
   // The certificate binds launch-plan.json byte-for-byte. Keep that prepared
   // evidence immutable and record runtime authorization in a separate artifact.
   fs.writeFileSync(jsonPath, `${JSON.stringify(artifact, null, 2)}\n`);
-  await ollamaPreflight(PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl, PHASE5_LIVE_PILOT_SPEC.committeeMiniModel);
-  console.log(`[phase5] ollama preflight OK: ${PHASE5_LIVE_PILOT_SPEC.committeeMiniModel} present`);
+  const committeeModels = [
+    ...new Set(plan.jobs.map((job) => flagValue(job.command, '--committee-mini-model')).filter(Boolean)),
+  ];
+  for (const model of committeeModels) {
+    await ollamaPreflight(PHASE5_LIVE_PILOT_SPEC.committeeOllamaUrl, model);
+    console.log(`[phase5] ollama preflight OK: ${model} present`);
+  }
 
   const limit = values['limit-jobs'] ? Number(values['limit-jobs']) : plan.jobs.length;
   const statePath = path.join(outputRoot, 'launch-state.json');
@@ -1231,7 +1437,16 @@ async function main() {
     : { schema: 'machinespirits.tutor-stub.program2-phase5-launch-state.v1', jobs: {} };
   const saveState = () => fs.writeFileSync(statePath, `${JSON.stringify(launchState, null, 2)}\n`);
   const enforceLiveFutility = (stage) => {
-    const rows = ['5e', '5e-pilot', '5f-pilot', '5f-pilot-a2', '5f-pilot-a3', '5f'].includes(planKey)
+    const rows = [
+      '5e',
+      '5e-pilot',
+      '5f-pilot',
+      '5f-pilot-a2',
+      '5f-pilot-a3',
+      '5f',
+      'weights-interface-retest-pilot',
+      'weights-interface-retest',
+    ].includes(planKey)
       ? loadProgram2Phase5eRows({ plan, root: outputRoot })
       : [];
     const check = evaluateProgram2LiveFutility({

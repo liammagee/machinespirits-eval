@@ -7,6 +7,8 @@ import { summarizeTutorStubFixedHorizon } from './tutorStubEvalIntegrity.js';
 
 export const PROGRAM2_PHASE5E_PILOT_BUNDLE_SCHEMA = 'machinespirits.program2.phase5e-r2-pilot-bundle.v1';
 export const PROGRAM2_PHASE5F_PILOT_BUNDLE_SCHEMA = 'machinespirits.program2.phase5f-pilot-bundle.v1';
+export const PROGRAM2_WEIGHTS_INTERFACE_RETEST_PILOT_BUNDLE_SCHEMA =
+  'machinespirits.program2.weights-interface-retest-pilot-bundle.v1';
 export const PROGRAM2_PHASE5F_A3_SOURCE_SHA = '473640a4ae8aa159e5b8a395686bcfc9ee0a5c69';
 
 const VARIABLE_COMMAND_FLAGS = new Set(['--eval-job-id', '--trace-dir']);
@@ -81,8 +83,11 @@ function traceRow(job, file, primaryHorizon) {
         ordinal: job.ordinal,
         profile: job.profile,
         arm: job.arm,
+        condition: job.condition,
+        weight: job.weight,
+        spanInterface: job.spanInterface,
         repeat: job.repeat,
-        blockKey: `${job.profile}:${job.repeat}`,
+        blockKey: job.blockKey || `${job.profile}:${job.repeat}`,
       },
       warrant: { opp: verdicts.length, comp: verdicts.filter((verdict) => verdict.compliant === true).length },
       fixedHorizon: summarizeTutorStubFixedHorizon(turnRecords, { primaryHorizon }),
@@ -109,10 +114,16 @@ function check(id, pass, detail) {
   return { id, pass: Boolean(pass), detail };
 }
 
+function treatmentForJob(job) {
+  return String(job?.condition ?? job?.arm ?? 'unknown');
+}
+
 function expectedCohortJob(cohortPlan, pilotJob) {
   return cohortPlan.jobs.find(
     (job) =>
-      job.profile === pilotJob.profile && job.arm === pilotJob.arm && Number(job.repeat) === Number(pilotJob.repeat),
+      job.profile === pilotJob.profile &&
+      treatmentForJob(job) === treatmentForJob(pilotJob) &&
+      Number(job.repeat) === Number(pilotJob.repeat),
   );
 }
 
@@ -130,12 +141,11 @@ export function buildProgram2PilotBundle({
 } = {}) {
   const cohortSha256 = program2PlanSha256(cohortPlan);
   const expectedGroups = [
-    'affective_resistant|committee',
-    'affective_resistant|silent_control',
-    'proof_skipper|committee',
-    'proof_skipper|silent_control',
-  ];
-  const observedGroups = (pilotPlan?.jobs || []).map((job) => `${job.profile}|${job.arm}`).sort();
+    ...new Set((cohortPlan?.jobs || []).map((job) => `${job.profile}|${treatmentForJob(job)}`)),
+  ].sort();
+  const observedGroups = [
+    ...new Set((pilotPlan?.jobs || []).map((job) => `${job.profile}|${treatmentForJob(job)}`)),
+  ].sort();
   const traces = (pilotPlan?.jobs || []).map((job) => {
     const files = sealedTraceFiles(pilotRoot, job);
     return { job, files, parsed: files.length === 1 ? traceRow(job, files[0], pilotPlan.primaryHorizon) : null };
@@ -181,6 +191,7 @@ export function buildProgram2PilotBundle({
     const pointOfAction = parsed?.runStart?.metadata?.pointOfAction || {};
     const commandRubric = flagValue(job.command, '--learner-analysis-evidence-use-rubric');
     const commandFallback = flagValue(job.command, '--committee-fallback-policy');
+    const commandSpanInterface = flagValue(job.command, '--committee-span-interface');
     const runtimeRubric = options['learner-analysis-evidence-use-rubric'];
     const armMatches =
       options['point-of-action-arm'] === job.arm && (!pointOfAction.arm || pointOfAction.arm === job.arm);
@@ -194,10 +205,14 @@ export function buildProgram2PilotBundle({
           (!pointOfAction.committee?.fallbackPolicy ||
             pointOfAction.committee.fallbackPolicy === pilotPlan.fallbackPolicy)
         : commandFallback === null;
-    return armMatches && rubricMatches && fallbackMatches;
+    const spanInterfaceMatches = commandSpanInterface
+      ? options['committee-span-interface'] === commandSpanInterface &&
+        (!pointOfAction.committee?.spanInterface || pointOfAction.committee.spanInterface === commandSpanInterface)
+      : options['committee-span-interface'] === undefined || options['committee-span-interface'] === 'v1';
+    return armMatches && rubricMatches && fallbackMatches && spanInterfaceMatches;
   });
   const normalizedRowsComplete =
-    rows.length === 4 &&
+    rows.length === expectedGroups.length &&
     rows.every((row) => {
       return (
         Number.isFinite(row.warrant.opp) &&
@@ -213,7 +228,7 @@ export function buildProgram2PilotBundle({
     check('cohort_plan_schema', cohortPlan?.schema === expectedCohortSchema, cohortPlan?.schema),
     check(
       'pilot_plan_schema',
-      expectedPilotSchemas.includes(pilotPlan?.schema) && pilotPlan?.jobs?.length === 4,
+      expectedPilotSchemas.includes(pilotPlan?.schema) && pilotPlan?.jobs?.length === expectedGroups.length,
       `${pilotPlan?.schema || 'missing'}; jobs=${pilotPlan?.jobs?.length || 0}`,
     ),
     check(
@@ -246,12 +261,12 @@ export function buildProgram2PilotBundle({
     check(
       'rubric_and_intervention',
       apparatusMatches,
-      `${pilotPlan?.evidenceUseRubric}; command-bound rubric (legacy traces may omit the runtime option), point-of-action arms, and active committee fallback policy`,
+      `${pilotPlan?.evidenceUseRubric}; command-bound rubric, point-of-action arms, committee fallback policy, and optional span interface`,
     ),
     check(
       'normalized_rows_complete',
       normalizedRowsComplete,
-      `${rows.length}/4 rows with complete fixed-horizon outcomes`,
+      `${rows.length}/${expectedGroups.length} rows with complete fixed-horizon outcomes`,
     ),
   ];
   const status = checks.every((entry) => entry.pass) ? 'pass' : 'fail';
@@ -297,5 +312,14 @@ export function buildProgram2Phase5fPilotBundle(options = {}) {
     expectedCohortSchema: 'machinespirits.tutor-stub.program2-phase5f-plan.v1',
     expectedPilotSchemas: ['machinespirits.tutor-stub.program2-phase5f-pilot-a3-plan.v1'],
     acceptedPilotSourceSha: PROGRAM2_PHASE5F_A3_SOURCE_SHA,
+  });
+}
+
+export function buildProgram2WeightsInterfaceRetestPilotBundle(options = {}) {
+  return buildProgram2PilotBundle({
+    ...options,
+    bundleSchema: PROGRAM2_WEIGHTS_INTERFACE_RETEST_PILOT_BUNDLE_SCHEMA,
+    expectedCohortSchema: 'machinespirits.tutor-stub.program2-weights-interface-retest-plan.v1',
+    expectedPilotSchemas: ['machinespirits.tutor-stub.program2-weights-interface-retest-pilot-plan.v1'],
   });
 }
