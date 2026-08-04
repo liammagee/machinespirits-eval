@@ -86,6 +86,7 @@ test('pipeline delegates extracted responsibilities to bounded implementation ow
     ['tutorStubTutorTurnPreparation.js', 'createTutorStubTutorTurnPreparation'],
     ['tutorStubTutorAttemptRuntime.js', 'createTutorStubTutorAttemptRuntime'],
     ['tutorStubTutorCommitteeRuntime.js', 'createTutorStubTutorCommitteeRuntime'],
+    ['tutorStubTutorDeliveryRuntime.js', 'createTutorStubTutorDeliveryRuntime'],
     ['tutorStubTutorDraftAudit.js', 'createTutorStubTutorDraftAudit'],
   ];
 
@@ -98,6 +99,7 @@ test('pipeline delegates extracted responsibilities to bounded implementation ow
 
   assert.doesNotMatch(pipeline, /async function invokeTutorAttempt\(/);
   assert.doesNotMatch(pipeline, /async function invokeCommitteeFirstDraft\(/);
+  assert.doesNotMatch(pipeline, /function withTutorDeliveryDecision\(/);
   assert.doesNotMatch(pipeline, /function auditTutorDraft\(/);
   assert.doesNotMatch(pipeline, /tutorMessageContext\(state, history\)/);
 });

@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-08-05
 updated: 2026-08-05
-branch: codex/refactor-tutor-stub-committee-repair-owner
+branch: codex/refactor-tutor-stub-repair-fallback-owner
 verification: The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.
 claim_status: planned
 depends_on: []
@@ -18,6 +18,7 @@ links:
     - services/tutorStubTutorTurnPreparation.js
     - services/tutorStubTutorAttemptRuntime.js
     - services/tutorStubTutorCommitteeRuntime.js
+    - services/tutorStubTutorDeliveryRuntime.js
     - services/tutorStubTutorDraftAudit.js
     - services/tutorStubResponsePolicy.js
     - scripts/tutor-stub.js
@@ -90,3 +91,13 @@ Log:
   check are in place, with 46/46 focused tests, ESLint, Prettier, diff checks,
   the zero-cycle graph, and the complete hermetic suite passing with zero
   skips. Repair orchestration remains the next seam in this pass.
+- 2026-08-05 — Opened committee-runtime PR #488 at `a65319ec`, then started the
+  repair/fallback continuation on a separate stacked branch. To keep every
+  owner below the 1,200-line ceiling, first extracted delivery decisions, safe
+  uptake preservation, fallback composition, audit attachment, and recovery
+  response envelopes into a 186-line prerequisite owner. The pipeline is now
+  1,589 LOC, the stability manifest has 20 pins, and 18/18 focused tests plus
+  ESLint, Prettier, diff checks, and the zero-cycle graph pass. The complete
+  hermetic suite also passes on the rebased slice (7,780/7,780 root and 137/137
+  tutor-core tests; zero failures and zero skips). The model and mechanical
+  repair ladder remains the next extraction inside this item.
