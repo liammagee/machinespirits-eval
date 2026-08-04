@@ -53,7 +53,19 @@ const PINS = [
   },
   {
     file: 'services/tutorStubTutorTurnPipeline.js',
-    claim: 'card rides the recovery retry (the card-strip fix); insertion interception; contract licence slot',
+    claim: 'recovery/committee orchestration and insertion interception',
+  },
+  {
+    file: 'services/tutorStubTutorTurnPreparation.js',
+    claim: 'speaking prompt assembly; conduct-card and contract-licence slots; speaker-privilege recovery',
+  },
+  {
+    file: 'services/tutorStubTutorAttemptRuntime.js',
+    claim: 'prompt audit/recovery; provider-attempt dispatch; Program-2 budget reservation and trace envelope',
+  },
+  {
+    file: 'services/tutorStubTutorDraftAudit.js',
+    claim: 'delivery guard battery, dispositions, and audit trace shape',
   },
   {
     file: 'services/tutorStubWorldPromptContext.js',
