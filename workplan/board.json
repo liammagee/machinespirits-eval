@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-04T07:49:34.429Z",
+  "generated": "2026-08-04T08:04:41.717Z",
   "counts": {
     "total": 375,
     "byStatus": {
@@ -842,7 +842,7 @@
       "created": "2026-07-29",
       "updated": "2026-08-04",
       "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
-      "branch": "codex/refactor-tutor-stub-turn-orchestration",
+      "branch": "codex/refactor-tutor-stub-subsystem-facades",
       "claim_status": "planned",
       "depends_on": [],
       "links": {
@@ -852,15 +852,19 @@
         "code": [
           "scripts/tutor-stub.js",
           "services/tutorStubCommandRuntime.js",
+          "services/tutorStubCliArguments.js",
+          "services/tutorStubLaunchRuntime.js",
           "services/tutorStubModelPickerController.js",
           "services/tutorStubResponsePolicy.js",
+          "services/tutorStubScenarioController.js",
           "services/tutorStubSessionOrchestration.js",
           "services/tutorStubSessionStateRuntime.js",
           "services/tutorStubTraceRuntime.js",
           "services/tutorStubTurnOrchestration.js",
           "services/tutorStubVoiceController.js",
           "services/tutorStubTutorTurnPipeline.js",
-          "tests/tutorStubTutorTurnPipeline.test.js"
+          "tests/tutorStubTutorTurnPipeline.test.js",
+          "tests/tutorStubEntrypointFacades.test.js"
         ],
         "prs": [
           426,
@@ -868,7 +872,8 @@
           428,
           429,
           430,
-          431
+          431,
+          471
         ],
         "items": [
           "codebase-refactoring-program"
