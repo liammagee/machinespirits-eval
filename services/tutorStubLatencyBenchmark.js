@@ -1,11 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { resolveTutorStubDiscoursePlane } from './tutorStubDiscoursePlane.js';
+
 export const TUTOR_STUB_LATENCY_BENCHMARK_SCHEMA = 'machinespirits.tutor-stub.latency-benchmark.v1';
-export const TUTOR_STUB_LATENCY_BENCHMARK_REPORT_SCHEMA = 'machinespirits.tutor-stub.latency-benchmark-report.v1';
+export const TUTOR_STUB_LATENCY_BENCHMARK_REPORT_SCHEMA = 'machinespirits.tutor-stub.latency-benchmark-report.v2';
 
 const PLANES = new Set(['object', 'instructional_meta', 'mixed']);
-const FACTORS = new Set(['baseline', 'effort', 'routing', 'prompt']);
+const FACTORS = new Set(['baseline', 'effort', 'routing', 'prompt', 'prefetch']);
 const PROMPT_PROFILES = new Set(['baseline', 'compact_v1']);
 const PREFETCH_POLICIES = new Set(['always', 'analysis_only']);
 
@@ -60,6 +62,12 @@ export function validateTutorStubLatencyBenchmarkConfig(config) {
     if (!PLANES.has(row.expected_plane)) {
       throw new Error(`case ${row.id} expected_plane must be object, instructional_meta, or mixed`);
     }
+    const resolved = resolveTutorStubDiscoursePlane({ learnerText: row.learner_text });
+    if (resolved.plane !== row.expected_plane) {
+      throw new Error(
+        `case ${row.id} is not deterministic under ${resolved.schema}: expected ${row.expected_plane}, resolved ${resolved.plane}`,
+      );
+    }
   }
   let baselineCount = 0;
   for (const row of variants) {
@@ -84,6 +92,15 @@ export function validateTutorStubLatencyBenchmarkConfig(config) {
     caseCount: cases.length,
     variantCount: variants.length,
     draws: positiveInt(config.draws, 'draws'),
+    planeContract: cases.map((row) => {
+      const resolved = resolveTutorStubDiscoursePlane({ learnerText: row.learner_text });
+      return {
+        caseId: row.id,
+        expectedPlane: row.expected_plane,
+        resolvedPlane: resolved.plane,
+        schema: resolved.schema,
+      };
+    }),
   };
 }
 
@@ -199,11 +216,20 @@ export function parseTutorStubLatencyBenchmarkTrace({ events, job, tracePath = n
   const analysisCalls = calls.filter((event) => /learner_analysis/u.test(event.role || ''));
   const tutorCalls = calls.filter((event) => /^tutor_stub_tutor(?:_|$)/u.test(event.role || ''));
   const recoveryCalls = tutorCalls.filter((event) => /recovery/u.test(event.role || ''));
-  const observedPlane =
+  const runtimeObservedPlane =
     record.responseConfiguration?.discourse_plane?.plane ||
     record.classification?.turn?.discourse_plane ||
     record.humanDiscourseFrame?.discoursePlane?.plane ||
     null;
+  const learnerText = String(record.learner || job.learnerText || '').trim();
+  const rescoredDiscoursePlane = learnerText
+    ? resolveTutorStubDiscoursePlane({
+        learnerText,
+        classification: record.classification || null,
+        sideArc: record.humanDiscourseFrame?.sideArc || record.humanDiscourseFrame?.side_arc || null,
+      })
+    : null;
+  const observedPlane = rescoredDiscoursePlane?.plane || runtimeObservedPlane;
   const finalDelivery = record.tutorGuardAccounting?.finalDelivery || {};
   const finalDeliverySource = finalDelivery.source || finalDelivery.kind || null;
   const deterministicFallback = Boolean(
@@ -232,6 +258,10 @@ export function parseTutorStubLatencyBenchmarkTrace({ events, job, tracePath = n
     tracePath,
     expectedPlane: job.expectedPlane,
     observedPlane,
+    runtimeObservedPlane,
+    runtimePlanePass: runtimeObservedPlane === job.expectedPlane,
+    planeContractSchema: rescoredDiscoursePlane?.schema || null,
+    planeReclassified: Boolean(runtimeObservedPlane && runtimeObservedPlane !== observedPlane),
     planePass: observedPlane === job.expectedPlane,
     tutorModel: job.tutorModel,
     analysisModel: job.analysisModel,
@@ -277,6 +307,8 @@ export function summarizeTutorStubLatencyBenchmark(results = []) {
         {
           jobs: rows.length,
           planeAccuracy: rows.filter((row) => row.planePass).length / rows.length,
+          runtimePlaneAccuracy: rows.filter((row) => row.runtimePlanePass ?? row.planePass).length / rows.length,
+          planeReclassificationRate: rows.filter((row) => row.planeReclassified).length / rows.length,
           firstDraftAcceptanceRate: rows.filter((row) => row.firstDraftAccepted).length / rows.length,
           recoveryRate: rows.filter((row) => row.recoveryCalls > 0).length / rows.length,
           fallbackRate: rows.filter((row) => row.deterministicFallback).length / rows.length,

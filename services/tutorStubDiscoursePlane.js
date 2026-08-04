@@ -1,4 +1,4 @@
-export const TUTOR_STUB_DISCOURSE_PLANE_SCHEMA = 'machinespirits.tutor-stub.discourse-plane.v1';
+export const TUTOR_STUB_DISCOURSE_PLANE_SCHEMA = 'machinespirits.tutor-stub.discourse-plane.v2';
 
 const DISCOURSE_PLANES = new Set(['object', 'instructional_meta', 'mixed']);
 const META_REQUEST_TYPES = new Set(['plain_language_request', 'plain_simplification_followup']);
@@ -7,7 +7,11 @@ const META_LANGUAGE_PATTERN =
 const INSTRUCTIONAL_FORM_PATTERN =
   /\b(?:explanation|instructions?|language|phrasing|sentence|wording|words?|what\s+you\s+(?:mean|said|wrote)|your\s+(?:answer|explanation|point|reply|response|wording))\b/iu;
 const NATURAL_META_REQUEST_PATTERN =
-  /\b(?:can|could|would|will)\s+(?:you|we)\b[^.!?]{0,90}\b(?:rephras|restat|simpl|translat)\w*\b|\b(?:can|could|would|will)\s+you\b[^.!?]{0,40}\b(?:clarif|explain|unpack)\w*\s+(?:that|this|it|what\s+you\s+(?:mean|said|wrote)|your\s+(?:answer|explanation|point|reply|response|wording)|the\s+(?:explanation|language|phrasing|sentence|wording))\b|\bi\s+(?:am|[’']m)\s+not\s+following(?:\s+(?:that|this|it|what\s+you\s+(?:mean|said|wrote)|your\s+(?:explanation|point|reply|wording)|the\s+(?:explanation|language|wording)))?(?=[.!?]|$)|\bi\s+(?:do not|don[’']t)\s+understand(?:\s+(?:that|this|it|what\s+you\s+(?:mean|said|wrote)|your\s+(?:explanation|point|reply|wording)|the\s+(?:explanation|language|wording)))?(?=[.!?]|$)|\bwhat\s+does\b[^.!?]{1,100}\bmean\b|\b(?:say|put)\s+(?:that|this|it)\s+in\s+(?:plain|simpler)\s+(?:language|words)\b|\bsimpl(?:ify|er)\b[^.!?]{0,50}\b(?:explanation|language|wording|words)\b/iu;
+  /\b(?:can|could|would|will)\s+(?:you|we)\b[^.!?]{0,90}\b(?:rephras|restat|simpl|translat)\w*\b|\b(?:can|could|would|will)\s+you\b[^.!?]{0,40}\b(?:clarif|explain|unpack)\w*\s+(?:that|this|it|what\s+you\s+(?:mean|said|wrote)|your\s+(?:answer|explanation|point|reply|response|wording)|the\s+(?:explanation|language|phrase|phrasing|sentence|wording))\b|\bi\s+(?:am|[’']m)\s+not\s+following(?:\s+(?:that|this|it|that\s+(?:phrase|term|wording)|what\s+you\s+(?:mean|said|wrote)|your\s+(?:explanation|point|reply|wording)|the\s+(?:explanation|language|phrase|wording)))?(?=[.!?]|$)|\bi\s+(?:do not|don[’']t)\s+understand(?:\s+(?:that|this|it|that\s+(?:phrase|term|wording)|what\s+you\s+(?:mean|said|wrote)|your\s+(?:explanation|point|reply|wording)|the\s+(?:explanation|language|phrase|wording)))?(?=[.!?]|$)|\bwhat\s+does\b[^.!?]{1,100}\bmean\b|\b(?:say|put)\s+(?:that|this|it)\s+in\s+(?:plain|simpler)\s+(?:english|language|words)\b|\bsimpl(?:ify|er)\b[^.!?]{0,50}\b(?:explanation|language|wording|words)\b/iu;
+const IMPERATIVE_META_REQUEST_PATTERN =
+  /\b(?:please\s+)?(?:clarify|explain|rephrase|restate|simplify|translate|unpack)\b[^.!?]{0,120}(?:[“"][^”"]{1,100}[”"]|[‘'][^’']{1,100}[’']|\bin\s+(?:plain|simpler)\s+(?:english|language|words)\b|\b(?:explanation|language|phrase|term|wording|words?)\b)/iu;
+const OBJECT_CLAUSE_PATTERN =
+  /\b(?:i\s+(?:argue|believe|infer|propose|suspect|think)|we\s+(?:believe|could|need|ought|propose|should|suspect|think)|(?:it|that|this)\s+(?:implies|means|shows|suggests)|because|therefore)\b/iu;
 
 function oneLine(value) {
   return String(value || '')
@@ -20,6 +24,27 @@ function controlledPlane(value) {
     .toLowerCase()
     .replace(/[\s-]+/gu, '_');
   return DISCOURSE_PLANES.has(normalized) ? normalized : null;
+}
+
+function clauseSegments(value = '') {
+  return String(value || '')
+    .split(/(?<=[.!?;])\s+|\b(?:also|separately),?\s+|\b(?:and|but)\s+(?=(?:i|we)\b)/iu)
+    .map(oneLine)
+    .filter(Boolean);
+}
+
+function isInstructionalMetaClause(value = '') {
+  return Boolean(
+    NATURAL_META_REQUEST_PATTERN.test(value) ||
+    IMPERATIVE_META_REQUEST_PATTERN.test(value) ||
+    INSTRUCTIONAL_FORM_PATTERN.test(value),
+  );
+}
+
+function surfaceObjectContribution(learnerText = '') {
+  return clauseSegments(learnerText).some(
+    (clause) => !isInstructionalMetaClause(clause) && OBJECT_CLAUSE_PATTERN.test(clause),
+  );
 }
 
 function instructionalMetaTarget(learnerText = '') {
@@ -50,7 +75,9 @@ export function resolveTutorStubDiscoursePlane({ learnerText = '', classificatio
   const discourseMove = oneLine(turn.discourse_move);
   const evidenceUse = oneLine(turn.evidence_use);
   const sideArcType = oneLine(sideArc?.type || turn?.human_discourse?.side_arc?.type);
-  const naturalMetaRequest = NATURAL_META_REQUEST_PATTERN.test(learnerText);
+  const naturalMetaRequest = Boolean(
+    NATURAL_META_REQUEST_PATTERN.test(learnerText) || IMPERATIVE_META_REQUEST_PATTERN.test(learnerText),
+  );
   const surfaceMetaVisible = Boolean(naturalMetaRequest || INSTRUCTIONAL_FORM_PATTERN.test(learnerText));
   const classifiedMetaRequest = Boolean(
     META_REQUEST_TYPES.has(requestType) ||
@@ -59,12 +86,14 @@ export function resolveTutorStubDiscoursePlane({ learnerText = '', classificatio
     discourseMove === 'repair_request',
   );
   const metaSignal = Boolean(naturalMetaRequest || (classifiedMetaRequest && surfaceMetaVisible));
-  const objectContribution = Boolean(
+  const classifiedObjectContribution = Boolean(
     evidenceUse &&
     evidenceUse !== 'none' &&
     !['repeats_setup'].includes(evidenceUse) &&
     ['claim', 'hypothesis', 'inference', 'evidence_adoption'].includes(discourseMove),
   );
+  const surfaceObjectContributionVisible = surfaceObjectContribution(learnerText);
+  const objectContribution = Boolean(classifiedObjectContribution || surfaceObjectContributionVisible);
   const plane = metaSignal
     ? objectContribution || requestedPlane === 'mixed'
       ? 'mixed'
@@ -93,6 +122,8 @@ export function resolveTutorStubDiscoursePlane({ learnerText = '', classificatio
       surface_meta_visible: surfaceMetaVisible,
       meta_language_visible: metaSignal,
       object_contribution_visible: objectContribution,
+      classified_object_contribution_visible: classifiedObjectContribution,
+      surface_object_contribution_visible: surfaceObjectContributionVisible,
     },
   };
 }

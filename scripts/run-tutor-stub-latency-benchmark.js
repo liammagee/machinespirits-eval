@@ -44,7 +44,7 @@ function usage() {
   node scripts/run-tutor-stub-latency-benchmark.js --prefetch-trace TRACE.jsonl --dry-run
   node scripts/run-tutor-stub-latency-benchmark.js --reparse-report report.json
 
-Factors: effort, routing, prompt, or a comma-separated subset. The baseline is
+Factors: effort, routing, prompt, prefetch, or a comma-separated subset. The baseline is
 always included. Live jobs run sequentially and each launches the real
 tutor-stub one-turn path with an isolated trace directory.`;
 }
@@ -168,6 +168,7 @@ async function main() {
           mode: 'dry_run',
           config: configPath,
           traceRoot,
+          planeContract: plan.planeContract,
           jobs: plan.jobs.map((job) => ({
             id: job.id,
             factor: job.factor,
@@ -177,6 +178,7 @@ async function main() {
             analysisModel: job.analysisModel,
             cliEffort: job.cliEffort,
             promptProfile: job.promptProfile,
+            prefetchPolicy: job.prefetchPolicy,
           })),
           prefetchPolicyReports,
         },
@@ -199,6 +201,7 @@ async function main() {
     traceRoot,
     generatedAt: new Date().toISOString(),
     attribution: 'one_factor_at_a_time_against_baseline',
+    planeContract: plan.planeContract,
     results,
     summary: summarizeTutorStubLatencyBenchmark(results),
     prefetchPolicyReports,
