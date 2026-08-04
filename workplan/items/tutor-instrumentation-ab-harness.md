@@ -1,25 +1,26 @@
 ---
 id: tutor-instrumentation-ab-harness
 title: Instrumentation A/B — bare tutor vs instrumented tutor on one frozen dialogue
-status: active
+status: done
 type: infra
 priority: P2
 owner: claude
 source: manual
 created: 2026-07-26
-updated: 2026-07-29
-verification: "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call plan;
-  the baseline arm's projected request is exactly the learner utterance with zero
-  advisory chars; the plan control's projected request is the learner utterance plus
-  one fixed 995-char plan, identical on every turn; every arm is audited with the
-  recorded run's guard set and pinning is an identity on the fixtures; a paid run
-  writes report.json, report.md, and a swimlane diff whose failure-cluster deltas
-  separate the arms; `node scripts/judge-tutor-stub-ab-pairs.js --mock` exercises
-  the whole blind-judging path with no model calls, and `--limit 0` re-summarises a
-  recorded corpus without judging anything; every rule the bench has ever raised
-  carries an explicit open/told class with a stated reason, held against a
-  checked-in table by `tests/tutorStubAbHarness.test.js`, and
-  `node scripts/rescore-tutor-stub-ab-open-rules.js --pooled` re-splits the whole
+updated: 2026-08-04
+verification: "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call
+  plan; the baseline arm's projected request is exactly the learner utterance
+  with zero advisory chars; the plan control's projected request is the learner
+  utterance plus one fixed 995-char plan, identical on every turn; every arm is
+  audited with the recorded run's guard set and pinning is an identity on the
+  fixtures; a paid run writes report.json, report.md, and a swimlane diff whose
+  failure-cluster deltas separate the arms; `node
+  scripts/judge-tutor-stub-ab-pairs.js --mock` exercises the whole blind-judging
+  path with no model calls, and `--limit 0` re-summarises a recorded corpus
+  without judging anything; every rule the bench has ever raised carries an
+  explicit open/told class with a stated reason, held against a checked-in table
+  by `tests/tutorStubAbHarness.test.js`, and `node
+  scripts/rescore-tutor-stub-ab-open-rules.js --pooled` re-splits the whole
   recorded corpus with the API keys blanked."
 claim_status: scope-bound
 links:

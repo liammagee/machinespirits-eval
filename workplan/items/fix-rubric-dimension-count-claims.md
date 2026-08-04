@@ -1,18 +1,18 @@
 ---
 id: fix-rubric-dimension-count-claims
 title: Fix the off-by-one in both v2.2 rubric dimension-count claims
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: claude
 source: review
 created: 2026-07-28
-updated: 2026-07-28
-verification: "`npm run paper:provable-discourse` reports 134 pass / 29 warn /
-  0 fail with both claims at actual=8 and actual=5; a negative test (delete one
-  dimension) now fails the claim where it previously passed;
-  `npm run paper:provable-discourse:test` passes 69/69 (needs a writable
-  LOGS_ROOT); `npm run lint` and `npm run refs:check` are clean."
+updated: 2026-08-04
+verification: "`npm run paper:provable-discourse` reports 134 pass / 29 warn / 0
+  fail with both claims at actual=8 and actual=5; a negative test (delete one
+  dimension) now fails the claim where it previously passed; `npm run
+  paper:provable-discourse:test` passes 69/69 (needs a writable LOGS_ROOT); `npm
+  run lint` and `npm run refs:check` are clean."
 links:
   items:
     - repoint-learner-deliberation-claim-fingerprint

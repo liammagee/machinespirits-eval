@@ -1,20 +1,21 @@
 ---
 id: paraphrase-robust-detection
-title: "Paraphrase-robust detection: token-bag state anchors compiled from the ratified schedules (trigger v5)"
-status: active
+title: "Paraphrase-robust detection: token-bag state anchors compiled from the
+  ratified schedules (trigger v5)"
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-02
+updated: 2026-08-04
 verification: "Gate registered before any tuning: v5 must (a) catch at least
   half of the known missed re-phrasings (the escalation dialogues' unheard
-  repeat demands and repeat mockery at t6/t8/t10 — the L2 and S-revisit
-  misses), (b) hold the w033 bench at >=17/20 classification, and (c) hold
-  calm false alarms <=2/dialogue on the standing calm set. Miss any clause =
-  v5 rejected, patterns stay, the ladder's classifier rung (stage 3 proper)
-  becomes the next candidate."
+  repeat demands and repeat mockery at t6/t8/t10 — the L2 and S-revisit misses),
+  (b) hold the w033 bench at >=17/20 classification, and (c) hold calm false
+  alarms <=2/dialogue on the standing calm set. Miss any clause = v5 rejected,
+  patterns stay, the ladder's classifier rung (stage 3 proper) becomes the next
+  candidate."
 claim_status: methods
 depends_on:
   - adaptation-plan-3-phase-l

@@ -1,15 +1,22 @@
 ---
 id: program-2-transfer-apparatus-hardening
 title: Program-2 transfer apparatus hardening after Phase 5e A4
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
 source: review
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-04
 branch: codex/program-2-phase5e-r2-replication
-verification: "Without model calls, frozen A1-A4 and Phase 5f A2 prefixes plus non-Skyway fixtures prove queued recovery for every released-but-unheld best-path premise, rejection of closure while strict DAG premises remain missing, idempotent one-time due-clue delivery, preservation of cue-bearing committee content, recognition of authored entailed-answer paraphrases, and a fail-closed unsupported-answer recovery that does not echo the proposed conclusion. Focused, derivation-quality, hermetic-manifest, lint, and workplan source gates must pass before a replacement certificate is prepared."
+verification: Without model calls, frozen A1-A4 and Phase 5f A2 prefixes plus
+  non-Skyway fixtures prove queued recovery for every released-but-unheld
+  best-path premise, rejection of closure while strict DAG premises remain
+  missing, idempotent one-time due-clue delivery, preservation of cue-bearing
+  committee content, recognition of authored entailed-answer paraphrases, and a
+  fail-closed unsupported-answer recovery that does not echo the proposed
+  conclusion. Focused, derivation-quality, hermetic-manifest, lint, and workplan
+  source gates must pass before a replacement certificate is prepared.
 claim_status: methods
 links:
   notes:

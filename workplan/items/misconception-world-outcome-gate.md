@@ -1,14 +1,20 @@
 ---
 id: misconception-world-outcome-gate
 title: Misconception world — can any tutor close against a structured wrong theory?
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-07-30
-updated: 2026-07-30
-verification: "`node scripts/lint-derivation-world.js --world config/drama-derivation/world-032-alder-row.yaml` reports LINT PASS (the --world flag is required; a bare path is now a usage error rather than a silent lint of world-001), and `node scripts/run-contract-outcome-pilot.js --dry-run --worlds world_032_alder_row --n 5` plans five dialogues at the world's own cap 40 / floor 24. `tests/derivationWorldPresentation.test.js` lints the whole world catalog, so no new world can skip the pacing gate."
+updated: 2026-08-04
+verification: "`node scripts/lint-derivation-world.js --world
+  config/drama-derivation/world-032-alder-row.yaml` reports LINT PASS (the
+  --world flag is required; a bare path is now a usage error rather than a
+  silent lint of world-001), and `node scripts/run-contract-outcome-pilot.js
+  --dry-run --worlds world_032_alder_row --n 5` plans five dialogues at the
+  world's own cap 40 / floor 24. `tests/derivationWorldPresentation.test.js`
+  lints the whole world catalog, so no new world can skip the pacing gate."
 claim_status: scope-bound
 links:
   notes: []

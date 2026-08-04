@@ -1,30 +1,32 @@
 ---
 id: tutor-instrumentation-showcase
-title: Instrumentation showcase — two free-running dialogues, bare vs instrumented, run to close
-status: active
+title: Instrumentation showcase — two free-running dialogues, bare vs
+  instrumented, run to close
+status: done
 type: infra
 priority: P2
 owner: claude
 source: manual
 created: 2026-07-26
-updated: 2026-07-28
-verification: "`npm run tutor:stub:showcase -- --print-plan` emits a finite zero-call
-  plan whose arms hold learner parity in every preset; a paid run writes report.json,
-  report.md, and a turn-aligned two-column transcripts.html; each arm's resolution
-  verdict comes from the stub's own closure lifecycle, and guard coverage is read
-  from the stub's `tutor_response_guard_accounting` rows rather than from the audit
-  records the turn carries either way; each scoring pass
-  (`npm run tutor:stub:showcase:rubric`, `npm run tutor:stub:showcase:pr-benchmark`)
-  writes its own artifact beside report.json and re-renders transcripts.html, so a
-  run scored by both instruments, by one, or by neither shows the scores it actually
-  has and names the axes nobody asked; `--rubric-version 3.0` writes
-  `rubric-v3.0.json` beside the v2.2 artifact rather than over it, with the page
-  rendering the two versions as separate labelled blocks that are never averaged;
-  and a page carrying two scored versions also carries the instrument-contrast
-  panel — spread, within-version dimension redundancy, turn-by-turn divergence, a
-  per-dimension radar, and the whole-transcript instrument it declines to run —
-  alongside a jump menu whose every entry resolves to a section the page rendered
-  and a type control that scales the whole document from one root font size."
+updated: 2026-08-04
+verification: "`npm run tutor:stub:showcase -- --print-plan` emits a finite
+  zero-call plan whose arms hold learner parity in every preset; a paid run
+  writes report.json, report.md, and a turn-aligned two-column transcripts.html;
+  each arm's resolution verdict comes from the stub's own closure lifecycle, and
+  guard coverage is read from the stub's `tutor_response_guard_accounting` rows
+  rather than from the audit records the turn carries either way; each scoring
+  pass (`npm run tutor:stub:showcase:rubric`, `npm run
+  tutor:stub:showcase:pr-benchmark`) writes its own artifact beside report.json
+  and re-renders transcripts.html, so a run scored by both instruments, by one,
+  or by neither shows the scores it actually has and names the axes nobody
+  asked; `--rubric-version 3.0` writes `rubric-v3.0.json` beside the v2.2
+  artifact rather than over it, with the page rendering the two versions as
+  separate labelled blocks that are never averaged; and a page carrying two
+  scored versions also carries the instrument-contrast panel — spread,
+  within-version dimension redundancy, turn-by-turn divergence, a per-dimension
+  radar, and the whole-transcript instrument it declines to run — alongside a
+  jump menu whose every entry resolves to a section the page rendered and a type
+  control that scales the whole document from one root font size."
 claim_status: methods
 depends_on:
   - tutor-instrumentation-ab-harness
