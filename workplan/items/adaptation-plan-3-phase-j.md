@@ -1,16 +1,17 @@
 ---
 id: adaptation-plan-3-phase-j
-title: "Plan 3.0 Phase J: judging as an instrument — state-shown standard, disclosure with estimated states"
-status: active
+title: "Plan 3.0 Phase J: judging as an instrument — state-shown standard,
+  disclosure with estimated states"
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-02
+updated: 2026-08-04
 verification: "Gate J2 quoted from ADAPTATION-PLAN-3.0.md: the alignment gain
-  survives estimation error in measurable part; the degradation is itself
-  the finding (it prices what live judging inherits from the trigger)."
+  survives estimation error in measurable part; the degradation is itself the
+  finding (it prices what live judging inherits from the trigger)."
 claim_status: methods
 depends_on:
   - adaptation-plan-3-phase-q

@@ -1,21 +1,22 @@
 ---
 id: adaptation-plan-3-phase-p
-title: "Plan 3.0 Phase P: the in-seat dose profiler, the voice-change probe, and the routing note"
-status: active
+title: "Plan 3.0 Phase P: the in-seat dose profiler, the voice-change probe, and
+  the routing note"
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-02
-verification: "Gates registered before any run. Gate P1: the in-seat probe
-  must reproduce two live anchors — sonnet demand at doses 1-3 stays at/near
-  zero (the S2c/S2d nulls) and opus stake at dose 0 hits at least half (R4) —
-  before any new cell earns a reading; each model x move then gets a recorded
-  minimum in-seat dose or a recorded wall. Gate P2: measurement, not
-  pass/fail — spliced-window voice-change detection rate vs intact-window
-  false-alarm rate; the difference is the router's visibility price. P3 is
-  written only from P1+P2 numbers."
+updated: 2026-08-04
+verification: "Gates registered before any run. Gate P1: the in-seat probe must
+  reproduce two live anchors — sonnet demand at doses 1-3 stays at/near zero
+  (the S2c/S2d nulls) and opus stake at dose 0 hits at least half (R4) — before
+  any new cell earns a reading; each model x move then gets a recorded minimum
+  in-seat dose or a recorded wall. Gate P2: measurement, not pass/fail —
+  spliced-window voice-change detection rate vs intact-window false-alarm rate;
+  the difference is the router's visibility price. P3 is written only from P1+P2
+  numbers."
 claim_status: methods
 depends_on:
   - adaptation-plan-3-phase-l

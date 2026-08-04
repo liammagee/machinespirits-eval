@@ -1,13 +1,13 @@
 ---
 id: adaptation-plan-3-phase-h
 title: "Plan 3.0 Phase H: the repertoire holes — can a worked example teach the move?"
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-02
+updated: 2026-08-04
 verification: "Gate H quoted verbatim from ADAPTATION-PLAN-3.0.md: the move
   appears in ≥half of its card-covered moments, or the hole is recorded as a
   generation boundary for the family — both outcomes are paper-grade."

@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-04T04:30:45.761Z",
+  "generated": "2026-08-04T04:39:51.076Z",
   "counts": {
     "total": 373,
     "byStatus": {
-      "done": 234,
+      "done": 241,
       "blocked": 5,
       "dropped": 4,
       "triaged": 11,
-      "active": 23,
       "review": 92,
+      "active": 16,
       "archived": 4
     },
     "byType": {
@@ -305,69 +305,6 @@
       ]
     },
     {
-      "id": "adaptation-plan-3-phase-q",
-      "title": "Plan 3.0 Phase Q: the quiet states — repair what the pressure trigger cannot hear",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-01",
-      "updated": "2026-08-01",
-      "verification": "Registered gate quoted from ADAPTATION-PLAN-3.0.md: quiet-plant repair rate (currently ~0–1 of 6 per run) doubles under the chosen mechanism at k=3 without pressure-plant regression. Re-baselining note below recorded BEFORE any run: R2 made the registered numbers stale; the numeric bar for the k=3 run is restated after the one-dialogue pilots, from mechanics only.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-r"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "manner-switch"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-r",
-      "title": "Plan 3.0 Phase R: replicate the move-card result — two worlds, k=5, two taggers, second family",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-01",
-      "updated": "2026-08-01",
-      "verification": "Gates R1–R4 quoted verbatim from ADAPTATION-PLAN-3.0.md; each recorded on this card with its numbers before the next starts. R2 is the claim gate: v3's right-repair margin over the butler holds pooled across both worlds at k=5, or the paper claim stays at its current scope.",
-      "claim_status": "methods",
-      "depends_on": [
-        "manner-trigger-tuning"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "replication"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-s",
-      "title": "Plan 3.0 Phase S: seat release — name what suppresses the move the bare model can make",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gate S1 quoted from ADAPTATION-PLAN-3.0.md: some ablation recovers the demand move in ≥half its regenerations while the control stays at zero — the suppressor is named; no recovery under any ablation = the suppression is distributed, recorded as a bound. S2 runs only if S1 names a suppressor.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-model-profiler"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "casting"
-      ]
-    },
-    {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
       "status": "active",
@@ -605,90 +542,6 @@
         "model-routing",
         "discourse-plane",
         "mixed-mode"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-h",
-      "title": "Plan 3.0 Phase H: the repertoire holes — can a worked example teach the move?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gate H quoted verbatim from ADAPTATION-PLAN-3.0.md: the move appears in ≥half of its card-covered moments, or the hole is recorded as a generation boundary for the family — both outcomes are paper-grade.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-q"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "manner-switch"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-j",
-      "title": "Plan 3.0 Phase J: judging as an instrument — state-shown standard, disclosure with estimated states",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gate J2 quoted from ADAPTATION-PLAN-3.0.md: the alignment gain survives estimation error in measurable part; the degradation is itself the finding (it prices what live judging inherits from the trigger).",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-q"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "judging"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-l",
-      "title": "Plan 3.0 Phase L: learner profiles — recovery from behavior, then dose-by-profile",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gate L1 quoted verbatim from ADAPTATION-PLAN-3.0.md, registered BEFORE any number was computed: leave-one-out nearest-centroid persona classification >=80% over the recorded corpus AND separation stabilizes within the first half of a dialogue; else profile-recovery is recorded as not-yet-measurable at current detection quality. Persona-plus-world confound stated up front.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-j"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "learner-profile"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-p",
-      "title": "Plan 3.0 Phase P: the in-seat dose profiler, the voice-change probe, and the routing note",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gates registered before any run. Gate P1: the in-seat probe must reproduce two live anchors — sonnet demand at doses 1-3 stays at/near zero (the S2c/S2d nulls) and opus stake at dose 0 hits at least half (R4) — before any new cell earns a reading; each model x move then gets a recorded minimum in-seat dose or a recorded wall. Gate P2: measurement, not pass/fail — spliced-window voice-change detection rate vs intact-window false-alarm rate; the difference is the router's visibility price. P3 is written only from P1+P2 numbers.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-l"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "casting"
       ]
     },
     {
@@ -5052,6 +4905,69 @@
         "evaluation"
       ],
       "branch": "worktree-longitudinal-abm"
+    },
+    {
+      "id": "adaptation-plan-3-phase-q",
+      "title": "Plan 3.0 Phase Q: the quiet states — repair what the pressure trigger cannot hear",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-01",
+      "updated": "2026-08-04",
+      "verification": "Registered gate quoted from ADAPTATION-PLAN-3.0.md: quiet-plant repair rate (currently ~0–1 of 6 per run) doubles under the chosen mechanism at k=3 without pressure-plant regression. Re-baselining note below recorded BEFORE any run: R2 made the registered numbers stale; the numeric bar for the k=3 run is restated after the one-dialogue pilots, from mechanics only.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-r"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-r",
+      "title": "Plan 3.0 Phase R: replicate the move-card result — two worlds, k=5, two taggers, second family",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-01",
+      "updated": "2026-08-04",
+      "verification": "Gates R1–R4 quoted verbatim from ADAPTATION-PLAN-3.0.md; each recorded on this card with its numbers before the next starts. R2 is the claim gate: v3's right-repair margin over the butler holds pooled across both worlds at k=5, or the paper claim stays at its current scope.",
+      "claim_status": "methods",
+      "depends_on": [
+        "manner-trigger-tuning"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "replication"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-s",
+      "title": "Plan 3.0 Phase S: seat release — name what suppresses the move the bare model can make",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gate S1 quoted from ADAPTATION-PLAN-3.0.md: some ablation recovers the demand move in ≥half its regenerations while the control stays at zero — the suppressor is named; no recovery under any ablation = the suppression is distributed, recorded as a bound. S2 runs only if S1 names a suppressor.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-model-profiler"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
+      ]
     },
     {
       "id": "adaptive-causality-crossed-effects",
@@ -9731,6 +9647,90 @@
         "learner-variance"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "adaptation-plan-3-phase-h",
+      "title": "Plan 3.0 Phase H: the repertoire holes — can a worked example teach the move?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gate H quoted verbatim from ADAPTATION-PLAN-3.0.md: the move appears in ≥half of its card-covered moments, or the hole is recorded as a generation boundary for the family — both outcomes are paper-grade.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-q"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-j",
+      "title": "Plan 3.0 Phase J: judging as an instrument — state-shown standard, disclosure with estimated states",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gate J2 quoted from ADAPTATION-PLAN-3.0.md: the alignment gain survives estimation error in measurable part; the degradation is itself the finding (it prices what live judging inherits from the trigger).",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-q"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "judging"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-l",
+      "title": "Plan 3.0 Phase L: learner profiles — recovery from behavior, then dose-by-profile",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gate L1 quoted verbatim from ADAPTATION-PLAN-3.0.md, registered BEFORE any number was computed: leave-one-out nearest-centroid persona classification >=80% over the recorded corpus AND separation stabilizes within the first half of a dialogue; else profile-recovery is recorded as not-yet-measurable at current detection quality. Persona-plus-world confound stated up front.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-j"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "learner-profile"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-p",
+      "title": "Plan 3.0 Phase P: the in-seat dose profiler, the voice-change probe, and the routing note",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gates registered before any run. Gate P1: the in-seat probe must reproduce two live anchors — sonnet demand at doses 1-3 stays at/near zero (the S2c/S2d nulls) and opus stake at dose 0 hits at least half (R4) — before any new cell earns a reading; each model x move then gets a recorded minimum in-seat dose or a recorded wall. Gate P2: measurement, not pass/fail — spliced-window voice-change detection rate vs intact-window false-alarm rate; the difference is the router's visibility price. P3 is written only from P1+P2 numbers.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-l"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
+      ]
     },
     {
       "id": "adaptive-causality-wager-promotion",
