@@ -1057,6 +1057,201 @@ claims:
     remediation:
       - "Never smooth the formal safety failure into the rider's compliance pass; preserve the turn-9 anatomy."
 
+  # ── §6.21 Phase 5f terminal fresh-world cohort (program-2-phase5f.manifest.json) ──
+
+  - id: paper2.program2.phase5f.sealed_total_14
+    epoch: "2.0"
+    description: "§6.21 Phase 5f sealed 14 dialogues before the frozen futility stop."
+    source_keys:
+      - "n|0|phase5f sealed total 14"
+    statement:
+      pattern: "The stop fired after fourteen dialogues sealed"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
+      path: headline.sealed.total
+    assertion:
+      op: eq
+      expected: 14
+    remediation:
+      - "Keep the realized cohort count distinct from the frozen 18-dialogue plan."
+
+  - id: paper2.program2.phase5f.sealed_committee_8
+    epoch: "2.0"
+    description: "§6.21 Phase 5f sealed 8 committee dialogues."
+    source_keys:
+      - "n|0|phase5f sealed committee 8"
+    statement:
+      pattern: "eight committee and six controls"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
+      path: headline.sealed.committee
+    assertion:
+      op: eq
+      expected: 8
+    remediation:
+      - "Do not count the unlaunched committee rows as attrition or sealed evidence."
+
+  - id: paper2.program2.phase5f.sealed_control_6
+    epoch: "2.0"
+    description: "§6.21 Phase 5f sealed 6 fresh-control dialogues."
+    source_keys:
+      - "n|0|phase5f sealed control 6"
+    statement:
+      pattern: "eight committee and six controls"
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
+      path: headline.sealed.freshControl
+    assertion:
+      op: eq
+      expected: 6
+    remediation:
+      - "Phase 5f uses only its fresh Tideway controls; never pool prior-world controls."
+
+  - id: paper2.program2.phase5f.committee_opportunities_0
+    epoch: "2.0"
+    description: "§6.21 Phase 5f committee arm recorded zero eligible warrant_skip opportunities."
+    source_keys:
+      - "n|0|phase5f committee opportunities 0"
+    statement:
+      pattern: 'every profile-arm cell still contained \*\*zero eligible `warrant_skip` opportunities\*\*'
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
+      path: headline.opportunityDensity.committee
+    assertion:
+      op: eq
+      expected: 0
+    remediation:
+      - "Zero opportunities means the committee effect is undefined, not zero."
+
+  - id: paper2.program2.phase5f.control_opportunities_0
+    epoch: "2.0"
+    description: "§6.21 Phase 5f fresh-control arm recorded zero eligible warrant_skip opportunities."
+    source_keys:
+      - "n|0|phase5f control opportunities 0"
+    statement:
+      pattern: 'every profile-arm cell still contained \*\*zero eligible `warrant_skip` opportunities\*\*'
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
+      path: headline.opportunityDensity.freshControl
+    assertion:
+      op: eq
+      expected: 0
+    remediation:
+      - "Zero opportunities means control compliance is undefined, not zero."
+
+  - id: paper2.program2.phase5f.coverage_committee_1000
+    epoch: "2.0"
+    description: "§6.21 Phase 5f committee coverage guardrail is 1.000."
+    source_keys:
+      - "stat|0|phase5f committee coverage 1.000"
+    statement:
+      pattern: 'Coverage and hard safety are 1\.000 in both arms'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
+      path: headline.guardrails.coverage.committee
+    assertion:
+      op: approx
+      expected: 1.0
+      tolerance_abs: 0.0005
+    remediation:
+      - "Keep apparatus guardrails separate from the uninstantiated treatment endpoint."
+
+  - id: paper2.program2.phase5f.coverage_control_1000
+    epoch: "2.0"
+    description: "§6.21 Phase 5f fresh-control coverage guardrail is 1.000."
+    source_keys:
+      - "stat|0|phase5f control coverage 1.000"
+    statement:
+      pattern: 'Coverage and hard safety are 1\.000 in both arms'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
+      path: headline.guardrails.coverage.freshControl
+    assertion:
+      op: approx
+      expected: 1.0
+      tolerance_abs: 0.0005
+    remediation:
+      - "Keep apparatus guardrails separate from the uninstantiated treatment endpoint."
+
+  - id: paper2.program2.phase5f.safety_committee_1000
+    epoch: "2.0"
+    description: "§6.21 Phase 5f committee hard-safety guardrail is 1.000."
+    source_keys:
+      - "stat|0|phase5f committee hard safety 1.000"
+    statement:
+      pattern: 'Coverage and hard safety are 1\.000 in both arms'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
+      path: headline.guardrails.hardSafety.committee
+    assertion:
+      op: approx
+      expected: 1.0
+      tolerance_abs: 0.0005
+    remediation:
+      - "A safety pass does not convert the density failure into a transfer estimate."
+
+  - id: paper2.program2.phase5f.safety_control_1000
+    epoch: "2.0"
+    description: "§6.21 Phase 5f fresh-control hard-safety guardrail is 1.000."
+    source_keys:
+      - "stat|0|phase5f control hard safety 1.000"
+    statement:
+      pattern: 'Coverage and hard safety are 1\.000 in both arms'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: artifact_json
+      file: config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
+      path: headline.guardrails.hardSafety.freshControl
+    assertion:
+      op: approx
+      expected: 1.0
+      tolerance_abs: 0.0005
+    remediation:
+      - "A safety pass does not convert the density failure into a transfer estimate."
+
+  - id: paper2.program2.phase5f.verdict_not_estimable
+    epoch: "2.0"
+    description: "§6.21 Phase 5f terminal verdict is NOT_ESTIMABLE because opportunity density failed."
+    source_keys:
+      - "stat|0|phase5f verdict not estimable"
+    statement:
+      pattern: 'The registered endpoint is therefore \*\*not estimable: insufficient opportunities\*\*'
+      flags: "i"
+      min_occurrences: 1
+    evidence:
+      type: code_path
+      file: config/adaptive-tutor-evidence/program-2-phase5f.manifest.json
+      pattern: '"primaryEndpoint":\s*\{[\s\S]*?"verdict": "NOT_ESTIMABLE"[\s\S]*?"reason": "insufficient_opportunities"'
+      min_matches: 1
+    assertion:
+      op: eq
+      expected: 1
+    remediation:
+      - "Never rewrite not-estimable as no effect or committee failure; both arm denominators are zero."
+
   # ── §6.22 Offline follow-ups: composer family flip + span-v2 (program-2-terra-probe.manifest.json) ──
 
   - id: paper2.program2.terra.v1_sonnet_delivered_0293

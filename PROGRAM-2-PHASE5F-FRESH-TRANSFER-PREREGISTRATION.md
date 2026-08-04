@@ -1,11 +1,11 @@
 # Program-2 Phase 5f — fresh-world apparatus-hardening pilot pre-registration
 
-Status: **A3 FEASIBILITY COMPLETE; PROSPECTIVE COHORT PREREGISTERED BUT NOT
-AUTHORIZED** on branch `codex/program-2-phase5f-cohort` (2026-07-28). Sections
-1-10 preserve the successive four-dialogue feasibility freezes and
-amendments; section 11 records the immutable A3 outcome; section 12 freezes
-the one terminal cohort. This document does not authorize the 18-dialogue
-cohort, seam review, or any empirical transfer claim.
+Status: **TERMINAL COHORT COMPLETE — NOT ESTIMABLE: INSUFFICIENT
+OPPORTUNITIES** (2026-07-29). Sections 1-10 preserve the successive
+four-dialogue feasibility freezes and amendments; section 11 records the
+immutable A3 outcome; section 12 freezes the one terminal cohort; section 13
+records its terminal result. No seam review, replacement cohort, or empirical
+transfer claim is authorized.
 
 ## 1. Purpose
 
@@ -317,3 +317,46 @@ still requires separate explicit authorization naming the Anthropic and
 OpenAI payload destinations and scopes. At most this one cohort may run. No
 A4-style apparatus amendment, replacement suffix, or trace-informed repair
 series follows it; the card closes with the frozen terminal verdict.
+
+## 13. Terminal cohort result (2026-07-29)
+
+The exact 18-dialogue plan was prepared and certified on clean source
+`d7552ba90a21e8c71f94108440ffd14cf2e844bd`. Separate authorization named the
+Anthropic `claude-code.sonnet-5` tutor payload, the OpenAI
+`codex.gpt-5.6-terra` private simulated-learner and classification payloads,
+and the local Ollama `program2-sft-instruct-v2` committee. No seam review was
+authorized or run.
+
+The live mathematical-reachability gate stopped the cohort after 14 of 18
+dialogues sealed: eight committee and six fresh silent controls. One
+`affective_resistant|silent_control` first attempt failed closed when a tutor
+recovery prompt crossed the private-planner boundary at future evidence
+surface `p_trace`; its permitted retry sealed. Final attrition was zero. The
+four remaining jobs were not launched.
+
+The frozen primary endpoint was never instantiated. Every profile-arm cell
+recorded zero eligible `warrant_skip` opportunities. Once all five
+`proof_skipper|committee` rows had sealed at zero, that cell could not reach
+its minimum of five regardless of the remaining jobs, so the pre-registered
+futility stop fired. Committee and control compliance are both 0/0; their
+difference and bootstrap interval are undefined. The terminal verdict is
+**`not_estimable`**, reason **`insufficient_opportunities`**. Coverage and hard
+safety are 1.000 in both arms. The analyzer's technical-failure list records
+the four pending/unclassified jobs produced by the intentional futility stop;
+its pedagogical-failure list is empty because no eligible treatment moment
+exists.
+
+This result does not show that the fine-tuned committee failed to transfer. It
+shows that Tideway, these simulated profiles, and the frozen point-of-action
+detector did not produce a usable test of transfer. Residual apparatus burden
+remains visible outside the endpoint: the longest sealed dialogue required 22
+turns and 19 safe fallbacks after the learner had reached the supported
+answer. That observation is not attributable to committee advice.
+
+The frozen result is in `exports/program2-live-pilot-5f/analysis.json` under
+the run worktree and is durably archived with the A3 evidence under
+`~/.machinespirits-data/program-2/phase5f-live`. Artifact hashes and the exact
+source-bound reading are recorded in
+`config/adaptive-tutor-evidence/program-2-phase5f.manifest.json`. Per section
+12.5, this result spends the card's stopping rule: no replacement cohort,
+trace-informed repair, or Phase 5f rerun follows it.
