@@ -112,3 +112,22 @@ table and the judge-disclosure channel), but the confused card is not
 load-bearing at the current stack and is not claimed as causal.
 Playbook final: five entries causally proven, one robust-native,
 flat/bored conduct-evidenced only. Phase 3 closes.
+
+## Flat/bored promotion registered (2026-08-04, before any run or build)
+
+The last entry, two pieces. (1) CROSSED TEST at w033 t11 (the ratified
+mid-dialogue bored plant; t31's endgame-drag gold has no matching
+card and is excluded rather than forced falsely): RIGHT arm forces
+quiet:flat (the short lure) at t11, WRONG arm forces settled_claim
+(record-reopening = the schedule's named wrong, "a careful recap of
+settled ground"); all other targets natural; k=5 per arm, one world
+(bound stated — w030's ratified schedule has no bored plant).
+Bar, proportional to the family standard: right >= 4/5 AND wrong
+<= 2/5 on ruled conduct (t11 gold: off_track_probe/speed_up — the
+oblique lure). (2) DETECTION FIX qd-v2 for wordy boredom: flat =
+length-collapse OR (assent-without-content opener AND low novel-token
+ratio vs the prior tutor turn), closed-class and world-neutral;
+offline gates: recall on the archived wordy-bored misses strictly up,
+no regression on short-bored, calm alarms not worse, zero pressure
+collisions. The crossed run's own t11/t31 lines then serve as fresh
+held-out shadow data for the detector.
