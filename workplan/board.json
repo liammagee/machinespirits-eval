@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-04T21:34:54.250Z",
+  "generated": "2026-08-04T22:01:44.537Z",
   "counts": {
     "total": 398,
     "byStatus": {
       "done": 365,
       "blocked": 7,
       "dropped": 4,
-      "triaged": 9,
+      "triaged": 8,
       "review": 3,
-      "active": 6,
+      "active": 7,
       "archived": 4
     },
     "byType": {
@@ -22,38 +22,6 @@
     }
   },
   "items": [
-    {
-      "id": "refactor-tutor-stub-extracted-owner-boundaries",
-      "title": "Split oversized tutor-stub pipeline and response-policy owners",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "code": [
-          "services/tutorStubTutorTurnPipeline.js",
-          "services/tutorStubResponsePolicy.js",
-          "scripts/tutor-stub.js"
-        ],
-        "items": [
-          "refactor-tutor-stub-macro-decomposition",
-          "codebase-refactoring-program"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "tutor-stub",
-        "boundaries",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
     {
       "id": "tutor-contract-outcome-prereg",
       "title": "Pre-registration: does the per-turn contract change legitimate closure?",
@@ -375,6 +343,42 @@
         "testing",
         "coverage",
         "dead-code",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-extracted-owner-boundaries",
+      "title": "Split oversized tutor-stub pipeline and response-policy owners",
+      "status": "active",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "branch": "codex/refactor-tutor-stub-extracted-owner-boundaries",
+      "verification": "The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "code": [
+          "services/tutorStubTutorTurnPipeline.js",
+          "services/tutorStubTutorTurnPreparation.js",
+          "services/tutorStubTutorAttemptRuntime.js",
+          "services/tutorStubTutorDraftAudit.js",
+          "services/tutorStubResponsePolicy.js",
+          "scripts/tutor-stub.js"
+        ],
+        "items": [
+          "refactor-tutor-stub-macro-decomposition",
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "boundaries",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
