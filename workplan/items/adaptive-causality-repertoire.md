@@ -83,3 +83,16 @@ Playbook after phase 3: exhibit, stake, demand, mockery, grievance
 FULLY PROVEN (crossed, both worlds, delivery-verified); lost
 provisional; quiet flat/bored and the wager-at-demand remain
 conduct-evidenced only.
+
+## Lost-thread retest registered (2026-08-04, before any run)
+
+Wrong-arm redesign per the phase-3 note: the retest arm forces GOLD
+at every target except the lost turn, which gets the DEMAND card
+(test-pressing while tangled — the schedule's named wrong, zero
+conduct overlap with side-by-side untangling). Only one card differs
+from the phase-3 right arm, whose lost cells (6/6) carry over as the
+right side. k=3 per world = 6 new dialogues. Bar unchanged: right
+>= 4/6 (already 6/6) AND wrong <= 2/6 promotes the entry; wrong
+>= 3/6 again = the state is robust to mismatched cards (the model
+untangles regardless) and the entry is recorded as such — a finding,
+not a failure.
