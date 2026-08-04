@@ -1,18 +1,19 @@
 ---
 id: tutor-stub-leak-audit-false-positives
-title: Leak audits fire on hedges and stage directions — every recorded A/B leak was a false alarm
-status: review
+title: Leak audits fire on hedges and stage directions — every recorded A/B leak
+  was a false alarm
+status: done
 type: infra
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-29
-updated: 2026-07-29
-verification: "A unit test asserts the conclusion check treats `X, not Y` as
+updated: 2026-08-04
+verification: A unit test asserts the conclusion check treats `X, not Y` as
   withholding, the way it already treats `does not` and `not yet`; a unit test
   asserts `I trace the winter-to-thaw entry with my finger` raises no evidence
   correspondence; replaying the nine recorded leak turns through the A/B bench
-  reads zero leaks; the seven turns that never leaked still read zero."
+  reads zero leaks; the seven turns that never leaked still read zero.
 claim_status: scope-bound
 depends_on:
   - tutor-instrumentation-ab-harness

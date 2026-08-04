@@ -1,22 +1,22 @@
 ---
 id: adaptation-planted-stress-bench
 title: Planted typed stress — a bench where teaching moves have consequences
-status: triaged
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-07-30
-updated: 2026-07-30
-verification: "Design-stage card: no build until the authored gold exists.
-  First build gate: a user-edited stress schedule (draft:
+updated: 2026-08-04
+verification: "Design-stage card: no build until the authored gold exists. First
+  build gate: a user-edited stress schedule (draft:
   config/drama-derivation/stress/world-033-stress-schedule.yaml) naming per
-  planted turn the state, the sim directive, and the right repair. The gate
-  was originally transcript annotation; inverted 2026-07-30 — the corpus
-  transcripts contain no states to read out (the sim has none), so the gold
-  is authored in, never discovered. The annotation sheets survive for rating
-  whether a tutor reply met a planted state."
-claim_status: methods
+  planted turn the state, the sim directive, and the right repair. The gate was
+  originally transcript annotation; inverted 2026-07-30 — the corpus transcripts
+  contain no states to read out (the sim has none), so the gold is authored in,
+  never discovered. The annotation sheets survive for rating whether a tutor
+  reply met a planted state."
+claim_status: scope-bound
 depends_on:
   - misconception-world-outcome-gate
 tags:

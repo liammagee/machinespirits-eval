@@ -2,17 +2,18 @@
 id: drama-world-public-object-reachability
 title: Make each drama world's declared public object reachable in its own
   deterministic text
-status: active
+status: done
 type: maintenance
 priority: P2
 owner: claude
 source: review
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-08-04
 verification: Every world's deterministic fallback names that world's own public
-  object rather than the generic 'public record', unprompted wording is pinned by
-  test for all 32 worlds, and the change to the 17 affected worlds is enumerated
-  rather than incidental; targeted and hermetic suites pass without model calls.
+  object rather than the generic 'public record', unprompted wording is pinned
+  by test for all 32 worlds, and the change to the 17 affected worlds is
+  enumerated rather than incidental; targeted and hermetic suites pass without
+  model calls.
 branch: claude/world-public-objects-reachable
 links:
   code:

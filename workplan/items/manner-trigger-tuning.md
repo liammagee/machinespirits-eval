@@ -1,18 +1,17 @@
 ---
 id: manner-trigger-tuning
 title: Tune the manner switch's trigger against planted gold — staged, gated
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-07-31
-updated: 2026-07-31
-verification: "Each stage's gate is numeric and recorded in this card before
-  the next stage starts. Trigger versions ship as config artifacts with
-  training-set hashes; every trace records its trigger version; no pooling
-  across versions."
-claim_status: methods
+updated: 2026-08-04
+verification: Each stage's gate is numeric and recorded in this card before the
+  next stage starts. Trigger versions ship as config artifacts with training-set
+  hashes; every trace records its trigger version; no pooling across versions.
+claim_status: scope-bound
 depends_on:
   - adaptation-planted-stress-bench
 tags:
