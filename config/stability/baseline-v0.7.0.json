@@ -42,7 +42,7 @@
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
       "claim": "recovery/committee orchestration and insertion interception",
-      "sha256": "679dbefc69b40dea03e8c1c6e949e3d4e53d3097cc69d508519f3f16e47e50a0"
+      "sha256": "5fc696f27d0af5c19be47b15f531a12f874535aefef77fcc2e0468bcb71f1fc5"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
@@ -53,6 +53,11 @@
       "file": "services/tutorStubTutorAttemptRuntime.js",
       "claim": "prompt audit/recovery; provider-attempt dispatch; Program-2 budget reservation and trace envelope",
       "sha256": "16a861f64e414c7a66f7bb007116117b5df4aea2b89a99fed6ce8c15027546be"
+    },
+    {
+      "file": "services/tutorStubTutorCommitteeRuntime.js",
+      "claim": "Program-2 committee mini/composer dispatch, fallback battery, resampling, and trace envelope",
+      "sha256": "5b138faca1599cd57804c7bcf14d14df4aad21484d551745552d05f94fb35047"
     },
     {
       "file": "services/tutorStubTutorDraftAudit.js",

@@ -64,6 +64,10 @@ const PINS = [
     claim: 'prompt audit/recovery; provider-attempt dispatch; Program-2 budget reservation and trace envelope',
   },
   {
+    file: 'services/tutorStubTutorCommitteeRuntime.js',
+    claim: 'Program-2 committee mini/composer dispatch, fallback battery, resampling, and trace envelope',
+  },
+  {
     file: 'services/tutorStubTutorDraftAudit.js',
     claim: 'delivery guard battery, dispositions, and audit trace shape',
   },
