@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-07-28
+updated: 2026-08-05
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -111,6 +111,8 @@ links:
     - normalize-provenance-validator-data-paths
     - tutor-stub-first-draft-series
     - adaptive-eval-immutable-provenance
+    - refactor-tutor-stub-macro-decomposition
+    - refactor-tutor-stub-extracted-owner-boundaries
 tags:
   - refactoring
   - testing
@@ -1404,3 +1406,8 @@ Log:
 - 2026-07-28 — Opened fifty-loop run 50 as PR #424 against `main`; the push
   benchmark remained byte-identical to its standing failed baseline. All fifty
   requested refactor/validate/commit/push/PR cycles are published.
+- 2026-08-05 — Reconciled the parent after macro cycles 1–16 merged through PR
+  #484. The tutor-stub entrypoint has reached its near-2,000 functional-body
+  destination; the programme remains active for the explicit extracted-owner
+  boundary card and later ranked hotspots, rather than for further helper-sized
+  entrypoint shaving.

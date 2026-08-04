@@ -1,17 +1,19 @@
 ---
 id: negative-register-effect-estimation-grid
 title: Estimate negative-register effects with stance-fidelity gating
-status: active
+status: blocked
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-07-03
-updated: 2026-07-26
-branch: codex/negative-register-effect-estimation-grid
+updated: 2026-08-05
+blocked_by: Explicit operator authorization for the frozen 45-row model-consuming generation and judging run
 verification: Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.
 claim_status: future
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/252
   notes:
     - notes/2026-07-03-negative-register-effect-estimation-future-work.md
     - notes/2026-07-26-negative-register-effect-estimation-preregistration.md
@@ -74,3 +76,8 @@ launch gate, pinned Sonnet-class scoring seams, and a fail-closed report that
 separates assigned and faithful estimands, noncompliance exclusions, and
 invalid person-attack violations. The remaining gate is the explicitly
 approved model-consuming generation and judging run.
+
+2026-08-05 Codex: Reconciled after confirming PR #252 merged and no active
+branch or worktree remains. The apparatus is prepared, but the empirical grid
+cannot proceed without the explicitly named paid-run authorization, so the
+card is blocked rather than active.

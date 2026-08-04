@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-04
+updated: 2026-08-05
 verification: "Gate registered before any change: (a) flag off — behavior
   byte-identical, hermetic suite green; (b) flag on, k=3 live — at release
   turns where the draft fails ONLY the release-delivery family, the
@@ -17,6 +17,9 @@ verification: "Gate registered before any change: (a) flag off — behavior
 claim_status: methods
 depends_on:
   - adaptation-plan-3-phase-p
+links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/444
 tags:
   - tutor-stub
   - harness
@@ -137,3 +140,12 @@ is open. One instruction for the sequence's shared paid run: leave
 `TUTOR_STUB_CLUE_INSERTION` off there, so the fallback-rate change
 that run measures is attributable to the guard fixes alone and not
 to insertion converting fallback turns.
+
+## Reconciliation (2026-08-05)
+
+PR #444 is merged and its CI passed, so this is no longer awaiting code or PR
+review. It remains in `review` for a substantive scope decision: the original
+zero-template target was met for presented-exhibit releases but not for the
+enacted-role family, which remains safely composer-owned by the recorded
+anti-creep decision. Mark done only if that bounded exception is accepted;
+otherwise open a new parser-focused implementation card.
