@@ -1,0 +1,67 @@
+{
+  "schema_version": "superego-framing-codebook-v1",
+  "codebook_id": "superego-framing-trajectory-v1",
+  "version": "1.0.0",
+  "status": "single-coder-construct-diagnostic",
+  "source": {
+    "paper": "Tuveri, From Prompt Engineering to Epistemic Prompting: Prompt Trajectories as AI-Mediated Problem Framing in Science Education, arXiv:2607.11680",
+    "local_synopsis": "notes/daily-notes/2026-07-20-research-roundup.html",
+    "operationalization_note": "The five-stage vocabulary is adapted as an external coding frame. The narrower check-to-next-ego unit below is a project operationalization, not a claim that the source paper defines this exact metric."
+  },
+  "construct": "Whether a revision-demanding disciplinary check produces a materially different organizing frame in the ego's immediate next response.",
+  "trajectory_stages": [
+    {
+      "id": "prompt",
+      "trace_evidence": "The contextual or learner input preceding ego generation; retained for trajectory context but not independently coded."
+    },
+    {
+      "id": "response",
+      "trace_evidence": "The last observable ego generation or revision before the superego check."
+    },
+    {
+      "id": "learner_uptake",
+      "trace_evidence": "A learner turn_action after the check makes the next ego response deferred and excludes the case from this causal diagnostic."
+    },
+    {
+      "id": "disciplinary_check",
+      "trace_evidence": "A superego review/revise event that rejects, enhances, or requests revision."
+    },
+    {
+      "id": "reframe",
+      "trace_evidence": "The immediate next ego generation or revision before another learner turn."
+    }
+  ],
+  "eligibility": [
+    "The trace contains a revision-demanding superego check.",
+    "Both the preceding ego response and immediate next ego response contain observable text.",
+    "No learner turn_action occurs between the disciplinary check and the next ego response.",
+    "The dialogue and profile are part of the frozen cell 21, 48, or 49 corpus."
+  ],
+  "labels": {
+    "reframe": {
+      "definition": "The next ego response changes the organizing interpretation, pedagogical strategy, question, evidence relation, or action target in a way that substantively answers the disciplinary check.",
+      "include": [
+        "A directive answer becomes an inquiry that gives the learner epistemic work.",
+        "The tutor changes which evidence, premise, misconception, or relation structures the response.",
+        "The action or pedagogical strategy changes for a reason named by the check."
+      ],
+      "exclude": [
+        "Longer wording, added warmth, or synonymous phrasing with the same organizing move.",
+        "A new surface example that leaves the same interpretation and learner role intact."
+      ]
+    },
+    "restate": {
+      "definition": "The next ego response preserves the same organizing frame and pedagogical move, even if it is edited, expanded, softened, or lexically different.",
+      "include": [
+        "The same answer or recommendation is repeated with more explanation.",
+        "The response acknowledges the check but does not alter the learner's epistemic task.",
+        "Type, target, or wording changes without a check-responsive change in interpretation or strategy."
+      ],
+      "exclude": [
+        "A genuine change in the question, evidence relation, premise, learner role, or pedagogical strategy."
+      ]
+    }
+  },
+  "decision_rule": "Code semantic function, not edit magnitude or trace action name. If the check-responsive organizing change is not identifiable from public trace text, exclude the case rather than infer hidden intent.",
+  "claim_boundary": "This codebook supports a single-coder construct-separation pilot only. It does not validate a replacement metric; a second independent coder is required for reliability or stable prevalence claims."
+}
