@@ -16,6 +16,8 @@ verification: CI launches the real shared tutor surface with a fake provider in
 depends_on:
   - tutor-stub-unified-session-surface
 links:
+  prs:
+    - 481
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   items:
