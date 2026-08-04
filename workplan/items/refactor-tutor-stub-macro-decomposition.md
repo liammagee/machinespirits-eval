@@ -56,6 +56,7 @@ links:
     - 431
     - 471
     - 474
+    - 475
   items:
     - codebase-refactoring-program
 tags:
@@ -316,5 +317,8 @@ Boundary reassessment after cycle 11:
   The zero-skip hermetic suite passes 7,748/7,748 root tests and 137/137
   tutor-core tests. Repository-wide lint, Prettier, manifest, workplan source
   (397 items), ref governance, syntax, whitespace, and the static import graph
-  all pass with zero cycles across 482 files; no model calls were authorized for
-  these structural extractions.
+  all pass with zero cycles across 482 files. The mandatory pre-push strong
+  benchmark subsequently completed all six jobs and returned the standing 0/6
+  calibration warning; the nearest saved baseline re-audits identically with
+  0 improved and 0 regressed, so the report-only hook allowed the push.
+- 2026-08-04 — Opened macro cycles 9–11 as PR #475.
