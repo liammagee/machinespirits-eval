@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-04T04:39:51.076Z",
+  "generated": "2026-08-04T04:45:26.665Z",
   "counts": {
-    "total": 373,
+    "total": 374,
     "byStatus": {
-      "done": 241,
+      "done": 242,
       "blocked": 5,
       "dropped": 4,
       "triaged": 11,
@@ -16,7 +16,7 @@
       "experiment": 69,
       "infra": 73,
       "maintenance": 165,
-      "content": 2,
+      "content": 3,
       "ops": 8,
       "paper": 6
     }
@@ -10546,6 +10546,32 @@
       ],
       "branch": "codex/geist-positioning",
       "milestone": "board-pm"
+    },
+    {
+      "id": "dramatic-recognition-arc-editorial-refresh",
+      "title": "Review and republish the dramatic-recognition arc",
+      "status": "done",
+      "type": "content",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-04",
+      "updated": "2026-08-04",
+      "verification": "The source and standalone arc contain ten traced panels; the prompt packs describe the shipped PNGs; local desktop/mobile visual QA, source checks, packaging, publisher dry-run, live deploy, and live URL verification pass.",
+      "branch": "codex/dramatic-recognition-arc-review",
+      "links": {
+        "notes": [
+          "notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",
+          "notes/poetics/images/2026-05-26-paper-to-dramatic-recognition-arc-image-prompts.txt"
+        ]
+      },
+      "tags": [
+        "poetics",
+        "techne",
+        "publishing",
+        "images"
+      ],
+      "milestone": "paper-2-0"
     },
     {
       "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
