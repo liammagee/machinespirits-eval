@@ -1,0 +1,25 @@
+{
+  "schema": "machinespirits.program2.trl-exclusion-ledger.v1",
+  "sourceDataset": "program2-dataset-v1/general-sft.jsonl",
+  "purpose": "Reproduce the historical 865-row TRL SFT corpus from 868 train rows without inventing a rationale that was not recorded at the time.",
+  "exclusions": [
+    {
+      "dialogueId": "step4-41-claude-code-sonnet-5-affective_resistant-compiled_constraint-r4",
+      "turnId": "2026-07-17T17-36-47-726Z:t002",
+      "reason": "historical_untracked_formatter_exclusion",
+      "reasonKnown": false
+    },
+    {
+      "dialogueId": "step4-41-claude-code-sonnet-5-affective_resistant-compiled_constraint-r4",
+      "turnId": "2026-07-17T17-36-47-726Z:t004",
+      "reason": "historical_untracked_formatter_exclusion",
+      "reasonKnown": false
+    },
+    {
+      "dialogueId": "step4-41-claude-code-sonnet-5-affective_resistant-compiled_constraint-r4",
+      "turnId": "2026-07-17T17-36-47-726Z:t009",
+      "reason": "historical_untracked_formatter_exclusion",
+      "reasonKnown": false
+    }
+  ]
+}

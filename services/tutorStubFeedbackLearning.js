@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 export const TUTOR_STUB_FEEDBACK_ADAPTATION_PLAN_SCHEMA = 'machinespirits.tutor-stub.feedback-adaptation-plan.v1';
 export const TUTOR_STUB_FEEDBACK_ADAPTATION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.feedback-adaptation-audit.v1';
 export const TUTOR_STUB_FEEDBACK_OBSERVATION_SCHEMA = 'machinespirits.tutor-stub.feedback-observation.v1';
@@ -20,6 +22,24 @@ function oneLine(value) {
 
 function jsonClone(value) {
   return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+}
+
+function feedbackResponseHash(targetTurn) {
+  return crypto
+    .createHash('sha256')
+    .update(oneLine(targetTurn?.tutor || targetTurn?.text))
+    .digest('hex');
+}
+
+export function tutorStubFeedbackRatingId({ targetTurn, provenance = {} } = {}) {
+  if (!targetTurn) return null;
+  const identity = {
+    sourceAssetId: provenance.sourceAssetId || provenance.trace || 'unknown_source_asset',
+    runId: provenance.runId || 'unknown_run',
+    ratedTurnId: targetTurn.turnId || `turn:${targetTurn.turn ?? 'unknown'}`,
+    responseSha256: feedbackResponseHash(targetTurn),
+  };
+  return `rating_${crypto.createHash('sha256').update(JSON.stringify(identity)).digest('hex')}`;
 }
 
 function feedbackRating(feedback) {
@@ -115,6 +135,7 @@ export function buildTutorStubFeedbackRatingRecord({ feedback, targetTurn, prove
     null;
   return {
     schema: TUTOR_STUB_FEEDBACK_RATING_RECORD_SCHEMA,
+    ratingId: tutorStubFeedbackRatingId({ targetTurn, provenance }),
     observationType: 'immediate_observational_preference',
     causalClaim: false,
     recordedAt: new Date().toISOString(),
@@ -133,7 +154,9 @@ export function buildTutorStubFeedbackRatingRecord({ feedback, targetTurn, prove
       turn: targetTurn.turn ?? feedback.targetTutorTurn ?? null,
       turnId: targetTurn.turnId || feedback.targetTutorTurnId || null,
       kind: feedback.targetKind || (targetTurn.opening ? 'opening' : 'tutor_response'),
+      displayed: true,
       text: oneLine(targetTurn.tutor || targetTurn.text),
+      responseSha256: feedbackResponseHash(targetTurn),
       responseConfiguration: configurationSnapshot(targetTurn),
       responseConfigurationAudit: jsonClone(targetTurn.responseConfigurationAudit || null),
       selectionPolicy: targetSelection?.policy || null,
@@ -302,6 +325,7 @@ export function buildTutorStubFeedbackObservation({
   const ratingRecord = buildTutorStubFeedbackRatingRecord({ feedback, targetTurn, provenance });
   return {
     schema: TUTOR_STUB_FEEDBACK_OBSERVATION_SCHEMA,
+    ratingId: ratingRecord.ratingId,
     observationType: 'observational_preference_with_next-turn_outcomes',
     causalClaim: false,
     recordedAt: new Date().toISOString(),

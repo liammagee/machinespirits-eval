@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "machinespirits.data-governance.holdout-record.v1",
+  "title": "Machine Spirits append-only holdout event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "holdoutId", "action", "recordedAt", "reason"],
+  "properties": {
+    "schema": { "const": "machinespirits.data-governance.holdout-record.v1" },
+    "holdoutId": { "type": "string", "minLength": 1 },
+    "action": { "enum": ["holdout", "release"] },
+    "recordedAt": { "type": "string", "format": "date-time" },
+    "reason": { "type": "string", "minLength": 1 },
+    "assetId": { "type": "string", "minLength": 1 },
+    "sourceGroupId": { "type": "string", "minLength": 1 },
+    "supersedes": { "type": ["string", "null"] }
+  },
+  "anyOf": [{ "required": ["assetId"] }, { "required": ["sourceGroupId"] }]
+}

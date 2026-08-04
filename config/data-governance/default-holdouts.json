@@ -1,0 +1,45 @@
+{
+  "schema": "machinespirits.data-governance.holdout-seed.v1",
+  "records": [
+    {
+      "schema": "machinespirits.data-governance.holdout-record.v1",
+      "holdoutId": "holdout-pilot-human-learner-data-v1",
+      "action": "holdout",
+      "recordedAt": "2026-08-04T00:00:00.000Z",
+      "reason": "research participant data is restricted unless its consent and protocol explicitly license secondary training use",
+      "assetId": "pilot-human-learner-data"
+    },
+    {
+      "schema": "machinespirits.data-governance.holdout-record.v1",
+      "holdoutId": "holdout-program2-archived-v2-candidate-v1",
+      "action": "holdout",
+      "recordedAt": "2026-08-04T00:00:00.000Z",
+      "reason": "archived engineering corpus was not the approved Program-2 training corpus",
+      "assetId": "program2-archived-v2-candidate"
+    },
+    {
+      "schema": "machinespirits.data-governance.holdout-record.v1",
+      "holdoutId": "holdout-program2-evaluations-v1",
+      "action": "holdout",
+      "recordedAt": "2026-08-04T00:00:00.000Z",
+      "reason": "floor and live evaluation assets are evaluation-only descendants",
+      "assetId": "program2-floor-and-live-evaluations-v1"
+    },
+    {
+      "schema": "machinespirits.data-governance.holdout-record.v1",
+      "holdoutId": "holdout-canonical-paper-evaluation-assets-v1",
+      "action": "holdout",
+      "recordedAt": "2026-08-04T00:00:00.000Z",
+      "reason": "canonical paper evaluation material is reserved from future training until a separately reviewed contamination plan exists",
+      "assetId": "canonical-paper-evaluation-assets"
+    },
+    {
+      "schema": "machinespirits.data-governance.holdout-record.v1",
+      "holdoutId": "holdout-v-series-transfer-worlds-v1",
+      "action": "holdout",
+      "recordedAt": "2026-08-04T00:00:00.000Z",
+      "reason": "V-series transfer worlds remain evaluation material",
+      "assetId": "v-series-transfer-worlds"
+    }
+  ]
+}

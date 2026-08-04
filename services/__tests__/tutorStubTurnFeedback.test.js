@@ -244,6 +244,8 @@ test('an immediate rating record survives without a following learner turn', () 
     provenance: { runId: 'run', inputSource: 'empty_prompt_left_arrow' },
   });
   assert.equal(record.schema, 'machinespirits.tutor-stub.feedback-rating-record.v1');
+  assert.match(record.ratingId, /^rating_[a-f0-9]{64}$/u);
+  assert.match(record.ratedResponse.responseSha256, /^[a-f0-9]{64}$/u);
   assert.equal(record.feedback.helpfulness, -1);
   assert.equal(record.ratedResponse.turnId, 'run:t004');
   assert.equal(record.ratedResponse.responseConfiguration.engagement_stance, 'precise');
