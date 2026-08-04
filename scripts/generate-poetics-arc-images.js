@@ -36,6 +36,22 @@ const PREFERRED_PANEL_IDS = [
 const STYLE_GUIDE_PATH = 'docs/design/machinespirits-house-style.md';
 const STYLE_ID = 'machinespirits-poetics-editorial-cartoon-v2';
 
+// Preserve the panel-total line from the prompt that actually generated each
+// shipped image. Panels 02–09 came from the nine-panel 2026-07-23 refresh;
+// corrected Panel 01 and new Panel 10 came from the ten-panel 2026-08-04 pass.
+const IMAGE_ORIGIN_PANEL_TOTALS = {
+  'starting-point': 10,
+  'the-stage': 9,
+  derivation: 9,
+  'figure-authority': 9,
+  'internal-superego': 9,
+  decay: 9,
+  'calendar-repair': 9,
+  'the-guards': 9,
+  verdict: 9,
+  'after-the-verdict': 10,
+};
+
 const STYLE_GUIDE = `
 Machine Spirits editorial illustration: the editorial Techne layer translated through the website's Swiss-constructivist identity, with film-noir light used as atmosphere rather than as a costume:
 - Build the image from off-white #fafafa or warm paper, hard black #0a0a0a ink, and white. Use signature red #E63946 or dark red #c1121f for one causal turn, intervention, or selection; moss, ochre, and brick may appear only as quiet secondary evidence colours. Do not use a sepia-only wash, neon accents, or glossy gradients.
@@ -349,6 +365,7 @@ function buildPanels({ analysis, htmlPath, imageDir, opts, selectedSections }) {
     const metaphor = inferVisualMetaphor(section);
     const caption = buildCaption(section);
     const alt = buildAlt(section, metaphor);
+    const promptPanelTotal = IMAGE_ORIGIN_PANEL_TOTALS[section.id] || selectedSections.length;
     const prompt = buildCodexImagePrompt({
       analysis,
       caption,
@@ -357,7 +374,7 @@ function buildPanels({ analysis, htmlPath, imageDir, opts, selectedSections }) {
       opts,
       panelNumber,
       section,
-      total: selectedSections.length,
+      total: promptPanelTotal,
     });
 
     return {
@@ -368,6 +385,7 @@ function buildPanels({ analysis, htmlPath, imageDir, opts, selectedSections }) {
       image_path: imagePath,
       image_src: src,
       panel: panelNumber,
+      prompt_panel_total: promptPanelTotal,
       section_heading: section.heading,
       section_id: section.id,
       section_kicker: section.kicker || null,
@@ -383,7 +401,7 @@ function inferVisualMetaphor(section) {
   // arc note (the section ids in 2026-05-26-paper-to-dramatic-recognition-arc.html).
   const byId = {
     'starting-point':
-      'a long black average-slope ruler crossing an off-white Swiss grid while one decisive lesson hinge falls just outside its frame; a single red -18-degree cut marks the missed turning point beside the paired tutor and learner figures',
+      "a perfectly horizontal black average line, unmistakably level from left edge to right edge, crossing an off-white Swiss grid; beneath that flat summary, a compact tutor-learner scene reaches one local stuck point and a single red path breaks sharply downward outside the average line's frame—the aggregate is flat while the decisive hinge is visibly missed; do not tilt the ruler or imply an upward trend",
     'the-stage':
       'a tutoring table staged as three crisp beats on a black ruled grid—block, turn, checked result—with a red checker stamp landing only on the final beat and the tutor and learner visible throughout',
     derivation:
@@ -400,6 +418,8 @@ function inferVisualMetaphor(section) {
       'a split black-rule composition with two sensors labelled V and H: V reads the conversation surface, H reads the explicit proof-state depth; each red selection path succeeds on one small lesson geometry and stops at a black boundary on another, with no overall winner',
     verdict:
       'three square evidence cards locked to one grid—a check, a boundary bracket, and an open ring—while a heavy red stamp marks the narrow claim CONDUCT ONLY; the paired tutor and learner remain outside any imagined mind-reading apparatus',
+    'after-the-verdict':
+      "an elaborate black strategy gearbox and classifier bank bolted onto the tutor's route, with local dials visibly moving, while the red proof-outcome line remains flat and stops short of the checked answer; beside it, a smaller simple proof-control loop continues as the retained baseline—the machinery changes conduct but does not improve the proof",
   };
   if (byId[id]) return byId[id];
   if (text.includes('guard') || text.includes('world')) return byId['the-guards'];
@@ -420,7 +440,28 @@ function buildCaption(section) {
 }
 
 function buildAlt(section, metaphor) {
-  return clampText(`Editorial cartoon for ${section.heading}: ${metaphor}.`, 180);
+  const byId = {
+    'starting-point':
+      'A horizontal black average line stays flat above a tutor and learner while a red path drops sharply at the local stuck point the average misses.',
+    'the-stage':
+      'A tutor and learner face a three-beat proof diagram: block, changed path, and a final checked result.',
+    derivation:
+      'A red route crosses a proof graph one verified node at a time toward D equals zero while the answer remains covered.',
+    'figure-authority':
+      'A repeated mask fills a film strip until a red device card redirects the final frame into a different rhetorical move.',
+    'internal-superego':
+      'An empty director chair sits outside the tutor while an internal red gate blocks and reroutes the third repeated move.',
+    decay:
+      'A visible decay ledger lets one tutor restore a faded proof node while a blacked-out evidence channel prevents the other tutor from targeting the loss.',
+    'calendar-repair':
+      'An early red clue breaks a numbered proof schedule, and a compact repair rule restores the missing fact before the route continues to turn twenty.',
+    'the-guards':
+      'Visible and hidden-state sensors guide red paths through different proof geometries, succeeding in one shape and stopping at a boundary in another.',
+    verdict: 'Three evidence cards sit above a tutor and learner under a red CONDUCT ONLY stamp that limits the claim.',
+    'after-the-verdict':
+      'An elaborate strategy machine moves many local gauges but stops short of the proof finish, while the smaller baseline control loop reaches a checked result.',
+  };
+  return byId[section.id] || clampText(`Black-and-white editorial diagram: ${metaphor}.`, 240);
 }
 
 function trimTrailingSentencePunctuation(text) {
@@ -489,6 +530,7 @@ Panel count: ${panels.length}
 Format: ${opts.format}
 House style: ${STYLE_GUIDE_PATH}
 Prompt style: ${STYLE_ID}
+Prompt lineage: each code block preserves the panel-total line from the run that generated its shipped PNG.
 
 ## Text Analysis
 
@@ -537,6 +579,7 @@ ${panel.codex_prompt}
       image_file: panel.image_file,
       image_src: panel.image_src,
       panel: panel.panel,
+      prompt_panel_total: panel.prompt_panel_total,
       section_heading: panel.section_heading,
       section_id: panel.section_id,
       section_kicker: panel.section_kicker,
@@ -869,7 +912,9 @@ function uniqueStrings(values) {
 function clampText(text, max) {
   const normalized = normalizeWhitespace(text);
   if (normalized.length <= max) return normalized;
-  return `${normalized.slice(0, max - 1).trim()}...`;
+  const clipped = normalized.slice(0, max - 3).trimEnd();
+  const boundary = clipped.lastIndexOf(' ');
+  return `${(boundary > max * 0.7 ? clipped.slice(0, boundary) : clipped).trim()}...`;
 }
 
 function simplifyForComparison(text) {

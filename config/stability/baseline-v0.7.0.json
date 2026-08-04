@@ -1,0 +1,101 @@
+{
+  "schema": "machinespirits.baseline-manifest.v1",
+  "baseline": "v0.7.0",
+  "paper_version": "3.0.250",
+  "generated_by": "scripts/generate-baseline-manifest.js",
+  "pins": [
+    {
+      "file": "config/manner-trigger/v4.json",
+      "claim": "tuned pressure patterns (held-out recall 68/162)",
+      "sha256": "3353b7525a04d80fb41e9356d8deb94f7676ef070edff83146b8a3e3714f76c1"
+    },
+    {
+      "file": "config/manner-trigger/v5.json",
+      "claim": "schedule-coverage token bags (leave-one-out 0/13: coverage only, not paraphrase robustness)",
+      "sha256": "13943a321425594242862d0a96280c471a839c8e9a774ad5d89a06369ab8f402"
+    },
+    {
+      "file": "config/manner-trigger/v6-cascade.json",
+      "claim": "detection cascade (held-out 84/162 at unchanged calm alarms; leave-one-world-out standard)",
+      "sha256": "12a796eab1768b0fea906d3dd50ca2fa4a588f1267511c6d1ed17c24cb2a23f2"
+    },
+    {
+      "file": "config/manner-trigger/v7-cascade.json",
+      "claim": "v6 + stake-fusion patterns (corpus recall 169/169, collisions 0/179, calm 0/124 — card adaptive-causality-routing)",
+      "sha256": "2cdb1c171454fbf068a77b56638dd1ec24b88d8a0d7b1e96309ccbabea4c3f5d"
+    },
+    {
+      "file": "services/tutorStubMannerSwitch.js",
+      "claim": "move cards + exemplars + licences; classifier features fv1; dose options",
+      "sha256": "2faaf0dcb4af5611c418f0fbaab6510bb73ae97e2d4e3659b2f66a2bd162192b"
+    },
+    {
+      "file": "services/tutorStubQuietDetector.js",
+      "claim": "typed quiet states qd-v2 (qd-v1 record 14/18, k=5 22/30, plus wordy-flat shapes: replayed flat recall 66/66, collisions 0, calm 0 — card adaptive-causality-repertoire)",
+      "sha256": "de4980e4961030e31ae87ce29a7580069740418280f23b435f552710ab9b0a43"
+    },
+    {
+      "file": "services/tutorStubDramaticRelease.js",
+      "claim": "clue span replacement (model-voiced deliveries; t5 wedge case recorded)",
+      "sha256": "22915240bb535ebd9ce85a3734d733d8179c0b79ce0f1def5b5bf247c5b9df50"
+    },
+    {
+      "file": "services/tutorStubTutorTurnPipeline.js",
+      "claim": "card rides the recovery retry (the card-strip fix); insertion interception; contract licence slot",
+      "sha256": "6d59c4c490e814dd3ba798936e12cf9a97b2d224fcf7a55d67fa95f8f00b864e"
+    },
+    {
+      "file": "services/tutorStubWorldPromptContext.js",
+      "claim": "safety-contract/teaching-charter split, byte-exact reassembly, licence slot",
+      "sha256": "cf26365d90e4ac9a5da50c363b052e3cd0dfc28996b1f0faaa883417c7aba43a"
+    },
+    {
+      "file": "config/drama-derivation/world-030-rowan-flat.yaml",
+      "claim": "second world (ratified schedule world)",
+      "sha256": "dc2752ee9757feeda71595bed2850c61f41cb6b0f6eef5fd08c768577ba8b8c1"
+    },
+    {
+      "file": "config/drama-derivation/stress/world-030-stress-schedule.yaml",
+      "claim": "ratified stress schedule v1.1 (bench for the side-by-side and the live-seat runs)",
+      "sha256": "af935c8a3c391cb5770b5f642d59407638911770c55e8b9eeac5fc9bfe30c44a"
+    },
+    {
+      "file": "config/drama-derivation/world-033-alder-row-redoubt.yaml",
+      "claim": "first world (training world for the cascade classifier)",
+      "sha256": "0ec97e6455dcd68ec22cadff1499d9ec0fa6f9be18a6dc1aa0244b10bbb3e67a"
+    },
+    {
+      "file": "config/drama-derivation/stress/world-033-stress-schedule.yaml",
+      "claim": "first ratified schedule",
+      "sha256": "e1f8f35d8573e4d9d4b8337e65f432231bc139bee7d4acd7cadbd7839c427675"
+    },
+    {
+      "file": "config/drama-derivation/world-034-groupwork-flag.yaml",
+      "claim": "contemporary demo world (gates passed; schedule demo-tier, NOT ratified)",
+      "sha256": "e31a331979833e31b3ef07b12b29c92b96c6ad445c54b8aad4e0f2280275dafc"
+    },
+    {
+      "file": "config/drama-derivation/stress/world-034-stress-schedule.yaml",
+      "claim": "demo-tier schedule (no gold adjudication)",
+      "sha256": "42cb89eccdfbbdf55a75ac8a4c2df76a8960c68e20ecf96b2d71983a07f0450e"
+    }
+  ],
+  "models": {
+    "tutor_seats_tested": [
+      "claude-code.claude-sonnet-5",
+      "claude-code.claude-opus-5"
+    ],
+    "learner": "codex.gpt-5.6-terra",
+    "move_tagger": "codex.gpt-5.6-sol",
+    "second_family_tagger": "claude-code.claude-fable-5"
+  },
+  "baselines": {
+    "bare": "tutor-stub with no adaptive envs (no manner switch, no quiet detector, no dose ladder, no contract licence, no clue insertion)",
+    "full_stack": "TUTOR_STUB_MANNER_SWITCH=1 TUTOR_STUB_MANNER_TRIGGER=config/manner-trigger/v6-cascade.json TUTOR_STUB_QUIET_DETECTOR=1 TUTOR_STUB_CARD_DOSE_LADDER=1 TUTOR_STUB_CONTRACT_LICENCE=1 TUTOR_STUB_CLUE_INSERTION=1"
+  },
+  "corrected_contracts": [
+    "card-plus-licence delivery: the conduct card and the standing licence must both reach the SHIPPED prompt of the delivered attempt at planted pressure turns, retries included (tests/goldenDeliveryContract.test.js)",
+    "licence/card separation: licence alone 0, card alone 0 full wagers, together 2/3 both families — do NOT freeze the dissolved family-relative first-demand boundary (see the living log correction entry, 2026-08-03)"
+  ],
+  "claim_boundary": "Simulated learners only; k<=5 per bench; one to two worlds per claim; no human-learning claim. Source of truth for claims: docs/research/paper-full-2.0.md §6.24 and §7.11."
+}

@@ -1,23 +1,23 @@
 {
-  "generated": "2026-08-02T22:57:02.201Z",
+  "generated": "2026-08-04T05:36:51.494Z",
   "counts": {
-    "total": 368,
+    "total": 375,
     "byStatus": {
-      "done": 228,
-      "blocked": 5,
+      "done": 242,
+      "blocked": 6,
       "dropped": 4,
       "triaged": 11,
-      "active": 24,
       "review": 92,
+      "active": 16,
       "archived": 4
     },
     "byType": {
       "research": 50,
-      "experiment": 65,
-      "infra": 72,
+      "experiment": 69,
+      "infra": 73,
       "maintenance": 165,
-      "content": 2,
-      "ops": 8,
+      "content": 3,
+      "ops": 9,
       "paper": 6
     }
   },
@@ -305,69 +305,6 @@
       ]
     },
     {
-      "id": "adaptation-plan-3-phase-q",
-      "title": "Plan 3.0 Phase Q: the quiet states — repair what the pressure trigger cannot hear",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-01",
-      "updated": "2026-08-01",
-      "verification": "Registered gate quoted from ADAPTATION-PLAN-3.0.md: quiet-plant repair rate (currently ~0–1 of 6 per run) doubles under the chosen mechanism at k=3 without pressure-plant regression. Re-baselining note below recorded BEFORE any run: R2 made the registered numbers stale; the numeric bar for the k=3 run is restated after the one-dialogue pilots, from mechanics only.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-r"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "manner-switch"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-r",
-      "title": "Plan 3.0 Phase R: replicate the move-card result — two worlds, k=5, two taggers, second family",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-01",
-      "updated": "2026-08-01",
-      "verification": "Gates R1–R4 quoted verbatim from ADAPTATION-PLAN-3.0.md; each recorded on this card with its numbers before the next starts. R2 is the claim gate: v3's right-repair margin over the butler holds pooled across both worlds at k=5, or the paper claim stays at its current scope.",
-      "claim_status": "methods",
-      "depends_on": [
-        "manner-trigger-tuning"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "replication"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-s",
-      "title": "Plan 3.0 Phase S: seat release — name what suppresses the move the bare model can make",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gate S1 quoted from ADAPTATION-PLAN-3.0.md: some ablation recovers the demand move in ≥half its regenerations while the control stays at zero — the suppressor is named; no recovery under any ablation = the suppression is distributed, recorded as a bound. S2 runs only if S1 names a suppressor.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-model-profiler"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "casting"
-      ]
-    },
-    {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
       "status": "active",
@@ -608,90 +545,6 @@
       ]
     },
     {
-      "id": "adaptation-plan-3-phase-h",
-      "title": "Plan 3.0 Phase H: the repertoire holes — can a worked example teach the move?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gate H quoted verbatim from ADAPTATION-PLAN-3.0.md: the move appears in ≥half of its card-covered moments, or the hole is recorded as a generation boundary for the family — both outcomes are paper-grade.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-q"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "manner-switch"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-j",
-      "title": "Plan 3.0 Phase J: judging as an instrument — state-shown standard, disclosure with estimated states",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gate J2 quoted from ADAPTATION-PLAN-3.0.md: the alignment gain survives estimation error in measurable part; the degradation is itself the finding (it prices what live judging inherits from the trigger).",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-q"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "judging"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-l",
-      "title": "Plan 3.0 Phase L: learner profiles — recovery from behavior, then dose-by-profile",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gate L1 quoted verbatim from ADAPTATION-PLAN-3.0.md, registered BEFORE any number was computed: leave-one-out nearest-centroid persona classification >=80% over the recorded corpus AND separation stabilizes within the first half of a dialogue; else profile-recovery is recorded as not-yet-measurable at current detection quality. Persona-plus-world confound stated up front.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-j"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "learner-profile"
-      ]
-    },
-    {
-      "id": "adaptation-plan-3-phase-p",
-      "title": "Plan 3.0 Phase P: the in-seat dose profiler, the voice-change probe, and the routing note",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Gates registered before any run. Gate P1: the in-seat probe must reproduce two live anchors — sonnet demand at doses 1-3 stays at/near zero (the S2c/S2d nulls) and opus stake at dose 0 hits at least half (R4) — before any new cell earns a reading; each model x move then gets a recorded minimum in-seat dose or a recorded wall. Gate P2: measurement, not pass/fail — spliced-window voice-change detection rate vs intact-window false-alarm rate; the difference is the router's visibility price. P3 is written only from P1+P2 numbers.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-l"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "casting"
-      ]
-    },
-    {
       "id": "drama-world-public-object-reachability",
       "title": "Make each drama world's declared public object reachable in its own deterministic text",
       "status": "active",
@@ -910,51 +763,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "codex/program2-committee-floor-ablation"
-    },
-    {
-      "id": "program-2-phase5f-fresh-transfer-world",
-      "title": "Program-2 Phase 5f: clean post-hardening transfer world",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-28",
-      "updated": "2026-07-28",
-      "branch": "codex/program-2-phase5f-cohort",
-      "verification": "A3 sealed 4/4 rows on their first attempt with no final attrition, full coverage by turn 16, hard safety passing, and all 31 gate-grade decisions clean. The prospective source-only cohort amendment now freezes 10 committee plus 8 fresh controls, the inherited >=15 opportunities/arm and >=5/profile-arm terminal density floor, a Phase 5f-native analyzer, and an A3-bound 11-check pilot bundle. Deterministic tests cover the zero-opportunity apparatus-pilot certificate exception while preserving the cohort live-futility gate. No paid cohort, certificate, transfer estimate, or external-payload authorization is included; after merge the exact clean-main artifacts must be generated and separately authorized.",
-      "claim_status": "planned",
-      "depends_on": [
-        "program-2-transfer-apparatus-hardening"
-      ],
-      "links": {
-        "notes": [
-          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md",
-          "PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md"
-        ],
-        "items": [
-          "program-2-phase5d-second-transfer-world",
-          "program-2-transfer-apparatus-hardening"
-        ],
-        "code": [
-          "scripts/run-program2-live-pilot.js",
-          "scripts/analyze-program2-live-pilot-5f.mjs",
-          "scripts/build-program2-phase5f-pilot-bundle.mjs",
-          "config/adaptive-tutor-evidence/program-2-phase5f-world-selection.json",
-          "config/adaptive-tutor-evidence/program-2-phase5f-pilot-gates.json",
-          "config/adaptive-tutor-evidence/program-2-phase5f-gates.json"
-        ],
-        "prs": [
-          382
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "move-library",
-        "cross-world-transfer"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "tutor-instrumentation-ab-harness",
@@ -1207,6 +1015,40 @@
         "lambda"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "publish-ideal-tutor-blueprint",
+      "title": "Publish the ideal-tutor blueprint to the public content site",
+      "status": "blocked",
+      "type": "ops",
+      "priority": "P2",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-08-04",
+      "updated": "2026-08-04",
+      "blocked_by": "Human authorization to execute the outward production deployment from the staged content repository.",
+      "verification": "The current ideal-tutor blueprint passes its provenance check, the content-repository publish succeeds, and https://machinespirits.org/content/articles/ai-tutor/tutor-blueprint.html serves the self-contained recipe page rather than the site's missing-route response; record the content commit and deployment run before marking done.",
+      "links": {
+        "notes": [
+          "notes/poetics/ideal-tutor-blueprint.html",
+          "DEPLOYMENT.md"
+        ],
+        "code": [
+          "notes/poetics/publish-blueprint-to-site.js"
+        ],
+        "prs": [
+          461,
+          464,
+          466
+        ]
+      },
+      "tags": [
+        "poetics",
+        "techne",
+        "publishing",
+        "blueprint"
+      ],
+      "milestone": "paper-2-0"
     },
     {
       "id": "program-2-transfer-apparatus-hardening",
@@ -2942,9 +2784,9 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-29",
-      "updated": "2026-07-29",
+      "updated": "2026-08-04",
       "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
-      "branch": "codex/refactor-tutor-stub-tutor-turn-pipeline",
+      "branch": "codex/refactor-tutor-stub-turn-orchestration",
       "claim_status": "planned",
       "depends_on": [],
       "links": {
@@ -2953,11 +2795,24 @@
         ],
         "code": [
           "scripts/tutor-stub.js",
+          "services/tutorStubCommandRuntime.js",
+          "services/tutorStubModelPickerController.js",
+          "services/tutorStubResponsePolicy.js",
+          "services/tutorStubSessionOrchestration.js",
+          "services/tutorStubSessionStateRuntime.js",
+          "services/tutorStubTraceRuntime.js",
+          "services/tutorStubTurnOrchestration.js",
+          "services/tutorStubVoiceController.js",
           "services/tutorStubTutorTurnPipeline.js",
           "tests/tutorStubTutorTurnPipeline.test.js"
         ],
         "prs": [
-          426
+          426,
+          427,
+          428,
+          429,
+          430,
+          431
         ],
         "items": [
           "codebase-refactoring-program"
@@ -5097,6 +4952,149 @@
         "evaluation"
       ],
       "branch": "worktree-longitudinal-abm"
+    },
+    {
+      "id": "adaptation-plan-3-phase-q",
+      "title": "Plan 3.0 Phase Q: the quiet states — repair what the pressure trigger cannot hear",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-01",
+      "updated": "2026-08-04",
+      "verification": "Registered gate quoted from ADAPTATION-PLAN-3.0.md: quiet-plant repair rate (currently ~0–1 of 6 per run) doubles under the chosen mechanism at k=3 without pressure-plant regression. Re-baselining note below recorded BEFORE any run: R2 made the registered numbers stale; the numeric bar for the k=3 run is restated after the one-dialogue pilots, from mechanics only.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-r"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-r",
+      "title": "Plan 3.0 Phase R: replicate the move-card result — two worlds, k=5, two taggers, second family",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-01",
+      "updated": "2026-08-04",
+      "verification": "Gates R1–R4 quoted verbatim from ADAPTATION-PLAN-3.0.md; each recorded on this card with its numbers before the next starts. R2 is the claim gate: v3's right-repair margin over the butler holds pooled across both worlds at k=5, or the paper claim stays at its current scope.",
+      "claim_status": "methods",
+      "depends_on": [
+        "manner-trigger-tuning"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "replication"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-s",
+      "title": "Plan 3.0 Phase S: seat release — name what suppresses the move the bare model can make",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gate S1 quoted from ADAPTATION-PLAN-3.0.md: some ablation recovers the demand move in ≥half its regenerations while the control stays at zero — the suppressor is named; no recovery under any ablation = the suppression is distributed, recorded as a bound. S2 runs only if S1 names a suppressor.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-model-profiler"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
+      ]
+    },
+    {
+      "id": "adaptive-causality-crossed-effects",
+      "title": "Adaptive causality arc, phase 1: crossed two-state/two-action experiment with transfer",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-03",
+      "updated": "2026-08-04",
+      "verification": "Terminal (PRs #453-455, paper v3.0.251-256): crossed interaction present on ruled conduct in both worlds (exhibit right card 6/6 vs wrong 3/6; stake 5/6 vs 0/6; oracle 12/12, router 11/12) — the registered PARTIAL: adaptation moves conduct, not learning. The transfer column was then corrected twice: cold baselines showed the v1 probe read persona identity, and the v2 episode-citation instrument (cold 0/10) found teaching transfer robust and uniform once multi-sampled — the single-draw probes had manufactured the arm differences. Stake-move causal test null (pooled 3/7 vs 2/7 against the 4-vs-1 bar); the assay world's zero closed as measured analogy distance plus identity crowding (near-twin 3/15, far-twin 0/15, cold 0/5). Standing rules recorded: multi-sample probes, cold baselines before any transfer claim. k=3 per cell, two worlds, simulated learner.",
+      "claim_status": "scope-bound",
+      "links": {
+        "prs": [
+          453,
+          454,
+          455,
+          460
+        ]
+      }
+    },
+    {
+      "id": "adaptive-causality-repertoire",
+      "title": "Adaptive causality arc, phase 3: prove the outstanding playbook entries",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-04",
+      "updated": "2026-08-04",
+      "verification": "Terminal (PRs #457-459, paper v3.0.258/259/261): right vs named-wrong contrast, 48/48 delivery-verified — demand 5/6 vs 1/6, mockery 6/6 vs 2/6, grievance 6/6 vs 2/6, all PASS at the registered bar. Lost-thread retest with a non-overlapping wrong card ruled ROBUST-NATIVE: the model untangles 5/6 despite the adversarial card, so default conduct is the gold and the confused card is not claimed as causal. Flat/bored crossed test right 5/5 vs wrong 0/5, with qd-v2 detection closing the wordy-boredom misses (replayed recall 66/66, collisions 0, calm 0, held-out shadow 10/10; manifest pins updated). Final census: six entries causally proven, one robust-native. k=3 per arm per world; flat/bored carries a one-world bound.",
+      "claim_status": "scope-bound",
+      "links": {
+        "prs": [
+          457,
+          458,
+          459,
+          460
+        ]
+      }
+    },
+    {
+      "id": "adaptive-causality-routing",
+      "title": "Adaptive causality arc, phase 2: routing — close the sensing floor",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-04",
+      "updated": "2026-08-04",
+      "verification": "Terminal (PR #456, paper v3.0.257): R1 — corpus of 169 recorded stake plants harvested; the v7 cascade closes all 8 recorded misses with two world-neutral closed-class shapes; recall 169/169, cross-state collisions 0/179, calm set 0/124 new fires, unplanted turns 1/423. R2 — live router k=3 on world-030: the fusion stake detected 3/3, cards in all three shipped prompts, split move made 3/3, leaks 0. Router sensing matches the oracle on this bench; detector plus card table is the whole routing policy at this repertoire size. One world live, k=3.",
+      "claim_status": "scope-bound",
+      "links": {
+        "prs": [
+          456,
+          460
+        ]
+      }
+    },
+    {
+      "id": "adaptive-causality-stabilization",
+      "title": "Adaptive causality arc, phase 0: stabilization pass on the v0.7.0 baseline",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-03",
+      "updated": "2026-08-04",
+      "verification": "Closed via PR #452: v0.7.0 baseline manifest shipped (config/stability/baseline-v0.7.0.json — 14 pinned artifacts, each with sha256 and the claim it supports, plus a --check mode CI can run) and the golden delivery-contract test green (card footer and licence present in every shipped prompt, retries included, deterministic, no model calls); living-log correction entry appended, ADAPTATION-PLAN-3.0 status reconciled; CI green on merge.",
+      "claim_status": "methods",
+      "links": {
+        "prs": [
+          452,
+          460
+        ]
+      }
     },
     {
       "id": "admin-chat-drama-launcher-simplification",
@@ -9698,6 +9696,109 @@
       "milestone": "poetics-followups"
     },
     {
+      "id": "adaptation-plan-3-phase-h",
+      "title": "Plan 3.0 Phase H: the repertoire holes — can a worked example teach the move?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gate H quoted verbatim from ADAPTATION-PLAN-3.0.md: the move appears in ≥half of its card-covered moments, or the hole is recorded as a generation boundary for the family — both outcomes are paper-grade.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-q"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "manner-switch"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-j",
+      "title": "Plan 3.0 Phase J: judging as an instrument — state-shown standard, disclosure with estimated states",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gate J2 quoted from ADAPTATION-PLAN-3.0.md: the alignment gain survives estimation error in measurable part; the degradation is itself the finding (it prices what live judging inherits from the trigger).",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-q"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "judging"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-l",
+      "title": "Plan 3.0 Phase L: learner profiles — recovery from behavior, then dose-by-profile",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gate L1 quoted verbatim from ADAPTATION-PLAN-3.0.md, registered BEFORE any number was computed: leave-one-out nearest-centroid persona classification >=80% over the recorded corpus AND separation stabilizes within the first half of a dialogue; else profile-recovery is recorded as not-yet-measurable at current detection quality. Persona-plus-world confound stated up front.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-j"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "learner-profile"
+      ]
+    },
+    {
+      "id": "adaptation-plan-3-phase-p",
+      "title": "Plan 3.0 Phase P: the in-seat dose profiler, the voice-change probe, and the routing note",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-04",
+      "verification": "Gates registered before any run. Gate P1: the in-seat probe must reproduce two live anchors — sonnet demand at doses 1-3 stays at/near zero (the S2c/S2d nulls) and opus stake at dose 0 hits at least half (R4) — before any new cell earns a reading; each model x move then gets a recorded minimum in-seat dose or a recorded wall. Gate P2: measurement, not pass/fail — spliced-window voice-change detection rate vs intact-window false-alarm rate; the difference is the router's visibility price. P3 is written only from P1+P2 numbers.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-l"
+      ],
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
+      ]
+    },
+    {
+      "id": "adaptive-causality-wager-promotion",
+      "title": "Adaptive causality: wager promotion — does the staked send move the learner?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-04",
+      "updated": "2026-08-04",
+      "verification": "Terminal (PR #459, paper v3.0.260): pooled k=6/arm at the world-030 first demand — check-engagement WAGER 4/6 vs HARNESS 1/6, PASS at the registered bar; send-deferral 6/6 in both arms, so the three-beat harness already buys deferral and the licence's measurable purchase is engagement. Manipulation check: staked sends 2/6 with the licence, 0/6 without, and two of the licence arm's engagement wins followed unstaked replies — the promotion attaches to the licence, the fourth beat itself unisolated (n=2, recorded as anecdote, not claim). Leaks 0 across every licensed turn.",
+      "claim_status": "scope-bound",
+      "links": {
+        "prs": [
+          459,
+          460
+        ]
+      }
+    },
+    {
       "id": "adaptive-tutor-copilot-shadow-pilot",
       "title": "Adaptive tutor co-pilot shadow and guarded human pilot",
       "status": "done",
@@ -10494,6 +10595,35 @@
       "milestone": "board-pm"
     },
     {
+      "id": "dramatic-recognition-arc-editorial-refresh",
+      "title": "Review and republish the dramatic-recognition arc",
+      "status": "done",
+      "type": "content",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-04",
+      "updated": "2026-08-04",
+      "verification": "The source and standalone arc contain ten traced panels; the prompt packs describe the shipped PNGs; local desktop/mobile visual QA, source checks, packaging, publisher dry-run, live deploy, and live URL verification pass.",
+      "branch": "codex/dramatic-recognition-arc-review",
+      "links": {
+        "notes": [
+          "notes/poetics/2026-05-26-paper-to-dramatic-recognition-arc.html",
+          "notes/poetics/images/2026-05-26-paper-to-dramatic-recognition-arc-image-prompts.txt"
+        ],
+        "prs": [
+          462
+        ]
+      },
+      "tags": [
+        "poetics",
+        "techne",
+        "publishing",
+        "images"
+      ],
+      "milestone": "paper-2-0"
+    },
+    {
       "id": "environment-grounded-automated-prompt-optimization-for-llm-g",
       "title": "Environment-Grounded Automated Prompt Optimization for LLM Game Agents",
       "status": "done",
@@ -11065,6 +11195,53 @@
         "instrument",
         "fine-tune"
       ]
+    },
+    {
+      "id": "program-2-phase5f-fresh-transfer-world",
+      "title": "Program-2 Phase 5f: clean post-hardening transfer world",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-07-29",
+      "branch": "codex/program-2-phase5f-closeout",
+      "verification": "The separately authorized, clean-main terminal cohort stopped at its frozen live-futility boundary after 14/18 sealed dialogues (8 committee, 6 fresh controls, zero final attrition, one recovered retry): every profile-arm cell had 0 eligible warrant_skip opportunities, so E1e and its interval were undefined and the Phase 5f analyzer returned not_estimable/insufficient_opportunities. Coverage and hard safety were 1.000 in both arms; the A3-bound pilot bundle passed all 11 checks; no seam review, replacement cohort, or further repair was run.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "program-2-transfer-apparatus-hardening"
+      ],
+      "links": {
+        "notes": [
+          "notes/program-2/2026-07-28-phase5e-r2-a4-closeout-and-split.md",
+          "PROGRAM-2-PHASE5F-FRESH-TRANSFER-PREREGISTRATION.md"
+        ],
+        "items": [
+          "program-2-phase5d-second-transfer-world",
+          "program-2-transfer-apparatus-hardening"
+        ],
+        "code": [
+          "scripts/run-program2-live-pilot.js",
+          "scripts/analyze-program2-live-pilot-5f.mjs",
+          "scripts/build-program2-phase5f-pilot-bundle.mjs",
+          "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+          "config/adaptive-tutor-evidence/program-2-phase5f-world-selection.json",
+          "config/adaptive-tutor-evidence/program-2-phase5f-pilot-gates.json",
+          "config/adaptive-tutor-evidence/program-2-phase5f-gates.json"
+        ],
+        "prs": [
+          382,
+          433
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "move-library",
+        "cross-world-transfer"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
     },
     {
       "id": "proof-dag-dramatic-derivation-assessment",

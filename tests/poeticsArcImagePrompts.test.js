@@ -36,7 +36,8 @@ test('poetics arc prompt pack carries the Machine Spirits editorial house style'
   assert.equal(manifest.style, 'machinespirits-poetics-editorial-cartoon-v2');
   assert.equal(manifest.style_guide, 'docs/design/machinespirits-house-style.md');
   assert.equal(manifest.style_profile, 'editorial');
-  assert.equal(manifest.images.length, 9);
+  assert.equal(manifest.images.length, 10);
+  assert.equal(path.basename(manifest.images.at(-1).image_file), 'dramatic-recognition-arc-10.png');
   assert.match(prompts, /off-white #fafafa/u);
   assert.match(prompts, /signature red #E63946/u);
   assert.match(prompts, /60px Swiss grid/u);

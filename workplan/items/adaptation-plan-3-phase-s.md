@@ -1,18 +1,19 @@
 ---
 id: adaptation-plan-3-phase-s
-title: "Plan 3.0 Phase S: seat release — name what suppresses the move the bare model can make"
-status: active
+title: "Plan 3.0 Phase S: seat release — name what suppresses the move the bare
+  model can make"
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-02
+updated: 2026-08-04
 verification: "Gate S1 quoted from ADAPTATION-PLAN-3.0.md: some ablation
-  recovers the demand move in ≥half its regenerations while the control
-  stays at zero — the suppressor is named; no recovery under any ablation =
-  the suppression is distributed, recorded as a bound. S2 runs only if S1
-  names a suppressor."
+  recovers the demand move in ≥half its regenerations while the control stays at
+  zero — the suppressor is named; no recovery under any ablation = the
+  suppression is distributed, recorded as a bound. S2 runs only if S1 names a
+  suppressor."
 claim_status: methods
 depends_on:
   - adaptation-plan-3-model-profiler

@@ -178,6 +178,7 @@ test('real director context and reprise retain their exact no-model terminal byt
 test('the CLI retains director-state derivation, withholding, traces, terminal writes, and command ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubDirectorPresentation.js'), 'utf8');
+  const commandSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCommandRuntime.js'), 'utf8');
   const preludeSlice = cliSource.slice(
     cliSource.indexOf('function printDirectorPreludeBeforeFirstTutor'),
     cliSource.indexOf('const directorNotesIssuedSoFar'),
@@ -194,8 +195,8 @@ test('the CLI retains director-state derivation, withholding, traces, terminal w
   assert.match(serviceSource, /committedReleaseRows/u);
   assert.match(notesSlice, /projectTutorStubDirectorNotesLines/u);
   assert.match(notesSlice, /console\.log\(line\)/u);
-  assert.match(cliSource, /type: 'director_notes_reprise'/u);
-  assert.match(cliSource, /if \(command === '\/director'/u);
+  assert.match(commandSource, /type: 'director_notes_reprise'/u);
+  assert.match(commandSource, /if \(command === '\/director'/u);
   assert.doesNotMatch(serviceSource, /^import\s/mu);
   assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);
 });

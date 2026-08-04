@@ -1,18 +1,19 @@
 ---
 id: adaptation-plan-3-phase-q
-title: "Plan 3.0 Phase Q: the quiet states — repair what the pressure trigger cannot hear"
-status: active
+title: "Plan 3.0 Phase Q: the quiet states — repair what the pressure trigger
+  cannot hear"
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-01
-updated: 2026-08-01
+updated: 2026-08-04
 verification: "Registered gate quoted from ADAPTATION-PLAN-3.0.md: quiet-plant
   repair rate (currently ~0–1 of 6 per run) doubles under the chosen mechanism
   at k=3 without pressure-plant regression. Re-baselining note below recorded
-  BEFORE any run: R2 made the registered numbers stale; the numeric bar for
-  the k=3 run is restated after the one-dialogue pilots, from mechanics only."
+  BEFORE any run: R2 made the registered numbers stale; the numeric bar for the
+  k=3 run is restated after the one-dialogue pilots, from mechanics only."
 claim_status: methods
 depends_on:
   - adaptation-plan-3-phase-r

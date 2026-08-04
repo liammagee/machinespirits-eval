@@ -99,6 +99,21 @@ Serves at the static content path `/content/articles/ai-tutor/<slug>.html`
 site soft-200 to the homepage, so **verify a publish by grepping page content,
 not the HTTP status.**
 
+The ideal-tutor blueprint publishes the same way
+(`notes/poetics/publish-blueprint-to-site.js`, `npm run poetics:publish-blueprint`;
+slug `tutor-blueprint`). It is simpler than the arc stager — no images, no
+localhost live layer — and it refuses to stage a stale page: the provenance
+check (`node scripts/refresh-blueprint.js --check`) must pass first. Once
+staged, every later redeploy of the content repo carries the page; after
+editing `notes/poetics/ideal-tutor-blueprint.html`, re-run the stager and the
+content repo's `./publish`.
+
+```bash
+npm run poetics:publish-blueprint -- --dry-run   # print the plan, write nothing
+npm run poetics:publish-blueprint                # stage only (no deploy)
+npm run poetics:publish-blueprint -- --publish   # stage + ./publish (DEPLOYS LIVE — human-gated)
+```
+
 ### To snapshot another view
 
 The same bundler (`notes/poetics/package-standalone.js`) can publicise any

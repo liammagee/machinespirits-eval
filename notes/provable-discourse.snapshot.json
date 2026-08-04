@@ -1329,6 +1329,115 @@
         "match_count": 1
       },
       "actual_value": 1
+    },
+    "paper2.program2.phase5f.sealed_total_14": {
+      "updated_at": "2026-07-29T00:30:00.000Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+        "path": "headline.sealed.total",
+        "sha256": "4018984f530846fd88812003a7dfed2f1aaefeb040b39d5512363f1fa64c6a9a",
+        "value": 14
+      },
+      "actual_value": 14
+    },
+    "paper2.program2.phase5f.sealed_committee_8": {
+      "updated_at": "2026-07-29T00:30:00.000Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+        "path": "headline.sealed.committee",
+        "sha256": "4018984f530846fd88812003a7dfed2f1aaefeb040b39d5512363f1fa64c6a9a",
+        "value": 8
+      },
+      "actual_value": 8
+    },
+    "paper2.program2.phase5f.sealed_control_6": {
+      "updated_at": "2026-07-29T00:30:00.000Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+        "path": "headline.sealed.freshControl",
+        "sha256": "4018984f530846fd88812003a7dfed2f1aaefeb040b39d5512363f1fa64c6a9a",
+        "value": 6
+      },
+      "actual_value": 6
+    },
+    "paper2.program2.phase5f.committee_opportunities_0": {
+      "updated_at": "2026-07-29T00:30:00.000Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+        "path": "headline.opportunityDensity.committee",
+        "sha256": "4018984f530846fd88812003a7dfed2f1aaefeb040b39d5512363f1fa64c6a9a",
+        "value": 0
+      },
+      "actual_value": 0
+    },
+    "paper2.program2.phase5f.control_opportunities_0": {
+      "updated_at": "2026-07-29T00:30:00.000Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+        "path": "headline.opportunityDensity.freshControl",
+        "sha256": "4018984f530846fd88812003a7dfed2f1aaefeb040b39d5512363f1fa64c6a9a",
+        "value": 0
+      },
+      "actual_value": 0
+    },
+    "paper2.program2.phase5f.coverage_committee_1000": {
+      "updated_at": "2026-07-29T00:30:00.000Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+        "path": "headline.guardrails.coverage.committee",
+        "sha256": "4018984f530846fd88812003a7dfed2f1aaefeb040b39d5512363f1fa64c6a9a",
+        "value": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5f.coverage_control_1000": {
+      "updated_at": "2026-07-29T00:30:00.000Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+        "path": "headline.guardrails.coverage.freshControl",
+        "sha256": "4018984f530846fd88812003a7dfed2f1aaefeb040b39d5512363f1fa64c6a9a",
+        "value": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5f.safety_committee_1000": {
+      "updated_at": "2026-07-29T00:30:00.000Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+        "path": "headline.guardrails.hardSafety.committee",
+        "sha256": "4018984f530846fd88812003a7dfed2f1aaefeb040b39d5512363f1fa64c6a9a",
+        "value": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5f.safety_control_1000": {
+      "updated_at": "2026-07-29T00:30:00.000Z",
+      "fingerprint": {
+        "source": "artifact_json",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+        "path": "headline.guardrails.hardSafety.freshControl",
+        "sha256": "4018984f530846fd88812003a7dfed2f1aaefeb040b39d5512363f1fa64c6a9a",
+        "value": 1
+      },
+      "actual_value": 1
+    },
+    "paper2.program2.phase5f.verdict_not_estimable": {
+      "updated_at": "2026-07-29T00:30:00.000Z",
+      "fingerprint": {
+        "source": "code_path",
+        "file": "config/adaptive-tutor-evidence/program-2-phase5f.manifest.json",
+        "pattern": "\"primaryEndpoint\":\\s*\\{[\\s\\S]*?\"verdict\": \"NOT_ESTIMABLE\"[\\s\\S]*?\"reason\": \"insufficient_opportunities\"",
+        "match_count": 1
+      },
+      "actual_value": 1
     }
   }
 }

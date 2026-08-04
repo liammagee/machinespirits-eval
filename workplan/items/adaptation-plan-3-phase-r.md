@@ -1,17 +1,18 @@
 ---
 id: adaptation-plan-3-phase-r
-title: "Plan 3.0 Phase R: replicate the move-card result — two worlds, k=5, two taggers, second family"
-status: active
+title: "Plan 3.0 Phase R: replicate the move-card result — two worlds, k=5, two
+  taggers, second family"
+status: done
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-01
-updated: 2026-08-01
+updated: 2026-08-04
 verification: "Gates R1–R4 quoted verbatim from ADAPTATION-PLAN-3.0.md; each
-  recorded on this card with its numbers before the next starts. R2 is the
-  claim gate: v3's right-repair margin over the butler holds pooled across
-  both worlds at k=5, or the paper claim stays at its current scope."
+  recorded on this card with its numbers before the next starts. R2 is the claim
+  gate: v3's right-repair margin over the butler holds pooled across both worlds
+  at k=5, or the paper claim stays at its current scope."
 claim_status: methods
 depends_on:
   - manner-trigger-tuning

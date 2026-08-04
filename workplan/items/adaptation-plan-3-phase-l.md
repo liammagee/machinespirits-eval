@@ -1,19 +1,20 @@
 ---
 id: adaptation-plan-3-phase-l
-title: "Plan 3.0 Phase L: learner profiles — recovery from behavior, then dose-by-profile"
-status: active
+title: "Plan 3.0 Phase L: learner profiles — recovery from behavior, then
+  dose-by-profile"
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-02
+updated: 2026-08-04
 verification: "Gate L1 quoted verbatim from ADAPTATION-PLAN-3.0.md, registered
   BEFORE any number was computed: leave-one-out nearest-centroid persona
-  classification >=80% over the recorded corpus AND separation stabilizes
-  within the first half of a dialogue; else profile-recovery is recorded as
-  not-yet-measurable at current detection quality. Persona-plus-world
-  confound stated up front."
+  classification >=80% over the recorded corpus AND separation stabilizes within
+  the first half of a dialogue; else profile-recovery is recorded as
+  not-yet-measurable at current detection quality. Persona-plus-world confound
+  stated up front."
 claim_status: methods
 depends_on:
   - adaptation-plan-3-phase-j
