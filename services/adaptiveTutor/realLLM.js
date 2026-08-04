@@ -967,7 +967,7 @@ INCORRECT (retirement at high confidence — premature):
 INCORRECT (verdict for an id not in the tentative set):
   tentative: [{hypothesis_id: "hyp_abc12345"}]
   output: {"decisions": [{"hypothesis_id": "hyp_zzz99999", "new_status": "validated", "reasoning": "..."}]}
-  (Validator emitted a decision for an id that doesn't exist in the input. The node will drop this silently — emit only verdicts for ids you can see in the tentative set.)
+  (Validator emitted a decision for an id that doesn't exist in the input. The node will reject and audit this proposal — emit only verdicts for ids you can see in the tentative set.)
 
 Output JSON only, no surrounding prose, no code fences.`;
 

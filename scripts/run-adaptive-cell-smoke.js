@@ -48,10 +48,10 @@ if (rows.length === 0) fails.push('no rows persisted');
 
 // Derive expected scenario types from the profile's scenario_source so the
 // smoke works for v1 (config/adaptive-trap-scenarios.yaml) and v2 cells alike.
-const yaml = await import('js-yaml');
+const yaml = await import('yaml');
 const scenarioSource = evalProfile.scenario_source || 'config/adaptive-trap-scenarios.yaml';
 const scenariosFile = fs.readFileSync(scenarioSource, 'utf8');
-const scenariosDoc = yaml.default.load(scenariosFile);
+const scenariosDoc = yaml.parse(scenariosFile);
 const expectedScenarioTypes = new Set((scenariosDoc?.scenarios || []).map((s) => s.scenario_type || s.id));
 const seenTypes = new Set();
 for (const row of rows) {

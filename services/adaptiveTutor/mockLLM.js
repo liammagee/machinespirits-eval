@@ -328,20 +328,20 @@ const fixtures = {
   groundingValidator: ({ hypotheses }) => {
     const decisions = [];
     for (const h of hypotheses) {
-      const supportCount = (h.supporting_evidence || []).length;
-      const contradictCount = (h.contradicting_evidence || []).length;
+      const supportCount = new Set(h.supporting_evidence || []).size;
+      const contradictCount = new Set(h.contradicting_evidence || []).size;
       const conf = typeof h.confidence === 'number' ? h.confidence : 0.5;
       if (contradictCount >= 1 && conf < 0.4) {
         decisions.push({
           hypothesis_id: h.hypothesis_id,
           new_status: 'contradicted',
-          reasoning: `mock: ${contradictCount} contradicting obs_ids with confidence ${conf.toFixed(2)} < 0.4`,
+          reasoning: `mock: contradicting obs_ids ${(h.contradicting_evidence || []).join(', ')} with confidence ${conf.toFixed(2)} < 0.4`,
         });
       } else if (supportCount >= 3 && contradictCount === 0) {
         decisions.push({
           hypothesis_id: h.hypothesis_id,
           new_status: 'validated',
-          reasoning: `mock: ${supportCount} supporting obs_ids, no contradiction`,
+          reasoning: `mock: supporting obs_ids ${(h.supporting_evidence || []).join(', ')}, no contradiction`,
         });
       }
     }
