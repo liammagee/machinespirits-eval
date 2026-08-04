@@ -192,6 +192,7 @@ test('real normal and passthrough /status commands preserve exact no-model termi
 test('the CLI retains status state derivation, helper calls, slash dispatch, and terminal ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubSessionStatusPresentation.js'), 'utf8');
+  const commandSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCommandRuntime.js'), 'utf8');
   const statusSlice = cliSource.slice(
     cliSource.indexOf('function printInteractiveStatus'),
     cliSource.indexOf('function cliDirectorApplicationContext'),
@@ -209,7 +210,7 @@ test('the CLI retains status state derivation, helper calls, slash dispatch, and
   assert.match(statusSlice, /tutorStubTurnFeedbackEnvelope/u);
   assert.match(statusSlice, /projectTutorStubSessionStatusLines/u);
   assert.match(statusSlice, /console\.log\(line\)/u);
-  assert.match(cliSource, /if \(trimmed === '\/status'\)[\s\S]{0,120}printInteractiveStatus\(\)/u);
+  assert.match(commandSource, /if \(trimmed === '\/status'\)[\s\S]{0,120}printInteractiveStatus\(\)/u);
   assert.doesNotMatch(statusSlice, /one speaker call per turn/u);
   assert.doesNotMatch(statusSlice, /commands remain live while models work/u);
   assert.match(serviceSource, /export function projectTutorStubSessionStatusLines/u);

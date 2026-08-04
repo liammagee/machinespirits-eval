@@ -293,12 +293,14 @@ test('real tutor and classifier model-choice commands preserve exact no-model te
 test('the CLI retains role and entry resolution, slash dispatch, picker behavior, and terminal ownership', () => {
   const cliSource = fs.readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   const serviceSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubModelChoicePresentation.js'), 'utf8');
+  const commandSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubCommandRuntime.js'), 'utf8');
   const choiceSlice = cliSource.slice(
     cliSource.indexOf('function printModelChoices'),
     cliSource.indexOf('function pickLiveNumericSettingValue'),
   );
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubModelChoicePresentation\.js';/u);
+  assert.match(cliSource, /from '\.\.\/services\/tutorStubCommandRuntime\.js';/u);
   assert.match(cliSource, /createTutorStubModelSelection/u);
   assert.doesNotMatch(
     cliSource,
@@ -311,7 +313,7 @@ test('the CLI retains role and entry resolution, slash dispatch, picker behavior
   assert.match(choiceSlice, /console\.log\(line\)/u);
   assert.match(choiceSlice, /pickInitialTutorModelWithKeyboard/u);
   assert.match(choiceSlice, /handleDialogueSettings/u);
-  assert.match(cliSource, /if \(setting === 'models'\)/u);
+  assert.match(commandSource, /if \(setting === 'models'\)/u);
   assert.doesNotMatch(choiceSlice, /more configured aliases/u);
   assert.doesNotMatch(choiceSlice, /default restores/u);
   assert.match(serviceSource, /export function projectTutorStubModelChoiceLines/u);

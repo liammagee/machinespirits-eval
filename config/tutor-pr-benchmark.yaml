@@ -64,6 +64,7 @@ hook:
     - services/tutorStubFrozenReplay.js
     - services/tutorStubPrBenchmark.js
     - services/tutorStubPrBenchmarkHook.js
+    - services/tutorStubCommandRuntime.js
     - services/tutorStubTutorTurnPipeline.js
   path_prefixes:
     - config/drama-derivation/

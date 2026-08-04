@@ -7,9 +7,9 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-29
-updated: 2026-07-29
+updated: 2026-08-04
 verification: Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines
-branch: codex/refactor-tutor-stub-tutor-turn-pipeline
+branch: codex/refactor-tutor-stub-command-router
 claim_status: planned
 depends_on: []
 links:
@@ -17,10 +17,12 @@ links:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
   code:
     - scripts/tutor-stub.js
+    - services/tutorStubCommandRuntime.js
     - services/tutorStubTutorTurnPipeline.js
     - tests/tutorStubTutorTurnPipeline.test.js
   prs:
     - 426
+    - 427
   items:
     - codebase-refactoring-program
 tags:
@@ -78,3 +80,19 @@ Log:
   this structural extraction. The new pipeline path is now explicitly in the
   benchmark hook scope so subsequent behavioral edits cannot be skipped.
 - 2026-07-29 — Opened macro PR 1 as PR #426.
+- 2026-07-29 — Macro cycle 2 moved the 1,305-line dialogue-settings and
+  slash-command dispatch bodies behind one injected command-runtime boundary.
+  The entrypoint fell from 21,131 to 19,932 lines, a 1,199-line net reduction;
+  the two-cycle rolling average is 1,684 lines per PR.
+- 2026-07-29 — Cycle 2 verification passes 83 focused command/settings and
+  interactive assertions, 13 director/status ownership and exact-byte checks,
+  the zero-skip hermetic suite at 7,667/7,667 root plus 137/137 tutor-core
+  tests, and every static gate with zero import cycles across 450 files.
+- 2026-07-29 — Opened macro cycle 2 as PR #427.
+- 2026-08-04 — Refreshed PR #427 onto current `origin/main` after 228 intervening
+  commits. The same command-runtime boundary now retains the newer manner-switch,
+  quiet-detector, stress-schedule, dramatic-release, and speaker-advisory work;
+  `scripts/tutor-stub.js` falls from 21,485 to 20,286 lines. Focused current-main
+  contracts pass 56/56, the zero-skip hermetic suite passes 7,732/7,732 root plus
+  137/137 tutor-core tests, and all static gates remain green with zero cycles
+  across 457 files.
