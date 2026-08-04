@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-07-26
-updated: 2026-08-04
+updated: 2026-08-05
 verification: "`npm run tutor:stub:ab -- --print-plan` emits a finite zero-call
   plan; the baseline arm's projected request is exactly the learner utterance
   with zero advisory chars; the plan control's projected request is the learner
@@ -269,3 +269,11 @@ judgement call recorded in one file so it can be argued with — each rule carri
 the reason it was graded the way it was. A rule nobody has classified is counted
 apart and printed rather than folded into either total, so the two halves need
 not add to the headline count.
+
+## Closed (2026-08-05)
+
+The frozen-replay pricing is complete and in §6.23: exactly one block
+pays on a plan-blind reading, and the due line's one sentence of hidden
+state carries the effect; the live rerun on the stress bench (stage6)
+agreed. The harness stays available for future block pricing; the
+outcome-level question moved to the fallible-learner pre-registration.

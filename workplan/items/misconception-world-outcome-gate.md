@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-07-30
-updated: 2026-08-04
+updated: 2026-08-05
 verification: "`node scripts/lint-derivation-world.js --world
   config/drama-derivation/world-032-alder-row.yaml` reports LINT PASS (the
   --world flag is required; a bare path is now a usage error rather than a
@@ -174,3 +174,12 @@ conflation, flatness, refusal) each carrying a known right repair, scored as
 detection-and-repair rate on the replay bench — with the human-annotated
 gold (signal, move) pairs from `build-adaptation-annotation-sheet.js` as its
 specification. Design to be carded separately before any build.
+
+## Closed (2026-08-05)
+
+All three bare-tutor gates ruled and folded into paper §6.24 (the
+misconception pair): derivability 5/5, stress 5/5 at +2 turns, sibling
+world 4/5 with the designed failure mode. The information-placement
+finding (one clause moved close rate more than any tutoring behaviour)
+is the section's opening result. Worlds 032/033 remain the standing
+bench for later cards.

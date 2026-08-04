@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-07-31
-updated: 2026-08-04
+updated: 2026-08-05
 verification: Each stage's gate is numeric and recorded in this card before the
   next stage starts. Trigger versions ship as config artifacts with training-set
   hashes; every trace records its trigger version; no pooling across versions.
@@ -201,3 +201,12 @@ Overfitting ledger (HOW-TO-BUILD-A-TUTOR.md): vocabulary → held-out world;
 author → two directive authors; simulator → cross-sim gold, human transfer
 unclaimable; base rate → organic-dialogue false alarms. Trigger versions
 are config artifacts with hashes; traces record the version; no pooling.
+
+## Closed (2026-08-05)
+
+Trigger tuning ran its full ladder (v3 gate pass → v4 demand edition →
+v6 world-neutral cascade → v7 stake-fusion edition): sensing floor
+closed at 169/169 recalled stake plants, zero calm fires, live router
+matching the oracle on the bench (paper v3.0.257, §6.24 phase 2).
+Versioned artifacts under config/manner-trigger/; no pooling across
+versions stands.

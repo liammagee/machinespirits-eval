@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-07-30
-updated: 2026-08-04
+updated: 2026-08-05
 verification: "Design-stage card: no build until the authored gold exists. First
   build gate: a user-edited stress schedule (draft:
   config/drama-derivation/stress/world-033-stress-schedule.yaml) naming per
@@ -150,3 +150,12 @@ bench, not of human learning. The stress schedule tests whether the tutor's
 move matches a planted signal with a known repair — repertoire and
 contingency — not whether the repair would help a person. No mentalistic
 reading: probes are typed events in a file, not inferred interior states.
+
+## Closed (2026-08-05)
+
+The bench is built, ratified, and carried the whole §6.24 program: the
+stress schedule made repair a measured quantity, the claim gate ruled
+twice (v2 fail, v3 pass), and Phase R replicated the pooled claim on a
+second world, persona, tagger family, and tutor family. Census closed at
+v3.0.259: six moves causally proven, one robust-native. New entries wait
+on a priced deficit, per the admission rule.
