@@ -41,8 +41,23 @@
     },
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
-      "claim": "card rides the recovery retry (the card-strip fix); insertion interception; contract licence slot",
-      "sha256": "6d59c4c490e814dd3ba798936e12cf9a97b2d224fcf7a55d67fa95f8f00b864e"
+      "claim": "recovery/committee orchestration and insertion interception",
+      "sha256": "679dbefc69b40dea03e8c1c6e949e3d4e53d3097cc69d508519f3f16e47e50a0"
+    },
+    {
+      "file": "services/tutorStubTutorTurnPreparation.js",
+      "claim": "speaking prompt assembly; conduct-card and contract-licence slots; speaker-privilege recovery",
+      "sha256": "3b92439193291b279376b0ff8449f3aa1199222b70eb2b7fb0cf120122c23e84"
+    },
+    {
+      "file": "services/tutorStubTutorAttemptRuntime.js",
+      "claim": "prompt audit/recovery; provider-attempt dispatch; Program-2 budget reservation and trace envelope",
+      "sha256": "16a861f64e414c7a66f7bb007116117b5df4aea2b89a99fed6ce8c15027546be"
+    },
+    {
+      "file": "services/tutorStubTutorDraftAudit.js",
+      "claim": "delivery guard battery, dispositions, and audit trace shape",
+      "sha256": "db3f89c71bf04163fdd1e1c3398e770317cff154bffa069e5e8fe88e9e016e79"
     },
     {
       "file": "services/tutorStubWorldPromptContext.js",

@@ -1,7 +1,16 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { createTutorStubTutorTurnPipeline } from '../services/tutorStubTutorTurnPipeline.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+function serviceSource(fileName) {
+  return readFileSync(path.join(ROOT, 'services', fileName), 'utf8');
+}
 
 function messageContext(history = []) {
   return {
@@ -70,6 +79,26 @@ function passthroughRequest(overrides = {}) {
     ...overrides,
   };
 }
+
+test('pipeline delegates extracted responsibilities to bounded implementation owners', () => {
+  const pipeline = serviceSource('tutorStubTutorTurnPipeline.js');
+  const owners = [
+    ['tutorStubTutorTurnPreparation.js', 'createTutorStubTutorTurnPreparation'],
+    ['tutorStubTutorAttemptRuntime.js', 'createTutorStubTutorAttemptRuntime'],
+    ['tutorStubTutorDraftAudit.js', 'createTutorStubTutorDraftAudit'],
+  ];
+
+  for (const [fileName, factoryName] of owners) {
+    const source = serviceSource(fileName);
+    assert.match(pipeline, new RegExp(`import \\{ ${factoryName} \\}`));
+    assert.match(source, new RegExp(`export function ${factoryName}\\(`));
+    assert.ok(source.split('\n').length <= 1200, `${fileName} must remain within the 1,200-line owner ceiling`);
+  }
+
+  assert.doesNotMatch(pipeline, /async function invokeTutorAttempt\(/);
+  assert.doesNotMatch(pipeline, /function auditTutorDraft\(/);
+  assert.doesNotMatch(pipeline, /tutorMessageContext\(state, history\)/);
+});
 
 test('direct passthrough preserves public replay, request metadata, and model-call tracing', async () => {
   const trace = [];

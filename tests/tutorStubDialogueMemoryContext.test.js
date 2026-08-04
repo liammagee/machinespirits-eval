@@ -206,6 +206,7 @@ test('the CLI keeps state defaults and call sites while services own pure projec
   const publicSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubPublicHistory.js'), 'utf8');
   const tutorOnlySource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorPromptContext.js'), 'utf8');
   const pipelineSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorTurnPipeline.js'), 'utf8');
+  const preparationSource = fs.readFileSync(path.join(ROOT, 'services', 'tutorStubTutorTurnPreparation.js'), 'utf8');
 
   assert.match(cliSource, /from '\.\.\/services\/tutorStubPublicHistory\.js';/u);
   assert.match(cliSource, /from '\.\.\/services\/tutorStubTutorPromptContext\.js';/u);
@@ -219,13 +220,14 @@ test('the CLI keeps state defaults and call sites while services own pure projec
   assert.match(cliSource, /defaultHistoryTurns: STUB\.historyTurns/u);
   assert.match(cliSource, /createTutorStubTutorTurnPipeline/u);
   assert.match(pipelineSource, /return async function callTutor/u);
-  assert.match(pipelineSource, /tutorMessageContext\(state, history\)/u);
+  assert.match(pipelineSource, /createTutorStubTutorTurnPreparation/u);
+  assert.match(preparationSource, /tutorMessageContext\(state, history\)/u);
   assert.doesNotMatch(cliSource, /\[Compact public dialogue memory\]/u);
   assert.doesNotMatch(cliSource, /\[Tutor-only learner classifier\]/u);
   assert.doesNotMatch(cliSource, /No previous turns in the raw recent window\./u);
   assert.doesNotMatch(publicSource, /\[Tutor-only learner classifier\]/u);
   assert.doesNotMatch(publicSource, /tutorStubTutorPromptContext/u);
-  for (const serviceSource of [publicSource, tutorOnlySource, pipelineSource]) {
+  for (const serviceSource of [publicSource, tutorOnlySource, preparationSource, pipelineSource]) {
     assert.doesNotMatch(serviceSource, /(?:from|import\()[^\n]*scripts\//u);
     assert.doesNotMatch(serviceSource, /\b(?:spawnSync|fs|console|process|fetch|Date\.now)\s*[.(]/u);
   }
