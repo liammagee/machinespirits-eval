@@ -1,7 +1,7 @@
 ---
 id: dramatic-recognition-arc-editorial-refresh
 title: "Review and republish the dramatic-recognition arc"
-status: active
+status: done
 type: content
 priority: P2
 owner: codex
@@ -26,3 +26,13 @@ Review the dramatic-recognition arc as prose and as a rendered visual argument,
 repair any image that contradicts its section, complete the visual closeout,
 keep the generated images traceable to checked-in prompts, and republish the
 validated standalone article to the public site.
+
+2026-08-04 Codex: Reviewed all ten sections and the nine existing images. Replaced
+Panel 01 because its rising ruler contradicted the flat-average claim, added a
+Panel 10 closeout image, synchronized both checked-in prompt packs and manifests,
+and made publishing worktree-safe. Desktop and 390px visual QA passed with no
+horizontal overflow; source/standalone each contain 10 panels and 10 prompts;
+script parse/lint, `git diff --check`, publisher dry-run, and workplan source
+validation (374/374) passed. Source commit `5ef43c7f`; content release `ff27ea7`;
+Fly run `30873383617` succeeded; the live URL was checked directly with Panel 10
+loaded at 1586×992.
