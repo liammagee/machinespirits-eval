@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-05T04:19:09.371Z",
+  "generated": "2026-08-05T04:29:01.482Z",
   "counts": {
     "total": 408,
     "byStatus": {
       "done": 372,
       "blocked": 7,
       "dropped": 6,
-      "triaged": 7,
+      "triaged": 3,
       "active": 7,
       "archived": 4,
-      "review": 5
+      "review": 9
     },
     "byType": {
       "research": 71,
@@ -41,48 +41,6 @@
         "tutor-stub",
         "adaptation",
         "casting"
-      ]
-    },
-    {
-      "id": "docs-build-default-and-regen",
-      "title": "One build default, one refresh command, one PDF pruning rule",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "build.sh without arguments builds (or clearly refuses in favour of) paper2; one npm command regenerates board, ref-status, atlas and arc and reports what changed; a written rule bounds the versioned PDFs kept in docs/research/.",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "build",
-        "regeneration"
-      ]
-    },
-    {
-      "id": "docs-exports-tracking-policy",
-      "title": "Make exports/ tracking policy and reality agree",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "gitignore rules and tracked reality agree for exports/ (explicit negations or a recorded untracking decision); every paper-cited exports path either resolves in a fresh checkout or carries an explicit archive pointer.",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "policy",
-        "exports"
       ]
     },
     {
@@ -118,47 +76,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "main"
-    },
-    {
-      "id": "docs-notes-conventions-cleanup",
-      "title": "Bring notes/ and root naming back inside their own conventions",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P3",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "daily-notes filenames satisfy their README rule; the two generated JSON snapshots either live outside notes/ or are documented in place as generated; the four lowercase root analysis notes are renamed or the naming rule is written down with a waiver.",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "naming"
-      ]
-    },
-    {
-      "id": "docs-techne-token-sync-test",
-      "title": "Test-enforce the techne token mirror (served subset vs editorial source)",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "A test fails when the shared tokens in public/components/techne.css drift from notes/poetics/assets/techne.css (light and dark), and the current --paper mismatch is resolved one way or the other.",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "design",
-        "tests"
-      ]
     },
     {
       "id": "tutor-contract-turns-to-closure-prereg",
@@ -874,6 +791,28 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
+      "id": "docs-build-default-and-regen",
+      "title": "One build default, one refresh command, one PDF pruning rule",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "build.sh without arguments builds (or clearly refuses in favour of) paper2; one npm command regenerates board, ref-status, atlas and arc and reports what changed; a written rule bounds the versioned PDFs kept in docs/research/.",
+      "branch": "worktree-docs-coherence",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "build",
+        "regeneration"
+      ]
+    },
+    {
       "id": "docs-entry-point-index",
       "title": "Create the documentation entry point and repoint the live-arc references",
       "status": "review",
@@ -892,6 +831,28 @@
       "tags": [
         "docs",
         "structure"
+      ]
+    },
+    {
+      "id": "docs-exports-tracking-policy",
+      "title": "Make exports/ tracking policy and reality agree",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "branch": "worktree-docs-coherence",
+      "verification": "gitignore rules and tracked reality agree for exports/ (explicit negations or a recorded untracking decision); every paper-cited exports path either resolves in a fresh checkout or carries an explicit archive pointer.",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "policy",
+        "exports"
       ]
     },
     {
@@ -917,6 +878,49 @@
       "tags": [
         "tutor-stub",
         "harness"
+      ]
+    },
+    {
+      "id": "docs-notes-conventions-cleanup",
+      "title": "Bring notes/ and root naming back inside their own conventions",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "daily-notes filenames satisfy their README rule or are explicitly grandfathered in it; the two generated JSON snapshots either live outside notes/ or are documented in place as generated; the four lowercase root analysis notes are renamed or the naming rule is written down with a waiver.",
+      "branch": "worktree-docs-coherence",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "naming"
+      ]
+    },
+    {
+      "id": "docs-techne-token-sync-test",
+      "title": "Test-enforce the techne token mirror (served subset vs editorial source)",
+      "status": "review",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "tests/techneTokenMirror.test.js fails on value drift between the served subset and the dashboard BASE_CSS (all four skin blocks) and between the shared dark palettes; the light-palette divergence is documented and guarded, not silently equalized.",
+      "branch": "worktree-docs-coherence",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "design",
+        "tests"
       ]
     },
     {
