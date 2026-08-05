@@ -26,6 +26,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-eval-cli-generation-commands
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/517
 tags:
   - refactoring
   - evaluation
@@ -83,3 +85,7 @@ Log:
   tutor/learner per-turn, fallback, holistic, deliberation, persistence,
   compatibility-label, and tutor-only paths. No paid model calls or production
   DB/log writes were made.
+- 2026-08-06 — Rebased without conflict onto refreshed `origin/main` at
+  `f54785aa`, reran the 162-test focused set and all affected static/workplan
+  gates, and opened the reviewed macro slice as PR #517. The final
+  implementation commit is `00b2b308` before this PR-link follow-up.

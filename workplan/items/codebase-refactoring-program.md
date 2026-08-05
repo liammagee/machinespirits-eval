@@ -1476,3 +1476,6 @@ Log:
   tutor/learner symmetry signoff. Across R4 step 4, `eval-cli.js` is down from
   6,300 to 269 lines; the command-family extraction is complete once this child
   merges.
+- 2026-08-06 — Opened the final R4 command-family extraction as PR #517 after
+  rebasing onto current `main`; the post-rebase focused, source, manifest,
+  formatting, lint, cycle, workplan, and commit-link gates remained green.
