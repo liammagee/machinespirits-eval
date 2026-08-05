@@ -42,12 +42,12 @@
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
       "claim": "tutor-turn coordination, clue-insertion interception, and terminal fallback",
-      "sha256": "f6bc7ceff8a20125a33ab3a16fe38e073d1ff3ea7006e9e9150f4ae82753c068"
+      "sha256": "1fca50b125fa185286b3219b8bdcb6adfa1ba4061f9b00334b1dbe4139283b7e"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
       "claim": "speaking prompt assembly; conduct-card and contract-licence slots; speaker-privilege recovery",
-      "sha256": "3b92439193291b279376b0ff8449f3aa1199222b70eb2b7fb0cf120122c23e84"
+      "sha256": "4cf544f709915e38e64d63f7db5fecf3b93a05960873ef16274a0a42073c454d"
     },
     {
       "file": "services/tutorStubTutorAttemptRuntime.js",
