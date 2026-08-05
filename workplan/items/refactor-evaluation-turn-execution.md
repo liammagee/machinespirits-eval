@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-turn-execution
 title: Split evaluation single-turn and multi-turn execution owners
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -34,6 +34,8 @@ links:
     - tests/checkpointResume.test.js
   items:
     - codebase-refactoring-program
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/512
 tags:
   - refactoring
   - evaluation
@@ -86,3 +88,6 @@ Log:
   workplan source/tests; and diff checks. The first sandboxed coverage attempt
   could not bind loopback ports; the authorized loopback rerun passed all five
   coverage groups.
+- 2026-08-05 — PR #512 merged to `main` as `5fe625cf`; the generated workplan
+  refresh followed at `dd377147`. The merged source and CI evidence satisfy the
+  card, which is now closed before R4 step 3 begins.

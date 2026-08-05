@@ -272,6 +272,7 @@
         "tests/evalSignature.test.js",
         "tests/evaluationDataCloseout.test.js",
         "tests/evaluationDataPaths.test.js",
+        "tests/evaluationResumeRejudgeRuntime.test.js",
         "tests/evaluationRunner.test.js",
         "tests/evaluationScoring.test.js",
         "tests/evaluationStore.test.js",

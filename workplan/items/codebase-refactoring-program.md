@@ -114,6 +114,7 @@ links:
     - refactor-tutor-stub-macro-decomposition
     - refactor-tutor-stub-extracted-owner-boundaries
     - refactor-evaluation-turn-execution
+    - refactor-evaluation-resume-rejudge-runtime
 tags:
   - refactoring
   - testing
@@ -1422,3 +1423,15 @@ Log:
   transcripts, setup, adaptation, completion, and turn execution below the
   1,200-line ceiling. Focused, zero-skip hermetic, coverage-risk, lint, format,
   manifest, workplan, diff, and zero-cycle gates pass with no model calls.
+- 2026-08-05 — PR #512 merged R4 step 2 as `5fe625cf`; activated R4 step 3 on
+  `codex/refactor-evaluation-resume-rejudge-runtime` from refreshed `main` at
+  `dd377147`. The next facade seam is resume/checkpoint coordination plus
+  rejudge scoring and orchestration, with attempt/provenance/symmetry contracts
+  frozen.
+- 2026-08-05 — R4 step 3 reached review: the evaluation facade fell from 3,534
+  to 2,187 lines while 488-line resume and 963-line rejudge owners preserve
+  checkpoint, attempt, frozen-row, judge-provenance, hash, rubric, and bilateral
+  score contracts. Focused, zero-skip hermetic, coverage-risk, lint, format,
+  manifest, workplan, diff, and zero-cycle gates pass without model calls.
+- 2026-08-05 — Opened R4 step 3 as PR #513 against `main` after the reviewed
+  implementation passed all local gates.
