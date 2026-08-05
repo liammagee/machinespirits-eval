@@ -8,10 +8,10 @@ owner: codex
 source: manual
 created: 2026-07-22
 updated: 2026-08-05
-verification: "The retrain is explicitly declined after both weights-attribution designs ended without a trained-versus-untuned treatment estimate; Paper §7.12 no longer presents it as future work; no dataset build, training run, or live confirmation is authorized, and the extracted live moments remain archival inputs only."
+verification: "The retrain is explicitly declined after both weights-attribution designs ended without a trained-versus-untuned treatment estimate; Paper §9 no longer presents it as future work; no dataset build, training run, or live confirmation is authorized, and the extracted live moments remain archival inputs only."
 claim_status: killed
 links:
-  paper: §6.21, §7.12
+  paper: §6.21, §7.12, §9
   notes:
     - notes/program-2/2026-07-18-cloud-finetune-runbook.md
     - notes/program-2/2026-07-20-phase5-live-pilot-results.md
@@ -69,6 +69,6 @@ not license a retrain. Reopening the question requires a new identification
 design, a new card, a fresh preregistration, and fresh external-run authority;
 it is not a continuation of this experiment.
 
-Paper §7.12 and the v3.0.264 revision entry are corrected in the same change so
+Paper §9 and the v3.0.264 revision entry are corrected in the same change so
 the canonical research record no longer recommends the spent attribution test
 or its dependent retrain as live future work.
