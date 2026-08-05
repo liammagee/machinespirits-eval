@@ -1,13 +1,13 @@
 {
-  "generated": "2026-08-04T23:37:04.491Z",
+  "generated": "2026-08-05T01:15:31.322Z",
   "counts": {
     "total": 398,
     "byStatus": {
-      "done": 369,
+      "done": 371,
       "blocked": 7,
       "dropped": 4,
       "triaged": 3,
-      "active": 9,
+      "active": 7,
       "archived": 4,
       "review": 2
     },
@@ -415,39 +415,6 @@
       ]
     },
     {
-      "id": "guard-ladder-ships-canned-text-on-most-turns",
-      "title": "The guard ladder ships canned text on most instrumented turns",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-07-28",
-      "updated": "2026-08-04",
-      "verification": "A turn that quotes an exhibit containing a question mark is audited against the whole quoted sentence rather than the fragment after the internal `?`, with the real campus turn-1 string pinned as the case; a closing turn is not asked to put the handoff target terms in the sentence that declares the close; and the self-correction pass either changes the finding that triggered it or does not run, checked against the six turns in the 2026-07-28 run where it ran and changed nothing.",
-      "links": {
-        "code": [
-          "services/tutorStubTurnProgressionContract.js",
-          "services/tutorStubFirstDraftOuterLoop.js",
-          "services/tutorStubGuardDisposition.js",
-          "services/tutorStubSelfCorrectionDisclosure.js",
-          "scripts/tutor-stub.js",
-          "tests/tutorStubTurnProgressionContract.test.js",
-          "tests/tutorStubLiveFirstDraftAudit.test.js",
-          "tests/tutorStubSelfCorrectionDisclosure.test.js"
-        ],
-        "items": [
-          "tutor-instrumentation-showcase",
-          "repetition-audit-misses-reworded-stall",
-          "tutor-redeclares-close-lifecycle-has-not-accepted"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
-    {
       "id": "harness-untangling-contract-split",
       "title": "Untangling 2: split the standing text into a safety contract and a teaching charter",
       "status": "active",
@@ -497,38 +464,6 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "codex/program2-committee-floor-ablation"
-    },
-    {
-      "id": "tutor-redeclares-close-lifecycle-has-not-accepted",
-      "title": "The tutor re-declares a close the closure lifecycle has not accepted",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-07-28",
-      "updated": "2026-08-04",
-      "verification": "A response that declares the case closed while `dialogueClosure.lifecycle.phase` is still `open` raises an issue instead of passing unread, with the real Riverside turn-5 string pinned as the case and the other 35 showcase turns pinned as passing; a live run then shows the regenerated turn is not a second closing declaration; a turn taken after the lifecycle has closed is left alone.",
-      "links": {
-        "code": [
-          "services/tutorStubDialogueClosure.js",
-          "services/tutorStubGuardDisposition.js",
-          "services/__tests__/tutorStubDialogueClosure.test.js",
-          "services/tutorStubResponseConfiguration.js",
-          "services/tutorStubReleasePacing.js",
-          "services/tutorStubPublicLearnerAnalysis.js",
-          "scripts/tutor-stub.js"
-        ],
-        "items": [
-          "tutor-instrumentation-showcase",
-          "showcase-turn-cap-untied-to-release-schedule",
-          "guard-ladder-ships-canned-text-on-most-turns"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "closure"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -10966,6 +10901,39 @@
       "milestone": "poetics-followups"
     },
     {
+      "id": "guard-ladder-ships-canned-text-on-most-turns",
+      "title": "The guard ladder ships canned text on most instrumented turns",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-08-05",
+      "verification": "A turn that quotes an exhibit containing a question mark is audited against the whole quoted sentence rather than the fragment after the internal `?`, with the real campus turn-1 string pinned as the case; a closing turn is not asked to put the handoff target terms in the sentence that declares the close; and the self-correction pass either changes the finding that triggered it or does not run, checked against the six turns in the 2026-07-28 run where it ran and changed nothing.",
+      "links": {
+        "code": [
+          "services/tutorStubTurnProgressionContract.js",
+          "services/tutorStubFirstDraftOuterLoop.js",
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubSelfCorrectionDisclosure.js",
+          "scripts/tutor-stub.js",
+          "tests/tutorStubTurnProgressionContract.test.js",
+          "tests/tutorStubLiveFirstDraftAudit.test.js",
+          "tests/tutorStubSelfCorrectionDisclosure.test.js"
+        ],
+        "items": [
+          "tutor-instrumentation-showcase",
+          "repetition-audit-misses-reworded-stall",
+          "tutor-redeclares-close-lifecycle-has-not-accepted"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
       "id": "harness-native-rl-literature-triage",
       "title": "OpenForgeRL: Train Harness-native Agents in Any Environment",
       "status": "done",
@@ -12482,6 +12450,38 @@
         "hook"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "tutor-redeclares-close-lifecycle-has-not-accepted",
+      "title": "The tutor re-declares a close the closure lifecycle has not accepted",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-07-28",
+      "updated": "2026-08-05",
+      "verification": "A response that declares the case closed while `dialogueClosure.lifecycle.phase` is still `open` raises an issue instead of passing unread, with the real Riverside turn-5 string pinned as the case and the other 35 showcase turns pinned as passing; a live run then either reaches one licensed close without an earlier unearned declaration or shows that a premature close is regenerated as non-closing; a turn taken after the lifecycle has closed is left alone.",
+      "links": {
+        "code": [
+          "services/tutorStubDialogueClosure.js",
+          "services/tutorStubGuardDisposition.js",
+          "services/__tests__/tutorStubDialogueClosure.test.js",
+          "services/tutorStubResponseConfiguration.js",
+          "services/tutorStubReleasePacing.js",
+          "services/tutorStubPublicLearnerAnalysis.js",
+          "scripts/tutor-stub.js"
+        ],
+        "items": [
+          "tutor-instrumentation-showcase",
+          "showcase-turn-cap-untied-to-release-schedule",
+          "guard-ladder-ships-canned-text-on-most-turns"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "closure"
+      ]
     },
     {
       "id": "tutor-stub-curriculum-mastery-runtime",
