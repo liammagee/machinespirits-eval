@@ -1,4 +1,4 @@
-# Project Memory for Claude
+# Project Memory for Gemini
 
 > **CRITICAL AI INSTRUCTION:** Do NOT automatically run `eval-cli.js` or `consolidate-runs.js` commands in the terminal using the `run_command` tool. Provide the exact commands to the user instead, so the user can run them manually themselves.
 ## Core Architecture

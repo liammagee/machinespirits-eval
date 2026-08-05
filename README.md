@@ -300,7 +300,7 @@ CI checks that inventory once before starting the Node-version test matrix.
 
 This repository currently accepts a small set of known risks because it is run as an internal localhost-only evaluation system.
 
-See `notes/known-risks-localhost-2026-02-13.md` for the tracked risk register, acceptance scope, and hardening triggers required before broader deployment.
+See `DEPLOYMENT.md` for the current deployment posture and the hardening required before any non-localhost deploy.
 
 ## Citation
 

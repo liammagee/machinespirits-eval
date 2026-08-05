@@ -1,6 +1,6 @@
 # Analysis Scripts Registry
 
-All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/paper-2-0/analysis-toolkit-guide.md`.
+All post-hoc analysis scripts in `scripts/`. For workflow order, see `docs/analysis-toolkit-guide.md`.
 
 ## Statistical Analysis
 
