@@ -4,6 +4,7 @@ import { createTutorStubTutorDeliveryRuntime } from './tutorStubTutorDeliveryRun
 import { createTutorStubTutorDraftAudit } from './tutorStubTutorDraftAudit.js';
 import { createTutorStubTutorRepairRuntime } from './tutorStubTutorRepairRuntime.js';
 import { createTutorStubTutorTurnPreparation } from './tutorStubTutorTurnPreparation.js';
+import { TUTOR_STUB_AB_GENERIC_PLAN } from './tutorStubAbArms.js';
 
 export { TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS } from './tutorStubTutorTurnPreparation.js';
 
@@ -204,6 +205,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     compileTutorStubPerformanceObligationContract,
     currentReleaseRows,
     dagTurnContext,
+    emptyPlanAdvisory: TUTOR_STUB_AB_GENERIC_PLAN,
     humanDiscourseTutorContext,
     reconcileTutorStubPointOfActionHandoffEligibility,
     recoverTutorStubSpeakerPrompt,
