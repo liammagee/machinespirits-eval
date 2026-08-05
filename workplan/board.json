@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-05T05:22:16.291Z",
+  "generated": "2026-08-05T05:32:23.587Z",
   "counts": {
     "total": 409,
     "byStatus": {
-      "done": 383,
+      "done": 384,
       "blocked": 7,
       "dropped": 8,
       "active": 5,
       "archived": 4,
-      "review": 2
+      "review": 1
     },
     "byType": {
       "research": 71,
@@ -617,31 +617,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "harness-untangling-clue-insertion",
-      "title": "Untangling 1: insert the due clue into the model's reply instead of replacing the reply",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-05",
-      "verification": "Gate registered before any change: (a) flag off — behavior byte-identical, hermetic suite green; (b) flag on, k=3 live — at release turns where the draft fails ONLY the release-delivery family, the delivered reply is the model draft with the due clue sentence inserted (traced), template whole-reply replacements at those turns fall to zero, release audits pass on the composed reply, leaks stay zero.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-p"
-      ],
-      "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/444"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "harness"
-      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -11085,6 +11060,31 @@
         "harness"
       ],
       "milestone": "literature-triage"
+    },
+    {
+      "id": "harness-untangling-clue-insertion",
+      "title": "Untangling 1: insert the due clue into the model's reply instead of replacing the reply",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-05",
+      "verification": "PR #444 merged with CI green; flag-off behavior remained byte-identical; live traces retained the model draft with exact clue span replacement for presented-exhibit releases, including every first-demand turn, with zero leaks; enacted-role t5 remains safely composer-owned as the explicit bounded exception accepted at review.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-p"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/444"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "harness"
+      ]
     },
     {
       "id": "implement-messages-style-internal-history-probe",
