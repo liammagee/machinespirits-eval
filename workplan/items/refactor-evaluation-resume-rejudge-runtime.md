@@ -29,6 +29,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-turn-execution
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/513
 tags:
   - refactoring
   - evaluation
@@ -78,3 +80,6 @@ Log:
   missing-run and judge-selection errors, completed-generation skipping, and
   cross-judge overwrite refusal while ratcheting both new owners below 1,200
   lines.
+- 2026-08-05 — Opened the reviewed slice as PR #513 against `main`; local and
+  remote implementation SHAs matched at `4ba78c7f` before this PR-link
+  follow-up.

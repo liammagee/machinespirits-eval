@@ -1433,3 +1433,5 @@ Log:
   checkpoint, attempt, frozen-row, judge-provenance, hash, rubric, and bilateral
   score contracts. Focused, zero-skip hermetic, coverage-risk, lint, format,
   manifest, workplan, diff, and zero-cycle gates pass without model calls.
+- 2026-08-05 — Opened R4 step 3 as PR #513 against `main` after the reviewed
+  implementation passed all local gates.
