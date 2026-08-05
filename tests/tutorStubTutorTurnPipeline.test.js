@@ -89,6 +89,7 @@ test('pipeline delegates extracted responsibilities to bounded implementation ow
     ['tutorStubTutorDeliveryRuntime.js', 'createTutorStubTutorDeliveryRuntime'],
     ['tutorStubTutorDraftAudit.js', 'createTutorStubTutorDraftAudit'],
     ['tutorStubTutorRepairRuntime.js', 'createTutorStubTutorRepairRuntime'],
+    ['tutorStubTutorTerminalRuntime.js', 'createTutorStubTutorTerminalRuntime'],
   ];
 
   for (const [fileName, factoryName] of owners) {
@@ -103,6 +104,7 @@ test('pipeline delegates extracted responsibilities to bounded implementation ow
   assert.doesNotMatch(pipeline, /function withTutorDeliveryDecision\(/);
   assert.doesNotMatch(pipeline, /function auditTutorDraft\(/);
   assert.doesNotMatch(pipeline, /const simplifiedRecoveryResponse = await invokeTutorAttempt\(/);
+  assert.doesNotMatch(pipeline, /const closureFallbackSelected = Boolean\(/);
   assert.doesNotMatch(pipeline, /tutorMessageContext\(state, history\)/);
 });
 
