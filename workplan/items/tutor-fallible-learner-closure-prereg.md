@@ -114,3 +114,27 @@ defaults carried unchanged (codex gpt-5.6-terra both seats, medium effort,
 authored caps, offline recompute as audit). Outputs under
 `exports/tutor-stub-outcome/fallible-phaseA/<profile>--<world>/`. Attended,
 one to two cells at a time, resumable per cell.
+
+**2026-08-05 — Phase A complete; FREEZE.** All 8 cells ran (5 bare
+dialogues each, zero crashes, offline recompute as audit; artifacts under
+`exports/tutor-stub-outcome/fallible-phaseA/`). Corrected closure:
+
+| profile | rowan_flat | greyfen_lab |
+|---|---|---|
+| memory_limited | 5/5 above | 5/5 above |
+| false_memory | **4/5 in band** | 5/5 above |
+| premature_closure | 5/5 above (3 engine misses corrected) | 5/5 above |
+| low_agency | **1/5 in band** | **2/5 in band** |
+
+Gate passed: three usable cells on two worlds. **Frozen Phase B cells:**
+`false_memory × world_030_rowan_flat`, `low_agency × world_030_rowan_flat`,
+`low_agency × world_023_greyfen_lab`. No long-world extension: the gate is
+met on the short worlds and extension is the card's rescue path, not a
+requirement. Two notes for the record: the premature_closure engine-miss
+pattern (live matcher under-counts that profile's phrasings; recompute
+governs) and the profile-by-world locality (each failure mode bites on one
+world). Implementation step before Phase B starts, per the registered
+design: the empty-plan control block exists in the A/B replay arms only
+(`services/tutorStubAbArms.js` GENERIC_PLAN) and must be wired into the
+live runner as a gated block before the first Phase B call; the contract
+smoke gates as registered.
