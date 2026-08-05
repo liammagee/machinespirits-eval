@@ -1,19 +1,18 @@
 ---
 id: harness-untangling-clue-insertion
 title: "Untangling 1: insert the due clue into the model's reply instead of replacing the reply"
-status: review
+status: done
 type: infra
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-02
 updated: 2026-08-05
-verification: "Gate registered before any change: (a) flag off — behavior
-  byte-identical, hermetic suite green; (b) flag on, k=3 live — at release
-  turns where the draft fails ONLY the release-delivery family, the
-  delivered reply is the model draft with the due clue sentence inserted
-  (traced), template whole-reply replacements at those turns fall to zero,
-  release audits pass on the composed reply, leaks stay zero."
+verification: "PR #444 merged with CI green; flag-off behavior remained
+  byte-identical; live traces retained the model draft with exact clue span
+  replacement for presented-exhibit releases, including every first-demand
+  turn, with zero leaks; enacted-role t5 remains safely composer-owned as the
+  explicit bounded exception accepted at review."
 claim_status: methods
 depends_on:
   - adaptation-plan-3-phase-p
@@ -149,3 +148,14 @@ zero-template target was met for presented-exhibit releases but not for the
 enacted-role family, which remains safely composer-owned by the recorded
 anti-creep decision. Mark done only if that bounded exception is accepted;
 otherwise open a new parser-focused implementation card.
+
+## Accepted bounded close (2026-08-05)
+
+The review decision accepts the enacted-role exception and closes this card as
+done. Its decision-relevant objective is met: presented-exhibit releases,
+including every first-demand turn, preserve the model's voice while exact clue
+delivery and zero-leak guards remain enforced. The residual t5 enacted-role
+case is deterministic, safely traced, and composer-owned; nine bounded
+iterations did not justify further parser work. No parser-focused follow-up is
+opened. Any future requirement to remove that fallback must start as a new card
+with its own gate rather than silently extending this one.
