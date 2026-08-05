@@ -122,5 +122,7 @@ Log:
   Moved the item to review for PR handoff.
 - 2026-08-05 — Opened PR #504 for review.
 - 2026-08-05 — Closed after PR #504 merged with the full CI matrix green. The
-  clean committed pre-push benchmark remains 6/6 fresh jobs passed with no
-  repair, fallback, retry, learner regeneration, or dialogue continuation.
+  repair head was confirmed contained in `origin/main`, and the clean isolated
+  repair worktree was removed. The committed pre-push benchmark remains 6/6
+  fresh jobs passed with no repair, fallback, retry, learner regeneration, or
+  dialogue continuation.

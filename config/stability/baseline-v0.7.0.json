@@ -80,6 +80,26 @@
       "sha256": "db3f89c71bf04163fdd1e1c3398e770317cff154bffa069e5e8fe88e9e016e79"
     },
     {
+      "file": "services/tutorStubResponsePolicy.js",
+      "claim": "response-policy compatibility facade and public method contract",
+      "sha256": "a0b29dbcbdcd93c30f4858597b03f99135fa71ba76f57d70fefcbd6d8214e9f4"
+    },
+    {
+      "file": "services/tutorStubResponsePolicySelectionRuntime.js",
+      "claim": "core policy selection, explicit performance directives, and replayable seeded sampling",
+      "sha256": "471dc3065dfff6d28178250d9058f51770702d314d69675862627db593cde5da"
+    },
+    {
+      "file": "services/tutorStubAdaptiveResponsePolicyRuntime.js",
+      "claim": "field, state, trajectory, dynamical-system, continuous, and overlay policy selection",
+      "sha256": "3a8a418c572528a3a86e9fe2d809abc98ff97f76ab90ca8836c8d8ea5a319abe"
+    },
+    {
+      "file": "services/tutorStubResponseConfigurationSelectionRuntime.js",
+      "claim": "final response-configuration composition, precedence, and selection trace envelope",
+      "sha256": "ff665edfb7c3dace57eeb47ded5d61118f863854475b482701c012a1ef96d03e"
+    },
+    {
       "file": "services/tutorStubWorldPromptContext.js",
       "claim": "safety-contract/teaching-charter split, byte-exact reassembly, licence slot",
       "sha256": "cf26365d90e4ac9a5da50c363b052e3cd0dfc28996b1f0faaa883417c7aba43a"

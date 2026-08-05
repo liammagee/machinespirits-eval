@@ -99,7 +99,10 @@ hook:
     - services/tutorStubPrBenchmarkHook.js
     - services/tutorStubPublicPresentationRuntime.js
     - services/tutorStubRecoveryAccountingRuntime.js
+    - services/tutorStubAdaptiveResponsePolicyRuntime.js
+    - services/tutorStubResponseConfigurationSelectionRuntime.js
     - services/tutorStubResponsePolicy.js
+    - services/tutorStubResponsePolicySelectionRuntime.js
     - services/tutorStubScenarioController.js
     - services/tutorStubSessionApplicationContext.js
     - services/tutorStubSessionApplicationRuntime.js
