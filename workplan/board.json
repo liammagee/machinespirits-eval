@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-05T21:39:59.299Z",
+  "generated": "2026-08-05T22:32:50.656Z",
   "counts": {
-    "total": 412,
+    "total": 413,
     "byStatus": {
       "done": 389,
       "blocked": 6,
       "dropped": 8,
       "active": 3,
       "archived": 4,
-      "review": 2
+      "review": 3
     },
     "byType": {
       "research": 71,
       "experiment": 70,
       "infra": 78,
-      "maintenance": 174,
+      "maintenance": 175,
       "content": 3,
       "ops": 10,
       "paper": 6
@@ -133,7 +133,8 @@
           "refactor-tutor-stub-extracted-owner-boundaries",
           "refactor-evaluation-turn-execution",
           "refactor-evaluation-resume-rejudge-runtime",
-          "refactor-eval-cli-operational-commands"
+          "refactor-eval-cli-operational-commands",
+          "refactor-eval-cli-generation-commands"
         ]
       },
       "tags": [
@@ -414,6 +415,56 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "refactor-eval-cli-generation-commands",
+      "title": "Extract eval-cli generation, chat, and rejudge commands",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-eval-cli-generation-commands",
+      "verification": "The eval-cli facade dispatches quick/test, run, chat, and rejudge through bounded command owners while generation selection, model guards, adaptive budgets, live reporting, chat tools, rubric overrides, judge provenance, arguments, stdout/stderr, and exit codes remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-eval-cli-operational-commands"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/eval-cli.js",
+          "scripts/eval-cli/commands/generationIndex.js",
+          "scripts/eval-cli/commands/quickCommand.js",
+          "scripts/eval-cli/commands/runCommand.js",
+          "scripts/eval-cli/commands/chatCommand.js",
+          "scripts/eval-cli/commands/chatTools.js",
+          "scripts/eval-cli/commands/rejudgeCommand.js",
+          "tests/eval-cli-smoke.test.js",
+          "tests/dryRun.test.js",
+          "tests/evalCliGenerationCommands.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-eval-cli-operational-commands"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/515"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "cli",
+        "generation",
+        "rejudge",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "refactor-eval-cli-operational-commands",
