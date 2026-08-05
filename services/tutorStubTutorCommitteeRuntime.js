@@ -2,12 +2,17 @@ export function createTutorStubTutorCommitteeRuntime(dependencies = {}) {
   const {
     PROGRAM2_COMMITTEE_SCHEMA,
     appendTraceEvent,
+    auditTutorResponseLeak,
     buildCommitteeCompositionBlock,
     committeeFallbackBatteryPass,
     committeeMiniGenerate,
+    extractCommitteeSpanV1,
+    extractCuePreservingCommitteeSpanV2,
     jsonClone,
     reserveTutorStubMeteredModelCall,
+    resolveCueBlindCommitteeDelivery,
     runCommitteeBattery,
+    runCueBlindCommitteeBattery,
     selectCommitteeCompositionQuestion,
     trimCommitteeFallback,
     tutorStubPointOfActionTargetText,
@@ -20,14 +25,17 @@ export function createTutorStubTutorCommitteeRuntime(dependencies = {}) {
     effectiveSpeakerUserPrompt,
     firstDraftContract,
     invokeTutorAttempt,
+    learnerText,
     maxTokens,
     nextTutorGuardCallId,
     roleBase,
     speakerPrivilegeAudit,
+    speakerPublicPremiseIds,
     state,
     trace,
     tutorStreamMode,
     tutorTurn,
+    world,
   }) {
     // Program-2 Phase 5 committee first draft
     // (PROGRAM-2-PHASE5-LIVE-PILOT-PREREGISTRATION.md §2): at warrant_skip
@@ -100,10 +108,27 @@ export function createTutorStubTutorCommitteeRuntime(dependencies = {}) {
       // battery — greedy first, then up to two resamples at the frozen
       // sampled temperature, then the cue-preserving trim. Policy v1 ships
       // the greedy reply unchecked (the Phase 5 behavior).
-      async function resolveCommitteeFallbackEnvelope() {
+      async function resolveCommitteeFallbackEnvelope({
+        spanResult = null,
+        composedText = null,
+        composerError = null,
+        battery = null,
+      } = {}) {
         const fallback = { policy: state.committee.fallbackPolicy || 'v1', resolution: 'v1_unchecked', resamples: 0 };
         let deliveredText = miniText;
-        if (fallback.policy === 'v2') {
+        if (fallback.policy === 'cue_blind') {
+          const ledger = resolveCueBlindCommitteeDelivery({
+            miniText,
+            spanResult,
+            composedText,
+            composerError,
+            battery,
+          });
+          fallback.resolution = ledger.fallbackUsed ? 'original_greedy_mini' : 'composer_accepted';
+          fallback.failureReason = ledger.failureReason;
+          deliveredText = ledger.deliveredText;
+          moment.enforcementLedger = ledger;
+        } else if (fallback.policy === 'v2') {
           if (committeeFallbackBatteryPass(miniText)) {
             fallback.resolution = 'selected_greedy';
           } else {
@@ -167,12 +192,15 @@ export function createTutorStubTutorCommitteeRuntime(dependencies = {}) {
         schema: PROGRAM2_COMMITTEE_SCHEMA,
         turn: tutorTurn,
         trigger: momentTurn.assigned_trigger,
+        opportunitySource: momentTurn.opportunity_source || 'frozen_detector',
         miniModel: state.committee.miniModel,
         miniLatencyMs,
         miniError,
         miniText,
+        spanInterface: state.committee.spanInterface || 'v1',
         span: null,
         spanSentenceCount: 0,
+        spanCarriedStatement: false,
         composedText: null,
         composerLatencyMs: null,
         composerError: null,
@@ -189,14 +217,26 @@ export function createTutorStubTutorCommitteeRuntime(dependencies = {}) {
           repairAttempt: 0,
         });
       } else {
-        const spanSelection = selectCommitteeCompositionQuestion(miniText);
-        moment.spanSentenceCount = spanSelection.questions.length;
-        moment.spanSelection = spanSelection;
-        if (!spanSelection.eligible) {
-          moment.source = spanSelection.questions.length ? 'fallback_question_lacks_cue' : 'fallback_no_span';
-          chosen = await resolveCommitteeFallbackEnvelope();
+        const cueBlind = state.committee.fallbackPolicy === 'cue_blind';
+        const spanResult = cueBlind
+          ? state.committee.spanInterface === 'v2'
+            ? extractCuePreservingCommitteeSpanV2(miniText)
+            : extractCommitteeSpanV1(miniText)
+          : null;
+        const spanSelection = cueBlind ? null : selectCommitteeCompositionQuestion(miniText);
+        moment.spanSentenceCount = cueBlind ? spanResult.questionCount : spanSelection.questions.length;
+        moment.spanCarriedStatement = cueBlind ? spanResult.carriedStatement : false;
+        moment.spanSelection = cueBlind ? spanResult : spanSelection;
+        const eligible = cueBlind ? spanResult.status === 'ok' : spanSelection.eligible;
+        if (!eligible) {
+          moment.source = cueBlind
+            ? 'fallback_no_span'
+            : spanSelection.questions.length
+              ? 'fallback_question_lacks_cue'
+              : 'fallback_no_span';
+          chosen = await resolveCommitteeFallbackEnvelope({ spanResult });
         } else {
-          const span = spanSelection.selected;
+          const span = cueBlind ? spanResult.span : spanSelection.selected;
           moment.span = span;
           const compositionBlock = buildCommitteeCompositionBlock(span);
           try {
@@ -209,10 +249,44 @@ export function createTutorStubTutorCommitteeRuntime(dependencies = {}) {
             });
             moment.composedText = composer.text;
             moment.composerLatencyMs = composer.latencyMs;
-            const battery = runCommitteeBattery({ composedText: composer.text, span });
+            const leakAudit = cueBlind
+              ? auditTutorResponseLeak({
+                  text: composer.text,
+                  world,
+                  tutorTurn,
+                  learnerText,
+                  state,
+                  publicPremiseIds: speakerPublicPremiseIds,
+                })
+              : null;
+            const battery = cueBlind
+              ? runCueBlindCommitteeBattery({
+                  composedText: composer.text,
+                  span,
+                  publicEvidenceSafe: leakAudit.ok,
+                  noNewPremise: leakAudit.ok,
+                })
+              : runCommitteeBattery({ composedText: composer.text, span });
             moment.battery = battery;
+            moment.compositionEvidenceAudit = leakAudit
+              ? { ok: leakAudit.ok, leakCount: leakAudit.leaks.length, basis: 'tutor_response_leak_audit' }
+              : null;
             if (battery.pass) {
               moment.source = 'composed';
+              if (cueBlind) {
+                moment.enforcementLedger = resolveCueBlindCommitteeDelivery({
+                  miniText,
+                  spanResult,
+                  composedText: composer.text,
+                  battery,
+                });
+                moment.fallback = {
+                  policy: 'cue_blind',
+                  resolution: 'composer_accepted',
+                  resamples: 0,
+                  failureReason: null,
+                };
+              }
               chosen = composer;
               chosen.guardRole = roleBase;
             } else {
@@ -222,12 +296,12 @@ export function createTutorStubTutorCommitteeRuntime(dependencies = {}) {
                   : battery.failedCheck === 'exactly_one_question'
                     ? 'fallback_multi_question'
                     : 'fallback_empty';
-              chosen = await resolveCommitteeFallbackEnvelope();
+              chosen = await resolveCommitteeFallbackEnvelope({ spanResult, composedText: composer.text, battery });
             }
           } catch (err) {
             moment.composerError = String(err?.message || err).slice(0, 300);
             moment.source = 'fallback_error';
-            chosen = await resolveCommitteeFallbackEnvelope();
+            chosen = await resolveCommitteeFallbackEnvelope({ spanResult, composerError: moment.composerError });
           }
         }
       }

@@ -1,0 +1,20 @@
+{
+  "schema": "machinespirits.program2.weights-interface-retest-pilot-gates.v2",
+  "coverageThreshold": 0.8,
+  "minSealedPerCell": 2,
+  "minCompleteBlocks": 2,
+  "minCompleteBlocksPerProfile": 1,
+  "minOpportunitiesPerCell": 2,
+  "minOpportunitiesPerProfileCell": 1,
+  "minScheduledOpportunitiesPerRow": 1,
+  "minPilotRowsPerProfileCell": 1,
+  "requirePilotOpportunityPower": true,
+  "opportunityReserveFactor": 1,
+  "maxOpportunitiesPerDialogue": 40,
+  "maxAttritionDifference": 0,
+  "attritionPairs": [
+    ["trained_v1", "untuned_v1"],
+    ["trained_v2", "untuned_v2"]
+  ],
+  "requireCueBlind": true
+}

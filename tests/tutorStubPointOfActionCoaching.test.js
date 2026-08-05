@@ -3,10 +3,12 @@ import test from 'node:test';
 import {
   TUTOR_STUB_POINT_OF_ACTION_ARMS,
   TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS,
+  TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
   applyTutorStubPointOfActionConstraint,
   auditTutorStubPointOfActionCompliance,
   buildTutorStubPointOfActionTurn,
   normalizeTutorStubPointOfActionArm,
+  normalizeTutorStubPointOfActionOpportunityProtocol,
   reconcileTutorStubPointOfActionHandoffEligibility,
   tutorStubPointOfActionPlaceboAudit,
   tutorStubPointOfActionTargetText,
@@ -224,4 +226,86 @@ test('Phase 5e r2 excludes due-release warrant moments from both experimental ar
     duePremises: ['p_due'],
   });
   assert.equal(frozenArm.assigned_trigger, 'warrant_skip');
+});
+
+test('Amendment 1 schedules exactly the first handoff-admissible warrant exposure', () => {
+  assert.equal(
+    normalizeTutorStubPointOfActionOpportunityProtocol('first-admissible-warrant-v1'),
+    TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
+  );
+  assert.equal(normalizeTutorStubPointOfActionOpportunityProtocol('off'), null);
+  assert.throws(() => normalizeTutorStubPointOfActionOpportunityProtocol('force_every_turn'));
+
+  const forbidden = buildTutorStubPointOfActionTurn({
+    ...BASE,
+    arm: 'committee',
+    turn: 15,
+    evidenceUse: 'omits_warrant',
+    opportunityProtocol: TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
+  });
+  const delayed = reconcileTutorStubPointOfActionHandoffEligibility(forbidden, {
+    handoff_contract: { mode: 'declarative_unsupported_claim', question_allowed: false },
+  });
+  assert.equal(delayed.assigned_trigger, null);
+  assert.equal(delayed.opportunity_protocol.activated, false);
+
+  const admissible = buildTutorStubPointOfActionTurn({
+    ...BASE,
+    arm: 'committee',
+    turn: 16,
+    stagnation: 0.9,
+    previousActionFamilies: Array(4).fill('clarify_distinction'),
+    opportunityProtocol: TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
+  });
+  assert.equal(admissible.assigned_trigger, 'stagnant_repeat');
+  const activated = reconcileTutorStubPointOfActionHandoffEligibility(admissible, {
+    handoff_contract: { mode: 'new_unresolved_check', question_allowed: true },
+  });
+  assert.equal(activated.assigned_trigger, 'warrant_skip');
+  assert.equal(activated.displaced_trigger, 'stagnant_repeat');
+  assert.equal(activated.opportunity_source, TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL);
+  assert.equal(activated.opportunity_protocol.activated, true);
+  assert.equal(activated.opportunity_protocol.activated_turn, 16);
+  assert.equal(activated.handoff_eligibility.eligible, true);
+  assert.equal(
+    auditTutorStubPointOfActionCompliance({
+      turn: activated,
+      tutorText: 'Which public record connects that claim to the rule?',
+      guardsPassed: true,
+    }).opportunity_source,
+    TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
+  );
+
+  const consumed = buildTutorStubPointOfActionTurn({
+    ...BASE,
+    arm: 'committee',
+    turn: 17,
+    opportunityProtocol: TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
+    opportunityProtocolConsumed: true,
+  });
+  assert.equal(
+    reconcileTutorStubPointOfActionHandoffEligibility(consumed, {
+      handoff_contract: { mode: 'new_unresolved_check', question_allowed: true },
+    }),
+    consumed,
+  );
+});
+
+test('Amendment 1 never schedules over a due release or outside its frozen window', () => {
+  for (const input of [
+    { turn: 14, duePremises: [] },
+    { turn: 22, duePremises: [] },
+    { turn: 16, duePremises: ['p_due'] },
+  ]) {
+    const turn = buildTutorStubPointOfActionTurn({
+      ...BASE,
+      ...input,
+      arm: 'committee',
+      opportunityProtocol: TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
+    });
+    const reconciled = reconcileTutorStubPointOfActionHandoffEligibility(turn, {
+      handoff_contract: { mode: 'new_unresolved_check', question_allowed: true },
+    });
+    assert.equal(reconciled.opportunity_protocol.activated, false);
+  }
 });

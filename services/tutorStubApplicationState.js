@@ -239,6 +239,7 @@ export function createTutorStubApplicationState({ launchApplicationContext, sess
     pointOfAction: {
       enabled: Boolean(pointOfActionArm),
       arm: pointOfActionArm,
+      opportunityProtocol: args['point-of-action-opportunity-protocol'] || null,
       current: null,
       history: [],
     },
@@ -246,7 +247,8 @@ export function createTutorStubApplicationState({ launchApplicationContext, sess
       enabled: pointOfActionArm === 'committee',
       miniModel: args['committee-mini-model'],
       ollamaUrl: args['committee-ollama-url'],
-      fallbackPolicy: args['committee-fallback-policy'] === 'v2' ? 'v2' : 'v1',
+      spanInterface: args['committee-span-interface'],
+      fallbackPolicy: args['committee-fallback-policy'],
       numCtx: PROGRAM2_COMMITTEE_DEFAULTS.numCtx,
       timeoutMs: PROGRAM2_COMMITTEE_DEFAULTS.timeoutMs,
     },

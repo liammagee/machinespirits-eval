@@ -16,6 +16,11 @@ export const TUTOR_STUB_POINT_OF_ACTION_ARMS = Object.freeze([
 export const TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS = Object.freeze(['committee', 'silent_control']);
 export const TUTOR_STUB_POINT_OF_ACTION_HANDOFF_ELIGIBILITY_VERSION =
   'program2-phase5e-r2-opportunity-eligibility-2026-07-27.v2';
+export const TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL = 'first_admissible_warrant_v1';
+export const TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_WINDOW = Object.freeze({
+  firstTurn: 15,
+  lastTurn: 21,
+});
 const ALL_POINT_OF_ACTION_ARMS = Object.freeze([
   ...TUTOR_STUB_POINT_OF_ACTION_ARMS,
   ...TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS,
@@ -95,6 +100,20 @@ export function normalizeTutorStubPointOfActionArm(value, { allowOff = true } = 
     );
   }
   return arm;
+}
+
+export function normalizeTutorStubPointOfActionOpportunityProtocol(value, { allowOff = true } = {}) {
+  const protocol = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replaceAll('-', '_');
+  if ((!protocol || protocol === 'off' || protocol === 'none') && allowOff) return null;
+  if (protocol !== TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL) {
+    throw new Error(
+      `Unknown point-of-action opportunity protocol ${JSON.stringify(value)}; expected ${TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL}`,
+    );
+  }
+  return protocol;
 }
 
 export function tutorStubPointOfActionStandingBook() {
@@ -183,9 +202,12 @@ export function buildTutorStubPointOfActionTurn({
   nearClosure = false,
   closeInquiry = false,
   duePremises = [],
+  opportunityProtocol = null,
+  opportunityProtocolConsumed = false,
 } = {}) {
   const normalizedArm = normalizeTutorStubPointOfActionArm(arm);
   if (!normalizedArm) return null;
+  const normalizedOpportunityProtocol = normalizeTutorStubPointOfActionOpportunityProtocol(opportunityProtocol);
   const assignment = assignedTrigger({
     turn,
     stagnation,
@@ -247,6 +269,15 @@ export function buildTutorStubPointOfActionTurn({
       close_inquiry: Boolean(closeInquiry || proposedActionFamily === 'close_inquiry'),
       due_premises: [...duePremises],
     },
+    opportunity_protocol: normalizedOpportunityProtocol
+      ? {
+          id: normalizedOpportunityProtocol,
+          first_turn: TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_WINDOW.firstTurn,
+          last_turn: TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_WINDOW.lastTurn,
+          consumed_before_turn: Boolean(opportunityProtocolConsumed),
+          activated: false,
+        }
+      : null,
     interruption: {
       kind: injectedKind,
       text: injectedText,
@@ -276,29 +307,62 @@ export function tutorStubPointOfActionPrompt(turn) {
  * any standing-book, placebo, side-coach, or compiled-constraint arm.
  */
 export function reconcileTutorStubPointOfActionHandoffEligibility(turn, progressionContract = null) {
-  if (
-    !turn ||
-    turn.assigned_trigger !== 'warrant_skip' ||
-    !TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS.includes(turn.arm) ||
-    progressionContract?.handoff_contract?.question_allowed !== false
-  ) {
-    return turn;
+  if (!turn || !TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS.includes(turn.arm)) return turn;
+  const questionAllowed = progressionContract?.handoff_contract?.question_allowed === true;
+  const questionForbidden = progressionContract?.handoff_contract?.question_allowed === false;
+  if (turn.assigned_trigger === 'warrant_skip' && questionForbidden) {
+    return {
+      ...turn,
+      assigned_trigger: null,
+      assignment_priority: null,
+      suppressed_trigger: 'warrant_skip',
+      suppression: {
+        ...(turn.suppression || {}),
+        handoff_contract_question_forbidden: true,
+      },
+      handoff_eligibility: {
+        version: TUTOR_STUB_POINT_OF_ACTION_HANDOFF_ELIGIBILITY_VERSION,
+        eligible: false,
+        handoff_mode: progressionContract?.handoff_contract?.mode || null,
+        reason: 'question_forbidden_by_handoff_contract',
+      },
+    };
   }
+  const protocol = turn.opportunity_protocol;
+  const protocolEligible = Boolean(
+    protocol?.id === TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL &&
+    protocol.consumed_before_turn !== true &&
+    Number(turn.turn) >= Number(protocol.first_turn) &&
+    Number(turn.turn) <= Number(protocol.last_turn) &&
+    questionAllowed &&
+    !turn.inputs?.due_premises?.length,
+  );
+  if (!protocolEligible) return turn;
+  const displacedTrigger =
+    turn.assigned_trigger && turn.assigned_trigger !== 'warrant_skip' ? turn.assigned_trigger : null;
   return {
     ...turn,
-    assigned_trigger: null,
-    assignment_priority: null,
-    suppressed_trigger: 'warrant_skip',
-    suppression: {
-      ...(turn.suppression || {}),
-      handoff_contract_question_forbidden: true,
-    },
+    assigned_trigger: 'warrant_skip',
+    assignment_priority: 0,
+    ...(displacedTrigger ? { displaced_trigger: displacedTrigger } : {}),
+    opportunity_source: TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
     handoff_eligibility: {
       version: TUTOR_STUB_POINT_OF_ACTION_HANDOFF_ELIGIBILITY_VERSION,
-      eligible: false,
+      eligible: true,
       handoff_mode: progressionContract?.handoff_contract?.mode || null,
-      reason: 'question_forbidden_by_handoff_contract',
+      reason: 'first_admissible_warrant_protocol',
     },
+    opportunity_protocol: {
+      ...protocol,
+      activated: true,
+      activated_turn: Number(turn.turn),
+      displaced_trigger: displacedTrigger,
+    },
+    interruption: {
+      ...(turn.interruption || {}),
+      target_token_count: pointOfActionTokenCount(TARGET_TEXT.warrant_skip),
+    },
+    compiled_constraint: null,
   };
 }
 
@@ -367,6 +431,7 @@ export function auditTutorStubPointOfActionCompliance({
     arm: turn.arm,
     turn: turn.turn,
     trigger: turn.assigned_trigger,
+    opportunity_source: turn.opportunity_source || 'frozen_detector',
     compliant,
     components,
     realized_action_family: realizedActionFamily,

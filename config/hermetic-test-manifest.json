@@ -345,6 +345,7 @@
         "tests/program2StallDataset.test.js",
         "tests/program2TrainingGovernance.test.js",
         "tests/program2TrlExporter.test.js",
+        "tests/program2WeightsInterfaceRetest.test.js",
         "tests/progress.test.js",
         "tests/progressLogger.test.js",
         "tests/prompt-lab-recovery.test.js",

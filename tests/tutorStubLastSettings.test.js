@@ -162,6 +162,7 @@ test('human chat defaults to the learned committee without changing automated ex
     assert.equal(interactive.pointOfAction.arm, 'committee');
     assert.deepEqual(interactive.pointOfAction.committee, {
       model: 'program2-sft-instruct-v2',
+      spanInterface: 'v1',
       fallbackPolicy: 'v2',
       control: '/committee on|off|status',
     });
@@ -171,6 +172,7 @@ test('human chat defaults to the learned committee without changing automated ex
 
     const explicitExperiment = tutorStubDryRun(filePath, ['--auto-learner', '--point-of-action-arm', 'committee']);
     assert.equal(explicitExperiment.pointOfAction.arm, 'committee');
+    assert.equal(explicitExperiment.pointOfAction.committee.spanInterface, 'v1');
     assert.equal(explicitExperiment.pointOfAction.committee.fallbackPolicy, 'v1');
 
     const easyOptIn = tutorStubDryRun(filePath, ['--auto-learner', '--committee']);
