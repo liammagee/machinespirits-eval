@@ -397,6 +397,7 @@
         "tests/staticSurfaceSkin.test.js",
         "tests/streamingReporter.test.js",
         "tests/structureLearnerContext.test.js",
+        "tests/subjectExplorerServer.test.js",
         "tests/superego-guard.test.js",
         "tests/superegoFramingTrajectoryAnalyzer.test.js",
         "tests/superegoFramingTrajectoryCli.test.js",

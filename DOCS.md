@@ -3,7 +3,9 @@
 The entry point for everything written in this repo. One hop from here reaches
 every layer. The full illustrated survey (servers, layers, authority chain,
 design systems, defect ledger) is the techne doc
-[`notes/poetics/2026-08-05-documentation-map.html`](notes/poetics/2026-08-05-documentation-map.html).
+[`notes/poetics/2026-08-05-documentation-map.html`](notes/poetics/2026-08-05-documentation-map.html)
+— open the file directly, or serve it: `npm run poetics:serve`, then
+`http://127.0.0.1:3466/map` (the "docs map" entry on the scriptorium rail).
 
 ## The six layers
 
@@ -53,9 +55,14 @@ One Express route table (`services/evalSurfaces.js`), three hosts:
 
 - `npm start` — standalone eval server, port 8081, guarded end to end.
 - `npm run poetics:serve` — the scriptorium on port 3466 (idempotent restart);
-  transcripts, board, doc views, `/admin` job launcher.
+  transcripts, board, doc views, `/admin` job launcher. Reading pages are
+  public; the shared eval surfaces carry the same guard as the standalone
+  server when credentials are set.
 - `npm run desktop:dev` — the Electron app, same routes on an ephemeral
   loopback port (route parity is test-enforced).
+- `npm run subject-explorer` — the subject-explorer surface alone, port 4505,
+  loopback by default behind the shared guard (also mounted at `/subject` on
+  all three hosts above).
 
 ## Regeneration
 
