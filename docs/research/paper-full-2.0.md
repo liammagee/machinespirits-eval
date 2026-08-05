@@ -2,7 +2,7 @@
 title: "*Geist* in the Machine: Mutual Recognition and Multiagent Architecture for Dialectical AI Tutoring"
 author: "Liam Magee"
 date: "July 2026"
-version: "3.0.263"
+version: "3.0.264"
 bibliography: references.bib
 csl: apa.csl
 link-citations: true
@@ -3771,7 +3771,7 @@ Second, **human learner validation** remains the critical external-validity test
 
 Third, **human-grounded communicative-impasse validation** is the nearest available bridge between the synthetic adaptation apparatus and the full human pilot. A bounded candidate-episode corpus has already been extracted without model calls from the user's own interactive tutor sessions; the next gate is human labeling of whether each episode is a genuine impasse, what kind it is, and whether the tutor resolves it. Only after the existing computed signals are tested against those labels should a repair policy be designed. This is a validation of failure detection and repair in one person's interactions, not a human-learning result.
 
-Fourth, **a trained-mini versus untuned-mini committee ablation** should price the Program-2 fine-tune before any retraining or further transfer expansion. The contrast holds the fail-closed committee harness fixed and changes only the small model in its specialist seat. If the untuned floor reproduces the trained committee, the live result belongs primarily to harness engineering; if it falls toward the silent control, the trained weights are load-bearing. The comparison requires its own frozen pre-registration and run license; the completed Program-2 ledger authorizes neither outcome in advance.
+Fourth, **the trained-mini versus untuned-mini committee ablation was attempted but did not resolve attribution**. The original floor design was retired as under-informative; its corrected cue-blind weights-by-interface successor then stopped under its frozen excluded-pilot futility gates before a treatment estimate could be formed, and the terminal ruling licenses no Amendment 2. No confirmatory cohort ran. This is a design stop, not evidence that the trained weights are or are not load-bearing. The dependent iterated-exhaust retrain is therefore dropped: without a valid attribution contrast, it could not distinguish a new weight gain from the committee harness's contribution. Reopening requires a new identification design, pre-registration, and run license rather than another amendment to the spent design (`notes/program-2/2026-08-05-weights-interface-retest-amendment1-pilot-stop.md`; board cards `program-2-weights-interface-retest` and `program-2-iterated-exhaust-retrain`).
 
 Fifth, **model-boundary, prompt-threshold, and white-box localisation work** remain longer-term rather than immediate widening. The useful targets are already defined: role- and capability-stratified tests of where the mechanism account stops generalising; a threshold map for when procedural scaffolding changes from prosthesis to straitjacket (§7.8.3); and open-weights analysis of the initiative-ceding mediator isolated in §7.10. These lines should follow the human-coding and causal-attribution gates above, not displace them.
 
@@ -4577,6 +4577,10 @@ The published version prior to this cycle was **v3.0.42** (2026-04-21). What fol
 **Net effect across the cycle**. Three mechanisms originally claimed; now two supported, one clean null. The two supported mechanisms have stronger evidence than before (A11 confirming architecture residual; §7.9 closing the density alternative at the orientation-family level). The paper has a new methodological contribution (pedagogical-orientation taxonomy, `docs/pedagogical-taxonomy.md`) and a retracted-then-corrected experiment (A10 v1 → A10 v2). An `/ultrareview` pass caught the bug_007 issue before A10's result propagated into a broken paper claim. Net paper length grew by ~6% (new §7.9 orientation-family content); net theoretical-content distinctiveness shrank slightly (recognition now framed as one family member rather than the uniquely-necessary frame), but defensibility strengthened.
 
 Individual v3.0.X entries follow in chronological order (newest first):
+
+**v3.0.264** (2026-08-05)
+
+:   **§9 future-work correction — Program-2 weights attribution and dependent retrain closed.** The trained-mini versus untuned-mini committee ablation no longer appears as an unrun recommendation: the original floor design was retired as under-informative, and its corrected cue-blind successor stopped under frozen excluded-pilot futility gates before producing a treatment estimate. No confirmatory cohort ran and no Amendment 2 is implied. The text records this as a design stop rather than evidence for either the trained weights or the harness, and drops the dependent iterated-exhaust retrain because its own attribution prerequisite remains unresolved. No DB, rubric, abstract, headline-N, or section-number changes. Provenance: `notes/program-2/2026-08-05-weights-interface-retest-amendment1-pilot-stop.md`; board cards `program-2-weights-interface-retest` and `program-2-iterated-exhaust-retrain`; PR #501.
 
 **v3.0.263** (2026-08-04)
 
