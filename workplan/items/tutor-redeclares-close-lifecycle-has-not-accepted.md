@@ -1,19 +1,20 @@
 ---
 id: tutor-redeclares-close-lifecycle-has-not-accepted
 title: The tutor re-declares a close the closure lifecycle has not accepted
-status: active
+status: done
 type: infra
 priority: P2
 owner: claude
 source: review
 created: 2026-07-28
-updated: 2026-08-04
+updated: 2026-08-05
 verification: >-
   A response that declares the case closed while `dialogueClosure.lifecycle.phase`
   is still `open` raises an issue instead of passing unread, with the real
   Riverside turn-5 string pinned as the case and the other 35 showcase turns
-  pinned as passing; a live run then shows the regenerated turn is not a second
-  closing declaration; a turn taken after the lifecycle has closed is left alone.
+  pinned as passing; a live run then either reaches one licensed close without an
+  earlier unearned declaration or shows that a premature close is regenerated as
+  non-closing; a turn taken after the lifecycle has closed is left alone.
 links:
   code:
     - services/tutorStubDialogueClosure.js
@@ -148,6 +149,18 @@ of that run and is decided afterwards.
 The classifier lag is untouched and was left that way deliberately. Making the
 tutor robust to a late accept is the durable fix; tuning the classifier to accept
 sooner would only move the boundary.
+
+## Live closeout evidence (2026-08-05)
+
+The shared Riverside confirmation reached one strict, licensed close on turn 5.
+It was a model-authored response accepted after the plain-recovery rung and named
+the complete public chain: `DUP-SWEEP-04`, Noor, the duplicate mark, the sweep,
+and the 02:03 ledger entry. No earlier turn declared closure, no
+`premature_dialogue_close` event fired, and the session stopped without repeating
+the verdict. This is the stronger of the verification card's two allowed live
+outcomes: the lifecycle and public response agreed on the first close. The unit
+cases continue to pin both the unearned-close regeneration branch and the
+post-closed branch that a single live trajectory cannot exercise together.
 
 ## A near-miss in the detector
 

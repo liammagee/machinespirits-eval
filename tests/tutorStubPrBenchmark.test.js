@@ -6,6 +6,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
+  auditTutorPrBenchmarkCandidate,
   buildTutorPrBenchmarkPlan,
   loadTutorPrBenchmarkConfig,
   prepareTutorPrBenchmarkJob,
@@ -105,6 +106,31 @@ test('preparing a job refreshes only the current contract and preserves the publ
   assert.equal(prepared.bundle.learnerText, before.learnerText);
   assert.equal(prepared.latest.role, 'user');
   assert.match(prepared.latest.content, /\[Tutor-only host plan\]/u);
+});
+
+test('the strong benchmark keeps its three accepted reference answers responsive under the refreshed contract', () => {
+  const benchmarkPlan = plan('strong');
+  const referenceJobs = benchmarkPlan.jobs.filter((job) => job.modelId === 'codex_medium');
+  assert.equal(referenceJobs.length, 3);
+
+  for (const job of referenceJobs) {
+    const prepared = prepareTutorPrBenchmarkJob(job, { root: ROOT });
+    const referenceText = job.benchmarkCase.bundle.recorded?.originalCandidate?.candidate?.text;
+    assert.ok(referenceText, `${job.caseId} has no accepted reference candidate`);
+    const audit = auditTutorPrBenchmarkCandidate({ prepared, text: referenceText });
+    const progressionIssues = audit.audits.liveTurnProgressionAudit.issues.map((issue) => issue.type);
+    assert.equal(
+      progressionIssues.includes('learner_uptake_not_realized'),
+      false,
+      `${job.caseId}: ${JSON.stringify(progressionIssues)}`,
+    );
+    assert.equal(
+      progressionIssues.includes('handoff_loses_turn_focus'),
+      false,
+      `${job.caseId}: ${JSON.stringify(progressionIssues)}`,
+    );
+    assert.equal(audit.safetyFailure, false, job.caseId);
+  }
 });
 
 test('runner terminates pass and fail without retrying or continuing a dialogue', async () => {
