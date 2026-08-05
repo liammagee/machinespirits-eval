@@ -1,7 +1,7 @@
 ---
 id: tutor-fallible-learner-closure-prereg
 title: "Pre-registration: restore variance to legitimate closure with a learner that can fail"
-status: review
+status: done
 type: experiment
 priority: P1
 owner: claude
@@ -192,3 +192,10 @@ dialogues throughout; all closure numbers are the offline recompute's.
 Artifacts under `exports/tutor-stub-outcome/fallible-phaseB/`. Next:
 fold the result into the paper's §6.23 line with the stated scope
 limits; the calibrated cells remain a platform (reuse note above).
+
+**2026-08-06 — CLOSED.** Result folded into paper §6.23 (v3.0.265,
+commit 19946f9e) with the stated scope limits; validators clean
+(provable-discourse 144/0 after repairing the moved two-file-storage
+evidence pointer; manifest ALL PASSED). The three calibrated cells
+remain a platform per the reuse note — any later contrast needs its
+own card.
