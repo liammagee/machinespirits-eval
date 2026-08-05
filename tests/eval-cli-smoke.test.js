@@ -163,6 +163,43 @@ describe('eval-cli smoke — usage / error handling', () => {
     assert.strictEqual(code, 1);
     assert.ok(stderr.includes('mutually exclusive'), 'should reject combined flags');
   });
+
+  it('run --max-cost requires a positive number', async () => {
+    const { stderr, code } = await runCli(['run', '--max-cost', 'nope']);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('positive number'), 'should reject an invalid cost budget');
+  });
+
+  it('run rejects simultaneous --judge and --judge-cli flags', async () => {
+    const { stderr, code } = await runCli(['run', '--judge', 'openrouter.gpt', '--judge-cli', 'codex']);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('either'), 'should preserve the mutually exclusive judge error');
+  });
+
+  it('run rejects an unsupported --judge-cli value', async () => {
+    const { stderr, code } = await runCli(['run', '--judge-cli', 'nope']);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('--judge-cli must be'), 'should preserve judge CLI validation');
+  });
+
+  it('rejudge rejects simultaneous --judge and --judge-cli flags', async () => {
+    const { stderr, code } = await runCli([
+      'rejudge',
+      'eval-9999-99-99-nonexistent',
+      '--judge',
+      'openrouter.gpt',
+      '--judge-cli',
+      'codex',
+    ]);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('either'), 'should preserve the mutually exclusive judge error');
+  });
+
+  it('rejudge rejects an unsupported --judge-cli value', async () => {
+    const { stderr, code } = await runCli(['rejudge', 'eval-9999-99-99-nonexistent', '--judge-cli', 'nope']);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('--judge-cli must be'), 'should preserve judge CLI validation');
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -265,6 +265,7 @@
         "tests/dynamicDimensions.test.js",
         "tests/engagementRegisterPragmatics.test.js",
         "tests/eval-cli-smoke.test.js",
+        "tests/evalCliGenerationCommands.test.js",
         "tests/evalCliOperationalCommands.test.js",
         "tests/evalLogRoutesDataRoot.test.js",
         "tests/evalProfileRegistry.test.js",
