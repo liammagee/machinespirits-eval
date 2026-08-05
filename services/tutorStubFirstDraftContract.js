@@ -62,7 +62,8 @@ const ACTION_CUES = Object.freeze({
 const PART_CUES = Object.freeze({
   scene_partner:
     'In the unquoted host voice, say “I make room for you beside [named public object]” with the bracket replaced by a scene object, then return the observation to the learner.',
-  examiner: 'In the unquoted host voice, visibly inspect, compare, test, weigh, or point to a named public exhibit.',
+  examiner:
+    'In the unquoted host voice, visibly inspect, test, weigh, or point to a named public exhibit. Do not claim that separate exhibits physically match unless a public RECORD line states that correspondence.',
   record_keeper:
     'In the unquoted host voice, open, read, mark, enter, or close a named public record and distinguish what is entered from what remains unproved.',
   authored_source:
@@ -87,7 +88,7 @@ const PART_CUES = Object.freeze({
 
 const COMPACT_PART_CUES = Object.freeze({
   scene_partner: 'make room beside one named public object and return its reading to the learner',
-  examiner: 'inspect, compare, test, weigh, or point to one named public exhibit',
+  examiner: 'inspect named exhibit; claim no cross-exhibit match absent a public RECORD',
   record_keeper: 'open, read, mark, enter, or close a public record, separating its entry from what remains unproved',
   authored_source: 'enter the public source directly and voice only the supplied evidence',
   advocate:

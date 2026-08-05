@@ -82,6 +82,23 @@ test('does not read the to inside a hyphenated compound as tracing one exhibit t
   assert.equal(auditTutorStubEvidenceAssertions({ text: 'The residue traces to the weir-forge crucible.' }).ok, false);
 });
 
+test('does not carry a physical trace action across a colon into a licensed dating inference', () => {
+  const text =
+    'I inspect the steward\u2019s stock-book beside the marked leaf. I trace the entry: it dates the nocturne to that span.';
+  const permittedText =
+    'Held to the lamp, every leaf of the nocturne shows the same heron watermark \u2014 the Brell mill\u2019s mark. ' +
+    'The steward\u2019s stock-book is plain: heron paper entered the copy-room in the winter of the flood, and the last of it was spent before the thaw.';
+
+  assert.equal(auditTutorStubEvidenceAssertions({ text, permittedText }).ok, true);
+  assert.equal(
+    auditTutorStubEvidenceAssertions({
+      text: 'I inspect the entry: the residue traces to the weir-forge crucible.',
+      permittedText,
+    }).ok,
+    false,
+  );
+});
+
 test('lets the tutor handle a named match as stage business without claiming one', () => {
   assert.equal(
     auditTutorStubEvidenceAssertions({

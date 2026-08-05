@@ -2,8 +2,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import {
+  TUTOR_STUB_CONDITIONAL_HANDOFF_RULE,
+  TUTOR_STUB_CONDITIONAL_QUESTION_GOAL,
+  TUTOR_STUB_CONDITIONAL_QUESTION_RULE,
   createTutorStubPromptBlockModel,
   delimitTutorStubPrompt,
+  refreshTutorStubStandingQuestionRules,
   replaceDelimitedTutorStubPrompt,
 } from '../services/tutorStubPromptBlocks.js';
 
@@ -44,6 +48,26 @@ test('open-response guidance retains bounded-choice and terminal-handoff rules',
   assert.equal(rules.length, 4);
   assert.match(rules.join('\n'), /Do not default to multiple choice/u);
   assert.match(rules.join('\n'), /end declaratively/u);
+});
+
+test('frozen standing rules migrate exact legacy question instructions idempotently', () => {
+  const legacy = [
+    'before',
+    'Goal: Help the learner make one small conceptual move. Prefer questions and concrete examples over explanation dumps.',
+    '- Ask at most one main question per turn.',
+    "- End with one light prompt for the learner's natural next thought; do not require a full proof step unless their leap is unsafe or case-closing.",
+    'after',
+  ].join('\n');
+  const refreshed = refreshTutorStubStandingQuestionRules(legacy);
+
+  assert.equal(refreshTutorStubStandingQuestionRules(refreshed), refreshed);
+  assert.equal(refreshed.split('\n').at(0), 'before');
+  assert.equal(refreshed.split('\n').at(-1), 'after');
+  assert.ok(refreshed.includes(TUTOR_STUB_CONDITIONAL_QUESTION_GOAL));
+  assert.ok(refreshed.includes(TUTOR_STUB_CONDITIONAL_QUESTION_RULE));
+  assert.ok(refreshed.includes(TUTOR_STUB_CONDITIONAL_HANDOFF_RULE));
+  assert.doesNotMatch(refreshed, /Ask at most one main question per turn/u);
+  assert.doesNotMatch(refreshed, /End with one light prompt for the learner/u);
 });
 
 test('the CLI binds rather than redeclares the prompt-block model', () => {

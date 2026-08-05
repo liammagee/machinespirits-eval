@@ -188,6 +188,22 @@ test('pressure-bearing tutor characters receive concrete subject-action instruct
   assert.match(exacting.host_plan.slots.find((slot) => slot.id === 'part').instruction, /precise retry/iu);
 });
 
+test('examiner instructions forbid invented correspondence between public exhibits', () => {
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText: 'The dates and the watermark both look important.',
+    responseConfiguration: configuration({
+      actorial_part: 'examiner',
+      actorial_part_label: 'evidence examiner',
+    }),
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const part = contract.host_plan.slots.find((slot) => slot.id === 'part');
+
+  assert.match(contract.performance.part_execution, /unless a public RECORD line states that correspondence/iu);
+  assert.match(part.instruction, /claim no cross-exhibit match absent a public RECORD/iu);
+  assert.doesNotMatch(part.instruction, /inspect, compare/iu);
+});
+
 test('keeps a writable-entry scene invitation declarative after the uptake answers the learner', () => {
   const contract = buildTutorStubFirstDraftContract({
     learnerText: 'What should I write next?',

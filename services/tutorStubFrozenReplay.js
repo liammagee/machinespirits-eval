@@ -46,6 +46,7 @@ import {
 import { aggregateTokenUsage, tokenUsageFields } from './tokenUsage.js';
 import { summarizeTutorStubPromptSizeReports } from './tutorStubPromptSizeReport.js';
 import { normalizeTutorStubResponseConfiguration } from './tutorStubRegisterPragmatics.js';
+import { refreshTutorStubStandingQuestionRules } from './tutorStubPromptBlocks.js';
 
 export const TUTOR_STUB_FROZEN_REPLAY_SCHEMA = 'machinespirits.tutor-stub.frozen-replay.v1';
 export const TUTOR_STUB_REGRESSION_FIXTURE_SCHEMA = 'machinespirits.tutor-stub.first-draft-regression-fixture.v1';
@@ -470,6 +471,7 @@ export function extractTutorStubFrozenTurn({ tracePath, turn } = {}) {
 export function refreshTutorStubFrozenFirstDraftRequest({ bundle, world, sourceAccessibilityPolicy = null } = {}) {
   if (!bundle || !world) throw new Error('frozen request refresh requires bundle and world');
   const refreshed = clone(bundle);
+  refreshed.request.systemPrompt = refreshTutorStubStandingQuestionRules(refreshed.request?.systemPrompt);
   refreshed.selectedResponseConfiguration = normalizeTutorStubResponseConfiguration(
     refreshed.selectedResponseConfiguration,
     { world },
