@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-05T07:13:31.934Z",
+  "generated": "2026-08-05T08:42:28.919Z",
   "counts": {
-    "total": 409,
+    "total": 410,
     "byStatus": {
       "done": 386,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
       "archived": 4,
-      "review": 1
+      "review": 2
     },
     "byType": {
       "research": 71,
       "experiment": 70,
       "infra": 78,
-      "maintenance": 171,
+      "maintenance": 172,
       "content": 3,
       "ops": 10,
       "paper": 6
@@ -130,7 +130,8 @@
           "tutor-stub-first-draft-series",
           "adaptive-eval-immutable-provenance",
           "refactor-tutor-stub-macro-decomposition",
-          "refactor-tutor-stub-extracted-owner-boundaries"
+          "refactor-tutor-stub-extracted-owner-boundaries",
+          "refactor-evaluation-turn-execution"
         ]
       },
       "tags": [
@@ -433,6 +434,56 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "refactor-evaluation-turn-execution",
+      "title": "Split evaluation single-turn and multi-turn execution owners",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "branch": "codex/refactor-evaluation-turn-execution",
+      "verification": "The existing evaluationRunner facade delegates shared generation plus single-turn and multi-turn execution to bounded tested owners; fixture rows, dialogue traces, checkpoints, score shapes, CLI output contracts, and attempt indexes remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass with no production owner above 1,200 lines.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-eval-profile-registry",
+        "refactor-adaptive-trace-projection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/evaluationRunner.js",
+          "services/evaluationTurnContext.js",
+          "services/evaluationTurnExecutionRuntime.js",
+          "services/evaluationMultiTurnExecutionRuntime.js",
+          "services/evaluationMultiTurnSetupRuntime.js",
+          "services/evaluationBetweenTurnAdaptationRuntime.js",
+          "services/evaluationMultiTurnTranscriptRuntime.js",
+          "services/evaluationMultiTurnCompletionRuntime.js",
+          "services/evaluationCheckpointStore.js",
+          "tests/evaluationRunner.test.js",
+          "tests/evaluationTurnExecutionBoundaries.test.js",
+          "services/__tests__/dialogueTranscript.test.js",
+          "tests/checkpointE2E.test.js",
+          "tests/checkpointResume.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "runner",
+        "multi-turn",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
