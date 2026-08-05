@@ -138,3 +138,15 @@ design: the empty-plan control block exists in the A/B replay arms only
 (`services/tutorStubAbArms.js` GENERIC_PLAN) and must be wired into the
 live runner as a gated block before the first Phase B call; the contract
 smoke gates as registered.
+
+**2026-08-05 — contract smoke PASSED; empty-plan control built.** The
+registered smoke (5 contract-arm dialogues on low_agency ×
+world_023_greyfen_lab): zero aborted dialogues, all clean exits, and every
+turn's trace stamp shows exactly `first_draft_contract` enabled with the
+other blocks omitted (`exports/tutor-stub-outcome/fallible-phaseB-smoke/`).
+The third registered version now exists live: the fixed empty plan ships
+via `--blocks empty_plan` (request-only; PR #495, merged), with a
+one-dialogue delivery check running before Phase B opens. Phase B cells,
+order and arms as frozen above; n = 12 per version per cell; versions run
+sequenced within a cell (they feed the contrast and share the quota
+window).
