@@ -41,10 +41,9 @@ Stale pointers found by the survey, with the outcome for each:
 - [x] FALSE POSITIVE — `DEPLOYMENT.md`'s `services/poeticsMount.js` and
       `.github/workflows/deploy.yml` name files in the sibling
       `machinespirits-website` repo, and both exist there. No edit.
-- [ ] Frozen pre-registrations with dead supersede targets
-      (`DRAMATIC-RECOGNITION-PLAN.md` names two deleted critique files): dated
-      editor's note only, no rewrite. Pending a policy line on editing frozen
-      docs.
+- [x] Frozen pre-registrations with dead supersede targets: dated editor's
+      note added to `DRAMATIC-RECOGNITION-PLAN.md` (the two felicity files
+      survive in git history only; wording kept as written), and the policy —
+      dated editor's notes, never rewrites — is stated in DOCS.md layer 2.
 
-First batch landed on this branch 2026-08-05; only the frozen-doc note
-remains.
+All flagged pointers are now fixed, waived as false positives, or annotated.

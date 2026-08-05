@@ -1,6 +1,8 @@
 # Project Memory for Gemini
 
 > **CRITICAL AI INSTRUCTION:** Do NOT automatically run `eval-cli.js` or `consolidate-runs.js` commands in the terminal using the `run_command` tool. Provide the exact commands to the user instead, so the user can run them manually themselves.
+
+Documentation entry point: `DOCS.md` (layers, authorities, web surfaces, regeneration, deploy).
 ## Core Architecture
 
 ### Bilateral Ego-Superego Architecture

@@ -1,7 +1,7 @@
 ---
 id: docs-build-default-and-regen
 title: One build default, one refresh command, one PDF pruning rule
-status: triaged
+status: review
 type: infra
 priority: P2
 owner: claude
@@ -9,6 +9,7 @@ source: review
 created: 2026-08-05
 updated: 2026-08-05
 verification: "build.sh without arguments builds (or clearly refuses in favour of) paper2; one npm command regenerates board, ref-status, atlas and arc and reports what changed; a written rule bounds the versioned PDFs kept in docs/research/."
+branch: worktree-docs-coherence
 links:
   notes: notes/poetics/2026-08-05-documentation-map.html
   items: docs-coherence-structure
@@ -37,3 +38,20 @@ Three regeneration papercuts:
 Deploy stays as is: stage into the sibling content repo, human-gated
 `./publish`. Document that path in the entry-point index (DEPLOYMENT.md is the
 long-form; it gets repaired under the stale-pointer card).
+
+Landed 2026-08-05 (this branch):
+
+- `build.sh` bare invocation now builds `paper2`; `full` prints a LEGACY note
+  to stderr and the usage marks both legacy targets. No callers used the bare
+  form (checked package.json, workflows, skills).
+- `npm run docs:refresh` (`scripts/docs-refresh.js`): refs render + atlas
+  validate + board render on main / source-check on branches, then a
+  changed-files report. `-- --arc` opts into the arc regions (excluded by
+  default — regeneration stamps `generated_at` and dirties the tree with no
+  content change). Paper/atlas PDF builds deliberately excluded (LaTeX).
+- `npm run docs:prune-pdfs` (`scripts/prune-research-pdfs.js`): keep rule =
+  newest per family + anything the published site carries (resolved through
+  the git common dir, so it works from linked worktrees); dry run by default.
+  The PDFs are untracked local artifacts, so applying it happens per checkout
+  — this worktree holds none; run it in the primary checkout.
+- Rules written into DOCS.md (regeneration section).

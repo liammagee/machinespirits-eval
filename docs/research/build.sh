@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Build PDF, short paper, and slides from paper markdown source.
 # Usage:
-#   ./build.sh              # build full paper PDF
-#   ./build.sh full         # build full paper PDF
-#   ./build.sh short        # build short paper PDF
+#   ./build.sh              # build Paper 2.0 PDF (canonical — same as paper2)
+#   ./build.sh paper2       # build Paper 2.0 PDF (canonical)
+#   ./build.sh full         # build LEGACY Paper 1.0 PDF (paper-full.md — superseded)
+#   ./build.sh short        # build LEGACY short paper PDF
 #   ./build.sh beamer       # build slides PDF (beamer)
 #   ./build.sh pptx         # build slides PPTX
 #   ./build.sh slides       # build both beamer PDF and PPTX slides
-#   ./build.sh paper2       # build Paper 2.0 PDF
 #   ./build.sh all          # build everything
 
 set -euo pipefail
@@ -105,8 +105,11 @@ build_pptx() {
   echo "  -> ${SLIDES_PPTX}"
 }
 
-case "${1:-full}" in
-  full|pdf|"")
+# Default is the CANONICAL Paper 2.0. The legacy Paper 1.0 stays reachable via
+# an explicit `full`, with a reminder so nobody builds it by accident.
+case "${1:-paper2}" in
+  full|pdf)
+    echo "NOTE: 'full' builds the LEGACY Paper 1.0 (paper-full.md). The canonical paper is 'paper2'." >&2
     build_full
     ;;
   short)
@@ -149,7 +152,7 @@ case "${1:-full}" in
     build_pptx
     ;;
   *)
-    echo "Usage: $0 [full|short|paper2|paper2-short|paper2-slides|paper2-all|beamer|pptx|slides|all]"
+    echo "Usage: $0 [paper2|paper2-short|paper2-slides|paper2-all|methods|full(LEGACY)|short(LEGACY)|beamer|pptx|slides|all]"
     exit 1
     ;;
 esac
