@@ -4,11 +4,11 @@ title: Close the poetics-server auth gap over /api/eval and Codex PTY endpoints
 status: review
 type: infra
 priority: P1
-owner: codex
+owner: claude
 source: review
 created: 2026-08-05
 updated: 2026-08-05
-branch: codex/docs-poetics-eval-api-guard
+branch: worktree-docs-coherence
 verification: "With POETICS/EVAL credentials set, unauthenticated POST /api/eval/quick and /api/eval/codex/* return 401 on the poetics host; desktop route-parity and existing surface tests still pass."
 links:
   notes: notes/poetics/2026-08-05-documentation-map.html
@@ -35,16 +35,13 @@ endpoint stays pre-guard), keeping localhost-open behaviour when no creds are
 configured. Check the desktop app still boots and its route-parity tests pass,
 and that the pilot participant flow keeps its allowlist behaviour.
 
-2026-08-05 Codex: Activated from current `origin/main` after closing the merged
-latency screen. Implementation is confined to the poetics host perimeter and
-its route-parity/auth tests; public read-only pages and credential-free
-localhost behavior remain invariants.
-
-2026-08-05 Codex: Wrapped the complete shared eval-surface mount with the
-poetics Basic Auth guard and default-deny role gate while leaving `/healthz`
-and poetics-native read-only pages outside the perimeter. Mounted-prefix tests
-now prove unauthenticated eval, SSE, and Codex PTY requests return 401,
-participant credentials return 403, administrator access succeeds, and the
-pilot participant allowlist remains live. Focused auth, desktop route-parity,
-desktop menu, and poetics browser tests pass; ESLint, Prettier, workplan source
-validation, and `git diff --check` also pass. Ready for review.
+Landed 2026-08-05 (this branch): `services/evalSurfaces.js` now exports the
+shared mount-prefix list (derived from the mount tables, so it cannot drift);
+the poetics host applies guard + default-deny role gate over exactly those
+prefixes, registered after its own routes so the scriptorium's reading pages,
+the paper pre-mount and the legacy public redirects stay open. Unpathed
+middleware on purpose — a pathed `app.use()` strips the prefix from
+`req.path`, which blinds the participant allowlist (caught by test).
+Tests extended in `tests/poeticsAdminAuth.test.js`: anonymous 401 on
+`/api/eval/*` and `/subject`, participant 403 by default-deny, admin passes,
+pilot participant flow still reachable. Route-parity and skin suites pass.

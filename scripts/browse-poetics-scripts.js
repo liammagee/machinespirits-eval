@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
 import { resolveBasicAuthGuard, makeRoleGate } from '../services/httpBasicAuth.js';
-import { mountEvalSurfaces } from '../services/evalSurfaces.js';
+import { mountEvalSurfaces, EVAL_SURFACE_MOUNT_PREFIXES } from '../services/evalSurfaces.js';
 import { installApplicationShutdownHandlers } from '../services/applicationShutdown.js';
 import chatRoutes from '../routes/chatRoutes.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
@@ -1106,11 +1106,6 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   const db = openPoeticsStore(dbPath || undefined);
   const app = express();
   const adminRouter = express.Router();
-  const evalSurfaceRouter = express.Router();
-  // mountEvalSurfaces records cleanup/session handles on its host. Share the
-  // outer app's locals object so wrapping the routes does not fork lifecycle
-  // ownership from the server that actually listens and shuts down.
-  evalSurfaceRouter.locals = app.locals;
   // Liveness probe with no auth — registered before the guard so a load
   // balancer's health check (e.g. fly) gets a 200, not a 401. It returns only
   // "ok", so it leaks nothing.
@@ -1122,18 +1117,18 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   app.use(express.json({ limit: '256kb' }));
   if (adminAuthGuard) {
     adminRouter.use(adminAuthGuard);
-    // Every shared eval surface can reach mutable state, metered model work, or
-    // operator processes. Keep the surrounding poetics reading surfaces public
-    // while applying the host credential once at the shared-surface boundary.
-    evalSurfaceRouter.use(adminAuthGuard);
-    console.log('[poetics] basic-auth ENABLED (/admin and shared eval surfaces require credentials)');
+    // The shared eval surfaces get the same guard just before they are
+    // mounted (see the block above mountEvalSurfaces below), so metered eval
+    // runs, the Codex PTY endpoints, the tutor runtime and the app UIs are
+    // never open on a credentialed bind. Poetics-native reading pages — and
+    // the paper subtree pre-mounted at /docs/research — stay public by design.
+    console.log('[poetics] basic-auth ENABLED (/admin + shared eval surfaces require credentials)');
   }
   // Default-deny role gate (Design A — perimeter RBAC). No-op on localhost-open
   // and for the admin role; restricts a 'participant' credential to the pilot +
   // adjudication allowlist (services/httpBasicAuth.js PARTICIPANT_ALLOWLIST), so
   // every metered/researcher surface under /admin stays admin-only.
   adminRouter.use(makeRoleGate());
-  evalSurfaceRouter.use(makeRoleGate());
   app.use('/images', express.static(path.resolve(ROOT, 'notes/poetics/images'), { index: false }));
   app.use('/assets', express.static(path.resolve(ROOT, 'notes/poetics/assets'), { index: false }));
   app.use('/docs/research', express.static(path.resolve(ROOT, 'docs/research'), { index: false }));
@@ -1611,6 +1606,30 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
     if (!fs.existsSync(notePath)) return res.status(404).type('text').send('story-so-far note not found');
     res.type('html').sendFile(notePath);
   });
+  // GET /map serves the documentation-map techne note — how the repo's web
+  // servers, doc layers, authority chain and design systems hang together,
+  // with the fray ledger of seams under repair (workplan docs-* cards). The
+  // repo-side entry point is DOCS.md; this is its illustrated companion.
+  app.get('/map', (_req, res) =>
+    res.type('html').send(
+      framedNoteHtml({
+        active: 'map',
+        sub: 'the documentation map — servers, layers, authority, design systems &amp; the fray ledger',
+        src: '/map-doc',
+        title: 'The documentation map',
+        hint: orientBand(
+          'docs map',
+          'where every kind of writing lives, who rules what, and the seams under repair',
+          'repo-side entry point: DOCS.md',
+        ),
+      }),
+    ),
+  );
+  app.get('/map-doc', (_req, res) => {
+    const notePath = path.resolve(ROOT, 'notes/poetics/2026-08-05-documentation-map.html');
+    if (!fs.existsSync(notePath)) return res.status(404).type('text').send('documentation-map note not found');
+    res.type('html').sendFile(notePath);
+  });
   // GET /repertoire serves the bare "three instruments, one repertoire" techne
   // note (relative assets/* resolve against /assets, served by the static route
   // above). It analyses the three measurement instruments (ontology memory ·
@@ -1882,8 +1901,26 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // Mounted AFTER the poetics routes (so /api/* and /compose stay poetics-owned)
   // and AFTER /docs/research (line ~864, { index:false }) so the paper subtree
   // keeps precedence over the broader /docs mount here; BEFORE the catch-all '/'.
-  mountEvalSurfaces(evalSurfaceRouter, { root: ROOT });
-  app.use(evalSurfaceRouter);
+  //
+  // Perimeter: the shared surfaces carry the SAME guard + default-deny role
+  // gate as server.js, over exactly the prefixes services/evalSurfaces.js
+  // exports (derived from the mount tables, so the two cannot drift).
+  // Registered HERE — after the poetics-native routes, statics and legacy
+  // public redirects — so the scriptorium's reading pages keep their open
+  // behaviour, and unpathed on purpose: a pathed app.use() strips the matched
+  // prefix from req.path, which would blind makeRoleGate's participant
+  // allowlist. On a localhost bind with no credentials the guard resolves to
+  // null and everything stays open.
+  if (adminAuthGuard) {
+    const sharedGate = makeRoleGate();
+    const isSharedSurfacePath = (p) =>
+      EVAL_SURFACE_MOUNT_PREFIXES.some((mount) => p === mount || p.startsWith(mount + '/'));
+    app.use((req, res, next) => {
+      if (!isSharedSurfacePath(req.path)) return next();
+      adminAuthGuard(req, res, (err) => (err ? next(err) : sharedGate(req, res, next)));
+    });
+  }
+  mountEvalSurfaces(app, { root: ROOT });
   // Stats digest shared by the redesigned home (/) and the classic dashboard
   // (/classic) — pure reads, so both landings show identical live numbers.
   const dashboardStats = () => {
@@ -2331,6 +2368,12 @@ const NAV = [
     'Three measurement instruments analysed by grain &amp; a repertoire of controlled adaptive mechanisms — with a gallery of failed &amp; minimally-succeeded adaptation',
   ],
   [
+    'map',
+    '/map',
+    'docs map',
+    'The documentation map — how the repo&#39;s web servers, doc layers, authority chain &amp; design systems hang together, with the fray ledger of seams under repair',
+  ],
+  [
     'board',
     '/board',
     'board',
@@ -2387,6 +2430,7 @@ const NAV_GROUPS = [
       'summary',
       'story',
       'repertoire',
+      'map',
     ],
   ],
 ];
@@ -2408,6 +2452,7 @@ const NAV_DRAWER_GROUPS = [
       'summary',
       'story',
       'repertoire',
+      'map',
     ],
   ],
 ];

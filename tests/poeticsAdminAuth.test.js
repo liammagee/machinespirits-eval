@@ -82,6 +82,39 @@ test('read-only poetics pages stay public on a public-bind app', async () => {
   assert.equal(nav.status, 200);
   assert.match(nav.body, /Make/);
   assert.match(nav.body, /href="\/tutor\?mode=research"[^>]*>tutor lab<\/a>/);
+
+  // The documentation map is a poetics-native reading page: public, framed,
+  // with the bare techne note behind it.
+  const map = await request('/map');
+  assert.equal(map.status, 200);
+  assert.match(map.body, /documentation map/iu);
+  const mapDoc = await request('/map-doc');
+  assert.equal(mapDoc.status, 200);
+  assert.match(mapDoc.body, /fray/iu);
+});
+
+test('shared eval surfaces carry the server.js perimeter on a credentialed app', async () => {
+  // Researcher/metered API: 401 anonymous, 403 participant (default-deny role
+  // gate), pass with the admin credential.
+  assert.equal((await request('/api/eval/runs')).status, 401);
+  assert.equal((await request('/api/eval/quick', { method: 'POST', body: {} })).status, 401);
+  const runsParticipant = await request('/api/eval/runs', {
+    user: 'participant',
+    pass: 'participant-secret',
+  });
+  assert.equal(runsParticipant.status, 403);
+  const runsAdmin = await request('/api/eval/runs', { user: 'admin', pass: 'secret' });
+  assert.equal(runsAdmin.status, 200, runsAdmin.body);
+
+  // Subject explorer is researcher tooling: guarded, not on the participant allowlist.
+  assert.equal((await request('/subject')).status, 401);
+
+  // The participant allowlist keeps the pilot flow reachable for that role.
+  const pilotConfig = await request('/api/pilot/config', {
+    user: 'participant',
+    pass: 'participant-secret',
+  });
+  assert.equal(pilotConfig.status, 200, pilotConfig.body);
 });
 
 test('admin tool pages require Basic Auth', async () => {

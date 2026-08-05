@@ -1,7 +1,7 @@
 ---
 id: docs-stray-servers-lockdown
 title: Lock down the two stray web servers (transcript browser, subject explorer)
-status: active
+status: review
 type: infra
 priority: P1
 owner: claude
@@ -44,7 +44,10 @@ Acceptance criteria:
       ms-analyze-data + ms-deep-dive skills and their `.agents/` mirrors)
       repointed at the scriptorium. Dated exploration notes keep their
       historical mentions. The paper never cited it.
-- [ ] `serve-subject-explorer.js`: loopback default + shared guard, or retire
-      (the same surface is mounted at `/subject` on all three real hosts).
-- [ ] No repo server binds beyond loopback without the shared guard engaged.
-- [ ] No reader hardcodes `data/evaluations.db`.
+- [x] `serve-subject-explorer.js`: rewritten 2026-08-05 — loopback by default,
+      shared guard (`EVAL_AUTH_*` / `MS_AUTH_*`) + role gate, refuses a public
+      bind without credentials, `npm run subject-explorer` added, covered by
+      `tests/subjectExplorerServer.test.js`.
+- [x] No repo server binds beyond loopback without the shared guard engaged.
+- [x] No reader hardcodes `data/evaluations.db` (the hardcoder was the retired
+      browser; the explorer mounts no DB at all).

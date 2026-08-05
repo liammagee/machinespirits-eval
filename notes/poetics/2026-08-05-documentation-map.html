@@ -96,15 +96,17 @@
           was a 3,300-line second transcript browser with no npm script, no auth guard, a listener on
           every network interface, and a hardcoded path to the production database — retired
           2026-08-05 in favour of the scriptorium. <code>scripts/serve-subject-explorer.js</code>
-          (port 4505) duplicates a surface the main stack already serves, with the same open bind;
-          it is still open.</p>
+          (port 4505) duplicated a surface the main stack already serves, with the same open bind —
+          rewritten the same day: loopback by default, the shared guard, and an npm script.</p>
 
-          <p>Auth is three unrelated mechanisms: basic auth with a role gate at the perimeter, a
-          pilot admin token header, and the A19 coder key whose keyed mode switches on when a roster
-          file exists. The perimeters also differ by host: the standalone server guards everything,
-          while the poetics server guards only <code>/admin</code>, <code>/tutor</code> and the
-          tutor-stub API — the paid run endpoints under <code>/api/eval</code> stay open there even
-          when credentials are set.</p>
+          <p>Auth is three mechanisms: basic auth with a role gate at the perimeter, a pilot admin
+          token header, and the A19 coder key whose keyed mode switches on when a roster file
+          exists. The perimeters differed by host until 2026-08-05: the standalone server guarded
+          everything while the poetics server guarded only <code>/admin</code>, <code>/tutor</code>
+          and the tutor-stub API, leaving the paid run endpoints under <code>/api/eval</code> open
+          on a credentialed bind. Closed on the coherence branch: the poetics host now guards the
+          shared eval surfaces from the same exported prefix list the mounter uses, while its
+          reading pages stay public.</p>
         </div>
         <div class="mr">
           <p class="note note--moss"><span class="note__lbl">Note</span> <code>npm run chat</code> is a
@@ -265,21 +267,22 @@
           <span class="chip chip--moss"><span class="chip__dot"></span> in hand</span></p>
 
           <div class="ev-grid">
-            <article class="ev-card" data-status="risk">
-              <span class="chip chip--brick"><span class="chip__dot"></span> Part done · P1</span>
+            <article class="ev-card" data-status="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> In hand</span>
               <h3>Stray servers listen wide open</h3>
               <p>The second transcript browser (port 3456) bound every interface with no password
               and hardcoded the production database path — retired 2026-08-05. The subject-explorer
-              harness (port 4505) still binds open: loopback plus the shared guard, or retire it
-              too. <code>docs-stray-servers-lockdown</code></p>
+              harness (port 4505) was rewritten the same day: loopback by default, the shared
+              guard, an npm script, and tests. <code>docs-stray-servers-lockdown</code></p>
             </article>
-            <article class="ev-card" data-status="risk">
-              <span class="chip chip--brick"><span class="chip__dot"></span> Open · P1</span>
-              <h3>Poetics perimeter leaves paid endpoints open</h3>
-              <p>On the scriptorium host only <code>/admin</code>, <code>/tutor</code> and the
-              tutor-stub API sit behind the password; metered runs and the Codex terminal endpoints
-              under <code>/api/eval</code> do not. The standalone server guards everything. Decide
-              the intended perimeter and apply it. <code>docs-poetics-eval-api-guard</code></p>
+            <article class="ev-card" data-status="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> In hand</span>
+              <h3>Poetics perimeter left paid endpoints open</h3>
+              <p>The scriptorium host guarded only <code>/admin</code>, <code>/tutor</code> and the
+              tutor-stub API; metered runs and the Codex terminal endpoints under
+              <code>/api/eval</code> were open on a credentialed bind. Closed 2026-08-05: the
+              shared surfaces now carry the standalone server's guard + role gate from one
+              exported prefix list, with tests. <code>docs-poetics-eval-api-guard</code></p>
             </article>
             <article class="ev-card" data-status="boundary">
               <span class="chip chip--ochre"><span class="chip__dot"></span> Open · P2</span>

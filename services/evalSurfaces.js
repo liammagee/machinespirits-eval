@@ -48,6 +48,20 @@ const API_ROUTERS = [
   ['/api/human-coding', humanCodingRoutes],
 ];
 
+// Every mount prefix this module adds (API routers, tutor-stub sessions, the
+// /chat shim, the static UI dirs, the subject explorer). Exported so a host
+// that keeps its own pages public but guards the shared eval perimeter (the
+// poetics scriptorium) can apply its auth middleware to exactly this set —
+// derived from the same tables as the mounts, so the two cannot drift.
+export const EVAL_SURFACE_MOUNT_PREFIXES = Object.freeze([
+  ...API_ROUTERS.map(([mount]) => mount),
+  '/api/tutor-stub',
+  '/chat',
+  ...STATIC_SURFACES.map(([mount]) => mount),
+  '/subject',
+  '/api/subject',
+]);
+
 // Static UI surfaces live in their own module so tests can read the list without
 // importing this one, which pulls in every route module and opens the DB. Each
 // is existsSync-guarded at mount time so a missing directory is skipped silently

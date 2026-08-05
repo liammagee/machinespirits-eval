@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-05T03:23:02.828Z",
+  "generated": "2026-08-05T03:51:45.607Z",
   "counts": {
     "total": 407,
     "byStatus": {
       "done": 371,
       "blocked": 7,
       "dropped": 4,
-      "triaged": 8,
-      "active": 9,
+      "triaged": 7,
+      "active": 8,
       "archived": 4,
-      "review": 4
+      "review": 6
     },
     "byType": {
       "research": 71,
@@ -22,27 +22,6 @@
     }
   },
   "items": [
-    {
-      "id": "docs-poetics-eval-api-guard",
-      "title": "Close the poetics-server auth gap over /api/eval and Codex PTY endpoints",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "With POETICS/EVAL credentials set, unauthenticated POST /api/eval/quick and /api/eval/codex/* return 401 on the poetics host; desktop route-parity and existing surface tests still pass.",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "security",
-        "servers"
-      ]
-    },
     {
       "id": "adaptation-plan-3-model-profiler",
       "title": "Model profiler: which model owns which teaching move — and when to switch",
@@ -351,28 +330,6 @@
       "tags": [
         "docs",
         "structure"
-      ]
-    },
-    {
-      "id": "docs-stray-servers-lockdown",
-      "title": "Lock down the two stray web servers (transcript browser, subject explorer)",
-      "status": "active",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "browse-transcripts.js is deleted with no dangling references; serve-subject-explorer.js binds 127.0.0.1 by default behind the shared guard (or is retired); no reader hardcodes data/evaluations.db.",
-      "branch": "worktree-docs-coherence",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "security",
-        "servers"
       ]
     },
     {
@@ -861,6 +818,50 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "docs-poetics-eval-api-guard",
+      "title": "Close the poetics-server auth gap over /api/eval and Codex PTY endpoints",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "branch": "worktree-docs-coherence",
+      "verification": "With POETICS/EVAL credentials set, unauthenticated POST /api/eval/quick and /api/eval/codex/* return 401 on the poetics host; desktop route-parity and existing surface tests still pass.",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "security",
+        "servers"
+      ]
+    },
+    {
+      "id": "docs-stray-servers-lockdown",
+      "title": "Lock down the two stray web servers (transcript browser, subject explorer)",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "browse-transcripts.js is deleted with no dangling references; serve-subject-explorer.js binds 127.0.0.1 by default behind the shared guard (or is retired); no reader hardcodes data/evaluations.db.",
+      "branch": "worktree-docs-coherence",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "security",
+        "servers"
+      ]
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
