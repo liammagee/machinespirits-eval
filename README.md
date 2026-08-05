@@ -6,6 +6,9 @@ The tutor engine formerly published as `@machinespirits/tutor-core` is now
 in-housed under [`tutor-core/`](tutor-core/), so engine, evaluation, and prompt
 changes are versioned and tested together.
 
+New here? [`DOCS.md`](DOCS.md) maps where every kind of documentation lives —
+layers, authorities, web surfaces, regeneration, deploy.
+
 ## Overview
 
 The system runs automated tutoring dialogues across configurable experimental cells, then scores them with LLM judges against a multi-dimensional rubric. It supports:
@@ -222,7 +225,7 @@ To re-run evaluations from scratch (rather than reproducing from saved data), ex
 | Script | Description |
 |--------|-------------|
 | `assess-transcripts.js <runId>` | Qualitative transcript assessment (`--blinded`, `--force`) |
-| `browse-transcripts.js` | Interactive transcript browser (terminal UI) |
+| `browse-poetics-scripts.js` | Transcript scriptorium (web UI, port 3466; `npm run poetics:browse`) |
 | `qualitative-analysis-ai.js` | AI-based thematic analysis of transcripts |
 | `code-impasse-strategies.js` | Code impasse dialogues into Hegelian resolution strategies |
 | `code-dialectical-modulation.js` | Code superego modulation patterns |
@@ -300,7 +303,7 @@ CI checks that inventory once before starting the Node-version test matrix.
 
 This repository currently accepts a small set of known risks because it is run as an internal localhost-only evaluation system.
 
-See `notes/known-risks-localhost-2026-02-13.md` for the tracked risk register, acceptance scope, and hardening triggers required before broader deployment.
+See `DEPLOYMENT.md` for the current deployment posture and the hardening required before any non-localhost deploy.
 
 ## Citation
 

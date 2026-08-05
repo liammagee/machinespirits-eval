@@ -717,7 +717,7 @@ When in coverage mode (`cell_80..87` etc.), automatically select comparison pair
 
 10. **Transcript browser** — provide the command for the user to run interactively:
     ```bash
-    node scripts/browse-transcripts.js --run <runId>
+    node scripts/browse-poetics-scripts.js --run-id <runId>
     ```
     Note: this starts a web server. Don't run it — just print the command.
 
@@ -786,7 +786,7 @@ After gathering coverage data, synthesize into:
 5. **Gap Analysis**: Missing cells, under-replicated cells, scenario gaps, balance issues
 6. **Recommendations**: Exact `eval-cli.js run` commands to fill gaps (generate, don't execute)
 7. **Variant Notes**: Any cells outside the core factorial (model variants, etc.) and their status
-8. **Browse command**: Suggest `browse-transcripts.js --compare` for qualitative comparison of matched cells
+8. **Browse command**: Suggest the scriptorium (`npm run poetics:browse`, then `/read`) for qualitative comparison of matched cells
 
 ## Important Notes
 

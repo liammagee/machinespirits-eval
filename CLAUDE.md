@@ -6,7 +6,7 @@ Plain words, short sentences, answer what was asked and stop. The full rule is `
 
 ## This fork
 
-This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` specialised for the **Dramatic Recognition / Poetics** arc (sanctioned 2026-05-19). Master plan: `DRAMATIC-RECOGNITION-PLAN.md`. The full eval-factorial machinery below (cells 1–125, ego-superego, adaptive runner, rubrics v2.2) is inherited unchanged; the *active* work lives in the poetics pipeline and lands as a new § of `docs/research/paper-full-2.0.md`. Sibling agent docs at repo root: `AGENTS.md` (Codex), `GEMINI.md`.
+This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` specialised for the **Dramatic Recognition / Poetics** arc (sanctioned 2026-05-19). Master plan: `DRAMATIC-RECOGNITION-PLAN.md` (now historical — pre-registration plus closeout ledger; live work is tracked on the `workplan/` board). Documentation entry point: `DOCS.md` (layers, authorities, web surfaces, regeneration, deploy). The full eval-factorial machinery below (cells 1–125, ego-superego, adaptive runner, rubrics v2.2) is inherited unchanged; the poetics pipeline's results land as §s of `docs/research/paper-full-2.0.md`. Sibling agent docs at repo root: `AGENTS.md` (Codex), `GEMINI.md`.
 
 ## Desktop app (Electron)
 
@@ -182,7 +182,7 @@ Treats the tutoring dialogue as a *drama* and the evaluator as a *literary criti
 - **Adaptation loop**: `npm run poetics:adaptation-loop`, `poetics:audit-quality`, `poetics:diagnose-adaptation`
 - **Scoring**: `poetics:score-sonnet`, `poetics:structure-critic`, `poetics:flag-review`, `poetics:audit` (cross-critic disagreement)
 - **Packaging**: `npm run poetics:package-run` (archive a run's artifacts for sharing)
-- **Outputs**: `exports/phase2-classic-drama-*` (pilot reports, adaptation failures, tutor-adaptation csvs)
+- **Outputs**: `config/poetics-calibration/phase2-classic-drama-*/` (gitignored; pilot reports, adaptation failures, tutor-adaptation csvs)
 
 Note: phase-2 transfer of the codex-trained instrument to tutoring transcripts FAILED (weighted κ ≈ 0.04 vs ≥0.60 target) — the instrument classifies dramatic form, NOT mind-reading or real learning. Treat critic divergence as a finding, not a κ-failure.
 
