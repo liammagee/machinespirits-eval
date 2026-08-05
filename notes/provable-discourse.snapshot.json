@@ -409,10 +409,10 @@
       "actual_value": 10
     },
     "paper2.s4.architecture.two_file_storage": {
-      "updated_at": "2026-07-05T11:48:06.443Z",
+      "updated_at": "2026-08-05T20:25:55.995Z",
       "fingerprint": {
         "source": "code_path",
-        "file": "services/evaluationRunner.js",
+        "file": "services/evaluationMultiTurnCompletionRuntime.js",
         "pattern": "hashPath|dialoguePath",
         "match_count": 4
       },
@@ -869,7 +869,7 @@
       "fingerprint": {
         "source": "code_path",
         "file": "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
-        "pattern": "49/83 \u2248 0\\.59",
+        "pattern": "49/83 ≈ 0\\.59",
         "match_count": 1
       },
       "actual_value": 1

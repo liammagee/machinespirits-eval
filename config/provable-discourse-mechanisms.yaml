@@ -988,7 +988,9 @@ claims:
       min_occurrences: 0
     evidence:
       type: code_path
-      file: "services/evaluationRunner.js"
+      # 2026-08-06: the writer moved out of evaluationRunner.js in the
+      # turn-execution refactor (4ba78c7f); the two-file behaviour is unchanged.
+      file: "services/evaluationMultiTurnCompletionRuntime.js"
       pattern: "hashPath|dialoguePath"
       min_matches: 2
     assertion:

@@ -10,7 +10,7 @@ Archived refs are historical provenance, not live workplan items.
 | Surface | Declared version | Latest canonical tag | State |
 | --- | ---: | --- | --- |
 | Repository/package | `0.7.0` | `release/v0.6.0` | declared version is not tagged |
-| Canonical paper | `3.0.264` | `paper/v3.0.262` | declared version is not tagged |
+| Canonical paper | `3.0.265` | `paper/v3.0.262` | declared version is not tagged |
 | Legacy mixed `v*` namespace | — | `v0.7.0` | frozen; do not add new tags here |
 
 The repository and paper versions are intentionally independent. See [Tagging and Version Protocol](tagging-and-version-protocol.md).
