@@ -1,0 +1,378 @@
+<!doctype html>
+<!--
+  The Documentation Map — how this repo's servers, docs, notes and design
+  systems hang together, and where the seams fray. Authored as a techne doc:
+  the .html IS the source (no build step). Survey provenance: four read-only
+  sweeps on 2026-08-05 (servers/routes, markdown inventory, notes/workplan/
+  exports, HTML/design). Fray items map 1:1 to workplan/items/docs-*.md.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<title>The Documentation Map — machinespirits-eval</title>
+<meta name="description" content="How the eval repo's web servers, document layers, authority chain and design systems hang together — with a ledger of the seams that need mending." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=JetBrains+Mono:wght@300..700&display=swap" />
+<link rel="stylesheet" href="assets/techne.css" />
+</head>
+
+<body>
+
+<header class="rail" id="rail">
+  <div class="rail__inner">
+    <span class="rail__title">Documentation Map</span>
+    <span class="rail__dot" aria-hidden="true"></span>
+    <nav class="rail__nav" aria-label="Section navigation">
+      <a href="#stack">Servers</a>
+      <a href="#layers">Layers</a>
+      <a href="#authority">Authority</a>
+      <a href="#design">Design</a>
+      <a href="#regen">Regeneration</a>
+      <a href="#fray">Fray ledger</a>
+      <a href="#target">Target shape</a>
+    </nav>
+    <div class="rail__actions">
+      <button class="rail__btn" id="themeToggle" type="button">Dark</button>
+    </div>
+  </div>
+  <div class="rail__progress" id="railProgress"></div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero__rune"><span>§</span> Techne doc · surveyed 2026-08-05</div>
+    <h1 class="hero__h1">The documentation <span class="em">map</span></h1>
+    <p class="hero__subtitle">One web stack, six layers of record, two source formats, one design system — and the seams that need mending.</p>
+    <div class="hero__lede">
+      <div>
+        <p>This repo writes a lot about itself: a canonical paper, sixty-five root documents, a
+        schema-checked work board, three hundred working notes, nearly two gigabytes of run
+        artifacts, and a family of web pages that read them all back. This map records how those
+        pieces hang together — where each kind of writing lives, who declares what canonical, how
+        the generated views get rebuilt, and which joints have worked loose. It was drawn from four
+        read-only sweeps on 2026-08-05; each defect in the ledger at the end has a matching card on
+        the work board under <code>docs-*</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="shell">
+
+    <section class="s" id="stack">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">01<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Servers</p>
+          <h2 class="s__h">One stack, three hosts, two <em>strays</em>.</h2>
+          <p>Everything meant for the browser is a single Express route table, declared once in the
+          shared mounter (<code>services/evalSurfaces.js</code>): the eval API, the pilot flow, A19
+          adjudication, human coding, tutor-stub sessions, the subject explorer, and the static UIs
+          under <code>public/</code>. Three hosts mount that table:</p>
+          <ul>
+            <li><strong>The standalone server</strong> (<code>server.js</code>, <code>npm start</code>, port 8081) —
+            loopback by default, HTTP basic auth plus a role gate in front of every route.</li>
+            <li><strong>The poetics scriptorium</strong> (<code>scripts/browse-poetics-scripts.js</code>, port 3466) —
+            about thirteen thousand lines of server-rendered pages (browse, read, derivation views,
+            board, timeline, doc views) plus the <code>/admin</code> job launcher, with the shared
+            surfaces mounted on top. <code>npm run poetics:serve</code> is a thin launcher that frees
+            the port first, so a restart is one command.</li>
+            <li><strong>The desktop app</strong> — Electron forks the same poetics app factory onto an
+            ephemeral loopback port and points its window at it.</li>
+          </ul>
+
+          <div class="claim">
+            <span class="claim__no">i.</span>
+            <h3 class="claim__h">Route drift cannot merge <span class="chip chip--moss">by construction</span></h3>
+            <div class="claim__body"><p>Web and desktop serve the same table because they call the
+            same factory, and a parity test compares the served routes. The sync is enforced, not
+            promised.</p></div>
+          </div>
+
+          <p>Two servers sit outside the stack. <code>scripts/browse-transcripts.js</code> (port 3456)
+          is a 3,300-line second transcript browser with no npm script, no auth guard, a listener on
+          every network interface, and a hardcoded path to the production database that ignores the
+          override every other reader honors. <code>scripts/serve-subject-explorer.js</code>
+          (port 4505) duplicates a surface the main stack already serves, with the same open bind.</p>
+
+          <p>Auth is three unrelated mechanisms: basic auth with a role gate at the perimeter, a
+          pilot admin token header, and the A19 coder key whose keyed mode switches on when a roster
+          file exists. The perimeters also differ by host: the standalone server guards everything,
+          while the poetics server guards only <code>/admin</code>, <code>/tutor</code> and the
+          tutor-stub API — the paid run endpoints under <code>/api/eval</code> stay open there even
+          when credentials are set.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Note</span> <code>npm run chat</code> is a
+          terminal client of the 8081 server, not a server. The voice bridge is a token-gated
+          side-car of the tutor-stub CLI, loopback and ephemeral.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="layers">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">02<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Layers</p>
+          <h2 class="s__h">Six layers of <em>record</em>, by status.</h2>
+          <ul>
+            <li><strong>Agent instructions.</strong> <code>CLAUDE.md</code>, <code>AGENTS.md</code>,
+            <code>GEMINI.md</code> — the same project memory cut three ways, plus the style rule a
+            hook injects on every turn.</li>
+            <li><strong>Repo root, 65 files.</strong> Mostly frozen plans and pre-registrations — a
+            status line in the first three lines is the house convention — plus theory notes that
+            originate no claims, README / CONTRIBUTING / DEPLOYMENT, and the 185&nbsp;KB
+            <code>TODO.md</code> archive.</li>
+            <li><strong><code>docs/</code>.</strong> Operational reference (the script registry pairs
+            with the analysis toolkit guide) and research. <code>docs/research/paper-full-2.0.md</code>
+            is canonical for every empirical claim; <code>paper-full.md</code> is the legacy 1.0; the
+            atlas is a generated projection of the paper.</li>
+            <li><strong><code>workplan/</code>.</strong> 397 schema-checked item files as source of
+            truth; <code>BOARD.md</code> and <code>board.json</code> are generated views written only
+            by the CI job on main. At 91% done the board is more archive than queue.</li>
+            <li><strong><code>notes/</code>.</strong> 296 files of design history — no frontmatter,
+            loose <code>Date:</code> lines. <code>notes/poetics/</code> is the biggest and also hosts
+            the techne design system itself; daily notes are HTML research roundups with their own
+            six-rule convention.</li>
+            <li><strong><code>exports/</code>.</strong> 1,900 files and 1.7&nbsp;GB of run artifacts
+            and analysis reports, some cited by the paper.</li>
+          </ul>
+          <p class="pq">The status taxonomy is carried in the files themselves — frozen status lines,
+          "generated, do not edit" banners, a JSON schema on the board items.<cite>survey · 2026-08-05</cite></p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Drift</span> Two dating conventions
+          coexist: board items carry schema-checked <code>created:</code> / <code>updated:</code>
+          frontmatter; notes carry a loose prose <code>Date:</code> line. Nothing bridges them.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="authority">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">03<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Authority</p>
+          <h2 class="s__h">Who rules <em>what</em>.</h2>
+          <p><code>CLAUDE.md</code> is the hub. It names one authority per question:</p>
+          <ul>
+            <li>Empirical claims, numbers, tables — <code>docs/research/paper-full-2.0.md</code>;
+            spin-offs inherit and may not originate claims.</li>
+            <li>Live work — <code>workplan/items/</code>; every change reaching main names its card.</li>
+            <li>Cell architecture — <code>config/tutor-agents.yaml</code>, never a doc's summary table.</li>
+            <li>Database schema — the migrations at the top of <code>services/evaluationStore.js</code>.</li>
+            <li>Analysis scripts — the registry <code>scripts/ANALYSIS-SCRIPTS.md</code>, with
+            <code>docs/analysis-toolkit-guide.md</code> as the workflow layer.</li>
+            <li>UX and desktop — <code>desktop/ARCHITECTURE.md</code>: one UI codebase, never fork
+            into <code>desktop/</code>.</li>
+            <li>Prose — <code>.claude/style-rule.md</code>, injected every turn.</li>
+          </ul>
+          <p>The paper cites about thirty root plan and pre-registration documents as provenance,
+          which pins them in place: a closed experiment's plan is citable history, not clutter. The
+          weak spots are the pointers <em>into</em> the live present: the fork's named master plan
+          calls itself historical, the June "canonical active plan" is dormant, and the August plan
+          closed and handed off to notes plus board cards — so no root document names the current
+          arc. <code>DEPLOYMENT.md</code> and the house-style doc are near-orphans, linked from
+          almost nothing.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Pinned</span> Frozen pre-registrations
+          are edited only with dated editor's notes, if at all — the paper cites them at specific
+          commits. Grep the paper before moving or deleting any root doc.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="design">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">04<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Design</p>
+          <h2 class="s__h">Two source formats, one design system, a tail of <em>one-offs</em>.</h2>
+          <p>The working rule: markdown when a document is prose; hand-authored HTML when it needs
+          components — and for techne docs the HTML is the source, with no build step. Design lives
+          in <code>notes/poetics/assets/techne.css</code>, behaviour in <code>techne.js</code>, and
+          every JS feature is opt-in by markup.</p>
+          <p>One visual system — warm paper and ink; Fraunces, Source Serif 4, JetBrains Mono — with
+          two sanctioned skins: <code>data-skin="machine-spirits"</code> (the website's white and red
+          Swiss face, used by the two published pieces) and <code>data-skin="stark"</code> (dashboard
+          framing). The app UIs under <code>public/</code> share the palette; the pilot pages swap
+          the face to Inter. The scriptorium and the techne docs are genuinely one system.</p>
+          <p>Two copies of the tokens exist: the full editorial stylesheet in
+          <code>notes/poetics/assets/</code> and an 11&nbsp;KB served subset at
+          <code>public/components/techne.css</code>. They are synced by comment, not by test, and the
+          light paper token already differs between them. Five one-off visual systems linger in
+          <code>docs/</code> from before the house style — a teal guide, a navy interactive index, a
+          rounded-card spec, a pasted critique, and the mermaid diagram pages.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Rule</span> The operational/editorial
+          split is written down in <code>docs/design/machinespirits-house-style.md</code>: Swiss
+          white-field chrome for transcripts and tools, parchment techne for essays and atlases.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="regen">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">05<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Regeneration</p>
+          <h2 class="s__h">From source to <em>site</em>.</h2>
+          <p>Each generated view has exactly one writer, but the writers are scattered:</p>
+          <ul>
+            <li><strong>Board views</strong> — <code>scripts/workplan.js render</code>; on main only
+            the serialized CI job commits them, and feature branches must not.</li>
+            <li><strong>Reference status</strong> — <code>npm run refs:render</code> writes
+            <code>docs/ref-status.md</code>; <code>refs:check</code> fails when stale.</li>
+            <li><strong>Paper</strong> — <code>docs/research/build.sh</code> (pandoc + xelatex);
+            <code>paper2</code> builds the canonical paper, while the bare default still builds the
+            legacy 1.0. Versioned PDFs pile up beside the sources.</li>
+            <li><strong>Atlas</strong> — <code>scripts/build-atlas.js</code> projects the paper into
+            spine and module PDFs; it never edits the paper.</li>
+            <li><strong>Arc images and regions</strong> — <code>npm run poetics:arc-html</code>
+            rewrites marked regions of the arc doc.</li>
+          </ul>
+          <p>Deployment is deliberate and human-gated: the publish scripts stage standalone HTML,
+          PDFs and images into the sibling content repo
+          (<code>../machinespirits-content-philosophy/articles/ai-tutor/</code>), and only its
+          <code>./publish</code> pushes — a GitHub Action then redeploys the site. Live URLs sit
+          under <code>/content/articles/ai-tutor/</code>, and pages are checked by content, not
+          status code, because unknown routes soft-200.</p>
+        </div>
+        <div class="mr">
+          <p class="note note--ochre"><span class="note__lbl">Gap</span> There is no single
+          "refresh everything" command — board, refs, atlas, arc and paper each have their own
+          verb. The regeneration card proposes one.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="fray">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">06<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Fray ledger</p>
+          <h2 class="s__h">Where the picture <em>frays</em>.</h2>
+          <p>Each card below has a matching item on the work board (id in mono). Statuses:
+          <span class="chip chip--brick"><span class="chip__dot"></span> open · P1</span>
+          <span class="chip chip--ochre"><span class="chip__dot"></span> open</span>
+          <span class="chip chip--moss"><span class="chip__dot"></span> in hand</span></p>
+
+          <div class="ev-grid">
+            <article class="ev-card" data-status="risk">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Open · P1</span>
+              <h3>Stray servers listen wide open</h3>
+              <p>The second transcript browser (port 3456) and the subject-explorer harness
+              (port 4505) bind every interface with no password; the former also hardcodes the
+              production database path. Bind loopback, add the shared guard, honor the DB override —
+              or retire them. <code>docs-stray-servers-lockdown</code></p>
+            </article>
+            <article class="ev-card" data-status="risk">
+              <span class="chip chip--brick"><span class="chip__dot"></span> Open · P1</span>
+              <h3>Poetics perimeter leaves paid endpoints open</h3>
+              <p>On the scriptorium host only <code>/admin</code>, <code>/tutor</code> and the
+              tutor-stub API sit behind the password; metered runs and the Codex terminal endpoints
+              under <code>/api/eval</code> do not. The standalone server guards everything. Decide
+              the intended perimeter and apply it. <code>docs-poetics-eval-api-guard</code></p>
+            </article>
+            <article class="ev-card" data-status="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Open · P2</span>
+              <h3>No root pointer to the live arc</h3>
+              <p>The named master plan self-labels historical; the "canonical active plan" is
+              dormant; the August plan closed and handed off. A reader at the root cannot find the
+              current work without the board. One entry-point index, linked from README and
+              CLAUDE.md. <code>docs-entry-point-index</code></p>
+            </article>
+            <article class="ev-card" data-status="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Open · P2</span>
+              <h3>exports/ tracking contradicts its rule</h3>
+              <p>The directory is gitignored, yet 912 files are tracked and the paper cites some of
+              them; the global CSV ignore leaves paper-cited tables out of fresh checkouts. Make the
+              rule and the reality agree. <code>docs-exports-tracking-policy</code></p>
+            </article>
+            <article class="ev-card" data-status="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> In hand</span>
+              <h3>Stale pointers</h3>
+              <p>The script registry points at a guide path that no longer exists; the in-housing doc
+              still says to prune a package already gone; DEPLOYMENT.md cites two missing files;
+              README and AGENTS.md each cite a missing note; GEMINI.md keeps CLAUDE.md's title;
+              CLAUDE.md names a poetics output path that matches nothing. Being repaired on this
+              branch. <code>docs-stale-pointer-sweep</code></p>
+            </article>
+            <article class="ev-card" data-status="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Open · P2</span>
+              <h3>Build default is the legacy paper; regeneration is scattered</h3>
+              <p><code>build.sh</code> with no argument builds Paper 1.0 and only CLAUDE.md warns.
+              Board, refs, atlas, arc and paper each regenerate with a different verb, and ~100
+              versioned PDFs sit beside the sources. One default, one refresh command, one pruning
+              rule. <code>docs-build-default-and-regen</code></p>
+            </article>
+            <article class="ev-card" data-status="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Open · P3</span>
+              <h3>Design tokens drift between the two techne copies</h3>
+              <p>The served subset and the editorial stylesheet are synced by comment only, and the
+              light paper token already differs. A small test should fail on drift.
+              <code>docs-techne-token-sync-test</code></p>
+            </article>
+            <article class="ev-card" data-status="boundary">
+              <span class="chip chip--ochre"><span class="chip__dot"></span> Open · P3</span>
+              <h3>Notes conventions drift</h3>
+              <p>Three daily-note filenames break their own README rule; two large generated JSON
+              snapshots are parked in <code>notes/</code>; four lowercase analysis notes sit among
+              sixty-one capitalized root files. <code>docs-notes-conventions-cleanup</code></p>
+            </article>
+          </div>
+        </div>
+        <div class="mr">
+          <p class="note note--ink"><span class="note__lbl">Umbrella</span> The parent card is
+          <code>docs-coherence-structure</code>: one entry point, tight layout, easy regeneration.
+          Children close into it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="s" id="target">
+      <div class="diag">
+        <div class="ml"><h2 class="s__num">07<span class="glyph">·</span></h2></div>
+        <div class="body">
+          <p class="s__kicker">Target shape</p>
+          <h2 class="s__h">What <em>done</em> looks like.</h2>
+          <ul>
+            <li><strong>One entry point.</strong> A root index that reaches every layer in one hop —
+            paper, board, notes, exports, servers, deploy — and names the live arc.</li>
+            <li><strong>Statuses you can trust.</strong> Every document declares itself canonical,
+            frozen, generated or note, and the declarations are current.</li>
+            <li><strong>No unguarded doors.</strong> Every listener binds loopback by default and
+            shares the one auth perimeter.</li>
+            <li><strong>One refresh verb.</strong> A single command rebuilds the generated views and
+            says what changed; deploy stays human-gated.</li>
+            <li><strong>Tested seams.</strong> The token mirror, the route parity, the board views
+            and the reference status all fail loudly when they drift — no sync-by-comment.</li>
+          </ul>
+        </div>
+        <div class="mr">
+          <p class="note note--moss"><span class="note__lbl">Method</span> Doc-only repairs land
+          first; server and build changes ride their own cards with tests. Frozen documents get
+          editor's notes, never rewrites.</p>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /shell -->
+
+  <footer class="colophon">
+    <p><span class="label">Colophon</span> &nbsp; Typeset in Fraunces, Source Serif 4, JetBrains Mono.
+      Design: <code>assets/techne.css</code>. Behaviour: <code>assets/techne.js</code>.
+      Survey: four read-only sweeps, 2026-08-05.</p>
+  </footer>
+
+</main>
+
+<script src="assets/techne.js"></script>
+</body>
+</html>
