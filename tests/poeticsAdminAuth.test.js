@@ -203,6 +203,42 @@ test('shared tutor shell and process API require the administrator role', async 
   assert.equal(JSON.parse(researchAdmin.body).research.schema, 'machinespirits.cell-lab.research-trace.v1');
 });
 
+test('shared eval, stream, and Codex PTY routes require the administrator role', async () => {
+  const quickDenied = await request('/api/eval/quick', {
+    method: 'POST',
+    body: { dryRun: true },
+  });
+  assert.equal(quickDenied.status, 401);
+  assert.match(quickDenied.headers['www-authenticate'] || '', /^Basic realm="machine spirits poetics"/);
+
+  const streamDenied = await request('/api/eval/stream/quick');
+  assert.equal(streamDenied.status, 401);
+
+  const codexDenied = await request('/api/eval/codex/sessions');
+  assert.equal(codexDenied.status, 401);
+
+  const quickParticipant = await request('/api/eval/quick', {
+    method: 'POST',
+    user: 'participant',
+    pass: 'participant-secret',
+    body: { dryRun: true },
+  });
+  assert.equal(quickParticipant.status, 403);
+
+  const codexParticipant = await request('/api/eval/codex/sessions', {
+    user: 'participant',
+    pass: 'participant-secret',
+  });
+  assert.equal(codexParticipant.status, 403);
+
+  const codexAdmin = await request('/api/eval/codex/sessions', {
+    user: 'admin',
+    pass: 'secret',
+  });
+  assert.equal(codexAdmin.status, 200, codexAdmin.body);
+  assert.deepEqual(JSON.parse(codexAdmin.body).sessions, []);
+});
+
 test('legacy public tool paths redirect pages but do not execute APIs', async () => {
   const page = await request('/runs?kind=generate');
   assert.equal(page.status, 302);

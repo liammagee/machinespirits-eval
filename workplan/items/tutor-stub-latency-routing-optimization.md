@@ -1,19 +1,19 @@
 ---
 id: tutor-stub-latency-routing-optimization
 title: "Optimize tutor-stub foreground latency with attributable routing experiments"
-status: review
+status: done
 type: experiment
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-24
 updated: 2026-08-05
-branch: codex/tutor-stub-latency-v2-screen
 verification: "A frozen object/meta/mixed transcript matrix reports first-draft acceptance, recovery/fallback rate, foreground p50/p95 latency, model-call latency, token use, and tutor-quality/safety outcomes for isolated effort, role-routing, prompt-compaction, and prefetch-policy contrasts; no candidate becomes a default without preserving the instructional-meta regression and public-safety gates."
 claim_status: exploratory
 links:
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/201
+    - https://github.com/liammagee/machinespirits-eval/pull/496
   notes:
     - notes/2026-07-24-tutor-stub-latency-and-discourse-plane.md
   items:
@@ -167,3 +167,7 @@ still exits non-zero when any job failed. Focused compiler, fallback,
 progression, response-composition, and benchmark tests pass without model
 calls. Live confirmation remains separately gated and is not required to retain
 the no-default verdict.
+
+2026-08-05 Codex: Closed after PR #496 passed CI and merged. The bounded screen
+and its contract repair satisfy the declared verification while retaining the
+registered no-default verdict; the merged branch and worktree were removed.
