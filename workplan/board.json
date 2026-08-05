@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-05T20:15:46.102Z",
+  "generated": "2026-08-05T20:29:34.567Z",
   "counts": {
     "total": 411,
     "byStatus": {
-      "done": 387,
+      "done": 388,
       "blocked": 6,
       "dropped": 8,
       "active": 3,
       "archived": 4,
-      "review": 3
+      "review": 2
     },
     "byType": {
       "research": 71,
@@ -503,28 +503,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "tutor-fallible-learner-closure-prereg",
-      "title": "Pre-registration: restore variance to legitimate closure with a learner that can fail",
-      "status": "review",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-30",
-      "updated": "2026-08-06",
-      "verification": "Phase A runs bare-tutor only and is exploratory. Before the first paid Phase B call: the in-band cells and their profiles are frozen in a dated log entry here, and a 5-dialogue contract smoke on one in-band cell shows zero aborted dialogues. The run itself is attended and checkpointed.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-contract-outcome-prereg"
-      ],
-      "tags": [
-        "tutor-stub",
-        "prereg",
-        "outcome",
-        "learner"
-      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -8380,6 +8358,28 @@
           "exports/tutor-stub-outcome/pilot-2/"
         ]
       }
+    },
+    {
+      "id": "tutor-fallible-learner-closure-prereg",
+      "title": "Pre-registration: restore variance to legitimate closure with a learner that can fail",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-30",
+      "updated": "2026-08-06",
+      "verification": "Phase A runs bare-tutor only and is exploratory. Before the first paid Phase B call: the in-band cells and their profiles are frozen in a dated log entry here, and a 5-dialogue contract smoke on one in-band cell shows zero aborted dialogues. The run itself is attended and checkpointed.",
+      "claim_status": "methods",
+      "depends_on": [
+        "tutor-contract-outcome-prereg"
+      ],
+      "tags": [
+        "tutor-stub",
+        "prereg",
+        "outcome",
+        "learner"
+      ]
     },
     {
       "id": "tutor-pr-benchmark-calibration-harness",
