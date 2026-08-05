@@ -23,7 +23,7 @@ export function tutorStubPrivateTokenAlreadyPublic(token, publicTokens = new Set
 // exhibit traced to another, because the `to` inside the compound carries word
 // boundaries on both sides.
 const CORRESPONDENCE_PATTERN =
-  /\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|identical to|match(?:es|ed)?|same (?:[\p{L}\p{N}-]+\s+)?(?:alloy|flaw|mark|metal|residue|strain|streak)|tie(?:s|d)?\b[^.!?;]{0,55}(?<!-)\bto(?!-)|trace(?:s|d)?\b[^.!?;]{0,55}(?<!-)\bto(?!-))\b/iu;
+  /\b(?:answer(?:s|ed)? to|correspond(?:s|ed)? to|identical to|match(?:es|ed)?|same (?:[\p{L}\p{N}-]+\s+)?(?:alloy|flaw|mark|metal|residue|strain|streak)|tie(?:s|d)?\b[^.!?;:]{0,55}(?<!-)\bto(?!-)|trace(?:s|d)?\b[^.!?;:]{0,55}(?<!-)\bto(?!-))\b/iu;
 // A determined "the match" names a correspondence without claiming one, so the
 // tutor can handle it as stage business. "a match between X and Y" still
 // claims, and so is left alone.

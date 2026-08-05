@@ -437,6 +437,84 @@ test('an advocate can force the town to face an evidentiary gap', () => {
   assert.equal(audit.actorial_realization.ok, true);
 });
 
+test('an advocate realizes a declarative case by naming both the record support and its limit', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    learnerText: 'The watermark identifies the mill, but does it date the leaf?',
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const text =
+    "My case is that the heron watermark identifies the paper's mill, but not its Cassia period or Vess's authorship. The Brell watermark supports identifying Brell paper; it does not establish when the leaf was made. I close the ledger beside the lamp: until it gives that period, the watermark cannot date the nocturne.";
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world: testWorld() });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('an advocate can bound a declarative case with a support-only not-the contrast', () => {
+  const world = {
+    title: 'The Heron Nocturne',
+    setting: "In Cassia's copy-room, the heron watermark lies beside the Brell stock-book.",
+    question: 'Who composed the nocturne?',
+    premiseById: new Map([
+      ['p1', { surface: 'The heron watermark identifies Brell paper.', fact: ['identifies', 'heron', 'Brell'] }],
+    ]),
+  };
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    learnerText: 'The watermark identifies the mill, but does it date the leaf?',
+    world,
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'evidentiary_boundary', label: 'evidentiary boundary' },
+  };
+  const text =
+    "My case is that the mill mark is confirmed, and that alone dates nothing. The watermark supports only the paper's origin, not the period it was used, and certainly not who used it. That gap sits before us: nothing in the record yet says when Brell stock sat in the copy-room, nor who signed for it then.";
+  const audit = auditTutorStubResponseConfiguration({ text, configuration, world });
+
+  assert.equal(audit.axes.actorial_part.part_visible, true);
+  assert.equal(audit.axes.actorial_part.performance_visible, true);
+  assert.equal(audit.actorial_realization.ok, true);
+});
+
+test('an advocate does not realize the part by merely announcing an unbounded case', () => {
+  const base = buildTutorStubResponseConfiguration({
+    engagementStance: 'charismatic',
+    classification: classification(),
+    tutorLearnerDag: learnerDag(),
+    learnerText: 'The watermark matters.',
+    world: testWorld(),
+  });
+  const configuration = {
+    ...base,
+    actorial_part: 'advocate',
+    actorial_part_label: 'advocate for the live case',
+    actorial_performance: { id: 'unadorned_report', label: 'unadorned report' },
+  };
+  const audit = auditTutorStubResponseConfiguration({
+    text: 'My case is that the watermark matters. I close the ledger.',
+    configuration,
+    world: testWorld(),
+  });
+
+  assert.equal(audit.axes.actorial_part.part_visible, false);
+  assert.equal(audit.actorial_realization.ok, false);
+});
+
 test('a plain advocate can answer accountably around a longer authored source quotation', () => {
   const base = buildTutorStubResponseConfiguration({
     engagementStance: 'plain',

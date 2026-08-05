@@ -1246,6 +1246,11 @@ function actorialPartVisible(configuration, text, metrics) {
       /\b(?:i\s+argue|i(?:[’']ll| will| am going to) (?:argue|make|put)|i rest my case|my case (?:is|rests)|the strongest case|take the case for)\b/iu.test(
         text,
       ) && accountableCaseHandoff;
+    const statesBoundedRecordCase =
+      /\bmy case is\b/iu.test(text) &&
+      /\b(?:establish(?:es|ed)?|identif(?:y|ies|ied)|proves?|shows?|supports?)\b/iu.test(text) &&
+      /\b(?:but not|cannot|can[’']t|does not|doesn[’']t|not yet|not (?:the|what|when|which|who))\b/iu.test(text) &&
+      metrics.concreteSceneTermCount > 0;
     const stagesBoundedCase =
       /\bi\s+(?:lay|place|put|set)\b[^.!?]{0,65}\bcase\b[^.!?]{0,95}\b(?:cannot|can[’']t|does not|doesn[’']t|gap|not yet|test|unshown|without)\b/iu.test(
         text,
@@ -1317,6 +1322,7 @@ function actorialPartVisible(configuration, text, metrics) {
       ) && /\bbreak it\b/iu.test(text);
     return (
       announcedCase ||
+      statesBoundedRecordCase ||
       stagesBoundedCase ||
       directlyAddressesPublicJudgment ||
       takesAccountablePosition ||
