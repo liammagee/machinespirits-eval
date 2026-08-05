@@ -88,9 +88,8 @@ describe('eval-cli operational command boundaries', () => {
       assert.doesNotMatch(source, new RegExp(`function ${helper}\\(`, 'u'));
     }
 
-    for (const command of ['evaluate', 'backfill-first-turn', 'evaluate-learner', 'evaluate-dialogue']) {
-      assert.match(source, new RegExp(`case ['"]${command}['"]`, 'u'));
-    }
+    assert.match(source, /getScoringCommandHandler\(command\)/u);
+    assert.match(source, /await scoringCommandHandler\(/u);
   });
 
   it('keeps host-relative dynamic imports at the facade boundary', () => {

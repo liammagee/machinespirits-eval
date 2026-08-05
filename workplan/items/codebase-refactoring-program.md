@@ -117,6 +117,7 @@ links:
     - refactor-evaluation-resume-rejudge-runtime
     - refactor-eval-cli-operational-commands
     - refactor-eval-cli-generation-commands
+    - refactor-eval-cli-scoring-commands
 tags:
   - refactoring
   - testing
@@ -1464,3 +1465,14 @@ Log:
   independent review.
 - 2026-08-06 — Opened the generation/chat/rejudge extraction as PR #515 after
   its rebased implementation and regression gates remained green.
+- 2026-08-06 — PR #515 merged R4 step 4's generation/chat/rejudge boundary;
+  activated the final scoring-command macro slice on
+  `codex/refactor-eval-cli-scoring-commands` from refreshed `main` at
+  `ec4aa873`. All four remaining cases move together, with the large evaluate
+  path decomposed internally and bilateral scoring contracts frozen.
+- 2026-08-06 — The final R4 scoring-command macro slice reached review with a
+  269-line executable facade, sixteen bounded production owners, exact safe
+  process parity, complete hermetic and risk-coverage gates, and independent
+  tutor/learner symmetry signoff. Across R4 step 4, `eval-cli.js` is down from
+  6,300 to 269 lines; the command-family extraction is complete once this child
+  merges.

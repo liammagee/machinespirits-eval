@@ -1830,10 +1830,20 @@ describe('evaluate-dialogue multi-turn filter', () => {
 // ============================================================================
 
 describe('DgP/DgI consolidation into evaluateMultiTurnResult', () => {
+  const scoringCommandsDir = path.join(
+    path.dirname(new URL(import.meta.url).pathname),
+    '..',
+    'scripts',
+    'eval-cli',
+    'commands',
+  );
   const evalCliSource = fs.readFileSync(
     path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'scripts', 'eval-cli.js'),
     'utf-8',
   );
+  const runtimeSource = fs.readFileSync(path.join(scoringCommandsDir, 'evaluateMultiTurnRuntime.js'), 'utf-8');
+  const judgeWaveSource = fs.readFileSync(path.join(scoringCommandsDir, 'evaluateMultiTurnJudgeWave.js'), 'utf-8');
+  const persistenceSource = fs.readFileSync(path.join(scoringCommandsDir, 'evaluateMultiTurnPersistence.js'), 'utf-8');
 
   it('evaluate loops do NOT call scoreDialogueQuality after evaluateMultiTurnResult', () => {
     // The evaluate loops (follow-mode and one-shot) should no longer call
@@ -1850,17 +1860,7 @@ describe('DgP/DgI consolidation into evaluateMultiTurnResult', () => {
   });
 
   it('evaluateMultiTurnResult contains all 6 metric store writes', () => {
-    // Extract the evaluateMultiTurnResult function body.
-    // It starts with "async function evaluateMultiTurnResult" and ends before
-    // "// Helper: run dialogue quality scoring" or the next top-level function.
-    const funcStart = evalCliSource.indexOf('async function evaluateMultiTurnResult');
-    assert.ok(funcStart !== -1, 'evaluateMultiTurnResult should exist in eval-cli.js');
-
-    // Find a reliable end boundary: the _scoreDialogueQuality helper that follows it.
-    const funcEnd = evalCliSource.indexOf('async function _scoreDialogueQuality', funcStart);
-    assert.ok(funcEnd !== -1, '_scoreDialogueQuality should still exist (used by standalone evaluate-dialogue)');
-
-    const funcBody = evalCliSource.slice(funcStart, funcEnd);
+    assert.match(runtimeSource, /function createEvaluateMultiTurnResult\(/u);
 
     // All 6 metric store writes must appear inside this function:
     const requiredStoreWrites = [
@@ -1874,36 +1874,22 @@ describe('DgP/DgI consolidation into evaluateMultiTurnResult', () => {
 
     for (const storeFn of requiredStoreWrites) {
       assert.ok(
-        funcBody.includes(`evaluationStore.${storeFn}(`),
+        persistenceSource.includes(`evaluationStore.${storeFn}(`),
         `evaluateMultiTurnResult must call evaluationStore.${storeFn}()`,
       );
     }
   });
 
   it('DgP/DgI are guarded by tutorOnly flag', () => {
-    // Verify that dialogue quality scoring is inside the !tutorOnly guard.
-    // The pattern: "if (!tutorOnly)" block should contain both DgP and DgI calls.
-    const funcStart = evalCliSource.indexOf('async function evaluateMultiTurnResult');
-    const funcEnd = evalCliSource.indexOf('async function scoreDialogueQuality', funcStart);
-    const funcBody = evalCliSource.slice(funcStart, funcEnd);
-
-    // Find the DgP/DgI section — it should be inside a !tutorOnly block
-    const dgpIdx = funcBody.indexOf('updateDialogueQualityScore');
-    const dgiIdx = funcBody.indexOf('updateDialogueQualityInternalScore');
-    assert.ok(dgpIdx !== -1, 'DgP store write must exist');
-    assert.ok(dgiIdx !== -1, 'DgI store write must exist');
-
-    // Walk backwards from DgP to find the nearest !tutorOnly guard
-    const beforeDgp = funcBody.slice(0, dgpIdx);
-    const tutorOnlyGuardIdx = beforeDgp.lastIndexOf('if (!tutorOnly)');
-    assert.ok(tutorOnlyGuardIdx !== -1, 'DgP/DgI must be inside an if (!tutorOnly) guard');
-
-    // The guard should be closer to DgP than the learner section's guard
-    // (there's another !tutorOnly for learner scoring earlier in the function).
-    // Check that DgI also comes after this guard.
-    const afterGuard = funcBody.slice(tutorOnlyGuardIdx);
-    assert.ok(afterGuard.includes('updateDialogueQualityScore'), 'DgP must be inside the !tutorOnly block');
-    assert.ok(afterGuard.includes('updateDialogueQualityInternalScore'), 'DgI must be inside the !tutorOnly block');
+    const preparationSource = fs.readFileSync(
+      path.join(scoringCommandsDir, 'evaluateMultiTurnPreparation.js'),
+      'utf-8',
+    );
+    assert.match(preparationSource, /const dqPromptParams = !tutorOnly/u);
+    assert.match(judgeWaveSource, /const dgpPromise = dqPromptParams/u);
+    assert.match(judgeWaveSource, /const dgiPromise = dqPromptParams/u);
+    assert.match(persistenceSource, /evaluationStore\.updateDialogueQualityScore\(/u);
+    assert.match(persistenceSource, /evaluationStore\.updateDialogueQualityInternalScore\(/u);
   });
 });
 
