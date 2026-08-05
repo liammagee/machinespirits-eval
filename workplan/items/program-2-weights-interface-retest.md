@@ -1,21 +1,24 @@
 ---
 id: program-2-weights-interface-retest
 title: "Price the fine-tune with a weights by interface retest"
-status: blocked
+status: dropped
 type: experiment
 priority: P2
 owner: codex
 source: review
 created: 2026-08-05
 updated: 2026-08-05
-verification: "A source-, plan-, world-, gate-, and evidence-bound eight-dialogue exact-pipeline pilot passes every completion, safety, provenance, coverage, trace-integrity, and cue-blind gate; only then may the frozen 48-dialogue cohort run and report the blinded W1 trained-minus-untuned interval in the canonical paper."
-claim_status: planned
+verification: "The source-bound Amendment 1 pilot sealed 2/8 rows and then correctly stopped: both rows had one scheduled opportunity and passed safety/cue-blind checks, but trained-v1 coverage at turn 23 was 0.667 and both scheduled turns were publicly noncompliant; six jobs and the cohort never ran, and no treatment estimate is claimed."
+claim_status: killed
 links:
   paper: §6.21
   notes:
     - PROGRAM-2-WEIGHTS-INTERFACE-RETEST-PREREGISTRATION.md
     - notes/program-2/2026-08-05-weights-interface-retest-pilot-stop.md
     - notes/program-2/2026-08-05-weights-interface-retest-amendment1.md
+    - notes/program-2/2026-08-05-weights-interface-retest-amendment1-pilot-stop.md
+  exports:
+    - exports/program2-weights-interface-retest-pilot-a1/partial-analysis.json
   items:
     - program-2-committee-floor-ablation
     - program-2-context-vs-weights-finetune
@@ -27,7 +30,6 @@ tags:
   - interface
 milestone: adaptive-tutor-evidence-v1
 branch: codex/program2-weights-interface-retest
-blocked_by: "Fresh authorization for the source-bound Amendment 1 replacement external pilot"
 ---
 
 Correct the historical identification failures without reusing their rows:
@@ -66,3 +68,13 @@ old pilot remains immutable; replacement schemas and roots are v2/A1. Focused
 tests and zero-model plan validation pass. Once committed, this source must pass
 a fresh clean-source smoke/certificate; external launch remains blocked on
 explicit replacement-pilot authorization, and the cohort remains unauthorized.
+
+2026-08-05 — The authorized Amendment 1 excluded pilot sealed two rows and
+then stopped under its frozen live futility rule. The Amendment successfully
+scheduled one committee opportunity per row, but neither became a compliant
+public treatment. `untuned_v1` reached coverage 1.000 at turn 23;
+`trained_v1` remained at 0.667 because the last premise was released on tutor
+turn 23 and integrated on learner turn 24. Both rows stayed leak-free and
+eventually grounded at turn 25, but post-horizon closure cannot rescue the
+registered gate. Six jobs and the cohort never ran. The card is dropped with a
+killed endpoint, no treatment estimate, and no Amendment 2 implied.

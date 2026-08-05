@@ -1,7 +1,7 @@
 # Program 2 weights × interface retest — pre-registration
 
 Date: 2026-08-05
-Status: Amendment 1 implementation and zero-model verification; replacement external calls not authorized
+Status: Amendment 1 excluded pilot stopped after 2/8 sealed rows; cohort prohibited
 
 ## Why a new test is required
 
