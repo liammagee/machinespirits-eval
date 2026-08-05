@@ -863,7 +863,9 @@ export async function callCodexJudge(prompt, { model = null, spawnImpl } = {}) {
 
 export async function callClaudeCodeJudge(prompt, { model = null, spawnImpl } = {}) {
   const result = await callAIWithCliBridge({ provider: 'claude-code', model }, '', prompt, 'rubric-judge', {
-    timeoutMs: 180_000,
+    // 180s starved sonnet-5 on long register prompts (31/54 slices timed out,
+    // 2026-08-06); 600s matches the tutor-scoring ceiling.
+    timeoutMs: 600_000,
     spawnImpl,
     // The historical rubric CLI call supplied only the user prompt and kept
     // Claude's built-in system prompt. Preserve that instrument boundary
