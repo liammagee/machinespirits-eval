@@ -1,7 +1,7 @@
 ---
 id: docs-stale-pointer-sweep
 title: Repair stale cross-references across root and docs/
-status: active
+status: done
 type: maintenance
 priority: P2
 owner: claude

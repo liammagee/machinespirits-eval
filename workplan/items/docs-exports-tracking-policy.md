@@ -1,7 +1,7 @@
 ---
 id: docs-exports-tracking-policy
 title: Make exports/ tracking policy and reality agree
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: claude
@@ -47,7 +47,16 @@ exports path resolves in a fresh clone), and DOCS.md layer 6 states the same.
 The `prototypes/` "mirrors the exports convention" comment is no longer
 contradicted: the stated convention now matches reality.
 
-Remaining before done (needs the PRIMARY checkout — gitignored content does
-not exist in linked worktrees): sweep the paper's exports citations once and
-force-add or archive-annotate the cited-but-untracked files (the ~11 CSVs the
-survey found, plus any md). `ref-governance` already validates tracked refs.
+Citation sweep done 2026-08-05 (this branch), closing the card. 204 exports
+paths cited by the paper, classified:
+
+- 46 already tracked (or under a tracked directory) — untouched.
+- 45 files + 2 cited directories existed untracked in the primary checkout —
+  copied onto this branch and force-added (113 new tracked files, ~5 MB;
+  largest single file 166 KB). Includes the ~11 CSV/md set the survey found.
+- EXCEPTION: `exports/tutor-stub-outcome/` is cited as a location but weighs
+  1.0 GB — stays untracked per the policy's "never assume it resolves" rule.
+- 109 remaining matches are not real dangling files: prose patterns the
+  extraction over-matched (trailing hyphens, `r1..3` ranges) plus artifacts
+  that now live only in the private archive; the paper's own appendix states
+  this acceptance.

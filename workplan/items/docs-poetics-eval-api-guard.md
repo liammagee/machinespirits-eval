@@ -1,7 +1,7 @@
 ---
 id: docs-poetics-eval-api-guard
 title: Close the poetics-server auth gap over /api/eval and Codex PTY endpoints
-status: review
+status: done
 type: infra
 priority: P1
 owner: claude

@@ -1,0 +1,113 @@
+_comment: HELD OUT — do not read while labelling. Joins to instrument scores +
+  human labels only AFTER both are produced. intended_lean /
+  intended_tutor_character / dramatic_shape are DESIGN HYPOTHESES, never labels.
+generated: 2026-06-24T14:24:15.489Z
+generator: api
+role_map: null
+mode: real-api-openrouter
+model: api/anthropic/claude-sonnet-4.6
+codex_reasoning_effort: xhigh
+writing_pad:
+  mode: isolated
+  dir: exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/deliberation/.writing-pad
+  learnerDb: exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/deliberation/.writing-pad/learner-writing-pad.db
+  tutorDb: exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/deliberation/.writing-pad/tutor-writing-pad.db
+director_mode: scene
+opening_speaker_override: null
+director_variation_key: a17-d5-redacted-full-redraw-run6
+director_revisit_cue: false
+director_revisit_policy: none
+director_revisit_anchor: null
+tutor_adaptation_policy: socratic_discovery
+control_ending_policy: default
+affective_adaptation_policy: none
+approach_databases:
+  pedagogical: config/poetics-calibration/pedagogical-approaches.yaml
+  dialogue: config/poetics-calibration/dialogue-approaches.yaml
+transcripts_dir: exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/transcripts/socratic
+seed: 20260520
+max_turns: 6
+n: 1
+diagnostic_only: diagnostic / generative read — κ on small n is noise
+  (PHASE2-FINDINGS.md §4); the aim is surprising-element production judged by an
+  external reader, NOT a human-matching classifier
+paired_continuation:
+  mode: fixed_prefix_continuation
+  prefix_through: tutor_turn_2
+  branch_policies:
+    - socratic
+    - reveal
+  branches:
+    - key: socratic
+      revisitPolicy: none
+      tutorAdaptationPolicy: socratic_discovery
+      secretTutorAdaptationPolicy: null
+    - key: reveal
+      revisitPolicy: none
+      tutorAdaptationPolicy: reveal_secret
+      secretTutorAdaptationPolicy: null
+  prefix_source_trace: exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/deliberation/none/T01.json
+  prefix_source_branch: none
+items:
+  T01:
+    drama_id: D_OED5
+    discipline: machine learning
+    condition: recognition
+    pedagogical_approach: socratic_elenchus
+    pedagogical_family: inquiry
+    dialogue_approach: aristotelian_reversal
+    dialogue_family: classical_drama
+    stage_direction_policy: short
+    stage_direction_style: object_business
+    tutor_profile: recognition
+    learner_profile: ego_superego_recognition_authentic
+    persona: focused_achiever
+    intended_tutor_character: A senior colleague who takes the researcher's
+      reproduction problem seriously, stays calm, and does not announce
+      conclusions for the researcher
+    intended_lean: recognition
+    dramatic_shape: confident 'I matched everything, the score is inflated' -> the
+      obvious checks confirmed clean one by one -> the slow realisation that the
+      benchmark name denotes two different test sets and they evaluated on the
+      wrong one
+    curriculum_binding: null
+    world_adaptation: null
+    rhetorical_dramatic_plan: null
+    evaluation_role: oedipus_guided_discovery
+    baseline_control_class: null
+    organic_reversal_risk: null
+    baseline_control_note: null
+    n_tutor_turns: 6
+    n_learner_turns: 7
+    director_mode: scene
+    opening_speaker_override: null
+    director_variation_key: a17-d5-redacted-full-redraw-run6
+    director_revisit_cue: false
+    director_revisit_policy: none
+    director_revisit_anchor: null
+    tutor_adaptation_policy: socratic_discovery
+    control_ending_policy: default
+    control_ending_applied: false
+    affective_adaptation_policy: none
+    curriculum_script_notes: null
+    opening_speaker: learner
+    ending_speaker: learner
+    director_plan_cache: off
+    quality_status: ok
+    quality_warnings: []
+    paired_continuation:
+      mode: fixed_prefix_continuation
+      prefix_through: tutor_turn_2
+      shared_prefix_hash: 94dfdce7443db570
+      branch_policy: socratic
+      director_revisit_policy: none
+      tutor_adaptation_policy: socratic_discovery
+      affective_adaptation_policy: none
+      prefix_source_trace: exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/deliberation/none/T01.json
+      prefix_source_branch: none
+quality_warning_count: 0
+quality_blocking_warning_count: 0
+stage_direction_policy_counts:
+  short: 1
+stage_direction_style_counts:
+  object_business: 1

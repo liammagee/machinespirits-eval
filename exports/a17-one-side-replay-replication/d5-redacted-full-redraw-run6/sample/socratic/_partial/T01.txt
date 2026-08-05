@@ -1,0 +1,81 @@
+STAGE: [The printed paper sits between them on the desk, the headline accuracy circled in pencil.]
+
+LEARNER: [slides the printed paper across the desk so the results table faces the colleague]
+
+"The model loads clean, the eval script matches what's described in section 3.2, and the metric computation is exact — and I'm still twelve points below their reported number. That's not noise. That's a systematic gap, and I want to know whether there's a legitimate procedural explanation I've missed before I submit this critique."
+
+TUTOR: [picks up the printed paper, turns to the results table, sets it back down without comment]
+
+"Three claims there. The model loads clean. The eval script matches section 3.2. The metric computation is exact.
+
+Which of those has been verified against something external to the paper — and to be clear, all three require an answer, not just the one that feels most settled."
+
+LEARNER: [looks back at the terminal, not the paper]
+
+"The eval script. The model weights came from the official release and the metric formula cross-checked against the original codebase — those have something external to hold them against. The script verification was circular: matched against section 3.2, which means matched against the paper's own account of what it does. If the script is where the gap lives, that's a procedural explanation I haven't ruled out, and submitting on a twelve-point discrepancy I can't fully account for is — that's premature."
+
+STAGE: [The marked work is moved or turned; the earlier mark remains visible.]
+
+TUTOR: [lifts the printed paper, turns it so the results table faces the learner rather than the desk, and sets it back down without straightening it]
+
+"The circular verification point is the sharper observation of the two. Note it.
+
+But there's a distinction being run together here. The script matching section 3.2 is one question. Whether section 3.2 accurately describes what the paper actually ran is another. Those aren't the same question, and treating them as the same is part of what makes the discrepancy hard to locate.
+
+So: the claim is that circular verification is a gap in the audit. That's a reasonable claim. What would a non-circular audit of the script require — what external evidence would actually falsify the proposition that the script is not the source of the problem?"
+
+LEARNER: [glances at the terminal, not the paper]
+
+"The script is no longer settled — that's the honest position. Matching it to section 3.2 doesn't establish what was actually executed, and if section 3.2 could be wrong or retrospective, then the twelve-point gap might sit there rather than in the paper's reported number. Which means submitting on the current audit would be premature. What's needed is something that existed before the paper — a commit log, a dated intermediate output, anything that isn't itself downstream of the published account."
+
+TUTOR: [picks up the pencil from the desk and sets it down on top of the printed paper without straightening it]
+
+"The audit logic is sound as far as it goes. Commit logs, dated outputs — those would establish what was executed.
+
+But notice what that audit is still about. It's about what the paper ran. The model, the script, the metric — all of that is on the paper's side of the ledger.
+
+There's a different object that hasn't been examined on those terms: the test set itself. Not the code that evaluated it. The test data — the actual collection of examples the evaluation was run against.
+
+The benchmark has a name. The paper uses that name. The download used that name. The question is whether the name denotes the same collection of examples in both cases — and that's a question that hasn't been asked yet, let alone answered.
+
+How would one establish whether the test set used here and the test set the paper evaluated on are, in fact, the same set of examples?"
+
+LEARNER: [looks at the terminal, not at the colleague]
+
+"The test set is the most likely location of the gap. A version mismatch there would leave the model, the code, and the metric all looking clean — which is exactly what's been found. That means the submission isn't ready, because the critique is built on the assumption that the paper's number is inflated, and a versioning discrepancy would make that accusation wrong.
+[pause]
+The checksum and release manifest need checking against whatever the paper's submission date was — that's the remaining audit. But the conclusion already shifts: the twelve-point gap may not be inflation."
+
+TUTOR: [turns the second monitor — the PDF — so the results table is no longer visible from the learner's side; the terminal stays where it is]
+
+"Version mismatch. Spell that out. What would the examples in the two sets look like — the paper's and the downloaded one — if it were a version mismatch?"
+
+LEARNER: [looks at the terminal, not at the colleague]
+
+"The downloaded set would have examples the paper never evaluated on, or be missing ones it did — so both evaluations could be internally coherent and the gap still be real. That means the twelve-point discrepancy isn't evidence of inflation. The submission is wrong in what it's accusing the paper of."
+
+TUTOR: [picks up the printed paper, turns it face-down on the desk, and leaves the terminal visible]
+
+"So the audit has shifted. The paper's number may be perfectly accurate for what the paper ran. Hold that.
+
+There's a step before the checksum. "Version mismatch" is covering two different cases and it matters which one is meant. One case: same underlying examples, different release — a shuffle, a patch, a reordering. Another case: the short name circulates and two different bodies of examples sit under it — different items, different size, different population. Those are not the same situation. In the first, any download of the same benchmark gets the same examples eventually. In the second, no amount of re-downloading resolves the gap, because the name itself is pointing at different things depending on where it was obtained.
+
+The question isn't yet which of those two cases applies here. It's whether the distinction is visible — whether "version mismatch" and "one name, two different things" are the same claim or different claims.
+
+What does the difference amount to?"
+
+LEARNER: [looks at the terminal]
+
+"The two cases are different claims. A versioned release is still one object — the gap is traceable and closeable. A fractured name is two different objects that happen to share a label — no audit resolves that, because there was never a single referent to recover. If that second case is what's happened here, the submission isn't just premature. The gap can't be read as inflation at all."
+
+TUTOR: [sets the printed paper beside the terminal so both are in front of the learner at once]
+
+"The model weights, the evaluation code, the metric — all confirmed, all matching the paper's release. That ledger is closed.
+
+What remains is the test set and the name it was downloaded under. The name appears in the paper. The same name was used for the download. Those are the only confirmed facts about it.
+
+Where would the information actually sit — the record that would establish which body of examples was used for a given evaluation, rather than just which name was invoked?"
+
+LEARNER: [looks at the terminal, not at the paper]
+
+"A checksum logged at download time. A commit hash or release manifest from whatever repository the authors pulled. A hash embedded in the evaluation config, if anyone recorded it. Those are the records that would settle it. If none of them exist, the name is the only evidence — and the accusation as written doesn't hold."

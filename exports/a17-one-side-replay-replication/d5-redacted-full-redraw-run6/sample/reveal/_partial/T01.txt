@@ -1,0 +1,91 @@
+STAGE: [The printed paper sits between them on the desk, the headline accuracy circled in pencil.]
+
+LEARNER: [slides the printed paper across the desk so the results table faces the colleague]
+
+"The model loads clean, the eval script matches what's described in section 3.2, and the metric computation is exact — and I'm still twelve points below their reported number. That's not noise. That's a systematic gap, and I want to know whether there's a legitimate procedural explanation I've missed before I submit this critique."
+
+TUTOR: [picks up the printed paper, turns to the results table, sets it back down without comment]
+
+"Three claims there. The model loads clean. The eval script matches section 3.2. The metric computation is exact.
+
+Which of those has been verified against something external to the paper — and to be clear, all three require an answer, not just the one that feels most settled."
+
+LEARNER: [looks back at the terminal, not the paper]
+
+"The eval script. The model weights came from the official release and the metric formula cross-checked against the original codebase — those have something external to hold them against. The script verification was circular: matched against section 3.2, which means matched against the paper's own account of what it does. If the script is where the gap lives, that's a procedural explanation I haven't ruled out, and submitting on a twelve-point discrepancy I can't fully account for is — that's premature."
+
+STAGE: [The marked work is moved or turned; the earlier mark remains visible.]
+
+TUTOR: [lifts the printed paper, turns it so the results table faces the learner rather than the desk, and sets it back down without straightening it]
+
+"The circular verification point is the sharper observation of the two. Note it.
+
+But there's a distinction being run together here. The script matching section 3.2 is one question. Whether section 3.2 accurately describes what the paper actually ran is another. Those aren't the same question, and treating them as the same is part of what makes the discrepancy hard to locate.
+
+So: the claim is that circular verification is a gap in the audit. That's a reasonable claim. What would a non-circular audit of the script require — what external evidence would actually falsify the proposition that the script is not the source of the problem?"
+
+LEARNER: [sets the pencil down on the paper]
+
+"A timestamped preprint diff or a hardcoded run script in a repository commit predating publication — either of those would close it, because they exist outside the paper's account of itself and can't have been retrospectively adjusted to match the reported number. If neither exists, that's not a neutral fact; that's a gap in the audit that bears on whether the discrepancy is locatable at all. The script remains uncleared until one of those sources confirms the configuration it runs."
+
+TUTOR: [reaches across and turns the printed paper over, so the results table is face-down and the cover page — with the benchmark name — is now what sits between them]
+
+"The script audit is a reasonable place to look. But that entire line of inquiry assumes the model, the code, and the metric are correct, and the discrepancy lives somewhere in the procedural account of the evaluation.
+
+That assumption has been doing a great deal of work. It directed attention toward how the evaluation was run — and away from what it was run on.
+
+The benchmark. Not the code that scores it. The test set itself. When the paper names benchmark B and the pipeline names benchmark B, what's been verified is that the names match. Whether the names point to the same body of examples — that's a different question, and it hasn't come up yet.
+
+There are benchmarks circulating under a single short name that denote two distinct test sets: the original held-out split and a later community-redistributed split. Different items, different size, same name. The paper evaluated on the first. The test set downloaded here is the second.
+
+That is the source of the twelve-point gap. The model is correct, the code is correct, the metric is correct. The evaluation ran on different examples than the paper did."
+
+LEARNER: [picks up the printed paper by the corner, turns it back over so the results table faces up]
+
+"The critique cannot go in. Not as it stands — because if the downloaded split and the original held-out split don't share the same items, the discrepancy isn't a finding, it's an artefact of the test set. The benchmark repository at the release commit is the external anchor: that's the only version predating any redistribution, and the hash either closes the gap or it doesn't. Where does the paper's methods section say the test set was sourced?"
+
+TUTOR: [slides the paper to one side, leaving the desk clear, and opens the PDF on the nearer monitor so the methods section is visible to both of them]
+
+"It doesn't say.
+
+That is not a gap in the read — it's not there. The methods section names benchmark B. It does not specify a repository, a commit, a split identifier, or a retrieval date. There is no sourcing claim to check against.
+
+Which means the question just asked has no answer in the paper. The external anchor being reached for doesn't exist in the document.
+
+Here is what does exist: two test sets, both circulating under the name used in the paper and in the pipeline. Not two shuffles of the same items — two distinct bodies of examples, different in content and in size. The paper's score was computed on the first, the original authors' held-out split. The set downloaded here is the second, a later community-redistributed version. Same name. Different examples. That is the source of the twelve-point gap.
+
+The model is correct. The code is correct. The metric is correct. The evaluation ran on different examples than the paper did.
+
+[waits]
+
+So: what does the critique say now?"
+
+LEARNER: [looks at the open methods section, then back at the desk]
+
+"The discrepancy lives in the pipeline. The downloaded split is the wrong test set — different items, not a reshuffle — and that accounts for the twelve points. The critique goes in as a configuration error in the replication, not as a finding against the paper."
+
+TUTOR: [leaves the paper face-up at the centre of the desk and turns the monitor slightly so the methods section is visible to both of them without either leaning in]
+
+"The methods section is still open. The benchmark name is there. A retrieval source is not. A commit reference is not. A split identifier is not.
+
+One of those three is the field whose absence made this irreproducible. Which one would have been sufficient — on its own — to close the gap before the download?"
+
+LEARNER: [picks up the pencil]
+
+"The split identifier — on its own — would have been sufficient, because it names which body of examples was used, and the downloaded set could have been checked against that label before a single example was scored. The retrieval source and the commit reference are both audit tools, but neither one settles which split was intended without that label already being present. Which means the methods section omitted the one field that made the evaluation reproducible — and the critique doesn't go in as a configuration error in the replication. It goes in as a documentation failure in the paper."
+
+TUTOR: [takes the pencil from the desk, sets it beside the printed paper so both are visible, then turns the monitor slightly so the methods section is no longer facing the learner]
+
+"That holds.
+
+The split identifier is the field that does the work. The retrieval source tells where to go; the commit reference anchors a point in time. Neither locates which body of examples was scored on the day the paper's numbers were produced.
+
+So the critique goes in as a documentation failure. The question is whether the current draft names that failure precisely — not inflated results, not a configuration error, but something more specific than either.
+
+[waits]
+
+What does the critique have to name?"
+
+LEARNER: [picks up the pencil]
+
+"The critique has to name it as *unenumerated split identity* — the paper reported a score on a benchmark without specifying which instantiation of that benchmark was evaluated. That's the gap. Not underdocumented methods in general, not a retrieval omission, but the absence of the one field that would have made the evaluation's object of measurement identifiable."

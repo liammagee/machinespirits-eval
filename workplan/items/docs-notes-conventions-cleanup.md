@@ -1,7 +1,7 @@
 ---
 id: docs-notes-conventions-cleanup
 title: Bring notes/ and root naming back inside their own conventions
-status: review
+status: done
 type: maintenance
 priority: P3
 owner: claude

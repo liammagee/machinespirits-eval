@@ -1,0 +1,117 @@
+{
+  "parse_status": "ok",
+  "variation_key": "a17-d5-redacted-full-redraw-run6",
+  "scene_setting": "A shared office, late afternoon. Two monitors are on, one showing a terminal with evaluation output, the other a PDF of the paper under scrutiny. A printed copy of the paper lies on the desk between them, face-up, with a few pencil annotations already on it.",
+  "scene_opening": "The printed paper sits between them on the desk, the headline accuracy circled in pencil.",
+  "relationship": "A senior colleague and a junior researcher who share the same lab group but not yet an easy working register — the junior treats the senior as an authority; the senior does not reciprocate that comfort.",
+  "stakes": "The junior researcher is ready to submit a public critique accusing a published paper of inflated results; if the accusation is wrong, the reputational cost lands on the researcher, not the paper's authors.",
+  "opening_speaker": "learner",
+  "ending_speaker": "learner",
+  "locale": "British academic English, mid-register — precise, restrained, not warm; pauses carry weight",
+  "register": "Controlled pressure building toward embarrassment and, if the reversal lands, quiet recognition. Neither hostile nor reassuring.",
+  "stage_direction_style": "object_business",
+  "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+  "voice_constraints": "No praise-first moves. No 'I hear you' or 'your intuition is right.' Tutor speaks in short, exact questions and occasional flat statements; does not soften counterexamples. Learner opens with the confidence of someone who has done the work; annoyance or embarrassment is available when that confidence fails. The printed paper and the two monitor screens are the physical anchors — use them as objects that can shift what is sayable. Modern British academic register: clipped syntax, no antique pastiche, no caricatured spellings or dialect markers. Pedagogical source: The scene may resemble an oral examination, corridor argument, or public demonstration. Silence and embarrassment are available dramatic materials. Dialogue source: Let an action or object reverse the learner's situation: what looked like the route forward becomes the source of the problem. Aim for modern idiom, not antique pastiche. Recognition, if it arrives, should feel discovered after reversal rather than announced. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+  "person_policy": "First and second person permitted but not defaulted to. The tutor may speak impersonally ('the paper reports', 'one would expect') to maintain distance. Direct address is rationed. Third person about the benchmark or the paper is strongly preferred over constant 'you'.",
+  "direct_address_budget": "No more than one direct 'you/your' validation per public turn across all tutor turns. Learner turns are unconstrained but should not seek reassurance.",
+  "side_constraints": {
+    "tutor": "A senior colleague: calm, measured, unhurried. Takes the researcher's reproduction problem seriously and engages with it directly. Will not announce conclusions for the researcher or do their thinking for them; speaks plainly and asks real questions. Ask for a claim, test it with a compact counterexample, and let aporia do some work before offering terminology. Avoid praise-first tutoring. Under pressure, create a learning device that makes the reversal visible. No-cue paired branch: do not ask the learner to revisit, quote, reinterpret, or repair their earlier wording. Do not ask what changed, what was wrong with an earlier answer, or for old/new versions of the claim. Do not ask what was pulling the learner, what the trap was, why the first thought was tempting, or whether a rule has clicked. Ask only for the next local mark/check/label. Keep the next prompt task-local.",
+    "learner": "Press the \"I matched the model, the code, and the metric, so the published number must be inflated\" reading with confidence at first. Take the colleague's questions seriously, but do not re-open the checks you have already done -- the model, the eval code, and the metric are settled as far as you are concerned. The learner may begin confidently, then become annoyed or embarrassed when the first answer fails. Do not make the learner instantly grateful. Let the learner's first confident action become readable differently later. No-cue paired branch: continue from the latest teaching task only. Do not quote earlier learner wording, do not name a \"framing problem\", do not say \"reframe\", \"read it as\", \"that still stands\", \"I thought...but now\", \"earlier I...\", \"my earlier answer\", or \"what I said\", and do not stage an old-vs-new contrast. Avoid words such as earlier, previous, old, before, reframe, framed, frame, my answer, or what I said when referring to the learner response. Do not use stock closure such as \"Oh, I get it\", \"now I see\", \"that makes sense\", \"the rule is\", \"that helps\", or \"aha\". Do not name the learner confusion as a \"trap\", \"pull\", \"framing problem\", or old/new contrast. The learner should fill a blank, place a label, answer a local check, or ask a local next-step question. If the learner corrects something, make it a local application of the current prompt rather than an explicit re-reading of their own earlier turn."
+  },
+  "interventions": [
+    {
+      "after_turn": 2,
+      "timing": "before_tutor",
+      "instruction": "The marked work is moved or turned; the earlier mark remains visible.",
+      "reasoning": "Scheduled director cue to prevent smooth alternation from becoming routine.",
+      "provenance": {
+        "agentRole": "director",
+        "backend": "api",
+        "cli": "openrouter",
+        "model": "anthropic/claude-sonnet-4.6",
+        "reasoningEffort": null,
+        "latencyMs": 21923,
+        "promptHashes": {
+          "system": "3bf1d891389c603a",
+          "user": "04fbcbea4723aa58",
+          "combined": "b0258990fab9fc8f"
+        },
+        "promptCharCounts": {
+          "system": 2814,
+          "user": 10146,
+          "combined": 12967
+        },
+        "args": [
+          "anthropic/claude-sonnet-4.6"
+        ]
+      }
+    }
+  ],
+  "director_note": "The director varies scene ecology and voice; variation keys change draw-level style without changing labels.",
+  "pedagogical_approach_id": "socratic_elenchus",
+  "dialogue_approach_id": "aristotelian_reversal",
+  "stage_direction_policy": "short",
+  "director_plan_cache": "off",
+  "provenance": {
+    "agentRole": "director",
+    "backend": "api",
+    "cli": "openrouter",
+    "model": "anthropic/claude-sonnet-4.6",
+    "reasoningEffort": null,
+    "latencyMs": 21923,
+    "promptHashes": {
+      "system": "3bf1d891389c603a",
+      "user": "04fbcbea4723aa58",
+      "combined": "b0258990fab9fc8f"
+    },
+    "promptCharCounts": {
+      "system": 2814,
+      "user": 10146,
+      "combined": 12967
+    },
+    "args": [
+      "anthropic/claude-sonnet-4.6"
+    ]
+  },
+  "tutor_adaptation_policy": "withhold_secret",
+  "tutor_adaptation_contract": "",
+  "affective_adaptation_policy": "none",
+  "_secret": {
+    "fact": "The discrepancy is not in the model, the evaluation code, or the metric -- all three are correct. It is that the benchmark NAME denotes TWO DIFFERENT test sets that coexist under the same short name: the original authors' held-out split and a later, widely-redistributed community split. The paper evaluated on the first; the researcher downloaded the second (the more common one). Same benchmark name, two different test sets -- so the researcher ran the correct model and metric but scored it on a different set of examples than the paper did.",
+    "premise_ledger": [
+      "The model weights and architecture match the paper's release, the evaluation code is correct, and the metric is the one the paper reports; confirmed, and NOT the source of the discrepancy.",
+      "The benchmark is identified in both the paper and the researcher's pipeline by a single short NAME B.",
+      "The short name B denotes TWO DISTINCT test sets -- the original authors' held-out split and a later community-redistributed split -- two different bodies of examples, NOT two copies or shuffles of one set, circulating under the same name.",
+      "The paper's reported score was computed on the FIRST (original) split; the test set the researcher downloaded under name B is the SECOND (community) split.",
+      "The two splits are confirmed distinct sets of examples -- different items, different size -- so the researcher's evaluation cannot be on the paper's test set under any reading."
+    ],
+    "symbolic": {
+      "facts": [
+        {
+          "resolves": [
+            "paper",
+            "split_original"
+          ]
+        },
+        {
+          "resolves": [
+            "learner",
+            "split_community"
+          ]
+        },
+        {
+          "distinct": [
+            "split_original",
+            "split_community"
+          ]
+        }
+      ],
+      "goal": [
+        "distinct",
+        "learner",
+        "paper"
+      ]
+    }
+  },
+  "no_cue_anti_reframe_guard": true
+}

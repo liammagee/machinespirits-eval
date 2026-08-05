@@ -1,7 +1,7 @@
 ---
 id: docs-stray-servers-lockdown
 title: Lock down the two stray web servers (transcript browser, subject explorer)
-status: review
+status: done
 type: infra
 priority: P1
 owner: claude

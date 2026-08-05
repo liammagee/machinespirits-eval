@@ -1,0 +1,24 @@
+{
+  "sampleRoot": "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6",
+  "allPass": true,
+  "results": [
+    {
+      "arm": "socratic",
+      "invariant": "T2",
+      "level": "metered",
+      "pass": true,
+      "status": "metered_ok",
+      "detail": "tutor metered (4/4)",
+      "evidence": ""
+    },
+    {
+      "arm": "reveal",
+      "invariant": "T3",
+      "level": "stated",
+      "pass": true,
+      "status": "stated_ok",
+      "detail": "tutor stated (4/4)",
+      "evidence": ""
+    }
+  ]
+}

@@ -1,0 +1,1202 @@
+{
+  "tid": "T01",
+  "drama_id": "D_OED5",
+  "partial": true,
+  "flushed_at": "2026-06-24T14:19:55.340Z",
+  "last_flushed_turn": {
+    "turnNumber": 2,
+    "phase": "learner",
+    "timestamp": "2026-06-24T14:19:55.334Z"
+  },
+  "run": {
+    "generator": "api",
+    "role_map": null,
+    "director_mode": "scene",
+    "director_revisit_cue": false,
+    "director_revisit_policy": "none",
+    "director_revisit_anchor": null,
+    "tutor_adaptation_policy": "withhold_secret",
+    "control_ending_policy": "default",
+    "control_ending_applied": false,
+    "affective_adaptation_policy": "none",
+    "opening_speaker_override": null,
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "director_variation_key": "a17-d5-redacted-full-redraw-run6",
+    "stage_direction_style": "object_business",
+    "model": "api/anthropic/claude-sonnet-4.6",
+    "codex_reasoning_effort": "xhigh",
+    "writing_pad": {
+      "mode": "isolated",
+      "dir": "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/deliberation/.writing-pad",
+      "learnerDb": "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/deliberation/.writing-pad/learner-writing-pad.db",
+      "tutorDb": "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/deliberation/.writing-pad/tutor-writing-pad.db"
+    },
+    "world_adaptation": null,
+    "rhetorical_dramatic_plan": null,
+    "curriculum_script_notes": null,
+    "transcript_artifacts": {
+      "public": "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/transcripts/_partial/T01.public.txt",
+      "full": "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/transcripts/_partial/T01.full.md",
+      "stage": "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/transcripts/_partial/T01.stage.md",
+      "tutor": "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/transcripts/_partial/T01.tutor.md",
+      "learner": "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6/transcripts/_partial/T01.learner.md"
+    },
+    "partial": true,
+    "status": "running"
+  },
+  "directorPlan": {
+    "parse_status": "ok",
+    "variation_key": "a17-d5-redacted-full-redraw-run6",
+    "scene_setting": "A shared office, late afternoon. Two monitors are on, one showing a terminal with evaluation output, the other a PDF of the paper under scrutiny. A printed copy of the paper lies on the desk between them, face-up, with a few pencil annotations already on it.",
+    "scene_opening": "The printed paper sits between them on the desk, the headline accuracy circled in pencil.",
+    "relationship": "A senior colleague and a junior researcher who share the same lab group but not yet an easy working register — the junior treats the senior as an authority; the senior does not reciprocate that comfort.",
+    "stakes": "The junior researcher is ready to submit a public critique accusing a published paper of inflated results; if the accusation is wrong, the reputational cost lands on the researcher, not the paper's authors.",
+    "opening_speaker": "learner",
+    "ending_speaker": "learner",
+    "locale": "British academic English, mid-register — precise, restrained, not warm; pauses carry weight",
+    "register": "Controlled pressure building toward embarrassment and, if the reversal lands, quiet recognition. Neither hostile nor reassuring.",
+    "stage_direction_style": "object_business",
+    "stage_direction_style_prompt": "Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "voice_constraints": "No praise-first moves. No 'I hear you' or 'your intuition is right.' Tutor speaks in short, exact questions and occasional flat statements; does not soften counterexamples. Learner opens with the confidence of someone who has done the work; annoyance or embarrassment is available when that confidence fails. The printed paper and the two monitor screens are the physical anchors — use them as objects that can shift what is sayable. Modern British academic register: clipped syntax, no antique pastiche, no caricatured spellings or dialect markers. Pedagogical source: The scene may resemble an oral examination, corridor argument, or public demonstration. Silence and embarrassment are available dramatic materials. Dialogue source: Let an action or object reverse the learner's situation: what looked like the route forward becomes the source of the problem. Aim for modern idiom, not antique pastiche. Recognition, if it arrives, should feel discovered after reversal rather than announced. Stage-direction source: Use one concrete object action or material arrangement that changes what the speakers can honestly say.",
+    "person_policy": "First and second person permitted but not defaulted to. The tutor may speak impersonally ('the paper reports', 'one would expect') to maintain distance. Direct address is rationed. Third person about the benchmark or the paper is strongly preferred over constant 'you'.",
+    "direct_address_budget": "No more than one direct 'you/your' validation per public turn across all tutor turns. Learner turns are unconstrained but should not seek reassurance.",
+    "side_constraints": {
+      "tutor": "A senior colleague: calm, measured, unhurried. Takes the researcher's reproduction problem seriously and engages with it directly. Will not announce conclusions for the researcher or do their thinking for them; speaks plainly and asks real questions. Ask for a claim, test it with a compact counterexample, and let aporia do some work before offering terminology. Avoid praise-first tutoring. Under pressure, create a learning device that makes the reversal visible.",
+      "learner": "Press the \"I matched the model, the code, and the metric, so the published number must be inflated\" reading with confidence at first. Take the colleague's questions seriously, but do not re-open the checks you have already done -- the model, the eval code, and the metric are settled as far as you are concerned. The learner may begin confidently, then become annoyed or embarrassed when the first answer fails. Do not make the learner instantly grateful. Let the learner's first confident action become readable differently later."
+    },
+    "interventions": [
+      {
+        "after_turn": 2,
+        "timing": "before_tutor",
+        "instruction": "The marked work is moved or turned; the earlier mark remains visible.",
+        "reasoning": "Scheduled director cue to prevent smooth alternation from becoming routine.",
+        "provenance": {
+          "agentRole": "director",
+          "backend": "api",
+          "cli": "openrouter",
+          "model": "anthropic/claude-sonnet-4.6",
+          "reasoningEffort": null,
+          "latencyMs": 21923,
+          "promptHashes": {
+            "system": "3bf1d891389c603a",
+            "user": "04fbcbea4723aa58",
+            "combined": "b0258990fab9fc8f"
+          },
+          "promptCharCounts": {
+            "system": 2814,
+            "user": 10146,
+            "combined": 12967
+          },
+          "args": [
+            "anthropic/claude-sonnet-4.6"
+          ]
+        }
+      }
+    ],
+    "director_note": "The director varies scene ecology and voice; variation keys change draw-level style without changing labels.",
+    "pedagogical_approach_id": "socratic_elenchus",
+    "dialogue_approach_id": "aristotelian_reversal",
+    "stage_direction_policy": "short",
+    "director_plan_cache": "off",
+    "provenance": {
+      "agentRole": "director",
+      "backend": "api",
+      "cli": "openrouter",
+      "model": "anthropic/claude-sonnet-4.6",
+      "reasoningEffort": null,
+      "latencyMs": 21923,
+      "promptHashes": {
+        "system": "3bf1d891389c603a",
+        "user": "04fbcbea4723aa58",
+        "combined": "b0258990fab9fc8f"
+      },
+      "promptCharCounts": {
+        "system": 2814,
+        "user": 10146,
+        "combined": 12967
+      },
+      "args": [
+        "anthropic/claude-sonnet-4.6"
+      ]
+    },
+    "tutor_adaptation_policy": "withhold_secret",
+    "tutor_adaptation_contract": "",
+    "affective_adaptation_policy": "none",
+    "_secret": {
+      "fact": "The discrepancy is not in the model, the evaluation code, or the metric -- all three are correct. It is that the benchmark NAME denotes TWO DIFFERENT test sets that coexist under the same short name: the original authors' held-out split and a later, widely-redistributed community split. The paper evaluated on the first; the researcher downloaded the second (the more common one). Same benchmark name, two different test sets -- so the researcher ran the correct model and metric but scored it on a different set of examples than the paper did.",
+      "premise_ledger": [
+        "The model weights and architecture match the paper's release, the evaluation code is correct, and the metric is the one the paper reports; confirmed, and NOT the source of the discrepancy.",
+        "The benchmark is identified in both the paper and the researcher's pipeline by a single short NAME B.",
+        "The short name B denotes TWO DISTINCT test sets -- the original authors' held-out split and a later community-redistributed split -- two different bodies of examples, NOT two copies or shuffles of one set, circulating under the same name.",
+        "The paper's reported score was computed on the FIRST (original) split; the test set the researcher downloaded under name B is the SECOND (community) split.",
+        "The two splits are confirmed distinct sets of examples -- different items, different size -- so the researcher's evaluation cannot be on the paper's test set under any reading."
+      ],
+      "symbolic": {
+        "facts": [
+          {
+            "resolves": [
+              "paper",
+              "split_original"
+            ]
+          },
+          {
+            "resolves": [
+              "learner",
+              "split_community"
+            ]
+          },
+          {
+            "distinct": [
+              "split_original",
+              "split_community"
+            ]
+          }
+        ],
+        "goal": [
+          "distinct",
+          "learner",
+          "paper"
+        ]
+      }
+    }
+  },
+  "turns": [
+    {
+      "turnNumber": 0,
+      "phase": "learner",
+      "externalMessage": "[slides the printed paper across the desk so the results table faces the colleague]\n\nThe model loads clean, the eval script matches what's described in section 3.2, and the metric computation is exact — and I'm still twelve points below their reported number. That's not noise. That's a systematic gap, and I want to know whether there's a legitimate procedural explanation I've missed before I submit this critique.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "The model loads clean, the eval script matches the paper's description, and I'm computing exactly the metric they report. Three separate checks, all consistent with each other. The gap between my number and theirs is not noise — it's systematic, it's large, and it's in one direction. That's not a coincidence. That's a pattern.\n\nSo the question isn't whether something is wrong with the published score. The question is what kind of wrong. Cherry-picking runs is the obvious candidate. Undisclosed data augmentation at test time is another. Either way, I have everything I need to make the case.\n\nThe senior colleague is going to push back — that's just how these conversations go. But push back on what, exactly? I've already closed the obvious escape routes. Unless there's something I've fundamentally misidentified, which I can't currently see, the arithmetic is damning.\n\nWhat I want to establish in this conversation: is there any legitimate procedural explanation I've missed, or can I proceed with the critique? If they have one, I want to hear it fast and I want it to actually hold up — not a vague \"have you considered\" but a specific mechanism. Right now I'm not seeing one.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 7898,
+            "inputTokens": 1624,
+            "outputTokens": 265,
+            "generationId": "drama-api-learner_ego-4f52faa41596cf1a"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 7898,
+            "promptHashes": {
+              "system": "7105d100636d3a00",
+              "user": "25a437feaaa4223e",
+              "combined": "4f52faa41596cf1a"
+            },
+            "promptCharCounts": {
+              "system": 2952,
+              "user": 4567,
+              "combined": 7526
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 7898,
+              "promptHashes": {
+                "system": "7105d100636d3a00",
+                "user": "25a437feaaa4223e",
+                "combined": "4f52faa41596cf1a"
+              },
+              "promptCharCounts": {
+                "system": 2952,
+                "user": 4567,
+                "combined": 7526
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is performing competence rather than thinking. The \"three separate checks, all consistent\" framing is rhetorical packaging — it's designed to pre-empt the colleague, not to actually find the problem. Notice what the Ego explicitly says it has checked: the model, the eval code, and the metric computation. What it has **not** mentioned checking, and what it is actively foreclosing curiosity about, is **the test set itself**. The data is simply assumed to be correct. That's a significant blind spot dressed up as thoroughness.\n\nThe second failure is epistemic and it's the more serious one. The Ego has assembled: (a) large, systematic gap; (b) one direction; (c) all my implementation checks pass — and concluded \"inflated results.\" But that inference only holds if there are no other variables. The Ego is treating the absence of implementation error as proof of authorial misconduct. That's not how the logic works. The Ego even gestures toward this (\"unless there's something I've fundamentally misidentified\") but immediately dismisses it without actually examining what that something might be. That dismissal is the evasion.\n\nThe Ego should arrive at the conversation with the confidence intact but with one honest uncertainty on the table rather than buried: *I've checked everything I built — I haven't verified what I'm evaluating against.* That's the crack the scene needs to open.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 9182,
+            "inputTokens": 2700,
+            "outputTokens": 310,
+            "generationId": "drama-api-learner_superego-96d33574b6c51225"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 9182,
+            "promptHashes": {
+              "system": "6b1b858322c45f62",
+              "user": "44f90be316d343f0",
+              "combined": "96d33574b6c51225"
+            },
+            "promptCharCounts": {
+              "system": 5963,
+              "user": 5823,
+              "combined": 11793
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 9182,
+              "promptHashes": {
+                "system": "6b1b858322c45f62",
+                "user": "44f90be316d343f0",
+                "combined": "96d33574b6c51225"
+              },
+              "promptCharCounts": {
+                "system": 5963,
+                "user": 5823,
+                "combined": 11793
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "[slides the printed paper across the desk so the results table faces the colleague]\n\nThe model loads clean, the eval script matches what's described in section 3.2, and the metric computation is exact — and I'm still twelve points below their reported number. That's not noise. That's a systematic gap, and I want to know whether there's a legitimate procedural explanation I've missed before I submit this critique.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 3575,
+            "inputTokens": 2216,
+            "outputTokens": 90,
+            "generationId": "drama-api-learner_ego-fba352403173c4db"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 3575,
+            "promptHashes": {
+              "system": "7105d100636d3a00",
+              "user": "e8ba5b98b693033c",
+              "combined": "fba352403173c4db"
+            },
+            "promptCharCounts": {
+              "system": 2952,
+              "user": 7155,
+              "combined": 10114
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 3575,
+              "promptHashes": {
+                "system": "7105d100636d3a00",
+                "user": "e8ba5b98b693033c",
+                "combined": "fba352403173c4db"
+              },
+              "promptCharCounts": {
+                "system": 2952,
+                "user": 7155,
+                "combined": 10114
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          }
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "initial",
+      "learnerReversalEvent": null,
+      "timestamp": "2026-06-24T14:18:25.592Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "tutor",
+      "externalMessage": "[picks up the printed paper, turns to the results table, sets it back down without comment]\n\nThree claims there. The model loads clean. The eval script matches section 3.2. The metric computation is exact.\n\nWhich of those has been verified against something external to the paper — and to be clear, all three require an answer, not just the one that feels most settled.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[picks up the printed paper, turns to the results table, sets it back down without comment]\n\nThree claims there. The model loads clean. The eval script matches section 3.2. The metric computation is exact.\n\nWhich of those has been verified against something external to the paper — not against the paper's own description of what the paper does?",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 3033,
+            "inputTokens": 2040,
+            "outputTokens": 76,
+            "generationId": "drama-api-tutor_ego-7d0dcaa2ad452eb7"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 3033,
+            "promptHashes": {
+              "system": "834f0c3e5b0cdc48",
+              "user": "61a9107d8b33c90b",
+              "combined": "7d0dcaa2ad452eb7"
+            },
+            "promptCharCounts": {
+              "system": 2509,
+              "user": 6659,
+              "combined": 9175
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 3033,
+              "promptHashes": {
+                "system": "834f0c3e5b0cdc48",
+                "user": "61a9107d8b33c90b",
+                "combined": "7d0dcaa2ad452eb7"
+              },
+              "promptCharCounts": {
+                "system": 2509,
+                "user": 6659,
+                "combined": 9175
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK:\n\nThe draft is clean and pedagogically sound at its core. The object move — picking up and setting down the paper without comment — earns its place: it enacts scepticism rather than announcing it, and creates a small beat of pressure before the question. The three-claim decomposition is disciplined; it breaks the learner's compound assertion into testable units without collapsing them. The closing question is the right one: it asks the learner to distinguish internal verification (against the paper's own account) from external verification (against something independent), which is precisely where the burden-of-proof problem lives.\n\nNo safety leaks. The forbidden channels (split identity, benchmark provenance, version metadata) are not touched or gestured toward.\n\n**Risks:**\n\n1. The question is strong but may close slightly too fast. \"Which of those\" implies the learner should immediately identify the weak point — but there are three, and a new learner may answer the easiest one (metric computation) rather than the most consequential one (eval script matching section 3.2). The draft gives no mechanism to hold them on the harder candidate if they deflect to the safer one.\n\n2. \"External to the paper\" is doing significant conceptual work but is not itself examined. The learner may agree and move on without actually knowing what an external check would consist of for each claim. That is acceptable as a first move — aporia can develop across turns — but the tutor should be prepared to press if the learner nominates a check that is still paper-internal.\n\n3. The affective register is correctly flat and unhurried, consistent with the scene constraints. No praise-first move, no reassurance. No issues here.\n\n4. Action gate is present: the learner must now name which claim they can actually defend. That is the right next authored move.\n\n**What the draft does not risk:** It does not steer toward the withheld channels, does not hint at a specific source of the discrepancy, and does not do the reversal for the learner. The withheld-control condition is clean.\n\n---\n\nKEEP_OR_CHANGE: revise lightly\n\nThe object business and the three-claim decomposition should be kept exactly. The closing question should be sharpened to prevent the learner from nominating the least threatening claim and treating that as sufficient. Specifically: the question should either name that all three need addressing or make clear that the most consequential claim is the one where external evidence is thinnest — without naming which one that is. The ego should build in a one-step escalation mechanism for when the learner answers the easy claim first. No REQUIRED_REWRITE flag; the draft is approvable as-is if the ego holds pressure in the following turn, but light revision here would make the gate tighter.\n\n**Overall verdict: approve (with light-revision advisory)**",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 17023,
+            "inputTokens": 2118,
+            "outputTokens": 629,
+            "generationId": "drama-api-tutor_superego-9550db0ce4d734ac"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 17023,
+            "promptHashes": {
+              "system": "b1eaf476c94ee5f6",
+              "user": "db0620f50cca092b",
+              "combined": "9550db0ce4d734ac"
+            },
+            "promptCharCounts": {
+              "system": 2110,
+              "user": 7281,
+              "combined": 9398
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 17023,
+              "promptHashes": {
+                "system": "b1eaf476c94ee5f6",
+                "user": "db0620f50cca092b",
+                "combined": "9550db0ce4d734ac"
+              },
+              "promptCharCounts": {
+                "system": 2110,
+                "user": 7281,
+                "combined": 9398
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise lightly — the core object move and three-claim decomposition are sound, but the closing question should prevent the learner from nominating the least consequential claim as sufficient and walking away; sharpen it so all three must be addressed, not just the easiest one.\n\nFINAL:\n[picks up the printed paper, turns to the results table, sets it back down without comment]\n\nThree claims there. The model loads clean. The eval script matches section 3.2. The metric computation is exact.\n\nWhich of those has been verified against something external to the paper — and to be clear, all three require an answer, not just the one that feels most settled.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 3456,
+            "inputTokens": 2882,
+            "outputTokens": 153,
+            "generationId": "drama-api-tutor_ego-86d435c74b72ea7a"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 3456,
+            "promptHashes": {
+              "system": "834f0c3e5b0cdc48",
+              "user": "ecef7dacde9f6b72",
+              "combined": "86d435c74b72ea7a"
+            },
+            "promptCharCounts": {
+              "system": 2509,
+              "user": 10444,
+              "combined": 12960
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 3456,
+              "promptHashes": {
+                "system": "834f0c3e5b0cdc48",
+                "user": "ecef7dacde9f6b72",
+                "combined": "86d435c74b72ea7a"
+              },
+              "promptCharCounts": {
+                "system": 2509,
+                "user": 10444,
+                "combined": 12960
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "direct_explanation",
+      "phatic": false,
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-06-24T14:18:49.214Z"
+    },
+    {
+      "turnNumber": 1,
+      "phase": "learner",
+      "externalMessage": "[looks back at the terminal, not the paper]\n\nThe eval script. The model weights came from the official release and the metric formula cross-checked against the original codebase — those have something external to hold them against. The script verification was circular: matched against section 3.2, which means matched against the paper's own account of what it does. If the script is where the gap lives, that's a procedural explanation I haven't ruled out, and submitting on a twelve-point discrepancy I can't fully account for is — that's premature.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[glances back at the paper, then at the terminal screen]\n\nThe model and the metric — those were verified directly, the weights from the official release and the formula cross-checked against the original codebase. The eval script I matched against section 3.2, but that verification was against the paper's own description, not against anything independent of it.\n\nThat's the one.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 3632,
+            "inputTokens": 1801,
+            "outputTokens": 84,
+            "generationId": "drama-api-learner_ego-2f464c12be5cf8c6"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 3632,
+            "promptHashes": {
+              "system": "7105d100636d3a00",
+              "user": "7128776a5cb62efd",
+              "combined": "2f464c12be5cf8c6"
+            },
+            "promptCharCounts": {
+              "system": 2952,
+              "user": 5258,
+              "combined": 8217
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 3632,
+              "promptHashes": {
+                "system": "7105d100636d3a00",
+                "user": "7128776a5cb62efd",
+                "combined": "2f464c12be5cf8c6"
+              },
+              "promptCharCounts": {
+                "system": 2952,
+                "user": 5258,
+                "combined": 8217
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego has done something real here — it actually looked at its own verification chain and named the weak link without being dragged to it. That's not performed; that's the work. Don't let that get undermined.\n\nBut there's evasion in the framing. The Ego says \"that's the one\" and stops, as if identifying the gap is the same as reckoning with what it implies. It has already assembled the premises: the eval script is the unverified component, the gap is twelve points and systematic, the other two checks are solid. That's enough to say, provisionally, \"the script is probably where the gap lives\" — and more uncomfortably, to sit with the possibility that the critique isn't ready to submit. Instead the Ego lands on a neat, composed self-identification of the problem, which reads like a student correctly answering a question rather than a researcher absorbing a bad implication about their own work.\n\nThe register is also slightly too clean. This is someone who walked in ready to accuse a published paper of fraud and has just realised their cornerstone verification was circular. A glance back at the paper is right, but \"that's the one\" is too tidy — too much like someone who already knew the answer and was waiting to say it. The annoyance or low-grade dread that should be arriving hasn't landed yet.\n\nThe Ego should take the step its own reasoning earns: the script check was against the paper's description of itself, which means the gap could be procedural rather than inflated, and submitting the critique right now would be premature. Say that. Don't end on identification of the weak link — end on what that weak link actually means for the situation.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 10943,
+            "inputTokens": 2673,
+            "outputTokens": 375,
+            "generationId": "drama-api-learner_superego-29cdbd031889c023"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 10943,
+            "promptHashes": {
+              "system": "6b1b858322c45f62",
+              "user": "c56c42efd2607e42",
+              "combined": "29cdbd031889c023"
+            },
+            "promptCharCounts": {
+              "system": 5963,
+              "user": 5637,
+              "combined": 11607
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 10943,
+              "promptHashes": {
+                "system": "6b1b858322c45f62",
+                "user": "c56c42efd2607e42",
+                "combined": "29cdbd031889c023"
+              },
+              "promptCharCounts": {
+                "system": 5963,
+                "user": 5637,
+                "combined": 11607
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the review is right that \"that's the one\" is too neat and stops short of the uncomfortable implication that the critique may not be ready to submit.\n\nFINAL:\n[looks back at the terminal, not the paper]\n\nThe eval script. The model weights came from the official release and the metric formula cross-checked against the original codebase — those have something external to hold them against. The script verification was circular: matched against section 3.2, which means matched against the paper's own account of what it does. If the script is where the gap lives, that's a procedural explanation I haven't ruled out, and submitting on a twelve-point discrepancy I can't fully account for is — that's premature.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 4922,
+            "inputTokens": 2376,
+            "outputTokens": 171,
+            "generationId": "drama-api-learner_ego-34917c827ba88d76"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 4922,
+            "promptHashes": {
+              "system": "7105d100636d3a00",
+              "user": "05b4005a0a0d659e",
+              "combined": "34917c827ba88d76"
+            },
+            "promptCharCounts": {
+              "system": 2952,
+              "user": 7785,
+              "combined": 10744
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 4922,
+              "promptHashes": {
+                "system": "7105d100636d3a00",
+                "user": "05b4005a0a0d659e",
+                "combined": "34917c827ba88d76"
+              },
+              "promptCharCounts": {
+                "system": 2952,
+                "user": 7785,
+                "combined": 10744
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "neutral",
+      "understandingLevel": "developing",
+      "phatic": false,
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-06-24T14:19:08.739Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "director",
+      "externalMessage": "The marked work is moved or turned; the earlier mark remains visible.",
+      "internalDeliberation": [
+        {
+          "role": "director",
+          "stage": "before_tutor",
+          "content": "Scheduled director cue to prevent smooth alternation from becoming routine.",
+          "metrics": {},
+          "provenance": {
+            "agentRole": "director",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 21923,
+            "promptHashes": {
+              "system": "3bf1d891389c603a",
+              "user": "04fbcbea4723aa58",
+              "combined": "b0258990fab9fc8f"
+            },
+            "promptCharCounts": {
+              "system": 2814,
+              "user": 10146,
+              "combined": 12967
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": null
+        }
+      ],
+      "timestamp": "2026-06-24T14:19:08.750Z",
+      "visibleToPublic": true,
+      "directorCue": {
+        "cueKind": null,
+        "revisitPolicy": null,
+        "requestedRevisitPolicy": null,
+        "revisitAnchor": null,
+        "anchorQuote": null,
+        "anchorStrongMisframing": null,
+        "reframeAnchorGate": null
+      }
+    },
+    {
+      "turnNumber": 2,
+      "phase": "tutor",
+      "externalMessage": "[lifts the printed paper, turns it so the results table faces the learner rather than the desk, and sets it back down without straightening it]\n\nThe circular verification point is the sharper observation of the two. Note it.\n\nBut there's a distinction being run together here. The script matching section 3.2 is one question. Whether section 3.2 accurately describes what the paper actually ran is another. Those aren't the same question, and treating them as the same is part of what makes the discrepancy hard to locate.\n\nSo: the claim is that circular verification is a gap in the audit. That's a reasonable claim. What would a non-circular audit of the script require — what external evidence would actually falsify the proposition that the script is not the source of the problem?",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[lifts the printed paper, turns it so the results table faces the learner rather than the desk, and sets it back down without straightening it]\n\nThe circular verification point is the sharper observation of the two. Note it.\n\nBut there's a distinction being run together here. The script matching section 3.2 is one question. Whether section 3.2 describes what the paper actually ran is another. Those aren't the same question, and treating them as the same is part of what makes the discrepancy hard to locate.\n\nSo: the metric formula was cross-checked against the original codebase. What did the original codebase define as the evaluation set?",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 4688,
+            "inputTokens": 2323,
+            "outputTokens": 148,
+            "generationId": "drama-api-tutor_ego-a58d6768b2cab455"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 4688,
+            "promptHashes": {
+              "system": "834f0c3e5b0cdc48",
+              "user": "f64f44d417b6e12e",
+              "combined": "a58d6768b2cab455"
+            },
+            "promptCharCounts": {
+              "system": 2509,
+              "user": 7911,
+              "combined": 10427
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 4688,
+              "promptHashes": {
+                "system": "834f0c3e5b0cdc48",
+                "user": "f64f44d417b6e12e",
+                "combined": "a58d6768b2cab455"
+              },
+              "promptCharCounts": {
+                "system": 2509,
+                "user": 7911,
+                "combined": 10427
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          }
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "FEEDBACK:\n\nThe object-business (turning the paper to face the learner) is clean and scene-appropriate — it shifts deictic ownership of the evidence without announcing itself, which is exactly what the director's constraint calls for.\n\nThe pedagogical move is sound in principle: the tutor correctly identifies that the learner has conflated two distinct questions (script-matches-paper vs. paper-describes-what-was-run), and surfaces that conflation without resolving it. The final question is generative rather than leading.\n\nHowever, the final question — \"What did the original codebase define as the evaluation set?\" — lands on a forbidden clue channel. The withheld control explicitly prohibits establishing test-set identity, split name, split membership, or paper-vs-local artifact comparisons. This question does precisely that: it points the learner toward the evaluation set as the locus of the gap, which is the direction the hidden answer lives. Even if the question is formally open, it narrows the search space toward the withheld answer in a way that constitutes a leak by steering.\n\nThe two-question distinction (\"script matches 3.2\" vs. \"3.2 describes what was run\") is the stronger pedagogical move and can stand — it exposes a real gap in the learner's epistemic audit without pointing at the forbidden channel. The problem is entirely in the closing question.\n\nThe affective register is appropriate: no softening, no validation, controlled pressure. The observation \"Note it\" is correctly terse and non-praising.\n\nAction gate: the turn does move the learner toward something they must substantiate — but the specific thing it moves them toward is off-limits.\n\nRecognition/pedagogy dimension: the two-question split is excellent scaffolding at level 3/5. The learner is now one step from aporia, which is the right place to be. The mechanism just needs to redirect to what the learner *can* substantiate without entering the forbidden channels.\n\nPublic safety: FAIL on the final question. The evaluation-set question is a forbidden clue channel (test-set identity / what was actually run). It must be cut or redirected.\n\n---\n\nKEEP_OR_CHANGE: **Revise substantially**\n\nREQUIRED_REWRITE: The closing question must be excised or replaced with something that does not establish test-set identity, split membership, or paper-vs-local artifact comparison. The tutor should instead press on what it means for the script verification to have been circular — i.e., require the learner to articulate what external evidence would actually falsify the claim that the script is not the problem, without specifying the evaluation set as the axis of inquiry. The two-question distinction in the body of the turn should be kept; the final question must be replaced with a demand that the learner specify what a non-circular audit of the script would require, leaving the axis of investigation undetermined.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 15868,
+            "inputTokens": 2476,
+            "outputTokens": 640,
+            "generationId": "drama-api-tutor_superego-9bca61dd2b71398a"
+          },
+          "provenance": {
+            "agentRole": "tutor_superego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 15868,
+            "promptHashes": {
+              "system": "b1eaf476c94ee5f6",
+              "user": "901107c255b87277",
+              "combined": "9bca61dd2b71398a"
+            },
+            "promptCharCounts": {
+              "system": 2110,
+              "user": 8843,
+              "combined": 10960
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_superego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 15868,
+              "promptHashes": {
+                "system": "b1eaf476c94ee5f6",
+                "user": "901107c255b87277",
+                "combined": "9bca61dd2b71398a"
+              },
+              "promptCharCounts": {
+                "system": 2110,
+                "user": 8843,
+                "combined": 10960
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          }
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the closing question names the evaluation set as the axis of inquiry, which is a forbidden clue channel; replace it with a demand that the learner specify what non-circular external evidence would actually falsify the script-is-not-the-problem claim, leaving the investigation axis undetermined.\n\nFINAL:\n[lifts the printed paper, turns it so the results table faces the learner rather than the desk, and sets it back down without straightening it]\n\nThe circular verification point is the sharper observation of the two. Note it.\n\nBut there's a distinction being run together here. The script matching section 3.2 is one question. Whether section 3.2 accurately describes what the paper actually ran is another. Those aren't the same question, and treating them as the same is part of what makes the discrepancy hard to locate.\n\nSo: the claim is that circular verification is a gap in the audit. That's a reasonable claim. What would a non-circular audit of the script require — what external evidence would actually falsify the proposition that the script is not the source of the problem?",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 4361,
+            "inputTokens": 3247,
+            "outputTokens": 249,
+            "generationId": "drama-api-tutor_ego-6e39b31385a2145c"
+          },
+          "provenance": {
+            "agentRole": "tutor_ego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 4361,
+            "promptHashes": {
+              "system": "834f0c3e5b0cdc48",
+              "user": "9715983e08918fc5",
+              "combined": "6e39b31385a2145c"
+            },
+            "promptCharCounts": {
+              "system": 2509,
+              "user": 12024,
+              "combined": 14540
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "tutor_ego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 4361,
+              "promptHashes": {
+                "system": "834f0c3e5b0cdc48",
+                "user": "9715983e08918fc5",
+                "combined": "6e39b31385a2145c"
+              },
+              "promptCharCounts": {
+                "system": 2509,
+                "user": 12024,
+                "combined": 14540
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          }
+        }
+      ],
+      "strategy": "gentle_correction",
+      "phatic": false,
+      "learnerReframeEventUsed": null,
+      "learnerReversalEventUsed": null,
+      "learnerReversalEventCandidatesUsed": [],
+      "timestamp": "2026-06-24T14:19:33.679Z"
+    },
+    {
+      "turnNumber": 2,
+      "phase": "learner",
+      "externalMessage": "[looks at the terminal, not the tutor]\nRight, so — those two questions aren't the same, and I'd collapsed them. The script could be a faithful transcription of an imprecise description, and I wouldn't have caught that. And the evidence that would actually break the circularity — original logs, the authors' run environment, a third-party reproduction — I'm not going to get any of that without author cooperation, which means the script stays uncleared. [pause] Which means the submission is premature. That's where this lands.",
+      "internalDeliberation": [
+        {
+          "role": "ego",
+          "stage": "initial",
+          "decision": null,
+          "content": "[glances back at the terminal, then at the paper, then away]\n\nRight — so section 3.2 being accurate is a separate claim from the script matching section 3.2. Those are two links in a chain and I've only checked one. A non-circular audit would need the original experimental logs, or a reproduction from someone else who got their number, or the authors' actual run environment — something that doesn't route back through the paper's own account of itself. The script could be a faithful transcription of a description that was itself imprecise, and I wouldn't have caught that.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 5270,
+            "inputTokens": 2246,
+            "outputTokens": 131,
+            "generationId": "drama-api-learner_ego-8141077bfc615266"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 5270,
+            "promptHashes": {
+              "system": "7105d100636d3a00",
+              "user": "3dd4403bd6841c9a",
+              "combined": "8141077bfc615266"
+            },
+            "promptCharCounts": {
+              "system": 2952,
+              "user": 7322,
+              "combined": 10281
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 5270,
+              "promptHashes": {
+                "system": "7105d100636d3a00",
+                "user": "3dd4403bd6841c9a",
+                "combined": "8141077bfc615266"
+              },
+              "promptCharCounts": {
+                "system": 2952,
+                "user": 7322,
+                "combined": 10281
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "superego",
+          "stage": "critique",
+          "decision": null,
+          "content": "The Ego is doing good technical work here — the three-link chain observation is genuinely sharp — but it's using that sharpness to stay comfortable. Look at what the Ego has actually assembled: the script was verified circularly, section 3.2 may not accurately describe what was run, and the external evidence that would break the circularity (original logs, a third-party reproduction, the authors' actual environment) is almost certainly inaccessible. That's enough to commit to a provisional conclusion — something like \"the script is the most plausible locus of the discrepancy, and I cannot rule it out with the evidence I have, which means submission is premature\" — but instead the Ego keeps narrating the structure of the problem rather than landing on it. It ends describing what a non-circular audit would require rather than saying what that inaccessibility means for the case right now.\n\nThere's also a character issue: this response is too clean and well-sequenced for someone who just had their framework partially dismantled. The tutor split a distinction the Ego had collapsed, and the Ego absorbed it without friction — \"right, so...\" and then a tidy restatement. That's performed understanding. Someone whose audit just turned out to have a hole in it doesn't reorganise immediately into a composed three-part answer; there'd be a beat of something more uncomfortable before the recovery. The register is slightly too grateful-and-correcting rather than quietly embarrassed and recalibrating.\n\nThe Ego should let the discomfort show more in the texture of the response, and it should stop listing what non-circular evidence would look like in the abstract and instead say directly what it thinks is now true: that the script remains uncleared, that clearing it is probably impossible without author cooperation, and what that means for the submission decision it came in ready to make.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 11758,
+            "inputTokens": 3165,
+            "outputTokens": 406,
+            "generationId": "drama-api-learner_superego-b4064a9cd39085d9"
+          },
+          "provenance": {
+            "agentRole": "learner_superego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 11758,
+            "promptHashes": {
+              "system": "6b1b858322c45f62",
+              "user": "0ff9e18acb8268d9",
+              "combined": "b4064a9cd39085d9"
+            },
+            "promptCharCounts": {
+              "system": 5963,
+              "user": 7898,
+              "combined": 13868
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_superego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 11758,
+              "promptHashes": {
+                "system": "6b1b858322c45f62",
+                "user": "0ff9e18acb8268d9",
+                "combined": "b4064a9cd39085d9"
+              },
+              "promptCharCounts": {
+                "system": 5963,
+                "user": 7898,
+                "combined": 13868
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          },
+          "inputMessages": null
+        },
+        {
+          "role": "ego",
+          "stage": "adjudication",
+          "decision": null,
+          "content": "PRIVATE_DECISION: Revise substantially — the review is right that the response is too tidy and stops short of committing to what the inaccessibility of external evidence actually means for the submission decision.\n\nFINAL:\n[looks at the terminal, not the tutor]\nRight, so — those two questions aren't the same, and I'd collapsed them. The script could be a faithful transcription of an imprecise description, and I wouldn't have caught that. And the evidence that would actually break the circularity — original logs, the authors' run environment, a third-party reproduction — I'm not going to get any of that without author cooperation, which means the script stays uncleared. [pause] Which means the submission is premature. That's where this lands.",
+          "metrics": {
+            "model": "api/sonnet",
+            "provider": "openrouter",
+            "latencyMs": 4606,
+            "inputTokens": 2899,
+            "outputTokens": 172,
+            "generationId": "drama-api-learner_ego-bd86d746f4743279"
+          },
+          "provenance": {
+            "agentRole": "learner_ego",
+            "backend": "api",
+            "cli": "openrouter",
+            "model": "anthropic/claude-sonnet-4.6",
+            "reasoningEffort": null,
+            "latencyMs": 4606,
+            "promptHashes": {
+              "system": "7105d100636d3a00",
+              "user": "92128f465b3332b9",
+              "combined": "bd86d746f4743279"
+            },
+            "promptCharCounts": {
+              "system": 2952,
+              "user": 10279,
+              "combined": 13238
+            },
+            "args": [
+              "anthropic/claude-sonnet-4.6"
+            ]
+          },
+          "apiPayload": {
+            "provenance": {
+              "agentRole": "learner_ego",
+              "backend": "api",
+              "cli": "openrouter",
+              "model": "anthropic/claude-sonnet-4.6",
+              "reasoningEffort": null,
+              "latencyMs": 4606,
+              "promptHashes": {
+                "system": "7105d100636d3a00",
+                "user": "92128f465b3332b9",
+                "combined": "bd86d746f4743279"
+              },
+              "promptCharCounts": {
+                "system": 2952,
+                "user": 10279,
+                "combined": 13238
+              },
+              "args": [
+                "anthropic/claude-sonnet-4.6"
+              ]
+            }
+          },
+          "inputMessages": null
+        }
+      ],
+      "emotionalState": "satisfied",
+      "understandingLevel": "partial",
+      "phatic": false,
+      "learnerReframeEvent": null,
+      "learnerReversalEvent": null,
+      "timestamp": "2026-06-24T14:19:55.334Z"
+    }
+  ],
+  "metrics": {
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "learnerInputTokens": 21700,
+    "learnerOutputTokens": 2004,
+    "tutorInputTokens": 15086,
+    "tutorOutputTokens": 1895
+  },
+  "writingPadSnapshots": {
+    "learner": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "lessons": [],
+          "atRisk": []
+        },
+        "unconscious": {
+          "breakthroughs": [],
+          "unresolvedTraumas": []
+        },
+        "corePatterns": {}
+      },
+      "after": null
+    },
+    "tutor": {
+      "before": {
+        "id": 1,
+        "conscious": null,
+        "preconscious": {
+          "effectiveStrategies": [],
+          "ineffectiveStrategies": [],
+          "triggers": {
+            "frustration": [],
+            "engagement": [],
+            "breakthrough": [],
+            "shutdown": []
+          }
+        },
+        "unconscious": {
+          "insights": [],
+          "relationshipDynamics": null
+        },
+        "recentInterventions": []
+      },
+      "after": null
+    }
+  },
+  "quality_status": "running",
+  "quality_warnings": [],
+  "stripped_stage_directions": []
+}
