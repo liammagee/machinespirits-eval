@@ -150,3 +150,11 @@ one-dialogue delivery check running before Phase B opens. Phase B cells,
 order and arms as frozen above; n = 12 per version per cell; versions run
 sequenced within a cell (they feed the contrast and share the quota
 window).
+
+**2026-08-05 — Phase B cell 1 complete (low_agency × greyfen_lab).**
+Corrected closure by the offline audit: bare 6/9 (67%, 3 aborts — codex
+tool-reflex kills, excluded and named per the crash rule; the runner
+treats aborts as spent by design), contract 10/11 (91%, 1 abort), empty
+plan 5/12 (42%, 0 aborts). Empty-plan delivery check preceding the cell:
+1 dialogue, stamp `empty_plan` only, plan text shipped verbatim on all
+turns. Descriptive only; the verdict pools all three cells.
