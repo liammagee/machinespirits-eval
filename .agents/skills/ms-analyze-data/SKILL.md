@@ -153,9 +153,10 @@ node scripts/calibrate-rubric.js --from-version 2.1 --to-version 2.2 --export ca
 
 ### 17. Transcript browser (interactive)
 ```bash
-node scripts/browse-transcripts.js [--port 3456] [--run <runId>]
+npm run poetics:browse                                   # scriptorium web UI
+node scripts/browse-poetics-scripts.js --run-id <runId>  # jump to one run
 ```
-- Starts a web server (default port 3456)
+- Starts a web server (default port 3466); `npm run poetics:serve` restarts it idempotently
 - No API calls
 
 ## Standard Pipeline Order

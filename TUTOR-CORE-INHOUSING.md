@@ -3,8 +3,9 @@
 Status: **migration complete** — commits A–D landed 2026-05-30 (`npm test` → 2753 pass / 0 fail).
 The four prompts-authoritative files (`localPromptLoader`, `tutorConfigLocal`, `learnerConfigLoader`,
 `learnerTutorInteractionEngine`) were flipped by a concurrent commit (260cdc6); the remaining 18
-consumers + peerDependency removal by commit C. The `node_modules` copy + `package-lock.json` entry are
-intentionally NOT pruned yet (rollback net) — run `npm rm @machinespirits/tutor-core` when ready. The
+consumers + peerDependency removal by commit C. The `node_modules` copy + `package-lock.json` entry
+(kept for a while as a rollback net) have since been pruned — no `@machinespirits/tutor-core` reference
+remains in `package.json` or the lockfile (checked 2026-08-05). The
 "Wins unlocked" follow-ups below remain open.
 Owner: migration is piecemeal + atomic-commit; another agent is concurrently active on this repo.
 

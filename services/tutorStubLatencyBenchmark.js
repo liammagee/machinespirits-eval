@@ -324,6 +324,74 @@ export function summarizeTutorStubLatencyBenchmark(results = []) {
   );
 }
 
+export function normalizeTutorStubLatencyBenchmarkFailure({ job = null, error = null } = {}) {
+  const detail = error?.benchmarkFailure || {};
+  return {
+    status: 'failed',
+    jobId: job?.id || null,
+    variantId: job?.variantId || null,
+    factor: job?.factor || null,
+    caseId: job?.caseId || null,
+    draw: job?.draw || null,
+    expectedPlane: job?.expectedPlane || null,
+    tutorModel: job?.tutorModel || null,
+    analysisModel: job?.analysisModel || null,
+    cliEffort: job?.cliEffort || null,
+    promptProfile: job?.promptProfile || null,
+    prefetchPolicy: job?.prefetchPolicy || null,
+    exitCode: Number.isInteger(detail.exitCode) ? detail.exitCode : null,
+    tracePath: detail.tracePath || null,
+    error: String(error?.message || error || 'benchmark job failed'),
+    stderr: detail.stderr || null,
+    stdout: detail.stdout || null,
+  };
+}
+
+/**
+ * Run every planned job even when one job fails. The caller owns execution and
+ * persistence so tests can exercise the orchestration without external model
+ * calls, while the live CLI can atomically checkpoint after every attempt.
+ */
+export async function runTutorStubLatencyBenchmarkJobs({ jobs = [], executeJob, onCheckpoint = null } = {}) {
+  if (typeof executeJob !== 'function') throw new Error('executeJob is required');
+  const plannedJobs = Array.isArray(jobs) ? jobs : [];
+  const results = [];
+  const failures = [];
+
+  for (const [index, job] of plannedJobs.entries()) {
+    try {
+      results.push(await executeJob(job, index));
+    } catch (error) {
+      failures.push(normalizeTutorStubLatencyBenchmarkFailure({ job, error }));
+    }
+    const attemptedJobs = results.length + failures.length;
+    const status =
+      attemptedJobs < plannedJobs.length ? 'in_progress' : failures.length ? 'complete_with_failures' : 'complete';
+    if (onCheckpoint) {
+      await onCheckpoint({
+        status,
+        plannedJobs: plannedJobs.length,
+        attemptedJobs,
+        completedJobs: results.length,
+        failedJobs: failures.length,
+        currentJobId: job?.id || null,
+        results: [...results],
+        failures: [...failures],
+      });
+    }
+  }
+
+  return {
+    status: failures.length ? 'complete_with_failures' : 'complete',
+    plannedJobs: plannedJobs.length,
+    attemptedJobs: results.length + failures.length,
+    completedJobs: results.length,
+    failedJobs: failures.length,
+    results,
+    failures,
+  };
+}
+
 export function analyzeTutorStubPrefetchPolicies(events = []) {
   const tutorPrefetchCalls = events.filter(
     (event) => event.type === 'model_call' && /^tutor_stub_tutor_prefetch(?:_|$)/u.test(event.role || ''),

@@ -241,3 +241,57 @@ response was generated under the repaired mixed path.
 
 This removes the measurement prerequisite for repeated draws. It does not make
 any latency candidate a default and does not authorize new model calls.
+
+## 2026-08-05 repeated-draw screen and closeout repair
+
+The explicitly authorized v2 screen at source
+`d0886eec5b71cdec37faaa63fa477a6ea4b3cbf0` attempted all 36 frozen job IDs
+exactly once. Thirty-four produced a guarded public tutor turn; two mixed jobs
+failed closed and emitted no tutor response. All 34 delivered responses passed
+the recorded public-safety delivery checks. The run used 105 model calls and
+1,194,054 recorded tokens. The CLI cost field was zero and is not evidence that
+the external calls were free.
+
+| Variant | Delivered | Foreground p50 | Foreground p95 | First draft | Recovery | Fallback |
+|---|---:|---:|---:|---:|---:|---:|
+| medium tutor / Sol analysis baseline | 8/9 | 38.136s | 49.687s | 12.5% | 87.5% | 12.5% |
+| low tutor effort / Sol analysis | 9/9 | 34.036s | 49.635s | 22.2% | 77.8% | 22.2% |
+| medium tutor / Terra analysis | 9/9 | 29.844s | 46.270s | 0% | 100% | 55.6% |
+| analysis-only tutor prefetch | 8/9 | 32.220s | 57.676s | 25% | 75% | 37.5% |
+
+No candidate becomes the default. Low effort is the only plausible later
+confirmation candidate, but this screen does not promote it: the median gain is
+about 4.1 seconds, p95 is effectively unchanged, and deterministic fallback use
+is higher. Terra analysis is rejected because every job needed recovery and
+five of nine fell back. Analysis-only prefetch is rejected because it had a
+mixed hard failure, the worst p95, and both delivered mixed jobs used fallback.
+The baseline's own recovery burden also means these numbers are not a clean
+latency-only comparison.
+
+The two failures were
+`baseline-medium-sol__mixed__d3` and
+`prefetch-analysis-only__mixed__d1`. They were not provider, network, quota, or
+leak failures. Each mixed turn asked for a plain definition while separately
+making an unsupported object-level proposal. The compiled support contract
+required a small bounded choice and clarification affordance, while progression
+required a declarative unsupported-claim boundary with no question. The first
+draft omitted the choice, recovery asked a choice question without the
+clarification affordance and violated the declarative handoff, and the terminal
+fallback omitted both the choice and the term definition.
+
+The follow-up repair is deliberately model-free. A forbidden-question handoff
+now translates bounded support into two or three recognizable declarative
+choices and states the clarification affordance declaratively. The Campus FAQ
+world authors a public definition of “baseline,” which the deterministic
+fallback may use without private proof access, while the separate interview
+proposal remains open at the public-evidence boundary. The benchmark runner now
+writes an atomic report checkpoint after every attempted job, records failures
+separately, continues to the rest of the frozen plan, and exits non-zero after
+reporting if any job failed. Unit regressions exercise the exact mixed turn and
+the continue-on-failure orchestration without model calls.
+
+This closes the screen as an exploratory no-default result. The 36-job paid
+authorization is exhausted. A future live confirmation of low effort would
+need a fresh frozen plan and explicit authorization; it is not part of this
+repair and is not needed to preserve the present rejection/no-promotion
+decision.

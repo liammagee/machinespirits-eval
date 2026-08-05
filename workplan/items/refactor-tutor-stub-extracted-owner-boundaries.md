@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-08-05
 updated: 2026-08-05
-branch: codex/refactor-tutor-stub-repair-ladder-owner
+branch: codex/refactor-tutor-stub-terminal-fallback-owner
 verification: The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.
 claim_status: planned
 depends_on: []
@@ -21,6 +21,7 @@ links:
     - services/tutorStubTutorDeliveryRuntime.js
     - services/tutorStubTutorDraftAudit.js
     - services/tutorStubTutorRepairRuntime.js
+    - services/tutorStubTutorTerminalRuntime.js
     - services/tutorStubResponsePolicy.js
     - scripts/tutor-stub.js
   items:
@@ -113,3 +114,27 @@ Log:
   and 137/137 tutor-core tests; zero failures and zero skips), ESLint,
   Prettier, workplan and stability-manifest checks, and a zero-cycle import
   graph across 513 files.
+- 2026-08-05 — Opened repair-ladder PR #491 at `14ecebed`, then moved the final
+  contiguous terminal path behind a 406-line owner: narrowly licensed clue-span
+  insertion runs first, followed by deterministic fallback selection,
+  construction, audit, accounting, delivery, or fail-closed rejection. The
+  compatibility pipeline falls from 942 to 647 lines; the stability manifest
+  now pins 22 owners and the boundary test prevents the terminal implementation
+  from returning to the facade. Verified with 342/342 repair/delivery parity
+  tests, the complete hermetic suite (7,787/7,787 root and 137/137 tutor-core
+  tests; zero failures and zero skips), ESLint, Prettier, workplan and manifest
+  checks, and a zero-cycle import graph across 514 files. This completes the
+  tutor-turn pipeline boundary; the separately bounded response-policy pass
+  remains active on this card.
+- 2026-08-05 — Rebased the terminal-runtime extraction onto current `main`
+  after PRs #494 and #495 merged. The owner continues to call the current guard
+  calibration, fallback-composition, progression, and request-only plan paths
+  through injected dependencies rather than preserving stale copies. PR #495's
+  request-only path adds two lines to the compatibility facade, leaving it at
+  649 LOC on the current base. Verified on that base with 247/247 focused
+  terminal, orchestration, guard, composition, closure, disclosure, and
+  benchmark-regression tests; the complete hermetic suite (7,806/7,806 root
+  and 137/137 tutor-core tests; zero failures and zero skips); ESLint; Prettier;
+  workplan, hermetic-manifest, stability-manifest, and diff checks; a zero-cycle
+  import graph across 515 files; and a zero-call re-audit of the saved six-case
+  tutor benchmark (0 improved, 0 regressed).

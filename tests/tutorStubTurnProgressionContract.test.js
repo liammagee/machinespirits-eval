@@ -875,6 +875,50 @@ test('deterministic V1 recovery makes ordinary uncertainty a declarative bounded
   assert.equal(auditTutorStubQuestionSupportResponse({ text: handoff, support }).ok, true);
 });
 
+test('deterministic bounded choice keeps classifier analyst prose out of public speech', () => {
+  const support = {
+    modality: 'bounded_directional_choice',
+    clarificationInvitationRequired: true,
+  };
+  const contract = {
+    schema: TUTOR_STUB_TURN_PROGRESSION_CONTRACT_SCHEMA,
+    complete: true,
+    public_only: true,
+    learner_uptake: {
+      required: true,
+      mode: 'credit_or_qualify_resolved_move',
+      learner_surface:
+        'It rules out confident generated advice when policy consequences are uncertain; the tool should instead use approved guidance or hand off.',
+      accepted_meaning: 'Learner links unacceptable uncertainty to approved guidance or handoff.',
+      focus_terms: ['unacceptable', 'uncertainty', 'approved', 'guidance', 'handoff'],
+    },
+    turn_focus_contract: {
+      primary_surface: 'Learner links unacceptable uncertainty to approved guidance or handoff',
+      primary_terms: ['unacceptable', 'uncertainty', 'approved', 'guidance', 'handoff'],
+      due_surfaces: [],
+      due_terms: [],
+    },
+    handoff_contract: {
+      mode: 'declarative_missing_support',
+      question_allowed: false,
+      question_required: false,
+      required_target_surfaces: ['Learner links unacceptable uncertainty to approved guidance or handoff'],
+      required_target_terms: ['unacceptable', 'uncertainty', 'approved', 'guidance', 'handoff'],
+      prohibited_settled_surfaces: [],
+    },
+  };
+
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract,
+    support,
+    publicObject: 'formulation card',
+  });
+
+  assert.doesNotMatch(handoff, /\blearner\b/iu);
+  assert.match(handoff, /decide whether it rules out confident generated advice/iu);
+  assert.match(handoff, /ask me to unpack one word or connection/iu);
+});
+
 test('deterministic V1 recovery replaces generic uptake with bounded typed learner focus', () => {
   const contract = compileTutorStubTurnProgressionContract({
     learnerText: 'First learner message?',

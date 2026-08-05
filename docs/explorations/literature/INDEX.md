@@ -1,6 +1,6 @@
 # Research Literature Index
 
-Comprehensive index of all resources from `docs/explorations/claude/research-resources.md`,
+Comprehensive index of all resources from `docs/explorations/claude/agents/2026-05-01-research-resources.md`,
 organized by section. Each entry shows the source bullet plus all its links, with a
 local path for any arXiv paper that the download script will fetch.
 

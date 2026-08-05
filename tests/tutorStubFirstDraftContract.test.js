@@ -753,3 +753,44 @@ test('renderer fails closed if required slot ordering or ownership is corrupted'
   missingOwner.host_plan.axis_ownership.actorial_part = [];
   assert.throws(() => tutorStubFirstDraftContractPrompt(missingOwner), /unowned_delivered_axis:actorial_part/iu);
 });
+
+test('mixed repair and unsupported proposal compile one declarative bounded handoff', () => {
+  const learnerText =
+    'Please explain “baseline” in plain English. Separately, I think student interviews should come before we choose one.';
+  const contract = buildTutorStubFirstDraftContract({
+    learnerText,
+    publicQuestion: 'What should the campus FAQ tool use as its first implementation baseline?',
+    responseConfiguration: configuration({
+      action_family: 'clarify_term',
+      unresolved_terms: ['baseline'],
+      discourse_plane: { plane: 'mixed', meta_target: { kind: 'named_phrase', surface: 'baseline' } },
+    }),
+    responseCompositionFrame: {
+      learner_move: {
+        summary: 'The learner requests a plain definition and separately proposes interviews first.',
+        evidence_use: 'omits_warrant',
+      },
+      learner_dag: { final_secret_entailed: false },
+      discourse_plane: { plane: 'mixed', meta_target: { kind: 'named_phrase', surface: 'baseline' } },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+      scene_action_budget: { saturated: false },
+    },
+    questionSupport: {
+      modality: 'bounded_directional_choice',
+      clarificationInvitationRequired: true,
+      answerability: 'direction_only_until_evidence_is_public',
+    },
+    dramaticReleaseFrame: { active: false, entries: [] },
+  });
+  const prompt = tutorStubFirstDraftContractPrompt(contract);
+  const handoff = contract.host_plan.slots.find((slot) => slot.id === 'handoff');
+
+  assert.equal(contract.progression.handoff_contract.mode, 'declarative_unsupported_claim');
+  assert.equal(contract.progression.handoff_contract.question_allowed, false);
+  assert.match(handoff.instruction, /concrete use of the clarified term/iu);
+  assert.match(handoff.instruction, /two or three recognizable public-safe choices declaratively/iu);
+  assert.match(handoff.instruction, /may ask for a direct explanation/iu);
+  assert.match(prompt, /ask no question/iu);
+  assert.doesNotMatch(prompt, /HANDOFF may ask|HANDOFF alone asks/iu);
+});

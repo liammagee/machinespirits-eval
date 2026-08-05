@@ -17,7 +17,12 @@ import {
 } from '../services/tutorStubResponseComposition.js';
 import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from '../services/tutorStubFirstDraftContract.js';
 import { auditTutorStubResponseConfiguration } from '../services/tutorStubResponseConfiguration.js';
+import { auditTutorStubQuestionSupportResponse } from '../services/tutorStubQuestionSupport.js';
 import { auditTutorStubRepetitionResponse } from '../services/tutorStubResponseGuard.js';
+import {
+  auditTutorStubLiveTurnProgressionV1,
+  compileTutorStubTurnProgressionContract,
+} from '../services/tutorStubTurnProgressionContract.js';
 
 const WRITABLE_ENTRY_FIRST_DRAFT_CONTRACT = Object.freeze({
   schema: TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA,
@@ -2751,6 +2756,65 @@ test('the configured fallback keeps its frozen wording where no world is supplie
     fallbackFor(null, 'scene_partner', ''),
   );
   assert.match(fallbackFor(null, 'scene_partner', ''), /I set the public record between us/u);
+});
+
+test('mixed terminal fallback defines the public term and realizes a declarative bounded choice', () => {
+  const learnerText =
+    'Please explain “baseline” in plain English. Separately, I think student interviews should come before we choose one.';
+  const discoursePlane = { plane: 'mixed', meta_target: { kind: 'named_phrase', surface: 'baseline' } };
+  const support = {
+    guardRequired: true,
+    modality: 'bounded_directional_choice',
+    clarificationInvitationRequired: true,
+    answerability: 'direction_only_until_evidence_is_public',
+    responsiveRepairRequired: false,
+  };
+  const responseCompositionFrame = {
+    learner_move: {
+      summary: 'The learner requests a plain definition and separately proposes interviews first.',
+      evidence_use: 'omits_warrant',
+    },
+    learner_dag: { final_secret_entailed: false },
+    discourse_plane: discoursePlane,
+    conversational_completion: { resolved: false },
+    due_evidence_surfaces: [],
+  };
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    responseCompositionFrame,
+    questionSupport: support,
+    actionFamily: 'clarify_term',
+  });
+  const world = loadWorld(path.join(DRAMA_WORLD_DIR, 'world-016-ai-syllabus-af1.yaml'));
+  const text = deterministicTutorStubConfiguredContinuationFallback({
+    uptake: 'Fair point—the next thing we check has to answer it.',
+    responseConfiguration: {
+      action_family: 'clarify_term',
+      unresolved_terms: ['baseline'],
+      discourse_plane: discoursePlane,
+      engagement_stance: 'plain',
+      actorial_host_part: 'examiner',
+      actorial_performance: { id: 'unadorned_report' },
+    },
+    support,
+    world,
+    learnerText,
+    turnProgressionContract: contract,
+  });
+  const [uptake, ...development] = text.split(/(?<=[.!?])\s+/u);
+  const progressionAudit = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text,
+    responseComposition: { uptake, development: development.join(' ') },
+  });
+
+  assert.match(text, /“baseline” means the simplest useful starting approach/iu);
+  assert.match(text, /Choose one way forward/iu);
+  assert.match(text, /leave the proposed causal answer open until public evidence establishes it/iu);
+  assert.match(text, /ask me to unpack one word or connection/iu);
+  assert.doesNotMatch(text, /\?/u);
+  assert.equal(auditTutorStubQuestionSupportResponse({ text, support }).ok, true);
+  assert.equal(progressionAudit.ok, true, JSON.stringify(progressionAudit.issues));
 });
 
 // Closing the echo leak above left the authoring gap it had been covering:

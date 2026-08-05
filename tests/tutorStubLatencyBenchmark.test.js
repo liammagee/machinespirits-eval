@@ -12,6 +12,7 @@ import {
   analyzeTutorStubPrefetchPolicies,
   expandTutorStubLatencyBenchmark,
   parseTutorStubLatencyBenchmarkTrace,
+  runTutorStubLatencyBenchmarkJobs,
   summarizeTutorStubLatencyBenchmark,
   validateTutorStubLatencyBenchmarkConfig,
 } from '../services/tutorStubLatencyBenchmark.js';
@@ -352,4 +353,44 @@ test('prefetch report distinguishes saved background work from lost cache hits',
   assert.equal(report.observedAlways.wastedTutorCalls, 0);
   assert.equal(report.counterfactualAnalysisOnly.avoidedBackgroundTutorLatencyMs, 16000);
   assert.equal(report.counterfactualAnalysisOnly.repliesLosingTutorCacheHit, 1);
+});
+
+test('latency job orchestration checkpoints failures and continues through the frozen plan', async () => {
+  const jobs = [
+    { id: 'first', variantId: 'baseline', caseId: 'object', draw: 1 },
+    { id: 'second', variantId: 'baseline', caseId: 'mixed', draw: 1 },
+    { id: 'third', variantId: 'baseline', caseId: 'instructional-meta', draw: 1 },
+  ];
+  const attempted = [];
+  const checkpoints = [];
+  const progress = await runTutorStubLatencyBenchmarkJobs({
+    jobs,
+    executeJob: async (job) => {
+      attempted.push(job.id);
+      if (job.id === 'second') {
+        const error = new Error('guard exhaustion');
+        error.benchmarkFailure = { exitCode: 1, tracePath: '/tmp/second.jsonl' };
+        throw error;
+      }
+      return { jobId: job.id, variantId: job.variantId };
+    },
+    onCheckpoint: async (checkpoint) => checkpoints.push(checkpoint),
+  });
+
+  assert.deepEqual(attempted, ['first', 'second', 'third']);
+  assert.equal(checkpoints.length, 3);
+  assert.deepEqual(
+    checkpoints.map((checkpoint) => [checkpoint.status, checkpoint.attemptedJobs, checkpoint.failedJobs]),
+    [
+      ['in_progress', 1, 0],
+      ['in_progress', 2, 1],
+      ['complete_with_failures', 3, 1],
+    ],
+  );
+  assert.equal(progress.status, 'complete_with_failures');
+  assert.equal(progress.completedJobs, 2);
+  assert.equal(progress.failedJobs, 1);
+  assert.equal(progress.failures[0].jobId, 'second');
+  assert.equal(progress.failures[0].tracePath, '/tmp/second.jsonl');
+  assert.equal(progress.failures[0].exitCode, 1);
 });

@@ -16,6 +16,7 @@ import {
   expandTutorStubLatencyBenchmark,
   parseTutorStubLatencyBenchmarkTrace,
   readTutorStubTraceEvents,
+  runTutorStubLatencyBenchmarkJobs,
   summarizeTutorStubLatencyBenchmark,
 } from '../services/tutorStubLatencyBenchmark.js';
 
@@ -66,6 +67,26 @@ function findTrace(traceDir) {
   return files[0];
 }
 
+function existingTrace(traceDir) {
+  try {
+    return findTrace(traceDir);
+  } catch {
+    return null;
+  }
+}
+
+function boundedDiagnostic(value, limit = 4000) {
+  const text = String(value || '').trim();
+  return text ? text.slice(-limit) : null;
+}
+
+function writeJsonAtomic(filePath, value) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  const temporaryPath = `${filePath}.tmp-${process.pid}`;
+  fs.writeFileSync(temporaryPath, `${JSON.stringify(value, null, 2)}\n`);
+  fs.renameSync(temporaryPath, filePath);
+}
+
 function runJob(job) {
   fs.mkdirSync(job.traceDir, { recursive: true });
   return new Promise((resolve, reject) => {
@@ -90,11 +111,16 @@ function runJob(job) {
     child.on('error', reject);
     child.on('close', (code) => {
       if (code !== 0) {
-        reject(
-          new Error(
-            `benchmark job ${job.id} exited ${code}: ${stderr.trim() || stdout.trim() || 'no diagnostic output'}`,
-          ),
+        const error = new Error(
+          `benchmark job ${job.id} exited ${code}: ${stderr.trim() || stdout.trim() || 'no diagnostic output'}`,
         );
+        error.benchmarkFailure = {
+          exitCode: code,
+          tracePath: existingTrace(job.traceDir),
+          stderr: boundedDiagnostic(stderr),
+          stdout: boundedDiagnostic(stdout),
+        };
+        reject(error);
         return;
       }
       try {
@@ -188,29 +214,51 @@ async function main() {
     );
     return;
   }
-  const results = [];
-  for (const [index, job] of plan.jobs.entries()) {
-    console.log(`[${index + 1}/${plan.jobs.length}] ${job.variantId} · ${job.caseId} · draw ${job.draw}`);
-    results.push(await runJob(job));
-  }
-  const report = {
+  const outPath = path.resolve(args.out || path.join(traceRoot, `${config.id}-report.json`));
+  const reportForProgress = (progress) => ({
     schema: TUTOR_STUB_LATENCY_BENCHMARK_REPORT_SCHEMA,
     benchmarkId: config.id,
     runId,
     config: configPath,
     traceRoot,
     generatedAt: new Date().toISOString(),
+    status: progress.status,
+    progress: {
+      plannedJobs: progress.plannedJobs,
+      attemptedJobs: progress.attemptedJobs,
+      completedJobs: progress.completedJobs,
+      failedJobs: progress.failedJobs,
+      currentJobId: progress.currentJobId || null,
+    },
     attribution: 'one_factor_at_a_time_against_baseline',
     planeContract: plan.planeContract,
-    results,
-    summary: summarizeTutorStubLatencyBenchmark(results),
+    results: progress.results,
+    failures: progress.failures,
+    summary: summarizeTutorStubLatencyBenchmark(progress.results),
     prefetchPolicyReports,
-  };
-  const outPath = path.resolve(args.out || path.join(traceRoot, `${config.id}-report.json`));
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`);
+  });
+  const progress = await runTutorStubLatencyBenchmarkJobs({
+    jobs: plan.jobs,
+    executeJob: async (job, index) => {
+      console.log(`[${index + 1}/${plan.jobs.length}] ${job.variantId} · ${job.caseId} · draw ${job.draw}`);
+      return runJob(job);
+    },
+    onCheckpoint: async (checkpoint) => {
+      writeJsonAtomic(outPath, reportForProgress(checkpoint));
+      const failed = checkpoint.failures.at(-1);
+      if (failed?.jobId === checkpoint.currentJobId) {
+        console.error(`job failed; checkpointed and continuing: ${failed.jobId}`);
+      }
+    },
+  });
+  const report = reportForProgress(progress);
+  writeJsonAtomic(outPath, report);
   console.log(`report: ${outPath}`);
   console.log(JSON.stringify(report.summary, null, 2));
+  if (progress.failedJobs > 0) {
+    console.error(`benchmark completed with ${progress.failedJobs} failed job(s); see ${outPath}`);
+    process.exitCode = 1;
+  }
 }
 
 main().catch((error) => {

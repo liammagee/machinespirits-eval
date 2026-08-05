@@ -309,7 +309,7 @@ node scripts/eval-cli.js export <runId> --format csv       # Export results
 | `qualitative-analysis-ai.js` | LLM-based theme discovery (`--mode classify\|discover`) — **API** |
 | `code-impasse-strategies.js` | Code dialogues into 5 Hegelian resolution strategies — **API** |
 | `code-dialectical-modulation.js` | Code superego modulation (structural + semantic) — **API** |
-| `browse-transcripts.js` | Interactive transcript browser (web UI on localhost) |
+| `browse-poetics-scripts.js` | Transcript scriptorium (web UI on localhost:3466; `npm run poetics:browse`) |
 | `calibrate-rubric.js` | Rubric version calibration (synthetic or `--live` re-scoring) |
 
 ### Post-Hoc Analysis Workflow
@@ -380,7 +380,7 @@ Full registry: `scripts/ANALYSIS-SCRIPTS.md`. Workflow guide: `docs/analysis-too
 
 **Mechanism for catching violations**: when reviewing a spin-off, search for any numerical claim or empirical assertion and confirm it traces to a specific section of `paper-full-2.0.md`. If it doesn't, the claim either belongs in `paper-full-2.0.md` (add it) or shouldn't be in the spin-off (remove it).
 
-The methods-paper skeleton (`notes/methods-paper-skeleton.md`) operationalises this rule for the methods-paper extraction with a "hard rule" section. The same logic applies to all other spin-offs (short paper, slides, blog posts, conference talks).
+The methods paper (`docs/research/methods-paper.md`) is the worked example of this rule for a spin-off extraction. The same logic applies to all other spin-offs (short paper, slides, blog posts, conference talks).
 
 ## Common Commands
 

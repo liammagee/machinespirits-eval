@@ -1,6 +1,6 @@
 # Analysis Scripts Registry
 
-All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/paper-2-0/analysis-toolkit-guide.md`.
+All post-hoc analysis scripts in `scripts/`. For workflow order, see `docs/analysis-toolkit-guide.md`.
 
 ## Statistical Analysis
 
@@ -57,7 +57,7 @@ All post-hoc analysis scripts in `scripts/`. For workflow order, see `notes/pape
 
 | Script | Args | API? | Description |
 |--------|------|------|-------------|
-| `browse-transcripts.js` | `[--port N] [--no-open] [--run <id>] [--scenario <id>] [--dialogue <id>] [--theme light\|dark]` | No | Web UI for browsing transcripts with sequence diagrams |
+| `browse-poetics-scripts.js` | `[--port N] [--host H] [--db PATH] [--run-id <id>] [--no-open]` | No | Transcript scriptorium web UI (port 3466; `npm run poetics:browse`, idempotent restart via `poetics:serve`); per-dialogue sequence diagrams via `render-sequence-diagram.js` |
 | `run-transfer-probe.js` | `--trace-dir DIR [--brief FILE] [--learner-model REF] [--out FILE] [--dry-run]` | Learner CLI bridge | Pose the per-world transfer probe (config/crossed-effects/transfer-probes.yaml) to the dialogue's learner and score against the deterministic conduct key (no judge) |
 | `render-stress-comparison.js` | `--col LABEL --tags rows.json [--traces DIR]` (repeat per column) `[--ruled overrides.json] [--title T] --out-md PATH --out-html PATH` | No | Render a stress-bench side-by-side (Markdown + self-contained techne swimlane HTML) from standard transcript rows `{d,turn,pressure,dose?,learner?,reply?,tag,why?,hit}`; missing learner/reply text filled from a run's dialogue logs; standing rulings passed as explicit per-moment overrides |
 | `generate-paper-comics.js` | `--pdf <paper.pdf> [--count N] [--out-dir PATH] [--html-template PATH] [--html-placement distributed\|strip] [--html-image-source auto\|svg\|png] [--compose-html-only] [--png-too] [--png-only] [--chatgpt-prompts-only] [--dry-run] [--preview-only]` | Codex CLI / OpenAI Image API | Generate Machine Spirits-style comic-strip image assets, manifest JSON, HTML embed snippets, standalone previews, composed template pages with distributed section-level insertions by default, optional PNG panels via `gpt-image-2`, and paste-ready ChatGPT image prompts |

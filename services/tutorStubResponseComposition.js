@@ -1796,6 +1796,18 @@ function configuredMetaFallbackHost({ part, object }) {
   );
 }
 
+function configuredFallbackTermDefinition({ responseConfiguration = null, world = null } = {}) {
+  if (responseConfiguration?.action_family !== 'clarify_term') return null;
+  const term = oneLine(
+    responseConfiguration?.unresolved_terms?.[0] || responseConfiguration?.discourse_plane?.meta_target?.surface,
+  );
+  if (!term) return null;
+  const glossary = world?.presentation?.public_glossary;
+  const definition = oneLine(glossary && typeof glossary === 'object' ? glossary[term.toLowerCase()] : '');
+  if (!definition) return null;
+  return `Here, “${term}” means ${definition.replace(/[.!?]+$/gu, '')}.`;
+}
+
 export function deterministicTutorStubInstructionalMetaFallback({
   uptake = '',
   responseConfiguration = null,
@@ -1874,20 +1886,34 @@ export function deterministicTutorStubConfiguredContinuationFallback({
       uptake,
     ) ||
       /\b(?:i|we)\s+(?:enter|mark|note|record|write)\s+(?:that|this|it)\b/iu.test(uptake));
+  const defaultHandoff = configuredFallbackHandoff({ support, actionFamily });
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract: turnProgressionContract,
+    support,
+    defaultQuestion: defaultHandoff,
+    publicObject: object,
+  });
+  // The progression contract owns the terminal question. An assertion-gap
+  // handoff therefore replaces the configured support question with the
+  // world's public question. Preserve the support affordance declaratively
+  // before that terminal question instead of dropping it or adding a second
+  // question after it.
+  const clarificationInvitation =
+    support?.clarificationInvitationRequired === true && handoff !== defaultHandoff && /\?/u.test(handoff)
+      ? 'You can ask me to clarify any word or connection.'
+      : null;
+  const termDefinition = configuredFallbackTermDefinition({ responseConfiguration, world });
   const candidates = configuredFallbackVariantOrder({ variationKey, recentTutorTexts }).map((variant) =>
     [
       integrationTarget?.active ? oneLine(integrationTarget.qualification) : oneLine(uptake),
+      termDefinition,
       configuredFallbackVariationBridge(variant),
       integrationTarget?.active || !uptakeAlreadyPerformsRecordKeeper
         ? configuredFallbackPerformance({ part, object, tactic, diction })
         : null,
       configuredFallbackStance(stance),
-      deterministicTutorStubTurnProgressionHandoff({
-        contract: turnProgressionContract,
-        support,
-        defaultQuestion: configuredFallbackHandoff({ support, actionFamily }),
-        publicObject: object,
-      }),
+      clarificationInvitation,
+      handoff,
     ]
       .filter(Boolean)
       .join(' '),

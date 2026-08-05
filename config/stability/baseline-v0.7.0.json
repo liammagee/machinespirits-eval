@@ -41,13 +41,13 @@
     },
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
-      "claim": "tutor-turn coordination, clue-insertion interception, and terminal fallback",
-      "sha256": "f8b2ff27e96e86a325bb847fd227f53ae222ee3f32c57d29ab7b91952a040c60"
+      "claim": "tutor-turn coordination and extracted runtime delegation",
+      "sha256": "01938aad4a9f49b38d7493849a0f47276c71f6e6a9f2df51e6280400bac1480f"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",
       "claim": "speaking prompt assembly; conduct-card and contract-licence slots; speaker-privilege recovery",
-      "sha256": "b63327d777966b110fbefa28e514b61ba8a3d792e7a36e1a74e26b8b1703e07e"
+      "sha256": "f95491278814ee497eaa1a023a38098ded7654e217447d514a8c3208dbd11e39"
     },
     {
       "file": "services/tutorStubTutorAttemptRuntime.js",
@@ -68,6 +68,11 @@
       "file": "services/tutorStubTutorRepairRuntime.js",
       "claim": "host-part, simplified model, composition, question, source-voice, and self-correction repair ladder",
       "sha256": "b259faa7bdfd3025a3ee6dcdd94631e6ff9ad070bd9e0a2f5fee1bc35a574b86"
+    },
+    {
+      "file": "services/tutorStubTutorTerminalRuntime.js",
+      "claim": "clue-span insertion, deterministic safety fallback, terminal audit, and rejection accounting",
+      "sha256": "5ff6bd845c7b3d40127fa62f3051e5bbeac944fab0f55f9bb9cdc58cb5c98612"
     },
     {
       "file": "services/tutorStubTutorDraftAudit.js",
