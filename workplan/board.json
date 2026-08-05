@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-05T04:18:11.937Z",
+  "generated": "2026-08-05T04:19:09.371Z",
   "counts": {
-    "total": 407,
+    "total": 408,
     "byStatus": {
       "done": 372,
       "blocked": 7,
-      "dropped": 4,
+      "dropped": 6,
       "triaged": 7,
-      "active": 8,
+      "active": 7,
       "archived": 4,
       "review": 5
     },
     "byType": {
       "research": 71,
-      "experiment": 69,
+      "experiment": 70,
       "infra": 78,
       "maintenance": 170,
       "content": 3,
@@ -536,37 +536,6 @@
         "tutor-stub",
         "harness"
       ]
-    },
-    {
-      "id": "program-2-committee-floor-ablation",
-      "title": "Price the fine-tune: live committee with the untuned mini",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-26",
-      "verification": "The exact Phase 5b design with one variable changed — the untuned same-lineage floor model (program2-floor-instruct-q8) in the mini seat, fallback policy v2 — run under a small frozen prereg (12 committee-floor dialogues + stationarity-pooled controls, seeds and bars fixed before launch), yields a pooled warrant-compliance rate whose comparison against both the pooled control (0.150) and the trained-mini committee reference (0.386, 5b §8) cleanly attributes the live gain between harness and weights.",
-      "claim_status": "planned",
-      "links": {
-        "paper": "§6.21",
-        "notes": [
-          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
-          "notes/program-2/2026-07-20-phase5-live-pilot-results.md"
-        ],
-        "items": [
-          "program-2-context-vs-weights-finetune"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "committee",
-        "ablation"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "codex/program2-committee-floor-ablation"
     },
     {
       "id": "a1-human-learner-validation",
@@ -13637,6 +13606,38 @@
       ]
     },
     {
+      "id": "program-2-committee-floor-ablation",
+      "title": "Price the fine-tune: live committee with the untuned mini",
+      "status": "dropped",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-08-05",
+      "verification": "The historical committee-floor and first weights-by-interface attempts are inventoried as under-informative, their traces are excluded from confirmatory pooling, and the corrected successor is tracked by program-2-weights-interface-retest.",
+      "claim_status": "killed",
+      "links": {
+        "paper": "§6.21",
+        "notes": [
+          "PROGRAM-2-PHASE5B-FALLBACK-BATTERY-PREREGISTRATION.md",
+          "PROGRAM-2-WEIGHTS-INTERFACE-RETEST-PREREGISTRATION.md",
+          "notes/program-2/2026-07-20-phase5-live-pilot-results.md"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune",
+          "program-2-weights-interface-retest"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "committee",
+        "ablation"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
       "id": "program-2-phase5d-second-transfer-world",
       "title": "Program-2 Phase 5e: second transfer world (letter-hostile probe)",
       "status": "dropped",
@@ -13684,6 +13685,44 @@
         "cross-world-transfer"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "program-2-weights-interface-retest",
+      "title": "Price the fine-tune with a weights by interface retest",
+      "status": "dropped",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "The source-bound Amendment 1 pilot sealed 2/8 rows and then correctly stopped: both rows had one scheduled opportunity and passed safety/cue-blind checks, but trained-v1 coverage at turn 23 was 0.667 and both scheduled turns were publicly noncompliant; six jobs and the cohort never ran, and no treatment estimate is claimed.",
+      "claim_status": "killed",
+      "links": {
+        "paper": "§6.21",
+        "notes": [
+          "PROGRAM-2-WEIGHTS-INTERFACE-RETEST-PREREGISTRATION.md",
+          "notes/program-2/2026-08-05-weights-interface-retest-pilot-stop.md",
+          "notes/program-2/2026-08-05-weights-interface-retest-amendment1.md",
+          "notes/program-2/2026-08-05-weights-interface-retest-amendment1-pilot-stop.md"
+        ],
+        "exports": [
+          "exports/program2-weights-interface-retest-pilot-a1/partial-analysis.json"
+        ],
+        "items": [
+          "program-2-committee-floor-ablation",
+          "program-2-context-vs-weights-finetune"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "committee",
+        "ablation",
+        "interface"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1",
+      "branch": "codex/program2-weights-interface-retest"
     },
     {
       "id": "a18-38-teacher-as-learner-ml-fine-tuning-ladder",
