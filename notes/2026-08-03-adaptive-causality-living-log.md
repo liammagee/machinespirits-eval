@@ -5,7 +5,9 @@
 **Status:** Living research note. This is an assessment of the evidence boundary,
 not a production-readiness claim. Add future lessons and results as new dated
 entries under **Append-only lessons and results log**; do not rewrite earlier
-entries to fit later findings.
+entries to fit later findings. The arc this note seeded closed on 2026-08-04
+(PRs #452–#460); the closing entry dated 2026-08-05 at the end of this log
+records the results and what remains open.
 
 ## Executive assessment
 
@@ -1750,3 +1752,130 @@ their claims are superseded and must not seed later work:
 Standing lesson for every later entry: verify a per-turn instruction in
 the SHIPPED prompt of the delivered attempt before reading any live
 result. `tutorResponseRepaired: true` turns are the danger zone.
+
+### 2026-08-05 — Arc closeout: the chain this log demanded has run
+
+**Status:** Verified results from merged PRs #452–#460, recorded on the four
+arc workplan cards (`adaptive-causality-stabilization`, `-crossed-effects`,
+`-routing`, `-repertoire`) and in paper §6.24 (arc entries v3.0.251–v3.0.261).
+This entry closes the arc this log opened. Earlier entries stand unchanged
+per the append-only rule.
+
+The evidence chain named in the executive assessment — validate state
+recognition, then establish crossed action effects, then routing — has run
+to its end on simulated learners. Every phase was registered before it ran;
+two transfer instruments failed on the way and were replaced; and the
+correction entry's standing lesson (read no live result before checking the
+shipped prompt) held as a working rule throughout: every phase reports a
+delivery-verified column.
+
+**Phase 0 — stabilization (PR #452).** The proposed stabilization phase ran
+in its bounded form. The baseline manifest
+(`config/stability/baseline-v0.7.0.json`) pins the adaptive stack with a
+hash and the supported claim per artifact: detector editions, the switch,
+quiet-detector, release, and pipeline services, worlds and stress
+schedules. A `--check` mode runs in CI. It froze at 14 pins and has grown
+under later registered work; 22 today. The golden delivery contract is a
+deterministic test, no model calls, that the conduct card and licence are
+present in every shipped prompt of a frozen full-stack trace, retries
+included. Per the correction entry, the dissolved family-relative
+first-demand boundary was not frozen; card-plus-licence delivery and the
+licence/card separation were.
+
+**Phase 1 — the decisive crossed experiment (PRs #453–#455).** The
+two-state/two-action design ran as registered: five policies (each action
+fixed, a sealed coin, the live router, an oracle told the planted state),
+two worlds, three dialogues per cell, thirty dialogues, delivery verified
+59/60, leaks zero. The crossed interaction is present on ruled conduct in
+both worlds: at the misremembered exhibit the right card repairs 6/6
+against the wrong card's 3/6; at the endgame stake, 5/6 against 0/6. The
+wrong instruction produces the state's characteristic error on demand.
+Oracle 12/12; router 11/12, its whole gap one sensing miss. Registered
+verdict: PARTIAL — adaptation moves conduct.
+
+The transfer column then taught the arc's two instrument lessons, both now
+standing rules:
+
+1. **The first transfer probe measured persona identity, not teaching.**
+   The registered cold-baseline check posed each world's probe to its
+   persona with no dialogue at all: cold pass rates (assay 4/5, flat-share
+   0/5) equal the taught rates (11/15, 1/15). The apparent world effect on
+   transfer dissolved. Rule: no transfer claim without a cold baseline
+   measured first; the effect is lift over cold.
+2. **Single-draw probes manufacture dialogue-level differences.** The
+   replacement instrument, episode citation — cold zero by construction,
+   verified 0/10 — first read 9/15 taught flat-share learners citing the
+   taught method. A registered causal test of the stake move was null:
+   3/7 citations with the move forced against 2/7 with it withheld, missing
+   a pre-declared 4-versus-1 bar in both directions. The registered
+   stability check then dissolved the residue: probed five times each, the
+   citing dialogue cited 5/5 and the originally silent one 4/5. Citation
+   propensity per dialogue is high and uniform; the one-shot probes were
+   the noise source and had manufactured the arm differences. Rule:
+   transfer probes report multi-sample rates per dialogue, never single
+   draws.
+
+The corrected transfer picture: taught flat-share learners cite the taught
+method at high probability against a structurally zero cold baseline; no
+move-level lever for citation survived a causal test; and the assay world's
+zero closed as measured analogy distance — a nearer twin incident turns
+citation on at 3/15 while the far twin stays 0/15 and cold stays 0/5, on
+leak-audited tokens — plus identity crowding: a persona whose character
+already contains the lesson cites little even at close range.
+
+**Phase 2 — routing (PR #456).** The router's one measured deficit closed
+at its edge. The full recorded corpus of 169 stake plants reduced its
+eight misses to two world-neutral closed-class shapes, the first-person
+conditional-cost fusion and refusal-of-entry; the v7 cascade recalls
+169/169 with zero cross-state collisions, zero new calm-set fires, and one
+borderline fire in 423 unplanted turns. Live, the router detected the
+fusion 3/3, delivered the card to every shipped prompt, and made the split
+move 3/3 at zero leaks — matching the oracle cells. At this repertoire
+size the routing policy the chain called for is the detector plus the card
+table; no learned optimization layer earns its keep.
+
+**Phase 3 — the playbook proven almost whole (PRs #457–#459).** The four
+remaining carded states ran through one registered design: a right arm
+forcing each state's gold card against a wrong arm forcing its named
+tempting error, both worlds, 48/48 target deliveries verified. Demand
+passes 5/6 against 1/6, mockery 6/6 against 2/6, grievance 6/6 against
+2/6 — three promotions. The lost thread read 6/6 against 3/6,
+direction-only, and its registered retest under a genuinely adversarial
+card came back 5/6 untangled anyway: at a real confusion moment this
+model's default conduct is the gold and no card moves it — recorded as
+handled natively, detection retained, the card not claimed as causal.
+Flat boredom promoted 5/5 against 0/5 (one world), and the wordy-boredom
+detection gap closed as two closed-class shapes: replayed recall 66/66,
+zero new calm fires, held-out shadow 10/10. The wager licence promoted on
+learner conduct, check-engagement 4/6 against 1/6, with its manipulation
+check keeping the claim small: the staked-send beat itself appeared in
+only 2/6 licensed replies and stays unisolated. Final census: six entries
+causally proven, one robust-native; repertoire growth for this generation
+is closed until a deficit is priced.
+
+**What the arc did not do, recorded so the log stays a fair record:**
+
+- No human-learning claim anywhere. Everything is simulated, k≤3 per
+  cell, single-adjudicator conduct rulings with per-row audit trails
+  saved under `exports/crossed-effects/`.
+- The persona-plus-world confound on the 88% learner-profile recovery
+  stands untouched: no third persona, no crossed worlds. It is the
+  cheapest unbuilt deconfound and a prerequisite of the publication
+  closeout's crossed holdout.
+- The publication closeout — select two or three primary claims,
+  preregister an untouched crossed holdout, independent human coding of
+  state and move realization — has not started.
+- The prospective figure families above (charisma figures, recognition
+  figures, negative registers, role reversal, ensembles, the
+  state-adapter generalization test) have no workplan cards. They wait
+  behind the small-kernel rule: a new entry needs a priced deficit, not a
+  lineage.
+- The human door stays shut on consent and IRB, not on evidence: the
+  chain this log demanded before guarded human work is complete at
+  conduct level on simulated learners.
+
+Successor work lives on the board, not in this log: the fallible-learner
+closure contrast (Phase B frozen and smoke-tested), the contract-split and
+clue-insertion untanglings, and the model profiler's free consolidation
+stage. The log stays append-only for any later lesson that bears on this
+arc's claims.
