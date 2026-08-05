@@ -275,9 +275,11 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
       cardFinalSlot || cardAfterLearner ? null : state?.mannerSwitch?.card || null,
       // Keep the executable contract nearest the learner line so later analysis
       // advisories cannot bury the actual speaking task. The empty-plan control
-      // (the contract's length-and-shape control, off by default) occupies the
-      // same slot: an outcome-contrast arm requests exactly one of the two.
-      withSpeakerBlock('empty_plan', emptyPlanAdvisory ?? null),
+      // (the contract's length-and-shape control) occupies the same slot: an
+      // outcome-contrast arm requests exactly one of the two. Request-only, so
+      // the un-gated legacy path (speakerAdvisoryBlocks === null) never ships
+      // a control block into a real dialogue.
+      speakerAdvisoryBlocks?.has('empty_plan') ? (emptyPlanAdvisory ?? null) : null,
       withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
       cardFinalSlot && !cardAfterLearner ? state?.mannerSwitch?.card || null : null,
     ]
