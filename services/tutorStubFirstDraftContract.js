@@ -188,6 +188,7 @@ function endingCue({
   dramaticReleaseFrame = null,
   dialogueClosureFrame = null,
   discoursePlane = null,
+  progression = null,
 } = {}) {
   if (discoursePlane?.plane === 'instructional_meta') {
     return 'End after the plain restatement or one declarative invitation to unpack another phrase. Do not return to the proof and do not ask a proof question in this turn.';
@@ -202,6 +203,23 @@ function endingCue({
   }
   if (dialogueClosureFrame?.available) {
     return 'Continue only if the learner has not settled the public question. If this reply states or confirms the final verdict, explicitly close the inquiry instead of asking another proof question.';
+  }
+  if (progression?.handoff_contract?.question_allowed === false) {
+    const boundedChoice = /bounded.*choice/u.test(String(questionSupport?.modality || ''));
+    const clarification = questionSupport?.clarificationInvitationRequired === true;
+    if (boundedChoice) {
+      return [
+        'Offer 2-3 short public-safe choices as a declarative list, then end at the compiled public boundary; do not ask a question or use a question mark.',
+        clarification
+          ? 'Explicitly say that the learner may instead ask which clue, connection, or term needs explaining.'
+          : null,
+      ]
+        .filter(Boolean)
+        .join(' ');
+    }
+    if (clarification) {
+      return 'End declaratively at the compiled public boundary and explicitly permit the learner to ask which clue, connection, or term needs explaining; do not ask a question.';
+    }
   }
   if (questionSupport?.responsiveRepairRequired) {
     return 'The learner says an earlier question went unanswered. Answer it directly; do not replace that answer with another exercise.';
@@ -420,10 +438,7 @@ function compactProgressionHandoffInstruction(contract) {
     : '';
   let action;
   if (handoff?.question_allowed === false) {
-    action =
-      contract.ending?.closure_required || contract.opening?.responsive_repair_required
-        ? compactActionInstruction(contract)
-        : 'State the current public limit through the selected action; ask no question.';
+    action = `${compactActionInstruction(contract)} ${handoff.instruction || 'End declaratively; ask no question.'}`;
   } else if (handoff?.question_required === false) {
     action =
       'Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.';
@@ -510,8 +525,11 @@ function buildHostPlan(contract) {
       closure: contract.ending?.closure_required === true,
       instruction: [
         compactProgressionHandoffInstruction(contract),
+        /bounded.*choice/u.test(String(contract.ending?.support_modality || ''))
+          ? 'Express two or three recognizable public-safe choices declaratively; do not turn the list into a question.'
+          : '',
         contract.ending?.clarification_invitation_required
-          ? 'Also permit a direct question about one clue, connection, or term.'
+          ? 'Also say that the learner may ask for a direct explanation of one clue, connection, or term.'
           : '',
       ]
         .filter(Boolean)
@@ -815,8 +833,15 @@ export function buildTutorStubFirstDraftContract({
       source_accessibility: sourceAccessibility,
     },
     ending: {
-      instruction: endingCue({ questionSupport, dramaticReleaseFrame, dialogueClosureFrame, discoursePlane }),
+      instruction: endingCue({
+        questionSupport,
+        dramaticReleaseFrame,
+        dialogueClosureFrame,
+        discoursePlane,
+        progression,
+      }),
       clarification_invitation_required: questionSupport?.clarificationInvitationRequired === true,
+      support_modality: questionSupport?.modality || null,
       closure_required: dialogueClosureFrame?.mandatory === true,
     },
     language: {
