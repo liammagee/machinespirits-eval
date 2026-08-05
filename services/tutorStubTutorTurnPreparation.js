@@ -10,6 +10,11 @@ export const TUTOR_STUB_SPEAKER_GATED_BLOCK_IDS = Object.freeze([
   'learner_dag',
   'human_scaffold',
   'first_draft_contract',
+  // Control arm, not instrumentation: the A/B bench's fixed generic plan
+  // (length-and-shape control for the contract), live so outcome contrasts
+  // can run it as a version. Off by default; `all` includes it by
+  // construction and the trace stamp shows it either way.
+  'empty_plan',
 ]);
 
 /**
@@ -29,6 +34,7 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
     compileTutorStubPerformanceObligationContract,
     currentReleaseRows,
     dagTurnContext,
+    emptyPlanAdvisory,
     humanDiscourseTutorContext,
     reconcileTutorStubPointOfActionHandoffEligibility,
     recoverTutorStubSpeakerPrompt,
@@ -268,7 +274,12 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
       // block entirely and follows the learner's line (see promptParts).
       cardFinalSlot || cardAfterLearner ? null : state?.mannerSwitch?.card || null,
       // Keep the executable contract nearest the learner line so later analysis
-      // advisories cannot bury the actual speaking task.
+      // advisories cannot bury the actual speaking task. The empty-plan control
+      // (the contract's length-and-shape control) occupies the same slot: an
+      // outcome-contrast arm requests exactly one of the two. Request-only, so
+      // the un-gated legacy path (speakerAdvisoryBlocks === null) never ships
+      // a control block into a real dialogue.
+      speakerAdvisoryBlocks?.has('empty_plan') ? (emptyPlanAdvisory ?? null) : null,
       withSpeakerBlock('first_draft_contract', firstDraftContractAdvisory),
       cardFinalSlot && !cardAfterLearner ? state?.mannerSwitch?.card || null : null,
     ]

@@ -443,6 +443,7 @@
         "tests/tutorStubDiscoursePlane.test.js",
         "tests/tutorStubDramaticRelease.test.js",
         "tests/tutorStubDueSourceRenderer.test.js",
+        "tests/tutorStubEmptyPlanBlock.test.js",
         "tests/tutorStubEngagementOperation.test.js",
         "tests/tutorStubEntrypointFacades.test.js",
         "tests/tutorStubExplanatoryDebug.test.js",
