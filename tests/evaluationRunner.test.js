@@ -699,11 +699,11 @@ describe('evaluate / rejudge scoring parity', () => {
   }
 
   it('scoreMultiTurnRejudgment calls all required DB writers', () => {
-    const source = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8');
+    const source = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationRejudgeRuntime.js'), 'utf-8');
 
     // Extract the scoreMultiTurnRejudgment function body
     const fnStart = source.indexOf('async function scoreMultiTurnRejudgment(');
-    assert.ok(fnStart > 0, 'scoreMultiTurnRejudgment must exist in evaluationRunner.js');
+    assert.ok(fnStart > 0, 'scoreMultiTurnRejudgment must exist in evaluationRejudgeRuntime.js');
 
     // Find the end by matching braces (approximate — look for next top-level function)
     const fnEnd = source.indexOf('\nasync function ', fnStart + 10);
@@ -729,7 +729,10 @@ describe('evaluate / rejudge scoring parity', () => {
 
   it('evaluate multi-turn and rejudge multi-turn write the same score columns', () => {
     const evalCliSource = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'eval-cli.js'), 'utf-8');
-    const runnerSource = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8');
+    const rejudgeSource = fs.readFileSync(
+      path.join(__dirname, '..', 'services', 'evaluationRejudgeRuntime.js'),
+      'utf-8',
+    );
 
     // Extract evaluateMultiTurnResult from eval-cli.js
     const evalStart = evalCliSource.indexOf('async function evaluateMultiTurnResult(');
@@ -738,10 +741,10 @@ describe('evaluate / rejudge scoring parity', () => {
     const evalBody =
       evalEnd > 0 ? evalCliSource.slice(evalStart, evalEnd) : evalCliSource.slice(evalStart, evalStart + 5000);
 
-    // Extract scoreMultiTurnRejudgment from evaluationRunner.js
-    const rejStart = runnerSource.indexOf('async function scoreMultiTurnRejudgment(');
-    const rejEnd = runnerSource.indexOf('\nasync function ', rejStart + 10);
-    const rejBody = rejEnd > 0 ? runnerSource.slice(rejStart, rejEnd) : runnerSource.slice(rejStart);
+    // Extract scoreMultiTurnRejudgment from its bounded runtime owner.
+    const rejStart = rejudgeSource.indexOf('async function scoreMultiTurnRejudgment(');
+    const rejEnd = rejudgeSource.indexOf('\n  async function ', rejStart + 10);
+    const rejBody = rejEnd > 0 ? rejudgeSource.slice(rejStart, rejEnd) : rejudgeSource.slice(rejStart);
 
     const evalWriters = extractDbWriterCalls(evalBody);
     const rejWriters = extractDbWriterCalls(rejBody);
@@ -784,7 +787,7 @@ describe('evaluate / rejudge scoring parity', () => {
   });
 
   it('rejudge persists public and internal dialogue dimension vectors, not only aggregates', () => {
-    const source = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationRunner.js'), 'utf-8');
+    const source = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationRejudgeRuntime.js'), 'utf-8');
     assert.match(source, /updateDialogueQualityScore\(rowId, \{[\s\S]*?dialogueQualityScores: publicScores/u);
     assert.match(
       source,
