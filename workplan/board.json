@@ -1,15 +1,14 @@
 {
-  "generated": "2026-08-05T04:58:18.415Z",
+  "generated": "2026-08-05T05:22:16.291Z",
   "counts": {
     "total": 409,
     "byStatus": {
-      "done": 381,
+      "done": 383,
       "blocked": 7,
-      "dropped": 7,
-      "triaged": 2,
+      "dropped": 8,
       "active": 5,
       "archived": 4,
-      "review": 3
+      "review": 2
     },
     "byType": {
       "research": 71,
@@ -22,48 +21,6 @@
     }
   },
   "items": [
-    {
-      "id": "adaptation-plan-3-model-profiler",
-      "title": "Model profiler: which model owns which teaching move — and when to switch",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-02",
-      "verification": "Design-stage card. Smoke gate (registered before any paid probe): the profile must reproduce the two anchors already established by full runs — sonnet fails the demand move with the card present; opus makes the stake split unaided — from frozen single-turn replays, before any new model or move earns a claim.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-h"
-      ],
-      "tags": [
-        "tutor-stub",
-        "adaptation",
-        "casting"
-      ]
-    },
-    {
-      "id": "tutor-contract-turns-to-closure-prereg",
-      "title": "Pre-registration: does the per-turn contract change how fast legitimate closure comes?",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P3",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-07-30",
-      "updated": "2026-07-30",
-      "verification": "Before the main spend: the leak-guard fix for quoted learner text has landed (the guard killed 1 of 10 paid dialogues on 2026-07-30, and a crash rate that differs by tutor version would bias the endpoint), and a 5-dialogue smoke on the contract version shows zero aborted dialogues. The run itself is attended and checkpointed.",
-      "claim_status": "methods",
-      "depends_on": [
-        "tutor-contract-outcome-prereg"
-      ],
-      "tags": [
-        "tutor-stub",
-        "prereg",
-        "outcome"
-      ]
-    },
     {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
@@ -660,49 +617,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "tutor-pr-benchmark-fresh-response-repairs",
-      "title": "Repair the four fresh tutor PR benchmark response failures",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "branch": "codex/tutor-pr-benchmark-four-failure-repair",
-      "verification": "Frozen replay refreshes the current standing tutor rules without changing its public prefix; exact regressions preserve declarative handoff ownership, public-only exhibit correspondence, and bounded advocate realization; focused, static, zero-skip hermetic, and fresh six-call strong tutor PR benchmark gates pass.",
-      "depends_on": [],
-      "links": {
-        "prs": [
-          504
-        ],
-        "items": [
-          "tutor-pr-frozen-prefix-benchmark",
-          "tutor-pr-benchmark-calibration-harness",
-          "guard-ladder-ships-canned-text-on-most-turns"
-        ],
-        "code": [
-          "services/tutorStubEvidenceAssertion.js",
-          "services/tutorStubFrozenReplay.js",
-          "services/tutorStubPromptBlocks.js",
-          "services/tutorStubFirstDraftContract.js",
-          "services/tutorStubResponseConfiguration.js",
-          "tests/tutorStubFrozenReplay.test.js",
-          "tests/tutorStubFirstDraftContract.test.js",
-          "services/__tests__/tutorStubResponseConfiguration.test.js",
-          "services/__tests__/tutorStubEvidenceAssertion.test.js",
-          "tests/tutorStubV27ConfirmationRegression.test.js"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "first-draft",
-        "benchmark",
-        "guards"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "harness-untangling-clue-insertion",
@@ -8441,6 +8355,48 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
+      "id": "tutor-pr-benchmark-fresh-response-repairs",
+      "title": "Repair the four fresh tutor PR benchmark response failures",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "Frozen replay refreshes the current standing tutor rules without changing its public prefix; exact regressions preserve declarative handoff ownership, public-only exhibit correspondence, and bounded advocate realization; focused, static, zero-skip hermetic, and fresh six-call strong tutor PR benchmark gates pass.",
+      "depends_on": [],
+      "links": {
+        "prs": [
+          504
+        ],
+        "items": [
+          "tutor-pr-frozen-prefix-benchmark",
+          "tutor-pr-benchmark-calibration-harness",
+          "guard-ladder-ships-canned-text-on-most-turns"
+        ],
+        "code": [
+          "services/tutorStubEvidenceAssertion.js",
+          "services/tutorStubFrozenReplay.js",
+          "services/tutorStubPromptBlocks.js",
+          "services/tutorStubFirstDraftContract.js",
+          "services/tutorStubResponseConfiguration.js",
+          "tests/tutorStubFrozenReplay.test.js",
+          "tests/tutorStubFirstDraftContract.test.js",
+          "services/__tests__/tutorStubResponseConfiguration.test.js",
+          "services/__tests__/tutorStubEvidenceAssertion.test.js",
+          "tests/tutorStubV27ConfirmationRegression.test.js"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "first-draft",
+        "benchmark",
+        "guards"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "tutor-pr-frozen-prefix-benchmark",
       "title": "Add a bounded dual-CLI frozen-prefix benchmark for tutor PRs",
       "status": "done",
@@ -9401,6 +9357,34 @@
         "learner-variance"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "adaptation-plan-3-model-profiler",
+      "title": "Model profiler: which model owns which teaching move — and when to switch",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-05",
+      "verification": "The provenance matrix and frozen probes expose the bare-probe instrument's saturation; delivery-verified seat tests identify the apparent family-routing advantage as a card-delivery confound, reproduce 2/3 full first-demand wagers in both Sonnet and Opus with card plus licence, promote no router, and are folded into Paper §6.24.",
+      "claim_status": "scope-bound",
+      "depends_on": [
+        "adaptation-plan-3-phase-h"
+      ],
+      "links": {
+        "paper": "§6.24",
+        "exports": [
+          "exports/l2v6-tags.json",
+          "exports/fullstack-tags.json"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "adaptation",
+        "casting"
+      ]
     },
     {
       "id": "adaptation-plan-3-phase-h",
@@ -13839,6 +13823,29 @@
         "adaptive-tutor",
         "derivation",
         "strategy-refusal"
+      ]
+    },
+    {
+      "id": "tutor-contract-turns-to-closure-prereg",
+      "title": "Pre-registration: does the per-turn contract change how fast legitimate closure comes?",
+      "status": "dropped",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-07-30",
+      "updated": "2026-08-05",
+      "verification": "The preregistration remains an unspent historical design: no paid pacing run launched, the parent already scopes the contract as compliance machinery, the expected null changes no decision, and reopening requires a new card and fresh authorization.",
+      "claim_status": "killed",
+      "links": {
+        "items": [
+          "tutor-contract-outcome-prereg"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "prereg",
+        "outcome"
       ]
     }
   ]
