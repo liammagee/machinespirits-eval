@@ -1,7 +1,7 @@
 ---
 id: refactor-tutor-stub-macro-decomposition
 title: Decompose tutor-stub into cohesive runtime subsystems
-status: active
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -84,6 +84,7 @@ links:
     - 479
     - 482
     - 484
+    - 507
   items:
     - codebase-refactoring-program
     - refactor-tutor-stub-extracted-owner-boundaries
@@ -470,3 +471,9 @@ Boundary reassessment after cycle 11:
   `tutorStubResponsePolicy.js` is 1,975. Their decomposition is now isolated in
   `refactor-tutor-stub-extracted-owner-boundaries`; do not resume by shaving
   imports or moving composition into another facade.
+- 2026-08-05 — Closed after PR #507 completed the extracted-owner boundary.
+  The tutor-turn facade is 661 lines; the response-policy facade is 26 lines;
+  the replacement runtime owners range from 186 to 726 lines, below the
+  1,200-line ceiling. Together with the approximately 2,045-line executable
+  entrypoint body and the green #507 CI matrix, this satisfies the macro
+  programme without further helper-sized entrypoint shaving.
