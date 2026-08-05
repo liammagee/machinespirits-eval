@@ -1,7 +1,7 @@
 ---
 id: tutor-pr-benchmark-fresh-response-repairs
 title: Repair the four fresh tutor PR benchmark response failures
-status: active
+status: review
 type: maintenance
 priority: P1
 owner: codex
@@ -113,3 +113,9 @@ Log:
   suite 220/220; root hermetic 7,831/7,831 across 599 files with zero skips;
   tutor-core hermetic 137/137 with zero skips; lint, formatting, import-cycle,
   workplan-source, hermetic-manifest, baseline-manifest, and diff checks green.
+- 2026-08-05 — Committed the repair at `b7c39664` and ran the authorized strong
+  benchmark from that clean committed tree through the pre-push hook. All six
+  fresh jobs passed, with 0 failed and 0 blocked; no repair, fallback, retry,
+  learner regeneration, or dialogue continuation ran. The Git-local report is
+  `.git/machinespirits-reports/tutor-pr-benchmark/hook/b7c39664db28a37d8654ae3045a6318ae2265953/report.md`.
+  Moved the item to review for PR handoff.
