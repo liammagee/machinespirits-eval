@@ -13,6 +13,8 @@ verification: The tutor-turn pipeline and response-policy modules are decomposed
 claim_status: planned
 depends_on: []
 links:
+  prs:
+    - 507
   code:
     - services/tutorStubTutorTurnPipeline.js
     - services/tutorStubTutorTurnPreparation.js
@@ -174,3 +176,8 @@ Log:
   exact-base root 7,836/7,836 and tutor-core 137/137 hermetic suites, the 35/35
   world and 21/21 prompt/world quality gates, and the zero-call six-case
   benchmark re-audit; all remain green with zero skips and zero regressions.
+- 2026-08-05 — Committed the completed response-policy boundary at `fe48c254`,
+  pushed `codex/refactor-tutor-stub-policy-selection-owner`, and opened PR #507
+  for review. The pre-push benchmark hook recorded a reasoned bypass because
+  fresh external-model calls were not authorized; the PR reports the complete
+  deterministic suite and zero-call saved-response re-audit instead.
