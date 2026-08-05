@@ -196,4 +196,27 @@ describe('eval-cli --dry-run', () => {
       `recognition (${recogJson.tutorFirstTurnScore}) should score higher than base (${baseJson.tutorFirstTurnScore})`,
     );
   });
+
+  it('run --dry-run completes one selected scenario without API keys', async () => {
+    const { stdout, stderr, code } = await runCli([
+      'run',
+      '--dry-run',
+      '--profile',
+      'budget',
+      '--scenario',
+      'new_user_first_visit',
+      '--runs',
+      '1',
+    ]);
+    assert.strictEqual(code, 0, `should exit 0, stderr: ${stderr}`);
+    assert.ok(stdout.includes('EVALUATION COMPLETE'), 'should finish the evaluation');
+    assert.ok(stdout.includes('"totalTests": 1'), 'should run exactly one test');
+    assert.ok(stdout.includes('"failedTests": 0'), 'should complete without failures');
+  });
+
+  it('chat fails cleanly without an OpenRouter API key', async () => {
+    const { stderr, code } = await runCli(['chat']);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('OPENROUTER_API_KEY not set'), 'should preserve the missing-key error');
+  });
 });

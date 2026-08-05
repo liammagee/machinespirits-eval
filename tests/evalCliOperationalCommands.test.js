@@ -27,6 +27,22 @@ const EXPECTED_OPERATIONAL_COMMANDS = [
   'watch',
 ];
 
+const OPERATIONAL_OWNER_FILES = [
+  'cleanupCommand.js',
+  'deleteRunsCommand.js',
+  'exportCommand.js',
+  'listCommand.js',
+  'playCommand.js',
+  'reportCommand.js',
+  'resumeCommand.js',
+  'revertCommand.js',
+  'runsCommand.js',
+  'statusCommand.js',
+  'transcriptCommand.js',
+  'validateConfigCommand.js',
+  'watchCommand.js',
+];
+
 describe('eval-cli operational command boundaries', () => {
   it('registers every extracted command exactly once', () => {
     assert.deepEqual([...OPERATIONAL_COMMAND_NAMES].sort(), EXPECTED_OPERATIONAL_COMMANDS);
@@ -39,13 +55,7 @@ describe('eval-cli operational command boundaries', () => {
   });
 
   it('keeps every operational owner below the 500-line ceiling', () => {
-    const commandFiles = fs
-      .readdirSync(commandsDir)
-      .filter((file) => file.endsWith('Command.js'))
-      .sort();
-
-    assert.equal(commandFiles.length, EXPECTED_OPERATIONAL_COMMANDS.length);
-    for (const file of commandFiles) {
+    for (const file of OPERATIONAL_OWNER_FILES) {
       const lineCount = fs.readFileSync(path.join(commandsDir, file), 'utf8').split('\n').length - 1;
       assert.ok(lineCount <= 500, `${file} has ${lineCount} lines; expected at most 500`);
     }
@@ -78,7 +88,7 @@ describe('eval-cli operational command boundaries', () => {
       assert.doesNotMatch(source, new RegExp(`function ${helper}\\(`, 'u'));
     }
 
-    for (const command of ['quick', 'run', 'chat', 'rejudge', 'evaluate', 'evaluate-learner', 'evaluate-dialogue']) {
+    for (const command of ['evaluate', 'backfill-first-turn', 'evaluate-learner', 'evaluate-dialogue']) {
       assert.match(source, new RegExp(`case ['"]${command}['"]`, 'u'));
     }
   });

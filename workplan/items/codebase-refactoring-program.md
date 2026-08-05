@@ -116,6 +116,7 @@ links:
     - refactor-evaluation-turn-execution
     - refactor-evaluation-resume-rejudge-runtime
     - refactor-eval-cli-operational-commands
+    - refactor-eval-cli-generation-commands
 tags:
   - refactoring
   - testing
@@ -1448,3 +1449,18 @@ Log:
   workplan, diff, and zero-cycle gates pass without model calls.
 - 2026-08-06 — Rebased the first R4 step 4 slice over the latest paper/workplan
   changes and opened it as PR #514; no eval-cli source overlap occurred.
+- 2026-08-06 — Activated the second R4 step 4 slice on
+  `codex/refactor-eval-cli-generation-commands`, stacked from PR #514's final
+  head `e86599f1`. Quick/run generation, conversational chat, and rejudge move
+  next; the four scoring families remain frozen for a separate macro slice.
+- 2026-08-06 — The second R4 step 4 slice reached review: quick/test, run,
+  chat, chat tools, and rejudge now have bounded owners, reducing
+  `eval-cli.js` from 4,526 to 3,456 lines while the scoring family stays frozen.
+  Nine exact old/new process cases plus focused and complete hermetic,
+  coverage-risk, lint, format, manifest, workplan, diff, and cycle gates pass
+  without paid model calls.
+- 2026-08-06 — PR #514 merged the operational-command registry; rebased its
+  generation/chat/rejudge follow-up onto refreshed `main` at `e3cbe611` for
+  independent review.
+- 2026-08-06 — Opened the generation/chat/rejudge extraction as PR #515 after
+  its rebased implementation and regression gates remained green.
