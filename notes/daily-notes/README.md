@@ -20,6 +20,13 @@ apart, and — only by luck — **zero shared arxiv IDs**. Run daily, this
 accumulates near-duplicate windows fast and makes "what's new since I last
 looked?" unanswerable.
 
+**Grandfather clause (2026-08-05):** the three pre-rule files
+(`2026-06-08-research-digest.html`, `2026-06-10-research-digest.html`,
+`2026-06-10-weekly-research-digest.html`) keep their names as documented
+history — the table above cites the first by name, and renaming them would
+misrepresent files that satisfy neither the window nor the header rule. The
+rules below bind everything from 2026-06-11 on.
+
 ## Rules
 
 1. **One type word: `research-roundup`.** Filename grammar is

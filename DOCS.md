@@ -15,7 +15,10 @@ design systems, defect ledger) is the techne doc
 2. **Repo root** — frozen plans and pre-registrations (a status line in the
    first three lines says which), theory notes, `README.md`, `CONTRIBUTING.md`,
    `DEPLOYMENT.md`. `TODO.md` is a historical archive. Frozen docs are cited by
-   the paper at specific commits: grep the paper before moving or deleting one.
+   the paper at specific commits: grep the paper before moving or deleting one,
+   and when a frozen doc needs correcting, add a dated *[Editor's note …]* —
+   never rewrite it. Waiver: the four lowercase analysis notes at root predate
+   the ALL-CAPS naming convention and keep their names (one is paper-cited).
 3. **`docs/`** — operational reference and research.
    `docs/research/paper-full-2.0.md` is canonical for every empirical claim;
    `docs/research/paper-full.md` is the legacy Paper 1.0. The atlas under
@@ -25,9 +28,13 @@ design systems, defect ledger) is the techne doc
    main. Contract: `workplan/README.md`.
 5. **`notes/`** — dated working notes and design history, plus the techne HTML
    doc system in `notes/poetics/` (`TECHNE-DOCS.md` is its convention).
-   `notes/daily-notes/README.md` governs research roundups.
-6. **`exports/`** — run artifacts and analysis reports (mostly generated,
-   mostly gitignored).
+   `notes/daily-notes/README.md` governs research roundups. Two generated
+   files live here in place (`provable-discourse.snapshot.json`,
+   `paper-claim-audit.json`) — their writers own them; edit neither by hand.
+6. **`exports/`** — run artifacts and analysis reports. Ignored by default;
+   the exception is the policy: an artifact a paper section cites may be
+   force-added (`git add -f`) and stays tracked. Never assume an exports path
+   resolves in a fresh clone unless it is tracked.
 
 ## Who rules what
 
@@ -66,15 +73,25 @@ One Express route table (`services/evalSurfaces.js`), three hosts:
 
 ## Regeneration
 
-Each generated view has one writer:
+One verb for the cheap views: `npm run docs:refresh` — renders the reference
+status, validates the atlas manifest, renders the board views on main (source-
+check only on branches, where the generated views are CI-owned), and reports
+what changed. `-- --arc` adds the arc regions (excluded by default: timestamp
+churn). Each view's own writer, for when you want just one:
 
 - Board views — `node scripts/workplan.js render` (CI commits them on main;
   feature branches must not).
 - Reference status — `npm run refs:render` / checked by `npm run refs:check`.
-- Paper PDF — `cd docs/research && ./build.sh paper2` (the bare default still
-  builds the legacy 1.0).
+- Paper PDF — `cd docs/research && ./build.sh` (canonical Paper 2.0 is now the
+  default; `full` builds the legacy 1.0 and says so). Not part of
+  `docs:refresh` — needs LaTeX and minutes.
 - Atlas — `npm run atlas:build` (projection of the paper; never edits it).
 - Arc regions — `npm run poetics:arc-html`.
+
+Versioned PDFs beside the paper sources are untracked local artifacts. Keep
+rule: newest version per family, plus anything the published site carries;
+`npm run docs:prune-pdfs` applies it (dry run by default, `-- --apply` to
+delete; every version rebuilds from the committed markdown).
 
 ## Deploy
 

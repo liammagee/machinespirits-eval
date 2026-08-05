@@ -27,6 +27,8 @@
     "dev": "STANDALONE=true node server.js",
     "chat": "node scripts/chat-cli.js",
     "subject-explorer": "node scripts/serve-subject-explorer.js",
+    "docs:refresh": "node scripts/docs-refresh.js",
+    "docs:prune-pdfs": "node scripts/prune-research-pdfs.js",
     "labelling-game": "node scripts/labelling-game.js",
     "labelling-game:coder-artifacts": "node scripts/migrate-labelling-coder-artifacts.js",
     "labelling-game:impasse-provenance": "node scripts/migrate-labelling-impasse-provenance.js",

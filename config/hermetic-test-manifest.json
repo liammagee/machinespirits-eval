@@ -403,6 +403,7 @@
         "tests/superegoFramingTrajectoryCli.test.js",
         "tests/superegoTaxonomyProvenance.test.js",
         "tests/teachingDramaAxiomProtocol.test.js",
+        "tests/techneTokenMirror.test.js",
         "tests/timingPairGenerator.test.js",
         "tests/traceSchema.test.js",
         "tests/transcriptFormatter.test.js",

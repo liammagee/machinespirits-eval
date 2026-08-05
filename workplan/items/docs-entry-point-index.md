@@ -40,5 +40,5 @@ authorities, live-work pointer (the board plus
 `notes/2026-08-03-adaptive-causality-living-log.md`), web surfaces,
 regeneration verbs, deploy path. Linked from
 `README.md` and `CLAUDE.md`'s fork section; the master-plan line now marks the
-plan historical. In review: mirror one-line pointers into `AGENTS.md` /
-`GEMINI.md`, and human eyes on the map's content before done.
+plan historical. Mirror pointers added to `AGENTS.md` and `GEMINI.md`
+(2026-08-05). Remaining for done: human eyes on the map's content.

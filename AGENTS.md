@@ -1,5 +1,7 @@
 # Project Memory for Codex
 
+Documentation entry point: `DOCS.md` (layers, authorities, web surfaces, regeneration, deploy).
+
 ## Core Architecture
 
 ### Bilateral Ego-Superego Architecture

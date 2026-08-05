@@ -2,7 +2,7 @@
 
 **Status:** historical pre-registration plus closeout ledger. New arc sanctioned 2026-05-19; ledger updated 2026-06-15.
 **Lands as:** scoped paragraphs in `docs/research/paper-full-2.0.md` (single-paper discipline — no spin-off). The live paper body currently carries the poetics sidecar near the §7.9 discussion block; avoid relying on a bare section number without checking current headings.
-**Supersedes the framing of:** `docs/critique/dialogical-felicity-experimental-design.md` and its `-response.md`. The felicity design was the right instinct (transcript-as-evidence, not interiority) but kept an effect-estimation grammar; this arc replaces that grammar with a typological/poetic one.
+**Supersedes the framing of:** `docs/critique/dialogical-felicity-experimental-design.md` and its `-response.md`. The felicity design was the right instinct (transcript-as-evidence, not interiority) but kept an effect-estimation grammar; this arc replaces that grammar with a typological/poetic one. *[Editor's note, 2026-08-05: both felicity files have since been removed from the repo; they survive in git history only. Wording above kept as written.]*
 **Relation to the closed arcs:** *orthogonal* to the six adaptation nulls (§6.7 / §6.8.8 / §6.9.7 / §6.9.8 / §6.10). Those measured a latent variable (did the tutor read a hidden learner state). This measures a property of the artifact (does the transcript instantiate tragic form). It is **not** a re-proposal of Plan 2.0 / concealment-inference; it is a different object.
 
 ---

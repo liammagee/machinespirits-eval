@@ -17,6 +17,11 @@ data
 !/data/paper2/superego-critiques-classified-paper-6.2-n500.jsonl
 logs
 logs.pre-symlink-backup-*/
+# exports/ is ignored by default: run artifacts are regenerable or archived
+# outside Git. EXCEPTION (the actual policy, see DOCS.md): an artifact a paper
+# section cites may be force-added (`git add -f`) and then stays tracked —
+# ~900 such files predate or use this rule. Never assume exports/ content is
+# in a fresh clone unless the citation says it is tracked.
 exports
 notes/private/
 notes/local/

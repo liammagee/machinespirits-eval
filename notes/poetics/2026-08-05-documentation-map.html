@@ -233,8 +233,9 @@
             <li><strong>Reference status</strong> — <code>npm run refs:render</code> writes
             <code>docs/ref-status.md</code>; <code>refs:check</code> fails when stale.</li>
             <li><strong>Paper</strong> — <code>docs/research/build.sh</code> (pandoc + xelatex);
-            <code>paper2</code> builds the canonical paper, while the bare default still builds the
-            legacy 1.0. Versioned PDFs pile up beside the sources.</li>
+            the bare default now builds the canonical <code>paper2</code>, and <code>full</code>
+            announces itself as the legacy 1.0. <code>npm run docs:prune-pdfs</code> applies the
+            keep rule to the versioned PDFs beside the sources.</li>
             <li><strong>Atlas</strong> — <code>scripts/build-atlas.js</code> projects the paper into
             spine and module PDFs; it never edits the paper.</li>
             <li><strong>Arc images and regions</strong> — <code>npm run poetics:arc-html</code>
@@ -248,9 +249,9 @@
           status code, because unknown routes soft-200.</p>
         </div>
         <div class="mr">
-          <p class="note note--ochre"><span class="note__lbl">Gap</span> There is no single
-          "refresh everything" command — board, refs, atlas, arc and paper each have their own
-          verb. The regeneration card proposes one.</p>
+          <p class="note note--moss"><span class="note__lbl">Added</span> One verb now exists:
+          <code>npm run docs:refresh</code> runs the cheap regenerations and reports what changed;
+          the paper PDF stays a separate, LaTeX-heavy step.</p>
         </div>
       </div>
     </section>
@@ -292,12 +293,13 @@
               current work without the board. One entry-point index, linked from README and
               CLAUDE.md. <code>docs-entry-point-index</code></p>
             </article>
-            <article class="ev-card" data-status="boundary">
-              <span class="chip chip--ochre"><span class="chip__dot"></span> Open · P2</span>
-              <h3>exports/ tracking contradicts its rule</h3>
-              <p>The directory is gitignored, yet 912 files are tracked and the paper cites some of
-              them; the global CSV ignore leaves paper-cited tables out of fresh checkouts. Make the
-              rule and the reality agree. <code>docs-exports-tracking-policy</code></p>
+            <article class="ev-card" data-status="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> In hand</span>
+              <h3>exports/ tracking contradicted its rule</h3>
+              <p>Gitignored, yet 912 tracked files. The rule is now written where the contradiction
+              lived: ignored by default, paper-cited artifacts may be force-added and stay tracked
+              (.gitignore + DOCS.md). One sweep of cited-but-untracked files remains, from the
+              primary checkout. <code>docs-exports-tracking-policy</code></p>
             </article>
             <article class="ev-card" data-status="strong">
               <span class="chip chip--moss"><span class="chip__dot"></span> In hand</span>
@@ -308,27 +310,29 @@
               CLAUDE.md names a poetics output path that matches nothing. Being repaired on this
               branch. <code>docs-stale-pointer-sweep</code></p>
             </article>
-            <article class="ev-card" data-status="boundary">
-              <span class="chip chip--ochre"><span class="chip__dot"></span> Open · P2</span>
-              <h3>Build default is the legacy paper; regeneration is scattered</h3>
-              <p><code>build.sh</code> with no argument builds Paper 1.0 and only CLAUDE.md warns.
-              Board, refs, atlas, arc and paper each regenerate with a different verb, and ~100
-              versioned PDFs sit beside the sources. One default, one refresh command, one pruning
-              rule. <code>docs-build-default-and-regen</code></p>
+            <article class="ev-card" data-status="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> In hand</span>
+              <h3>Build default was the legacy paper; regeneration was scattered</h3>
+              <p>The bare <code>build.sh</code> now builds the canonical paper and marks
+              <code>full</code> legacy; <code>docs:refresh</code> is the one cheap-regeneration
+              verb; <code>docs:prune-pdfs</code> carries the PDF keep rule (dry run by default).
+              <code>docs-build-default-and-regen</code></p>
             </article>
-            <article class="ev-card" data-status="boundary">
-              <span class="chip chip--ochre"><span class="chip__dot"></span> Open · P3</span>
-              <h3>Design tokens drift between the two techne copies</h3>
-              <p>The served subset and the editorial stylesheet are synced by comment only, and the
-              light paper token already differs. A small test should fail on drift.
+            <article class="ev-card" data-status="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> In hand</span>
+              <h3>Design tokens looked adrift — measuring said otherwise</h3>
+              <p>The served subset is value-equal to the dashboard it claims to mirror (all four
+              skin blocks; the diffs were formatting). The editorial light palette is a deliberate
+              second tuning; dark is shared. A test now locks all three facts.
               <code>docs-techne-token-sync-test</code></p>
             </article>
-            <article class="ev-card" data-status="boundary">
-              <span class="chip chip--ochre"><span class="chip__dot"></span> Open · P3</span>
+            <article class="ev-card" data-status="strong">
+              <span class="chip chip--moss"><span class="chip__dot"></span> In hand</span>
               <h3>Notes conventions drift</h3>
-              <p>Three daily-note filenames break their own README rule; two large generated JSON
-              snapshots are parked in <code>notes/</code>; four lowercase analysis notes sit among
-              sixty-one capitalized root files. <code>docs-notes-conventions-cleanup</code></p>
+              <p>Resolved by documentation, not churn: the three pre-rule daily notes are
+              grandfathered in their README (one is its own failure exhibit), the two generated
+              snapshots are marked generated-in-place, and the lowercase root notes carry a written
+              waiver (one is paper-cited). <code>docs-notes-conventions-cleanup</code></p>
             </article>
           </div>
         </div>
