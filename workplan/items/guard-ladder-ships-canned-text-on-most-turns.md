@@ -217,3 +217,18 @@ Two dialogues, one model, one run, against a single earlier run for the
 comparison. The self-correction result is six for six, which is a clean enough
 pattern to act on. The fallback rate going from 1-of-7 to 3-of-5 on Riverside is
 one dialogue against one dialogue and is the weakest number here.
+
+## The closing rates did not hold at scale (2026-08-06)
+
+The fallible-learner Phase-B run went out the same day on the same tree, with
+every fix above in place: 1,156 turns across nine conditions, 62% canned, and
+the model's first draft passing 10% of the time. Campus 3-of-10 and Riverside
+2-of-5 were the easy end of the range, not the new level. The four specific
+fixes on this card stand — they were verified by replay and none is in
+question. What does not stand is the reading that the fallback problem was
+solved by them.
+
+Picked up at scale in `guard-regime-fallback-census-at-scale`, with
+`guard-delivery-prefer-model-over-canned` and `guard-validity-study` carrying
+the two changes it proposes. This card stays closed; the numbers here should be
+cited as the two-dialogue post-fix check they were.
