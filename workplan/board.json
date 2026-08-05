@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-05T05:32:23.587Z",
+  "generated": "2026-08-05T05:35:26.781Z",
   "counts": {
     "total": 409,
     "byStatus": {
       "done": 384,
-      "blocked": 7,
+      "blocked": 6,
       "dropped": 8,
       "active": 5,
       "archived": 4,
-      "review": 1
+      "review": 2
     },
     "byType": {
       "research": 71,
@@ -138,46 +138,6 @@
         "testing",
         "coverage",
         "dead-code",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "refactor-tutor-stub-extracted-owner-boundaries",
-      "title": "Split oversized tutor-stub pipeline and response-policy owners",
-      "status": "active",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "branch": "codex/refactor-tutor-stub-terminal-fallback-owner",
-      "verification": "The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "code": [
-          "services/tutorStubTutorTurnPipeline.js",
-          "services/tutorStubTutorTurnPreparation.js",
-          "services/tutorStubTutorAttemptRuntime.js",
-          "services/tutorStubTutorCommitteeRuntime.js",
-          "services/tutorStubTutorDeliveryRuntime.js",
-          "services/tutorStubTutorDraftAudit.js",
-          "services/tutorStubTutorRepairRuntime.js",
-          "services/tutorStubTutorTerminalRuntime.js",
-          "services/tutorStubResponsePolicy.js",
-          "scripts/tutor-stub.js"
-        ],
-        "items": [
-          "refactor-tutor-stub-macro-decomposition",
-          "codebase-refactoring-program"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "tutor-stub",
-        "boundaries",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -327,6 +287,55 @@
       ]
     },
     {
+      "id": "negative-register-effect-estimation-grid",
+      "title": "Estimate negative-register effects with stance-fidelity gating",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-08-05",
+      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
+      "claim_status": "future",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/252"
+        ],
+        "notes": [
+          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
+          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md",
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
+          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
+        ],
+        "exports": [
+          "exports/charisma-desire-breakthrough-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-matrix.json",
+          "exports/negative-register-corrosive-exemplar-results.md"
+        ],
+        "runs": [
+          "eval-2026-07-02-e7b15809",
+          "eval-2026-07-02-7e461a5c",
+          "eval-2026-07-02-5c4d52e6"
+        ],
+        "items": [
+          "register-taxonomy-negative-registers"
+        ]
+      },
+      "depends_on": [
+        "register-taxonomy-negative-registers"
+      ],
+      "tags": [
+        "registers",
+        "negative-registers",
+        "effect-estimation",
+        "stance-fidelity"
+      ]
+    },
+    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -450,56 +459,6 @@
       "blocked_by": "tutor-stub-transition-reward-model ended with a killed claim; no supported learned-ranking prerequisite"
     },
     {
-      "id": "negative-register-effect-estimation-grid",
-      "title": "Estimate negative-register effects with stance-fidelity gating",
-      "status": "blocked",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-03",
-      "updated": "2026-08-05",
-      "blocked_by": "Explicit operator authorization for the frozen 45-row model-consuming generation and judging run",
-      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
-      "claim_status": "future",
-      "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/252"
-        ],
-        "notes": [
-          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
-          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md",
-          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
-        ],
-        "paper": [
-          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
-          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
-        ],
-        "exports": [
-          "exports/charisma-desire-breakthrough-matrix-summary.md",
-          "exports/charisma-desire-breakthrough-matrix.json",
-          "exports/negative-register-corrosive-exemplar-results.md"
-        ],
-        "runs": [
-          "eval-2026-07-02-e7b15809",
-          "eval-2026-07-02-7e461a5c",
-          "eval-2026-07-02-5c4d52e6"
-        ],
-        "items": [
-          "register-taxonomy-negative-registers"
-        ]
-      },
-      "depends_on": [
-        "register-taxonomy-negative-registers"
-      ],
-      "tags": [
-        "registers",
-        "negative-registers",
-        "effect-estimation",
-        "stance-fidelity"
-      ]
-    },
-    {
       "id": "program-2-second-trigger-family-stall",
       "title": "Program-2: second trigger family — stall-breaking specialist (stagnant_repeat)",
       "status": "blocked",
@@ -576,6 +535,56 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "refactor-tutor-stub-extracted-owner-boundaries",
+      "title": "Split oversized tutor-stub pipeline and response-policy owners",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "branch": "codex/refactor-tutor-stub-policy-selection-owner",
+      "verification": "The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; 207 focused policy/configuration tests, 7,836 root tests, and 137 tutor-core tests pass with zero failures or skips; prompt/world, lint, format, source, manifest, benchmark re-audit, and zero-cycle gates pass; no replacement owner exceeds the 1,200-line ceiling.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "prs": [
+          507
+        ],
+        "code": [
+          "services/tutorStubTutorTurnPipeline.js",
+          "services/tutorStubTutorTurnPreparation.js",
+          "services/tutorStubTutorAttemptRuntime.js",
+          "services/tutorStubTutorCommitteeRuntime.js",
+          "services/tutorStubTutorDeliveryRuntime.js",
+          "services/tutorStubTutorDraftAudit.js",
+          "services/tutorStubTutorRepairRuntime.js",
+          "services/tutorStubTutorTerminalRuntime.js",
+          "services/tutorStubResponsePolicy.js",
+          "services/tutorStubResponsePolicySelectionRuntime.js",
+          "services/tutorStubAdaptiveResponsePolicyRuntime.js",
+          "services/tutorStubResponseConfigurationSelectionRuntime.js",
+          "config/stability/baseline-v0.7.0.json",
+          "config/tutor-pr-benchmark.yaml",
+          "scripts/generate-baseline-manifest.js",
+          "tests/tutorStubResponsePolicyRuntime.test.js",
+          "scripts/tutor-stub.js"
+        ],
+        "items": [
+          "refactor-tutor-stub-macro-decomposition",
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "boundaries",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
