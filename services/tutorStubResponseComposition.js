@@ -1874,6 +1874,22 @@ export function deterministicTutorStubConfiguredContinuationFallback({
       uptake,
     ) ||
       /\b(?:i|we)\s+(?:enter|mark|note|record|write)\s+(?:that|this|it)\b/iu.test(uptake));
+  const defaultHandoff = configuredFallbackHandoff({ support, actionFamily });
+  const handoff = deterministicTutorStubTurnProgressionHandoff({
+    contract: turnProgressionContract,
+    support,
+    defaultQuestion: defaultHandoff,
+    publicObject: object,
+  });
+  // The progression contract owns the terminal question. An assertion-gap
+  // handoff therefore replaces the configured support question with the
+  // world's public question. Preserve the support affordance declaratively
+  // before that terminal question instead of dropping it or adding a second
+  // question after it.
+  const clarificationInvitation =
+    support?.clarificationInvitationRequired === true && handoff !== defaultHandoff && /\?/u.test(handoff)
+      ? 'You can ask me to clarify any word or connection.'
+      : null;
   const candidates = configuredFallbackVariantOrder({ variationKey, recentTutorTexts }).map((variant) =>
     [
       integrationTarget?.active ? oneLine(integrationTarget.qualification) : oneLine(uptake),
@@ -1882,12 +1898,8 @@ export function deterministicTutorStubConfiguredContinuationFallback({
         ? configuredFallbackPerformance({ part, object, tactic, diction })
         : null,
       configuredFallbackStance(stance),
-      deterministicTutorStubTurnProgressionHandoff({
-        contract: turnProgressionContract,
-        support,
-        defaultQuestion: configuredFallbackHandoff({ support, actionFamily }),
-        publicObject: object,
-      }),
+      clarificationInvitation,
+      handoff,
     ]
       .filter(Boolean)
       .join(' '),

@@ -841,7 +841,22 @@ function declarativeFallbackFocus(
 ) {
   const focus = contract?.turn_focus_contract || {};
   const uptake = contract?.learner_uptake || {};
-  const surface = oneLine(focus.primary_surface || uptake.accepted_meaning || uptake.learner_surface);
+  const selectedSurface = oneLine(focus.primary_surface || uptake.accepted_meaning || uptake.learner_surface);
+  const learnerSurface = oneLine(uptake.learner_surface);
+  const learnerSurfaceIsBareUncertainty =
+    /^(?:i\s+)?(?:do(?:n['’]?t)?\s+know|no idea|not sure|unsure|uncertain|confused)$/iu.test(learnerSurface);
+  // Classifier summaries sometimes begin with third-person apparatus prose
+  // such as “Learner links …”. Deterministic public fallbacks should use the
+  // learner's actual public wording instead of exposing that analyst voice.
+  // A bare “no idea” has too little content to carry the typed focus, so retain
+  // the classifier's substance while removing its third-person wrapper.
+  const surface = /^(?:the\s+)?learner\b/iu.test(selectedSurface)
+    ? learnerSurface && !learnerSurfaceIsBareUncertainty
+      ? learnerSurface
+      : selectedSurface
+          .replace(/^(?:the\s+)?learner\s+cannot\s+yet\s+/iu, 'how to ')
+          .replace(/^(?:the\s+)?learner\s+/iu, '')
+    : selectedSurface;
   if (contract?.discourse_plane?.plane === 'instructional_meta') {
     return 'I will keep the same point and restate it in short, ordinary words before we return to the inquiry.';
   }
@@ -873,7 +888,9 @@ function declarativeFallbackFocus(
       .trim();
     const focus =
       publicFocus && !/^(?:not really sure|not sure|unsure|uncertain|confused)$/iu.test(publicFocus)
-        ? publicFocus
+        ? /^(?:it|this|that)\s+/iu.test(publicFocus)
+          ? `whether ${publicFocus.charAt(0).toLowerCase()}${publicFocus.slice(1)}`
+          : publicFocus
         : `what the ${object} establishes`;
     return clarificationInvitationRequired
       ? `Choose one way forward: use the ${object} to decide ${focus}, or leave that reading open until another public fact arrives; you may also ask me to unpack one word or connection.`
@@ -1162,9 +1179,24 @@ export function auditTutorStubLiveTurnProgressionV1({
   });
   const uptakeOverlap = uptakeLinkage.matchedTerms;
   const requestedEntryAnswerRecognition = responseComposition?.requestedEntryAnswerRecognition || null;
+  const writableEntryTurn = contract.learner_uptake.mode === 'writable_entry';
+  const requestedEntryPrerequisites = requestedEntryAnswerRecognition?.prerequisites || {};
+  // Uptake and evidence licensing are different contracts. A well-formed
+  // Write answer can substantively answer the learner even when the stricter
+  // requested-entry recognizer cannot prove a derived claim from one literal
+  // public-status surface. Safety, release, and evidence audits still own
+  // whether that answer is licensed; progression owns whether it responds.
+  const writableEntryStructureVisible =
+    writableEntryTurn &&
+    uptakeLinkage.visible &&
+    requestedEntryPrerequisites.exact_write_envelope === true &&
+    requestedEntryPrerequisites.one_declarative_quoted_line === true &&
+    requestedEntryPrerequisites.non_question === true &&
+    requestedEntryPrerequisites.non_meta === true &&
+    requestedEntryPrerequisites.not_exact_learner_surface === true;
   const writableUptake =
-    contract.learner_uptake.mode === 'writable_entry' && requestedEntryAnswerRecognition?.recognized === true;
-  const responsiveUptake = contract.learner_uptake.mode === 'writable_entry' ? writableUptake : uptakeLinkage.visible;
+    writableEntryTurn && (requestedEntryAnswerRecognition?.recognized === true || writableEntryStructureVisible);
+  const responsiveUptake = writableEntryTurn ? writableUptake : uptakeLinkage.visible;
   if (contract.learner_uptake.required && (!uptake || !responsiveUptake)) {
     issues.push({
       type: 'learner_uptake_not_realized',
@@ -1240,15 +1272,19 @@ export function auditTutorStubLiveTurnProgressionV1({
   // adjacent boundary instead of fabricating V2 ownership. Declarative endings
   // must still carry their own focus in the terminal sentence.
   //
-  // A closing turn is the exception, and it was rejecting every draft it got.
+  // A closing turn is one exception, and it was rejecting every draft it got.
   // The closure guard needs the last sentence to be the closing act — "The
   // Riverside Clinic inquiry is closed" — and this check was demanding the same
   // sentence carry the turn's target terms. Nothing can be both, so Riverside's
   // close in the 2026-07-28 run failed on all four attempts and went out as
-  // canned text. The turn must still carry its focus; it just may say it before
-  // the sentence that ends the dialogue.
+  // canned text. A writable-entry turn has the same ownership shape for a
+  // different reason: UPTAKE directly answers the requested topic, while the
+  // remaining host sentences may hand off the next unresolved relation. Both
+  // turns must still carry their focus; they just need not repeat it in the
+  // sentence that ends the response.
   const closingTurn = handoff.mode === 'closure';
-  const targetSurface = closingTurn
+  const wholeResponseOwnsFocus = closingTurn || writableEntryTurn;
+  const targetSurface = wholeResponseOwnsFocus
     ? responseText
     : questionCount > 0 && handoff.question_owner === 'handoff'
       ? sentences.slice(-2).join(' ')
@@ -1257,7 +1293,7 @@ export function auditTutorStubLiveTurnProgressionV1({
   if (losesHandoffFocus(target, handoff.required_target_terms)) {
     issues.push({
       type: 'handoff_loses_turn_focus',
-      owner: closingTurn ? 'whole_response' : 'terminal_sentence',
+      owner: wholeResponseOwnsFocus ? 'whole_response' : 'terminal_sentence',
       required_target_surfaces: handoff.required_target_surfaces,
       audited_target_surface: targetSurface,
       matched_terms: target.matched,
@@ -1303,9 +1339,10 @@ export function auditTutorStubLiveTurnProgressionV1({
       visible: responsiveUptake,
       matched_focus_terms: uptakeOverlap,
       requested_entry_recognized: requestedEntryAnswerRecognition?.recognized === true,
+      writable_entry_structure_visible: writableEntryStructureVisible,
     },
     handoff: {
-      owner: closingTurn ? 'whole_response' : 'terminal_sentence',
+      owner: wholeResponseOwnsFocus ? 'whole_response' : 'terminal_sentence',
       mode: handoff.mode,
       question_owner: handoff.question_owner,
       target_coverage: target,

@@ -66,7 +66,7 @@ test('live V1 progression audits substantive writable uptake and declarative ter
   assert.equal(audit.scope, 'whole_response_terminal_boundary');
   assert.equal(audit.slot_ownership_inferred, false);
   assert.equal(audit.learner_uptake.visible, true);
-  assert.equal(audit.handoff.owner, 'terminal_sentence');
+  assert.equal(audit.handoff.owner, 'whole_response');
   assert.equal(audit.observed.question_count, 0);
 });
 
@@ -430,6 +430,73 @@ test('contract-aware no-due fallback passes live audit for forbidden and allowed
   }
 });
 
+test('assertion-gap fallback preserves a required clarification invitation before the terminal public question', () => {
+  const publicQuestion =
+    'What should the campus FAQ tool use as its first implementation baseline, on the evidence in the formulation card?';
+  const learnerText =
+    'I would record: when policy consequences are uncertain, the tool should hand the case to staff rather than risk a confident but wrong answer.';
+  const support = {
+    guardRequired: true,
+    answerability: 'public_but_needs_scaffold',
+    modality: 'embedded_public_hint',
+    clarificationInvitationRequired: true,
+    responsiveRepairRequired: false,
+  };
+  const contract = compileTutorStubTurnProgressionContract({
+    learnerText,
+    publicQuestion,
+    responseCompositionFrame: {
+      learner_move: {
+        summary: 'Links uncertain policy consequences to staff handoff.',
+        pedagogical_need: 'State the final baseline conclusion',
+      },
+      learner_dag: {
+        bottleneck: 'assertion_gap',
+        final_secret_entailed: true,
+        asserted_secret: false,
+      },
+      conversational_completion: { resolved: false },
+      due_evidence_surfaces: [],
+    },
+    questionSupport: support,
+    actionFamily: 'compress_sayback',
+    tactic: 'evidentiary_boundary',
+  });
+  assert.equal(contract.handoff_contract.mode, 'assertion_gap_prompt');
+
+  const uptake = 'That gives the tool a clear safety boundary.';
+  const text = deterministicTutorStubConfiguredContinuationFallback({
+    uptake,
+    responseConfiguration: {
+      engagement_stance: 'plain',
+      action_family: 'compress_sayback',
+      actorial_part: 'record_keeper',
+    },
+    support,
+    world: {
+      setting: 'The workshop is reviewing a campus FAQ triage tool.',
+      question: publicQuestion,
+      ledger_term: 'formulation card',
+      public_objects: ['formulation card'],
+    },
+    learnerText,
+    turnProgressionContract: contract,
+  });
+  const development = text.slice(uptake.length).trim();
+  const progressionAudit = auditTutorStubLiveTurnProgressionV1({
+    contract,
+    text,
+    responseComposition: { segments: { uptake, development } },
+  });
+  const questionSupportAudit = auditTutorStubQuestionSupportResponse({ text, support });
+
+  assert.equal(progressionAudit.ok, true, JSON.stringify(progressionAudit.issues));
+  assert.equal(questionSupportAudit.ok, true, JSON.stringify(questionSupportAudit.issues));
+  assert.match(text, /ask me to clarify (?:a|any) word or connection/iu);
+  assert.equal(text.endsWith(publicQuestion), true);
+  assert.equal(progressionAudit.observed.question_count, 1);
+});
+
 test('latest fixed-intent no-idea regression ends with a declarative bounded choice', () => {
   const support = {
     guardRequired: true,
@@ -484,6 +551,7 @@ test('latest fixed-intent no-idea regression ends with a declarative bounded cho
   assert.equal(contract.handoff_contract.question_allowed, false);
   assert.doesNotMatch(text, /\?/u);
   assert.match(text, /Choose one way forward/iu);
+  assert.doesNotMatch(text, /\blearner\b/iu);
   assert.match(text, /or leave that reading open/iu);
   assert.match(text, /ask me to unpack one word or connection/iu);
   assert.equal(progressionAudit.ok, true, JSON.stringify(progressionAudit.issues));

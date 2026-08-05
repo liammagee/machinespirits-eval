@@ -1,13 +1,13 @@
 ---
 id: guard-ladder-ships-canned-text-on-most-turns
 title: The guard ladder ships canned text on most instrumented turns
-status: active
+status: done
 type: infra
 priority: P2
 owner: claude
 source: review
 created: 2026-07-28
-updated: 2026-08-04
+updated: 2026-08-05
 verification: >-
   A turn that quotes an exhibit containing a question mark is audited against the
   whole quoted sentence rather than the fragment after the internal `?`, with the
@@ -152,6 +152,28 @@ where the replay predicted (campus 1 and 9, riverside 3 and 5, unless the
 turn-focus fixes take campus 1 and riverside 5 out first); whether the two passes
 that still run land this time; and whether the brief's "keep what already worked"
 line stops the shortening.
+
+## Post-fix run evidence (2026-08-05)
+
+The shared post-fix run closed the empirical gap. Riverside completed in five
+turns with two successful recoveries, one accepted self-correction pass, two
+deterministic fallbacks, and no final guard failure. Campus completed eight
+turns before turn 9 exposed one exact deterministic-fallback defect: the
+assertion-gap progression handoff had replaced the required clarification
+invitation. The repaired fallback was then confirmed in a fresh ten-turn Campus
+session: five first drafts, five model rewrites, three fallbacks, and zero final
+guard failures. Turn 10 exercised the exact assertion-gap plus clarification
+intersection and passed both the question-support and turn-progression audits.
+
+The observed fallback rates therefore moved from the 2026-07-28 baselines of
+Campus 6/10 and Riverside 3/5 to Campus 3/10 and Riverside 2/5. The six-case
+strong PR benchmark initially still reported 0/6, but the same saved responses
+showed that this was partly a contract-calibration defect: writable learner
+uptake had been conflated with evidence licensing, and a legitimate next-step
+handoff was required to repeat the topic already answered in the writable
+entry. Separating those responsibilities changed the zero-call re-audit to 3/6,
+with three improvements, no regressions, and no safety finding introduced or
+cleared. The remaining three cases retain genuine hard failures.
 
 ## Sequence for the safety/closure cards (2026-08-04)
 
