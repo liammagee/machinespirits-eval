@@ -861,6 +861,12 @@ function declarativeFallbackFocus(
     return 'I will keep the same point and restate it in short, ordinary words before we return to the inquiry.';
   }
   if (contract?.handoff_contract?.mode === 'declarative_unsupported_claim') {
+    if (boundedChoiceRequired) {
+      const object = oneLine(publicObject) || 'public record';
+      return clarificationInvitationRequired
+        ? `Choose one way forward: use the ${object} to test the next public connection, or leave the proposed causal answer open until public evidence establishes it; you may also ask me to unpack one word or connection.`
+        : `Choose one way forward: use the ${object} to test the next public connection, or leave the proposed causal answer open until public evidence establishes it.`;
+    }
     return 'We will leave the proposed causal answer open until public evidence establishes the missing connection.';
   }
   const terms = new Set([...(focus.primary_terms || []), ...(uptake.focus_terms || [])].map(normalizeToken));

@@ -1796,6 +1796,18 @@ function configuredMetaFallbackHost({ part, object }) {
   );
 }
 
+function configuredFallbackTermDefinition({ responseConfiguration = null, world = null } = {}) {
+  if (responseConfiguration?.action_family !== 'clarify_term') return null;
+  const term = oneLine(
+    responseConfiguration?.unresolved_terms?.[0] || responseConfiguration?.discourse_plane?.meta_target?.surface,
+  );
+  if (!term) return null;
+  const glossary = world?.presentation?.public_glossary;
+  const definition = oneLine(glossary && typeof glossary === 'object' ? glossary[term.toLowerCase()] : '');
+  if (!definition) return null;
+  return `Here, “${term}” means ${definition.replace(/[.!?]+$/gu, '')}.`;
+}
+
 export function deterministicTutorStubInstructionalMetaFallback({
   uptake = '',
   responseConfiguration = null,
@@ -1890,9 +1902,11 @@ export function deterministicTutorStubConfiguredContinuationFallback({
     support?.clarificationInvitationRequired === true && handoff !== defaultHandoff && /\?/u.test(handoff)
       ? 'You can ask me to clarify any word or connection.'
       : null;
+  const termDefinition = configuredFallbackTermDefinition({ responseConfiguration, world });
   const candidates = configuredFallbackVariantOrder({ variationKey, recentTutorTexts }).map((variant) =>
     [
       integrationTarget?.active ? oneLine(integrationTarget.qualification) : oneLine(uptake),
+      termDefinition,
       configuredFallbackVariationBridge(variant),
       integrationTarget?.active || !uptakeAlreadyPerformsRecordKeeper
         ? configuredFallbackPerformance({ part, object, tactic, diction })

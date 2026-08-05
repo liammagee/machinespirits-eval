@@ -1,14 +1,14 @@
 ---
 id: tutor-stub-latency-routing-optimization
 title: "Optimize tutor-stub foreground latency with attributable routing experiments"
-status: active
+status: review
 type: experiment
 priority: P1
 owner: codex
 source: manual
 created: 2026-07-24
 updated: 2026-08-05
-branch: codex/tutor-stub-latency-routing-optimization
+branch: codex/tutor-stub-latency-v2-screen
 verification: "A frozen object/meta/mixed transcript matrix reports first-draft acceptance, recovery/fallback rate, foreground p50/p95 latency, model-call latency, token use, and tutor-quality/safety outcomes for isolated effort, role-routing, prompt-compaction, and prefetch-policy contrasts; no candidate becomes a default without preserving the instructional-meta regression and public-safety gates."
 claim_status: exploratory
 links:
@@ -131,3 +131,39 @@ low effort, Terra analysis, and analysis-only tutor prefetch). The regressive
 a promotion run: it can reject candidates or nominate one for confirmation,
 but cannot by itself change the default. External model calls remain
 unauthorized in this branch.
+
+2026-08-05 Codex: Completed the explicitly authorized 36-job v2 screen at
+source `d0886eec5b71cdec37faaa63fa477a6ea4b3cbf0`. All 36 planned job IDs were
+attempted exactly once; 34 delivered a guarded tutor turn and two mixed jobs
+failed closed without public delivery. Across delivered jobs, every final
+delivery passed the public-safety checks. The screen did not justify changing
+any default:
+
+- baseline medium/Sol: 8/9 delivered, foreground p50 38,136ms and p95
+  49,687ms, 87.5% recovery and 12.5% deterministic fallback;
+- low effort/Sol: 9/9 delivered, p50 34,036ms and p95 49,635ms, 77.8%
+  recovery and 22.2% fallback;
+- medium/Terra analysis: 9/9 delivered, p50 29,844ms and p95 46,270ms, 100%
+  recovery and 55.6% fallback;
+- analysis-only tutor prefetch: 8/9 delivered, p50 32,220ms and p95 57,676ms,
+  75% recovery and 37.5% fallback.
+
+Low effort remains at most a prospective confirmation candidate: its median
+gain was modest, its p95 was unchanged, and fallback use increased. Terra
+analysis and analysis-only prefetch are rejected by this screen. This remains
+an exploratory engineering result, not a treatment effect or human-learning
+claim. The frozen 36-job authorization is exhausted; no rerun is implied.
+
+The two failures were contract failures rather than provider, quota, or safety
+leak failures. A mixed plain-language repair plus unsupported object proposal
+compiled a bounded-choice requirement alongside a declarative no-question
+handoff. Recovery satisfied one side and violated the other; the terminal
+fallback satisfied the declarative boundary but omitted the choice. The
+model-free repair now compiles the choice as a declarative list, carries an
+authored public glossary definition into the Campus FAQ fallback, and keeps the
+unsupported proposal open. The benchmark runner now checkpoints after every
+attempt, records failed jobs separately, continues through the frozen plan, and
+still exits non-zero when any job failed. Focused compiler, fallback,
+progression, response-composition, and benchmark tests pass without model
+calls. Live confirmation remains separately gated and is not required to retain
+the no-default verdict.

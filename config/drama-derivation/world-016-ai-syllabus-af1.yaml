@@ -192,3 +192,5 @@ presentation:
   narrative_diction: "plain technical contemporary"
   ledger_term: "formulation card"
   summary: A first AI workshop tests whether a conversational FAQ tool actually needs a generative model or should begin with a rule-based baseline.
+  public_glossary:
+    baseline: "the simplest useful starting approach we can build first and compare later options against"
