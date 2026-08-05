@@ -63,10 +63,10 @@ learner did integrate it at turn 23, when proof-path coverage rose from 0.667 to
 
 This is a measurement-boundary error, not evidence that the dialogue was
 incapable of completion. A replacement design must keep public availability at
-turn 22 separate from learner integration. The natural amendment is a release
-gate at turn 22 plus a later fixed learner-uptake horizon, provisionally turn
-24; that choice must be preregistered and locally tested before another external
-pilot.
+turn 22 separate from learner integration. Exact zero-model resummary
+subsequently showed both sealed successful traces at coverage 1.000 with
+complete hard-safety evidence at turn 23. Amendment 1 therefore keeps a release
+gate at turn 22 and fixes learner uptake at turn 23.
 
 ### 2. Neither sealed job exposed the weights × interface treatment
 

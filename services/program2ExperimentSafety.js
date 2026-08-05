@@ -12,6 +12,7 @@ export const DEFAULT_PROGRAM2_GATE_SPEC = Object.freeze({
   minCompleteBlocksPerProfile: 4,
   minOpportunitiesPerCell: 60,
   minOpportunitiesPerProfileCell: 20,
+  minScheduledOpportunitiesPerRow: 0,
   minPilotRowsPerProfileCell: 1,
   requirePilotOpportunityPower: true,
   opportunityReserveFactor: 1.25,
@@ -292,7 +293,7 @@ export function buildProgram2LaunchCertificate({
 } = {}) {
   const spec = { ...DEFAULT_PROGRAM2_GATE_SPEC, ...gateSpec };
   const staticReachability = deriveProgram2WorldReachability(world, {
-    horizon: plan.primaryHorizon,
+    horizon: plan.publicReleaseHorizon ?? plan.primaryHorizon,
     coverageThreshold: spec.coverageThreshold,
   });
   const budget = deriveProgram2Budget(plan, budgetPolicy);
@@ -433,6 +434,13 @@ export function evaluateProgram2LiveFutility({ plan, launchState = {}, rows = []
   for (const failure of guardrails.safety.failures) reasons.push(`${failure.jobId}: frozen all-row safety gate failed`);
   if (spec.requireCueBlind) {
     for (const row of rows.filter(cueBlindViolation)) reasons.push(`${row.job.id}: cue-blind enforcement failed`);
+  }
+  for (const row of rows) {
+    if (finiteNumber(row?.warrant?.scheduledOpp, 0) < spec.minScheduledOpportunitiesPerRow) {
+      reasons.push(
+        `${row.job.id}: scheduled warrant exposure ${finiteNumber(row?.warrant?.scheduledOpp, 0)} is below ${spec.minScheduledOpportunitiesPerRow}`,
+      );
+    }
   }
 
   const { profiles, conditions, profileConditions } = plannedGroupKeys(plan);

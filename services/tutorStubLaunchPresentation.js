@@ -411,6 +411,7 @@ export function runTutorStubLaunchPresentation({ launchApplicationContext, sessi
                 enabled: true,
                 arm: pointOfActionArm,
                 detectorVersion: 'step4-frozen-2026-07-14.v1',
+                opportunityProtocol: args['point-of-action-opportunity-protocol'] || null,
                 eligibleTurns: [3, 24],
                 triggerPriority: ['stagnant_repeat', 'warrant_skip'],
                 committee:

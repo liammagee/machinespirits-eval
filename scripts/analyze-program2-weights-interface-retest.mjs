@@ -54,7 +54,11 @@ function cueBlindViolation(row) {
 function componentSummary(rows) {
   const moments = rows.flatMap((row) =>
     (row.moments || [])
-      .filter((moment) => moment.trigger === 'warrant_skip')
+      .filter(
+        (moment) =>
+          moment.trigger === 'warrant_skip' &&
+          moment.opportunitySource === WEIGHTS_INTERFACE_RETEST_SPEC.opportunityProtocol,
+      )
       .map((moment) => ({ condition: conditionOf(row), ...moment })),
   );
   return Object.fromEntries(
@@ -154,6 +158,13 @@ export function analyzeWeightsInterfaceRetestRows({
       observed: opportunitiesByProfileCondition,
       minimum: spec.minOpportunitiesPerProfileCell,
     },
+    scheduledExposurePerRow: {
+      pass: rows.every((row) => Number(row.warrant?.scheduledOpp || 0) >= spec.minScheduledOpportunitiesPerRow),
+      failures: rows
+        .filter((row) => Number(row.warrant?.scheduledOpp || 0) < spec.minScheduledOpportunitiesPerRow)
+        .map((row) => ({ jobId: row.job.id, observed: Number(row.warrant?.scheduledOpp || 0) })),
+      minimum: spec.minScheduledOpportunitiesPerRow,
+    },
     attritionBalance: {
       pass: attritionBalanceRows.every((row) => row.difference <= spec.maxAttritionDifference),
       observed: attritionByCondition,
@@ -209,7 +220,7 @@ async function main() {
       },
     },
   });
-  const root = path.resolve(positionals[0] || path.join(ROOT, 'exports/program2-weights-interface-retest'));
+  const root = path.resolve(positionals[0] || path.join(ROOT, 'exports/program2-weights-interface-retest-a1'));
   const planFile = path.join(root, 'launch-plan.json');
   const stateFile = path.join(root, 'launch-state.json');
   const attemptFile = path.join(root, 'launch-attempt.json');

@@ -23,10 +23,10 @@ function resolveRoot(value) {
 async function main() {
   const { values } = parseArgs({
     options: {
-      'cohort-plan': { type: 'string', default: 'exports/program2-weights-interface-retest/launch-plan.json' },
-      'pilot-plan': { type: 'string', default: 'exports/program2-weights-interface-retest-pilot/launch-plan.json' },
-      'pilot-root': { type: 'string', default: 'exports/program2-weights-interface-retest-pilot' },
-      out: { type: 'string', default: 'exports/program2-weights-interface-retest-pilot/pilot-bundle.json' },
+      'cohort-plan': { type: 'string', default: 'exports/program2-weights-interface-retest-a1/launch-plan.json' },
+      'pilot-plan': { type: 'string', default: 'exports/program2-weights-interface-retest-pilot-a1/launch-plan.json' },
+      'pilot-root': { type: 'string', default: 'exports/program2-weights-interface-retest-pilot-a1' },
+      out: { type: 'string', default: 'exports/program2-weights-interface-retest-pilot-a1/pilot-bundle.json' },
       help: { type: 'boolean', short: 'h', default: false },
     },
   });

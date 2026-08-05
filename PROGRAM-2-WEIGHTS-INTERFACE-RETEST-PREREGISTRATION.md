@@ -1,7 +1,7 @@
 # Program 2 weights × interface retest — pre-registration
 
 Date: 2026-08-05
-Status: implementation and zero-model verification; external calls not yet authorized
+Status: Amendment 1 implementation and zero-model verification; replacement external calls not authorized
 
 ## Why a new test is required
 
@@ -110,3 +110,41 @@ authorize sending repository prompts, private learner briefs, private DAG
 state, or dialogue transcripts to external model providers. The excluded
 pilot and any later cohort require a fresh explicit authorization naming the
 external destinations and payload scope.
+
+## Amendment 1 — separate uptake from release and require real exposure
+
+The first certified excluded pilot stopped after two of eight jobs and remains
+immutable under `exports/program2-weights-interface-retest-pilot/`. It produced
+no treatment estimate. Its traces showed that turn 22 was the public-release
+boundary rather than a fair learner-uptake boundary, and that neither sealed
+row contained an eligible committee moment.
+
+Amendment 1 supersedes the conflicting horizon, opportunity-density, schema,
+and export-root clauses above:
+
+- public-release reachability remains fixed at turn 22;
+- learner coverage and safety are evaluated at turn 23;
+- every dialogue carries the command-bound
+  `first_admissible_warrant_v1` protocol, which schedules exactly one warrant
+  exposure on the first no-release turn in turns 15–21 whose compiled handoff
+  permits a question;
+- W1 uses only that scheduled first-pass moment; natural later opportunities
+  are secondary;
+- every sealed row must contain at least one scheduled moment, with pilot
+  minima of 2 opportunities per condition and 1 per profile/condition;
+- the cohort minima become 10 per condition and 5 per profile/condition,
+  matching one standardized primary exposure per sealed dialogue;
+- replacement plan and bundle schemas are v2; and
+- replacement roots are
+  `exports/program2-weights-interface-retest-pilot-a1/` and
+  `exports/program2-weights-interface-retest-a1/`.
+
+The protocol never overrides a question-forbidden handoff or a due clue. It is
+off by default outside this retest and records any displaced natural trigger.
+The full frozen amendment and stopped-pilot evidence are linked from
+`notes/program-2/2026-08-05-weights-interface-retest-amendment1.md` and
+`notes/program-2/2026-08-05-weights-interface-retest-pilot-stop.md`.
+
+The prior external authorization is exhausted by the stopped pilot and does
+not authorize this replacement. A new clean commit, local smoke, plan,
+certificate, and explicit authorization are required before any external call.

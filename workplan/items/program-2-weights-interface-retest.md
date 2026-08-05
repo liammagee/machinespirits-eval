@@ -15,6 +15,7 @@ links:
   notes:
     - PROGRAM-2-WEIGHTS-INTERFACE-RETEST-PREREGISTRATION.md
     - notes/program-2/2026-08-05-weights-interface-retest-pilot-stop.md
+    - notes/program-2/2026-08-05-weights-interface-retest-amendment1.md
   items:
     - program-2-committee-floor-ablation
     - program-2-context-vs-weights-finetune
@@ -26,12 +27,13 @@ tags:
   - interface
 milestone: adaptive-tutor-evidence-v1
 branch: codex/program2-weights-interface-retest
-blocked_by: "Amendment 1 design choice and fresh authorization for a replacement external pilot"
+blocked_by: "Fresh authorization for the source-bound Amendment 1 replacement external pilot"
 ---
 
-Correct the two historical identification failures without reusing their rows:
-move Marrick's fixed primary horizon from the unreachable turn 16 to turn 22,
-cross trained versus untuned local weights with deterministic v1 versus v2 span
+Correct the historical identification failures without reusing their rows:
+keep Marrick's public-release horizon at turn 22, measure learner uptake at turn
+23, guarantee one handoff-admissible scheduled warrant exposure per row, cross
+trained versus untuned local weights with deterministic v1 versus v2 span
 extraction, and make all downstream enforcement cue-blind. The excluded pilot
 contains one complete four-cell block per learner profile. It licenses apparatus
 and completion only, never a treatment-effect reading.
@@ -54,3 +56,13 @@ there is no primary estimate and no treatment-effect reading. A replacement is
 blocked on a preregistered Amendment 1 with separate release/uptake horizons,
 handoff-compatible treatment exposure, a non-vacuous opportunity gate, new
 bindings, and fresh external-run authorization.
+
+2026-08-05 — Amendment 1 implemented prospectively without external calls.
+The plan now separates public release at turn 22 from learner uptake at turn
+23, schedules exactly one first handoff-admissible no-release warrant exposure
+in turns 15–21, records its provenance through the runtime and committee
+ledger, and fails each sealed row unless that exposure actually occurred. The
+old pilot remains immutable; replacement schemas and roots are v2/A1. Focused
+tests and zero-model plan validation pass. Once committed, this source must pass
+a fresh clean-source smoke/certificate; external launch remains blocked on
+explicit replacement-pilot authorization, and the cohort remains unauthorized.

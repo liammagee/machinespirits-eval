@@ -12,7 +12,11 @@ import {
   resolveCueBlindCommitteeDelivery,
   runCueBlindCommitteeBattery,
 } from '../services/program2CommitteeEngine.js';
-import { deriveProgram2Budget, deriveProgram2WorldReachability } from '../services/program2ExperimentSafety.js';
+import {
+  deriveProgram2Budget,
+  deriveProgram2WorldReachability,
+  evaluateProgram2LiveFutility,
+} from '../services/program2ExperimentSafety.js';
 import { buildProgram2WeightsInterfaceRetestPilotBundle } from '../services/program2Phase5ePilotBundle.js';
 import { createTutorStubTutorCommitteeRuntime } from '../services/tutorStubTutorCommitteeRuntime.js';
 import {
@@ -31,10 +35,10 @@ function flagValue(command, flag) {
   return index >= 0 ? command[index + 1] : null;
 }
 
-test('retest horizon reaches the frozen Marrick coverage threshold without changing the world', () => {
+test('retest separates public release at turn 22 from learner uptake at turn 23', () => {
   const failedHistorical = deriveProgram2WorldReachability(WORLD, { horizon: 16, coverageThreshold: 0.8 });
   const retest = deriveProgram2WorldReachability(WORLD, {
-    horizon: WEIGHTS_INTERFACE_RETEST_SPEC.primaryHorizon,
+    horizon: WEIGHTS_INTERFACE_RETEST_SPEC.publicReleaseHorizon,
     coverageThreshold: 0.8,
   });
   assert.equal(failedHistorical.pass, false);
@@ -42,6 +46,8 @@ test('retest horizon reaches the frozen Marrick coverage threshold without chang
   assert.equal(retest.pass, true);
   assert.equal(retest.maxCoverageAtHorizon, 1);
   assert.equal(retest.paths[0].releasedCount, 6);
+  assert.equal(WEIGHTS_INTERFACE_RETEST_SPEC.publicReleaseHorizon, 22);
+  assert.equal(WEIGHTS_INTERFACE_RETEST_SPEC.primaryHorizon, 23);
 });
 
 test('v1 and v2 implement the frozen deterministic extraction contrast', () => {
@@ -163,7 +169,8 @@ test('excluded pilot covers every profile and cell in two complete blocks', () =
   assert.equal(validation.jobCount, 8);
   assert.equal(validation.balancedCellCount, 8);
   assert.equal(validation.completeBlockCount, 2);
-  assert.equal(plan.primaryHorizon, 22);
+  assert.equal(plan.publicReleaseHorizon, 22);
+  assert.equal(plan.primaryHorizon, 23);
   assert.equal(plan.certificateGateSpec, WEIGHTS_INTERFACE_RETEST_SPEC.pilotGateSpec);
   assert.equal(deriveProgram2Budget(plan).maxProviderCalls, 5_120);
 });
@@ -177,6 +184,10 @@ test('cohort is a balanced 48-dialogue 2 x 2 matched design with frozen seams', 
   assert.equal(deriveProgram2Budget(plan).maxProviderCalls, 30_720);
   for (const job of plan.jobs) {
     assert.equal(flagValue(job.command, '--committee-fallback-policy'), 'cue_blind');
+    assert.equal(
+      flagValue(job.command, '--point-of-action-opportunity-protocol'),
+      WEIGHTS_INTERFACE_RETEST_SPEC.opportunityProtocol,
+    );
     assert.equal(flagValue(job.command, '--committee-span-interface'), job.spanInterface);
     assert.equal(flagValue(job.command, '--committee-mini-model'), WEIGHTS_INTERFACE_RETEST_SPEC.weights[job.weight]);
     assert.equal(flagValue(job.command, '--model'), 'claude-code.sonnet-5');
@@ -188,13 +199,14 @@ test('terminal analyzer licenses judging only after every frozen completion gate
   const plan = buildWeightsInterfaceRetestPlan({ outputRoot: '/tmp/program2-retest-analysis-test' });
   const rows = plan.jobs.map((job) => ({
     job,
-    warrant: { opp: 7, comp: 0 },
+    warrant: { opp: 1, comp: 0, scheduledOpp: 1 },
     fixedHorizon: { coverageAtHorizon: 1, hardSafetyPassed: true },
     leakTurns: [],
     trace: { file: `${job.id}.jsonl`, sha256: 'a'.repeat(64) },
     moments: [
       {
         trigger: 'warrant_skip',
+        opportunitySource: WEIGHTS_INTERFACE_RETEST_SPEC.opportunityProtocol,
         miniText: 'Which record supports that inference?',
         span: 'Which record supports that inference?',
         fallback: { policy: 'cue_blind' },
@@ -235,6 +247,55 @@ test('terminal analyzer licenses judging only after every frozen completion gate
   });
   assert.equal(unbound.completionReady, false);
   assert.equal(unbound.gates.certificateBound.pass, false);
+
+  const unexposedRows = rows.map((row, index) =>
+    index === 0 ? { ...row, warrant: { ...row.warrant, scheduledOpp: 0 } } : row,
+  );
+  const unexposed = analyzeWeightsInterfaceRetestRows({
+    plan,
+    rows: unexposedRows,
+    launchState: { jobs: {} },
+    gateSpec,
+    certificateBound: true,
+  });
+  assert.equal(unexposed.completionReady, false);
+  assert.equal(unexposed.gates.scheduledExposurePerRow.pass, false);
+  assert.equal(unexposed.gates.scheduledExposurePerRow.failures[0].jobId, rows[0].job.id);
+});
+
+test('live futility stops the replacement pilot immediately on a vacuous sealed row', () => {
+  const plan = buildWeightsInterfaceRetestPilotPlan({ outputRoot: '/tmp/program2-retest-a1-futility-test' });
+  const gateSpec = JSON.parse(
+    fs.readFileSync(
+      path.join(ROOT, 'config/adaptive-tutor-evidence/program-2-weights-interface-retest-pilot-gates.json'),
+      'utf8',
+    ),
+  );
+  const job = plan.jobs[0];
+  const baseRow = {
+    job,
+    warrant: { opp: 1, comp: 1, scheduledOpp: 1 },
+    fixedHorizon: { coverageAtHorizon: 1, hardSafetyPassed: true },
+    leakTurns: [],
+    moments: [],
+  };
+  const launchState = { jobs: { [job.id]: { status: 'sealed', attempts: 1 } } };
+  const exposed = evaluateProgram2LiveFutility({
+    plan,
+    launchState,
+    rows: [baseRow],
+    contract: { gateSpec },
+  });
+  assert.equal(exposed.pass, true, exposed.reasons.join('; '));
+
+  const vacuous = evaluateProgram2LiveFutility({
+    plan,
+    launchState,
+    rows: [{ ...baseRow, warrant: { opp: 0, comp: 0, scheduledOpp: 0 } }],
+    contract: { gateSpec },
+  });
+  assert.equal(vacuous.pass, false);
+  assert.match(vacuous.reasons.join('; '), /scheduled warrant exposure 0 is below 1/u);
 });
 
 test('pilot bundle gate recognizes all eight exact-pipeline profile by condition groups', () => {

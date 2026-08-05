@@ -49,6 +49,10 @@ Options:
                          writes the warrant question, the frontier composes
                          around it verbatim, fail-closed battery decides) and
                          silent_control (detector logs only, no intervention)
+  --point-of-action-opportunity-protocol <off|first_admissible_warrant_v1>
+                         retest-only controlled exposure: between turns 15-21,
+                         use the first no-release turn whose final handoff
+                         permits a question; requires the committee arm
   --committee            use the learned Qwen warrant specialist in human chat
                          (the interactive default; shorthand for the committee arm)
   --no-committee         keep human chat on the frontier-only response path;

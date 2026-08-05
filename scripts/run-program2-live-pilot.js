@@ -25,7 +25,9 @@ import { parseArgs } from 'node:util';
 import {
   TUTOR_STUB_POINT_OF_ACTION_PHASE5_ARMS,
   TUTOR_STUB_POINT_OF_ACTION_DETECTOR_VERSION,
+  TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
   buildTutorStubPointOfActionTurn,
+  reconcileTutorStubPointOfActionHandoffEligibility,
 } from '../services/tutorStubPointOfActionCoaching.js';
 import {
   TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
@@ -186,6 +188,7 @@ function commandForJob(
     evidenceUseRubric = TUTOR_STUB_EVIDENCE_USE_RUBRIC_DEFAULT,
     committeeMiniModel = PHASE5_LIVE_PILOT_SPEC.committeeMiniModel,
     committeeSpanInterface = null,
+    pointOfActionOpportunityProtocol = null,
     learnerLabel = null,
   } = {},
 ) {
@@ -248,6 +251,9 @@ function commandForJob(
     String(PHASE5_LIVE_PILOT_SPEC.historyTurns),
     '--point-of-action-arm',
     job.arm,
+    ...(pointOfActionOpportunityProtocol
+      ? ['--point-of-action-opportunity-protocol', pointOfActionOpportunityProtocol]
+      : []),
     '--committee-mini-model',
     committeeMiniModel,
     '--committee-ollama-url',
@@ -341,13 +347,15 @@ export function buildPhase5bLivePilotPlan({
 }
 
 export const WEIGHTS_INTERFACE_RETEST_SPEC = Object.freeze({
-  schema: 'machinespirits.tutor-stub.program2-weights-interface-retest-plan.v1',
-  pilotSchema: 'machinespirits.tutor-stub.program2-weights-interface-retest-pilot-plan.v1',
+  schema: 'machinespirits.tutor-stub.program2-weights-interface-retest-plan.v2',
+  pilotSchema: 'machinespirits.tutor-stub.program2-weights-interface-retest-pilot-plan.v2',
   preregistration: 'PROGRAM-2-WEIGHTS-INTERFACE-RETEST-PREREGISTRATION.md',
   runSeed: 20260805,
   bootstrapSeed: 20260806,
   repeats: 6,
-  primaryHorizon: 22,
+  publicReleaseHorizon: 22,
+  primaryHorizon: 23,
+  opportunityProtocol: TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
   fallbackPolicy: 'cue_blind',
   weights: Object.freeze({
     trained: PROGRAM2_COMMITTEE_DEFAULTS.miniModel,
@@ -355,7 +363,7 @@ export const WEIGHTS_INTERFACE_RETEST_SPEC = Object.freeze({
   }),
   interfaces: Object.freeze(['v1', 'v2']),
   conditions: Object.freeze(['trained_v1', 'trained_v2', 'untuned_v1', 'untuned_v2']),
-  pilotBundle: 'exports/program2-weights-interface-retest-pilot/pilot-bundle.json',
+  pilotBundle: 'exports/program2-weights-interface-retest-pilot-a1/pilot-bundle.json',
   pilotGateSpec: 'config/adaptive-tutor-evidence/program-2-weights-interface-retest-pilot-gates.json',
   cohortGateSpec: 'config/adaptive-tutor-evidence/program-2-weights-interface-retest-gates.json',
 });
@@ -402,6 +410,7 @@ function buildWeightsInterfaceRetestPlanDefinition({ outputRoot, pilot }) {
         fallbackPolicy: WEIGHTS_INTERFACE_RETEST_SPEC.fallbackPolicy,
         committeeMiniModel: WEIGHTS_INTERFACE_RETEST_SPEC.weights[cell.weight],
         committeeSpanInterface: cell.spanInterface,
+        pointOfActionOpportunityProtocol: WEIGHTS_INTERFACE_RETEST_SPEC.opportunityProtocol,
         learnerLabel:
           `Program-2 weights by interface retest ${cell.profile} ` +
           `repeat ${cell.repeat}/${WEIGHTS_INTERFACE_RETEST_SPEC.repeats}.`,
@@ -427,12 +436,12 @@ function buildWeightsInterfaceRetestPlanDefinition({ outputRoot, pilot }) {
   };
 }
 
-export function buildWeightsInterfaceRetestPlan({ outputRoot = 'exports/program2-weights-interface-retest' } = {}) {
+export function buildWeightsInterfaceRetestPlan({ outputRoot = 'exports/program2-weights-interface-retest-a1' } = {}) {
   return buildWeightsInterfaceRetestPlanDefinition({ outputRoot, pilot: false });
 }
 
 export function buildWeightsInterfaceRetestPilotPlan({
-  outputRoot = 'exports/program2-weights-interface-retest-pilot',
+  outputRoot = 'exports/program2-weights-interface-retest-pilot-a1',
 } = {}) {
   return buildWeightsInterfaceRetestPlanDefinition({ outputRoot, pilot: true });
 }
@@ -441,7 +450,10 @@ export function validateWeightsInterfaceRetestPlan(plan, { pilot = false } = {})
   const errors = [];
   const expectedJobs = pilot ? 8 : 48;
   if (plan.jobs.length !== expectedJobs) errors.push(`expected ${expectedJobs} jobs, found ${plan.jobs.length}`);
-  if (plan.primaryHorizon !== 22) errors.push(`expected reachable horizon 22, found ${plan.primaryHorizon}`);
+  if (plan.publicReleaseHorizon !== 22) {
+    errors.push(`expected public-release horizon 22, found ${plan.publicReleaseHorizon}`);
+  }
+  if (plan.primaryHorizon !== 23) errors.push(`expected learner-uptake horizon 23, found ${plan.primaryHorizon}`);
   const cellCounts = new Map();
   const blocks = new Map();
   for (const job of plan.jobs) {
@@ -451,6 +463,12 @@ export function validateWeightsInterfaceRetestPlan(plan, { pilot = false } = {})
     block.push(job);
     blocks.set(job.blockKey, block);
     if (flagValue(job.command, '--point-of-action-arm') !== 'committee') errors.push(`${job.id} arm mismatch`);
+    if (
+      flagValue(job.command, '--point-of-action-opportunity-protocol') !==
+      WEIGHTS_INTERFACE_RETEST_SPEC.opportunityProtocol
+    ) {
+      errors.push(`${job.id} opportunity-protocol mismatch`);
+    }
     if (flagValue(job.command, '--committee-fallback-policy') !== 'cue_blind') {
       errors.push(`${job.id} is not cue-blind`);
     }
@@ -1148,6 +1166,25 @@ export function runPhase5ZeroModelFixtures() {
       cueBlindFallback.fallbackSource === 'original_greedy_mini' &&
       cueBlindFallback.miniResamples === 0,
   });
+  const scheduledCandidate = buildTutorStubPointOfActionTurn({
+    arm: 'committee',
+    turn: 16,
+    stagnation: 0.8,
+    proposedActionFamily: 'stage_next_step',
+    previousActionFamilies: Array(4).fill('stage_next_step'),
+    evidenceUse: 'cites_public_evidence',
+    opportunityProtocol: TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL,
+  });
+  const scheduledExposure = reconcileTutorStubPointOfActionHandoffEligibility(scheduledCandidate, {
+    handoff_contract: { mode: 'new_unresolved_check', question_allowed: true },
+  });
+  checks.push({
+    name: 'first_admissible_warrant_protocol_is_handoff_bound',
+    ok:
+      scheduledExposure.assigned_trigger === 'warrant_skip' &&
+      scheduledExposure.opportunity_protocol?.activated === true &&
+      scheduledExposure.displaced_trigger === 'stagnant_repeat',
+  });
   return { ok: checks.every((check) => check.ok), checks };
 }
 
@@ -1308,13 +1345,13 @@ async function main() {
       certificatePhase: 'cohort',
     },
     'weights-interface-retest-pilot': {
-      root: 'exports/program2-weights-interface-retest-pilot',
+      root: 'exports/program2-weights-interface-retest-pilot-a1',
       build: buildWeightsInterfaceRetestPilotPlan,
       validate: (plan) => validateWeightsInterfaceRetestPlan(plan, { pilot: true }),
       certificatePhase: 'pilot',
     },
     'weights-interface-retest': {
-      root: 'exports/program2-weights-interface-retest',
+      root: 'exports/program2-weights-interface-retest-a1',
       build: buildWeightsInterfaceRetestPlan,
       validate: (plan) => validateWeightsInterfaceRetestPlan(plan),
       certificatePhase: 'cohort',

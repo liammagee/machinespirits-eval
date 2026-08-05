@@ -345,6 +345,10 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
           closeInquiry:
             registerSelection?.action_family === 'close_inquiry' || dialogueClosureFrame?.mandatory === true,
           duePremises: instructionalMetaRepair ? [] : currentReleaseRows(state, tutorTurn).map((row) => row.premise),
+          opportunityProtocol: state.pointOfAction.opportunityProtocol,
+          opportunityProtocolConsumed: state.pointOfAction.history.some(
+            (entry) => entry?.opportunity_protocol?.activated === true,
+          ),
         })
       : null;
     if (state.pointOfAction) state.pointOfAction.current = pointOfAction;

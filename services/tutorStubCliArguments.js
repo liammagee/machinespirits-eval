@@ -28,6 +28,10 @@ export function parseTutorStubCliArguments({
       'register-palette': { type: 'string', default: 'all' },
       'register-policy': { type: 'string', default: stub.registerPolicy },
       'point-of-action-arm': { type: 'string', default: stub.pointOfActionArm },
+      'point-of-action-opportunity-protocol': {
+        type: 'string',
+        default: env.TUTOR_STUB_POINT_OF_ACTION_OPPORTUNITY_PROTOCOL || 'off',
+      },
       committee: { type: 'boolean', default: false },
       'no-committee': { type: 'boolean', default: false },
       'committee-mini-model': { type: 'string', default: committeeDefaults.miniModel },

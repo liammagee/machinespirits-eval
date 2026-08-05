@@ -8,7 +8,7 @@ import { summarizeTutorStubFixedHorizon } from './tutorStubEvalIntegrity.js';
 export const PROGRAM2_PHASE5E_PILOT_BUNDLE_SCHEMA = 'machinespirits.program2.phase5e-r2-pilot-bundle.v1';
 export const PROGRAM2_PHASE5F_PILOT_BUNDLE_SCHEMA = 'machinespirits.program2.phase5f-pilot-bundle.v1';
 export const PROGRAM2_WEIGHTS_INTERFACE_RETEST_PILOT_BUNDLE_SCHEMA =
-  'machinespirits.program2.weights-interface-retest-pilot-bundle.v1';
+  'machinespirits.program2.weights-interface-retest-pilot-bundle.v2';
 export const PROGRAM2_PHASE5F_A3_SOURCE_SHA = '473640a4ae8aa159e5b8a395686bcfc9ee0a5c69';
 
 const VARIABLE_COMMAND_FLAGS = new Set(['--eval-job-id', '--trace-dir']);
@@ -89,7 +89,11 @@ function traceRow(job, file, primaryHorizon) {
         repeat: job.repeat,
         blockKey: job.blockKey || `${job.profile}:${job.repeat}`,
       },
-      warrant: { opp: verdicts.length, comp: verdicts.filter((verdict) => verdict.compliant === true).length },
+      warrant: {
+        opp: verdicts.length,
+        comp: verdicts.filter((verdict) => verdict.compliant === true).length,
+        scheduledOpp: verdicts.filter((verdict) => verdict.opportunity_source === 'first_admissible_warrant_v1').length,
+      },
       fixedHorizon: summarizeTutorStubFixedHorizon(turnRecords, { primaryHorizon }),
       leakTurns,
       moments,
@@ -138,6 +142,7 @@ export function buildProgram2PilotBundle({
   expectedCohortSchema = 'machinespirits.tutor-stub.program2-phase5e-r2-plan.v1',
   expectedPilotSchemas = ['machinespirits.tutor-stub.program2-phase5e-r2-pilot-plan.v1'],
   acceptedPilotSourceSha = null,
+  expectedOpportunityProtocol = null,
 } = {}) {
   const cohortSha256 = program2PlanSha256(cohortPlan);
   const expectedGroups = [
@@ -192,6 +197,7 @@ export function buildProgram2PilotBundle({
     const commandRubric = flagValue(job.command, '--learner-analysis-evidence-use-rubric');
     const commandFallback = flagValue(job.command, '--committee-fallback-policy');
     const commandSpanInterface = flagValue(job.command, '--committee-span-interface');
+    const commandOpportunityProtocol = flagValue(job.command, '--point-of-action-opportunity-protocol');
     const runtimeRubric = options['learner-analysis-evidence-use-rubric'];
     const armMatches =
       options['point-of-action-arm'] === job.arm && (!pointOfAction.arm || pointOfAction.arm === job.arm);
@@ -209,7 +215,12 @@ export function buildProgram2PilotBundle({
       ? options['committee-span-interface'] === commandSpanInterface &&
         (!pointOfAction.committee?.spanInterface || pointOfAction.committee.spanInterface === commandSpanInterface)
       : options['committee-span-interface'] === undefined || options['committee-span-interface'] === 'v1';
-    return armMatches && rubricMatches && fallbackMatches && spanInterfaceMatches;
+    const opportunityProtocolMatches = expectedOpportunityProtocol
+      ? commandOpportunityProtocol === expectedOpportunityProtocol &&
+        options['point-of-action-opportunity-protocol'] === expectedOpportunityProtocol &&
+        pointOfAction.opportunityProtocol === expectedOpportunityProtocol
+      : commandOpportunityProtocol === null;
+    return armMatches && rubricMatches && fallbackMatches && spanInterfaceMatches && opportunityProtocolMatches;
   });
   const normalizedRowsComplete =
     rows.length === expectedGroups.length &&
@@ -218,7 +229,8 @@ export function buildProgram2PilotBundle({
         Number.isFinite(row.warrant.opp) &&
         row.fixedHorizon?.complete === true &&
         typeof row.fixedHorizon?.coverageAtHorizon === 'number' &&
-        typeof row.fixedHorizon?.hardSafetyPassed === 'boolean'
+        typeof row.fixedHorizon?.hardSafetyPassed === 'boolean' &&
+        (!expectedOpportunityProtocol || Number(row.warrant?.scheduledOpp || 0) >= 1)
       );
     });
   const sourceTransitionAccepted =
@@ -319,7 +331,8 @@ export function buildProgram2WeightsInterfaceRetestPilotBundle(options = {}) {
   return buildProgram2PilotBundle({
     ...options,
     bundleSchema: PROGRAM2_WEIGHTS_INTERFACE_RETEST_PILOT_BUNDLE_SCHEMA,
-    expectedCohortSchema: 'machinespirits.tutor-stub.program2-weights-interface-retest-plan.v1',
-    expectedPilotSchemas: ['machinespirits.tutor-stub.program2-weights-interface-retest-pilot-plan.v1'],
+    expectedCohortSchema: 'machinespirits.tutor-stub.program2-weights-interface-retest-plan.v2',
+    expectedPilotSchemas: ['machinespirits.tutor-stub.program2-weights-interface-retest-pilot-plan.v2'],
+    expectedOpportunityProtocol: 'first_admissible_warrant_v1',
   });
 }

@@ -21,6 +21,7 @@ export const TUTOR_STUB_RECIPE_OPTION_KEYS = Object.freeze([
   'register-palette',
   'register-policy',
   'point-of-action-arm',
+  'point-of-action-opportunity-protocol',
   'committee-mini-model',
   'committee-ollama-url',
   'committee-span-interface',

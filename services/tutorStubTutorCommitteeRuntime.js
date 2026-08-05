@@ -192,6 +192,7 @@ export function createTutorStubTutorCommitteeRuntime(dependencies = {}) {
         schema: PROGRAM2_COMMITTEE_SCHEMA,
         turn: tutorTurn,
         trigger: momentTurn.assigned_trigger,
+        opportunitySource: momentTurn.opportunity_source || 'frozen_detector',
         miniModel: state.committee.miniModel,
         miniLatencyMs,
         miniError,

@@ -207,7 +207,10 @@ export function createTutorStubTutorTurnPreparation(dependencies = {}) {
     if (eligiblePointOfAction !== assignedPointOfAction) {
       state.pointOfAction.current = eligiblePointOfAction;
       appendTraceEvent(trace, {
-        type: 'point_of_action_handoff_suppression',
+        type:
+          eligiblePointOfAction?.opportunity_protocol?.activated === true
+            ? 'point_of_action_handoff_activation'
+            : 'point_of_action_handoff_suppression',
         turn: tutorTurn,
         pointOfAction: eligiblePointOfAction,
         publicTranscriptChanged: false,

@@ -239,6 +239,7 @@ export function createTutorStubApplicationState({ launchApplicationContext, sess
     pointOfAction: {
       enabled: Boolean(pointOfActionArm),
       arm: pointOfActionArm,
+      opportunityProtocol: args['point-of-action-opportunity-protocol'] || null,
       current: null,
       history: [],
     },
