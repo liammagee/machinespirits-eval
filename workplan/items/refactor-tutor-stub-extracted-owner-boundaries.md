@@ -1,15 +1,15 @@
 ---
 id: refactor-tutor-stub-extracted-owner-boundaries
 title: Split oversized tutor-stub pipeline and response-policy owners
-status: active
+status: review
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-05
 updated: 2026-08-05
-branch: codex/refactor-tutor-stub-terminal-fallback-owner
-verification: The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; focused parity, zero-skip hermetic, lint, source, and zero-cycle gates pass; no replacement owner exceeds the agreed boundary ceiling.
+branch: codex/refactor-tutor-stub-policy-selection-owner
+verification: The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; 207 focused policy/configuration tests, 7,836 root tests, and 137 tutor-core tests pass with zero failures or skips; prompt/world, lint, format, source, manifest, benchmark re-audit, and zero-cycle gates pass; no replacement owner exceeds the 1,200-line ceiling.
 claim_status: planned
 depends_on: []
 links:
@@ -23,6 +23,13 @@ links:
     - services/tutorStubTutorRepairRuntime.js
     - services/tutorStubTutorTerminalRuntime.js
     - services/tutorStubResponsePolicy.js
+    - services/tutorStubResponsePolicySelectionRuntime.js
+    - services/tutorStubAdaptiveResponsePolicyRuntime.js
+    - services/tutorStubResponseConfigurationSelectionRuntime.js
+    - config/stability/baseline-v0.7.0.json
+    - config/tutor-pr-benchmark.yaml
+    - scripts/generate-baseline-manifest.js
+    - tests/tutorStubResponsePolicyRuntime.test.js
     - scripts/tutor-stub.js
   items:
     - refactor-tutor-stub-macro-decomposition
@@ -138,3 +145,32 @@ Log:
   workplan, hermetic-manifest, stability-manifest, and diff checks; a zero-cycle
   import graph across 515 files; and a zero-call re-audit of the saved six-case
   tutor benchmark (0 improved, 0 regressed).
+- 2026-08-05 — Activated the response-policy pass from current `origin/main` at
+  `271d01ca` on `codex/refactor-tutor-stub-policy-selection-owner`. The
+  1,975-line policy owner will become three bounded implementation owners—core
+  seeded selection, adaptive policy families, and final response-configuration
+  composition—behind the unchanged `createTutorStubResponsePolicy()` facade.
+  The existing 1,200-line production-owner ceiling applies independently to
+  all three, preventing this pass from replacing one monolith with another.
+- 2026-08-05 — Completed the response-policy pass without changing the public
+  facade: the former 1,975-line owner is now a 26-line compatibility facade over
+  core seeded selection (643 LOC), adaptive policy families (726 LOC), and
+  final response-configuration composition (671 LOC). A direct boundary test
+  enforces the 1,200-line ceiling and exact ten-method facade contract; the
+  stability manifest now pins all three owners plus the facade, and the tutor
+  PR benchmark scope follows their new paths.
+- 2026-08-05 — Verification passed: 207/207 focused policy, configuration,
+  character, light-adaptation, continuous, overlay, and interactive tests;
+  derivation quality 35/35; prompt/world boundary tests 21/21; complete root
+  hermetic 7,836/7,836 and tutor-core hermetic 137/137 with zero skips; ESLint,
+  Prettier, workplan source, hermetic manifest, stability manifest, diff, and a
+  518-file zero-cycle import graph. A zero-call re-audit of the saved six-case
+  strong tutor benchmark passed with 0 improved and 0 regressed. The first
+  sandboxed root attempt failed only because localhost listeners were denied;
+  the permitted hermetic rerun is the recorded result. Moved the item to review.
+- 2026-08-05 — Refreshed the uncommitted worktree without conflict onto current
+  `origin/main` at `a6377faa` after seven paper/ref-status/workplan-only commits
+  landed. Repeated all 207 focused tests, every static and manifest gate, the
+  exact-base root 7,836/7,836 and tutor-core 137/137 hermetic suites, the 35/35
+  world and 21/21 prompt/world quality gates, and the zero-call six-case
+  benchmark re-audit; all remain green with zero skips and zero regressions.

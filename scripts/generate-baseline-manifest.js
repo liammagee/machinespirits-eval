@@ -84,6 +84,22 @@ const PINS = [
     claim: 'delivery guard battery, dispositions, and audit trace shape',
   },
   {
+    file: 'services/tutorStubResponsePolicy.js',
+    claim: 'response-policy compatibility facade and public method contract',
+  },
+  {
+    file: 'services/tutorStubResponsePolicySelectionRuntime.js',
+    claim: 'core policy selection, explicit performance directives, and replayable seeded sampling',
+  },
+  {
+    file: 'services/tutorStubAdaptiveResponsePolicyRuntime.js',
+    claim: 'field, state, trajectory, dynamical-system, continuous, and overlay policy selection',
+  },
+  {
+    file: 'services/tutorStubResponseConfigurationSelectionRuntime.js',
+    claim: 'final response-configuration composition, precedence, and selection trace envelope',
+  },
+  {
     file: 'services/tutorStubWorldPromptContext.js',
     claim: 'safety-contract/teaching-charter split, byte-exact reassembly, licence slot',
   },
