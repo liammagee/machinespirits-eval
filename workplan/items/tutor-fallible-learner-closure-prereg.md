@@ -1,13 +1,13 @@
 ---
 id: tutor-fallible-learner-closure-prereg
 title: "Pre-registration: restore variance to legitimate closure with a learner that can fail"
-status: active
+status: review
 type: experiment
 priority: P1
 owner: claude
 source: manual
 created: 2026-07-30
-updated: 2026-08-05
+updated: 2026-08-06
 verification: "Phase A runs bare-tutor only and is exploratory. Before the
   first paid Phase B call: the in-band cells and their profiles are frozen in
   a dated log entry here, and a 5-dialogue contract smoke on one in-band cell
@@ -166,3 +166,29 @@ The cell was frozen at the band edge (80% calibration) and its Phase B
 bare sample drifted above it — recorded, not re-gated; the pooled test
 carries it. All aborts remain codex tool-reflex kills, named per the
 crash rule.
+
+**2026-08-06 — Phase B complete; VERDICT: the null branch.** Cell 3
+(low_agency × rowan_flat): bare 6/11 (55%, 1 abort), contract 3/12 (25%,
+0 aborts), empty plan 6/11 (55%, 1 abort). Pooled primary over the three
+frozen cells: contract 22/33 (67%) vs bare 20/29 (69%), difference −2.3
+points, two-sided Fisher exact p = 1.000. Pre-committed reading applies:
+**no difference — the stronger null.** The contract stays compliance
+machinery even where the learner gives it room to help; the outcome-level
+pedagogy claim is WITHDRAWN for this stack (codex gpt-5.6-terra, these
+authored failure modes), not deferred. The empty plan pooled 20/34 (59%),
+a control, not a comparison of record.
+
+Descriptive residue for any future card (not licensed by this design):
+the cell-level swing is large and opposite-signed — contract +24 points
+on low_agency × greyfen, +1 at the false_memory ceiling, −30 on
+low_agency × rowan — the outcome channel showing the same per-world
+locality the conduct benches kept measuring. A contrast keyed to that
+interaction needs its own pre-registration on fresh cells.
+
+Accounting: 9 blocks × 12 dialogues attempted; 14 aborts total, every
+one a codex tool-reflex kill under the bridge's no-tools policy,
+excluded and named per the crash rule; denominators are completed
+dialogues throughout; all closure numbers are the offline recompute's.
+Artifacts under `exports/tutor-stub-outcome/fallible-phaseB/`. Next:
+fold the result into the paper's §6.23 line with the stated scope
+limits; the calibrated cells remain a platform (reuse note above).
