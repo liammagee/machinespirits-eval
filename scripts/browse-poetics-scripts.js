@@ -1106,6 +1106,11 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   const db = openPoeticsStore(dbPath || undefined);
   const app = express();
   const adminRouter = express.Router();
+  const evalSurfaceRouter = express.Router();
+  // mountEvalSurfaces records cleanup/session handles on its host. Share the
+  // outer app's locals object so wrapping the routes does not fork lifecycle
+  // ownership from the server that actually listens and shuts down.
+  evalSurfaceRouter.locals = app.locals;
   // Liveness probe with no auth — registered before the guard so a load
   // balancer's health check (e.g. fly) gets a 200, not a 401. It returns only
   // "ok", so it leaks nothing.
@@ -1117,21 +1122,18 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   app.use(express.json({ limit: '256kb' }));
   if (adminAuthGuard) {
     adminRouter.use(adminAuthGuard);
-    // The tutor surface can start model-backed processes, so protect its
-    // shared web path and API with the same administrator credential even
-    // though the surrounding poetics reading surfaces remain public.
-    // The auth guard may recognize a participant credential too; apply the
-    // default-deny role gate at these mounts so only an administrator reaches
-    // the metered tutor runtime.
-    app.use('/tutor', adminAuthGuard, makeRoleGate());
-    app.use('/api/tutor-stub', adminAuthGuard, makeRoleGate());
-    console.log('[poetics] admin basic-auth ENABLED (/admin requires credentials)');
+    // Every shared eval surface can reach mutable state, metered model work, or
+    // operator processes. Keep the surrounding poetics reading surfaces public
+    // while applying the host credential once at the shared-surface boundary.
+    evalSurfaceRouter.use(adminAuthGuard);
+    console.log('[poetics] basic-auth ENABLED (/admin and shared eval surfaces require credentials)');
   }
   // Default-deny role gate (Design A — perimeter RBAC). No-op on localhost-open
   // and for the admin role; restricts a 'participant' credential to the pilot +
   // adjudication allowlist (services/httpBasicAuth.js PARTICIPANT_ALLOWLIST), so
   // every metered/researcher surface under /admin stays admin-only.
   adminRouter.use(makeRoleGate());
+  evalSurfaceRouter.use(makeRoleGate());
   app.use('/images', express.static(path.resolve(ROOT, 'notes/poetics/images'), { index: false }));
   app.use('/assets', express.static(path.resolve(ROOT, 'notes/poetics/assets'), { index: false }));
   app.use('/docs/research', express.static(path.resolve(ROOT, 'docs/research'), { index: false }));
@@ -1880,7 +1882,8 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   // Mounted AFTER the poetics routes (so /api/* and /compose stay poetics-owned)
   // and AFTER /docs/research (line ~864, { index:false }) so the paper subtree
   // keeps precedence over the broader /docs mount here; BEFORE the catch-all '/'.
-  mountEvalSurfaces(app, { root: ROOT });
+  mountEvalSurfaces(evalSurfaceRouter, { root: ROOT });
+  app.use(evalSurfaceRouter);
   // Stats digest shared by the redesigned home (/) and the classic dashboard
   // (/classic) — pure reads, so both landings show identical live numbers.
   const dashboardStats = () => {
