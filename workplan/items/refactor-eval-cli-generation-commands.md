@@ -30,6 +30,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-eval-cli-operational-commands
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/515
 tags:
   - refactoring
   - evaluation
@@ -83,3 +85,5 @@ Log:
 - 2026-08-06 — After PR #514 merged, rebased the staged follow-up onto current
   `origin/main` at `e3cbe611`; the focused 171-test hermetic suite and static
   gates remained green without conflict.
+- 2026-08-06 — Opened the reviewed follow-up as PR #515 after the post-rebase
+  implementation commit `056c2149` passed all required local gates.

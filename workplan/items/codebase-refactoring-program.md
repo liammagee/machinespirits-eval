@@ -1462,3 +1462,5 @@ Log:
 - 2026-08-06 — PR #514 merged the operational-command registry; rebased its
   generation/chat/rejudge follow-up onto refreshed `main` at `e3cbe611` for
   independent review.
+- 2026-08-06 — Opened the generation/chat/rejudge extraction as PR #515 after
+  its rebased implementation and regression gates remained green.
