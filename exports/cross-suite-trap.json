@@ -1,0 +1,2138 @@
+{
+  "runId": "eval-2026-05-12-de6d48ab,eval-2026-05-12-952498c6",
+  "runIds": [
+    "eval-2026-05-12-de6d48ab",
+    "eval-2026-05-12-952498c6"
+  ],
+  "profileFilter": null,
+  "totalScenarios": 47,
+  "errors": 0,
+  "byProfile": [
+    {
+      "key": "cell_125_dialogue_engine_crosssuite_baseline",
+      "n": 23,
+      "strategy_shift_correctness": 0.30434782608695654,
+      "strategy_shift_correct_count": 7,
+      "strategy_shift_evaluable": 23,
+      "shift_window_correctness": 0.30434782608695654,
+      "shift_window_correct_count": 7,
+      "shift_window_evaluable": 23,
+      "shift_window_offset_distribution": {
+        "1": 7,
+        "2": 0,
+        "3": 0
+      },
+      "family_match_rate": 0.391304347826087,
+      "family_match_count": 9,
+      "family_match_evaluable": 23,
+      "actual_family_distribution": {
+        "substantive_engagement": 13,
+        "diagnostic": 3,
+        "repair_affective": 2,
+        "scaffolding": 5
+      },
+      "counterfactual_divergence": null,
+      "counterfactual_divergent_count": 0,
+      "counterfactual_total": 0,
+      "counterfactual_family_divergence": null,
+      "counterfactual_family_divergent_count": 0,
+      "counterfactual_family_total": 0,
+      "confusion_matrix": {
+        "substantive_engagement": {
+          "substantive_engagement": 5,
+          "diagnostic": 3,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "diagnostic": {
+          "substantive_engagement": 3,
+          "diagnostic": 0,
+          "scaffolding": 1,
+          "repair_affective": 0
+        },
+        "scaffolding": {
+          "substantive_engagement": 3,
+          "diagnostic": 0,
+          "scaffolding": 3,
+          "repair_affective": 1
+        },
+        "repair_affective": {
+          "substantive_engagement": 2,
+          "diagnostic": 0,
+          "scaffolding": 1,
+          "repair_affective": 1
+        }
+      },
+      "within_action_refinement_rate": 1,
+      "within_action_refinements": 9,
+      "same_action_repeats": 9
+    },
+    {
+      "key": "cell_124_langgraph_adaptive_crosssuite",
+      "n": 24,
+      "strategy_shift_correctness": 0.625,
+      "strategy_shift_correct_count": 15,
+      "strategy_shift_evaluable": 24,
+      "shift_window_correctness": 0.625,
+      "shift_window_correct_count": 15,
+      "shift_window_evaluable": 24,
+      "shift_window_offset_distribution": {
+        "1": 15,
+        "2": 0,
+        "3": 0
+      },
+      "family_match_rate": 0.6666666666666666,
+      "family_match_count": 16,
+      "family_match_evaluable": 24,
+      "actual_family_distribution": {
+        "substantive_engagement": 15,
+        "repair_affective": 5,
+        "scaffolding": 4
+      },
+      "counterfactual_divergence": 0.9166666666666666,
+      "counterfactual_divergent_count": 22,
+      "counterfactual_total": 24,
+      "counterfactual_family_divergence": 0.6666666666666666,
+      "counterfactual_family_divergent_count": 16,
+      "counterfactual_family_total": 24,
+      "confusion_matrix": {
+        "substantive_engagement": {
+          "substantive_engagement": 8,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "diagnostic": {
+          "substantive_engagement": 4,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "scaffolding": {
+          "substantive_engagement": 3,
+          "diagnostic": 0,
+          "scaffolding": 4,
+          "repair_affective": 1
+        },
+        "repair_affective": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 4
+        }
+      },
+      "within_action_refinement_rate": 1,
+      "within_action_refinements": 37,
+      "same_action_repeats": 37
+    }
+  ],
+  "byScenarioType": [
+    {
+      "key": "epistemic_resistance",
+      "n": 8,
+      "strategy_shift_correctness": 0.875,
+      "strategy_shift_correct_count": 7,
+      "strategy_shift_evaluable": 8,
+      "shift_window_correctness": 0.875,
+      "shift_window_correct_count": 7,
+      "shift_window_evaluable": 8,
+      "shift_window_offset_distribution": {
+        "1": 7,
+        "2": 0,
+        "3": 0
+      },
+      "family_match_rate": 0.875,
+      "family_match_count": 7,
+      "family_match_evaluable": 8,
+      "actual_family_distribution": {
+        "substantive_engagement": 7,
+        "diagnostic": 1
+      },
+      "counterfactual_divergence": 1,
+      "counterfactual_divergent_count": 4,
+      "counterfactual_total": 4,
+      "counterfactual_family_divergence": 1,
+      "counterfactual_family_divergent_count": 4,
+      "counterfactual_family_total": 4,
+      "confusion_matrix": {
+        "substantive_engagement": {
+          "substantive_engagement": 7,
+          "diagnostic": 1,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "diagnostic": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "scaffolding": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "repair_affective": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        }
+      },
+      "within_action_refinement_rate": 1,
+      "within_action_refinements": 8,
+      "same_action_repeats": 8
+    },
+    {
+      "key": "affective_shutdown",
+      "n": 8,
+      "strategy_shift_correctness": 0.625,
+      "strategy_shift_correct_count": 5,
+      "strategy_shift_evaluable": 8,
+      "shift_window_correctness": 0.625,
+      "shift_window_correct_count": 5,
+      "shift_window_evaluable": 8,
+      "shift_window_offset_distribution": {
+        "1": 5,
+        "2": 0,
+        "3": 0
+      },
+      "family_match_rate": 0.625,
+      "family_match_count": 5,
+      "family_match_evaluable": 8,
+      "actual_family_distribution": {
+        "repair_affective": 5,
+        "substantive_engagement": 2,
+        "scaffolding": 1
+      },
+      "counterfactual_divergence": 1,
+      "counterfactual_divergent_count": 4,
+      "counterfactual_total": 4,
+      "counterfactual_family_divergence": 1,
+      "counterfactual_family_divergent_count": 4,
+      "counterfactual_family_total": 4,
+      "confusion_matrix": {
+        "substantive_engagement": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "diagnostic": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "scaffolding": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "repair_affective": {
+          "substantive_engagement": 2,
+          "diagnostic": 0,
+          "scaffolding": 1,
+          "repair_affective": 5
+        }
+      },
+      "within_action_refinement_rate": 1,
+      "within_action_refinements": 7,
+      "same_action_repeats": 7
+    },
+    {
+      "key": "productive_deadlock",
+      "n": 8,
+      "strategy_shift_correctness": 0.5,
+      "strategy_shift_correct_count": 4,
+      "strategy_shift_evaluable": 8,
+      "shift_window_correctness": 0.5,
+      "shift_window_correct_count": 4,
+      "shift_window_evaluable": 8,
+      "shift_window_offset_distribution": {
+        "1": 4,
+        "2": 0,
+        "3": 0
+      },
+      "family_match_rate": 0.75,
+      "family_match_count": 6,
+      "family_match_evaluable": 8,
+      "actual_family_distribution": {
+        "diagnostic": 2,
+        "substantive_engagement": 6
+      },
+      "counterfactual_divergence": 1,
+      "counterfactual_divergent_count": 4,
+      "counterfactual_total": 4,
+      "counterfactual_family_divergence": 0.75,
+      "counterfactual_family_divergent_count": 3,
+      "counterfactual_family_total": 4,
+      "confusion_matrix": {
+        "substantive_engagement": {
+          "substantive_engagement": 6,
+          "diagnostic": 2,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "diagnostic": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "scaffolding": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "repair_affective": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        }
+      },
+      "within_action_refinement_rate": 1,
+      "within_action_refinements": 13,
+      "same_action_repeats": 13
+    },
+    {
+      "key": "misconception_surfaces",
+      "n": 8,
+      "strategy_shift_correctness": 0,
+      "strategy_shift_correct_count": 0,
+      "strategy_shift_evaluable": 8,
+      "shift_window_correctness": 0,
+      "shift_window_correct_count": 0,
+      "shift_window_evaluable": 8,
+      "shift_window_offset_distribution": {
+        "1": 0,
+        "2": 0,
+        "3": 0
+      },
+      "family_match_rate": 0,
+      "family_match_count": 0,
+      "family_match_evaluable": 8,
+      "actual_family_distribution": {
+        "scaffolding": 1,
+        "substantive_engagement": 7
+      },
+      "counterfactual_divergence": 1,
+      "counterfactual_divergent_count": 4,
+      "counterfactual_total": 4,
+      "counterfactual_family_divergence": 0,
+      "counterfactual_family_divergent_count": 0,
+      "counterfactual_family_total": 4,
+      "confusion_matrix": {
+        "substantive_engagement": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "diagnostic": {
+          "substantive_engagement": 7,
+          "diagnostic": 0,
+          "scaffolding": 1,
+          "repair_affective": 0
+        },
+        "scaffolding": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "repair_affective": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        }
+      },
+      "within_action_refinement_rate": 1,
+      "within_action_refinements": 5,
+      "same_action_repeats": 5
+    },
+    {
+      "key": "activity_avoidance",
+      "n": 8,
+      "strategy_shift_correctness": 0.125,
+      "strategy_shift_correct_count": 1,
+      "strategy_shift_evaluable": 8,
+      "shift_window_correctness": 0.125,
+      "shift_window_correct_count": 1,
+      "shift_window_evaluable": 8,
+      "shift_window_offset_distribution": {
+        "1": 1,
+        "2": 0,
+        "3": 0
+      },
+      "family_match_rate": 0.25,
+      "family_match_count": 2,
+      "family_match_evaluable": 8,
+      "actual_family_distribution": {
+        "substantive_engagement": 6,
+        "scaffolding": 2
+      },
+      "counterfactual_divergence": 0.5,
+      "counterfactual_divergent_count": 2,
+      "counterfactual_total": 4,
+      "counterfactual_family_divergence": 0.25,
+      "counterfactual_family_divergent_count": 1,
+      "counterfactual_family_total": 4,
+      "confusion_matrix": {
+        "substantive_engagement": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "diagnostic": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "scaffolding": {
+          "substantive_engagement": 6,
+          "diagnostic": 0,
+          "scaffolding": 2,
+          "repair_affective": 0
+        },
+        "repair_affective": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        }
+      },
+      "within_action_refinement_rate": 1,
+      "within_action_refinements": 8,
+      "same_action_repeats": 8
+    },
+    {
+      "key": "struggling_overload",
+      "n": 7,
+      "strategy_shift_correctness": 0.7142857142857143,
+      "strategy_shift_correct_count": 5,
+      "strategy_shift_evaluable": 7,
+      "shift_window_correctness": 0.7142857142857143,
+      "shift_window_correct_count": 5,
+      "shift_window_evaluable": 7,
+      "shift_window_offset_distribution": {
+        "1": 5,
+        "2": 0,
+        "3": 0
+      },
+      "family_match_rate": 0.7142857142857143,
+      "family_match_count": 5,
+      "family_match_evaluable": 7,
+      "actual_family_distribution": {
+        "scaffolding": 5,
+        "repair_affective": 2
+      },
+      "counterfactual_divergence": 1,
+      "counterfactual_divergent_count": 4,
+      "counterfactual_total": 4,
+      "counterfactual_family_divergence": 1,
+      "counterfactual_family_divergent_count": 4,
+      "counterfactual_family_total": 4,
+      "confusion_matrix": {
+        "substantive_engagement": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "diagnostic": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        },
+        "scaffolding": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 5,
+          "repair_affective": 2
+        },
+        "repair_affective": {
+          "substantive_engagement": 0,
+          "diagnostic": 0,
+          "scaffolding": 0,
+          "repair_affective": 0
+        }
+      },
+      "within_action_refinement_rate": 1,
+      "within_action_refinements": 5,
+      "same_action_repeats": 5
+    }
+  ],
+  "perScenario": [
+    {
+      "scenarioId": "cross_epistemic_resistance__r0",
+      "scenarioType": "epistemic_resistance",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": [
+        "name_the_disagreement",
+        "scope_test",
+        "pose_counterexample"
+      ],
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "scope_test",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_epistemic_resistance__r1",
+      "scenarioType": "epistemic_resistance",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": [
+        "name_the_disagreement",
+        "scope_test",
+        "pose_counterexample"
+      ],
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "scope_test",
+          "scope_test",
+          "ask_diagnostic_question"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "ask_diagnostic_question",
+        "actualShiftFamily": "diagnostic",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_epistemic_resistance__r2",
+      "scenarioType": "epistemic_resistance",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": [
+        "name_the_disagreement",
+        "scope_test",
+        "pose_counterexample"
+      ],
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "scope_test",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_epistemic_resistance__r3",
+      "scenarioType": "epistemic_resistance",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": [
+        "name_the_disagreement",
+        "scope_test",
+        "pose_counterexample"
+      ],
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "scope_test",
+          "give_worked_example",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_affective_shutdown__r0",
+      "scenarioType": "affective_shutdown",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "acknowledge_and_redirect",
+      "expectedFamily": "repair_affective",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "acknowledge_and_redirect",
+          "lower_cognitive_load",
+          "acknowledge_and_redirect",
+          "acknowledge_and_redirect"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "acknowledge_and_redirect",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_affective_shutdown__r1",
+      "scenarioType": "affective_shutdown",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "acknowledge_and_redirect",
+      "expectedFamily": "repair_affective",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "acknowledge_and_redirect",
+          "give_worked_example",
+          "acknowledge_and_redirect",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_affective_shutdown__r2",
+      "scenarioType": "affective_shutdown",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "acknowledge_and_redirect",
+      "expectedFamily": "repair_affective",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "acknowledge_and_redirect",
+          "mirror_and_extend",
+          "acknowledge_and_redirect",
+          "give_worked_example"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "give_worked_example",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_affective_shutdown__r3",
+      "scenarioType": "affective_shutdown",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "acknowledge_and_redirect",
+      "expectedFamily": "repair_affective",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "acknowledge_and_redirect",
+          "mirror_and_extend",
+          "acknowledge_and_redirect",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_productive_deadlock__r0",
+      "scenarioType": "productive_deadlock",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "name_the_disagreement",
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "mirror_and_extend",
+          "pose_counterexample",
+          "name_the_disagreement",
+          "ask_diagnostic_question"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "ask_diagnostic_question",
+        "actualShiftFamily": "diagnostic",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_productive_deadlock__r1",
+      "scenarioType": "productive_deadlock",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "name_the_disagreement",
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "scope_test"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": true,
+        "actualShiftAction": "scope_test",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_productive_deadlock__r2",
+      "scenarioType": "productive_deadlock",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "name_the_disagreement",
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "scope_test",
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "ask_diagnostic_question"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "ask_diagnostic_question",
+        "actualShiftFamily": "diagnostic",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_productive_deadlock__r3",
+      "scenarioType": "productive_deadlock",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "name_the_disagreement",
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "mirror_and_extend",
+          "scope_test",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_misconception_surfaces__r0",
+      "scenarioType": "misconception_surfaces",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "ask_diagnostic_question",
+      "expectedFamily": "diagnostic",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "pose_counterexample",
+          "scope_test",
+          "lower_cognitive_load"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "lower_cognitive_load",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_misconception_surfaces__r1",
+      "scenarioType": "misconception_surfaces",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "ask_diagnostic_question",
+      "expectedFamily": "diagnostic",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "scope_test",
+          "scope_test",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_misconception_surfaces__r2",
+      "scenarioType": "misconception_surfaces",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "ask_diagnostic_question",
+      "expectedFamily": "diagnostic",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "scope_test",
+          "name_the_disagreement",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_misconception_surfaces__r3",
+      "scenarioType": "misconception_surfaces",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "ask_diagnostic_question",
+      "expectedFamily": "diagnostic",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "pose_counterexample",
+          "mirror_and_extend",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_activity_avoidance__r0",
+      "scenarioType": "activity_avoidance",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "withhold_answer",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "withhold_answer",
+          "mirror_and_extend",
+          "acknowledge_and_redirect",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_activity_avoidance__r1",
+      "scenarioType": "activity_avoidance",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "withhold_answer",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "withhold_answer",
+          "mirror_and_extend",
+          "acknowledge_and_redirect",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_activity_avoidance__r2",
+      "scenarioType": "activity_avoidance",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "withhold_answer",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "ask_diagnostic_question",
+          "mirror_and_extend",
+          "acknowledge_and_redirect",
+          "invite_objection"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "invite_objection",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_activity_avoidance__r3",
+      "scenarioType": "activity_avoidance",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "withhold_answer",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "withhold_answer",
+          "mirror_and_extend",
+          "acknowledge_and_redirect",
+          "give_worked_example"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": true,
+        "actualShiftAction": "give_worked_example",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_struggling_overload__r0",
+      "scenarioType": "struggling_overload",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "lower_cognitive_load",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "ask_diagnostic_question",
+          "acknowledge_and_redirect",
+          "lower_cognitive_load"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "lower_cognitive_load",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_struggling_overload__r2",
+      "scenarioType": "struggling_overload",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "lower_cognitive_load",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "acknowledge_and_redirect",
+          "lower_cognitive_load",
+          "lower_cognitive_load"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "lower_cognitive_load",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_struggling_overload__r3",
+      "scenarioType": "struggling_overload",
+      "profileName": "cell_125_dialogue_engine_crosssuite_baseline",
+      "expectedShift": "lower_cognitive_load",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "ask_diagnostic_question",
+          "lower_cognitive_load",
+          "repair_misrecognition"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "repair_misrecognition",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 0,
+        "sameActionRepeats": 0
+      },
+      "counterfactual": null,
+      "counterfactualDivergence": null,
+      "counterfactualFamilyDivergence": null
+    },
+    {
+      "scenarioId": "cross_epistemic_resistance",
+      "scenarioType": "epistemic_resistance",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": [
+        "name_the_disagreement",
+        "scope_test",
+        "pose_counterexample"
+      ],
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "pose_counterexample",
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 2,
+        "sameActionRepeats": 2
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "request_elaboration",
+          "repair_misrecognition",
+          "repair_misrecognition"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "repair_misrecognition",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_epistemic_resistance__r1",
+      "scenarioType": "epistemic_resistance",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": [
+        "name_the_disagreement",
+        "scope_test",
+        "pose_counterexample"
+      ],
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "scope_test",
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "withhold_answer",
+          "repair_misrecognition",
+          "repair_misrecognition"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "repair_misrecognition",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_epistemic_resistance__r2",
+      "scenarioType": "epistemic_resistance",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": [
+        "name_the_disagreement",
+        "scope_test",
+        "pose_counterexample"
+      ],
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "name_the_disagreement",
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "ask_diagnostic_question",
+          "repair_misrecognition",
+          "repair_misrecognition"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "repair_misrecognition",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_epistemic_resistance__r3",
+      "scenarioType": "epistemic_resistance",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": [
+        "name_the_disagreement",
+        "scope_test",
+        "pose_counterexample"
+      ],
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "pose_counterexample",
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "ask_diagnostic_question",
+          "lower_cognitive_load",
+          "lower_cognitive_load"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "lower_cognitive_load",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_affective_shutdown",
+      "scenarioType": "affective_shutdown",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "acknowledge_and_redirect",
+      "expectedFamily": "repair_affective",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "acknowledge_and_redirect",
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "acknowledge_and_redirect",
+          "acknowledge_and_redirect"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "acknowledge_and_redirect",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "name_the_disagreement",
+          "mirror_and_extend",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_affective_shutdown__r1",
+      "scenarioType": "affective_shutdown",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "acknowledge_and_redirect",
+      "expectedFamily": "repair_affective",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "acknowledge_and_redirect",
+          "mirror_and_extend",
+          "acknowledge_and_redirect",
+          "acknowledge_and_redirect",
+          "acknowledge_and_redirect"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "acknowledge_and_redirect",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 2,
+        "sameActionRepeats": 2
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "acknowledge_and_redirect",
+          "ask_diagnostic_question",
+          "ask_diagnostic_question"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "ask_diagnostic_question",
+        "actualShiftFamily": "diagnostic",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_affective_shutdown__r2",
+      "scenarioType": "affective_shutdown",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "acknowledge_and_redirect",
+      "expectedFamily": "repair_affective",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "acknowledge_and_redirect",
+          "give_worked_example",
+          "mirror_and_extend",
+          "acknowledge_and_redirect",
+          "acknowledge_and_redirect"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "acknowledge_and_redirect",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "mirror_and_extend",
+          "pose_counterexample",
+          "pose_counterexample"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "pose_counterexample",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_affective_shutdown__r3",
+      "scenarioType": "affective_shutdown",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "acknowledge_and_redirect",
+      "expectedFamily": "repair_affective",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "acknowledge_and_redirect",
+          "mirror_and_extend",
+          "mirror_and_extend",
+          "acknowledge_and_redirect",
+          "acknowledge_and_redirect"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "acknowledge_and_redirect",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 2,
+        "sameActionRepeats": 2
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "scope_test",
+          "ask_diagnostic_question",
+          "ask_diagnostic_question"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "ask_diagnostic_question",
+        "actualShiftFamily": "diagnostic",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_productive_deadlock",
+      "scenarioType": "productive_deadlock",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "name_the_disagreement",
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "scope_test",
+          "name_the_disagreement",
+          "scope_test",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "scope_test",
+          "lower_cognitive_load",
+          "lower_cognitive_load"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "lower_cognitive_load",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_productive_deadlock__r1",
+      "scenarioType": "productive_deadlock",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "name_the_disagreement",
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "pose_counterexample",
+          "pose_counterexample"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": true,
+        "actualShiftAction": "pose_counterexample",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 3,
+        "sameActionRepeats": 3
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "request_elaboration",
+          "repair_misrecognition",
+          "repair_misrecognition"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "repair_misrecognition",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_productive_deadlock__r2",
+      "scenarioType": "productive_deadlock",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "name_the_disagreement",
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 4,
+        "sameActionRepeats": 4
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "request_elaboration",
+          "mirror_and_extend",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": true,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": false
+    },
+    {
+      "scenarioId": "cross_productive_deadlock__r3",
+      "scenarioType": "productive_deadlock",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "name_the_disagreement",
+      "expectedFamily": "substantive_engagement",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "scope_test",
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 2,
+        "sameActionRepeats": 2
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "name_the_disagreement",
+          "repair_misrecognition",
+          "repair_misrecognition"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "repair_misrecognition",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_misconception_surfaces",
+      "scenarioType": "misconception_surfaces",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "ask_diagnostic_question",
+      "expectedFamily": "diagnostic",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "pose_counterexample",
+          "mirror_and_extend",
+          "pose_counterexample",
+          "pose_counterexample"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "pose_counterexample",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "mirror_and_extend",
+          "mirror_and_extend",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 2,
+        "sameActionRepeats": 2
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": false
+    },
+    {
+      "scenarioId": "cross_misconception_surfaces__r1",
+      "scenarioType": "misconception_surfaces",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "ask_diagnostic_question",
+      "expectedFamily": "diagnostic",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "pose_counterexample",
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "name_the_disagreement",
+          "mirror_and_extend",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": false
+    },
+    {
+      "scenarioId": "cross_misconception_surfaces__r2",
+      "scenarioType": "misconception_surfaces",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "ask_diagnostic_question",
+      "expectedFamily": "diagnostic",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "pose_counterexample",
+          "mirror_and_extend",
+          "pose_counterexample",
+          "pose_counterexample"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "pose_counterexample",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "name_the_disagreement",
+          "mirror_and_extend",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": false
+    },
+    {
+      "scenarioId": "cross_misconception_surfaces__r3",
+      "scenarioType": "misconception_surfaces",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "ask_diagnostic_question",
+      "expectedFamily": "diagnostic",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "pose_counterexample",
+          "mirror_and_extend",
+          "pose_counterexample",
+          "pose_counterexample"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "pose_counterexample",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": false
+    },
+    {
+      "scenarioId": "cross_activity_avoidance",
+      "scenarioType": "activity_avoidance",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "withhold_answer",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "withhold_answer",
+          "withhold_answer",
+          "withhold_answer",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 3,
+        "sameActionRepeats": 3
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "name_the_disagreement",
+          "mirror_and_extend",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": false
+    },
+    {
+      "scenarioId": "cross_activity_avoidance__r1",
+      "scenarioType": "activity_avoidance",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "withhold_answer",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "withhold_answer",
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 2,
+        "sameActionRepeats": 2
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": false,
+      "counterfactualFamilyDivergence": false
+    },
+    {
+      "scenarioId": "cross_activity_avoidance__r2",
+      "scenarioType": "activity_avoidance",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "withhold_answer",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "withhold_answer",
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 2,
+        "sameActionRepeats": 2
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "name_the_disagreement",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 2,
+        "sameActionRepeats": 2
+      },
+      "counterfactualDivergence": false,
+      "counterfactualFamilyDivergence": false
+    },
+    {
+      "scenarioId": "cross_activity_avoidance__r3",
+      "scenarioType": "activity_avoidance",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "withhold_answer",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 2,
+      "original": {
+        "policyTrace": [
+          "withhold_answer",
+          "provide_hint",
+          "mirror_and_extend",
+          "withhold_answer",
+          "withhold_answer"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "withhold_answer",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "name_the_disagreement",
+          "mirror_and_extend",
+          "mirror_and_extend"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "mirror_and_extend",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_struggling_overload",
+      "scenarioType": "struggling_overload",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "lower_cognitive_load",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "lower_cognitive_load",
+          "mirror_and_extend",
+          "acknowledge_and_redirect",
+          "acknowledge_and_redirect"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "acknowledge_and_redirect",
+        "actualShiftFamily": "repair_affective",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_struggling_overload__r1",
+      "scenarioType": "struggling_overload",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "lower_cognitive_load",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "ask_diagnostic_question",
+          "give_worked_example",
+          "lower_cognitive_load",
+          "lower_cognitive_load"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "lower_cognitive_load",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "provide_hint",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_struggling_overload__r2",
+      "scenarioType": "struggling_overload",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "lower_cognitive_load",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "lower_cognitive_load",
+          "mirror_and_extend",
+          "lower_cognitive_load",
+          "lower_cognitive_load"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "lower_cognitive_load",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    },
+    {
+      "scenarioId": "cross_struggling_overload__r3",
+      "scenarioType": "struggling_overload",
+      "profileName": "cell_124_langgraph_adaptive_crosssuite",
+      "expectedShift": "lower_cognitive_load",
+      "expectedFamily": "scaffolding",
+      "triggerTurn": 1,
+      "original": {
+        "policyTrace": [
+          "lower_cognitive_load",
+          "mirror_and_extend",
+          "lower_cognitive_load",
+          "lower_cognitive_load"
+        ],
+        "shiftMatched": true,
+        "shiftWindowMatched": true,
+        "shiftWindowOffset": 1,
+        "familyMatched": true,
+        "actualShiftAction": "lower_cognitive_load",
+        "actualShiftFamily": "scaffolding",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactual": {
+        "policyTrace": [
+          null,
+          "mirror_and_extend",
+          "name_the_disagreement",
+          "name_the_disagreement"
+        ],
+        "shiftMatched": false,
+        "shiftWindowMatched": false,
+        "shiftWindowOffset": null,
+        "familyMatched": false,
+        "actualShiftAction": "name_the_disagreement",
+        "actualShiftFamily": "substantive_engagement",
+        "withinActionRefinements": 1,
+        "sameActionRepeats": 1
+      },
+      "counterfactualDivergence": true,
+      "counterfactualFamilyDivergence": true
+    }
+  ]
+}

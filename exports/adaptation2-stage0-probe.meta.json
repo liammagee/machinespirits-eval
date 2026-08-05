@@ -1,0 +1,73 @@
+{
+  "stage": "ADAPTATION-PLAN-2.0.md \u00a73 Stage 0 (offline, zero-API, read-only)",
+  "generated_at_utc": "2026-05-18T00:53:39.033931Z",
+  "seed": 20260517,
+  "B_boot": 2000,
+  "ridge_lambda": 1.0,
+  "n_units": 1604,
+  "n_scenario_types": 9,
+  "n_dialogues": 2589,
+  "skipped": {
+    "no_file": 856,
+    "no_trace": 0,
+    "no_triplet_turn": 2138,
+    "bad_json": 0
+  },
+  "by_profile": {
+    "cell_2_base_single_psycho": 5,
+    "cell_4_base_multi_psycho": 2,
+    "cell_66_recog_dialectical_profile_prosthesis_descriptive": 28,
+    "cell_81_messages_base_single_psycho": 234,
+    "cell_83_messages_base_multi_psycho": 411,
+    "cell_85_messages_recog_single_psycho": 381,
+    "cell_87_messages_recog_multi_psycho": 329,
+    "cell_88_messages_recog_multi_psycho_haiku": 88,
+    "cell_89_messages_recog_multi_psycho_gemflash": 53,
+    "cell_8_recog_multi_psycho": 67,
+    "cell_92_messages_recog_single_psycho_gemflash": 6
+  },
+  "P1_primary": {
+    "target": "1 - tfidf_cosine(ego_initial, final_output)",
+    "r2_surface_A": 0.08558257059572716,
+    "r2_latentcause_B": -0.025728706586253258,
+    "gap_B_minus_A": -0.11131127718198042,
+    "ci95_r2_B": [
+      -0.21247613476241867,
+      -0.03211648737972594
+    ],
+    "ci95_gap_B_minus_A": [
+      -0.23400176976145987,
+      -0.010222613338102206
+    ],
+    "B_structured_lowerCI_gt0": false,
+    "surface_misses_lowerCI_gt0": false,
+    "boot_n": 2000
+  },
+  "P1_secondary_robustness": {
+    "target": "token_jaccard(ego_initial, final_output) [robustness]",
+    "r2_surface_A": 0.03908231240623261,
+    "r2_latentcause_B": -0.021507961351119542,
+    "gap_B_minus_A": -0.06059027375735215,
+    "ci95_r2_B": [
+      -0.20570085267276422,
+      -0.0182938619724409
+    ],
+    "ci95_gap_B_minus_A": [
+      -0.2185862933758028,
+      0.04957118640915975
+    ],
+    "B_structured_lowerCI_gt0": false,
+    "surface_misses_lowerCI_gt0": false,
+    "boot_n": 2000
+  },
+  "frozen_gate": {
+    "rule": "P1 PASS iff lower95(R\u00b2_B)>0 AND lower95(R\u00b2_B - R\u00b2_A)>0 on the PRIMARY target",
+    "PASSED": false,
+    "disposition": "FAIL -> STOP. The concealed interior is NOT separable from the surface the base already reads (or is unstructured noise): a concealment mechanism would be re-encoding. This null IS the \u00a76.10 result (the \u00a76.7/\u00a76.8.8/\u00a76.9 motif on the signal axis). No Stage 1, no live run, no tune-and-retry. Report the P2 corpus-gap finding as the reason the Weber lever was never realised."
+  },
+  "P2_weber": "structurally deferred to Stage 1: existing charisma corpus (cells 100-109) is scripted-learner / tutor-only (<=38/505 rows any learner score, 0 interiority) -> uptake not zero-API testable; that absence is the finding.",
+  "zero_api": true,
+  "read_only": true,
+  "db": "/Users/lmagee/Dev/machinespirits/machinespirits-eval/data/evaluations.db",
+  "logs": "/Users/lmagee/Dev/machinespirits/machinespirits-eval/logs/tutor-dialogues"
+}

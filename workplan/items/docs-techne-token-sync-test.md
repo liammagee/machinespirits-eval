@@ -1,7 +1,7 @@
 ---
 id: docs-techne-token-sync-test
 title: Test-enforce the techne token mirror (served subset vs editorial source)
-status: review
+status: done
 type: infra
 priority: P3
 owner: claude

@@ -18,6 +18,11 @@ import {
   tutorStubPerformanceAdjudicationUserPrompt,
 } from '../services/tutorStubPerformanceAdjudication.js';
 import { auditTutorStubPrompt } from '../services/tutorStubPromptAudit.js';
+import {
+  TUTOR_STUB_CONDITIONAL_HANDOFF_RULE,
+  TUTOR_STUB_CONDITIONAL_QUESTION_GOAL,
+  TUTOR_STUB_CONDITIONAL_QUESTION_RULE,
+} from '../services/tutorStubPromptBlocks.js';
 import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
 import { TUTOR_STUB_FIRST_DRAFT_CONTRACT_SCHEMA } from '../services/tutorStubFirstDraftContract.js';
 import { splitTutorStubPublicWords } from '../services/tutorStubPublicText.js';
@@ -212,6 +217,12 @@ test('frozen screens recompile the current single-development contract without c
 
   assert.deepEqual(refreshed.priorTurns, original.priorTurns);
   assert.deepEqual(refreshed.publicPremiseIds, original.publicPremiseIds);
+  assert.deepEqual(refreshed.request.messages.slice(0, -1), original.request.messages.slice(0, -1));
+  assert.ok(refreshed.request.systemPrompt.includes(TUTOR_STUB_CONDITIONAL_QUESTION_GOAL));
+  assert.ok(refreshed.request.systemPrompt.includes(TUTOR_STUB_CONDITIONAL_QUESTION_RULE));
+  assert.ok(refreshed.request.systemPrompt.includes(TUTOR_STUB_CONDITIONAL_HANDOFF_RULE));
+  assert.doesNotMatch(refreshed.request.systemPrompt, /Ask at most one main question per turn/u);
+  assert.doesNotMatch(refreshed.request.systemPrompt, /End with one light prompt for the learner/u);
   assert.equal(refreshed.performanceObligationContract.complete, true);
   assert.match(refreshed.request.messages.at(-1).content, /\[Tutor-only host plan\]/u);
   assert.match(refreshed.request.messages.at(-1).content, /UPTAKE —[\s\S]*PART —[\s\S]*TACTIC —[\s\S]*HANDOFF —/u);
@@ -240,6 +251,7 @@ test('frozen screens can refresh an already-current typed host plan', () => {
 
   assert.deepEqual(secondRefresh.priorTurns, original.priorTurns);
   assert.deepEqual(secondRefresh.publicPremiseIds, original.publicPremiseIds);
+  assert.equal(secondRefresh.request.systemPrompt, firstRefresh.request.systemPrompt);
   assert.equal(prompt.split('[Tutor-only host plan]').length - 1, 1);
   assert.equal(prompt.split('[End tutor-only host plan]').length - 1, 1);
   assert.doesNotMatch(prompt, /Tutor-only first-draft performance contract/u);

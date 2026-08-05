@@ -1,0 +1,67 @@
+STAGE: [The printed paper sits between them on the desk, the headline accuracy circled in pencil.]
+
+LEARNER: [slides the printed paper across the desk so the results table faces the colleague]
+
+"The model loads clean, the eval script matches what's described in section 3.2, and the metric computation is exact — and I'm still twelve points below their reported number. That's not noise. That's a systematic gap, and I want to know whether there's a legitimate procedural explanation I've missed before I submit this critique."
+
+TUTOR: [picks up the printed paper, turns to the results table, sets it back down without comment]
+
+"Three claims there. The model loads clean. The eval script matches section 3.2. The metric computation is exact.
+
+Which of those has been verified against something external to the paper — and to be clear, all three require an answer, not just the one that feels most settled."
+
+LEARNER: [looks back at the terminal, not the paper]
+
+"The eval script. The model weights came from the official release and the metric formula cross-checked against the original codebase — those have something external to hold them against. The script verification was circular: matched against section 3.2, which means matched against the paper's own account of what it does. If the script is where the gap lives, that's a procedural explanation I haven't ruled out, and submitting on a twelve-point discrepancy I can't fully account for is — that's premature."
+
+STAGE: [The marked work is moved or turned; the earlier mark remains visible.]
+
+TUTOR: [lifts the printed paper, turns it so the results table faces the learner rather than the desk, and sets it back down without straightening it]
+
+"The circular verification point is the sharper observation of the two. Note it.
+
+But there's a distinction being run together here. The script matching section 3.2 is one question. Whether section 3.2 accurately describes what the paper actually ran is another. Those aren't the same question, and treating them as the same is part of what makes the discrepancy hard to locate.
+
+So: the claim is that circular verification is a gap in the audit. That's a reasonable claim. What would a non-circular audit of the script require — what external evidence would actually falsify the proposition that the script is not the source of the problem?"
+
+LEARNER: [pushes back slightly from the desk, not reaching for the paper]
+
+"The paper doesn't have a public commit history and there's no versioned harness — so the audit gap doesn't close, and the script stays open as the live candidate. That's not a comfortable position to be in, because it means going back into the script properly rather than treating section 3.2 as a proxy for what was actually run."
+
+TUTOR: [takes the printed paper and folds it closed, so only the cover page is visible]
+
+"The script stays open as a candidate. Before it gets opened — what does the deficit actually look like? Not the number. The number is known. The distribution, the direction, the consistency across the evaluation."
+
+LEARNER: [glances at the terminal, not at the colleague]
+
+"The aggregate is up there, but — it hasn't been broken down. Whether the gap is uniform or concentrated in specific examples, I don't actually know that yet. Which is — that should have been the first thing checked before the number became the argument."
+
+TUTOR: [opens the paper to the results table and turns it to face the learner, then moves aside to leave the terminal screen unobstructed]
+
+"Then that's the next check. Not the aggregate — the breakdown.
+
+What exactly gets computed? Walk through what the terminal would need to show before the distribution is actually known."
+
+LEARNER: [pulls up the terminal log, not the paper]
+
+"Per-instance scores — the terminal needs to show each example scored individually, not just the aggregate. And the distribution matters because the two patterns aren't equivalent: a uniform gap across the full set points toward something systematic in the metric computation or preprocessing, whereas a concentrated gap in a subset implicates how specific examples are being handled — which is precisely where an undocumented script divergence would show up. That second pattern would be harder to explain away as noise, and it's the one that should have been checked before the aggregate became the operative number."
+
+TUTOR: [moves the printed paper off the desk and sets it on the filing cabinet behind, leaving only the two screens visible]
+
+"The distinction holds. Now run it.
+
+Which pattern does the terminal show — uniform or concentrated — and what does that commit to?"
+
+LEARNER: [reads across the per-instance scores without turning from the screen]
+
+"The gap is concentrated — a subset of examples is driving most of the deficit, not a uniform shift across the full set. That rules out the metric computation as the primary explanation and puts the divergence squarely in how specific examples are being handled."
+
+TUTOR: [takes the terminal keyboard and scrolls the per-instance output upward, so the subset in question sits centred on the screen]
+
+"Concentrated in a subset. That's the finding on the table.
+
+Now: which subset? Not in general terms — which examples, specifically, are carrying the gap?"
+
+LEARNER: [reads the example IDs aloud, cross-checking against the score column]
+
+"It's the long-sequence examples — they're carrying the gap. The scores drop specifically at the tail of the length distribution, not scattered. That's not where a truncation or padding divergence would show up. That's where it is showing up."

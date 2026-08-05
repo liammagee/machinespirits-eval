@@ -1,7 +1,7 @@
 ---
 id: docs-entry-point-index
 title: Create the documentation entry point and repoint the live-arc references
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: claude
@@ -41,4 +41,5 @@ authorities, live-work pointer (the board plus
 regeneration verbs, deploy path. Linked from
 `README.md` and `CLAUDE.md`'s fork section; the master-plan line now marks the
 plan historical. Mirror pointers added to `AGENTS.md` and `GEMINI.md`
-(2026-08-05). Remaining for done: human eyes on the map's content.
+(2026-08-05). Closed 2026-08-05: reviewed through the merges of PRs
+#497/#500/#502 and the user's flip instruction.

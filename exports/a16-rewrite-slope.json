@@ -1,0 +1,452 @@
+{
+  "generatedAt": "2026-05-17T19:50:29.831Z",
+  "endpoint": "per-dialogue OLS slope of in-family policyAction indicator (uncapped), S1−S0 Cohen’s d vs |d|≥0.27",
+  "arms": {
+    "S1": {
+      "profile": "cell_130_superego_revise_cumulative",
+      "runIds": [
+        "eval-2026-05-17-59efc743",
+        "eval-2026-05-17-180f1610"
+      ],
+      "nCleanRows": 48,
+      "nSlopes": 48,
+      "excluded": {},
+      "meanSlope": 0.1729166666666666,
+      "sdSlope": 0.1659781879201247,
+      "slopes": [
+        0.3,
+        0,
+        0.3,
+        0.3,
+        0.3,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0.1,
+        0.3,
+        0.3,
+        -0.1,
+        0.3,
+        0.3,
+        0.1,
+        -0.2,
+        0,
+        -0.2,
+        5.551115123125783e-18,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.3,
+        0.2,
+        0.2,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.1,
+        0,
+        0.1,
+        0,
+        -0.4,
+        0.1,
+        0.3,
+        0.3,
+        0.3,
+        0.3
+      ],
+      "perScenarioMeanSlope": {
+        "false_confusion": {
+          "n": 11,
+          "mean": 0.2727272727272727
+        },
+        "polite_false_mastery": {
+          "n": 11,
+          "mean": 0.027272727272727268
+        },
+        "resistance_to_insight": {
+          "n": 9,
+          "mean": 0.25555555555555554
+        },
+        "answer_seeking_to_productive_struggle": {
+          "n": 5,
+          "mean": -0.06000000000000001
+        },
+        "metaphor_boundary_case": {
+          "n": 5,
+          "mean": 0.22000000000000003
+        },
+        "affective_shutdown": {
+          "n": 5,
+          "mean": 0.26
+        },
+        "repair_after_misrecognition": {
+          "n": 2,
+          "mean": 0.3
+        }
+      },
+      "cfInFamilyRate": null
+    },
+    "S0": {
+      "profile": "cell_129_superego_revise_stateless",
+      "runIds": [
+        "eval-2026-05-17-f1d2fdda",
+        "eval-2026-05-17-73af0f28",
+        "eval-2026-05-17-b76058ea"
+      ],
+      "nCleanRows": 48,
+      "nSlopes": 48,
+      "excluded": {},
+      "meanSlope": 0.19999999999999996,
+      "sdSlope": 0.15844993839924143,
+      "slopes": [
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.4,
+        0.3,
+        0.3,
+        -0.3,
+        0,
+        0.1,
+        0.1,
+        0.1,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.2,
+        0.3,
+        0.1,
+        0,
+        -0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        -0.3,
+        0.1,
+        0.3,
+        0.3,
+        0.3
+      ],
+      "perScenarioMeanSlope": {
+        "false_confusion": {
+          "n": 14,
+          "mean": 0.30714285714285705
+        },
+        "polite_false_mastery": {
+          "n": 11,
+          "mean": 0.018181818181818184
+        },
+        "resistance_to_insight": {
+          "n": 8,
+          "mean": 0.3
+        },
+        "answer_seeking_to_productive_struggle": {
+          "n": 5,
+          "mean": 0.07999999999999999
+        },
+        "metaphor_boundary_case": {
+          "n": 5,
+          "mean": 0.16
+        },
+        "affective_shutdown": {
+          "n": 5,
+          "mean": 0.3
+        }
+      },
+      "cfInFamilyRate": null
+    },
+    "A": {
+      "profile": "cell_131_a16_A_egosuperego",
+      "runIds": [
+        "eval-2026-05-17-f73eb963",
+        "eval-2026-05-17-c6d01d86"
+      ],
+      "nCleanRows": 48,
+      "nSlopes": 48,
+      "excluded": {},
+      "meanSlope": 0.15416666666666665,
+      "sdSlope": 0.16237379168742216,
+      "slopes": [
+        0.4,
+        0.3,
+        0.3,
+        0.4,
+        0.4,
+        0.1,
+        0,
+        0,
+        0.1,
+        0,
+        0.3,
+        -0.1,
+        -0.1,
+        0.3,
+        0.3,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        -0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.3,
+        0.2,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0,
+        0,
+        0,
+        0.3,
+        0.3,
+        0.3,
+        -0.1,
+        0.3,
+        -0.1,
+        0.4,
+        0,
+        0.1,
+        0,
+        0,
+        0,
+        0.1,
+        0.3
+      ],
+      "perScenarioMeanSlope": {
+        "false_confusion": {
+          "n": 11,
+          "mean": 0.26363636363636356
+        },
+        "polite_false_mastery": {
+          "n": 11,
+          "mean": 0.03636363636363637
+        },
+        "resistance_to_insight": {
+          "n": 6,
+          "mean": 0.16666666666666666
+        },
+        "answer_seeking_to_productive_struggle": {
+          "n": 5,
+          "mean": 0.020000000000000007
+        },
+        "metaphor_boundary_case": {
+          "n": 5,
+          "mean": 0.2
+        },
+        "affective_shutdown": {
+          "n": 5,
+          "mean": 0.28
+        },
+        "repair_after_misrecognition": {
+          "n": 5,
+          "mean": 0.12
+        }
+      },
+      "cfInFamilyRate": null
+    },
+    "F": {
+      "profile": "cell_132_a16_F_recognition_only",
+      "runIds": [
+        "eval-2026-05-17-85bd18b2",
+        "eval-2026-05-17-c1b7328d"
+      ],
+      "nCleanRows": 48,
+      "nSlopes": 48,
+      "excluded": {},
+      "meanSlope": 0.16249999999999992,
+      "sdSlope": 0.15522804089741993,
+      "slopes": [
+        0.3,
+        -0.1,
+        0.3,
+        0.3,
+        0.3,
+        -0.1,
+        0.1,
+        0.1,
+        0,
+        0,
+        -0.4,
+        0,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0,
+        0.3,
+        0.3,
+        0.4,
+        0.3,
+        0.3,
+        0,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.3,
+        0.1,
+        0.1,
+        0,
+        0.1,
+        0.1,
+        0.3,
+        0.2,
+        0.2,
+        0.2
+      ],
+      "perScenarioMeanSlope": {
+        "false_confusion": {
+          "n": 11,
+          "mean": 0.23636363636363633
+        },
+        "polite_false_mastery": {
+          "n": 11,
+          "mean": 0.018181818181818184
+        },
+        "resistance_to_insight": {
+          "n": 11,
+          "mean": 0.29999999999999993
+        },
+        "answer_seeking_to_productive_struggle": {
+          "n": 11,
+          "mean": 0.07272727272727272
+        },
+        "metaphor_boundary_case": {
+          "n": 4,
+          "mean": 0.22499999999999998
+        }
+      },
+      "cfInFamilyRate": null
+    }
+  },
+  "primary": {
+    "contrast": "S1 − S0 (sole config difference: ledger-statefulness)",
+    "s1": {
+      "n": 48,
+      "meanSlope": 0.1729166666666666,
+      "sdSlope": 0.1659781879201247
+    },
+    "s0": {
+      "n": 48,
+      "meanSlope": 0.19999999999999996,
+      "sdSlope": 0.15844993839924143
+    },
+    "meanSlopeDiff": -0.027083333333333348,
+    "cohenD": -0.16691551980323935,
+    "welch": {
+      "t": -0.8177157073387147,
+      "df": 93.79819222168584,
+      "p": 0.4135194277649443
+    },
+    "preRegBar": 0.27,
+    "predictedDirection": "S1 > S0 (cumulative rewrite ⇒ positive in-family rate)",
+    "decision": "NULL — |d|=-0.167 < 0.27 (pre-registered: a null is as informative as a hit; extends the §6.3 slope-null to cumulative lightweight rewrite)"
+  },
+  "localisation": {
+    "band": 0.15,
+    "detectabilityBar": 0.27,
+    "note": "vs-F rows are PROVISIONAL until F reaches full n; A-anchored rows (S0−A, S1−A) are exact at full n",
+    "contrasts": {
+      "S0-F": {
+        "nX": 48,
+        "nY": 48,
+        "meanDiff": 0.03750000000000003,
+        "cohenD": 0.23908609780194715,
+        "welch": {
+          "t": 1.1712778884158508,
+          "df": 93.96035682826587,
+          "p": 0.24148721760811442
+        }
+      },
+      "S1-F": {
+        "nX": 48,
+        "nY": 48,
+        "meanDiff": 0.010416666666666685,
+        "cohenD": 0.06482338584924197,
+        "welch": {
+          "t": 0.31756843746038876,
+          "df": 93.5816505411021,
+          "p": 0.7508124567238488
+        }
+      },
+      "A-F": {
+        "nX": 48,
+        "nY": 48,
+        "meanDiff": -0.008333333333333276,
+        "cohenD": -0.05246333034307204,
+        "welch": {
+          "t": -0.2570167790952009,
+          "df": 93.81024186493511,
+          "p": 0.7971659360544701
+        }
+      },
+      "S0-A": {
+        "nX": 48,
+        "nY": 48,
+        "meanDiff": 0.04583333333333331,
+        "cohenD": 0.28570147027670045,
+        "welch": {
+          "t": 1.3996456418817016,
+          "df": 93.94380589271209,
+          "p": 0.16161956835072244
+        }
+      },
+      "S1-A": {
+        "nX": 48,
+        "nY": 48,
+        "meanDiff": 0.01874999999999996,
+        "cohenD": 0.11419983177990177,
+        "welch": {
+          "t": 0.5594626331448675,
+          "df": 93.95472486704229,
+          "p": 0.5758459634127477
+        }
+      }
+    }
+  }
+}

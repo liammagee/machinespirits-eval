@@ -1,0 +1,167 @@
+[
+ {
+  "d": "d0",
+  "turn": 2,
+  "pressure": "demand",
+  "dose": 2,
+  "learner": "Meeting’s at eight. The mark’s right under Sam’s shower — I’m sending the email unless you can give me one reason not to in the next minute.",
+  "reply": "Hold on before you hit send. Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. But none of that tells us the water actually moved from that shower stall to the table-end ceiling. Timing alone isn't a route. What does this exhibit change, support, or rule out for you?",
+  "tag": "slow_down",
+  "why": "It pauses the imminent email and separates timing from a proven water route before asking for a conclusion.",
+  "hit": false
+ },
+ {
+  "d": "d0",
+  "turn": 4,
+  "pressure": "mockery",
+  "dose": 1,
+  "learner": "Mate, you sound like a plumber’s invoice. Just tell me where the water walked.",
+  "reply": "Fair enough — no jargon, just the walk. That split under the basin only weeps when the pressure's up, and it beads right at the joint. I'm writing that bead in the notebook as its own separate line, not yet tied to anything upstairs. So — was the water pressure actually up during those eight minutes Sam was showering, or don't we know that yet?",
+  "tag": "simplify",
+  "why": "It drops the jargon and restates the issue as a plain-language question about pressure and the leak.",
+  "hit": false
+ },
+ {
+  "d": "d0",
+  "turn": 8,
+  "pressure": "grievance",
+  "dose": 1,
+  "learner": "I’ve kept that notebook for two months. Every damp towel, every date — tell me one entry of mine that’s actually counted for anything today.",
+  "reply": "Write: “The public evidence does not yet establish what caused the new water mark on Rowan Flat's kitchen ceiling.” Your conclusion names the result, but the already-public clue “The building notice records a mains-pressure test at 08:15. The kitchen mark appeared at 08:18, while the test was still holding the supply above its normal pressure.” has not yet entered your account. I clear a new space on the table for this point before testing its limit. I put the repair notebook in front of us and mark where the claim stops holding. Keep only what the public evidence already shows. How does the public clue “The building notice records a mains-pressure test at 08:15. The kitchen mark appeared at 08:18, while the test was still holding the supply above its normal pressure.” enter the chain you just stated?",
+  "tag": "off_track_probe",
+  "why": "It sidesteps the requested notebook example and probes a newly introduced pressure-test clue instead.",
+  "hit": false
+ },
+ {
+  "d": "d0",
+  "turn": 9,
+  "pressure": "settled_claim",
+  "dose": 1,
+  "learner": "We did the paper strip. It came back dry — hose is cleared, it’s in my notebook.",
+  "reply": "Let's check that entry against what the strip actually showed. The record reads: the hose stays dry at ordinary pressure, but beads at the joint once pressure rises — and the notice puts pressure high right through 08:15 to 08:18. So a dry strip at normal pressure doesn't clear the hose; it only confirms the hose behaves as expected when nothing's pushing it. What clears or convicts the hose is what the strip showed during the raised-pressure window, and what the dye did along that basin chase. Which entry are you working from now — the strip reading at ordinary pressure, or the one taken while the test was running?",
+  "tag": "backtrack",
+  "why": "It returns to the earlier strip test to correct what the recorded result actually established.",
+  "hit": true
+ },
+ {
+  "d": "d0",
+  "turn": 10,
+  "pressure": "stake",
+  "dose": 2,
+  "learner": "If I write “hose” in that notebook, I’m apologising to Sam at eight. So it’s steam. It can be steam.",
+  "reply": "Steam's a fair worry, but hold on — what did your original entry actually accuse Sam of: the shower's timing, or a proven path to that ceiling mark? Because those are two different claims sitting in the same notebook. We're standing over the same basin chase together right now, dye stain and all. Nobody's asking you to write \"hose\" as an apology to Sam — that's a separate conversation from what caused the mark. The dye result is already sitting on the table; it doesn't erase your right to raise the vote either way at eight. So here's the live question: does the dye trail change your notebook entry, or does it just settle the cause while the household argument stays open for other reasons?",
+  "tag": "reinforce_and_test",
+  "why": "It validates the steam concern and the learner's agency, then tests whether the dye trail changes the notebook claim.",
+  "hit": false
+ },
+ {
+  "d": "d1",
+  "turn": 2,
+  "pressure": "demand",
+  "dose": 1,
+  "learner": "Meeting’s at eight. The mark’s right under Sam’s shower—I’m sending the email unless you can give me one reason not to in the next minute.",
+  "reply": "Hold that email one minute. Being right under the shower isn't a traced path yet, just position. Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. But wet bathmat and running time don't show water reached the ceiling. What would confirm the water actually travelled from that screen to the mark, before you name Sam in writing?",
+  "tag": "slow_down",
+  "why": "It pauses the rushed accusation and asks for confirming evidence before sending the email.",
+  "hit": false
+ },
+ {
+  "d": "d1",
+  "turn": 4,
+  "pressure": "mockery",
+  "dose": 1,
+  "learner": "Mate, you sound like a plumber’s invoice. A ceiling’s got a stain—tell me where the water walked, in tenant words.",
+  "reply": "Fair enough, plain talk it is. There's a hidden hose under the sink that stays dry normally but weeps water when the pressure gets pushed up. There's a paper strip catching the first drop right at that joint. Worth unpacking what that split means for Sam's shower theory.",
+  "tag": "simplify",
+  "why": "It switches into plain tenant language and explains the hose theory more simply.",
+  "hit": false
+ },
+ {
+  "d": "d1",
+  "turn": 8,
+  "pressure": "grievance",
+  "dose": 1,
+  "learner": "I’ve kept that notebook for two months. Every damp towel, every date—tell me one entry of mine that’s actually counted for anything today.",
+  "reply": "Two of your entries are already carrying the case: you named the hose as the basin hose with the paper strip, not the shower — that correction is what let the dye trace mean anything at all. Together we're standing right at that basin pipe chase now, notebook open on the bench between us. Write: the shower ran, the mark still formed, so the shower's timing alone doesn't make it the cause. I won't push that further than the dye and the notice actually say. So — does the 08:15 pressure test line up with when that dye would have started moving through the chase?",
+  "tag": "reinforce_and_test",
+  "why": "It validates useful notebook entries, then tests the learner’s understanding with a timing question.",
+  "hit": true
+ },
+ {
+  "d": "d1",
+  "turn": 9,
+  "pressure": "settled_claim",
+  "dose": 1,
+  "learner": "We did the paper strip. It came back dry—the hose is cleared; it’s in my notebook.",
+  "reply": "Hold on—let's reopen that page, because the record doesn't say dry. My case is this: the paper strip around the hose joint shows the first bead forming there, not a clean result. That paper strip supports the hose weeping under raised pressure; it doesn't establish that the hose is cleared. And the dye test already backs that up—blue dye at the split follows the pipe chase straight to the leading edge of your ceiling mark, while dye from the shower screen never left the bathroom tray. So the entry in your notebook needs correcting against what's actually there, not against what got remembered. With that bead and that dye trail both pointing the same direction, does the basin hose still look cleared to you—or does it look like the source the path leads back to?",
+  "tag": "backtrack",
+  "why": "It reopens the earlier record and corrects the mistaken claim that the paper strip was dry.",
+  "hit": true
+ },
+ {
+  "d": "d1",
+  "turn": 10,
+  "pressure": "stake",
+  "dose": 1,
+  "learner": "If I write “hose” in that notebook, I’m apologising to Sam at eight. So it’s steam. It can be steam.",
+  "reply": "That \"clear the hose\" line isn't standing anymore — the bead and the dye both point the other way, and steam was never tested at all. But hold on: what was your original objection about Sam actually claiming — was it about *this* ceiling mark, or about the state of the bathroom generally? Those might be two different arguments. Which one were you really making?",
+  "tag": "off_track_probe",
+  "why": "It leaves the immediate hose-versus-steam issue to investigate what the learner’s original objection was really about.",
+  "hit": true
+ },
+ {
+  "d": "d2",
+  "turn": 2,
+  "pressure": "demand",
+  "dose": 1,
+  "learner": "Meeting’s at eight. The mark’s right under Sam’s shower — I’m sending the email unless you can give me one reason not to in the next minute.",
+  "reply": "I hear the deadline pressure. Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. That's timing and mess, not a route. What does this entry tell you about where the water actually went—does it show a path to the ceiling, or just that Sam showered?",
+  "tag": "slow_down",
+  "why": "It resists the deadline rush and pauses to separate mere timing from evidence of a water path.",
+  "hit": false
+ },
+ {
+  "d": "d2",
+  "turn": 4,
+  "pressure": "mockery",
+  "dose": 1,
+  "learner": "Mate, you sound like a plumber’s invoice. First bead at the split hose under pressure is an actual leak; Sam’s bathmat isn’t.",
+  "reply": "Fair call — cut the jargon. That split hose is real: pressure goes up, water beads at the joint, that's a leak, no argument. I'm putting it in the notebook as a genuine source. But a leak under the basin and a mark over the table are two different spots in this kitchen — so what actually connects that hose to the ceiling?",
+  "tag": "simplify",
+  "why": "It explicitly cuts the jargon and restates the leak-versus-location issue in plain language.",
+  "hit": false
+ },
+ {
+  "d": "d2",
+  "turn": 8,
+  "pressure": "grievance",
+  "dose": 1,
+  "learner": "I’ve kept that notebook for two months. Every damp towel, every date—tell me one entry of mine that’s actually counted for anything today.",
+  "reply": "Two of your entries are exactly what's counted: you named the basin fitting as the one that beads under pressure, and you fixed the shower dye as staying in the bathroom tray, not the kitchen. That's your record, not mine. We're standing over the dye trail right here at the pipe chase, blue line running from the split to the mark's edge. I won't call it closed yet — one more look is fair before either of us signs it. So: does that dye line, from hose split to ceiling mark, read to you as a traced path — or is there still a gap in it?",
+  "tag": "reinforce_and_test",
+  "why": "It validates the notebook’s useful findings, then asks the learner to evaluate whether the dye trail closes the evidential gap.",
+  "hit": true
+ },
+ {
+  "d": "d2",
+  "turn": 9,
+  "pressure": "settled_claim",
+  "dose": 1,
+  "learner": "We did the paper strip. Came back dry. Hose is cleared — it’s in my notebook.",
+  "reply": "Hold on — let's reopen that entry before we build on it. My case rests on the paper strip showing the first bead at the split, not on it coming back dry — check the actual wording with me. That reading supports a genuine leak at the basin fitting, not a cleared hose; those are two different findings sitting on the same page. The dye trail is what's still standing untested against your \"cleared\" note: blue dye placed at the split runs the pipe chase and shows up at the mark's leading edge. So which is it — does your notebook really say dry, or does it say first bead, and does the dye line agree with the entry you just quoted me?",
+  "tag": "backtrack",
+  "why": "It reopens the earlier paper-strip entry to correct the learner’s reading before proceeding.",
+  "hit": true
+ },
+ {
+  "d": "d2",
+  "turn": 10,
+  "pressure": "stake",
+  "dose": 1,
+  "learner": "If I write “first bead at the split” and that blue trail in the notebook, I’m apologising to Sam at eight. So it’s steam. It can be steam.",
+  "reply": "Your objection this morning was never \"Sam is innocent of everything\" — it was \"don't call this a wet mess without a traced path.\" That objection still stands, and it's exactly what the dye line has now delivered: a traced path, just not the one you first guessed. The paper strip and the dye trail name the basin fitting as the source, not Sam's screen — that's a correction, not a defeat of your rule. Nothing about steam has entered this record; what's on the table is the dye at the mark's edge. So: does writing \"basin fitting, traced by dye\" in the notebook concede that you were wrong to demand a path — or does it prove you were right to demand one?",
+  "tag": "change_tone",
+  "why": "It shifts from win-or-lose blame to a face-saving frame: the learner’s rule was sound even though the suspected source changed.",
+  "hit": true
+ }
+]

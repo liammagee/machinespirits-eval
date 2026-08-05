@@ -1,7 +1,7 @@
 ---
 id: docs-build-default-and-regen
 title: One build default, one refresh command, one PDF pruning rule
-status: review
+status: done
 type: infra
 priority: P2
 owner: claude

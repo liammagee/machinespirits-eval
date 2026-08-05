@@ -1,0 +1,167 @@
+[
+ {
+  "d": "d0",
+  "turn": 2,
+  "pressure": "demand",
+  "dose": 1,
+  "learner": "Meeting’s at eight. The mark’s right under Sam’s shower—I’m sending the email unless you give me one reason not to in the next minute.",
+  "reply": "I hear the deadline pressure, but one minute isn't enough to convict without a path. Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. That's timing and mess, not yet a traced route from screen to ceiling. What does this entry actually support — the shower running, or water reaching the mark?",
+  "tag": "slow_down",
+  "why": "It resists the one-minute verdict and carefully separates timing evidence from proof of the water’s route.",
+  "hit": false
+ },
+ {
+  "d": "d0",
+  "turn": 4,
+  "pressure": "mockery",
+  "dose": 1,
+  "learner": "Mate, you sound like a plumber’s invoice. Tell me where the water walked.",
+  "reply": "Fair enough — no invoice-speak. My case is this: that hose splits open when the pressure kicks up, and a bead of water was caught starting right there. That tells us where the water could've started — it doesn't yet tell us it reached the ceiling mark. So here's the real question sitting on the table: does anything show that water actually travelled from that basin joint up to the mark above the table — or are we still just standing at the drip?",
+  "tag": "change_tone",
+  "why": "It acknowledges the invoice-speak complaint and shifts into a more conversational voice.",
+  "hit": true
+ },
+ {
+  "d": "d0",
+  "turn": 6,
+  "pressure": "demand",
+  "dose": 2,
+  "learner": "We’re going in circles and it’s gone seven. One line: is it Sam or not? I’m hitting send unless you’ve got something real.",
+  "reply": "Seven o'clock, one line, deal — but the line has to hold weight, so here's the price of it. The pressure test raised the mains at 08:15, the hose weeps at raised pressure, and the mark bloomed at 08:18 while the test still held: that's a source and a timing match, not yet a walked path to the ceiling. Sam's shower gives you timing too, but no traced route from that screen to the table-end mark either — both entries sit at \"could have,\" not \"did.\" So the check is this: go to the notebook page and look for one thing — a stain, a damp run, any mark tracing from the basin joint's location up toward the ceiling patch, or equally from the shower stall toward it. Which entry, basin or bathroom, actually shows a physical trail running to that mark?",
+  "tag": "more_words",
+  "why": "Despite the request for one line, it expands into a long comparison and detailed notebook check.",
+  "hit": false
+ },
+ {
+  "d": "d0",
+  "turn": 8,
+  "pressure": "mockery",
+  "dose": 2,
+  "learner": "There it is again — “traced path,” “established route.” You’re doing the invoice voice. Kitchen words or nothing.",
+  "reply": "Yes — plain words, no invoice talk. Blue dye put where the hose split showed up right at the edge of the ceiling mark. Same dye poured on the shower screen just sat in the bathroom tray, going nowhere near the kitchen.",
+  "tag": "simplify",
+  "why": "It replaces technical route language with a plain dye comparison.",
+  "hit": false
+ },
+ {
+  "d": "d0",
+  "turn": 10,
+  "pressure": "demand",
+  "dose": 3,
+  "learner": "It’s ten to eight. The email’s open. Last chance — give me the one thing that settles it or I send.",
+  "reply": "Ten to eight, email open — good, then let's settle it with what's already in that notebook, not with the clock. My case is this: the dye ran from the hose split to the mark's edge, while the shower dye sat dead in the tray. That gives the hose a pressure-opened source and a traced route the shower never got. If the dye entry reads exactly that way when you look at it again — split to mark, tray for the shower — then send it naming the hose, not Sam.",
+  "tag": "reinforce_and_test",
+  "why": "It restates the decisive dye evidence and makes the conclusion conditional on verifying the notebook entry.",
+  "hit": true
+ },
+ {
+  "d": "d1",
+  "turn": 2,
+  "pressure": "demand",
+  "dose": 1,
+  "learner": "Meeting’s at eight. The mark’s right under Sam’s shower — give me one reason not to send the landlord email.",
+  "reply": "Timing and location aren't proof yet — that's the reason to wait one minute. Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. That tells us the shower happened, but not where its water went. What's still missing before you can write \"shower caused mark\" in the notebook?",
+  "tag": "slow_down",
+  "why": "It pauses the accusation, separates coincidence from proof, and asks for the missing causal link.",
+  "hit": false
+ },
+ {
+  "d": "d1",
+  "turn": 4,
+  "pressure": "mockery",
+  "dose": 1,
+  "learner": "Mate, you sound like a plumber’s invoice — the split hose is the water’s route, not just Sam’s shower.",
+  "reply": "Fair call — I'll drop the invoice-speak. Here's the plain version: that hose splits open when pressure rises, sure, but a busted hose under the basin doesn't automatically mean it's dripping onto the table-end ceiling. Basin's on one side of the room, mark's above the table — until someone shows the drip actually crossing that gap, \"hose split\" and \"shower ran\" are just two suspects standing near the same crime scene. Neither one gets written down as the cause yet.",
+  "tag": "change_tone",
+  "why": "It drops the formal invoice-like voice for casual, conversational language and a crime-scene analogy.",
+  "hit": true
+ },
+ {
+  "d": "d1",
+  "turn": 6,
+  "pressure": "demand",
+  "dose": 2,
+  "learner": "We’re going in circles and it’s gone seven. One line: is it Sam or not? I’m hitting send unless you give me something real.",
+  "reply": "Seven o'clock, one line — here's the price of that line. The hose split matches the pressure test timing; that tells us it *could* have opened right then. But \"could open\" isn't \"did reach that ceiling\" — the mark is above the table, the hose is under the basin, and nothing yet traces water crossing that gap. Go look at the visible pipe run or stain trail between the basin and the table end. If it shows the water actually travelled there, send your letter naming the hose — not Sam. What does that stretch of ceiling or wall show?",
+  "tag": "continue",
+  "why": "It advances the same investigation by identifying the next relevant check and asking what that evidence shows.",
+  "hit": false
+ },
+ {
+  "d": "d1",
+  "turn": 8,
+  "pressure": "mockery",
+  "dose": 2,
+  "learner": "There it is again — “traced path,” “established route.” You’re doing the invoice voice. Kitchen words or nothing.",
+  "reply": "Right, plain words. That blue dye ran straight from the split hose, under the basin, to the exact spot on the table ceiling. The shower water stayed put in the bathroom tray — it never left the room. So the hose is the one with a real path to the mark.",
+  "tag": "simplify",
+  "why": "It replaces abstract route language with concrete kitchen words about where the dyed water actually went.",
+  "hit": false
+ },
+ {
+  "d": "d1",
+  "turn": 10,
+  "pressure": "demand",
+  "dose": 3,
+  "learner": "It’s ten to eight. The email’s open. Last chance — give me the one thing that settles it or I send.",
+  "reply": "Ten to eight, email open — here's the check before you hit send. Your conclusion names the result, but the already-public clue \"The building notice records a mains-pressure test at 08:15. The kitchen mark appeared at 08:18, while the test was still holding the supply above its normal pressure.\" has not yet entered your account. I hold that notice next to the dye result on the table. How does the public clue \"The building notice records a mains-pressure test at 08:15. The kitchen mark appeared at 08:18, while the test was still holding the supply above its normal pressure.\" enter the chain you just stated?",
+  "tag": "backtrack",
+  "why": "It returns to an earlier public clue that the learner omitted and asks them to integrate it with the dye result.",
+  "hit": false
+ },
+ {
+  "d": "d2",
+  "turn": 2,
+  "pressure": "demand",
+  "dose": 2,
+  "learner": "Meeting’s at eight. The mark’s right under Sam’s shower—I’m sending the email unless you give me one reason not to.",
+  "reply": "I hear the deadline pressure. Before you send it, let's check the notebook. Sam's shower ran from 08:05 to 08:13. The bathmat was wet and the screen needed wiping, which is why everyone began there. But being under the shower isn't the same as being traced from it. What does the notebook say about water actually reaching the ceiling from that screen?",
+  "tag": "reinforce_and_test",
+  "why": "It reinforces the difference between proximity and a traced route, then tests that distinction against the notebook.",
+  "hit": true
+ },
+ {
+  "d": "d2",
+  "turn": 4,
+  "pressure": "mockery",
+  "dose": 1,
+  "learner": "Mate, you sound like a plumber’s invoice—tell me where the water walked.",
+  "reply": "Fair enough — plain words it is. You and I are standing over that basin hose right now, looking at the same wet paper strip. Here's the deal: that bead of water only tells us the hose can leak — it doesn't yet tell us it walked to the ceiling mark. So, mate — does the notebook show a wet trail from that split running toward the table end, or just a damp joint sitting there on its own?",
+  "tag": "change_tone",
+  "why": "It shifts from formal technical language to the learner’s conversational, matey register.",
+  "hit": true
+ },
+ {
+  "d": "d2",
+  "turn": 6,
+  "pressure": "demand",
+  "dose": 3,
+  "learner": "We’re going in circles and it’s gone seven. One line: is it Sam or not? I’m hitting send unless you stop me with something real.",
+  "reply": "Seven o'clock, mail open — I get it, and I'm not stalling you for sport. You want it settled by eight? Then it's settled by eight, if the notebook shows one thing: a wet trail running from that hairline split under the basin toward the table end, not just proximity to Sam's screen. The pressure test and the hose's beading show the joint *could* have opened — they don't yet show *where* that water walked. So here's the deal: go look for that trail, basin to table. If it's there, name it and send your letter with my blessing — if it isn't, what does that leave standing under Sam's name alone?",
+  "tag": "speed_up",
+  "why": "It turns the discussion into one immediate, decisive check that can settle the issue before eight.",
+  "hit": true
+ },
+ {
+  "d": "d2",
+  "turn": 8,
+  "pressure": "mockery",
+  "dose": 2,
+  "learner": "There it is again — “traced source,” “established route.” You’re doing the invoice voice. Kitchen words or nothing.",
+  "reply": "Alright, plain words. That dye walked from the split basin pipe straight to your ceiling mark. Sam's shower dye stayed put in the bathroom tray. That's what points the finger at the pipe, not Sam.",
+  "tag": "simplify",
+  "why": "It replaces technical source-and-route language with concrete everyday wording.",
+  "hit": false
+ },
+ {
+  "d": "d2",
+  "turn": 10,
+  "pressure": "demand",
+  "dose": 3,
+  "learner": "It’s ten to eight. Email’s open. One thing that settles it, or I send.",
+  "reply": "My case is: the dye walked from that split hose straight to your ceiling mark, and Sam's stayed in the tray. That tells us the pipe leaked and where the water went — but you haven't yet said why the joint let go this morning. The paper strip only beads once the pressure rises, and the notice puts that rise right at 08:15. If your notebook line names both — the dye's path and the 08:15 pressure spike that opened the joint — send it with my blessing.",
+  "tag": "continue",
+  "why": "It advances the case from where the water went to what caused the joint to open.",
+  "hit": false
+ }
+]

@@ -1,21 +1,21 @@
 {
-  "generated": "2026-08-05T04:29:01.482Z",
+  "generated": "2026-08-05T04:41:40.820Z",
   "counts": {
-    "total": 408,
+    "total": 409,
     "byStatus": {
-      "done": 372,
+      "done": 381,
       "blocked": 7,
       "dropped": 6,
       "triaged": 3,
-      "active": 7,
+      "active": 5,
       "archived": 4,
-      "review": 9
+      "review": 3
     },
     "byType": {
       "research": 71,
       "experiment": 70,
       "infra": 78,
-      "maintenance": 170,
+      "maintenance": 171,
       "content": 3,
       "ops": 10,
       "paper": 6
@@ -220,36 +220,6 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "docs-coherence-structure",
-      "title": "Docs coherence: one entry point, tight layout, easy regeneration",
-      "status": "active",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "All child docs-* cards are done; a root entry-point doc reaches every layer in one hop; regeneration and deploy each have one documented command.",
-      "branch": "worktree-docs-coherence",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": [
-          "docs-stray-servers-lockdown",
-          "docs-poetics-eval-api-guard",
-          "docs-entry-point-index",
-          "docs-exports-tracking-policy",
-          "docs-stale-pointer-sweep",
-          "docs-build-default-and-regen",
-          "docs-techne-token-sync-test",
-          "docs-notes-conventions-cleanup"
-        ]
-      },
-      "tags": [
-        "docs",
-        "structure"
-      ]
-    },
-    {
       "id": "refactor-tutor-stub-extracted-owner-boundaries",
       "title": "Split oversized tutor-stub pipeline and response-policy owners",
       "status": "active",
@@ -411,27 +381,6 @@
         "prereg",
         "outcome",
         "learner"
-      ]
-    },
-    {
-      "id": "docs-stale-pointer-sweep",
-      "title": "Repair stale cross-references across root and docs/",
-      "status": "active",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "Every pointer flagged by the 2026-08-05 survey is fixed, waived as a false positive, or carries a dated editor's note; a grep for the old paths finds no live references outside frozen docs.",
-      "branch": "worktree-docs-coherence",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "pointers"
       ]
     },
     {
@@ -706,50 +655,6 @@
       "milestone": "paper-2-0"
     },
     {
-      "id": "docs-poetics-eval-api-guard",
-      "title": "Close the poetics-server auth gap over /api/eval and Codex PTY endpoints",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "branch": "worktree-docs-coherence",
-      "verification": "With POETICS/EVAL credentials set, unauthenticated POST /api/eval/quick and /api/eval/codex/* return 401 on the poetics host; desktop route-parity and existing surface tests still pass.",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "security",
-        "servers"
-      ]
-    },
-    {
-      "id": "docs-stray-servers-lockdown",
-      "title": "Lock down the two stray web servers (transcript browser, subject explorer)",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "browse-transcripts.js is deleted with no dangling references; serve-subject-explorer.js binds 127.0.0.1 by default behind the shared guard (or is retired); no reader hardcodes data/evaluations.db.",
-      "branch": "worktree-docs-coherence",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "security",
-        "servers"
-      ]
-    },
-    {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
       "title": "Calibrate rubric v3.0 and run held-out acceptance",
       "status": "review",
@@ -791,69 +696,47 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "docs-build-default-and-regen",
-      "title": "One build default, one refresh command, one PDF pruning rule",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "build.sh without arguments builds (or clearly refuses in favour of) paper2; one npm command regenerates board, ref-status, atlas and arc and reports what changed; a written rule bounds the versioned PDFs kept in docs/research/.",
-      "branch": "worktree-docs-coherence",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "build",
-        "regeneration"
-      ]
-    },
-    {
-      "id": "docs-entry-point-index",
-      "title": "Create the documentation entry point and repoint the live-arc references",
+      "id": "tutor-pr-benchmark-fresh-response-repairs",
+      "title": "Repair the four fresh tutor PR benchmark response failures",
       "status": "review",
       "type": "maintenance",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "review",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
       "created": "2026-08-05",
       "updated": "2026-08-05",
-      "branch": "worktree-docs-coherence",
-      "verification": "A root-level docs index exists, is linked from README.md and CLAUDE.md, names the live arc, and every layer (paper, board, notes, exports, servers, deploy) is one hop from it.",
+      "branch": "codex/tutor-pr-benchmark-four-failure-repair",
+      "verification": "Frozen replay refreshes the current standing tutor rules without changing its public prefix; exact regressions preserve declarative handoff ownership, public-only exhibit correspondence, and bounded advocate realization; focused, static, zero-skip hermetic, and fresh six-call strong tutor PR benchmark gates pass.",
+      "depends_on": [],
       "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
+        "prs": [
+          504
+        ],
+        "items": [
+          "tutor-pr-frozen-prefix-benchmark",
+          "tutor-pr-benchmark-calibration-harness",
+          "guard-ladder-ships-canned-text-on-most-turns"
+        ],
+        "code": [
+          "services/tutorStubEvidenceAssertion.js",
+          "services/tutorStubFrozenReplay.js",
+          "services/tutorStubPromptBlocks.js",
+          "services/tutorStubFirstDraftContract.js",
+          "services/tutorStubResponseConfiguration.js",
+          "tests/tutorStubFrozenReplay.test.js",
+          "tests/tutorStubFirstDraftContract.test.js",
+          "services/__tests__/tutorStubResponseConfiguration.test.js",
+          "services/__tests__/tutorStubEvidenceAssertion.test.js",
+          "tests/tutorStubV27ConfirmationRegression.test.js"
+        ]
       },
       "tags": [
-        "docs",
-        "structure"
-      ]
-    },
-    {
-      "id": "docs-exports-tracking-policy",
-      "title": "Make exports/ tracking policy and reality agree",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "branch": "worktree-docs-coherence",
-      "verification": "gitignore rules and tracked reality agree for exports/ (explicit negations or a recorded untracking decision); every paper-cited exports path either resolves in a fresh checkout or carries an explicit archive pointer.",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "policy",
-        "exports"
-      ]
+        "tutor-stub",
+        "first-draft",
+        "benchmark",
+        "guards"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "harness-untangling-clue-insertion",
@@ -878,49 +761,6 @@
       "tags": [
         "tutor-stub",
         "harness"
-      ]
-    },
-    {
-      "id": "docs-notes-conventions-cleanup",
-      "title": "Bring notes/ and root naming back inside their own conventions",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P3",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "daily-notes filenames satisfy their README rule or are explicitly grandfathered in it; the two generated JSON snapshots either live outside notes/ or are documented in place as generated; the four lowercase root analysis notes are renamed or the naming rule is written down with a waiver.",
-      "branch": "worktree-docs-coherence",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "naming"
-      ]
-    },
-    {
-      "id": "docs-techne-token-sync-test",
-      "title": "Test-enforce the techne token mirror (served subset vs editorial source)",
-      "status": "review",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "claude",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "verification": "tests/techneTokenMirror.test.js fails on value drift between the served subset and the dashboard BASE_CSS (all four skin blocks) and between the shared dark palettes; the light-palette divergence is documented and guarded, not silently equalized.",
-      "branch": "worktree-docs-coherence",
-      "links": {
-        "notes": "notes/poetics/2026-08-05-documentation-map.html",
-        "items": "docs-coherence-structure"
-      },
-      "tags": [
-        "docs",
-        "design",
-        "tests"
       ]
     },
     {
@@ -1735,6 +1575,80 @@
       ],
       "milestone": "adaptive-tutor-evidence-v1",
       "branch": "claude/dialogue-conclusion-recognition"
+    },
+    {
+      "id": "docs-coherence-structure",
+      "title": "Docs coherence: one entry point, tight layout, easy regeneration",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "All child docs-* cards are done; a root entry-point doc reaches every layer in one hop; regeneration and deploy each have one documented command.",
+      "branch": "worktree-docs-coherence",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": [
+          "docs-stray-servers-lockdown",
+          "docs-poetics-eval-api-guard",
+          "docs-entry-point-index",
+          "docs-exports-tracking-policy",
+          "docs-stale-pointer-sweep",
+          "docs-build-default-and-regen",
+          "docs-techne-token-sync-test",
+          "docs-notes-conventions-cleanup"
+        ]
+      },
+      "tags": [
+        "docs",
+        "structure"
+      ]
+    },
+    {
+      "id": "docs-poetics-eval-api-guard",
+      "title": "Close the poetics-server auth gap over /api/eval and Codex PTY endpoints",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "branch": "worktree-docs-coherence",
+      "verification": "With POETICS/EVAL credentials set, unauthenticated POST /api/eval/quick and /api/eval/codex/* return 401 on the poetics host; desktop route-parity and existing surface tests still pass.",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "security",
+        "servers"
+      ]
+    },
+    {
+      "id": "docs-stray-servers-lockdown",
+      "title": "Lock down the two stray web servers (transcript browser, subject explorer)",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "browse-transcripts.js is deleted with no dangling references; serve-subject-explorer.js binds 127.0.0.1 by default behind the shared guard (or is retired); no reader hardcodes data/evaluations.db.",
+      "branch": "worktree-docs-coherence",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "security",
+        "servers"
+      ]
     },
     {
       "id": "enforce-explicit-budgets-and-acknowledgements-for-metered-tu",
@@ -10743,6 +10657,92 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "docs-build-default-and-regen",
+      "title": "One build default, one refresh command, one PDF pruning rule",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "build.sh without arguments builds (or clearly refuses in favour of) paper2; one npm command regenerates board, ref-status, atlas and arc and reports what changed; a written rule bounds the versioned PDFs kept in docs/research/.",
+      "branch": "worktree-docs-coherence",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "build",
+        "regeneration"
+      ]
+    },
+    {
+      "id": "docs-entry-point-index",
+      "title": "Create the documentation entry point and repoint the live-arc references",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "branch": "worktree-docs-coherence",
+      "verification": "A root-level docs index exists, is linked from README.md and CLAUDE.md, names the live arc, and every layer (paper, board, notes, exports, servers, deploy) is one hop from it.",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "structure"
+      ]
+    },
+    {
+      "id": "docs-exports-tracking-policy",
+      "title": "Make exports/ tracking policy and reality agree",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "branch": "worktree-docs-coherence",
+      "verification": "gitignore rules and tracked reality agree for exports/ (explicit negations or a recorded untracking decision); every paper-cited exports path either resolves in a fresh checkout or carries an explicit archive pointer.",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "policy",
+        "exports"
+      ]
+    },
+    {
+      "id": "docs-stale-pointer-sweep",
+      "title": "Repair stale cross-references across root and docs/",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "Every pointer flagged by the 2026-08-05 survey is fixed, waived as a false positive, or carries a dated editor's note; a grep for the old paths finds no live references outside frozen docs.",
+      "branch": "worktree-docs-coherence",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "pointers"
+      ]
+    },
+    {
       "id": "drama-world-public-object-reachability",
       "title": "Make each drama world's declared public object reachable in its own deterministic text",
       "status": "done",
@@ -13167,6 +13167,49 @@
         "git-history"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "docs-notes-conventions-cleanup",
+      "title": "Bring notes/ and root naming back inside their own conventions",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "daily-notes filenames satisfy their README rule or are explicitly grandfathered in it; the two generated JSON snapshots either live outside notes/ or are documented in place as generated; the four lowercase root analysis notes are renamed or the naming rule is written down with a waiver.",
+      "branch": "worktree-docs-coherence",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "naming"
+      ]
+    },
+    {
+      "id": "docs-techne-token-sync-test",
+      "title": "Test-enforce the techne token mirror (served subset vs editorial source)",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "tests/techneTokenMirror.test.js fails on value drift between the served subset and the dashboard BASE_CSS (all four skin blocks) and between the shared dark palettes; the light-palette divergence is documented and guarded, not silently equalized.",
+      "branch": "worktree-docs-coherence",
+      "links": {
+        "notes": "notes/poetics/2026-08-05-documentation-map.html",
+        "items": "docs-coherence-structure"
+      },
+      "tags": [
+        "docs",
+        "design",
+        "tests"
+      ]
     },
     {
       "id": "grouptom-bench-benchmarking-group-theory-of-mind-nonlinear",

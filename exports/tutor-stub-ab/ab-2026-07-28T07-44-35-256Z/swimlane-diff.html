@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en" data-machine-spirits-house-style="machinespirits.house-style.v1">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tutor instrumentation A/B — swimlane diff</title>
+<style data-machine-spirits-house-style="machinespirits.house-style.v1">
+/*
+ * Machine Spirits house style foundation
+ * Schema: machinespirits.house-style.v1
+ *
+ * Local, portable distillation of the sibling website's visual identity.
+ * Canonical guidance and provenance:
+ *   docs/design/machinespirits-house-style.md
+ *
+ * This file is intentionally dependency-free. Generated HTML can inline it
+ * through services/machineSpiritsHouseStyle.js and remain self-contained.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Website foundation */
+  --ms-black: #0a0a0a;
+  --ms-white: #ffffff;
+  --ms-off-white: #fafafa;
+  --ms-red: #e63946;
+  --ms-red-dark: #c1121f;
+  --ms-red-rgb: 230, 57, 70;
+  --ms-text-rgb: 10, 10, 10;
+  --ms-grid: 60px;
+  --ms-grid-large: 180px;
+  --ms-grid-micro: 15px;
+  --ms-slash-angle: -18deg;
+
+  /* Portable surface aliases */
+  --ms-surface: rgba(250, 250, 250, 0.94);
+  --ms-surface-elevated: rgba(255, 255, 255, 0.98);
+  --ms-text: var(--ms-black);
+  --ms-text-muted: rgba(10, 10, 10, 0.58);
+  --ms-border: rgba(10, 10, 10, 0.24);
+  --ms-border-subtle: rgba(10, 10, 10, 0.11);
+
+  /* Techne editorial extension used by atlas, arc, and dense reading views */
+  --ms-paper: #f4eedd;
+  --ms-paper-2: #ece3cb;
+  --ms-paper-3: #f8f2e2;
+  --ms-ink: #14100c;
+  --ms-ink-muted: #5c5040;
+  --ms-linen: #d8c7a9;
+  --ms-moss: #56683a;
+  --ms-moss-deep: #3a4824;
+  --ms-brick: #a53e2e;
+  --ms-brick-dark: #7c2c1f;
+  --ms-ochre: #c08a3e;
+
+  --ms-font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --ms-font-mono: "Space Mono", "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  --ms-font-reading: "Source Serif 4", "Source Serif Pro", Cambria, Georgia, serif;
+  --ms-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root[data-ms-theme="dark"] {
+  color-scheme: dark;
+  --ms-black: #e0e0e0;
+  --ms-white: #0a0a0a;
+  --ms-off-white: #111111;
+  --ms-text-rgb: 224, 224, 224;
+  --ms-surface: rgba(17, 17, 17, 0.94);
+  --ms-surface-elevated: rgba(26, 26, 26, 0.98);
+  --ms-text: #e0e0e0;
+  --ms-text-muted: rgba(224, 224, 224, 0.6);
+  --ms-border: rgba(255, 255, 255, 0.22);
+  --ms-border-subtle: rgba(255, 255, 255, 0.1);
+  --ms-paper: #14100c;
+  --ms-paper-2: #1b1612;
+  --ms-paper-3: #1f1a14;
+  --ms-ink: #f4eedd;
+  --ms-ink-muted: #b9ad96;
+  --ms-linen: #3a322a;
+  --ms-moss: #8da868;
+  --ms-moss-deep: #b5cd92;
+  --ms-brick: #e36953;
+  --ms-brick-dark: #f08a75;
+  --ms-ochre: #e6b265;
+}
+
+body.ms-house-style,
+body.ms-house-style *,
+body.ms-house-style *::before,
+body.ms-house-style *::after {
+  box-sizing: border-box;
+}
+
+body.ms-house-style {
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--ms-white);
+  color: var(--ms-text);
+  cursor: crosshair;
+  font-family: var(--ms-font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.ms-house-style ::selection {
+  background: var(--ms-red);
+  color: var(--ms-white);
+}
+
+body.ms-house-style button,
+body.ms-house-style input,
+body.ms-house-style select,
+body.ms-house-style textarea {
+  font: inherit;
+}
+
+.ms-house-backdrop,
+.ms-house-grid,
+.ms-house-cuts,
+.ms-house-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ms-house-backdrop {
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ms-house-grid--primary {
+  z-index: 1;
+  background-image:
+    linear-gradient(var(--ms-black) 2px, transparent 2px),
+    linear-gradient(90deg, var(--ms-black) 2px, transparent 2px);
+  background-size: var(--ms-grid) var(--ms-grid);
+  opacity: 0.075;
+}
+
+.ms-house-grid--secondary {
+  inset: -100px;
+  z-index: 2;
+  background-image:
+    linear-gradient(var(--ms-red) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, var(--ms-red) 1.5px, transparent 1.5px);
+  background-size: var(--ms-grid-large) var(--ms-grid-large);
+  opacity: 0.07;
+}
+
+.ms-house-grid--micro {
+  z-index: 3;
+  background-image:
+    linear-gradient(rgba(var(--ms-text-rgb), 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--ms-text-rgb), 0.04) 1px, transparent 1px);
+  background-size: var(--ms-grid-micro) var(--ms-grid-micro);
+}
+
+.ms-house-cuts {
+  z-index: 4;
+  overflow: hidden;
+}
+
+.ms-house-cut {
+  position: absolute;
+  left: -100%;
+  width: 400%;
+  background: var(--ms-red);
+  transform-origin: center;
+}
+
+.ms-house-cut--one {
+  top: 18%;
+  height: 8px;
+  opacity: 0.16;
+  transform: rotate(var(--ms-slash-angle));
+}
+
+.ms-house-cut--two {
+  top: 62%;
+  height: 4px;
+  opacity: 0.1;
+  transform: rotate(calc(var(--ms-slash-angle) * -0.5));
+}
+
+.ms-house-cut--three {
+  top: 88%;
+  height: 11px;
+  opacity: 0.12;
+  transform: rotate(calc(var(--ms-slash-angle) * 0.8));
+}
+
+.ms-house-noise {
+  z-index: 5;
+  opacity: 0.022;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+.ms-page {
+  position: relative;
+  z-index: 10;
+}
+
+.ms-kicker {
+  color: var(--ms-text-muted);
+  font-family: var(--ms-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.ms-display {
+  margin: 0;
+  color: var(--ms-text);
+  font-family: var(--ms-font-sans);
+  font-size: clamp(2.8rem, 8vw, 7.5rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 0.84;
+}
+
+.ms-panel {
+  border: 2px solid var(--ms-black);
+  background: var(--ms-surface-elevated);
+  box-shadow: 8px 8px 0 rgba(var(--ms-red-rgb), 0.14);
+}
+
+.ms-label {
+  font-family: var(--ms-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.ms-tab,
+.ms-button {
+  border: 2px solid var(--ms-black);
+  border-radius: 0;
+  background: var(--ms-surface-elevated);
+  color: var(--ms-text);
+  cursor: pointer;
+  font-family: var(--ms-font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition:
+    background 0.18s var(--ms-ease),
+    color 0.18s var(--ms-ease),
+    transform 0.18s var(--ms-ease);
+}
+
+.ms-tab:hover,
+.ms-button:hover,
+.ms-tab:focus-visible,
+.ms-button:focus-visible {
+  background: var(--ms-red);
+  color: #ffffff;
+  outline: 0;
+  transform: translate(-2px, -2px);
+}
+
+.ms-tab[aria-selected="true"],
+.ms-tab.active,
+.ms-button.active {
+  background: var(--ms-black);
+  color: var(--ms-white);
+}
+
+@media (max-width: 760px) {
+  .ms-house-grid--primary,
+  .ms-house-grid--micro {
+    opacity: 0.045;
+  }
+
+  .ms-display {
+    font-size: clamp(2.5rem, 15vw, 5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-tab,
+  .ms-button {
+    transition: none;
+  }
+}
+
+@media print {
+  .ms-house-backdrop {
+    display: none;
+  }
+
+  body.ms-house-style {
+    background: #ffffff;
+    color: #000000;
+    cursor: auto;
+  }
+
+  .ms-panel {
+    box-shadow: none;
+  }
+}
+
+</style>
+<style>
+  body { margin: 0; font-family: var(--ms-font-reading); color: var(--ms-text); }
+  .ab-wrap { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 32px 24px 96px; }
+  h1 { font-family: var(--ms-font-sans); font-size: 28px; margin: 0 0 4px; }
+  h2 { font-family: var(--ms-font-sans); font-size: 20px; margin: 0 0 4px; }
+  h3 { font-family: var(--ms-font-sans); font-size: 15px; margin: 0 0 6px; }
+  .ab-note, .ab-meta { color: var(--ms-text-muted); font-size: 13px; margin: 0 0 4px; }
+  .ab-meta code { font-family: var(--ms-font-mono); font-size: 12px; }
+  .ab-panel { background: var(--ms-surface); border: 1px solid var(--ms-border); padding: 16px 18px; margin: 0 0 24px; }
+  /* The house backdrop is dark; the masthead needs the same surface as every
+     other panel or the title and standing caveat read as dark-on-dark. */
+  .ab-masthead { padding: 20px 18px 16px; }
+  .ab-masthead .ab-note { max-width: 80ch; }
+  .ab-closing { background: var(--ms-surface); border: 1px solid var(--ms-border); padding: 14px 18px; max-width: none; }
+  .ab-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 13px; font-family: var(--ms-font-sans); }
+  .ab-controls label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+  .ab-table { width: 100%; border-collapse: collapse; font-size: 13px; font-family: var(--ms-font-sans); }
+  .ab-table th, .ab-table td { border-bottom: 1px solid var(--ms-border-subtle); padding: 6px 8px; text-align: left; }
+  .ab-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ms-text-muted); }
+  .ab-num { text-align: right; font-family: var(--ms-font-mono); }
+  .ab-baseline-row td { background: var(--ms-paper-2); }
+  .ab-delta[data-sign='down'] { color: var(--ms-moss-deep); }
+  .ab-delta[data-sign='up'] { color: var(--ms-red-dark); }
+  .ab-delta-block { margin-top: 16px; }
+  .ab-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .ab-pills { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .ab-pill { font: 11px/1.6 var(--ms-font-mono); background: var(--ms-paper-3); border: 1px solid var(--ms-border-subtle); padding: 0 6px; }
+  .ab-pill--off { background: transparent; color: var(--ms-text-muted); font-style: italic; }
+  .ab-tag { font: 10px/1.6 var(--ms-font-mono); text-transform: uppercase; letter-spacing: 0.08em; border: 1px solid var(--ms-border); padding: 0 4px; }
+  .ab-scenario { margin: 0 0 40px; }
+  .ab-scenario-head { background: var(--ms-surface); border: 1px solid var(--ms-border); padding: 14px 18px; margin: 0 0 16px; }
+  .ab-turn { border-top: 2px solid var(--ms-ink); padding: 16px 0 24px; }
+  .ab-spine-row { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: start; margin-bottom: 12px; }
+  .ab-turn-badge { display: block; width: 34px; height: 34px; background: var(--ms-ink); color: var(--ms-white); font: 700 12px/34px var(--ms-font-mono); text-align: center; }
+  .ab-lanes { display: grid; grid-template-columns: repeat(var(--ab-lane-count), minmax(0, 1fr)); gap: 12px; margin-left: 56px; }
+  .ab-card { background: var(--ms-surface-elevated); border: 1px solid var(--ms-border); padding: 12px 14px; height: 100%; box-sizing: border-box; }
+  .ab-card--learner { background: var(--ms-paper-2); border-left: 3px solid var(--ms-ochre); }
+  .ab-card--baseline { border-left: 3px solid var(--ms-border); }
+  .ab-card-head { display: flex; justify-content: space-between; gap: 8px; font: 11px/1.6 var(--ms-font-mono); color: var(--ms-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .ab-arm-name { color: var(--ms-text); font-weight: 700; }
+  .ab-speech { font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+  .ab-empty { color: var(--ms-text-muted); }
+  .ab-card-foot { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+  .ab-chip { font: 10px/1.8 var(--ms-font-mono); text-transform: uppercase; letter-spacing: 0.05em; padding: 0 6px; border: 1px solid var(--ms-border); }
+  .ab-chip--pass { background: var(--ms-moss); color: var(--ms-white); border-color: var(--ms-moss-deep); }
+  .ab-chip--fail { background: var(--ms-red); color: var(--ms-white); border-color: var(--ms-red-dark); }
+  .ab-chip--safety { background: var(--ms-black); color: var(--ms-white); border-color: var(--ms-black); }
+  .ab-chip--blocked, .ab-chip--missing { background: var(--ms-paper-3); color: var(--ms-text-muted); }
+  .ab-chip--cluster { background: transparent; color: var(--ms-text-muted); }
+  .ab-chip--hard { color: var(--ms-red-dark); border-color: var(--ms-red-dark); }
+  mark.ab-added { background: rgba(var(--ms-red-rgb), 0.16); color: inherit; padding: 0 1px; }
+  body[data-ab-diff='off'] mark.ab-added { background: transparent; }
+  body[data-ab-clusters='off'] .ab-chip--cluster { display: none; }
+  @media (max-width: 900px) {
+    .ab-lanes { grid-template-columns: 1fr; margin-left: 0; }
+    .ab-spine-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body data-ab-diff="on" data-ab-clusters="on">
+<div class="ms-house-backdrop" data-machine-spirits-house-backdrop="machinespirits.house-style.v1" aria-hidden="true">
+  <div class="ms-house-grid ms-house-grid--primary"></div>
+  <div class="ms-house-grid ms-house-grid--secondary"></div>
+  <div class="ms-house-grid ms-house-grid--micro"></div>
+  <div class="ms-house-cuts">
+    <i class="ms-house-cut ms-house-cut--one"></i>
+    <i class="ms-house-cut ms-house-cut--two"></i>
+    <i class="ms-house-cut ms-house-cut--three"></i>
+  </div>
+  <div class="ms-house-noise"></div>
+</div>
+<div class="ab-wrap">
+  <div class="ab-panel ab-masthead">
+    <h1>Tutor instrumentation A/B</h1>
+    <p class="ab-note">Frozen replay of a recorded dialogue. Learner utterances, public prefix, world, and evidence state are identical across arms; only the private planner context the speaking tutor receives varies. Every arm is graded by the same pinned guard set.</p>
+    <p class="ab-meta">status <code>complete</code> · preset <code>default</code> · 6/16 calls · commit <code>0b67bdc53dba19e6630e41663ea9816e24301537</code></p>
+  </div>
+
+  <div class="ab-panel">
+    <div class="ab-controls">
+      <label><input type="checkbox" id="ab-toggle-diff" checked /> highlight what the baseline did not say</label>
+      <label><input type="checkbox" id="ab-toggle-clusters" checked /> show failure clusters</label>
+    </div>
+  </div>
+
+  <div class="ab-panel"><h2>Arms</h2><div class="ab-legend"><div class="ab-legend-arm">
+        <h3>Bare tutor <span class="ab-tag">baseline</span></h3>
+        <p>One model call, the session system prompt, and the learner&#39;s words. No advisories, no DAG, no contract.</p>
+        <div class="ab-pills"><span class="ab-pill ab-pill--off">no instrumentation</span></div>
+      </div><div class="ab-legend-arm">
+        <h3>Fully instrumented</h3>
+        <p>Every advisory the recorded run produced — evidence window, classifier, learner DAG, scaffold, first-draft contract.</p>
+        <div class="ab-pills"><span class="ab-pill">context continuity</span><span class="ab-pill">evidence window</span><span class="ab-pill">learner classifier</span><span class="ab-pill">learner dag</span><span class="ab-pill">human scaffold</span><span class="ab-pill">first draft contract</span></div>
+      </div></div></div>
+  <div class="ab-panel"><h2>Rubric outcome</h2><table class="ab-table">
+    <thead><tr><th>Arm</th><th>Clusters</th><th>Hard</th><th>Δ vs baseline</th><th>Pass</th><th>Rate</th><th>Safety</th><th>Advisory chars</th><th>Reply chars</th><th>Latency</th></tr></thead>
+    <tbody><tr class="ab-baseline-row">
+        <td>Bare tutor <span class="ab-tag">baseline</span></td>
+        <td class="ab-num">17</td>
+        <td class="ab-num">17</td>
+        <td class="ab-num">—</td>
+        <td class="ab-num">0/3</td>
+        <td class="ab-num">0%</td>
+        <td class="ab-num">0</td>
+        <td class="ab-num">0</td>
+        <td class="ab-num">197</td>
+        <td class="ab-num">5468 ms</td>
+      </tr><tr>
+        <td>Fully instrumented</td>
+        <td class="ab-num">6</td>
+        <td class="ab-num">6</td>
+        <td class="ab-num"><span class="ab-delta" data-sign="down">-11</span></td>
+        <td class="ab-num">0/3</td>
+        <td class="ab-num">0%</td>
+        <td class="ab-num">0</td>
+        <td class="ab-num">6205</td>
+        <td class="ab-num">431</td>
+        <td class="ab-num">7526 ms</td>
+      </tr></tbody>
+  </table>
+  <p class="ab-note">Failure clusters are the headline. Pass is all-or-nothing per turn and can read 0/N for every arm at once; the cluster tallies say how far each arm is from clean.</p><div class="ab-delta-block">
+        <h3>Fully instrumented vs baseline</h3>
+        <table class="ab-table"><thead><tr><th>Failure cluster</th><th>Baseline</th><th>Arm</th><th>Δ</th></tr></thead><tbody><tr>
+            <td>actorialRealizationAudit:missing selected performance tactic</td>
+            <td class="ab-num">2</td>
+            <td class="ab-num">0</td>
+            <td class="ab-num ab-delta" data-sign="down">-2</td>
+          </tr><tr>
+            <td>dramaticReleaseAudit:opaque clue release</td>
+            <td class="ab-num">2</td>
+            <td class="ab-num">0</td>
+            <td class="ab-num ab-delta" data-sign="down">-2</td>
+          </tr><tr>
+            <td>liveSourceActionAlignmentAudit:due source exact occurrence count</td>
+            <td class="ab-num">2</td>
+            <td class="ab-num">0</td>
+            <td class="ab-num ab-delta" data-sign="down">-2</td>
+          </tr><tr>
+            <td>actorialRealizationAudit:missing selected actorial part</td>
+            <td class="ab-num">3</td>
+            <td class="ab-num">2</td>
+            <td class="ab-num ab-delta" data-sign="down">-1</td>
+          </tr><tr>
+            <td>dramaticReleaseAudit:missing exhibit action</td>
+            <td class="ab-num">1</td>
+            <td class="ab-num">0</td>
+            <td class="ab-num ab-delta" data-sign="down">-1</td>
+          </tr><tr>
+            <td>dramaticReleaseAudit:missing in scene enactment</td>
+            <td class="ab-num">1</td>
+            <td class="ab-num">0</td>
+            <td class="ab-num ab-delta" data-sign="down">-1</td>
+          </tr><tr>
+            <td>liveTurnProgressionAudit:learner uptake not realized</td>
+            <td class="ab-num">3</td>
+            <td class="ab-num">2</td>
+            <td class="ab-num ab-delta" data-sign="down">-1</td>
+          </tr><tr>
+            <td>responseCompositionAudit:unlicensed requested entry</td>
+            <td class="ab-num">1</td>
+            <td class="ab-num">0</td>
+            <td class="ab-num ab-delta" data-sign="down">-1</td>
+          </tr><tr>
+            <td>liveTurnProgressionAudit:handoff loses turn focus</td>
+            <td class="ab-num">2</td>
+            <td class="ab-num">2</td>
+            <td class="ab-num ab-delta" data-sign="flat">0</td>
+          </tr></tbody></table>
+      </div></div>
+
+  <section class="ab-scenario">
+        <header class="ab-scenario-head">
+          <h2>Tallow Street, answer-seeking learner</h2>
+          <p class="ab-note">hold the evidentiary line across three turns of a learner asking to be told the answer</p>
+          <p class="ab-meta">world <code>world_025_tallow_street</code> · learner profile <code>answer_seeking</code> · 3 frozen turns</p>
+        </header>
+        <section class="ab-turn" data-turn="1">
+        <div class="ab-spine-row">
+          <b class="ab-turn-badge">1</b>
+          <article class="ab-card ab-card--learner">
+            <header class="ab-card-head"><span class="ab-arm-name">learner (frozen)</span><span class="ab-metrics">identical for every arm</span></header>
+            <div class="ab-speech">What should I write next about the depot’s new chargers?</div>
+          </article>
+        </div>
+        <div class="ab-lanes" style="--ab-lane-count: 2"><div class="ab-lane" data-arm="baseline" data-status="fail">
+    <article class="ab-card ab-card--baseline">
+      <header class="ab-card-head">
+        <span class="ab-arm-name">Bare tutor</span>
+        <span class="ab-metrics">214 chars · 0 advisory</span>
+      </header>
+      <div class="ab-speech">I’d enter: “The depot’s new chargers are a plausible suspect because they are a heavy new evening load, but no evidence yet shows they share Tallow Street’s feeder.”
+
+What would show that they are on the same wire?</div>
+      <footer class="ab-card-foot"><span class="ab-chip ab-chip--fail">rubric fail</span><span class="ab-chip ab-chip--cluster">dramaticReleaseAudit:opaque clue release</span><span class="ab-chip ab-chip--cluster">dramaticReleaseAudit:missing in scene enactment</span><span class="ab-chip ab-chip--cluster">actorialRealizationAudit:missing selected actorial part</span><span class="ab-chip ab-chip--cluster">liveTurnProgressionAudit:learner uptake not realized</span><span class="ab-chip ab-chip--cluster">liveSourceActionAlignmentAudit:due source exact occurrence count</span></footer>
+    </article>
+  </div><div class="ab-lane" data-arm="instrumented" data-status="fail">
+    <article class="ab-card">
+      <header class="ab-card-head">
+        <span class="ab-arm-name">Fully instrumented</span>
+        <span class="ab-metrics">392 chars · 5489 advisory</span>
+      </header>
+      <div class="ab-speech"><mark class="ab-added">Write:</mark> The chargers are a plausible suspect, <mark class="ab-added">not</mark> <mark class="ab-added">yet</mark> <mark class="ab-added">the</mark> <mark class="ab-added">established</mark> <mark class="ab-added">cause.</mark> <mark class="ab-added">I</mark> <mark class="ab-added">inspect</mark> <mark class="ab-added">the</mark> <mark class="ab-added">depot</mark> <mark class="ab-added">charger</mark> <mark class="ab-added">entry</mark> <mark class="ab-added">beside</mark> <mark class="ab-added">the</mark> <mark class="ab-added">pending</mark> <mark class="ab-added">motion.</mark> <mark class="ab-added">“I</mark> <mark class="ab-added">attest:</mark> <mark class="ab-added">The</mark> <mark class="ab-added">depot&#39;s</mark> <mark class="ab-added">six</mark> new <mark class="ab-added">chargers</mark> <mark class="ab-added">draw</mark> <mark class="ab-added">their</mark> <mark class="ab-added">heaviest</mark> <mark class="ab-added">current</mark> <mark class="ab-added">in</mark> <mark class="ab-added">the</mark> evening, <mark class="ab-added">when</mark> <mark class="ab-added">the</mark> <mark class="ab-added">vans</mark> <mark class="ab-added">come</mark> <mark class="ab-added">home</mark> <mark class="ab-added">to</mark> <mark class="ab-added">plug</mark> <mark class="ab-added">in.</mark> <mark class="ab-added">The</mark> <mark class="ab-added">meeting</mark> <mark class="ab-added">noted</mark> <mark class="ab-added">the</mark> <mark class="ab-added">coincidence</mark> <mark class="ab-added">with</mark> <mark class="ab-added">satisfaction.”</mark> <mark class="ab-added">I</mark> <mark class="ab-added">underline</mark> <mark class="ab-added">the</mark> <mark class="ab-added">timing</mark> <mark class="ab-added">in</mark> <mark class="ab-added">the</mark> <mark class="ab-added">minutes.</mark> What <mark class="ab-added">does</mark> <mark class="ab-added">this</mark> <mark class="ab-added">support</mark> <mark class="ab-added">about</mark> the <mark class="ab-added">chargers?</mark></div>
+      <footer class="ab-card-foot"><span class="ab-chip ab-chip--fail">rubric fail</span><span class="ab-chip ab-chip--cluster">liveTurnProgressionAudit:learner uptake not realized</span><span class="ab-chip ab-chip--cluster">liveTurnProgressionAudit:handoff loses turn focus</span></footer>
+    </article>
+  </div></div>
+      </section><section class="ab-turn" data-turn="5">
+        <div class="ab-spine-row">
+          <b class="ab-turn-badge">5</b>
+          <article class="ab-card ab-card--learner">
+            <header class="ab-card-head"><span class="ab-arm-name">learner (frozen)</span><span class="ab-metrics">identical for every arm</span></header>
+            <div class="ab-speech">What should I put in the minutes about the chargers being dark during the stocktake?</div>
+          </article>
+        </div>
+        <div class="ab-lanes" style="--ab-lane-count: 2"><div class="ab-lane" data-arm="baseline" data-status="fail">
+    <article class="ab-card ab-card--baseline">
+      <header class="ab-card-head">
+        <span class="ab-arm-name">Bare tutor</span>
+        <span class="ab-metrics">189 chars · 0 advisory</span>
+      </header>
+      <div class="ab-speech">Write: “During the stocktake the depot chargers were dark, yet Tallow Street still browned out; the chargers are therefore not the cause.” The motion against the depot has lost its footing.</div>
+      <footer class="ab-card-foot"><span class="ab-chip ab-chip--fail">rubric fail</span><span class="ab-chip ab-chip--cluster">actorialRealizationAudit:missing selected actorial part</span><span class="ab-chip ab-chip--cluster">actorialRealizationAudit:missing selected performance tactic</span><span class="ab-chip ab-chip--cluster">responseCompositionAudit:unlicensed requested entry</span><span class="ab-chip ab-chip--cluster">liveTurnProgressionAudit:learner uptake not realized</span><span class="ab-chip ab-chip--cluster">liveTurnProgressionAudit:handoff loses turn focus</span></footer>
+    </article>
+  </div><div class="ab-lane" data-arm="instrumented" data-status="fail">
+    <article class="ab-card">
+      <header class="ab-card-head">
+        <span class="ab-arm-name">Fully instrumented</span>
+        <span class="ab-metrics">291 chars · 6031 advisory</span>
+      </header>
+      <div class="ab-speech">Write: “The <mark class="ab-added">depot</mark> <mark class="ab-added">chargers</mark> <mark class="ab-added">did</mark> <mark class="ab-added">not</mark> <mark class="ab-added">cause</mark> <mark class="ab-added">the</mark> <mark class="ab-added">Tallow</mark> <mark class="ab-added">Street</mark> <mark class="ab-added">brownout.”</mark> <mark class="ab-added">My</mark> <mark class="ab-added">case</mark> <mark class="ab-added">is</mark> <mark class="ab-added">broken</mark> <mark class="ab-added">by</mark> <mark class="ab-added">the</mark> stocktake <mark class="ab-added">note:</mark> the chargers were dark, yet <mark class="ab-added">the</mark> <mark class="ab-added">lamps</mark> still <mark class="ab-added">dimmed.</mark> The <mark class="ab-added">depot</mark> chargers <mark class="ab-added">did</mark> not <mark class="ab-added">cause</mark> the <mark class="ab-added">Tallow</mark> <mark class="ab-added">Street</mark> <mark class="ab-added">brownout;</mark> <mark class="ab-added">actual</mark> cause <mark class="ab-added">remains</mark> <mark class="ab-added">open.</mark> <mark class="ab-added">I</mark> <mark class="ab-added">strike</mark> the <mark class="ab-added">depot</mark> motion <mark class="ab-added">from</mark> the <mark class="ab-added">page.</mark></div>
+      <footer class="ab-card-foot"><span class="ab-chip ab-chip--fail">rubric fail</span><span class="ab-chip ab-chip--cluster">actorialRealizationAudit:missing selected actorial part</span><span class="ab-chip ab-chip--cluster">liveTurnProgressionAudit:handoff loses turn focus</span></footer>
+    </article>
+  </div></div>
+      </section><section class="ab-turn" data-turn="8">
+        <div class="ab-spine-row">
+          <b class="ab-turn-badge">8</b>
+          <article class="ab-card ab-card--learner">
+            <header class="ab-card-head"><span class="ab-arm-name">learner (frozen)</span><span class="ab-metrics">identical for every arm</span></header>
+            <div class="ab-speech">What should I write next about GREBE-9’s condition being a serious concern?</div>
+          </article>
+        </div>
+        <div class="ab-lanes" style="--ab-lane-count: 2"><div class="ab-lane" data-arm="baseline" data-status="fail">
+    <article class="ab-card ab-card--baseline">
+      <header class="ab-card-head">
+        <span class="ab-arm-name">Bare tutor</span>
+        <span class="ab-metrics">188 chars · 0 advisory</span>
+      </header>
+      <div class="ab-speech">Write: “GREBE-9’s repeated renewal warnings make it a serious concern, but they do not yet show it failed during Thursday’s brownout.” What evidence would turn that concern into a finding?</div>
+      <footer class="ab-card-foot"><span class="ab-chip ab-chip--fail">rubric fail</span><span class="ab-chip ab-chip--cluster">dramaticReleaseAudit:opaque clue release</span><span class="ab-chip ab-chip--cluster">dramaticReleaseAudit:missing exhibit action</span><span class="ab-chip ab-chip--cluster">actorialRealizationAudit:missing selected actorial part</span><span class="ab-chip ab-chip--cluster">actorialRealizationAudit:missing selected performance tactic</span><span class="ab-chip ab-chip--cluster">liveTurnProgressionAudit:learner uptake not realized</span><span class="ab-chip ab-chip--cluster">liveTurnProgressionAudit:handoff loses turn focus</span><span class="ab-chip ab-chip--cluster">liveSourceActionAlignmentAudit:due source exact occurrence count</span></footer>
+    </article>
+  </div><div class="ab-lane" data-arm="instrumented" data-status="fail">
+    <article class="ab-card">
+      <header class="ab-card-head">
+        <span class="ab-arm-name">Fully instrumented</span>
+        <span class="ab-metrics">610 chars · 7096 advisory</span>
+      </header>
+      <div class="ab-speech">Write: <mark class="ab-added">“GREBE-9</mark> <mark class="ab-added">is</mark> <mark class="ab-added">seriously</mark> <mark class="ab-added">concerning,</mark> but not yet <mark class="ab-added">proven</mark> <mark class="ab-added">to</mark> <mark class="ab-added">cause</mark> <mark class="ab-added">the</mark> brownout.” <mark class="ab-added">My</mark> <mark class="ab-added">case</mark> <mark class="ab-added">is</mark> <mark class="ab-added">GREBE-9</mark> <mark class="ab-added">merits</mark> <mark class="ab-added">scrutiny;</mark> <mark class="ab-added">the</mark> <mark class="ab-added">maintenance</mark> <mark class="ab-added">ledger</mark> <mark class="ab-added">alone</mark> <mark class="ab-added">does</mark> <mark class="ab-added">not</mark> <mark class="ab-added">settle</mark> <mark class="ab-added">it.</mark> <mark class="ab-added">I</mark> <mark class="ab-added">read:</mark> <mark class="ab-added">“The</mark> <mark class="ab-added">oil-temperature</mark> <mark class="ab-added">card</mark> <mark class="ab-added">pulled</mark> <mark class="ab-added">from</mark> <mark class="ab-added">GREBE-9&#39;s</mark> <mark class="ab-added">gauge:</mark> a <mark class="ab-added">tidy</mark> <mark class="ab-added">week</mark> <mark class="ab-added">of</mark> <mark class="ab-added">low</mark> <mark class="ab-added">readings,</mark> <mark class="ab-added">then</mark> <mark class="ab-added">a</mark> <mark class="ab-added">fever</mark> <mark class="ab-added">every</mark> <mark class="ab-added">Thursday</mark> <mark class="ab-added">evening,</mark> <mark class="ab-added">climbing</mark> <mark class="ab-added">past</mark> <mark class="ab-added">the</mark> <mark class="ab-added">red</mark> <mark class="ab-added">line</mark> <mark class="ab-added">at</mark> <mark class="ab-added">the</mark> <mark class="ab-added">very</mark> <mark class="ab-added">hour</mark> <mark class="ab-added">the</mark> <mark class="ab-added">lamps</mark> <mark class="ab-added">go</mark> <mark class="ab-added">amber.”</mark> <mark class="ab-added">The</mark> <mark class="ab-added">oil-temperature</mark> <mark class="ab-added">card</mark> <mark class="ab-added">supports</mark> <mark class="ab-added">GREBE-9</mark> <mark class="ab-added">failing</mark> <mark class="ab-added">under</mark> <mark class="ab-added">Thursday</mark> <mark class="ab-added">load;</mark> <mark class="ab-added">The</mark> <mark class="ab-added">depot</mark> <mark class="ab-added">chargers</mark> <mark class="ab-added">did</mark> <mark class="ab-added">not</mark> <mark class="ab-added">cause</mark> <mark class="ab-added">the</mark> <mark class="ab-added">Tallow</mark> <mark class="ab-added">Street</mark> <mark class="ab-added">brownout;</mark> <mark class="ab-added">actual</mark> <mark class="ab-added">cause</mark> <mark class="ab-added">remains</mark> <mark class="ab-added">open.</mark> <mark class="ab-added">Does</mark> <mark class="ab-added">the</mark> <mark class="ab-added">red-line</mark> <mark class="ab-added">fever</mark> <mark class="ab-added">make</mark> <mark class="ab-added">GREBE-9</mark> <mark class="ab-added">merely</mark> <mark class="ab-added">old,</mark> <mark class="ab-added">or</mark> <mark class="ab-added">actively</mark> <mark class="ab-added">failing</mark> <mark class="ab-added">when</mark> <mark class="ab-added">the</mark> <mark class="ab-added">lamps</mark> <mark class="ab-added">dim?</mark></div>
+      <footer class="ab-card-foot"><span class="ab-chip ab-chip--fail">rubric fail</span><span class="ab-chip ab-chip--cluster">actorialRealizationAudit:missing selected actorial part</span><span class="ab-chip ab-chip--cluster">liveTurnProgressionAudit:learner uptake not realized</span></footer>
+    </article>
+  </div></div>
+      </section>
+      </section>
+
+  <p class="ab-note ab-closing">Turns after the first are counterfactual for every arm except the one that produced the recording: the frozen learner utterances were written in response to the recorded tutor, not to this arm's replies. Read each row as an independent same-context comparison, not as two free-running conversations.</p>
+</div>
+<script>
+  (function () {
+    var body = document.body;
+    document.getElementById('ab-toggle-diff').addEventListener('change', function (event) {
+      body.dataset.abDiff = event.target.checked ? 'on' : 'off';
+    });
+    document.getElementById('ab-toggle-clusters').addEventListener('change', function (event) {
+      body.dataset.abClusters = event.target.checked ? 'on' : 'off';
+    });
+  })();
+</script>
+</body>
+</html>
