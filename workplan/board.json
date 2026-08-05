@@ -1,12 +1,12 @@
 {
-  "generated": "2026-08-05T04:41:40.820Z",
+  "generated": "2026-08-05T04:58:18.415Z",
   "counts": {
     "total": 409,
     "byStatus": {
       "done": 381,
       "blocked": 7,
-      "dropped": 6,
-      "triaged": 3,
+      "dropped": 7,
+      "triaged": 2,
       "active": 5,
       "archived": 4,
       "review": 3
@@ -42,40 +42,6 @@
         "adaptation",
         "casting"
       ]
-    },
-    {
-      "id": "program-2-iterated-exhaust-retrain",
-      "title": "Iterated-exhaust retrain: teach the mini its own live moments",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-07-22",
-      "updated": "2026-07-22",
-      "verification": "A LoRA retrain whose data mixture adds the live committee's own audit-labeled moments (Phase 5/5b/5c extractions via scripts/program2-extract-live-moments.mjs) to the v1 corpus, run under a fresh frozen prereg (mixture, serving pin, bars fixed before training), then confirmed by a fresh live committee run that beats the 5b reference (0.386 vs pooled control 0.150) with CI separation, at no coverage cost and seam parity.",
-      "claim_status": "planned",
-      "depends_on": [
-        "program-2-committee-floor-ablation"
-      ],
-      "links": {
-        "paper": "§6.21, §7.12",
-        "notes": [
-          "notes/program-2/2026-07-18-cloud-finetune-runbook.md",
-          "notes/program-2/2026-07-20-phase5-live-pilot-results.md"
-        ],
-        "items": [
-          "program-2-context-vs-weights-finetune"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "fine-tune",
-        "committee",
-        "distribution-shift"
-      ],
-      "milestone": "adaptive-tutor-evidence-v1",
-      "branch": "main"
     },
     {
       "id": "tutor-contract-turns-to-closure-prereg",
@@ -13681,6 +13647,38 @@
         "fine-tune",
         "committee",
         "ablation"
+      ],
+      "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "program-2-iterated-exhaust-retrain",
+      "title": "Iterated-exhaust retrain: teach the mini its own live moments",
+      "status": "dropped",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-22",
+      "updated": "2026-08-05",
+      "verification": "The retrain is explicitly declined after both weights-attribution designs ended without a trained-versus-untuned treatment estimate; Paper §9 no longer presents it as future work; no dataset build, training run, or live confirmation is authorized, and the extracted live moments remain archival inputs only.",
+      "claim_status": "killed",
+      "links": {
+        "paper": "§6.21, §7.12, §9",
+        "notes": [
+          "notes/program-2/2026-07-18-cloud-finetune-runbook.md",
+          "notes/program-2/2026-07-20-phase5-live-pilot-results.md"
+        ],
+        "items": [
+          "program-2-context-vs-weights-finetune",
+          "program-2-committee-floor-ablation",
+          "program-2-weights-interface-retest"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "fine-tune",
+        "committee",
+        "distribution-shift"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
     },
