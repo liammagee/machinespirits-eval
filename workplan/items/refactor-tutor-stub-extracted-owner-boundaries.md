@@ -1,14 +1,13 @@
 ---
 id: refactor-tutor-stub-extracted-owner-boundaries
 title: Split oversized tutor-stub pipeline and response-policy owners
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-05
 updated: 2026-08-05
-branch: codex/refactor-tutor-stub-policy-selection-owner
 verification: The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; 207 focused policy/configuration tests, 7,836 root tests, and 137 tutor-core tests pass with zero failures or skips; prompt/world, lint, format, source, manifest, benchmark re-audit, and zero-cycle gates pass; no replacement owner exceeds the 1,200-line ceiling.
 claim_status: planned
 depends_on: []
@@ -181,3 +180,7 @@ Log:
   for review. The pre-push benchmark hook recorded a reasoned bypass because
   fresh external-model calls were not authorized; the PR reports the complete
   deterministic suite and zero-call saved-response re-audit instead.
+- 2026-08-05 — PR #507 merged at `7c8e77fd` with the complete CI matrix green.
+  Confirmed its clean head `c36f3b7f` is contained in `origin/main`, removed the
+  isolated worktree, and closed the card with every facade, owner-ceiling, and
+  parity acceptance criterion satisfied.
