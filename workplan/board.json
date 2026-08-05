@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-05T20:29:34.567Z",
+  "generated": "2026-08-05T21:39:59.299Z",
   "counts": {
-    "total": 411,
+    "total": 412,
     "byStatus": {
-      "done": 388,
+      "done": 389,
       "blocked": 6,
       "dropped": 8,
       "active": 3,
@@ -14,7 +14,7 @@
       "research": 71,
       "experiment": 70,
       "infra": 78,
-      "maintenance": 173,
+      "maintenance": 174,
       "content": 3,
       "ops": 10,
       "paper": 6
@@ -132,7 +132,8 @@
           "refactor-tutor-stub-macro-decomposition",
           "refactor-tutor-stub-extracted-owner-boundaries",
           "refactor-evaluation-turn-execution",
-          "refactor-evaluation-resume-rejudge-runtime"
+          "refactor-evaluation-resume-rejudge-runtime",
+          "refactor-eval-cli-operational-commands"
         ]
       },
       "tags": [
@@ -415,8 +416,8 @@
       "milestone": "paper-2-0"
     },
     {
-      "id": "refactor-evaluation-resume-rejudge-runtime",
-      "title": "Extract evaluation resume and rejudge runtimes",
+      "id": "refactor-eval-cli-operational-commands",
+      "title": "Extract eval-cli operational command modules",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -424,41 +425,39 @@
       "source": "review",
       "created": "2026-08-05",
       "updated": "2026-08-05",
-      "branch": "codex/refactor-evaluation-resume-rejudge-runtime",
-      "verification": "The evaluationRunner compatibility facade delegates resume/checkpoint coordination and rejudge scoring/orchestration to bounded owners while frozen rows, attempt indexes, checkpoints, trace/score symmetry, hashes, judge provenance, CLI output, and error behavior remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass with no production owner above 1,200 lines.",
+      "branch": "codex/refactor-eval-cli-operational-commands",
+      "verification": "The eval-cli facade dispatches read, monitoring, lifecycle, resume, export, configuration-validation, and play commands through bounded modules while their arguments, stdout/stderr, exit codes, long-running cleanup, data selection, and side effects remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-evaluation-turn-execution"
+        "refactor-evaluation-resume-rejudge-runtime"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
         ],
         "code": [
-          "services/evaluationRunner.js",
-          "services/evaluationResumeRuntime.js",
-          "services/evaluationRejudgeRuntime.js",
-          "services/evaluationCheckpointStore.js",
-          "tests/evaluationRunner.test.js",
-          "tests/evaluationResumeRejudgeRuntime.test.js",
-          "tests/checkpointE2E.test.js",
-          "tests/checkpointResume.test.js",
-          "tests/evaluationStoreRoundtripIntegrity.test.js"
+          "scripts/eval-cli.js",
+          "scripts/eval-cli/commands/index.js",
+          "scripts/eval-cli/runProgressPresentation.js",
+          "scripts/eval-cli/runsPresentation.js",
+          "scripts/eval-cli/tracePresentation.js",
+          "tests/eval-cli-smoke.test.js",
+          "tests/evalCliOperationalCommands.test.js",
+          "tests/dryRun.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-evaluation-turn-execution"
+          "refactor-evaluation-resume-rejudge-runtime"
         ],
         "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/513"
+          "https://github.com/liammagee/machinespirits-eval/pull/514"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
-        "resume",
-        "rejudge",
-        "provenance",
+        "cli",
+        "command-dispatch",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -2259,6 +2258,55 @@
         "configuration",
         "registry",
         "provenance"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-resume-rejudge-runtime",
+      "title": "Extract evaluation resume and rejudge runtimes",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "branch": "codex/refactor-evaluation-resume-rejudge-runtime",
+      "verification": "The evaluationRunner compatibility facade delegates resume/checkpoint coordination and rejudge scoring/orchestration to bounded owners while frozen rows, attempt indexes, checkpoints, trace/score symmetry, hashes, judge provenance, CLI output, and error behavior remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass with no production owner above 1,200 lines.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-turn-execution"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "services/evaluationRunner.js",
+          "services/evaluationResumeRuntime.js",
+          "services/evaluationRejudgeRuntime.js",
+          "services/evaluationCheckpointStore.js",
+          "tests/evaluationRunner.test.js",
+          "tests/evaluationResumeRejudgeRuntime.test.js",
+          "tests/checkpointE2E.test.js",
+          "tests/checkpointResume.test.js",
+          "tests/evaluationStoreRoundtripIntegrity.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-turn-execution"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/513"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "resume",
+        "rejudge",
+        "provenance",
+        "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
     },
