@@ -1,21 +1,18 @@
 ---
 id: tutor-contract-turns-to-closure-prereg
 title: "Pre-registration: does the per-turn contract change how fast legitimate closure comes?"
-status: triaged
+status: dropped
 type: experiment
 priority: P3
 owner: claude
 source: manual
 created: 2026-07-30
-updated: 2026-07-30
-verification: "Before the main spend: the leak-guard fix for quoted learner
-  text has landed (the guard killed 1 of 10 paid dialogues on 2026-07-30, and
-  a crash rate that differs by tutor version would bias the endpoint), and a
-  5-dialogue smoke on the contract version shows zero aborted dialogues. The
-  run itself is attended and checkpointed."
-claim_status: methods
-depends_on:
-  - tutor-contract-outcome-prereg
+updated: 2026-08-05
+verification: "The preregistration remains an unspent historical design: no paid pacing run launched, the parent already scopes the contract as compliance machinery, the expected null changes no decision, and reopening requires a new card and fresh authorization."
+claim_status: killed
+links:
+  items:
+    - tutor-contract-outcome-prereg
 tags:
   - tutor-stub
   - prereg
@@ -113,3 +110,11 @@ itself why the ceiling exists; criterial endpoints; no claim about human
 learning; a null is stack-bounded until replicated on another model. Nothing
 enters the paper before the run completes and survives this card's own
 verdict rule.
+
+2026-08-05 Codex reconciliation: Dropped without a smoke, main run, or paid
+call. The card's own parked ruling already establishes that the expected null
+would not change the contract's compliance-only role, while the bounded harm
+question does not justify the registered 144-dialogue, roughly 30-hour design.
+This preserves the preregistration as historical design rather than silently
+amending it. Any future decision-relevant pacing question starts as a new,
+smaller card with a fresh gate and fresh external-run authorization.

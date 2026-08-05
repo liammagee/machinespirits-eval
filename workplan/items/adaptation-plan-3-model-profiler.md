@@ -1,21 +1,22 @@
 ---
 id: adaptation-plan-3-model-profiler
 title: "Model profiler: which model owns which teaching move — and when to switch"
-status: triaged
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-02
-updated: 2026-08-02
-verification: "Design-stage card. Smoke gate (registered before any paid
-  probe): the profile must reproduce the two anchors already established by
-  full runs — sonnet fails the demand move with the card present; opus makes
-  the stake split unaided — from frozen single-turn replays, before any new
-  model or move earns a claim."
-claim_status: methods
+updated: 2026-08-05
+verification: "The provenance matrix and frozen probes expose the bare-probe instrument's saturation; delivery-verified seat tests identify the apparent family-routing advantage as a card-delivery confound, reproduce 2/3 full first-demand wagers in both Sonnet and Opus with card plus licence, promote no router, and are folded into Paper §6.24."
+claim_status: scope-bound
 depends_on:
   - adaptation-plan-3-phase-h
+links:
+  paper: §6.24
+  exports:
+    - exports/l2v6-tags.json
+    - exports/fullstack-tags.json
 tags:
   - tutor-stub
   - adaptation
@@ -260,3 +261,12 @@ verdict to the learner's own check. H's draft-channel observation
 ("the withheld beat is always the last") was the licence's absence,
 measured. Thread closed; dose-ladder contribution stays confined to
 repeat demands, unseparated by choice (anti-creep).
+
+2026-08-05 Codex reconciliation: Closed as a completed, scope-bound experiment.
+The original bare-probe gate correctly prevented new model-cell claims when it
+failed to reproduce the in-seat anchor. Subsequent delivery-verified seat tests
+resolved the apparent family difference: Sonnet and Opus each produced the
+full first-demand wager in 2/3 dialogues when both card and licence reached the
+seat, so routing was unnecessary for this move. Paper §6.24 contains the final
+correction and its one-world, one-persona, k=3 scope. No router is promoted and
+no further paid run is implied.

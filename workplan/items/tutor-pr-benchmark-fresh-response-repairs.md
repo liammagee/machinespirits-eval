@@ -1,14 +1,13 @@
 ---
 id: tutor-pr-benchmark-fresh-response-repairs
 title: Repair the four fresh tutor PR benchmark response failures
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-05
 updated: 2026-08-05
-branch: codex/tutor-pr-benchmark-four-failure-repair
 verification: Frozen replay refreshes the current standing tutor rules without changing its public prefix; exact regressions preserve declarative handoff ownership, public-only exhibit correspondence, and bounded advocate realization; focused, static, zero-skip hermetic, and fresh six-call strong tutor PR benchmark gates pass.
 depends_on: []
 links:
@@ -122,3 +121,6 @@ Log:
   `.git/machinespirits-reports/tutor-pr-benchmark/hook/b7c39664db28a37d8654ae3045a6318ae2265953/report.md`.
   Moved the item to review for PR handoff.
 - 2026-08-05 — Opened PR #504 for review.
+- 2026-08-05 — Closed after PR #504 merged with the full CI matrix green. The
+  clean committed pre-push benchmark remains 6/6 fresh jobs passed with no
+  repair, fallback, retry, learner regeneration, or dialogue continuation.
