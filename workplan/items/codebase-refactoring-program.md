@@ -1446,3 +1446,5 @@ Log:
   4,526 lines (28.2%); exact old/new output parity passed twenty-two command
   cases, and focused, zero-skip hermetic, coverage-risk, lint, format, manifest,
   workplan, diff, and zero-cycle gates pass without model calls.
+- 2026-08-06 — Rebased the first R4 step 4 slice over the latest paper/workplan
+  changes and opened it as PR #514; no eval-cli source overlap occurred.

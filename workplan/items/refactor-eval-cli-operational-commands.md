@@ -28,6 +28,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-resume-rejudge-runtime
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/514
 tags:
   - refactoring
   - evaluation
@@ -76,3 +78,6 @@ Log:
   passed 7,852 tests and the in-housed core suite passed 137. Risk coverage,
   lint, format, manifest, workplan source/tests, diff, and zero-cycle gates are
   green. No model calls or production DB/log writes were made.
+- 2026-08-06 — Rebased without conflict onto `origin/main` at `3d5c0ded`,
+  reran the focused and static gates, and opened the reviewed slice as PR #514.
+  The implementation commit is `72747dec` before this PR-link follow-up.
