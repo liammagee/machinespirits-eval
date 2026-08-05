@@ -92,11 +92,12 @@
             promised.</p></div>
           </div>
 
-          <p>Two servers sit outside the stack. <code>scripts/browse-transcripts.js</code> (port 3456)
-          is a 3,300-line second transcript browser with no npm script, no auth guard, a listener on
-          every network interface, and a hardcoded path to the production database that ignores the
-          override every other reader honors. <code>scripts/serve-subject-explorer.js</code>
-          (port 4505) duplicates a surface the main stack already serves, with the same open bind.</p>
+          <p>Two servers sat outside the stack. <code>scripts/browse-transcripts.js</code> (port 3456)
+          was a 3,300-line second transcript browser with no npm script, no auth guard, a listener on
+          every network interface, and a hardcoded path to the production database — retired
+          2026-08-05 in favour of the scriptorium. <code>scripts/serve-subject-explorer.js</code>
+          (port 4505) duplicates a surface the main stack already serves, with the same open bind;
+          it is still open.</p>
 
           <p>Auth is three unrelated mechanisms: basic auth with a role gate at the perimeter, a
           pilot admin token header, and the A19 coder key whose keyed mode switches on when a roster
@@ -265,12 +266,12 @@
 
           <div class="ev-grid">
             <article class="ev-card" data-status="risk">
-              <span class="chip chip--brick"><span class="chip__dot"></span> Open · P1</span>
+              <span class="chip chip--brick"><span class="chip__dot"></span> Part done · P1</span>
               <h3>Stray servers listen wide open</h3>
-              <p>The second transcript browser (port 3456) and the subject-explorer harness
-              (port 4505) bind every interface with no password; the former also hardcodes the
-              production database path. Bind loopback, add the shared guard, honor the DB override —
-              or retire them. <code>docs-stray-servers-lockdown</code></p>
+              <p>The second transcript browser (port 3456) bound every interface with no password
+              and hardcoded the production database path — retired 2026-08-05. The subject-explorer
+              harness (port 4505) still binds open: loopback plus the shared guard, or retire it
+              too. <code>docs-stray-servers-lockdown</code></p>
             </article>
             <article class="ev-card" data-status="risk">
               <span class="chip chip--brick"><span class="chip__dot"></span> Open · P1</span>

@@ -232,7 +232,7 @@ node scripts/eval-cli.js export <runId> --format csv       # Export results
 | `qualitative-analysis-ai.js` | LLM-based theme discovery (`--mode classify\|discover`) — **API** |
 | `code-impasse-strategies.js` | Code dialogues into 5 Hegelian resolution strategies — **API** |
 | `code-dialectical-modulation.js` | Code superego modulation (structural + semantic) — **API** |
-| `browse-transcripts.js` | Interactive transcript browser (web UI on localhost) |
+| `browse-poetics-scripts.js` | Transcript scriptorium (web UI on localhost:3466; `npm run poetics:browse`) |
 | `calibrate-rubric.js` | Rubric version calibration (synthetic or `--live` re-scoring) |
 
 ### Post-Hoc Analysis Workflow

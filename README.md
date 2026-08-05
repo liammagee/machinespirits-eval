@@ -225,7 +225,7 @@ To re-run evaluations from scratch (rather than reproducing from saved data), ex
 | Script | Description |
 |--------|-------------|
 | `assess-transcripts.js <runId>` | Qualitative transcript assessment (`--blinded`, `--force`) |
-| `browse-transcripts.js` | Interactive transcript browser (terminal UI) |
+| `browse-poetics-scripts.js` | Transcript scriptorium (web UI, port 3466; `npm run poetics:browse`) |
 | `qualitative-analysis-ai.js` | AI-based thematic analysis of transcripts |
 | `code-impasse-strategies.js` | Code impasse dialogues into Hegelian resolution strategies |
 | `code-dialectical-modulation.js` | Code superego modulation patterns |
