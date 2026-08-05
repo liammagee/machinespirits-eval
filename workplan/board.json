@@ -1,19 +1,20 @@
 {
-  "generated": "2026-08-05T22:32:50.656Z",
+  "generated": "2026-08-05T22:47:10.581Z",
   "counts": {
-    "total": 413,
+    "total": 417,
     "byStatus": {
       "done": 389,
       "blocked": 6,
       "dropped": 8,
-      "active": 3,
+      "active": 5,
       "archived": 4,
+      "triaged": 2,
       "review": 3
     },
     "byType": {
-      "research": 71,
+      "research": 72,
       "experiment": 70,
-      "infra": 78,
+      "infra": 81,
       "maintenance": 175,
       "content": 3,
       "ops": 10,
@@ -21,6 +22,53 @@
     }
   },
   "items": [
+    {
+      "id": "guard-delivery-prefer-model-over-canned",
+      "title": "When every draft fails, ship the closest model draft instead of the template",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "DONE (2026-08-06, scripts/replay-guard-fallback-delivery.js): a replay over the fallible-phaseB traces that, for each of the 717 fallback turns, picks the least-vetoed model draft and reports what would have shipped and which findings would have ridden along. Then a paired live run on one cell under both delivery rules, comparing fallback rate, closure rate and turns to closure. The safety families must show zero deliveries carrying a leak, clue-bookkeeping or closure finding under either rule.",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "services/tutorStubFirstDraftOuterLoop.js",
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubTutorTurnPipeline.js"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-validity-study",
+          "tutor-stub-terminal-fallback-delivery-boundary"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
+      "id": "tutor-stub-correspondence-guard-vocabulary",
+      "title": "Evidence-correspondence guard can never clear in a plain-language world",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "A unit test that takes world-030's own p_dye surface as the permitted text and asserts the matching tutor sentence is allowed. It must fail on the current code and pass after the fix.",
+      "claim_status": "methods",
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "worlds"
+      ]
+    },
     {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
@@ -145,6 +193,63 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "guard-regime-fallback-census-at-scale",
+      "title": "At scale the guard regime ships canned text on most turns",
+      "status": "active",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "A census script that reads guard accounting out of any run's traces and reports, per condition: turns, fallback rate, model-as-written rate, pass rate by candidate kind, and the failure count by guard family. Run it on fallible-phaseB and on the next instrumented run, and hold the numbers against the ones recorded here.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubFirstDraftOuterLoop.js",
+          "services/tutorStubTurnProgressionContract.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-ladder-ships-canned-text-on-most-turns",
+          "tutor-fallible-learner-closure-prereg",
+          "tutor-stub-correspondence-guard-vocabulary"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
+      "id": "guard-validity-study",
+      "title": "Test whether the guards' vetoes pick the better turn",
+      "status": "active",
+      "type": "research",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "For a sample of vetoed drafts, a blind pairwise comparison between the vetoed draft and what actually shipped, scored by a judge that never sees which is which or why either was chosen. Reported per guard family: how often the vetoed draft was preferred. A family preferred above chance is a family whose veto is costing more than it saves.",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-delivery-prefer-model-over-canned"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
     },
     {
       "id": "harness-untangling-contract-split",
