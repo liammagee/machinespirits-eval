@@ -1,7 +1,7 @@
 {
-  "generated": "2026-08-05T22:47:10.581Z",
+  "generated": "2026-08-05T23:45:32.014Z",
   "counts": {
-    "total": 417,
+    "total": 418,
     "byStatus": {
       "done": 389,
       "blocked": 6,
@@ -9,13 +9,13 @@
       "active": 5,
       "archived": 4,
       "triaged": 2,
-      "review": 3
+      "review": 4
     },
     "byType": {
       "research": 72,
       "experiment": 70,
       "infra": 81,
-      "maintenance": 175,
+      "maintenance": 176,
       "content": 3,
       "ops": 10,
       "paper": 6
@@ -182,7 +182,8 @@
           "refactor-evaluation-turn-execution",
           "refactor-evaluation-resume-rejudge-runtime",
           "refactor-eval-cli-operational-commands",
-          "refactor-eval-cli-generation-commands"
+          "refactor-eval-cli-generation-commands",
+          "refactor-eval-cli-scoring-commands"
         ]
       },
       "tags": [
@@ -614,6 +615,52 @@
         "evaluation",
         "cli",
         "command-dispatch",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-eval-cli-scoring-commands",
+      "title": "Extract the eval-cli scoring command family",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-eval-cli-scoring-commands",
+      "verification": "The eval-cli executable is a bounded dispatcher with no scoring logic; evaluate, backfill-first-turn, evaluate-learner, and evaluate-dialogue use explicit bounded owners while tutor/learner symmetry, score shapes, judge and rubric provenance, selection, follow mode, output, errors, and storage writes remain unchanged under exact process parity, focused and zero-skip hermetic, coverage-risk, lint, format, manifest, workplan, and zero-cycle gates plus symmetry review.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-eval-cli-generation-commands"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/eval-cli.js",
+          "scripts/eval-cli/commands/",
+          "scripts/eval-cli/scoringCommandDependencies.js",
+          "tests/eval-cli-smoke.test.js",
+          "tests/evalCliScoringCommands.test.js",
+          "tests/evaluationScoring.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-eval-cli-generation-commands"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/517"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "cli",
+        "scoring",
+        "symmetry",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
