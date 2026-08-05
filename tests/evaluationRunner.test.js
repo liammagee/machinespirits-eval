@@ -728,25 +728,27 @@ describe('evaluate / rejudge scoring parity', () => {
   });
 
   it('evaluate multi-turn and rejudge multi-turn write the same score columns', () => {
-    const evalCliSource = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'eval-cli.js'), 'utf-8');
+    const evaluateCommandsDir = path.join(__dirname, '..', 'scripts', 'eval-cli', 'commands');
+    const evalSource = [
+      'evaluateMultiTurnRuntime.js',
+      'evaluateMultiTurnJudgeWave.js',
+      'evaluateMultiTurnPersistence.js',
+    ]
+      .map((file) => fs.readFileSync(path.join(evaluateCommandsDir, file), 'utf-8'))
+      .join('\n');
     const rejudgeSource = fs.readFileSync(
       path.join(__dirname, '..', 'services', 'evaluationRejudgeRuntime.js'),
       'utf-8',
     );
 
-    // Extract evaluateMultiTurnResult from eval-cli.js
-    const evalStart = evalCliSource.indexOf('async function evaluateMultiTurnResult(');
-    assert.ok(evalStart > 0, 'evaluateMultiTurnResult must exist in eval-cli.js');
-    const evalEnd = evalCliSource.indexOf('\n        async function evaluateSingle', evalStart + 10);
-    const evalBody =
-      evalEnd > 0 ? evalCliSource.slice(evalStart, evalEnd) : evalCliSource.slice(evalStart, evalStart + 5000);
+    assert.match(evalSource, /function createEvaluateMultiTurnResult\(/u);
 
     // Extract scoreMultiTurnRejudgment from its bounded runtime owner.
     const rejStart = rejudgeSource.indexOf('async function scoreMultiTurnRejudgment(');
     const rejEnd = rejudgeSource.indexOf('\n  async function ', rejStart + 10);
     const rejBody = rejEnd > 0 ? rejudgeSource.slice(rejStart, rejEnd) : rejudgeSource.slice(rejStart);
 
-    const evalWriters = extractDbWriterCalls(evalBody);
+    const evalWriters = extractDbWriterCalls(evalSource);
     const rejWriters = extractDbWriterCalls(rejBody);
 
     // Rejudge must have AT LEAST every writer that evaluate has (except updateResultScores

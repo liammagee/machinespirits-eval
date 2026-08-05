@@ -28,7 +28,7 @@ describe('eval-cli generation command boundaries', () => {
     for (const command of EXPECTED_GENERATION_COMMANDS) {
       assert.equal(typeof getGenerationCommandHandler(command), 'function', `${command} should resolve to a handler`);
     }
-    assert.equal(getGenerationCommandHandler('evaluate'), null, 'scoring commands stay in the facade');
+    assert.equal(getGenerationCommandHandler('evaluate'), null, 'scoring commands stay in their own registry');
     assert.equal(getGenerationCommandHandler('not-a-command'), null);
   });
 
@@ -49,9 +49,8 @@ describe('eval-cli generation command boundaries', () => {
     for (const command of EXPECTED_GENERATION_COMMANDS) {
       assert.doesNotMatch(source, new RegExp(`case ['"]${command}['"]`, 'u'));
     }
-    for (const command of ['evaluate', 'backfill-first-turn', 'evaluate-learner', 'evaluate-dialogue']) {
-      assert.match(source, new RegExp(`case ['"]${command}['"]`, 'u'));
-    }
+    assert.match(source, /getScoringCommandHandler\(command\)/u);
+    assert.match(source, /await scoringCommandHandler\(/u);
 
     for (const helper of [
       'FACTORIAL_2X2X2_PROFILES',

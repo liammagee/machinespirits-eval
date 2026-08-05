@@ -267,6 +267,7 @@
         "tests/eval-cli-smoke.test.js",
         "tests/evalCliGenerationCommands.test.js",
         "tests/evalCliOperationalCommands.test.js",
+        "tests/evalCliScoringCommands.test.js",
         "tests/evalLogRoutesDataRoot.test.js",
         "tests/evalProfileRegistry.test.js",
         "tests/evalRequestAdmissionRoutes.test.js",

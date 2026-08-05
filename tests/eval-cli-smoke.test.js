@@ -263,6 +263,34 @@ describe('eval-cli smoke — evaluate-learner', () => {
   });
 });
 
+describe('eval-cli smoke — extracted scoring command process contracts', () => {
+  it('evaluate preserves judge validation before result lookup', async () => {
+    const { stderr, code } = await runCli(['evaluate', 'eval-9999-99-99-nonexistent', '--judge-cli', 'nope']);
+    assert.strictEqual(code, 1);
+    assert.strictEqual(stderr.trim(), "Error: --judge-cli must be 'claude', 'gemini', or 'codex', got 'nope'");
+  });
+
+  it('backfill-first-turn preserves usage and missing-run exits', async () => {
+    const missingArgument = await runCli(['backfill-first-turn']);
+    assert.strictEqual(missingArgument.code, 1);
+    assert.ok(missingArgument.stderr.includes('Usage: eval-cli.js backfill-first-turn <runId>'));
+
+    const missingRun = await runCli(['backfill-first-turn', 'eval-9999-99-99-nonexistent']);
+    assert.strictEqual(missingRun.code, 1);
+    assert.ok(missingRun.stderr.includes('No results found for run'));
+  });
+
+  it('evaluate-dialogue preserves usage and missing-run exits', async () => {
+    const missingArgument = await runCli(['evaluate-dialogue']);
+    assert.strictEqual(missingArgument.code, 1);
+    assert.ok(missingArgument.stderr.includes('Usage: eval-cli.js evaluate-dialogue <runId>'));
+
+    const missingRun = await runCli(['evaluate-dialogue', 'eval-9999-99-99-nonexistent']);
+    assert.strictEqual(missingRun.code, 1);
+    assert.ok(missingRun.stderr.includes('No results found for run'));
+  });
+});
+
 describe('eval-cli smoke — configuration validation', () => {
   it('validate-config: reaches the complete repository validation summary', async () => {
     const { stdout, stderr, code } = await runCli(['validate-config'], 30000);
