@@ -1,17 +1,15 @@
 ---
 id: program-2-iterated-exhaust-retrain
 title: "Iterated-exhaust retrain: teach the mini its own live moments"
-status: triaged
+status: dropped
 type: experiment
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-07-22
-updated: 2026-07-22
-verification: "A LoRA retrain whose data mixture adds the live committee's own audit-labeled moments (Phase 5/5b/5c extractions via scripts/program2-extract-live-moments.mjs) to the v1 corpus, run under a fresh frozen prereg (mixture, serving pin, bars fixed before training), then confirmed by a fresh live committee run that beats the 5b reference (0.386 vs pooled control 0.150) with CI separation, at no coverage cost and seam parity."
-claim_status: planned
-depends_on:
-  - program-2-committee-floor-ablation
+updated: 2026-08-05
+verification: "The retrain is explicitly declined after both weights-attribution designs ended without a trained-versus-untuned treatment estimate; Paper §7.12 no longer presents it as future work; no dataset build, training run, or live confirmation is authorized, and the extracted live moments remain archival inputs only."
+claim_status: killed
 links:
   paper: §6.21, §7.12
   notes:
@@ -19,16 +17,18 @@ links:
     - notes/program-2/2026-07-20-phase5-live-pilot-results.md
   items:
     - program-2-context-vs-weights-finetune
+    - program-2-committee-floor-ablation
+    - program-2-weights-interface-retest
 tags:
   - tutor-stub
   - fine-tune
   - committee
   - distribution-shift
 milestone: adaptive-tutor-evidence-v1
-branch: main
 ---
 
-The one training route left with a mechanism behind it. The KTO null
+Historical proposal (2026-07-22): the one training route left with a mechanism
+behind it. The KTO null
 (2026-07-21: 58/58 byte-identical to SFT, both arms) proved the mini has
 extracted everything the archived labels contain; its live weakness is
 distribution shift — trained on 865 moments that frontier tutors
@@ -54,3 +54,21 @@ organ and this retrain targets the wrong lever; (3) compliant-target
 thinness (15-40 rows vs 865) may want a round of committee dialogues run
 purely as data harvest before training. Fresh prereg required; nothing
 is licensed by the spent Phase 2 ledger.
+
+2026-08-05 Codex reconciliation: Dropped without building a dataset, training,
+or making new paid calls. The required attribution gate did not resolve: the
+committee-floor design was retired as under-informative, and its corrected
+weights-by-interface successor stopped twice under its frozen pilot futility
+rules before producing any trained-versus-untuned treatment estimate. PR #501
+records the terminal ruling: no Amendment 2 is implied.
+
+Running this retrain now would bypass the card's own sequence and could not say
+whether any later gain came from the weights or from the committee harness.
+The existing live-moment extracts remain useful archival inputs, but they do
+not license a retrain. Reopening the question requires a new identification
+design, a new card, a fresh preregistration, and fresh external-run authority;
+it is not a continuation of this experiment.
+
+Paper §7.12 and the v3.0.264 revision entry are corrected in the same change so
+the canonical research record no longer recommends the spent attribution test
+or its dependent retrain as live future work.
