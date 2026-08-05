@@ -438,7 +438,14 @@ function compactProgressionHandoffInstruction(contract) {
     : '';
   let action;
   if (handoff?.question_allowed === false) {
-    action = `${compactActionInstruction(contract)} ${handoff.instruction || 'End declaratively; ask no question.'}`;
+    const needsDeclarativeSupport =
+      /bounded.*choice/u.test(String(contract.ending?.support_modality || '')) ||
+      contract.ending?.clarification_invitation_required === true;
+    action = needsDeclarativeSupport
+      ? `${compactActionInstruction(contract)} ${handoff.instruction || 'End declaratively; ask no question.'}`
+      : contract.ending?.closure_required || contract.opening?.responsive_repair_required
+        ? compactActionInstruction(contract)
+        : 'State the current public limit through the selected action; ask no question.';
   } else if (handoff?.question_required === false) {
     action =
       'Carry the selected action to TURN FOCUS. HANDOFF may ask one final question there; otherwise end declaratively.';
