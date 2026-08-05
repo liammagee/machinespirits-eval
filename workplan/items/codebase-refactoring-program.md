@@ -113,6 +113,7 @@ links:
     - adaptive-eval-immutable-provenance
     - refactor-tutor-stub-macro-decomposition
     - refactor-tutor-stub-extracted-owner-boundaries
+    - refactor-evaluation-turn-execution
 tags:
   - refactoring
   - testing
@@ -1411,3 +1412,13 @@ Log:
   destination; the programme remains active for the explicit extracted-owner
   boundary card and later ranked hotspots, rather than for further helper-sized
   entrypoint shaving.
+- 2026-08-05 — Activated R4 step 2 on
+  `codex/refactor-evaluation-turn-execution` after the tutor-stub extracted-owner
+  boundary merged through PR #507. The first evaluation macro slice preserves
+  the runner facade while assigning shared generation, single-turn execution,
+  and multi-turn coordination to bounded owners.
+- 2026-08-05 — R4 step 2 reached review: `evaluationRunner.js` fell from 6,440
+  to 3,534 lines while nine explicit owners keep context, checkpoints,
+  transcripts, setup, adaptation, completion, and turn execution below the
+  1,200-line ceiling. Focused, zero-skip hermetic, coverage-risk, lint, format,
+  manifest, workplan, diff, and zero-cycle gates pass with no model calls.
