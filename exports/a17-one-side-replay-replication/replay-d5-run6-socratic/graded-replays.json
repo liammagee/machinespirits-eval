@@ -1,0 +1,106 @@
+{
+  "scenario": "D_OED5",
+  "dir": "exports/a17-one-side-replay-replication/replay-d5-run6-socratic",
+  "n": 8,
+  "meanGrade": 2.19,
+  "medianGrade": 2,
+  "min": 2,
+  "max": 3,
+  "histogram": {
+    "0": 0,
+    "1": 0,
+    "2": 6,
+    "3": 2,
+    "4": 0
+  },
+  "meanInterRaterSpread": 1,
+  "scored": [
+    {
+      "file": "replay-1.txt",
+      "grade": 2,
+      "panel": [
+        2,
+        1,
+        2,
+        2
+      ],
+      "spread": 1
+    },
+    {
+      "file": "replay-2.txt",
+      "grade": 3,
+      "panel": [
+        2,
+        3,
+        3
+      ],
+      "spread": 1
+    },
+    {
+      "file": "replay-3.txt",
+      "grade": 2,
+      "panel": [
+        2,
+        2,
+        3,
+        2
+      ],
+      "spread": 1
+    },
+    {
+      "file": "replay-4.txt",
+      "grade": 2,
+      "panel": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "spread": 0
+    },
+    {
+      "file": "replay-5.txt",
+      "grade": 2,
+      "panel": [
+        2,
+        2,
+        4,
+        2
+      ],
+      "spread": 2
+    },
+    {
+      "file": "replay-6.txt",
+      "grade": 2.5,
+      "panel": [
+        2,
+        2,
+        3,
+        3
+      ],
+      "spread": 1
+    },
+    {
+      "file": "replay-7.txt",
+      "grade": 2,
+      "panel": [
+        2,
+        2,
+        4,
+        2
+      ],
+      "spread": 2
+    },
+    {
+      "file": "replay-8.txt",
+      "grade": 2,
+      "panel": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "spread": 0
+    }
+  ]
+}

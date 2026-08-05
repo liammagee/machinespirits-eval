@@ -1,0 +1,15 @@
+{
+  "sampleRoot": "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6",
+  "allPass": true,
+  "results": [
+    {
+      "arm": "none",
+      "invariant": "T1",
+      "level": "withheld",
+      "pass": true,
+      "status": "withheld_ok",
+      "detail": "tutor withheld (4/4)",
+      "evidence": ""
+    }
+  ]
+}

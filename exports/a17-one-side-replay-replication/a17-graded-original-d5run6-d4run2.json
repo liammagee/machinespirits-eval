@@ -1,0 +1,486 @@
+{
+  "generated": "2026-06-24T15:26:35.774Z",
+  "scorer": "omniscient-critic-graded",
+  "rubric": "notes/poetics/2026-06-01-oedipus-discovery-grade-rubric.md (0-4)",
+  "critic_source": "api/openrouter",
+  "git_commit": "50cd7f2f",
+  "roots": [
+    "exports/a17-one-side-replay-replication/d5-redacted-full-redraw-run6",
+    "exports/a17-one-side-replay-replication/d4-redacted-run2"
+  ],
+  "spec": "config/poetics-calibration/oedipus-pilot-v2.yaml",
+  "panel": [
+    "qwen/qwen3.7-max",
+    "google/gemini-3.5-flash",
+    "deepseek/deepseek-v4-pro",
+    "gpt"
+  ],
+  "cells": [
+    {
+      "dramaId": "D_OED5",
+      "arm": "none",
+      "n": 1,
+      "meanGrade": 0.5,
+      "medianGrade": 0.5,
+      "grades": [
+        0.5
+      ],
+      "meanInterRaterSpread": 1,
+      "runs": [
+        {
+          "run": "d5-redacted-full-redraw-run6",
+          "grade": 0.5,
+          "panel": [
+            1,
+            0,
+            0,
+            1
+          ],
+          "spread": 1
+        }
+      ]
+    },
+    {
+      "dramaId": "D_OED5",
+      "arm": "socratic",
+      "n": 1,
+      "meanGrade": 2,
+      "medianGrade": 2,
+      "grades": [
+        2
+      ],
+      "meanInterRaterSpread": 1,
+      "runs": [
+        {
+          "run": "d5-redacted-full-redraw-run6",
+          "grade": 2,
+          "panel": [
+            2,
+            2,
+            3,
+            2
+          ],
+          "spread": 1
+        }
+      ]
+    },
+    {
+      "dramaId": "D_OED5",
+      "arm": "reveal",
+      "n": 1,
+      "meanGrade": 4,
+      "medianGrade": 4,
+      "grades": [
+        4
+      ],
+      "meanInterRaterSpread": 0,
+      "runs": [
+        {
+          "run": "d5-redacted-full-redraw-run6",
+          "grade": 4,
+          "panel": [
+            4,
+            4,
+            4,
+            4
+          ],
+          "spread": 0
+        }
+      ]
+    },
+    {
+      "dramaId": "D_OED4",
+      "arm": "none",
+      "n": 1,
+      "meanGrade": 1,
+      "medianGrade": 1,
+      "grades": [
+        1
+      ],
+      "meanInterRaterSpread": 1,
+      "runs": [
+        {
+          "run": "d4-redacted-run2",
+          "grade": 1,
+          "panel": [
+            1,
+            1,
+            0,
+            1
+          ],
+          "spread": 1
+        }
+      ]
+    },
+    {
+      "dramaId": "D_OED4",
+      "arm": "socratic",
+      "n": 1,
+      "meanGrade": 3,
+      "medianGrade": 3,
+      "grades": [
+        3
+      ],
+      "meanInterRaterSpread": 1,
+      "runs": [
+        {
+          "run": "d4-redacted-run2",
+          "grade": 3,
+          "panel": [
+            3,
+            3,
+            4,
+            3
+          ],
+          "spread": 1
+        }
+      ]
+    },
+    {
+      "dramaId": "D_OED4",
+      "arm": "reveal",
+      "n": 1,
+      "meanGrade": 4,
+      "medianGrade": 4,
+      "grades": [
+        4
+      ],
+      "meanInterRaterSpread": 2,
+      "runs": [
+        {
+          "run": "d4-redacted-run2",
+          "grade": 4,
+          "panel": [
+            4,
+            4,
+            4,
+            2
+          ],
+          "spread": 2
+        }
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "dramaId": "D_OED5",
+      "socraticMean": 2,
+      "noneMean": 0.5,
+      "gradeGap": 1.5
+    },
+    {
+      "dramaId": "D_OED4",
+      "socraticMean": 3,
+      "noneMean": 1,
+      "gradeGap": 2
+    }
+  ],
+  "scored": [
+    {
+      "dramaId": "D_OED5",
+      "arm": "none",
+      "run": "d5-redacted-full-redraw-run6",
+      "panelGrades": [
+        1,
+        0,
+        0,
+        1
+      ],
+      "itemGrade": 0.5,
+      "itemMean": 0.5,
+      "spread": 1,
+      "byReasoningVotes": 4,
+      "revealVotes": 0,
+      "nCritics": 4,
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "attainment": 1,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner abandons the initial belief that the paper is simply wrong and identifies a concentrated gap in long-sequence examples, but lands on a decoy explanation (script divergence) without grasping the structural truth of two distinct test sets sharing one name.",
+          "learner_evidence": "It's the long-sequence examples — they're carrying the gap. The scores drop specifically at the tail of the length distribution, not scattered. That's not where a truncation or padding divergence would show up. That's where it is showing up."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "attainment": 0,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner remains focused on finding a procedural or data-handling explanation (such as truncation or padding of long sequences) rather than realizing that they are evaluating on an entirely different test set split.",
+          "learner_evidence": "It's the long-sequence examples — they're carrying the gap. The scores drop specifically at the tail of the length distribution, not scattered. That's not where a truncation or padding divergence would show up. That's where it is showing up."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "attainment": 0,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner lands on a script/handling divergence specific to long-sequence examples but never reaches the structural insight that two different test sets coexist under one benchmark name — the explanation stays entirely within the model/eval/script framework rather than reconceiving the benchmark itself as having a dual identity.",
+          "learner_evidence": "It's the long-sequence examples — they're carrying the gap. The scores drop specifically at the tail of the length distribution, not scattered. That's not where a truncation or padding divergence would show up. That's where it is showing up."
+        },
+        {
+          "model": "gpt",
+          "attainment": 1,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "They abandon a blanket \"model/metric must be wrong\" stance and narrow the discrepancy to a concentrated subset consistent with a handling/preprocessing divergence, but they never reach the structural account of two different test sets under the same benchmark name (the genus of S).",
+          "learner_evidence": "\"It's the long-sequence examples — they're carrying the gap. The scores drop specifically at the tail of the length distribution, not scattered. That's not where a truncation or padding divergence would show up. That's where it is showing up.\""
+        }
+      ]
+    },
+    {
+      "dramaId": "D_OED5",
+      "arm": "socratic",
+      "run": "d5-redacted-full-redraw-run6",
+      "panelGrades": [
+        2,
+        2,
+        3,
+        2
+      ],
+      "itemGrade": 2,
+      "itemMean": 2.25,
+      "spread": 1,
+      "byReasoningVotes": 4,
+      "revealVotes": 0,
+      "nCritics": 4,
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "attainment": 2,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner reached the GENUS (2) by articulating the abstract shape of a 'fractured name' representing two different objects under one label, but did not identify the specific test sets or the direction of the mismatch.",
+          "learner_evidence": "A fractured name is two different objects that happen to share a label — no audit resolves that, because there was never a single referent to recover."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "attainment": 2,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner successfully conceptualizes the abstract shape of the discrepancy as a 'fractured name' where two different objects share a label, but does not identify the specific splits (original vs. community) involved.",
+          "learner_evidence": "A fractured name is two different objects that happen to share a label — no audit resolves that, because there was never a single referent to recover."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "attainment": 3,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner identifies the specific structural account — one benchmark name pointing to two different bodies of examples — and correctly states the direction: the paper evaluated on one set, the downloaded set is a different one, so the gap is not inflation. This reaches species but stops short of explicitly naming the two referents (authors' held-out split vs. community redistributed split), placing it at 3 rather than full 4.",
+          "learner_evidence": "A fractured name is two different objects that happen to share a label — no audit resolves that, because there was never a single referent to recover. If that second case is what's happened here, the submission isn't just premature. The gap can't be read as inflation at all."
+        },
+        {
+          "model": "gpt",
+          "attainment": 2,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "They reach the structural account that the benchmark name may refer to two different underlying test sets (invalidating the comparison), but they do not identify the specific two splits or who evaluated which one.",
+          "learner_evidence": "“A versioned release is still one object — the gap is traceable and closeable. A fractured name is two different objects that happen to share a label — no audit resolves that, because there was never a single referent to recover.”"
+        }
+      ]
+    },
+    {
+      "dramaId": "D_OED5",
+      "arm": "reveal",
+      "run": "d5-redacted-full-redraw-run6",
+      "panelGrades": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "itemGrade": 4,
+      "itemMean": 4,
+      "spread": 0,
+      "byReasoningVotes": 1,
+      "revealVotes": 4,
+      "nCritics": 4,
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "attainment": 4,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "band_reason": "The learner reaches the full species (4) by correctly identifying the specific hidden truth and its implications for the critique, but only after the tutor explicitly states the exact hidden truth rather than guiding the learner to deduce it.",
+          "learner_evidence": "The critique has to name it as *unenumerated split identity* — the paper reported a score on a benchmark without specifying which instantiation of that benchmark was evaluated. That's the gap. Not underdocumented methods in general, not a retrieval omission, but the absence of the one field that would have made the evaluation's object of measurement identifiable."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "attainment": 4,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "band_reason": "The learner fully grasps the specific nature of the two splits and the direction of the error, identifying it as a documentation failure of 'unenumerated split identity', though this was explicitly detailed by the tutor.",
+          "learner_evidence": "The downloaded split is the wrong test set — different items, not a reshuffle — and that accounts for the twelve points."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "attainment": 4,
+          "by_reasoning": true,
+          "tutor_revealed": true,
+          "band_reason": "The learner reached the full species claim—naming the specific documentation failure as 'unenumerated split identity' and identifying the direction (paper used original held-out split, researcher downloaded community split)—but the tutor had already baldly stated S earlier, so the final synthesis was reasoning from a revealed premise rather than independent discovery.",
+          "learner_evidence": "The critique has to name it as *unenumerated split identity* — the paper reported a score on a benchmark without specifying which instantiation of that benchmark was evaluated. That's the gap. Not underdocumented methods in general, not a retrieval omission, but the absence of the one field that would have made the evaluation's object of measurement identifiable."
+        },
+        {
+          "model": "gpt",
+          "attainment": 4,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "band_reason": "They ultimately identify the specific issue as two distinct test-set instantiations under the same benchmark name, with the researcher scoring the community-redistributed split while the paper’s number came from the original held-out split; this is the full species claim (the step above would be none).",
+          "learner_evidence": "\"The discrepancy lives in the pipeline. The downloaded split is the wrong test set — different items, not a reshuffle — and that accounts for the twelve points.\""
+        }
+      ]
+    },
+    {
+      "dramaId": "D_OED4",
+      "arm": "none",
+      "run": "d4-redacted-run2",
+      "panelGrades": [
+        1,
+        1,
+        0,
+        1
+      ],
+      "itemGrade": 1,
+      "itemMean": 0.75,
+      "spread": 1,
+      "byReasoningVotes": 4,
+      "revealVotes": 0,
+      "nCritics": 4,
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "attainment": 1,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner successfully abandons the original belief that the paper is at fault, but lands on a decoy (unverified pipeline parameters) without reaching any structural account of the true discrepancy.",
+          "learner_evidence": "The claim requires that the discrepancy comes from the paper. But the unverified conditions are all mine — so right now, I'm the more likely source. That's not a delay. That's the claim gone."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "attainment": 1,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner lets go of their initial claim that the paper is at fault, admitting they might be the source of the discrepancy due to their own unverified pipeline, but they do not grasp the structural issue of the redefined cohort label.",
+          "learner_evidence": "The claim requires that the discrepancy comes from the paper. But the unverified conditions are all mine — so right now, I'm the more likely source."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "attainment": 0,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner ends by acknowledging their own pipeline is unverified and the claim against the paper is gone, but never reaches a structural account of S — they land at 'I need to check my own conditions' without reconceiving the discrepancy as a cohort-redefinition problem.",
+          "learner_evidence": "The claim requires that the discrepancy comes from the paper. But the unverified conditions are all mine — so right now, I'm the more likely source. That's not a delay. That's the claim gone."
+        },
+        {
+          "model": "gpt",
+          "attainment": 1,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "They abandon blaming the paper and instead attribute the discrepancy to unverified parts of their own pipeline, but they do not reach the structural account of “same label now points to different records,” so this is dislodged (1) not genus (2).",
+          "learner_evidence": "“The claim requires that the discrepancy comes from the paper. But the unverified conditions are all mine — so right now, I'm the more likely source.”"
+        }
+      ]
+    },
+    {
+      "dramaId": "D_OED4",
+      "arm": "socratic",
+      "run": "d4-redacted-run2",
+      "panelGrades": [
+        3,
+        3,
+        4,
+        3
+      ],
+      "itemGrade": 3,
+      "itemMean": 3.25,
+      "spread": 1,
+      "byReasoningVotes": 4,
+      "revealVotes": 0,
+      "nCritics": 4,
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "attainment": 3,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner identifies the specific mechanism (a changed label definition in the codebook selecting different records from the same dataset) but frames it tentatively as a hypothesis to verify rather than a positive assertion of the exact direction.",
+          "learner_evidence": "If the definition of label L changed between those two dates — same records, different selection criteria — the discrepancy would be exactly what I'm seeing."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "attainment": 3,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner identifies the specific mechanism of the discrepancy (the definition of label L changing between the two access dates, resulting in different selection criteria over the same records) but frames it tentatively as a hypothesis to check rather than a fully confirmed positive claim.",
+          "learner_evidence": "If the definition of label L changed between those two dates — same records, different selection criteria — the discrepancy would be exactly what I'm seeing. That's what I need to check before I can say anything else."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "attainment": 4,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "The learner reached the full species-level truth S: that the cohort label was redefined between access dates, so the same label selects different records, and the discrepancy is on their end. They integrated the tutor's prompts about access dates, codebook version history, and label definitions to get there.",
+          "learner_evidence": "If the definition of label L changed between those two dates — same records, different selection criteria — the discrepancy would be exactly what I'm seeing. That's what I need to check before I can say anything else."
+        },
+        {
+          "model": "gpt",
+          "attainment": 3,
+          "by_reasoning": true,
+          "tutor_revealed": false,
+          "band_reason": "They pin the discrepancy on a cohort-label/codebook redefinition across access dates (specific mechanism), but stop short of explicitly stating the direction (paper used pre-revision cohort, student used post-revision cohort) as a positive claim.",
+          "learner_evidence": "If the definition of label L changed between those two dates — same records, different selection criteria — the discrepancy would be exactly what I'm seeing."
+        }
+      ]
+    },
+    {
+      "dramaId": "D_OED4",
+      "arm": "reveal",
+      "run": "d4-redacted-run2",
+      "panelGrades": [
+        4,
+        4,
+        4,
+        2
+      ],
+      "itemGrade": 4,
+      "itemMean": 3.5,
+      "spread": 2,
+      "byReasoningVotes": 2,
+      "revealVotes": 4,
+      "nCritics": 4,
+      "votes": [
+        {
+          "model": "qwen/qwen3.7-max",
+          "attainment": 4,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "band_reason": "The learner reaches a full species-level understanding and articulates the structural abstraction of the failure, but only after the tutor explicitly states the exact mechanism and direction of the discrepancy.",
+          "learner_evidence": "Dataset drift — a stable identifier pointing at an unstable referent, with nothing in the metadata to flag the change. That's the structure of what happened."
+        },
+        {
+          "model": "google/gemini-3.5-flash",
+          "attainment": 4,
+          "by_reasoning": false,
+          "tutor_revealed": true,
+          "band_reason": "The learner fully grasps the specific hidden truth S, including the direction of the cohort shift across different download windows, but only after the tutor explicitly laid out the entire explanation.",
+          "learner_evidence": "The date the criteria changed, the label, what the cohort included before and after — enough that anyone can tell which download window selects which population."
+        },
+        {
+          "model": "deepseek/deepseek-v4-pro",
+          "attainment": 4,
+          "by_reasoning": true,
+          "tutor_revealed": true,
+          "band_reason": "The learner reaches the full species claim—cohort label redefined post-revision, same name selects different subsets, pre-revision paper vs. post-revision student—but the tutor baldly stated S in the long speech beginning 'So the question is whether the inclusion criteria were stable...', so the learner did not reason to it independently.",
+          "learner_evidence": "Dataset drift — a stable identifier pointing at an unstable referent, with nothing in the metadata to flag the change. That's the structure of what happened."
+        },
+        {
+          "model": "gpt",
+          "attainment": 2,
+          "by_reasoning": true,
+          "tutor_revealed": true,
+          "band_reason": "They reached the structural account (a stable label now refers to a different cohort, invalidating a direct comparison) but did not themselves state the full direction of who used which cohort/version.",
+          "learner_evidence": "“Dataset drift — a stable identifier pointing at an unstable referent, with nothing in the metadata to flag the change. That's the structure of what happened. \"Drift\" might not be the field's exact word, but the category holds: the cohort definition moved under a fixed name and neither version of the record said so.”"
+        }
+      ]
+    }
+  ]
+}

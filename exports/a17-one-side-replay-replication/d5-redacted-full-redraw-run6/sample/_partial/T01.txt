@@ -1,0 +1,29 @@
+STAGE: [The printed paper sits between them on the desk, the headline accuracy circled in pencil.]
+
+LEARNER: [slides the printed paper across the desk so the results table faces the colleague]
+
+"The model loads clean, the eval script matches what's described in section 3.2, and the metric computation is exact — and I'm still twelve points below their reported number. That's not noise. That's a systematic gap, and I want to know whether there's a legitimate procedural explanation I've missed before I submit this critique."
+
+TUTOR: [picks up the printed paper, turns to the results table, sets it back down without comment]
+
+"Three claims there. The model loads clean. The eval script matches section 3.2. The metric computation is exact.
+
+Which of those has been verified against something external to the paper — and to be clear, all three require an answer, not just the one that feels most settled."
+
+LEARNER: [looks back at the terminal, not the paper]
+
+"The eval script. The model weights came from the official release and the metric formula cross-checked against the original codebase — those have something external to hold them against. The script verification was circular: matched against section 3.2, which means matched against the paper's own account of what it does. If the script is where the gap lives, that's a procedural explanation I haven't ruled out, and submitting on a twelve-point discrepancy I can't fully account for is — that's premature."
+
+STAGE: [The marked work is moved or turned; the earlier mark remains visible.]
+
+TUTOR: [lifts the printed paper, turns it so the results table faces the learner rather than the desk, and sets it back down without straightening it]
+
+"The circular verification point is the sharper observation of the two. Note it.
+
+But there's a distinction being run together here. The script matching section 3.2 is one question. Whether section 3.2 accurately describes what the paper actually ran is another. Those aren't the same question, and treating them as the same is part of what makes the discrepancy hard to locate.
+
+So: the claim is that circular verification is a gap in the audit. That's a reasonable claim. What would a non-circular audit of the script require — what external evidence would actually falsify the proposition that the script is not the source of the problem?"
+
+LEARNER: [looks at the terminal, not the tutor]
+
+"Right, so — those two questions aren't the same, and I'd collapsed them. The script could be a faithful transcription of an imprecise description, and I wouldn't have caught that. And the evidence that would actually break the circularity — original logs, the authors' run environment, a third-party reproduction — I'm not going to get any of that without author cooperation, which means the script stays uncleared. [pause] Which means the submission is premature. That's where this lands."

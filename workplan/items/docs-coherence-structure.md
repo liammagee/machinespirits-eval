@@ -1,7 +1,7 @@
 ---
 id: docs-coherence-structure
 title: "Docs coherence: one entry point, tight layout, easy regeneration"
-status: active
+status: done
 type: infra
 priority: P1
 owner: claude
@@ -42,3 +42,12 @@ Working method:
 - Server and build behaviour changes ride their own cards with tests.
 - Frozen pre-registrations get dated editor's notes only, never rewrites —
   the paper cites them at specific commits.
+
+CLOSED 2026-08-05, all eight children done across PRs #497, #500, #502 and
+the citation-sweep PR. What now exists: `DOCS.md` as the one entry point
+(linked from all three agent docs and README); the illustrated map at
+`/map` on the scriptorium; one perimeter across every server; one cheap
+regeneration verb (`docs:refresh`) plus the PDF keep rule; written policies
+for exports tracking, frozen-doc edits, and the naming waivers; and tests
+holding the seams (route parity, perimeter, token mirror, subject-explorer
+guard).

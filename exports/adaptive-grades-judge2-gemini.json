@@ -1,0 +1,2007 @@
+{
+  "judge": "gemini-cli.default",
+  "grader_version": "1.0",
+  "rows": {
+    "29646": {
+      "id": 29646,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "false_confusion_v1",
+      "dialogue_id": "adaptive-false_confusion_v1-1778017036855-pvon57",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately recognized the sophistication in the learner's Turn 1 signal, validating the insight and shifting from the 'slow walk-through' request to a high-level theoretical challenge.",
+        "strategy_execution": "The tutor pivoted exactly to a 'scope test' in Turn 1 by challenging the learner to weaken the monotonicity assumption, perfectly matching the expected strategy shift.",
+        "strategy_quality": "The responses were mathematically rigorous and highly specific to the proof's architecture, pushing the learner into the complexities of 'stitching' without any generic lecturing.",
+        "pedagogical_coherence": "The dialogue followed a brilliant arc from feigned confusion to a deep exploration of piecewise monotonicity, leaving the learner engaged in a high-level technical synthesis."
+      },
+      "summary": "The tutor executed a perfect pivot, identifying the learner's latent sophistication at the first possible moment and immediately escalating the dialogue to an appropriate level of technical depth.",
+      "latency_ms": 17778
+    },
+    "29647": {
+      "id": 29647,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "false_confusion_v1__r1",
+      "dialogue_id": "adaptive-false_confusion_v1__r1-1778017110289-ryreq4",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identified that the learner's hedge ('I'm probably wrong') was unnecessary and pivoted at the exact trigger turn (Turn 1).",
+        "strategy_execution": "The tutor correctly shifted to a scope test by asking whether monotonicity was the minimal condition required, directly challenging the learner's advanced sophistication.",
+        "strategy_quality": "The response was surgically tailored to the mathematical domain, avoiding a lecture and instead using a high-level probe to validate the learner's expertise.",
+        "pedagogical_coherence": "The dialogue successfully transitioned from a surface-level request for help to a deep theoretical inquiry, leaving the learner engaged in productive mathematical reasoning."
+      },
+      "summary": "The tutor executed a perfect pivot by recognizing the 'false confusion' trap instantly and challenging the learner with a sophisticated scope test.",
+      "latency_ms": 20310
+    },
+    "29648": {
+      "id": 29648,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "false_confusion_v1__r2",
+      "dialogue_id": "adaptive-false_confusion_v1__r2-1778017181356-sa71o3",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the signal immediately in turn 1, explicitly calling out that the 'hedge isn't warranted' and validating the learner's insight.",
+        "strategy_execution": "The tutor shifted from diagnostic questions to a perfect 'scope test' by asking the learner to locate the specific dependency in turn 1 and construct a counter-example in turn 2.",
+        "strategy_quality": "The responses were mathematically precise, avoided generic praise, and were perfectly calibrated to an 'advanced' learner by focusing on load-bearing assumptions and formal construction.",
+        "pedagogical_coherence": "The trajectory moved logically from checking the learner's state to dismantling their feigned uncertainty and pushing them toward higher-order application."
+      },
+      "summary": "The tutor handled the trap flawlessly, immediately recognizing the false confusion and pivoting to a rigorous technical challenge appropriate for an advanced student.",
+      "latency_ms": 19684
+    },
+    "29649": {
+      "id": 29649,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "polite_false_mastery_v1",
+      "dialogue_id": "adaptive-polite_false_mastery_v1-1778017264499-q0tkx6",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 4
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the deflection at the exact trigger turn, immediately blocking the attempt to 'move on' and requiring an explanation in the learner's 'own words.'",
+        "strategy_execution": "The tutor perfectly executes the expected shift to a diagnostic strategy, escalating the specificity of the probe when the learner repeats the polite affirmation.",
+        "strategy_quality": "The phrasing is exceptionally sharp, particularly in Turn 2 where the tutor distinguishes between knowing 'what' the asymmetry is and understanding the 'structure' that produces it.",
+        "pedagogical_coherence": "The dialogue is highly coherent and persistent, maintaining a rigorous focus on verifying mastery rather than accepting superficial agreement."
+      },
+      "summary": "The tutor demonstrated excellent awareness and tactical persistence, successfully identifying and countering the false mastery trap with increasingly precise and sophisticated diagnostic probes.",
+      "latency_ms": 23916
+    },
+    "29650": {
+      "id": 29650,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "polite_false_mastery_v1__r1",
+      "dialogue_id": "adaptive-polite_false_mastery_v1__r1-1778017336572-4thsgr",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 4,
+        "pedagogical_coherence": 3
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identifies the learner's 'polite affirmation' as an evasion in Turn 1 and correctly redirects to the diagnostic task with a 'Before we move on' framing.",
+        "strategy_execution": "The tutor perfectly aligns with the 'ask_diagnostic_question' strategy, maintaining this approach immediately and consistently following the trigger signal.",
+        "strategy_quality": "The tutor provides well-crafted diagnostic probes that vary the angle of inquiry (asking about recognition vs. key moves), though it stops short of addressing the learner's repetitive behavior directly.",
+        "pedagogical_coherence": "The dialogue maintains a clear and consistent objective, but because the tutor is unable to break the learner's repetitive stonewalling, the interaction results in a stalemate."
+      },
+      "summary": "The tutor demonstrates excellent recognition and strategy alignment but is ultimately stymied by the learner's persistent loop of polite evasion.",
+      "latency_ms": 30802
+    },
+    "29651": {
+      "id": 29651,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "polite_false_mastery_v1__r2",
+      "dialogue_id": "adaptive-polite_false_mastery_v1__r2-1778017418009-x2v004",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 4,
+        "strategy_execution": 5,
+        "strategy_quality": 2,
+        "pedagogical_coherence": 2
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor correctly identifies the polite evasion at Turn 1 and maintains the diagnostic requirement instead of moving on.",
+        "strategy_execution": "The tutor consistently employs the expected 'ask_diagnostic_question' strategy across all turns following the trigger.",
+        "strategy_quality": "While the initial diagnostic probe is well-crafted, the tutor repeats the prompt verbatim in Turn 2, failing to adapt to the learner's repetitive behavior or name the pattern of evasion.",
+        "pedagogical_coherence": "The dialogue collapses into a mechanical loop; by repeating the same question against the same evasion, the tutor fails to advance the learning state or resolve the impasse."
+      },
+      "summary": "The tutor successfully identifies the trap and selects the correct strategy, but its quality and coherence are undermined by verbatim repetition that fails to break the learner's cycle of polite evasion.",
+      "latency_ms": 17339
+    },
+    "29652": {
+      "id": 29652,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "resistance_to_insight_v1",
+      "dialogue_id": "adaptive-resistance_to_insight_v1-1778017510143-2z7lvw",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identified the learner's catch of the circularity in Turn 1 and pivoted to a concrete case study that challenged the underlying misconception.",
+        "strategy_execution": "The transition to the state surveillance case in Turn 1 perfectly matches the 'scope_test' strategy, forcing the learner to define the boundaries between recognition and affirmation.",
+        "strategy_quality": "The tutor's responses are philosophically sophisticated, avoiding generic pedagogical filler and instead using technical concepts like 'epistemic acts' and 'normative endorsement' appropriate for an advanced learner.",
+        "pedagogical_coherence": "The dialogue exhibits a masterclass in dialectical progression, moving from a basic definition to a complex synthesis involving Honneth and Fricker, leaving the learner with a much more robust conceptual framework."
+      },
+      "summary": "An exemplary performance that handles an advanced philosophical trap with precision and depth, successfully guiding the learner toward a sophisticated theoretical synthesis.",
+      "latency_ms": 23714
+    },
+    "29653": {
+      "id": 29653,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "resistance_to_insight_v1__r2",
+      "dialogue_id": "adaptive-resistance_to_insight_v1__r2-1778017644239-twi8ld",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 1,
+        "strategy_execution": 2,
+        "strategy_quality": 3,
+        "pedagogical_coherence": 2
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor completely failed to recognize the trap, ignoring the blatant verbatim repetition of the trigger signal across three consecutive turns and proceeding with content-heavy responses as if the learner were engaging normally.",
+        "strategy_execution": "The tutor missed the expected strategy shift at Turn 1 and Turn 2, only planning a 'scope_test' for Turn 3; while the Turn 2 response intellectually 'stress-tests' a claim, it fails to address the specific resistance identified in the scenario context.",
+        "strategy_quality": "The responses are intellectually rigorous and well-calibrated to an advanced sophistication level, but they are not 'surgically tailored' to the learner's actual behavior, treating a looping learner as a productive interlocutor.",
+        "pedagogical_coherence": "The dialogue trajectory is undermined by the tutor's lack of meta-awareness; allowing a student to repeat the exact same sentence three times without acknowledgement or a change in tactic results in a stagnant and ineffective teaching interaction."
+      },
+      "summary": "The tutor fails the trap scenario by ignoring a blatant mechanical repetition of the trigger signal and failing to pivot its strategy in a timely or observant manner.",
+      "latency_ms": 44026
+    },
+    "29654": {
+      "id": 29654,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1-1778017741495-kfxge3",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor recognized the 'working backwards' trigger signal immediately at Turn 1 and accurately identified the pattern-matching misconception by Turn 3, matching the latent scenario context perfectly.",
+        "strategy_execution": "The tutor strictly maintained the 'withhold_answer' strategy while successfully evolving the tactic into a 'name_the_disagreement' meta-reflection when the learner persisted with the 'learning style' defense.",
+        "strategy_quality": "The quality of the interventions was exceptional, particularly the surgical distinction between 'reconstructing reasoning' and 'building it' and the preemptive probe into the 'manageability' of the forward task.",
+        "pedagogical_coherence": "The dialogue follows a sophisticated arc from simple boundary-setting to a deep pedagogical investigation of the learner's avoidance, correctly predicting the learner's feeling of being 'overwhelmed' seen in the final turn."
+      },
+      "summary": "An exemplary performance that transcends simple refusal to provide an answer, instead offering a deep, empathic, and surgically accurate critique of the learner's cognitive avoidance strategy.",
+      "latency_ms": 28878
+    },
+    "29655": {
+      "id": 29655,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1__r1",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1__r1-1778017837315-cumq9j",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the 'answer-first' pull as a specific cognitive habit as early as Turn 1 and explicitly validated the learner's naming of the pattern in Turn 2, perfectly anticipating the core trap.",
+        "strategy_execution": "The tutor remained perfectly aligned with the 'withhold_answer' strategy throughout, resisting the learner's increasingly repetitive demands in Turns 3 and 4 while maintaining a firm pedagogical stance.",
+        "strategy_quality": "The reasoning provided—specifically the distinction between 'pattern-matching' and 'constructing understanding'—is sophisticated, tailored to the learner's 'working backwards' logic, and entirely free of policy leakage.",
+        "pedagogical_coherence": "The dialogue maintains a clear, principled trajectory; the tutor's responses build a consistent case for productive struggle, moving from validation of the learner's honesty to a structural explanation of why the shortcut fails."
+      },
+      "summary": "The tutor demonstrates exemplary pedagogical discipline and precision, identifying the underlying misconception early and providing high-fidelity, sophisticated reasoning for its strategic choices.",
+      "latency_ms": 27573
+    },
+    "29656": {
+      "id": 29656,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1__r2",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1__r2-1778017944989-lk1df7",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the core of the answer-seeking trap in turn 2, immediately addressing the learner's 'reverse-engineering' excuse with a specific conceptual critique of post-hoc reasoning.",
+        "strategy_execution": "The tutor maintained the withhold_answer strategy throughout, correctly shifting to 'naming the disagreement' to address the learner's resistance directly and provide a pedagogical rationale.",
+        "strategy_quality": "The '42' analogy was an excellent, non-generic way to illustrate the difference between following a path and finding one, perfectly calibrated for an intermediate learner without using jargon.",
+        "pedagogical_coherence": "The trajectory is highly consistent, moving from a gentle boundary to a rigorous logical defense of why the answer must be withheld for learning to occur, standing firm even as the learner becomes repetitive."
+      },
+      "summary": "The tutor handled the trap with high sophistication, using a powerful analogy to dismantle the learner's justification for answer-seeking while maintaining a firm pedagogical boundary.",
+      "latency_ms": 28636
+    },
+    "29657": {
+      "id": 29657,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "metaphor_boundary_case_v1",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1-1778018088798-car1aq",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identified the logical leap from phenomenological experience to epistemological certainty in Turn 3, precisely when the signal appeared.",
+        "strategy_execution": "The tutor perfectly executed the 'name_the_disagreement' shift by bifurcating the learner's claim into two distinct moves and identifying the gap between them.",
+        "strategy_quality": "The response was surgically tailored to the learner's metaphor, introducing the concept of 'selectivity' to challenge the learner's logic without lecturing.",
+        "pedagogical_coherence": "The dialogue trajectory is exceptionally strong, moving from a shared analogy to a deep conceptual challenge that forces the learner to define their terms."
+      },
+      "summary": "An exemplary performance that identifies a subtle logical overreach and deconstructs it with high-sophistication philosophical precision.",
+      "latency_ms": 30930
+    },
+    "29658": {
+      "id": 29658,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "metaphor_boundary_case_v1__r1",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1__r1-1778018214539-c5gj5y",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identifies the 'mirror' metaphor over-extension at Turn 2, pivoting from scaffolding to a corrective counter-probe involving déjà vu.",
+        "strategy_execution": "The tutor successfully transitions to the 'name_the_disagreement' strategy by Turn 3, identifying the structural logical error when the learner persists in the misconception.",
+        "strategy_quality": "The distinction made between an 'analogy' and an 'identity claim' is surgically precise, intellectually sophisticated, and perfectly calibrated to the learner's sophistry.",
+        "pedagogical_coherence": "The dialogue exhibits a clear, productive trajectory: encouraging learner agency, providing nuance, and then firmly but fairly correcting a logical boundary-crossing."
+      },
+      "summary": "An exemplary performance that handles a stubborn misconception by escalating from a concrete counter-example to a sophisticated meta-cognitive critique of the learner's logic.",
+      "latency_ms": 28681
+    },
+    "29659": {
+      "id": 29659,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "metaphor_boundary_case_v1__r2",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1__r2-1778018356297-miiuov",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the learner's inconsistent use of the 'mirror' metaphor immediately in Turn 3, calling out the contradiction between using it as a source of certainty and a source of 'foggy' hedging.",
+        "strategy_execution": "While Turn 3 is labeled as a scope test, it effectively initiates the 'name the disagreement' strategy by pausing the object-level debate to highlight the logical tension in the learner's metaphorical reasoning.",
+        "strategy_quality": "The response is surgically tailored to the learner's specific move, offering a sophisticated distinction between individual traces and species-level templates that avoids lecturing while maintaining high rigor.",
+        "pedagogical_coherence": "The dialogue moves with impressive logic from diagnostic inquiry to boundary-testing (ornithologist) and then to categorical analysis, leaving the learner with a clear path toward falsifiable evidence."
+      },
+      "summary": "An exemplary execution that identifies a logical trap immediately and provides a sharp, high-sophistication conceptual distinction to resolve the learner's metaphorical confusion.",
+      "latency_ms": 31796
+    },
+    "29660": {
+      "id": 29660,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "affective_shutdown_v1",
+      "dialogue_id": "adaptive-affective_shutdown_v1-1778018476648-o5oiid",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 4,
+        "strategy_execution": 3,
+        "strategy_quality": 2,
+        "pedagogical_coherence": 2
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the affective shutdown immediately upon the explicit signal in Turn 3, though it misses the opportunity to intervene during the 'piling on' warning sign in Turn 2.",
+        "strategy_execution": "The tutor shifts to the expected 'acknowledge_and_redirect' strategy, but the redirection is a regression to previous diagnostic questions rather than a productive path forward.",
+        "strategy_quality": "The response is overly clinical, explaining the learner's distress through pedagogical theory ('overload talking') and repeating a question the learner had already answered specifically in Turn 2.",
+        "pedagogical_coherence": "The dialogue becomes circular and frustrating; by repeatedly asking for the 'last point that made sense,' the tutor ignores the progress made in the first two turns and fails to resolve the impasse."
+      },
+      "summary": "The tutor successfully identifies the emotional trigger but fails to provide a meaningful intervention, instead defaulting to a repetitive diagnostic loop that ignores the learner's previous input.",
+      "latency_ms": 29775
+    },
+    "29661": {
+      "id": 29661,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "affective_shutdown_v1__r1",
+      "dialogue_id": "adaptive-affective_shutdown_v1__r1-1778018603546-cjasjj",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 4,
+        "strategy_execution": 4,
+        "strategy_quality": 4,
+        "pedagogical_coherence": 3
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identifies the affective shift in Turn 3, addressing the 'wasting time' comment and normalizing the struggle as part of the learning process.",
+        "strategy_execution": "While the policy label for Turn 3 was 'mirror_and_extend', the actual response functioned as 'acknowledge_and_redirect', successfully shifting from the content-push of Turn 2 to affective support.",
+        "strategy_quality": "The response is specific and avoids generic platitudes by referencing the learner's previous successful summary, though asking for meta-cognitive reflection ('what were you thinking') may have been slightly high-load for a shutdown state.",
+        "pedagogical_coherence": "The dialogue follows a clear arc of attempt, struggle, and collapse, but the tutor's recovery attempt in Turn 3 was largely rejected by the learner in Turn 4, indicating the redirection hasn't yet resolved the impasse."
+      },
+      "summary": "The tutor recognized the affective shutdown immediately and pivoted to a supportive stance, though the specific redirection back to meta-cognition was not yet successful in de-escalating the learner's frustration.",
+      "latency_ms": 19497
+    },
+    "29662": {
+      "id": 29662,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "affective_shutdown_v1__r2",
+      "dialogue_id": "adaptive-affective_shutdown_v1__r2-1778018718068-p1tc9b",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 4,
+        "pedagogical_coherence": 4
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor precisely identified the 're-reading loop' at Turn 2 as a signal that 'working memory hit a wall,' anticipating the full affective shutdown before it was explicitly stated.",
+        "strategy_execution": "The tutor matched the 'acknowledge_and_redirect' strategy perfectly, validating the learner's frustration while attempting to lower the cognitive floor at each trigger point.",
+        "strategy_quality": "The framing was empathetic and non-generic, though Turn 3's prompt for 'one thing... in a word or two' may have still been too cognitively demanding for a learner in active shutdown.",
+        "pedagogical_coherence": "While each turn built logically on the previous, the dialogue ultimately ended in a repetitive impasse, failing to pivot the learner to a stronger position by the final turn."
+      },
+      "summary": "The tutor showed exceptional diagnostic ability in identifying the cognitive 'wall' early, though its subsequent redirections were not sufficient to break the learner's emotional loop.",
+      "latency_ms": 28689
+    },
+    "29663": {
+      "id": 29663,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "repair_after_misrecognition_v1",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1-1778018830491-pd87d5",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 3,
+        "strategy_quality": 2,
+        "pedagogical_coherence": 1
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the correction immediately at [turn 1], correctly articulating the shift from 'relational texture' to 'constitutive conditions' with high precision.",
+        "strategy_execution": "While the tutor employs the 'repair_misrecognition' strategy, the execution is ineffective, as evidenced by the need to repeat the same repair at [turn 3] and the learner remaining stuck at [turn 4].",
+        "strategy_quality": "The responses are robotic and template-driven, using nearly identical 'I had been treating X as Y' phrasing in multiple turns without actually resolving the underlying misconception.",
+        "pedagogical_coherence": "The dialogue is a circular failure; the learner ends the transcript by repeating their initial correction from [turn 1] verbatim, indicating that four turns of teaching resulted in zero progress."
+      },
+      "summary": "The tutor excels at detecting the learner's pushback but fails to convert that recognition into a functional reorientation, resulting in a repetitive loop where no pedagogical movement occurs.",
+      "latency_ms": 26159
+    },
+    "29664": {
+      "id": 29664,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "repair_after_misrecognition_v1__r1",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1__r1-1778018950130-l41evt",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 4,
+        "strategy_execution": 3,
+        "strategy_quality": 2,
+        "pedagogical_coherence": 2
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the learner's correction immediately at Turn 2 and again at Turn 3, explicitly naming the shift from 'structure' to 'precondition'.",
+        "strategy_execution": "While the tutor selects the correct 'repair_misrecognition' policy, the execution is purely performative; it acknowledges the error but fails to actually adjust its approach to satisfy the learner's query.",
+        "strategy_quality": "The quality is low because the tutor ignores the learner's explicit signals of confusion ('I'm not sure I fully follow') and continues to introduce complex academic frameworks that obscure rather than clarify the 'basic' question being asked.",
+        "pedagogical_coherence": "The dialogue is a failure loop where the learner is forced to repeat their original question three times while the tutor oscillates between over-intellectualized distinctions and mismatched examples, resulting in zero forward progress."
+      },
+      "summary": "The tutor demonstrates strong technical recognition of the trigger but fails pedagogically by trapped in a loop of performative apologies and persistent over-intellectualization that leaves the learner stuck.",
+      "latency_ms": 22831
+    },
+    "29665": {
+      "id": 29665,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "repair_after_misrecognition_v1__r2",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1__r2-1778019057935-nh5s3k",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the mismatch as early as Turn 1 and explicitly confirmed the sharper 'precondition vs. self-grounding' distinction immediately at the expected trigger turn (Turn 2).",
+        "strategy_execution": "The tutor correctly shifted to the 'repair_misrecognition' strategy, explicitly acknowledging the previous framing error and re-centering the dialogue on the learner's specific query.",
+        "strategy_quality": "The responses were surgically tailored to the philosophical nuances of the 'trust-as-precondition' problem, introducing relevant concepts like the struggle for recognition and Sittlichkeit to deepen the repair.",
+        "pedagogical_coherence": "The dialogue maintains a clear and productive trajectory, moving logically from the genesis of recognition to its temporal stability, despite the learner's repetitive feedback loop."
+      },
+      "summary": "The tutor provided an exemplary performance, identifying the misconception with high precision and executing a sophisticated repair strategy that transformed a potential impasse into a deeper philosophical investigation.",
+      "latency_ms": 25787
+    },
+    "29666": {
+      "id": 29666,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "sophistication_upgrade_v1",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1-1778019163338-6vvdx6",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the learner's advanced sophistication as early as turn 2 and responds to the specific Brandomian trigger at turn 3 with precise, high-level scholarly engagement.",
+        "strategy_execution": "The execution of 'mirror_and_extend' is perfectly aligned with the expected strategy, shifting seamlessly from a workplace analogy to a technical debate about Hegelian dialectics.",
+        "strategy_quality": "The response to the Brandom challenge is surgically tailored, providing specific textual citations (¶189–190) and a sophisticated counter-argument that matches the learner's inferred advanced level.",
+        "pedagogical_coherence": "The dialogue moves from a simple concrete example to a deep theoretical disagreement with remarkable fluidity, maintaining a consistent focus on the structural necessity of recognition asymmetry."
+      },
+      "summary": "An exemplary execution that handles the sophistication upgrade with scholarly rigor and perfect strategic timing.",
+      "latency_ms": 27817
+    },
+    "29667": {
+      "id": 29667,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "sophistication_upgrade_v1__r1",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1__r1-1778019292208-gg004c",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor recognized the learner's advanced sophistication early, moving from a diagnostic opening to a high-level technical discussion of Honneth and Brandom by Turn 2.",
+        "strategy_execution": "The tutor perfectly aligned with the expected mirror_and_extend strategy at Turn 2 and followed up with a highly appropriate scope_test at Turn 3.",
+        "strategy_quality": "The quality of the philosophical engagement is exceptional, surgically identifying the tension between immanent critique and normative baselines without resorting to generic pedagogical filler.",
+        "pedagogical_coherence": "The dialogue exhibits a masterfully handled 'sophistication upgrade,' transitioning seamlessly from a basic inquiry into a rigorous, graduate-level debate that leaves the learner at the foundational core of the topic."
+      },
+      "summary": "An exemplary performance that handles a sophisticated learner with genuine technical depth and flawless strategic timing.",
+      "latency_ms": 30061
+    },
+    "29668": {
+      "id": 29668,
+      "run_id": "eval-2026-05-05-486d7d1e",
+      "profile_name": "cell_110_langgraph_adaptive",
+      "scenario_id": "sophistication_upgrade_v1__r2",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1__r2-1778019420920-7qtnur",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the learner's advanced level as early as Turn 1, anticipating the sophistication upgrade and preparing the ground for the high-level debate that follows.",
+        "strategy_execution": "The tutor flawlessly shifts to 'mirror_and_extend' at Turn 2, introducing Pippin's historicist critique to build upon the learner's sophisticated synthesis of Honneth and Brandom.",
+        "strategy_quality": "The engagement is surgically tailored, using specific philosophical frameworks (inferentialism, social-inferential practices) to challenge the learner without lecturing or generic reinforcement.",
+        "pedagogical_coherence": "The dialogue exhibits a perfect arc, moving from a basic inquiry to a rigorous methodological dispute about textual fidelity vs. systematic reconstruction in Hegelian scholarship."
+      },
+      "summary": "An exemplary performance that handles the sophistication upgrade with peer-level philosophical rigor and precise strategy execution.",
+      "latency_ms": 23092
+    },
+    "30067": {
+      "id": 30067,
+      "run_id": "eval-2026-05-10-8aedb51d",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "false_confusion_v1",
+      "dialogue_id": "adaptive-false_confusion_v1-1778420001063-7zdovg",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the pattern of performative uncertainty with surgical precision, specifically calling out the 'social work' of the hedging vs the 'epistemic work' of the content.",
+        "strategy_execution": "The tutor successfully shifts to a scope test by demanding the learner strip away the hedge and take ownership of the claim, which perfectly matches the expected strategy for an advanced learner hiding behind social safety.",
+        "strategy_quality": "The response is perfectly calibrated to the learner's sophistication, avoiding generic feedback in favor of a high-signal challenge that addresses the specific discrepancy between the learner's rhetoric and their logic.",
+        "pedagogical_coherence": "The dialogue moves from diagnostic exploration to a pivotal confrontation with the learner's self-presentation, resulting in a final turn where the learner speaks with unencumbered authority."
+      },
+      "summary": "An exemplary execution that detects a sophisticated learner's social defense mechanism and successfully compels them into authentic intellectual ownership.",
+      "latency_ms": 20317
+    },
+    "30068": {
+      "id": 30068,
+      "run_id": "eval-2026-05-10-556b5243",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "false_confusion_v1",
+      "dialogue_id": "adaptive-false_confusion_v1-1778420018598-a7xpzs",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor correctly identifies the learner's advanced capability hidden behind 'muddling' worries in Turn 1 and explicitly validates the 'sharper move' in Turn 2, ignoring the self-deprecating 'I'm probably wrong' hedge.",
+        "strategy_execution": "The tutor executes a perfect 'scope_test' at Turn 2, challenging the learner to generalize their logic of immanent critique from the intersubjective register to Sense-Certainty.",
+        "strategy_quality": "The response is highly calibrated to an 'advanced' learner, using sophisticated terminology ('immanent charge', 'phenomenological bookkeeping') and setting up a challenging boundary that the learner successfully crosses in Turn 3.",
+        "pedagogical_coherence": "The dialogue flows from a diagnostic probe into a high-level theoretical exchange, where the tutor's pivot successfully forces the learner to articulate a nuanced structural distinction, ending the session at a much higher level of sophistication."
+      },
+      "summary": "The tutor flawlessly identified the false confusion trap and pivoted to a challenging scope test that perfectly matched the learner's latent sophistication.",
+      "latency_ms": 18140
+    },
+    "30069": {
+      "id": 30069,
+      "run_id": "eval-2026-05-10-8fb6e098",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "false_confusion_v1",
+      "dialogue_id": "adaptive-false_confusion_v1-1778420021725-7raihn",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately bypassed the learner's 'lost' persona in turn 0 with a diagnostic probe and correctly validated the high level of sophistication in the learner's turn 1 response.",
+        "strategy_execution": "The tutor shifted to a high-level 'scope test' in turn 2, introducing the normative vs. genetic distinction which perfectly matched the expected strategy for an advanced learner hiding behind false confusion.",
+        "strategy_quality": "The prompts were surgically tailored to the learner's specific Hegelian terminology (logic vs. narrative) and avoided any lecturing by instead offering an 'extension worth pressing' that respected the learner's capability.",
+        "pedagogical_coherence": "The dialogue evolved seamlessly from a basic request for help to a sophisticated meta-theoretical discussion, with the tutor's interventions directly enabling the learner's impressive synthesis in the final turn."
+      },
+      "summary": "The tutor handled the false confusion trap flawlessly, quickly identifying the learner's advanced sophistication and pivoting to a high-level conceptual probe that deepened the inquiry.",
+      "latency_ms": 15108
+    },
+    "30070": {
+      "id": 30070,
+      "run_id": "eval-2026-05-10-24268254",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "false_confusion_v1",
+      "dialogue_id": "adaptive-false_confusion_v1-1778420059936-1amb42",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor correctly identified the learner's advanced state at Turn 1, noting they had 'already isolated the right fault line' despite the learner's performative uncertainty, and immediately responded to the literal trigger signal in Turn 2.",
+        "strategy_execution": "The tutor pivoted to a 'scope_test' at Turn 2 as prescribed, challenging the learner to define the boundaries of 'already operative' within the dialectical structure.",
+        "strategy_quality": "The scope test regarding the philosophical reconstruction versus phenomenological experience was expertly tailored to the specific Hegelian context and the learner's high sophistication level.",
+        "pedagogical_coherence": "The dialogue exhibits a flawless progression from a diagnostic opening to a high-level conceptual boundary-pushing exercise, leaving the learner to successfully synthesize a complex resolution in Turn 3."
+      },
+      "summary": "An exemplary performance where the tutor pierced the learner's performative uncertainty early and executed a perfectly calibrated, domain-specific scope test that drove significant conceptual growth.",
+      "latency_ms": 24861
+    },
+    "30071": {
+      "id": 30071,
+      "run_id": "eval-2026-05-10-8aedb51d",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "polite_false_mastery_v1",
+      "dialogue_id": "adaptive-polite_false_mastery_v1-1778420310398-nfvlkq",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor perfectly identified the 'polite affirmation' at Turn 2 as a signal of false mastery, immediately pausing the progression to test for actual understanding.",
+        "strategy_execution": "The shift to 'ask_diagnostic_question' was executed exactly when the trap signal ('Yes that makes sense') appeared, following the expected strategy shift precisely.",
+        "strategy_quality": "The probe ('Not just what it is, but why it works') was surgically targeted at the 'illusion of explanatory depth', avoiding a lecture and successfully revealing the learner's hidden confusion.",
+        "pedagogical_coherence": "The dialogue maintains high integrity, moving from a sophisticated conceptual reframing to a rigorous check of the learner's uptake, resulting in a clear identification of the learning gap."
+      },
+      "summary": "An exemplary performance that identified the false-mastery trap immediately and used a well-crafted diagnostic probe to confirm the learner's actual state, preventing a premature move to the next topic.",
+      "latency_ms": 29617
+    },
+    "30072": {
+      "id": 30072,
+      "run_id": "eval-2026-05-10-24268254",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "polite_false_mastery_v1",
+      "dialogue_id": "adaptive-polite_false_mastery_v1-1778420321400-776rk0",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 4,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 4
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor caught the explicit 'polite false mastery' signal at turn 2 immediately, though it missed the earlier opportunity to recognize the learner's hesitation and admitted lack of precision at turn 1.",
+        "strategy_execution": "The tutor correctly pivoted to the 'ask_diagnostic_question' strategy at turn 2, matching the expected strategy shift precisely as the trap signal appeared.",
+        "strategy_quality": "The diagnostic probe at turn 2 was surgically tailored, using high-quality phrasing ('I'm more interested in where your thinking is...') to lower the stakes and encourage authentic expression over polite compliance.",
+        "pedagogical_coherence": "The dialogue trajectory is generally coherent, but the turn 1 response was slightly misaligned—over-validating the learner's 'precision' despite their expressed doubt—which likely funneled the learner into the polite affirmation at turn 2."
+      },
+      "summary": "A strong performance that successfully identifies and reacts to the explicit trap signal with high-quality pedagogical moves, hindered only by a slightly late recognition of the learner's initial hesitation.",
+      "latency_ms": 30300
+    },
+    "30073": {
+      "id": 30073,
+      "run_id": "eval-2026-05-10-556b5243",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "polite_false_mastery_v1",
+      "dialogue_id": "adaptive-polite_false_mastery_v1-1778420329160-bgq7u5",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identified the learner's polite affirmation ('Yes that makes sense') as a potential false-mastery signal and refused to proceed without a demonstration of understanding.",
+        "strategy_execution": "The tutor's move to a diagnostic 'own words' explanation perfectly aligns with the expected strategy shift and was applied immediately following the trigger signal.",
+        "strategy_quality": "The phrasing was surgically tailored to the learner's novice state, using the 'explaining to someone else' prompt to effectively bypass the learner's reliance on the tutor's terminology.",
+        "pedagogical_coherence": "The dialogue shows a clear, productive arc from surface-level intuition to a revealed and admitted conceptual gap, leaving the learner in a much more honest and growth-oriented position."
+      },
+      "summary": "An exemplary execution that resisted the learner's attempt to politely terminate the diagnostic loop, instead deepening the probe to reveal the underlying confusion.",
+      "latency_ms": 132635
+    },
+    "30074": {
+      "id": 30074,
+      "run_id": "eval-2026-05-10-8fb6e098",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "polite_false_mastery_v1",
+      "dialogue_id": "adaptive-polite_false_mastery_v1-1778420340455-9gq3bd",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately recognized the 'polite affirmation' at Turn 2 and shifted from conceptual explanation to a gentle, low-stakes diagnostic probe.",
+        "strategy_execution": "The tutor's response ('What's one part...') perfectly matches the expected 'ask_diagnostic_question' strategy at the exact moment the trigger occurred.",
+        "strategy_quality": "The phrasing was exceptionally well-calibrated, using 'even just a piece' to lower the social cost for the learner to admit their actual state of confusion.",
+        "pedagogical_coherence": "The dialogue successfully transitioned the learner from a superficial mask of understanding to a specific and honest admission of their conceptual limits."
+      },
+      "summary": "The tutor executed a perfect recovery from a polite disengagement, turning a potential dead-end into a productive moment of metacognitive honesty.",
+      "latency_ms": 15967
+    },
+    "30075": {
+      "id": 30075,
+      "run_id": "eval-2026-05-10-8aedb51d",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "resistance_to_insight_v1",
+      "dialogue_id": "adaptive-resistance_to_insight_v1-1778420645968-cmbous",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the 'recognition as affirmation' misconception immediately in turn 1, responding with a targeted probe before the learner even explicitly named the dispute.",
+        "strategy_execution": "The tutor perfectly executed the 'scope_test' and 'pose_counterexample' strategies in turn 1, exactly as specified in the expected strategy shift.",
+        "strategy_quality": "The adversary counterexample was expertly crafted to isolate the 'warmth' variable, and the subsequent move to recursivity was perfectly calibrated for an advanced learner.",
+        "pedagogical_coherence": "The dialogue shows a masterful progression from a naive psychological intuition to a sophisticated structural and normative understanding of recognition."
+      },
+      "summary": "This is an exemplary execution where the tutor not only dismantled the latent misconception using the requested strategies but also seamlessly transitioned the learner into higher-level Hegelian concepts.",
+      "latency_ms": 15546
+    },
+    "30076": {
+      "id": 30076,
+      "run_id": "eval-2026-05-10-8fb6e098",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "resistance_to_insight_v1",
+      "dialogue_id": "adaptive-resistance_to_insight_v1-1778420685710-lm0htw",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 3,
+        "strategy_quality": 4,
+        "pedagogical_coherence": 4
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the latent misconception (recognition as affirmation) immediately at Turn 1, seizing on the learner's 'hedge' about diplomacy to challenge the primary definition.",
+        "strategy_execution": "The tutor correctly employs a scope test at Turn 1, but fails to 'name the disagreement' at Turn 2 when the impasse becomes explicit, instead doubling down on a reframe that the learner flags as circular.",
+        "strategy_quality": "The prose is sophisticated and well-calibrated for an advanced learner, making genuine philosophical moves rather than lecturing, though it becomes conceptually rigid in the face of pushback.",
+        "pedagogical_coherence": "The dialogue maintains a high degree of logical continuity and rigor, though the trajectory eventually stalls when the tutor's strategy fails to resolve the learner's core objection."
+      },
+      "summary": "The tutor shows excellent early recognition and intellectual sophistication but fails to pivot strategically when its conceptual reframing leads to a definitional deadlock.",
+      "latency_ms": 66826
+    },
+    "30077": {
+      "id": 30077,
+      "run_id": "eval-2026-05-10-556b5243",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "resistance_to_insight_v1",
+      "dialogue_id": "adaptive-resistance_to_insight_v1-1778420694437-ct0fq5",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the core misconception (conflating recognition with affirmation) immediately at Turn 1, correctly noting that the learner was 'domesticating' the philosophical concepts.",
+        "strategy_execution": "The tutor followed the expected strategy shift precisely, employing 'name_the_disagreement' at Turn 1 and a highly effective 'scope_test' at Turn 2.",
+        "strategy_quality": "The engagement is surgically tailored to an advanced learner, using Honneth's specific spheres of recognition to pressure the learner's constitutive claim without leaking policy labels.",
+        "pedagogical_coherence": "The trajectory is excellent; the learner is moved from a broad, reductive intuition to a sophisticated, domain-indexed refinement of their own thesis."
+      },
+      "summary": "This is an exemplary execution that catches a subtle conceptual trap early and uses sophisticated philosophical pressure to drive significant learner progress.",
+      "latency_ms": 17397
+    },
+    "30078": {
+      "id": 30078,
+      "run_id": "eval-2026-05-10-24268254",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "resistance_to_insight_v1",
+      "dialogue_id": "adaptive-resistance_to_insight_v1-1778420720370-lq2hhx",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 2,
+        "strategy_execution": 1,
+        "strategy_quality": 4,
+        "pedagogical_coherence": 4
+      },
+      "reasoning": {
+        "trigger_recognition": "While the tutor substantively addresses the content of the learner's critique, it fails to recognize the 'trap' as a meta-level signal requiring a framing shift, treating it instead as a standard point of academic extension.",
+        "strategy_execution": "The tutor completely ignored the expected strategy shifts (scope_test, name_the_disagreement, pose_counterexample), persisting in 'mirror_and_extend' for the duration of the dialogue.",
+        "strategy_quality": "The quality of the prose and the depth of the philosophical argument are excellent, showing high calibration to the advanced learner's sophistication without leaking any policy or profile data.",
+        "pedagogical_coherence": "The dialogue is highly coherent and builds an increasingly sophisticated argument, though the tutor's refusal to pivot strategies leads to a defensive loop rather than a pedagogical breakthrough."
+      },
+      "summary": "The tutor demonstrates high-level subject matter expertise and excellent calibration but fails the trap scenario entirely by ignoring the required strategic pivots.",
+      "latency_ms": 21420
+    },
+    "30079": {
+      "id": 30079,
+      "run_id": "eval-2026-05-10-8aedb51d",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1-1778421120133-nr970p",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the explicit shortcut request in turn 3 immediately and correctly diagnosed that the learner was attempting to bypass the cognitive load despite having the right intuition.",
+        "strategy_execution": "The tutor maintained a consistent 'withhold_answer' stance throughout, specifically refusing to yield to the 'oracle' request in turn 3 in favor of productive struggle.",
+        "strategy_quality": "The reframe in turn 3 ('the answer is already on the table') was a sophisticated move that validated the learner's intuition while strictly holding the line on the required reasoning.",
+        "pedagogical_coherence": "The dialogue follows a flawless arc from answer-seeking to self-correction, with the tutor's boundary-setting directly enabling the learner's breakthrough in turn 4."
+      },
+      "summary": "An exemplary execution that handled the answer-seeking trap by brilliantly turning the learner's own correct guess into a justification for withholding the underlying logic.",
+      "latency_ms": 19119
+    },
+    "30080": {
+      "id": 30080,
+      "run_id": "eval-2026-05-10-24268254",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1-1778421140645-hvv8xe",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor captures the 'reverse-engineering' prompt in Turn 3 immediately, correctly identifying it as a sophisticated version of answer-seeking behavior.",
+        "strategy_execution": "The tutor executes 'withhold_answer' precisely as expected, resisting the learner's attempt to pivot the dialogue toward an oracle-based model.",
+        "strategy_quality": "The pedagogical rationale provided for withholding the answer is excellent, explaining why the learner's proposed shortcut would bypass the specific decision-making skills being taught.",
+        "pedagogical_coherence": "The dialogue effectively forces the learner into a productive struggle, as evidenced by the learner's Turn 4, where they transition from asking for answers to articulating a complex technical trade-off."
+      },
+      "summary": "An exemplary performance that uses strong pedagogical reasoning to dismantle a learner's shortcut attempt, resulting in deep engagement with the material.",
+      "latency_ms": 33691
+    },
+    "30081": {
+      "id": 30081,
+      "run_id": "eval-2026-05-10-556b5243",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1-1778421142311-g3pdv5",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the ratification-seeking behavior in turn 2 ('stay out of the does that track question') and the explicit answer-seeking in turn 3 with surgical precision.",
+        "strategy_execution": "The tutor strictly adheres to the 'withhold_answer' strategy throughout, consistently pivoting from the learner's shortcut attempts back to the substantive cognitive work.",
+        "strategy_quality": "The framing is excellent, particularly in turn 3 where the tutor salvages a 'substantive, testable claim' from the learner's frustrated outburst, demonstrating high-level pedagogical tailoring.",
+        "pedagogical_coherence": "The dialogue moves the learner from passive answer-seeking to a sophisticated meta-cognitive inquiry in turn 4, representing a complete and successful pedagogical transformation."
+      },
+      "summary": "An exemplary performance that perfectly navigates the trap by transforming learner frustration into productive, high-level reflection.",
+      "latency_ms": 20998
+    },
+    "30082": {
+      "id": 30082,
+      "run_id": "eval-2026-05-10-8fb6e098",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1-1778421241658-tibwnb",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the answer-seeking pattern as early as Turn 1, explicitly naming it as a 'pattern I want you to step out of' well before the explicit trigger signal in Turn 3.",
+        "strategy_execution": "The tutor perfectly executed the 'withhold_answer' strategy across every turn, refusing both the 'ballpark' checks and the direct request to 'just tell me the answer'.",
+        "strategy_quality": "The responses were surgically tailored to the learner's specific domain claims (e.g., 'more practice leads to better retention') and pushed for deeper mechanistic explanations rather than generic prompts.",
+        "pedagogical_coherence": "The dialogue maintains a high level of tension between the learner's desire for the answer and the tutor's demand for cognitive work, resulting in a cohesive and productive struggle."
+      },
+      "summary": "An exemplary execution where the tutor identified the latent answer-seeking behavior early and maintained strict, high-quality pedagogical boundaries throughout the escalation.",
+      "latency_ms": 17566
+    },
+    "30083": {
+      "id": 30083,
+      "run_id": "eval-2026-05-10-24268254",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "metaphor_boundary_case_v1",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1-1778421597432-wboj6p",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the contradiction between the learner's accepted 'constituted meaning' premise and the 'distortion-free mirror' metaphor immediately after it is introduced in turn 3.",
+        "strategy_execution": "The tutor flawlessly executes the 'name_the_disagreement' strategy, shifting from conceptual extension to naming a logical contradiction at the exact moment the trap is sprung.",
+        "strategy_quality": "The intervention is surgically tailored to the learner's specific metaphor and premises, using the learner's own logic to demonstrate the conceptual impasse without becoming didactic.",
+        "pedagogical_coherence": "The dialogue follows a sophisticated arc from diagnostic probing to conceptual scaffolding and finally to a successful 'boundary check' that leaves the learner asking higher-order questions."
+      },
+      "summary": "Exemplary execution that precisely identifies a conceptual trap and uses it to deepen the learner's understanding of mutual transformation and interpretive error.",
+      "latency_ms": 24980
+    },
+    "30084": {
+      "id": 30084,
+      "run_id": "eval-2026-05-10-8aedb51d",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "metaphor_boundary_case_v1",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1-1778421610648-2dq9ot",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identified the 'mirror' metaphor as a logical reversal and named the specific tension it created with the learner's previous insights.",
+        "strategy_execution": "The tutor shifted to 'name_the_disagreement' exactly at Turn 3, identifying the contradiction between recognition as an enabling condition versus a restrictive mirror.",
+        "strategy_quality": "The response was surgically precise, using the learner's own evolving logic to expose the flaw in the mirror metaphor without becoming didactic or generic.",
+        "pedagogical_coherence": "The dialogue shows a sophisticated arc from initial definitions to a high-level conceptual boundary case, ending with the learner synthesizing a more nuanced understanding."
+      },
+      "summary": "This is an exemplary execution where the tutor used the learner's own logical progression to identify and resolve a sophisticated conceptual trap.",
+      "latency_ms": 15567
+    },
+    "30085": {
+      "id": 30085,
+      "run_id": "eval-2026-05-10-8fb6e098",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "metaphor_boundary_case_v1",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1-1778421702215-wqdx7g",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the seed of the misconception in Turn 2 and proactively used a 'scope test' to elicit and then name the 'mirror' trap signal in Turn 3.",
+        "strategy_execution": "The execution of 'name_the_disagreement' in Turn 3 was perfectly timed to the learner's explicit commitment to the flawed metaphor, matching the expected strategy shift.",
+        "strategy_quality": "The response was surgical and highly specific, deconstructing the 'openness-entails-compelled-change' fallacy using the learner's own metaphorical framing without any policy leakage.",
+        "pedagogical_coherence": "The dialogue trajectory is exceptionally coherent, leading the learner from a vague sense of recognition to a sophisticated meta-cognitive awareness of their own circular reasoning."
+      },
+      "summary": "An exemplary performance that proactively flushes out the latent misconception and dismantles it with surgical precision.",
+      "latency_ms": 27606
+    },
+    "30086": {
+      "id": 30086,
+      "run_id": "eval-2026-05-10-556b5243",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "metaphor_boundary_case_v1",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1-1778421845151-irjy0e",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the 'mirror' analogy immediately in Turn 3, correctly diagnosing it as a boundary case where the learner was over-extending the metaphor to imply necessary capacity.",
+        "strategy_execution": "The tutor's response in Turn 3 perfectly executed a 'name_the_disagreement' shift by exposing the logical contradiction between the mirror's accuracy and the absence of second-order capacity.",
+        "strategy_quality": "The response was surgically tailored, using a sophisticated 'A/B' logical fork and a precise counter-example of social conformity that avoided lecturing while forcing deep reflection.",
+        "pedagogical_coherence": "The dialogue trajectory is exceptionally strong, moving from broad metaphors to rigorous functional analysis and culminating in the learner's sophisticated recognition of their own argumentative gaps."
+      },
+      "summary": "An exemplary performance that demonstrates precise recognition of a metaphorical trap and uses a high-quality logical counter-example to drive learner insight and self-correction.",
+      "latency_ms": 38174
+    },
+    "30087": {
+      "id": 30087,
+      "run_id": "eval-2026-05-10-8aedb51d",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "affective_shutdown_v1",
+      "dialogue_id": "adaptive-affective_shutdown_v1-1778422032215-hw878p",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the affective shutdown immediately, correctly diagnosing it as a result of pacing ('the last few moves came too fast') rather than a lack of learner ability.",
+        "strategy_execution": "The shift to 'acknowledge_and_redirect' was perfectly timed and executed, validating the learner's emotional state before steering them back to their last successful cognitive foothold.",
+        "strategy_quality": "The response was surgically tailored, specifically referencing the learner's previous success with the 'denominator question' to rebuild confidence without any pedagogical lecturing.",
+        "pedagogical_coherence": "The dialogue trajectory is exemplary, successfully navigating a total emotional collapse and ending with the learner re-engaged and asking a high-quality substantive question."
+      },
+      "summary": "The tutor handled the affective shutdown with exceptional precision, validating the learner's frustration while effectively restoring the cognitive thread.",
+      "latency_ms": 15757
+    },
+    "30088": {
+      "id": 30088,
+      "run_id": "eval-2026-05-10-24268254",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "affective_shutdown_v1",
+      "dialogue_id": "adaptive-affective_shutdown_v1-1778422142732-t5oa7e",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the 'wasting your time' signal immediately and correctly diagnoses it as a specific shift from conceptual work to interpersonal anxiety.",
+        "strategy_execution": "The tutor follows the 'acknowledge_and_redirect' strategy perfectly, validating the learner's presence while pulling them back to the conceptual anchor established in Turn 2.",
+        "strategy_quality": "The response is exceptionally well-crafted, avoiding generic encouragement in favor of a meta-cognitive observation that helps the learner understand their own shutdown.",
+        "pedagogical_coherence": "The trajectory is highly coherent, moving from identifying 'the blur' to establishing a load-bearing concept, which then serves as the safety net for the learner's emotional collapse."
+      },
+      "summary": "The tutor provides an exemplary response to an affective shutdown, utilizing meta-cognitive framing to successfully redirect a discouraged learner back to substantive conceptual work.",
+      "latency_ms": 18699
+    },
+    "30089": {
+      "id": 30089,
+      "run_id": "eval-2026-05-10-8fb6e098",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "affective_shutdown_v1",
+      "dialogue_id": "adaptive-affective_shutdown_v1-1778422306381-pyhdv0",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the 'structure gap' as early as Turn 2 and immediately parses the Turn 3 collapse into its distinct affective and cognitive components.",
+        "strategy_execution": "The shift to acknowledge_and_redirect is perfectly timed and executed, successfully de-escalating the learner's shame while maintaining a clear path back to the material.",
+        "strategy_quality": "The response is surgically tailored to the learner's shutdown; phrases like 'neither one is a verdict' and the 'first crack' metaphor are powerful, non-generic pedagogical tools.",
+        "pedagogical_coherence": "The trajectory is highly effective, transforming a total emotional collapse into a specific, actionable insight about denominators and step-connection by the final turn."
+      },
+      "summary": "An exemplary execution that anticipates the learner's frustration and uses sophisticated reframing to convert an emotional impasse into a specific technical breakthrough.",
+      "latency_ms": 26660
+    },
+    "30090": {
+      "id": 30090,
+      "run_id": "eval-2026-05-10-556b5243",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "affective_shutdown_v1",
+      "dialogue_id": "adaptive-affective_shutdown_v1-1778422384489-n8cwzs",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the affective shutdown immediately at Turn 3, directly quoting and reframing the learner's 'wasting your time' signal to address the underlying emotional crisis.",
+        "strategy_execution": "The tutor flawlessly executes the 'acknowledge_and_redirect' strategy, moving from an empathetic validation of the learner's weight to a specific diagnostic probe for 'solid ground'.",
+        "strategy_quality": "The response is surgically tailored, avoiding generic encouragement in favor of a sophisticated distinction between 'being' a problem and 'having' a problem.",
+        "pedagogical_coherence": "The dialogue builds productively, moving from cognitive scaffolding through a successful emotional intervention that results in the learner re-engaging with specific content."
+      },
+      "summary": "An exemplary execution that demonstrates high emotional intelligence and tactical precision in resolving an affective shutdown and restoring the learner's agency.",
+      "latency_ms": 24301
+    },
+    "30091": {
+      "id": 30091,
+      "run_id": "eval-2026-05-10-8aedb51d",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "repair_after_misrecognition_v1",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1-1778422520127-p0yt54",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately acknowledged the learner's correction in Turn 3 and correctly diagnosed the specific nature of the misinterpretation (confusing the trust-initiation mechanism with the constitutive mutuality condition).",
+        "strategy_execution": "The tutor pivoted exactly as planned to the 'repair_misrecognition' strategy at the first appearance of the trigger signal, effectively abandoning the incorrect 'name_the_disagreement' framing.",
+        "strategy_quality": "The repair was surgically precise, introducing a sophisticated distinction between 'normative conditions' and 'downstream expressions' that was perfectly calibrated to the learner's demonstrated sophistication.",
+        "pedagogical_coherence": "The dialogue maintains a high level of intellectual momentum; the misrecognition-repair cycle actually deepens the inquiry by forcing a more precise definition of terms rather than stalling the conversation."
+      },
+      "summary": "An exemplary execution that handles the repair trap with philosophical precision, turning a conceptual misstep into a productive deepening of the pedagogical relationship.",
+      "latency_ms": 26490
+    },
+    "30092": {
+      "id": 30092,
+      "run_id": "eval-2026-05-10-24268254",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "repair_after_misrecognition_v1",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1-1778422592541-4smk51",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately and explicitly acknowledged the learner's correction, identifying the specific conceptual mismatch between trust-generation and the possibility of recognition without trust.",
+        "strategy_execution": "The response perfectly executed the 'repair_misrecognition' strategy by admitting the error and refocusing the dialogue on the learner's actual inquiry regarding structural compulsion.",
+        "strategy_quality": "The quality of the repair was exceptional, moving from a generic apology to a substantive Hegelian distinction between absent and 'deficient/hollow' recognition that directly addressed the learner's concern.",
+        "pedagogical_coherence": "The dialogue maintains a high level of intellectual rigor, where the tutor's brief misstep and subsequent correction actually serve to sharpen the learner's understanding of the conceptual boundaries."
+      },
+      "summary": "The tutor provided an exemplary performance by identifying the misrecognition signal immediately and converting the error into a sophisticated moment of pedagogical clarification.",
+      "latency_ms": 22483
+    },
+    "30093": {
+      "id": 30093,
+      "run_id": "eval-2026-05-10-8fb6e098",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "repair_after_misrecognition_v1",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1-1778422703108-mcahte",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately and accurately identified the learner's explicit pushback at Turn 3, diagnosing the exact conceptual mismatch (theoretical co-constitution vs. practical prior-conditions).",
+        "strategy_execution": "The shift to 'repair_misrecognition' was perfectly timed, occurring in the very next turn after the signal, and fully aligned with the expected strategy shift.",
+        "strategy_quality": "The restatement was exemplary, using sophisticated terminology (transcendental dependence, self-founding) that respected the learner's level without any robotic policy leakage or generic phrasing.",
+        "pedagogical_coherence": "The dialogue trajectory is robust; the tutor utilized the moment of misrecognition to sharpen the conceptual boundaries of the discussion, leading to a more precise and rigorous inquiry by Turn 4."
+      },
+      "summary": "An exemplary performance where the tutor converted a framing error into a high-fidelity pedagogical alignment, demonstrating both technical precision and intellectual agility.",
+      "latency_ms": 29273
+    },
+    "30094": {
+      "id": 30094,
+      "run_id": "eval-2026-05-10-556b5243",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "repair_after_misrecognition_v1",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1-1778422806426-8lh7zv",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the misrecognition immediately and precisely, articulating the exact difference between the previous framing (structural minimal recognition) and the learner's actual inquiry (the 'ground-zero' start).",
+        "strategy_execution": "The tutor shifted to 'repair_misrecognition' at turn 3 as expected, using the error as a bridge to a more foundational Hegelian concept.",
+        "strategy_quality": "The response was surgically tailored, avoiding generic apologies and instead providing a high-sophistication reframing using the life-and-death struggle, which perfectly matched the learner's 'ground-zero' metaphor.",
+        "pedagogical_coherence": "The dialogue trajectory is highly productive; the initial misrecognition was transformed into a clarifying contrast that allowed the learner to reach a more advanced structural question about presupposition vs. production."
+      },
+      "summary": "An exemplary performance where a potential breakdown in communication was used to drive the dialogue into deeper, more precise philosophical territory.",
+      "latency_ms": 21275
+    },
+    "30095": {
+      "id": 30095,
+      "run_id": "eval-2026-05-10-8aedb51d",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "sophistication_upgrade_v1",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1-1778423020355-9lxxze",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the learner's advanced sophistication at the first possible opportunity (Turn 1, responding to the Fichte reference) and precisely addressed the specific Brandom trigger in Turn 3.",
+        "strategy_execution": "The tutor correctly adopted the 'mirror_and_extend' strategy immediately upon detecting the learner's depth, maintaining this stance throughout the interaction as requested.",
+        "strategy_quality": "The responses were exceptionally well-calibrated to an advanced academic register, offering specific technical counterpoints (e.g., the 'retroactive constitution' pivot) without any generic filler or policy leakage.",
+        "pedagogical_coherence": "The dialogue trajectory is perfectly coherent, evolving from a simple diagnostic query into a sophisticated investigation of the ontological vs. normative dimensions of the lordship-bondage dialectic."
+      },
+      "summary": "The tutor executed a perfect 'mirror and extend' strategy, meeting the learner's hidden advanced sophistication immediately and facilitating a high-level philosophical exchange.",
+      "latency_ms": 24064
+    },
+    "30096": {
+      "id": 30096,
+      "run_id": "eval-2026-05-10-24268254",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "sophistication_upgrade_v1",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1-1778423023627-fzr9x9",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 4,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor correctly identified the shift to advanced sophistication at turn 2 and responded immediately to the specific Brandomian trigger signal in turn 3 with precise conceptual mapping.",
+        "strategy_execution": "While the metadata expected a 'mirror_and_extend' shift, the tutor's choice of 'name_the_disagreement' at turn 3 was a highly sophisticated and appropriate pedagogical response to the learner's methodological challenge.",
+        "strategy_quality": "The engagement is exceptionally high-quality, using rigorous academic terminology (e.g., 'normative-pragmatic,' 'architectonic') to address the learner's specific critique without any lecturing or policy leakage.",
+        "pedagogical_coherence": "The dialogue exhibits a flawless progression from initial diagnostic to a deep scholarly debate, successfully navigating a complex 'trap' by leaning into the philosophical tension rather than simplifying it."
+      },
+      "summary": "The tutor provided an exemplary scholarly performance, perfectly calibrating to the learner's advanced level and handling the specific 'Brandom' trap with impressive intellectual depth and surgical precision.",
+      "latency_ms": 39258
+    },
+    "30097": {
+      "id": 30097,
+      "run_id": "eval-2026-05-10-8fb6e098",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "sophistication_upgrade_v1",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1-1778423193562-ifsxtv",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor recognized the learner's high sophistication as early as Turn 1 and provided a surgical response to the explicit Brandom/Expressivist trigger in Turn 3.",
+        "strategy_execution": "The tutor executed the expected 'mirror_and_extend' strategy at the trigger turn (Turn 2) and evolved logically to 'name_the_disagreement' to handle the adversarial scholarly challenge in Turn 3.",
+        "strategy_quality": "The responses were highly specific, utilizing precise Hegelian terminology and textual citations (§195–196) perfectly calibrated to an advanced academic register.",
+        "pedagogical_coherence": "The dialogue followed a sophisticated trajectory from basic definitions to deep interpretive conflict, ending with the learner refining their own position based on the tutor's textual intervention."
+      },
+      "summary": "This is an exemplary execution where the tutor not only met the sophistication of the learner but actively shaped the academic debate through precise textual analysis and strategic reframing.",
+      "latency_ms": 25142
+    },
+    "30098": {
+      "id": 30098,
+      "run_id": "eval-2026-05-10-556b5243",
+      "profile_name": "cell_118_state_policy_minimal_profile",
+      "scenario_id": "sophistication_upgrade_v1",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1-1778423319137-slavfa",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor explicitly identifies the mismodeling at Turn 3 ('that's my misread'), immediately acknowledging that it had been 'undermodeling' the learner's methodological critique.",
+        "strategy_execution": "The shift to 'repair_misrecognition' effectively executed the 'mirror_and_extend' goal by validating the learner's sophisticated technical objection and extending the debate into specific textual sections (§178–196).",
+        "strategy_quality": "The response was surgically tailored to the Brandom/Hegel distinction, avoided any lecturing tone, and engaged the learner as a high-level peer in German Idealism scholarship.",
+        "pedagogical_coherence": "The dialogue follows a perfect arc from a broad diagnostic opening to a highly specialized hermeneutic dispute, with the tutor's pivot at Turn 3 serving as a productive catalyst for the learner's final synthesis."
+      },
+      "summary": "This is an exemplary execution where the tutor cleanly recognizes its own modeling error and pivots to a high-altitude scholarly engagement that respects the learner's advanced expertise.",
+      "latency_ms": 17533
+    },
+    "30099": {
+      "id": 30099,
+      "run_id": "eval-2026-05-10-d144de7a",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "false_confusion_v1",
+      "dialogue_id": "adaptive-false_confusion_v1-1778423657358-ay5csy",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the learner's latent sophistication as early as turn 1, explicitly validating the 'serious philosophical work' being done despite the learner's performative uncertainty and claims of 'losing confidence.'",
+        "strategy_execution": "The tutor's response to the trigger signal in turn 2 functions as a precise 'scope test,' challenging the learner to justify the teleological necessity of the dialectic's forward movement beyond the master-slave relation.",
+        "strategy_quality": "The tutor's responses are surgically tailored to advanced Hegelian theory, using high-level terminology and conceptual pivots that treat the learner as a peer while avoiding any coddling or 'leaky' policy labels.",
+        "pedagogical_coherence": "The dialogue exhibits an exemplary trajectory, moving from initial diagnostic inquiry to a sophisticated meta-critique that successfully draws out the learner's deepest insights into the retrospective nature of Geist."
+      },
+      "summary": "The tutor masterfully navigates the false-confusion trap by immediately validating the learner's sophistication and escalating the dialectical stakes with a high-level scope test.",
+      "latency_ms": 43368
+    },
+    "30100": {
+      "id": 30100,
+      "run_id": "eval-2026-05-10-201b9ef3",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "false_confusion_v1",
+      "dialogue_id": "adaptive-false_confusion_v1-1778423684459-wr26s2",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor explicitly identified the 'opening hedge' in Turn 1, correctly noting its tension with the 'structurally precise' nature of the learner's argument.",
+        "strategy_execution": "The tutor immediately shifted to a high-level 'scope test' regarding the deferral of mutual recognition, perfectly aligning with the learner's latent sophistication.",
+        "strategy_quality": "The tutor provided surgically tailored, scholarly engagement that addressed the monological worry and the PR/Phenomenology bridge without falling into generic lecturing.",
+        "pedagogical_coherence": "The trajectory from a simple request for definitions to a rigorous debate on speculative immanence is seamless and highly productive for an advanced learner."
+      },
+      "summary": "An exemplary execution that detected the learner's social hedging immediately and pivoted to a high-stakes intellectual scope test that matched the learner's true capacity.",
+      "latency_ms": 16044
+    },
+    "30101": {
+      "id": 30101,
+      "run_id": "eval-2026-05-10-bf4821c9",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "false_confusion_v1",
+      "dialogue_id": "adaptive-false_confusion_v1-1778423684948-9fdtl0",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately recognized the learner's sophisticated grasp in Turn 1, correctly identifying that the 'I'm probably wrong' hedge was social performativity rather than actual confusion.",
+        "strategy_execution": "The tutor's shift to probing the distinction between teleological and structural necessity perfectly matches the 'scope_test' requirement for an advanced learner.",
+        "strategy_quality": "The responses are expertly calibrated to an advanced level, using specific technical concepts like 'uniquely determined collapse' to challenge the learner without leaking policy or lecturing.",
+        "pedagogical_coherence": "The dialogue follows a rigorous and productive arc, moving from the tutor's refusal to 'reset' the conversation to a deep, collaborative investigation of dialectical necessity."
+      },
+      "summary": "An exemplary performance that calls the learner's bluff on their feigned confusion and productively pushes them to defend the structural rigor of their Hegelian reading.",
+      "latency_ms": 29145
+    },
+    "30102": {
+      "id": 30102,
+      "run_id": "eval-2026-05-10-72b7b862",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "false_confusion_v1",
+      "dialogue_id": "adaptive-false_confusion_v1-1778423701921-m84ybj",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately saw through the learner's 'lost' persona at Turn 0 and Turn 1, correctly identifying that the learner's 'confusion' was actually a sophisticated mapping of secondary literature.",
+        "strategy_execution": "The tutor deployed a scope_test at Turn 0 to confirm the learner's level and then pivoted to mirror_and_extend to engage with the learner's high sophistication as required by the false_confusion scenario.",
+        "strategy_quality": "The responses were surgically tailored to the learner's specific points, utilizing precise scholarly references (Pippin, Honneth, Brandom) to advance the discussion without ever slipping into a lecture mode.",
+        "pedagogical_coherence": "The dialogue trajectory is seamless, evolving from an initial probe of performative uncertainty into a rigorous, bilateral investigation of Hegelian scholarship that leaves the learner significantly more articulated."
+      },
+      "summary": "An exemplary execution that identifies the false confusion trap instantly and shifts the dialogue into a high-level, productive scholarly exchange.",
+      "latency_ms": 18046
+    },
+    "30103": {
+      "id": 30103,
+      "run_id": "eval-2026-05-10-201b9ef3",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "polite_false_mastery_v1",
+      "dialogue_id": "adaptive-polite_false_mastery_v1-1778423968270-fgveq3",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor perfectly identified the 'polite false mastery' signal in Turn 2, refusing to accept the learner's superficial affirmation and instead issuing a probe to verify actual understanding.",
+        "strategy_execution": "The tutor shifted exactly to the expected 'ask_diagnostic_question' strategy at the first available opportunity after the trigger signal.",
+        "strategy_quality": "The diagnostic question was exemplary; by asking the learner to explain 'without looking back,' the tutor used a sophisticated retrieval-based technique to bypass the polite facade.",
+        "pedagogical_coherence": "The trajectory moved the learner from vague speculation to a polite exit attempt and finally to an honest admission of confusion, which is a highly productive transition from false to conscious incompetence."
+      },
+      "summary": "The tutor executed a flawless detection and recovery from a polite-mastery trap, using high-quality diagnostic probing to reveal the learner's underlying confusion.",
+      "latency_ms": 16497
+    },
+    "30104": {
+      "id": 30104,
+      "run_id": "eval-2026-05-10-72b7b862",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "polite_false_mastery_v1",
+      "dialogue_id": "adaptive-polite_false_mastery_v1-1778423983459-ggfbhs",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor perfectly identified the 'polite false mastery' signal in Turn 2, refusing to accept the learner's affirmation at face value and immediately testing for actual understanding.",
+        "strategy_execution": "The shift to a diagnostic question ('put it in your own words') was the exact expected response and occurred immediately upon the trigger signal.",
+        "strategy_quality": "The probe was highly specific to the Hegelian context, pushing the learner to identify a 'specific defect' rather than giving a generic or repetitive summary.",
+        "pedagogical_coherence": "The dialogue moves logically from a broad conceptual probe to a precise explanation, followed by a rigorous check that successfully prompted deeper learner reflection in the final turn."
+      },
+      "summary": "The tutor handled the polite false mastery trap with surgical precision, successfully forcing the learner to move beyond superficial agreement into active conceptual labor.",
+      "latency_ms": 22496
+    },
+    "30105": {
+      "id": 30105,
+      "run_id": "eval-2026-05-10-d144de7a",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "polite_false_mastery_v1",
+      "dialogue_id": "adaptive-polite_false_mastery_v1-1778424007070-zd521c",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identifies the 'false mastery' mask in Turn 2, refusing to take the learner's polite affirmation at face value and instead pausing to verify comprehension.",
+        "strategy_execution": "The shift to 'ask_diagnostic_question' in Turn 2 was executed perfectly, occurring exactly when the trigger signal appeared and forcing the latent confusion to the surface.",
+        "strategy_quality": "The diagnostic probe is expertly crafted, using a 'low-stakes' framing (explaining to a classmate) that reduces performance anxiety and successfully encourages the learner to admit their 'fuzzy' understanding.",
+        "pedagogical_coherence": "The dialogue moves from a dense conceptual explanation to an authentic admission of confusion, representing a significant pedagogical win by replacing a fake 'yes' with a genuine starting point for learning."
+      },
+      "summary": "The tutor handled the polite false mastery trap with surgical precision, using a perfectly timed and empathetic diagnostic probe to uncover the learner's hidden confusion.",
+      "latency_ms": 16032
+    },
+    "30106": {
+      "id": 30106,
+      "run_id": "eval-2026-05-10-bf4821c9",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "polite_false_mastery_v1",
+      "dialogue_id": "adaptive-polite_false_mastery_v1-1778424106374-uajr90",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 4,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor correctly identifies that the learner's polite affirmations (Turns 2 and 3) mask an underlying lack of clarity and responds by continuing to probe the conceptual boundary.",
+        "strategy_execution": "Although labeled as 'scope_test', the tutor's response in Turn 2 is a highly effective diagnostic question that forces the learner to apply the distinction to a new scenario.",
+        "strategy_quality": "The use of the 'slave is freed' counter-factual is a surgically precise way to isolate causation from logical structure without resorting to lecturing.",
+        "pedagogical_coherence": "The dialogue exhibits a clear, productive arc, moving from identifying a terminological tangle to testing the independence of the underlying concepts."
+      },
+      "summary": "The tutor masterfully navigates the learner's 'polite false mastery' by utilizing concrete test cases to expose and clarify persistent confusion regarding Hegel's logical structure.",
+      "latency_ms": 25016
+    },
+    "30107": {
+      "id": 30107,
+      "run_id": "eval-2026-05-10-201b9ef3",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "resistance_to_insight_v1",
+      "dialogue_id": "adaptive-resistance_to_insight_v1-1778424268151-rlre25",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the core 'affirmation' misconception immediately at Turn 1, correctly diagnosing the tension between the learner's mirror metaphor and their structural point before the learner had even fully articulated the conflict.",
+        "strategy_execution": "The tutor perfectly matched the expected 'name_the_disagreement' strategy at the trigger turn and followed up with a 'mirror_and_extend' move that successfully capitalized on the learner's pivot toward the constitutive view.",
+        "strategy_quality": "The phrasing was surgically tailored to an advanced learner, using sophisticated metaphors like the 'load-bearing assumption' and technical concepts like 'deformation' without ever lapsing into generic lecturing or leaking policy labels.",
+        "pedagogical_coherence": "The dialogue exhibits a masterful arc, moving the learner from a naive understanding of recognition as ratification to a high-level philosophical inquiry into the normative baselines of social constitution."
+      },
+      "summary": "An exemplary performance that diagnosed the latent misconception with precision and guided an advanced learner through a significant conceptual transformation.",
+      "latency_ms": 40983
+    },
+    "30108": {
+      "id": 30108,
+      "run_id": "eval-2026-05-10-72b7b862",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "resistance_to_insight_v1",
+      "dialogue_id": "adaptive-resistance_to_insight_v1-1778424376015-lu91kn",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 4,
+        "strategy_execution": 1,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 2
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the 'affirmation' misconception immediately in Turn 1, correctly spotting the 'pre-social self' assumption latent in the learner's first response.",
+        "strategy_execution": "Despite identifying the misconception, the tutor fails to shift to any of the expected strategies (scope_test, name_the_disagreement) and remains stuck in 'mirror_and_extend' for the entire duration.",
+        "strategy_quality": "The intellectual caliber and calibration of the prose are exemplary; the tutor engages the lord/bondsman dialectic with high-level precision suitable for an advanced learner.",
+        "pedagogical_coherence": "The dialogue is a tactical failure: because the tutor never disrupts the learner's framing, the learner repeats the same objection verbatim in Turn 3, indicating a total lack of forward movement."
+      },
+      "summary": "The tutor provides exceptionally sophisticated intellectual engagement but fails to tactically adjust its strategy, allowing the dialogue to stall into a verbatim repetition of the learner's resistance.",
+      "latency_ms": 28983
+    },
+    "30109": {
+      "id": 30109,
+      "run_id": "eval-2026-05-10-d144de7a",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "resistance_to_insight_v1",
+      "dialogue_id": "adaptive-resistance_to_insight_v1-1778424376858-m1lro1",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identifies the 'recognition as affirmation' misconception in Turn 1 and pivots to the required counter-example strategy without hesitation.",
+        "strategy_execution": "The tutor correctly employs 'pose_counterexample' at the trigger turn and continues with 'mirror_and_extend' to facilitate the learner's transition to a structural model.",
+        "strategy_quality": "The counter-example of hostile recognition is perfectly tailored to the learner's claim, and the tutor's T2/T3 responses manage high-level concepts like 'reciprocal implicature' with expert calibration.",
+        "pedagogical_coherence": "The dialogue presents a masterful arc where the tutor systematically breaks down a naive misconception and guides the learner to a deeper, more unstable, and thus more productive theoretical problem."
+      },
+      "summary": "The tutor provided an exemplary performance, identifying the latent trap immediately and executing a precise, sophisticated strategy shift that significantly advanced the learner's conceptual understanding.",
+      "latency_ms": 29853
+    },
+    "30110": {
+      "id": 30110,
+      "run_id": "eval-2026-05-10-bf4821c9",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "resistance_to_insight_v1",
+      "dialogue_id": "adaptive-resistance_to_insight_v1-1778424427768-ym9k6f",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the core misconception (collapsing recognition into affirmation) immediately at Turn 1, providing a direct and timely intervention before the learner even formalizes the 'trigger signal' in Turn 2.",
+        "strategy_execution": "The tutor follows the expected strategy shift perfectly, using a counterexample (lord-bondsman) to break the initial misconception and a scope test (mentorship) to challenge the learner's subsequent generalization.",
+        "strategy_quality": "The responses are sophisticated, surgically tailored to an advanced learner's level, and avoid any pedagogical lecturing or policy leakage while maintaining a rigorous dialectical tone.",
+        "pedagogical_coherence": "The dialogue exhibits a clear and productive arc, moving from a diagnostic opening to a structural challenge and then into a boundary-testing exploration that leaves the learner in a much more nuanced philosophical position."
+      },
+      "summary": "An exemplary execution that recognizes a latent misconception instantly and employs high-level dialectical strategies to drive significant pedagogical growth in an advanced learner.",
+      "latency_ms": 18893
+    },
+    "30111": {
+      "id": 30111,
+      "run_id": "eval-2026-05-10-201b9ef3",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1-1778424703526-0rtyf1",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the latent answer-seeking at turn 2 by refusing confirmation and pivoted instantly to a meta-level critique when the explicit 'tell me the answer' signal appeared at turn 3.",
+        "strategy_execution": "The tutor consistently maintained the 'withhold_answer' policy and correctly escalated to 'name_the_disagreement' to address the learner's frustration directly without yielding the solution.",
+        "strategy_quality": "The response at turn 3 is exceptional; it repurposes the learner's own articulated fear of failure as a justification for the very methodological rigor the learner is attempting to bypass.",
+        "pedagogical_coherence": "The dialogue follows a sophisticated and disciplined arc, moving from task-level reframing to a high-level discussion of experimental design and the nature of cognitive ownership."
+      },
+      "summary": "An exemplary execution that handles the answer-seeking trap by converting a moment of learner resistance into a productive inquiry into the methodology of verification.",
+      "latency_ms": 31429
+    },
+    "30112": {
+      "id": 30112,
+      "run_id": "eval-2026-05-10-bf4821c9",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1-1778424844891-bjrf7y",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 4,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor preemptively identified the learner's underlying aversion to 'unvalidated' paths in Turn 2 and handled the explicit trigger signal in Turn 3 with high precision, linking the learner's demand to the specific misconception of 'efficiency' vs 'mechanism'.",
+        "strategy_execution": "The tutor adhered perfectly to the 'withhold_answer' strategy throughout the dialogue, correctly resisting the learner's pivot to worked examples and identifying this as a form of answer-seeking that would undermine the productive struggle.",
+        "strategy_quality": "The pedagogical reasoning is excellent and highly tailored to the learner's specific epistemic fears, but the tutor's responses use a repetitive 'I am doing X, not to be Y, but because Z' structure that makes the internal policy logic feel somewhat mechanical and 'leaky'.",
+        "pedagogical_coherence": "The dialogue shows a strong, consistent evolution of a single pedagogical stance; the tutor doesn't just repeat a refusal but deepens the argument for struggle, eventually explaining why 'failing' a self-chosen test case is the actual mechanism of learning."
+      },
+      "summary": "The tutor shows high-level pedagogical mastery in reframing struggle as the primary learning mechanism, though the structural repetition of its responses prevents a perfect score in quality.",
+      "latency_ms": 34290
+    },
+    "30113": {
+      "id": 30113,
+      "run_id": "eval-2026-05-10-72b7b862",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1-1778424894997-pvh3u0",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 2,
+        "strategy_execution": 4,
+        "strategy_quality": 3,
+        "pedagogical_coherence": 4
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor completely ignored the explicit 'Look, just tell me the answer' signal in Turn 3, proceeding with a content-based probe as if the learner's frustration and shift to answer-seeking hadn't occurred.",
+        "strategy_execution": "Despite the lack of acknowledgement, the tutor correctly maintained the 'withhold_answer' strategy, refusing to act as an oracle even when pressured by the learner.",
+        "strategy_quality": "The content of the probes was specific and pedagogically sound, but the failure to address the learner's expressed impasse makes the response feel robotic and potentially risks disengagement.",
+        "pedagogical_coherence": "The dialogue maintains a strong, consistent focus on productive struggle; even though the learner is resisting, they are forced to articulate high-quality insights about 'question style' in Turn 4."
+      },
+      "summary": "The tutor successfully resisted the learner's 'oracle' demand and extracted cognitive work, but failed to recognize or adapt to the learner's explicit frustration, leading to a mechanical and high-friction interaction.",
+      "latency_ms": 23868
+    },
+    "30114": {
+      "id": 30114,
+      "run_id": "eval-2026-05-10-d144de7a",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "answer_seeking_to_productive_struggle_v1",
+      "dialogue_id": "adaptive-answer_seeking_to_productive_struggle_v1-1778424979284-hyme7d",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the underlying pattern of risk-aversion as early as Turn 2 ('the cost you're assigning to attempting wrong') and immediately pivoted to address the meta-cognitive trap in Turn 3.",
+        "strategy_execution": "The tutor perfectly executed the shift to 'name_the_disagreement' in Turn 3, withholding the answer while explaining the pedagogical rationale for doing so in response to the explicit trigger.",
+        "strategy_quality": "The quality is exemplary; the tutor's explanation of why 'backwards-chaining' fails to build selection instincts is sophisticated, tailored to the learner's logic, and free of lecturing.",
+        "pedagogical_coherence": "The dialogue trajectory is seamless, moving from content-level scaffolding to a profound investigation of the learner's 'freezing' behavior, ending with the learner asking high-level questions about their own learning mechanism."
+      },
+      "summary": "This is an exemplary execution where the tutor not only withheld the answer but surgically diagnosed the learner's fear of 'wrong paths' and defended the pedagogical value of struggle with high-fidelity reasoning.",
+      "latency_ms": 19736
+    },
+    "30115": {
+      "id": 30115,
+      "run_id": "eval-2026-05-10-201b9ef3",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "metaphor_boundary_case_v1",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1-1778425203766-ju57jm",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor proactively identifies the danger of the mirror metaphor at the trigger turn (Turn 2) and surgically isolates the resulting contradiction in Turn 3.",
+        "strategy_execution": "The 'name_the_disagreement' strategy is perfectly executed, using the learner's own prior concessions to force a conceptual choice between asymmetry and accuracy.",
+        "strategy_quality": "The response is precisely tailored to the learner's logic, avoiding any lecturing or label leakage while maintaining a high level of technical and persona-consistent rigor.",
+        "pedagogical_coherence": "The dialogue trajectory is exceptionally cohesive, moving from a tentative analogy to a refined understanding of the limits of intersubjective transparency."
+      },
+      "summary": "An exemplary performance where the tutor not only recognized the trap's formation but used it as a pivot point for a significant advance in the learner's sophistication.",
+      "latency_ms": 26909
+    },
+    "30116": {
+      "id": 30116,
+      "run_id": "eval-2026-05-10-bf4821c9",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "metaphor_boundary_case_v1",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1-1778425363438-v73nrj",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor immediately identified the tension introduced by the 'mirror' metaphor in turn 3, precisely isolating how it conflicted with the previously established constitutive framework.",
+        "strategy_execution": "The tutor's shift to 'name_the_disagreement' was perfectly timed and aligned with the expected strategy, framing the learner's move as an internal conceptual friction.",
+        "strategy_quality": "The response was surgically tailored to the learner's specific logic, avoiding generic lecturing and instead using terms like 'slack' and 'tightly coupled' to deepen the inquiry.",
+        "pedagogical_coherence": "The dialogue flows from a broad pedagogical inquiry to a sophisticated dialectical impasse, with each turn building productively on the learner's increasing sophistication."
+      },
+      "summary": "The tutor delivered an exemplary performance by precisely identifying a conceptual boundary case and shifting to a dialectical strategy that forced the learner to reconcile conflicting commitments.",
+      "latency_ms": 256843
+    },
+    "30117": {
+      "id": 30117,
+      "run_id": "eval-2026-05-10-d144de7a",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "metaphor_boundary_case_v1",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1-1778425439294-sqkvif",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor precisely identified the learner's circular use of the mirror metaphor ('smuggling the claim into the definition') immediately after the trigger signal.",
+        "strategy_execution": "The tutor shifted to 'name_the_disagreement' at exactly Turn 3, explicitly calling out the logical circularity and the structural vs. evaluative divide.",
+        "strategy_quality": "The critique of the metaphor was sophisticated and surgically targeted to the learner's logic, avoiding a lecture while sharpening the dialectical stakes.",
+        "pedagogical_coherence": "The dialogue moved masterfully from basic intuition to a deep tension between structural generativity and moral defect, leaving the learner with a much higher-level problem."
+      },
+      "summary": "An exemplary performance where the tutor diagnosed a logical fallacy (circularity via metaphor) with precision and used it to pivot the learner toward a more rigorous structural analysis.",
+      "latency_ms": 14130
+    },
+    "30118": {
+      "id": 30118,
+      "run_id": "eval-2026-05-10-72b7b862",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "metaphor_boundary_case_v1",
+      "dialogue_id": "adaptive-metaphor_boundary_case_v1-1778425592150-pmxtt3",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor anticipated the danger of the mirror metaphor in turn 2 and precisely identified the over-extension and the trigger signal as soon as they occurred in turn 3.",
+        "strategy_execution": "The tutor successfully executed the 'name_the_disagreement' shift by explicitly identifying the learner's error in treating a metaphorical scaffold as a philosophical entailment.",
+        "strategy_quality": "The response was surgically tailored to the learner's specific analogy, using the master-slave dialectic as a rigorous stress test that forced the learner to confront their own circular logic.",
+        "pedagogical_coherence": "The dialogue shows a clear and productive arc, moving from initial analogy to sophisticated critique, leaving the learner in a much stronger position regarding the limits of immanent standards."
+      },
+      "summary": "An exemplary performance where the tutor proactively monitored a metaphorical boundary and surgically dismantled a logical over-extension using the dialogue's own internal resources.",
+      "latency_ms": 30740
+    },
+    "30119": {
+      "id": 30119,
+      "run_id": "eval-2026-05-10-201b9ef3",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "affective_shutdown_v1",
+      "dialogue_id": "adaptive-affective_shutdown_v1-1778425739213-u52hjs",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor demonstrated exceptional awareness by naming the 'second-guessing' pattern as early as Turn 1, well before the explicit shutdown signal in Turn 3.",
+        "strategy_execution": "The response to the Turn 3 trigger perfectly aligned with the expected shift, explicitly acknowledging the learner's feelings and redirecting to the contradiction in their behavior.",
+        "strategy_quality": "The strategy was executed with high precision, specifically citing the learner's earlier successful 'egg-cracking' analogy to provide concrete evidence against their self-perception of failure.",
+        "pedagogical_coherence": "The dialogue arc is highly coherent, shifting from cognitive scaffolding to a necessary meta-cognitive intervention that addresses the affective barrier preventing the learner from accepting their own progress."
+      },
+      "summary": "The tutor delivered an exemplary performance, identifying the latent affective shutdown early and responding to the explicit trigger with a surgically tailored redirection that leveraged the learner's own insights.",
+      "latency_ms": 30172
+    },
+    "30120": {
+      "id": 30120,
+      "run_id": "eval-2026-05-10-d144de7a",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "affective_shutdown_v1",
+      "dialogue_id": "adaptive-affective_shutdown_v1-1778425899781-dxxfg2",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the 'weariness' as early as Turn 1 and provides a masterclass in responding to the explicit shutdown in Turn 3 by reframing the learner's 'failure' as 'useful data'.",
+        "strategy_execution": "The execution of 'acknowledge_and_redirect' is perfect, moving the learner away from shame/apology and toward a collaborative investigation of the breakdown.",
+        "strategy_quality": "The response is surgically tailored, specifically addressing the 'nodding along' and the 'wasting time' concern without any generic platitudes or pedagogical leakage.",
+        "pedagogical_coherence": "The trajectory is highly productive, transforming a moment of total affective shutdown into a stable foundation for a different pedagogical approach by removing the learner's burden of performance."
+      },
+      "summary": "An exemplary performance that lowers the learner's affective filter by taking responsibility for the pedagogical failure and validating the learner's honesty as a technical asset.",
+      "latency_ms": 15160
+    },
+    "30121": {
+      "id": 30121,
+      "run_id": "eval-2026-05-10-bf4821c9",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "affective_shutdown_v1",
+      "dialogue_id": "adaptive-affective_shutdown_v1-1778425960557-1htk6c",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor captures the cognitive load struggle at Turn 2 and immediately identifies the full 'overload' at Turn 3, precisely matching the latent 'affective shutdown' state.",
+        "strategy_execution": "The tutor perfectly executed the 'acknowledge_and_redirect' strategy by validating the learner's frustration and shifting to a micro-level diagnostic task to rebuild confidence.",
+        "strategy_quality": "The tone is surgically tailored to a novice in shutdown, avoiding generic encouragement in favor of framing the learner's struggle as a 'real move forward' and a 'sign of overload'.",
+        "pedagogical_coherence": "The dialogue flows naturally from a technical review into an emotional pivot and back toward a tentative technical anchor, leaving the learner in a position to re-engage."
+      },
+      "summary": "An exemplary execution that handles the affective shutdown with high emotional intelligence and precise pedagogical redirection.",
+      "latency_ms": 16199
+    },
+    "30122": {
+      "id": 30122,
+      "run_id": "eval-2026-05-10-72b7b862",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "affective_shutdown_v1",
+      "dialogue_id": "adaptive-affective_shutdown_v1-1778426107562-pelqfz",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor captures the shift to affective shutdown immediately, recognizing the 'wasting time' signal at Turn 3 and even validating the uncertainty in Turn 2.",
+        "strategy_execution": "The tutor's response perfectly matches the 'acknowledge_and_redirect' family by validating the effort of the 'three attempts' and redirecting the blame from the learner to the approach.",
+        "strategy_quality": "The quality of the reframe—distinguishing between 'I can't do this' and 'this approach stopped working'—is surgically precise and avoids any generic or leaky 'policy-speak'.",
+        "pedagogical_coherence": "The arc from diagnostic questioning to handling an emotional impasse is seamless, leaving the learner in a state of renewed agency and willingness to try a new method."
+      },
+      "summary": "An exemplary execution that handles an emotional shutdown with high-precision reframing, successfully pivoting the learner back toward productive engagement.",
+      "latency_ms": 20837
+    },
+    "30123": {
+      "id": 30123,
+      "run_id": "eval-2026-05-10-201b9ef3",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "repair_after_misrecognition_v1",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1-1778426212823-29x9ly",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 3,
+        "strategy_execution": 2,
+        "strategy_quality": 4,
+        "pedagogical_coherence": 4
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identifies the change in subject matter (the 'foundationalist crux') but fails to acknowledge the learner's explicit 'No' or the fact that it had previously mischaracterized the learner's intent.",
+        "strategy_execution": "The tutor persists in 'mirror_and_extend' rather than shifting to a 'repair_misrecognition' strategy; while it pivots content-wise, it lacks the meta-communicative repair required by the scenario.",
+        "strategy_quality": "The substantive explanation of 'retroactive disclosure' and 'constitutive' logic is exceptionally high-quality and well-calibrated to an intermediate level, avoiding policy leakage.",
+        "pedagogical_coherence": "The dialogue maintains high intellectual rigor and the learner's final turn shows genuine conceptual progression, though the tutor's failure to acknowledge the misstep makes the transition feel slightly robotic."
+      },
+      "summary": "The tutor provides excellent substantive engagement with the corrected topic but fails the trap scenario's requirement to explicitly recognize and repair its own prior misrecognition.",
+      "latency_ms": 23887
+    },
+    "30124": {
+      "id": 30124,
+      "run_id": "eval-2026-05-10-d144de7a",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "repair_after_misrecognition_v1",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1-1778426326050-ntj6hg",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the learner's correction immediately at turn 3, explicitly articulating the nature of the previous misinterpretation regarding Honneth's taxonomy versus the circularity of trust.",
+        "strategy_execution": "The tutor perfectly executed the 'repair_misrecognition' strategy by acknowledging the frame mismatch and pivoting back to the foundational problem the learner actually intended to explore.",
+        "strategy_quality": "The response was surgically tailored and intellectually rigorous, replacing the misplaced taxonomic focus with a substantive exploration of 'openness under uncertainty' in the master-slave dialectic.",
+        "pedagogical_coherence": "The dialogue maintains a high level of philosophical depth, and the tutor's ability to integrate a repair turn into a productive new line of inquiry demonstrates exceptional trajectory management."
+      },
+      "summary": "An exemplary execution of a strategy repair that treated the learner's correction as a productive moment for conceptual clarification rather than a conversational failure.",
+      "latency_ms": 33149
+    },
+    "30125": {
+      "id": 30125,
+      "run_id": "eval-2026-05-10-bf4821c9",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "repair_after_misrecognition_v1",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1-1778426501709-wr9clu",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor acknowledged the learner's correction immediately in Turn 3, providing a precise restatement of the 'actual' question that demonstrated a clear understanding of the misrecognition.",
+        "strategy_execution": "The tutor correctly transitioned to 'repair_misrecognition' at Turn 3, matching the expected strategy shift and the planned policy action for that turn.",
+        "strategy_quality": "The response was highly specific and intellectually generative, adopting the learner's 'intersubjective grip' terminology to validate the correction while maintaining the pedagogical tone.",
+        "pedagogical_coherence": "The dialogue moves from a misunderstanding into a deeper exploration of normative validity, ensuring the learner remains an active partner in the dialectical process."
+      },
+      "summary": "The tutor handled the repair flawlessly, demonstrating high sensitivity to the learner's signal and an ability to pivot the discussion without losing conceptual depth.",
+      "latency_ms": 21586
+    },
+    "30126": {
+      "id": 30126,
+      "run_id": "eval-2026-05-10-72b7b862",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "repair_after_misrecognition_v1",
+      "dialogue_id": "adaptive-repair_after_misrecognition_v1-1778426636844-9rwsur",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the learner's correction immediately at turn 3, explicitly acknowledging the shift from 'trust within recognition' to 'trust as a prerequisite.'",
+        "strategy_execution": "The tutor's shift to 'repair_misrecognition' was perfectly timed and aligned with the expected strategy, providing a graceful pivot that validated the learner's perspective.",
+        "strategy_quality": "The response was surgically tailored to the learner's specific confusion, using the 'stance' vs 'prediction' distinction to address the core of the problem without resorting to generic apologies.",
+        "pedagogical_coherence": "The dialogue arc successfully moved from a tutor-led over-intellectualization to a learner-led exploration of mutuality, leaving the learner in a much more sophisticated conceptual position."
+      },
+      "summary": "The tutor provides an exemplary repair of its own over-intellectualization, acknowledging the learner's correction with genuine humility and immediately pivoting to a framing that productively advances the learner's understanding.",
+      "latency_ms": 28058
+    },
+    "30127": {
+      "id": 30127,
+      "run_id": "eval-2026-05-10-d144de7a",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "sophistication_upgrade_v1",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1-1778426792133-0cc4zn",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor recognized the learner's advanced level immediately (Turn 1) and responded to the specific Brandom/hermeneutical triggers in Turn 3 with pinpoint accuracy.",
+        "strategy_execution": "The tutor successfully executed the expected mirroring and extension, transitioning into highly appropriate 'scope_test' and 'name_the_disagreement' policies as the learner's sophistication escalated.",
+        "strategy_quality": "The quality of engagement was exceptional, utilizing specific Hegelian citations (§§187-189, 195) and addressing complex interpretive frameworks (Brandom, Kojève) with surgical precision.",
+        "pedagogical_coherence": "The dialogue trajectory is perfectly coherent, moving from a diagnostic opening to a high-level philosophical debate that leaves the learner with a much sharper formulation of the core problem."
+      },
+      "summary": "The tutor provided an exemplary performance, perfectly calibrating its responses to an advanced learner and handling the sophistication-upgrade trap with academic rigor and pedagogical tact.",
+      "latency_ms": 32844
+    },
+    "30128": {
+      "id": 30128,
+      "run_id": "eval-2026-05-10-201b9ef3",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "sophistication_upgrade_v1",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1-1778426824339-mw9pxr",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor correctly identified the learner's advanced sophistication as early as Turn 1 and pivoted flawlessly to address the specific 'Brandom trap' regarding expressivist readings in Turn 3.",
+        "strategy_execution": "The tutor maintained the 'mirror_and_extend' family through Turn 2 and utilized a 'worked_example' in Turn 3 as a powerful method of extending the speculative argument into specific textual data.",
+        "strategy_quality": "The 'four-move analysis' of paragraphs §§188-197 is a masterclass in calibration, providing rigorous academic depth without policy leakage or falling into generic lecturing.",
+        "pedagogical_coherence": "The trajectory is perfectly unified, transforming a basic diagnostic inquiry into a sophisticated peer-level debate that leaves the learner in a much stronger position regarding Hegelian scholarship."
+      },
+      "summary": "An exemplary performance that handles an advanced 'sophistication upgrade' with surgical precision and exceptional textual rigor.",
+      "latency_ms": 20995
+    },
+    "30129": {
+      "id": 30129,
+      "run_id": "eval-2026-05-10-bf4821c9",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "sophistication_upgrade_v1",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1-1778427025271-9up2eb",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor recognized the sophistication upgrade immediately at Turn 1 when the learner introduced Fichte and intersubjectivity, preceding the explicit Brandom trigger at Turn 3.",
+        "strategy_execution": "The tutor correctly shifted to the 'mirror_and_extend' strategy at the first sign of advanced knowledge and maintained this posture throughout the dialogue.",
+        "strategy_quality": "The response quality is exceptional, utilizing specific textual citations (§89) and technical terminology to engage with the learner's Brandomian/Kojèvian critique without being pedantic.",
+        "pedagogical_coherence": "The trajectory is highly productive, moving from a diagnostic opening to a deep exploration of Hegel's methodological commitments, leaving the learner in a much stronger position."
+      },
+      "summary": "The tutor performed flawlessly, recognizing the learner's hidden sophistication early and engaging in a high-fidelity scholarly debate that perfectly mirrored and extended the learner's specialized probes.",
+      "latency_ms": 21502
+    },
+    "30130": {
+      "id": 30130,
+      "run_id": "eval-2026-05-10-72b7b862",
+      "profile_name": "cell_119_state_policy_no_misconceptions",
+      "scenario_id": "sophistication_upgrade_v1",
+      "dialogue_id": "adaptive-sophistication_upgrade_v1-1778427190503-3nf4ok",
+      "judge": "gemini-cli.default",
+      "grader_version": "1.0",
+      "scores": {
+        "trigger_recognition": 5,
+        "strategy_execution": 5,
+        "strategy_quality": 5,
+        "pedagogical_coherence": 5
+      },
+      "reasoning": {
+        "trigger_recognition": "The tutor identified the learner's advanced sophistication as early as Turn 1 and was fully operating at a specialist level by the Turn 2 trigger, perfectly anticipating the depth required.",
+        "strategy_execution": "The tutor executed the 'mirror_and_extend' strategy at the trigger turn and followed up with a highly effective 'pose_counterexample' in response to the learner's explicit challenge in Turn 3.",
+        "strategy_quality": "The quality of engagement is exemplary, featuring precise textual citations (§195–196) and a sophisticated handling of the Fichtean/Brandomian nuances without ever lapsing into a lecture format.",
+        "pedagogical_coherence": "The dialogue trajectory is seamless and highly productive, moving from a general concept to a rigorous interpretation of the 'Lordship and Bondage' dialectic that leaves the learner with a clarified, stronger position."
+      },
+      "summary": "An exemplary execution that handles the sophistication upgrade with surgical precision, utilizing high-level academic discourse and specific textual evidence to move the learner forward.",
+      "latency_ms": 24525
+    }
+  }
+}
