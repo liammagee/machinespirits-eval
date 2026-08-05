@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-05T05:35:26.781Z",
+  "generated": "2026-08-05T07:13:31.934Z",
   "counts": {
     "total": 409,
     "byStatus": {
-      "done": 384,
+      "done": 386,
       "blocked": 6,
       "dropped": 8,
-      "active": 5,
+      "active": 4,
       "archived": 4,
-      "review": 2
+      "review": 1
     },
     "byType": {
       "research": 71,
@@ -138,108 +138,6 @@
         "testing",
         "coverage",
         "dead-code",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "refactor-tutor-stub-macro-decomposition",
-      "title": "Decompose tutor-stub into cohesive runtime subsystems",
-      "status": "active",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-07-29",
-      "updated": "2026-08-05",
-      "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
-        ],
-        "code": [
-          "scripts/tutor-stub.js",
-          "services/tutorStubAutomatedLearnerGenerationRuntime.js",
-          "services/tutorStubApplicationState.js",
-          "services/tutorStubApplicationTraceContext.js",
-          "services/tutorStubCharacterControlController.js",
-          "services/tutorStubClarificationTranslationRuntime.js",
-          "services/tutorStubCliArguments.js",
-          "services/tutorStubCommandRuntime.js",
-          "services/tutorStubDebugReportRuntime.js",
-          "services/tutorStubFeedbackTuningController.js",
-          "services/tutorStubInteractiveAutomationController.js",
-          "services/tutorStubInteractiveApplicationComposition.js",
-          "services/tutorStubInteractiveCommandComposition.js",
-          "services/tutorStubInteractiveDialogueController.js",
-          "services/tutorStubInteractiveDirectorController.js",
-          "services/tutorStubInteractiveInputPresentation.js",
-          "services/tutorStubInteractiveLearnerRuntime.js",
-          "services/tutorStubInteractiveSessionController.js",
-          "services/tutorStubInteractiveTurnController.js",
-          "services/tutorStubInterimController.js",
-          "services/tutorStubLaunchRuntime.js",
-          "services/tutorStubLaunchApplicationContext.js",
-          "services/tutorStubLaunchPresentation.js",
-          "services/tutorStubLaunchSummaryPresentation.js",
-          "services/tutorStubLearnerAnalysisRuntime.js",
-          "services/tutorStubLearnerDagState.js",
-          "services/tutorStubLearnerEvidenceRuntime.js",
-          "services/tutorStubLiveSettingsController.js",
-          "services/tutorStubMixedLearnerController.js",
-          "services/tutorStubNonInteractiveApplication.js",
-          "services/tutorStubModelPickerController.js",
-          "services/tutorStubPerformanceControlController.js",
-          "services/tutorStubOpeningRuntime.js",
-          "services/tutorStubPromptTransport.js",
-          "services/tutorStubPublicHistory.js",
-          "services/tutorStubPublicPresentationRuntime.js",
-          "services/tutorStubRecoveryAccountingRuntime.js",
-          "services/tutorStubResponsePolicy.js",
-          "services/tutorStubScenarioController.js",
-          "services/tutorStubSessionOrchestration.js",
-          "services/tutorStubSessionApplicationContext.js",
-          "services/tutorStubSessionApplicationRuntime.js",
-          "services/tutorStubSessionStateRuntime.js",
-          "services/tutorStubTraceRuntime.js",
-          "services/tutorStubTerminalHost.js",
-          "services/tutorStubTutorPromptContext.js",
-          "services/tutorStubTurnOrchestration.js",
-          "services/tutorStubTypedActionPlanningRuntime.js",
-          "services/tutorStubVoiceController.js",
-          "services/tutorStubWorldPresentation.js",
-          "services/tutorStubTutorTurnPipeline.js",
-          "tests/tutorStubTutorTurnPipeline.test.js",
-          "tests/tutorStubEntrypointFacades.test.js",
-          "tests/tutorStubLearnerAnalysisRuntime.test.js"
-        ],
-        "prs": [
-          426,
-          427,
-          428,
-          429,
-          430,
-          431,
-          471,
-          474,
-          475,
-          476,
-          478,
-          479,
-          482,
-          484
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-tutor-stub-extracted-owner-boundaries"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "tutor-stub",
-        "macro-decomposition",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -535,56 +433,6 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
-    },
-    {
-      "id": "refactor-tutor-stub-extracted-owner-boundaries",
-      "title": "Split oversized tutor-stub pipeline and response-policy owners",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "branch": "codex/refactor-tutor-stub-policy-selection-owner",
-      "verification": "The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; 207 focused policy/configuration tests, 7,836 root tests, and 137 tutor-core tests pass with zero failures or skips; prompt/world, lint, format, source, manifest, benchmark re-audit, and zero-cycle gates pass; no replacement owner exceeds the 1,200-line ceiling.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "prs": [
-          507
-        ],
-        "code": [
-          "services/tutorStubTutorTurnPipeline.js",
-          "services/tutorStubTutorTurnPreparation.js",
-          "services/tutorStubTutorAttemptRuntime.js",
-          "services/tutorStubTutorCommitteeRuntime.js",
-          "services/tutorStubTutorDeliveryRuntime.js",
-          "services/tutorStubTutorDraftAudit.js",
-          "services/tutorStubTutorRepairRuntime.js",
-          "services/tutorStubTutorTerminalRuntime.js",
-          "services/tutorStubResponsePolicy.js",
-          "services/tutorStubResponsePolicySelectionRuntime.js",
-          "services/tutorStubAdaptiveResponsePolicyRuntime.js",
-          "services/tutorStubResponseConfigurationSelectionRuntime.js",
-          "config/stability/baseline-v0.7.0.json",
-          "config/tutor-pr-benchmark.yaml",
-          "scripts/generate-baseline-manifest.js",
-          "tests/tutorStubResponsePolicyRuntime.test.js",
-          "scripts/tutor-stub.js"
-        ],
-        "items": [
-          "refactor-tutor-stub-macro-decomposition",
-          "codebase-refactoring-program"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "tutor-stub",
-        "boundaries",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
@@ -4166,6 +4014,55 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-tutor-stub-extracted-owner-boundaries",
+      "title": "Split oversized tutor-stub pipeline and response-policy owners",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-05",
+      "verification": "The tutor-turn pipeline and response-policy modules are decomposed into cohesive tested owners without changing their public facades; 207 focused policy/configuration tests, 7,836 root tests, and 137 tutor-core tests pass with zero failures or skips; prompt/world, lint, format, source, manifest, benchmark re-audit, and zero-cycle gates pass; no replacement owner exceeds the 1,200-line ceiling.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "prs": [
+          507
+        ],
+        "code": [
+          "services/tutorStubTutorTurnPipeline.js",
+          "services/tutorStubTutorTurnPreparation.js",
+          "services/tutorStubTutorAttemptRuntime.js",
+          "services/tutorStubTutorCommitteeRuntime.js",
+          "services/tutorStubTutorDeliveryRuntime.js",
+          "services/tutorStubTutorDraftAudit.js",
+          "services/tutorStubTutorRepairRuntime.js",
+          "services/tutorStubTutorTerminalRuntime.js",
+          "services/tutorStubResponsePolicy.js",
+          "services/tutorStubResponsePolicySelectionRuntime.js",
+          "services/tutorStubAdaptiveResponsePolicyRuntime.js",
+          "services/tutorStubResponseConfigurationSelectionRuntime.js",
+          "config/stability/baseline-v0.7.0.json",
+          "config/tutor-pr-benchmark.yaml",
+          "scripts/generate-baseline-manifest.js",
+          "tests/tutorStubResponsePolicyRuntime.test.js",
+          "scripts/tutor-stub.js"
+        ],
+        "items": [
+          "refactor-tutor-stub-macro-decomposition",
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "boundaries",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-tutor-stub-fact-matching",
       "title": "Refactor tutor-stub fact matching",
       "status": "done",
@@ -5506,6 +5403,109 @@
         "tutor-stub",
         "learning-summary",
         "projection"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-tutor-stub-macro-decomposition",
+      "title": "Decompose tutor-stub into cohesive runtime subsystems",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-07-29",
+      "updated": "2026-08-05",
+      "verification": "Each macro PR removes at least 750 net lines from scripts/tutor-stub.js on a rolling three-PR average, preserves focused byte/contract parity plus the zero-skip hermetic and static gates, introduces no import cycles or replacement oversized module, and leaves the entry script near 2,000 lines",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/tutor-stub.js",
+          "services/tutorStubAutomatedLearnerGenerationRuntime.js",
+          "services/tutorStubApplicationState.js",
+          "services/tutorStubApplicationTraceContext.js",
+          "services/tutorStubCharacterControlController.js",
+          "services/tutorStubClarificationTranslationRuntime.js",
+          "services/tutorStubCliArguments.js",
+          "services/tutorStubCommandRuntime.js",
+          "services/tutorStubDebugReportRuntime.js",
+          "services/tutorStubFeedbackTuningController.js",
+          "services/tutorStubInteractiveAutomationController.js",
+          "services/tutorStubInteractiveApplicationComposition.js",
+          "services/tutorStubInteractiveCommandComposition.js",
+          "services/tutorStubInteractiveDialogueController.js",
+          "services/tutorStubInteractiveDirectorController.js",
+          "services/tutorStubInteractiveInputPresentation.js",
+          "services/tutorStubInteractiveLearnerRuntime.js",
+          "services/tutorStubInteractiveSessionController.js",
+          "services/tutorStubInteractiveTurnController.js",
+          "services/tutorStubInterimController.js",
+          "services/tutorStubLaunchRuntime.js",
+          "services/tutorStubLaunchApplicationContext.js",
+          "services/tutorStubLaunchPresentation.js",
+          "services/tutorStubLaunchSummaryPresentation.js",
+          "services/tutorStubLearnerAnalysisRuntime.js",
+          "services/tutorStubLearnerDagState.js",
+          "services/tutorStubLearnerEvidenceRuntime.js",
+          "services/tutorStubLiveSettingsController.js",
+          "services/tutorStubMixedLearnerController.js",
+          "services/tutorStubNonInteractiveApplication.js",
+          "services/tutorStubModelPickerController.js",
+          "services/tutorStubPerformanceControlController.js",
+          "services/tutorStubOpeningRuntime.js",
+          "services/tutorStubPromptTransport.js",
+          "services/tutorStubPublicHistory.js",
+          "services/tutorStubPublicPresentationRuntime.js",
+          "services/tutorStubRecoveryAccountingRuntime.js",
+          "services/tutorStubResponsePolicy.js",
+          "services/tutorStubScenarioController.js",
+          "services/tutorStubSessionOrchestration.js",
+          "services/tutorStubSessionApplicationContext.js",
+          "services/tutorStubSessionApplicationRuntime.js",
+          "services/tutorStubSessionStateRuntime.js",
+          "services/tutorStubTraceRuntime.js",
+          "services/tutorStubTerminalHost.js",
+          "services/tutorStubTutorPromptContext.js",
+          "services/tutorStubTurnOrchestration.js",
+          "services/tutorStubTypedActionPlanningRuntime.js",
+          "services/tutorStubVoiceController.js",
+          "services/tutorStubWorldPresentation.js",
+          "services/tutorStubTutorTurnPipeline.js",
+          "tests/tutorStubTutorTurnPipeline.test.js",
+          "tests/tutorStubEntrypointFacades.test.js",
+          "tests/tutorStubLearnerAnalysisRuntime.test.js"
+        ],
+        "prs": [
+          426,
+          427,
+          428,
+          429,
+          430,
+          431,
+          471,
+          474,
+          475,
+          476,
+          478,
+          479,
+          482,
+          484,
+          507
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-tutor-stub-extracted-owner-boundaries"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "macro-decomposition",
+        "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
     },
