@@ -115,6 +115,7 @@ links:
     - refactor-tutor-stub-extracted-owner-boundaries
     - refactor-evaluation-turn-execution
     - refactor-evaluation-resume-rejudge-runtime
+    - refactor-eval-cli-operational-commands
 tags:
   - refactoring
   - testing
@@ -1435,3 +1436,13 @@ Log:
   manifest, workplan, diff, and zero-cycle gates pass without model calls.
 - 2026-08-05 — Opened R4 step 3 as PR #513 against `main` after the reviewed
   implementation passed all local gates.
+- 2026-08-05 — PR #513 merged R4 step 3 as `3b50ef95`; activated the first R4
+  step 4 slice on `codex/refactor-eval-cli-operational-commands` from refreshed
+  `main` at `23816179`. This slice establishes the command registry and moves
+  read, monitoring, lifecycle, resume, export, config-validation, and play
+  handlers before generation and scoring commands follow.
+- 2026-08-05 — The first R4 step 4 slice reached review with thirteen command
+  owners and three presentation modules. `eval-cli.js` fell from 6,300 to
+  4,526 lines (28.2%); exact old/new output parity passed twenty-two command
+  cases, and focused, zero-skip hermetic, coverage-risk, lint, format, manifest,
+  workplan, diff, and zero-cycle gates pass without model calls.

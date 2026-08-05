@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-resume-rejudge-runtime
 title: Extract evaluation resume and rejudge runtimes
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -83,3 +83,6 @@ Log:
 - 2026-08-05 — Opened the reviewed slice as PR #513 against `main`; local and
   remote implementation SHAs matched at `4ba78c7f` before this PR-link
   follow-up.
+- 2026-08-05 — PR #513 merged to `main` as `3b50ef95`; the generated workplan
+  refresh followed at `23816179`. All required CI jobs passed, so the card is
+  closed before eval-cli command decomposition begins.

@@ -121,6 +121,36 @@ describe('eval-cli smoke — usage / error handling', () => {
     assert.ok(stderr.includes('Usage:'), 'should show usage');
   });
 
+  it('watch: shows usage when no runId', async () => {
+    const { stderr, code } = await runCli(['watch']);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('Usage:'), 'should show usage');
+  });
+
+  it('resume: shows usage when no runId', async () => {
+    const { stderr, code } = await runCli(['resume']);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('Usage:'), 'should show usage');
+  });
+
+  it('revert: shows usage when no runId', async () => {
+    const { stderr, code } = await runCli(['revert']);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('Usage:'), 'should show usage');
+  });
+
+  it('delete-runs: rejects an unbounded deletion request', async () => {
+    const { stderr, code } = await runCli(['delete-runs']);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('requires at least one filter'), 'should require an explicit deletion filter');
+  });
+
+  it('play: validates the human side before loading the interactive host', async () => {
+    const { stderr, code } = await runCli(['play', '--as', 'observer']);
+    assert.strictEqual(code, 1);
+    assert.ok(stderr.includes('Invalid --as value'), 'should preserve the play-side validation error');
+  });
+
   it('unknown command: exits with error and lists available commands', async () => {
     const { stderr, code } = await runCli(['nonexistent_command']);
     assert.strictEqual(code, 1);
@@ -193,5 +223,14 @@ describe('eval-cli smoke — evaluate-learner', () => {
       stderr.includes('not found') || stderr.includes('No multi-turn'),
       'should report not found or no results',
     );
+  });
+});
+
+describe('eval-cli smoke — configuration validation', () => {
+  it('validate-config: reaches the complete repository validation summary', async () => {
+    const { stdout, stderr, code } = await runCli(['validate-config'], 30000);
+    assert.strictEqual(code, 0, stderr);
+    assert.ok(stdout.includes('Validating configuration'), 'should start configuration validation');
+    assert.ok(stdout.includes('0 error(s)'), 'should preserve the successful summary');
   });
 });
