@@ -1,14 +1,13 @@
 ---
 id: negative-register-effect-estimation-grid
 title: Estimate negative-register effects with stance-fidelity gating
-status: blocked
+status: active
 type: experiment
 priority: P2
 owner: codex
 source: manual
 created: 2026-07-03
 updated: 2026-08-05
-blocked_by: Explicit operator authorization for the frozen 45-row model-consuming generation and judging run
 verification: Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.
 claim_status: future
 links:
@@ -81,3 +80,18 @@ approved model-consuming generation and judging run.
 branch or worktree remains. The apparatus is prepared, but the empirical grid
 cannot proceed without the explicitly named paid-run authorization, so the
 card is blocked rather than active.
+
+2026-08-05 Claude: Operator authorization received in chat ("Authorize the
+negative-register run" — Liam Magee, 2026-08-05). The named gate is lifted
+and the card returns to active. Scope of the authorization: exactly the
+frozen 45-row plan the registered dry-run produces — plan SHA-256
+4590ff55a1a940f5c794f4dec7faef3f947e3bc5d9d2cca14bd7e88ca54b1774, verified
+reproducible on main after PR #508. A changed plan needs fresh
+authorization. The launch did not start from the authorizing session: that
+container has neither the codex CLI nor its credentials, and generation
+needs codex for both seats. Next step, unchanged from the preregistration:
+from a clean checkout of main, run
+`npm run negative-register:grid -- --launch-approved --expected-sha <HEAD>`,
+then the fail-closed report step (`--report-run <runId>`). Scoring seams
+stay pinned: tutor-only rubric v2.2 via the Claude CLI on sonnet-5, register
+rubric via claude-code sonnet-5.
