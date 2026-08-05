@@ -26,8 +26,10 @@ export const NEGATIVE_REGISTER_EFFECT_GRID = Object.freeze({
   scoring: Object.freeze({
     tutorRubricVersion: '2.2',
     tutorJudgeCli: 'claude',
-    tutorJudgeModel: 'sonnet-5',
-    tutorJudgeLabel: 'claude-code/sonnet-5',
+    // The claude CLI takes the full model ID; 'sonnet-5' stopped resolving at
+    // CLI 2.1.216. The label mirrors eval-cli's stored `claude-code/<model>`.
+    tutorJudgeModel: 'claude-sonnet-5',
+    tutorJudgeLabel: 'claude-code/claude-sonnet-5',
     registerJudge: 'claude-code.sonnet-5',
   }),
 });

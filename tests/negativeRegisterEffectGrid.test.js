@@ -40,7 +40,7 @@ function completeAnalyses() {
           verdict: repeat === 1 ? 'candidate_router_breakthrough' : 'partial_uptake',
           tutorV22Score: 70 + profileIndex,
           tutorRubricVersion: '2.2',
-          tutorJudgeModel: 'claude-code/sonnet-5',
+          tutorJudgeModel: 'claude-code/claude-sonnet-5',
           registerRubricScore: 60 + repeat,
           registerJudgeModel: 'claude-code.sonnet-5',
           stanceFidelity: {
