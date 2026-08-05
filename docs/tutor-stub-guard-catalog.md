@@ -102,6 +102,41 @@ Readings, each visible in the traces:
   advance: backtrack, slow down, reinforce and test. A per-turn binary here
   criminalizes consolidation.
 
+## The same measurement at scale (2026-08-05)
+
+The table above is single dialogues. The fallible-learner Phase-B run is the
+first large sample: nine conditions, 1,156 tutor turns, one model (codex
+gpt-5.6-terra), on the post-fix tree with every guard default unchanged.
+
+| | turns | canned | model as written |
+|---|---|---|---|
+| false_memory × rowan (bare / contract / empty plan) | 332 | 43% / 43% / 55% | 8% / 25% / 3% |
+| low_agency × greyfen | 425 | 69% / 63% / 66% | 1% / 28% / 1% |
+| low_agency × rowan | 399 | 74% / 66% / 71% | 0% / 21% / 2% |
+| all | 1156 | 62% | 10% |
+
+Pass rate by candidate kind: the model as first written 10% (n=1156), plain
+rewrite 20% (997), self-correction 28% (144), composition repair 28% (130),
+actorial part repair 71% (62), source voice repair 0% (17). The template
+passes 100% by construction, being built from the checks — it is not a
+candidate the ladder had and declined.
+
+Findings against the model's first draft, by family: live turn progression
+1264, actorial realization 949, dramatic release 516, live source action
+alignment 295, repetition 249, response composition 123, closure 62. The three
+busiest single checks are `tutor_turn_without_advance` (978 firings across all
+attempts), `handoff_loses_turn_focus` (917) and `learner_uptake_not_realized`
+(872). Only 297 of 1,041 rejected drafts failed one family alone, so no single
+relaxation moves the rate much.
+
+Two things this adds to the 2026-07-30 reading. First, the rate is worse in
+harder cells — the bare tutor facing a deferential learner got 0 of 127 turns
+through as composed — so the fallback rate tracks dialogue difficulty, and the
+number above is this run's, not a constant. Second, it is not equal across
+arms: an arm carrying a per-turn contract spoke in its own words 21–28% of the
+time against a bare arm's 0–1%. Any comparison between such arms is partly a
+comparison between a model tutor and a fixed script, and should say so.
+
 ## The design rule this yields
 
 Binary where it is a transaction, graded where it is a judgment. Families 1,
