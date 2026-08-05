@@ -158,3 +158,11 @@ treats aborts as spent by design), contract 10/11 (91%, 1 abort), empty
 plan 5/12 (42%, 0 aborts). Empty-plan delivery check preceding the cell:
 1 dialogue, stamp `empty_plan` only, plan text shipped verbatim on all
 turns. Descriptive only; the verdict pools all three cells.
+
+**2026-08-05 — Phase B cell 2 complete (false_memory × rowan_flat).**
+Corrected closure: bare 8/9 (89%, 3 aborts), contract 9/10 (90%, 2
+aborts), empty plan 9/11 (82%, 1 abort; two engine misses corrected).
+The cell was frozen at the band edge (80% calibration) and its Phase B
+bare sample drifted above it — recorded, not re-gated; the pooled test
+carries it. All aborts remain codex tool-reflex kills, named per the
+crash rule.
