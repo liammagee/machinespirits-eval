@@ -6,6 +6,9 @@ The tutor engine formerly published as `@machinespirits/tutor-core` is now
 in-housed under [`tutor-core/`](tutor-core/), so engine, evaluation, and prompt
 changes are versioned and tested together.
 
+New here? [`DOCS.md`](DOCS.md) maps where every kind of documentation lives —
+layers, authorities, web surfaces, regeneration, deploy.
+
 ## Overview
 
 The system runs automated tutoring dialogues across configurable experimental cells, then scores them with LLM judges against a multi-dimensional rubric. It supports:

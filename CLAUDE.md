@@ -6,7 +6,7 @@ Plain words, short sentences, answer what was asked and stop. The full rule is `
 
 ## This fork
 
-This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` specialised for the **Dramatic Recognition / Poetics** arc (sanctioned 2026-05-19). Master plan: `DRAMATIC-RECOGNITION-PLAN.md` (now historical — pre-registration plus closeout ledger; live work is tracked on the `workplan/` board). The full eval-factorial machinery below (cells 1–125, ego-superego, adaptive runner, rubrics v2.2) is inherited unchanged; the poetics pipeline's results land as §s of `docs/research/paper-full-2.0.md`. Sibling agent docs at repo root: `AGENTS.md` (Codex), `GEMINI.md`.
+This is `machinespirits-eval-dramatic` — a fork of `machinespirits-eval` specialised for the **Dramatic Recognition / Poetics** arc (sanctioned 2026-05-19). Master plan: `DRAMATIC-RECOGNITION-PLAN.md` (now historical — pre-registration plus closeout ledger; live work is tracked on the `workplan/` board). Documentation entry point: `DOCS.md` (layers, authorities, web surfaces, regeneration, deploy). The full eval-factorial machinery below (cells 1–125, ego-superego, adaptive runner, rubrics v2.2) is inherited unchanged; the poetics pipeline's results land as §s of `docs/research/paper-full-2.0.md`. Sibling agent docs at repo root: `AGENTS.md` (Codex), `GEMINI.md`.
 
 ## Desktop app (Electron)
 
