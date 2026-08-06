@@ -6,10 +6,16 @@
       "id": "evaluation-store",
       "label": "Evaluation store integrity",
       "runner": "node",
-      "sources": ["services/evaluationStore.js"],
+      "sources": [
+        "services/evaluationStore.js",
+        "services/evaluationStore/connection.js",
+        "services/evaluationStore/migrations.js"
+      ],
       "tests": [
         "services/__tests__/evaluationStoreTransientStats.test.js",
         "tests/evaluationStore.test.js",
+        "tests/evaluationStoreBoundaryInventory.test.js",
+        "tests/evaluationStoreConnectionMigrations.test.js",
         "tests/evaluationStoreRoundtripIntegrity.test.js"
       ],
       "floors": { "lines": 80, "branches": 62, "functions": 72 }
