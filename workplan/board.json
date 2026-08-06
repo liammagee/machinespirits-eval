@@ -1,21 +1,21 @@
 {
-  "generated": "2026-08-06T10:00:37.085Z",
+  "generated": "2026-08-06T14:14:10.419Z",
   "counts": {
-    "total": 430,
+    "total": 432,
     "byStatus": {
-      "done": 396,
+      "done": 397,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
       "archived": 4,
-      "triaged": 7,
+      "triaged": 8,
       "review": 5
     },
     "byType": {
       "research": 74,
       "experiment": 71,
       "infra": 83,
-      "maintenance": 182,
+      "maintenance": 184,
       "content": 3,
       "ops": 10,
       "paper": 7
@@ -134,6 +134,35 @@
         "guards",
         "fallible-learner"
       ]
+    },
+    {
+      "id": "repair-evaluation-config-comparison-missing-side-winner",
+      "title": "Define missing-side winner semantics in configuration comparison",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "Configuration-comparison tests prove the reviewed policy for scenarios missing from either side, including score, difference, winner, and overall win/tie counts, without changing complete-pair behavior.",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "services/evaluationStore/statisticsRepository.js",
+          "tests/evaluationStoreStatisticsRepository.test.js"
+        ],
+        "items": [
+          "refactor-evaluation-store-statistics-repository"
+        ]
+      },
+      "tags": [
+        "evaluation",
+        "statistics",
+        "correctness",
+        "compatibility"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "tutor-stub-correspondence-guard-vocabulary",
@@ -337,7 +366,9 @@
           "refactor-evaluation-store-connection-migrations",
           "refactor-evaluation-store-run-repository",
           "refactor-evaluation-store-result-repository",
-          "refactor-evaluation-store-score-repository"
+          "refactor-evaluation-store-score-repository",
+          "refactor-evaluation-store-interaction-repository",
+          "refactor-evaluation-store-statistics-repository"
         ]
       },
       "tags": [
@@ -771,8 +802,8 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "refactor-evaluation-store-interaction-repository",
-      "title": "Extract interaction-evaluation persistence",
+      "id": "refactor-evaluation-store-statistics-repository",
+      "title": "Extract evaluation statistics and projections",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -780,11 +811,11 @@
       "source": "review",
       "created": "2026-08-06",
       "updated": "2026-08-06",
-      "branch": "codex/refactor-evaluation-store-interaction-repository",
-      "verification": "Direct in-memory repository tests and facade regressions preserve full interaction round trips, compact and run-scoped projections, latest-record lookup, learner-score updates, defaults and judge-score precedence, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "branch": "codex/refactor-evaluation-store-statistics-repository",
+      "verification": "Direct in-memory repository tests and facade regressions preserve run and scenario aggregates, transient-failure reconstruction, configuration comparison, factorial score projection, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-evaluation-store-score-repository"
+        "refactor-evaluation-store-interaction-repository"
       ],
       "links": {
         "notes": [
@@ -792,19 +823,20 @@
         ],
         "code": [
           "services/evaluationStore.js",
-          "services/evaluationStore/interactionRepository.js",
-          "tests/evaluationStoreInteractionRepository.test.js"
+          "services/evaluationStore/statisticsRepository.js",
+          "tests/evaluationStoreStatisticsRepository.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-evaluation-store-score-repository"
+          "refactor-evaluation-store-interaction-repository",
+          "repair-evaluation-config-comparison-missing-side-winner"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
-        "interaction",
-        "persistence",
+        "statistics",
+        "projections",
         "sqlite",
         "maintainability"
       ],
@@ -2741,6 +2773,50 @@
       "tags": [
         "refactoring",
         "evaluation",
+        "persistence",
+        "sqlite",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-interaction-repository",
+      "title": "Extract interaction-evaluation persistence",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-evaluation-store-interaction-repository",
+      "verification": "Direct in-memory repository tests and facade regressions preserve full interaction round trips, compact and run-scoped projections, latest-record lookup, learner-score updates, defaults and judge-score precedence, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-score-repository"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "services/evaluationStore/interactionRepository.js",
+          "tests/evaluationStoreInteractionRepository.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-score-repository",
+          "refactor-evaluation-store-statistics-repository"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/526"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "interaction",
         "persistence",
         "sqlite",
         "maintainability"
