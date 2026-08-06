@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-06T06:34:01.041Z",
+  "generated": "2026-08-06T10:00:37.085Z",
   "counts": {
-    "total": 429,
+    "total": 430,
     "byStatus": {
-      "done": 395,
+      "done": 396,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
@@ -15,7 +15,7 @@
       "research": 74,
       "experiment": 71,
       "infra": 83,
-      "maintenance": 181,
+      "maintenance": 182,
       "content": 3,
       "ops": 10,
       "paper": 7
@@ -771,8 +771,8 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "refactor-evaluation-store-score-repository",
-      "title": "Extract evaluation score mutation and audit persistence",
+      "id": "refactor-evaluation-store-interaction-repository",
+      "title": "Extract interaction-evaluation persistence",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -780,11 +780,11 @@
       "source": "review",
       "created": "2026-08-06",
       "updated": "2026-08-06",
-      "branch": "codex/refactor-evaluation-store-score-repository",
-      "verification": "Direct in-memory repository tests and facade regressions preserve every mutable evaluation-result score family, append-only change audit, rubric and judge provenance, tutor/learner symmetry, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "branch": "codex/refactor-evaluation-store-interaction-repository",
+      "verification": "Direct in-memory repository tests and facade regressions preserve full interaction round trips, compact and run-scoped projections, latest-record lookup, learner-score updates, defaults and judge-score precedence, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-evaluation-store-result-repository"
+        "refactor-evaluation-store-score-repository"
       ],
       "links": {
         "notes": [
@@ -792,22 +792,19 @@
         ],
         "code": [
           "services/evaluationStore.js",
-          "services/evaluationStore/scoreRepository.js",
-          "tests/evaluationRunner.test.js",
-          "tests/evaluationStoreScoreRepository.test.js"
+          "services/evaluationStore/interactionRepository.js",
+          "tests/evaluationStoreInteractionRepository.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-evaluation-store-result-repository"
+          "refactor-evaluation-store-score-repository"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
+        "interaction",
         "persistence",
-        "scoring",
-        "provenance",
-        "symmetry",
         "sqlite",
         "maintainability"
       ],
@@ -2832,6 +2829,53 @@
         "refactoring",
         "evaluation",
         "persistence",
+        "sqlite",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-score-repository",
+      "title": "Extract evaluation score mutation and audit persistence",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-evaluation-store-score-repository",
+      "verification": "Direct in-memory repository tests and facade regressions preserve every mutable evaluation-result score family, append-only change audit, rubric and judge provenance, tutor/learner symmetry, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-result-repository"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "services/evaluationStore/scoreRepository.js",
+          "tests/evaluationRunner.test.js",
+          "tests/evaluationStoreScoreRepository.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-result-repository",
+          "refactor-evaluation-store-interaction-repository"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/525"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "persistence",
+        "scoring",
+        "provenance",
+        "symmetry",
         "sqlite",
         "maintainability"
       ],
