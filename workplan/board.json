@@ -1,7 +1,7 @@
 {
-  "generated": "2026-08-06T01:06:53.931Z",
+  "generated": "2026-08-06T01:43:04.050Z",
   "counts": {
-    "total": 418,
+    "total": 419,
     "byStatus": {
       "done": 390,
       "blocked": 6,
@@ -9,13 +9,13 @@
       "active": 4,
       "archived": 4,
       "triaged": 2,
-      "review": 4
+      "review": 5
     },
     "byType": {
       "research": 72,
       "experiment": 70,
       "infra": 81,
-      "maintenance": 176,
+      "maintenance": 177,
       "content": 3,
       "ops": 10,
       "paper": 6
@@ -183,7 +183,8 @@
           "refactor-evaluation-resume-rejudge-runtime",
           "refactor-eval-cli-operational-commands",
           "refactor-eval-cli-generation-commands",
-          "refactor-eval-cli-scoring-commands"
+          "refactor-eval-cli-scoring-commands",
+          "refactor-evaluation-store-boundary-inventory"
         ]
       },
       "tags": [
@@ -612,6 +613,50 @@
         "cli",
         "scoring",
         "symmetry",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-boundary-inventory",
+      "title": "Characterize the evaluation-store facade and bootstrap boundary",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-evaluation-store-boundary-inventory",
+      "verification": "An exact tracked-consumer and export inventory, hermetic import-time database bootstrap test, and package-export root/direct-subpath smoke preserve the current evaluationStore facade contract before persistence modules move.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-eval-cli-scoring-commands"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "config/evaluation-store-boundary-inventory.json",
+          "scripts/audit-evaluation-store-boundary.js",
+          "tests/evaluationStoreBoundaryInventory.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-eval-cli-scoring-commands"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/518"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "persistence",
+        "packaging",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
