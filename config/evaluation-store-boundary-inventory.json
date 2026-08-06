@@ -1,0 +1,364 @@
+{
+  "schemaVersion": 1,
+  "facade": "services/evaluationStore.js",
+  "characterization": {
+    "sourceLineCount": 3437,
+    "liveAndPackageConsumerCount": 30,
+    "archivedConsumerCount": 4,
+    "testConsumerCount": 15
+  },
+  "importTimeContract": {
+    "databasePathPrecedence": ["EVAL_DB_PATH", "<repository>/data/evaluations.db"],
+    "logsPathPrecedence": ["EVAL_LOGS_DIR", "<MS_DATA_HOME>/logs when the data home exists", "<repository>/logs"],
+    "effects": [
+      "create the database parent directory recursively",
+      "open SQLite immediately",
+      "set journal_mode to WAL",
+      "create and migrate the evaluation schema"
+    ],
+    "tables": ["evaluation_results", "evaluation_runs", "interaction_evaluations", "score_audit", "sqlite_sequence"]
+  },
+  "consumers": [
+    {
+      "path": "index.js",
+      "classification": "package-entrypoint",
+      "modes": ["namespace-reexport"]
+    },
+    {
+      "path": "routes/evalRoutes.js",
+      "classification": "application-runtime",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/analyze-insight-action-gap.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/archive/oneoff/backfill-judge-input-hashes.js",
+      "classification": "archived-oneoff",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/archive/oneoff/check-dialogue-judgements.js",
+      "classification": "archived-oneoff",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/archive/oneoff/check-run.js",
+      "classification": "archived-oneoff",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/archive/oneoff/inspect-judge-prompt.js",
+      "classification": "archived-oneoff",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/assess-transcripts.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/audit-message-chain.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/code-dialectical-modulation.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/eval-cli.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/eval-cli/scoringCommandDependencies.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/evaluate-charisma.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/evaluate-learner-standalone.js",
+      "classification": "operational-script",
+      "modes": ["default"]
+    },
+    {
+      "path": "scripts/evaluate-register-rubric.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/generate-paper-figures.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/grade-adaptive-dialogue.js",
+      "classification": "operational-script",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "scripts/ingest-pilot-sessions.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/prompt-lab.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/render-sequence-diagram.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/report-longitudinal-drift-stage-a2-live.js",
+      "classification": "operational-script",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "scripts/report-longitudinal-drift-stage-a3-live.js",
+      "classification": "operational-script",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "scripts/report-longitudinal-drift-stage-a4-live.js",
+      "classification": "operational-script",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "scripts/report-longitudinal-drift-stage-a5-live.js",
+      "classification": "operational-script",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "scripts/run-adaptive-cell-smoke.js",
+      "classification": "operational-script",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "scripts/run-adaptive-persistence-smoke.js",
+      "classification": "operational-script",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "scripts/run-dialogue-engine-trap-baseline.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/run-id-director-trap-pilot.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/score-d4-first-turns.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/seed-db.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "scripts/test-token-budget.js",
+      "classification": "operational-script",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "services/__tests__/evaluationStoreTransientStats.test.js",
+      "classification": "test",
+      "modes": ["named"]
+    },
+    {
+      "path": "services/__tests__/loadDialogueLog.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "services/adaptiveTutor/index.js",
+      "classification": "application-runtime",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "services/adaptiveTutor/persistence.js",
+      "classification": "application-runtime",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "services/evaluationRunner.js",
+      "classification": "application-runtime",
+      "modes": ["namespace"]
+    },
+    {
+      "path": "tests/adaptation-world-spec-resolution.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "tests/checkpointE2E.test.js",
+      "classification": "test",
+      "modes": ["default"]
+    },
+    {
+      "path": "tests/cliBridgeDialogueEngine.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "tests/dynamicDimensions.test.js",
+      "classification": "test",
+      "modes": ["named"]
+    },
+    {
+      "path": "tests/evaluationRunner.test.js",
+      "classification": "test",
+      "modes": ["named"]
+    },
+    {
+      "path": "tests/evaluationScoring.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "tests/evaluationStore.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "tests/evaluationStoreBoundaryInventory.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "tests/evaluationStoreRoundtripIntegrity.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "tests/messageChainAudit.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "tests/negotiationThreading.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "tests/promptVersioning.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    },
+    {
+      "path": "tests/provenance.test.js",
+      "classification": "test",
+      "modes": ["dynamic"]
+    }
+  ],
+  "exports": {
+    "named": [
+      "autoCompleteStaleRuns",
+      "cloneRowsForRubricVersion",
+      "compareConfigs",
+      "completeRun",
+      "createRun",
+      "deleteRun",
+      "exportToCsv",
+      "exportToJson",
+      "findIncompleteRuns",
+      "generationIdentity",
+      "getFactorialCellData",
+      "getIncompleteTests",
+      "getInteractionEval",
+      "getInteractionEvalByRunId",
+      "getResultById",
+      "getResults",
+      "getRun",
+      "getRunStats",
+      "getScenarioStats",
+      "getScoreAudit",
+      "getScoreAuditByRun",
+      "listInteractionEvals",
+      "listInteractionEvalsByRunId",
+      "listRuns",
+      "loadDialogueLog",
+      "loadImmutableDialogueLog",
+      "setIdConstructionTrace",
+      "storeInteractionEval",
+      "storeRejudgment",
+      "storeResult",
+      "updateDialogueQualityInternalScore",
+      "updateDialogueQualityScore",
+      "updateInteractionLearnerScores",
+      "updateLearnerDeliberationScores",
+      "updateProcessMeasures",
+      "updateResultLearnerScores",
+      "updateResultScores",
+      "updateResultTutorCharismaScores",
+      "updateResultTutorHolisticScores",
+      "updateResultTutorRegisterScore",
+      "updateResultTutorScores",
+      "updateRun",
+      "updateTutorDeliberationScores",
+      "updateTutorLastTurnScore"
+    ],
+    "defaultMembers": [
+      "autoCompleteStaleRuns",
+      "cloneRowsForRubricVersion",
+      "compareConfigs",
+      "completeRun",
+      "createRun",
+      "deleteRun",
+      "exportToCsv",
+      "exportToJson",
+      "findIncompleteRuns",
+      "generationIdentity",
+      "getFactorialCellData",
+      "getIncompleteTests",
+      "getInteractionEval",
+      "getInteractionEvalByRunId",
+      "getResultById",
+      "getResults",
+      "getRun",
+      "getRunStats",
+      "getScenarioStats",
+      "getScoreAudit",
+      "getScoreAuditByRun",
+      "listInteractionEvals",
+      "listInteractionEvalsByRunId",
+      "listRuns",
+      "loadDialogueLog",
+      "loadImmutableDialogueLog",
+      "setIdConstructionTrace",
+      "storeInteractionEval",
+      "storeRejudgment",
+      "storeResult",
+      "updateDialogueQualityInternalScore",
+      "updateDialogueQualityScore",
+      "updateInteractionLearnerScores",
+      "updateLearnerDeliberationScores",
+      "updateProcessMeasures",
+      "updateResultLearnerScores",
+      "updateResultScores",
+      "updateResultTutorHolisticScores",
+      "updateRun",
+      "updateTutorDeliberationScores",
+      "updateTutorLastTurnScore"
+    ]
+  },
+  "packageSurface": {
+    "root": "./index.js",
+    "servicesPattern": "./services/*.js",
+    "rootNamespaceReexport": true
+  }
+}
