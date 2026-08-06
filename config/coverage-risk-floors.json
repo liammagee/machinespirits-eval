@@ -20,12 +20,14 @@
         "services/evaluationStore/runRepository.js",
         "services/evaluationStore/runManifestWriter.js",
         "services/evaluationStore/scoreRepository.js",
+        "services/evaluationStore/scriptContext.js",
         "services/evaluationStore/statisticsRepository.js"
       ],
       "tests": [
         "services/__tests__/evaluationStoreTransientStats.test.js",
         "tests/applicationShutdown.test.js",
         "tests/evalRoutesDependencyInjection.test.js",
+        "tests/evaluationScriptContext.test.js",
         "tests/evaluationStore.test.js",
         "tests/evaluationStoreBoundaryInventory.test.js",
         "tests/evaluationStoreConnectionMigrations.test.js",

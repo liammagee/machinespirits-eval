@@ -39,12 +39,12 @@ import YAML from 'yaml';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import { buildMessageChain } from '../services/evaluationRunner.js';
-import * as evaluationStore from '../services/evaluationStore.js';
+import { createEvaluationScriptContext } from '../services/evaluationStore/scriptContext.js';
 import { failedDialogueLogIntegrity, validateDialogueLogIntegrity } from '../services/messageChainAudit.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT, 'data', 'evaluations.db');
+const { databasePath: DB_PATH, dialogueLogs } = createEvaluationScriptContext({ rootDir: ROOT });
 const DIALOGUE_LOGS_DIR = resolveTutorDialoguesDir(ROOT);
 const LOCAL_PROMPTS_DIR = path.join(ROOT, 'prompts');
 const LEARNER_CONFIG_PATH = path.join(ROOT, 'config', 'learner-agents.yaml');
@@ -603,7 +603,7 @@ function loadDialogueLog(dialogueId) {
     }
   }
 
-  const json = evaluationStore.loadDialogueLog(dialogueId);
+  const json = dialogueLogs.loadDialogueLog(dialogueId);
   if (!json) return { path: null, json: null, error: 'log_file_missing' };
   return { path: `${dialogueId}.json`, json, error: null };
 }

@@ -24,9 +24,10 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import Database from 'better-sqlite3';
-import * as evaluationStore from '../services/evaluationStore.js';
+import { createEvaluationScriptContext } from '../services/evaluationStore/scriptContext.js';
 
-const DB_PATH = path.join(import.meta.dirname, '..', 'data', 'evaluations.db');
+const ROOT = path.join(import.meta.dirname, '..');
+const { databasePath: DB_PATH, dialogueLogs } = createEvaluationScriptContext({ rootDir: ROOT });
 const DEFAULT_OUTPUT = path.join(import.meta.dirname, '..', 'exports', 'paper-figures');
 
 // ── CLI parsing ──────────────────────────────────────────────────────────────
@@ -93,7 +94,7 @@ function loadDialogue(dialogueId) {
   }
 
   // Load trace from log file
-  const log = evaluationStore.loadDialogueLog(dialogueId) || {};
+  const log = dialogueLogs.loadDialogueLog(dialogueId) || {};
   const trace = log.consolidatedTrace || log.dialogueTrace || [];
 
   // Detect multi-turn: look for turn_action events (learner followups)

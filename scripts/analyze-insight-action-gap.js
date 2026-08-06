@@ -34,10 +34,11 @@ import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import * as evaluationStore from '../services/evaluationStore.js';
+import { createEvaluationScriptContext } from '../services/evaluationStore/scriptContext.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+const ROOT = path.resolve(__dirname, '..');
+const { databasePath: DB_PATH, dialogueLogs } = createEvaluationScriptContext({ rootDir: ROOT });
 
 // ── CLI ─────────────────────────────────────────────────────────────────
 
@@ -419,7 +420,7 @@ async function main() {
 
   for (const row of rows) {
     if (!hasReflectionMechanism(row.profile_name)) continue;
-    const log = evaluationStore.loadDialogueLog(row.dialogue_id);
+    const log = dialogueLogs.loadDialogueLog(row.dialogue_id);
     if (!log || !log.dialogueTrace) continue;
     dialoguesScanned++;
 
