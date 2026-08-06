@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-06T05:38:54.071Z",
+  "generated": "2026-08-06T06:08:14.365Z",
   "counts": {
-    "total": 423,
+    "total": 424,
     "byStatus": {
-      "done": 393,
+      "done": 394,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
@@ -18,7 +18,7 @@
       "maintenance": 180,
       "content": 3,
       "ops": 10,
-      "paper": 6
+      "paper": 7
     }
   },
   "items": [
@@ -12211,6 +12211,28 @@
         "closure-loop"
       ],
       "milestone": "paper-2-evidence-cleanup"
+    },
+    {
+      "id": "pedagogical-figure-ontology",
+      "title": "Pedagogical figure ontology: the seven-level unit ladder, stated once and mapped",
+      "status": "done",
+      "type": "paper",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "Delivered in one PR: the ontology note (notes/2026-08-06-pedagogical-figure-ontology.md — seven levels, dual naming rule, artifact map, ten-field records for the seven playbook figures, critical refinements) and paper §7.13 (v3.0.267) stating the ladder with every empirical anchor citing an established section. Interpretation only — no new empirical claims. Paper-claim audit run on the diff: §7.13 and the revision entry traced clean (25-claim table); the audit found two citation defects in the note's artifact map (persona count uncited; the log's prospective charisma vocabulary attributed to the built rubric), both fixed in the same PR.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/2026-08-06-pedagogical-figure-ontology.md",
+          "notes/2026-08-03-adaptive-causality-living-log.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#713-the-unit-ladder-a-seven-level-ontology-for-the-pedagogical-instrumentation"
+        ]
+      }
     },
     {
       "id": "person-aligned-user-simulation-literature-triage",
