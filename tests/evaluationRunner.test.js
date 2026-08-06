@@ -770,11 +770,14 @@ describe('evaluate / rejudge scoring parity', () => {
 
   it('required multi-turn columns are all written by updateResultTutorScores', () => {
     // Verify that updateResultTutorScores writes the key tutor columns
-    const storeSource = fs.readFileSync(path.join(__dirname, '..', 'services', 'evaluationStore.js'), 'utf-8');
+    const storeSource = fs.readFileSync(
+      path.join(__dirname, '..', 'services', 'evaluationStore', 'scoreRepository.js'),
+      'utf-8',
+    );
 
-    const fnStart = storeSource.indexOf('export function updateResultTutorScores(');
-    assert.ok(fnStart > 0, 'updateResultTutorScores must exist in evaluationStore.js');
-    const fnEnd = storeSource.indexOf('\nexport function ', fnStart + 10);
+    const fnStart = storeSource.indexOf('function updateResultTutorScores(');
+    assert.ok(fnStart > 0, 'updateResultTutorScores must exist in scoreRepository.js');
+    const fnEnd = storeSource.indexOf('\n  function ', fnStart + 10);
     const fnBody = fnEnd > 0 ? storeSource.slice(fnStart, fnEnd) : storeSource.slice(fnStart, fnStart + 1000);
 
     const expectedColumns = [

@@ -11,7 +11,8 @@
         "services/evaluationStore/connection.js",
         "services/evaluationStore/migrations.js",
         "services/evaluationStore/resultRepository.js",
-        "services/evaluationStore/runRepository.js"
+        "services/evaluationStore/runRepository.js",
+        "services/evaluationStore/scoreRepository.js"
       ],
       "tests": [
         "services/__tests__/evaluationStoreTransientStats.test.js",
@@ -20,7 +21,8 @@
         "tests/evaluationStoreConnectionMigrations.test.js",
         "tests/evaluationStoreResultRepository.test.js",
         "tests/evaluationStoreRunRepository.test.js",
-        "tests/evaluationStoreRoundtripIntegrity.test.js"
+        "tests/evaluationStoreRoundtripIntegrity.test.js",
+        "tests/evaluationStoreScoreRepository.test.js"
       ],
       "floors": { "lines": 80, "branches": 62, "functions": 72 }
     },
