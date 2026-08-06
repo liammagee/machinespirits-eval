@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-runner-cli-store-injection
 title: Inject evaluation-store ownership into the runner and eval CLI
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -27,6 +27,9 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-application-lifecycle
+    - refactor-adaptive-tutor-store-injection
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/532
 tags:
   - refactoring
   - evaluation
@@ -88,3 +91,9 @@ Log:
   advanced through independent PR #531 to `78e57192`. The staged source slice
   rebased cleanly onto that current main with its temporary autostash applied
   and removed; it remains one publication commit.
+- 2026-08-07 — Published as PR #532 at reviewed head `6ee6e350`; adaptive-tutor
+  runner and persistence injection is active on the dependent
+  `codex/refactor-adaptive-tutor-store-injection` branch.
+- 2026-08-07 — PR #532 merged as `c98419c7`, closing standard-runner and
+  eval-CLI store injection. The dependent adaptive-tutor slice rebased onto
+  that merge without conflict.

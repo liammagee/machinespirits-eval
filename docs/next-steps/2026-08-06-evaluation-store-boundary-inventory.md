@@ -161,3 +161,24 @@ consumers: 26 live/package, four archived one-offs, and 15 tests. The remaining
 application-runtime consumers are eval routes plus the adaptive-tutor index and
 persistence modules; those retain the lazy compatibility path until their own
 host-migration cohorts land.
+
+## Adaptive-tutor injection follow-up (2026-08-07)
+
+The adaptive runner and persistence adapter now participate in the same explicit
+ownership graph as the standard runner:
+
+1. `createAdaptivePersistence({ evaluationStore })` binds run creation, trace
+   metadata, result writes, and completion data to one supplied store while the
+   existing named persistence functions retain lazy compatibility.
+2. `createAdaptiveEvaluationRunner({ evaluationStore })` binds adaptive run
+   orchestration and finalization to that store. Constructing either adapter
+   without a store fails closed.
+3. Adaptive eval-CLI dispatch constructs the runner from the store already owned
+   by CLI startup. A real mock-backed child-process regression proves the route
+   writes one run and one result, passes SQLite integrity, and exits cleanly.
+
+This removes two application-runtime facade consumers and one test consumer.
+The executable inventory is now 42 consumers: 24 live/package, four archived
+one-offs, and 14 tests. `routes/evalRoutes.js` is the sole remaining direct
+application-runtime consumer; operational scripts, the package entrypoint, and
+legacy tests remain separate compatibility cohorts.
