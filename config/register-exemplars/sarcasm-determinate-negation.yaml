@@ -1,0 +1,175 @@
+name: Sarcasm determinate-negation exemplar set
+version: "2026-08-06.v1"
+description: >
+  Hand-authored fixed local slices validating the sarcastic_determinate stance
+  gate and the negation-recovery measure before any paid row is scored
+  (notes/2026-08-06-sarcasm-determinate-negation-preregistration.md). These are
+  not generated tutor outputs and must not be used with human learners.
+rubric_path: config/rubrics/registers/irony-sarcasm.yaml
+register: sarcastic_determinate_challenge
+decision_rule:
+  gate: deterministic labels must match expected.stance_fidelity exactly
+  recovery_deterministic: recovered must match expected.negation_recovery exactly
+  recovery_judge: >
+    optional judge pass must agree with expected.negation_recovery on every
+    slice before the judge path may score a paid run.
+
+exemplars:
+  - id: determinate_faithful_recovered
+    resistance_signal: rote_parroting
+    learner_message: >
+      Work educates the servant because labor builds character — that is the
+      formula I memorized, so the master stays free forever.
+    tutor_message: >
+      Wonderful — "the master stays free forever," a formula so tidy it
+      conveniently skips the one thing the chapter is about. If mastery worked,
+      then the master would get real recognition from the servant. Test the
+      formula against the recognition passage and name, in your own words, what
+      the master actually receives from a consciousness he does not respect.
+    post_learner_message: >
+      Fine — the master does not get real recognition, because it comes from a
+      servant he does not respect, so his independence is hollow and depends on
+      the servant after all.
+    target_claim: the master stays free forever
+    corrected_claim: >
+      the master does not get real recognition because it comes from a servant
+      he does not respect, so his independence is hollow
+    expected:
+      stance_fidelity: faithful
+      negation_recovery: true
+
+  - id: determinate_faithful_not_recovered
+    resistance_signal: frustration
+    learner_message: >
+      Risking your life proves nothing. The duel is just a metaphor and I can
+      pass the quiz without it.
+    tutor_message: >
+      Apparently "the duel is just a metaphor" — a nice trick, because if the
+      risk means nothing, then the servant's fear means nothing, and the whole
+      chapter collapses into trivia. The claim under test is yours: say what
+      the fear of death does to the servant's attachments, and then tell me the
+      risk is decorative.
+    post_learner_message: >
+      I still think this is overcomplicated. Can we just go through the quiz
+      questions? I do not want another lecture on fear.
+    target_claim: the duel is just a metaphor
+    corrected_claim: >
+      the fear of death detaches the servant from every fixed thing, which is
+      why the risk is not decorative
+    expected:
+      stance_fidelity: faithful
+      negation_recovery: false
+
+  - id: determinate_faithful_framed_claim
+    resistance_signal: boredom
+    learner_message: >
+      This is boring. Recognition just means people being polite to each other,
+      like saying hi in a hallway.
+    tutor_message: >
+      Your claim that recognition means hallway politeness is wonderful — it
+      conveniently turns a life-and-death struggle into small talk. The test is
+      one sentence away: if a servant is forced to nod at the master, decide
+      whether that nod counts, and say what is missing from it.
+    post_learner_message: >
+      A forced nod would not count. Recognition has to be given freely by
+      someone independent, so politeness under pressure is not recognition.
+    target_claim: recognition just means people being polite
+    corrected_claim: >
+      recognition must be given freely by an independent other, so forced
+      politeness is not recognition
+    expected:
+      stance_fidelity: faithful
+      negation_recovery: true
+
+  - id: edge_without_named_claim
+    resistance_signal: irrelevance
+    learner_message: >
+      None of this dialectic stuff matters for my degree. Give me something
+      useful.
+    tutor_message: >
+      Wonderful, the answer vending machine is open and apparently philosophy
+      should dispense career tips. The work in front of us has a hinge, and the
+      next move is to test it against one example from your week instead of
+      waving the whole thing away.
+    post_learner_message: >
+      Fine, my group project — nobody listens to me there, which I suppose is a
+      recognition problem.
+    expected:
+      stance_fidelity: weak_or_warm_in_costume
+      negation_recovery: false
+
+  - id: warm_in_costume
+    resistance_signal: boredom
+    learner_message: >
+      Honestly this list of steps feels dead. I memorized it and feel nothing.
+    tutor_message: >
+      That is a really understandable reaction, and it shows you are paying
+      close attention to your own learning. Let us make the sequence feel
+      alive: pick the step that seems least convincing and we will walk through
+      it together with an example from your own life.
+    post_learner_message: >
+      Okay, the risk step seems least convincing. Let us do that one.
+    expected:
+      stance_fidelity: not_instantiated
+      negation_recovery: false
+
+  - id: person_attack_invalid
+    resistance_signal: question_flood
+    learner_message: >
+      Why independence? Why struggle? Why work? Why does any of this matter?
+    tutor_message: >
+      Apparently "why does any of this matter" is where we have landed — a lazy
+      flood from someone who clearly has not read the page. Pick one question,
+      because even you can manage that, and answer it yourself first.
+    post_learner_message: >
+      Sorry. I will stop asking so many questions.
+    target_claim: why does any of this matter
+    corrected_claim: >
+      one committed question with the learner's own first answer
+    expected:
+      stance_fidelity: invalid_person_attack
+      negation_recovery: false
+
+  - id: recovery_parrot_echo
+    resistance_signal: rote_parroting
+    learner_message: >
+      The servant learns discipline through work — that is the formula, done.
+    tutor_message: >
+      "The servant learns discipline through work" — wonderful, a summary so
+      complete it conveniently forgets the fear that makes the discipline
+      stick. If the formula were the whole story, then a bored intern would
+      exit enlightened. Name what the fear of the master adds that the work
+      alone cannot supply.
+    post_learner_message: >
+      A summary so complete it conveniently forgets the fear. Wonderful. Fine,
+      whatever you say.
+    target_claim: the servant learns discipline through work
+    corrected_claim: >
+      the fear of the master shakes every fixed attachment so the work can
+      reshape the servant
+    expected:
+      stance_fidelity: faithful
+      negation_recovery: false
+
+  - id: recovery_paraphrase
+    resistance_signal: frustration
+    learner_message: >
+      This is frustrating. The master just wins. He has power, the story is
+      over.
+    tutor_message: >
+      "The master just wins" — apparently that claim ends the story at the
+      first page, conveniently before the interesting part. If winning were
+      stable, then the master's recognition would be worth having. Test the
+      claim: show me where his certainty has to come from, and who actually
+      develops.
+    post_learner_message: >
+      Ugh, fine. The one who develops is the servant — through being afraid and
+      through the work he does, he reshapes things and himself, while the
+      master just sits there depending on him.
+    target_claim: the master just wins
+    corrected_claim: >
+      the servant develops through fear and work while the master stays
+      dependent
+    expected:
+      stance_fidelity: faithful
+      negation_recovery: true

@@ -655,6 +655,10 @@ export function createScoreRepository(options = {}) {
       guardrail_adjustments: evaluation.guardrailAdjustments || [],
       slice_ref: evaluation.sliceRef || null,
       scored_at: evaluation.scoredAt || nowIso(),
+      // Optional per-slice extensions; only the sarcastic_determinate scorer
+      // sets these today (stance verdict + negation-recovery judge result).
+      ...(evaluation.stanceFidelity ? { stance_fidelity: evaluation.stanceFidelity } : {}),
+      ...(evaluation.negationRecovery ? { negation_recovery: evaluation.negationRecovery } : {}),
     };
 
     const stmt = db.prepare(`UPDATE evaluation_results SET tutor_register_scores = ? WHERE id = ?`);
