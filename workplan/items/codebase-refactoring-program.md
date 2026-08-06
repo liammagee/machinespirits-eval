@@ -1492,3 +1492,6 @@ Log:
   step 6 repository split plus later host migration ordered. Focused and
   complete zero-skip hermetic, lint, format, manifest, workplan, diff, and cycle
   gates pass without production data or model calls.
+- 2026-08-06 — Opened the R4 step 5 characterization as PR #518. Its reviewed
+  head is the dependency base for the first R4 step 6 connection/migrations
+  extraction; the latter remains a separate card and PR.

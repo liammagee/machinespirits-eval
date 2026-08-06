@@ -28,6 +28,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-eval-cli-scoring-commands
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/518
 tags:
   - refactoring
   - evaluation
@@ -72,3 +74,6 @@ Log:
   passed 137, all with zero failures/skips. Lint, formatting, manifest,
   workplan-source, diff, and zero-cycle gates are green. No production store
   code, database/log data, or model endpoint was touched.
+- 2026-08-06 — Published the reviewed characterization as PR #518 from commit
+  `1a0bc12c`; the PR names this card explicitly and classifies ref impact as
+  N/A.
