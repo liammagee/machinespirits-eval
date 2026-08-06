@@ -1,7 +1,7 @@
 ---
 id: let-the-hermetic-test-runner-find-vitest-from-a-worktree
 title: Let the hermetic test runner find Vitest from a worktree
-status: review
+status: done
 type: infra
 priority: P3
 owner: claude
@@ -14,6 +14,8 @@ verification: "npm test completes from a .claude/worktrees/* checkout: both the
   layout and against a root with no install above it."
 claim_status: methods
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/537
   code:
     - scripts/hermetic-test-contract.js
     - scripts/run-hermetic-tests.js
@@ -54,3 +56,4 @@ Log:
   from a worktree. The runner test asserts the fixture worktree layout, the
   fallback, and that the default core phase points at a Vitest on disk rather
   than restating how the path is built.
+- 2026-08-07 — Merged to main in `94f65480` via PR #537. Closed.
