@@ -42,7 +42,7 @@ object. `updateResultTutorScores`, `updateResultTutorCharismaScores`, and
 the persistence split must preserve it until a deliberate compatibility change
 has its own consumer proof.
 
-## Import-time contract
+## Baseline import-time contract
 
 Importing the facade currently:
 
@@ -101,10 +101,40 @@ for each:
 5. package consumers, while retaining a deprecated facade path for external
    callers through at least one release boundary.
 
-Do not remove import-time bootstrap merely because the internal files have
-split. R4 step 8 begins only when the live/package direct-import inventory has
+At this characterization checkpoint, import-time bootstrap was not to be
+removed merely because the internal files had split. R4 step 8 begins only when
+the live/package direct-import inventory has
 been driven to its explicitly approved compatibility remainder, every host has
 an explicit connection lifecycle, and a packed-package smoke test proves the
 new startup contract. The four broken archived references should be repaired
 or declared permanently non-runnable under a separate archive-maintenance
 decision; they are not blockers for live-host migration.
+
+## Explicit lifecycle follow-up (2026-08-07)
+
+The repository-family split is now complete through run-manifest ownership. The
+first host-migration slice replaces the baseline contract above with three
+explicit layers:
+
+1. `createEvaluationStore()` opens or accepts one SQLite connection, runs the
+   schema migration, assembles every repository, and returns an idempotently
+   closeable store. It closes only connections it opened.
+2. The standalone server starts the default store immediately before `listen()`;
+   the poetics host wraps the connection it already owns, so mounting eval
+   surfaces no longer creates a second connection to the same database.
+3. The legacy `services/evaluationStore.js` facade remains source-compatible but
+   starts its default store only on the first actual operation. Importing the
+   file facade, package root, eval routes, or evaluation runner has no database
+   or filesystem effect.
+
+Application shutdown drains HTTP streams and tutor processes first, disposes the
+evaluation store second, and closes any host-owned database last. The adaptive
+grader now migrates its own explicit connection rather than importing the facade
+for a side effect.
+
+This closes bootstrap ownership, not all consumer injection. The runner,
+adaptive runtime, CLI, operational scripts, and package compatibility remainder
+still migrate by cohort under later cards; until then their first real store
+operation uses the lazy compatibility path. Removing the adaptive grader's
+migration-only import reduces the executable inventory to 48 consumers: 29
+live/package, four archived one-offs, and 15 tests.

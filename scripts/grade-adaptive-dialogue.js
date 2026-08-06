@@ -15,7 +15,7 @@
  *      OpenAI API key needed) and parses the JSON envelope via the same
  *      fence-extraction pattern eval-cli.js uses for CLI judges.
  *   5. Writes the 4 scores + reasoning + judge_model + grader_version to DB
- *      (adaptive_* columns added in services/evaluationStore.js).
+ *      (adaptive_* columns added by services/evaluationStore/migrations.js).
  *
  * Complements scripts/analyze-strategy-shift.js: that script computes binary
  * mechanism signals (did the right family fire at trigger+window?). This
@@ -41,19 +41,17 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import Database from 'better-sqlite3';
 import { GRADER_VERSION, buildPrompt, extractJsonEnvelope } from './lib/adaptiveGraderPrompt.js';
 import { callAIWithCliBridge, callModelCliText } from '../services/cliProviderBridge.js';
+import { openEvaluationDatabase } from '../services/evaluationStore/connection.js';
+import { migrateEvaluationDatabase } from '../services/evaluationStore/migrations.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
 process.chdir(REPO_ROOT);
 
-// Import for the side effect of running migrations (adaptive_* columns).
-await import('../services/evaluationStore.js');
-
-const DB_PATH = process.env.EVAL_DB_PATH || path.join(REPO_ROOT, 'data', 'evaluations.db');
-const db = new Database(DB_PATH);
+const db = openEvaluationDatabase({ rootDir: REPO_ROOT });
+migrateEvaluationDatabase(db);
 
 // ─────────────────────────────────────── arg parsing
 function parseArgs(argv) {

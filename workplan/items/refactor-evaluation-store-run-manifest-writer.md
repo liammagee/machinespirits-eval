@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-run-manifest-writer
 title: Extract evaluation run-manifest writing
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -27,6 +27,9 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-export-log-readers
+    - refactor-evaluation-store-application-lifecycle
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/529
 tags:
   - refactoring
   - evaluation
@@ -78,3 +81,9 @@ Log:
   boundary, diff, and zero-cycle gates are green. No model calls or production
   database/log writes were made. Explicit application startup and connection
   lifecycle migration is the next bounded phase after this stacked slice lands.
+- 2026-08-07 — Rebased onto merged PR #528 as `03879d75`, pushed, and opened as
+  PR #529. Activated `refactor-evaluation-store-application-lifecycle` from that
+  exact reviewed head so startup and connection ownership remain a separate
+  publication unit.
+- 2026-08-07 — PR #529 merged as `f637b398`, closing completion-time manifest
+  ownership. The application-lifecycle child is now the active publication unit.

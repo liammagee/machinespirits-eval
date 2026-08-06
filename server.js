@@ -22,6 +22,7 @@ import express from 'express';
 import { resolveBasicAuthGuard, makeRoleGate } from './services/httpBasicAuth.js';
 import { mountEvalSurfaces } from './services/evalSurfaces.js';
 import { installApplicationShutdownHandlers } from './services/applicationShutdown.js';
+import { startDefaultEvaluationStore } from './services/evaluationStore/lifecycle.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, mkdirSync, readFileSync } from 'fs';
@@ -51,13 +52,6 @@ app.use(makeRoleGate());
 
 // Middleware
 app.use(express.json());
-
-// Ensure data directory exists
-const dataDir = path.join(__dirname, 'data');
-if (!existsSync(dataDir)) {
-  mkdirSync(dataDir, { recursive: true });
-  console.log('[EvalServer] Created data directory');
-}
 
 // Health check
 app.get('/health', (req, res) => {
@@ -248,6 +242,12 @@ app.use((err, req, res, _next) => {
 });
 
 export function startEvalServer() {
+  const dataDir = path.join(__dirname, 'data');
+  if (!existsSync(dataDir)) {
+    mkdirSync(dataDir, { recursive: true });
+    console.log('[EvalServer] Created data directory');
+  }
+  app.locals.evaluationStore = startDefaultEvaluationStore({ rootDir: __dirname });
   const server = app.listen(PORT, HOST, () => {
     console.log(`[EvalServer] Machine Spirits Eval running at http://${HOST}:${PORT}`);
     console.log(`[EvalServer] Mode: ${isStandalone ? 'standalone' : 'mounted'}`);

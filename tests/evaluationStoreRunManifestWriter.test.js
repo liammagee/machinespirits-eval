@@ -230,20 +230,24 @@ describe('evaluation-store run-manifest writer', () => {
     assert.doesNotThrow(() => writeFailure.writeRunManifest('eval-b', {}, [], 'complete'));
   });
 
-  it('keeps manifest wiring inside the compatibility facade with bounded owners', () => {
+  it('keeps manifest wiring inside the explicit factory with bounded owners', () => {
     const facade = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore.js'), 'utf-8');
+    const factory = fs.readFileSync(
+      path.join(ROOT_DIR, 'services', 'evaluationStore', 'createEvaluationStore.js'),
+      'utf-8',
+    );
     const writer = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore', 'runManifestWriter.js'), 'utf-8');
     const runRepository = fs.readFileSync(
       path.join(ROOT_DIR, 'services', 'evaluationStore', 'runRepository.js'),
       'utf-8',
     );
 
-    assert.match(facade, /createRunManifestWriter\(\{/);
-    assert.match(facade, /writeRunManifest: runManifestWriter\.writeRunManifest/);
+    assert.match(factory, /createRunManifestWriter\(\{/);
+    assert.match(factory, /writeRunManifest: runManifestWriter\.writeRunManifest/);
     assert.doesNotMatch(facade, /function writeRunManifest\(|run-manifests|tutor_rubric_version FROM/);
     assert.match(writer, /function writeRunManifest\(/);
     assert.match(runRepository, /writeRunManifest\(runId, run, results, completedAt\)/);
-    assert.equal(facade.split('\n').length - 1 <= 265, true);
+    assert.equal(facade.split('\n').length - 1 <= 170, true);
     assert.equal(writer.split('\n').length - 1 <= 150, true);
   });
 });
