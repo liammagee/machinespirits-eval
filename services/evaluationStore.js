@@ -37,7 +37,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { randomBytes, createHash } from 'crypto';
+import { randomBytes } from 'crypto';
 import { isPidAlive } from './processUtils.js';
 import { getScenario, getTutorProfile, loadRubric, resolveModel } from './evalConfigLoader.js';
 import { readProgressLog } from './progressLogger.js';
@@ -50,6 +50,8 @@ import {
 import { loadLearnerRubric } from './learnerRubricEvaluator.js';
 import { openEvaluationDatabase } from './evaluationStore/connection.js';
 import { createInteractionRepository } from './evaluationStore/interactionRepository.js';
+import { createDialogueLogRepository } from './evaluationStore/dialogueLogRepository.js';
+import { createExportRepository } from './evaluationStore/exportRepository.js';
 import { migrateEvaluationDatabase } from './evaluationStore/migrations.js';
 import { createResultRepository } from './evaluationStore/resultRepository.js';
 import { createRunRepository } from './evaluationStore/runRepository.js';
@@ -110,122 +112,6 @@ function expectedTestsForRun(run) {
   if (Number.isInteger(run?.totalTests) && run.totalTests > 0) return run.totalTests;
   const runsPerConfig = Number(run?.metadata?.runsPerConfig) || 1;
   return (run?.totalScenarios || 0) * (run?.totalConfigurations || 0) * runsPerConfig;
-}
-
-/**
- * Export results to JSON
- */
-export function exportToJson(runId) {
-  const run = getRun(runId);
-  const results = getResults(runId);
-  const stats = getRunStats(runId);
-  const scenarioStats = getScenarioStats(runId);
-
-  return {
-    run,
-    stats,
-    scenarioStats,
-    results,
-    exportedAt: new Date().toISOString(),
-  };
-}
-
-/**
- * Export results to CSV format
- */
-export function exportToCsv(runId) {
-  const results = getResults(runId);
-
-  const headers = [
-    'scenario_id',
-    'scenario_name',
-    'provider',
-    'model',
-    'tutor_first_turn_score',
-    'relevance',
-    'specificity',
-    'pedagogical',
-    'personalization',
-    'actionability',
-    'tone',
-    'latency_ms',
-    'input_tokens',
-    'output_tokens',
-    'passes_required',
-    'passes_forbidden',
-    'success',
-    'attempt_index',
-    'profile_name',
-    'prompt_id',
-    'ego_model',
-    'superego_model',
-    'factor_recognition',
-    'factor_multi_agent_tutor',
-    'factor_multi_agent_learner',
-    'learner_architecture',
-    'learner_id',
-    'conversation_mode',
-    'dialogue_id',
-    'dialogue_content_hash',
-    'config_hash',
-    'tutor_ego_prompt_version',
-    'tutor_superego_prompt_version',
-    'learner_prompt_version',
-    'prompt_content_hash',
-    'id_construction_trace',
-    'raw_response',
-  ];
-
-  const rows = results.map((r) => [
-    r.scenarioId,
-    r.scenarioName,
-    r.provider,
-    r.model,
-    r.tutorFirstTurnScore,
-    r.scores?.relevance,
-    r.scores?.specificity,
-    r.scores?.pedagogical,
-    r.scores?.personalization,
-    r.scores?.actionability,
-    r.scores?.tone,
-    r.latencyMs,
-    r.inputTokens,
-    r.outputTokens,
-    r.passesRequired ? 1 : 0,
-    r.passesForbidden ? 1 : 0,
-    r.success ? 1 : 0,
-    r.attemptIndex,
-    r.profileName,
-    r.promptId,
-    r.egoModel,
-    r.superegoModel,
-    r.factors?.recognition == null ? null : r.factors.recognition ? 1 : 0,
-    r.factors?.multi_agent_tutor == null ? null : r.factors.multi_agent_tutor ? 1 : 0,
-    r.factors?.multi_agent_learner == null ? null : r.factors.multi_agent_learner ? 1 : 0,
-    r.learnerArchitecture,
-    r.learnerId,
-    r.conversationMode,
-    r.dialogueId,
-    r.dialogueContentHash,
-    r.configHash,
-    r.tutorEgoPromptVersion,
-    r.tutorSuperegoPromptVersion,
-    r.learnerPromptVersion,
-    r.promptContentHash,
-    r.idConstructionTrace == null ? null : JSON.stringify(r.idConstructionTrace),
-    r.rawResponse,
-  ]);
-
-  const escapeCsvField = (value) => {
-    if (value == null) return '';
-    const str = String(value);
-    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-      return '"' + str.replace(/"/g, '""') + '"';
-    }
-    return str;
-  };
-
-  return [headers.join(','), ...rows.map((row) => row.map(escapeCsvField).join(','))].join('\n');
 }
 
 /**
@@ -349,6 +235,13 @@ const statisticsRepository = createStatisticsRepository({
   getTutorProfile,
   resolveModel,
 });
+const exportRepository = createExportRepository({
+  getRun: (...args) => runRepository.getRun(...args),
+  getResults: (...args) => resultRepository.getResults(...args),
+  getRunStats: (...args) => statisticsRepository.getRunStats(...args),
+  getScenarioStats: (...args) => statisticsRepository.getScenarioStats(...args),
+});
+const dialogueLogRepository = createDialogueLogRepository({ logsRoot: LOGS_ROOT });
 
 export const storeResult = resultRepository.storeResult;
 export const getResults = resultRepository.getResults;
@@ -393,74 +286,10 @@ export const getRunStats = statisticsRepository.getRunStats;
 export const getScenarioStats = statisticsRepository.getScenarioStats;
 export const compareConfigs = statisticsRepository.compareConfigs;
 export const getFactorialCellData = statisticsRepository.getFactorialCellData;
-
-// ── Dialogue log loading ───────────────────────────────────────────────────
-
-const DIALOGUE_LOGS_DIR = path.join(LOGS_ROOT, 'tutor-dialogues');
-
-/**
- * Load a dialogue log file from disk by its dialogueId.
- *
- * Uses a hybrid lookup strategy: tries the exact path first
- * (`{dialogueId}.json`), then falls back to a partial-match scan of the
- * logs directory.  Returns the parsed JSON object, or null if the file
- * cannot be found or parsed.
- *
- * @param {string} dialogueId - The dialogue identifier (e.g. "dialogue-1771310299522-ys1c3i")
- * @returns {{ [key: string]: any } | null} Parsed dialogue log, or null
- */
-export function loadDialogueLog(dialogueId) {
-  if (!dialogueId) return null;
-
-  // 1. Try exact path
-  const direct = path.join(DIALOGUE_LOGS_DIR, `${dialogueId}.json`);
-  if (fs.existsSync(direct)) {
-    try {
-      return JSON.parse(fs.readFileSync(direct, 'utf-8'));
-    } catch {
-      return null;
-    }
-  }
-
-  // 2. Fallback: partial-match scan (handles legacy naming)
-  let files;
-  try {
-    files = fs.readdirSync(DIALOGUE_LOGS_DIR).filter((f) => f.includes(dialogueId) && f.endsWith('.json'));
-  } catch {
-    return null; // directory doesn't exist
-  }
-  if (files.length === 0) return null;
-
-  try {
-    return JSON.parse(fs.readFileSync(path.join(DIALOGUE_LOGS_DIR, files[0]), 'utf-8'));
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Load a dialogue log from the content-addressed (immutable) copy.
- * Phase 3a: hash-named files are the write-once evidence snapshot.
- * Returns { log, verified } where verified indicates the content matches the hash filename.
- */
-export function loadImmutableDialogueLog(contentHash) {
-  if (!contentHash) return { log: null, verified: false };
-
-  const hashPath = path.join(DIALOGUE_LOGS_DIR, `${contentHash}.json`);
-  if (!fs.existsSync(hashPath)) return { log: null, verified: false };
-
-  try {
-    const content = fs.readFileSync(hashPath, 'utf-8');
-    const log = JSON.parse(content);
-    // Verify content matches filename hash
-    const recomputed = createHash('sha256')
-      .update(JSON.stringify(log, null, 2))
-      .digest('hex');
-    return { log, verified: recomputed === contentHash };
-  } catch {
-    return { log: null, verified: false };
-  }
-}
+export const exportToJson = exportRepository.exportToJson;
+export const exportToCsv = exportRepository.exportToCsv;
+export const loadDialogueLog = dialogueLogRepository.loadDialogueLog;
+export const loadImmutableDialogueLog = dialogueLogRepository.loadImmutableDialogueLog;
 
 export default {
   createRun,

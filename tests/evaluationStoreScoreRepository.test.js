@@ -279,7 +279,7 @@ describe('evaluation-store score repository', () => {
     assert.match(repository, /function updateResultTutorScores/);
     assert.match(repository, /function updateResultLearnerScores/);
     assert.match(repository, /function getScoreAuditByRun/);
-    assert.equal(facade.split('\n').length - 1 <= 525, true);
+    assert.equal(facade.split('\n').length - 1 <= 350, true);
     assert.equal(repository.split('\n').length - 1 <= 750, true);
   });
 });

@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-statistics-repository
 title: Extract evaluation statistics and projections
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -27,7 +27,10 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-interaction-repository
+    - refactor-evaluation-store-export-log-readers
     - repair-evaluation-config-comparison-missing-side-winner
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/527
 tags:
   - refactoring
   - evaluation
@@ -82,3 +85,6 @@ Log:
   boundary, diff, and zero-cycle gates are green. No model calls or production
   database/log writes were made. Exporters and dialogue-log readers form the
   next bounded ownership family after this child lands.
+- 2026-08-07 — PR #527 merged as `28fcf27e`; all ten GitHub checks passed and
+  the serialized board refresh landed as `53e1e989`. Statistics and projections
+  are closed; exporter and dialogue-log ownership is the active child.

@@ -237,7 +237,7 @@ describe('evaluation-store run repository', () => {
     assert.doesNotMatch(facade, /SELECT \* FROM evaluation_runs|DELETE FROM evaluation_runs/);
     assert.match(resultRepository, /derivedRunId.*rubricVersion/s, 'derived-run cloning belongs to result persistence');
     assert.match(repository, /DELETE FROM interaction_evaluations WHERE run_id = \?/);
-    assert.equal(facade.split('\n').length - 1 <= 525, true);
+    assert.equal(facade.split('\n').length - 1 <= 350, true);
     assert.equal(repository.split('\n').length - 1 <= 550, true);
   });
 });
