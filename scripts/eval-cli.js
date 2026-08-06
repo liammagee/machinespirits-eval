@@ -94,9 +94,9 @@ import 'dotenv/config';
  *   eval-cli.js run --all-profiles --runs 1     # Legacy: every profile in tutor-agents.yaml
  */
 
-import * as evaluationRunner from '../services/evaluationRunner.js';
+import { createEvaluationRunner } from '../services/evaluationRunner.js';
 import * as anovaStats from '../services/anovaStats.js';
-import * as evaluationStore from '../services/evaluationStore.js';
+import { createEvaluationStore } from '../services/evaluationStore/createEvaluationStore.js';
 import { readProgressLog, getProgressLogPath } from '../services/progressLogger.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 const { getScenario } = evalConfigLoader;
@@ -105,7 +105,10 @@ import theme from '../services/cliTheme.js';
 import { getOperationalCommandHandler } from './eval-cli/commands/index.js';
 import { getGenerationCommandHandler } from './eval-cli/commands/generationIndex.js';
 import { getScoringCommandHandler } from './eval-cli/commands/scoringIndex.js';
-import { generationRubricDependencies, scoringCommandDependencies } from './eval-cli/scoringCommandDependencies.js';
+import {
+  createScoringCommandDependencies,
+  generationRubricDependencies,
+} from './eval-cli/scoringCommandDependencies.js';
 import readline from 'readline';
 import fs from 'fs';
 import path from 'path';
@@ -185,12 +188,17 @@ function expandRunId(id) {
   return id;
 }
 
-async function main() {
+async function main({ evaluationRunner = null, evaluationStore = null } = {}) {
   try {
     if (wantsHelp()) {
       printHelp();
       return;
     }
+    if (!evaluationRunner || !evaluationStore) {
+      throw new TypeError('evaluationRunner and evaluationStore dependencies are required');
+    }
+
+    const scoringCommandDependencies = createScoringCommandDependencies({ evaluationRunner, evaluationStore });
 
     const operationalCommandHandler = getOperationalCommandHandler(command);
     if (operationalCommandHandler) {
@@ -266,4 +274,19 @@ async function main() {
   }
 }
 
-main();
+async function runCli() {
+  if (wantsHelp()) return await main();
+
+  const evaluationStore = createEvaluationStore({ rootDir: path.resolve(__dirname, '..') });
+  const evaluationRunner = createEvaluationRunner({ evaluationStore });
+  const closeStore = () => evaluationStore.close();
+  process.once('exit', closeStore);
+  try {
+    await main({ evaluationRunner, evaluationStore });
+  } finally {
+    process.removeListener('exit', closeStore);
+    closeStore();
+  }
+}
+
+await runCli();
