@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-export-log-readers
 title: Extract evaluation exporters and dialogue-log readers
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -28,6 +28,9 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-statistics-repository
+    - refactor-evaluation-store-run-manifest-writer
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/528
 tags:
   - refactoring
   - evaluation
@@ -79,3 +82,9 @@ Log:
   boundary, diff, and zero-cycle gates are green. No model calls or production
   database/log writes were made. Run-manifest writing is the next bounded
   owner, followed by explicit application startup and connection lifecycle.
+- 2026-08-07 — Opened the reviewed exporter/log-reader slice as PR #528 at
+  `69666c20`. The run-manifest child is stacked from that exact head so it can
+  proceed without widening #528; it must rebase onto refreshed main after the
+  dependency merges.
+- 2026-08-07 — PR #528 merged as `919ad33e`, closing exporter and dialogue-log
+  ownership. The run-manifest child is now the active publication unit.

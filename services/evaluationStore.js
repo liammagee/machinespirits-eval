@@ -55,6 +55,7 @@ import { createExportRepository } from './evaluationStore/exportRepository.js';
 import { migrateEvaluationDatabase } from './evaluationStore/migrations.js';
 import { createResultRepository } from './evaluationStore/resultRepository.js';
 import { createRunRepository } from './evaluationStore/runRepository.js';
+import { createRunManifestWriter } from './evaluationStore/runManifestWriter.js';
 import { createScoreRepository } from './evaluationStore/scoreRepository.js';
 import { createStatisticsRepository } from './evaluationStore/statisticsRepository.js';
 
@@ -114,96 +115,16 @@ function expectedTestsForRun(run) {
   return (run?.totalScenarios || 0) * (run?.totalConfigurations || 0) * runsPerConfig;
 }
 
-/**
- * Complete an incomplete evaluation run
- *
- * Phase 3c: Write run snapshot manifest to logs/run-manifests/{runId}.json.
- * Records the complete provenance anchor for a run: every row's dialogue hash,
- * config hash, and scoring metadata.
- */
-const MANIFESTS_DIR = path.join(LOGS_ROOT, 'run-manifests');
-
-function writeRunManifest(runId, run, results, completedAt) {
-  try {
-    if (!fs.existsSync(MANIFESTS_DIR)) {
-      fs.mkdirSync(MANIFESTS_DIR, { recursive: true });
-    }
-
-    // Collect per-row provenance data
-    const rows = {};
-    const configHashes = {};
-    const profiles = new Set();
-    const scenarios = new Set();
-    const judgeModels = new Set();
-
-    // Query rubric versions directly (not in parsed results)
-    const rubricVersionMap = {};
-    try {
-      const versionRows = db
-        .prepare('SELECT id, tutor_rubric_version FROM evaluation_results WHERE run_id = ?')
-        .all(runId);
-      for (const vr of versionRows) rubricVersionMap[String(vr.id)] = vr.tutor_rubric_version || null;
-    } catch {
-      /* ignore */
-    }
-
-    for (const r of results) {
-      const rowIdStr = String(r.id);
-      rows[rowIdStr] = {
-        dialogueId: r.dialogueId || null,
-        dialogueContentHash: r.dialogueContentHash || null,
-        configHash: r.configHash || null,
-        profileName: r.profileName || null,
-        scenarioId: r.scenarioId || null,
-        attemptIndex: r.attemptIndex ?? null,
-        learnerId: r.learnerId || null,
-        judgeModel: r.judgeModel || null,
-        tutorRubricVersion: rubricVersionMap[rowIdStr] || null,
-        promptContentHash: r.promptContentHash || null,
-        tutorEgoPromptVersion: r.tutorEgoPromptVersion || null,
-        tutorSuperegoPromptVersion: r.tutorSuperegoPromptVersion || null,
-        learnerPromptVersion: r.learnerPromptVersion || null,
-      };
-
-      if (r.configHash && r.profileName) {
-        configHashes[r.profileName] = r.configHash;
-      }
-      if (r.profileName) profiles.add(r.profileName);
-      if (r.scenarioId) scenarios.add(r.scenarioId);
-      if (r.judgeModel) judgeModels.add(r.judgeModel);
-    }
-
-    const rubricVersions = [...new Set(Object.values(rubricVersionMap).filter(Boolean))].sort();
-
-    const manifest = {
-      run_id: runId,
-      created_at: run.createdAt,
-      completed_at: completedAt,
-      git_commit: run.gitCommit || null,
-      package_version: run.packageVersion || null,
-      description: run.description || null,
-      total_rows: results.length,
-      total_generations: uniqueGenerationResults(results).length,
-      expected_tests: expectedTestsForRun(run),
-      profiles: [...profiles].sort(),
-      scenarios: [...scenarios].sort(),
-      judge_models: [...judgeModels].sort(),
-      rubric_versions: rubricVersions,
-      config_hashes: configHashes,
-      rows,
-    };
-
-    const manifestPath = path.join(MANIFESTS_DIR, `${runId}.json`);
-    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-  } catch {
-    // Non-fatal: manifest write failure should not block run completion
-  }
-}
-
 const resultRepository = createResultRepository({
   db,
   getTutorRubricVersion,
   getRun: (...args) => runRepository.getRun(...args),
+  expectedTestsForRun,
+});
+const runManifestWriter = createRunManifestWriter({
+  db,
+  logsRoot: LOGS_ROOT,
+  uniqueGenerationResults: (...args) => resultRepository.uniqueGenerationResults(...args),
   expectedTestsForRun,
 });
 const runRepository = createRunRepository({
@@ -213,7 +134,7 @@ const runRepository = createRunRepository({
   generationIdentity: (...args) => resultRepository.generationIdentity(...args),
   uniqueGenerationResults: (...args) => resultRepository.uniqueGenerationResults(...args),
   expectedTestsForRun,
-  writeRunManifest,
+  writeRunManifest: runManifestWriter.writeRunManifest,
   isPidAlive,
 });
 const scoreRepository = createScoreRepository({
@@ -249,7 +170,6 @@ export const getResultById = resultRepository.getResultById;
 export const storeRejudgment = resultRepository.storeRejudgment;
 export const generationIdentity = resultRepository.generationIdentity;
 export const cloneRowsForRubricVersion = resultRepository.cloneRowsForRubricVersion;
-const uniqueGenerationResults = resultRepository.uniqueGenerationResults;
 
 export const createRun = runRepository.createRun;
 export const updateRun = runRepository.updateRun;

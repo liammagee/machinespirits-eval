@@ -281,7 +281,7 @@ describe('evaluation-store dialogue-log repository', () => {
       assert.doesNotMatch(facade, new RegExp(`function ${method}\\(`));
       assert.match(facade, new RegExp(`export const ${method} = dialogueLogRepository\\.${method};`));
     }
-    assert.equal(facade.split('\n').length - 1 <= 350, true);
+    assert.equal(facade.split('\n').length - 1 <= 265, true);
     assert.equal(exportSource.split('\n').length - 1 <= 150, true);
     assert.equal(logSource.split('\n').length - 1 <= 150, true);
   });

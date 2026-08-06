@@ -15,6 +15,7 @@
         "services/evaluationStore/migrations.js",
         "services/evaluationStore/resultRepository.js",
         "services/evaluationStore/runRepository.js",
+        "services/evaluationStore/runManifestWriter.js",
         "services/evaluationStore/scoreRepository.js",
         "services/evaluationStore/statisticsRepository.js"
       ],
@@ -27,6 +28,7 @@
         "tests/evaluationStoreInteractionRepository.test.js",
         "tests/evaluationStoreResultRepository.test.js",
         "tests/evaluationStoreRunRepository.test.js",
+        "tests/evaluationStoreRunManifestWriter.test.js",
         "tests/evaluationStoreRoundtripIntegrity.test.js",
         "tests/evaluationStoreScoreRepository.test.js",
         "tests/evaluationStoreStatisticsRepository.test.js"
