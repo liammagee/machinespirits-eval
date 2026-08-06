@@ -8,6 +8,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import { resolveVitestEntryPoint } from './hermetic-test-contract.js';
 import { createIsolatedPaths } from './run-hermetic-tests.js';
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -111,7 +112,7 @@ export function buildNodeCoverageArgs(group, lcovPath) {
 
 export function buildVitestCoverageArgs(group, reportsDirectory, projectRoot = PROJECT_ROOT) {
   return [
-    path.join(projectRoot, 'node_modules', 'vitest', 'vitest.mjs'),
+    resolveVitestEntryPoint(projectRoot),
     'run',
     ...group.tests,
     '--coverage.enabled=true',

@@ -29,6 +29,7 @@ import {
   readRootExecutedFiles,
   readRootTapSummary,
   replayCapturedOutput,
+  resolveVitestEntryPoint,
   runPhase,
   selectTestShard,
 } from '../scripts/run-hermetic-tests.js';
@@ -54,7 +55,12 @@ test('default hermetic run selects root and in-housed core suites', () => {
       { phase: 'core', forceExit: false },
     ],
   );
-  assert.equal(phases[1].args[0], path.join(projectRoot, 'node_modules/vitest/vitest.mjs'));
+  // Asserting the joined path here would only restate how the path is built,
+  // and would fail in a worktree, where the install this has to point at sits in
+  // the main checkout above. Assert the property that matters instead: the phase
+  // runs a Vitest that is actually on disk.
+  assert.equal(path.basename(phases[1].args[0]), 'vitest.mjs');
+  assert.ok(fs.existsSync(phases[1].args[0]), `core phase must run an installed Vitest, got ${phases[1].args[0]}`);
   const manifestState = validateTestManifest(loadTestManifest(projectRoot), projectRoot);
   assert.equal(phases[0].selectedFiles.length, manifestState.rootFiles.length);
   assert.equal(phases[1].selectedFiles.length, manifestState.coreFiles.length);
@@ -308,6 +314,40 @@ test('root discovery stays explicit while the core phase targets all in-housed V
     '--outputFile.json=/tmp/core.json',
   ]);
   assert.equal(coreArgs.includes('--test-force-exit'), false);
+});
+
+test('the core phase borrows the main checkout install when a worktree has none', () => {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'hermetic-worktree-fixture-'));
+  const vitestEntry = (root) => path.join(root, 'node_modules', 'vitest', 'vitest.mjs');
+  try {
+    const mainCheckout = path.join(fixtureRoot, 'machinespirits-eval');
+    const worktree = path.join(mainCheckout, '.claude', 'worktrees', 'some-branch');
+    fs.mkdirSync(path.dirname(vitestEntry(mainCheckout)), { recursive: true });
+    fs.writeFileSync(vitestEntry(mainCheckout), '// fixture\n');
+    fs.mkdirSync(worktree, { recursive: true });
+    assert.equal(fs.existsSync(path.join(worktree, 'node_modules')), false);
+
+    // `git worktree` installs nothing of its own, so the entry point has to be
+    // found the way node finds it: by walking up to the main checkout.
+    assert.equal(resolveVitestEntryPoint(worktree), vitestEntry(mainCheckout));
+    assert.equal(resolveVitestEntryPoint(mainCheckout), vitestEntry(mainCheckout));
+    assert.equal(
+      buildCoreTestArgs({
+        projectRoot: worktree,
+        forwarded: ['tutor-core/services/__tests__/example.test.js'],
+        reportPath: '/tmp/core.json',
+      })[0],
+      vitestEntry(mainCheckout),
+    );
+
+    // Nothing installed above either: the unresolved path comes back, so a
+    // genuinely missing Vitest still names the checkout the caller asked about.
+    const uninstalled = path.join(fixtureRoot, 'no-install');
+    fs.mkdirSync(uninstalled, { recursive: true });
+    assert.equal(resolveVitestEntryPoint(uninstalled), vitestEntry(uninstalled));
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
 });
 
 test('isolated environment covers root and tutor-core writable stores', () => {
