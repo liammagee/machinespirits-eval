@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-08-05
+updated: 2026-08-07
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -127,6 +127,8 @@ links:
     - refactor-evaluation-store-statistics-repository
     - refactor-evaluation-store-export-log-readers
     - refactor-evaluation-store-run-manifest-writer
+    - refactor-evaluation-store-application-lifecycle
+    - refactor-evaluation-runner-cli-store-injection
 tags:
   - refactoring
   - testing
@@ -1624,3 +1626,13 @@ Log:
   The reviewed application-lifecycle child remains the next publication unit;
   its branch head is the merged PR commit and therefore has a trivial one-commit
   rebase path onto refreshed main at handoff.
+- 2026-08-07 — Published the application-lifecycle child as PR #530 at
+  `a044468f` and completed the stacked runner/eval-CLI dependency cohort for
+  review. Standard run, resume, rejudge, reporting, scoring commands, and CLI
+  disposal now share one injected store; the direct facade inventory is down
+  to 26 live/package consumers with full parity green. Adaptive-tutor index and
+  persistence are the next application-runtime cohort after these two branches
+  land.
+- 2026-08-07 — PR #530 merged as `9699a5f7`, closing explicit application
+  lifecycle ownership. The reviewed runner/eval-CLI cohort is now the next
+  publication unit; adaptive-tutor injection follows it.

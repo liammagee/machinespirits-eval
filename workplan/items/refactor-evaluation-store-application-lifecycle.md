@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-application-lifecycle
 title: Make evaluation-store startup and connection lifecycle explicit
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -32,6 +32,9 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-run-manifest-writer
+    - refactor-evaluation-runner-cli-store-injection
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/530
 tags:
   - refactoring
   - evaluation
@@ -99,3 +102,9 @@ Log:
 - 2026-08-07 — Dependency PR #529 merged as `f637b398` while this slice was in
   validation. Its reviewed head is an ancestor of refreshed main, so this
   source-only change remains isolated and can rebase as one commit at handoff.
+- 2026-08-07 — Published as PR #530 at reviewed head `a044468f`; the explicitly
+  stacked runner and eval-CLI dependency-injection cohort is active on
+  `codex/refactor-evaluation-runner-cli-store-injection`.
+- 2026-08-07 — PR #530 merged as `9699a5f7`, closing explicit application
+  startup and connection disposal. Runner and eval-CLI injection remains the
+  active next cohort.

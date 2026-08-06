@@ -11,8 +11,6 @@ import {
 import { callModelCliText } from '../../services/cliProviderBridge.js';
 import * as evalConfigLoader from '../../services/evalConfigLoader.js';
 import { clearRubricPathOverride, setRubricPathOverride } from '../../services/evalConfigLoader.js';
-import * as evaluationRunner from '../../services/evaluationRunner.js';
-import * as evaluationStore from '../../services/evaluationStore.js';
 import {
   buildBatchedLearnerPrompt,
   buildLearnerEvaluationPrompt,
@@ -71,7 +69,7 @@ async function callSelectedCliJudgeText(judgeCli, model, prompt, role, effort = 
   });
 }
 
-function resolveEvaluationScenarioAndDialogueLog(result) {
+function resolveEvaluationScenarioAndDialogueLog(evaluationStore, result) {
   const standardScenario = evalConfigLoader.getScenario(result.scenarioId);
   let dialogueLog = null;
   if (result.dialogueId) dialogueLog = evaluationStore.loadDialogueLog(result.dialogueId);
@@ -134,40 +132,47 @@ export const generationRubricDependencies = Object.freeze({
   setAllRubricOverrides,
 });
 
-export const scoringCommandDependencies = Object.freeze({
-  LOGS_DIR,
-  buildBatchedLearnerPrompt,
-  buildBatchedPerTurnTutorPrompt,
-  buildDialogueFullTranscript,
-  buildDialoguePublicTranscript,
-  buildDialogueQualityPrompt,
-  buildEvaluationPrompt,
-  buildLearnerDeliberationPrompt,
-  buildLearnerEvaluationPrompt,
-  buildLearnerHolisticEvaluationPrompt,
-  buildPerTurnTutorEvaluationPrompt,
-  buildTutorDeliberationPrompt,
-  buildTutorHolisticEvaluationPrompt,
-  calculateBaseScore,
-  calculateDeliberationScore,
-  calculateDialogueQualityScore,
-  calculateLearnerOverallScore,
-  calculateOverallScore,
-  calculateRecognitionScore,
-  calculateTutorHolisticScore,
-  callSelectedCliJudgeText,
-  clearAllRubricOverrides,
-  createHash,
-  evalConfigLoader,
-  evaluationRunner,
-  evaluationStore,
-  extractLearnerTurnsFromTrace,
-  fs,
-  getScenario: evalConfigLoader.getScenario,
-  hasTutorSuperego,
-  path,
-  resolveDefaultCliJudgeModelOverride,
-  resolveEvaluationScenarioAndDialogueLog,
-  resolveRubricPaths,
-  setAllRubricOverrides,
-});
+export function createScoringCommandDependencies({ evaluationRunner, evaluationStore } = {}) {
+  if (!evaluationRunner || !evaluationStore) {
+    throw new TypeError('evaluationRunner and evaluationStore dependencies are required');
+  }
+
+  return Object.freeze({
+    LOGS_DIR,
+    buildBatchedLearnerPrompt,
+    buildBatchedPerTurnTutorPrompt,
+    buildDialogueFullTranscript,
+    buildDialoguePublicTranscript,
+    buildDialogueQualityPrompt,
+    buildEvaluationPrompt,
+    buildLearnerDeliberationPrompt,
+    buildLearnerEvaluationPrompt,
+    buildLearnerHolisticEvaluationPrompt,
+    buildPerTurnTutorEvaluationPrompt,
+    buildTutorDeliberationPrompt,
+    buildTutorHolisticEvaluationPrompt,
+    calculateBaseScore,
+    calculateDeliberationScore,
+    calculateDialogueQualityScore,
+    calculateLearnerOverallScore,
+    calculateOverallScore,
+    calculateRecognitionScore,
+    calculateTutorHolisticScore,
+    callSelectedCliJudgeText,
+    clearAllRubricOverrides,
+    createHash,
+    evalConfigLoader,
+    evaluationRunner,
+    evaluationStore,
+    extractLearnerTurnsFromTrace,
+    fs,
+    getScenario: evalConfigLoader.getScenario,
+    hasTutorSuperego,
+    path,
+    resolveDefaultCliJudgeModelOverride,
+    resolveEvaluationScenarioAndDialogueLog: (result) =>
+      resolveEvaluationScenarioAndDialogueLog(evaluationStore, result),
+    resolveRubricPaths,
+    setAllRubricOverrides,
+  });
+}

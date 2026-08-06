@@ -138,3 +138,26 @@ still migrate by cohort under later cards; until then their first real store
 operation uses the lazy compatibility path. Removing the adaptive grader's
 migration-only import reduces the executable inventory to 48 consumers: 29
 live/package, four archived one-offs, and 15 tests.
+
+## Runner and eval-CLI injection follow-up (2026-08-07)
+
+The first direct-dependency cohort removes the legacy facade from the standard
+evaluation runner, the eval CLI, and its scoring dependency adapter:
+
+1. `createEvaluationRunner({ evaluationStore })` binds run creation, result
+   persistence, reports, resume, rejudgment, and multi-turn completion to one
+   host-supplied store. Store-bound runtime owners are assembled lazily and
+   cached per store; importing the runner still performs no persistence work.
+2. The named runner exports remain compatible. Calls that do not inject a
+   store resolve the lazy default lifecycle only when a persistence operation
+   begins, so routes and external package callers can migrate in later cohorts.
+3. `scripts/eval-cli.js` now owns one explicit store, constructs its runner and
+   scoring dependency graph from that store, and closes it after command
+   completion. A synchronous `exit` hook also closes it when a legacy command
+   invokes `process.exit()` directly. Help remains database-free.
+
+This removes three direct facade consumers. The executable inventory is now 45
+consumers: 26 live/package, four archived one-offs, and 15 tests. The remaining
+application-runtime consumers are eval routes plus the adaptive-tutor index and
+persistence modules; those retain the lazy compatibility path until their own
+host-migration cohorts land.

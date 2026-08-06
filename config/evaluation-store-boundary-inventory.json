@@ -3,7 +3,7 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 29,
+    "liveAndPackageConsumerCount": 26,
     "archivedConsumerCount": 4,
     "testConsumerCount": 15
   },
@@ -69,16 +69,6 @@
     },
     {
       "path": "scripts/code-dialectical-modulation.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/eval-cli.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/eval-cli/scoringCommandDependencies.js",
       "classification": "operational-script",
       "modes": ["namespace"]
     },
@@ -189,11 +179,6 @@
     },
     {
       "path": "services/adaptiveTutor/persistence.js",
-      "classification": "application-runtime",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "services/evaluationRunner.js",
       "classification": "application-runtime",
       "modes": ["namespace"]
     },
