@@ -1656,3 +1656,7 @@ Log:
   direct-facade inventory is down to 23 live/package consumers with no
   application-runtime entries. Complete route, API, root, core, risk, source,
   lint, formatting, boundary, and cycle gates pass.
+- 2026-08-07 — Published eval-route host-context injection as PR #539 at
+  `7d3c9bef`. The next host-migration phase is operational scripts, beginning
+  with a read-only analysis/reporting cohort before scoring and write-bearing
+  tools.

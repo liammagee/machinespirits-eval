@@ -28,6 +28,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-adaptive-tutor-store-injection
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/539
 tags:
   - refactoring
   - evaluation
@@ -83,3 +85,5 @@ Log:
   evaluation-store group, alongside source, formatting, lint, boundary, and
   zero-cycle gates. No model calls, shared production writes, or generated
   workplan views occurred.
+- 2026-08-07 — Opened PR #539 at `7d3c9bef`; the head matches origin and the PR
+  is ready for review against current `main`.
