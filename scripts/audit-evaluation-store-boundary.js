@@ -83,9 +83,21 @@ export function scanEvaluationStoreExports(rootDir = ROOT_DIR) {
 export function buildActualInventory(rootDir = ROOT_DIR) {
   const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
   const indexSource = fs.readFileSync(path.join(rootDir, 'index.js'), 'utf8');
+  const facadeSource = fs.readFileSync(path.join(rootDir, 'services', 'evaluationStore.js'), 'utf8');
+  const consumers = scanEvaluationStoreConsumers(rootDir);
+  const consumerCount = (classification) =>
+    consumers.filter((consumer) => consumer.classification === classification).length;
 
   return {
-    consumers: scanEvaluationStoreConsumers(rootDir),
+    characterization: {
+      sourceLineCount: facadeSource.split('\n').length - 1,
+      liveAndPackageConsumerCount: consumers.filter(
+        (consumer) => !['archived-oneoff', 'test'].includes(consumer.classification),
+      ).length,
+      archivedConsumerCount: consumerCount('archived-oneoff'),
+      testConsumerCount: consumerCount('test'),
+    },
+    consumers,
     exports: scanEvaluationStoreExports(rootDir),
     packageSurface: {
       root: packageJson.exports?.['.'] ?? null,
@@ -104,6 +116,7 @@ export function auditEvaluationStoreBoundary({ rootDir = ROOT_DIR, inventoryPath
   const expected = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
   const actual = buildActualInventory(rootDir);
   const expectedBoundary = {
+    characterization: expected.characterization,
     consumers: expected.consumers,
     exports: expected.exports,
     packageSurface: expected.packageSurface,
@@ -130,6 +143,7 @@ function printSummary(inventory) {
   ).length;
 
   console.log('Evaluation store boundary inventory: current');
+  console.log(`  facade lines: ${inventory.characterization.sourceLineCount}`);
   console.log(`  tracked consumers: ${inventory.consumers.length} (${liveCount} live/package)`);
   for (const [classification, count] of Object.entries(counts).sort()) {
     console.log(`  ${classification}: ${count}`);

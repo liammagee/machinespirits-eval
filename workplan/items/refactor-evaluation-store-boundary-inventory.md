@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-boundary-inventory
 title: Characterize the evaluation-store facade and bootstrap boundary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -28,6 +28,7 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-eval-cli-scoring-commands
+    - refactor-evaluation-store-connection-migrations
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/518
 tags:
@@ -80,3 +81,6 @@ Log:
 - 2026-08-06 — Replaced the test-only `Object.groupBy` use after the Node 20
   shard exposed that Node 22-only API. The equivalent explicit count loop keeps
   the inventory assertion unchanged and the focused test and lint pass locally.
+- 2026-08-06 — PR #518 merged as `e0ad0b26`; the serialized workplan refresh
+  followed as `4f94b98f`. The characterization boundary is closed and the
+  connection/migrations extraction now proceeds from that merged base.

@@ -119,6 +119,7 @@ links:
     - refactor-eval-cli-generation-commands
     - refactor-eval-cli-scoring-commands
     - refactor-evaluation-store-boundary-inventory
+    - refactor-evaluation-store-connection-migrations
 tags:
   - refactoring
   - testing
@@ -1495,3 +1496,19 @@ Log:
 - 2026-08-06 — Opened the R4 step 5 characterization as PR #518. Its reviewed
   head is the dependency base for the first R4 step 6 connection/migrations
   extraction; the latter remains a separate card and PR.
+- 2026-08-06 — Activated the first R4 step 6 extraction on
+  `codex/refactor-evaluation-store-connection-migrations`, stacked from PR
+  #518's reviewed head `5ebd9f07`. The connection/path/WAL lifecycle and full
+  idempotent migration sequence move behind the unchanged import-time facade;
+  repositories and host startup remain out of scope.
+- 2026-08-06 — The connection/migrations slice reached review with 458 facade
+  lines removed into two bounded owners, exact import-time/package behavior,
+  fresh/idempotent/legacy schema characterization, and expanded risk coverage
+  over the extracted modules. Focused, complete zero-skip hermetic, coverage,
+  lint, format, manifest, workplan, diff, and cycle gates pass without model
+  calls or production data access. The next R4 step 6 family after merge is the
+  run repository.
+- 2026-08-06 — PR #518 merged as `e0ad0b26` and its serialized board refresh
+  landed as `4f94b98f`; the boundary-inventory child is closed. The reviewed
+  connection/migrations child was rebased onto that refreshed `main` without
+  conflict and remains the active handoff.
