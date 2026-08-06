@@ -22,7 +22,11 @@ import {
   getRegisterRubricPath,
   resolveEngagementRegister,
 } from '../services/engagementRegisterRegistry.js';
-import { applyNegativeRegisterScoreGuardrails } from '../services/registerStanceFidelity.js';
+import {
+  applyNegativeRegisterScoreGuardrails,
+  evaluateRegisterStanceFidelity,
+} from '../services/registerStanceFidelity.js';
+import { buildNegationRecoveryJudgePrompt, parseNegationRecoveryJudgeReply } from '../services/negationRecovery.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -237,6 +241,35 @@ async function scoreSlice(slice, { judgeModel = null }) {
   const overall = calculateRubricOverallScore(guarded.scores, rubric);
   if (overall == null) return { ok: false, reason: 'no_valid_dimension_scores' };
 
+  // The determinate-sarcasm register carries two extra measurements per slice:
+  // the deterministic stance verdict and the judged negation-recovery result
+  // (both validated on config/register-exemplars/sarcasm-determinate-negation.yaml).
+  // A recovery-judge failure fails the slice so it stays pending.
+  let stanceFidelity = null;
+  let negationRecovery = null;
+  if (slice.registerName === 'sarcastic_determinate') {
+    stanceFidelity = evaluateRegisterStanceFidelity({
+      registerName: slice.registerName,
+      tutorMessage: slice.tutorMessage,
+      learnerMessage: slice.learnerMessage,
+      postLearnerMessage: slice.postLearnerMessage,
+    });
+    const recoveryPrompt = buildNegationRecoveryJudgePrompt({
+      tutorMessage: slice.tutorMessage,
+      postLearnerMessage: slice.postLearnerMessage,
+    });
+    let recoveryText;
+    try {
+      recoveryText = await callJudgeModel(recoveryPrompt, judgeOverrides);
+    } catch (err) {
+      return { ok: false, reason: `recovery_judge_error:${err.message}` };
+    }
+    negationRecovery = parseNegationRecoveryJudgeReply(recoveryText);
+    if (negationRecovery.parseError) {
+      return { ok: false, reason: `recovery_parse_error:${negationRecovery.parseError}` };
+    }
+  }
+
   evaluationStore.updateResultTutorRegisterScore(slice.rowId, {
     register: slice.registerName,
     sliceKey: slice.sliceKey,
@@ -259,6 +292,8 @@ async function scoreSlice(slice, { judgeModel = null }) {
       v22_turn_score: slice.v22TurnScore,
       recognition_quality: slice.recognitionQuality,
     },
+    ...(stanceFidelity ? { stanceFidelity } : {}),
+    ...(negationRecovery ? { negationRecovery } : {}),
   });
 
   return { ok: true, overall };

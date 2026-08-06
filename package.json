@@ -119,6 +119,8 @@
     "analyze:recognition-definitions": "node scripts/analyze-recognition-definitions.js",
     "analyze:effects": "node scripts/analyze-eval-results.js",
     "negative-register:grid": "node scripts/run-negative-register-effect-estimation-grid.js",
+    "sarcasm-determinate:grid": "node scripts/run-sarcasm-determinate-negation-grid.js",
+    "sarcasm-determinate:exemplars": "node scripts/run-sarcasm-determinate-exemplar-test.js",
     "program2:stall-audit": "node scripts/audit-program2-stall-corpus.mjs",
     "program2:stall-dataset": "node scripts/program2-extract-dataset.mjs --trigger stagnant_repeat",
     "program2:gate-grade": "node scripts/grade-point-of-action-gate.js",

@@ -1,6 +1,6 @@
 import { getEngagementRegisterDefinition, resolveEngagementRegister } from './engagementRegisterRegistry.js';
 
-const NEGATIVE_REGISTER_NAMES = new Set(['ironic', 'sarcastic', 'face_threat']);
+const NEGATIVE_REGISTER_NAMES = new Set(['ironic', 'sarcastic', 'face_threat', 'sarcastic_determinate']);
 
 const STANCE_FIDELITY_GATE_BY_LABEL = {
   faithful: {
@@ -66,6 +66,53 @@ const REGISTER_MARKERS = {
     /\bthis move lets you\b/i,
   ],
 };
+REGISTER_MARKERS.sarcastic_determinate = REGISTER_MARKERS.sarcastic;
+
+// The determinate variant's extra requirement: the sarcastic beat names its
+// target claim, either by quoting the learner or by an explicit naming frame.
+const NAMED_CLAIM_FRAME_PATTERNS = [
+  /\byour (?:claim|answer|formula|statement|argument|line|move|version) (?:that|was|is)\b/i,
+  /\byou (?:said|wrote|told me|claimed|answered|insisted|declared)\b/i,
+  /\bthe claim that\b/i,
+  /\bwhen you say\b/i,
+  /\bso your (?:claim|answer|story|theory) is\b/i,
+];
+
+function tokenSet(text) {
+  return new Set(
+    normalize(text)
+      .toLowerCase()
+      .split(/[^a-z0-9']+/)
+      .filter((token) => token.length > 2),
+  );
+}
+
+function quotedSpans(text) {
+  const normalized = normalize(text);
+  const spans = [];
+  const pattern = /"([^"]{6,200})"|'([^']{6,200})'/g;
+  let match;
+  while ((match = pattern.exec(normalized)) !== null) {
+    spans.push(match[1] || match[2]);
+  }
+  return spans;
+}
+
+export function findNamedTargetClaim(tutorMessage, learnerMessage = '') {
+  const frames = findMatches(tutorMessage, NAMED_CLAIM_FRAME_PATTERNS);
+  const learnerTokens = tokenSet(learnerMessage);
+  const echoedQuote = quotedSpans(tutorMessage).find((span) => {
+    const spanTokens = [...tokenSet(span)];
+    if (spanTokens.length < 2) return false;
+    const overlap = spanTokens.filter((token) => learnerTokens.has(token)).length;
+    return learnerMessage ? overlap >= Math.min(2, spanTokens.length) : true;
+  });
+  return {
+    named: Boolean(frames.length || echoedQuote),
+    frames,
+    echoedQuote: echoedQuote || null,
+  };
+}
 
 const TARGET_DISCIPLINE_PATTERNS = [
   /\b(?:claim|argument|answer|formula|sequence|move|work|example|case|hinge|phrase|sentence|test|response|draft|object|paragraph)\b/i,
@@ -280,25 +327,41 @@ export function evaluateRegisterStanceFidelity({
     normalize(learnerMessage),
   );
 
+  const determinate = canonicalRegister === 'sarcastic_determinate';
+  const namedClaim = determinate ? findNamedTargetClaim(tutorMessage, learnerMessage) : null;
+
   const missing = [];
   if (!markerHits.length) missing.push('register_marker');
+  if (determinate && !namedClaim.named) missing.push('named_target_claim');
   if (!targetHits.length) missing.push('target_discipline');
   if (!nextMoveHits.length) missing.push('next_move');
   if (!repairHits.length) missing.push('repair_path');
   if (!learnerResistanceVisible) missing.push('visible_resistance_context');
 
   let score = 0;
-  if (markerHits.length) score += 35;
-  if (targetHits.length) score += 20;
-  if (nextMoveHits.length) score += 20;
-  if (repairHits.length) score += 15;
-  if (learnerResistanceVisible) score += 10;
+  if (determinate) {
+    // Re-weighted so the named target claim carries real mass: the variant's
+    // point is cargo, and manner alone must not reach the faithful band.
+    if (markerHits.length) score += 25;
+    if (namedClaim.named) score += 25;
+    if (targetHits.length) score += 15;
+    if (nextMoveHits.length) score += 15;
+    if (repairHits.length) score += 10;
+    if (learnerResistanceVisible) score += 10;
+  } else {
+    if (markerHits.length) score += 35;
+    if (targetHits.length) score += 20;
+    if (nextMoveHits.length) score += 20;
+    if (repairHits.length) score += 15;
+    if (learnerResistanceVisible) score += 10;
+  }
   if (forbiddenFound.length) score = Math.min(score, 20);
 
   let label = 'faithful';
   if (forbiddenFound.length) label = 'invalid_person_attack';
   else if (score < 40) label = 'not_instantiated';
   else if (score < 70) label = 'weak_or_warm_in_costume';
+  else if (determinate && !namedClaim.named) label = 'weak_or_warm_in_costume';
 
   const result = {
     applies: true,
@@ -310,6 +373,7 @@ export function evaluateRegisterStanceFidelity({
     signals: [...new Set([...markerHits, ...targetHits, ...nextMoveHits, ...repairHits])],
     missing,
     forbiddenFound,
+    ...(determinate ? { namedTargetClaim: namedClaim } : {}),
   };
   return {
     ...result,

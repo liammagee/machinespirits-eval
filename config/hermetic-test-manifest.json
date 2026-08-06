@@ -394,6 +394,7 @@
         "tests/runDiscursiveReplayPanel.test.js",
         "tests/runPoeticsAdaptationLoop.test.js",
         "tests/runPoeticsProductionBatch.test.js",
+        "tests/sarcasmDeterminateNegationGrid.test.js",
         "tests/scaffoldLifecycle.test.js",
         "tests/scorePoeticsCalibration.test.js",
         "tests/scorePoeticsMissingSonnet.test.js",
