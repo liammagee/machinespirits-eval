@@ -286,6 +286,7 @@
         "tests/evaluationStoreResultRepository.test.js",
         "tests/evaluationStoreRoundtripIntegrity.test.js",
         "tests/evaluationStoreRunRepository.test.js",
+        "tests/evaluationStoreRunManifestWriter.test.js",
         "tests/evaluationStoreScoreRepository.test.js",
         "tests/evaluationStoreStatisticsRepository.test.js",
         "tests/evaluationStreamRegistry.test.js",

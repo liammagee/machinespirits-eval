@@ -126,6 +126,7 @@ links:
     - refactor-evaluation-store-interaction-repository
     - refactor-evaluation-store-statistics-repository
     - refactor-evaluation-store-export-log-readers
+    - refactor-evaluation-store-run-manifest-writer
 tags:
   - refactoring
   - testing
@@ -1593,3 +1594,17 @@ Log:
   default exports remained fixed; complete focused, hermetic, risk-coverage,
   source, and static gates pass. Run-manifest writing is next, then explicit
   application startup and connection lifecycle migration.
+- 2026-08-07 — Opened exporter and dialogue-log ownership as PR #528 at
+  `69666c20`. Activated `refactor-evaluation-store-run-manifest-writer` from
+  that reviewed head as an explicitly stacked follow-up; this child owns only
+  completion-time provenance artifacts, leaving import-time bootstrap and host
+  migration for the next phase.
+- 2026-08-07 — The run-manifest child reached review with exact provenance
+  projection and best-effort filesystem persistence in an 87-line injected
+  writer. The facade fell from 341 to 261 lines while all public exports and
+  bootstrap behavior stayed fixed; complete focused, hermetic, risk-coverage,
+  source, and static gates pass. Explicit application startup and connection
+  lifecycle migration is now the remaining evaluation-store boundary phase.
+- 2026-08-07 — PR #528 merged as `919ad33e`, closing exporter and dialogue-log
+  ownership. The reviewed run-manifest child can now publish from refreshed
+  main before explicit application startup and connection lifecycle begins.

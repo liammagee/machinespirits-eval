@@ -269,7 +269,7 @@ describe('evaluation-store interaction repository', () => {
       assert.doesNotMatch(facade, new RegExp(`function ${method}\\(`));
       assert.match(facade, new RegExp(`export const ${method} = interactionRepository\\.${method};`));
     }
-    assert.equal(facade.split('\n').length - 1 <= 350, true);
+    assert.equal(facade.split('\n').length - 1 <= 265, true);
     assert.equal(repository.split('\n').length - 1 <= 225, true);
   });
 });
