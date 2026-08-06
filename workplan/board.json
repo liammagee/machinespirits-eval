@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-06T01:43:04.050Z",
+  "generated": "2026-08-06T03:25:18.520Z",
   "counts": {
-    "total": 419,
+    "total": 420,
     "byStatus": {
-      "done": 390,
+      "done": 391,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
@@ -15,7 +15,7 @@
       "research": 72,
       "experiment": 70,
       "infra": 81,
-      "maintenance": 177,
+      "maintenance": 178,
       "content": 3,
       "ops": 10,
       "paper": 6
@@ -184,7 +184,8 @@
           "refactor-eval-cli-operational-commands",
           "refactor-eval-cli-generation-commands",
           "refactor-eval-cli-scoring-commands",
-          "refactor-evaluation-store-boundary-inventory"
+          "refactor-evaluation-store-boundary-inventory",
+          "refactor-evaluation-store-connection-migrations"
         ]
       },
       "tags": [
@@ -618,8 +619,8 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "refactor-evaluation-store-boundary-inventory",
-      "title": "Characterize the evaluation-store facade and bootstrap boundary",
+      "id": "refactor-evaluation-store-connection-migrations",
+      "title": "Extract the evaluation-store connection and migration owners",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -627,36 +628,35 @@
       "source": "review",
       "created": "2026-08-06",
       "updated": "2026-08-06",
-      "branch": "codex/refactor-evaluation-store-boundary-inventory",
-      "verification": "An exact tracked-consumer and export inventory, hermetic import-time database bootstrap test, and package-export root/direct-subpath smoke preserve the current evaluationStore facade contract before persistence modules move.",
+      "branch": "codex/refactor-evaluation-store-connection-migrations",
+      "verification": "Hermetic fresh, repeated, and legacy-schema tests prove database path precedence, missing-parent creation, WAL mode, schema/index parity, evaluator-model rename, score backfill, and unchanged import-time facade and package behavior while all existing store round trips remain green.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-eval-cli-scoring-commands"
+        "refactor-evaluation-store-boundary-inventory"
       ],
       "links": {
         "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
           "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
         ],
         "code": [
           "services/evaluationStore.js",
-          "config/evaluation-store-boundary-inventory.json",
-          "scripts/audit-evaluation-store-boundary.js",
-          "tests/evaluationStoreBoundaryInventory.test.js"
+          "services/evaluationStore/connection.js",
+          "services/evaluationStore/migrations.js",
+          "tests/evaluationStoreConnectionMigrations.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-eval-cli-scoring-commands"
+          "refactor-evaluation-store-boundary-inventory"
         ],
         "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/518"
+          "https://github.com/liammagee/machinespirits-eval/pull/519"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
         "persistence",
-        "packaging",
+        "sqlite",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -2505,6 +2505,51 @@
         "resume",
         "rejudge",
         "provenance",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-boundary-inventory",
+      "title": "Characterize the evaluation-store facade and bootstrap boundary",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-evaluation-store-boundary-inventory",
+      "verification": "An exact tracked-consumer and export inventory, hermetic import-time database bootstrap test, and package-export root/direct-subpath smoke preserve the current evaluationStore facade contract before persistence modules move.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-eval-cli-scoring-commands"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "config/evaluation-store-boundary-inventory.json",
+          "scripts/audit-evaluation-store-boundary.js",
+          "tests/evaluationStoreBoundaryInventory.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-eval-cli-scoring-commands",
+          "refactor-evaluation-store-connection-migrations"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/518"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "persistence",
+        "packaging",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
