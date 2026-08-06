@@ -14,20 +14,39 @@ const exec = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CLI = path.resolve(__dirname, '..', 'scripts', 'eval-cli.js');
 
-/** Run the CLI with given args, stripping API keys from env. */
-async function runCli(args = [], timeoutMs = 30000) {
-  // Remove all API keys to prove dry-run needs none
-  const cleanEnv = { ...process.env, NODE_NO_WARNINGS: '1' };
-  delete cleanEnv.OPENROUTER_API_KEY;
-  delete cleanEnv.ANTHROPIC_API_KEY;
-  delete cleanEnv.GEMINI_API_KEY;
-  delete cleanEnv.OPENAI_API_KEY;
+/**
+ * Run the CLI with given args, stripping API keys from env.
+ *
+ * The keys are blanked, not deleted. scripts/eval-cli.js imports
+ * `dotenv/config`, and dotenv refills a deleted var from the repo's .env
+ * (it only skips vars already present in process.env), so deleting them
+ * leaves the child with real keys on any machine that has a .env.
+ *
+ * @param {string[]} args CLI arguments
+ * @param {object} [options]
+ * @param {number} [options.timeoutMs] kill the child after this long
+ * @param {boolean} [options.closeStdin] send EOF, for commands that prompt
+ * @param {Record<string, string>} [options.env] extra env for the child
+ */
+async function runCli(args = [], { timeoutMs = 30000, closeStdin = false, env = {} } = {}) {
+  const cleanEnv = {
+    ...process.env,
+    NODE_NO_WARNINGS: '1',
+    OPENROUTER_API_KEY: '',
+    ANTHROPIC_API_KEY: '',
+    GEMINI_API_KEY: '',
+    OPENAI_API_KEY: '',
+    ...env,
+  };
 
   try {
-    const { stdout, stderr } = await exec('node', [CLI, ...args], {
+    const pending = exec('node', [CLI, ...args], {
       timeout: timeoutMs,
       env: cleanEnv,
     });
+    // Without EOF an interactive command sits on the pipe until the timeout.
+    if (closeStdin) pending.child.stdin.end();
+    const { stdout, stderr } = await pending;
     return { stdout, stderr, code: 0 };
   } catch (err) {
     return {
@@ -215,8 +234,25 @@ describe('eval-cli --dry-run', () => {
   });
 
   it('chat fails cleanly without an OpenRouter API key', async () => {
-    const { stderr, code } = await runCli(['chat']);
-    assert.strictEqual(code, 1);
+    // chat talks to one endpoint only (OpenRouter completions), whatever judge
+    // model resolves, so with no key it must bail instead of opening a prompt
+    // it cannot use. stdin gets EOF: if the check ever regresses the test fails
+    // on the assertions below rather than hanging until the timeout.
+    const { stderr, code } = await runCli(['chat'], { closeStdin: true, timeoutMs: 15000 });
+    assert.strictEqual(code, 1, `should exit 1, stderr: ${stderr}`);
     assert.ok(stderr.includes('OPENROUTER_API_KEY not set'), 'should preserve the missing-key error');
+  });
+
+  it('chat starts and exits on EOF when a key is present', async () => {
+    // Guards the other half: the prompt must close itself when stdin ends.
+    // No line is ever typed, so the key is never spent on a request.
+    const { stdout, stderr, code } = await runCli(['chat'], {
+      closeStdin: true,
+      timeoutMs: 15000,
+      env: { OPENROUTER_API_KEY: 'test-key-never-sent' },
+    });
+    assert.strictEqual(code, 0, `should exit 0, stderr: ${stderr}`);
+    assert.ok(stdout.includes('Eval Chat (model:'), 'should print the chat banner');
+    assert.ok(stdout.includes('Bye.'), 'should close out on EOF');
   });
 });

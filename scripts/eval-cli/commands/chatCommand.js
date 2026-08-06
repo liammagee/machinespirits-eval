@@ -28,16 +28,53 @@ async function callOpenRouter(messages, model, apiKey, hyperparameters = {}) {
   return res.json();
 }
 
+/**
+ * Work out which model slug chat should send to OpenRouter.
+ *
+ * chat has one transport, the OpenRouter completions endpoint, so a judge from
+ * any other provider cannot be reached from here. Prefixing the provider name
+ * onto the model — what this used to do — invents a slug OpenRouter has never
+ * heard of ('claude-code/sonnet') and turns a config problem into a 400 on the
+ * user's first message. A CLI-bridge judge can't be rescued by routing either:
+ * the bridge runs with tools disabled, and chat is a tool-calling loop.
+ *
+ * An openrouter judge already carries its full slug ('anthropic/claude-...'),
+ * so it passes through untouched.
+ *
+ * @param {{provider?: string, model?: string}} judge resolved judge config
+ * @returns {{model: string, error?: undefined}|{model?: undefined, error: string}}
+ */
+export function resolveChatModel(judge) {
+  const provider = judge?.provider;
+  const model = judge?.model;
+
+  if (!model) {
+    return { error: 'No judge model resolved. Set judge.model in config/evaluation-rubric.yaml.' };
+  }
+  if (provider !== 'openrouter') {
+    return {
+      error:
+        `Chat talks to OpenRouter only, but the judge resolved to ${provider}/${model}. ` +
+        'Point judge.model in config/evaluation-rubric.yaml at an openrouter.* reference.',
+    };
+  }
+  return { model };
+}
+
 export async function runChatCommand(context) {
   const { getAvailableJudge, readline } = context;
   const judge = getAvailableJudge();
+  const resolved = resolveChatModel(judge);
+  if (resolved.error) {
+    console.error(resolved.error);
+    process.exit(1);
+  }
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     console.error('OPENROUTER_API_KEY not set. Required for chat mode.');
     process.exit(1);
   }
-  const _model = `${judge.provider === 'openrouter' ? '' : judge.provider + '/'}${judge.model}`;
-  const chatModel = judge.provider === 'openrouter' ? judge.model : `${judge.provider}/${judge.model}`;
+  const chatModel = resolved.model;
 
   console.log(`\nEval Chat (model: ${chatModel})`);
   console.log('Type your questions about evaluation runs. Use "quit" or "exit" to leave.\n');
