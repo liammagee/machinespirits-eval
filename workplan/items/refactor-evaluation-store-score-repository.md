@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-score-repository
 title: Extract evaluation score mutation and audit persistence
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -28,6 +28,9 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-result-repository
+    - refactor-evaluation-store-interaction-repository
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/525
 tags:
   - refactoring
   - evaluation
@@ -84,3 +87,10 @@ Log:
   boundary, diff, and zero-cycle gates are green. No model calls or production
   database/log writes were made. Interaction-evaluation persistence is the next
   bounded repository family.
+- 2026-08-06 — Opened the reviewed score/audit extraction as PR #525 at
+  `b379ffa1`. Activated the interaction-repository child from that exact head;
+  it remains independently reviewable and will rebase onto refreshed `main`
+  after #525 merges.
+- 2026-08-06 — PR #525 merged as `c162fcc6`; score mutation and append-only
+  audit persistence is closed. The interaction-repository child rebased with
+  its staged work intact onto current `origin/main` at `a410c982`.

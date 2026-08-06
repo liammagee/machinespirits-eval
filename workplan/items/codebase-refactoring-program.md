@@ -1554,3 +1554,17 @@ Log:
   exports remained fixed; complete focused, hermetic, risk-coverage, source,
   and static gates pass. Interaction-evaluation persistence is next, followed
   by statistics/projections, exporters/log readers, and explicit host startup.
+- 2026-08-06 — Opened score mutation/audit persistence as PR #525 and activated
+  `refactor-evaluation-store-interaction-repository` from its reviewed head
+  `b379ffa1`. The child extracts the six legacy interaction-evaluation CRUD and
+  learner-score operations while keeping statistics and filesystem/host work
+  outside the repository boundary.
+- 2026-08-06 — The interaction-repository child reached review with six CRUD,
+  projection, and learner-score operations in a 214-line owner. The facade fell
+  from 1,214 to 961 lines while the 44 named and 41 default exports remained
+  fixed; complete focused, hermetic, risk-coverage, source, and static gates
+  pass. Statistics/projections are next, then exporters/log readers and
+  explicit host startup.
+- 2026-08-06 — PR #525 merged as `c162fcc6`, closing score mutation/audit
+  persistence. The reviewed interaction-repository child rebased cleanly onto
+  current `origin/main` at `a410c982` and remains the next publication unit.

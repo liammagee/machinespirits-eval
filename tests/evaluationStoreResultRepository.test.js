@@ -224,7 +224,7 @@ describe('evaluation-store result repository', () => {
     assert.doesNotMatch(facade, /GENERATION_PROVENANCE_COLUMNS|INSERT INTO evaluation_results/);
     assert.match(repository, /function storeRejudgment/);
     assert.match(repository, /function cloneRowsForRubricVersion/);
-    assert.equal(facade.split('\n').length - 1 <= 1_250, true);
+    assert.equal(facade.split('\n').length - 1 <= 975, true);
     assert.equal(repository.split('\n').length - 1 <= 650, true);
   });
 });
