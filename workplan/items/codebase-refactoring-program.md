@@ -1669,3 +1669,6 @@ Log:
   scripts bound to passive, isolated read contexts. Direct facade ownership is
   down to 17 live/package consumers, complete parity is green, and the four
   longitudinal live reports are the next read-only projection cohort.
+- 2026-08-07 — Published operational dialogue-log injection as PR #542 at
+  `cffa5249` after a clean rebase onto current main. Longitudinal A2-A5 live
+  report ownership remains the next migration cohort.

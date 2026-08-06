@@ -31,6 +31,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-eval-routes-store-injection
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/542
 tags:
   - refactoring
   - evaluation
@@ -83,3 +85,5 @@ Log:
   transient failure while both shards ran concurrently; the immediate solo
   rerun passed 3,534/3,534. No model calls, shared production writes, or
   generated workplan views occurred.
+- 2026-08-07 — Rebased cleanly onto current main `d437f7fb`, revalidated all 57
+  focused tests and static gates, and opened PR #542 at `cffa5249`.
