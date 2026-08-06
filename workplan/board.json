@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-06T06:08:14.365Z",
+  "generated": "2026-08-06T06:09:42.956Z",
   "counts": {
-    "total": 424,
+    "total": 428,
     "byStatus": {
       "done": 394,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
       "archived": 4,
-      "triaged": 3,
+      "triaged": 7,
       "review": 5
     },
     "byType": {
-      "research": 72,
+      "research": 74,
       "experiment": 71,
-      "infra": 81,
+      "infra": 83,
       "maintenance": 180,
       "content": 3,
       "ops": 10,
@@ -52,6 +52,90 @@
       ]
     },
     {
+      "id": "guard-policy-default-flip",
+      "title": "Make the shadow-advisory guard column the default delivery policy",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "GATED: does not start until guard-validity-study reports its full sample and the draft-beats-template shape holds. Then: the default boundary policy becomes shadow_advisory, the disposition catalog bumps to v7 with an incomparability note, the advance window default moves off per-turn, a regression test pins that evidence-safety, clue-bookkeeping and closure findings still veto, and one instrumented dialogue pair (same seed, old vs new default) shows model text delivered where the template shipped before.",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubTutorTurnPipeline.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-validity-study",
+          "guard-regime-fallback-census-at-scale",
+          "guard-delivery-prefer-model-over-canned"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
+      "id": "guard-findings-feed-forward",
+      "title": "Feed guard findings into the next turn's request instead of redrafting this one",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "GATED on guard-policy-default-flip landing. Then: an instrumented run where each tutor request carries the previous turn's findings as one line each, no same-turn redraft for quality findings, against a control without the lines. Readout: finding recurrence turn over turn, and the quality instruments per condition. The retry ladder stays for contract findings only.",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "services/tutorStubTutorTurnPipeline.js",
+          "services/tutorStubFirstDraftContract.js"
+        ],
+        "items": [
+          "guard-policy-default-flip",
+          "guard-validity-study"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
+      "id": "phase-b-rerun-under-flipped-policy",
+      "title": "Re-run the Phase-B contract contrast with the guards not scripting the tutor",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "DOUBLY GATED — starts only after guard-policy-default-flip lands AND the user authorizes the spend. Then: the same registered design (frozen cells, bare vs contract vs empty plan, n = 12 per version per cell, same models, learner blind), on catalog v7. Primary endpoint unchanged. Reported against the original as a pair: strict-harness verdict and open-harness verdict, never pooled.",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js"
+        ],
+        "items": [
+          "guard-policy-default-flip",
+          "guard-validity-study",
+          "tutor-fallible-learner-closure-prereg"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "fallible-learner"
+      ]
+    },
+    {
       "id": "tutor-stub-correspondence-guard-vocabulary",
       "title": "Evidence-correspondence guard can never clear in a plain-language world",
       "status": "triaged",
@@ -67,6 +151,34 @@
         "tutor-stub",
         "guards",
         "worlds"
+      ]
+    },
+    {
+      "id": "tutor-stub-template-rate-audit",
+      "title": "Stamp every cited tutor-stub run with its measured template rate",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "A table, checked into the guard catalog doc, listing every tutor-stub run cited in paper-full-2.0.md with its template rate and model-as-written rate measured from its own traces by the census/replay script. Paper §s that read tutor prose off a guarded run carry the rate beside the claim. The paper edit itself waits for guard-validity-study to conclude so the whole account lands in one pass.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "scripts/replay-guard-fallback-delivery.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-validity-study"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "paper"
       ]
     },
     {
