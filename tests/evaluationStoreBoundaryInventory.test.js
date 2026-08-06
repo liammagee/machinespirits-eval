@@ -68,11 +68,10 @@ describe('evaluationStore boundary inventory', () => {
     const result = auditEvaluationStoreBoundary({ rootDir: ROOT_DIR });
     assert.equal(result.ok, true, result.ok ? undefined : JSON.stringify(result, null, 2));
 
-    const counts = Object.fromEntries(
-      Object.entries(Object.groupBy(inventory.consumers, (consumer) => consumer.classification)).map(
-        ([classification, consumers]) => [classification, consumers.length],
-      ),
-    );
+    const counts = {};
+    for (const consumer of inventory.consumers) {
+      counts[consumer.classification] = (counts[consumer.classification] ?? 0) + 1;
+    }
     assert.deepEqual(counts, {
       'package-entrypoint': 1,
       'application-runtime': 4,

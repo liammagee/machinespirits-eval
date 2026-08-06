@@ -77,3 +77,6 @@ Log:
 - 2026-08-06 — Published the reviewed characterization as PR #518 from commit
   `1a0bc12c`; the PR names this card explicitly and classifies ref impact as
   N/A.
+- 2026-08-06 — Replaced the test-only `Object.groupBy` use after the Node 20
+  shard exposed that Node 22-only API. The equivalent explicit count loop keeps
+  the inventory assertion unchanged and the focused test and lint pass locally.
