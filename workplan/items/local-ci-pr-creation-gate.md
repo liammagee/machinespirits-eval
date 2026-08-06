@@ -15,6 +15,8 @@ depends_on:
 links:
   items:
     - local-ci-parity-runner
+  prs:
+    - 538
 tags:
   - ci
   - developer-experience
@@ -51,3 +53,9 @@ Log:
   routes, gate failures, source drift, argument safety, body governance, and
   report provenance. ESLint, Prettier, the hermetic manifest, and workplan
   source validation pass.
+- 2026-08-07 — Dogfooding created draft PR #538 after the quick gate passed.
+  With hosted checks absent, the full fallback exposed `npm rebuild node-pty`
+  invoking an unavailable development-only TypeScript prepare hook. PR #538
+  was merged while that fallback was still running; this follow-up replaces
+  the broken restoration with npm's bundled `node-gyp` directly and reruns the
+  full gate on the repaired commit.

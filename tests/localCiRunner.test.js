@@ -12,6 +12,7 @@ import {
   parseLocalCiArgs,
   pathTriggersSurfaceAcceptance,
 } from '../scripts/run-local-ci.js';
+import { nativeRebuildPlan } from '../scripts/rebuild-node-native-modules.js';
 
 function displays(plan) {
   return plan.flatMap((lane) => lane.commands.map(displayCommand));
@@ -169,7 +170,25 @@ test('npm and workflow integration expose local and manual recovery entry points
     manifest.scripts['ci:local:node20'],
     'node scripts/run-local-ci.js --lane node20 --node20-container --no-install --offline',
   );
-  assert.equal(manifest.scripts['native:rebuild:node'], 'npm rebuild better-sqlite3 node-pty');
+  assert.equal(manifest.scripts['native:rebuild:node'], 'node scripts/rebuild-node-native-modules.js');
+  const rebuild = nativeRebuildPlan({
+    projectRoot: '/repo',
+    nodeGypPath: '/npm/node-gyp.js',
+    nodePath: '/node',
+    npmPath: '/npm',
+  });
+  assert.deepEqual(rebuild[0], {
+    label: 'better-sqlite3',
+    program: '/npm',
+    args: ['rebuild', 'better-sqlite3'],
+    cwd: '/repo',
+  });
+  assert.deepEqual(rebuild[1], {
+    label: 'node-pty',
+    program: '/node',
+    args: ['/npm/node-gyp.js', 'rebuild', '--release'],
+    cwd: '/repo/node_modules/node-pty',
+  });
   const workflow = fs.readFileSync(path.resolve('.github/workflows/test.yml'), 'utf8');
   assert.match(workflow, /^ {2}workflow_dispatch: \{\}$/mu);
 });

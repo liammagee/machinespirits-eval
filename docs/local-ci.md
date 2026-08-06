@@ -27,7 +27,11 @@ The default `full` profile:
 
 The surface lane restores root native modules to the Node ABI before the web
 check and as an always-run cleanup after Electron packaging. Repeated local
-runs therefore do not inherit the packaged application's native ABI.
+runs therefore do not inherit the packaged application's native ABI. The
+restoration rebuilds `node-pty` through npm's bundled `node-gyp` directly;
+`npm rebuild node-pty` also invokes the published package's development-only
+TypeScript `prepare` hook, whose compiler is intentionally absent from a
+consumer install.
 
 Every executed command, duration, exit code, source SHA, and lane outcome is
 written to `.test-tmp/local-ci/<timestamp>/summary.{json,md}`. The directory is
