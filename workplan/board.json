@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-06T05:20:46.686Z",
+  "generated": "2026-08-06T05:38:54.071Z",
   "counts": {
-    "total": 422,
+    "total": 423,
     "byStatus": {
-      "done": 392,
+      "done": 393,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
@@ -15,7 +15,7 @@
       "research": 72,
       "experiment": 71,
       "infra": 81,
-      "maintenance": 179,
+      "maintenance": 180,
       "content": 3,
       "ops": 10,
       "paper": 6
@@ -223,7 +223,8 @@
           "refactor-eval-cli-scoring-commands",
           "refactor-evaluation-store-boundary-inventory",
           "refactor-evaluation-store-connection-migrations",
-          "refactor-evaluation-store-run-repository"
+          "refactor-evaluation-store-run-repository",
+          "refactor-evaluation-store-result-repository"
         ]
       },
       "tags": [
@@ -657,8 +658,8 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "refactor-evaluation-store-run-repository",
-      "title": "Extract the evaluation-store run repository",
+      "id": "refactor-evaluation-store-result-repository",
+      "title": "Extract the evaluation-store result repository",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -666,11 +667,11 @@
       "source": "review",
       "created": "2026-08-06",
       "updated": "2026-08-06",
-      "branch": "codex/refactor-evaluation-store-run-repository",
-      "verification": "Direct in-memory repository tests and facade round trips preserve run CRUD, enriched listing, completion and resume accounting, stale-process recovery, four-table aggregate deletion, package exports, and the import-time facade while complete hermetic and risk-coverage gates remain green.",
+      "branch": "codex/refactor-evaluation-store-result-repository",
+      "verification": "Direct in-memory repository tests and facade round trips preserve generation provenance, row parsing and filtering, historical rejudgments, attempt-aware identity, rubric-version cloning, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-evaluation-store-connection-migrations"
+        "refactor-evaluation-store-run-repository"
       ],
       "links": {
         "notes": [
@@ -678,18 +679,19 @@
         ],
         "code": [
           "services/evaluationStore.js",
-          "services/evaluationStore/runRepository.js",
-          "tests/evaluationStoreRunRepository.test.js"
+          "services/evaluationStore/resultRepository.js",
+          "tests/evaluationStoreResultRepository.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-evaluation-store-connection-migrations"
+          "refactor-evaluation-store-run-repository"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
         "persistence",
+        "provenance",
         "sqlite",
         "maintainability"
       ],
@@ -2621,6 +2623,49 @@
         ],
         "prs": [
           "https://github.com/liammagee/machinespirits-eval/pull/519"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "persistence",
+        "sqlite",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-run-repository",
+      "title": "Extract the evaluation-store run repository",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-evaluation-store-run-repository",
+      "verification": "Direct in-memory repository tests and facade round trips preserve run CRUD, enriched listing, completion and resume accounting, stale-process recovery, four-table aggregate deletion, package exports, and the import-time facade while complete hermetic and risk-coverage gates remain green.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-connection-migrations"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "services/evaluationStore/runRepository.js",
+          "tests/evaluationStoreRunRepository.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-connection-migrations",
+          "refactor-evaluation-store-result-repository"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/520"
         ]
       },
       "tags": [
