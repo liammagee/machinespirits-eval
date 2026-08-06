@@ -71,3 +71,15 @@ simulated-only and non-human-facing, and undergo the paper claim audit before a
 spin-off artifact can inherit it.
 
 No model-consuming grid was run while preparing this preregistration.
+
+## Post-run addendum (2026-08-06)
+
+The grid ran as `eval-2026-08-05-87fe3664` under the authorized plan
+(SHA `4590ff55…1774`). One amendment: claude CLI 2.1.216 no longer resolves
+the pinned tutor-judge spelling `sonnet-5`, so under operator option-A
+approval the plan constants were re-frozen with the full model ID
+`claude-sonnet-5` (same judge model, Sonnet 5; new plan SHA
+`a7265c00…e083`; commit `75e057ef`). Results, both estimands, exclusions,
+and the one invalid violation are recorded in
+`workplan/items/negative-register-effect-estimation-grid.md` (2026-08-06
+entry) and in `docs/research/paper-full-2.0.md` §6.7 (v3.0.265).

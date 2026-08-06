@@ -1,12 +1,12 @@
 {
-  "generated": "2026-08-05T23:45:32.014Z",
+  "generated": "2026-08-06T01:06:53.931Z",
   "counts": {
     "total": 418,
     "byStatus": {
-      "done": 389,
+      "done": 390,
       "blocked": 6,
       "dropped": 8,
-      "active": 5,
+      "active": 4,
       "archived": 4,
       "triaged": 2,
       "review": 4
@@ -270,55 +270,6 @@
       "tags": [
         "tutor-stub",
         "harness"
-      ]
-    },
-    {
-      "id": "negative-register-effect-estimation-grid",
-      "title": "Estimate negative-register effects with stance-fidelity gating",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-07-03",
-      "updated": "2026-08-05",
-      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
-      "claim_status": "future",
-      "links": {
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/252"
-        ],
-        "notes": [
-          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
-          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md",
-          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
-        ],
-        "paper": [
-          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
-          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
-        ],
-        "exports": [
-          "exports/charisma-desire-breakthrough-matrix-summary.md",
-          "exports/charisma-desire-breakthrough-matrix.json",
-          "exports/negative-register-corrosive-exemplar-results.md"
-        ],
-        "runs": [
-          "eval-2026-07-02-e7b15809",
-          "eval-2026-07-02-7e461a5c",
-          "eval-2026-07-02-5c4d52e6"
-        ],
-        "items": [
-          "register-taxonomy-negative-registers"
-        ]
-      },
-      "depends_on": [
-        "register-taxonomy-negative-registers"
-      ],
-      "tags": [
-        "registers",
-        "negative-registers",
-        "effect-estimation",
-        "stance-fidelity"
       ]
     },
     {
@@ -11912,6 +11863,58 @@
         "multi-agent"
       ],
       "milestone": "literature-triage"
+    },
+    {
+      "id": "negative-register-effect-estimation-grid",
+      "title": "Estimate negative-register effects with stance-fidelity gating",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-07-03",
+      "updated": "2026-08-06",
+      "verification": "Full five-target grid, or an explicit drop decision, reports assigned-arm effects, faithful-arm effects, exclusions, invalid person-attack violations, and paper/workplan scope.",
+      "claim_status": "exploratory",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/252"
+        ],
+        "notes": [
+          "notes/2026-07-03-negative-register-effect-estimation-future-work.md",
+          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md",
+          "notes/2026-07-02-register-taxonomy-and-negative-registers-plan.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy",
+          "docs/research/paper-full-2.0.md#89-scope-of-the-id-director-extension"
+        ],
+        "exports": [
+          "exports/charisma-desire-breakthrough-matrix-summary.md",
+          "exports/charisma-desire-breakthrough-matrix.json",
+          "exports/negative-register-corrosive-exemplar-results.md",
+          "exports/negative-register-effect-grid/eval-2026-08-05-87fe3664.md",
+          "exports/negative-register-effect-grid/eval-2026-08-05-87fe3664.json"
+        ],
+        "runs": [
+          "eval-2026-07-02-e7b15809",
+          "eval-2026-07-02-7e461a5c",
+          "eval-2026-07-02-5c4d52e6",
+          "eval-2026-08-05-87fe3664"
+        ],
+        "items": [
+          "register-taxonomy-negative-registers"
+        ]
+      },
+      "depends_on": [
+        "register-taxonomy-negative-registers"
+      ],
+      "tags": [
+        "registers",
+        "negative-registers",
+        "effect-estimation",
+        "stance-fidelity"
+      ]
     },
     {
       "id": "normalize-provenance-validator-data-paths",
