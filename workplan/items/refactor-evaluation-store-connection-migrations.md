@@ -28,6 +28,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-boundary-inventory
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/519
 tags:
   - refactoring
   - evaluation
@@ -77,3 +79,6 @@ Log:
 - 2026-08-06 — Rebased without conflict onto refreshed `origin/main` at
   `4f94b98f` after PR #518 merged. The merged Node 20 compatibility repair is
   inherited, and the repository extraction remains isolated to this branch.
+- 2026-08-06 — Published the reviewed connection/migrations extraction as PR
+  #519 from `00d584ad`; the PR names this card explicitly and classifies ref
+  impact as N/A.

@@ -1512,3 +1512,6 @@ Log:
   landed as `4f94b98f`; the boundary-inventory child is closed. The reviewed
   connection/migrations child was rebased onto that refreshed `main` without
   conflict and remains the active handoff.
+- 2026-08-06 — Opened the connection/migrations extraction as PR #519. Its
+  reviewed head is the dependency base for the run-repository child; that next
+  family remains a separate card and PR after #519 merges.
