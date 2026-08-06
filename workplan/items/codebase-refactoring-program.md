@@ -120,6 +120,7 @@ links:
     - refactor-eval-cli-scoring-commands
     - refactor-evaluation-store-boundary-inventory
     - refactor-evaluation-store-connection-migrations
+    - refactor-evaluation-store-run-repository
 tags:
   - refactoring
   - testing
@@ -1515,3 +1516,13 @@ Log:
 - 2026-08-06 — Opened the connection/migrations extraction as PR #519. Its
   reviewed head is the dependency base for the run-repository child; that next
   family remains a separate card and PR after #519 merges.
+- 2026-08-06 — PR #519 merged as `33c228f4` and its serialized board refresh
+  landed as `b83c7612`; the connection/migrations child is closed. Activated
+  `refactor-evaluation-store-run-repository` from that refreshed `main`, keeping
+  result/statistics, interaction CRUD, exporters, and host startup out of scope.
+- 2026-08-06 — The run-repository child reached review with run lifecycle,
+  enriched listing, completion/recovery/resume, and aggregate deletion behind
+  one injected owner. The facade fell from 2,979 to 2,452 lines; complete
+  behavioral, risk-coverage, source, and static gates pass. Result persistence,
+  rejudging, scoring updates, provenance, and derived-run cloning form the next
+  repository family after this child merges.
