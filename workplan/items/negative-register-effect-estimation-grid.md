@@ -98,7 +98,9 @@ Invalid person-attack violations, kept separate: 1 (face-threat, irrelevance).
 Headline: canary fidelity did not scale (15/15 on the canaries vs 18/45 here),
 and the estimands disagree — face-threat's assigned lead rests mostly on
 unfaithful rows. Exploratory at 3 repeats/cell; simulated-only. Paper first:
-§6.7 paragraph + §8.9 scope sentence + revision entry v3.0.265.
+§6.7 paragraph + §8.9 scope sentence + revision entry v3.0.266 (renumbered
+from v3.0.265 during rebase; a concurrent §6.23 commit took that number, so
+two commit messages in this arc still say v3.0.265).
 Deviations, all disclosed in the paper entry: (1) plan re-frozen from
 `4590ff55…1774` to `a7265c00…e083` under operator option-A approval in chat
 (2026-08-06) after claude CLI 2.1.216 stopped resolving the pinned judge

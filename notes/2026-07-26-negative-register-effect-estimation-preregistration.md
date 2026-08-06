@@ -82,4 +82,6 @@ approval the plan constants were re-frozen with the full model ID
 `a7265c00…e083`; commit `75e057ef`). Results, both estimands, exclusions,
 and the one invalid violation are recorded in
 `workplan/items/negative-register-effect-estimation-grid.md` (2026-08-06
-entry) and in `docs/research/paper-full-2.0.md` §6.7 (v3.0.265).
+entry) and in `docs/research/paper-full-2.0.md` §6.7 (v3.0.266; the entry
+was renumbered from v3.0.265 during rebase after a concurrent paper commit
+took that number).
