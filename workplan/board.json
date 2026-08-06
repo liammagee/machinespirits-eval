@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-06T22:07:37.837Z",
+  "generated": "2026-08-06T23:09:47.218Z",
   "counts": {
-    "total": 441,
+    "total": 444,
     "byStatus": {
-      "done": 404,
+      "done": 407,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
@@ -14,8 +14,8 @@
     "byType": {
       "research": 74,
       "experiment": 72,
-      "infra": 86,
-      "maintenance": 189,
+      "infra": 87,
+      "maintenance": 191,
       "content": 3,
       "ops": 10,
       "paper": 7
@@ -373,7 +373,9 @@
           "refactor-evaluation-store-run-manifest-writer",
           "refactor-evaluation-store-application-lifecycle",
           "refactor-evaluation-runner-cli-store-injection",
-          "refactor-adaptive-tutor-store-injection"
+          "refactor-adaptive-tutor-store-injection",
+          "refactor-eval-routes-store-injection",
+          "refactor-operational-log-reader-injection"
         ]
       },
       "tags": [
@@ -686,8 +688,8 @@
       "milestone": "paper-2-0"
     },
     {
-      "id": "local-ci-parity-runner",
-      "title": "Package the GitHub CI contract as a reproducible local runner",
+      "id": "local-ci-pr-creation-gate",
+      "title": "Gate repository PR creation with adaptive local CI",
       "status": "review",
       "type": "infra",
       "priority": "P1",
@@ -695,53 +697,25 @@
       "source": "manual",
       "created": "2026-08-07",
       "updated": "2026-08-07",
-      "branch": "codex/local-ci-parity-runner",
-      "verification": "One documented npm command reproduces the CI, validation, and workplan lanes locally with fresh-install, reporting, path-gated surface acceptance, and optional isolated Node 20 parity; focused contract tests and the complete local gate pass.",
-      "tags": [
-        "ci",
-        "developer-experience",
-        "reliability"
-      ]
-    },
-    {
-      "id": "refactor-adaptive-tutor-store-injection",
-      "title": "Inject evaluation-store ownership into the adaptive tutor",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-07",
-      "updated": "2026-08-07",
-      "branch": "codex/refactor-adaptive-tutor-store-injection",
-      "verification": "Store-bound adaptive-runner, persistence-adapter, eval-CLI child-process, world-spec-finalization, smoke, boundary-inventory, hermetic, lint, and root regressions prove explicit dependency identity and lazy compatibility without model calls, production writes, or generated workplan views.",
-      "claim_status": "planned",
+      "branch": "codex/local-ci-pr-create",
+      "verification": "A repository PR command validates clean committed state and the final workplan-linked body, passes quick local CI before any push/PR write, detects hosted checks without duplicating the full suite, falls back to full local CI when checks do not appear, and is covered by zero-network orchestration tests.",
       "depends_on": [
-        "refactor-evaluation-runner-cli-store-injection"
+        "local-ci-parity-runner"
       ],
       "links": {
-        "notes": [
-          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
-        ],
-        "code": [
-          "services/adaptiveTutor/index.js",
-          "services/adaptiveTutor/persistence.js",
-          "scripts/eval-cli/commands/runCommand.js"
-        ],
         "items": [
-          "codebase-refactoring-program",
-          "refactor-evaluation-runner-cli-store-injection"
+          "local-ci-parity-runner"
+        ],
+        "prs": [
+          538
         ]
       },
       "tags": [
-        "refactoring",
-        "evaluation",
-        "adaptive-tutor",
-        "sqlite",
-        "dependency-injection",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
+        "ci",
+        "developer-experience",
+        "github",
+        "reliability"
+      ]
     },
     {
       "id": "refactor-eval-cli-generation-commands",
@@ -882,6 +856,53 @@
         "cli",
         "scoring",
         "symmetry",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-operational-log-reader-injection",
+      "title": "Inject dialogue-log repositories into operational scripts",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-readonly-script-store-injection",
+      "verification": "Passive context, cross-root isolation, operational CLI, boundary-inventory, hermetic, risk-coverage, lint, formatting, and root regressions prove six scripts no longer depend on the legacy facade without model calls, shared production writes, or generated workplan views.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-eval-routes-store-injection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore/scriptContext.js",
+          "scripts/analyze-insight-action-gap.js",
+          "scripts/assess-transcripts.js",
+          "scripts/audit-message-chain.js",
+          "scripts/code-dialectical-modulation.js",
+          "scripts/generate-paper-figures.js",
+          "scripts/render-sequence-diagram.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-eval-routes-store-injection"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/542"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "operational-scripts",
+        "dialogue-logs",
+        "dependency-injection",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -2212,6 +2233,29 @@
       ]
     },
     {
+      "id": "local-ci-parity-runner",
+      "title": "Package the GitHub CI contract as a reproducible local runner",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/local-ci-parity-runner",
+      "verification": "One documented npm command reproduces the CI, validation, and workplan lanes locally with fresh-install, reporting, path-gated surface acceptance, and optional isolated Node 20 parity; focused contract tests and the complete local gate pass.",
+      "links": {
+        "prs": [
+          534
+        ]
+      },
+      "tags": [
+        "ci",
+        "developer-experience",
+        "reliability"
+      ]
+    },
+    {
       "id": "longitudinal-drift-adaptation",
       "title": "Longitudinal drift adaptation (cross-session memory as new signal)",
       "status": "done",
@@ -2572,6 +2616,50 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-adaptive-tutor-store-injection",
+      "title": "Inject evaluation-store ownership into the adaptive tutor",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-adaptive-tutor-store-injection",
+      "verification": "Store-bound adaptive-runner, persistence-adapter, eval-CLI child-process, world-spec-finalization, smoke, boundary-inventory, hermetic, lint, and root regressions prove explicit dependency identity and lazy compatibility without model calls, production writes, or generated workplan views.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-runner-cli-store-injection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/adaptiveTutor/index.js",
+          "services/adaptiveTutor/persistence.js",
+          "scripts/eval-cli/commands/runCommand.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-runner-cli-store-injection",
+          "refactor-eval-routes-store-injection"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/533"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "adaptive-tutor",
+        "sqlite",
+        "dependency-injection",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-cast-layer-fixture",
       "title": "Make cast-layer reader-quality scoring hermetic",
       "status": "done",
@@ -2682,6 +2770,52 @@
         "configuration",
         "registry",
         "provenance"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-eval-routes-store-injection",
+      "title": "Inject evaluation-store ownership into eval routes",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-eval-routes-store-injection",
+      "verification": "Request-local dependency, cross-host isolation, fail-closed binding, standalone/poetics lifecycle, API route, admission, import, boundary, hermetic, lint, and root regressions prove explicit host ownership without model calls, production writes, or generated workplan views.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-adaptive-tutor-store-injection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "routes/evalRoutes.js",
+          "services/evalSurfaces.js",
+          "server.js",
+          "scripts/browse-poetics-scripts.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-adaptive-tutor-store-injection",
+          "refactor-operational-log-reader-injection"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/539"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "routes",
+        "sqlite",
+        "dependency-injection",
+        "application-hosting",
+        "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
     },
