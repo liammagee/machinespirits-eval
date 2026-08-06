@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "facade": "services/evaluationStore.js",
   "characterization": {
-    "sourceLineCount": 961,
+    "sourceLineCount": 512,
     "liveAndPackageConsumerCount": 30,
     "archivedConsumerCount": 4,
     "testConsumerCount": 15

@@ -123,6 +123,8 @@ links:
     - refactor-evaluation-store-run-repository
     - refactor-evaluation-store-result-repository
     - refactor-evaluation-store-score-repository
+    - refactor-evaluation-store-interaction-repository
+    - refactor-evaluation-store-statistics-repository
 tags:
   - refactoring
   - testing
@@ -1568,3 +1570,14 @@ Log:
 - 2026-08-06 — PR #525 merged as `c162fcc6`, closing score mutation/audit
   persistence. The reviewed interaction-repository child rebased cleanly onto
   current `origin/main` at `a410c982` and remains the next publication unit.
+- 2026-08-06 — PR #526 merged as `f66e0f90` and the serialized board refresh as
+  `9166554c`, closing interaction persistence. Activated
+  `refactor-evaluation-store-statistics-repository` from that refreshed main to
+  extract read-only aggregates, transient-failure reconstruction,
+  configuration comparison, and factorial projections.
+- 2026-08-06 — The statistics/projection child reached review with all four
+  public projections and transient run-plan reconstruction in a 460-line
+  injected owner. The facade fell from 961 to 512 lines while its 44 named and
+  41 default exports remained fixed; complete focused, hermetic, risk-coverage,
+  source, and static gates pass. Exporters and dialogue-log readers are next,
+  followed by manifest hosting and explicit startup.

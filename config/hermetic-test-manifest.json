@@ -286,6 +286,7 @@
         "tests/evaluationStoreRoundtripIntegrity.test.js",
         "tests/evaluationStoreRunRepository.test.js",
         "tests/evaluationStoreScoreRepository.test.js",
+        "tests/evaluationStoreStatisticsRepository.test.js",
         "tests/evaluationStreamRegistry.test.js",
         "tests/evaluationTurnExecutionBoundaries.test.js",
         "tests/factorial-design.test.js",

@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-interaction-repository
 title: Extract interaction-evaluation persistence
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -28,6 +28,9 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-score-repository
+    - refactor-evaluation-store-statistics-repository
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/526
 tags:
   - refactoring
   - evaluation
@@ -83,3 +86,6 @@ Log:
   onto refreshed `origin/main` at `a410c982`, including the generated-board
   refresh and PR #523. Post-rebase source, behavioral, and static gates are
   rerun before publication.
+- 2026-08-06 — PR #526 merged as `f66e0f90`; interaction-evaluation persistence
+  is closed. The serialized board refresh landed as `9166554c`, which is the
+  clean base for statistics and projection extraction.
