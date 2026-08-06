@@ -228,12 +228,16 @@ describe('evaluation-store run repository', () => {
   it('leaves the facade as compatibility and bootstrap owner only', () => {
     const facade = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore.js'), 'utf8');
     const repository = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore', 'runRepository.js'), 'utf8');
+    const resultRepository = fs.readFileSync(
+      path.join(ROOT_DIR, 'services', 'evaluationStore', 'resultRepository.js'),
+      'utf8',
+    );
 
     assert.match(facade, /createRunRepository\(\{/);
     assert.doesNotMatch(facade, /SELECT \* FROM evaluation_runs|DELETE FROM evaluation_runs/);
-    assert.match(facade, /derivedRunId.*rubricVersion/s, 'derived-run cloning remains result-repository work');
+    assert.match(resultRepository, /derivedRunId.*rubricVersion/s, 'derived-run cloning belongs to result persistence');
     assert.match(repository, /DELETE FROM interaction_evaluations WHERE run_id = \?/);
-    assert.equal(facade.split('\n').length - 1 <= 2_500, true);
+    assert.equal(facade.split('\n').length - 1 <= 1_900, true);
     assert.equal(repository.split('\n').length - 1 <= 550, true);
   });
 });
