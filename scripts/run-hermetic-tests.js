@@ -16,6 +16,7 @@ import {
   parseNodeTapSummary,
   parseVitestJsonSummary,
   printPhaseSummary,
+  resolveVitestEntryPoint,
   validatePhaseSummary,
   validateTestManifest,
 } from './hermetic-test-contract.js';
@@ -44,7 +45,7 @@ const TWO_WAY_SHARD_OVERRIDES = new Map([
   ['tests/tutorStubFirstDraftOuterLoop.test.js', 0],
 ]);
 
-export { discoverCoreTestFiles, discoverRootTestFiles } from './hermetic-test-contract.js';
+export { discoverCoreTestFiles, discoverRootTestFiles, resolveVitestEntryPoint } from './hermetic-test-contract.js';
 
 function parseShard(value) {
   const match = String(value || '').match(/^(\d+)\/(\d+)$/u);
@@ -181,7 +182,7 @@ export function buildRootTestArgs({
 export function buildCoreTestArgs({ projectRoot = PROJECT_ROOT, forwarded = [], reportPath } = {}) {
   const testFiles = forwarded.length ? forwarded : discoverCoreTestFiles(projectRoot);
   return [
-    path.join(projectRoot, 'node_modules', 'vitest', 'vitest.mjs'),
+    resolveVitestEntryPoint(projectRoot),
     'run',
     ...testFiles,
     '--reporter=default',
