@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-connection-migrations
 title: Extract the evaluation-store connection and migration owners
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -28,6 +28,7 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-boundary-inventory
+    - refactor-evaluation-store-run-repository
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/519
 tags:
@@ -82,3 +83,6 @@ Log:
 - 2026-08-06 — Published the reviewed connection/migrations extraction as PR
   #519 from `00d584ad`; the PR names this card explicitly and classifies ref
   impact as N/A.
+- 2026-08-06 — PR #519 merged as `33c228f4`; the serialized workplan refresh
+  followed as `b83c7612`. Connection and migration ownership is closed, and
+  the run-repository child now proceeds from that merged base.
