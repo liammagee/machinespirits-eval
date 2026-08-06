@@ -988,7 +988,9 @@ function buildRegisterPalette(mode) {
 
 function humanDirectedRegisterPalette() {
   const definitions = getEngagementStanceDefinitions();
-  return Object.keys(definitions).filter((name) => definitions[name]?.simulated_only !== true);
+  return Object.keys(definitions).filter(
+    (name) => definitions[name]?.simulated_only !== true && definitions[name]?.experiment_arm_only !== true,
+  );
 }
 
 const { engagementStancePalettePromptRows, requestTypePromptRows } = createTutorStubRegisterPromptVocabulary({

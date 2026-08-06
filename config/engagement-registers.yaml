@@ -279,6 +279,10 @@ engagement_stances:
   sarcastic_determinate:
     valence: negative
     router_selectable: false
+    # Assigned-arm experiment register (cell 202). Kept out of every
+    # automatic tutor-stub palette so the live chat surface is unchanged;
+    # an explicit --register-palette listing can still opt in.
+    experiment_arm_only: true
     public_signature: "Quote the exact weak claim, give it one beat of dry mock praise, and let the reversal hand the learner one corrected claim to voice."
     contrast: "Unlike sarcastic, every cutting beat names its target claim and implies one determinate correction; edge without a named target is noncompliance, not sarcasm."
     reviewer_cues: |

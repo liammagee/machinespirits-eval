@@ -121,6 +121,20 @@ describe('sarcasm determinate-negation grid', () => {
     assert.equal(findNamedTargetClaim('Wonderful, apparently everything is settled now.', learner).named, false);
   });
 
+  it('stays out of every automatic tutor-stub palette but accepts an explicit listing', async () => {
+    const { buildTutorStubRegisterPalette } = await import('../services/tutorStubRegisterPalette.js');
+    const { getEngagementStanceDefinitions } = await import('../services/engagementRegisterRegistry.js');
+    const definitions = getEngagementStanceDefinitions();
+    assert.equal(definitions.sarcastic_determinate?.experiment_arm_only, true);
+    for (const mode of ['all', 'non-simulated', 'simulated']) {
+      const palette = buildTutorStubRegisterPalette(mode, { definitions });
+      assert.ok(!palette.includes('sarcastic_determinate'), `mode ${mode} must exclude the experiment arm`);
+      assert.ok(palette.includes('sarcastic'), `mode ${mode} keeps the plain sarcastic register`);
+    }
+    const explicit = buildTutorStubRegisterPalette('sarcastic_determinate', { definitions });
+    assert.deepEqual(explicit, ['sarcastic_determinate']);
+  });
+
   it('holds the fixture: stance labels and deterministic recovery verdicts', () => {
     const fixture = yaml.parse(fs.readFileSync(FIXTURE, 'utf8'));
     for (const exemplar of fixture.exemplars) {

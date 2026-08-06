@@ -3,6 +3,9 @@ export function buildTutorStubRegisterPalette(
   { definitions = {}, safeNames = [], negativeFloorNames = [], resolveStance = (name) => ({ register: name }) } = {},
 ) {
   const allNames = Object.keys(definitions);
+  // Assigned-arm experiment registers never enter an automatic palette mode;
+  // only an explicit comma-list (the else branch below) can name them.
+  const paletteNames = allNames.filter((name) => definitions[name]?.experiment_arm_only !== true);
   const value = String(mode || 'all')
     .trim()
     .toLowerCase();
@@ -13,9 +16,9 @@ export function buildTutorStubRegisterPalette(
   } else if (value === 'negative' || value === 'negative-floor') {
     names = negativeFloorNames;
   } else if (value === 'non-simulated') {
-    names = allNames.filter((name) => definitions[name]?.simulated_only !== true);
+    names = paletteNames.filter((name) => definitions[name]?.simulated_only !== true);
   } else if (value === 'all' || value === 'simulated') {
-    names = allNames;
+    names = paletteNames;
   } else {
     names = value
       .split(',')
