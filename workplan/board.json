@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-06T03:25:18.520Z",
+  "generated": "2026-08-06T03:28:48.807Z",
   "counts": {
-    "total": 420,
+    "total": 421,
     "byStatus": {
       "done": 391,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
       "archived": 4,
-      "triaged": 2,
+      "triaged": 3,
       "review": 5
     },
     "byType": {
       "research": 72,
-      "experiment": 70,
+      "experiment": 71,
       "infra": 81,
       "maintenance": 178,
       "content": 3,
@@ -67,6 +67,43 @@
         "tutor-stub",
         "guards",
         "worlds"
+      ]
+    },
+    {
+      "id": "sarcasm-determinate-negation-grid",
+      "title": "Sarcasm as determinate negation — cargo-bearing cue contract",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "A 15-row run (or an explicit drop decision) reports fidelity vs the parent sarcasm arm, faithful-row conversion, and negation recovery, with exclusions and invalid violations separate; any claim lands in paper §6.7 first.",
+      "claim_status": "planned",
+      "links": {
+        "notes": [
+          "notes/2026-08-06-sarcasm-determinate-negation-preregistration.md",
+          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "runs": [
+          "eval-2026-08-05-87fe3664"
+        ],
+        "items": [
+          "negative-register-effect-estimation-grid"
+        ]
+      },
+      "depends_on": [
+        "negative-register-effect-estimation-grid"
+      ],
+      "tags": [
+        "registers",
+        "negative-registers",
+        "stance-fidelity",
+        "determinate-negation"
       ]
     },
     {
