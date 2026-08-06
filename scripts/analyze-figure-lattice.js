@@ -17,10 +17,20 @@
  *   A  — sanity, WITH card identity as an attribute (must separate trivially)
  *   B  — the real test, WITHOUT card identity (124 delivery-verified turns)
  *   B' — subset run adding ruled/ruledOverride on the rows that stamp them
+ *
+ * Run C was added afterwards (card: reply-feature-stamps) and is NOT part of
+ * the frozen design: it re-runs B with the performed-figure attributes that
+ * B's 0/7 said were missing. A, B and B' are untouched and must reproduce
+ * their recorded numbers exactly — the script asserts that before reading C.
+ * C is calibration, not a clean test: the act patterns were widened after
+ * reading three replies from this same corpus with their card labels visible.
+ * The clean test is fresh turns carrying the live stamp.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { describeTutorStubReplyFeatures, tutorStubReplyFeatureAttributes } from '../services/tutorStubReplyFeatures.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CE = path.join(ROOT, 'exports', 'crossed-effects');
@@ -128,6 +138,8 @@ function buildObjects() {
       hit: Boolean(r.hit),
       ruled: typeof r.ruled === 'boolean' ? r.ruled : null,
       ruledOverride: typeof r.ruledOverride === 'boolean' ? r.ruledOverride : null,
+      reply: r.reply || null,
+      learner: r.learner || null,
     });
   }
 
@@ -154,6 +166,8 @@ function buildObjects() {
       hit: Boolean(r.hit),
       ruled: typeof r.ruled === 'boolean' ? r.ruled : null,
       ruledOverride: typeof r.ruledOverride === 'boolean' ? r.ruledOverride : null,
+      reply: r.reply || null,
+      learner: r.learner || null,
     });
   }
 
@@ -179,6 +193,8 @@ function buildObjects() {
       hit: Boolean(r.hit),
       ruled: null,
       ruledOverride: null,
+      reply: r.reply || null,
+      learner: r.learner || null,
     });
   }
 
@@ -202,6 +218,8 @@ function buildObjects() {
       hit: Boolean(r.hit),
       ruled: null,
       ruledOverride: null,
+      reply: r.reply || null,
+      learner: r.learner || null,
     });
   }
 
@@ -211,9 +229,23 @@ function buildObjects() {
 // ---------------------------------------------------------------------------
 // Formal context: object -> attribute set (one attribute per stamped value).
 // ---------------------------------------------------------------------------
-function attributesOf(o, { withCard, withRuled }) {
+/**
+ * The performed column the falsifier's 0/7 asked for (card:
+ * reply-feature-stamps): what the reply DID, measured from the reply text by
+ * the same pure module the live harness now stamps on every turn. Blind to
+ * the card by construction — see services/tutorStubReplyFeatures.js.
+ */
+const replyAttributesOf = (o) =>
+  tutorStubReplyFeatureAttributes(describeTutorStubReplyFeatures(o.reply, { learnerText: o.learner }));
+
+function attributesOf(o, { withCard, withRuled, withReply, replyOnly }) {
   const a = [];
   if (withCard) a.push(`card:${o.figure}`);
+  if (withReply) a.push(...replyAttributesOf(o));
+  // The performed column on its own. Worth its own run because the ordered
+  // columns are what swallowed the corpus in B — if the reply features carry
+  // any signal, adding B's columns can only hide it.
+  if (replyOnly) return a;
   a.push(`state:${o.state}`);
   a.push(`entry:${o.entry}`);
   a.push(o.licence ? 'licence:present' : 'licence:absent');
@@ -376,11 +408,51 @@ function main() {
     `B': stamped-ruled subset (${ruledObjects.length} rows), WITHOUT card identity`,
   );
 
+  // The frozen runs must land where the card recorded them. If a later edit
+  // moves them, run C is being read against a changed baseline and the
+  // comparison is worthless — so stop instead.
+  // objects, attributes, concepts, separated — as recorded on the card and in
+  // the artifact of 2026-08-07.
+  const recorded = { A: [122, 36, 611, 7], B: [122, 29, 372, 0], Bruled: [106, 32, 695, 0] };
+  for (const [label, run] of [
+    ['A', runA],
+    ['B', runB],
+    ['Bruled', runB2],
+  ]) {
+    const got = [run.objects, run.attributes, run.conceptCount, run.separatedCount];
+    if (String(got) !== String(recorded[label])) {
+      console.error(
+        `run ${label} no longer reproduces the recorded result (objects/attributes/concepts/separated ${got} vs ${recorded[label]}) — stopping.`,
+      );
+      process.exit(1);
+    }
+  }
+
+  // Run C (card: reply-feature-stamps). B plus the performed column.
+  const withReplyText = objects.filter((o) => o.reply);
+  const runC = analyze(
+    buildContext(withReplyText, { withCard: false, withRuled: false, withReply: true }),
+    `C: B plus performed-reply features (${withReplyText.length} rows with reply text), WITHOUT card identity`,
+  );
+  const runCOnly = analyze(
+    buildContext(withReplyText, { withCard: false, withRuled: false, withReply: true, replyOnly: true }),
+    `C': performed-reply features ALONE (${withReplyText.length} rows)`,
+  );
+
   const doseDist = {};
   const licenceCount = objects.filter((o) => o.licence).length;
   objects.forEach((o) => {
     const k = o.dose === null ? 'none' : String(o.dose);
     doseDist[k] = (doseDist[k] || 0) + 1;
+  });
+
+  // How often each performed attribute fires, so a dead column (the failure
+  // that made the stamped dose useless in B) is visible rather than inferred.
+  const replyRealization = {};
+  withReplyText.forEach((o) => {
+    replyAttributesOf(o).forEach((a) => {
+      replyRealization[a] = (replyRealization[a] || 0) + 1;
+    });
   });
 
   const report = {
@@ -390,13 +462,25 @@ function main() {
       traces: ['crossed-k3', 'repertoire-k3', 'lostretest-k3', 'flatpromo-k3'],
     },
     checks: { crossedDelivery: `${checks.conductDelivered}/${checks.conductTotal}`, mismatches: checks.mismatches },
-    attributeRealization: { doseDistribution: doseDist, licencePresentTurns: licenceCount },
-    runs: { A: runA, B: runB, Bruled: runB2 },
-    objects: objects.map((o) => ({ ...o })),
+    attributeRealization: {
+      doseDistribution: doseDist,
+      licencePresentTurns: licenceCount,
+      replyAttributeTurns: replyRealization,
+    },
+    runs: { A: runA, B: runB, Bruled: runB2, C: runC, ConlyReply: runCOnly },
+    // Raw reply and learner text stay out of the artifact — they are already
+    // in the audit exports, and the derived attributes are what a reader
+    // checks. `replyAttributes` is what run C actually saw for each turn.
+    objects: objects.map(({ reply, learner, ...o }) => ({
+      ...o,
+      replyChars: reply ? reply.length : 0,
+      learnerChars: learner ? learner.length : 0,
+      replyAttributes: reply ? replyAttributesOf({ reply, learner }) : null,
+    })),
   };
   fs.writeFileSync(path.join(CE, 'figure-lattice-falsifier.json'), JSON.stringify(report, null, 1) + '\n');
 
-  for (const run of [runA, runB, runB2]) {
+  for (const run of [runA, runB, runB2, runC, runCOnly]) {
     console.log(`\n=== ${run.label} ===`);
     console.log(
       `objects ${run.objects}, attributes ${run.attributes}, concepts ${run.conceptCount}, separated ${run.separatedCount}/${Object.keys(run.figures).length}`,
