@@ -279,6 +279,7 @@
         "tests/evaluationRunner.test.js",
         "tests/evaluationScoring.test.js",
         "tests/evaluationStore.test.js",
+        "tests/evaluationStoreBoundaryInventory.test.js",
         "tests/evaluationStoreRoundtripIntegrity.test.js",
         "tests/evaluationStreamRegistry.test.js",
         "tests/evaluationTurnExecutionBoundaries.test.js",

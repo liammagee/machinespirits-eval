@@ -118,6 +118,7 @@ links:
     - refactor-eval-cli-operational-commands
     - refactor-eval-cli-generation-commands
     - refactor-eval-cli-scoring-commands
+    - refactor-evaluation-store-boundary-inventory
 tags:
   - refactoring
   - testing
@@ -1479,3 +1480,18 @@ Log:
 - 2026-08-06 — Opened the final R4 command-family extraction as PR #517 after
   rebasing onto current `main`; the post-rebase focused, source, manifest,
   formatting, lint, cycle, workplan, and commit-link gates remained green.
+- 2026-08-06 — PR #517 merged the final eval-cli scoring-command extraction;
+  activated R4 step 5 on
+  `codex/refactor-evaluation-store-boundary-inventory` from refreshed `main` at
+  `ee802740`. This characterization slice freezes store consumers, facade and
+  package exports, and import-time bootstrap before persistence implementation
+  moves.
+- 2026-08-06 — R4 step 5 reached review with all 30 live/package consumers and
+  19 archival/test consumers classified, named/default exports ratcheted, the
+  hermetic WAL/schema and package-resolution contract executable, and the R4
+  step 6 repository split plus later host migration ordered. Focused and
+  complete zero-skip hermetic, lint, format, manifest, workplan, diff, and cycle
+  gates pass without production data or model calls.
+- 2026-08-06 — Opened the R4 step 5 characterization as PR #518. Its reviewed
+  head is the dependency base for the first R4 step 6 connection/migrations
+  extraction; the latter remains a separate card and PR.
