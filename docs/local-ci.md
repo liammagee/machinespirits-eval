@@ -56,6 +56,46 @@ To reproduce the PR-body link locally, save the final body and add:
 npm run ci:local -- --pr-body-file /tmp/pr-body.md
 ```
 
+## PR creation gate
+
+Use the repository wrapper when a committed feature branch is ready to hand
+off:
+
+```bash
+npm run pr:create -- --title "Describe the change" --workplan <item-id>
+```
+
+The default `auto` policy requires a clean non-main branch synchronized with
+`origin/main`, validates the final `Workplan item:` link, and runs quick local
+CI before it performs any remote write. It then pushes with normal hooks,
+verifies remote SHA parity, and creates a draft PR. If one of this repository's
+hosted CI workflows attaches during the bounded wait, the wrapper marks the PR
+ready and leaves the expensive matrix to GitHub. If no hosted CI attaches, the
+PR remains draft while full local CI runs; only a passing, SHA-matched report is
+added to the body before the PR becomes ready.
+
+Useful variants:
+
+```bash
+# Keep the admitted PR as a draft.
+npm run pr:create -- --title "Describe the change" --workplan <item-id> --draft
+
+# Always run full local CI before the first push.
+npm run pr:create -- --title "Describe the change" --workplan <item-id> --ci full
+
+# Use a reviewed body instead of the generated template-derived body.
+npm run pr:create -- --title "Describe the change" --workplan <item-id> --body-file /tmp/pr-body.md
+
+# Validate branch, synchronization, and body without CI or remote writes.
+npm run pr:create -- --title "Describe the change" --workplan <item-id> --dry-run
+```
+
+`--ci quick` deliberately skips both the hosted-check wait and the full local
+fallback; use it only when that narrower policy is intentional. `--no-install`
+and `--offline` are passed to a required full local gate. A failure after draft
+creation leaves the draft URL in the error output rather than presenting an
+unadmitted PR as ready.
+
 ## Node 20 parity
 
 The host uses Node 22. Add GitHub's second runtime through a disposable Docker

@@ -1,7 +1,7 @@
 ---
 id: local-ci-parity-runner
 title: Package the GitHub CI contract as a reproducible local runner
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
@@ -10,6 +10,9 @@ created: 2026-08-07
 updated: 2026-08-07
 branch: codex/local-ci-parity-runner
 verification: "One documented npm command reproduces the CI, validation, and workplan lanes locally with fresh-install, reporting, path-gated surface acceptance, and optional isolated Node 20 parity; focused contract tests and the complete local gate pass."
+links:
+  prs:
+    - 534
 tags:
   - ci
   - developer-experience
@@ -46,3 +49,5 @@ Log:
   and real web plus signed packaged-Electron acceptance. Docker is absent on
   this host, so the isolated Node 20 lane is contract-tested and dry-run
   verified but was not executed locally.
+- 2026-08-07 — PR #534 merged as `a4a0baa8`; the source, fresh-install lane,
+  complete local gate, and committed-SHA quick gate were verified before merge.
