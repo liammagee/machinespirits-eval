@@ -20,7 +20,7 @@
 import 'dotenv/config';
 import express from 'express';
 import { resolveBasicAuthGuard, makeRoleGate } from './services/httpBasicAuth.js';
-import { mountEvalSurfaces } from './services/evalSurfaces.js';
+import { bindEvalSurfaceDependencies, mountEvalSurfaces } from './services/evalSurfaces.js';
 import { installApplicationShutdownHandlers } from './services/applicationShutdown.js';
 import { startDefaultEvaluationStore } from './services/evaluationStore/lifecycle.js';
 import path from 'path';
@@ -247,7 +247,8 @@ export function startEvalServer() {
     mkdirSync(dataDir, { recursive: true });
     console.log('[EvalServer] Created data directory');
   }
-  app.locals.evaluationStore = startDefaultEvaluationStore({ rootDir: __dirname });
+  const evaluationStore = startDefaultEvaluationStore({ rootDir: __dirname });
+  bindEvalSurfaceDependencies(app, { evaluationStore });
   const server = app.listen(PORT, HOST, () => {
     console.log(`[EvalServer] Machine Spirits Eval running at http://${HOST}:${PORT}`);
     console.log(`[EvalServer] Mode: ${isStandalone ? 'standalone' : 'mounted'}`);

@@ -10,9 +10,15 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'http';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-// Import the Express app (does not start listening on its own)
-import { app } from '../server.js';
+const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+let app;
+let bindEvalSurfaceDependencies;
+let createEvaluationStore;
 
 /** Simple GET helper returning { status, body } with parsed JSON. */
 function get(baseUrl, path) {
@@ -78,8 +84,22 @@ function post(baseUrl, path, body = {}) {
 describe('API routes', () => {
   let server;
   let baseUrl;
+  let evaluationStore;
+  let tempDir;
+  let previousDatabasePath;
+  let previousLogsDir;
 
   before(async () => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'eval-routes-api-'));
+    previousDatabasePath = process.env.EVAL_DB_PATH;
+    previousLogsDir = process.env.EVAL_LOGS_DIR;
+    process.env.EVAL_DB_PATH = path.join(tempDir, 'data', 'evaluations.db');
+    process.env.EVAL_LOGS_DIR = path.join(tempDir, 'logs');
+    ({ app } = await import('../server.js'));
+    ({ bindEvalSurfaceDependencies } = await import('../services/evalSurfaces.js'));
+    ({ createEvaluationStore } = await import('../services/evaluationStore/createEvaluationStore.js'));
+    evaluationStore = createEvaluationStore({ rootDir: ROOT_DIR });
+    bindEvalSurfaceDependencies(app, { evaluationStore });
     await new Promise((resolve) => {
       server = app.listen(0, '127.0.0.1', () => {
         const { port } = server.address();
@@ -93,6 +113,12 @@ describe('API routes', () => {
     if (server) {
       await new Promise((resolve) => server.close(resolve));
     }
+    evaluationStore?.close();
+    if (previousDatabasePath === undefined) delete process.env.EVAL_DB_PATH;
+    else process.env.EVAL_DB_PATH = previousDatabasePath;
+    if (previousLogsDir === undefined) delete process.env.EVAL_LOGS_DIR;
+    else process.env.EVAL_LOGS_DIR = previousLogsDir;
+    if (tempDir) fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
   // ── Health check ──
