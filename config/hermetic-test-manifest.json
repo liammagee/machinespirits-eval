@@ -78,6 +78,7 @@
         "services/__tests__/tutorStubPublicText.test.js",
         "services/__tests__/tutorStubRegisterTemperature.test.js",
         "services/__tests__/tutorStubReleaseNotes.test.js",
+        "services/__tests__/tutorStubReplyFeatures.test.js",
         "services/__tests__/tutorStubResponseConfiguration.test.js",
         "services/__tests__/tutorStubStageSpeech.test.js",
         "services/__tests__/tutorStubTuning.test.js",

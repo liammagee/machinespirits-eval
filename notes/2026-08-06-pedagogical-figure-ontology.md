@@ -400,3 +400,61 @@ standing requirement — a performed-figure column (act, register,
 footing stamped on the reply) is exactly what separation would need.
 Simulated learners, k≤3 per cell per world, single-adjudicator
 rulings, as inherited from the source audits.
+
+## The performed column, built and read back (2026-08-07)
+
+Amendment 3's requirement, acted on the same day the falsifier measured
+the bound. `services/tutorStubReplyFeatures.js` stamps what a reply
+DID, read off the reply text: seven acts (ask, cite, credit, assign,
+contrast, restate, concede, plus `assert` as the residual), where the
+warrant sits (`authority: record | learner | shared | own | none`),
+whether the tutor commits himself to a next action, whether the reply
+makes a conditional wager, and two plain measured properties of the
+sentences — mean length and rate of Latinate word endings, each
+bucketed low/medium/high. The harness now emits it as a
+`tutor_reply_features` trace event at every turn-completion path.
+
+The rule that makes it worth anything: the stamp never sees the card,
+the pressure classification or the detected state. Its signature takes
+reply text and (only for echo counting) the learner turn. A stamp that
+could read the card would re-encode the card and separation would pass
+by construction. This is enforced by a test that reads the module's own
+source and fails if the card vocabulary ever appears in it.
+
+Read back over the same 122 turns (run C of the falsifier script,
+added after the frozen design and marked as such; runs A, B and B' are
+asserted to reproduce their recorded numbers before C is read):
+
+- **1/7 separated**, up from 0/7. The oblique lure separates on
+  `{authority:none, state:flat}`. This is the right-arm/wrong-arm
+  contrast the flat-promotion design set up and that run B could not
+  see: at the flat state all five lure turns rest on nobody's say-so,
+  and all five wrong-arm reopen-the-record turns cite the record
+  (4 `authority:record`, 1 `shared`). A clean split at a shared state,
+  on n=5 vs 5.
+- **The plain-words swap narrows sharply without separating.** Its
+  closure falls from swallowing most of the corpus to 20 foreign
+  turns, driven by `latinate:low` on 12 of 12 mockery turns against
+  40% corpus-wide. The swap leaves a measurable trace in the prose.
+- **The lost state is unchanged.** Untangling, demand and grievance
+  still form one concept there. The performed features do not rescue
+  it, which is the robust-native finding holding up under a new
+  instrument rather than a limit of the instrument.
+- **Performed features alone separate nothing** (run C', 0/7), and four
+  of the seven figures share no performed attribute across all their
+  turns. The column is a complement to the state, not a replacement.
+- **Attribute realization**: 20 attributes, none dead, none
+  near-constant — the failure that made the stamped dose useless in
+  run B. The three-way buckets spread 27/44/29 and 40/30/30. Two
+  columns are genuinely rare and say something: conditional wagers on
+  3 of 122 turns, which is the arc's finding that this tutor family
+  does not price an outcome unprompted; and `act:restate` on 5 of 122,
+  which fires on only 42% of the mockery turns it was written for, so
+  the restate pattern under-detects and should be read as a floor.
+
+**Calibration, not a clean test.** The act patterns were widened after
+reading three mockery replies from this same corpus with their card
+labels visible. Any separation figure computed here is therefore
+in-sample. The clean test is fresh turns carrying the live stamp — the
+harness now writes it on every run, so the next planned run supplies
+them at no extra cost. Nothing in the paper is touched until then.
