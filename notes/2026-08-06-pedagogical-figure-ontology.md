@@ -352,3 +352,51 @@ promote, bound, archive, or kill) — and only against a priced deficit, per
 the small-kernel rule. This note is the registry until a config-level
 registry earns its keep; when a figure's status changes, update its record
 here and cite the card that changed it.
+
+## The lattice falsifier, run (2026-08-07): the bound is measured
+
+Amendment 2's falsifier — the proven figures should surface as
+well-separated concepts under the features the harness already logs —
+has now been run, as registered, on the recorded carded turns (card
+`figure-lattice-falsifier`; script `scripts/analyze-figure-lattice.js`;
+per-row artifact `exports/crossed-effects/figure-lattice-falsifier.json`).
+Objects: the 122 delivery-verified figure-carded target turns of the
+crossed, repertoire, lost-retest, and flat-promotion audits (crossed
+delivery reproduced 59/60; one further turn excluded and recorded — the
+typed quiet detector carded a stake fusion as quiet defiance, a card
+outside the seven). Attributes, frozen on the card before computing:
+state, entry (detected or forced), licence, dose (ordinal), world, the
+sol conduct tag, and the tag-match flag; the ruling joined a subset run
+on the 106 rows that stamp it. Criterion, frozen: a figure separates
+when the concept its turns generate contains no other figure's turns.
+
+The sanity run, with card identity as an attribute, separates 7/7
+trivially. The real run separates **0/7**, and no figure has any
+distinguishing combination of logged attributes at all. The named
+merges: the five move-card figures dissolve into near-total mutual
+confusion, because the crossed designs performed each card across
+states on purpose and the raw sol tag is too noisy to close the gap
+(the audits' own ruling overrides, 28/60 and 19/48, already said so);
+the lost state's three cards (untangling, demand, grievance) form one
+concept — the robust-native result in lattice form, since conduct there
+does not follow the card; the flat state's two cards form one concept
+for the same tag-noise reason. Adding the ruling (subset run) still
+separates nothing: the three wrong-card lost turns that untangled
+anyway stay inside the untangling concept.
+
+The measured bound, stated plainly: what the current logs separate is
+the STATE, not the figure. Of this note's five makeup dimensions —
+act, register, footing, dose, rights — the two that are stamped were
+near-constant in this corpus (dose: 84/122 turns at step 1; the
+licence text appeared in a card on zero turns — the single dose-3
+stamp sits under a forced quiet card, which carries no licence text by
+construction), and the three that vary from reply to reply are not
+logged at all. The figure identities live in the card text and the
+per-state conduct adjudication, neither of which is a stamped per-turn
+feature. Per the registered reading this is a finding, not a failure:
+the ontology's separation claim is not carried by the current logging
+vocabulary, and the result independently motivates amendment 3's
+standing requirement — a performed-figure column (act, register,
+footing stamped on the reply) is exactly what separation would need.
+Simulated learners, k≤3 per cell per world, single-adjudicator
+rulings, as inherited from the source audits.
