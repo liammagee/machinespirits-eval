@@ -2,20 +2,23 @@
   "schemaVersion": 1,
   "facade": "services/evaluationStore.js",
   "characterization": {
-    "sourceLineCount": 261,
-    "liveAndPackageConsumerCount": 30,
+    "sourceLineCount": 103,
+    "liveAndPackageConsumerCount": 29,
     "archivedConsumerCount": 4,
     "testConsumerCount": 15
   },
-  "importTimeContract": {
+  "startupContract": {
     "databasePathPrecedence": ["EVAL_DB_PATH", "<repository>/data/evaluations.db"],
     "logsPathPrecedence": ["EVAL_LOGS_DIR", "<MS_DATA_HOME>/logs when the data home exists", "<repository>/logs"],
-    "effects": [
+    "importEffects": [],
+    "explicitStartEffects": [
       "create the database parent directory recursively",
       "open SQLite immediately",
       "set journal_mode to WAL",
       "create and migrate the evaluation schema"
     ],
+    "compatibilityFallback": "the first legacy facade operation lazily starts the default store",
+    "closeContract": "an explicit store close is idempotent and closes only a connection owned by that store",
     "tables": ["evaluation_results", "evaluation_runs", "interaction_evaluations", "score_audit", "sqlite_sequence"]
   },
   "consumers": [
@@ -98,11 +101,6 @@
       "path": "scripts/generate-paper-figures.js",
       "classification": "operational-script",
       "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/grade-adaptive-dialogue.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
     },
     {
       "path": "scripts/ingest-pilot-sessions.js",

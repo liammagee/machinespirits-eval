@@ -274,14 +274,14 @@ describe('evaluation-store dialogue-log repository', () => {
     for (const method of ['exportToJson', 'exportToCsv']) {
       assert.match(exportSource, new RegExp(`function ${method}\\(`));
       assert.doesNotMatch(facade, new RegExp(`function ${method}\\(`));
-      assert.match(facade, new RegExp(`export const ${method} = exportRepository\\.${method};`));
+      assert.match(facade, new RegExp(`export const ${method} = delegate\\('${method}'\\);`));
     }
     for (const method of ['loadDialogueLog', 'loadImmutableDialogueLog']) {
       assert.match(logSource, new RegExp(`function ${method}\\(`));
       assert.doesNotMatch(facade, new RegExp(`function ${method}\\(`));
-      assert.match(facade, new RegExp(`export const ${method} = dialogueLogRepository\\.${method};`));
+      assert.match(facade, new RegExp(`export const ${method} = delegate\\('${method}'\\);`));
     }
-    assert.equal(facade.split('\n').length - 1 <= 265, true);
+    assert.equal(facade.split('\n').length - 1 <= 170, true);
     assert.equal(exportSource.split('\n').length - 1 <= 150, true);
     assert.equal(logSource.split('\n').length - 1 <= 150, true);
   });

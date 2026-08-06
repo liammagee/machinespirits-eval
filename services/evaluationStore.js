@@ -1,215 +1,62 @@
 /**
- * Evaluation Store Service
+ * Compatibility facade for evaluation persistence.
  *
- * SQLite-based storage for AI tutor evaluation results.
- * Supports querying, aggregation, comparison, and export.
- *
- * ═══════════════════════════════════════════════════════════════════════════
- * COLUMN SEMANTIC MAPPING (multi-turn dialogue scoring)
- * ═══════════════════════════════════════════════════════════════════════════
- *
- * For multi-turn dialogue rows, six distinct score types answer different questions:
- *
- *   DB Column                       │ Question
- *   ────────────────────────────────┼───────────────────────────────────
- *   tutor_overall_score             │ Average of per-turn tutor scores
- *   tutor_holistic_overall_score    │ Holistic tutor dialogue trajectory evaluation
- *   learner_overall_score           │ Average of per-turn learner scores
- *   learner_holistic_overall_score  │ Holistic learner dialogue evaluation
- *   dialogue_quality_score          │ Overall pedagogical encounter quality (PUBLIC transcript)
- *   dialogue_quality_internal_score │ Overall pedagogical encounter quality (FULL transcript w/ internal deliberation)
- *
- *   Additional tutor per-turn detail:
- *   tutor_first_turn_score          │ How good is the tutor's cold-start response?
- *   tutor_last_turn_score           │ How good is the tutor after adaptation?
- *   tutor_development_score         │ How much did the tutor improve? (last - first)
- *
- * DEPRECATED columns (kept for backward compatibility):
- *   - overall_score: DEPRECATED alias for tutor_first_turn_score (synced on write)
- *   - holistic_overall_score: DEAD column, no longer read or written (was alias for tutor_last_turn_score)
- *
- * For single-turn rows: tutor_last_turn_score, tutor_development_score,
- *   and dialogue_quality_score are NULL (these metrics are meaningless).
- * ═══════════════════════════════════════════════════════════════════════════
+ * Importing this module is side-effect free. Legacy callers retain the same
+ * named/default API and acquire the default store lazily on first operation;
+ * application hosts should start and stop it explicitly through
+ * evaluationStore/lifecycle.js or construct an isolated store directly.
  */
 
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { randomBytes } from 'crypto';
-import { isPidAlive } from './processUtils.js';
-import { getScenario, getTutorProfile, loadRubric, resolveModel } from './evalConfigLoader.js';
-import { readProgressLog } from './progressLogger.js';
-import {
-  loadTutorHolisticRubric,
-  loadDialogueRubric,
-  loadDeliberationRubric,
-  loadTutorCharismaRubric,
-} from './rubricEvaluator.js';
-import { loadLearnerRubric } from './learnerRubricEvaluator.js';
-import { openEvaluationDatabase } from './evaluationStore/connection.js';
-import { createInteractionRepository } from './evaluationStore/interactionRepository.js';
-import { createDialogueLogRepository } from './evaluationStore/dialogueLogRepository.js';
-import { createExportRepository } from './evaluationStore/exportRepository.js';
-import { migrateEvaluationDatabase } from './evaluationStore/migrations.js';
-import { createResultRepository } from './evaluationStore/resultRepository.js';
-import { createRunRepository } from './evaluationStore/runRepository.js';
-import { createRunManifestWriter } from './evaluationStore/runManifestWriter.js';
-import { createScoreRepository } from './evaluationStore/scoreRepository.js';
-import { createStatisticsRepository } from './evaluationStore/statisticsRepository.js';
+import { getDefaultEvaluationStore } from './evaluationStore/lifecycle.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT_DIR = path.resolve(__dirname, '..');
-// Data home: the canonical archive holding the DB and the dialogue logs, co-located
-// (workplan item: consolidate-logs-db-private-archive). Override with MS_DATA_HOME.
-const DATA_HOME = process.env.MS_DATA_HOME || path.join(os.homedir(), '.machinespirits-data');
-// Logs root, in precedence order:
-//   1. EVAL_LOGS_DIR — explicit override (sandboxed/CI tmp; the packaged desktop).
-//   2. <DATA_HOME>/logs — co-located beside the DB, so ANY worktree finds the
-//      canonical logs without a per-worktree `logs/` symlink (the recurrence the
-//      symlink approach kept hitting; this is what fixes the provenance
-//      `log_file_missing` from fresh checkouts).
-//   3. <repo>/logs — fallback for hosts without the archive (e.g. the website
-//      shallow clone that mounts /poetics from the DB and never reads logs).
-const LOGS_ROOT =
-  process.env.EVAL_LOGS_DIR || (fs.existsSync(DATA_HOME) ? path.join(DATA_HOME, 'logs') : path.join(ROOT_DIR, 'logs'));
-
-// Preserve the historical facade contract: importing evaluationStore opens the
-// configured database and runs every idempotent migration immediately.
-const db = openEvaluationDatabase({ rootDir: ROOT_DIR });
-migrateEvaluationDatabase(db);
-
-/**
- * Generate a unique run ID
- */
-function generateRunId() {
-  const timestamp = new Date().toISOString().slice(0, 10);
-  const suffix = randomBytes(4).toString('hex');
-  return `eval-${timestamp}-${suffix}`;
+function delegate(operation) {
+  return (...args) => getDefaultEvaluationStore()[operation](...args);
 }
 
-// ── Rubric version resolvers ──────────────────────────────────────────
-// Auto-resolve rubric versions from YAML at write time.
-// Tutor per-turn and holistic rubrics are versioned together (use per-turn as primary).
-function getTutorRubricVersion() {
-  return loadRubric()?.version || loadTutorHolisticRubric()?.version || null;
-}
-function getLearnerRubricVersion() {
-  return loadLearnerRubric()?.version || null;
-}
-function getDialogueRubricVersion() {
-  return loadDialogueRubric()?.version || null;
-}
-function getDeliberationRubricVersion() {
-  return loadDeliberationRubric()?.version || null;
-}
-function getCharismaRubricVersion() {
-  return loadTutorCharismaRubric()?.version || null;
-}
-
-function expectedTestsForRun(run) {
-  if (Number.isInteger(run?.totalTests) && run.totalTests > 0) return run.totalTests;
-  const runsPerConfig = Number(run?.metadata?.runsPerConfig) || 1;
-  return (run?.totalScenarios || 0) * (run?.totalConfigurations || 0) * runsPerConfig;
-}
-
-const resultRepository = createResultRepository({
-  db,
-  getTutorRubricVersion,
-  getRun: (...args) => runRepository.getRun(...args),
-  expectedTestsForRun,
-});
-const runManifestWriter = createRunManifestWriter({
-  db,
-  logsRoot: LOGS_ROOT,
-  uniqueGenerationResults: (...args) => resultRepository.uniqueGenerationResults(...args),
-  expectedTestsForRun,
-});
-const runRepository = createRunRepository({
-  db,
-  generateRunId,
-  getResults: (...args) => resultRepository.getResults(...args),
-  generationIdentity: (...args) => resultRepository.generationIdentity(...args),
-  uniqueGenerationResults: (...args) => resultRepository.uniqueGenerationResults(...args),
-  expectedTestsForRun,
-  writeRunManifest: runManifestWriter.writeRunManifest,
-  isPidAlive,
-});
-const scoreRepository = createScoreRepository({
-  db,
-  getTutorRubricVersion,
-  getLearnerRubricVersion,
-  getDialogueRubricVersion,
-  getDeliberationRubricVersion,
-  getCharismaRubricVersion,
-});
-const interactionRepository = createInteractionRepository({ db });
-const statisticsRepository = createStatisticsRepository({
-  db,
-  getResults: (...args) => resultRepository.getResults(...args),
-  getRun: (...args) => runRepository.getRun(...args),
-  readProgressLog,
-  uniqueGenerationResults: (...args) => resultRepository.uniqueGenerationResults(...args),
-  getScenario,
-  getTutorProfile,
-  resolveModel,
-});
-const exportRepository = createExportRepository({
-  getRun: (...args) => runRepository.getRun(...args),
-  getResults: (...args) => resultRepository.getResults(...args),
-  getRunStats: (...args) => statisticsRepository.getRunStats(...args),
-  getScenarioStats: (...args) => statisticsRepository.getScenarioStats(...args),
-});
-const dialogueLogRepository = createDialogueLogRepository({ logsRoot: LOGS_ROOT });
-
-export const storeResult = resultRepository.storeResult;
-export const getResults = resultRepository.getResults;
-export const getResultById = resultRepository.getResultById;
-export const storeRejudgment = resultRepository.storeRejudgment;
-export const generationIdentity = resultRepository.generationIdentity;
-export const cloneRowsForRubricVersion = resultRepository.cloneRowsForRubricVersion;
-
-export const createRun = runRepository.createRun;
-export const updateRun = runRepository.updateRun;
-export const getRun = runRepository.getRun;
-export const listRuns = runRepository.listRuns;
-export const completeRun = runRepository.completeRun;
-export const findIncompleteRuns = runRepository.findIncompleteRuns;
-export const autoCompleteStaleRuns = runRepository.autoCompleteStaleRuns;
-export const deleteRun = runRepository.deleteRun;
-export const getIncompleteTests = runRepository.getIncompleteTests;
-
-export const getScoreAudit = scoreRepository.getScoreAudit;
-export const getScoreAuditByRun = scoreRepository.getScoreAuditByRun;
-export const updateResultScores = scoreRepository.updateResultScores;
-export const updateTutorLastTurnScore = scoreRepository.updateTutorLastTurnScore;
-export const updateDialogueQualityScore = scoreRepository.updateDialogueQualityScore;
-export const updateDialogueQualityInternalScore = scoreRepository.updateDialogueQualityInternalScore;
-export const updateTutorDeliberationScores = scoreRepository.updateTutorDeliberationScores;
-export const updateLearnerDeliberationScores = scoreRepository.updateLearnerDeliberationScores;
-export const updateProcessMeasures = scoreRepository.updateProcessMeasures;
-export const updateResultLearnerScores = scoreRepository.updateResultLearnerScores;
-export const updateResultTutorScores = scoreRepository.updateResultTutorScores;
-export const updateResultTutorCharismaScores = scoreRepository.updateResultTutorCharismaScores;
-export const updateResultTutorRegisterScore = scoreRepository.updateResultTutorRegisterScore;
-export const setIdConstructionTrace = scoreRepository.setIdConstructionTrace;
-export const updateResultTutorHolisticScores = scoreRepository.updateResultTutorHolisticScores;
-export const storeInteractionEval = interactionRepository.storeInteractionEval;
-export const listInteractionEvals = interactionRepository.listInteractionEvals;
-export const getInteractionEval = interactionRepository.getInteractionEval;
-export const getInteractionEvalByRunId = interactionRepository.getInteractionEvalByRunId;
-export const listInteractionEvalsByRunId = interactionRepository.listInteractionEvalsByRunId;
-export const updateInteractionLearnerScores = interactionRepository.updateInteractionLearnerScores;
-export const getRunStats = statisticsRepository.getRunStats;
-export const getScenarioStats = statisticsRepository.getScenarioStats;
-export const compareConfigs = statisticsRepository.compareConfigs;
-export const getFactorialCellData = statisticsRepository.getFactorialCellData;
-export const exportToJson = exportRepository.exportToJson;
-export const exportToCsv = exportRepository.exportToCsv;
-export const loadDialogueLog = dialogueLogRepository.loadDialogueLog;
-export const loadImmutableDialogueLog = dialogueLogRepository.loadImmutableDialogueLog;
+export const autoCompleteStaleRuns = delegate('autoCompleteStaleRuns');
+export const cloneRowsForRubricVersion = delegate('cloneRowsForRubricVersion');
+export const compareConfigs = delegate('compareConfigs');
+export const completeRun = delegate('completeRun');
+export const createRun = delegate('createRun');
+export const deleteRun = delegate('deleteRun');
+export const exportToCsv = delegate('exportToCsv');
+export const exportToJson = delegate('exportToJson');
+export const findIncompleteRuns = delegate('findIncompleteRuns');
+export const generationIdentity = delegate('generationIdentity');
+export const getFactorialCellData = delegate('getFactorialCellData');
+export const getIncompleteTests = delegate('getIncompleteTests');
+export const getInteractionEval = delegate('getInteractionEval');
+export const getInteractionEvalByRunId = delegate('getInteractionEvalByRunId');
+export const getResultById = delegate('getResultById');
+export const getResults = delegate('getResults');
+export const getRun = delegate('getRun');
+export const getRunStats = delegate('getRunStats');
+export const getScenarioStats = delegate('getScenarioStats');
+export const getScoreAudit = delegate('getScoreAudit');
+export const getScoreAuditByRun = delegate('getScoreAuditByRun');
+export const listInteractionEvals = delegate('listInteractionEvals');
+export const listInteractionEvalsByRunId = delegate('listInteractionEvalsByRunId');
+export const listRuns = delegate('listRuns');
+export const loadDialogueLog = delegate('loadDialogueLog');
+export const loadImmutableDialogueLog = delegate('loadImmutableDialogueLog');
+export const setIdConstructionTrace = delegate('setIdConstructionTrace');
+export const storeInteractionEval = delegate('storeInteractionEval');
+export const storeRejudgment = delegate('storeRejudgment');
+export const storeResult = delegate('storeResult');
+export const updateDialogueQualityInternalScore = delegate('updateDialogueQualityInternalScore');
+export const updateDialogueQualityScore = delegate('updateDialogueQualityScore');
+export const updateInteractionLearnerScores = delegate('updateInteractionLearnerScores');
+export const updateLearnerDeliberationScores = delegate('updateLearnerDeliberationScores');
+export const updateProcessMeasures = delegate('updateProcessMeasures');
+export const updateResultLearnerScores = delegate('updateResultLearnerScores');
+export const updateResultScores = delegate('updateResultScores');
+export const updateResultTutorCharismaScores = delegate('updateResultTutorCharismaScores');
+export const updateResultTutorHolisticScores = delegate('updateResultTutorHolisticScores');
+export const updateResultTutorRegisterScore = delegate('updateResultTutorRegisterScore');
+export const updateResultTutorScores = delegate('updateResultTutorScores');
+export const updateRun = delegate('updateRun');
+export const updateTutorDeliberationScores = delegate('updateTutorDeliberationScores');
+export const updateTutorLastTurnScore = delegate('updateTutorLastTurnScore');
 
 export default {
   createRun,
@@ -239,23 +86,18 @@ export default {
   autoCompleteStaleRuns,
   getIncompleteTests,
   getFactorialCellData,
-  // Interaction evaluations
   storeInteractionEval,
   listInteractionEvals,
   listInteractionEvalsByRunId,
   getInteractionEval,
   getInteractionEvalByRunId,
   updateInteractionLearnerScores,
-  // Process measures
   updateProcessMeasures,
-  // Dialogue log loading
   loadDialogueLog,
   loadImmutableDialogueLog,
-  // Rubric version comparison
   getResultById,
   generationIdentity,
   cloneRowsForRubricVersion,
-  // P0 Provenance
   getScoreAudit,
   getScoreAuditByRun,
 };

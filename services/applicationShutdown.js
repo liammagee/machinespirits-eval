@@ -19,10 +19,22 @@ function closeHttpServer(server) {
   });
 }
 
-function closeDatabase(app) {
+function closeDatabases(app) {
+  const errors = [];
+  const evaluationStore = app?.locals?.evaluationStore;
+  try {
+    if (evaluationStore && typeof evaluationStore.close === 'function') evaluationStore.close();
+  } catch (error) {
+    errors.push(error);
+  }
+
   const db = app?.locals?.db;
-  if (!db || typeof db.close !== 'function' || db.open === false) return;
-  db.close();
+  try {
+    if (db && typeof db.close === 'function' && db.open !== false) db.close();
+  } catch (error) {
+    errors.push(error);
+  }
+  return errors;
 }
 
 /**
@@ -55,17 +67,12 @@ export async function shutdownApplication({
     server?.closeIdleConnections?.();
     const results = await Promise.allSettled([serverClose, hostClose]);
 
-    let databaseError = null;
-    try {
-      closeDatabase(app);
-    } catch (error) {
-      databaseError = error;
-    }
+    const databaseErrors = closeDatabases(app);
 
     const errors = [...streamResults, ...results]
       .filter((result) => result.status === 'rejected')
       .map((result) => result.reason);
-    if (databaseError) errors.push(databaseError);
+    errors.push(...databaseErrors);
     if (errors.length) throw new AggregateError(errors, 'application shutdown failed');
     return { reason, closed: true };
   })();

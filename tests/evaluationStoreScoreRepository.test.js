@@ -267,19 +267,24 @@ describe('evaluation-store score repository', () => {
     }
   });
 
-  it('keeps the facade as bootstrap/compatibility owner with a bounded score repository', () => {
+  it('keeps the facade as lazy compatibility owner with a bounded score repository', () => {
     const facade = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore.js'), 'utf8');
+    const factory = fs.readFileSync(
+      path.join(ROOT_DIR, 'services', 'evaluationStore', 'createEvaluationStore.js'),
+      'utf8',
+    );
     const repository = fs.readFileSync(
       path.join(ROOT_DIR, 'services', 'evaluationStore', 'scoreRepository.js'),
       'utf8',
     );
 
-    assert.match(facade, /createScoreRepository\(\{/);
+    assert.match(factory, /createScoreRepository\(\{/);
+    assert.match(facade, /export const updateResultScores = delegate\('updateResultScores'\);/);
     assert.doesNotMatch(facade, /UPDATE evaluation_results SET|INSERT INTO score_audit/);
     assert.match(repository, /function updateResultTutorScores/);
     assert.match(repository, /function updateResultLearnerScores/);
     assert.match(repository, /function getScoreAuditByRun/);
-    assert.equal(facade.split('\n').length - 1 <= 265, true);
+    assert.equal(facade.split('\n').length - 1 <= 170, true);
     assert.equal(repository.split('\n').length - 1 <= 750, true);
   });
 });

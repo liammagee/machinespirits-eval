@@ -1608,3 +1608,19 @@ Log:
 - 2026-08-07 — PR #528 merged as `919ad33e`, closing exporter and dialogue-log
   ownership. The reviewed run-manifest child can now publish from refreshed
   main before explicit application startup and connection lifecycle begins.
+- 2026-08-07 — Opened run-manifest ownership as PR #529 at `03879d75` and
+  activated `refactor-evaluation-store-application-lifecycle` from that reviewed
+  head. The child removes import-time SQLite bootstrap, gives both application
+  hosts explicit store ownership, and wires deterministic close behavior; broad
+  runner, adaptive, CLI, and operational dependency migration remains later.
+- 2026-08-07 — The application-lifecycle child reached review with a 194-line
+  explicit factory, 33-line lifecycle coordinator, and passive 103-line facade.
+  Standalone and poetics now acquire one store deliberately and shutdown closes
+  it in order; the migration-only adaptive grader left the facade inventory,
+  reducing live/package consumers from 30 to 29. Complete persistence, route,
+  desktop, hermetic, risk-coverage, source, and static gates pass. Runner plus
+  eval-CLI dependency injection is the next host-migration cohort.
+- 2026-08-07 — PR #529 merged as `f637b398`, closing run-manifest ownership.
+  The reviewed application-lifecycle child remains the next publication unit;
+  its branch head is the merged PR commit and therefore has a trivial one-commit
+  rebase path onto refreshed main at handoff.

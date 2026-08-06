@@ -49,6 +49,11 @@ test('shutdown drains tutor sessions before closing the application database', a
           events.push(`host.closeAll:${reason}`);
         },
       },
+      evaluationStore: {
+        close() {
+          events.push('evaluationStore.close');
+        },
+      },
       db: {
         open: true,
         close() {
@@ -74,6 +79,7 @@ test('shutdown drains tutor sessions before closing the application database', a
   assert.equal(streamResponse.writableEnded, true);
   assert.equal(streamRegistry.activeCount, 0);
   assert.ok(events.includes('host.closeAll:SIGTERM'));
+  assert.equal(events.at(-2), 'evaluationStore.close');
   assert.equal(events.at(-1), 'db.close');
 });
 

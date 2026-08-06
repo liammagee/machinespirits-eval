@@ -20,6 +20,7 @@ import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '.
 import { resolveBasicAuthGuard, makeRoleGate } from '../services/httpBasicAuth.js';
 import { mountEvalSurfaces, EVAL_SURFACE_MOUNT_PREFIXES } from '../services/evalSurfaces.js';
 import { installApplicationShutdownHandlers } from '../services/applicationShutdown.js';
+import { startDefaultEvaluationStore } from '../services/evaluationStore/lifecycle.js';
 import chatRoutes from '../routes/chatRoutes.js';
 import { classifyPoeticsConsensus, parseCriticFormString } from './lib/poeticsConsensus.js';
 import { ORIGIN_CLASSES, originCounts, recognitionOriginForScoreRow } from './lib/recognitionOrigin.js';
@@ -1104,6 +1105,7 @@ function saveBrowserReviewFlag(db, input) {
 
 function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   const db = openPoeticsStore(dbPath || undefined);
+  const evaluationStore = startDefaultEvaluationStore({ rootDir: ROOT, db });
   const app = express();
   const adminRouter = express.Router();
   // Liveness probe with no auth — registered before the guard so a load
@@ -1133,6 +1135,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   app.use('/assets', express.static(path.resolve(ROOT, 'notes/poetics/assets'), { index: false }));
   app.use('/docs/research', express.static(path.resolve(ROOT, 'docs/research'), { index: false }));
   app.locals.db = db;
+  app.locals.evaluationStore = evaluationStore;
   app.get('/runs', (req, res) => {
     const qs = new URLSearchParams(req.query || {}).toString();
     return res.redirect(302, `${req.baseUrl || ''}/admin/runs${qs ? '?' + qs : ''}`);

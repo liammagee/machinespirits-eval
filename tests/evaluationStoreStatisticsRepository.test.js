@@ -375,10 +375,10 @@ describe('evaluation-store statistics repository', () => {
     for (const method of methods) {
       assert.match(repository, new RegExp(`function ${method}\\(`));
       assert.doesNotMatch(facade, new RegExp(`function ${method}\\(`));
-      assert.match(facade, new RegExp(`export const ${method} = statisticsRepository\\.${method};`));
+      assert.match(facade, new RegExp(`export const ${method} = delegate\\('${method}'\\);`));
     }
     assert.match(repository, /function buildTransientPlaceholderMap\(/);
-    assert.equal(facade.split('\n').length - 1 <= 265, true);
+    assert.equal(facade.split('\n').length - 1 <= 170, true);
     assert.equal(repository.split('\n').length - 1 <= 475, true);
   });
 });
