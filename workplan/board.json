@@ -1,21 +1,21 @@
 {
-  "generated": "2026-08-06T21:15:20.484Z",
+  "generated": "2026-08-06T22:07:37.837Z",
   "counts": {
-    "total": 437,
+    "total": 441,
     "byStatus": {
-      "done": 402,
+      "done": 404,
       "blocked": 6,
       "dropped": 8,
-      "active": 4,
+      "active": 5,
       "archived": 4,
       "triaged": 8,
-      "review": 5
+      "review": 6
     },
     "byType": {
       "research": 74,
       "experiment": 72,
-      "infra": 83,
-      "maintenance": 188,
+      "infra": 86,
+      "maintenance": 189,
       "content": 3,
       "ops": 10,
       "paper": 7
@@ -372,7 +372,8 @@
           "refactor-evaluation-store-export-log-readers",
           "refactor-evaluation-store-run-manifest-writer",
           "refactor-evaluation-store-application-lifecycle",
-          "refactor-evaluation-runner-cli-store-injection"
+          "refactor-evaluation-runner-cli-store-injection",
+          "refactor-adaptive-tutor-store-injection"
         ]
       },
       "tags": [
@@ -460,6 +461,28 @@
         "tutor-stub",
         "harness"
       ]
+    },
+    {
+      "id": "reply-feature-stamps",
+      "title": "Reply-feature stamps: measure what the tutor reply did, blind to the card",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "verification": "Terminal, same day, pure computation. New unit suite (services/__tests__/tutorStubReplyFeatures.test.js, 10 tests) plus wiring tests in tests/tutorStubTurnOrchestration.test.js (4 tests) — all pass; lint clean; test manifest updated. Retrospective read-back over the falsifier's 122 turns (run C of scripts/analyze-figure- lattice.js): 1/7 separated, up from 0/7, with runs A/B/B' asserted to reproduce their recorded numbers first. That read-back is CALIBRATION, not a clean test — the act patterns were widened after reading three labelled replies from the same corpus. The clean test is fresh turns carrying the live stamp.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/2026-08-06-pedagogical-figure-ontology.md"
+        ],
+        "items": [
+          "figure-lattice-falsifier",
+          "pedagogical-figure-ontology"
+        ]
+      }
     },
     {
       "id": "a1-human-learner-validation",
@@ -663,6 +686,64 @@
       "milestone": "paper-2-0"
     },
     {
+      "id": "local-ci-parity-runner",
+      "title": "Package the GitHub CI contract as a reproducible local runner",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/local-ci-parity-runner",
+      "verification": "One documented npm command reproduces the CI, validation, and workplan lanes locally with fresh-install, reporting, path-gated surface acceptance, and optional isolated Node 20 parity; focused contract tests and the complete local gate pass.",
+      "tags": [
+        "ci",
+        "developer-experience",
+        "reliability"
+      ]
+    },
+    {
+      "id": "refactor-adaptive-tutor-store-injection",
+      "title": "Inject evaluation-store ownership into the adaptive tutor",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-adaptive-tutor-store-injection",
+      "verification": "Store-bound adaptive-runner, persistence-adapter, eval-CLI child-process, world-spec-finalization, smoke, boundary-inventory, hermetic, lint, and root regressions prove explicit dependency identity and lazy compatibility without model calls, production writes, or generated workplan views.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-runner-cli-store-injection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/adaptiveTutor/index.js",
+          "services/adaptiveTutor/persistence.js",
+          "scripts/eval-cli/commands/runCommand.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-runner-cli-store-injection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "adaptive-tutor",
+        "sqlite",
+        "dependency-injection",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-eval-cli-generation-commands",
       "title": "Extract eval-cli generation, chat, and rejudge commands",
       "status": "review",
@@ -801,46 +882,6 @@
         "cli",
         "scoring",
         "symmetry",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "refactor-evaluation-runner-cli-store-injection",
-      "title": "Inject evaluation-store ownership into the runner and eval CLI",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-07",
-      "updated": "2026-08-07",
-      "branch": "codex/refactor-evaluation-runner-cli-store-injection",
-      "verification": "Store-bound runner, scoring-adapter, help, CLI-process, resume/rejudge, report, boundary-inventory, hermetic, lint, and root-suite regressions prove explicit dependency identity, lazy compatibility, and deterministic close behavior without production writes or generated workplan views.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-evaluation-store-application-lifecycle"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
-        ],
-        "code": [
-          "services/evaluationRunner.js",
-          "scripts/eval-cli.js",
-          "scripts/eval-cli/scoringCommandDependencies.js"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-evaluation-store-application-lifecycle"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "evaluation",
-        "sqlite",
-        "dependency-injection",
-        "cli",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -2689,6 +2730,50 @@
         "resume",
         "rejudge",
         "provenance",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-runner-cli-store-injection",
+      "title": "Inject evaluation-store ownership into the runner and eval CLI",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-evaluation-runner-cli-store-injection",
+      "verification": "Store-bound runner, scoring-adapter, help, CLI-process, resume/rejudge, report, boundary-inventory, hermetic, lint, and root-suite regressions prove explicit dependency identity, lazy compatibility, and deterministic close behavior without production writes or generated workplan views.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-application-lifecycle"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationRunner.js",
+          "scripts/eval-cli.js",
+          "scripts/eval-cli/scoringCommandDependencies.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-application-lifecycle",
+          "refactor-adaptive-tutor-store-injection"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/532"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "sqlite",
+        "dependency-injection",
+        "cli",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -14298,6 +14383,36 @@
         "ci",
         "hermetic"
       ]
+    },
+    {
+      "id": "let-the-hermetic-test-runner-find-vitest-from-a-worktree",
+      "title": "Let the hermetic test runner find Vitest from a worktree",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "verification": "npm test completes from a .claude/worktrees/* checkout: both the root Node phase and the in-housed tutor-core Vitest phase run and report. A unit case drives buildCoreTestArgs against a fixture main-checkout/worktree layout and against a root with no install above it.",
+      "claim_status": "methods",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/537"
+        ],
+        "code": [
+          "scripts/hermetic-test-contract.js",
+          "scripts/run-hermetic-tests.js",
+          "scripts/run-risk-coverage.js"
+        ]
+      },
+      "tags": [
+        "testing",
+        "tooling",
+        "git-worktrees"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "claude/confident-jennings-9c45c6"
     },
     {
       "id": "lint-hook-worktree-node-modules-fallback",
