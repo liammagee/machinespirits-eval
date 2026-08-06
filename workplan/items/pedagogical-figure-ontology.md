@@ -11,9 +11,13 @@ updated: 2026-08-06
 verification: "Delivered in one PR: the ontology note
   (notes/2026-08-06-pedagogical-figure-ontology.md — seven levels, dual
   naming rule, artifact map, ten-field records for the seven playbook
-  figures) and paper §7.13 (v3.0.267) stating the ladder with every
-  empirical anchor citing an established section. Interpretation only —
-  no new empirical claims; paper-claim audit clean."
+  figures, critical refinements) and paper §7.13 (v3.0.267) stating the
+  ladder with every empirical anchor citing an established section.
+  Interpretation only — no new empirical claims. Paper-claim audit run on
+  the diff: §7.13 and the revision entry traced clean (25-claim table);
+  the audit found two citation defects in the note's artifact map (persona
+  count uncited; the log's prospective charisma vocabulary attributed to
+  the built rubric), both fixed in the same PR."
 claim_status: methods
 links:
   notes:
@@ -64,3 +68,16 @@ another level's result: costume as treatment, manner as move,
 critic-visible form as learning, instruction as capacity). Forward rule
 recorded in the note: new figures enter via the living log's eleven-step
 admission procedure, only against a priced deficit.
+
+Same-day critique folded into note and §7.13 as five recorded
+amendments: the ladder compresses three axes (unit, property, policy);
+"lattice" split into the paradigmatic concept lattice over figure
+features (differential combination, minimal pairs from the crossed
+wrong arms, a separation falsifier) and the syntagmatic game graph,
+with rights as a deontic ingredient of the figure (the licence/card
+separation as evidence); figure fidelity — performed vs worked —
+required as separate columns; downward causation (history changes
+felicity conditions, per the cold-start law); lineage delta stated
+(formal dialectic, exchange structure; the addition over "tutoring
+tactic" is contrastive identity plus rights). Paper-claim audit
+defects in the artifact map fixed as described in verification.

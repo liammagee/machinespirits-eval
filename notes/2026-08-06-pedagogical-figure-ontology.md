@@ -10,7 +10,8 @@ machine, dialogue games, macro-theory, Aristotelian effects) into one stated
 hierarchy, and maps every existing instrument onto its level. The canonical
 short statement is paper §7.13; this note is the working registry. It
 introduces no new empirical claims; every number cited below traces to a
-closed workplan card and its paper section.
+closed workplan card, its paper section, or the named source file.
+Amended same day under critique — see "Critical refinements" below.
 
 ## The two-name rule, and the reserved word
 
@@ -69,6 +70,66 @@ figures — a tendency to select and realize certain ones.
    participant-level and stays human-only; simulated learners cannot
    evidence it.
 
+## Critical refinements (2026-08-06, same day)
+
+A scholarly pass over the ladder the day it was stated drew five
+amendments, recorded here so the ladder is carried with its corrections.
+
+1. **Three axes, not one scale.** The ladder compresses three different
+   relations. Wording composes constructions — part and whole. A figure is
+   not made of registers; it is realized in one — type and token. And a
+   relational effect is not a bigger unit than a character; it is a
+   property of a trace, not a unit at all. The clean picture is a unit
+   hierarchy (wording, construction, figure, game), a property hierarchy
+   (uptake, relational effect, episode effect), and a policy hierarchy
+   (character, selection policy). The seven levels stay as the filing
+   order; any claim about composition must say which axis it moves on.
+
+2. **Two lattices, and a deontic ingredient.** "Lattice" was doing double
+   duty. The *paradigmatic* lattice is the figure's makeup: a figure is a
+   differential combination of ordered dimensions — act, register,
+   footing, dose, rights — and the crossed designs already define figures
+   by contrast, since every wrong arm forces the named tempting error: a
+   minimal pair. This is formalizable — treat logged turns as objects and
+   logged features as attributes and the corpus yields a concept lattice
+   in the mathematical sense — and it carries a falsifier: the proven
+   figures should surface as well-separated concepts under the features
+   the harness already logs, or the ontology is decoration. The
+   *syntagmatic* lattice is the game graph of level 4 — branching,
+   joining, cyclic — and stays topology talk. And composition from below
+   is incomplete: the licence/card separation showed the same act,
+   register, and wording differing by RIGHTS — the card walks the tutor
+   to the brink of the move, the licence releases the withheld beat.
+   Permission is deontic standing (commitments and entitlements —
+   Hamblin's commitment stores; Brandom's scorekeeping), an ingredient of
+   the figure record, not a lower rung.
+
+3. **Figure fidelity, stated as a requirement.** Figures are individuated
+   by the transformation they attempt, but "attempt" must not be read off
+   the same ruling that scores success — that risks redescription. The
+   register family got a stance-fidelity gate; level 3 needs the analog:
+   whether the figure was performed, judged separately from whether it
+   worked. The admission procedure's step 4 already demands a
+   treatment-fidelity test; the amendment makes it standing: figure
+   claims report performed and worked as separate columns, the way the
+   delivery-verified column already separates shipped from ruled.
+
+4. **Causation runs down the ladder too.** Repeat demands license what
+   first demands cannot: history changes a figure's felicity conditions,
+   and a character is a prior the learner holds about the tutor, not
+   inert manner plus selection. Description composes upward; causation is
+   bidirectional. Eligibility fields in the records may reference
+   relationship history — the dose ladder already does.
+
+5. **Lineage, stated plainly.** Quintilian legitimates more than he
+   theorizes here: classical figures of thought are monological ornaments
+   of oratory; these figures are dialogical and uptake-conditioned. The
+   nearer ancestors of levels 3–4 are formal dialectic (Hamblin; Walton
+   and Krabbe), exchange structure (Sinclair and Coulthard), and the
+   tutoring-move literature. What "pedagogical figure" adds over
+   "tutoring tactic" is the contrastive identity and the rights
+   dimension — that delta, not the classical citation, is the claim.
+
 ## The artifact map
 
 Level 1 — wording:
@@ -106,13 +167,18 @@ Level 4 — dialogue game:
 Level 5 — character:
 - The cast layer (authored stable cast, bounded reinvention).
 - The id-director family and charisma stance (cells 101–109).
-- Learner profile contracts (sixteen personas) — character on the learner
-  side.
+- Learner profile contracts — sixteen authored personas
+  (`scripts/tutor-stub-learner-profile-contracts.js`) — character on the
+  learner side.
 
 Level 6 — relational effect:
 - The v2.2 recognition dimensions and §7.9's analysis.
-- The charisma rubric (`config/evaluation-rubric-charisma.yaml`) — witness,
-  ratification, return of authority.
+- The charisma rubric (`config/evaluation-rubric-charisma.yaml`) — the
+  id-director family's built instrument; its dimensions include
+  witness/proof and the co-constitutive invitation.
+- The living log's charisma decomposition (2026-08-03) — learner
+  ratification and return of authority as candidate figures: prospective
+  and unbuilt, cited from the log, not from the rubric.
 - Conduct rulings over traces (the standing ruled-conduct instrument).
 
 Level 7 — episode effect:
