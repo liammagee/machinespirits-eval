@@ -149,6 +149,46 @@ with probability p) was considered and rejected: it destroys determinism,
 which is what makes the outcome channel judge-free and every comparison
 clean.
 
+## The regime this licenses (recorded 2026-08-06 — NOT in force until the validity study completes)
+
+Three measurements now sit behind the design rule. The replay
+(`scripts/replay-guard-fallback-delivery.js`): of the 717 Phase-B template
+turns, 91% had a model draft that clears the catalog's shadow-advisory column,
+and none of the deliverable drafts carried an evidence-safety, clue-bookkeeping
+or closure finding. The retry analysis: the rewrite clears 70% of the findings
+it is named, and still fails 80% of the time on checks it was not named — the
+conjunction fails, not the feedback loop. The validity study
+(`scripts/guard-validity-study.js`, Sonnet judge, blind single-text scoring
+after a pairwise probe showed the template is identifiable side by side):
+interim, at 33 of ~150 pairs, the vetoed draft scores 4.15 against the shipped
+template's 2.73 overall, and the template has not won a single turn outright.
+
+If the full sample holds that shape, the regime becomes:
+
+1. **Sort every check by what it protects.** The three contract families —
+   evidence safety, clue bookkeeping, closure — keep binary vetoes with the
+   template as last resort. Every quality judgment (uptake, advance, focus,
+   costume, repetition) records and never vetoes. Stalling is the one middle
+   case: veto only over a window of consecutive stalled turns.
+2. **Ship the model's words; findings ride as data** — five channels replace
+   the veto: per-condition fidelity instruments; findings from turn N fed into
+   turn N+1's request; windowed tripwires that end-and-exclude a drowning
+   dialogue rather than ghost-write it; findings as a preference order among
+   the model's own drafts; and template/finding rates stamped on every run for
+   analysis-side filtering.
+3. **A veto must earn its place.** The replay-plus-blind-scoring loop is cheap
+   and repeatable; a family keeps its veto only if what ships in its name
+   outscores what it rejects. Re-run it when guards change or the author model
+   family changes.
+4. **New checks enter report-only** and are promoted to veto only on validity
+   evidence. Any promotion or default change bumps the catalog version; runs
+   under different catalog versions never pool.
+
+Cards: `guard-policy-default-flip` (the switch, gated on the full study),
+`guard-findings-feed-forward`, `tutor-stub-template-rate-audit`,
+`phase-b-rerun-under-flipped-policy` (user-gated). Until the flip lands,
+every default below stays as it is.
+
 ## Knobs (both opt-in, default off, recorded in traces)
 
 - `TUTOR_STUB_STYLE_GUARDS_ADVISORY=1` — actorial part/tactic misses are
