@@ -163,6 +163,7 @@
         "tests/configOverrideBoundary.test.js",
         "tests/consolidateRuns.test.js",
         "tests/contentResolver.test.js",
+        "tests/createPr.test.js",
         "tests/criticPoeticsOmniscient.test.js",
         "tests/criticPoeticsStructure.test.js",
         "tests/curriculumBuilder.test.js",

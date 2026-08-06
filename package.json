@@ -340,6 +340,7 @@
     "ci:local": "node scripts/run-local-ci.js",
     "ci:local:quick": "node scripts/run-local-ci.js --profile quick --no-install",
     "ci:local:node20": "node scripts/run-local-ci.js --lane node20 --node20-container --no-install --offline",
+    "pr:create": "node scripts/create-pr.js",
     "native:rebuild:node": "npm rebuild better-sqlite3 node-pty",
     "test:hermetic": "node scripts/run-hermetic-tests.js",
     "test:manifest": "node scripts/sync-hermetic-test-manifest.js --check",
