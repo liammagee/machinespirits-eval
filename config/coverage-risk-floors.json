@@ -9,6 +9,7 @@
       "sources": [
         "services/evaluationStore.js",
         "services/evaluationStore/connection.js",
+        "services/evaluationStore/interactionRepository.js",
         "services/evaluationStore/migrations.js",
         "services/evaluationStore/resultRepository.js",
         "services/evaluationStore/runRepository.js",
@@ -19,6 +20,7 @@
         "tests/evaluationStore.test.js",
         "tests/evaluationStoreBoundaryInventory.test.js",
         "tests/evaluationStoreConnectionMigrations.test.js",
+        "tests/evaluationStoreInteractionRepository.test.js",
         "tests/evaluationStoreResultRepository.test.js",
         "tests/evaluationStoreRunRepository.test.js",
         "tests/evaluationStoreRoundtripIntegrity.test.js",
