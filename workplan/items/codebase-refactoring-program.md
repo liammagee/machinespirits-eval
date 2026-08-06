@@ -130,6 +130,7 @@ links:
     - refactor-evaluation-store-application-lifecycle
     - refactor-evaluation-runner-cli-store-injection
     - refactor-adaptive-tutor-store-injection
+    - refactor-eval-routes-store-injection
 tags:
   - refactoring
   - testing
@@ -1645,3 +1646,17 @@ Log:
   persistence factories, real mock-backed CLI dispatch, and complete parity
   green. Direct facade ownership is down to 24 live/package consumers;
   eval-route injection is the next and final application-runtime cohort.
+- 2026-08-07 — PR #533 merged as `39f8c29f`, closing adaptive-tutor injection.
+  Activated the final application-runtime cohort from current main at
+  `fec495a6`: eval routes now receive store and runner ownership from each
+  Express host rather than importing either namespace directly.
+- 2026-08-07 — Eval-route host-context injection reached review. The shared
+  router now resolves one store and matching runner from the current Express
+  app, standalone and poetics bind those dependencies explicitly, and the
+  direct-facade inventory is down to 23 live/package consumers with no
+  application-runtime entries. Complete route, API, root, core, risk, source,
+  lint, formatting, boundary, and cycle gates pass.
+- 2026-08-07 — Published eval-route host-context injection as PR #539 at
+  `7d3c9bef`. The next host-migration phase is operational scripts, beginning
+  with a read-only analysis/reporting cohort before scoring and write-bearing
+  tools.

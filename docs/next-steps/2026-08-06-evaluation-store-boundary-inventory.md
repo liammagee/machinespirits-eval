@@ -182,3 +182,25 @@ The executable inventory is now 42 consumers: 24 live/package, four archived
 one-offs, and 14 tests. `routes/evalRoutes.js` is the sole remaining direct
 application-runtime consumer; operational scripts, the package entrypoint, and
 legacy tests remain separate compatibility cohorts.
+
+## Eval-route host-context follow-up (2026-08-07)
+
+The shared evaluation router now consumes persistence and orchestration through
+the Express application context owned by each host:
+
+1. `bindEvalSurfaceDependencies()` binds one supplied evaluation store and its
+   matching `createEvaluationRunner()` adapter to `app.locals`. Tests may supply
+   an explicit runner while production hosts derive it from the store.
+2. Every store- and runner-backed route resolves those dependencies from the
+   current request application. The same router can therefore serve standalone,
+   poetics, and test hosts without capturing a process-global namespace; missing
+   host bindings fail closed with a configuration error.
+3. Standalone binds immediately before `listen()`, while poetics binds around
+   its existing host-owned database. Importing the router or server remains free
+   of persistence effects.
+
+This removes the last application-runtime facade consumer. The executable
+inventory is now 41 consumers: 23 live/package, four archived one-offs, and 14
+tests. The live compatibility remainder is entirely operational—22 scripts—plus
+the package entrypoint; these can migrate in bounded cohorts without reopening
+application startup ownership.

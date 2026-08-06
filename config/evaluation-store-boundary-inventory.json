@@ -3,7 +3,7 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 24,
+    "liveAndPackageConsumerCount": 23,
     "archivedConsumerCount": 4,
     "testConsumerCount": 14
   },
@@ -26,11 +26,6 @@
       "path": "index.js",
       "classification": "package-entrypoint",
       "modes": ["namespace-reexport"]
-    },
-    {
-      "path": "routes/evalRoutes.js",
-      "classification": "application-runtime",
-      "modes": ["namespace"]
     },
     {
       "path": "scripts/analyze-insight-action-gap.js",

@@ -18,7 +18,11 @@ import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import { openPoeticsStore, upsertPoeticsLabel, upsertPoeticsReviewFlag } from '../services/poeticsStore.js';
 import { resolveBasicAuthGuard, makeRoleGate } from '../services/httpBasicAuth.js';
-import { mountEvalSurfaces, EVAL_SURFACE_MOUNT_PREFIXES } from '../services/evalSurfaces.js';
+import {
+  bindEvalSurfaceDependencies,
+  mountEvalSurfaces,
+  EVAL_SURFACE_MOUNT_PREFIXES,
+} from '../services/evalSurfaces.js';
 import { installApplicationShutdownHandlers } from '../services/applicationShutdown.js';
 import { startDefaultEvaluationStore } from '../services/evaluationStore/lifecycle.js';
 import chatRoutes from '../routes/chatRoutes.js';
@@ -1135,7 +1139,7 @@ function createPoeticsBrowserApp({ dbPath = null, host = '127.0.0.1' } = {}) {
   app.use('/assets', express.static(path.resolve(ROOT, 'notes/poetics/assets'), { index: false }));
   app.use('/docs/research', express.static(path.resolve(ROOT, 'docs/research'), { index: false }));
   app.locals.db = db;
-  app.locals.evaluationStore = evaluationStore;
+  bindEvalSurfaceDependencies(app, { evaluationStore });
   app.get('/runs', (req, res) => {
     const qs = new URLSearchParams(req.query || {}).toString();
     return res.redirect(302, `${req.baseUrl || ''}/admin/runs${qs ? '?' + qs : ''}`);

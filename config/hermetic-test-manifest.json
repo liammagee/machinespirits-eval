@@ -274,6 +274,7 @@
         "tests/evalLogRoutesDataRoot.test.js",
         "tests/evalProfileRegistry.test.js",
         "tests/evalRequestAdmissionRoutes.test.js",
+        "tests/evalRoutesDependencyInjection.test.js",
         "tests/evalRoutesImport.test.js",
         "tests/evalSignature.test.js",
         "tests/evaluationDataCloseout.test.js",

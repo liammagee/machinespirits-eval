@@ -10,8 +10,6 @@
 
 import { Router } from 'express';
 import { spawnSync } from 'child_process';
-import * as evaluationRunner from '../services/evaluationRunner.js';
-import * as evaluationStore from '../services/evaluationStore.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
 import * as promptRecommendationService from '../services/promptRecommendationService.js';
 import interactionEngine from '../services/learnerTutorInteractionEngine.js';
@@ -54,6 +52,31 @@ import fs from 'fs';
 import path from 'path';
 
 const router = Router();
+
+function evaluationDependencyFor(req, name) {
+  const dependency = req?.app?.locals?.[name];
+  if (!dependency || typeof dependency !== 'object') {
+    throw new Error(
+      `evalRoutes requires app.locals.${name}; bind the host with bindEvalSurfaceDependencies() before serving requests`,
+    );
+  }
+  return dependency;
+}
+
+function evaluationStoreFor(req) {
+  return evaluationDependencyFor(req, 'evaluationStore');
+}
+
+function evaluationRunnerFor(req) {
+  return evaluationDependencyFor(req, 'evaluationRunner');
+}
+
+export function resolveEvalRouteDependencies(req) {
+  return Object.freeze({
+    evaluationStore: evaluationStoreFor(req),
+    evaluationRunner: evaluationRunnerFor(req),
+  });
+}
 
 function httpBoolean(value, fallback = false) {
   if (value === undefined) return fallback;
@@ -714,7 +737,7 @@ router.post(
       const scenarioName = scenarioDetails?.name || scenario;
 
       // Create a run to persist result to history
-      const run = evaluationStore.createRun({
+      const run = evaluationStoreFor(req).createRun({
         description: scenarioName,
         totalScenarios: 1,
         totalConfigurations: 1,
@@ -734,7 +757,7 @@ router.post(
       });
 
       req.reserveEvaluationTest(`${profile}:${scenario}`);
-      const result = await evaluationRunner.quickTest(config, {
+      const result = await evaluationRunnerFor(req).quickTest(config, {
         scenarioId: scenario,
         skipRubricEval: skipRubric,
         dryRun,
@@ -744,10 +767,10 @@ router.post(
       });
 
       // Store result to history
-      evaluationStore.storeResult(run.id, result);
+      evaluationStoreFor(req).storeResult(run.id, result);
 
       // Mark run as completed
-      evaluationStore.updateRun(run.id, {
+      evaluationStoreFor(req).updateRun(run.id, {
         status: 'completed',
         totalTests: 1,
         completedAt: new Date().toISOString(),
@@ -860,7 +883,7 @@ router.get(
       const scenarioName = scenarioDetails?.name || scenario;
 
       // Create a run to persist result to history (status: 'running')
-      const run = evaluationStore.createRun({
+      const run = evaluationStoreFor(req).createRun({
         description: scenarioName,
         totalScenarios: 1,
         totalConfigurations: 1,
@@ -899,7 +922,7 @@ router.get(
       sendEvent('progress', { stage: 'context', message: 'Building learner context' });
 
       req.reserveEvaluationTest(`${profile}:${scenario}`);
-      const result = await evaluationRunner.quickTest(config, {
+      const result = await evaluationRunnerFor(req).quickTest(config, {
         scenarioId: scenario,
         skipRubricEval: skipRubric,
         outputSize, // compact, normal, expanded - affects response length
@@ -909,10 +932,10 @@ router.get(
       });
 
       // Store result to history
-      evaluationStore.storeResult(run.id, result);
+      evaluationStoreFor(req).storeResult(run.id, result);
 
       // Mark run as completed
-      evaluationStore.updateRun(run.id, {
+      evaluationStoreFor(req).updateRun(run.id, {
         status: 'completed',
         totalTests: 1,
         completedAt: new Date().toISOString(),
@@ -1007,12 +1030,13 @@ function sendEvaluationAdmissionError(res, error, logPrefix) {
 }
 
 export function createMeteredEvaluationHandlers({
-  runner = evaluationRunner,
+  runner = null,
   profileRegistry = effectiveEvaluationProfileRegistry,
   scenarioRegistry = effectiveEvaluationScenarioRegistry,
   maxPlannedTests = () => resolveEvalApiMaxPlannedTests(),
   privilegedOverride = (req) => hasEvalApiPrivilegedOverride(req),
 } = {}) {
+  const runnerFor = (req) => runner || evaluationRunnerFor(req);
   const admit = (req, endpoint, minProfiles, defaults = {}) => {
     const rawBody = req.body;
     const body =
@@ -1042,7 +1066,7 @@ export function createMeteredEvaluationHandlers({
           dryRun: false,
         });
         const configurations = admission.profiles.map((profileName) => ({ profileName, label: profileName }));
-        const result = await runner.runEvaluation({
+        const result = await runnerFor(req).runEvaluation({
           scenarios: admission.scenarios,
           configurations,
           runsPerConfig: admission.runsPerConfig,
@@ -1076,7 +1100,7 @@ export function createMeteredEvaluationHandlers({
           dryRun: false,
         });
         const configurations = admission.profiles.map((profileName) => ({ profileName, label: profileName }));
-        const result = await runner.compareConfigurations(configurations, {
+        const result = await runnerFor(req).compareConfigurations(configurations, {
           scenarios: admission.scenarios,
           runsPerConfig: admission.runsPerConfig,
           dryRun: admission.dryRun,
@@ -1193,7 +1217,7 @@ router.post(
       const scenariosToRun = allScenarios.filter((scenario) => admittedScenarioIds.has(scenario.id));
 
       // Create a run to persist results to history
-      const run = evaluationStore.createRun({
+      const run = evaluationStoreFor(req).createRun({
         description: `${validProfiles.length} profiles × ${scenariosToRun.length} scenarios`,
         totalScenarios: scenariosToRun.length,
         totalConfigurations: validProfiles.length,
@@ -1221,7 +1245,7 @@ router.post(
           try {
             const config = { profileName, label: profileName };
             req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
-            const result = await evaluationRunner.quickTest(config, {
+            const result = await evaluationRunnerFor(req).quickTest(config, {
               scenarioId: scenario.id,
               verbose: false,
               skipRubricEval: skipRubric,
@@ -1233,7 +1257,7 @@ router.post(
             totalTests++;
 
             // Save result to database
-            evaluationStore.storeResult(run.id, {
+            evaluationStoreFor(req).storeResult(run.id, {
               ...result,
               scenarioId: scenario.id,
               scenarioName: scenario.name,
@@ -1261,7 +1285,7 @@ router.post(
             totalTests++;
 
             // Save error to database
-            evaluationStore.storeResult(run.id, {
+            evaluationStoreFor(req).storeResult(run.id, {
               ...errorResult,
               scenarioName: scenario.name,
               profileName,
@@ -1273,7 +1297,7 @@ router.post(
       }
 
       // Update run as completed
-      evaluationStore.updateRun(run.id, {
+      evaluationStoreFor(req).updateRun(run.id, {
         status: 'completed',
         totalTests,
         completedAt: new Date().toISOString(),
@@ -1423,7 +1447,7 @@ router.get(
       sendEvent('log', { message: `Output size: ${outputSize}`, level: 'info' });
 
       // Create a run to persist results
-      const run = evaluationStore.createRun({
+      const run = evaluationStoreFor(req).createRun({
         description: `${validProfiles.length} profiles × ${scenariosToRun.length} scenarios`,
         totalScenarios: scenariosToRun.length,
         totalConfigurations: validProfiles.length,
@@ -1473,7 +1497,7 @@ router.get(
             };
 
             req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
-            const result = await evaluationRunner.quickTest(config, {
+            const result = await evaluationRunnerFor(req).quickTest(config, {
               scenarioId: scenario.id,
               verbose: false,
               skipRubricEval: skipRubric,
@@ -1485,7 +1509,7 @@ router.get(
             results[profileName].push(result);
 
             // Save result to database
-            evaluationStore.storeResult(run.id, {
+            evaluationStoreFor(req).storeResult(run.id, {
               ...result,
               scenarioId: scenario.id,
               scenarioName: scenario.name,
@@ -1531,7 +1555,7 @@ router.get(
             };
             results[profileName].push(errorResult);
 
-            evaluationStore.storeResult(run.id, {
+            evaluationStoreFor(req).storeResult(run.id, {
               ...errorResult,
               scenarioName: scenario.name,
               profileName,
@@ -1543,7 +1567,7 @@ router.get(
       }
 
       // Update run as completed
-      evaluationStore.updateRun(run.id, {
+      evaluationStoreFor(req).updateRun(run.id, {
         status: 'completed',
         totalTests: completedTests,
         completedAt: new Date().toISOString(),
@@ -1940,7 +1964,7 @@ router.get(
       // First create a run entry so it appears in History with "Interact" filter
       let runId = null;
       try {
-        const runData = evaluationStore.createRun({
+        const runData = evaluationStoreFor(req).createRun({
           description: `Interact: ${persona} → ${tutorProfile}`,
           totalScenarios: 1,
           metadata: {
@@ -1962,12 +1986,12 @@ router.get(
       // Now store the interaction evaluation details
       try {
         result.runId = runId;
-        evaluationStore.storeInteractionEval(result);
+        evaluationStoreFor(req).storeInteractionEval(result);
         sendEvent('log', { message: `Stored in database: ${evalId}`, level: 'success' });
 
         // Mark the run as completed (don't use completeRun which checks evaluation_results table)
         if (runId) {
-          evaluationStore.updateRun(runId, {
+          evaluationStoreFor(req).updateRun(runId, {
             status: 'completed',
             totalTests: result.metrics?.turnCount || 1,
             completedAt: new Date().toISOString(),
@@ -2037,10 +2061,10 @@ router.get(
 router.get('/runs', (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 20;
-    const runs = evaluationStore.listRuns({ limit });
+    const runs = evaluationStoreFor(req).listRuns({ limit });
 
     // Also include interaction evals in the runs list
-    const interactionEvals = evaluationStore.listInteractionEvals({ limit });
+    const interactionEvals = evaluationStoreFor(req).listInteractionEvals({ limit });
     const interactionRuns = interactionEvals.map((e) => ({
       id: e.evalId,
       description: e.scenarioName || 'Interaction Evaluation',
@@ -2078,7 +2102,7 @@ router.get('/runs', (req, res) => {
 router.get('/runs-incomplete', (req, res) => {
   try {
     const olderThanMinutes = parseInt(req.query.olderThanMinutes) || 30;
-    const runs = evaluationStore.findIncompleteRuns({ olderThanMinutes });
+    const runs = evaluationStoreFor(req).findIncompleteRuns({ olderThanMinutes });
     res.json({ success: true, runs, found: runs.length });
   } catch (error) {
     console.error('[EvalRoutes] Find incomplete runs error:', error);
@@ -2094,7 +2118,7 @@ router.get('/runs-incomplete', (req, res) => {
 router.post('/runs-auto-complete', (req, res) => {
   try {
     const { olderThanMinutes = 30, dryRun = false } = req.body;
-    const result = evaluationStore.autoCompleteStaleRuns({ olderThanMinutes, dryRun });
+    const result = evaluationStoreFor(req).autoCompleteStaleRuns({ olderThanMinutes, dryRun });
     res.json({ success: true, ...result });
   } catch (error) {
     console.error('[EvalRoutes] Auto-complete runs error:', error);
@@ -2112,7 +2136,7 @@ router.get('/runs/:runId', (req, res) => {
 
     // Check if this is an interaction eval
     if (runId.startsWith('short-') || runId.startsWith('long-')) {
-      const evalData = evaluationStore.getInteractionEval(runId);
+      const evalData = evaluationStoreFor(req).getInteractionEval(runId);
       if (!evalData) {
         return res.status(404).json({ error: 'Interaction evaluation not found' });
       }
@@ -2175,7 +2199,7 @@ router.get('/runs/:runId', (req, res) => {
     }
 
     // Regular run
-    const result = evaluationRunner.getRunResults(runId);
+    const result = evaluationRunnerFor(req).getRunResults(runId);
 
     // Check if this is an interaction run (created from Interact tab)
     const runMetadata = result.run?.metadata
@@ -2186,7 +2210,7 @@ router.get('/runs/:runId', (req, res) => {
 
     if (runMetadata.runType === 'interaction') {
       // Look up the interaction eval data by runId
-      const interactionEval = evaluationStore.getInteractionEvalByRunId(runId);
+      const interactionEval = evaluationStoreFor(req).getInteractionEvalByRunId(runId);
       if (interactionEval) {
         return res.json({
           success: true,
@@ -2265,7 +2289,7 @@ router.get('/runs/:runId', (req, res) => {
  */
 router.get('/runs/:runId/report', (req, res) => {
   try {
-    const report = evaluationRunner.generateReport(req.params.runId);
+    const report = evaluationRunnerFor(req).generateReport(req.params.runId);
 
     // Check if client wants plain text
     if (req.accepts('text/plain')) {
@@ -2329,7 +2353,7 @@ router.get('/logs/dialogue/:dialogueId', (req, res) => {
 
     // Check if this is an interaction eval dialogue (starts with short- or long-)
     if (dialogueId.startsWith('short-') || dialogueId.startsWith('long-')) {
-      const interactionEval = evaluationStore.getInteractionEval(dialogueId);
+      const interactionEval = evaluationStoreFor(req).getInteractionEval(dialogueId);
       if (interactionEval) {
         // Format interaction eval as entries for DialogueFlowDiagram
         // Expand each turn into action-based entries the diagram expects
@@ -2550,7 +2574,7 @@ router.post('/prompts/recommend', createPromptRecommendationAdmissionMiddleware(
 
     if (runId) {
       // Get results from existing run
-      const runResults = evaluationStore.getResults(runId);
+      const runResults = evaluationStoreFor(req).getResults(runId);
       if (!runResults || runResults.length === 0) {
         return res.status(404).json({ error: 'Run not found or has no results' });
       }
@@ -2566,7 +2590,7 @@ router.post('/prompts/recommend', createPromptRecommendationAdmissionMiddleware(
         try {
           const config = { profileName: profile, label: profile };
           req.reserveEvaluationTest(`${profile}:${scenario.id}`);
-          const result = await evaluationRunner.quickTest(config, {
+          const result = await evaluationRunnerFor(req).quickTest(config, {
             scenarioId: scenario.id,
             verbose: false,
             skipRubricEval: false, // Need rubric for recommendations
@@ -2724,7 +2748,7 @@ router.get(
             };
 
             req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
-            const result = await evaluationRunner.quickTest(config, {
+            const result = await evaluationRunnerFor(req).quickTest(config, {
               scenarioId: scenario.id,
               skipRubricEval: skipRubric,
               outputSize,
@@ -2847,8 +2871,8 @@ router.get('/compare-runs/:runId1/:runId2', (req, res) => {
   try {
     const { runId1, runId2 } = req.params;
 
-    const results1 = evaluationStore.getResults(runId1);
-    const results2 = evaluationStore.getResults(runId2);
+    const results1 = evaluationStoreFor(req).getResults(runId1);
+    const results2 = evaluationStoreFor(req).getResults(runId2);
 
     if (!results1 || results1.length === 0) {
       return res.status(404).json({ error: `Run ${runId1} not found` });
@@ -2943,7 +2967,7 @@ router.get('/trends', (req, res) => {
 
     // Get recent runs (fetch 3x the limit to account for fast-mode runs being filtered)
     // Many runs may be --fast (no AI scoring), so we need to fetch more to get enough scored results
-    const runs = evaluationStore.listRuns({ limit: limit * 3 });
+    const runs = evaluationStoreFor(req).listRuns({ limit: limit * 3 });
 
     // Helper to extract numeric score from potentially complex score objects
     const extractNumericScore = (scoreVal) => {
@@ -2961,7 +2985,7 @@ router.get('/trends', (req, res) => {
     const dims = ['relevance', 'specificity', 'pedagogical', 'personalization', 'actionability', 'tone'];
 
     for (const run of runs) {
-      const results = evaluationStore.getResults(run.id);
+      const results = evaluationStoreFor(req).getResults(run.id);
 
       // Use metadata.runType if available, fallback to parsing description
       const metadata = run.metadata || {};
@@ -3216,7 +3240,7 @@ router.post('/monitor/alerts/:id/acknowledge', (req, res) => {
  */
 router.post('/runs/:runId/complete', (req, res) => {
   try {
-    const result = evaluationStore.completeRun(req.params.runId);
+    const result = evaluationStoreFor(req).completeRun(req.params.runId);
     res.json({ success: true, ...result });
   } catch (error) {
     console.error('[EvalRoutes] Complete run error:', error);
@@ -3236,7 +3260,7 @@ router.post('/runs/:runId/complete', (req, res) => {
 router.get('/runs/:runId/resume-status', (req, res) => {
   try {
     const { runId } = req.params;
-    const run = evaluationStore.getRun(runId);
+    const run = evaluationStoreFor(req).getRun(runId);
 
     if (!run) {
       return res.status(404).json({ error: 'Run not found' });
@@ -3262,7 +3286,7 @@ router.get('/runs/:runId/resume-status', (req, res) => {
       scenariosParam === 'all' ? allScenarios : allScenarios.filter((s) => scenariosParam.includes(s.id));
 
     // Get incomplete tests
-    const status = evaluationStore.getIncompleteTests(runId, profiles, scenarios);
+    const status = evaluationStoreFor(req).getIncompleteTests(runId, profiles, scenarios);
 
     res.json({
       success: true,
@@ -3294,7 +3318,7 @@ router.get('/interactions', (req, res) => {
     const limit = parseInt(req.query.limit) || 50;
     const scenarioId = req.query.scenarioId || null;
 
-    const evals = evaluationStore.listInteractionEvals({ limit, scenarioId });
+    const evals = evaluationStoreFor(req).listInteractionEvals({ limit, scenarioId });
     res.json({ success: true, evals, count: evals.length });
   } catch (error) {
     console.error('[EvalRoutes] List interactions error:', error);
@@ -3309,7 +3333,7 @@ router.get('/interactions', (req, res) => {
 router.get('/interactions/:evalId', (req, res) => {
   try {
     const { evalId } = req.params;
-    const evalData = evaluationStore.getInteractionEval(evalId);
+    const evalData = evaluationStoreFor(req).getInteractionEval(evalId);
 
     if (!evalData) {
       return res.status(404).json({ error: 'Interaction evaluation not found' });
@@ -3329,7 +3353,7 @@ router.get('/interactions/:evalId', (req, res) => {
 router.get('/interactions/:evalId/diagram', (req, res) => {
   try {
     const { evalId } = req.params;
-    const evalData = evaluationStore.getInteractionEval(evalId);
+    const evalData = evaluationStoreFor(req).getInteractionEval(evalId);
 
     if (!evalData) {
       return res.status(404).json({ error: 'Interaction evaluation not found' });
@@ -3349,7 +3373,7 @@ router.get('/interactions/:evalId/diagram', (req, res) => {
 router.get('/interactions/:evalId/transcript', (req, res) => {
   try {
     const { evalId } = req.params;
-    const evalData = evaluationStore.getInteractionEval(evalId);
+    const evalData = evaluationStoreFor(req).getInteractionEval(evalId);
 
     if (!evalData) {
       return res.status(404).json({ error: 'Interaction evaluation not found' });
@@ -3474,7 +3498,7 @@ router.get(
       });
 
       // Create a run to persist results
-      const run = evaluationStore.createRun({
+      const run = evaluationStoreFor(req).createRun({
         description: `Recognition A/B: baseline vs recognition × ${recognitionScenarios.length} scenarios`,
         totalScenarios: recognitionScenarios.length,
         totalConfigurations: 2,
@@ -3539,7 +3563,7 @@ router.get(
             };
 
             req.reserveEvaluationTest(`${profileName}:${scenario.id}`);
-            const result = await evaluationRunner.quickTest(config, {
+            const result = await evaluationRunnerFor(req).quickTest(config, {
               scenarioId: scenario.id,
               verbose: false,
               skipRubricEval: skipRubric,
@@ -3552,7 +3576,7 @@ router.get(
             results[profileName].push(result);
 
             // Save result to database
-            evaluationStore.storeResult(run.id, {
+            evaluationStoreFor(req).storeResult(run.id, {
               ...result,
               scenarioId: scenario.id,
               scenarioName: scenario.name,
@@ -3623,7 +3647,7 @@ router.get(
             };
             results[profileName].push(errorResult);
 
-            evaluationStore.storeResult(run.id, {
+            evaluationStoreFor(req).storeResult(run.id, {
               ...errorResult,
               scenarioName: scenario.name,
               profileName,
@@ -3635,7 +3659,7 @@ router.get(
       }
 
       // Update run as completed
-      evaluationStore.updateRun(run.id, {
+      evaluationStoreFor(req).updateRun(run.id, {
         status: 'completed',
         totalTests: completedTests,
         completedAt: new Date().toISOString(),

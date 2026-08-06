@@ -1,7 +1,7 @@
 ---
 id: refactor-adaptive-tutor-store-injection
 title: Inject evaluation-store ownership into the adaptive tutor
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -27,6 +27,9 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-runner-cli-store-injection
+    - refactor-eval-routes-store-injection
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/533
 tags:
   - refactoring
   - evaluation
@@ -89,3 +92,6 @@ Log:
   and removed, and the three unrelated Program-2 stashes remain untouched.
   Post-rebase focused tests pass 55/55, both adaptive mock smokes pass, and the
   workplan, boundary, lint, formatting, and zero-cycle gates remain green.
+- 2026-08-07 — PR #533 merged as `39f8c29f`, closing adaptive-tutor store
+  injection. The eval-route host-context slice is active from refreshed main on
+  `codex/refactor-eval-routes-store-injection`.

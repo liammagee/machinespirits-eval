@@ -135,6 +135,7 @@ describe('explicit evaluation-store lifecycle', () => {
       assert.equal(app.locals.evaluationStore.database, app.locals.db);
       assert.equal(app.locals.evaluationStore.ownsDatabase, false);
       assert.equal(app.locals.evaluationStore.isOpen, true);
+      assert.equal(typeof app.locals.evaluationRunner.getRunResults, 'function');
       assert.equal(app.locals.evaluationStore.close(), true);
       assert.equal(app.locals.db.open, true);
     } finally {
@@ -147,13 +148,20 @@ describe('explicit evaluation-store lifecycle', () => {
     const server = fs.readFileSync(path.join(ROOT_DIR, 'server.js'), 'utf8');
     const poetics = fs.readFileSync(path.join(ROOT_DIR, 'scripts', 'browse-poetics-scripts.js'), 'utf8');
     const grader = fs.readFileSync(path.join(ROOT_DIR, 'scripts', 'grade-adaptive-dialogue.js'), 'utf8');
+    const routes = fs.readFileSync(path.join(ROOT_DIR, 'routes', 'evalRoutes.js'), 'utf8');
 
     assert.ok(
-      server.indexOf('app.locals.evaluationStore = startDefaultEvaluationStore') <
-        server.indexOf('const server = app.listen'),
+      server.indexOf('const evaluationStore = startDefaultEvaluationStore') <
+        server.indexOf('bindEvalSurfaceDependencies(app, { evaluationStore })') &&
+        server.indexOf('bindEvalSurfaceDependencies(app, { evaluationStore })') <
+          server.indexOf('const server = app.listen'),
     );
     assert.match(poetics, /startDefaultEvaluationStore\(\{ rootDir: ROOT, db \}\)/u);
+    assert.match(poetics, /bindEvalSurfaceDependencies\(app, \{ evaluationStore \}\)/u);
     assert.doesNotMatch(poetics, /openEvaluationDatabase/u);
+    assert.doesNotMatch(routes, /from ['"]\.\.\/services\/evaluationStore\.js['"]/u);
+    assert.doesNotMatch(routes, /import \* as evaluationRunner/u);
+    assert.match(routes, /req\?\.app\?\.locals/u);
     assert.match(grader, /openEvaluationDatabase\(\{ rootDir: REPO_ROOT \}\)/u);
     assert.match(grader, /migrateEvaluationDatabase\(db\)/u);
     assert.doesNotMatch(grader, /await import\(['"]\.\.\/services\/evaluationStore\.js['"]\)/u);
