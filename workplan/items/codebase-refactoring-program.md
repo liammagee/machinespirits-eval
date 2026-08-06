@@ -125,6 +125,7 @@ links:
     - refactor-evaluation-store-score-repository
     - refactor-evaluation-store-interaction-repository
     - refactor-evaluation-store-statistics-repository
+    - refactor-evaluation-store-export-log-readers
 tags:
   - refactoring
   - testing
@@ -1581,3 +1582,14 @@ Log:
   41 default exports remained fixed; complete focused, hermetic, risk-coverage,
   source, and static gates pass. Exporters and dialogue-log readers are next,
   followed by manifest hosting and explicit startup.
+- 2026-08-07 — PR #527 merged as `28fcf27e` and the serialized board refresh as
+  `53e1e989`, closing statistics and projections. Activated
+  `refactor-evaluation-store-export-log-readers` from that refreshed main for
+  the final R4 step 6 repository family; manifest hosting and explicit startup
+  remain separate later slices.
+- 2026-08-07 — The exporter/log-reader child reached review with exact JSON,
+  CSV, mutable-log, and content-addressed-log contracts behind two injected
+  owners. The facade fell from 512 to 341 lines while its 44 named and 41
+  default exports remained fixed; complete focused, hermetic, risk-coverage,
+  source, and static gates pass. Run-manifest writing is next, then explicit
+  application startup and connection lifecycle migration.
