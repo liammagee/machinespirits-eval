@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-run-repository
 title: Extract the evaluation-store run repository
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -27,6 +27,9 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-connection-migrations
+    - refactor-evaluation-store-result-repository
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/520
 tags:
   - refactoring
   - evaluation
@@ -75,3 +78,9 @@ Log:
   and 82.88% functions for the evaluation-store group. Lint, format, manifest,
   source-only workplan, diff, and zero-cycle gates are green; no production
   database, dialogue log, or model endpoint was touched.
+- 2026-08-06 — Published the reviewed extraction as PR #520 from `3b45c24b`;
+  the result-repository child proceeds in a separate dependent worktree and
+  will rebase onto `main` after this PR merges.
+- 2026-08-06 — PR #520 merged as `76b85d52`; the serialized workplan refresh
+  followed as `8a664d9b`. Run-repository ownership is closed, and the result
+  child is now rebased onto that refreshed `main`.

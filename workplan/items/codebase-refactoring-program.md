@@ -121,6 +121,7 @@ links:
     - refactor-evaluation-store-boundary-inventory
     - refactor-evaluation-store-connection-migrations
     - refactor-evaluation-store-run-repository
+    - refactor-evaluation-store-result-repository
 tags:
   - refactoring
   - testing
@@ -1526,3 +1527,18 @@ Log:
   behavioral, risk-coverage, source, and static gates pass. Result persistence,
   rejudging, scoring updates, provenance, and derived-run cloning form the next
   repository family after this child merges.
+- 2026-08-06 — Opened the run-repository extraction as PR #520 from reviewed
+  head `3b45c24b`. Activated the dependent result-repository child in a separate
+  worktree from that head: generation/provenance persistence, result parsing,
+  historical rejudgments, and rubric-clone rows move now; score mutations and
+  their audit trail remain the following bounded repository.
+- 2026-08-06 — The result-repository child reached a gate-complete pre-rebase
+  checkpoint: the store facade is now 1,870 lines, below the original near-2k
+  destination, with immutable generation/result persistence in a bounded owner.
+  It remains active behind PR #520; score mutation/audit, interaction CRUD,
+  statistics, exporters/log readers, and explicit host startup form the bounded
+  runway to close the current evaluation persistence arm.
+- 2026-08-06 — PR #520 merged as `76b85d52` and its generated-board refresh as
+  `8a664d9b`. The result-repository child rebased cleanly and reached review on
+  that independent base; score mutation and audit persistence is now the next
+  repository family after this child is published and merged.
