@@ -1,7 +1,7 @@
 ---
 id: refactor-eval-routes-store-injection
 title: Inject evaluation-store ownership into eval routes
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -28,6 +28,7 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-adaptive-tutor-store-injection
+    - refactor-operational-log-reader-injection
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/539
 tags:
@@ -87,3 +88,5 @@ Log:
   workplan views occurred.
 - 2026-08-07 — Opened PR #539 at `7d3c9bef`; the head matches origin and the PR
   is ready for review against current `main`.
+- 2026-08-07 — PR #539 merged as `315cc7ff`, closing application-runtime store
+  injection. Operational dialogue-log consumers are the next active cohort.

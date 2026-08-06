@@ -204,3 +204,22 @@ inventory is now 41 consumers: 23 live/package, four archived one-offs, and 14
 tests. The live compatibility remainder is entirely operational—22 scripts—plus
 the package entrypoint; these can migrate in bounded cohorts without reopening
 application startup ownership.
+
+## Operational dialogue-log follow-up (2026-08-07)
+
+The first operational cohort separates scripts that use the legacy facade only
+for `loadDialogueLog()` from tools that read or mutate evaluation rows through
+the facade:
+
+1. `createEvaluationScriptContext()` resolves the established database and log
+   roots without opening SQLite or creating directories. It supplies a
+   dedicated dialogue-log repository to each script invocation.
+2. Six analysis, audit, coding, and rendering scripts keep their existing
+   explicitly closed SQLite connection while reading logs through that local
+   repository. Contexts with different data roots cannot share log state.
+3. Model-capable scripts retain their existing admission and calls; validation
+   exercises only deterministic or help paths and makes no model request.
+
+This removes six direct operational facade consumers. The executable inventory
+is now 35 consumers: 17 live/package, four archived one-offs, and 14 tests. The
+live remainder is 16 operational scripts plus the package entrypoint.

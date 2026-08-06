@@ -32,11 +32,12 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { formatTranscript } from '../services/transcriptFormatter.js';
-import * as evaluationStore from '../services/evaluationStore.js';
+import { createEvaluationScriptContext } from '../services/evaluationStore/scriptContext.js';
 import { callModelCliText } from '../services/cliProviderBridge.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.resolve(__dirname, '..', 'data', 'evaluations.db');
+const ROOT = path.resolve(__dirname, '..');
+const { databasePath: DB_PATH, dialogueLogs } = createEvaluationScriptContext({ rootDir: ROOT });
 
 // ── Assessment Tags ──────────────────────────────────────────────────────
 
@@ -190,7 +191,7 @@ function loadMultiTurnResults(db, runId, filters = {}) {
 }
 
 function loadDialogueTrace(dialogueId) {
-  const dialogue = evaluationStore.loadDialogueLog(dialogueId);
+  const dialogue = dialogueLogs.loadDialogueLog(dialogueId);
   if (!dialogue) return null;
   return {
     trace: dialogue.dialogueTrace || [],

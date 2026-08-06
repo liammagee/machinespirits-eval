@@ -131,6 +131,7 @@ links:
     - refactor-evaluation-runner-cli-store-injection
     - refactor-adaptive-tutor-store-injection
     - refactor-eval-routes-store-injection
+    - refactor-operational-log-reader-injection
 tags:
   - refactoring
   - testing
@@ -1660,3 +1661,14 @@ Log:
   `7d3c9bef`. The next host-migration phase is operational scripts, beginning
   with a read-only analysis/reporting cohort before scoring and write-bearing
   tools.
+- 2026-08-07 — PR #539 merged as `315cc7ff`, closing every direct
+  application-runtime facade consumer. Activated
+  `refactor-operational-log-reader-injection` from that refreshed main for the
+  six scripts whose only facade operation is dialogue-log reading.
+- 2026-08-07 — The operational dialogue-log cohort reached review with six
+  scripts bound to passive, isolated read contexts. Direct facade ownership is
+  down to 17 live/package consumers, complete parity is green, and the four
+  longitudinal live reports are the next read-only projection cohort.
+- 2026-08-07 — Published operational dialogue-log injection as PR #542 at
+  `cffa5249` after a clean rebase onto current main. Longitudinal A2-A5 live
+  report ownership remains the next migration cohort.

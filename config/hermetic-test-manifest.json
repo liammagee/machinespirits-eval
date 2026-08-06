@@ -283,6 +283,7 @@
         "tests/evaluationRunner.test.js",
         "tests/evaluationRunnerDependencyInjection.test.js",
         "tests/evaluationScoring.test.js",
+        "tests/evaluationScriptContext.test.js",
         "tests/evaluationStore.test.js",
         "tests/evaluationStoreBoundaryInventory.test.js",
         "tests/evaluationStoreConnectionMigrations.test.js",

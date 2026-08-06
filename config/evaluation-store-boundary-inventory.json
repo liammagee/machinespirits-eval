@@ -3,7 +3,7 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 23,
+    "liveAndPackageConsumerCount": 17,
     "archivedConsumerCount": 4,
     "testConsumerCount": 14
   },
@@ -28,11 +28,6 @@
       "modes": ["namespace-reexport"]
     },
     {
-      "path": "scripts/analyze-insight-action-gap.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
       "path": "scripts/archive/oneoff/backfill-judge-input-hashes.js",
       "classification": "archived-oneoff",
       "modes": ["namespace"]
@@ -53,21 +48,6 @@
       "modes": ["namespace"]
     },
     {
-      "path": "scripts/assess-transcripts.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/audit-message-chain.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/code-dialectical-modulation.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
       "path": "scripts/evaluate-charisma.js",
       "classification": "operational-script",
       "modes": ["namespace"]
@@ -83,22 +63,12 @@
       "modes": ["namespace"]
     },
     {
-      "path": "scripts/generate-paper-figures.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
       "path": "scripts/ingest-pilot-sessions.js",
       "classification": "operational-script",
       "modes": ["namespace"]
     },
     {
       "path": "scripts/prompt-lab.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/render-sequence-diagram.js",
       "classification": "operational-script",
       "modes": ["namespace"]
     },
