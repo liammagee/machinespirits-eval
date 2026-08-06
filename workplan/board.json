@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-06T06:09:42.956Z",
+  "generated": "2026-08-06T06:34:01.041Z",
   "counts": {
-    "total": 428,
+    "total": 429,
     "byStatus": {
-      "done": 394,
+      "done": 395,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
@@ -15,7 +15,7 @@
       "research": 74,
       "experiment": 71,
       "infra": 83,
-      "maintenance": 180,
+      "maintenance": 181,
       "content": 3,
       "ops": 10,
       "paper": 7
@@ -336,7 +336,8 @@
           "refactor-evaluation-store-boundary-inventory",
           "refactor-evaluation-store-connection-migrations",
           "refactor-evaluation-store-run-repository",
-          "refactor-evaluation-store-result-repository"
+          "refactor-evaluation-store-result-repository",
+          "refactor-evaluation-store-score-repository"
         ]
       },
       "tags": [
@@ -770,8 +771,8 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "refactor-evaluation-store-result-repository",
-      "title": "Extract the evaluation-store result repository",
+      "id": "refactor-evaluation-store-score-repository",
+      "title": "Extract evaluation score mutation and audit persistence",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -779,11 +780,11 @@
       "source": "review",
       "created": "2026-08-06",
       "updated": "2026-08-06",
-      "branch": "codex/refactor-evaluation-store-result-repository",
-      "verification": "Direct in-memory repository tests and facade round trips preserve generation provenance, row parsing and filtering, historical rejudgments, attempt-aware identity, rubric-version cloning, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "branch": "codex/refactor-evaluation-store-score-repository",
+      "verification": "Direct in-memory repository tests and facade regressions preserve every mutable evaluation-result score family, append-only change audit, rubric and judge provenance, tutor/learner symmetry, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-evaluation-store-run-repository"
+        "refactor-evaluation-store-result-repository"
       ],
       "links": {
         "notes": [
@@ -791,19 +792,22 @@
         ],
         "code": [
           "services/evaluationStore.js",
-          "services/evaluationStore/resultRepository.js",
-          "tests/evaluationStoreResultRepository.test.js"
+          "services/evaluationStore/scoreRepository.js",
+          "tests/evaluationRunner.test.js",
+          "tests/evaluationStoreScoreRepository.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-evaluation-store-run-repository"
+          "refactor-evaluation-store-result-repository"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
         "persistence",
+        "scoring",
         "provenance",
+        "symmetry",
         "sqlite",
         "maintainability"
       ],
@@ -2741,6 +2745,50 @@
         "refactoring",
         "evaluation",
         "persistence",
+        "sqlite",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-result-repository",
+      "title": "Extract the evaluation-store result repository",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-evaluation-store-result-repository",
+      "verification": "Direct in-memory repository tests and facade round trips preserve generation provenance, row parsing and filtering, historical rejudgments, attempt-aware identity, rubric-version cloning, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-run-repository"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "services/evaluationStore/resultRepository.js",
+          "tests/evaluationStoreResultRepository.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-run-repository",
+          "refactor-evaluation-store-score-repository"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/522"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "persistence",
+        "provenance",
         "sqlite",
         "maintainability"
       ],
