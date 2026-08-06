@@ -122,6 +122,7 @@ links:
     - refactor-evaluation-store-connection-migrations
     - refactor-evaluation-store-run-repository
     - refactor-evaluation-store-result-repository
+    - refactor-evaluation-store-score-repository
 tags:
   - refactoring
   - testing
@@ -1542,3 +1543,14 @@ Log:
   `8a664d9b`. The result-repository child rebased cleanly and reached review on
   that independent base; score mutation and audit persistence is now the next
   repository family after this child is published and merged.
+- 2026-08-06 — PR #522 merged as `f4c9864f` and its generated-board refresh as
+  `a458cae6`; immutable result persistence is closed. Activated
+  `refactor-evaluation-store-score-repository` from that refreshed `main` to
+  move every mutable result-score write and its append-only audit trail behind
+  one bounded, symmetry-tested owner.
+- 2026-08-06 — The score-repository child reached review with all mutable
+  result-score families and append-only score audit in one 728-line owner. The
+  facade fell from 1,870 to 1,214 lines while its 44 named and 41 default
+  exports remained fixed; complete focused, hermetic, risk-coverage, source,
+  and static gates pass. Interaction-evaluation persistence is next, followed
+  by statistics/projections, exporters/log readers, and explicit host startup.

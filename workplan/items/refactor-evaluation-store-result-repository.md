@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-result-repository
 title: Extract the evaluation-store result repository
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -27,6 +27,9 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-evaluation-store-run-repository
+    - refactor-evaluation-store-score-repository
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/522
 tags:
   - refactoring
   - evaluation
@@ -79,3 +82,6 @@ Log:
   conflict onto refreshed `origin/main` at `8a664d9b`. The post-rebase focused,
   package-boundary, manifest, workplan, formatting, lint, diff, and zero-cycle
   gates remain green, so this child has reached review independently.
+- 2026-08-06 — PR #522 merged as `f4c9864f`; the serialized board refresh
+  followed as `a458cae6`. Result persistence is closed, and mutable score/audit
+  persistence proceeds on its refreshed-main child.
