@@ -129,6 +129,7 @@ links:
     - refactor-evaluation-store-run-manifest-writer
     - refactor-evaluation-store-application-lifecycle
     - refactor-evaluation-runner-cli-store-injection
+    - refactor-adaptive-tutor-store-injection
 tags:
   - refactoring
   - testing
@@ -1636,3 +1637,11 @@ Log:
 - 2026-08-07 — PR #530 merged as `9699a5f7`, closing explicit application
   lifecycle ownership. The reviewed runner/eval-CLI cohort is now the next
   publication unit; adaptive-tutor injection follows it.
+- 2026-08-07 — Published runner/eval-CLI injection as PR #532 at `6ee6e350`
+  and activated the adaptive-tutor cohort from that reviewed head. The new
+  child binds adaptive run orchestration and persistence to the CLI-owned store;
+  eval-route hosting remains the following application-runtime boundary.
+- 2026-08-07 — The adaptive-tutor cohort reached review with explicit runner and
+  persistence factories, real mock-backed CLI dispatch, and complete parity
+  green. Direct facade ownership is down to 24 live/package consumers;
+  eval-route injection is the next and final application-runtime cohort.

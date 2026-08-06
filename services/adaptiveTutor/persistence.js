@@ -15,7 +15,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
 import { summarizeWorldAdaptationSpec } from './actionPolicy.js';
-import * as evaluationStore from '../evaluationStore.js';
+import { getDefaultEvaluationStore } from '../evaluationStore/lifecycle.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..', '..');
@@ -25,6 +25,17 @@ const EVAL_ROOT = path.resolve(__dirname, '..', '..');
 // self-contained sandbox.
 const logsRoot = () => process.env.EVAL_LOGS_DIR || path.join(EVAL_ROOT, 'logs');
 const dialoguesDir = () => path.join(logsRoot(), 'tutor-dialogues');
+
+function assertEvaluationStore(evaluationStore) {
+  if (!evaluationStore || typeof evaluationStore !== 'object') {
+    throw new TypeError('evaluationStore dependency is required');
+  }
+  return evaluationStore;
+}
+
+function resolveEvaluationStore(evaluationStore = null) {
+  return assertEvaluationStore(evaluationStore || getDefaultEvaluationStore());
+}
 
 function ensureLogsDir() {
   const dir = dialoguesDir();
@@ -354,6 +365,7 @@ function buildResultRow({
 
 // Public: persist a single (non-counterfactual) scenario run.
 export function persistScenarioRun({
+  evaluationStore: suppliedEvaluationStore = null,
   runId,
   scenario,
   scenarioConfig,
@@ -363,6 +375,7 @@ export function persistScenarioRun({
   llmMode,
   usage,
 }) {
+  const evaluationStore = resolveEvaluationStore(suppliedEvaluationStore);
   const dialogueId = makeDialogueId(scenario.id);
   const traceJson = buildTraceJson({ scenario, scenarioConfig, runResult, llmMode, profileName });
   const { contentHash } = writeTraceFile(dialogueId, traceJson);
@@ -387,6 +400,7 @@ export function persistScenarioRun({
 // without an extra join. Counterfactual is the diagnostic — recording it as
 // a sibling row would double-count under conventional aggregations.
 export function persistScenarioWithCounterfactual({
+  evaluationStore: suppliedEvaluationStore = null,
   runId,
   scenario,
   scenarioConfig,
@@ -396,6 +410,7 @@ export function persistScenarioWithCounterfactual({
   llmMode,
   usage,
 }) {
+  const evaluationStore = resolveEvaluationStore(suppliedEvaluationStore);
   const dialogueId = makeDialogueId(scenario.id);
   const traceJson = buildTraceJson({
     scenario,
@@ -424,7 +439,15 @@ export function persistScenarioWithCounterfactual({
 }
 
 // Public: helper to create a run for a batch of adaptive-trap scenarios.
-export function createAdaptiveRun({ description, totalScenarios, profileName, llmMode, metadata = {} }) {
+export function createAdaptiveRun({
+  evaluationStore: suppliedEvaluationStore = null,
+  description,
+  totalScenarios,
+  profileName,
+  llmMode,
+  metadata = {},
+}) {
+  const evaluationStore = resolveEvaluationStore(suppliedEvaluationStore);
   return evaluationStore.createRun({
     description: description || `adaptive trap run (${profileName}, ${llmMode})`,
     totalScenarios,
@@ -435,5 +458,16 @@ export function createAdaptiveRun({ description, totalScenarios, profileName, ll
       profileName,
       llmMode,
     },
+  });
+}
+
+export function createAdaptivePersistence({ evaluationStore } = {}) {
+  const store = assertEvaluationStore(evaluationStore);
+  const withStore = (options = {}) => ({ ...options, evaluationStore: store });
+
+  return Object.freeze({
+    createAdaptiveRun: (options) => createAdaptiveRun(withStore(options)),
+    persistScenarioRun: (options) => persistScenarioRun(withStore(options)),
+    persistScenarioWithCounterfactual: (options) => persistScenarioWithCounterfactual(withStore(options)),
   });
 }

@@ -3,9 +3,9 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 26,
+    "liveAndPackageConsumerCount": 24,
     "archivedConsumerCount": 4,
-    "testConsumerCount": 15
+    "testConsumerCount": 14
   },
   "startupContract": {
     "databasePathPrecedence": ["EVAL_DB_PATH", "<repository>/data/evaluations.db"],
@@ -169,21 +169,6 @@
     },
     {
       "path": "services/__tests__/loadDialogueLog.test.js",
-      "classification": "test",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "services/adaptiveTutor/index.js",
-      "classification": "application-runtime",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "services/adaptiveTutor/persistence.js",
-      "classification": "application-runtime",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "tests/adaptation-world-spec-resolution.test.js",
       "classification": "test",
       "modes": ["dynamic"]
     },
