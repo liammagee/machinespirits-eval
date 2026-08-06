@@ -123,6 +123,6 @@ describe('evaluation-store migration owner', () => {
     assert.doesNotMatch(facade, /new Database|ALTER TABLE|CREATE TABLE/);
     assert.equal(connection.split('\n').length - 1 <= 100, true);
     assert.equal(migrations.split('\n').length - 1 <= 500, true);
-    assert.equal(facade.split('\n').length - 1 <= 3_000, true);
+    assert.equal(facade.split('\n').length - 1 <= 1_250, true);
   });
 });

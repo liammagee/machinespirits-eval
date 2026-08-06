@@ -120,6 +120,9 @@ links:
     - refactor-eval-cli-scoring-commands
     - refactor-evaluation-store-boundary-inventory
     - refactor-evaluation-store-connection-migrations
+    - refactor-evaluation-store-run-repository
+    - refactor-evaluation-store-result-repository
+    - refactor-evaluation-store-score-repository
 tags:
   - refactoring
   - testing
@@ -1515,3 +1518,39 @@ Log:
 - 2026-08-06 — Opened the connection/migrations extraction as PR #519. Its
   reviewed head is the dependency base for the run-repository child; that next
   family remains a separate card and PR after #519 merges.
+- 2026-08-06 — PR #519 merged as `33c228f4` and its serialized board refresh
+  landed as `b83c7612`; the connection/migrations child is closed. Activated
+  `refactor-evaluation-store-run-repository` from that refreshed `main`, keeping
+  result/statistics, interaction CRUD, exporters, and host startup out of scope.
+- 2026-08-06 — The run-repository child reached review with run lifecycle,
+  enriched listing, completion/recovery/resume, and aggregate deletion behind
+  one injected owner. The facade fell from 2,979 to 2,452 lines; complete
+  behavioral, risk-coverage, source, and static gates pass. Result persistence,
+  rejudging, scoring updates, provenance, and derived-run cloning form the next
+  repository family after this child merges.
+- 2026-08-06 — Opened the run-repository extraction as PR #520 from reviewed
+  head `3b45c24b`. Activated the dependent result-repository child in a separate
+  worktree from that head: generation/provenance persistence, result parsing,
+  historical rejudgments, and rubric-clone rows move now; score mutations and
+  their audit trail remain the following bounded repository.
+- 2026-08-06 — The result-repository child reached a gate-complete pre-rebase
+  checkpoint: the store facade is now 1,870 lines, below the original near-2k
+  destination, with immutable generation/result persistence in a bounded owner.
+  It remains active behind PR #520; score mutation/audit, interaction CRUD,
+  statistics, exporters/log readers, and explicit host startup form the bounded
+  runway to close the current evaluation persistence arm.
+- 2026-08-06 — PR #520 merged as `76b85d52` and its generated-board refresh as
+  `8a664d9b`. The result-repository child rebased cleanly and reached review on
+  that independent base; score mutation and audit persistence is now the next
+  repository family after this child is published and merged.
+- 2026-08-06 — PR #522 merged as `f4c9864f` and its generated-board refresh as
+  `a458cae6`; immutable result persistence is closed. Activated
+  `refactor-evaluation-store-score-repository` from that refreshed `main` to
+  move every mutable result-score write and its append-only audit trail behind
+  one bounded, symmetry-tested owner.
+- 2026-08-06 — The score-repository child reached review with all mutable
+  result-score families and append-only score audit in one 728-line owner. The
+  facade fell from 1,870 to 1,214 lines while its 44 named and 41 default
+  exports remained fixed; complete focused, hermetic, risk-coverage, source,
+  and static gates pass. Interaction-evaluation persistence is next, followed
+  by statistics/projections, exporters/log readers, and explicit host startup.

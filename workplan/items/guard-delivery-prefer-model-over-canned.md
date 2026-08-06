@@ -171,3 +171,8 @@ does not. The replay says what would ship. It cannot say whether it is better.
   Result above: the relaxed policy column does 91% of the work, this card's new
   rung does 6%, safety holds at zero under both. Still not implemented, and the
   sequence should now put the default flip ahead of the new rung.
+- 2026-08-06 — under the regime drafted on `guard-policy-default-flip`, this
+  card's rung becomes the ranking channel: when several drafts survive, the
+  findings order them and the least-marked ships — guards choosing among the
+  model's own versions, never between the model and a script. Gated with the
+  rest on the full validity-study readout.

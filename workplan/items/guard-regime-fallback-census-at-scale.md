@@ -186,6 +186,14 @@ advance, and nothing yet says those beat the boilerplate they replace. Full
 numbers on `guard-delivery-prefer-model-over-canned`; the replay is
 `scripts/replay-guard-fallback-delivery.js` and costs nothing to re-run.
 
+Step 3 is running (2026-08-06) and its interim shape is one-directional —
+draft 4.15 vs template 2.73 overall at 33 pairs, template outright wins zero.
+The regime that follows if it holds is written into the guard catalog doc, and
+step 4 now has its own gated card, `guard-policy-default-flip`, joined by
+`guard-findings-feed-forward`, `tutor-stub-template-rate-audit` and
+`phase-b-rerun-under-flipped-policy`. Standing proviso from the user: full
+study results before any default moves.
+
 ## Scope
 
 One run, one model (codex gpt-5.6-terra), two worlds, two learner personas,

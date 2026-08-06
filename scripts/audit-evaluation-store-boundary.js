@@ -70,7 +70,10 @@ export function scanEvaluationStoreConsumers(rootDir = ROOT_DIR) {
 
 export function scanEvaluationStoreExports(rootDir = ROOT_DIR) {
   const source = fs.readFileSync(path.join(rootDir, 'services', 'evaluationStore.js'), 'utf8');
-  const named = [...source.matchAll(/^export (?:async )?function ([A-Za-z_$][\w$]*)/gm)]
+  const named = [
+    ...source.matchAll(/^export (?:async )?function ([A-Za-z_$][\w$]*)/gm),
+    ...source.matchAll(/^export (?:const|let|var) ([A-Za-z_$][\w$]*)/gm),
+  ]
     .map((match) => match[1])
     .sort();
   const defaultBlock = source.match(/export default \{([\s\S]*?)\n\};/);

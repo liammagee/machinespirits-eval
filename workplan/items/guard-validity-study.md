@@ -127,3 +127,19 @@ is atomic, so no context leaks between items. Attended run on the Max plan.
 - 2026-08-06 — moved to active. The replay
   (`scripts/replay-guard-fallback-delivery.js`) showed 91% of template turns
   had a deliverable model draft, so this study now gates the default flip.
+- 2026-08-06 — main pass interim, 33 of ~150 pairs: overall draft 4.15 vs
+  template 2.73, template outright wins 0 of 33; uptake 4.76 vs 2.97; fit 4.58
+  vs 2.58; advance closest at 4.03 vs 2.82 with 2 template wins. One judge,
+  a third of the sample — recorded here so the shape is on the card, decided
+  on the full sample only. Downstream regime documented in
+  `docs/tutor-stub-guard-catalog.md` and gated behind this card's full
+  readout: `guard-policy-default-flip`, `guard-findings-feed-forward`,
+  `tutor-stub-template-rate-audit`, `phase-b-rerun-under-flipped-policy`.
+- 2026-08-06 — blinding probe run (`scripts/guard-validity-study.js probe`,
+  Sonnet judge, 20 items). Side by side, the judge named the template on 13 of
+  14 parsed items, citing the real fingerprints (the fixed sentences, the
+  quote-back wrapper, the orphaned notebook line). Shown one text alone it
+  could not classify at all — 13 of 13 single texts called "stock", drafts
+  included. Decision per the plan: the main pass scores each candidate alone
+  on anchored 1–5 questions; visible pairs are out. Six items lost to a burst
+  of CLI failures; the main pass needs requeue-and-resume, not just retries.
