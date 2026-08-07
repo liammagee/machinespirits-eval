@@ -20,12 +20,22 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
   // turns shipped the deterministic fallback liturgy and the register-free
   // templates erased the character the guards were enforcing.
   const styleGuardsAdvisory = dependencies.styleGuardsAdvisory === true;
-  // Guard boundary policy (catalog v6): 'strict' is the delivery contract;
-  // 'shadow_advisory' demotes the progression/repetition families to recorded
-  // advisories while leaks, releases, learner-misreads, and closure stay hard.
+  // Guard boundary policy (catalog v6). 'shadow_advisory' is the default from
+  // 2026-08-07: the progression/repetition/costume families record advisories
+  // instead of vetoing, while leaks, releases, learner-misreads and closure
+  // stay hard. 'strict' makes those families veto again and is now the opt-in.
+  //
+  // The flip rests on the validity study (108 blind pairs, scored one text at
+  // a time): the vetoed draft beat the template it was replaced by on 91 pairs
+  // against 2, in every guard family. Under strict, 62% of a run's turns
+  // shipped as fixed template text, so the tutor under test was largely not
+  // speaking. Both dispositions are recorded on every finding whichever policy
+  // is set, so a run can still be re-scored under the other column offline.
+  //
   // The CLI resolves TUTOR_STUB_GUARD_POLICY; this service stays env-free, and
-  // every delivery decision records the policy it was made under.
-  const guardBoundaryPolicy = dependencies.guardBoundaryPolicy === 'shadow_advisory' ? 'shadow_advisory' : 'strict';
+  // every delivery decision records the policy it was made under. Compare runs
+  // by that stamp, never by run date.
+  const guardBoundaryPolicy = dependencies.guardBoundaryPolicy === 'strict' ? 'strict' : 'shadow_advisory';
   const {
     PROGRAM2_COMMITTEE_SCHEMA,
     appendTraceEvent,

@@ -42,7 +42,7 @@
     {
       "file": "services/tutorStubTutorTurnPipeline.js",
       "claim": "tutor-turn coordination and extracted runtime delegation",
-      "sha256": "01938aad4a9f49b38d7493849a0f47276c71f6e6a9f2df51e6280400bac1480f"
+      "sha256": "d43648c357b212c4db1cdbaad085476485e9d497dd1b74299bb2f5342e346960"
     },
     {
       "file": "services/tutorStubTutorTurnPreparation.js",

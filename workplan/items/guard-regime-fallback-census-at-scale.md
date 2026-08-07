@@ -9,11 +9,12 @@ source: manual
 created: 2026-08-06
 updated: 2026-08-06
 verification: >-
-  A census script that reads guard accounting out of any run's traces and
-  reports, per condition: turns, fallback rate, model-as-written rate, pass
-  rate by candidate kind, and the failure count by guard family. Run it on
-  fallible-phaseB and on the next instrumented run, and hold the numbers
-  against the ones recorded here.
+  DONE (2026-08-07, scripts/census-guard-template-rate.js): reads guard
+  accounting out of any run's traces and reports, per condition, turns,
+  fallback rate, model-as-written rate, pass rate by candidate kind and the
+  finding count by guard family, stamped with the counter used and the guard
+  policy the run ran under. Reproduces every number recorded below on
+  fallible-phaseB, and corrects the family table — see the log.
 claim_status: methods
 links:
   code:
@@ -203,8 +204,25 @@ harness's constant. What generalises is the ordering: the model as first
 written almost never passes, and the harder the dialogue the more the template
 speaks.
 
+The scope narrowed further on 2026-08-07, when the census ran over all 24
+runs on this machine. The 62% is a *strict-policy* number. Nineteen runs
+decided under the shadow policy sit at 7% template and 67% model-as-written,
+with no overlap against the five strict runs at 62% and 9%. Re-scoring every
+recorded first draft under both columns — exact, since the catalog stores both
+dispositions on every finding — puts the tutor family a few points apart
+(codex 8% pass under strict, sonnet 3%, opus 1%; 61%, 67%, 73% under shadow)
+against a policy gap of an order of magnitude. So the ordering above holds
+only within a policy, and "the model as first written almost never passes" is
+a description of strict. Full account on `tutor-stub-template-rate-audit`.
+
 ## Log
 
 - 2026-08-06 — census run over the Phase-B traces while working out why the
   first-draft contract moved outcomes in opposite directions on two worlds.
   Card filed; no code changed.
+- 2026-08-07 — census landed as a script and run over every run on this
+  machine. Two corrections to what is written above. The family table was
+  built by hand-walking the audits object and missed three families:
+  `response_configuration` 587 findings (second-largest), `leak` 68,
+  `release_delivery` 20; the seven already listed are unchanged. And the 62%
+  is a strict-policy figure, not a harness constant — see Scope.

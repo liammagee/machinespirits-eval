@@ -108,6 +108,19 @@ test('pipeline delegates extracted responsibilities to bounded implementation ow
   assert.doesNotMatch(pipeline, /tutorMessageContext\(state, history\)/);
 });
 
+// Pinned at the source because the resolution is a local const inside the
+// pipeline factory and inside the CLI's dependency literal, neither reachable
+// without standing up a full turn. The behavioural guarantee that matters —
+// safety findings still veto under the relaxed policy — is pinned separately
+// and exhaustively in services/__tests__/tutorStubGuardDisposition.js.
+test('the live guard policy defaults to shadow_advisory, with strict as the opt-in', () => {
+  const pipeline = serviceSource('tutorStubTutorTurnPipeline.js');
+  assert.match(pipeline, /dependencies\.guardBoundaryPolicy === 'strict' \? 'strict' : 'shadow_advisory'/u);
+
+  const cli = readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
+  assert.match(cli, /TUTOR_STUB_GUARD_POLICY === 'strict' \? 'strict' : 'shadow_advisory'/u);
+});
+
 test('direct passthrough preserves public replay, request metadata, and model-call tracing', async () => {
   const trace = [];
   let request = null;
