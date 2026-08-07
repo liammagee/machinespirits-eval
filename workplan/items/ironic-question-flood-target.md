@@ -1,7 +1,7 @@
 ---
 id: ironic-question-flood-target
 title: Irony against question-flooding — the one cell worth a second draw
-status: triaged
+status: active
 type: experiment
 priority: P3
 owner: unassigned
@@ -63,6 +63,23 @@ already paid for.
    the same tutor scored a second way.
 
 Step 2 is not authorized and should not be written until step 1 reports.
+
+## Step 1, frozen
+
+Plan SHA-256 `b980609c…9947`, three rows, operator-authorized 2026-08-08
+("launch it as proposed"). Apparatus:
+`services/ironicQuestionFloodRedraw.js` holds the plan and the decision rule,
+`scripts/run-ironic-question-flood-redraw.js` launches and reports.
+
+Generation and scoring are read off the parent grid's frozen plan rather than
+restated, and the plan fails if either drifts — two draws are only comparable
+if nothing between them moved, and a copied constant is one that can drift.
+
+The rule was written before the run: **0 or 1 of 3 closes the thread, 3 of 3
+clears it for a design, 2 of 3 is inconclusive.** The background it is read
+against is 3 of 12 — the ironic tutor on the other four targets in the first
+draw. Nothing here licenses a paper claim; a second sweep licenses writing a
+design.
 
 ## Why it is worth keeping open at all
 

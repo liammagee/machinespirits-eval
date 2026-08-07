@@ -316,6 +316,7 @@
         "tests/interactionEngine.test.js",
         "tests/internalHistoryMessages.test.js",
         "tests/intervention-ledger.test.js",
+        "tests/ironicQuestionFloodRedraw.test.js",
         "tests/labellingCoderArtifacts.test.js",
         "tests/labellingGameCli.test.js",
         "tests/labellingImpasseProvenance.test.js",

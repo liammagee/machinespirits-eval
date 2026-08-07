@@ -134,7 +134,7 @@ const PROVENANCE_FIELDS = [
  * pushed into errors, so the report fails closed instead of presenting a
  * configuration change as a sampling difference.
  */
-export function compareProvenance({ dbPath, runs, scenarios }) {
+export function compareProvenance({ dbPath, runs, scenarios, profilePrefix = CELL_202_PREFIX }) {
   // The root argument comes first; passing the options object in its place
   // resolves to the production database and quietly ignores --db.
   const { db, reason } = openEvaluationDbReadonly(ROOT, { explicitPath: dbPath });
@@ -144,7 +144,7 @@ export function compareProvenance({ dbPath, runs, scenarios }) {
     const placeholders = scenarios.map(() => '?').join(',');
     const statement = db.prepare(
       `SELECT DISTINCT ${PROVENANCE_FIELDS.join(', ')} FROM evaluation_results
-       WHERE run_id = ? AND profile_name LIKE '${CELL_202_PREFIX}%' AND scenario_id IN (${placeholders})`,
+       WHERE run_id = ? AND profile_name LIKE '${profilePrefix}%' AND scenario_id IN (${placeholders})`,
     );
     for (const runId of runs) observed.set(runId, statement.all(runId, ...scenarios));
   } finally {
