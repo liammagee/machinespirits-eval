@@ -379,6 +379,12 @@ export function evaluateRegisterStanceFidelity({
   else if (score < 40) label = 'not_instantiated';
   else if (score < 70) label = 'weak_or_warm_in_costume';
   else if (determinate && !namedClaim.named) label = 'weak_or_warm_in_costume';
+  // The register marker is necessary on every gate, not merely heavy. Under the
+  // plain weighting that followed from the arithmetic (100 - 35 = 65 < 70); under
+  // the determinate re-weighting it does not (100 - 25 = 75), so a marker-less
+  // earnest turn scored 75 and was labelled faithful. Say it outright on both
+  // gates rather than letting a weight change decide what "held the manner" means.
+  else if (!markerHits.length) label = 'weak_or_warm_in_costume';
 
   const result = {
     applies: true,

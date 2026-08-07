@@ -254,8 +254,13 @@ function renderMarkdown(data) {
   }
   lines.push('');
   lines.push(
-    'Both gates rank the two arms the same way, and the gap between arms is one row either way. ' +
-      'The originally reported 6/15-vs-8/15 gap came from the fold, not from the gate and not from the tutor.',
+    'The headline reading is the plain gate, where the arms sit one row apart and the originally reported ' +
+      '6/15-vs-8/15 gap turns out to have come from the fold, not from the gate and not from the tutor. ' +
+      'The determinate column is *not* a robustness check on that reading and should not be read as one: it ' +
+      'requires a named target claim, which is the treatment cell 202 received and the parent arm never did, ' +
+      'so it scores the control on a contract the control was never given. An earlier version of this export ' +
+      'showed the two columns agreeing (8 and 7); that agreement was an artifact of the determinate gate ' +
+      'admitting turns with no register marker, and it disappears once both gates require the marker.',
   );
   lines.push('');
   lines.push('## Conversion among faithful rows (same common gate and fold)');
@@ -326,8 +331,11 @@ function renderMarkdown(data) {
   }
   lines.push('');
   lines.push(
-    'The register marker carries 35 of 100 points and the faithful band opens at 70, so no turn can pass ' +
-      `without it. Across all ${bc.n} rows the marker ${bc.registerMarker.decisive ? 'predicts every pass and every fail without error' : 'does not fully predict the outcome'}` +
+    'Both gates require the register marker outright, so no turn can pass without it. (That requirement used ' +
+      'to be left to the point weights, which held on the plain gate — 100 − 35 = 65, below the band — but not ' +
+      'on the determinate gate, where 100 − 25 = 75 let a marker-less earnest turn pass. It is now stated as a ' +
+      'rule on both gates; these 30 rows contain no such turn, so the counts here are unchanged by that repair.) ' +
+      `Across all ${bc.n} rows the marker ${bc.registerMarker.decisive ? 'predicts every pass and every fail without error' : 'does not fully predict the outcome'}` +
       `, while the named target claim — the thing the determinate contract adds — ${bc.namedTargetClaim.decisive ? 'also does' : 'does not'}: ` +
       `${bc.namedTargetClaim.present_failed} rows named a claim and still failed, and ${bc.namedTargetClaim.absent_passed} passed without naming one.`,
   );
