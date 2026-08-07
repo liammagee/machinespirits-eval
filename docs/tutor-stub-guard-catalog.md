@@ -137,6 +137,85 @@ arms: an arm carrying a per-turn contract spoke in its own words 21–28% of the
 time against a bare arm's 0–1%. Any comparison between such arms is partly a
 comparison between a model tutor and a fixed script, and should say so.
 
+## Every rate needs its policy attached (2026-08-07)
+
+A rate on its own means nothing here. `scripts/census-guard-template-rate.js`
+reads any run's traces and reports turns, template rate, model-as-written rate
+and pass rate by candidate kind, stamped with two things that decide how to
+read them: which counter it used, and which guard policy the run was decided
+under. Both come off the traces — the policy from
+`attempt.audits.deliveryDecision.boundaryPolicy`, so it is recorded fact, not
+inferred.
+
+Run over the 24 runs on this machine carrying traces, the runs sort perfectly
+by policy and not at all by tutor:
+
+| policy | runs | turns | template | model as written |
+|---|---|---|---|---|
+| shadow advisory | 19 | 1711 | 7% | 67% |
+| strict | 5 | 1665 | 62% | 9% |
+
+Every shadow run lands at 4–39% template; every strict run at 60–100%. The
+spread within each group is small next to the gap between them. Before the
+policy was read off the traces this looked like a tutor-family split, because
+the shadow runs happen to be the claude-seated ones and the strict runs the
+codex-seated ones. It is not a family split.
+
+The catalog stores both the strict and the shadow disposition on every
+finding, and the trace keeps them, so each run can be re-scored under the
+policy it did not run under, exactly and for free. That has one limit worth
+stating: only *first drafts* can be re-scored. A run that shipped at attempt 0
+never generated the rewrite a stricter policy would have demanded, so a
+counterfactual template rate would be invention. The first-draft pass rate is
+recorded for every run under both policies, and it is the measure that holds
+the policy fixed:
+
+| tutor | drafts | pass, strict | pass, shadow |
+|---|---|---|---|
+| claude-opus-5 | 77 | 1% | 73% |
+| claude-sonnet-5 | 1640 | 3% | 67% |
+| codex gpt-5.6-terra | 1659 | 8% | 61% |
+
+Read across, not down. The policy moves the pass rate by a factor of eight to
+seventy; the tutor moves it by a few points. Under strict the codex tutor
+passes *more* often than either claude model, which is the opposite of what
+the run-level rates suggested.
+
+This does not overturn §6.24's boundary observation that the thresholds are
+calibrated on one family's prose. That claim rests on the 2026-07-31
+cross-family probe, where sonnet fell back on 20 of 25 turns against codex's
+14 of 23 at the same settings, and the direction survives here: under strict,
+sonnet drafts are vetoed on 97% of turns and codex drafts on 92%. What changes
+is the size. On first drafts at a fixed policy the family gap is a few points,
+not the order-of-magnitude gap the unstamped run rates implied. Anything
+citing a template rate should name the policy beside it, and two rates under
+different policies should never be set against each other.
+
+Two limits on the census itself. The 2026-07-31 probe runs behind the §6.24
+sentence are not on this machine — `exports/` is not tracked, so artifacts
+differ per checkout — and could not be stamped. And the greenroom run of
+2026-07-12 predates the catalog: it counts 314 turns at 6% template and 89%
+model-as-written, but its audits are leak checks alone, so the counter stamps
+it `pre-catalog` and it belongs in neither group above.
+
+**A correction to the family table above.** The 2026-08-05 counts were built
+by walking the audits object by hand and missed three families. Counted with
+the project's own issue extractor, Phase B's first drafts also carry 587
+`response_configuration` findings — the second-largest source, ahead of
+dramatic release — plus 68 `leak` and 20 `release_delivery`. The seven
+families already listed are unchanged. The lesson is the same one that caught
+an earlier cut of this work: the audits object has a different shape per
+guard, so counting its keys measures the shape, not the findings.
+
+**What the guards catch that no policy change touches.** Of first drafts,
+12–14% carry a finding in one of the three safety categories — evidence
+integrity, clue bookkeeping, closure integrity — and the rate is close across
+tutors (codex 12%, sonnet 14%, opus 5% on 77 drafts). These stay hard under
+the shadow policy as well as the strict one, so they are already inside the
+61–73% shadow pass rate and the proposed flip does not reach them. Relaxing
+the policy is a decision about the quality families only; roughly one first
+draft in eight is stopped for a reason that will keep stopping it.
+
 ## The design rule this yields
 
 Binary where it is a transaction, graded where it is a judgment. Families 1,
