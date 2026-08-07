@@ -16,6 +16,8 @@ claim_status: methods
 created: 2026-08-07
 updated: 2026-08-07
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/544
   code:
     - tests/dryRun.test.js
     - tests/fixtures/empty.env
@@ -67,3 +69,4 @@ Log:
   (root 7989 pass / 0 fail, core 137 pass / 0 fail). Removing the dotenv
   redirect fails the on-disk guard and the original chat case; removing the
   deletion loop fails the exported-key guard.
+- 2026-08-07 — Merged to main in `1c0f2ac9` via PR #544. Closed.
