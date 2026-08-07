@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-07T06:06:46.643Z",
+  "generated": "2026-08-07T16:28:29.351Z",
   "counts": {
-    "total": 446,
+    "total": 448,
     "byStatus": {
-      "done": 409,
+      "done": 411,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
@@ -13,8 +13,8 @@
     },
     "byType": {
       "research": 74,
-      "experiment": 73,
-      "infra": 88,
+      "experiment": 74,
+      "infra": 89,
       "maintenance": 191,
       "content": 3,
       "ops": 10,
@@ -11948,6 +11948,30 @@
       "claim_status": "future"
     },
     {
+      "id": "eval-db-writer-reader-path-split",
+      "title": "A run in a worktree writes one database and every reader opens another",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "eval-db-writer-reader-path-split",
+      "verification": "A paid run launched from a git worktree lands its rows where the analysis scripts read them, or fails loudly at launch. Demonstrated by a hermetic test that runs the writer and a reader from a fake worktree root and asserts they resolve the same file.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "sarcasm-precondition-claim-bearing-mood"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "worktrees"
+      ]
+    },
+    {
       "id": "evaluator-bias-propagation-literature-triage",
       "title": "Contagion Networks: Evaluator Bias Propagation in Multi-Agent LLM Systems",
       "status": "done",
@@ -14757,6 +14781,47 @@
       },
       "depends_on": [
         "negative-register-effect-estimation-grid"
+      ],
+      "tags": [
+        "registers",
+        "negative-registers",
+        "stance-fidelity",
+        "determinate-negation"
+      ]
+    },
+    {
+      "id": "sarcasm-precondition-claim-bearing-mood",
+      "title": "Sarcasm precondition — does a mood target block the manner because it offers no claim?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "verification": "A 16-row run reports, off one gate and one fold, whether the tutor held the sarcastic manner more often when the learner supplied a negatable claim alongside the mood; the manipulation check (did the tutor name a claim) gates the primary verdict, and person-attack violations stay separate from non-instantiation. Any claim lands in paper §6.7 first.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-08-07-sarcasm-precondition-preregistration.md",
+          "notes/2026-08-06-sarcasm-determinate-negation-preregistration.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "runs": [
+          "eval-2026-08-05-87fe3664",
+          "eval-2026-08-06-4de45d05",
+          "eval-2026-08-07-e3dffab2"
+        ],
+        "items": [
+          "sarcasm-determinate-negation-grid",
+          "negative-register-effect-estimation-grid",
+          "eval-db-writer-reader-path-split"
+        ]
+      },
+      "depends_on": [
+        "sarcasm-determinate-negation-grid"
       ],
       "tags": [
         "registers",
