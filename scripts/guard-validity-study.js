@@ -274,16 +274,22 @@ function parseVerdict(raw) {
 /**
  * Paced call with backoff: rapid back-to-back CLI calls draw exit-1 failures.
  *
- * Set the timeout from measurement, not from guesswork. Three real scoring
- * prompts through this same bridge answered in 47s, 65s and 68s, and they run
- * slower again when anything else on the machine is talking to the CLI. A
- * short leash does not make a slow call quick, it throws the finished work
- * away and pays for it twice: at 45s nothing landed at all, at 120s the
- * timeouts still outnumbered the scores.
+ * Ask for ordinary thinking, not the most the model will do. Left to the
+ * config default the judge thought at full stretch and took a median of 103
+ * seconds a score; asked for high it answers the same prompt in four or five.
+ * The scores are the same. Six runs of one prompt, three at each setting, all
+ * returned overall 2 and faithfulness 0, and uptake and fit moved a point
+ * either way *within* each setting as much as between them — the scale's own
+ * noise, not the effort. Scoring five anchored 1-5 scales does not need the
+ * deep setting, and paying for it turned a twenty-minute run into a four-hour
+ * one.
  *
- * So the leash sits well clear of the measured spread, and the backoff is
- * short because a retry is a fresh call, not a wait for the old one.
+ * Set the timeout from measurement too. It is generous against a four-second
+ * call because the spread widens when anything else on the machine is talking
+ * to the CLI, and a leash below the floor collects nothing at all: at 45s the
+ * run took 54 calls and scored none of them.
  */
+const CALL_EFFORT = 'high';
 const CALL_TIMEOUT_MS = 180000;
 const CALL_ATTEMPTS = 4;
 
@@ -300,6 +306,7 @@ async function judgeCall(prompt) {
         prompt,
         role: 'guard-validity-probe',
         timeoutMs: CALL_TIMEOUT_MS,
+        effort: CALL_EFFORT,
       });
       lastCallMs = Date.now() - start;
       return text;
