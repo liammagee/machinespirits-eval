@@ -1,21 +1,21 @@
 {
-  "generated": "2026-08-07T16:28:29.351Z",
+  "generated": "2026-08-07T17:45:18.119Z",
   "counts": {
-    "total": 448,
+    "total": 453,
     "byStatus": {
-      "done": 411,
+      "done": 412,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
       "archived": 4,
-      "triaged": 6,
+      "triaged": 10,
       "review": 8
     },
     "byType": {
       "research": 74,
       "experiment": 74,
-      "infra": 89,
-      "maintenance": 191,
+      "infra": 93,
+      "maintenance": 192,
       "content": 3,
       "ops": 10,
       "paper": 7
@@ -139,6 +139,30 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "scripts-hardcoded-data-path-guard",
+      "title": "A test that fails when a script builds its own database or logs path",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "A new script that writes `path.join(root, 'data', 'evaluations.db')` or `path.join(root, 'logs', 'tutor-dialogues')` fails `npm test`, and the failure message names the resolver to call instead.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "eval-db-writer-reader-path-split",
+          "eval-logs-root-single-resolver"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "guardrail"
+      ]
+    },
+    {
       "id": "tutor-stub-correspondence-guard-vocabulary",
       "title": "Evidence-correspondence guard can never clear in a plain-language world",
       "status": "triaged",
@@ -181,6 +205,78 @@
       "tags": [
         "tutor-stub",
         "guards"
+      ]
+    },
+    {
+      "id": "sarcasm-worktree-shadow-db-disposal",
+      "title": "Dispose of the shadow database the sarcasm worktree wrote",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "The worktree's `data/evaluations.db` is gone, after the owner confirms the archive holds everything it held.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "eval-db-writer-reader-path-split",
+          "sarcasm-precondition-claim-bearing-mood"
+        ]
+      },
+      "tags": [
+        "maintenance",
+        "data-integrity",
+        "worktrees"
+      ]
+    },
+    {
+      "id": "scripts-adopt-shared-data-path-resolvers",
+      "title": "Move the 52 scripts that build their own data paths onto the shared resolvers",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "The allowlist in the hardcoded-path guard is empty, and a spot check from a worktree shows each converted script opening the same file the store writes.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "scripts-hardcoded-data-path-guard",
+          "eval-db-writer-reader-path-split"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "backlog"
+      ]
+    },
+    {
+      "id": "store-opening-tests-own-their-paths",
+      "title": "Keep every store-opening test isolated when it is run on its own",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "A test that opens an evaluation store without setting its own database and logs paths fails the suite, so `node --test tests/<file>` can never reach the shared archive.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "eval-db-writer-reader-path-split",
+          "scripts-hardcoded-data-path-guard"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "testing"
       ]
     },
     {
@@ -14487,6 +14583,29 @@
       ]
     },
     {
+      "id": "eval-logs-root-single-resolver",
+      "title": "Two resolvers decide where the dialogue logs go",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "eval-logs-root-single-resolver",
+      "verification": "One exported `resolveEvaluationLogsRoot`, called by the store and by the readers alike, with a test that a relative `EVAL_LOGS_DIR` resolves against `rootDir` on both sides.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "eval-db-writer-reader-path-split"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity"
+      ]
+    },
+    {
       "id": "grouptom-bench-benchmarking-group-theory-of-mind-nonlinear",
       "title": "GroupToM-Bench: Benchmarking Group Theory of Mind and Nonlinear Social Emergence",
       "status": "done",
@@ -14757,7 +14876,7 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-08-06",
-      "updated": "2026-08-07",
+      "updated": "2026-08-08",
       "verification": "A 15-row run (or an explicit drop decision) reports fidelity vs the parent sarcasm arm, faithful-row conversion, and negation recovery, with exclusions and invalid violations separate; any claim lands in paper §6.7 first.",
       "claim_status": "exploratory",
       "links": {
