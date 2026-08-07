@@ -182,3 +182,36 @@ features distinguishes any figure — separation would need the
 performed-figure column of the note's amendment 3 (act/register/
 footing stamps on the reply), which this result independently
 motivates. Paper untouched, per the registered order.
+
+## Two methods facts recorded after the result
+
+Both belong to §7.13 whenever it carries these runs. Neither changes a
+recorded number.
+
+**1. The corpus cannot be regrown.** All 58 dialogues behind the 122
+objects ran with uncommitted edits on a branch that no longer exists —
+their tutor system prompt was 9760 chars against 9442 for a clean
+checkout of the same commit, and the 318-char difference was never
+committed, stashed or pushed. The recorded numbers still reproduce,
+because the script reads stored traces. But the corpus is a frozen
+artifact, not a repeatable condition, and anything read on it inherits
+that. Full evidence on `reply-feature-stamps`.
+
+**2. There is now a chance bar, and it changes how the follow-on run
+reads.** `scripts/analyze-figure-lattice-control.js` subsamples this
+corpus to n turns per figure and runs the same closure analysis, in two
+arms: intact (every turn keeps its real figure) and label-shuffled
+(figures permuted among the drawn turns, size and class balance held).
+Only the shuffled arm is a null; the intact arm still contains whatever
+signal exists and measures size sensitivity instead.
+
+The bar covers the reply-stamped readings, so it applies to run C (this
+card's columns plus the performed reply features, on
+`reply-feature-stamps`) and not to run B. At 5 or more turns per figure
+the shuffled arm separates 0.00 while the intact arm sits at 1.02–1.22,
+p < 0.001. So run C's 1 of 7 is real signal, not chance — a small, flat
+amount, about one figure at every size from 4 turns per figure up.
+Measured against the intact size curve alone it would have looked like
+exactly chance, which is the error the two-arm control exists to stop.
+Artifacts: `exports/crossed-effects/figure-lattice-smalln-control.json`
+(coded) and `-uncoded[-6fig].json`.

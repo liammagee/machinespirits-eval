@@ -28,7 +28,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { describeTutorStubReplyFeatures, tutorStubReplyFeatureAttributes } from '../services/tutorStubReplyFeatures.js';
 
@@ -97,7 +97,7 @@ function turnCardRecord(dir, turn) {
 // ---------------------------------------------------------------------------
 // Objects: the recorded carded target turns of the four audit exports.
 // ---------------------------------------------------------------------------
-function buildObjects() {
+export function buildObjects() {
   const objects = [];
   const checks = { conductDelivered: 0, conductTotal: 0, mismatches: [], nonFigureCarded: [] };
 
@@ -238,7 +238,13 @@ function buildObjects() {
 const replyAttributesOf = (o) =>
   tutorStubReplyFeatureAttributes(describeTutorStubReplyFeatures(o.reply, { learnerText: o.learner }));
 
-function attributesOf(o, { withCard, withRuled, withReply, replyOnly }) {
+// `withCoded` covers the two columns that come from the qualitative audit
+// rather than the trace: the coder's tag and hit. A fresh corpus has no such
+// coding, so a fresh reading must drop them — and any null distribution it is
+// compared against must drop them too, or the comparison rewards the smaller
+// attribute set rather than the ontology. Defaults true so runs A/B/B'/C are
+// untouched.
+function attributesOf(o, { withCard, withRuled, withReply, replyOnly, withCoded = true }) {
   const a = [];
   if (withCard) a.push(`card:${o.figure}`);
   if (withReply) a.push(...replyAttributesOf(o));
@@ -251,8 +257,10 @@ function attributesOf(o, { withCard, withRuled, withReply, replyOnly }) {
   a.push(o.licence ? 'licence:present' : 'licence:absent');
   if (o.dose !== null) for (let d = 1; d <= o.dose; d += 1) a.push(`dose>=${d}`);
   a.push(`world:${o.world}`);
-  a.push(`tag:${o.tag}`);
-  a.push(o.hit ? 'hit' : 'no-hit');
+  if (withCoded) {
+    a.push(`tag:${o.tag}`);
+    a.push(o.hit ? 'hit' : 'no-hit');
+  }
   if (withRuled) {
     a.push(o.ruled ? 'ruled' : 'unruled');
     a.push(o.ruledOverride ? 'override' : 'no-override');
@@ -260,7 +268,7 @@ function attributesOf(o, { withCard, withRuled, withReply, replyOnly }) {
   return a;
 }
 
-function buildContext(objects, opts) {
+export function buildContext(objects, opts) {
   const attrSet = new Set();
   const rows = objects.map((o) => {
     const attrs = attributesOf(o, opts);
@@ -348,7 +356,7 @@ function minimalDistinguishers(ctx, intent, ownFigure) {
   return survivors.length ? { size: null, sets: [] } : { size: chosen.length, sets: [chosen] };
 }
 
-function analyze(ctx, label) {
+export function analyze(ctx, label) {
   const figures = [...new Set(ctx.rows.map((r) => r.figure))].sort();
   const out = { label, objects: ctx.rows.length, attributes: ctx.attributes.length, figures: {}, confusion: {} };
   for (const f of figures) {
@@ -500,4 +508,6 @@ function main() {
   console.log(`\nwrote exports/crossed-effects/figure-lattice-falsifier.json`);
 }
 
-main();
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}
