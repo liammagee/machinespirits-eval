@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-07T21:28:30.549Z",
+  "generated": "2026-08-07T22:35:23.531Z",
   "counts": {
-    "total": 454,
+    "total": 455,
     "byStatus": {
-      "done": 413,
+      "done": 414,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 74,
       "experiment": 74,
-      "infra": 94,
+      "infra": 95,
       "maintenance": 192,
       "content": 3,
       "ops": 10,
@@ -12061,6 +12061,34 @@
           "sarcasm-precondition-claim-bearing-mood"
         ]
       },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "worktrees"
+      ]
+    },
+    {
+      "id": "eval-logs-root-rule-copies",
+      "title": "Twenty scripts each carried their own copy of the logs-root rule",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "unify-logs-root-resolver",
+      "verification": "An analysis script run from a git worktree reads the same dialogue traces it reads from the main checkout. Pinned by tests/evaluationLogsPathAgreement.test.js — the order itself, a source scan that fails if any script resolves the root on its own again (proved by reintroducing a copy in both languages), and four cases run through both the JavaScript rule and its Python mirror.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "eval-db-writer-reader-path-split",
+          "sarcasm-precondition-claim-bearing-mood"
+        ]
+      },
+      "depends_on": [
+        "eval-db-writer-reader-path-split"
+      ],
       "tags": [
         "infra",
         "data-integrity",
