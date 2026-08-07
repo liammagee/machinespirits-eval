@@ -7,7 +7,7 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-08-07
-updated: 2026-08-07
+updated: 2026-08-08
 verification: "Terminal, same day, pure computation. New unit suite
   (services/__tests__/tutorStubReplyFeatures.test.js, 10 tests) plus
   wiring tests in tests/tutorStubTurnOrchestration.test.js (4 tests) —
@@ -54,7 +54,19 @@ verification: "Terminal, same day, pure computation. New unit suite
   prune mockery is WITHDRAWN — the stamp measures word length and has no
   column for cryptic metaphor, which is what that move is about; three of
   its six drafts announce plain speech in words, on 3 of 32 turns corpus-
-  wide with no false positives."
+  wide with no false positives. SECOND WITHDRAWAL (2026-08-08, terminal,
+  pure computation over the stored traces): the recommendation to prune
+  quiet:flat is withdrawn too. All four of its turns ordered the lure at
+  a learner who was mid-argument — 19w/22.7 avg, 19w/21.3, 15w/23.0,
+  22w/20.3, three of four ending in a question, against a flat rule of
+  45% of the running length AND under 12 words AND no question. Replaying
+  the merged gate (services/tutorStubCardForce.js, #559) over those four
+  turns withholds 4 of 4. So the 0-of-4 recovery score measures a false
+  order, not the move, and the move is untested rather than weak. The
+  falsifier's own flat rows are unaffected — its five forced quiet:flat
+  turns are the planted bored learner at t11, 4 to 11 words each — so
+  runs A/B/B' stand as recorded; the six quiet:confused rows in
+  repertoire-tags were not checked and nothing is claimed about them."
 claim_status: methods
 links:
   notes:
@@ -462,6 +474,81 @@ the dialogue provoked it, so these six are the move performed cold.
 So the failure here is the instrument's, not the tutor's. Prune nothing
 on this evidence.
 
+## The lure was never ordered on an idle learner — second withdrawal
+
+An earlier draft of this card put `quiet:flat` — lure an idle learner —
+forward as the one prune candidate: 0 of 4 first guesses, 0 of 4 in the
+top two, no marker at all, and "no known blind spot to excuse it". There
+is one. It is not the move's.
+
+All four of the corpus's `quiet:flat` turns ordered the lure while she
+was pressing for evidence. Her message as the card was set, against the
+running length the detector measures her by:
+
+| turn | her words | mean of her last 3 | ratio | ends by asking |
+|---|---|---|---|---|
+| latin-d2 t8 | 19 | 22.7 | 0.84 | yes |
+| latin-d3 t7 | 19 | 21.3 | 0.89 | yes |
+| latin-d4 t6 | 15 | 23.0 | 0.65 | yes |
+| latin-d5 t5 | 22 | 20.3 | 1.08 | no |
+
+Going flat means falling to 45% of that running length, under 12 words,
+with no question. The nearest of the four sits at 0.65 and 15 words, and
+three of them end by asking:
+
+> Is there a wet trail or pipe run through the boiler cupboard from that
+> basin toward above the table? — latin-d2 t8
+
+> Fine, that split could leak during the pressure test — but I still want
+> to know how it reaches the kitchen ceiling. — latin-d5 t5
+
+Two open "Fine.", the same opener as the genuinely flat turns in the
+falsifier's flat-promotion rows. Those run 4 to 11 words and stop —
+"Fine. Go on, then." — where these concede a point and then press.
+
+So the tutor was told four times to draw back a learner who was
+mid-argument. Its four replies share no situation, because there was
+none, and a blind reader has nothing to find. The 0 of 4 measures the
+order, not the move. Prune nothing here either: this move has not been
+tested.
+
+**The falsifier's numbers are untouched.** Its only forced `quiet:flat`
+rows are the five right-arm flat-promotion turns, and every one is
+genuinely flat (4 to 11 words, all opening "Fine."), because that design
+planted a bored learner at t11 on purpose. Runs A, B and B' stand as
+recorded. Not checked, and so not claimed either way: the six
+`quiet:confused` rows in the repertoire file.
+
+## The gate that stops it happening again
+
+`services/tutorStubCardForce.js`, merged 8 August in #559.
+
+The five move cards name a tactic the tutor takes, so ordering one is
+coherent on any turn and they still ship as scheduled. A quiet card
+asserts a fact about the learner, so it is now read against her last
+message and withheld when it does not hold: the natural card stands, and
+the trace records that it was withheld and what state she was in. Replayed
+against the four turns above, the gate withholds all four.
+
+The schedule also gains a waiting form. `5+=quiet:flat` fires on the first
+turn from 5 onward where she really is flat, then retires; only quiet
+cards may wait, since only they name a state to wait for. Ordering a quiet
+card with the detector switched off now refuses to start, where before
+every such card would have been silently withheld and the run would have
+come out empty. `TUTOR_STUB_CARD_FORCE_QUIET_GATE=0` replays the old
+unchecked path, and the gate stamps a version (`cfg-v1`), so turns from
+before and after the change are never pooled.
+
+Both lattice readers drop a withheld order rather than crediting it to a
+reply written under some other card. Traces from before the gate carry no
+such field and read exactly as they did.
+
+What this costs the corpus: nothing recorded changes, since the corpus
+did not. But its `quiet:flat` cell is now known bad, so the balanced
+square was never balanced — six moves were performed on their occasion
+and the seventh was performed against one. A later run either gets the
+lure a real occasion or does not spend the turn.
+
 ## Next
 
 - Both readings are done and both are null under the registered
@@ -477,13 +564,14 @@ on this evidence.
   stays.
 - The draft reading closes the "was it just the guard?" question. It was
   not. With the corpus whole and balanced, nothing separates.
-- Prune far less than the earlier draft of this card said, and on the
-  recovery reading rather than the separation one. One candidate:
-  `quiet:flat`, the oblique lure — 0 of 4 first guesses, 0 of 4 in the
-  top two, and no marker at all, with no known blind spot to excuse it.
-  `mockery` is not a candidate; the instrument cannot see what that move
-  does (above). `quiet:confused` is weakly readable, 2 of 4 in the top
-  two on contrast.
+- **Prune nothing.** Both candidates this card once named are withdrawn,
+  for different reasons. `mockery` is not a candidate: the instrument has
+  no column for the metaphor the move is about. `quiet:flat` is not a
+  candidate either: all four of its turns ordered the lure at a learner
+  who was mid-argument, so its 0 of 4 says nothing about the move (both
+  above). `quiet:confused` is weakly readable, 2 of 4 in the top two on
+  contrast, and stands. That leaves no move with evidence against it, and
+  one — the lure — still untested.
 - The clean test for recovery is the same clean test as before: fresh
   turns nobody has generated, read by a profile built on this corpus.
   The live stamp writes them on every run, so a later run supplies them
