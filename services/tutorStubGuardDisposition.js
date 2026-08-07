@@ -14,7 +14,14 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // the 2026-07-31 three-arm manner test: those families templated two-thirds
 // of turns and answered nearly every learner-pressure turn themselves,
 // making tutor-conduct experiments unmeasurable under strict.
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 6;
+// 7 (2026-08-08): live_source_action_alignment_v1.due_source_action_referent_missing
+// reads ADVISORY under the shadow policy. The strict column is byte-identical
+// to version 6, so default-policy traces stay comparable; shadow-policy traces
+// from version 7 are NOT comparable with an earlier shadow reading on that one
+// finding — and the gap is wide, not marginal: on the 44 Phase B turns where
+// this guard was the last objector, the demotion moves 33 of them from
+// "template shipped" to "the model's own repair shipped".
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 7;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -75,6 +82,20 @@ const RULES = Object.freeze([
     category: 'dramatic_realization',
     rationale:
       'Each exact due source must appear once, with its pre-source carrier and any opt-in post-source accessibility sentence visible at their typed live boundaries.',
+  }),
+  rule({
+    guard: 'live_source_action_alignment_v1',
+    type: 'due_source_action_referent_missing',
+    dispositions: STRICT_HARD_SHADOW_ADVISORY,
+    category: 'dramatic_realization',
+    rationale:
+      'The draft said the source but did not anchor it to the carrier. Shadow (v7): recorded, not vetoing. ' +
+      'This was the guard that stopped the repair pass from ever landing. On the 44 Phase B turns where this ' +
+      'guard family was the last objector, a repair ran on all 44 and its reply carried every required passage ' +
+      'word for word on 38 — and the fixed template shipped anyway, because 34 of those repairs failed this ' +
+      "check alone, on where the passage sat rather than whether it was there. Demoting it lets the model's own " +
+      'reply ship on 33 of the 44. The occurrence check, which asks whether the words are present at all, keeps ' +
+      'its veto under the wildcard rule above.',
   }),
   rule({
     guard: 'release_delivery',

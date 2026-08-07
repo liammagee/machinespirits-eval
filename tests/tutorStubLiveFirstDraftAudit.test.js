@@ -828,13 +828,13 @@ test('an authored source cannot satisfy its own live host carrier audit', () => 
   assert.doesNotMatch(audit.audited_host_text, /visitor badge log/iu);
 });
 
-test('live V1 failures: alignment stays hard in both policies; progression demotes under shadow (catalog v6)', () => {
+test('live V1 failures: a missing source stays hard in both policies; progression demotes under shadow (catalog v7)', () => {
   const issues = tutorStubGuardIssueRows({
     liveTurnProgressionAudit: {
       issues: [{ type: 'question_forbidden_by_handoff_contract' }],
     },
     liveSourceActionAlignmentAudit: {
-      issues: [{ type: 'due_source_action_referent_missing' }],
+      issues: [{ type: 'due_source_exact_occurrence_count' }],
     },
   });
   assert.deepEqual(
@@ -858,6 +858,34 @@ test('live V1 failures: alignment stays hard in both policies; progression demot
     ['live_turn_progression_v1'],
   );
   assert.ok(strict.dispositions.every((row) => row.match === 'guard_wildcard'));
+});
+
+// The two complaints under this guard part company at catalog v7. Saying the
+// source is still a condition of delivery; anchoring it to the carrier is now
+// recorded and shipped, because on every turn in the Phase B corpus where it
+// was the only objector a blind judge preferred the draft it stopped.
+test('live V1: an unanchored source is recorded, not vetoed, under the live policy (catalog v7)', () => {
+  const issues = tutorStubGuardIssueRows({
+    liveSourceActionAlignmentAudit: {
+      issues: [{ type: 'due_source_action_referent_missing' }],
+    },
+  });
+  const strict = decideTutorStubGuardDelivery(issues, { boundaryPolicy: 'strict' });
+  assert.equal(strict.ok, false, 'the strict column is unchanged, so older readings stay comparable');
+  assert.deepEqual(
+    strict.hardIssues.map((issue) => issue.type),
+    ['due_source_action_referent_missing'],
+  );
+  const shadow = decideTutorStubGuardDelivery(issues, { boundaryPolicy: 'shadow_advisory' });
+  assert.equal(shadow.ok, true, 'the reply ships');
+  assert.deepEqual(shadow.hardIssues, []);
+  assert.deepEqual(
+    shadow.advisoryIssues.map((issue) => issue.type),
+    ['due_source_action_referent_missing'],
+  );
+  // An exact rule, not the guard-wide one — the sibling occurrence finding must
+  // keep its veto rather than riding along with this demotion.
+  assert.ok(shadow.dispositions.every((row) => row.match === 'exact'));
 });
 
 test('the deterministic live fallback consumes the same exact due-source renderer', () => {
