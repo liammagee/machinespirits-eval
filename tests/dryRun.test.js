@@ -3,11 +3,12 @@
  * through the full pipeline without any API calls or API keys.
  */
 
-import { describe, it } from 'node:test';
+import { after, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'node:fs/promises';
+import { mkdtempSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -17,6 +18,26 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CLI = path.resolve(__dirname, '..', 'scripts', 'eval-cli.js');
 const EMPTY_ENV_FILE = path.resolve(__dirname, 'fixtures', 'empty.env');
 const DOTENV_PROBE = path.resolve(__dirname, 'fixtures', 'dotenv-probe.js');
+
+/**
+ * Where the CLI children keep their data. Every child below is a real
+ * eval-cli process that opens the evaluation store on startup and writes mock
+ * runs into it, so the file needs somewhere throwaway to put them.
+ *
+ * The hermetic runner already sets these vars, but this file must not depend
+ * on being launched that way: run on its own with `node --test`, it would
+ * otherwise mint a repo-local `data/evaluations.db` full of mock runs — which
+ * in a worktree is the very file that then shadows the shared archive.
+ */
+const ISOLATED_ROOT = mkdtempSync(path.join(os.tmpdir(), 'dryrun-store-'));
+const ISOLATED_PATHS = {
+  EVAL_DB_PATH: path.join(ISOLATED_ROOT, 'evaluations.db'),
+  EVAL_LOGS_DIR: path.join(ISOLATED_ROOT, 'logs'),
+  EVAL_EXPORTS_DIR: path.join(ISOLATED_ROOT, 'exports'),
+  MS_DATA_HOME: path.join(ISOLATED_ROOT, 'data-home'),
+};
+
+after(() => rmSync(ISOLATED_ROOT, { recursive: true, force: true }));
 
 /**
  * Vars that hand the child a live credential, or decide which provider it
@@ -56,6 +77,9 @@ const PROVIDER_ENV_VARS = [
  *    missing key better than a blank one for any check that asks whether the
  *    name is present rather than whether it is truthy.
  *
+ * The store paths go on last, after `source`, so no child can reach the real
+ * database however the test run was launched. `extra` still wins over both.
+ *
  * @param {Record<string, string>} [extra] vars to put back, applied last
  * @param {Record<string, string>} [source] env to start from, for tests
  */
@@ -64,6 +88,7 @@ function buildChildEnv(extra = {}, source = process.env) {
     ...source,
     NODE_NO_WARNINGS: '1',
     DOTENV_CONFIG_PATH: EMPTY_ENV_FILE,
+    ...ISOLATED_PATHS,
   };
   for (const name of PROVIDER_ENV_VARS) delete env[name];
   return { ...env, ...extra };

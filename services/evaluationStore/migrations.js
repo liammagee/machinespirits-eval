@@ -1,3 +1,5 @@
+import { retypeScoreAuditResultId, scoreAuditTableSql } from './scoreAuditRetype.js';
+
 export function migrateEvaluationDatabase(db) {
   // Migrate: rename evaluator_model → judge_model if the old column exists
   try {
@@ -339,20 +341,11 @@ export function migrateEvaluationDatabase(db) {
     `CREATE INDEX IF NOT EXISTS idx_results_attempt ON evaluation_results(run_id, profile_name, scenario_id, attempt_index)`,
   );
 
-  // P0 Provenance: score audit trail (append-only)
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS score_audit (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      result_id TEXT NOT NULL,
-      column_name TEXT NOT NULL,
-      old_value TEXT,
-      new_value TEXT,
-      operation TEXT NOT NULL,
-      judge_model TEXT,
-      rubric_version TEXT,
-      timestamp TEXT NOT NULL DEFAULT (datetime('now'))
-    )
-  `);
+  // P0 Provenance: score audit trail (append-only). `result_id` is an INTEGER
+  // because it names evaluation_results.id; scoreAuditRetype.js repairs older
+  // databases that declared it TEXT, and drops the indexes recreated below.
+  db.exec(scoreAuditTableSql());
+  retypeScoreAuditResultId(db);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_score_audit_result ON score_audit(result_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_score_audit_timestamp ON score_audit(timestamp)`);
 

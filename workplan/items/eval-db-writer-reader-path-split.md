@@ -1,13 +1,14 @@
 ---
 id: eval-db-writer-reader-path-split
 title: A run in a worktree writes one database and every reader opens another
-status: active
+status: done
 type: infra
 priority: P2
-owner: unassigned
+owner: claude
 source: manual
 created: 2026-08-07
 updated: 2026-08-07
+branch: eval-db-writer-reader-path-split
 verification: A paid run launched from a git worktree lands its rows where the analysis scripts read them, or fails loudly at launch. Demonstrated by a hermetic test that runs the writer and a reader from a fake worktree root and asserts they resolve the same file.
 claim_status: methods
 links:
@@ -54,3 +55,39 @@ use, so there is one rule. If that is too invasive, have `eval-cli run` compare
 the two resolutions at launch and refuse to start when they disagree without an
 explicit `EVAL_DB_PATH` — a loud failure before any money is spent beats a
 silent one after.
+
+## Outcome (2026-08-07)
+
+The cheapest fix held, so the launch-time guard was not needed: one rule makes
+the two resolutions the same expression, and there is nothing left to compare.
+
+- The store now delegates to `resolveEvaluationDbPath`. This matches what the
+  logs root has always done — `createEvaluationStore` prefers the archive's logs
+  directory the same way — so it repairs an inconsistency rather than setting a
+  new policy. A relative `EVAL_DB_PATH` was a second split of the same class
+  (writer resolved it against the working directory, readers against `rootDir`);
+  both now use `rootDir`.
+- `tests/evaluationDbPathAgreement.test.js` runs the real writer and a real
+  reader from a fake worktree and asks the reader for the row the writer just
+  wrote, rather than comparing two strings. It also asserts no worktree-local
+  database was minted. Two of its four cases fail against the old rule — the two
+  where the rules disagreed; the other two are situations where they coincided,
+  which is why the defect survived in the main checkout.
+- `score_audit.result_id` is now `INTEGER`, rebuilt once under a guard on the
+  declared type. Rehearsed on the archive's 117,825 rows: 330 ms, count and
+  checksum unchanged, every value integer-typed afterwards. The copy leans on
+  affinity rather than `CAST`, so a value that is not a lossless integer stays as
+  it is instead of collapsing to 0. One assertion in `tests/provenance.test.js`
+  had to drop a `String()` — the defect in miniature.
+- `tests/dryRun.test.js` sets its own store paths, so running it directly no
+  longer mints the file that starts the whole problem.
+
+Left alone deliberately: `resolveEvaluationLogsRoot` still exists twice, in
+`services/evaluationDataPaths.js` and `services/evaluationStore/createEvaluationStore.js`,
+with different signatures. The two agree today. Unifying them is the same class
+of repair and worth its own card.
+
+The worktree's shadow `data/evaluations.db` still holds the three runs from the
+incident. The archive has the paid rows already, so it is disposable, but
+deleting a database is the owner's call. `npm run db:closeout` still works and
+now finds nothing to import.

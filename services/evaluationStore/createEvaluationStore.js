@@ -59,6 +59,7 @@ export function createEvaluationStore({
     openEvaluationDatabase({
       rootDir,
       env,
+      fileSystem,
       ...(DatabaseConstructor ? { DatabaseConstructor } : {}),
     });
 

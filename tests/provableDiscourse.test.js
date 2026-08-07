@@ -654,7 +654,7 @@ function createProvenanceTestDb() {
   const db = new Database(':memory:');
   db.exec(`
     CREATE TABLE evaluation_results (
-      id TEXT PRIMARY KEY,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       run_id TEXT,
       profile_name TEXT,
       scenario_id TEXT,
@@ -695,7 +695,7 @@ function createProvenanceTestDb() {
     );
     CREATE TABLE score_audit (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      result_id TEXT,
+      result_id INTEGER,
       column_name TEXT,
       old_value TEXT,
       new_value TEXT,
@@ -722,7 +722,7 @@ test('evaluateProvenanceCheck: dialogue_hash_match passes when log hash matches 
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 'dlg-hash-1', contentHash, '{}', 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', 'dlg-hash-1', contentHash, '{}', 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(
     db,
@@ -758,7 +758,7 @@ test('evaluateProvenanceCheck: dialogue_hash_match fails when log file modified'
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 'dlg-mod-1', originalHash, '{}', 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', 'dlg-mod-1', originalHash, '{}', 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(
     db,
@@ -787,7 +787,7 @@ test('evaluateProvenanceCheck: dialogue_hash_match skips rows with NULL dialogue
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 'dlg-null-1', null, '{}', 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', 'dlg-null-1', null, '{}', 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['dialogue_hash_match'] }, tmpDir);
   assert.strictEqual(result.details.checks.dialogue_hash_match.skipped, 1);
@@ -836,7 +836,7 @@ test('evaluateProvenanceCheck: dialogue_hash_match waives a documented-missing l
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 'dlg-waived-1', 'a'.repeat(64), '{}', 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', 'dlg-waived-1', 'a'.repeat(64), '{}', 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(
     db,
@@ -863,7 +863,7 @@ test('evaluateProvenanceCheck: dialogue_hash_match still fails an UN-waived miss
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 'dlg-missing-unwaived', 'b'.repeat(64), '{}', 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', 'dlg-missing-unwaived', 'b'.repeat(64), '{}', 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(
     db,
@@ -896,7 +896,7 @@ test('evaluateProvenanceCheck: a waiver does NOT mask a hash MISMATCH (only abse
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, dialogue_id, dialogue_content_hash, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 'dlg-tampered', 'c'.repeat(64), '{}', 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', 'dlg-tampered', 'c'.repeat(64), '{}', 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(
     db,
@@ -941,7 +941,7 @@ test('evaluateProvenanceCheck: turn_id_match passes when score turn IDs match lo
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, dialogue_id, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', dialogueId, tutorScores, 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', dialogueId, tutorScores, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['turn_id_match'] }, tmpDir);
   assert.strictEqual(result.value, 1.0);
@@ -968,7 +968,7 @@ test('evaluateProvenanceCheck: turn_id_match fails when score has wrong contentT
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, dialogue_id, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', dialogueId, tutorScores, 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', dialogueId, tutorScores, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['turn_id_match'] }, tmpDir);
   assert.strictEqual(result.value, 0.0);
@@ -988,7 +988,7 @@ test('evaluateProvenanceCheck: judge_input_present passes when all turns have ju
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', tutorScores, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['judge_input_present'] }, '/tmp');
   assert.strictEqual(result.value, 1.0);
@@ -1006,7 +1006,7 @@ test('evaluateProvenanceCheck: judge_input_present fails when some turns lack ju
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', tutorScores, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['judge_input_present'] }, '/tmp');
   assert.strictEqual(result.value, 0.0);
@@ -1021,11 +1021,11 @@ test('evaluateProvenanceCheck: audit_trail_present passes when scored rows have 
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, tutor_overall_score, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 85, 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', 85, 'claude-opus', '2026-02-27');
   db.prepare(
     `INSERT INTO score_audit (result_id, column_name, old_value, new_value, operation)
     VALUES (?, ?, ?, ?, ?)`,
-  ).run('r1', 'tutor_overall_score', null, '85', 'updateResultTutorScores');
+  ).run(1, 'tutor_overall_score', null, '85', 'updateResultTutorScores');
 
   const result = evaluateProvenanceCheck(db, { checks: ['audit_trail_present'] }, '/tmp');
   assert.strictEqual(result.value, 1.0);
@@ -1039,7 +1039,7 @@ test('evaluateProvenanceCheck: audit_trail_present fails when scored rows lack a
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, tutor_overall_score, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 85, 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', 85, 'claude-opus', '2026-02-27');
   // No audit entries inserted
 
   const result = evaluateProvenanceCheck(db, { checks: ['audit_trail_present'] }, '/tmp');
@@ -1059,7 +1059,7 @@ test('evaluateProvenanceCheck: return value is fraction (0.0–1.0)', () => {
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', tutorScores, 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', tutorScores, 'claude-opus', '2026-02-27');
   // Row 2: missing judgeInputHash
   const noHashScores = JSON.stringify({
     turn_0: { scores: { r: { score: 3 } }, overallScore: 60 },
@@ -1067,7 +1067,7 @@ test('evaluateProvenanceCheck: return value is fraction (0.0–1.0)', () => {
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, tutor_scores, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?)`,
-  ).run('r2', 'run1', noHashScores, 'claude-opus', '2026-02-27');
+  ).run(2, 'run1', noHashScores, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(db, { checks: ['judge_input_present'] }, '/tmp');
   assert.strictEqual(result.value, 0.5, '1 of 2 rows passes → 0.5');
@@ -1086,7 +1086,7 @@ test('evaluateProvenanceCheck: multiple checks combined returns lowest fraction'
   db.prepare(
     `INSERT INTO evaluation_results (id, run_id, tutor_scores, tutor_overall_score, judge_model, created_at)
     VALUES (?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', tutorScores, 80, 'claude-opus', '2026-02-27');
+  ).run(1, 'run1', tutorScores, 80, 'claude-opus', '2026-02-27');
 
   const result = evaluateProvenanceCheck(
     db,
@@ -1300,7 +1300,7 @@ test('trajectory_slope with turn_level + rootDir: verified turns included, misma
     `INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
     tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', dialogueId);
+  ).run(1, 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', dialogueId);
 
   const result = evaluateEvidence(
     db,
@@ -1341,7 +1341,7 @@ test('trajectory_slope with turn_level + rootDir: reports log_verified_turns and
     `INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
     tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', dialogueId);
+  ).run(1, 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', dialogueId);
 
   const result = evaluateEvidence(
     db,
@@ -1383,7 +1383,7 @@ test('trajectory_slope with turn_level + missing log: graceful degradation (pres
     `INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
     tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', 'dlg-missing');
+  ).run(1, 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', 'dlg-missing');
 
   const result = evaluateEvidence(
     db,
@@ -1425,7 +1425,7 @@ test('trajectory_slope without turn_level: no log verification occurs', () => {
     `INSERT INTO evaluation_results (id, run_id, profile_name, judge_model,
     tutor_first_turn_score, tutor_scores, created_at, dialogue_id)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run('r1', 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', dialogueId);
+  ).run(1, 'run1', 'cell_5_recog_single_unified', 'claude-opus', 80, tutorScores, '2026-02-27', dialogueId);
 
   const result = evaluateEvidence(
     db,
@@ -1499,7 +1499,7 @@ test('conditional_delta with turn_level + rootDir: verified turns included, mism
     tutor_first_turn_score, tutor_scores, learner_scores, created_at, dialogue_id)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
-    'r1',
+    1,
     'run1',
     'cell_5_recog_single_unified',
     'claude-opus',
@@ -1580,7 +1580,7 @@ test('conditional_delta with turn_level + rootDir: event detection only uses ver
     tutor_first_turn_score, tutor_scores, learner_scores, created_at, dialogue_id)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
-    'r1',
+    1,
     'run1',
     'cell_5_recog_single_unified',
     'claude-opus',

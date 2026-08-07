@@ -279,6 +279,7 @@
         "tests/evalSignature.test.js",
         "tests/evaluationDataCloseout.test.js",
         "tests/evaluationDataPaths.test.js",
+        "tests/evaluationDbPathAgreement.test.js",
         "tests/evaluationResumeRejudgeRuntime.test.js",
         "tests/evaluationRunner.test.js",
         "tests/evaluationRunnerDependencyInjection.test.js",

@@ -35,15 +35,32 @@ function schemaSnapshot(db) {
 }
 
 describe('evaluation-store connection owner', () => {
-  it('resolves EVAL_DB_PATH before the repository default', () => {
+  it('resolves EVAL_DB_PATH, then the shared archive, then the repository default', () => {
+    const archive = '/data-home/evaluations.db';
+    const env = { MS_DATA_HOME: '/data-home' };
+    const archivePresent = { existsSync: (candidate) => candidate === archive };
+    const archiveAbsent = { existsSync: () => false };
+
     assert.equal(
       resolveEvaluationDatabasePath({
         rootDir: '/repo',
-        env: { EVAL_DB_PATH: '/isolated/evaluations.db' },
+        env: { ...env, EVAL_DB_PATH: '/isolated/evaluations.db' },
+        fileSystem: archivePresent,
       }),
       '/isolated/evaluations.db',
     );
-    assert.equal(resolveEvaluationDatabasePath({ rootDir: '/repo', env: {} }), '/repo/data/evaluations.db');
+    // The rule the readers use, now the writer's too: a run launched from a
+    // worktree lands in the archive the analysis scripts open, not in a fresh
+    // database beside its own checkout that nothing else would ever read.
+    assert.equal(
+      resolveEvaluationDatabasePath({ rootDir: '/worktree', env, fileSystem: archivePresent }),
+      archive,
+      'a worktree run must not write beside its own checkout',
+    );
+    assert.equal(
+      resolveEvaluationDatabasePath({ rootDir: '/repo', env, fileSystem: archiveAbsent }),
+      '/repo/data/evaluations.db',
+    );
     assert.throws(() => resolveEvaluationDatabasePath({ env: {} }), /rootDir is required when EVAL_DB_PATH is not set/);
   });
 
@@ -71,6 +88,42 @@ describe('evaluation-store migration owner', () => {
     assert.deepEqual(
       first.filter((entry) => entry.type === 'table').map((entry) => entry.name),
       ['evaluation_results', 'evaluation_runs', 'interaction_evaluations', 'score_audit'],
+    );
+    db.close();
+  });
+
+  it('retypes a legacy TEXT score_audit.result_id and keeps its rows', () => {
+    const db = new Database(':memory:');
+    db.exec(`
+      CREATE TABLE score_audit (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        result_id TEXT NOT NULL,
+        column_name TEXT NOT NULL,
+        old_value TEXT,
+        new_value TEXT,
+        operation TEXT NOT NULL,
+        judge_model TEXT,
+        rubric_version TEXT,
+        timestamp TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      INSERT INTO score_audit (id, result_id, column_name, new_value, operation, timestamp)
+      VALUES (7, '4711', 'tutor_overall_score', '82', 'updateResultTutorScores', '2026-08-07T00:00:00Z');
+    `);
+
+    migrateEvaluationDatabase(db);
+
+    const declaredType = db
+      .prepare('PRAGMA table_info(score_audit)')
+      .all()
+      .find((column) => column.name === 'result_id').type;
+    const row = db.prepare('SELECT id, result_id AS resultId, typeof(result_id) AS storage FROM score_audit').get();
+    assert.equal(declaredType, 'INTEGER');
+    // Stored as a number now, so a Map keyed by evaluation_results.id finds it.
+    assert.deepEqual(row, { id: 7, resultId: 4711, storage: 'integer' });
+    assert.equal(
+      db.prepare(`SELECT COUNT(*) AS n FROM sqlite_master WHERE name = 'idx_score_audit_result'`).get().n,
+      1,
+      'the rebuild must leave the index it dropped',
     );
     db.close();
   });

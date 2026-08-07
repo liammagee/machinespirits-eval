@@ -461,7 +461,7 @@ function checkAuditTrailCoverage(db, runId, verbose) {
   const failures = [];
 
   for (const row of rows) {
-    const auditRow = db.prepare('SELECT COUNT(*) AS c FROM score_audit WHERE result_id = ?').get(String(row.id));
+    const auditRow = db.prepare('SELECT COUNT(*) AS c FROM score_audit WHERE result_id = ?').get(row.id);
     if (auditRow && auditRow.c > 0) {
       withAudit++;
     } else {
