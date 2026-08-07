@@ -7,7 +7,7 @@ priority: P3
 owner: claude
 source: manual
 created: 2026-08-06
-updated: 2026-08-07
+updated: 2026-08-08
 verification: A 15-row run (or an explicit drop decision) reports fidelity vs the parent sarcasm arm, faithful-row conversion, and negation recovery, with exclusions and invalid violations separate; any claim lands in paper §6.7 first.
 claim_status: exploratory
 links:
@@ -139,12 +139,27 @@ re-scores all 30 rows of both runs under both gates on one fold:
 
 | | plain gate | determinate gate | named a claim |
 |---|---|---|---|
-| parent 197 | 8/15 | 8/15 | 8/15 |
-| determinate 202 | 7/15 | 7/15 | 9/15 |
+| parent 197 | 8/15 | 8/15 [→ 3/15] | 8/15 |
+| determinate 202 | 7/15 | 7/15 [→ 5/15] | 9/15 |
 
-Fidelity is flat, and both gates rank the two arms the same way, so the
-ordering never depended on the gate. Conversion is 5/7 against 5/8.
-Assigned-arm positives 11/15 against 7/15, Fisher p=0.26 — not separating.
+Fidelity is flat under the plain gate: 8/15 against 7/15. Conversion is 5/7
+against 5/8. Assigned-arm positives 11/15 against 7/15, Fisher p=0.26 — not
+separating.
+
+**The determinate column above is wrong**, and so is the sentence that used
+to follow it here — "both gates rank the two arms the same way, so the
+ordering never depended on the gate". The determinate gate was admitting
+turns that carried no register marker at all, because it re-weighted the
+marker to 25 while leaving the faithful band at 70, so a turn missing only
+the marker scored 75. Repaired, that column reads **3/15 and 5/15**, which
+reverses the ranking. Found the next day by
+[[sarcasm-precondition-claim-bearing-mood]], whose outcome entry has the
+detail; withdrawn in the paper at v3.0.270.
+
+The column was never a valid cross-arm check in the first place: requiring a
+named target claim *is* cell 202's treatment, so scoring the parent under it
+grades a control on a contract it never received. Everything else on this
+card is computed on the plain gate and is unaffected.
 
 What is real is a change in *where* the manner survives: boredom and
 frustration go 5/6 → 0/6 (p=0.015), while irrelevance, question-flood and
