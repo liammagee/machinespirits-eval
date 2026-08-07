@@ -112,28 +112,26 @@ const safetyCount = (decision) =>
   decision.dispositions.filter((d) => SAFETY_CATEGORIES.has(d.category) && d.effectiveDisposition === 'hard').length;
 
 /**
- * The passages this turn was working from, read off the guard's own findings.
- * Taken from every finding rather than the hard ones, so the passage is still
- * recovered on a draft where the check only recorded.
+ * The passages this turn was working from.
  *
- * Only the occurrence-count finding is read. Its sibling in the same family,
- * which fires when the source is not anchored in a carrier phrase, puts the
- * source's ID in the same field — `source_1`, not the text. Handing that to the
- * judge as the passage would be worse than handing it nothing. Those turns get
- * the four quality scales instead, and `judge` says how many.
+ * Read off the audit's own occurrence rows, not its findings. Every finding in
+ * this family names its source by ID — `source_1` — and drops the text, so a
+ * study built on the findings would have shown the judge the string "source_1"
+ * and asked whether the reply represents it truthfully. The rows keep the
+ * rendered text under `expected_text`.
+ *
+ * Every source the turn was given is shown, not only the ones that failed.
+ * Showing the failed one alone would tell the judge which passage to look for.
  */
-const PASSAGE_FINDING = 'due_source_exact_occurrence_count';
-
 function dueSources(draft) {
   const byText = new Map();
-  for (const issue of tutorStubGuardIssueRows(draft.audits)) {
-    if (issue.guard !== 'live_source_action_alignment_v1' || issue.type !== PASSAGE_FINDING) continue;
-    const passage = typeof issue.source === 'string' ? issue.source.trim() : '';
+  for (const row of draft.audits?.liveSourceActionAlignmentAudit?.source_occurrences || []) {
+    const passage = typeof row.expected_text === 'string' ? row.expected_text.trim() : '';
     if (!passage || byText.has(passage)) continue;
     byText.set(passage, {
       text: passage,
-      expected: issue.expected_count ?? null,
-      observed: issue.observed_count ?? null,
+      expected: row.expected_count ?? null,
+      observed: row.observed_count ?? null,
     });
   }
   return [...byText.values()];
