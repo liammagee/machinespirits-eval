@@ -225,19 +225,24 @@ describe('evaluation-store run repository', () => {
     }
   });
 
-  it('leaves the facade as compatibility and bootstrap owner only', () => {
+  it('leaves the facade as lazy compatibility owner only', () => {
     const facade = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore.js'), 'utf8');
+    const factory = fs.readFileSync(
+      path.join(ROOT_DIR, 'services', 'evaluationStore', 'createEvaluationStore.js'),
+      'utf8',
+    );
     const repository = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore', 'runRepository.js'), 'utf8');
     const resultRepository = fs.readFileSync(
       path.join(ROOT_DIR, 'services', 'evaluationStore', 'resultRepository.js'),
       'utf8',
     );
 
-    assert.match(facade, /createRunRepository\(\{/);
+    assert.match(factory, /createRunRepository\(\{/);
+    assert.match(facade, /export const createRun = delegate\('createRun'\);/);
     assert.doesNotMatch(facade, /SELECT \* FROM evaluation_runs|DELETE FROM evaluation_runs/);
     assert.match(resultRepository, /derivedRunId.*rubricVersion/s, 'derived-run cloning belongs to result persistence');
     assert.match(repository, /DELETE FROM interaction_evaluations WHERE run_id = \?/);
-    assert.equal(facade.split('\n').length - 1 <= 1_250, true);
+    assert.equal(facade.split('\n').length - 1 <= 170, true);
     assert.equal(repository.split('\n').length - 1 <= 550, true);
   });
 });

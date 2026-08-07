@@ -38,6 +38,7 @@ import { createTutorStubProcessSessionHost } from './tutorStubProcessSessionFact
 import { buildTutorStubPublicCatalog } from './tutorStubCatalog.js';
 import { tutorStubCommandTransportAdmission } from './tutorStubCommandRegistry.js';
 import { STATIC_SURFACES } from './evalStaticSurfaces.js';
+import { createEvaluationRunner } from './evaluationRunner.js';
 
 // API routers, in mount order. [mountPath, router].
 const API_ROUTERS = [
@@ -62,22 +63,49 @@ export const EVAL_SURFACE_MOUNT_PREFIXES = Object.freeze([
   '/api/subject',
 ]);
 
+/**
+ * Bind the persistence and orchestration dependencies used by evalRoutes to a
+ * specific Express host. Keeping them in app.locals makes the shared router
+ * request-local: standalone, poetics, and tests can mount the same router
+ * without capturing one process-global store.
+ */
+export function bindEvalSurfaceDependencies(app, { evaluationStore, evaluationRunner = null } = {}) {
+  if (!app?.locals) throw new TypeError('bindEvalSurfaceDependencies: an Express app is required');
+  if (!evaluationStore || typeof evaluationStore !== 'object') {
+    throw new TypeError('bindEvalSurfaceDependencies: evaluationStore is required');
+  }
+  const runner = evaluationRunner || createEvaluationRunner({ evaluationStore });
+  if (!runner || typeof runner !== 'object') {
+    throw new TypeError('bindEvalSurfaceDependencies: evaluationRunner must be an object');
+  }
+  app.locals.evaluationStore = evaluationStore;
+  app.locals.evaluationRunner = runner;
+  return app;
+}
+
 // Static UI surfaces live in their own module so tests can read the list without
-// importing this one, which pulls in every route module and opens the DB. Each
-// is existsSync-guarded at mount time so a missing directory is skipped silently
+// importing this one, which pulls in every route module. Each is
+// existsSync-guarded at mount time so a missing directory is skipped silently
 // rather than erroring.
 
 /**
  * Mount the eval API routers + static UI surfaces onto an existing Express app.
  * @param {import('express').Express} app  host app (already has auth + json)
- * @param {{ root: string, tutorStubSessionHost?: object|false, tutorStubCatalogProvider?: Function|false }} opts root resolves
- * static dirs; the real process-backed host is the default, while tests may
- * inject a host and narrow embedders may explicitly pass false
+ * @param {{ root: string, evaluationStore?: object, evaluationRunner?: object, tutorStubSessionHost?: object|false, tutorStubCatalogProvider?: Function|false }} opts root resolves
+ * static dirs; supplied evaluation dependencies are bound to the host, the
+ * real process-backed tutor host is the default, while tests may inject a host
+ * and narrow embedders may explicitly pass false
  * @returns {import('express').Express} the same app, for chaining
  */
-export function mountEvalSurfaces(app, { root, tutorStubSessionHost, tutorStubCatalogProvider } = {}) {
+export function mountEvalSurfaces(
+  app,
+  { root, evaluationStore, evaluationRunner, tutorStubSessionHost, tutorStubCatalogProvider } = {},
+) {
   if (!app) throw new Error('mountEvalSurfaces: an Express app is required');
   if (!root) throw new Error('mountEvalSurfaces: { root } is required');
+  if (evaluationStore !== undefined || evaluationRunner !== undefined) {
+    bindEvalSurfaceDependencies(app, { evaluationStore, evaluationRunner });
+  }
   app.locals.cleanupEvaluationStreams = cleanupAllStreams;
   for (const [mount, router] of API_ROUTERS) {
     app.use(mount, router);

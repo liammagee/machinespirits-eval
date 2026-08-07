@@ -46,6 +46,7 @@ design systems, defect ledger) is the techne doc
   `services/evaluationStore.js`.
 - Analysis scripts — `scripts/ANALYSIS-SCRIPTS.md` (registry) with
   `docs/analysis-toolkit-guide.md` (workflow).
+- Local CI and Actions-outage fallback — `docs/local-ci.md`.
 - UX, web and desktop — `desktop/ARCHITECTURE.md`: one UI codebase.
 - Prose — `.claude/style-rule.md`.
 

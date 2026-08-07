@@ -7,22 +7,39 @@
       "label": "Evaluation store integrity",
       "runner": "node",
       "sources": [
+        "services/applicationShutdown.js",
         "services/evaluationStore.js",
         "services/evaluationStore/connection.js",
+        "services/evaluationStore/createEvaluationStore.js",
+        "services/evaluationStore/dialogueLogRepository.js",
+        "services/evaluationStore/exportRepository.js",
+        "services/evaluationStore/interactionRepository.js",
+        "services/evaluationStore/lifecycle.js",
         "services/evaluationStore/migrations.js",
         "services/evaluationStore/resultRepository.js",
         "services/evaluationStore/runRepository.js",
-        "services/evaluationStore/scoreRepository.js"
+        "services/evaluationStore/runManifestWriter.js",
+        "services/evaluationStore/scoreRepository.js",
+        "services/evaluationStore/scriptContext.js",
+        "services/evaluationStore/statisticsRepository.js"
       ],
       "tests": [
         "services/__tests__/evaluationStoreTransientStats.test.js",
+        "tests/applicationShutdown.test.js",
+        "tests/evalRoutesDependencyInjection.test.js",
+        "tests/evaluationScriptContext.test.js",
         "tests/evaluationStore.test.js",
         "tests/evaluationStoreBoundaryInventory.test.js",
         "tests/evaluationStoreConnectionMigrations.test.js",
+        "tests/evaluationStoreExportLogReaders.test.js",
+        "tests/evaluationStoreInteractionRepository.test.js",
+        "tests/evaluationStoreLifecycle.test.js",
         "tests/evaluationStoreResultRepository.test.js",
         "tests/evaluationStoreRunRepository.test.js",
+        "tests/evaluationStoreRunManifestWriter.test.js",
         "tests/evaluationStoreRoundtripIntegrity.test.js",
-        "tests/evaluationStoreScoreRepository.test.js"
+        "tests/evaluationStoreScoreRepository.test.js",
+        "tests/evaluationStoreStatisticsRepository.test.js"
       ],
       "floors": { "lines": 80, "branches": 62, "functions": 72 }
     },

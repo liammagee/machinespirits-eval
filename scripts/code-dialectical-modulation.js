@@ -25,8 +25,11 @@ import 'dotenv/config';
 import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
-import * as evaluationStore from '../services/evaluationStore.js';
+import { createEvaluationScriptContext } from '../services/evaluationStore/scriptContext.js';
 import { callModelCliText } from '../services/cliProviderBridge.js';
+
+const ROOT = path.resolve('.');
+const { databasePath: DB_PATH, dialogueLogs } = createEvaluationScriptContext({ rootDir: ROOT });
 
 // ── Constants ────────────────────────────────────────────────────────────
 
@@ -307,7 +310,7 @@ function parseCondition(profileName) {
 }
 
 function loadDialogueLog(dialogueId) {
-  return evaluationStore.loadDialogueLog(dialogueId);
+  return dialogueLogs.loadDialogueLog(dialogueId);
 }
 
 // ── Tier 1: Structural Metrics ───────────────────────────────────────────
@@ -1174,13 +1177,12 @@ Options:
 async function main() {
   const opts = parseArgs();
 
-  const dbPath = path.join(process.cwd(), 'data', 'evaluations.db');
-  if (!fs.existsSync(dbPath)) {
-    console.error('Database not found:', dbPath);
+  if (!fs.existsSync(DB_PATH)) {
+    console.error('Database not found:', DB_PATH);
     process.exit(1);
   }
 
-  const db = new Database(dbPath, { readonly: true });
+  const db = new Database(DB_PATH, { readonly: true });
 
   console.log('='.repeat(70));
   console.log('DIALECTICAL MODULATION CODING');

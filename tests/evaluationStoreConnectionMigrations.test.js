@@ -113,16 +113,28 @@ describe('evaluation-store migration owner', () => {
     db.close();
   });
 
-  it('keeps the facade as the only import-time bootstrap owner', () => {
+  it('moves bootstrap into the explicit factory and leaves the facade lazy', () => {
     const facade = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore.js'), 'utf8');
+    const factory = fs.readFileSync(
+      path.join(ROOT_DIR, 'services', 'evaluationStore', 'createEvaluationStore.js'),
+      'utf8',
+    );
+    const lifecycle = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore', 'lifecycle.js'), 'utf8');
     const connection = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore', 'connection.js'), 'utf8');
     const migrations = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore', 'migrations.js'), 'utf8');
 
-    assert.match(facade, /openEvaluationDatabase\(\{ rootDir: ROOT_DIR \}\)/);
-    assert.match(facade, /migrateEvaluationDatabase\(db\)/);
-    assert.doesNotMatch(facade, /new Database|ALTER TABLE|CREATE TABLE/);
+    assert.match(factory, /openEvaluationDatabase\(\{/);
+    assert.match(factory, /migrateEvaluationDatabase\(db\)/);
+    assert.match(lifecycle, /getDefaultEvaluationStore/);
+    assert.match(facade, /getDefaultEvaluationStore\(\)\[operation\]/);
+    assert.doesNotMatch(
+      facade,
+      /openEvaluationDatabase|migrateEvaluationDatabase|new Database|ALTER TABLE|CREATE TABLE/,
+    );
     assert.equal(connection.split('\n').length - 1 <= 100, true);
     assert.equal(migrations.split('\n').length - 1 <= 500, true);
-    assert.equal(facade.split('\n').length - 1 <= 1_250, true);
+    assert.equal(factory.split('\n').length - 1 <= 240, true);
+    assert.equal(lifecycle.split('\n').length - 1 <= 120, true);
+    assert.equal(facade.split('\n').length - 1 <= 170, true);
   });
 });

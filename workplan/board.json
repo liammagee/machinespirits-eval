@@ -1,21 +1,21 @@
 {
-  "generated": "2026-08-06T06:34:01.041Z",
+  "generated": "2026-08-07T02:24:43.076Z",
   "counts": {
-    "total": 429,
+    "total": 446,
     "byStatus": {
-      "done": 395,
+      "done": 409,
       "blocked": 6,
       "dropped": 8,
-      "active": 4,
+      "active": 5,
       "archived": 4,
-      "triaged": 7,
-      "review": 5
+      "triaged": 8,
+      "review": 6
     },
     "byType": {
       "research": 74,
-      "experiment": 71,
-      "infra": 83,
-      "maintenance": 181,
+      "experiment": 73,
+      "infra": 88,
+      "maintenance": 191,
       "content": 3,
       "ops": 10,
       "paper": 7
@@ -81,6 +81,36 @@
       ]
     },
     {
+      "id": "learner-profile-world-deconfound",
+      "title": "Deconfound the learner-profile recovery: cross personas and worlds",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "Design-stage card. Before any paid dialogue: the transplanted persona briefs are user-adjudicated, the crossed cells and readings below are frozen unchanged, and the operator has explicitly authorized the paid run. The run is attended; delivery is verified per the golden contract before any reading.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/2026-08-03-adaptive-causality-living-log.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#624-the-four-locks-why-nothing-beat-the-bare-tutor-and-what-opened-when-each-was-removed-post-hoc-except-the-claim-gate-development-tier"
+        ],
+        "items": [
+          "adaptive-causality-crossed-effects"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "learner-profiles",
+        "deconfound",
+        "prereg"
+      ]
+    },
+    {
       "id": "guard-findings-feed-forward",
       "title": "Feed guard findings into the next turn's request instead of redrafting this one",
       "status": "triaged",
@@ -136,6 +166,35 @@
       ]
     },
     {
+      "id": "repair-evaluation-config-comparison-missing-side-winner",
+      "title": "Define missing-side winner semantics in configuration comparison",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "unassigned",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "Configuration-comparison tests prove the reviewed policy for scenarios missing from either side, including score, difference, winner, and overall win/tie counts, without changing complete-pair behavior.",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "services/evaluationStore/statisticsRepository.js",
+          "tests/evaluationStoreStatisticsRepository.test.js"
+        ],
+        "items": [
+          "refactor-evaluation-store-statistics-repository"
+        ]
+      },
+      "tags": [
+        "evaluation",
+        "statistics",
+        "correctness",
+        "compatibility"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "tutor-stub-correspondence-guard-vocabulary",
       "title": "Evidence-correspondence guard can never clear in a plain-language world",
       "status": "triaged",
@@ -182,43 +241,6 @@
       ]
     },
     {
-      "id": "sarcasm-determinate-negation-grid",
-      "title": "Sarcasm as determinate negation — cargo-bearing cue contract",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P3",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "A 15-row run (or an explicit drop decision) reports fidelity vs the parent sarcasm arm, faithful-row conversion, and negation recovery, with exclusions and invalid violations separate; any claim lands in paper §6.7 first.",
-      "claim_status": "planned",
-      "links": {
-        "notes": [
-          "notes/2026-08-06-sarcasm-determinate-negation-preregistration.md",
-          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md"
-        ],
-        "paper": [
-          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
-        ],
-        "runs": [
-          "eval-2026-08-05-87fe3664"
-        ],
-        "items": [
-          "negative-register-effect-estimation-grid"
-        ]
-      },
-      "depends_on": [
-        "negative-register-effect-estimation-grid"
-      ],
-      "tags": [
-        "registers",
-        "negative-registers",
-        "stance-fidelity",
-        "determinate-negation"
-      ]
-    },
-    {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
       "status": "active",
@@ -227,7 +249,7 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-24",
-      "updated": "2026-08-05",
+      "updated": "2026-08-07",
       "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
       "claim_status": "planned",
       "depends_on": [],
@@ -337,7 +359,16 @@
           "refactor-evaluation-store-connection-migrations",
           "refactor-evaluation-store-run-repository",
           "refactor-evaluation-store-result-repository",
-          "refactor-evaluation-store-score-repository"
+          "refactor-evaluation-store-score-repository",
+          "refactor-evaluation-store-interaction-repository",
+          "refactor-evaluation-store-statistics-repository",
+          "refactor-evaluation-store-export-log-readers",
+          "refactor-evaluation-store-run-manifest-writer",
+          "refactor-evaluation-store-application-lifecycle",
+          "refactor-evaluation-runner-cli-store-injection",
+          "refactor-adaptive-tutor-store-injection",
+          "refactor-eval-routes-store-injection",
+          "refactor-operational-log-reader-injection"
         ]
       },
       "tags": [
@@ -425,6 +456,28 @@
         "tutor-stub",
         "harness"
       ]
+    },
+    {
+      "id": "reply-feature-stamps",
+      "title": "Reply-feature stamps: measure what the tutor reply did, blind to the card",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "verification": "Terminal, same day, pure computation. New unit suite (services/__tests__/tutorStubReplyFeatures.test.js, 10 tests) plus wiring tests in tests/tutorStubTurnOrchestration.test.js (4 tests) — all pass; lint clean; test manifest updated. Retrospective read-back over the falsifier's 122 turns (run C of scripts/analyze-figure- lattice.js): 1/7 separated, up from 0/7, with runs A/B/B' asserted to reproduce their recorded numbers first. That read-back is CALIBRATION, not a clean test — the act patterns were widened after reading three labelled replies from the same corpus. The clean test is fresh turns carrying the live stamp.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/2026-08-06-pedagogical-figure-ontology.md"
+        ],
+        "items": [
+          "figure-lattice-falsifier",
+          "pedagogical-figure-ontology"
+        ]
+      }
     },
     {
       "id": "a1-human-learner-validation",
@@ -628,6 +681,36 @@
       "milestone": "paper-2-0"
     },
     {
+      "id": "local-ci-pr-creation-gate",
+      "title": "Gate repository PR creation with adaptive local CI",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/local-ci-pr-create",
+      "verification": "A repository PR command validates clean committed state and the final workplan-linked body, passes quick local CI before any push/PR write, detects hosted checks without duplicating the full suite, falls back to full local CI when checks do not appear, and is covered by zero-network orchestration tests.",
+      "depends_on": [
+        "local-ci-parity-runner"
+      ],
+      "links": {
+        "items": [
+          "local-ci-parity-runner"
+        ],
+        "prs": [
+          538
+        ]
+      },
+      "tags": [
+        "ci",
+        "developer-experience",
+        "github",
+        "reliability"
+      ]
+    },
+    {
       "id": "refactor-eval-cli-generation-commands",
       "title": "Extract eval-cli generation, chat, and rejudge commands",
       "status": "review",
@@ -771,44 +854,48 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "refactor-evaluation-store-score-repository",
-      "title": "Extract evaluation score mutation and audit persistence",
+      "id": "refactor-operational-log-reader-injection",
+      "title": "Inject dialogue-log repositories into operational scripts",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "branch": "codex/refactor-evaluation-store-score-repository",
-      "verification": "Direct in-memory repository tests and facade regressions preserve every mutable evaluation-result score family, append-only change audit, rubric and judge provenance, tutor/learner symmetry, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-readonly-script-store-injection",
+      "verification": "Passive context, cross-root isolation, operational CLI, boundary-inventory, hermetic, risk-coverage, lint, formatting, and root regressions prove six scripts no longer depend on the legacy facade without model calls, shared production writes, or generated workplan views.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-evaluation-store-result-repository"
+        "refactor-eval-routes-store-injection"
       ],
       "links": {
         "notes": [
           "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
         ],
         "code": [
-          "services/evaluationStore.js",
-          "services/evaluationStore/scoreRepository.js",
-          "tests/evaluationRunner.test.js",
-          "tests/evaluationStoreScoreRepository.test.js"
+          "services/evaluationStore/scriptContext.js",
+          "scripts/analyze-insight-action-gap.js",
+          "scripts/assess-transcripts.js",
+          "scripts/audit-message-chain.js",
+          "scripts/code-dialectical-modulation.js",
+          "scripts/generate-paper-figures.js",
+          "scripts/render-sequence-diagram.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-evaluation-store-result-repository"
+          "refactor-eval-routes-store-injection"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/542"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
-        "persistence",
-        "scoring",
-        "provenance",
-        "symmetry",
-        "sqlite",
+        "operational-scripts",
+        "dialogue-logs",
+        "dependency-injection",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -2139,6 +2226,29 @@
       ]
     },
     {
+      "id": "local-ci-parity-runner",
+      "title": "Package the GitHub CI contract as a reproducible local runner",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/local-ci-parity-runner",
+      "verification": "One documented npm command reproduces the CI, validation, and workplan lanes locally with fresh-install, reporting, path-gated surface acceptance, and optional isolated Node 20 parity; focused contract tests and the complete local gate pass.",
+      "links": {
+        "prs": [
+          534
+        ]
+      },
+      "tags": [
+        "ci",
+        "developer-experience",
+        "reliability"
+      ]
+    },
+    {
       "id": "longitudinal-drift-adaptation",
       "title": "Longitudinal drift adaptation (cross-session memory as new signal)",
       "status": "done",
@@ -2499,6 +2609,50 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-adaptive-tutor-store-injection",
+      "title": "Inject evaluation-store ownership into the adaptive tutor",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-adaptive-tutor-store-injection",
+      "verification": "Store-bound adaptive-runner, persistence-adapter, eval-CLI child-process, world-spec-finalization, smoke, boundary-inventory, hermetic, lint, and root regressions prove explicit dependency identity and lazy compatibility without model calls, production writes, or generated workplan views.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-runner-cli-store-injection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/adaptiveTutor/index.js",
+          "services/adaptiveTutor/persistence.js",
+          "scripts/eval-cli/commands/runCommand.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-runner-cli-store-injection",
+          "refactor-eval-routes-store-injection"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/533"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "adaptive-tutor",
+        "sqlite",
+        "dependency-injection",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-cast-layer-fixture",
       "title": "Make cast-layer reader-quality scoring hermetic",
       "status": "done",
@@ -2613,6 +2767,52 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-eval-routes-store-injection",
+      "title": "Inject evaluation-store ownership into eval routes",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-eval-routes-store-injection",
+      "verification": "Request-local dependency, cross-host isolation, fail-closed binding, standalone/poetics lifecycle, API route, admission, import, boundary, hermetic, lint, and root regressions prove explicit host ownership without model calls, production writes, or generated workplan views.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-adaptive-tutor-store-injection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "routes/evalRoutes.js",
+          "services/evalSurfaces.js",
+          "server.js",
+          "scripts/browse-poetics-scripts.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-adaptive-tutor-store-injection",
+          "refactor-operational-log-reader-injection"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/539"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "routes",
+        "sqlite",
+        "dependency-injection",
+        "application-hosting",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-evaluation-resume-rejudge-runtime",
       "title": "Extract evaluation resume and rejudge runtimes",
       "status": "done",
@@ -2657,6 +2857,98 @@
         "resume",
         "rejudge",
         "provenance",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-runner-cli-store-injection",
+      "title": "Inject evaluation-store ownership into the runner and eval CLI",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-evaluation-runner-cli-store-injection",
+      "verification": "Store-bound runner, scoring-adapter, help, CLI-process, resume/rejudge, report, boundary-inventory, hermetic, lint, and root-suite regressions prove explicit dependency identity, lazy compatibility, and deterministic close behavior without production writes or generated workplan views.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-application-lifecycle"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationRunner.js",
+          "scripts/eval-cli.js",
+          "scripts/eval-cli/scoringCommandDependencies.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-application-lifecycle",
+          "refactor-adaptive-tutor-store-injection"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/532"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "sqlite",
+        "dependency-injection",
+        "cli",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-application-lifecycle",
+      "title": "Make evaluation-store startup and connection lifecycle explicit",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-evaluation-store-application-lifecycle",
+      "verification": "Hermetic package-import, explicit factory, standalone-host, mounted-poetics, shutdown-order, migration-script, facade, and repository regressions prove side-effect-free imports, ownership-aware close behavior, legacy lazy compatibility, and unchanged store results before the complete root and tutor-core gates run.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-run-manifest-writer"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "services/evaluationStore/createEvaluationStore.js",
+          "services/evaluationStore/lifecycle.js",
+          "services/applicationShutdown.js",
+          "server.js",
+          "scripts/browse-poetics-scripts.js",
+          "scripts/grade-adaptive-dialogue.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-run-manifest-writer",
+          "refactor-evaluation-runner-cli-store-injection"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/530"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "sqlite",
+        "lifecycle",
+        "application-hosting",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -2751,6 +3043,95 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-evaluation-store-export-log-readers",
+      "title": "Extract evaluation exporters and dialogue-log readers",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-evaluation-store-export-log-readers",
+      "verification": "Direct projection and filesystem-reader tests plus facade regressions preserve JSON and CSV output, mutable and immutable dialogue-log lookup, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-statistics-repository"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "services/evaluationStore/exportRepository.js",
+          "services/evaluationStore/dialogueLogRepository.js",
+          "tests/evaluationStoreExportLogReaders.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-statistics-repository",
+          "refactor-evaluation-store-run-manifest-writer"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/528"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "export",
+        "dialogue-logs",
+        "provenance",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-interaction-repository",
+      "title": "Extract interaction-evaluation persistence",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-evaluation-store-interaction-repository",
+      "verification": "Direct in-memory repository tests and facade regressions preserve full interaction round trips, compact and run-scoped projections, latest-record lookup, learner-score updates, defaults and judge-score precedence, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-score-repository"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "services/evaluationStore/interactionRepository.js",
+          "tests/evaluationStoreInteractionRepository.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-score-repository",
+          "refactor-evaluation-store-statistics-repository"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/526"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "interaction",
+        "persistence",
+        "sqlite",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-evaluation-store-result-repository",
       "title": "Extract the evaluation-store result repository",
       "status": "done",
@@ -2795,6 +3176,50 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-evaluation-store-run-manifest-writer",
+      "title": "Extract evaluation run-manifest writing",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "branch": "codex/refactor-evaluation-store-run-manifest-writer",
+      "verification": "Direct temporary-filesystem and in-memory database tests plus run-completion and facade regressions preserve manifest paths, shapes, provenance, failure tolerance, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-export-log-readers"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "services/evaluationStore/runManifestWriter.js",
+          "tests/evaluationStoreRunManifestWriter.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-export-log-readers",
+          "refactor-evaluation-store-application-lifecycle"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/529"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "provenance",
+        "manifests",
+        "filesystem",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-evaluation-store-run-repository",
       "title": "Extract the evaluation-store run repository",
       "status": "done",
@@ -2832,6 +3257,98 @@
         "refactoring",
         "evaluation",
         "persistence",
+        "sqlite",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-score-repository",
+      "title": "Extract evaluation score mutation and audit persistence",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-evaluation-store-score-repository",
+      "verification": "Direct in-memory repository tests and facade regressions preserve every mutable evaluation-result score family, append-only change audit, rubric and judge provenance, tutor/learner symmetry, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-result-repository"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "services/evaluationStore/scoreRepository.js",
+          "tests/evaluationRunner.test.js",
+          "tests/evaluationStoreScoreRepository.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-result-repository",
+          "refactor-evaluation-store-interaction-repository"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/525"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "persistence",
+        "scoring",
+        "provenance",
+        "symmetry",
+        "sqlite",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-statistics-repository",
+      "title": "Extract evaluation statistics and projections",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "branch": "codex/refactor-evaluation-store-statistics-repository",
+      "verification": "Direct in-memory repository tests and facade regressions preserve run and scenario aggregates, transient-failure reconstruction, configuration comparison, factorial score projection, package exports, and import-time bootstrap while complete hermetic and risk-coverage gates remain green.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-store-interaction-repository"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore.js",
+          "services/evaluationStore/statisticsRepository.js",
+          "tests/evaluationStoreStatisticsRepository.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-store-interaction-repository",
+          "refactor-evaluation-store-export-log-readers",
+          "repair-evaluation-config-comparison-missing-side-winner"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/527"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "statistics",
+        "projections",
         "sqlite",
         "maintainability"
       ],
@@ -11554,6 +12071,27 @@
       ]
     },
     {
+      "id": "figure-lattice-falsifier",
+      "title": "Figure-lattice falsifier: do the logged features separate the seven figures?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "verification": "Terminal, same day, pure computation (scripts/analyze-figure-lattice.js; artifact exports/crossed-effects/figure-lattice-falsifier.json). Sanity run with card identity separates 7/7 trivially; the real run without it separates 0/7 — the separation claim FAILS on the features the harness already logs, recorded per the fixed reading as the ontology's measured bound. What separates is the STATE, not the figure: the lost-state concept contains all three cards played there (the robust-native finding in lattice form) and the flat-state concept contains both its cards (the audits' own tag-noise finding). Of the note's five makeup dimensions, dose is near-constant (84/122 at step 1), rights never varied as a card ingredient (licence text on 0 turns), and act/register/footing are not stamped at all — the negative result independently motivates amendment 3's performed column. 122 delivery-verified figure-carded turns; crossed delivery reproduced 59/60; one non-figure carded turn excluded and recorded.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "notes/2026-08-06-pedagogical-figure-ontology.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#713-the-unit-ladder-a-seven-level-ontology-for-the-pedagogical-instrumentation"
+        ]
+      }
+    },
+    {
       "id": "fix-rubric-dimension-count-claims",
       "title": "Fix the off-by-one in both v2.2 rubric dimension-count claims",
       "status": "done",
@@ -13974,6 +14512,65 @@
       ]
     },
     {
+      "id": "keep-the-repo-dotenv-out-of-the-keyless-cli-tests",
+      "title": "Keep the repo .env out of the keyless CLI tests",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "verification": "node --test tests/dryRun.test.js passes in a checkout that has a populated .env at the root, not only in CI where there is none. Two guard cases stand behind that: one plants a .env in a temp directory and asserts the child reads nothing from it, with a control proving an unguarded child would read it; the other asserts an exported shell key does not reach the child. Deleting either half of the fix fails a guard.",
+      "claim_status": "methods",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/544"
+        ],
+        "code": [
+          "tests/dryRun.test.js",
+          "tests/fixtures/empty.env",
+          "tests/fixtures/dotenv-probe.js"
+        ]
+      },
+      "tags": [
+        "testing",
+        "tooling"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "claude/nostalgic-elion-a493d3"
+    },
+    {
+      "id": "let-the-hermetic-test-runner-find-vitest-from-a-worktree",
+      "title": "Let the hermetic test runner find Vitest from a worktree",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "verification": "npm test completes from a .claude/worktrees/* checkout: both the root Node phase and the in-housed tutor-core Vitest phase run and report. A unit case drives buildCoreTestArgs against a fixture main-checkout/worktree layout and against a root with no install above it.",
+      "claim_status": "methods",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/537"
+        ],
+        "code": [
+          "scripts/hermetic-test-contract.js",
+          "scripts/run-hermetic-tests.js",
+          "scripts/run-risk-coverage.js"
+        ]
+      },
+      "tags": [
+        "testing",
+        "tooling",
+        "git-worktrees"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "claude/confident-jennings-9c45c6"
+    },
+    {
       "id": "lint-hook-worktree-node-modules-fallback",
       "title": "Let the lint hook find node_modules from a worktree",
       "status": "done",
@@ -14125,6 +14722,47 @@
       ],
       "milestone": "paper-2-evidence-cleanup",
       "branch": "codex/workplan-board-triage"
+    },
+    {
+      "id": "sarcasm-determinate-negation-grid",
+      "title": "Sarcasm as determinate negation — cargo-bearing cue contract",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-07",
+      "verification": "A 15-row run (or an explicit drop decision) reports fidelity vs the parent sarcasm arm, faithful-row conversion, and negation recovery, with exclusions and invalid violations separate; any claim lands in paper §6.7 first.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-08-06-sarcasm-determinate-negation-preregistration.md",
+          "notes/2026-07-26-negative-register-effect-estimation-preregistration.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "runs": [
+          "eval-2026-08-05-87fe3664",
+          "eval-2026-08-06-4de45d05"
+        ],
+        "exports": [
+          "exports/sarcasm-determinate-negation-grid/eval-2026-08-06-4de45d05.json"
+        ],
+        "items": [
+          "negative-register-effect-estimation-grid"
+        ]
+      },
+      "depends_on": [
+        "negative-register-effect-estimation-grid"
+      ],
+      "tags": [
+        "registers",
+        "negative-registers",
+        "stance-fidelity",
+        "determinate-negation"
+      ]
     },
     {
       "id": "transcript-render-standard",

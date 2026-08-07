@@ -54,7 +54,7 @@ import {
   buildLearnerHolisticEvaluationPrompt,
   calculateLearnerOverallScore,
 } from './learnerRubricEvaluator.js';
-import * as evaluationStore from './evaluationStore.js';
+import { getDefaultEvaluationStore } from './evaluationStore/lifecycle.js';
 import * as evalConfigLoader from './evalConfigLoader.js';
 import {
   assertEvalProfileTargetExists,
@@ -146,7 +146,7 @@ const { deleteCheckpoint, listCheckpoints, loadCheckpoint, writeCheckpoint } = c
   rootDir: CHECKPOINTS_DIR,
 });
 
-function resolveRejudgeScenarioAndDialogueLog(result, preloadedDialogueLog = null) {
+function resolveRejudgeScenarioAndDialogueLog(evaluationStore, result, preloadedDialogueLog = null) {
   const standardScenario = evalConfigLoader.getScenario(result.scenarioId);
   const dialogueLog = preloadedDialogueLog || evaluationStore.loadDialogueLog(result.dialogueId);
   if (standardScenario) return { scenario: standardScenario, dialogueLog };
@@ -1020,7 +1020,11 @@ export async function runEvaluation(options = {}) {
     threadNegotiationResolution: explicitThreadNegotiationResolution = false, // A5 CLI --thread-negotiation-resolution: carry negotiated resolution into the delivered suggestion across revision rounds (OR'd with the profile-level thread_negotiation_resolution flag in runMultiTurnTest)
     externalEgoExtension = null, // opt-in ego prompt extension (e.g. cross-session memory narrative); multi-turn only, folded into fullEgoExtension in runMultiTurnTest
     admissionPlan = null, // HTTP metered-work admission snapshot; absent on CLI/direct callers
+    evaluationStore: suppliedEvaluationStore = null,
   } = options;
+
+  const evaluationStore = resolveEvaluationStore(suppliedEvaluationStore);
+  const { runSingleTest } = getEvaluationRunnerRuntime(evaluationStore);
 
   const log = verbose ? console.log : () => {};
 
@@ -1735,133 +1739,172 @@ const { prepareMultiTurnEvaluation } = createEvaluationMultiTurnSetupRuntime({
   transcriptsDir: TRANSCRIPTS_DIR,
 });
 
-const { completeMultiTurnEvaluation } = createEvaluationMultiTurnCompletionRuntime({
-  TRACE_SCHEMA_VERSION,
-  buildIdConstructionTraceFromTurnResults,
-  chalk,
-  createHash,
-  deleteCheckpoint,
-  dialogueTraceAnalyzer,
-  evalConfigLoader,
-  evaluationStore,
-  evaluateSuggestionWithSelectedJudge,
-  formatTranscript,
-  fs,
-  logsDir: LOGS_DIR,
-  path,
-  rubricEvaluator,
-  turnComparisonAnalyzer,
-});
+const evaluationRuntimeByStore = new WeakMap();
 
-const turnExecutionDependencies = {
-  attachApiPayloadsToTrace,
-  buildIdConstructionTraceFromTurnResults,
-  captureApiCalls,
-  collectPromptVersions,
-  computeConfigHash,
-  contentResolver,
-  debugLog,
-  evalConfigLoader,
-  evaluateSuggestionWithSelectedJudge,
-  flattenNumericScores,
-  formatApiMessages,
-  idDirectorEngine,
-  memoryDynamicsService,
-  mockGenerateResult,
-  mockJudgeResult,
-  resolveConfigModels,
-  resolveEvalProfile,
-  retryWithBackoff,
-  rubricEvaluator,
-  structureLearnerContext,
-  tutorApi,
-};
+function assertEvaluationStore(evaluationStore) {
+  if (!evaluationStore || typeof evaluationStore !== 'object') {
+    throw new TypeError('evaluationStore dependency is required');
+  }
+  return evaluationStore;
+}
 
-const { generateAndEvaluateTurn, runSingleTest } = createEvaluationTurnExecutionRuntime(turnExecutionDependencies);
+function resolveEvaluationStore(evaluationStore = null) {
+  return assertEvaluationStore(evaluationStore || getDefaultEvaluationStore());
+}
 
-const { runMultiTurnTest } = createEvaluationMultiTurnExecutionRuntime({
-  DESUB_DRIFT_CLASSIFIER_MODEL,
-  DESUB_SEMANTIC_RELEASE_JUDGE,
-  _bridge3CouplingCosine,
-  advanceBetweenTurnAdaptation,
-  analyzeLearnerTrajectory,
-  buildDriftCorrectionContext,
-  buildInteriorCharacterSheet,
-  buildMessageChain,
-  buildMultiTurnContext,
-  buildResistanceSignalRetryContext,
-  callDriftClassifierJudge,
-  checkContentConditionSemantic,
-  checkGrounding,
-  classifyLearnerDraft,
-  completeMultiTurnEvaluation,
-  countTutorWork,
-  dialogueEngine,
-  driftGateMaxAttempts,
-  evaluateLearnerDraft,
-  evaluateResistanceSignalTarget,
-  evaluationStore,
-  extractTurnSuperegoAssessment,
-  flattenConversationHistory,
-  flattenNumericScores,
-  formatLearnerActionForTranscript,
-  generateAndEvaluateTurn,
-  generateLearnerResponse,
-  generatePhase1Reflection,
-  joinContextBlocks,
-  prepareMultiTurnEvaluation,
-  projectLearnerDeliberationTrace,
-  promptRewriter,
-  resistanceSignalGateMaxAttempts,
-  shouldGateDynamicResistanceTurn,
-  structureLearnerContext,
-  tutorApi,
-  writeCheckpoint,
-});
+function createEvaluationRunnerRuntime(evaluationStore) {
+  assertEvaluationStore(evaluationStore);
 
-// The single-test owner delegates multi-turn scenarios through this late-bound
-// seam, avoiding a source-level import cycle between the two runtime owners.
-turnExecutionDependencies.runMultiTurnTest = runMultiTurnTest;
+  const { completeMultiTurnEvaluation } = createEvaluationMultiTurnCompletionRuntime({
+    TRACE_SCHEMA_VERSION,
+    buildIdConstructionTraceFromTurnResults,
+    chalk,
+    createHash,
+    deleteCheckpoint,
+    dialogueTraceAnalyzer,
+    evalConfigLoader,
+    evaluationStore,
+    evaluateSuggestionWithSelectedJudge,
+    formatTranscript,
+    fs,
+    logsDir: LOGS_DIR,
+    path,
+    rubricEvaluator,
+    turnComparisonAnalyzer,
+  });
 
-const { resumeEvaluation } = createEvaluationResumeRuntime({
-  DEFAULT_PARALLELISM,
-  ProgressLogger,
-  REQUEST_DELAY_MS,
-  StreamingReporter,
-  contentResolver,
-  evalConfigLoader,
-  evaluationStore,
-  formatProgress,
-  getProgressLogPath,
-  isPidAlive,
-  isTransientEvaluationError,
-  listCheckpoints,
-  monitoringService,
-  runSingleTest,
-  setQuietMode,
-  sleep,
-});
+  const turnExecutionDependencies = {
+    attachApiPayloadsToTrace,
+    buildIdConstructionTraceFromTurnResults,
+    captureApiCalls,
+    collectPromptVersions,
+    computeConfigHash,
+    contentResolver,
+    debugLog,
+    evalConfigLoader,
+    evaluateSuggestionWithSelectedJudge,
+    flattenNumericScores,
+    formatApiMessages,
+    idDirectorEngine,
+    memoryDynamicsService,
+    mockGenerateResult,
+    mockJudgeResult,
+    resolveConfigModels,
+    resolveEvalProfile,
+    retryWithBackoff,
+    rubricEvaluator,
+    structureLearnerContext,
+    tutorApi,
+  };
 
-const { rejudgeRun } = createEvaluationRejudgeRuntime({
-  DEFAULT_PARALLELISM,
-  REQUEST_DELAY_MS,
-  SUPPORTED_JUDGE_CLIS,
-  buildBatchedLearnerPrompt,
-  buildLearnerEvaluationPrompt,
-  buildLearnerHolisticEvaluationPrompt,
-  calculateLearnerOverallScore,
-  callCliJudge,
-  createHash,
-  evaluationStore,
-  extractLearnerTurnsFromTrace,
-  getCliJudgeModelLabel,
-  getDefaultCliJudgeModelOverride,
-  normalizeCliJudgeEvaluation,
-  resolveRejudgeScenarioAndDialogueLog,
-  retryWithBackoff,
-  rubricEvaluator,
-  sleep,
-});
+  const { generateAndEvaluateTurn, runSingleTest } = createEvaluationTurnExecutionRuntime(turnExecutionDependencies);
+  const { runMultiTurnTest } = createEvaluationMultiTurnExecutionRuntime({
+    DESUB_DRIFT_CLASSIFIER_MODEL,
+    DESUB_SEMANTIC_RELEASE_JUDGE,
+    _bridge3CouplingCosine,
+    advanceBetweenTurnAdaptation,
+    analyzeLearnerTrajectory,
+    buildDriftCorrectionContext,
+    buildInteriorCharacterSheet,
+    buildMessageChain,
+    buildMultiTurnContext,
+    buildResistanceSignalRetryContext,
+    callDriftClassifierJudge,
+    checkContentConditionSemantic,
+    checkGrounding,
+    classifyLearnerDraft,
+    completeMultiTurnEvaluation,
+    countTutorWork,
+    dialogueEngine,
+    driftGateMaxAttempts,
+    evaluateLearnerDraft,
+    evaluateResistanceSignalTarget,
+    evaluationStore,
+    extractTurnSuperegoAssessment,
+    flattenConversationHistory,
+    flattenNumericScores,
+    formatLearnerActionForTranscript,
+    generateAndEvaluateTurn,
+    generateLearnerResponse,
+    generatePhase1Reflection,
+    joinContextBlocks,
+    prepareMultiTurnEvaluation,
+    projectLearnerDeliberationTrace,
+    promptRewriter,
+    resistanceSignalGateMaxAttempts,
+    shouldGateDynamicResistanceTurn,
+    structureLearnerContext,
+    tutorApi,
+    writeCheckpoint,
+  });
+
+  // The single-test owner delegates multi-turn scenarios through this
+  // late-bound seam, avoiding a source-level import cycle between owners.
+  turnExecutionDependencies.runMultiTurnTest = runMultiTurnTest;
+
+  const resumeRuntime = createEvaluationResumeRuntime({
+    DEFAULT_PARALLELISM,
+    ProgressLogger,
+    REQUEST_DELAY_MS,
+    StreamingReporter,
+    contentResolver,
+    evalConfigLoader,
+    evaluationStore,
+    formatProgress,
+    getProgressLogPath,
+    isPidAlive,
+    isTransientEvaluationError,
+    listCheckpoints,
+    monitoringService,
+    runSingleTest,
+    setQuietMode,
+    sleep,
+  });
+  const rejudgeRuntime = createEvaluationRejudgeRuntime({
+    DEFAULT_PARALLELISM,
+    REQUEST_DELAY_MS,
+    SUPPORTED_JUDGE_CLIS,
+    buildBatchedLearnerPrompt,
+    buildLearnerEvaluationPrompt,
+    buildLearnerHolisticEvaluationPrompt,
+    calculateLearnerOverallScore,
+    callCliJudge,
+    createHash,
+    evaluationStore,
+    extractLearnerTurnsFromTrace,
+    getCliJudgeModelLabel,
+    getDefaultCliJudgeModelOverride,
+    normalizeCliJudgeEvaluation,
+    resolveRejudgeScenarioAndDialogueLog: (result, dialogueLog) =>
+      resolveRejudgeScenarioAndDialogueLog(evaluationStore, result, dialogueLog),
+    retryWithBackoff,
+    rubricEvaluator,
+    sleep,
+  });
+
+  return Object.freeze({ runSingleTest, runMultiTurnTest, ...resumeRuntime, ...rejudgeRuntime });
+}
+
+function getEvaluationRunnerRuntime(evaluationStore) {
+  let runtime = evaluationRuntimeByStore.get(evaluationStore);
+  if (!runtime) {
+    runtime = createEvaluationRunnerRuntime(evaluationStore);
+    evaluationRuntimeByStore.set(evaluationStore, runtime);
+  }
+  return runtime;
+}
+
+export function resumeEvaluation(options = {}) {
+  const { evaluationStore: suppliedEvaluationStore = null, ...runtimeOptions } = options;
+  const evaluationStore = resolveEvaluationStore(suppliedEvaluationStore);
+  return getEvaluationRunnerRuntime(evaluationStore).resumeEvaluation(runtimeOptions);
+}
+
+export function rejudgeRun(runId, options = {}) {
+  const { evaluationStore: suppliedEvaluationStore = null, ...runtimeOptions } = options;
+  const evaluationStore = resolveEvaluationStore(suppliedEvaluationStore);
+  return getEvaluationRunnerRuntime(evaluationStore).rejudgeRun(runId, runtimeOptions);
+}
 
 /**
  * Compare two or more configurations
@@ -1874,6 +1917,7 @@ export async function compareConfigurations(configs, options = {}) {
     dryRun = false,
     skipRubricEval = false,
     admissionPlan = null,
+    evaluationStore = null,
   } = options;
 
   // Run evaluation with specified configs
@@ -1885,6 +1929,7 @@ export async function compareConfigurations(configs, options = {}) {
     dryRun,
     skipRubricEval,
     admissionPlan,
+    evaluationStore,
     description: `Comparison: ${configs.map((c) => c.label || c.profileName || `${c.provider}/${c.model}`).join(' vs ')}`,
   });
 
@@ -1926,7 +1971,11 @@ export async function quickTest(config, options = {}) {
     superegoStrategy = null, // Superego intervention strategy
     judgeOverride = null, // Override judge model for this run
     dryRun = false,
+    evaluationStore: suppliedEvaluationStore = null,
   } = options;
+
+  const evaluationStore = resolveEvaluationStore(suppliedEvaluationStore);
+  const { runSingleTest } = getEvaluationRunnerRuntime(evaluationStore);
 
   const scenarios = [evalConfigLoader.listScenarios().find((s) => s.id === scenarioId)].filter(Boolean);
   if (scenarios.length === 0) {
@@ -1959,7 +2008,8 @@ export function listOptions() {
 /**
  * Get previous run results
  */
-export function getRunResults(runId) {
+export function getRunResults(runId, options = {}) {
+  const evaluationStore = resolveEvaluationStore(options.evaluationStore);
   const run = evaluationStore.getRun(runId);
   if (!run) {
     throw new Error(`Run not found: ${runId}`);
@@ -1976,7 +2026,8 @@ export function getRunResults(runId) {
 /**
  * Generate a text report for a run
  */
-export function generateReport(runId) {
+export function generateReport(runId, options = {}) {
+  const evaluationStore = resolveEvaluationStore(options.evaluationStore);
   const run = evaluationStore.getRun(runId);
   if (!run) {
     throw new Error(`Run not found: ${runId}`);
@@ -2155,10 +2206,33 @@ export function generateReport(runId) {
   return lines.join('\n');
 }
 
+/**
+ * Bind the orchestration API to one host-owned evaluation store. Hosts that
+ * use this factory never touch the lazy compatibility store.
+ */
+export function createEvaluationRunner({ evaluationStore } = {}) {
+  const store = assertEvaluationStore(evaluationStore);
+  const withStore = (options = {}) => ({ ...options, evaluationStore: store });
+
+  return Object.freeze({
+    runEvaluation: (options) => runEvaluation(withStore(options)),
+    resumeEvaluation: (options) => resumeEvaluation(withStore(options)),
+    compareConfigurations: (configs, options) => compareConfigurations(configs, withStore(options)),
+    quickTest: (config, options) => quickTest(config, withStore(options)),
+    listOptions,
+    getRunResults: (runId) => getRunResults(runId, { evaluationStore: store }),
+    generateReport: (runId) => generateReport(runId, { evaluationStore: store }),
+    rejudgeRun: (runId, options) => rejudgeRun(runId, withStore(options)),
+    parseCliJudgeJsonResponse,
+    getCliJudgeModelLabel,
+    CANONICAL_EVAL_PROFILES,
+    LEGACY_EVAL_PROFILE_ALIASES,
+    validateEvalProfileRegistry,
+  });
+}
+
 // Named exports for unit testing (these are internal helpers not part of the public API)
 export {
-  resumeEvaluation,
-  rejudgeRun,
   structureLearnerContext,
   stripRecentChatHistory,
   resolveConfigModels,

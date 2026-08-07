@@ -31,6 +31,11 @@ function isolatedStoreContract() {
     const direct = await import('@machinespirits/eval/services/evaluationStore');
     const root = await import('@machinespirits/eval');
     const fileFacade = await import('./services/evaluationStore.js');
+    await import('./routes/evalRoutes.js');
+    await import('./services/evaluationRunner.js');
+    const lifecycle = await import('./services/evaluationStore/lifecycle.js');
+    const databaseExistsAfterImports = fs.existsSync(process.env.EVAL_DB_PATH);
+    const store = lifecycle.startDefaultEvaluationStore({ rootDir: process.cwd() });
     const db = new Database(process.env.EVAL_DB_PATH, { readonly: true });
     const tables = db
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
@@ -38,10 +43,15 @@ function isolatedStoreContract() {
       .map((row) => row.name);
     const journalMode = db.pragma('journal_mode', { simple: true });
     db.close();
+    const storeOpenBeforeStop = store.isOpen;
+    lifecycle.stopDefaultEvaluationStore();
 
     console.log(JSON.stringify({
-      databaseExists: fs.existsSync(process.env.EVAL_DB_PATH),
+      databaseExistsAfterImports,
+      databaseExistsAfterStart: fs.existsSync(process.env.EVAL_DB_PATH),
       journalMode,
+      storeOpenBeforeStop,
+      storeOpenAfterStop: store.isOpen,
       tables,
       namedExports: Object.keys(direct).filter((name) => name !== 'default').sort(),
       defaultMembers: Object.keys(direct.default).sort(),
@@ -74,19 +84,21 @@ describe('evaluationStore boundary inventory', () => {
     }
     assert.deepEqual(counts, {
       'package-entrypoint': 1,
-      'application-runtime': 4,
-      'operational-script': 25,
+      'operational-script': 16,
       'archived-oneoff': 4,
-      test: 15,
+      test: 14,
     });
   });
 
-  it('preserves the hermetic import-time bootstrap and package facade contract', () => {
+  it('keeps imports side-effect free and preserves explicit startup plus package compatibility', () => {
     const contract = isolatedStoreContract();
 
-    assert.equal(contract.databaseExists, true);
+    assert.equal(contract.databaseExistsAfterImports, false);
+    assert.equal(contract.databaseExistsAfterStart, true);
     assert.equal(contract.journalMode, 'wal');
-    assert.deepEqual(contract.tables, inventory.importTimeContract.tables);
+    assert.equal(contract.storeOpenBeforeStop, true);
+    assert.equal(contract.storeOpenAfterStop, false);
+    assert.deepEqual(contract.tables, inventory.startupContract.tables);
     assert.deepEqual(contract.namedExports, inventory.exports.named);
     assert.deepEqual(contract.defaultMembers, inventory.exports.defaultMembers);
     assert.equal(contract.rootMatchesDirect, true);

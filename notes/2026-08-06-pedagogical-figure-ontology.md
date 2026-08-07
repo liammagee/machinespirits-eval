@@ -352,3 +352,109 @@ promote, bound, archive, or kill) — and only against a priced deficit, per
 the small-kernel rule. This note is the registry until a config-level
 registry earns its keep; when a figure's status changes, update its record
 here and cite the card that changed it.
+
+## The lattice falsifier, run (2026-08-07): the bound is measured
+
+Amendment 2's falsifier — the proven figures should surface as
+well-separated concepts under the features the harness already logs —
+has now been run, as registered, on the recorded carded turns (card
+`figure-lattice-falsifier`; script `scripts/analyze-figure-lattice.js`;
+per-row artifact `exports/crossed-effects/figure-lattice-falsifier.json`).
+Objects: the 122 delivery-verified figure-carded target turns of the
+crossed, repertoire, lost-retest, and flat-promotion audits (crossed
+delivery reproduced 59/60; one further turn excluded and recorded — the
+typed quiet detector carded a stake fusion as quiet defiance, a card
+outside the seven). Attributes, frozen on the card before computing:
+state, entry (detected or forced), licence, dose (ordinal), world, the
+sol conduct tag, and the tag-match flag; the ruling joined a subset run
+on the 106 rows that stamp it. Criterion, frozen: a figure separates
+when the concept its turns generate contains no other figure's turns.
+
+The sanity run, with card identity as an attribute, separates 7/7
+trivially. The real run separates **0/7**, and no figure has any
+distinguishing combination of logged attributes at all. The named
+merges: the five move-card figures dissolve into near-total mutual
+confusion, because the crossed designs performed each card across
+states on purpose and the raw sol tag is too noisy to close the gap
+(the audits' own ruling overrides, 28/60 and 19/48, already said so);
+the lost state's three cards (untangling, demand, grievance) form one
+concept — the robust-native result in lattice form, since conduct there
+does not follow the card; the flat state's two cards form one concept
+for the same tag-noise reason. Adding the ruling (subset run) still
+separates nothing: the three wrong-card lost turns that untangled
+anyway stay inside the untangling concept.
+
+The measured bound, stated plainly: what the current logs separate is
+the STATE, not the figure. Of this note's five makeup dimensions —
+act, register, footing, dose, rights — the two that are stamped were
+near-constant in this corpus (dose: 84/122 turns at step 1; the
+licence text appeared in a card on zero turns — the single dose-3
+stamp sits under a forced quiet card, which carries no licence text by
+construction), and the three that vary from reply to reply are not
+logged at all. The figure identities live in the card text and the
+per-state conduct adjudication, neither of which is a stamped per-turn
+feature. Per the registered reading this is a finding, not a failure:
+the ontology's separation claim is not carried by the current logging
+vocabulary, and the result independently motivates amendment 3's
+standing requirement — a performed-figure column (act, register,
+footing stamped on the reply) is exactly what separation would need.
+Simulated learners, k≤3 per cell per world, single-adjudicator
+rulings, as inherited from the source audits.
+
+## The performed column, built and read back (2026-08-07)
+
+Amendment 3's requirement, acted on the same day the falsifier measured
+the bound. `services/tutorStubReplyFeatures.js` stamps what a reply
+DID, read off the reply text: seven acts (ask, cite, credit, assign,
+contrast, restate, concede, plus `assert` as the residual), where the
+warrant sits (`authority: record | learner | shared | own | none`),
+whether the tutor commits himself to a next action, whether the reply
+makes a conditional wager, and two plain measured properties of the
+sentences — mean length and rate of Latinate word endings, each
+bucketed low/medium/high. The harness now emits it as a
+`tutor_reply_features` trace event at every turn-completion path.
+
+The rule that makes it worth anything: the stamp never sees the card,
+the pressure classification or the detected state. Its signature takes
+reply text and (only for echo counting) the learner turn. A stamp that
+could read the card would re-encode the card and separation would pass
+by construction. This is enforced by a test that reads the module's own
+source and fails if the card vocabulary ever appears in it.
+
+Read back over the same 122 turns (run C of the falsifier script,
+added after the frozen design and marked as such; runs A, B and B' are
+asserted to reproduce their recorded numbers before C is read):
+
+- **1/7 separated**, up from 0/7. The oblique lure separates on
+  `{authority:none, state:flat}`. This is the right-arm/wrong-arm
+  contrast the flat-promotion design set up and that run B could not
+  see: at the flat state all five lure turns rest on nobody's say-so,
+  and all five wrong-arm reopen-the-record turns cite the record
+  (4 `authority:record`, 1 `shared`). A clean split at a shared state,
+  on n=5 vs 5.
+- **The plain-words swap narrows sharply without separating.** Its
+  closure falls from swallowing most of the corpus to 20 foreign
+  turns, driven by `latinate:low` on 12 of 12 mockery turns against
+  40% corpus-wide. The swap leaves a measurable trace in the prose.
+- **The lost state is unchanged.** Untangling, demand and grievance
+  still form one concept there. The performed features do not rescue
+  it, which is the robust-native finding holding up under a new
+  instrument rather than a limit of the instrument.
+- **Performed features alone separate nothing** (run C', 0/7), and four
+  of the seven figures share no performed attribute across all their
+  turns. The column is a complement to the state, not a replacement.
+- **Attribute realization**: 20 attributes, none dead, none
+  near-constant — the failure that made the stamped dose useless in
+  run B. The three-way buckets spread 27/44/29 and 40/30/30. Two
+  columns are genuinely rare and say something: conditional wagers on
+  3 of 122 turns, which is the arc's finding that this tutor family
+  does not price an outcome unprompted; and `act:restate` on 5 of 122,
+  which fires on only 42% of the mockery turns it was written for, so
+  the restate pattern under-detects and should be read as a floor.
+
+**Calibration, not a clean test.** The act patterns were widened after
+reading three mockery replies from this same corpus with their card
+labels visible. Any separation figure computed here is therefore
+in-sample. The clean test is fresh turns carrying the live stamp — the
+harness now writes it on every run, so the next planned run supplies
+them at no extra cost. Nothing in the paper is touched until then.

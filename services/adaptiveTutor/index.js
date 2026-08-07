@@ -15,7 +15,7 @@ import yaml from 'yaml';
 import { runScenario, runScenarioWithCounterfactual } from './runner.js';
 import { llmMode } from './llm.js';
 import { assertWorldAdaptationSpecUsable, summarizeWorldAdaptationSpec } from './actionPolicy.js';
-import { createAdaptiveRun, persistScenarioWithCounterfactual, persistScenarioRun } from './persistence.js';
+import { createAdaptivePersistence } from './persistence.js';
 import { createBudgetTracker } from './budgetTracker.js';
 import {
   setActiveBudgetTracker,
@@ -24,7 +24,7 @@ import {
   clearActiveCellConfig,
 } from './realLLM.js';
 import { SUPPORTED_ARCHITECTURES } from './graph.js';
-import * as evaluationStore from '../evaluationStore.js';
+import { getDefaultEvaluationStore } from '../evaluationStore/lifecycle.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
@@ -156,6 +156,7 @@ export async function runAdaptiveEvaluation({
   dryRun = false,
   verbose = false,
   maxCostUsd = null,
+  evaluationStore: suppliedEvaluationStore = null,
 } = {}) {
   if (!profileName || !evalProfile) {
     throw new Error('runAdaptiveEvaluation requires profileName and evalProfile');
@@ -202,6 +203,10 @@ export async function runAdaptiveEvaluation({
     model: adaptiveCfg.model || 'mock',
     hyperparameters: adaptiveCfg.hyperparameters || {},
   };
+  const evaluationStore = suppliedEvaluationStore || getDefaultEvaluationStore();
+  const { createAdaptiveRun, persistScenarioWithCounterfactual, persistScenarioRun } = createAdaptivePersistence({
+    evaluationStore,
+  });
 
   const totalScenarios = scenarios.length * runsPerConfig;
   const run = createAdaptiveRun({
@@ -360,4 +365,13 @@ export async function runAdaptiveEvaluation({
     haltReason,
     budget: tracker ? tracker.summary() : null,
   };
+}
+
+export function createAdaptiveEvaluationRunner({ evaluationStore } = {}) {
+  if (!evaluationStore || typeof evaluationStore !== 'object') {
+    throw new TypeError('evaluationStore dependency is required');
+  }
+  return Object.freeze({
+    runAdaptiveEvaluation: (options) => runAdaptiveEvaluation({ ...options, evaluationStore }),
+  });
 }

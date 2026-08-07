@@ -43,6 +43,35 @@ export function discoverCoreTestFiles(projectRoot = DEFAULT_PROJECT_ROOT) {
   return discoverImmediateTests(projectRoot, CORE_TEST_DIRECTORY);
 }
 
+const VITEST_ENTRY_SEGMENTS = ['node_modules', 'vitest', 'vitest.mjs'];
+
+/**
+ * Vitest's entry point, found by walking up from the project root.
+ *
+ * A `git worktree` checkout — the ones under `.claude/worktrees/` here — carries
+ * no install of its own. Node, eslint and prettier all reach the main checkout's
+ * copy by walking the directory tree upwards, so this has to walk too: joining
+ * the entry point onto the project root points a worktree run at a path nobody
+ * installed, and the core phase dies with `Cannot find module` before it can
+ * write the JSON report the runner reads its verdict from. The same upward walk
+ * already fixes the lint hook, for the same reason.
+ *
+ * With no install above the root either, the unresolved project-root path comes
+ * back, so a genuinely missing Vitest still names the checkout the caller asked
+ * about rather than the filesystem root.
+ */
+export function resolveVitestEntryPoint(projectRoot = DEFAULT_PROJECT_ROOT) {
+  const start = path.resolve(projectRoot);
+  let directory = start;
+  for (;;) {
+    const candidate = path.join(directory, ...VITEST_ENTRY_SEGMENTS);
+    if (fs.existsSync(candidate)) return candidate;
+    const parent = path.dirname(directory);
+    if (parent === directory) return path.join(start, ...VITEST_ENTRY_SEGMENTS);
+    directory = parent;
+  }
+}
+
 function isExcludedTestPath(relativePath) {
   const segments = relativePath.split(/[\\/]/u);
   return segments.slice(0, -1).some((segment) => TEST_SCAN_EXCLUDED_DIRECTORIES.has(segment));

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import { resolveChatModel } from '../scripts/eval-cli/commands/chatCommand.js';
 import { GENERATION_COMMAND_NAMES, getGenerationCommandHandler } from '../scripts/eval-cli/commands/generationIndex.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -75,6 +76,42 @@ describe('eval-cli generation command boundaries', () => {
     assert.match(chatToolsSource, /executeChatTool/u);
     for (const tool of ['list_runs', 'get_run_status', 'get_run_report', 'get_transcript']) {
       assert.match(chatToolsSource, new RegExp(`name: ['"]${tool}['"]`, 'u'));
+    }
+  });
+});
+
+describe('chat model resolution', () => {
+  it('passes an OpenRouter judge slug through unchanged', () => {
+    const resolved = resolveChatModel({ provider: 'openrouter', model: 'anthropic/claude-sonnet-4.6' });
+
+    assert.equal(resolved.error, undefined);
+    assert.equal(resolved.model, 'anthropic/claude-sonnet-4.6');
+  });
+
+  it('refuses a non-OpenRouter judge instead of inventing a slug', () => {
+    // chat POSTs to OpenRouter whatever it is handed, so 'claude-code/sonnet'
+    // used to leave here as a model name and come back a 400 on the first
+    // message typed. Fail at the config, and name what resolved.
+    for (const [provider, model] of [
+      ['claude-code', 'sonnet'],
+      ['codex', 'gpt-5.5'],
+      ['anthropic', 'claude-sonnet-4.6'],
+      ['gemini', 'gemini-2.5-pro'],
+    ]) {
+      const resolved = resolveChatModel({ provider, model });
+
+      assert.equal(resolved.model, undefined, `${provider} should not yield a chat model`);
+      assert.match(resolved.error, new RegExp(`${provider}/${model}`, 'u'));
+      assert.match(resolved.error, /openrouter\.\*/u);
+    }
+  });
+
+  it('reports a judge that resolved to no model at all', () => {
+    for (const judge of [undefined, {}, { provider: 'openrouter' }]) {
+      const resolved = resolveChatModel(judge);
+
+      assert.equal(resolved.model, undefined);
+      assert.match(resolved.error, /No judge model resolved/u);
     }
   });
 });

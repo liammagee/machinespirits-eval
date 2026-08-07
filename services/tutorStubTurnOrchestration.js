@@ -1,3 +1,10 @@
+// Imported rather than injected on purpose. The stamp has to land on every
+// turn of every run or the figure-lattice test has nothing to read, and an
+// injected dependency that one construction site forgets to wire fails
+// silently — the reply features would just stop appearing. This service is
+// pure and stateless, so a direct import costs nothing.
+import { describeTutorStubReplyFeatures } from './tutorStubReplyFeatures.js';
+
 export function createTutorStubTurnOrchestration(dependencies = {}) {
   const {
     C,
@@ -74,6 +81,19 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
     tutorStubReleasePacingSnapshot,
     writeFieldVisualization,
   } = dependencies;
+
+  /**
+   * Stamp what the delivered reply did, measured from the reply text
+   * (card: reply-feature-stamps). Unconditional — no flag, no env — because
+   * the point of the stamp is to compare carded turns against uncarded ones,
+   * and a stamp that only fires when a card fires cannot do that. Costs a
+   * few regex passes over one turn, and never touches the reply.
+   */
+  function recordTutorStubReplyFeatures({ state, turnId, turn, replyText, learnerText }) {
+    const features = describeTutorStubReplyFeatures(replyText, { learnerText });
+    if (!features) return;
+    appendTraceEvent(state.trace, { type: 'tutor_reply_features', turnId, turn, ...features });
+  }
 
   async function runPassthroughTurn(learnerText, state, runtimeOptions = {}) {
     assertTutorStubTurnAttemptCurrent(runtimeOptions);
@@ -228,6 +248,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         ...observedAudits,
       });
     }
+    recordTutorStubReplyFeatures({ state, turnId, turn: tutorTurn, replyText: response.text, learnerText });
     appendTraceEvent(state.trace, {
       type: 'turn_complete',
       turnId,
@@ -859,6 +880,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
         publicTranscriptChanged: false,
       });
     }
+    recordTutorStubReplyFeatures({ state, turnId, turn: tutorTurn, replyText: response.text, learnerText });
     appendTraceEvent(state.trace, {
       type: 'turn_complete',
       turnId,
@@ -1124,6 +1146,7 @@ export function createTutorStubTurnOrchestration(dependencies = {}) {
       guardAccounting: accounting,
       publicDelivery: 'mechanical_public_safe_quarantine',
     });
+    recordTutorStubReplyFeatures({ state, turnId, turn: tutorTurn, replyText: text, learnerText });
     appendTraceEvent(state.trace, {
       type: 'turn_complete',
       turn: tutorTurn,

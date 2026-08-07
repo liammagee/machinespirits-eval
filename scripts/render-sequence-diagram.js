@@ -29,9 +29,10 @@ import path from 'path';
 import { execSync } from 'child_process';
 import Database from 'better-sqlite3';
 import YAML from 'yaml';
-import * as evaluationStore from '../services/evaluationStore.js';
+import { createEvaluationScriptContext } from '../services/evaluationStore/scriptContext.js';
 
-const DB_PATH = path.join(import.meta.dirname, '..', 'data', 'evaluations.db');
+const ROOT = path.join(import.meta.dirname, '..');
+const { databasePath: DB_PATH, dialogueLogs } = createEvaluationScriptContext({ rootDir: ROOT });
 const DEFAULT_OUTPUT = path.join(import.meta.dirname, '..', 'exports');
 
 // ── CLI parsing ──────────────────────────────────────────────────────────────
@@ -765,7 +766,7 @@ const rendered = [];
 
 for (const result of results) {
   const dialogueId = result.dialogue_id;
-  const log = evaluationStore.loadDialogueLog(dialogueId);
+  const log = dialogueLogs.loadDialogueLog(dialogueId);
 
   if (!log) {
     console.log(`  ⚠ No log file for ${dialogueId}, skipping`);

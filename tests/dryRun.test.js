@@ -7,27 +7,86 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const exec = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CLI = path.resolve(__dirname, '..', 'scripts', 'eval-cli.js');
+const EMPTY_ENV_FILE = path.resolve(__dirname, 'fixtures', 'empty.env');
+const DOTENV_PROBE = path.resolve(__dirname, 'fixtures', 'dotenv-probe.js');
 
-/** Run the CLI with given args, stripping API keys from env. */
-async function runCli(args = [], timeoutMs = 30000) {
-  // Remove all API keys to prove dry-run needs none
-  const cleanEnv = { ...process.env, NODE_NO_WARNINGS: '1' };
-  delete cleanEnv.OPENROUTER_API_KEY;
-  delete cleanEnv.ANTHROPIC_API_KEY;
-  delete cleanEnv.GEMINI_API_KEY;
-  delete cleanEnv.OPENAI_API_KEY;
+/**
+ * Vars that hand the child a live credential, or decide which provider it
+ * would talk to. Dropped from the child's environment so the CLI sees the
+ * same nothing on a developer box as it does in CI.
+ */
+const PROVIDER_ENV_VARS = [
+  'OPENROUTER_API_KEY',
+  'ANTHROPIC_API_KEY',
+  'GEMINI_API_KEY',
+  'OPENAI_API_KEY',
+  'GOOGLE_API_KEY',
+  'GROQ_API_KEY',
+  'LEMONFOX_API_KEY',
+  'GOOGLE_APPLICATION_CREDENTIALS',
+  'CLAUDE_CODE_OAUTH_TOKEN',
+  'DEFAULT_AI_PROVIDER',
+  'OPENROUTER_MODEL',
+  'ANTHROPIC_MODEL',
+  'OPENAI_MODEL',
+  'GOOGLE_MODEL',
+  'GEMINI_MODEL',
+  'GROQ_MODEL',
+];
 
+/**
+ * Build the environment for a CLI child that must run with no keys at all.
+ *
+ * Two ways a key reaches the child, and both are closed here:
+ *
+ * 1. The repo's own .env. scripts/eval-cli.js imports `dotenv/config`, which
+ *    reads <cwd>/.env unless DOTENV_CONFIG_PATH says otherwise. Pointing it
+ *    at an empty file neutralises the whole file, whatever it declares — so
+ *    these tests no longer pass or fail on whether a .env happens to exist.
+ * 2. The shell that started the test run. Those vars are deleted outright.
+ *    Deleting is safe now that dotenv is looking elsewhere, and it models a
+ *    missing key better than a blank one for any check that asks whether the
+ *    name is present rather than whether it is truthy.
+ *
+ * @param {Record<string, string>} [extra] vars to put back, applied last
+ * @param {Record<string, string>} [source] env to start from, for tests
+ */
+function buildChildEnv(extra = {}, source = process.env) {
+  const env = {
+    ...source,
+    NODE_NO_WARNINGS: '1',
+    DOTENV_CONFIG_PATH: EMPTY_ENV_FILE,
+  };
+  for (const name of PROVIDER_ENV_VARS) delete env[name];
+  return { ...env, ...extra };
+}
+
+/**
+ * Run the CLI with given args, with no API keys in reach.
+ *
+ * @param {string[]} args CLI arguments
+ * @param {object} [options]
+ * @param {number} [options.timeoutMs] kill the child after this long
+ * @param {boolean} [options.closeStdin] send EOF, for commands that prompt
+ * @param {Record<string, string>} [options.env] extra env for the child
+ */
+async function runCli(args = [], { timeoutMs = 30000, closeStdin = false, env = {} } = {}) {
   try {
-    const { stdout, stderr } = await exec('node', [CLI, ...args], {
+    const pending = exec('node', [CLI, ...args], {
       timeout: timeoutMs,
-      env: cleanEnv,
+      env: buildChildEnv(env),
     });
+    // Without EOF an interactive command sits on the pipe until the timeout.
+    if (closeStdin) pending.child.stdin.end();
+    const { stdout, stderr } = await pending;
     return { stdout, stderr, code: 0 };
   } catch (err) {
     return {
@@ -142,6 +201,73 @@ describe('mockProvider', () => {
 });
 
 // ---------------------------------------------------------------------------
+// The harness itself — every case below leans on this being true
+// ---------------------------------------------------------------------------
+
+describe('keyless CLI harness', () => {
+  it('keeps a .env on disk out of the child', async () => {
+    // Plant a .env in a temp directory and run the probe from there, rather
+    // than writing one at the repo root, where it would overwrite whatever a
+    // developer keeps for paid runs. The probe file still resolves dotenv
+    // from the repo, because module lookup follows the file, not the cwd.
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'dryrun-env-'));
+    try {
+      await fs.writeFile(
+        path.join(dir, '.env'),
+        'OPENROUTER_API_KEY=sentinel-from-dotenv\nDEFAULT_AI_PROVIDER=sentinel-provider\n',
+      );
+
+      const isolated = await exec('node', [DOTENV_PROBE], { cwd: dir, env: buildChildEnv() });
+      const seen = JSON.parse(isolated.stdout);
+      assert.strictEqual(seen.OPENROUTER_API_KEY, null, 'child should read no key from a .env');
+      assert.strictEqual(seen.DEFAULT_AI_PROVIDER, null, 'child should read no provider from a .env');
+
+      // Control: without the DOTENV_CONFIG_PATH redirect the sentinel gets
+      // through, so a regression fails here instead of passing on a machine
+      // that simply has no .env.
+      const leaky = { ...process.env, NODE_NO_WARNINGS: '1' };
+      delete leaky.OPENROUTER_API_KEY;
+      delete leaky.DEFAULT_AI_PROVIDER;
+      const unguarded = await exec('node', [DOTENV_PROBE], { cwd: dir, env: leaky });
+      assert.strictEqual(
+        JSON.parse(unguarded.stdout).OPENROUTER_API_KEY,
+        'sentinel-from-dotenv',
+        'control: deleting the var alone lets dotenv refill it, which is the bug being guarded',
+      );
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('keeps an exported shell key out of the child', async () => {
+    // The other route in: a developer who exported a key for a paid run and
+    // then ran the tests in the same shell.
+    const exported = {
+      ...process.env,
+      OPENROUTER_API_KEY: 'sentinel-from-shell',
+      DEFAULT_AI_PROVIDER: 'sentinel-provider',
+    };
+    const { stdout } = await exec('node', [DOTENV_PROBE], {
+      cwd: __dirname,
+      env: buildChildEnv({}, exported),
+    });
+    const seen = JSON.parse(stdout);
+    assert.strictEqual(seen.OPENROUTER_API_KEY, null, 'exported key should not reach the child');
+    assert.strictEqual(seen.DEFAULT_AI_PROVIDER, null, 'exported provider should not reach the child');
+  });
+
+  it('still lets a test hand the child a key on purpose', async () => {
+    // The chat-with-a-key case depends on this: the scrub must not outrank
+    // what a caller passes in.
+    const { stdout } = await exec('node', [DOTENV_PROBE], {
+      cwd: __dirname,
+      env: buildChildEnv({ OPENROUTER_API_KEY: 'test-key-never-sent' }),
+    });
+    assert.strictEqual(JSON.parse(stdout).OPENROUTER_API_KEY, 'test-key-never-sent');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // CLI integration tests (no API keys needed)
 // ---------------------------------------------------------------------------
 
@@ -215,8 +341,25 @@ describe('eval-cli --dry-run', () => {
   });
 
   it('chat fails cleanly without an OpenRouter API key', async () => {
-    const { stderr, code } = await runCli(['chat']);
-    assert.strictEqual(code, 1);
+    // chat talks to one endpoint only (OpenRouter completions), whatever judge
+    // model resolves, so with no key it must bail instead of opening a prompt
+    // it cannot use. stdin gets EOF: if the check ever regresses the test fails
+    // on the assertions below rather than hanging until the timeout.
+    const { stderr, code } = await runCli(['chat'], { closeStdin: true, timeoutMs: 15000 });
+    assert.strictEqual(code, 1, `should exit 1, stderr: ${stderr}`);
     assert.ok(stderr.includes('OPENROUTER_API_KEY not set'), 'should preserve the missing-key error');
+  });
+
+  it('chat starts and exits on EOF when a key is present', async () => {
+    // Guards the other half: the prompt must close itself when stdin ends.
+    // No line is ever typed, so the key is never spent on a request.
+    const { stdout, stderr, code } = await runCli(['chat'], {
+      closeStdin: true,
+      timeoutMs: 15000,
+      env: { OPENROUTER_API_KEY: 'test-key-never-sent' },
+    });
+    assert.strictEqual(code, 0, `should exit 0, stderr: ${stderr}`);
+    assert.ok(stdout.includes('Eval Chat (model:'), 'should print the chat banner');
+    assert.ok(stdout.includes('Bye.'), 'should close out on EOF');
   });
 });

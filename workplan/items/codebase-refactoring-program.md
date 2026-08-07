@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-08-05
+updated: 2026-08-07
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -123,6 +123,15 @@ links:
     - refactor-evaluation-store-run-repository
     - refactor-evaluation-store-result-repository
     - refactor-evaluation-store-score-repository
+    - refactor-evaluation-store-interaction-repository
+    - refactor-evaluation-store-statistics-repository
+    - refactor-evaluation-store-export-log-readers
+    - refactor-evaluation-store-run-manifest-writer
+    - refactor-evaluation-store-application-lifecycle
+    - refactor-evaluation-runner-cli-store-injection
+    - refactor-adaptive-tutor-store-injection
+    - refactor-eval-routes-store-injection
+    - refactor-operational-log-reader-injection
 tags:
   - refactoring
   - testing
@@ -1554,3 +1563,112 @@ Log:
   exports remained fixed; complete focused, hermetic, risk-coverage, source,
   and static gates pass. Interaction-evaluation persistence is next, followed
   by statistics/projections, exporters/log readers, and explicit host startup.
+- 2026-08-06 — Opened score mutation/audit persistence as PR #525 and activated
+  `refactor-evaluation-store-interaction-repository` from its reviewed head
+  `b379ffa1`. The child extracts the six legacy interaction-evaluation CRUD and
+  learner-score operations while keeping statistics and filesystem/host work
+  outside the repository boundary.
+- 2026-08-06 — The interaction-repository child reached review with six CRUD,
+  projection, and learner-score operations in a 214-line owner. The facade fell
+  from 1,214 to 961 lines while the 44 named and 41 default exports remained
+  fixed; complete focused, hermetic, risk-coverage, source, and static gates
+  pass. Statistics/projections are next, then exporters/log readers and
+  explicit host startup.
+- 2026-08-06 — PR #525 merged as `c162fcc6`, closing score mutation/audit
+  persistence. The reviewed interaction-repository child rebased cleanly onto
+  current `origin/main` at `a410c982` and remains the next publication unit.
+- 2026-08-06 — PR #526 merged as `f66e0f90` and the serialized board refresh as
+  `9166554c`, closing interaction persistence. Activated
+  `refactor-evaluation-store-statistics-repository` from that refreshed main to
+  extract read-only aggregates, transient-failure reconstruction,
+  configuration comparison, and factorial projections.
+- 2026-08-06 — The statistics/projection child reached review with all four
+  public projections and transient run-plan reconstruction in a 460-line
+  injected owner. The facade fell from 961 to 512 lines while its 44 named and
+  41 default exports remained fixed; complete focused, hermetic, risk-coverage,
+  source, and static gates pass. Exporters and dialogue-log readers are next,
+  followed by manifest hosting and explicit startup.
+- 2026-08-07 — PR #527 merged as `28fcf27e` and the serialized board refresh as
+  `53e1e989`, closing statistics and projections. Activated
+  `refactor-evaluation-store-export-log-readers` from that refreshed main for
+  the final R4 step 6 repository family; manifest hosting and explicit startup
+  remain separate later slices.
+- 2026-08-07 — The exporter/log-reader child reached review with exact JSON,
+  CSV, mutable-log, and content-addressed-log contracts behind two injected
+  owners. The facade fell from 512 to 341 lines while its 44 named and 41
+  default exports remained fixed; complete focused, hermetic, risk-coverage,
+  source, and static gates pass. Run-manifest writing is next, then explicit
+  application startup and connection lifecycle migration.
+- 2026-08-07 — Opened exporter and dialogue-log ownership as PR #528 at
+  `69666c20`. Activated `refactor-evaluation-store-run-manifest-writer` from
+  that reviewed head as an explicitly stacked follow-up; this child owns only
+  completion-time provenance artifacts, leaving import-time bootstrap and host
+  migration for the next phase.
+- 2026-08-07 — The run-manifest child reached review with exact provenance
+  projection and best-effort filesystem persistence in an 87-line injected
+  writer. The facade fell from 341 to 261 lines while all public exports and
+  bootstrap behavior stayed fixed; complete focused, hermetic, risk-coverage,
+  source, and static gates pass. Explicit application startup and connection
+  lifecycle migration is now the remaining evaluation-store boundary phase.
+- 2026-08-07 — PR #528 merged as `919ad33e`, closing exporter and dialogue-log
+  ownership. The reviewed run-manifest child can now publish from refreshed
+  main before explicit application startup and connection lifecycle begins.
+- 2026-08-07 — Opened run-manifest ownership as PR #529 at `03879d75` and
+  activated `refactor-evaluation-store-application-lifecycle` from that reviewed
+  head. The child removes import-time SQLite bootstrap, gives both application
+  hosts explicit store ownership, and wires deterministic close behavior; broad
+  runner, adaptive, CLI, and operational dependency migration remains later.
+- 2026-08-07 — The application-lifecycle child reached review with a 194-line
+  explicit factory, 33-line lifecycle coordinator, and passive 103-line facade.
+  Standalone and poetics now acquire one store deliberately and shutdown closes
+  it in order; the migration-only adaptive grader left the facade inventory,
+  reducing live/package consumers from 30 to 29. Complete persistence, route,
+  desktop, hermetic, risk-coverage, source, and static gates pass. Runner plus
+  eval-CLI dependency injection is the next host-migration cohort.
+- 2026-08-07 — PR #529 merged as `f637b398`, closing run-manifest ownership.
+  The reviewed application-lifecycle child remains the next publication unit;
+  its branch head is the merged PR commit and therefore has a trivial one-commit
+  rebase path onto refreshed main at handoff.
+- 2026-08-07 — Published the application-lifecycle child as PR #530 at
+  `a044468f` and completed the stacked runner/eval-CLI dependency cohort for
+  review. Standard run, resume, rejudge, reporting, scoring commands, and CLI
+  disposal now share one injected store; the direct facade inventory is down
+  to 26 live/package consumers with full parity green. Adaptive-tutor index and
+  persistence are the next application-runtime cohort after these two branches
+  land.
+- 2026-08-07 — PR #530 merged as `9699a5f7`, closing explicit application
+  lifecycle ownership. The reviewed runner/eval-CLI cohort is now the next
+  publication unit; adaptive-tutor injection follows it.
+- 2026-08-07 — Published runner/eval-CLI injection as PR #532 at `6ee6e350`
+  and activated the adaptive-tutor cohort from that reviewed head. The new
+  child binds adaptive run orchestration and persistence to the CLI-owned store;
+  eval-route hosting remains the following application-runtime boundary.
+- 2026-08-07 — The adaptive-tutor cohort reached review with explicit runner and
+  persistence factories, real mock-backed CLI dispatch, and complete parity
+  green. Direct facade ownership is down to 24 live/package consumers;
+  eval-route injection is the next and final application-runtime cohort.
+- 2026-08-07 — PR #533 merged as `39f8c29f`, closing adaptive-tutor injection.
+  Activated the final application-runtime cohort from current main at
+  `fec495a6`: eval routes now receive store and runner ownership from each
+  Express host rather than importing either namespace directly.
+- 2026-08-07 — Eval-route host-context injection reached review. The shared
+  router now resolves one store and matching runner from the current Express
+  app, standalone and poetics bind those dependencies explicitly, and the
+  direct-facade inventory is down to 23 live/package consumers with no
+  application-runtime entries. Complete route, API, root, core, risk, source,
+  lint, formatting, boundary, and cycle gates pass.
+- 2026-08-07 — Published eval-route host-context injection as PR #539 at
+  `7d3c9bef`. The next host-migration phase is operational scripts, beginning
+  with a read-only analysis/reporting cohort before scoring and write-bearing
+  tools.
+- 2026-08-07 — PR #539 merged as `315cc7ff`, closing every direct
+  application-runtime facade consumer. Activated
+  `refactor-operational-log-reader-injection` from that refreshed main for the
+  six scripts whose only facade operation is dialogue-log reading.
+- 2026-08-07 — The operational dialogue-log cohort reached review with six
+  scripts bound to passive, isolated read contexts. Direct facade ownership is
+  down to 17 live/package consumers, complete parity is green, and the four
+  longitudinal live reports are the next read-only projection cohort.
+- 2026-08-07 — Published operational dialogue-log injection as PR #542 at
+  `cffa5249` after a clean rebase onto current main. Longitudinal A2-A5 live
+  report ownership remains the next migration cohort.

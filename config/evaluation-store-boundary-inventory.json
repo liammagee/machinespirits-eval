@@ -2,20 +2,23 @@
   "schemaVersion": 1,
   "facade": "services/evaluationStore.js",
   "characterization": {
-    "sourceLineCount": 1214,
-    "liveAndPackageConsumerCount": 30,
+    "sourceLineCount": 103,
+    "liveAndPackageConsumerCount": 17,
     "archivedConsumerCount": 4,
-    "testConsumerCount": 15
+    "testConsumerCount": 14
   },
-  "importTimeContract": {
+  "startupContract": {
     "databasePathPrecedence": ["EVAL_DB_PATH", "<repository>/data/evaluations.db"],
     "logsPathPrecedence": ["EVAL_LOGS_DIR", "<MS_DATA_HOME>/logs when the data home exists", "<repository>/logs"],
-    "effects": [
+    "importEffects": [],
+    "explicitStartEffects": [
       "create the database parent directory recursively",
       "open SQLite immediately",
       "set journal_mode to WAL",
       "create and migrate the evaluation schema"
     ],
+    "compatibilityFallback": "the first legacy facade operation lazily starts the default store",
+    "closeContract": "an explicit store close is idempotent and closes only a connection owned by that store",
     "tables": ["evaluation_results", "evaluation_runs", "interaction_evaluations", "score_audit", "sqlite_sequence"]
   },
   "consumers": [
@@ -23,16 +26,6 @@
       "path": "index.js",
       "classification": "package-entrypoint",
       "modes": ["namespace-reexport"]
-    },
-    {
-      "path": "routes/evalRoutes.js",
-      "classification": "application-runtime",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/analyze-insight-action-gap.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
     },
     {
       "path": "scripts/archive/oneoff/backfill-judge-input-hashes.js",
@@ -55,31 +48,6 @@
       "modes": ["namespace"]
     },
     {
-      "path": "scripts/assess-transcripts.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/audit-message-chain.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/code-dialectical-modulation.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/eval-cli.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/eval-cli/scoringCommandDependencies.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
       "path": "scripts/evaluate-charisma.js",
       "classification": "operational-script",
       "modes": ["namespace"]
@@ -95,27 +63,12 @@
       "modes": ["namespace"]
     },
     {
-      "path": "scripts/generate-paper-figures.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/grade-adaptive-dialogue.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
       "path": "scripts/ingest-pilot-sessions.js",
       "classification": "operational-script",
       "modes": ["namespace"]
     },
     {
       "path": "scripts/prompt-lab.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/render-sequence-diagram.js",
       "classification": "operational-script",
       "modes": ["namespace"]
     },
@@ -181,26 +134,6 @@
     },
     {
       "path": "services/__tests__/loadDialogueLog.test.js",
-      "classification": "test",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "services/adaptiveTutor/index.js",
-      "classification": "application-runtime",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "services/adaptiveTutor/persistence.js",
-      "classification": "application-runtime",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "services/evaluationRunner.js",
-      "classification": "application-runtime",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "tests/adaptation-world-spec-resolution.test.js",
       "classification": "test",
       "modes": ["dynamic"]
     },

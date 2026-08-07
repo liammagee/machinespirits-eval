@@ -5,9 +5,11 @@ import os from 'node:os';
 import path from 'node:path';
 import yaml from 'yaml';
 
-// Hermetic DB + logs and mock LLM, set BEFORE the runner (which opens the DB at
-// import and would otherwise route to the production path / a paid backend) is
-// dynamically imported inside the test.
+import { createAdaptiveEvaluationRunner } from '../services/adaptiveTutor/index.js';
+import { createEvaluationStore } from '../services/evaluationStore/createEvaluationStore.js';
+
+// Hermetic DB + logs and mock LLM. The adaptive runner receives the resulting
+// store explicitly; importing it has no persistence effects.
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'adaptive-worldspec-'));
 process.env.EVAL_DB_PATH = path.join(tmpDir, 'evaluations.db');
 process.env.EVAL_LOGS_DIR = path.join(tmpDir, 'logs');
@@ -35,8 +37,8 @@ function scenario(id, extra = {}) {
 // outside the per-scenario try, the throw escapes the catch-less outer try and
 // skips updateRun(), leaving evaluation_runs stuck at status='running'.
 test('runner skips a scenario with an unresolvable world spec ref and still finalizes the run', async () => {
-  const { runAdaptiveEvaluation } = await import('../services/adaptiveTutor/index.js');
-  const evaluationStore = await import('../services/evaluationStore.js');
+  const evaluationStore = createEvaluationStore({ rootDir: path.resolve('.') });
+  const { runAdaptiveEvaluation } = createAdaptiveEvaluationRunner({ evaluationStore });
 
   // No world_adaptation_source => the loaded spec list is empty => the middle
   // scenario's world_adaptation_spec_id resolves to nothing and throws.
@@ -60,15 +62,19 @@ test('runner skips a scenario with an unresolvable world spec ref and still fina
 
   // Before the fix this rejected (the throw escaped the outer try). It must instead
   // resolve: the dangling-ref scenario is skipped, both good scenarios persist.
-  const result = await runAdaptiveEvaluation({
-    profileName: 'cell_test_worldspec',
-    evalProfile,
-    runsPerConfig: 1,
-  });
+  try {
+    const result = await runAdaptiveEvaluation({
+      profileName: 'cell_test_worldspec',
+      evalProfile,
+      runsPerConfig: 1,
+    });
 
-  assert.equal(result.persisted.length, 2, 'both good scenarios persist; the dangling-ref one is skipped');
+    assert.equal(result.persisted.length, 2, 'both good scenarios persist; the dangling-ref one is skipped');
 
-  const run = evaluationStore.getRun(result.runId);
-  assert.equal(run.status, 'completed', 'run must be finalized, not left stuck at status=running');
-  assert.ok(run.completedAt, 'run must carry a completedAt timestamp');
+    const run = evaluationStore.getRun(result.runId);
+    assert.equal(run.status, 'completed', 'run must be finalized, not left stuck at status=running');
+    assert.ok(run.completedAt, 'run must carry a completedAt timestamp');
+  } finally {
+    evaluationStore.close();
+  }
 });

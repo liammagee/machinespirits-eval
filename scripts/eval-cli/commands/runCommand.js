@@ -251,7 +251,8 @@ export async function runEvaluationCommand(context) {
     process.exit(1);
   }
   if (adaptiveProfiles.length > 0) {
-    const { runAdaptiveEvaluation } = await import('../services/adaptiveTutor/index.js');
+    const { createAdaptiveEvaluationRunner } = await import('../../../services/adaptiveTutor/index.js');
+    const { runAdaptiveEvaluation } = createAdaptiveEvaluationRunner({ evaluationStore });
     const summaries = [];
     let anyHalted = false;
     for (const profileName of adaptiveProfiles) {

@@ -213,18 +213,23 @@ describe('evaluation-store result repository', () => {
     }
   });
 
-  it('leaves the facade as the compatibility/bootstrap owner with bounded modules', () => {
+  it('leaves the facade as a lazy compatibility owner with bounded modules', () => {
     const facade = fs.readFileSync(path.join(ROOT_DIR, 'services', 'evaluationStore.js'), 'utf8');
+    const factory = fs.readFileSync(
+      path.join(ROOT_DIR, 'services', 'evaluationStore', 'createEvaluationStore.js'),
+      'utf8',
+    );
     const repository = fs.readFileSync(
       path.join(ROOT_DIR, 'services', 'evaluationStore', 'resultRepository.js'),
       'utf8',
     );
 
-    assert.match(facade, /createResultRepository\(\{/);
+    assert.match(factory, /createResultRepository\(\{/);
+    assert.match(facade, /export const storeResult = delegate\('storeResult'\);/);
     assert.doesNotMatch(facade, /GENERATION_PROVENANCE_COLUMNS|INSERT INTO evaluation_results/);
     assert.match(repository, /function storeRejudgment/);
     assert.match(repository, /function cloneRowsForRubricVersion/);
-    assert.equal(facade.split('\n').length - 1 <= 1_250, true);
+    assert.equal(facade.split('\n').length - 1 <= 170, true);
     assert.equal(repository.split('\n').length - 1 <= 650, true);
   });
 });
