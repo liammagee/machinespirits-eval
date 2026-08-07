@@ -10,6 +10,10 @@
  * So this does not compare two strings. It runs the real writer and a real
  * reader from a fake worktree root and asks the reader for the row the writer
  * just wrote — which is the only question that was ever at stake.
+ *
+ * The logs root, at the end of the file, had the same split one level down: a
+ * relative `EVAL_LOGS_DIR` meant `<rootDir>/x` to a reader and `x` under the
+ * working directory to the store.
  */
 
 import assert from 'node:assert/strict';
@@ -156,5 +160,50 @@ describe('evaluation database path agreement', () => {
         }
       },
     );
+  });
+});
+
+describe('evaluation logs root agreement', () => {
+  it('reads a relative EVAL_LOGS_DIR against the checkout, not the working directory', () => {
+    const worktree = tempDir('logs-worktree');
+    const anchored = path.join(worktree, 'run-logs');
+    const dialogueId = 'dialogue-logs-agreement';
+    fs.mkdirSync(path.join(anchored, 'tutor-dialogues'), { recursive: true });
+    fs.writeFileSync(path.join(anchored, 'tutor-dialogues', `${dialogueId}.json`), JSON.stringify({ dialogueId }));
+
+    withEnv(
+      {
+        MS_DATA_HOME: path.join(worktree, 'absent-data-home'),
+        EVAL_DB_PATH: path.join(worktree, 'data', 'evaluations.db'),
+        EVAL_LOGS_DIR: 'run-logs',
+      },
+      () => {
+        const context = createEvaluationScriptContext({ rootDir: worktree });
+        assert.equal(context.logsRoot, anchored, 'a relative setting belongs to the checkout it was set for');
+
+        // The store used to return the setting untouched, so it looked under
+        // whatever directory the command happened to be launched from and found
+        // nothing there. Asking it for a log a reader can see settles it.
+        const store = createEvaluationStore({ rootDir: worktree });
+        try {
+          assert.deepEqual(store.loadDialogueLog(dialogueId), { dialogueId }, 'the store must look where readers do');
+        } finally {
+          store.close();
+        }
+      },
+    );
+  });
+
+  it('keeps a handed-over run folder reading its own logs', () => {
+    const dataHome = tempDir('folder-home');
+    const handedOver = tempDir('handed-over-run');
+    fs.mkdirSync(path.join(handedOver, 'logs', 'tutor-dialogues'), { recursive: true });
+
+    withEnv({ MS_DATA_HOME: dataHome, EVAL_DB_PATH: null, EVAL_LOGS_DIR: null }, () => {
+      // No package.json, no services/ — a run shared as a folder, not a
+      // checkout. Its own logs win over an archive it was never part of, and
+      // now the store agrees with the readers about that too.
+      assert.equal(createEvaluationScriptContext({ rootDir: handedOver }).logsRoot, path.join(handedOver, 'logs'));
+    });
   });
 });
