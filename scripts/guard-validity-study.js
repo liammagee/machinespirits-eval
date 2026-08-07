@@ -112,20 +112,26 @@ const safetyCount = (decision) =>
   decision.dispositions.filter((d) => SAFETY_CATEGORIES.has(d.category) && d.effectiveDisposition === 'hard').length;
 
 /**
- * The passages this turn was working from, read off the guard's own findings.
- * Taken from every finding rather than the hard ones, so the passage is still
- * recovered on a draft where the check only recorded.
+ * The passages this turn was working from.
+ *
+ * Read off the audit's own occurrence rows, not its findings. Every finding in
+ * this family names its source by ID — `source_1` — and drops the text, so a
+ * study built on the findings would have shown the judge the string "source_1"
+ * and asked whether the reply represents it truthfully. The rows keep the
+ * rendered text under `expected_text`.
+ *
+ * Every source the turn was given is shown, not only the ones that failed.
+ * Showing the failed one alone would tell the judge which passage to look for.
  */
 function dueSources(draft) {
   const byText = new Map();
-  for (const issue of tutorStubGuardIssueRows(draft.audits)) {
-    if (issue.guard !== 'live_source_action_alignment_v1') continue;
-    const passage = typeof issue.source === 'string' ? issue.source.trim() : '';
+  for (const row of draft.audits?.liveSourceActionAlignmentAudit?.source_occurrences || []) {
+    const passage = typeof row.expected_text === 'string' ? row.expected_text.trim() : '';
     if (!passage || byText.has(passage)) continue;
     byText.set(passage, {
       text: passage,
-      expected: issue.expected_count ?? null,
-      observed: issue.observed_count ?? null,
+      expected: row.expected_count ?? null,
+      observed: row.observed_count ?? null,
     });
   }
   return [...byText.values()];
@@ -265,20 +271,48 @@ function parseVerdict(raw) {
   }
 }
 
-/** Paced call with backoff: rapid back-to-back CLI calls draw exit-1 failures. */
+/**
+ * Paced call with backoff: rapid back-to-back CLI calls draw exit-1 failures.
+ *
+ * Ask for ordinary thinking, not the most the model will do. Left to the
+ * config default the judge thought at full stretch and took a median of 103
+ * seconds a score; asked for high it answers the same prompt in four or five.
+ * The scores are the same. Six runs of one prompt, three at each setting, all
+ * returned overall 2 and faithfulness 0, and uptake and fit moved a point
+ * either way *within* each setting as much as between them — the scale's own
+ * noise, not the effort. Scoring five anchored 1-5 scales does not need the
+ * deep setting, and paying for it turned a twenty-minute run into a four-hour
+ * one.
+ *
+ * Set the timeout from measurement too. It is generous against a four-second
+ * call because the spread widens when anything else on the machine is talking
+ * to the CLI, and a leash below the floor collects nothing at all: at 45s the
+ * run took 54 calls and scored none of them.
+ */
+const CALL_EFFORT = 'high';
+const CALL_TIMEOUT_MS = 180000;
+const CALL_ATTEMPTS = 4;
+
+/** How long the last answered call took, so the run reports its own health. */
+let lastCallMs = 0;
+
 async function judgeCall(prompt) {
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < CALL_ATTEMPTS; attempt++) {
+    const start = Date.now();
     try {
-      return await callModelCliText({
+      const text = await callModelCliText({
         provider: 'claude-code',
         model: 'sonnet',
         prompt,
         role: 'guard-validity-probe',
-        timeoutMs: 120000,
+        timeoutMs: CALL_TIMEOUT_MS,
+        effort: CALL_EFFORT,
       });
+      lastCallMs = Date.now() - start;
+      return text;
     } catch (error) {
-      console.error(`  call failed (${error.message}), attempt ${attempt + 1}/4`);
-      await new Promise((r) => setTimeout(r, 20000 * (attempt + 1)));
+      console.error(`  call failed (${error.message}), attempt ${attempt + 1}/${CALL_ATTEMPTS}`);
+      await new Promise((r) => setTimeout(r, 5000 * (attempt + 1)));
     }
   }
   return '';
@@ -535,7 +569,7 @@ async function judge(n, family = null) {
       }) + '\n',
     );
     console.log(
-      `${String(queue.length).padStart(3)} left | ${candidate === 'draft' ? 'draft   ' : 'template'} overall=${scores.overall} ${item.id}`,
+      `${String(queue.length).padStart(3)} left | ${candidate === 'draft' ? 'draft   ' : 'template'} overall=${scores.overall} | ${String(Math.round(lastCallMs / 1000)).padStart(3)}s | ${item.id}`,
     );
     await new Promise((r) => setTimeout(r, 8000));
   }
