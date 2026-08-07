@@ -1,20 +1,20 @@
 ---
 id: guard-validity-study
 title: Test whether the guards' vetoes pick the better turn
-status: active
+status: review
 type: research
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-07
 verification: >-
   For a sample of vetoed drafts, a blind pairwise comparison between the vetoed
   draft and what actually shipped, scored by a judge that never sees which is
   which or why either was chosen. Reported per guard family: how often the
   vetoed draft was preferred. A family preferred above chance is a family whose
   veto is costing more than it saves.
-claim_status: planned
+claim_status: scope-bound
 links:
   code:
     - services/tutorStubGuardDisposition.js
@@ -135,6 +135,19 @@ is atomic, so no context leaks between items. Attended run on the Max plan.
   `docs/tutor-stub-guard-catalog.md` and gated behind this card's full
   readout: `guard-policy-default-flip`, `guard-findings-feed-forward`,
   `tutor-stub-template-rate-audit`, `phase-b-rerun-under-flipped-policy`.
+- 2026-08-07 — **final readout, 108 complete pairs** (judge stopped there;
+  239 single-text scores). Overall draft 4.17 vs template 2.51 — draft wins 91,
+  ties 15, template wins 2. Uptake 4.67 vs 2.75 (87/19/2); advance 4.12 vs 2.63
+  (73/31/4); fit 4.57 vs 2.44 (97/10/1). By family: live turn progression 4.40
+  vs 2.73 (n=30), mixed 4.08 vs 2.00 (n=26), repetition 3.53 vs 2.37 (n=19),
+  actorial realization 4.22 vs 2.06 (n=18), dramatic release 4.75 vs 4.25
+  (n=8), response composition 4.25 vs 2.50 (n=4), source alignment 4.67 vs 3.67
+  (n=3). No family favours the template; dramatic release is the closest and
+  still favours the draft. Verdict: every quality family's veto costs more than
+  it saves on this stack. `guard-policy-default-flip` released and done the same
+  day. Scope limits from the card stand — one author model, one judge family,
+  one run's traces, and the sharper draft-against-passing-draft comparison
+  never ran.
 - 2026-08-06 — blinding probe run (`scripts/guard-validity-study.js probe`,
   Sonnet judge, 20 items). Side by side, the judge named the template on 13 of
   14 parsed items, citing the real fingerprints (the fixed sentences, the

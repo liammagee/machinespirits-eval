@@ -3,17 +3,19 @@ id: guard-findings-feed-forward
 title: Feed guard findings into the next turn's request instead of redrafting this one
 status: triaged
 type: research
-priority: P2
+priority: P3
 owner: claude
 source: manual
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-07
 verification: >-
-  GATED on guard-policy-default-flip landing. Then: an instrumented run where
-  each tutor request carries the previous turn's findings as one line each, no
-  same-turn redraft for quality findings, against a control without the lines.
-  Readout: finding recurrence turn over turn, and the quality instruments per
-  condition. The retry ladder stays for contract findings only.
+  UNGATED but demoted — the flip landed and already delivered the subtractive
+  half, so only the additive half is left to test. Run when there is spare
+  quota and no better claim in the queue: an instrumented run where each tutor
+  request carries the previous turn's findings as one line each, against a
+  control without the lines. Readout: finding recurrence turn over turn, and
+  the quality instruments per condition. The retry ladder stays for contract
+  findings only.
 claim_status: planned
 links:
   code:
@@ -53,3 +55,10 @@ already carry.
 
 - 2026-08-06 — filed from the retry analysis. Waits for the default flip; no
   code changed.
+- 2026-08-07 — gate cleared and card demoted to P3 on the user's call. The flip
+  did the subtractive half by itself: quality findings no longer veto, so they
+  no longer trigger a same-turn rewrite, and the rewrite rung now fires on 404
+  drafts per Phase-B-sized run instead of 1,041. What remains is the untested
+  guess — that last turn's complaints, carried into the next request, help
+  rather than read as stale noise. Smaller card than when filed, and it queues
+  behind `phase-b-rerun-under-flipped-policy` for the same codex quota.

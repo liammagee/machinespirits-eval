@@ -338,6 +338,14 @@ function decisionFor(dispositions, key) {
   };
 }
 
+// The default here is the catalog's reference column, NOT the runtime default.
+// Live dialogues run shadow_advisory from 2026-08-07 and pass it explicitly
+// (`tutorStubTutorTurnPipeline.js`, resolved from TUTOR_STUB_GUARD_POLICY).
+// Strict stays the default of this function because the first-draft campaign
+// machinery calls it bare and was calibrated under strict; flipping it here
+// would re-calibrate that apparatus as a side effect of a delivery change.
+// Any new analysis must pass a policy: a bare call answers a question about
+// the strict column, which is not the regime live runs are decided under.
 export function decideTutorStubGuardDelivery(
   issueRows = [],
   {

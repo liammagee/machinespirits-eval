@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-07T02:24:43.076Z",
+  "generated": "2026-08-07T06:06:46.643Z",
   "counts": {
     "total": 446,
     "byStatus": {
@@ -8,8 +8,8 @@
       "dropped": 8,
       "active": 5,
       "archived": 4,
-      "triaged": 8,
-      "review": 6
+      "triaged": 6,
+      "review": 8
     },
     "byType": {
       "research": 74,
@@ -52,35 +52,6 @@
       ]
     },
     {
-      "id": "guard-policy-default-flip",
-      "title": "Make the shadow-advisory guard column the default delivery policy",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "GATED: does not start until guard-validity-study reports its full sample and the draft-beats-template shape holds. Then: the default boundary policy becomes shadow_advisory, the disposition catalog bumps to v7 with an incomparability note, the advance window default moves off per-turn, a regression test pins that evidence-safety, clue-bookkeeping and closure findings still veto, and one instrumented dialogue pair (same seed, old vs new default) shows model text delivered where the template shipped before.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "services/tutorStubGuardDisposition.js",
-          "services/tutorStubTutorTurnPipeline.js",
-          "docs/tutor-stub-guard-catalog.md"
-        ],
-        "items": [
-          "guard-validity-study",
-          "guard-regime-fallback-census-at-scale",
-          "guard-delivery-prefer-model-over-canned"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
-    {
       "id": "learner-profile-world-deconfound",
       "title": "Deconfound the learner-profile recovery: cross personas and worlds",
       "status": "triaged",
@@ -111,33 +82,6 @@
       ]
     },
     {
-      "id": "guard-findings-feed-forward",
-      "title": "Feed guard findings into the next turn's request instead of redrafting this one",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "GATED on guard-policy-default-flip landing. Then: an instrumented run where each tutor request carries the previous turn's findings as one line each, no same-turn redraft for quality findings, against a control without the lines. Readout: finding recurrence turn over turn, and the quality instruments per condition. The retry ladder stays for contract findings only.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "services/tutorStubTutorTurnPipeline.js",
-          "services/tutorStubFirstDraftContract.js"
-        ],
-        "items": [
-          "guard-policy-default-flip",
-          "guard-validity-study"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
-    {
       "id": "phase-b-rerun-under-flipped-policy",
       "title": "Re-run the Phase-B contract contrast with the guards not scripting the tutor",
       "status": "triaged",
@@ -146,8 +90,8 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "DOUBLY GATED — starts only after guard-policy-default-flip lands AND the user authorizes the spend. Then: the same registered design (frozen cells, bare vs contract vs empty plan, n = 12 per version per cell, same models, learner blind), on catalog v7. Primary endpoint unchanged. Reported against the original as a pair: strict-harness verdict and open-harness verdict, never pooled.",
+      "updated": "2026-08-07",
+      "verification": "PARKED ON QUOTA — guard-policy-default-flip landed 2026-08-07 and the user parked the run the same day until codex quota is free again. It needs no further decision, only headroom. Then: the same registered design (frozen cells, bare vs contract vs empty plan, n = 12 per version per cell, same models, learner blind), under boundaryPolicy shadow_advisory. Primary endpoint unchanged. Reported against the original as a pair: strict-harness verdict and open-harness verdict, never pooled.",
       "claim_status": "planned",
       "links": {
         "code": [
@@ -213,31 +157,30 @@
       ]
     },
     {
-      "id": "tutor-stub-template-rate-audit",
-      "title": "Stamp every cited tutor-stub run with its measured template rate",
+      "id": "guard-findings-feed-forward",
+      "title": "Feed guard findings into the next turn's request instead of redrafting this one",
       "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
+      "type": "research",
+      "priority": "P3",
       "owner": "claude",
       "source": "manual",
       "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "A table, checked into the guard catalog doc, listing every tutor-stub run cited in paper-full-2.0.md with its template rate and model-as-written rate measured from its own traces by the census/replay script. Paper §s that read tutor prose off a guarded run carry the rate beside the claim. The paper edit itself waits for guard-validity-study to conclude so the whole account lands in one pass.",
-      "claim_status": "methods",
+      "updated": "2026-08-07",
+      "verification": "UNGATED but demoted — the flip landed and already delivered the subtractive half, so only the additive half is left to test. Run when there is spare quota and no better claim in the queue: an instrumented run where each tutor request carries the previous turn's findings as one line each, against a control without the lines. Readout: finding recurrence turn over turn, and the quality instruments per condition. The retry ladder stays for contract findings only.",
+      "claim_status": "planned",
       "links": {
         "code": [
-          "scripts/replay-guard-fallback-delivery.js",
-          "docs/tutor-stub-guard-catalog.md"
+          "services/tutorStubTutorTurnPipeline.js",
+          "services/tutorStubFirstDraftContract.js"
         ],
         "items": [
-          "guard-regime-fallback-census-at-scale",
+          "guard-policy-default-flip",
           "guard-validity-study"
         ]
       },
       "tags": [
         "tutor-stub",
-        "guards",
-        "paper"
+        "guards"
       ]
     },
     {
@@ -390,7 +333,7 @@
       "source": "manual",
       "created": "2026-08-06",
       "updated": "2026-08-06",
-      "verification": "A census script that reads guard accounting out of any run's traces and reports, per condition: turns, fallback rate, model-as-written rate, pass rate by candidate kind, and the failure count by guard family. Run it on fallible-phaseB and on the next instrumented run, and hold the numbers against the ones recorded here.",
+      "verification": "DONE (2026-08-07, scripts/census-guard-template-rate.js): reads guard accounting out of any run's traces and reports, per condition, turns, fallback rate, model-as-written rate, pass rate by candidate kind and the finding count by guard family, stamped with the counter used and the guard policy the run ran under. Reproduces every number recorded below on fallible-phaseB, and corrects the family table — see the log.",
       "claim_status": "methods",
       "links": {
         "code": [
@@ -403,33 +346,6 @@
           "guard-ladder-ships-canned-text-on-most-turns",
           "tutor-fallible-learner-closure-prereg",
           "tutor-stub-correspondence-guard-vocabulary"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
-    {
-      "id": "guard-validity-study",
-      "title": "Test whether the guards' vetoes pick the better turn",
-      "status": "active",
-      "type": "research",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "For a sample of vetoed drafts, a blind pairwise comparison between the vetoed draft and what actually shipped, scored by a judge that never sees which is which or why either was chosen. Reported per guard family: how often the vetoed draft was preferred. A family preferred above chance is a family whose veto is costing more than it saves.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "services/tutorStubGuardDisposition.js",
-          "docs/tutor-stub-guard-catalog.md"
-        ],
-        "items": [
-          "guard-regime-fallback-census-at-scale",
-          "guard-delivery-prefer-model-over-canned"
         ]
       },
       "tags": [
@@ -467,7 +383,7 @@
       "source": "manual",
       "created": "2026-08-07",
       "updated": "2026-08-07",
-      "verification": "Terminal, same day, pure computation. New unit suite (services/__tests__/tutorStubReplyFeatures.test.js, 10 tests) plus wiring tests in tests/tutorStubTurnOrchestration.test.js (4 tests) — all pass; lint clean; test manifest updated. Retrospective read-back over the falsifier's 122 turns (run C of scripts/analyze-figure- lattice.js): 1/7 separated, up from 0/7, with runs A/B/B' asserted to reproduce their recorded numbers first. That read-back is CALIBRATION, not a clean test — the act patterns were widened after reading three labelled replies from the same corpus. The clean test is fresh turns carrying the live stamp.",
+      "verification": "Terminal, same day, pure computation. New unit suite (services/__tests__/tutorStubReplyFeatures.test.js, 10 tests) plus wiring tests in tests/tutorStubTurnOrchestration.test.js (4 tests) — all pass; lint clean; test manifest updated. Retrospective read-back over the falsifier's 122 turns (run C of scripts/analyze-figure- lattice.js): 1/7 separated, up from 0/7, with runs A/B/B' asserted to reproduce their recorded numbers first. That read-back is CALIBRATION, not a clean test — the act patterns were widened after reading three labelled replies from the same corpus. The clean test needed fresh turns carrying the live stamp. One such corpus was run (7 dialogues, 62 turns, cards forced in a Latin square, TUTOR_STUB_GUARD_POLICY= shadow_advisory) and READ TWICE: scripts/analyze-figure-lattice- fresh.js, artifacts exports/crossed-effects/figure-lattice-fresh.json (shipped text) and -draft.json (--source draft). Both NULL. Shipped: 19 turns survive the guard, 6 figures, 1 separated and that one is a single-turn figure on one attribute; a label shuffle of these same turns reaches 1 on 92% of draws. Draft (the tutor's own first attempt, logged on all 32 carded turns including the 13 the guard vetoed, so the whole balanced square is readable at zero cost): 32 turns, all 7 figures, 4-6 each, 0 separated, against a within-corpus label shuffle that separates 0.00 with a maximum of 0 over 400 draws — so one separated figure would have cleared, and none did. Instrument checks pass in both: live stamp equals a fresh recompute on every turn where it applies (19 of 19 shipped, 14 of 14 draft), and the card-identity sanity run separates 6/6 and 7/7. Post-hoc graded reading, not the registered criterion: grievance misses separation by one foreign turn (every grievance draft credits and contrasts), which some figure matches on 0.5% of 2000 shuffles. Guard cost recorded separately — 39% of turns shipped the deterministic template, and the audit that fails them is the exact-source evidence contract that should stay hard — but the draft reading shows the guard was not the cause of the null. THEN THE STANDARD CHANGED, after the null and declared as such: separation asks for exclusive fingerprints, which rhetorical moves do not have, so the test became whether the ordered move can be guessed from the reply. scripts/analyze-figure-recovery.js, artifact exports/ crossed-effects/figure-recovery-draft.json, leave-one-out naive Bayes over the same stamp columns with a uniform class prior. 37.5% first guess against 14.3% chance, 56.3% in the top two against 28.6%, against a within-corpus label shuffle scoring 13.2% mean and 34.4% maximum over 400 draws, p = 0.000. Four of seven moves are readable blind (grievance 4/4, demand 3/5, settled_claim 2/4, stake 3/5 in top two); quiet:flat is unreadable on every measure. Not pre-registered, and the clean test is still fresh turns. The earlier recommendation to prune mockery is WITHDRAWN — the stamp measures word length and has no column for cryptic metaphor, which is what that move is about; three of its six drafts announce plain speech in words, on 3 of 32 turns corpus- wide with no false positives.",
       "claim_status": "methods",
       "links": {
         "notes": [
@@ -478,6 +394,35 @@
           "pedagogical-figure-ontology"
         ]
       }
+    },
+    {
+      "id": "tutor-stub-template-rate-audit",
+      "title": "Stamp every cited tutor-stub run with its measured template rate",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-07",
+      "verification": "A table, checked into the guard catalog doc, listing every tutor-stub run cited in paper-full-2.0.md with its template rate and model-as-written rate measured from its own traces by the census/replay script. Paper §s that read tutor prose off a guarded run carry the rate beside the claim. The paper edit itself waits for guard-validity-study to conclude so the whole account lands in one pass.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "scripts/census-guard-template-rate.js",
+          "scripts/replay-guard-fallback-delivery.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-validity-study"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "paper"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -679,6 +624,62 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "guard-policy-default-flip",
+      "title": "Make the shadow-advisory guard column the default delivery policy",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-07",
+      "verification": "DONE 2026-08-07. The live default is shadow_advisory with strict as the opt-in (pipeline plus CLI, pinned at the source by test); evidence-safety, clue-bookkeeping and closure findings still veto, pinned exhaustively in services/__tests__/tutorStubGuardDisposition.test.js; and one fixture runs under both policies in tests/tutorStubGuardAccounting.test.js, delivering a fixed template under strict and the model's own draft under the default with the same findings recorded either way. The catalog bump and the advance-window change were deliberately not done — reasons on the card.",
+      "claim_status": "settled",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubTutorTurnPipeline.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-validity-study",
+          "guard-regime-fallback-census-at-scale",
+          "guard-delivery-prefer-model-over-canned"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
+      "id": "guard-validity-study",
+      "title": "Test whether the guards' vetoes pick the better turn",
+      "status": "review",
+      "type": "research",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-07",
+      "verification": "For a sample of vetoed drafts, a blind pairwise comparison between the vetoed draft and what actually shipped, scored by a judge that never sees which is which or why either was chosen. Reported per guard family: how often the vetoed draft was preferred. A family preferred above chance is a family whose veto is costing more than it saves.",
+      "claim_status": "scope-bound",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-delivery-prefer-model-over-canned"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
     },
     {
       "id": "local-ci-pr-creation-gate",

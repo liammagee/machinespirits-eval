@@ -106,6 +106,9 @@ test('short automated learner runs replay the full public dialogue with learner-
           PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
           FAKE_CODEX_LOG: promptLog,
           CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+          // Strict is the opt-in from 2026-08-07; these fixtures are written
+          // against the ladder it drives.
+          TUTOR_STUB_GUARD_POLICY: 'strict',
           TUTOR_STUB_SUMMARY_OPEN: '0',
         },
         encoding: 'utf8',
@@ -202,6 +205,9 @@ test('long automated learner runs recover budget overflow with a public recent-t
           ...process.env,
           PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
           CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+          // Strict is the opt-in from 2026-08-07; these fixtures are written
+          // against the ladder it drives.
+          TUTOR_STUB_GUARD_POLICY: 'strict',
           TUTOR_STUB_SUMMARY_OPEN: '0',
         },
         encoding: 'utf8',
