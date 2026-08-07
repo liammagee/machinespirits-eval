@@ -19,6 +19,30 @@
  *                          blind and the main pass must score candidates alone.
  *
  * Output lands in exports/guard-validity/.
+ *
+ * ---
+ *
+ * `--family <guard>` on judge and report (added 2026-08-07, after the flip).
+ *
+ * The first pass answered "are the guards as a whole right?" and stratified on
+ * the one family that failed, because a draft rejected by three checks at once
+ * cannot tell you which rejection was wrong. That left the checks which rarely
+ * fail alone with almost no evidence: source alignment got 3 pairs out of 108.
+ *
+ * The flip changes what is answerable. Most quality checks now record and stop
+ * vetoing, so a draft that failed source alignment AND repetition AND turn
+ * progression is a draft that today only source alignment still stops. It is
+ * attributable again. `--family` keeps exactly the items whose remaining hard
+ * findings under the live policy all belong to one guard, whatever else failed
+ * under strict.
+ *
+ * Two limits to declare when reporting a family run:
+ *   - The corpus was generated under strict, so every dialogue leading up to
+ *     these turns is full of template prose. "Would ship today" is a claim
+ *     about this turn under today's rules, not a prediction about a run made
+ *     under them.
+ *   - A family restricted this way is not a random sample of that guard's
+ *     vetoes; it is the subset where nothing else still blocks.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -138,6 +162,10 @@ function extract(runDir) {
                 boundaryPolicy: TUTOR_STUB_GUARD_BOUNDARY_POLICIES.strict,
               }),
             ),
+            // What still stops this draft under the live policy. Empty means it
+            // would ship today; one family means that family is the sole
+            // remaining blocker and its veto is attributable.
+            draftHardRelaxed: hardKeys(chosen.decision),
           });
         }
       }
@@ -277,6 +305,49 @@ function familyOf(item) {
   return families.size === 1 ? [...families][0] : 'mixed';
 }
 
+/**
+ * Which guards still stop this draft under the live policy. One name means that
+ * guard alone is what the learner lost the turn to, and a judgement on the pair
+ * is a judgement on that guard. Empty means the draft would ship today.
+ */
+function blockingFamilies(item) {
+  return [...new Set((item.draftHardRelaxed || []).map((k) => k.split('.')[0]))].sort();
+}
+
+function soleBlocker(item) {
+  const families = blockingFamilies(item);
+  return families.length === 1 ? families[0] : null;
+}
+
+/**
+ * Items where `family` is the only guard still blocking. Fails loudly on an item
+ * file written before draftHardRelaxed existed, rather than silently returning
+ * nothing — the fix is to re-run extract, which costs no model calls.
+ */
+function filterToFamily(items, family) {
+  if (!items.some((i) => i.draftHardRelaxed)) {
+    console.error('the item file predates --family: re-run `extract` first (no model calls, nothing is lost)');
+    process.exit(1);
+  }
+  const kept = items.filter((i) => soleBlocker(i) === family);
+  const anywhere = items.filter((i) => blockingFamilies(i).includes(family)).length;
+  console.log(
+    `${kept.length} items where ${family} is the only guard still blocking ` +
+      `(${anywhere} still blocked by it at all, out of ${items.length})`,
+  );
+  if (!kept.length) {
+    const tally = new Map();
+    for (const i of items) {
+      const k = soleBlocker(i) || (blockingFamilies(i).length ? 'several' : 'would ship today');
+      tally.set(k, (tally.get(k) || 0) + 1);
+    }
+    console.error(`nothing to judge. sole blocker across the file:`);
+    for (const [k, n] of [...tally].sort((a, b) => b[1] - a[1])) console.error(`  ${String(n).padStart(4)} ${k}`);
+    process.exit(1);
+  }
+  return kept;
+}
+
 /** Round-robin across (family, cell) strata so no world or fault type dominates. */
 function stratifiedSample(items, n) {
   const strata = new Map();
@@ -296,7 +367,7 @@ function stratifiedSample(items, n) {
   return out;
 }
 
-async function judge(n) {
+async function judge(n, family = null) {
   const resultsPath = path.join(OUT_DIR, 'judge-results.jsonl');
   const done = new Set();
   if (fs.existsSync(resultsPath)) {
@@ -310,7 +381,10 @@ async function judge(n) {
       }
     }
   }
-  const items = stratifiedSample(loadItems(), n);
+  const pool = family ? filterToFamily(loadItems(), family) : loadItems();
+  // Round-robin still earns its keep inside one family: it spreads the draws
+  // across worlds instead of taking them all from whichever ran first.
+  const items = stratifiedSample(pool, n);
   const queue = [];
   for (const item of items) {
     for (const candidate of ['draft', 'template']) {
@@ -342,17 +416,24 @@ async function judge(n) {
     }
     fs.appendFileSync(
       resultsPath,
-      JSON.stringify({ id: item.id, candidate, family: familyOf(item), rule: item.rule, ...scores }) + '\n',
+      JSON.stringify({
+        id: item.id,
+        candidate,
+        family: familyOf(item),
+        blocking: soleBlocker(item),
+        rule: item.rule,
+        ...scores,
+      }) + '\n',
     );
     console.log(
       `${String(queue.length).padStart(3)} left | ${candidate === 'draft' ? 'draft   ' : 'template'} overall=${scores.overall} ${item.id}`,
     );
     await new Promise((r) => setTimeout(r, 8000));
   }
-  report();
+  report(family);
 }
 
-function report() {
+function report(family = null) {
   const resultsPath = path.join(OUT_DIR, 'judge-results.jsonl');
   if (!fs.existsSync(resultsPath)) {
     console.log('no judge results yet');
@@ -365,7 +446,15 @@ function report() {
     if (!byPair.has(row.id)) byPair.set(row.id, {});
     byPair.get(row.id)[row.candidate] = row;
   }
-  const pairs = [...byPair.values()].filter((p) => p.draft && p.template);
+  let pairs = [...byPair.values()].filter((p) => p.draft && p.template);
+  if (family) {
+    const before = pairs.length;
+    // Rows scored before --family existed carry no blocking field. They were
+    // drawn under the whole-corpus rule, so they are not part of this question.
+    pairs = pairs.filter((p) => p.draft.blocking === family);
+    console.log(`\nonly the pairs where ${family} is the sole remaining blocker: ${pairs.length} of ${before} scored`);
+    if (!pairs.length) return;
+  }
   console.log(`\ncomplete pairs: ${pairs.length}`);
   const dims = ['overall', 'uptake', 'advance', 'fit'];
   for (const dim of dims) {
@@ -391,6 +480,14 @@ function report() {
   }
 }
 
+/** Read `--name value` or `--name=value`; null when absent. */
+function flag(argv, name) {
+  const inline = argv.find((a) => a.startsWith(`${name}=`));
+  if (inline) return inline.slice(name.length + 1) || null;
+  const at = argv.indexOf(name);
+  return at >= 0 && argv[at + 1] && !argv[at + 1].startsWith('--') ? argv[at + 1] : null;
+}
+
 async function main() {
   const [cmd, ...rest] = process.argv.slice(2);
   if (cmd === 'extract') {
@@ -400,11 +497,14 @@ async function main() {
     await probe(n);
   } else if (cmd === 'judge') {
     const n = Number(rest[rest.indexOf('--n') + 1]) || 150;
-    await judge(n);
+    await judge(n, flag(rest, '--family'));
   } else if (cmd === 'report') {
-    report();
+    report(flag(rest, '--family'));
   } else {
-    console.error('usage: guard-validity-study.js extract [runDir] | probe [--n 20] | judge [--n 150] | report');
+    console.error(
+      'usage: guard-validity-study.js extract [runDir] | probe [--n 20] | ' +
+        'judge [--n 150] [--family <guard>] | report [--family <guard>]',
+    );
     process.exit(2);
   }
 }
