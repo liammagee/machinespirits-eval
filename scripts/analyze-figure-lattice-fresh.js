@@ -84,7 +84,7 @@ function parseArgs(argv) {
 // would call 10 of 32 turns "rewritten" when the words are identical.
 const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
 
-function mulberry32(a) {
+export function mulberry32(a) {
   return function next() {
     a |= 0;
     a = (a + 0x6d2b79f5) | 0;
@@ -94,7 +94,7 @@ function mulberry32(a) {
   };
 }
 
-const walk = (d) =>
+export const walk = (d) =>
   fs.existsSync(d)
     ? fs
         .readdirSync(d, { withFileTypes: true })
@@ -111,7 +111,7 @@ const walk = (d) =>
  * happens after detection -- so the column stays blind to the card, which is
  * the whole point of the falsifier.
  */
-function readDialogue(file, source) {
+export function readDialogue(file, source) {
   const events = fs
     .readFileSync(file, 'utf8')
     .trim()

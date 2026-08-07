@@ -39,7 +39,22 @@ verification: "Terminal, same day, pure computation. New unit suite
   39% of turns shipped the deterministic template, and the audit that
   fails them is the exact-source evidence contract that should stay
   hard — but the draft reading shows the guard was not the cause of the
-  null."
+  null. THEN THE STANDARD CHANGED, after the null and declared as such:
+  separation asks for exclusive fingerprints, which rhetorical moves do
+  not have, so the test became whether the ordered move can be guessed
+  from the reply. scripts/analyze-figure-recovery.js, artifact exports/
+  crossed-effects/figure-recovery-draft.json, leave-one-out naive Bayes
+  over the same stamp columns with a uniform class prior. 37.5% first
+  guess against 14.3% chance, 56.3% in the top two against 28.6%,
+  against a within-corpus label shuffle scoring 13.2% mean and 34.4%
+  maximum over 400 draws, p = 0.000. Four of seven moves are readable
+  blind (grievance 4/4, demand 3/5, settled_claim 2/4, stake 3/5 in top
+  two); quiet:flat is unreadable on every measure. Not pre-registered,
+  and the clean test is still fresh turns. The earlier recommendation to
+  prune mockery is WITHDRAWN — the stamp measures word length and has no
+  column for cryptic metaphor, which is what that move is about; three of
+  its six drafts announce plain speech in words, on 3 of 32 turns corpus-
+  wide with no false positives."
 claim_status: methods
 links:
   notes:
@@ -194,6 +209,19 @@ written it. This is a knob set for one run, not a default moved, so the
 standing proviso on `guard-regime-fallback-census-at-scale` is
 untouched. The cost to declare: the fresh turns carry text the strict
 guards would have vetoed, so the two corpora are not like for like.
+
+**Superseded the same day.** `guard-policy-default-flip` landed on main
+on 7 August and made `shadow_advisory` the delivery default, with
+`TUTOR_STUB_GUARD_POLICY=strict` now the opt-in. The validity study it
+rested on scored 108 blind pairs and found the vetoed draft beat the
+template that replaced it 91 times to 2, in every quality family. So the
+setting this run reached for by hand is now what any run gets. Two things
+that does NOT change: the run itself is unaffected, since it already set
+the knob; and the wall stays where it was. The flip covers the quality
+families only — evidence safety, clue bookkeeping and closure still veto
+in both columns, and `due_source_exact_occurrence_count` is an
+evidence-safety check. That is the audit that removed a third of the
+shipped corpus. It was never up for relaxation and is not relaxed now.
 
 ## The run, and what it found
 
@@ -351,6 +379,89 @@ alone. Second, the near-unique one is grievance — the figure the guard
 removed entirely from the shipped corpus. The one move with its own
 handwriting is the one no learner met.
 
+## Changing the standard, and why
+
+Separation is the wrong bar for this object, and the reason is not that
+it failed. It asks whether a figure's shared fingerprint appears on NO
+other figure's turn — one trespasser kills it. That is how sounds in a
+language work: two sounds either contrast or they do not. Moves in an
+argument overlap by nature. Crediting the learner before correcting them
+and untangling a confused one can both open with a credit and a
+contrast, and neither is thereby fake.
+
+The weaker standard that fits: given a reply, guess which of the seven
+moves was ordered. Better than chance means the order left a mark.
+
+**Order of events, on the record.** Separation was registered first, run
+twice, and returned a null both times. This test was written afterwards,
+knowing that. It is not a pre-registered result. Switching from a strict
+bar to a loose one after a null is the move that rescues anything, so the
+guard is built in: the baseline shuffles the move labels among these same
+32 turns and reruns the whole thing, holding size, class balance and the
+attribute spread fixed.
+
+`scripts/analyze-figure-recovery.js --source draft`. Artifact:
+`exports/crossed-effects/figure-recovery-draft.json`. Leave one turn out,
+build each move's profile from the other 31, rank the seven. Naive Bayes
+over the same binary stamp columns, add-one smoothing, uniform class
+prior — the square was built for equal counts, so the realized 4-to-6
+spread is an accident of which turns fired, and using it as a prior would
+hand the reader free accuracy for guessing the commonest move.
+
+**Result: 37.5% first guess against a chance rate of 14.3%, and 56.3%
+in the top two against 28.6%.** Across 400 label shuffles the same reader
+scores 13.2% on average and never beats 34.4%, so p = 0.000.
+
+| move | first guess | in top two | what marks it |
+|---|---|---|---|
+| credit before correcting | 4/4 | 4/4 | credits and contrasts, 4/4 vs 4/28; speaks from shared ground 3/4 vs 1/28 |
+| harness the demand | 3/5 | 3/5 | long sentences 4/5 vs 7/27; asserts 4/5 vs 9/27 |
+| reopen the record | 2/4 | 3/4 | cites 4/4 vs 6/28; commits the tutor 3/4 vs 0/28 |
+| swap in plain words | 2/6 | 3/6 | does NOT ask, 2/6 vs 22/26 |
+| untangle a confused learner | 1/4 | 2/4 | contrasts 3/4 vs 5/28 |
+| split the stake | 0/5 | 3/5 | medium sentences 5/5, never long 0/5 vs 11/27 |
+| lure an idle learner | 0/4 | 0/4 | nothing stands out |
+
+Four of the seven leave a mark a blind reader can find, and they are the
+ones the order predicts. Splitting the stake is uniformly medium-length
+and never long, so the reader knows roughly where it is and keeps picking
+a neighbour. Luring an idle learner has no marker at all.
+
+**This does not overturn the null; it reframes what the null was about.**
+Separation asked for exclusive fingerprints and there are none. Recovery
+asks whether the orders are interchangeable and they are not. Both are
+true of the same 32 turns. The scope is narrow: a reader trained on 31 of
+32 turns the design had already balanced. It does not show the reader
+would hold on turns nobody has generated.
+
+## The instrument's blind spot, and a withdrawn recommendation
+
+An earlier draft of this card recommended pruning `mockery` — swap in
+plain words — on the ground that it separated worst. That reasoning was
+wrong and is withdrawn.
+
+The move asks the tutor to drop cryptic metaphor, not to drop Latin-root
+words. The stamp has a column for word length and none for metaphor, so
+it cannot see the thing the move is about. What it can see is an absence:
+these turns mostly do not ask (2 of 6, against 22 of the other 26). An
+absence is weak evidence, which is why recovery gets it 2/6.
+
+The tutor does perform the move. Three of the six drafts say so in
+words — "no jargon needed", "plain talk", "plain and simple". Those
+phrases appear on exactly 3 of 32 turns in the corpus, all three of them
+this move, no false positives. A crude column for announced plain speech
+(`--with-plain-flag`, off by default) lifts the first guess to 43.8%.
+But it does not fix the move it was written for: plain words stays 2/6,
+and the gain lands on splitting the stake instead. A post-hoc column
+helping by accident is not evidence. Recorded, not leaned on.
+
+One more thing the drafts show: the learner never mocked anything in any
+of the six. The Latin square forces the move on schedule whether or not
+the dialogue provoked it, so these six are the move performed cold.
+
+So the failure here is the instrument's, not the tutor's. Prune nothing
+on this evidence.
+
 ## Next
 
 - Both readings are done and both are null under the registered
@@ -366,14 +477,21 @@ handwriting is the one no learner met.
   stays.
 - The draft reading closes the "was it just the guard?" question. It was
   not. With the corpus whole and balanced, nothing separates.
-- Prune instead. The figures that cannot be told apart under three
-  instruments are the candidates — the lost state's three cards, already
-  merged under runs B and C, and now `mockery`, `quiet:flat` and
-  `quiet:confused`, which share no feature even within themselves.
-- If any figure is worth keeping on the evidence of its own handwriting,
-  it is `grievance` (credit plus contrast) and then `settled_claim` (ask
-  plus cite). That is a post-hoc reading and would need its own fresh
-  test before it counts as anything.
+- Prune far less than the earlier draft of this card said, and on the
+  recovery reading rather than the separation one. One candidate:
+  `quiet:flat`, the oblique lure — 0 of 4 first guesses, 0 of 4 in the
+  top two, and no marker at all, with no known blind spot to excuse it.
+  `mockery` is not a candidate; the instrument cannot see what that move
+  does (above). `quiet:confused` is weakly readable, 2 of 4 in the top
+  two on contrast.
+- The clean test for recovery is the same clean test as before: fresh
+  turns nobody has generated, read by a profile built on this corpus.
+  The live stamp writes them on every run, so a later run supplies them
+  at no extra cost. Until then this is 32 balanced turns read by a
+  leave-one-out reader, and no more.
+- Adding a column for cryptic metaphor would be the one instrument change
+  worth making. It is what one of the seven moves is defined by and the
+  stamp has no way to see it.
 - Paper untouched, per the falsifier card's registered order. The
   corrected chance reading of 1 of 7 belongs to §7.13 and is recorded on
   `figure-lattice-falsifier`.
