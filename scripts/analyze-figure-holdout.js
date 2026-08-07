@@ -92,6 +92,10 @@ export function loadTurns(dir, source) {
       turns.push({
         move: o.figure,
         where: `${o.dialogue} t${o.turn}`,
+        // Identity for the overlap check is the reply itself, not the name. Both
+        // corpora number their dialogues latin-d0..d6, so `${dialogue} t${turn}`
+        // collides across corpora that share no turn at all.
+        reply: o.reply.replace(/\s+/gu, ' ').trim(),
         features: new Set(
           tutorStubReplyFeatureAttributes(describeTutorStubReplyFeatures(o.reply, { learnerText: o.learner })),
         ),
@@ -173,8 +177,8 @@ function main() {
     console.error('Generate it with: node scripts/run-figure-clean-test.js');
     process.exit(1);
   }
-  const overlap = new Set(trainTurns.map((t) => t.where));
-  const shared = testTurns.filter((t) => overlap.has(t.where));
+  const overlap = new Set(trainTurns.map((t) => t.reply));
+  const shared = testTurns.filter((t) => overlap.has(t.reply));
 
   // Vocabulary from the TRAINING corpus only. A feature first seen in the test
   // set has no fitted probability, and inventing one from the test replies
@@ -187,8 +191,7 @@ function main() {
   console.log(`reading ${args.source === 'draft' ? "the tutor's own first drafts" : 'the text that shipped'}`);
   console.log(`train: ${trainTurns.length} turns from ${path.relative(ROOT, args.train)}`);
   console.log(`test:  ${testTurns.length} turns from ${path.relative(ROOT, args.test)}`);
-  if (shared.length)
-    console.log(`  WARNING: ${shared.length} turn labels appear in both corpora — not a held-out test.`);
+  if (shared.length) console.log(`  WARNING: ${shared.length} replies appear in both corpora — not a held-out test.`);
   console.log(
     `moves ranked: ${model.moves.join(', ')} (${model.moves.length}, so chance is 1 in ${model.moves.length})`,
   );
@@ -258,7 +261,7 @@ function main() {
         test: path.relative(ROOT, args.test),
         trainTurns: trainTurns.length,
         testTurns: n,
-        sharedTurnLabels: shared.length,
+        sharedReplies: shared.length,
         moves: model.moves,
         trainCounts: Object.fromEntries([...model.profile].map(([m, v]) => [m, v.n])),
         features: vocab,
