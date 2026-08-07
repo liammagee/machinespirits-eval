@@ -33,6 +33,7 @@ import { spawnSync } from 'child_process';
 
 import { evaluateRegisterStanceFidelity, STANCE_GATE_VERSION } from '../services/registerStanceFidelity.js';
 import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
+import { fisherExactTwoSided } from '../services/fisherExact.js';
 // Taken from the grid's own definition rather than re-implemented, so the
 // conversion denominator here cannot drift from the registered measure.
 import { isPositiveLocalOutcome } from './run-sarcasm-determinate-negation-grid.js';
@@ -71,43 +72,6 @@ function parseArgs(argv) {
     }
   }
   return flags;
-}
-
-// --- statistics -------------------------------------------------------------
-
-function logFactorial(n) {
-  let total = 0;
-  for (let i = 2; i <= n; i += 1) total += Math.log(i);
-  return total;
-}
-
-/** Two-sided Fisher exact test on a 2x2 table, by summing tables no likelier than observed. */
-function fisherExactTwoSided(a, b, c, d) {
-  const n = a + b + c + d;
-  if (!n) return null;
-  const tableProb = (w, x, y, z) =>
-    Math.exp(
-      logFactorial(w + x) +
-        logFactorial(y + z) +
-        logFactorial(w + y) +
-        logFactorial(x + z) -
-        logFactorial(n) -
-        logFactorial(w) -
-        logFactorial(x) -
-        logFactorial(y) -
-        logFactorial(z),
-    );
-  const observed = tableProb(a, b, c, d);
-  let total = 0;
-  for (let i = 0; i <= Math.min(a + b, a + c); i += 1) {
-    const j = a + b - i;
-    const k = a + c - i;
-    const l = n - i - j - k;
-    if (j < 0 || k < 0 || l < 0) continue;
-    const prob = tableProb(i, j, k, l);
-    if (prob <= observed + 1e-12) total += prob;
-  }
-  return Math.min(1, total);
 }
 
 // --- row loading ------------------------------------------------------------
