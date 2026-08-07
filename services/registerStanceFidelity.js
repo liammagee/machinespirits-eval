@@ -2,6 +2,16 @@ import { getEngagementRegisterDefinition, resolveEngagementRegister } from './en
 
 const NEGATIVE_REGISTER_NAMES = new Set(['ironic', 'sarcastic', 'face_threat', 'sarcastic_determinate']);
 
+// Identifies the scoring function that produced a stance verdict. Every verdict
+// carries it, because the component weights and the label rule differ BY
+// register (`sarcastic_determinate` re-weights the plain sarcastic gate and adds
+// a required conjunct), so a bare pass count is not comparable across registers.
+// Bump on any change to the component weights, the band cut-points, or the label
+// rule; verdicts stamped with different versions must not be differenced. The
+// pair is reported as `gateRegister` + `gateVersion` — NOT `gate`, which is
+// already taken by the evidence disposition (`faithful_arm_evidence` etc).
+export const STANCE_GATE_VERSION = 'stance-gate/1.0';
+
 const STANCE_FIDELITY_GATE_BY_LABEL = {
   faithful: {
     gate: 'faithful_arm_evidence',
@@ -143,6 +153,11 @@ function findMatches(text, patterns) {
 
 function canonicalRegisterName(registerName) {
   return resolveEngagementRegister(registerName, { fallback: null })?.register || String(registerName || '').trim();
+}
+
+/** True when the register has a stance gate, i.e. a verdict is worth persisting. */
+export function isNegativeRegister(registerName) {
+  return NEGATIVE_REGISTER_NAMES.has(canonicalRegisterName(registerName));
 }
 
 function escapeRegExp(value) {
@@ -303,6 +318,8 @@ export function evaluateRegisterStanceFidelity({
       applies: false,
       registerName: canonicalRegister,
       requestedRegisterName: registerName,
+      gateRegister: canonicalRegister,
+      gateVersion: STANCE_GATE_VERSION,
       passed: true,
       label: 'not_negative_register',
       score: null,
@@ -367,6 +384,8 @@ export function evaluateRegisterStanceFidelity({
     applies: true,
     registerName: canonicalRegister,
     requestedRegisterName: registerName,
+    gateRegister: canonicalRegister,
+    gateVersion: STANCE_GATE_VERSION,
     passed: label === 'faithful',
     label,
     score,
@@ -385,4 +404,6 @@ export default {
   applyNegativeRegisterScoreGuardrails,
   classifyRegisterStanceEvidence,
   evaluateRegisterStanceFidelity,
+  isNegativeRegister,
+  STANCE_GATE_VERSION,
 };
