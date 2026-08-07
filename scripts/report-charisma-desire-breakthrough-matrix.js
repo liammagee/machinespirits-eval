@@ -12,6 +12,7 @@ import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/e
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
 import { evaluateRegisterStanceFidelity } from '../services/registerStanceFidelity.js';
 import { summarizeNegativeRegisterEffects } from '../services/negativeRegisterEffectGrid.js';
+import { renderStancePayloadComparability } from '../services/stancePayloadComparability.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -1216,6 +1217,18 @@ function buildEffectGridSection(effectGrid) {
         ]),
       ),
     );
+    lines.push('');
+  }
+  if (effectGrid.payloadComparability?.stances?.length) {
+    lines.push('### What each arm was asked to do');
+    lines.push('');
+    lines.push(
+      'The counts above are not one demand met to different degrees. Each arm carries its own list of ' +
+        'mandated moves, and a stance with no rubric of its own is scored by another instrument. Read a ' +
+        'difference between arms with this table beside it.',
+    );
+    lines.push('');
+    lines.push(renderStancePayloadComparability(effectGrid.payloadComparability));
     lines.push('');
   }
   if (effectGrid.byTargetArm.length) {

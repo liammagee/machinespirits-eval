@@ -36,6 +36,7 @@ import {
   renderStanceComponentContingency,
   stanceComponentContingency,
 } from '../services/stanceComponentContingency.js';
+import { compareStancePayloads, renderStancePayloadComparability } from '../services/stancePayloadComparability.js';
 import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { fisherExactTwoSided } from '../services/fisherExact.js';
 // Taken from the grid's own definition rather than re-implemented, so the
@@ -265,6 +266,16 @@ function renderMarkdown(data) {
       'admitting turns with no register marker, and it disappears once both gates require the marker.',
   );
   lines.push('');
+  lines.push('## What each arm was asked to do');
+  lines.push('');
+  lines.push(
+    'Holding the gate and the fold fixed still leaves one thing moving: the two stances mandate different ' +
+      'moves. This table is read from the register registry rather than written out here, so it stays true if ' +
+      'either list changes.',
+  );
+  lines.push('');
+  lines.push(renderStancePayloadComparability(data.payloadComparability));
+  lines.push('');
   lines.push('## Conversion among faithful rows (same common gate and fold)');
   lines.push('');
   lines.push('| Arm | faithful | of which positive | positive across all rows |');
@@ -419,6 +430,10 @@ export function main() {
       }),
     ],
     missing: { parent: missingProfile(parent), determinate: missingProfile(child) },
+    // The two arms were not asked for the same thing. This is computed from the
+    // registry rather than described in prose, so it stays true if either
+    // stance's mandated moves change.
+    payloadComparability: compareStancePayloads([parentArm, 'sarcastic_determinate']),
     bindingConstraint: bindingConstraintCheck([...parentRows, ...childRows]),
     rows: { parent: parent.rows, determinate: child.rows },
   };

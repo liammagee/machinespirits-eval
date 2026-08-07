@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 
+import { compareStancePayloads } from './stancePayloadComparability.js';
 import { stanceComponentContingency } from './stanceComponentContingency.js';
 
 export const NEGATIVE_REGISTER_EFFECT_GRID = Object.freeze({
@@ -226,6 +227,15 @@ export function summarizeNegativeRegisterEffects(analyses) {
   const contingency = stanceComponentContingency(rows.map((row) => row.stanceFidelity));
   for (const contradiction of contingency.contradictions) errors.push(contradiction);
 
+  // The three arms were not asked for the same thing: irony wants the learner
+  // to do the unmasking, sarcasm a concrete next move, face threat a minimal
+  // repair path. Print what each was told to do beside its count, so a
+  // difference between counts is not read as one demand met to different
+  // degrees. An arm the register registry cannot resolve fails the report,
+  // because a mistyped arm would otherwise go unchecked and unnoticed.
+  const payload = compareStancePayloads([...byArm.keys()]);
+  for (const error of payload.errors) errors.push(error);
+
   return {
     schema: 'machinespirits.negative-register-effect-grid-report.v1',
     status: errors.length ? 'INCOMPLETE' : 'COMPLETE',
@@ -233,6 +243,7 @@ export function summarizeNegativeRegisterEffects(analyses) {
     expectedRows: 45,
     observedRows: rows.length,
     componentContingency: contingency,
+    payloadComparability: payload,
     byArm: [...byArm.values()].map(finalizeEffectBucket),
     byTargetArm: [...byTargetArm.values()].map(finalizeEffectBucket),
   };
