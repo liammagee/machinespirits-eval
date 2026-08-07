@@ -35,15 +35,32 @@ function schemaSnapshot(db) {
 }
 
 describe('evaluation-store connection owner', () => {
-  it('resolves EVAL_DB_PATH before the repository default', () => {
+  it('resolves EVAL_DB_PATH, then the shared archive, then the repository default', () => {
+    const archive = '/data-home/evaluations.db';
+    const env = { MS_DATA_HOME: '/data-home' };
+    const archivePresent = { existsSync: (candidate) => candidate === archive };
+    const archiveAbsent = { existsSync: () => false };
+
     assert.equal(
       resolveEvaluationDatabasePath({
         rootDir: '/repo',
-        env: { EVAL_DB_PATH: '/isolated/evaluations.db' },
+        env: { ...env, EVAL_DB_PATH: '/isolated/evaluations.db' },
+        fileSystem: archivePresent,
       }),
       '/isolated/evaluations.db',
     );
-    assert.equal(resolveEvaluationDatabasePath({ rootDir: '/repo', env: {} }), '/repo/data/evaluations.db');
+    // The rule the readers use, now the writer's too: a run launched from a
+    // worktree lands in the archive the analysis scripts open, not in a fresh
+    // database beside its own checkout that nothing else would ever read.
+    assert.equal(
+      resolveEvaluationDatabasePath({ rootDir: '/worktree', env, fileSystem: archivePresent }),
+      archive,
+      'a worktree run must not write beside its own checkout',
+    );
+    assert.equal(
+      resolveEvaluationDatabasePath({ rootDir: '/repo', env, fileSystem: archiveAbsent }),
+      '/repo/data/evaluations.db',
+    );
     assert.throws(() => resolveEvaluationDatabasePath({ env: {} }), /rootDir is required when EVAL_DB_PATH is not set/);
   });
 

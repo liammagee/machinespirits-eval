@@ -13,7 +13,7 @@ import { resolveEvaluationLogsRoot } from './createEvaluationStore.js';
 export function createEvaluationScriptContext({ rootDir, env = process.env, fileSystem = fs } = {}) {
   if (!rootDir) throw new Error('createEvaluationScriptContext requires rootDir');
 
-  const databasePath = resolveEvaluationDatabasePath({ rootDir, env });
+  const databasePath = resolveEvaluationDatabasePath({ rootDir, env, fileSystem });
   const logsRoot = resolveEvaluationLogsRoot({ rootDir, env, fileSystem });
   const dialogueLogs = createDialogueLogRepository({ logsRoot, fileSystem });
 
