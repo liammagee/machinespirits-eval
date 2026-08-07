@@ -34,12 +34,22 @@
  * turns, which holds size, class balance and the whole feature distribution
  * fixed and destroys only the link between move and text.
  *
+ * `--drop-quiet` reads the five MOVE cards only. The two quiet cards name a
+ * state the learner is in rather than a tactic the tutor takes, and a replay of
+ * the merged card-force gate (services/tutorStubCardForce.js) over these same
+ * traces withholds all 8 quiet orders in the corpus: the learner was not flat
+ * and was not confused on any of the turns the square scheduled them for. Those
+ * 8 turns therefore carry a label that names nothing, and pooling them with the
+ * 24 real ones both dilutes the profile and inflates the number of classes
+ * chance is divided among. The corpus predates the gate, so the traces carry no
+ * `withheld` field to filter on and the flag drops them by name.
+ *
  * Pure computation over stored traces. No model calls, no DB, no writes
  * outside exports/crossed-effects/.
  *
  * Usage:
  *   node scripts/analyze-figure-recovery.js [--traces <dir>] [--source draft|shipped]
- *                                           [--trials N] [--seed N] [--with-plain-flag]
+ *                                           [--trials N] [--seed N] [--drop-quiet]
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -52,14 +62,17 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CE = path.join(ROOT, 'exports', 'crossed-effects');
 const DEFAULT_TRACES = path.join(ROOT, 'exports', 'tutor-stub-outcome', 'figure-fresh-shadow');
 
-// Added AFTER reading the plain-words turns and noticing the instrument had no
-// column for the thing that move is about. Off by default, and any run with it
-// on is a post-hoc reading that needs fresh turns before it counts.
-const PLAIN_SPEECH =
-  /\b(no jargon|plain talk|plain and simple|plain english|in plain|simply put|plainly|straight talk|no fancy)\b/i;
+// The plain-speech column used to live here as `--with-plain-flag`, added after
+// reading the plain-words turns and off by default because a column written
+// from the turns it scores is post-hoc by construction. At rf-v2 it moved into
+// the instrument itself, unchanged, so it is now stamped on every reply and
+// needs no flag. On the corpus it was written from it is still post-hoc; on
+// turns generated after that commit it is prospective. The old artifact
+// exports/crossed-effects/figure-recovery-draft-plainflag.json records the
+// post-hoc reading and is no longer regenerable from this script.
 
 function parseArgs(argv) {
-  const out = { traces: DEFAULT_TRACES, source: 'draft', trials: 400, seed: 20260807, plainFlag: false };
+  const out = { traces: DEFAULT_TRACES, source: 'draft', trials: 400, seed: 20260807, dropQuiet: false };
   for (let i = 0; i < argv.length; i += 1) {
     const [k, inline] = argv[i].split('=');
     const val = inline !== undefined ? inline : argv[i + 1];
@@ -79,8 +92,8 @@ function parseArgs(argv) {
     } else if (k === '--seed') {
       out.seed = Number(val);
       if (inline === undefined) i += 1;
-    } else if (k === '--with-plain-flag') {
-      out.plainFlag = true;
+    } else if (k === '--drop-quiet') {
+      out.dropQuiet = true;
     }
   }
   return out;
@@ -153,10 +166,10 @@ function main() {
   const turns = [];
   for (const f of files.sort()) {
     for (const o of readDialogue(f, args.source).objects) {
+      if (args.dropQuiet && o.figure.startsWith('quiet:')) continue;
       const feats = new Set(
         tutorStubReplyFeatureAttributes(describeTutorStubReplyFeatures(o.reply, { learnerText: o.learner })),
       );
-      if (args.plainFlag && PLAIN_SPEECH.test(o.reply)) feats.add('says-it-plainly');
       turns.push({ figure: o.figure, where: `${o.dialogue} t${o.turn}`, features: feats });
     }
   }
@@ -168,7 +181,7 @@ function main() {
 
   console.log(`reading the ${args.source === 'draft' ? "tutor's own first drafts" : 'text that shipped'}`);
   console.log(
-    `${turns.length} turns, ${moves.length} moves, ${vocab.length} features${args.plainFlag ? ' (plain-speech flag ON — post-hoc)' : ''}`,
+    `${turns.length} turns, ${moves.length} moves, ${vocab.length} features${args.dropQuiet ? ' (quiet orders dropped)' : ''}`,
   );
 
   const res = leaveOneOut(turns, vocab, moves);
@@ -219,20 +232,20 @@ function main() {
     atLeast > 0.05 ? '  READING: the order left no mark this reader can find.' : '  READING: the order left a mark.',
   );
 
-  const out = `figure-recovery-${args.source}${args.plainFlag ? '-plainflag' : ''}.json`;
+  const out = `figure-recovery-${args.source}${args.dropQuiet ? '-moves' : ''}.json`;
   fs.writeFileSync(
     path.join(CE, out),
     JSON.stringify(
       {
         generated: 'can the ordered move be guessed from the reply? (workplan card: reply-feature-stamps)',
         source: args.source,
-        plainSpeechFlag: args.plainFlag,
+        quietOrdersDropped: args.dropQuiet,
         caveats: [
           'Written after the separation test returned a null, so this is not a pre-registered result. It needs a run on turns nobody has seen before it counts.',
           'Uniform class prior on purpose: the square was built for equal counts, so the realized 4-to-6 spread is an accident of which turns fired.',
-          args.plainFlag
-            ? 'The plain-speech flag was added after reading the plain-words turns. Any gain it brings is post-hoc by construction.'
-            : 'No plain-speech flag: the instrument has no column for announcing plain speech, which is what one of the seven moves is about.',
+          args.dropQuiet
+            ? 'Quiet orders dropped: a replay of the merged card-force gate over these traces withholds all 8 of them, so their labels name a state the learner was not in.'
+            : 'Quiet orders kept, though a gate replay says all 8 were false orders. Read the --drop-quiet run for the moves alone.',
           'Drafts include text the guard vetoed, so this measures what the tutor can write, not what learners read.',
         ],
         turns: turns.length,

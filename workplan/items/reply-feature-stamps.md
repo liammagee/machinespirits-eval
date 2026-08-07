@@ -549,39 +549,148 @@ square was never balanced — six moves were performed on their occasion
 and the seventh was performed against one. A later run either gets the
 lure a real occasion or does not spend the turn.
 
+## Both quiet cells are bad, not one — and what that does to the numbers
+
+Replaying the merged gate over all 32 carded turns, not just the four
+`quiet:flat` ones, withholds **8 of 8 quiet orders**. The four
+`quiet:confused` turns fail the same way the lures did: the tutor was
+told to untangle a learner who was not tangled. The detector's own count
+over the same 62 turns agrees — it read `flat` once, `quiet_defiance`
+twice, `confused` never, and nothing at all on 25.
+
+So the sentence above, "`quiet:confused` is weakly readable, 2 of 4 in
+the top two on contrast, and stands", is withdrawn. Its 2 of 4 was
+computed on turns whose label names a state the learner was not in. Both
+quiet moves are untested, for the same reason, and neither is a prune
+candidate.
+
+This changes the headline number, and in the direction that costs the
+least to say plainly. **Recovery over the 24 validly ordered turns is
+54.2% first guess against a 20% bar, and 75.0% in the top two against
+40%** (`--drop-quiet`, `figure-recovery-draft-moves.json`). Of 400 label
+shuffles inside those same turns, none reached 54.2%. The previously
+published 37.5% pooled 8 turns carrying meaningless labels, which both
+diluted the profile and split chance seven ways instead of five. Neither
+figure is a clean test; the 54.2% is the one built on turns whose labels
+mean something.
+
+Per move, over the 24: grievance 3/4, demand 3/5, stake 3/5, settled
+claim 2/4, plain words 2/6.
+
+## rf-v2: three columns, and the one that was refused
+
+Frozen 8 August, **before** the corpus meant to test it existed. That
+order is the correction to run C, whose act patterns were widened while
+looking at labelled replies from the corpus they then scored.
+
+Provenance rule followed for all three: patterns written from the card
+text and the tutor role prompt, never from a reply; the only thing
+checked against text was an unlabelled firing rate over the four
+falsifier runs — 1172 replies of `crossed-k3`, `repertoire-k3`,
+`lostretest-k3`, `flatpromo-k3` — and only to avoid shipping a dead
+column. The fresh-shadow corpus was not read while writing them.
+
+- `abstract-label` — the procedure vocabulary the swap-in-plain-words
+  move asks the tutor to drop. Every word comes from
+  `prompts/tutors/dramatic-detective.md`, which names "condition, rule,
+  reading, route, or whole case", plus `procedure` from the card's own
+  "the procedure vocabulary gone". Fires on 285 of 1172, and overlaps
+  `latinate:high` on only 58 of those 285 — `rule`, `route` and `case`
+  are short Anglo-Saxon words the Latin-suffix count cannot see.
+- `plain-speech` — the tutor announcing the switch. The regex moves
+  unchanged out of `analyze-figure-recovery.js`, where it had lived as
+  the off-by-default `--with-plain-flag`. Moving it does not launder its
+  history: on the corpus it was written from it stays post-hoc, and on
+  turns generated after the freeze it is prospective. That is the only
+  reason to move it. 86 of 1172, and 81 of those 86 carry no `restate`
+  flag, so it is not a rename.
+- `echo` — the learner's own content words coming back, bucketed at 0.30
+  and 0.50. Measured since rf-v1 and thrown away before the lattice saw
+  it, which was an oversight. Cuts are the tertiles of the same 1172
+  replies, read with the cards hidden.
+
+**The metaphor column this card asked for was not added.** The
+recommendation rested on a misreading of the move. Its instruction says
+"the procedure vocabulary gone", and the learner-side pressure it answers
+mocks a register — "who talks like that", "ledger-speak" — not an image.
+Measured, the column would also be dead: over the same 1172 replies,
+comparison frames fire 15 times, and 14 of the 15 are `call it` and "the
+way the", which are naming and manner. `as if` fires once. `abstract-label`
+is what that column should have been, and the earlier wording is
+withdrawn.
+
+On the 24 training turns the new columns do what the card hoped: plain
+words, whose only previous marker was an absence, now carries
+`plain-speech` on 3 of its 6 turns and 0 of the other 18, and drops the
+procedure vocabulary where the rest keep it.
+
+Readers are version-gated. `analyze-figure-lattice-fresh.js` now compares
+the live stamp to a recompute only when the trace was stamped by the
+loaded instrument, and says so when it was not — without that, every
+rf-v1 corpus would stop the reader by reporting the upgrade as a fault.
+
+## The clean test, registered before the run
+
+Design and bar fixed here before a turn of the test corpus existed.
+`scripts/run-figure-clean-test.js` writes the same design to a manifest
+beside the traces, because the fresh-shadow run left none and its design
+had to be rebuilt afterwards from seven trace files.
+
+**The corpus.** Seven dialogues from the pinned recipe
+(`../ms-figure-pinned/corpus-recipe.json`, world 030, dramatic-detective,
+Sonnet 5 tutor and gpt-5.6-terra learner), five move cards at slots 4 to
+8, one Latin-square rotation per dialogue, so each move is ordered seven
+times. Slots move one turn earlier than the training corpus's 5 to 11
+because those dialogues ended at turn 7 to 9 and the late slots rarely
+fired. No quiet cards: they have no valid training turns, so ordering
+them would only produce turns to throw away.
+
+**The test.** Train once on the 24 move turns of `figure-fresh-shadow`;
+apply that profile to the new turns; never look at a test reply while
+fitting, including the feature vocabulary. This is the thing leave-one-out
+cannot ask, since every training set it uses is 23 of the same 24 turns.
+
+**The bar.** Top-1 accuracy against 1 in 5, one-sided exact binomial,
+pass at p < 0.05. At the expected 35 turns that is 12 of 35, 34.3%. The
+bar does not move afterwards, and a result that beats chance without
+reaching it is a null. Reported either way: top-2 against 2 in 5, per-move
+recall, and a label shuffle inside the test corpus as a second baseline.
+The draft reading is primary, because the profile was built from drafts;
+the shipped reading is a different question — what survived the guard —
+not a second attempt at this one.
+
+**No turn is dropped after the fact.** The only drops are the ones the
+reader already makes for every corpus: a dialogue that never completed,
+and on the shipped reading a turn where the guard shipped its template.
+
 ## Next
 
-- Both readings are done and both are null under the registered
-  criterion. Do not buy more dialogues on this stack. Reaching 5 turns
-  per figure in the SHIPPED corpus needs roughly 18 more at the current
-  yield (the recipe allows 13 turns but dialogues close near 8, so 3 of
-  the square's 7 slots rarely fire — 4.6 cards per dialogue, and under
-  60% survive), or about 10 if the square moves to slots 2–8. Even then
-  the reading would rest on a corpus where a filter correlated with the
-  figures removed a third of it.
-- What would actually unblock the shipped reading is a guard change that
-  is not on the table: the exact-source contract is the wall, and it
-  stays.
-- The draft reading closes the "was it just the guard?" question. It was
-  not. With the corpus whole and balanced, nothing separates.
-- **Prune nothing.** Both candidates this card once named are withdrawn,
-  for different reasons. `mockery` is not a candidate: the instrument has
-  no column for the metaphor the move is about. `quiet:flat` is not a
-  candidate either: all four of its turns ordered the lure at a learner
-  who was mid-argument, so its 0 of 4 says nothing about the move (both
-  above). `quiet:confused` is weakly readable, 2 of 4 in the top two on
-  contrast, and stands. That leaves no move with evidence against it, and
-  one — the lure — still untested.
-- The clean test for recovery is the same clean test as before: fresh
-  turns nobody has generated, read by a profile built on this corpus.
-  The live stamp writes them on every run, so a later run supplies them
-  at no extra cost. Until then this is 32 balanced turns read by a
-  leave-one-out reader, and no more.
-- Adding a column for cryptic metaphor would be the one instrument change
-  worth making. It is what one of the seven moves is defined by and the
-  stamp has no way to see it.
-- Paper untouched, per the falsifier card's registered order. The
-  corrected chance reading of 1 of 7 belongs to §7.13 and is recorded on
-  `figure-lattice-falsifier`.
-- The unreproducibility of the calibration corpus is a methods fact
-  about §7.13's runs A/B/B' and is recorded there too.
+- **Now:** run the clean test, attended. `node scripts/run-figure-clean-test.js`
+  spends seven dialogues on the pinned recipe, ordering the five move
+  cards seven times each. It stops on the first failure and leaves a
+  manifest either way.
+- **Then read it once:** `node scripts/analyze-figure-holdout.js --test
+  exports/tutor-stub-outcome/figure-clean-test`. Draft reading is
+  primary. The bar is registered above and does not move.
+- **Prune nothing, still.** All three candidates this card once named are
+  withdrawn. `mockery` — the instrument had no column for what the move
+  is about, and now that the column exists it is `abstract-label`, not
+  metaphor; the move's own recall is unchanged at 2 of 6. `quiet:flat`
+  and `quiet:confused` — every one of their 8 turns ordered a state the
+  learner was not in, so their scores say nothing about the moves. No
+  move has evidence against it, and two are untested.
+- **The shipped reading stays blocked and that is fine.** The
+  exact-source contract is the wall and it stays; buying more dialogues
+  to work around a filter correlated with the figures would only build a
+  worse corpus. The clean test is on drafts for the same reason the
+  training profile was.
+- **The two quiet moves need a different experiment, not more turns.**
+  They can only be ordered when the detector says the learner is in that
+  state, and over 62 turns it said so three times. Testing them means
+  writing a learner that goes quiet on purpose, which is a separate card.
+- **Paper:** nothing until the clean test reads. §7.13 is the home for
+  whatever survives — the corrected chance reading of 1 in 7, the
+  unreproducibility of the calibration corpus, and, if the profile holds,
+  the fact that a card-blind reader recovers which move was ordered from
+  the reply alone. If it does not hold, that is the §7.13 sentence
+  instead, and it is the more useful one.
