@@ -12,7 +12,7 @@ import {
   validateSarcasmPreconditionGridPlan,
 } from '../services/sarcasmPreconditionGrid.js';
 import { followUpCommands, generationCommand } from '../scripts/run-sarcasm-precondition-grid.js';
-import { STANCE_GATE_VERSION } from '../services/registerStanceFidelity.js';
+import { stanceGateComponents, STANCE_GATE_VERSION } from '../services/registerStanceFidelity.js';
 import { fisherExactTwoSided } from '../services/fisherExact.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -198,6 +198,31 @@ describe('sarcasm precondition grid', () => {
     assert.equal(report.status, 'INCOMPLETE');
     assert.equal(report.verdict, 'INCOMPLETE');
     assert.ok(report.errors.some((error) => /mix stance gates/.test(error)));
+  });
+
+  it('carries the faithful count next to every part of the gate it came from', () => {
+    // Naming the gate is not enough: the report also has to show how passing
+    // splits against the gate's parts, so a count carried by the wrong part is
+    // visible without anyone thinking to ask.
+    const report = summarizeSarcasmPreconditionGrid(supportedAnalyses());
+    assert.equal(report.componentContingency.gates.length, 1);
+    const [gate] = report.componentContingency.gates;
+    assert.equal(gate.gate, `sarcastic_determinate@${STANCE_GATE_VERSION}`);
+    assert.deepEqual(
+      gate.parts.map((part) => part.key),
+      stanceGateComponents('sarcastic_determinate').map((part) => part.key),
+    );
+  });
+
+  it('fails closed when a passing row lacked a part the gate calls necessary', () => {
+    // The shape that reached a published number: a turn with no sarcastic
+    // marker scored 75 and was counted as having held the sarcastic manner.
+    const analyses = supportedAnalyses();
+    analyses[0].stanceFidelity.passed = true;
+    analyses[0].stanceFidelity.missing = ['register_marker'];
+    const report = summarizeSarcasmPreconditionGrid(analyses);
+    assert.equal(report.status, 'INCOMPLETE');
+    assert.ok(report.errors.some((error) => /counted faithful without register_marker/.test(error)));
   });
 
   it('fails closed when a row carries no named-claim component', () => {

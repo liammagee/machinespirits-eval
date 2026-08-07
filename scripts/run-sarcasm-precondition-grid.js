@@ -172,6 +172,20 @@ function runReport(runId, outputDir) {
     `[sarcasm-precondition-grid] gate ${report.measurement.gateRegister}@${report.measurement.gateVersion} ` +
       `fold ${report.measurement.fold}`,
   );
+  // The pass count next to what it is made of, always, whether or not anything
+  // looks wrong. A count carried by the wrong part of the gate is only visible
+  // when the split is on the page.
+  for (const gate of report.componentContingency?.gates || []) {
+    console.log(`[sarcasm-precondition-grid] ${gate.passed}/${gate.n} faithful under ${gate.gate}, by part:`);
+    for (const part of gate.parts) {
+      console.log(
+        `    ${part.key} (${part.weight}${part.required ? ', required' : ''}): ` +
+          `${part.presentPassed} had it and passed, ${part.presentFailed} had it and failed, ` +
+          `${part.absentPassed} lacked it and passed, ${part.absentFailed} lacked it and failed`,
+      );
+    }
+    for (const warning of gate.warnings) console.log(`    ! ${warning.severity}: ${warning.message}`);
+  }
   for (const error of report.errors) console.log(`  - ${error}`);
   if (report.status === 'COMPLETE') {
     for (const key of ['manipulation', 'primary', 'outcome']) {

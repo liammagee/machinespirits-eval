@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 
+import { stanceComponentContingency } from './stanceComponentContingency.js';
+
 // Frozen 15-row plan for the sarcasm-as-determinate-negation follow-up
 // (notes/2026-08-06-sarcasm-determinate-negation-preregistration.md). One
 // tightened sarcastic arm across the parent grid's five controlled resistance
@@ -193,6 +195,11 @@ export function summarizeSarcasmDeterminateNegationGrid(analyses, recoveryBySlic
   if (rows.some((row) => !row.stanceFidelity?.applies))
     errors.push('one or more rows are missing stance-fidelity classification');
 
+  // The faithful count next to what it is made of. Fails closed when a passing
+  // row lacked a part the gate declares necessary.
+  const contingency = stanceComponentContingency(rows.map((row) => row.stanceFidelity));
+  for (const contradiction of contingency.contradictions) errors.push(contradiction);
+
   const targets = [...byTarget.entries()].map(([target, b]) => ({
     target,
     ...b,
@@ -207,6 +214,7 @@ export function summarizeSarcasmDeterminateNegationGrid(analyses, recoveryBySlic
     expectedRows: grid.profiles.length * grid.scenarios.length * grid.repeats,
     observedRows: rows.length,
     recoverySlices: recoveryBySlice.size,
+    componentContingency: contingency,
     byTarget: targets,
   };
 }

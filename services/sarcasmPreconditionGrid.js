@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { STANCE_GATE_VERSION } from './registerStanceFidelity.js';
+import { stanceComponentContingency } from './stanceComponentContingency.js';
 import { fisherExactTwoSided } from './fisherExact.js';
 
 // Frozen 16-row plan for the sarcasm-precondition follow-up
@@ -282,6 +283,12 @@ export function summarizeSarcasmPreconditionGrid(analyses) {
     errors.push(`rows scored by ${[...gateIdentities][0]}, plan registers ${expectedIdentity}`);
   }
 
+  // Naming the gate is not enough — the gate has to be counting what its name
+  // says. Show how the primary count splits against each part of the gate, and
+  // fail closed when a passing row lacked a part the gate calls necessary.
+  const contingency = stanceComponentContingency(rows.map((row) => row.stanceFidelity));
+  for (const contradiction of contingency.contradictions) errors.push(contradiction);
+
   const plain = byCondition.get('plain');
   const claimed = byCondition.get('claimed');
   const manipulation = contrast('named a claim (manipulation check)', claimed, plain, 'namedAClaim');
@@ -305,6 +312,7 @@ export function summarizeSarcasmPreconditionGrid(analyses) {
     verdict,
     errors,
     measurement: { ...grid.measurement, observedGateIdentities: [...gateIdentities].sort() },
+    componentContingency: contingency,
     expectedRows: grid.profiles.length * grid.scenarios.length * grid.repeats,
     observedRows: rows.length,
     byCondition: [

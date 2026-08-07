@@ -113,6 +113,39 @@ named claim *is* cell 202's treatment, so it grades the parent arm on a contract
 the parent never received. Paper v3.0.270 (§6.7 new paragraph, §8.9 two scope
 conditions, revision entry, superseded claims marked in place).
 
+2026-08-07 Claude: The check that would have caught it, built generic. Three
+times now a fix has been cut to the shape of the last failure — a measure that
+was never wired, a count differenced across two gates, a gate that stopped
+requiring the thing it was named for — and each fix pinned that one case. The
+common shape is a count made of parts, where nothing prints how passing splits
+against the parts.
+
+So each gate now declares its parts as a table (`{key, weight, required}` in
+`services/registerStanceFidelity.js`), and both the score and the faithful label
+come off that one table, so a re-weighting cannot quietly change what counts as
+faithful. `services/stanceComponentContingency.js` walks that table and reports,
+for every part: how many rows had it and passed, had it and failed, lacked it
+and passed, lacked it and failed. Grouped by gate, because a multi-arm grid
+holds several and their counts are not comparable.
+
+Three things it says in words. A passing row that lacked a part the gate calls
+necessary is a **contradiction** — the gate disagrees with its own rows — and it
+is pushed into `errors`, so the report fails closed. A part the gate does *not*
+require that predicts every row on its own is a **warning**: the count is
+reporting that part rather than the gate. A required part every row carried is a
+**note**: the count shows nothing about whether the requirement bites.
+
+Wired into all three fail-closed grid reports (precondition, determinate
+negation, negative-register effect) and printed by the precondition launcher and
+the decomposition export whether or not anything looks wrong. The decomposition
+now prints both gates over the same 30 rows: under `sarcastic` the marker
+decides every row and is required, under `sarcastic_determinate` 8/30 pass with
+both required parts varying and neither deciding alone — no row passes without
+the marker any more. Eleven tests (`tests/stanceComponentContingency.test.js`
+plus two in `tests/sarcasmPreconditionGrid.test.js`), including one pinning that
+every gate's weights total 100 and each declares at least one necessary part.
+No run, no re-judging, no rows rewritten.
+
 Operational note: the run's rows landed in the worktree-local
 `data/evaluations.db` while every reader resolves the shared archive — see
 `eval-db-writer-reader-path-split`. Rows and the 124 score-audit rows were copied
