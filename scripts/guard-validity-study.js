@@ -115,11 +115,19 @@ const safetyCount = (decision) =>
  * The passages this turn was working from, read off the guard's own findings.
  * Taken from every finding rather than the hard ones, so the passage is still
  * recovered on a draft where the check only recorded.
+ *
+ * Only the occurrence-count finding is read. Its sibling in the same family,
+ * which fires when the source is not anchored in a carrier phrase, puts the
+ * source's ID in the same field — `source_1`, not the text. Handing that to the
+ * judge as the passage would be worse than handing it nothing. Those turns get
+ * the four quality scales instead, and `judge` says how many.
  */
+const PASSAGE_FINDING = 'due_source_exact_occurrence_count';
+
 function dueSources(draft) {
   const byText = new Map();
   for (const issue of tutorStubGuardIssueRows(draft.audits)) {
-    if (issue.guard !== 'live_source_action_alignment_v1') continue;
+    if (issue.guard !== 'live_source_action_alignment_v1' || issue.type !== PASSAGE_FINDING) continue;
     const passage = typeof issue.source === 'string' ? issue.source.trim() : '';
     if (!passage || byText.has(passage)) continue;
     byText.set(passage, {
