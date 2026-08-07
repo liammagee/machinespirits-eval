@@ -143,6 +143,12 @@ function runInteractive({ tmp, args, initialInput, followupInputs = [], stopWhen
         FAKE_CODEX_LOG: logPath,
         CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
         TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+        // These fixtures describe the strict ladder: a quality finding vetoes
+        // the draft, a rewrite is attempted, and the template speaks if none
+        // clears. Strict became the opt-in on 2026-08-07, so pin it here
+        // rather than let the fixtures drift with the default. Tests of the
+        // live default pass their own TUTOR_STUB_GUARD_POLICY through `env`.
+        TUTOR_STUB_GUARD_POLICY: 'strict',
         ...env,
       },
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -237,6 +243,7 @@ function runInteractiveModelSwitchSequence({ tmp, timeoutMs = 12_000, changeMode
           PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
           FAKE_CODEX_LOG: logPath,
           CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+          TUTOR_STUB_GUARD_POLICY: 'strict',
         },
         stdio: ['pipe', 'pipe', 'pipe'],
       },

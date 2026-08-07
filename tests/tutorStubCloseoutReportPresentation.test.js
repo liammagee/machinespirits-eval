@@ -199,6 +199,10 @@ test('the debug-report runtime retains report assembly and effects while live cl
           PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
           CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
           TUTOR_STUB_OPENING_REALIZER: 'deterministic',
+          // The hash below is a byte-identity fixture for the renderer. The
+          // guard policy is scaffolding here, but it decides what the tutor
+          // says, so pin it rather than let the fixture move with the default.
+          TUTOR_STUB_GUARD_POLICY: 'strict',
         },
       },
     );

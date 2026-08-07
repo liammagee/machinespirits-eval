@@ -1838,7 +1838,9 @@ const callTutor = createTutorStubTutorTurnPipeline({
   snapshotTutorStubPublicPremiseIds,
   speakerAdvisoryBlocks: SPEAKER_ADVISORY_BLOCKS,
   styleGuardsAdvisory: process.env.TUTOR_STUB_STYLE_GUARDS_ADVISORY === '1',
-  guardBoundaryPolicy: process.env.TUTOR_STUB_GUARD_POLICY === 'shadow_advisory' ? 'shadow_advisory' : 'strict',
+  // Default flipped to shadow_advisory on 2026-08-07 (guard-policy-default-flip).
+  // TUTOR_STUB_GUARD_POLICY=strict restores the old vetoing regime.
+  guardBoundaryPolicy: process.env.TUTOR_STUB_GUARD_POLICY === 'strict' ? 'strict' : 'shadow_advisory',
   // Q3: TUTOR_STUB_CORRUPT_RELIEF=1 demotes ALL hard guard issues to
   // advisory at deliberately-corrupted turns so the model's repair ships.
   corruptReliefTurn: (turn) => process.env.TUTOR_STUB_CORRUPT_RELIEF === '1' && automatedLearnerCorruptionEnabled(turn),

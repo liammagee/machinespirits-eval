@@ -18,6 +18,12 @@ const META_THEATRICAL_DRAFT =
   "You’re right to ask what the public evidence licenses us to write. I'm going to give you another piece of information. Let's role-play it: I'll be the town assayer. Verrell alone draws the mint-yard crucible. Back to the case: what does this new clue support?";
 const FLAT_CHARACTER_DRAFT =
   'You’re right to ask what the public evidence licenses us to write. Town assayer, opening the mint-yard register: “Verrell alone draws the mint-yard crucible.” What changes?';
+// Fails only families the shadow column records as advisory — a flat role
+// label instead of an enacted entrance, no selected part or tactic — while
+// placing the exact due source once behind its carrier, so the hard evidence
+// and clue-transaction checks pass. This is the draft the two policies decide
+// differently, which is what the paired test at the end reads.
+const QUALITY_ONLY_DRAFT = `You’re right to ask what the public evidence licenses us to write. I call for Marrick’s ready verdict; Town assayer, opening the mint-yard register: ${EXACT_DUE_SOURCE} What changes?`;
 const SAFE_UPTAKE_BROKEN_DEVELOPMENT =
   'You’re right to separate suspicion from proof. The next clue appears without a source or exhibit.';
 const TERSE_UPTAKE_BROKEN_DEVELOPMENT = 'Exactly. The next clue appears without a source or exhibit.';
@@ -39,7 +45,9 @@ function readTraceEvents(traceDir) {
     .map((line) => JSON.parse(line));
 }
 
-function runGuardFixture(mode) {
+// `boundaryPolicy: null` runs whatever the CLI's own default is, which is how
+// the paired test at the end reads the live regime rather than restating it.
+function runGuardFixture(mode, { boundaryPolicy = 'strict' } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `tutor-stub-guard-${mode}-`));
   const fakeCodex = path.join(tmp, 'codex');
   fs.writeFileSync(
@@ -64,6 +72,8 @@ process.stdin.on('end', () => {
     ? ${JSON.stringify(SAFE_UPTAKE_BROKEN_DEVELOPMENT)}
     : process.env.FAKE_CODEX_FIXTURE_MODE === 'terse-uptake'
       ? ${JSON.stringify(TERSE_UPTAKE_BROKEN_DEVELOPMENT)}
+    : process.env.FAKE_CODEX_FIXTURE_MODE === 'quality-only'
+      ? ${JSON.stringify(QUALITY_ONLY_DRAFT)}
     : process.env.FAKE_CODEX_FIXTURE_MODE === 'duplicate-repair' && repaired
       ? ${JSON.stringify(COMPLEMENTARY_WRITE_REPAIR)}
     : process.env.FAKE_CODEX_FIXTURE_MODE === 'duplicate-repair'
@@ -110,7 +120,7 @@ process.stdin.on('end', () => {
     '--trace-dir',
     tmp,
   ];
-  if (['tactic-repair', 'performance-advisory', 'soft-style'].includes(mode)) {
+  if (['tactic-repair', 'performance-advisory', 'soft-style', 'quality-only'].includes(mode)) {
     cliArgs.splice(cliArgs.indexOf('--no-register-selection'), 1);
     cliArgs.push(
       '--register-policy',
@@ -128,6 +138,9 @@ process.stdin.on('end', () => {
       ...process.env,
       PATH: `${tmp}${path.delimiter}${process.env.PATH || ''}`,
       CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+      // Strict is the opt-in from 2026-08-07; these fixtures are written
+      // against the ladder it drives.
+      ...(boundaryPolicy ? { TUTOR_STUB_GUARD_POLICY: boundaryPolicy } : {}),
       FAKE_CODEX_FIXTURE_MODE: mode,
     },
   });
@@ -371,6 +384,58 @@ test('a flat named character is rewritten until the selected stance tactic is vi
   assert.equal(accounting.finalDelivery.audits.actorialRealizationAudit.ok, true);
   assert.equal(actorAudits.length, 2);
   assert.equal(actorAudits[0].selectedPerformance.id, 'evidentiary_boundary');
+});
+
+// The paired demonstration behind the 2026-08-07 default flip: one fixture, one
+// seed, one environment variable apart. The draft misses the selected part and
+// tactic and labels its source instead of enacting it, and places the exact due
+// source once behind a carrier, so nothing about the public evidence is wrong.
+// Under strict the learner heard a fixed template; under the live default the
+// learner hears the tutor, and the same findings are still on the record.
+test('the same quality-only draft is vetoed under strict and delivered under the live default', () => {
+  const strictRun = runGuardFixture('quality-only', { boundaryPolicy: 'strict' });
+  const liveRun = runGuardFixture('quality-only', { boundaryPolicy: null });
+  const accountingOf = ({ events }) => events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+  const tutorTextOf = ({ events }) => events.find((row) => row.type === 'turn_complete')?.turnRecord.tutor;
+  const strict = accountingOf(strictRun);
+  const live = accountingOf(liveRun);
+  const strictDecision = strict.originalCandidate.audits.deliveryDecision;
+  const liveDecision = live.originalCandidate.audits.deliveryDecision;
+  const ruleIds = (decision) => decision.dispositions.map((row) => row.ruleId).sort();
+
+  assert.equal(strictDecision.boundaryPolicy, 'strict');
+  assert.equal(strict.outcome, 'guarded_deterministic_fallback');
+  assert.equal(strict.finalDelivery.source, 'deterministic_fallback');
+  assert.notEqual(tutorTextOf(strictRun), QUALITY_ONLY_DRAFT);
+
+  assert.equal(liveDecision.boundaryPolicy, 'shadow_advisory');
+  assert.equal(live.outcome, 'guarded_original_accepted_with_advisory');
+  assert.equal(live.finalDelivery.source, 'original_candidate');
+  assert.equal(live.finalDelivery.candidate.text, QUALITY_ONLY_DRAFT);
+  assert.equal(tutorTextOf(liveRun), QUALITY_ONLY_DRAFT);
+  assert.equal(live.attempts.length, 1, 'no rewrite is spent on findings that no longer veto');
+
+  // Identical findings on both sides: only what they license differs.
+  assert.deepEqual(ruleIds(liveDecision), ruleIds(strictDecision));
+  assert.ok(strictDecision.hardIssues.length > 0);
+  assert.deepEqual(liveDecision.hardIssues, []);
+  assert.deepEqual(
+    liveDecision.advisoryIssues.map((issue) => `${issue.guard}:${issue.type}`).sort(),
+    [
+      'actorial_realization:missing_selected_actorial_part',
+      'actorial_realization:missing_selected_performance_tactic',
+      'dramatic_release:missing_in_scene_enactment',
+      'dramatic_release:opaque_clue_release',
+      'dramatic_release:role_label_stage_direction',
+      'live_turn_progression_v1:learner_uptake_not_realized',
+      'response_configuration:axis_not_visible',
+    ],
+    'every finding the strict column vetoed on is still recorded, as an advisory',
+  );
+  for (const row of liveDecision.dispositions) {
+    assert.equal(row.known, true, `${row.ruleId} must resolve in the catalog, not fail closed as unknown`);
+    assert.equal(row.strictDisposition === 'hard' ? row.shadowDisposition : 'advisory', 'advisory');
+  }
 });
 
 test('simplified recovery uses its logged plain configuration rather than retrying the failed policy', () => {

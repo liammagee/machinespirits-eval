@@ -2,7 +2,8 @@
 
 Assessment recorded 2026-07-30, from the gate-3 follow-up experiments. Source
 of truth for dispositions: `services/tutorStubGuardDisposition.js` (catalog
-version 5). This document is the paper-facing account of what is checked at
+version 6; live default `shadow_advisory` from 2026-08-07 — see "The study
+finished, and the default flipped"). This document is the paper-facing account of what is checked at
 the tutor's mouth, why, and what the enforcement itself was measured to cost.
 Paper destination: the §6.23 line of `docs/research/paper-full-2.0.md`.
 
@@ -228,7 +229,107 @@ with probability p) was considered and rejected: it destroys determinism,
 which is what makes the outcome channel judge-free and every comparison
 clean.
 
-## The regime this licenses (recorded 2026-08-06 — NOT in force until the validity study completes)
+## The study finished, and the default flipped (2026-08-07)
+
+The validity study ran to 108 complete pairs and was stopped there. Each pair
+is one vetoed draft and the template that shipped in its place, scored one text
+at a time by a Sonnet judge that never saw the other, on uptake, advance and
+fit.
+
+| | draft | template | draft wins | ties | template wins |
+|---|---|---|---|---|---|
+| overall | 4.17 | 2.51 | 91 | 15 | 2 |
+| uptake | 4.67 | 2.75 | 87 | 19 | 2 |
+| advance | 4.12 | 2.63 | 73 | 31 | 4 |
+| fit | 4.57 | 2.44 | 97 | 10 | 1 |
+
+No guard family favours the template: live turn progression 4.40 v 2.73
+(n=30), mixed findings 4.08 v 2.00 (n=26), repetition 3.53 v 2.37 (n=19),
+actorial realization 4.22 v 2.06 (n=18), dramatic release 4.75 v 4.25 (n=8),
+response composition 4.25 v 2.50 (n=4), source alignment 4.67 v 3.67 (n=3).
+Dramatic release is the closest, and even there the draft leads.
+
+So the live default is now `shadow_advisory`
+(`services/tutorStubTutorTurnPipeline.js`, resolved by the CLI from
+`TUTOR_STUB_GUARD_POLICY`); `strict` is the opt-in. Quality findings record and
+no longer veto; evidence safety, clue bookkeeping and closure still veto, and
+an unrecognised finding still fails closed.
+`tests/tutorStubGuardAccounting.test.js` runs one fixture under both policies: the same draft, the same seven findings,
+a fixed template under strict and the tutor's own words under the default.
+
+Two things deliberately did **not** change with it.
+
+**The catalog version stays 6.** The version records the rule table. No rule
+moved — only which column the runtime reads. Bumping to 7 would say the 19
+shadow-policy runs already on disk cannot pool with runs made after the flip,
+and they can, exactly: they were decided under the same column by the same
+rules. Comparability follows the `boundaryPolicy` stamp each trace already
+carries, not the run date.
+
+**The advance window stays 1.** Under shadow, `tutor_turn_without_advance` is
+advisory anyway, so windowing it changes the advisory count and nothing about
+delivery. It is a measurement question now, and belongs in its own change.
+
+**The library default stays strict.** `decideTutorStubGuardDelivery` still
+answers under the strict column when called bare, because the first-draft
+campaign machinery in `services/tutorStubJointPerformanceFirstDraft.js` calls
+it that way and was calibrated that way. Any new analysis must pass a policy: a
+bare call answers a question about the strict column, which is not the regime
+live dialogues are decided under.
+
+## Which recorded runs survive the flip, and which do not (2026-08-07)
+
+The flip does not invalidate a run for having a high template rate. It
+invalidates a *comparison* whose conclusion depends on who wrote the prose.
+Dialogues closed at every template rate on record, including the two runs that
+shipped 100% template, so evidence-driven closure — did the learner reach the
+world's conclusion, in how many turns, off which clues — is untouched. What
+the template ruins is any reading of the tutor's words, and any contrast
+between tutor versions that the guards watered down unequally.
+
+**(a) Effectively archived — the finding needs re-running.**
+
+- `fallible-phaseB` (1156 turns, 62% template) and `fallible-phaseA` (423
+  turns, 60%). These are the registered contrast between a bare tutor and a
+  contract-carrying one. The contract version spoke its own words on 21–28% of
+  turns and the bare version on 0–1%, so the two conditions were silenced to
+  different degrees by the apparatus rather than by the manipulation. The
+  measured difference is not separable from that. Re-running is card
+  `phase-b-rerun-under-flipped-policy`, and it is gated on your go-ahead for
+  the spend.
+- `fallible-phaseB-smoke` (80 turns, 65%). A pilot for the above; it goes
+  wherever Phase B goes.
+- `figure-fresh` and `figure-probe` (3 turns each, 100% template). Every
+  delivered word is a template. Nothing about the tutor is readable in them.
+
+**(b) Sound as they stand, but not comparable across the boundary.**
+
+- The 19 shadow-policy runs (`crossed-k3` 581 turns, `flatpromo-k3` 250,
+  `repertoire-k3` 230, `lostretest-k3` 111, `stakecausal` 103,
+  `figure-fresh-shadow` 62, and thirteen smaller ones). These already ran under
+  the column that is now the default, at 4–39% template. They pool with runs
+  made after the flip. They must not be set against Phase A or Phase B — that
+  is a 7%-template group against a 62%-template group, and the gap between
+  policies is larger than any effect these runs report.
+- Phase A and Phase B for anything that does not depend on the tutor's prose:
+  closure counts, turns to closure, which clues were released, learner-side
+  measures. Those readings stand. Only the tutor-text and between-version
+  readings are archived.
+- `greenroom-gate1-2026-07-12` (314 turns, 6% template, 89% model as written).
+  It predates the catalog and ran leak checks alone, so its low template rate
+  is not a shadow-policy rate. Stamped `pre-catalog`; it belongs to neither
+  group.
+- The 2026-07-31 cross-family probe behind the §6.24 sentence. Its artifacts
+  are not on this machine (`exports/` is untracked), so it could not be
+  stamped. Its direction survives the census, its magnitude does not — cite it
+  for the direction only.
+
+The rule that follows: never put two template rates side by side, and never
+pool runs across the `boundaryPolicy` stamp. `scripts/census-guard-template-rate.js`
+reads the stamp off any run's traces, so this is a check, not a memory
+exercise.
+
+## The regime this licenses (recorded 2026-08-06, in force from 2026-08-07)
 
 Three measurements now sit behind the design rule. The replay
 (`scripts/replay-guard-fallback-delivery.js`): of the 717 Phase-B template
@@ -238,11 +339,11 @@ or closure finding. The retry analysis: the rewrite clears 70% of the findings
 it is named, and still fails 80% of the time on checks it was not named — the
 conjunction fails, not the feedback loop. The validity study
 (`scripts/guard-validity-study.js`, Sonnet judge, blind single-text scoring
-after a pairwise probe showed the template is identifiable side by side):
-interim, at 33 of ~150 pairs, the vetoed draft scores 4.15 against the shipped
-template's 2.73 overall, and the template has not won a single turn outright.
+after a pairwise probe showed the template is identifiable side by side): at
+108 pairs the vetoed draft scores 4.17 against the shipped template's 2.51, and
+the template wins 2 pairs of 108. The section above has the full readout.
 
-If the full sample holds that shape, the regime becomes:
+The sample held that shape, so the regime is:
 
 1. **Sort every check by what it protects.** The three contract families —
    evidence safety, clue bookkeeping, closure — keep binary vetoes with the
@@ -260,13 +361,18 @@ If the full sample holds that shape, the regime becomes:
    outscores what it rejects. Re-run it when guards change or the author model
    family changes.
 4. **New checks enter report-only** and are promoted to veto only on validity
-   evidence. Any promotion or default change bumps the catalog version; runs
-   under different catalog versions never pool.
+   evidence. A rule change bumps the catalog version; runs under different
+   catalog versions never pool. A change to which column the runtime reads is
+   not a rule change — it is stamped per delivery, and runs under different
+   stamps never pool either.
 
-Cards: `guard-policy-default-flip` (the switch, gated on the full study),
+Point 1 is now the default and point 4 is the standing rule. Point 2's five
+channels are unbuilt except the last, which the census provides. Point 3's loop
+ran once, on this flip.
+
+Cards: `guard-policy-default-flip` (done 2026-08-07),
 `guard-findings-feed-forward`, `tutor-stub-template-rate-audit`,
-`phase-b-rerun-under-flipped-policy` (user-gated). Until the flip lands,
-every default below stays as it is.
+`phase-b-rerun-under-flipped-policy` (user-gated).
 
 ## Knobs (both opt-in, default off, recorded in traces)
 

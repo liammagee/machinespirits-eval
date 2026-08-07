@@ -54,7 +54,11 @@ test('every hard veto wins the cartesian product with every proposed advisory is
   }
 });
 
-test('strict delivery remains the default while the narrower boundary is shadow-only', () => {
+// Strict is this function's reference column, not the regime live runs use —
+// those pass shadow_advisory explicitly from 2026-08-07. Both columns are
+// computed on every call whichever is asked for, which is what lets a run be
+// re-scored under the other policy offline.
+test('a bare call answers under the strict reference column and still reports the shadow one', () => {
   const issue = { guard: 'dramatic_release', type: 'missing_in_scene_enactment' };
   const strict = decideTutorStubGuardDelivery([issue]);
   assert.equal(strict.boundaryPolicy, TUTOR_STUB_GUARD_BOUNDARY_POLICIES.strict);

@@ -7,14 +7,14 @@ priority: P2
 owner: claude
 source: manual
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-07
 verification: >-
-  DOUBLY GATED — starts only after guard-policy-default-flip lands AND the
-  user authorizes the spend. Then: the same registered design (frozen cells,
-  bare vs contract vs empty plan, n = 12 per version per cell, same models,
-  learner blind), on catalog v7. Primary endpoint unchanged. Reported against
-  the original as a pair: strict-harness verdict and open-harness verdict,
-  never pooled.
+  ONE GATE LEFT — guard-policy-default-flip landed 2026-08-07; this now waits
+  only on the user authorizing the spend. Then: the same registered design
+  (frozen cells, bare vs contract vs empty plan, n = 12 per version per cell,
+  same models, learner blind), under boundaryPolicy shadow_advisory. Primary
+  endpoint unchanged. Reported against the original as a pair: strict-harness
+  verdict and open-harness verdict, never pooled.
 claim_status: planned
 links:
   code:
@@ -61,3 +61,8 @@ option if the spend needs staging.
 - 2026-08-06 — filed with the user's proviso: full validity-study results
   before anything proceeds, and this run additionally waits for explicit
   authorization.
+- 2026-08-07 — first gate cleared. The study reported (108 pairs, draft 4.17 vs
+  template 2.51) and the default flipped, so a re-run would now put the tutor's
+  own words in the dialogue on roughly 98% of turns instead of 38%. Still
+  waiting on the spend authorization. The catalog reference is the
+  `boundaryPolicy` stamp, not a catalog version — v6 covers both columns.
