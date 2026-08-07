@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-06T23:09:47.218Z",
+  "generated": "2026-08-07T02:19:46.503Z",
   "counts": {
-    "total": 444,
+    "total": 445,
     "byStatus": {
-      "done": 407,
+      "done": 408,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 74,
       "experiment": 72,
-      "infra": 87,
+      "infra": 88,
       "maintenance": 191,
       "content": 3,
       "ops": 10,
@@ -14517,6 +14517,32 @@
         "ci",
         "hermetic"
       ]
+    },
+    {
+      "id": "keep-the-repo-dotenv-out-of-the-keyless-cli-tests",
+      "title": "Keep the repo .env out of the keyless CLI tests",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "verification": "node --test tests/dryRun.test.js passes in a checkout that has a populated .env at the root, not only in CI where there is none. Two guard cases stand behind that: one plants a .env in a temp directory and asserts the child reads nothing from it, with a control proving an unguarded child would read it; the other asserts an exported shell key does not reach the child. Deleting either half of the fix fails a guard.",
+      "claim_status": "methods",
+      "created": "2026-08-07",
+      "updated": "2026-08-07",
+      "links": {
+        "code": [
+          "tests/dryRun.test.js",
+          "tests/fixtures/empty.env",
+          "tests/fixtures/dotenv-probe.js"
+        ]
+      },
+      "tags": [
+        "testing",
+        "tooling"
+      ],
+      "milestone": "evaluation-infrastructure",
+      "branch": "claude/nostalgic-elion-a493d3"
     },
     {
       "id": "let-the-hermetic-test-runner-find-vitest-from-a-worktree",
