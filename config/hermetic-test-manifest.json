@@ -547,6 +547,7 @@
         "tests/tutorStubQaMatrix.test.js",
         "tests/tutorStubQuestionSupport.test.js",
         "tests/tutorStubRatingCorpus.test.js",
+        "tests/tutorStubRecoveryPrompt.test.js",
         "tests/tutorStubRegisterEmpiricalPrior.test.js",
         "tests/tutorStubRegisterHistoryProjection.test.js",
         "tests/tutorStubRegisterPalette.test.js",

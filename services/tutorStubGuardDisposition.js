@@ -14,7 +14,14 @@ export const TUTOR_STUB_GUARD_DISPOSITION_SCHEMA = 'machinespirits.tutor-stub.gu
 // the 2026-07-31 three-arm manner test: those families templated two-thirds
 // of turns and answered nearly every learner-pressure turn themselves,
 // making tutor-conduct experiments unmeasurable under strict.
-export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 6;
+// 7 (2026-08-08): live_source_action_alignment_v1.due_source_action_referent_missing
+// reads ADVISORY under the shadow policy. The strict column is byte-identical
+// to version 6, so default-policy traces stay comparable; shadow-policy traces
+// from version 7 are NOT comparable with an earlier shadow reading on that one
+// finding. Motivated by the guard-validity judged pass: on all four turns in
+// the Phase B corpus where this was the only objector, a blind judge preferred
+// the draft it binned to the template that shipped.
+export const TUTOR_STUB_GUARD_DISPOSITION_CATALOG_VERSION = 7;
 
 export const TUTOR_STUB_GUARD_BOUNDARY_POLICIES = Object.freeze({
   strict: 'strict',
@@ -75,6 +82,19 @@ const RULES = Object.freeze([
     category: 'dramatic_realization',
     rationale:
       'Each exact due source must appear once, with its pre-source carrier and any opt-in post-source accessibility sentence visible at their typed live boundaries.',
+  }),
+  rule({
+    guard: 'live_source_action_alignment_v1',
+    type: 'due_source_action_referent_missing',
+    dispositions: STRICT_HARD_SHADOW_ADVISORY,
+    category: 'dramatic_realization',
+    rationale:
+      'The draft said the source but did not anchor it to the carrier. Shadow (v7): recorded, not vetoing. ' +
+      'This fires on 4 of 698 turns in the Phase B corpus and is the only objector on all four, so those four are ' +
+      'the whole population rather than a sample. A blind judge scored the binned draft and the template that ' +
+      'shipped in its place, separately, and the draft won or tied every scale on all four — including ' +
+      'faithfulness to the source, 5.00 against 4.25, where the anchoring complaint should have told against it. ' +
+      'It has not been seen to help. The occurrence check keeps its veto under the wildcard rule above.',
   }),
   rule({
     guard: 'release_delivery',

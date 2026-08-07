@@ -87,6 +87,13 @@ export function createTutorStubRecoveryAccountingRuntime({
     const responseCompositionRows = rows('response_composition', responseCompositionIssues);
     const liveTurnProgressionRows = rows('live_turn_progression_v1', liveTurnProgressionIssues);
     const liveSourceActionAlignmentRows = rows('live_source_action_alignment_v1', liveSourceActionAlignmentIssues);
+    // The passages the draft failed to say. Older traces carry the finding
+    // without its text, so drop anything empty rather than printing a blank
+    // instruction to quote nothing.
+    const missingSourceTexts = liveSourceActionAlignmentIssues
+      .filter((issue) => issue.type === 'due_source_exact_occurrence_count')
+      .map((issue) => String(issue.expected_text || '').trim())
+      .filter(Boolean);
     const repetitionRows = rows('repetition', repetitionIssues);
     const closureRows = rows('dialogue_closure', closureIssues);
     const recoveryTransition = responseConfiguration?.recovery_transition || null;
@@ -113,6 +120,17 @@ export function createTutorStubRecoveryAccountingRuntime({
         ? instructionalMetaRepair
           ? 'Begin with a substantive acknowledgement of the wording problem, then restate the explanation plainly. Ask no question and do not quote the public inquiry question.'
           : 'Answer the learner substantively first. Keep any permitted question single and terminal, and make its final sentence name the typed public focus.'
+        : null,
+      // Two different complaints used to share one instruction. The carrier
+      // sentence below only answers the second: it tells the tutor where to put
+      // the entrance relative to "the exact source words" while leaving those
+      // words unnamed. When the draft never said the source at all, that
+      // instruction asks for the placement of something absent, so say the
+      // missing thing first and quote it in full.
+      missingSourceTexts.length
+        ? `Your reply must contain ${missingSourceTexts.length === 1 ? 'this passage' : 'each of these passages'} once, word for word, inside quotation marks:\n${missingSourceTexts
+            .map((text) => `  ${JSON.stringify(text)}`)
+            .join('\n')}`
         : null,
       liveSourceActionAlignmentRows
         ? 'Write the required public carrier in the host entrance immediately before the exact source words. Do not substitute an unrelated prop or rely on a later question to name the carrier.'

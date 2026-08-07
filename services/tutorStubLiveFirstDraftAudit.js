@@ -185,6 +185,15 @@ export function auditTutorStubLiveSourceActionAlignmentV1({ text = '', firstDraf
     .map((row) => ({
       type: 'due_source_exact_occurrence_count',
       source: row.source,
+      // Carry the words themselves, not just the label. This finding is what
+      // the repair pass is handed, and `source_1` names a passage without
+      // showing it: the tutor was being told to quote something it could not
+      // see, which is why the repair failed on 42 of the 44 turns where this
+      // was the only complaint. The text is safe to pass on — the host already
+      // rendered it to the learner, and the fallback template quotes it in
+      // full. Withholding it is what the leak guard is for, and that guard
+      // covers concealed evidence, which this is the opposite of.
+      expected_text: row.expected_text,
       expected_count: row.expected_count,
       observed_count: row.observed_count,
       reason: 'the live response must contain the exact host-rendered source once',
