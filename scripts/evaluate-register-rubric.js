@@ -25,6 +25,7 @@ import {
 import {
   applyNegativeRegisterScoreGuardrails,
   evaluateRegisterStanceFidelity,
+  isNegativeRegister,
 } from '../services/registerStanceFidelity.js';
 import { buildNegationRecoveryJudgePrompt, parseNegationRecoveryJudgeReply } from '../services/negationRecovery.js';
 
@@ -241,19 +242,28 @@ async function scoreSlice(slice, { judgeModel = null }) {
   const overall = calculateRubricOverallScore(guarded.scores, rubric);
   if (overall == null) return { ok: false, reason: 'no_valid_dimension_scores' };
 
-  // The determinate-sarcasm register carries two extra measurements per slice:
-  // the deterministic stance verdict and the judged negation-recovery result
-  // (both validated on config/register-exemplars/sarcasm-determinate-negation.yaml).
-  // A recovery-judge failure fails the slice so it stays pending.
+  // Persist the deterministic stance verdict for EVERY negative register, not
+  // just the determinate one. It is the quantity the arm estimands are defined
+  // on, and a run that omits it forces every later reader to recompute it from
+  // dialogue logs — where two live slice conventions and two gate weightings
+  // disagree, which is how a 6/15-vs-8/15 "drop" reached the paper when the
+  // like-for-like counts were 7/15 and 8/15 (§6.7, corrected v3.0.269).
   let stanceFidelity = null;
   let negationRecovery = null;
-  if (slice.registerName === 'sarcastic_determinate') {
+  if (isNegativeRegister(slice.registerName)) {
     stanceFidelity = evaluateRegisterStanceFidelity({
       registerName: slice.registerName,
       tutorMessage: slice.tutorMessage,
       learnerMessage: slice.learnerMessage,
       postLearnerMessage: slice.postLearnerMessage,
     });
+  }
+
+  // The judged negation-recovery measure stays determinate-only — it asks
+  // whether the learner voiced the implied correction, which only the
+  // determinate contract commits the tutor to setting up. A recovery-judge
+  // failure fails the slice so it stays pending.
+  if (slice.registerName === 'sarcastic_determinate') {
     const recoveryPrompt = buildNegationRecoveryJudgePrompt({
       tutorMessage: slice.tutorMessage,
       postLearnerMessage: slice.postLearnerMessage,
