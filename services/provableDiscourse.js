@@ -1143,7 +1143,7 @@ export function evaluateProvenanceCheck(db, evidence, rootDir) {
           checkResults[check].skipped++;
           continue;
         }
-        const auditRows = db.prepare('SELECT COUNT(*) AS c FROM score_audit WHERE result_id = ?').get(String(row.id));
+        const auditRows = db.prepare('SELECT COUNT(*) AS c FROM score_audit WHERE result_id = ?').get(row.id);
         if (auditRows && auditRows.c > 0) checkResults[check].passed++;
         else {
           checkResults[check].failed++;

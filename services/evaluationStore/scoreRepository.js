@@ -43,7 +43,7 @@ export function createScoreRepository(options = {}) {
    * Capture before-state of columns about to be UPDATEd, then return a
    * function that—when called after the UPDATE—diffs and writes audit rows.
    *
-   * @param {string|number} resultId - Row ID in evaluation_results
+   * @param {number} resultId - Row ID in evaluation_results
    * @param {string[]} columns - Column names being modified
    * @param {string} operation - Name of the calling function (audit label)
    * @param {{ judgeModel?: string, rubricVersion?: string }} [metadata]
@@ -64,7 +64,7 @@ export function createScoreRepository(options = {}) {
         const newVal = after?.[col];
         if (stringifyAudit(oldVal) !== stringifyAudit(newVal)) {
           auditStmt.run(
-            String(resultId),
+            resultId,
             col,
             stringifyAudit(oldVal),
             stringifyAudit(newVal),
@@ -79,11 +79,11 @@ export function createScoreRepository(options = {}) {
 
   /**
    * Retrieve the full score audit trail for a single evaluation result.
-   * @param {string|number} resultId
+   * @param {number} resultId
    * @returns {Array} Ordered audit entries
    */
   function getScoreAudit(resultId) {
-    return db.prepare('SELECT * FROM score_audit WHERE result_id = ? ORDER BY timestamp').all(String(resultId));
+    return db.prepare('SELECT * FROM score_audit WHERE result_id = ? ORDER BY timestamp').all(resultId);
   }
 
   /**
@@ -96,7 +96,7 @@ export function createScoreRepository(options = {}) {
       .prepare(
         `
       SELECT sa.* FROM score_audit sa
-      JOIN evaluation_results er ON sa.result_id = CAST(er.id AS TEXT)
+      JOIN evaluation_results er ON sa.result_id = er.id
       WHERE er.run_id = ?
       ORDER BY sa.timestamp
     `,

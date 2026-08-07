@@ -92,6 +92,42 @@ describe('evaluation-store migration owner', () => {
     db.close();
   });
 
+  it('retypes a legacy TEXT score_audit.result_id and keeps its rows', () => {
+    const db = new Database(':memory:');
+    db.exec(`
+      CREATE TABLE score_audit (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        result_id TEXT NOT NULL,
+        column_name TEXT NOT NULL,
+        old_value TEXT,
+        new_value TEXT,
+        operation TEXT NOT NULL,
+        judge_model TEXT,
+        rubric_version TEXT,
+        timestamp TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      INSERT INTO score_audit (id, result_id, column_name, new_value, operation, timestamp)
+      VALUES (7, '4711', 'tutor_overall_score', '82', 'updateResultTutorScores', '2026-08-07T00:00:00Z');
+    `);
+
+    migrateEvaluationDatabase(db);
+
+    const declaredType = db
+      .prepare('PRAGMA table_info(score_audit)')
+      .all()
+      .find((column) => column.name === 'result_id').type;
+    const row = db.prepare('SELECT id, result_id AS resultId, typeof(result_id) AS storage FROM score_audit').get();
+    assert.equal(declaredType, 'INTEGER');
+    // Stored as a number now, so a Map keyed by evaluation_results.id finds it.
+    assert.deepEqual(row, { id: 7, resultId: 4711, storage: 'integer' });
+    assert.equal(
+      db.prepare(`SELECT COUNT(*) AS n FROM sqlite_master WHERE name = 'idx_score_audit_result'`).get().n,
+      1,
+      'the rebuild must leave the index it dropped',
+    );
+    db.close();
+  });
+
   it('preserves the evaluator_model rename and first-turn-score backfill', () => {
     const db = new Database(':memory:');
     db.exec(`

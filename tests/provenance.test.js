@@ -737,17 +737,20 @@ describe('Cross-function audit coverage', () => {
     const auditRun1 = getScoreAuditByRun(run1.id);
     const auditRun2 = getScoreAuditByRun(run2.id);
 
-    // Run1 audit should only contain entries for id1
+    // Compared without coercion on purpose. result_id is an INTEGER, the same
+    // type as the row id it names, so the two sides of this comparison are the
+    // two sides of any in-memory join over the audit trail. When the column was
+    // TEXT this line needed String(id1) and the join it stands for silently
+    // matched nothing.
     const run1ResultIds = [...new Set(auditRun1.map((a) => a.result_id))];
     assert.ok(
-      run1ResultIds.every((rid) => rid === String(id1)),
+      run1ResultIds.every((rid) => rid === id1),
       'run1 audit should only contain run1 results',
     );
 
-    // Run2 audit should only contain entries for id2
     const run2ResultIds = [...new Set(auditRun2.map((a) => a.result_id))];
     assert.ok(
-      run2ResultIds.every((rid) => rid === String(id2)),
+      run2ResultIds.every((rid) => rid === id2),
       'run2 audit should only contain run2 results',
     );
   });

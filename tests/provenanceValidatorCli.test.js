@@ -65,7 +65,7 @@ function createFixture({
       tutor_rubric_version TEXT
     );
     CREATE TABLE score_audit (
-      result_id TEXT
+      result_id INTEGER
     );
   `);
 
@@ -89,7 +89,7 @@ function createFixture({
        config_hash, tutor_overall_score, tutor_rubric_version)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(1, RUN_ID, DIALOGUE_ID, dialogueHash(log), tutorScores, configHash, 4, rowRubricVersion);
-  db.prepare('INSERT INTO score_audit (result_id) VALUES (?)').run('1');
+  db.prepare('INSERT INTO score_audit (result_id) VALUES (?)').run(1);
   db.close();
 
   if (includeLog) {
