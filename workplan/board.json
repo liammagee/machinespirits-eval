@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-07T23:06:28.275Z",
+  "generated": "2026-08-07T23:20:41.477Z",
   "counts": {
-    "total": 456,
+    "total": 457,
     "byStatus": {
-      "done": 415,
+      "done": 416,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
@@ -18,7 +18,7 @@
       "maintenance": 192,
       "content": 3,
       "ops": 10,
-      "paper": 7
+      "paper": 8
     }
   },
   "items": [
@@ -14805,6 +14805,28 @@
         "prompt-erosion",
         "deliberation"
       ]
+    },
+    {
+      "id": "register-axis-confound-paper-edits",
+      "title": "Say which \"registers\" are tones and which are arguments, in the paper",
+      "status": "done",
+      "type": "paper",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "§6.7 states, where the register list is introduced, that its entries span argumentative demands, tones and delivery styles; and the judge-repair sentence marks 68.1 as coming from a different rubric than the three negative arms. No figure moves.",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "items": [
+          "stance-payload-comparability",
+          "sarcasm-mood-floor-replication"
+        ]
+      }
     },
     {
       "id": "repetition-audit-misses-reworded-stall",
