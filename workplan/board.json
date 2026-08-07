@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-07T05:05:56.782Z",
+  "generated": "2026-08-07T05:26:19.104Z",
   "counts": {
     "total": 446,
     "byStatus": {
@@ -118,7 +118,7 @@
       "source": "manual",
       "created": "2026-08-06",
       "updated": "2026-08-07",
-      "verification": "ONE GATE LEFT — guard-policy-default-flip landed 2026-08-07; this now waits only on the user authorizing the spend. Then: the same registered design (frozen cells, bare vs contract vs empty plan, n = 12 per version per cell, same models, learner blind), under boundaryPolicy shadow_advisory. Primary endpoint unchanged. Reported against the original as a pair: strict-harness verdict and open-harness verdict, never pooled.",
+      "verification": "PARKED ON QUOTA — guard-policy-default-flip landed 2026-08-07 and the user parked the run the same day until codex quota is free again. It needs no further decision, only headroom. Then: the same registered design (frozen cells, bare vs contract vs empty plan, n = 12 per version per cell, same models, learner blind), under boundaryPolicy shadow_advisory. Primary endpoint unchanged. Reported against the original as a pair: strict-harness verdict and open-harness verdict, never pooled.",
       "claim_status": "planned",
       "links": {
         "code": [
