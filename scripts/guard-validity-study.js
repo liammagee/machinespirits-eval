@@ -17,6 +17,10 @@
  *                          assembled from stock lines?". High accuracy on the
  *                          templates means a visible pairwise design is not
  *                          blind and the main pass must score candidates alone.
+ *   judge [--n 150]        Score each item's draft and template, each alone.
+ *                          Two model calls per item.
+ *   report                 Read the scores back. No model calls.
+ *   preview [--n 1]        Print the prompts judge would send, and send none.
  *
  * Output lands in exports/guard-validity/.
  *
@@ -43,6 +47,28 @@
  *     under them.
  *   - A family restricted this way is not a random sample of that guard's
  *     vetoes; it is the subset where nothing else still blocks.
+ *
+ * ---
+ *
+ * The faithfulness scale (added 2026-08-07, with the source-alignment run).
+ *
+ * The four original scales ask how good a turn this is: does it engage what
+ * the learner said, move the inquiry on, fit the moment. A loose paraphrase
+ * scores WELL on all four — smoother, less stilted, more fitted than an exact
+ * quotation. Run on turns vetoed for not rendering the source word for word,
+ * that prompt hands the draft the win by construction, and the readout would
+ * announce that the guard bins good replies.
+ *
+ * So the judge is shown the passage the turn was working from, and asked a
+ * fifth question. Note what it is NOT asked. Whether the exact string appears
+ * once is deterministic; the guard already answered it and a judge could only
+ * agree less reliably. The question here is whether the reply still tells the
+ * learner the truth about the evidence — a paraphrase that keeps the meaning
+ * is a different case from one that bends it, and only the second makes the
+ * veto worth the cost of a fixed template.
+ *
+ * The passage is shown for both candidates and the judge is never told which
+ * is which, or that either was supposed to quote anything.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -84,6 +110,26 @@ const text = (attempt) => (typeof attempt?.candidate === 'string' ? attempt.cand
 const hardKeys = (decision) => decision.hardIssues.map((i) => `${i.guard}.${i.type}`);
 const safetyCount = (decision) =>
   decision.dispositions.filter((d) => SAFETY_CATEGORIES.has(d.category) && d.effectiveDisposition === 'hard').length;
+
+/**
+ * The passages this turn was working from, read off the guard's own findings.
+ * Taken from every finding rather than the hard ones, so the passage is still
+ * recovered on a draft where the check only recorded.
+ */
+function dueSources(draft) {
+  const byText = new Map();
+  for (const issue of tutorStubGuardIssueRows(draft.audits)) {
+    if (issue.guard !== 'live_source_action_alignment_v1') continue;
+    const passage = typeof issue.source === 'string' ? issue.source.trim() : '';
+    if (!passage || byText.has(passage)) continue;
+    byText.set(passage, {
+      text: passage,
+      expected: issue.expected_count ?? null,
+      observed: issue.observed_count ?? null,
+    });
+  }
+  return [...byText.values()];
+}
 
 /** The same choice the replay makes: relaxed column first, then the closest safety-clean draft. */
 function chooseDraft(attempts) {
@@ -166,6 +212,9 @@ function extract(runDir) {
             // would ship today; one family means that family is the sole
             // remaining blocker and its veto is attributable.
             draftHardRelaxed: hardKeys(chosen.decision),
+            // The passages the turn was working from, so the judge can be
+            // asked whether the reply represents them truthfully.
+            dueSources: dueSources(chosen.draft),
           });
         }
       }
@@ -271,25 +320,79 @@ async function probe(n) {
   for (const r of results) console.log(`  [${r.named === r.truth ? 'hit' : 'miss'}] ${r.tell}`);
 }
 
-const SCORE_SYSTEM = [
-  'You are scoring ONE tutor turn from a tutoring dialogue set in a fictional inquiry world.',
-  'The tutor may only use public evidence, must stay in character, and hands the turn back to the learner.',
-  'Score the reply on four anchored 1-5 scales:',
+const SCORE_SCALES = [
   '- uptake: engages the specific thing the learner just said (1 = ignores or merely re-quotes it, 3 = acknowledges it generically, 5 = answers its exact content)',
   '- advance: moves the inquiry a concrete step (1 = restates ground already held, 3 = organizes without adding, 5 = adds evidence, a distinction, or an applied test)',
   '- fit: the wording belongs to this exact moment (1 = could be pasted into any conversation, 3 = mixed, 5 = built from the particulars at hand)',
   '- overall: how good a next tutor turn this is (1 = useless or confusing, 3 = serviceable, 5 = excellent)',
-  'Reply with JSON only: {"uptake":n,"advance":n,"fit":n,"overall":n}',
-].join('\n');
+];
+// Asked only where a passage is available to judge against. It is a question
+// about truthfulness, not about wording: whether the exact string is present
+// is deterministic and already settled by the guard.
+//
+// The 0 matters more than the 1-5 do. Half of every pair is the fixed template,
+// which says nothing about the evidence at all — neither faithful nor unfaithful.
+// Scored 5 the template wins by silence; scored 1 the judge is just restating the
+// guard's rule. So silence gets its own value, kept out of the mean and counted
+// on its own, which is the number a reader wants anyway: how often the veto
+// bought silence about the evidence rather than an accurate account of it.
+const FAITHFULNESS_SCALE =
+  '- faithfulness: how truly the reply represents the passage below ' +
+  '(0 = does not touch the passage at all, 1 = says something the passage does not support, or contradicts it, ' +
+  '3 = broadly right but blurs or drops a detail that carries weight, 5 = renders it without loss, quoted or not). ' +
+  'Use 0 for silence, not 1: a reply that never mentions the passage has not misrepresented it.';
 
-function parseScores(raw) {
+function scoreSystem(withFaithfulness) {
+  const scales = withFaithfulness ? [...SCORE_SCALES, FAITHFULNESS_SCALE] : SCORE_SCALES;
+  const keys = withFaithfulness
+    ? '{"uptake":n,"advance":n,"fit":n,"overall":n,"faithfulness":n}'
+    : '{"uptake":n,"advance":n,"fit":n,"overall":n}';
+  return [
+    'You are scoring ONE tutor turn from a tutoring dialogue set in a fictional inquiry world.',
+    'The tutor may only use public evidence, must stay in character, and hands the turn back to the learner.',
+    `Score the reply on ${scales.length} anchored 1-5 scales:`,
+    ...scales,
+    `Reply with JSON only: ${keys}`,
+  ].join('\n');
+}
+
+const SCORE_KEYS = ['uptake', 'advance', 'fit', 'overall'];
+
+const hasPassage = (item) => (item.dueSources || []).length > 0;
+
+/**
+ * One candidate, shown alone. The passage goes to both candidates of a pair or
+ * to neither, so the two scores answer the same question, and nothing tells the
+ * judge which reply is which or that either was meant to quote anything.
+ */
+function scorePrompt(item, candidate) {
+  const passages = item.dueSources || [];
+  return [
+    scoreSystem(passages.length > 0),
+    '',
+    item.history.length ? `Recent dialogue:\n${item.history.join('\n')}\n` : '',
+    `The learner just said: ${item.learnerNow}`,
+    '',
+    passages.length
+      ? `The world renders ${passages.length === 1 ? 'this passage' : 'these passages'} for this turn:\n${passages
+          .map((s) => `"""\n${s.text}\n"""`)
+          .join('\n')}\n`
+      : '',
+    `Tutor reply to score:\n${candidate === 'draft' ? item.draft : item.template}`,
+  ].join('\n');
+}
+
+function parseScores(raw, withFaithfulness = false) {
   const match = String(raw).match(/\{[\s\S]*\}/);
   if (!match) return null;
   try {
     const parsed = JSON.parse(match[0]);
-    for (const k of ['uptake', 'advance', 'fit', 'overall']) {
+    for (const k of withFaithfulness ? [...SCORE_KEYS, 'faithfulness'] : SCORE_KEYS) {
       const v = Number(parsed[k]);
-      if (!Number.isFinite(v) || v < 1 || v > 5) return null;
+      // Faithfulness alone runs from 0, because 0 means the question did not
+      // arise: the reply never touched the passage.
+      const floor = k === 'faithfulness' ? 0 : 1;
+      if (!Number.isFinite(v) || v < floor || v > 5) return null;
       parsed[k] = v;
     }
     return parsed;
@@ -392,18 +495,20 @@ async function judge(n, family = null) {
     }
   }
   console.log(`${items.length} items, ${queue.length} scores to collect (${done.size} already on disk)`);
+  // A judged pair with no passage gets the four quality scales only, and on a
+  // source-alignment run that pair cannot answer the question it was drawn for.
+  // Say how many rather than letting them average in unasked.
+  const withoutPassage = items.filter((i) => !(i.dueSources || []).length).length;
+  if (withoutPassage) {
+    console.log(
+      `${withoutPassage} of them carry no passage to judge against — scored on the four quality scales only. ` +
+        'Re-run `extract` if the item file predates the faithfulness scale.',
+    );
+  }
   let failures = 0;
   while (queue.length) {
     const { item, candidate } = queue.shift();
-    const prompt = [
-      SCORE_SYSTEM,
-      '',
-      item.history.length ? `Recent dialogue:\n${item.history.join('\n')}\n` : '',
-      `The learner just said: ${item.learnerNow}`,
-      '',
-      `Tutor reply to score:\n${candidate === 'draft' ? item.draft : item.template}`,
-    ].join('\n');
-    const scores = parseScores(await judgeCall(prompt));
+    const scores = parseScores(await judgeCall(scorePrompt(item, candidate)), hasPassage(item));
     if (!scores) {
       failures++;
       queue.push({ item, candidate }); // requeue at the back; bursts pass
@@ -433,6 +538,25 @@ async function judge(n, family = null) {
   report(family);
 }
 
+/**
+ * How often did each side say nothing about the passage at all (faithfulness 0)?
+ *
+ * This is the count the veto is really argued over. The template's silence is
+ * not a bad account of the evidence, it is no account of it, and a mean over
+ * the replies that did speak hides exactly that. Read it beside the faithfulness
+ * means: those say who was truer when both spoke, this says who spoke.
+ */
+function silenceReport(pairs) {
+  const asked = pairs.filter(
+    (p) => Number.isFinite(Number(p.draft.faithfulness)) && Number.isFinite(Number(p.template.faithfulness)),
+  );
+  if (!asked.length) return;
+  const silent = (side) => asked.filter((p) => Number(p[side].faithfulness) === 0).length;
+  console.log(
+    `\npassage untouched: draft ${silent('draft')} of ${asked.length}, template ${silent('template')} of ${asked.length}`,
+  );
+}
+
 function report(family = null) {
   const resultsPath = path.join(OUT_DIR, 'judge-results.jsonl');
   if (!fs.existsSync(resultsPath)) {
@@ -456,16 +580,24 @@ function report(family = null) {
     if (!pairs.length) return;
   }
   console.log(`\ncomplete pairs: ${pairs.length}`);
-  const dims = ['overall', 'uptake', 'advance', 'fit'];
-  for (const dim of dims) {
-    const draftMean = pairs.reduce((s, p) => s + p.draft[dim], 0) / pairs.length;
-    const templateMean = pairs.reduce((s, p) => s + p.template[dim], 0) / pairs.length;
-    const wins = pairs.filter((p) => p.draft[dim] > p.template[dim]).length;
-    const ties = pairs.filter((p) => p.draft[dim] === p.template[dim]).length;
+  for (const dim of ['overall', ...SCORE_KEYS.filter((k) => k !== 'overall'), 'faithfulness']) {
+    // Faithfulness is only asked where a passage was there to judge against, and
+    // only answered where the reply touched it (0 = it did not). Both exclusions
+    // narrow the pairs, so it runs over its own subset; averaging it across pairs
+    // that were never asked, or that said nothing, would read as agreement.
+    const answered = (row) => Number.isFinite(Number(row[dim])) && (dim !== 'faithfulness' || Number(row[dim]) > 0);
+    const scored = pairs.filter((p) => answered(p.draft) && answered(p.template));
+    if (!scored.length) continue;
+    const draftMean = scored.reduce((s, p) => s + p.draft[dim], 0) / scored.length;
+    const templateMean = scored.reduce((s, p) => s + p.template[dim], 0) / scored.length;
+    const wins = scored.filter((p) => p.draft[dim] > p.template[dim]).length;
+    const ties = scored.filter((p) => p.draft[dim] === p.template[dim]).length;
+    const n = scored.length === pairs.length ? '' : ` (n=${scored.length})`;
     console.log(
-      `${dim.padEnd(8)} draft ${draftMean.toFixed(2)} vs template ${templateMean.toFixed(2)} | draft wins ${wins}, ties ${ties}, template wins ${pairs.length - wins - ties}`,
+      `${dim.padEnd(12)} draft ${draftMean.toFixed(2)} vs template ${templateMean.toFixed(2)} | draft wins ${wins}, ties ${ties}, template wins ${scored.length - wins - ties}${n}`,
     );
   }
+  silenceReport(pairs);
   console.log('\nby family of the draft’s findings (overall: draft mean vs template mean, n):');
   const byFamily = new Map();
   for (const p of pairs) {
@@ -477,6 +609,21 @@ function report(family = null) {
     const d = rows.reduce((s, p) => s + p.draft.overall, 0) / rows.length;
     const t = rows.reduce((s, p) => s + p.template.overall, 0) / rows.length;
     console.log(`  ${f.padEnd(36)} ${d.toFixed(2)} vs ${t.toFixed(2)}  (n=${rows.length})`);
+  }
+}
+
+/**
+ * Print what the judge will be shown, without calling it. A scoring run costs
+ * two calls per item against a subscription window, so the prompt is worth
+ * reading once before it is sent 88 times.
+ */
+function preview(n, family) {
+  const pool = family ? filterToFamily(loadItems(), family) : loadItems();
+  for (const item of stratifiedSample(pool, n)) {
+    for (const candidate of ['draft', 'template']) {
+      console.log(`\n${'='.repeat(70)}\n${item.id}  [${candidate}]  passage: ${hasPassage(item) ? 'yes' : 'none'}`);
+      console.log(`${'='.repeat(70)}\n${scorePrompt(item, candidate)}`);
+    }
   }
 }
 
@@ -500,10 +647,13 @@ async function main() {
     await judge(n, flag(rest, '--family'));
   } else if (cmd === 'report') {
     report(flag(rest, '--family'));
+  } else if (cmd === 'preview') {
+    preview(Number(flag(rest, '--n')) || 1, flag(rest, '--family'));
   } else {
     console.error(
       'usage: guard-validity-study.js extract [runDir] | probe [--n 20] | ' +
-        'judge [--n 150] [--family <guard>] | report [--family <guard>]',
+        'judge [--n 150] [--family <guard>] | report [--family <guard>] | ' +
+        'preview [--n 1] [--family <guard>]',
     );
     process.exit(2);
   }
