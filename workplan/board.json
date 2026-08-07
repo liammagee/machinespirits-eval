@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-07T05:26:19.104Z",
+  "generated": "2026-08-07T05:30:15.811Z",
   "counts": {
     "total": 446,
     "byStatus": {
@@ -82,33 +82,6 @@
       ]
     },
     {
-      "id": "guard-findings-feed-forward",
-      "title": "Feed guard findings into the next turn's request instead of redrafting this one",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "GATED on guard-policy-default-flip landing. Then: an instrumented run where each tutor request carries the previous turn's findings as one line each, no same-turn redraft for quality findings, against a control without the lines. Readout: finding recurrence turn over turn, and the quality instruments per condition. The retry ladder stays for contract findings only.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "services/tutorStubTutorTurnPipeline.js",
-          "services/tutorStubFirstDraftContract.js"
-        ],
-        "items": [
-          "guard-policy-default-flip",
-          "guard-validity-study"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
-    {
       "id": "phase-b-rerun-under-flipped-policy",
       "title": "Re-run the Phase-B contract contrast with the guards not scripting the tutor",
       "status": "triaged",
@@ -181,6 +154,33 @@
         "tutor-stub",
         "guards",
         "worlds"
+      ]
+    },
+    {
+      "id": "guard-findings-feed-forward",
+      "title": "Feed guard findings into the next turn's request instead of redrafting this one",
+      "status": "triaged",
+      "type": "research",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-07",
+      "verification": "UNGATED but demoted — the flip landed and already delivered the subtractive half, so only the additive half is left to test. Run when there is spare quota and no better claim in the queue: an instrumented run where each tutor request carries the previous turn's findings as one line each, against a control without the lines. Readout: finding recurrence turn over turn, and the quality instruments per condition. The retry ladder stays for contract findings only.",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "services/tutorStubTutorTurnPipeline.js",
+          "services/tutorStubFirstDraftContract.js"
+        ],
+        "items": [
+          "guard-policy-default-flip",
+          "guard-validity-study"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
       ]
     },
     {
