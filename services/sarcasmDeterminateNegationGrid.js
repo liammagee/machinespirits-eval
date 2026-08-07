@@ -122,13 +122,27 @@ export function summarizeSarcasmDeterminateNegationGrid(analyses, recoveryBySlic
     invalidViolations: 0,
     recoveryScored: 0,
     recoveryTrue: 0,
+    // Estimand 3 is the co-movement of recovery with outcome among faithful
+    // rows, so the report has to carry the 2x2 itself; the marginals alone
+    // cannot say whether the two move together.
+    recoveredAndPositive: 0,
+    recoveredAndNegative: 0,
+    notRecoveredAndPositive: 0,
+    notRecoveredAndNegative: 0,
   });
 
   for (const row of rows) {
     counts.set(row.scenarioId, (counts.get(row.scenarioId) || 0) + 1);
     if (!byTarget.has(row.targetSignal)) byTarget.set(row.targetSignal, bucket());
     const b = byTarget.get(row.targetSignal);
-    const positive = Boolean(row.positiveOutcome);
+    // Registered estimand 3 needs the parent grid's positive-local-outcome
+    // verdict on every row. A row that simply omits it must fail the report,
+    // not coerce to false — an unset field once let both positive counters
+    // sit at zero and read as a null result.
+    if (typeof row.positiveOutcome !== 'boolean') {
+      errors.push(`${row.rowId}: missing positive-local-outcome verdict`);
+    }
+    const positive = row.positiveOutcome === true;
     b.assignedRows += 1;
     b.assignedPositive += positive ? 1 : 0;
     if (Number.isFinite(row.tutorV22Score)) {
@@ -147,7 +161,12 @@ export function summarizeSarcasmDeterminateNegationGrid(analyses, recoveryBySlic
         errors.push(`${row.rowId}: faithful row missing negation-recovery verdict`);
       } else {
         b.recoveryScored += 1;
-        b.recoveryTrue += recovery.recovered === true ? 1 : 0;
+        const recovered = recovery.recovered === true;
+        b.recoveryTrue += recovered ? 1 : 0;
+        if (recovered && positive) b.recoveredAndPositive += 1;
+        else if (recovered) b.recoveredAndNegative += 1;
+        else if (positive) b.notRecoveredAndPositive += 1;
+        else b.notRecoveredAndNegative += 1;
       }
     }
     b.excludedNoncompliance += row.stanceFidelity?.countsAsExcludedNoncompliance ? 1 : 0;

@@ -8,6 +8,7 @@
 // a zero-call fail-closed report over already-scored rows.
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import { spawn, spawnSync } from 'node:child_process';
@@ -155,11 +156,52 @@ function foldRow(row) {
   };
 }
 
+// Registered estimand 3 compares negation recovery against the parent grid's
+// positive-local-outcome verdict, so it has to be the parent's definition, not
+// a second one written here. The matrix reporter derives that verdict from the
+// dialogue logs with zero model calls; we spawn it and join on row id.
+export function positiveOutcomeVerdicts(runId, { root = ROOT, execPath = process.execPath } = {}) {
+  const jsonPath = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'sarcasm-determinate-outcomes-')), `${runId}.json`);
+  const result = spawnSync(
+    execPath,
+    [
+      'scripts/report-charisma-desire-breakthrough-matrix.js',
+      '--runs',
+      runId,
+      '--output-json',
+      jsonPath,
+      '--output-md',
+      `${jsonPath}.md`,
+    ],
+    { cwd: root, env: process.env, stdio: 'ignore' },
+  );
+  if (!fs.existsSync(jsonPath)) {
+    throw new Error(`outcome verdicts unavailable (matrix reporter exited ${result.status})`);
+  }
+  const parsed = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  const verdicts = new Map();
+  for (const row of parsed.analyses || []) {
+    verdicts.set(String(row.rowId), isPositiveLocalOutcome(row.verdict));
+  }
+  return verdicts;
+}
+
+// Kept byte-identical to isPositiveOutcome() in the matrix reporter; the two
+// must not drift, which the cross-check test pins.
+export function isPositiveLocalOutcome(verdict) {
+  const value = String(verdict || '');
+  return (
+    value.includes('candidate') || value === 'productive_frustration_work' || value === 'owned_generation_with_residual'
+  );
+}
+
 async function runReport(runId, outputDir) {
-  const { openEvaluationDbReadonly } = await import('../services/evaluationDbReadonly.js');
-  const db = openEvaluationDbReadonly();
+  const { openEvaluationDbReadonly, describeMissingEvaluationDb } = await import('../services/evaluationDbReadonly.js');
+  // The opener hands back { db, dbPath, reason } — a bare handle is never returned,
+  // so destructure or every query dies on `db.prepare is not a function`.
+  const { db, dbPath, reason } = openEvaluationDbReadonly(ROOT);
   if (!db) {
-    console.log('[sarcasm-determinate-grid] no evaluation database found; nothing to report');
+    console.log(`[sarcasm-determinate-grid] ${describeMissingEvaluationDb(dbPath, reason)}`);
     return;
   }
   const rows = db
@@ -169,7 +211,12 @@ async function runReport(runId, outputDir) {
     )
     .all(runId);
   db.close();
-  const analyses = rows.map(foldRow);
+  const outcomes = positiveOutcomeVerdicts(runId);
+  const analyses = rows.map((row) => {
+    const folded = foldRow(row);
+    const verdict = outcomes.get(String(folded.rowId));
+    return { ...folded, positiveOutcome: typeof verdict === 'boolean' ? verdict : null };
+  });
   const report = summarizeSarcasmDeterminateNegationGrid(analyses);
   fs.mkdirSync(outputDir, { recursive: true });
   const jsonPath = path.join(outputDir, `${runId}.json`);

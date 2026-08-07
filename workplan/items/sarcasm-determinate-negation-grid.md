@@ -1,15 +1,15 @@
 ---
 id: sarcasm-determinate-negation-grid
 title: Sarcasm as determinate negation — cargo-bearing cue contract
-status: triaged
+status: done
 type: experiment
 priority: P3
 owner: claude
 source: manual
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-07
 verification: A 15-row run (or an explicit drop decision) reports fidelity vs the parent sarcasm arm, faithful-row conversion, and negation recovery, with exclusions and invalid violations separate; any claim lands in paper §6.7 first.
-claim_status: planned
+claim_status: exploratory
 links:
   notes:
     - notes/2026-08-06-sarcasm-determinate-negation-preregistration.md
@@ -18,6 +18,9 @@ links:
     - docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy
   runs:
     - eval-2026-08-05-87fe3664
+    - eval-2026-08-06-4de45d05
+  exports:
+    - exports/sarcasm-determinate-negation-grid/eval-2026-08-06-4de45d05.json
   items:
     - negative-register-effect-estimation-grid
 depends_on:
@@ -64,3 +67,53 @@ launch locked). Fixture recalibration note: three authored slices first
 failed the gate on move-verb wording and one expectation was corrected
 (pure warmth = not_instantiated, not costume). Paid run remains gated on
 fresh operator authorization bound to the dry-run SHA above.
+
+2026-08-07 Claude: Paid run complete under operator authorization; report
+COMPLETE at 15/15 rows. Run `eval-2026-08-06-4de45d05`, cell 202,
+codex.gpt-5.5 in both generating seats, tutor rubric v2.2 and the register
+rubric both judged by claude-code sonnet-5.
+
+**Assigned** (all 15 rows, whether or not the tutor held the manner): tutor
+v2.2 mean 54.92, register-rubric mean 66.85, positive local outcomes 11/15.
+
+**Faithful** (rows where every determinate turn met the tightened contract):
+6/15, of which 4 positive.
+
+**Excluded for not instantiating the register: 9. Invalid person-attack
+violations: 0.** The two counts stay separate; no row was excluded for an
+attack.
+
+**Negation recovery** (the new measure): all 6 faithful rows carry a verdict;
+the learner voiced the implicated correction in 1. Co-movement with outcome
+among faithful rows — recovered and positive 1, recovered and negative 0,
+not recovered and positive 3, not recovered and negative 2.
+
+Against the pre-registered estimands: (1) fidelity fell to 6/15 from the
+parent sarcasm arm's 8/15, so demanding cargo cost manner-holding rather
+than sharpening it — cross-run and unpowered; (2) faithful-row conversion
+4/6 against the parent's 5/8, flat within noise; (3) the mechanism check is
+uninformative rather than negative — one recovery event cannot say whether
+recovery tracks outcomes, and three of the five faithful rows that never
+recovered were positive anyway. Fidelity split by target: irrelevance 3/3
+faithful, question_flood 2/3, rote_parroting 1/3, boredom 0/3,
+frustration 0/3.
+
+Deviations, all recorded rather than patched around: (a) on the first
+register-scoring pass one slice's recovery judge hit the 600s ceiling and
+wrote nothing; a second pass scored it, no plan or model change; (b) the
+report crashed on first run because it treated the read-only database
+opener as returning a handle when it returns a record — fixed; (c) the
+registered positive-local-outcome measure was never wired into the report,
+so both positive counters read a field nothing set and sat at zero while
+the report still passed COMPLETE. Fixed by taking the verdict from the
+parent grid's matrix reporter (the registered definition, zero model
+calls), with a test that fails the report closed on a missing verdict and a
+second test pinning the two classifications against drift. The numbers
+above come from the repaired report and were cross-checked by hand against
+the matrix reporter's own row verdicts.
+
+Reading, held to the pre-registered boundary: fifteen rows, one register,
+one stack, simulated learners only. On this stack the manner-as-content
+proposal does not cash out behaviourally — naming the target claim did not
+get learners to voice the correction — and the parent grid's sarcasm result
+stands as a manner-only effect.
