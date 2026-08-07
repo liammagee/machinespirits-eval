@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 
 import Database from 'better-sqlite3';
 
-import { createEvaluationStore, resolveEvaluationLogsRoot } from '../services/evaluationStore/createEvaluationStore.js';
+import { resolveEvaluationLogsRoot } from '../services/evaluationDataPaths.js';
+import { createEvaluationStore } from '../services/evaluationStore/createEvaluationStore.js';
 import {
   getDefaultEvaluationStore,
   hasDefaultEvaluationStore,
@@ -109,19 +110,18 @@ describe('explicit evaluation-store lifecycle', () => {
     const paths = tempPaths('logs');
     const dataHome = path.join(paths.rootDir, 'archive');
     assert.equal(
-      resolveEvaluationLogsRoot({
-        rootDir: paths.rootDir,
+      resolveEvaluationLogsRoot(paths.rootDir, null, {
         env: { EVAL_LOGS_DIR: '/explicit/logs', MS_DATA_HOME: dataHome },
       }),
       '/explicit/logs',
     );
     assert.equal(
-      resolveEvaluationLogsRoot({ rootDir: paths.rootDir, env: { MS_DATA_HOME: dataHome } }),
+      resolveEvaluationLogsRoot(paths.rootDir, null, { env: { MS_DATA_HOME: dataHome } }),
       path.join(paths.rootDir, 'logs'),
     );
     fs.mkdirSync(dataHome, { recursive: true });
     assert.equal(
-      resolveEvaluationLogsRoot({ rootDir: paths.rootDir, env: { MS_DATA_HOME: dataHome } }),
+      resolveEvaluationLogsRoot(paths.rootDir, null, { env: { MS_DATA_HOME: dataHome } }),
       path.join(dataHome, 'logs'),
     );
   });

@@ -1,9 +1,8 @@
 import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import { randomBytes } from 'node:crypto';
 
 import { getScenario, getTutorProfile, loadRubric, resolveModel } from '../evalConfigLoader.js';
+import { resolveEvaluationLogsRoot } from '../evaluationDataPaths.js';
 import { loadLearnerRubric } from '../learnerRubricEvaluator.js';
 import { isPidAlive } from '../processUtils.js';
 import { readProgressLog } from '../progressLogger.js';
@@ -23,18 +22,6 @@ import { createRunManifestWriter } from './runManifestWriter.js';
 import { createRunRepository } from './runRepository.js';
 import { createScoreRepository } from './scoreRepository.js';
 import { createStatisticsRepository } from './statisticsRepository.js';
-
-export function resolveEvaluationLogsRoot({
-  rootDir,
-  env = process.env,
-  fileSystem = fs,
-  homeDir = os.homedir(),
-} = {}) {
-  if (!rootDir) throw new Error('rootDir is required');
-  if (env.EVAL_LOGS_DIR) return env.EVAL_LOGS_DIR;
-  const dataHome = env.MS_DATA_HOME || path.join(homeDir, '.machinespirits-data');
-  return fileSystem.existsSync(dataHome) ? path.join(dataHome, 'logs') : path.join(rootDir, 'logs');
-}
 
 /**
  * Assemble one evaluation store around an owned or host-supplied SQLite
@@ -70,7 +57,7 @@ export function createEvaluationStore({
     throw error;
   }
 
-  const resolvedLogsRoot = logsRoot || resolveEvaluationLogsRoot({ rootDir, env, fileSystem, homeDir: os.homedir() });
+  const resolvedLogsRoot = logsRoot || resolveEvaluationLogsRoot(rootDir, null, { env, fileSystem });
   let closed = false;
 
   function ensureOpen() {

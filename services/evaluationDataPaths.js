@@ -48,19 +48,32 @@ export function resolveEvaluationDbPath(rootDir, explicitPath = null, { env = pr
   return repoDb;
 }
 
-function isEvaluationRepoRoot(rootDir) {
-  return fs.existsSync(path.join(rootDir, 'package.json')) && fs.existsSync(path.join(rootDir, 'services'));
+function isEvaluationRepoRoot(rootDir, fileSystem = fs) {
+  return (
+    fileSystem.existsSync(path.join(rootDir, 'package.json')) && fileSystem.existsSync(path.join(rootDir, 'services'))
+  );
 }
 
-export function resolveEvaluationLogsRoot(rootDir, explicitPath = null) {
-  const explicit = explicitPath || process.env.EVAL_LOGS_DIR;
+/**
+ * Where the dialogue logs and their sibling artifacts go. Same shape as
+ * `resolveEvaluationDbPath` above, and for the same reason: one rule per kind of
+ * path, held in one place. The store used to keep its own copy of this, which
+ * left a relative `EVAL_LOGS_DIR` meaning `<rootDir>/x` to a reader and `x`
+ * relative to the working directory to a writer.
+ */
+export function resolveEvaluationLogsRoot(rootDir, explicitPath = null, { env = process.env, fileSystem = fs } = {}) {
+  if (!rootDir) throw new Error('rootDir is required');
+
+  const explicit = explicitPath || env.EVAL_LOGS_DIR;
   if (explicit) return resolvePathFromRoot(rootDir, explicit);
 
+  // A run handed over as a folder — logs, no checkout — reads from its own logs
+  // directory rather than the archive it was never part of.
   const rootLogs = path.join(rootDir, 'logs');
-  if (!isEvaluationRepoRoot(rootDir) && fs.existsSync(rootLogs)) return rootLogs;
+  if (!isEvaluationRepoRoot(rootDir, fileSystem) && fileSystem.existsSync(rootLogs)) return rootLogs;
 
-  const dataHome = resolveEvaluationDataHome();
-  if (fs.existsSync(dataHome)) return path.join(dataHome, 'logs');
+  const dataHome = resolveEvaluationDataHome(env);
+  if (fileSystem.existsSync(dataHome)) return path.join(dataHome, 'logs');
 
   return rootLogs;
 }

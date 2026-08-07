@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 
+import { resolveEvaluationLogsRoot } from '../evaluationDataPaths.js';
 import { resolveEvaluationDatabasePath } from './connection.js';
 import { createDialogueLogRepository } from './dialogueLogRepository.js';
-import { resolveEvaluationLogsRoot } from './createEvaluationStore.js';
 
 /**
  * Resolve the read-side dependencies shared by standalone evaluation scripts
@@ -14,7 +14,7 @@ export function createEvaluationScriptContext({ rootDir, env = process.env, file
   if (!rootDir) throw new Error('createEvaluationScriptContext requires rootDir');
 
   const databasePath = resolveEvaluationDatabasePath({ rootDir, env, fileSystem });
-  const logsRoot = resolveEvaluationLogsRoot({ rootDir, env, fileSystem });
+  const logsRoot = resolveEvaluationLogsRoot(rootDir, null, { env, fileSystem });
   const dialogueLogs = createDialogueLogRepository({ logsRoot, fileSystem });
 
   return Object.freeze({ databasePath, logsRoot, dialogueLogs });
