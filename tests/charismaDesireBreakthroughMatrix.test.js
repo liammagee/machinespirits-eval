@@ -20,7 +20,11 @@ describe('charisma desire resistance-breakthrough matrix', () => {
     });
 
     assert.match(stdout, /Scenario set: charisma_desire_resistance_breakthrough_controlled/);
-    assert.match(stdout, /Controlled scenarios: 5/);
+    // Ratchet: this list is the reporter's SQL row filter, so adding to it is a
+    // deliberate act. Bump the count AND name the new id when you widen it.
+    assert.match(stdout, /Controlled scenarios: 7/);
+    assert.match(stdout, /charisma_desire_resistance_breakthrough_boredom_claimed/);
+    assert.match(stdout, /charisma_desire_resistance_breakthrough_frustration_claimed/);
     assert.match(stdout, /cell_188_id_director_charisma_resistance_owned_test_breakthrough_dynamic_verified/);
     assert.match(stdout, /cell_189_id_director_charisma_resistance_precision_breakthrough_dynamic_verified/);
     assert.match(stdout, /cell_190_id_director_charisma_resistance_generation_breakthrough_dynamic_verified/);

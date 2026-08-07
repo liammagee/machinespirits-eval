@@ -32,7 +32,12 @@ import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
 
 import { evaluateRegisterStanceFidelity, STANCE_GATE_VERSION } from '../services/registerStanceFidelity.js';
+import {
+  renderStanceComponentContingency,
+  stanceComponentContingency,
+} from '../services/stanceComponentContingency.js';
 import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
+import { fisherExactTwoSided } from '../services/fisherExact.js';
 // Taken from the grid's own definition rather than re-implemented, so the
 // conversion denominator here cannot drift from the registered measure.
 import { isPositiveLocalOutcome } from './run-sarcasm-determinate-negation-grid.js';
@@ -71,43 +76,6 @@ function parseArgs(argv) {
     }
   }
   return flags;
-}
-
-// --- statistics -------------------------------------------------------------
-
-function logFactorial(n) {
-  let total = 0;
-  for (let i = 2; i <= n; i += 1) total += Math.log(i);
-  return total;
-}
-
-/** Two-sided Fisher exact test on a 2x2 table, by summing tables no likelier than observed. */
-function fisherExactTwoSided(a, b, c, d) {
-  const n = a + b + c + d;
-  if (!n) return null;
-  const tableProb = (w, x, y, z) =>
-    Math.exp(
-      logFactorial(w + x) +
-        logFactorial(y + z) +
-        logFactorial(w + y) +
-        logFactorial(x + z) -
-        logFactorial(n) -
-        logFactorial(w) -
-        logFactorial(x) -
-        logFactorial(y) -
-        logFactorial(z),
-    );
-  const observed = tableProb(a, b, c, d);
-  let total = 0;
-  for (let i = 0; i <= Math.min(a + b, a + c); i += 1) {
-    const j = a + b - i;
-    const k = a + c - i;
-    const l = n - i - j - k;
-    if (j < 0 || k < 0 || l < 0) continue;
-    const prob = tableProb(i, j, k, l);
-    if (prob <= observed + 1e-12) total += prob;
-  }
-  return Math.min(1, total);
 }
 
 // --- row loading ------------------------------------------------------------
@@ -176,7 +144,15 @@ function summarizeArm({ label, runId, rows, gate }) {
       positiveOutcome: isPositiveLocalOutcome(row.verdict),
     };
   });
-  return { label, runId, gate, gateVersion: STANCE_GATE_VERSION, fold: SLICE_FOLD, n: scored.length, rows: scored };
+  return {
+    label,
+    runId,
+    gate,
+    gateVersion: STANCE_GATE_VERSION,
+    fold: SLICE_FOLD,
+    n: scored.length,
+    rows: scored,
+  };
 }
 
 function countBy(rows, predicate) {
@@ -238,27 +214,17 @@ function perTargetTable(parent, child) {
 }
 
 /**
- * Cross-tabulate the two candidate binding constraints against the outcome, so
- * the claim "the marker decided it, the named claim did not" is computed rather
- * than asserted. Returns the 2x2 for each and whether it is decisive (i.e.
- * predicts every row's pass/fail without error).
+ * How the pass count splits against every part of the gate, so "the marker
+ * decided it, the named claim did not" is computed rather than asserted. Walks
+ * each gate's own list of parts instead of a hand-picked pair here, which is
+ * what lets a part nobody suspected show up as the one carrying the count.
+ *
+ * Both gates are applied to all the rows, as everywhere else in this script:
+ * the plain gate has no named-claim part at all, so its table alone could not
+ * say whether the named claim was doing the deciding.
  */
-function bindingConstraintCheck(arms) {
-  const rows = arms.flatMap((arm) => arm.rows);
-  const tabulate = (predicate) => {
-    const table = {
-      present_passed: countBy(rows, (row) => predicate(row) && row.passed),
-      present_failed: countBy(rows, (row) => predicate(row) && !row.passed),
-      absent_passed: countBy(rows, (row) => !predicate(row) && row.passed),
-      absent_failed: countBy(rows, (row) => !predicate(row) && !row.passed),
-    };
-    return { ...table, decisive: table.present_failed === 0 && table.absent_passed === 0 };
-  };
-  return {
-    n: rows.length,
-    registerMarker: tabulate((row) => row.markerPresent),
-    namedTargetClaim: tabulate((row) => row.namedTargetClaim),
-  };
+function bindingConstraintCheck(rows) {
+  return stanceComponentContingency(GATES.flatMap((gate) => rows.map((row) => scoreRow(row, gate))));
 }
 
 function missingProfile(arm) {
@@ -290,8 +256,13 @@ function renderMarkdown(data) {
   }
   lines.push('');
   lines.push(
-    'Both gates rank the two arms the same way, and the gap between arms is one row either way. ' +
-      'The originally reported 6/15-vs-8/15 gap came from the fold, not from the gate and not from the tutor.',
+    'The headline reading is the plain gate, where the arms sit one row apart and the originally reported ' +
+      '6/15-vs-8/15 gap turns out to have come from the fold, not from the gate and not from the tutor. ' +
+      'The determinate column is *not* a robustness check on that reading and should not be read as one: it ' +
+      'requires a named target claim, which is the treatment cell 202 received and the parent arm never did, ' +
+      'so it scores the control on a contract the control was never given. An earlier version of this export ' +
+      'showed the two columns agreeing (8 and 7); that agreement was an artifact of the determinate gate ' +
+      'admitting turns with no register marker, and it disappears once both gates require the marker.',
   );
   lines.push('');
   lines.push('## Conversion among faithful rows (same common gate and fold)');
@@ -347,27 +318,17 @@ function renderMarkdown(data) {
   lines.push('');
   lines.push('## What actually decided a pass');
   lines.push('');
-  const bc = data.bindingConstraint;
   lines.push(
-    `| Candidate constraint | present & passed | present & failed | absent & passed | absent & failed | decisive |`,
-  );
-  lines.push('| --- | --- | --- | --- | --- | --- |');
-  for (const [name, table] of [
-    ['register marker', bc.registerMarker],
-    ['named target claim', bc.namedTargetClaim],
-  ]) {
-    lines.push(
-      `| ${name} | ${table.present_passed} | ${table.present_failed} | ${table.absent_passed} | ${table.absent_failed} | ${table.decisive ? 'yes' : 'no'} |`,
-    );
-  }
-  lines.push('');
-  lines.push(
-    'The register marker carries 35 of 100 points and the faithful band opens at 70, so no turn can pass ' +
-      `without it. Across all ${bc.n} rows the marker ${bc.registerMarker.decisive ? 'predicts every pass and every fail without error' : 'does not fully predict the outcome'}` +
-      `, while the named target claim — the thing the determinate contract adds — ${bc.namedTargetClaim.decisive ? 'also does' : 'does not'}: ` +
-      `${bc.namedTargetClaim.present_failed} rows named a claim and still failed, and ${bc.namedTargetClaim.absent_passed} passed without naming one.`,
+    'Every part of the gate, and how the pass count splits against it. This table is generated by walking the ' +
+      "gate's own list of parts rather than a pair chosen in advance, so a part nobody suspected can show up as " +
+      'the one carrying the count — which is exactly what happened once. The register marker used to be ' +
+      'necessary only by arithmetic (100 − 35 = 65, below the band) and the determinate re-weighting repealed ' +
+      'that without anyone noticing, letting marker-less earnest turns pass at 75. Both gates now declare the ' +
+      'marker necessary outright, and a passing row that lacks a required part is reported as a contradiction ' +
+      'between the gate and its own rows.',
   );
   lines.push('');
+  lines.push(renderStanceComponentContingency(data.bindingConstraint));
   return lines.join('\n');
 }
 
@@ -458,7 +419,7 @@ export function main() {
       }),
     ],
     missing: { parent: missingProfile(parent), determinate: missingProfile(child) },
-    bindingConstraint: bindingConstraintCheck([parent, child]),
+    bindingConstraint: bindingConstraintCheck([...parentRows, ...childRows]),
     rows: { parent: parent.rows, determinate: child.rows },
   };
 

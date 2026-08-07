@@ -758,6 +758,72 @@ scenarios:
       - The key outcome is the learner move after the tutor's response to rote parroting: does resistance soften into renewed, content-bearing work?
       - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
 
+  # ─── Claim-bearing mood variants (notes/2026-08-07-sarcasm-precondition-preregistration.md) ───
+  # The determinate-sarcasm contract asks the tutor to name a learner claim and
+  # implicate its negation. Boredom and frustration as written give the tutor
+  # nothing to name except the learner's own inner state, and negating that is
+  # the person attack the stance gate forbids. These two scenarios hold the mood
+  # fixed and add one claim about the MATERIAL, so the contract has a lawful
+  # target. Everything else — persona, target signal, gates, turns — is
+  # inherited unchanged from the parent, so the pair differs in the learner's
+  # supply of a claim and in nothing else.
+  #
+  # Word choice is constrained: the added claim must avoid `formula`, `repeat`,
+  # `parrot`, `memorize` and the irrelevance phrasings, so the message is not a
+  # rote-parroting or irrelevance probe wearing a mood label. The target signal
+  # still wins classification (classifySignal prefers the declared target), but
+  # the text should not need that rescue.
+
+  charisma_desire_resistance_breakthrough_boredom_claimed:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_boredom
+    id: charisma_desire_resistance_breakthrough_boredom_claimed
+    name: "Charisma Desire: Resistance Breakthrough - Boredom With A Claim"
+    description: "Boredom probe where the learner also asserts one negatable claim about the material, so a determinate-negation contract has a lawful target."
+    learner_persona: resistant_boredom_probe
+    resistance_signal_target: boredom
+    claim_bearing_resistance: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but bored by symbolic summaries.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests boredom as the resistant condition, with one asserted claim attached.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that the explanation feels boring, dead, or disengaging, AND in the same reply assert one flat claim about the material itself, that the whole argument comes down to two people swapping who is on top and that once you have said that there is nothing further to work out. State it as a claim you hold, not as a question.
+      - The claim must be about the argument, not about you. Do not describe your own state beyond the boredom itself.
+      - The key outcome is the learner move after the tutor's response to boredom: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
+  charisma_desire_resistance_breakthrough_frustration_claimed:
+    <<: *resistance_breakthrough_base
+    extends: charisma_desire_resistance_breakthrough_frustration
+    id: charisma_desire_resistance_breakthrough_frustration_claimed
+    name: "Charisma Desire: Resistance Breakthrough - Frustration With A Claim"
+    description: "Frustration probe where the learner also asserts one negatable claim about the material, so a determinate-negation contract has a lawful target."
+    learner_persona: resistant_frustration_probe
+    resistance_signal_target: frustration
+    claim_bearing_resistance: true
+    learner_context: |
+      ### User Profile
+      - Returning user, capable but frustrated by step sequences that feel inert.
+      - Currently reading EPOL 479 lecture 3 on recognition and the master-servant dialectic.
+
+      ### Recent Chat History
+      - User: "Walk me through the master-servant argument step by step. I need the instructional version first: what changes, in what order, and what should I do next?"
+
+      ### Current Session
+      - This controlled probe tests frustration as the resistant condition, with one asserted claim attached.
+      - The first tutor move should use an instructional/scaffolding register.
+      - Dynamic learner instruction: after the first tutor move, do not summarize the argument successfully yet. First say that you are frustrated, annoyed, or fed up because the sequence still feels inert, AND in the same reply assert one flat claim about the material itself, that the steps are the whole of it and there is nothing underneath them to get. State it as a claim you hold, not as a question.
+      - The claim must be about the argument, not about you. Do not describe your own state beyond the frustration itself.
+      - The key outcome is the learner move after the tutor's response to frustration: does resistance soften into renewed, content-bearing work?
+      - Use a dynamic learner architecture for outcome evidence. Scripted learner uptake is only a shape check, not proof of breakthrough.
+
   # ─── De-substitution interiors (Stage 0, notes/2026-07-03-dag-pinned-learner-desubstitution-plan.md) ───
   # Each extends its resistance-breakthrough parent and adds a formal interior:
   # a micro belief-DAG with one blocking element (invented DSB-* tokens, never

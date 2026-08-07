@@ -89,6 +89,13 @@ const CONTROLLED_SCENARIOS = [
   'charisma_desire_resistance_breakthrough_irrelevance',
   'charisma_desire_resistance_breakthrough_question_flood',
   'charisma_desire_resistance_breakthrough_rote_parroting',
+  // Claim-bearing mood variants for the sarcasm-precondition run
+  // (notes/2026-08-07-sarcasm-precondition-preregistration.md). They keep the
+  // parent target signal, so they slot into the same per-target views. Grid
+  // summarizers filter rows by their own scenario list, so adding them here
+  // widens what this reporter can score without touching any frozen count.
+  'charisma_desire_resistance_breakthrough_boredom_claimed',
+  'charisma_desire_resistance_breakthrough_frustration_claimed',
 ];
 const BASE_SCENARIO_ID = 'charisma_desire_resistance_breakthrough_probe';
 
@@ -1709,6 +1716,10 @@ export function main() {
   console.log('Scenario set: charisma_desire_resistance_breakthrough_controlled');
   console.log(`Status: ${errors.length ? 'FAIL' : analyses.length ? 'ANALYZED_ROWS' : 'READY_NO_ROWS'}`);
   console.log(`Controlled scenarios: ${CONTROLLED_SCENARIOS.length}`);
+  // The ids, not just the count: this list is the SQL row filter, so a scenario
+  // missing from it reports as "no rows" rather than "not registered". Naming
+  // them makes a ratchet failure say which one moved.
+  console.log(`Controlled scenario ids: ${CONTROLLED_SCENARIOS.join(',')}`);
   console.log(`Profiles: ${data.profiles.join(',')}`);
   console.log(`Rows found: ${analyses.length}`);
   console.log(`Candidate breakthroughs: ${candidates.length}`);

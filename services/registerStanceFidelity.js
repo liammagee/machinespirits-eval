@@ -12,6 +12,53 @@ const NEGATIVE_REGISTER_NAMES = new Set(['ironic', 'sarcastic', 'face_threat', '
 // already taken by the evidence disposition (`faithful_arm_evidence` etc).
 export const STANCE_GATE_VERSION = 'stance-gate/1.0';
 
+// The parts each gate is made of, as data rather than as arithmetic buried in
+// the scorer. Two things depend on this being a table:
+//
+//   1. `required` says outright which parts a faithful turn must carry. It used
+//      to be a side effect of the weights — on the plain gate a turn missing the
+//      register marker could reach only 65 of the 70 band, so the marker was
+//      necessary by accident. The determinate re-weighting (35 -> 25) repealed
+//      that accident without anyone noticing, and marker-less earnest turns
+//      scored 75 and were counted as having held the sarcastic manner.
+//   2. A report can walk the list and show how passing splits against each part,
+//      so a count that is really counting some other part shows up on the page.
+//      See services/stanceComponentContingency.js.
+//
+// Weights must total 100 and each gate must declare at least one required part;
+// both are pinned by test.
+const PLAIN_GATE_COMPONENTS = Object.freeze([
+  Object.freeze({ key: 'register_marker', weight: 35, required: true }),
+  Object.freeze({ key: 'target_discipline', weight: 20, required: false }),
+  Object.freeze({ key: 'next_move', weight: 20, required: false }),
+  Object.freeze({ key: 'repair_path', weight: 15, required: false }),
+  Object.freeze({ key: 'visible_resistance_context', weight: 10, required: false }),
+]);
+
+// The determinate variant makes room for its named target claim by shrinking
+// every other weight. That is a scoring choice; it must not be a choice about
+// what "held the manner" means, so both parts are marked required.
+const DETERMINATE_GATE_COMPONENTS = Object.freeze([
+  Object.freeze({ key: 'register_marker', weight: 25, required: true }),
+  Object.freeze({ key: 'named_target_claim', weight: 25, required: true }),
+  Object.freeze({ key: 'target_discipline', weight: 15, required: false }),
+  Object.freeze({ key: 'next_move', weight: 15, required: false }),
+  Object.freeze({ key: 'repair_path', weight: 10, required: false }),
+  Object.freeze({ key: 'visible_resistance_context', weight: 10, required: false }),
+]);
+
+const STANCE_GATE_COMPONENTS = Object.freeze({
+  ironic: PLAIN_GATE_COMPONENTS,
+  sarcastic: PLAIN_GATE_COMPONENTS,
+  face_threat: PLAIN_GATE_COMPONENTS,
+  sarcastic_determinate: DETERMINATE_GATE_COMPONENTS,
+});
+
+/** The parts a gate scores, in report order. Empty for non-negative registers. */
+export function stanceGateComponents(registerName) {
+  return STANCE_GATE_COMPONENTS[canonicalRegisterName(registerName)] || [];
+}
+
 const STANCE_FIDELITY_GATE_BY_LABEL = {
   faithful: {
     gate: 'faithful_arm_evidence',
@@ -325,6 +372,7 @@ export function evaluateRegisterStanceFidelity({
       score: null,
       signals: [],
       missing: [],
+      missingRequired: [],
       forbiddenFound: [],
       ...classifyRegisterStanceEvidence({ applies: false }),
     };
@@ -347,38 +395,30 @@ export function evaluateRegisterStanceFidelity({
   const determinate = canonicalRegister === 'sarcastic_determinate';
   const namedClaim = determinate ? findNamedTargetClaim(tutorMessage, learnerMessage) : null;
 
-  const missing = [];
-  if (!markerHits.length) missing.push('register_marker');
-  if (determinate && !namedClaim.named) missing.push('named_target_claim');
-  if (!targetHits.length) missing.push('target_discipline');
-  if (!nextMoveHits.length) missing.push('next_move');
-  if (!repairHits.length) missing.push('repair_path');
-  if (!learnerResistanceVisible) missing.push('visible_resistance_context');
+  const present = {
+    register_marker: markerHits.length > 0,
+    named_target_claim: Boolean(namedClaim?.named),
+    target_discipline: targetHits.length > 0,
+    next_move: nextMoveHits.length > 0,
+    repair_path: repairHits.length > 0,
+    visible_resistance_context: learnerResistanceVisible,
+  };
 
-  let score = 0;
-  if (determinate) {
-    // Re-weighted so the named target claim carries real mass: the variant's
-    // point is cargo, and manner alone must not reach the faithful band.
-    if (markerHits.length) score += 25;
-    if (namedClaim.named) score += 25;
-    if (targetHits.length) score += 15;
-    if (nextMoveHits.length) score += 15;
-    if (repairHits.length) score += 10;
-    if (learnerResistanceVisible) score += 10;
-  } else {
-    if (markerHits.length) score += 35;
-    if (targetHits.length) score += 20;
-    if (nextMoveHits.length) score += 20;
-    if (repairHits.length) score += 15;
-    if (learnerResistanceVisible) score += 10;
-  }
+  // Both the score and the label now come off the same table, so a re-weighting
+  // cannot change what counts as faithful. Missing a required part fails the
+  // turn whatever the arithmetic says.
+  const components = stanceGateComponents(canonicalRegister);
+  const missing = components.filter((part) => !present[part.key]).map((part) => part.key);
+  const missingRequired = components.filter((part) => part.required && !present[part.key]).map((part) => part.key);
+
+  let score = components.reduce((total, part) => (present[part.key] ? total + part.weight : total), 0);
   if (forbiddenFound.length) score = Math.min(score, 20);
 
   let label = 'faithful';
   if (forbiddenFound.length) label = 'invalid_person_attack';
   else if (score < 40) label = 'not_instantiated';
   else if (score < 70) label = 'weak_or_warm_in_costume';
-  else if (determinate && !namedClaim.named) label = 'weak_or_warm_in_costume';
+  else if (missingRequired.length) label = 'weak_or_warm_in_costume';
 
   const result = {
     applies: true,
@@ -391,6 +431,9 @@ export function evaluateRegisterStanceFidelity({
     score,
     signals: [...new Set([...markerHits, ...targetHits, ...nextMoveHits, ...repairHits])],
     missing,
+    // Carried separately from `missing` so a report can check the gate's own
+    // rule against its own rows: no faithful verdict may list one of these.
+    missingRequired,
     forbiddenFound,
     ...(determinate ? { namedTargetClaim: namedClaim } : {}),
   };
@@ -405,5 +448,6 @@ export default {
   classifyRegisterStanceEvidence,
   evaluateRegisterStanceFidelity,
   isNegativeRegister,
+  stanceGateComponents,
   STANCE_GATE_VERSION,
 };

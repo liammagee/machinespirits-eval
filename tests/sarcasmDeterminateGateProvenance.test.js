@@ -86,6 +86,72 @@ test('differencing refuses when gate or fold disagree', () => {
   assert.throws(() => assertComparable(base, { ...base, gateVersion: 'stance-gate/9.9' }), /incomparable/);
 });
 
+test('the register marker is required on both gates, not merely heavy', () => {
+  // Real turn from run eval-2026-08-07-e3dffab2 (boredom, claim-bearing pilot).
+  // It names the learner's claim, disciplines its target, sets a next move and a
+  // repair path, and does all of it in an earnest voice — no sarcastic marker.
+  // Under the determinate weighting that scored 100 - 25 = 75 and passed the
+  // faithful band, so the run's "held the manner" count was really counting
+  // "named a claim". Under the plain weighting the same turn scores 65 and fails.
+  const args = {
+    learnerMessage:
+      'This still feels dead and procedural, but I see the test now. Failure condition: if paragraph 196 ' +
+      'only shows domination and submission, with no fear turning into Bildung through work, then the ' +
+      'inversion claim fails.',
+    tutorMessage:
+      'So you have boiled it down to a clean, self-referential test. If the passage only re-states ' +
+      'domination and submission, the whole inversion collapses. That is the condition you have set up. ' +
+      'Now tell me: which single feature of that chalk or that clay actually converts the fear into ' +
+      'Bildung? Or, if you cannot point to it, state the precise way the scene would still collapse into ' +
+      'pure obedience. Your move is to name the concrete element that does the work.',
+    postLearnerMessage:
+      'This still feels a bit dead, but the feature is that the material pushes back and keeps the result.',
+  };
+
+  const determinate = evaluateRegisterStanceFidelity({ registerName: 'sarcastic_determinate', ...args });
+  assert.ok(determinate.missing.includes('register_marker'), 'fixture must lack the register marker');
+  assert.equal(determinate.namedTargetClaim.named, true, 'fixture must name a target claim');
+  assert.equal(determinate.score, 75, 'the arithmetic that used to admit this turn is unchanged');
+  assert.equal(determinate.label, 'weak_or_warm_in_costume', 'a marker-less turn cannot be faithful');
+  assert.equal(determinate.passed, false);
+
+  const plain = evaluateRegisterStanceFidelity({ registerName: 'sarcastic_challenge', ...args });
+  assert.equal(plain.label, 'weak_or_warm_in_costume');
+  assert.equal(plain.passed, false);
+});
+
+test('no weighting can let a marker-less turn reach the faithful band on either gate', () => {
+  // The invariant, stated independently of any run's data: whatever the point
+  // weights are, a turn without the register marker is never faithful. The
+  // determinate gate is the case that matters — its 25-point marker leaves 75
+  // on the table, comfortably above the band — but assert it on both so a future
+  // re-weighting of either cannot re-open the hole.
+  const decomposed = evaluateRegisterStanceFidelity({
+    registerName: 'sarcastic_determinate',
+    learnerMessage: 'This still feels dead and procedural, but I see the test now.',
+    tutorMessage:
+      'So you have boiled it down to a clean, self-referential test. That is the condition you have set ' +
+      'up. Now tell me: which single feature of that clay actually converts the fear into Bildung? Your ' +
+      'move is to name the concrete element that does the work.',
+    postLearnerMessage: 'The feature is that the material pushes back and keeps the result.',
+  });
+  assert.ok(decomposed.missing.includes('register_marker'));
+  assert.ok(decomposed.score >= 70, 'the score still clears the band — the label rule is what stops it');
+  assert.equal(decomposed.passed, false);
+
+  // And the counts published from this repair, when the export is present. It is
+  // regenerated from the database and gitignored, so this half is a bonus check
+  // rather than a fixture the suite depends on.
+  const decompositionPath = path.join(ROOT, 'exports', 'sarcasm-determinate-gate-decomposition.json');
+  if (!fs.existsSync(decompositionPath)) return;
+  const decomposition = JSON.parse(fs.readFileSync(decompositionPath, 'utf8'));
+  for (const rows of Object.values(decomposition.rows)) {
+    for (const row of rows) {
+      if (row.passed) assert.equal(row.markerPresent, true, 'a passing row must carry the register marker');
+    }
+  }
+});
+
 test('register scoring persists a stance verdict for every negative register, not one', () => {
   // Pinned against drift: the original bug was gating the stance computation on
   // a single register name, which left the parent sarcastic arm with no stored

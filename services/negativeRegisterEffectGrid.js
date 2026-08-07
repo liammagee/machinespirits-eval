@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 
+import { stanceComponentContingency } from './stanceComponentContingency.js';
+
 export const NEGATIVE_REGISTER_EFFECT_GRID = Object.freeze({
   schema: 'machinespirits.negative-register-effect-grid-plan.v1',
   preregistration: 'notes/2026-07-26-negative-register-effect-estimation-preregistration.md',
@@ -218,12 +220,19 @@ export function summarizeNegativeRegisterEffects(analyses) {
   if (rows.some((row) => !row.stanceFidelity?.applies))
     errors.push('one or more rows are missing stance-fidelity classification');
 
+  // Each faithful count next to what it is made of, per gate — the three arms
+  // carry three different gates, so the split is grouped rather than pooled.
+  // A passing row that lacked a part its gate calls necessary fails the report.
+  const contingency = stanceComponentContingency(rows.map((row) => row.stanceFidelity));
+  for (const contradiction of contingency.contradictions) errors.push(contradiction);
+
   return {
     schema: 'machinespirits.negative-register-effect-grid-report.v1',
     status: errors.length ? 'INCOMPLETE' : 'COMPLETE',
     errors,
     expectedRows: 45,
     observedRows: rows.length,
+    componentContingency: contingency,
     byArm: [...byArm.values()].map(finalizeEffectBucket),
     byTargetArm: [...byTargetArm.values()].map(finalizeEffectBucket),
   };
