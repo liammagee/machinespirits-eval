@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-07T02:24:43.076Z",
+  "generated": "2026-08-07T05:05:56.782Z",
   "counts": {
     "total": 446,
     "byStatus": {
@@ -8,8 +8,8 @@
       "dropped": 8,
       "active": 5,
       "archived": 4,
-      "triaged": 8,
-      "review": 6
+      "triaged": 6,
+      "review": 8
     },
     "byType": {
       "research": 74,
@@ -44,35 +44,6 @@
           "guard-regime-fallback-census-at-scale",
           "guard-validity-study",
           "tutor-stub-terminal-fallback-delivery-boundary"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
-    {
-      "id": "guard-policy-default-flip",
-      "title": "Make the shadow-advisory guard column the default delivery policy",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "GATED: does not start until guard-validity-study reports its full sample and the draft-beats-template shape holds. Then: the default boundary policy becomes shadow_advisory, the disposition catalog bumps to v7 with an incomparability note, the advance window default moves off per-turn, a regression test pins that evidence-safety, clue-bookkeeping and closure findings still veto, and one instrumented dialogue pair (same seed, old vs new default) shows model text delivered where the template shipped before.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "services/tutorStubGuardDisposition.js",
-          "services/tutorStubTutorTurnPipeline.js",
-          "docs/tutor-stub-guard-catalog.md"
-        ],
-        "items": [
-          "guard-validity-study",
-          "guard-regime-fallback-census-at-scale",
-          "guard-delivery-prefer-model-over-canned"
         ]
       },
       "tags": [
@@ -146,8 +117,8 @@
       "owner": "claude",
       "source": "manual",
       "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "DOUBLY GATED — starts only after guard-policy-default-flip lands AND the user authorizes the spend. Then: the same registered design (frozen cells, bare vs contract vs empty plan, n = 12 per version per cell, same models, learner blind), on catalog v7. Primary endpoint unchanged. Reported against the original as a pair: strict-harness verdict and open-harness verdict, never pooled.",
+      "updated": "2026-08-07",
+      "verification": "ONE GATE LEFT — guard-policy-default-flip landed 2026-08-07; this now waits only on the user authorizing the spend. Then: the same registered design (frozen cells, bare vs contract vs empty plan, n = 12 per version per cell, same models, learner blind), under boundaryPolicy shadow_advisory. Primary endpoint unchanged. Reported against the original as a pair: strict-harness verdict and open-harness verdict, never pooled.",
       "claim_status": "planned",
       "links": {
         "code": [
@@ -210,34 +181,6 @@
         "tutor-stub",
         "guards",
         "worlds"
-      ]
-    },
-    {
-      "id": "tutor-stub-template-rate-audit",
-      "title": "Stamp every cited tutor-stub run with its measured template rate",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "A table, checked into the guard catalog doc, listing every tutor-stub run cited in paper-full-2.0.md with its template rate and model-as-written rate measured from its own traces by the census/replay script. Paper §s that read tutor prose off a guarded run carry the rate beside the claim. The paper edit itself waits for guard-validity-study to conclude so the whole account lands in one pass.",
-      "claim_status": "methods",
-      "links": {
-        "code": [
-          "scripts/replay-guard-fallback-delivery.js",
-          "docs/tutor-stub-guard-catalog.md"
-        ],
-        "items": [
-          "guard-regime-fallback-census-at-scale",
-          "guard-validity-study"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards",
-        "paper"
       ]
     },
     {
@@ -390,7 +333,7 @@
       "source": "manual",
       "created": "2026-08-06",
       "updated": "2026-08-06",
-      "verification": "A census script that reads guard accounting out of any run's traces and reports, per condition: turns, fallback rate, model-as-written rate, pass rate by candidate kind, and the failure count by guard family. Run it on fallible-phaseB and on the next instrumented run, and hold the numbers against the ones recorded here.",
+      "verification": "DONE (2026-08-07, scripts/census-guard-template-rate.js): reads guard accounting out of any run's traces and reports, per condition, turns, fallback rate, model-as-written rate, pass rate by candidate kind and the finding count by guard family, stamped with the counter used and the guard policy the run ran under. Reproduces every number recorded below on fallible-phaseB, and corrects the family table — see the log.",
       "claim_status": "methods",
       "links": {
         "code": [
@@ -403,33 +346,6 @@
           "guard-ladder-ships-canned-text-on-most-turns",
           "tutor-fallible-learner-closure-prereg",
           "tutor-stub-correspondence-guard-vocabulary"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
-    {
-      "id": "guard-validity-study",
-      "title": "Test whether the guards' vetoes pick the better turn",
-      "status": "active",
-      "type": "research",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "For a sample of vetoed drafts, a blind pairwise comparison between the vetoed draft and what actually shipped, scored by a judge that never sees which is which or why either was chosen. Reported per guard family: how often the vetoed draft was preferred. A family preferred above chance is a family whose veto is costing more than it saves.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "services/tutorStubGuardDisposition.js",
-          "docs/tutor-stub-guard-catalog.md"
-        ],
-        "items": [
-          "guard-regime-fallback-census-at-scale",
-          "guard-delivery-prefer-model-over-canned"
         ]
       },
       "tags": [
@@ -478,6 +394,35 @@
           "pedagogical-figure-ontology"
         ]
       }
+    },
+    {
+      "id": "tutor-stub-template-rate-audit",
+      "title": "Stamp every cited tutor-stub run with its measured template rate",
+      "status": "active",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-07",
+      "verification": "A table, checked into the guard catalog doc, listing every tutor-stub run cited in paper-full-2.0.md with its template rate and model-as-written rate measured from its own traces by the census/replay script. Paper §s that read tutor prose off a guarded run carry the rate beside the claim. The paper edit itself waits for guard-validity-study to conclude so the whole account lands in one pass.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "scripts/census-guard-template-rate.js",
+          "scripts/replay-guard-fallback-delivery.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-validity-study"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "paper"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -679,6 +624,62 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "guard-policy-default-flip",
+      "title": "Make the shadow-advisory guard column the default delivery policy",
+      "status": "review",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-07",
+      "verification": "DONE 2026-08-07. The live default is shadow_advisory with strict as the opt-in (pipeline plus CLI, pinned at the source by test); evidence-safety, clue-bookkeeping and closure findings still veto, pinned exhaustively in services/__tests__/tutorStubGuardDisposition.test.js; and one fixture runs under both policies in tests/tutorStubGuardAccounting.test.js, delivering a fixed template under strict and the model's own draft under the default with the same findings recorded either way. The catalog bump and the advance-window change were deliberately not done — reasons on the card.",
+      "claim_status": "settled",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubTutorTurnPipeline.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-validity-study",
+          "guard-regime-fallback-census-at-scale",
+          "guard-delivery-prefer-model-over-canned"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
+      "id": "guard-validity-study",
+      "title": "Test whether the guards' vetoes pick the better turn",
+      "status": "review",
+      "type": "research",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-07",
+      "verification": "For a sample of vetoed drafts, a blind pairwise comparison between the vetoed draft and what actually shipped, scored by a judge that never sees which is which or why either was chosen. Reported per guard family: how often the vetoed draft was preferred. A family preferred above chance is a family whose veto is costing more than it saves.",
+      "claim_status": "scope-bound",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-delivery-prefer-model-over-canned"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
     },
     {
       "id": "local-ci-pr-creation-gate",
