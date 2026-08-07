@@ -544,11 +544,36 @@ async function judge(n, family = null) {
     );
   }
   let failures = 0;
+  // One reply can be unscorable on its own. The corpus is full of invented
+  // accidents, and a scene about a contaminated culture reads to the safety
+  // filter like a request it should turn down; the model then answers nothing,
+  // every time, and no amount of waiting changes that. The bridge reports only
+  // "exited with code 1", so the run cannot tell that apart from a busy CLI —
+  // which is why one such reply held the queue for a hundred attempts while the
+  // other eighty-seven scores sat finished. Give each reply a few rounds and
+  // then set it aside, named, in a file of its own. A study that drops a turn
+  // in silence has a hole in its coverage it cannot report.
+  const GIVE_UP_AFTER = 3;
+  const perItem = new Map();
+  const refusalsPath = path.join(OUT_DIR, 'judge-unscorable.jsonl');
   while (queue.length) {
     const { item, candidate } = queue.shift();
     const scores = parseScores(await judgeCall(scorePrompt(item, candidate)), hasPassage(item));
     if (!scores) {
       failures++;
+      const key = `${item.id}|${candidate}`;
+      const rounds = (perItem.get(key) || 0) + 1;
+      perItem.set(key, rounds);
+      if (rounds >= GIVE_UP_AFTER) {
+        fs.appendFileSync(
+          refusalsPath,
+          JSON.stringify({ id: item.id, candidate, rounds: rounds * CALL_ATTEMPTS }) + '\n',
+        );
+        console.error(
+          `  giving up on ${candidate} ${item.id} after ${rounds * CALL_ATTEMPTS} calls — see ${refusalsPath}`,
+        );
+        continue;
+      }
       queue.push({ item, candidate }); // requeue at the back; bursts pass
       if (failures > queue.length * 3 + 30) {
         console.error('too many failures; stopping — rerun to resume from disk');
