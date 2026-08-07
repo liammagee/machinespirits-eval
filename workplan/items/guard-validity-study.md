@@ -148,6 +148,23 @@ is atomic, so no context leaks between items. Attended run on the Max plan.
   day. Scope limits from the card stand — one author model, one judge family,
   one run's traces, and the sharper draft-against-passing-draft comparison
   never ran.
+- 2026-08-08 — **the repair pass judged, 33 turns.** The readouts above scored
+  whatever the guard catalog of the day would have shipped, which on most of
+  those turns was the model's first draft. Demoting the anchoring check to
+  record-only moves 33 turns from "template shipped" to "the model's own reply
+  shipped", 32 of them the plain repair. Scoring those replies against the very
+  templates they displace (`guard-validity-study.js recheck`, same judge, same
+  single-text questions, templates reused because their text is unchanged):
+  the repair beats the template on every question — uptake 3.82 vs 2.76, fit
+  3.70 vs 2.55, overall 3.61 vs 2.82, advance 3.76 vs 3.42 — and loses outright
+  on at most 3 of 33 anywhere. The point is what it does to faithfulness, the
+  one thing the template was protecting. On these same 33 turns the original
+  draft never touched the world's passage on 19 of them and scores 1.06; the
+  template scores 4.70; the repair scores 4.82 and touches the passage on all
+  33. So the veto was right about the first draft and wrong to survive the
+  repair: the repair recovers the template's faithfulness without paying its
+  cost in uptake and fit. Recorded in `services/tutorStubGuardDisposition.js`
+  catalog version 7. Same scope limits — one author model, one judge, one run.
 - 2026-08-06 — blinding probe run (`scripts/guard-validity-study.js probe`,
   Sonnet judge, 20 items). Side by side, the judge named the template on 13 of
   14 parsed items, citing the real fingerprints (the fixed sentences, the
