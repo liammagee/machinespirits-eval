@@ -330,12 +330,16 @@ const SCORE_SCALES = [
 // about truthfulness, not about wording: whether the exact string is present
 // is deterministic and already settled by the guard.
 //
-// The 0 matters more than the 1-5 do. Half of every pair is the fixed template,
-// which says nothing about the evidence at all — neither faithful nor unfaithful.
-// Scored 5 the template wins by silence; scored 1 the judge is just restating the
-// guard's rule. So silence gets its own value, kept out of the mean and counted
-// on its own, which is the number a reader wants anyway: how often the veto
-// bought silence about the evidence rather than an accurate account of it.
+// The 0 matters more than the 1-5 do. A reply that never mentions the passage
+// has not misrepresented it — scored 5 it wins by saying nothing, scored 1 the
+// judge is only restating the guard's rule. So silence gets its own value, kept
+// out of the mean and counted on its own line.
+//
+// On a source-alignment run the silence usually sits on the DRAFT side: these
+// are the turns whose draft failed to render the source, so the template is the
+// one quoting it and the draft is the one that changed the subject. Do not read
+// the untouched count as a charge against the template. Which side is silent is
+// the finding; the code takes no view.
 const FAITHFULNESS_SCALE =
   '- faithfulness: how truly the reply represents the passage below ' +
   '(0 = does not touch the passage at all, 1 = says something the passage does not support, or contradicts it, ' +
@@ -541,10 +545,10 @@ async function judge(n, family = null) {
 /**
  * How often did each side say nothing about the passage at all (faithfulness 0)?
  *
- * This is the count the veto is really argued over. The template's silence is
- * not a bad account of the evidence, it is no account of it, and a mean over
- * the replies that did speak hides exactly that. Read it beside the faithfulness
- * means: those say who was truer when both spoke, this says who spoke.
+ * This is the count the veto is really argued over. Silence is not a bad account
+ * of the evidence, it is no account of it, and a mean over the replies that did
+ * speak hides exactly that. Read it beside the faithfulness means: those say who
+ * was truer when both spoke, this says who spoke.
  */
 function silenceReport(pairs) {
   const asked = pairs.filter(
