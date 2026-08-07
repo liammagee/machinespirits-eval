@@ -100,6 +100,9 @@ occurs". No embeddings / no semantic model -- a deliberate anti-thrash choice.
 import os, sys, json, re, sqlite3, math
 from datetime import datetime, timezone
 import numpy as np
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from lib.eval_data_paths import resolve_db_path, resolve_tutor_dialogues_dir
 
 SEED = 20260609
 B_BOOT = 2000
@@ -107,28 +110,14 @@ MIN_RUNS = 3            # frozen: a stratum needs >=3 runs
 DIN_FLOOR = 0.05        # frozen: learner must actually vary
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB = os.environ.get("EVAL_DB_PATH", os.path.join(REPO, "data", "evaluations.db"))
+DB = resolve_db_path(REPO)
 OUT_CSV = os.path.join(REPO, "exports", "adaptation-repertoire-stage0-table.csv")
 OUT_META = os.path.join(REPO, "exports", "adaptation-repertoire-stage0.meta.json")
 
 TOKEN = re.compile(r"[a-z]+")
 
 
-def resolve_logs():
-    """tutor-dialogues trace dir. EVAL_LOGS_DIR may point at .../logs (with a
-    tutor-dialogues/ subdir) or directly at the trace dir; fall back to repo."""
-    env = os.environ.get("EVAL_LOGS_DIR")
-    cands = []
-    if env:
-        cands += [os.path.join(env, "tutor-dialogues"), env]
-    cands += [os.path.join(REPO, "logs", "tutor-dialogues"), os.path.join(REPO, "logs")]
-    for c in cands:
-        if os.path.isdir(c):
-            return c
-    return cands[0]
-
-
-LOGS = resolve_logs()
+LOGS = resolve_tutor_dialogues_dir(REPO)
 
 
 def toks(s):

@@ -52,11 +52,12 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
-const DB_PATH = process.env.EVAL_DB_PATH || path.join(REPO_ROOT, 'data', 'evaluations.db');
-const LOGS_DIR = path.join(process.env.EVAL_LOGS_DIR || path.join(REPO_ROOT, 'logs'), 'tutor-dialogues');
+const DB_PATH = resolveEvaluationDbPath(REPO_ROOT);
+const LOGS_DIR = resolveTutorDialoguesDir(REPO_ROOT);
 
 // ── Pedagogical family map ───────────────────────────────────────────
 // Copied verbatim from scripts/analyze-strategy-shift.js (which in turn

@@ -13,6 +13,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { resolveTutorDialoguesDirCandidates } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -100,8 +101,7 @@ function discoverInputs(args) {
   const logsDir =
     args.logsDir ||
     firstExisting([
-      process.env.EVAL_LOGS_DIR,
-      path.join(ROOT_DIR, 'logs', 'tutor-dialogues'),
+      ...resolveTutorDialoguesDirCandidates(ROOT_DIR),
       ROOT_DIR === STABLE_ROOT ? null : path.join(STABLE_ROOT, 'logs', 'tutor-dialogues'),
     ]);
   return {

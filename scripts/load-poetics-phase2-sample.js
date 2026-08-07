@@ -45,15 +45,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
 import { openEvaluationDbReadonly } from '../services/evaluationDbReadonly.js';
+import { resolveTutorDialoguesDir, resolveTutorDialoguesDirCandidates } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const WORKTREE_ROOT = path.resolve(__dirname, '..');
 
-// Inputs: real eval data (main repo). Resolve from cwd; allow env override.
-const LOGS_DIR = process.env.EVAL_LOGS_DIR
-  ? path.join(process.env.EVAL_LOGS_DIR, 'tutor-dialogues')
-  : path.join(process.cwd(), 'logs', 'tutor-dialogues');
+// Inputs: real eval data. This used to resolve from the working directory, so
+// running it from anywhere but the main checkout read an empty directory.
+const LOGS_DIR =
+  resolveTutorDialoguesDirCandidates(WORKTREE_ROOT).find((d) => fs.existsSync(d)) ||
+  resolveTutorDialoguesDir(WORKTREE_ROOT);
 
 // Outputs: poetics artifacts (this worktree).
 const DEFAULT_OUT_DIR = path.join(WORKTREE_ROOT, 'config', 'poetics-calibration', 'phase2-sample');

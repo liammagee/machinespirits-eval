@@ -54,6 +54,9 @@ tune-and-retry. P2 (Weber uptake) is structurally deferred to Stage 1
 """
 import os, sys, json, re, sqlite3, math, hashlib
 import numpy as np
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from lib.eval_data_paths import resolve_db_path, resolve_tutor_dialogues_dir
 
 SEED = 20260517
 B_BOOT = 2000
@@ -61,8 +64,8 @@ RIDGE_LAMBDA = 1.0
 TOPK_TFIDF = 60  # vocab cap per text channel (deterministic, doc-freq ranked)
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB = os.environ.get("EVAL_DB_PATH", os.path.join(REPO, "data", "evaluations.db"))
-LOGS = os.environ.get("EVAL_LOGS_DIR", os.path.join(REPO, "logs", "tutor-dialogues"))
+DB = resolve_db_path(REPO)
+LOGS = resolve_tutor_dialogues_dir(REPO)
 OUT_CSV = os.path.join(REPO, "exports", "adaptation2-stage0-table.csv")
 OUT_META = os.path.join(REPO, "exports", "adaptation2-stage0-probe.meta.json")
 

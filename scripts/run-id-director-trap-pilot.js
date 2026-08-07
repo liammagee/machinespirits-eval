@@ -40,6 +40,7 @@ import * as realLLM from '../services/adaptiveTutor/realLLM.js';
 import { createAdaptiveRun } from '../services/adaptiveTutor/persistence.js';
 import { createBudgetTracker } from '../services/adaptiveTutor/budgetTracker.js';
 import { learnerTurnIndexForTutorTurn } from './lib/trapTurnConvention.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -56,7 +57,7 @@ function makeDialogueId(scenarioId) {
 }
 
 function logsDir() {
-  return path.join(process.env.EVAL_LOGS_DIR || path.join(REPO_ROOT, 'logs'), 'tutor-dialogues');
+  return resolveTutorDialoguesDir(REPO_ROOT);
 }
 
 function writeTraceFile(dialogueId, traceJson) {

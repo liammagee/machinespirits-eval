@@ -14,11 +14,16 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import Database from 'better-sqlite3';
 import yaml from 'yaml';
 import { scoredTutorTurnAfterTrigger } from './lib/trapTurnConvention.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
-const DB_PATH = process.env.EVAL_DB_PATH || path.join(REPO_ROOT, 'data', 'evaluations.db');
-const LOGS_DIR = path.join(process.env.EVAL_LOGS_DIR || path.join(REPO_ROOT, 'logs'), 'tutor-dialogues');
+// Shared rules, not local copies. The copies read `<checkout>/data` and
+// `<checkout>/logs`, which are symlinks to the archive in the main checkout and
+// ordinary empty directories in a worktree — so this script found every row from
+// one place and none from the other, with nothing to say so.
+const DB_PATH = resolveEvaluationDbPath(REPO_ROOT);
+const LOGS_DIR = resolveTutorDialoguesDir(REPO_ROOT);
 const DEFAULT_SCENARIO_FILE = 'config/adaptive-generalization-counterfactual-scenarios.yaml';
 
 const ADAPTATION_ACTION_FAMILIES = Object.freeze({
