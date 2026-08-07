@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-07T17:45:18.119Z",
+  "generated": "2026-08-07T21:28:30.549Z",
   "counts": {
-    "total": 453,
+    "total": 454,
     "byStatus": {
-      "done": 412,
+      "done": 413,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 74,
       "experiment": 74,
-      "infra": 93,
+      "infra": 94,
       "maintenance": 192,
       "content": 3,
       "ops": 10,
@@ -14947,6 +14947,38 @@
         "negative-registers",
         "stance-fidelity",
         "determinate-negation"
+      ]
+    },
+    {
+      "id": "stance-payload-comparability",
+      "title": "Say what each stance was asked to do, wherever two stances are differenced",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "Every report that puts two stances in one table prints their mandated moves and the rubric that scored each, read from the register registry rather than written in prose; an arm the registry cannot resolve fails the report closed; the scorer and the reports resolve a stance's instrument through one function, pinned by a source-level guard.",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "items": [
+          "sarcasm-precondition-claim-bearing-mood",
+          "sarcasm-determinate-negation-grid",
+          "negative-register-effect-estimation-grid",
+          "register-axis-confound-audit"
+        ]
+      },
+      "depends_on": [
+        "sarcasm-precondition-claim-bearing-mood"
+      ],
+      "tags": [
+        "registers",
+        "stance-fidelity",
+        "provenance"
       ]
     },
     {
