@@ -68,7 +68,10 @@ function turnCardRecord(dir, turn) {
   let card = null;
   let entry = null;
   let delivered = false;
-  if (force) {
+  // A withheld order did not ship (see services/tutorStubCardForce.js), so the
+  // turn reads as an ordinary one: the natural card stood, and the detector ran
+  // after the force block exactly as it would have on an unscheduled turn.
+  if (force && !force.withheld) {
     entry = 'forced';
     delivered = Boolean(force.cardActive);
     card = force.forced === 'none' ? null : force.forced;

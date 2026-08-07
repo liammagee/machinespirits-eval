@@ -524,6 +524,12 @@ import {
   detectTutorStubQuietState,
   tutorStubQuietStateCard,
 } from '../services/tutorStubQuietDetector.js';
+import {
+  TUTOR_STUB_CARD_FORCE_GATE_VERSION,
+  assertQuietGateFeasible,
+  parseCardForceSchedule,
+  resolveCardForce,
+} from '../services/tutorStubCardForce.js';
 import { renderTutorStubDueSource } from '../services/tutorStubDueSourceRenderer.js';
 import { composeTutorStubClueSpanReplacement } from '../services/tutorStubDramaticRelease.js';
 import {
@@ -1511,16 +1517,20 @@ const CARD_LICENCE_ENABLED = process.env.TUTOR_STUB_CARD_LICENCE === '1';
 // Dial-setting only — no learner description enters any prompt.
 const CARD_DOSE_LADDER = process.env.TUTOR_STUB_CARD_DOSE_LADDER === '1';
 // TUTOR_STUB_CARD_FORCE='9=settled_claim,10=stake' (crossed-effects arms).
-const CARD_FORCE_MAP = (() => {
-  const raw = process.env.TUTOR_STUB_CARD_FORCE;
-  if (!raw) return null;
-  const map = new Map();
-  for (const part of raw.split(',')) {
-    const [turn, card] = part.split('=').map((x) => x.trim());
-    if (turn && card) map.set(Number(turn), card);
-  }
-  return map.size ? map : null;
-})();
+// A trailing '+' waits instead of pinning the turn: '5+=quiet:flat' means the
+// first turn from 5 onward where she is really flat. See CARD_FORCE_QUIET_GATE.
+const { map: CARD_FORCE_MAP, waits: CARD_FORCE_WAITS } = parseCardForceSchedule(process.env.TUTOR_STUB_CARD_FORCE);
+// Set to 0 to replay the ungated crossed-effects arms exactly. On by default:
+// see services/tutorStubCardForce.js for what an ungated quiet card did to the
+// figure-recovery reading.
+const CARD_FORCE_QUIET_GATE = process.env.TUTOR_STUB_CARD_FORCE_QUIET_GATE !== '0';
+assertQuietGateFeasible({
+  map: CARD_FORCE_MAP,
+  waits: CARD_FORCE_WAITS,
+  quietDetectorEnabled: QUIET_DETECTOR_ENABLED,
+  gateOn: CARD_FORCE_QUIET_GATE,
+});
+
 let mannerTriggerCache;
 function activeMannerTrigger() {
   if (!MANNER_TRIGGER_PATH) return null;
@@ -1555,24 +1565,42 @@ function updateMannerSwitchForLearnerTurn({ learnerText, state, tutorTurn, recor
   }
   state.mannerSwitch.card = tutorStubMannerCard(state.mannerSwitch, cardOptions);
   // Crossed-effects experiment knob (card: adaptive-causality-crossed-effects).
-  // TUTOR_STUB_CARD_FORCE='9=settled_claim,10=stake' forces the named card
-  // at the named tutor turn regardless of detection ('none' suppresses).
+  // TUTOR_STUB_CARD_FORCE='9=settled_claim,10=stake' forces the named move card
+  // at the named tutor turn ('none' suppresses). A quiet:* card is checked
+  // against her real state first and withheld when she is not in it; '5+=' waits
+  // for the occasion instead of pinning a turn. See tutorStubCardForce.js.
   // Fixed/random/oracle policies are realized by the launcher setting this
   // per dialogue; the router arm leaves it unset. Stamped in-trace.
-  if (CARD_FORCE_MAP && CARD_FORCE_MAP.has(tutorTurn)) {
-    const forced = CARD_FORCE_MAP.get(tutorTurn);
+  const pendingForce = resolveCardForce({
+    state,
+    learnerText,
+    tutorTurn,
+    map: CARD_FORCE_MAP,
+    waits: CARD_FORCE_WAITS,
+    gateOn: CARD_FORCE_QUIET_GATE,
+  });
+  if (pendingForce) {
+    const { forced, withheld, observedQuietState, gated, waited } = pendingForce;
     const naturalCard = state.mannerSwitch.card;
-    state.mannerSwitch.card =
-      forced === 'none'
-        ? null
-        : forced.startsWith('quiet:')
-          ? tutorStubQuietStateCard(forced.slice(6))
-          : tutorStubMannerCard({ lastAdvance: { pressure: forced } }, cardOptions);
+    // Withheld leaves the natural card standing — exactly what would have
+    // happened had this turn never been scheduled.
+    if (!withheld) {
+      state.mannerSwitch.card =
+        forced === 'none'
+          ? null
+          : forced.startsWith('quiet:')
+            ? tutorStubQuietStateCard(forced.slice(6))
+            : tutorStubMannerCard({ lastAdvance: { pressure: forced } }, cardOptions);
+    }
     if (recordTrace) {
       appendTraceEvent(state.trace, {
         type: 'tutor_card_force',
         turn: tutorTurn,
         forced,
+        withheld,
+        observedQuietState,
+        waited,
+        gate: gated ? TUTOR_STUB_CARD_FORCE_GATE_VERSION : null,
         displacedNaturalCard: Boolean(naturalCard),
         cardActive: Boolean(state.mannerSwitch.card),
       });

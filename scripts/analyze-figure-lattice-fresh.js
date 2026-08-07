@@ -135,7 +135,14 @@ export function readDialogue(file, source) {
   const mismatches = [];
   let stampChecked = 0;
 
-  for (const force of events.filter((e) => e.type === 'tutor_card_force' && e.cardActive && e.forced !== 'none')) {
+  // `withheld` marks a quiet card that came due but did not ship, because she
+  // was not in that state (services/tutorStubCardForce.js). The tutor was never
+  // told to make that move, so the turn is not an object of this lattice — the
+  // reply belongs to whatever natural card stood instead. Older traces carry no
+  // such field, so they read exactly as before.
+  for (const force of events.filter(
+    (e) => e.type === 'tutor_card_force' && !e.withheld && e.cardActive && e.forced !== 'none',
+  )) {
     const turn = force.turn;
     const complete = at('turn_complete', turn);
     if (!complete) {

@@ -448,6 +448,7 @@
         "tests/tutorStubAutoEvalEvidence.test.js",
         "tests/tutorStubCanonicalActorialRealization.test.js",
         "tests/tutorStubCapabilities.test.js",
+        "tests/tutorStubCardForce.test.js",
         "tests/tutorStubCharacterAdaptationLoop.test.js",
         "tests/tutorStubCliHelp.test.js",
         "tests/tutorStubCliParsing.test.js",
