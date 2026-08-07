@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-07T22:47:22.494Z",
+  "generated": "2026-08-07T23:06:28.275Z",
   "counts": {
-    "total": 455,
+    "total": 456,
     "byStatus": {
-      "done": 414,
+      "done": 415,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
@@ -13,7 +13,7 @@
     },
     "byType": {
       "research": 74,
-      "experiment": 74,
+      "experiment": 75,
       "infra": 95,
       "maintenance": 192,
       "content": 3,
@@ -14935,6 +14935,37 @@
         "stance-fidelity",
         "determinate-negation"
       ]
+    },
+    {
+      "id": "sarcasm-mood-floor-replication",
+      "title": "Does the mood floor reproduce? — replication check on the composition split",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "A repo-resident report re-scores cell 202's plain mood rows from both runs under one gate and one fold, reads the provenance fields out of the database rather than asserting a match, and reports whether the 0/6 that motivated this sub-line reproduces. Any claim lands in paper §6.7 first.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-08-08-sarcasm-mood-floor-replication-preregistration.md",
+          "notes/2026-08-07-sarcasm-precondition-preregistration.md",
+          "notes/2026-08-06-sarcasm-determinate-negation-preregistration.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "runs": [
+          "eval-2026-08-06-4de45d05",
+          "eval-2026-08-07-e3dffab2"
+        ],
+        "items": [
+          "sarcasm-precondition-claim-bearing-mood",
+          "sarcasm-determinate-negation-grid"
+        ]
+      }
     },
     {
       "id": "sarcasm-precondition-claim-bearing-mood",
