@@ -274,15 +274,18 @@ function parseVerdict(raw) {
 /**
  * Paced call with backoff: rapid back-to-back CLI calls draw exit-1 failures.
  *
- * Two failure shapes, and they want opposite treatment. A healthy score takes
- * about seven seconds. The other shape is a hang, where the CLI never answers
- * and the call sits there until the timeout kills it. Waiting longer does not
- * rescue a hang, it only makes it dearer, so the leash is short and the
- * retries are many. A first pass ran at a 120s timeout with 20s-a-step
- * backoff and spent roughly seven minutes of quota per score collected.
+ * Set the timeout from measurement, not from guesswork. Three real scoring
+ * prompts through this same bridge answered in 47s, 65s and 68s, and they run
+ * slower again when anything else on the machine is talking to the CLI. A
+ * short leash does not make a slow call quick, it throws the finished work
+ * away and pays for it twice: at 45s nothing landed at all, at 120s the
+ * timeouts still outnumbered the scores.
+ *
+ * So the leash sits well clear of the measured spread, and the backoff is
+ * short because a retry is a fresh call, not a wait for the old one.
  */
-const CALL_TIMEOUT_MS = 45000;
-const CALL_ATTEMPTS = 6;
+const CALL_TIMEOUT_MS = 180000;
+const CALL_ATTEMPTS = 4;
 
 /** How long the last answered call took, so the run reports its own health. */
 let lastCallMs = 0;
