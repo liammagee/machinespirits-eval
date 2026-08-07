@@ -12,6 +12,12 @@
  *   extract [runDir]       Build the item file: for each template turn, the
  *                          draft the replay would ship, the template that did
  *                          ship, and the dialogue context. No model calls.
+ *                          `--out` writes elsewhere, so re-extracting under a
+ *                          new catalogue does not orphan scores already keyed
+ *                          to the old file.
+ *   recheck                Two item files, two catalogue versions: score the
+ *                          turns where the newer one ships a model reply and
+ *                          the older shipped the template. See recheck() below.
  *   probe [--n 20]         Blinding check. Single texts, half drafts and half
  *                          templates, judge asked "composed for this moment or
  *                          assembled from stock lines?". High accuracy on the
@@ -161,7 +167,7 @@ function chooseDraft(attempts) {
   return best;
 }
 
-function extract(runDir) {
+function extract(runDir, outPath = ITEMS_PATH) {
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const items = [];
   for (const cell of fs.readdirSync(runDir, { withFileTypes: true }).filter((e) => e.isDirectory())) {
@@ -226,13 +232,13 @@ function extract(runDir) {
       }
     }
   }
-  fs.writeFileSync(ITEMS_PATH, items.map((i) => JSON.stringify(i)).join('\n') + '\n');
+  fs.writeFileSync(outPath, items.map((i) => JSON.stringify(i)).join('\n') + '\n');
   const byCell = new Map();
   for (const i of items) {
     const k = `${i.cell}/${i.version}`;
     byCell.set(k, (byCell.get(k) || 0) + 1);
   }
-  console.log(`wrote ${items.length} items to ${ITEMS_PATH}`);
+  console.log(`wrote ${items.length} items to ${outPath}`);
   for (const [k, n] of byCell) console.log(`  ${k}: ${n}`);
 }
 
@@ -416,7 +422,10 @@ function scorePrompt(item, candidate) {
           .map((s) => `"""\n${s.text}\n"""`)
           .join('\n')}\n`
       : '',
-    `Tutor reply to score:\n${candidate === 'draft' ? item.draft : item.template}`,
+    // Only the template is fetched by name. Everything else is "the reply the
+    // machinery would have shipped", which is the item's draft slot whether the
+    // caller is scoring the original pair or a later re-choice.
+    `Tutor reply to score:\n${candidate === 'template' ? item.template : item.draft}`,
   ].join('\n');
 }
 
@@ -543,6 +552,18 @@ async function judge(n, family = null) {
         'Re-run `extract` if the item file predates the faithfulness scale.',
     );
   }
+  await runScoreQueue(queue, resultsPath);
+  report(family);
+}
+
+/**
+ * Score every (item, candidate) in the queue and append the rows to disk.
+ *
+ * `candidate` says which text to score and is written out as-is, so a caller
+ * scoring something other than the original pair — the repair, say — names it
+ * and its rows stay separable from the pair's.
+ */
+async function runScoreQueue(queue, resultsPath) {
   let failures = 0;
   // One reply can be unscorable on its own. The corpus is full of invented
   // accidents, and a scene about a contaminated culture reads to the safety
@@ -594,11 +615,155 @@ async function judge(n, family = null) {
       }) + '\n',
     );
     console.log(
-      `${String(queue.length).padStart(3)} left | ${candidate === 'draft' ? 'draft   ' : 'template'} overall=${scores.overall} | ${String(Math.round(lastCallMs / 1000)).padStart(3)}s | ${item.id}`,
+      `${String(queue.length).padStart(3)} left | ${candidate.padEnd(8)} overall=${scores.overall} | ${String(Math.round(lastCallMs / 1000)).padStart(3)}s | ${item.id}`,
     );
     await new Promise((r) => setTimeout(r, 8000));
   }
-  report(family);
+}
+
+/**
+ * Did relaxing a guard put a better turn in front of the learner?
+ *
+ * `judge` answers "was the veto right?" by scoring the draft that was stopped.
+ * That question is settled per catalogue version, and when a version changes,
+ * the answer can change with it — not because any reply changed, but because a
+ * different one is now the one that would ship. Demoting the anchoring check
+ * did exactly that: on most of the source-alignment turns the reply that ships
+ * is no longer the original draft, it is the model's own repair, which the
+ * check had been binning for where the passage sat rather than whether it was
+ * there.
+ *
+ * So this mode takes two item files extracted under two catalogue versions,
+ * keeps the turns where the older one shipped the template and the newer one
+ * ships a model reply, and scores that reply. It is written out under its own
+ * candidate name, so it neither overwrites nor averages into the original pair.
+ *
+ * The template scores are reused rather than re-collected. The template is the
+ * deterministic fallback: same text under either catalogue, already scored by
+ * the same judge on the same prompt. Re-scoring it would only add sampling
+ * noise to the side of the comparison that did not change.
+ */
+async function recheck(baselinePath, currentPath) {
+  const resultsPath = path.join(OUT_DIR, 'judge-results.jsonl');
+  for (const p of [baselinePath, currentPath]) {
+    if (!fs.existsSync(p)) {
+      console.error(`missing item file: ${p} — run \`extract\` for it first (no model calls)`);
+      process.exit(1);
+    }
+  }
+  const read = (p) =>
+    new Map(
+      fs
+        .readFileSync(p, 'utf8')
+        .split('\n')
+        .filter(Boolean)
+        .map((l) => JSON.parse(l))
+        .map((i) => [i.id, i]),
+    );
+  const baseline = read(baselinePath);
+  const current = read(currentPath);
+
+  const changed = [];
+  for (const [id, now] of current) {
+    const before = baseline.get(id);
+    if (!before) continue;
+    if (!(before.draftHardRelaxed || []).length) continue; // already shipped a model reply
+    if ((now.draftHardRelaxed || []).length) continue; // still blocked
+    changed.push({ before, now });
+  }
+  console.log(
+    `${changed.length} turns move from template to a model reply between ` +
+      `${path.basename(baselinePath)} and ${path.basename(currentPath)} (of ${current.size} fallback turns)`,
+  );
+  if (!changed.length) process.exit(1);
+  const byBlocker = new Map();
+  for (const { before } of changed) {
+    const k = soleBlocker(before) || 'several';
+    byBlocker.set(k, (byBlocker.get(k) || 0) + 1);
+  }
+  for (const [k, n] of [...byBlocker].sort((a, b) => b[1] - a[1]))
+    console.log(`  ${String(n).padStart(3)} was held by ${k}`);
+  const kinds = new Map();
+  for (const { now } of changed) kinds.set(now.draftKind, (kinds.get(now.draftKind) || 0) + 1);
+  for (const [k, n] of [...kinds].sort((a, b) => b[1] - a[1])) console.log(`  ${String(n).padStart(3)} now ship ${k}`);
+
+  const done = new Set();
+  const templateScores = new Map();
+  if (fs.existsSync(resultsPath)) {
+    for (const line of fs.readFileSync(resultsPath, 'utf8').split('\n')) {
+      if (!line.trim()) continue;
+      try {
+        const row = JSON.parse(line);
+        done.add(`${row.id}|${row.candidate}`);
+        if (row.candidate === 'template') templateScores.set(row.id, row);
+      } catch {
+        /* skip broken line */
+      }
+    }
+  }
+  const missingTemplate = changed.filter(({ now }) => !templateScores.has(now.id)).length;
+  if (missingTemplate) {
+    console.log(`${missingTemplate} of them have no template score yet — those will be collected too`);
+  }
+  const queue = [];
+  for (const { now } of changed) {
+    if (!done.has(`${now.id}|repair`)) queue.push({ item: now, candidate: 'repair' });
+    if (!templateScores.has(now.id)) queue.push({ item: now, candidate: 'template' });
+  }
+  console.log(`${queue.length} scores to collect`);
+  await runScoreQueue(queue, resultsPath);
+  recheckReport(changed.map(({ now }) => now.id));
+}
+
+/** Repair against the template it displaced, on the turns where the change bites. */
+function recheckReport(ids) {
+  const resultsPath = path.join(OUT_DIR, 'judge-results.jsonl');
+  const wanted = new Set(ids);
+  const rows = fs
+    .readFileSync(resultsPath, 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .map((l) => JSON.parse(l))
+    .filter((r) => wanted.has(r.id));
+  const pairs = [];
+  for (const id of wanted) {
+    const repair = rows.find((r) => r.id === id && r.candidate === 'repair');
+    const template = rows.find((r) => r.id === id && r.candidate === 'template');
+    if (repair && template) pairs.push({ repair, template });
+  }
+  console.log(`\n${pairs.length} pairs scored on both sides`);
+  if (!pairs.length) return;
+  const mean = (side, key, keep = () => true) => {
+    const vals = pairs.filter(keep).map((p) => Number(p[side][key]));
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+  };
+  const fmt = (v) => (v === null ? '  n/a' : v.toFixed(2));
+  for (const key of SCORE_KEYS) {
+    const r = mean('repair', key);
+    const t = mean('template', key);
+    const wins = pairs.filter((p) => Number(p.repair[key]) > Number(p.template[key])).length;
+    const ties = pairs.filter((p) => Number(p.repair[key]) === Number(p.template[key])).length;
+    console.log(
+      `  ${key.padEnd(9)} repair ${fmt(r)}  template ${fmt(t)}  ` +
+        `(repair better on ${wins}, tied on ${ties}, worse on ${pairs.length - wins - ties})`,
+    );
+  }
+  // Faithfulness is only asked where a passage was rendered, and 0 means the
+  // reply never touched it. Keep the silences out of the mean and count them.
+  const spoke = (p) => Number(p.repair.faithfulness) > 0 && Number(p.template.faithfulness) > 0;
+  const asked = pairs.filter(
+    (p) => Number.isFinite(Number(p.repair.faithfulness)) && Number.isFinite(Number(p.template.faithfulness)),
+  );
+  if (asked.length) {
+    console.log(
+      `  ${'faithful'.padEnd(9)} repair ${fmt(mean('repair', 'faithfulness', spoke))}  ` +
+        `template ${fmt(mean('template', 'faithfulness', spoke))}  (both spoke on ${pairs.filter(spoke).length})`,
+    );
+    const silent = (side) => asked.filter((p) => Number(p[side].faithfulness) === 0).length;
+    console.log(
+      `\npassage untouched: repair ${silent('repair')} of ${asked.length}, template ${silent('template')} of ${asked.length}`,
+    );
+  }
 }
 
 /**
@@ -701,7 +866,16 @@ function flag(argv, name) {
 async function main() {
   const [cmd, ...rest] = process.argv.slice(2);
   if (cmd === 'extract') {
-    extract(rest.find((a) => !a.startsWith('--')) || DEFAULT_RUN_DIR);
+    const out = flag(rest, '--out');
+    // The run dir is the one bare argument. `--out <path>` puts its path in the
+    // same position, so drop the flag's own value before looking.
+    const positional = rest.filter((a, i) => !a.startsWith('--') && !String(rest[i - 1] || '').startsWith('--'));
+    extract(positional[0] || DEFAULT_RUN_DIR, out ? path.resolve(out) : ITEMS_PATH);
+  } else if (cmd === 'recheck') {
+    await recheck(
+      path.resolve(flag(rest, '--baseline') || ITEMS_PATH),
+      path.resolve(flag(rest, '--current') || path.join(OUT_DIR, 'items-relaxed.jsonl')),
+    );
   } else if (cmd === 'probe') {
     const n = Number(rest[rest.indexOf('--n') + 1]) || 20;
     await probe(n);
@@ -714,9 +888,10 @@ async function main() {
     preview(Number(flag(rest, '--n')) || 1, flag(rest, '--family'));
   } else {
     console.error(
-      'usage: guard-validity-study.js extract [runDir] | probe [--n 20] | ' +
+      'usage: guard-validity-study.js extract [runDir] [--out <path>] | probe [--n 20] | ' +
         'judge [--n 150] [--family <guard>] | report [--family <guard>] | ' +
-        'preview [--n 1] [--family <guard>]',
+        'preview [--n 1] [--family <guard>] | ' +
+        'recheck [--baseline <items>] [--current <items>]',
     );
     process.exit(2);
   }
