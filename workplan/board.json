@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-07T02:21:18.865Z",
+  "generated": "2026-08-07T02:24:43.076Z",
   "counts": {
-    "total": 445,
+    "total": 446,
     "byStatus": {
       "done": 409,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
       "archived": 4,
-      "triaged": 7,
+      "triaged": 8,
       "review": 6
     },
     "byType": {
       "research": 74,
-      "experiment": 72,
+      "experiment": 73,
       "infra": 88,
       "maintenance": 191,
       "content": 3,
@@ -78,6 +78,36 @@
       "tags": [
         "tutor-stub",
         "guards"
+      ]
+    },
+    {
+      "id": "learner-profile-world-deconfound",
+      "title": "Deconfound the learner-profile recovery: cross personas and worlds",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-06",
+      "verification": "Design-stage card. Before any paid dialogue: the transplanted persona briefs are user-adjudicated, the crossed cells and readings below are frozen unchanged, and the operator has explicitly authorized the paid run. The run is attended; delivery is verified per the golden contract before any reading.",
+      "claim_status": "methods",
+      "links": {
+        "notes": [
+          "notes/2026-08-03-adaptive-causality-living-log.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#624-the-four-locks-why-nothing-beat-the-bare-tutor-and-what-opened-when-each-was-removed-post-hoc-except-the-claim-gate-development-tier"
+        ],
+        "items": [
+          "adaptive-causality-crossed-effects"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "learner-profiles",
+        "deconfound",
+        "prereg"
       ]
     },
     {
@@ -14494,6 +14524,9 @@
       "created": "2026-08-07",
       "updated": "2026-08-07",
       "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/544"
+        ],
         "code": [
           "tests/dryRun.test.js",
           "tests/fixtures/empty.env",
