@@ -1,19 +1,19 @@
 {
-  "generated": "2026-08-07T23:20:41.477Z",
+  "generated": "2026-08-07T23:32:26.241Z",
   "counts": {
-    "total": 457,
+    "total": 458,
     "byStatus": {
       "done": 416,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
       "archived": 4,
-      "triaged": 10,
+      "triaged": 11,
       "review": 8
     },
     "byType": {
       "research": 74,
-      "experiment": 75,
+      "experiment": 76,
       "infra": 95,
       "maintenance": 192,
       "content": 3,
@@ -206,6 +206,34 @@
         "tutor-stub",
         "guards"
       ]
+    },
+    {
+      "id": "ironic-question-flood-target",
+      "title": "Irony against question-flooding — the one cell worth a second draw",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "Step 1 is a second draw of one cell already run — three rows, ironic tutor against question-flooding, same stacks and judges — reported through the existing grid reporter under the plain stance gate. It passes only if the report states the two draws' counts side by side and the fields that make them comparable are read out of the database rather than asserted. No paper claim from step 1; a claim needs step 2, and step 2 needs a size argued from step 1's spread.",
+      "claim_status": "speculative",
+      "links": {
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "runs": [
+          "eval-2026-08-05-87fe3664",
+          "eval-2026-07-02-5c4d52e6",
+          "eval-2026-07-02-67be317c"
+        ],
+        "items": [
+          "negative-register-effect-estimation-grid",
+          "sarcasm-mood-floor-replication",
+          "sarcasm-determinate-negation-grid"
+        ]
+      }
     },
     {
       "id": "sarcasm-worktree-shadow-db-disposal",
