@@ -44,10 +44,11 @@ import { fileURLToPath } from 'url';
 import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 import { scoredTutorTurnAfterTrigger } from './lib/trapTurnConvention.js';
 import { codingFor, NWM_QUERY_TYPES } from './lib/trapRevealQueryCoding.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
-const LOGS_DIR = path.join(process.env.EVAL_LOGS_DIR || path.join(REPO_ROOT, 'logs'), 'tutor-dialogues');
+const LOGS_DIR = resolveTutorDialoguesDir(REPO_ROOT);
 
 const args = process.argv.slice(2);
 const getOption = (name) => {

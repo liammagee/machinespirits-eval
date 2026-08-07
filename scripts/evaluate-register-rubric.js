@@ -3,10 +3,10 @@
 import 'dotenv/config';
 
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { resolveEvaluationLogsRootCandidates } from '../services/evaluationDataPaths.js';
 import * as evaluationStore from '../services/evaluationStore.js';
 import { getScenario } from '../services/evalConfigLoader.js';
 import {
@@ -28,12 +28,9 @@ import { buildNegationRecoveryJudgePrompt, parseNegationRecoveryJudgeReply } fro
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const DATA_HOME = process.env.MS_DATA_HOME || path.join(os.homedir(), '.machinespirits-data');
-const LOG_ROOTS = [
-  process.env.EVAL_LOGS_DIR || null,
-  fs.existsSync(DATA_HOME) ? path.join(DATA_HOME, 'logs') : null,
-  path.join(ROOT, 'logs'),
-].filter(Boolean);
+// Every root a dialogue log could be under, best first, from the one place that
+// knows the order — this list used to be written out here as well.
+const LOG_ROOTS = resolveEvaluationLogsRootCandidates(ROOT);
 
 function parseArgs(argv) {
   const args = argv.slice(2);

@@ -28,6 +28,7 @@ import {
   summarizeGroundingValidatorBranches,
 } from '../services/adaptiveTutor/groundingValidatorAudit.js';
 import { describeMissingEvaluationDb, openEvaluationDbReadonly } from '../services/evaluationDbReadonly.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -43,7 +44,7 @@ const profileFilter = getOption('profile');
 const dbPathArg = getOption('db');
 const logsPathArg = getOption('logs');
 const outPath = getOption('out');
-const logsDir = path.join(logsPathArg || process.env.EVAL_LOGS_DIR || path.join(REPO_ROOT, 'logs'), 'tutor-dialogues');
+const logsDir = resolveTutorDialoguesDir(REPO_ROOT, logsPathArg);
 const defaultPrefixes = ['cell_127_state_policy_evidence_bound_validated', 'cell_128_state_policy_minimal_profile'];
 
 const { db, dbPath, reason } = openEvaluationDbReadonly(REPO_ROOT, { explicitPath: dbPathArg });

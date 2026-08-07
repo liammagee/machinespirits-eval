@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 import fs from 'fs';
 
+import { getProgressLogPath } from '../services/progressLogger.js';
+
 const runId = 'eval-2026-02-03-f5d4dd93';
-const logPath = `./logs/eval-progress/${runId}.jsonl`;
+// Was `./logs/eval-progress/...` — relative to wherever you happened to run it.
+const logPath = getProgressLogPath(runId);
 
 const lines = fs
   .readFileSync(logPath, 'utf8')

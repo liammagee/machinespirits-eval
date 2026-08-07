@@ -14,11 +14,12 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import Database from 'better-sqlite3';
 import yaml from 'yaml';
 import { scoredTutorTurnAfterTrigger } from './lib/trapTurnConvention.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
-const DB_PATH = process.env.EVAL_DB_PATH || path.join(REPO_ROOT, 'data', 'evaluations.db');
-const LOGS_DIR = path.join(process.env.EVAL_LOGS_DIR || path.join(REPO_ROOT, 'logs'), 'tutor-dialogues');
+const DB_PATH = resolveEvaluationDbPath(REPO_ROOT);
+const LOGS_DIR = resolveTutorDialoguesDir(REPO_ROOT);
 
 const ACTION_TO_FALLBACK_HYPOTHESIS = Object.freeze({
   observe_no_intervention: 'productive_progress',

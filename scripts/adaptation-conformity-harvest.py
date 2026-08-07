@@ -73,6 +73,9 @@ scripts/adaptation-conformity-classifier.py does, and a null there is the result
 """
 import os, sys, json, re, sqlite3, hashlib, random
 from datetime import datetime, timezone
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from lib.eval_data_paths import resolve_db_path, resolve_tutor_dialogues_dir_candidates
 
 SEED = 20260609
 JACCARD_FLOOR = 0.05      # frozen: substantive-change threshold
@@ -80,7 +83,7 @@ GATE_N = 60               # frozen: gold-set size
 TRUNC = 1500              # frozen: per-field render truncation
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB = os.environ.get("EVAL_DB_PATH", os.path.join(REPO, "data", "evaluations.db"))
+DB = resolve_db_path(REPO)
 OUT_HARVEST = os.path.join(REPO, "exports", "adaptation-conformity-harvest.jsonl")
 OUT_GATE = os.path.join(REPO, "exports", "adaptation-conformity-gate.jsonl")
 OUT_META = os.path.join(REPO, "exports", "adaptation-conformity-harvest.meta.json")
@@ -89,19 +92,10 @@ TOKEN = re.compile(r"[a-z]+")
 
 
 def resolve_logs():
-    """tutor-dialogues trace dir. EVAL_LOGS_DIR may point at .../logs (with a
-    tutor-dialogues/ subdir) or directly at the trace dir. Falls back to the
-    sibling machinespirits-eval repo (the current log-dir stopgap for this fork),
-    then to the repo's own logs/."""
-    env = os.environ.get("EVAL_LOGS_DIR")
-    cands = []
-    if env:
-        cands += [os.path.join(env, "tutor-dialogues"), env]
-    cands += [
-        os.path.join(REPO, "logs", "tutor-dialogues"),
-        os.path.join(REPO, "logs"),
-        os.path.join(os.path.dirname(REPO), "machinespirits-eval", "logs", "tutor-dialogues"),
-    ]
+    """tutor-dialogues trace dir, from the shared rule, plus the sibling
+    machinespirits-eval repo this fork used as a log-dir stopgap."""
+    cands = resolve_tutor_dialogues_dir_candidates(REPO)
+    cands.append(os.path.join(os.path.dirname(REPO), "machinespirits-eval", "logs", "tutor-dialogues"))
     for c in cands:
         if os.path.isdir(c):
             return c

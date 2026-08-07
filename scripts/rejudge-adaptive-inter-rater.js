@@ -52,6 +52,7 @@ import { callModelCliText } from '../services/cliProviderBridge.js';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { GRADER_VERSION, buildPrompt, extractJsonEnvelope } from './lib/adaptiveGraderPrompt.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -153,8 +154,7 @@ function selectRows() {
 
 // ─────────────────────────────────────── dialogue trace
 function loadTrace(dialogueId) {
-  const dir = process.env.EVAL_LOGS_DIR || path.join(process.cwd(), 'logs');
-  const p = path.join(dir, 'tutor-dialogues', `${dialogueId}.json`);
+  const p = path.join(resolveTutorDialoguesDir(REPO_ROOT), `${dialogueId}.json`);
   if (!fs.existsSync(p)) return null;
   try {
     return JSON.parse(fs.readFileSync(p, 'utf-8'));

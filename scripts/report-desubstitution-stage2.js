@@ -25,9 +25,9 @@
 // reported direction (kernel-favoring / 193-favoring).
 
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
+import { resolveTutorDialoguesDirCandidates } from '../services/evaluationDataPaths.js';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const RUN_ID = process.argv.includes('--run-id')
@@ -37,11 +37,9 @@ const OUT_BASE = process.argv.includes('--out-base')
   ? process.argv[process.argv.indexOf('--out-base') + 1]
   : 'desubstitution-stage2-matrix';
 const CONFIRMATORY = process.argv.includes('--confirmatory');
-const LOG_DIRS = [
-  process.env.EVAL_LOGS_DIR ? path.join(process.env.EVAL_LOGS_DIR, 'tutor-dialogues') : null,
-  path.join(os.homedir(), '.machinespirits-data/logs/tutor-dialogues'),
-  path.join(ROOT, 'logs/tutor-dialogues'),
-].filter(Boolean);
+// This list used to be spelled out here: env override, archive, checkout. That
+// is the shared order, so it comes from the shared place now.
+const LOG_DIRS = resolveTutorDialoguesDirCandidates(ROOT);
 
 const ARMS = [
   { key: '186_fixed', match: 'cell_186' },

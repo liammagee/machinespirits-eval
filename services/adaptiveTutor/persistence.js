@@ -15,16 +15,18 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
 import { summarizeWorldAdaptationSpec } from './actionPolicy.js';
+import { resolveTutorDialoguesDir } from '../evaluationDataPaths.js';
 import { getDefaultEvaluationStore } from '../evaluationStore/lifecycle.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EVAL_ROOT = path.resolve(__dirname, '..', '..');
 
-// Honour EVAL_LOGS_DIR exactly the way services/evaluationStore.js does, so a
-// test that swaps EVAL_DB_PATH + EVAL_LOGS_DIR into a tmp dir gets a fully
-// self-contained sandbox.
-const logsRoot = () => process.env.EVAL_LOGS_DIR || path.join(EVAL_ROOT, 'logs');
-const dialoguesDir = () => path.join(logsRoot(), 'tutor-dialogues');
+// The one rule every reader and writer shares, so a test that swaps
+// EVAL_DB_PATH + EVAL_LOGS_DIR into a tmp dir still gets a self-contained
+// sandbox, and a run with neither set writes where the archive's readers look.
+// This used to be its own copy — EVAL_LOGS_DIR or <checkout>/logs — which put a
+// worktree run's traces beside the checkout instead of in the archive.
+const dialoguesDir = () => resolveTutorDialoguesDir(EVAL_ROOT);
 
 function assertEvaluationStore(evaluationStore) {
   if (!evaluationStore || typeof evaluationStore !== 'object') {

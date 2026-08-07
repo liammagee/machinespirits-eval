@@ -32,6 +32,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { resolveTutorDialoguesDirCandidates } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -48,7 +49,7 @@ const OUT_PATH =
 // Trace files for these (pre-fork, May) runs live in the private archive; newer
 // runs land in the local logs dir. Try both.
 const LOG_DIRS = [
-  path.join(process.env.EVAL_LOGS_DIR || path.join(REPO_ROOT, 'logs'), 'tutor-dialogues'),
+  ...resolveTutorDialoguesDirCandidates(REPO_ROOT),
   path.join(REPO_ROOT, '..', 'machinespirits-eval-private', 'logs', 'tutor-dialogues'),
 ];
 

@@ -1,10 +1,18 @@
 /**
  * Progress Logger — JSONL event writer for cross-process eval monitoring.
  *
- * One file per run at <logs-root>/eval-progress/<runId>.jsonl, where the
- * logs root defaults to ROOT_DIR/logs but can be overridden with the
- * EVAL_LOGS_DIR env var (useful for sandboxed CI runs that can't write
- * to the real symlinked logs/ tree).
+ * One file per run at <logs-root>/eval-progress/<runId>.jsonl, where the logs
+ * root comes from the one rule every reader and writer shares
+ * (`resolveEvaluationLogsRoot`): an explicit EVAL_LOGS_DIR, else the archive
+ * under MS_DATA_HOME, else the checkout's own logs/.
+ *
+ * This module used to hold its own copy of that rule — EVAL_LOGS_DIR or
+ * <checkout>/logs, skipping the archive. It was self-consistent, so nothing
+ * errored; it just put the progress logs of a run launched from a worktree in a
+ * directory the archive's readers never look at, the same defect the database
+ * path had one level up. Resolved per call rather than at import, so a caller
+ * that sets EVAL_LOGS_DIR after loading this module still gets it.
+ *
  * Each line is a self-contained JSON object with timestamp + runId + eventType.
  */
 
@@ -12,18 +20,23 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import { resolveEvaluationLogsRoot } from './evaluationDataPaths.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(ROOT_DIR, 'logs');
-const PROGRESS_DIR = path.join(LOGS_ROOT, 'eval-progress');
+
+function progressDir() {
+  return path.join(resolveEvaluationLogsRoot(ROOT_DIR), 'eval-progress');
+}
 
 export class ProgressLogger {
   constructor(runId) {
     this.runId = runId;
+    const dir = progressDir();
     // Ensure directory exists
-    fs.mkdirSync(PROGRESS_DIR, { recursive: true });
-    this.filePath = path.join(PROGRESS_DIR, `${runId}.jsonl`);
+    fs.mkdirSync(dir, { recursive: true });
+    this.filePath = path.join(dir, `${runId}.jsonl`);
   }
 
   /** Append a single JSON line */
@@ -114,12 +127,12 @@ export class ProgressLogger {
 
 /** Resolve the JSONL path for a given runId (may not exist yet). */
 export function getProgressLogPath(runId) {
-  return path.join(PROGRESS_DIR, `${runId}.jsonl`);
+  return path.join(progressDir(), `${runId}.jsonl`);
 }
 
 /** Read all events from a JSONL progress file. Returns [] if missing. */
 export function readProgressLog(runId) {
-  const filePath = path.join(PROGRESS_DIR, `${runId}.jsonl`);
+  const filePath = path.join(progressDir(), `${runId}.jsonl`);
   if (!fs.existsSync(filePath)) return [];
   const lines = fs.readFileSync(filePath, 'utf-8').split('\n').filter(Boolean);
   return lines

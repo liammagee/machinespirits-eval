@@ -34,12 +34,12 @@ import Database from 'better-sqlite3';
 import * as pilotStore from '../services/pilotStore.js';
 import * as evaluationStore from '../services/evaluationStore.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const LOGS_ROOT = process.env.EVAL_LOGS_DIR || path.join(ROOT_DIR, 'logs');
-const DIALOGUE_LOGS_DIR = path.join(LOGS_ROOT, 'tutor-dialogues');
+const DIALOGUE_LOGS_DIR = resolveTutorDialoguesDir(ROOT_DIR);
 
 // ─── CLI parsing ──────────────────────────────────────────────────────────
 

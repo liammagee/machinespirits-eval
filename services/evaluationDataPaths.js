@@ -55,32 +55,69 @@ function isEvaluationRepoRoot(rootDir, fileSystem = fs) {
 }
 
 /**
+ * Every logs root this checkout could mean, best first.
+ *
+ * Writers take the first one. Some readers want the whole list, because a log
+ * written under an older rule may still be sitting in a root that is no longer
+ * preferred — the register scorer searches all of them. Both used to spell the
+ * order out separately, which is how a rule ends up with two versions of
+ * itself, so the order lives here once and `resolveEvaluationLogsRoot` is its
+ * first element.
+ */
+export function resolveEvaluationLogsRootCandidates(
+  rootDir,
+  explicitPath = null,
+  { env = process.env, fileSystem = fs } = {},
+) {
+  if (!rootDir) throw new Error('rootDir is required');
+  const candidates = [];
+
+  const explicit = explicitPath || env.EVAL_LOGS_DIR;
+  if (explicit) candidates.push(resolvePathFromRoot(rootDir, explicit));
+
+  // A run handed over as a folder — logs, no checkout — reads from its own logs
+  // directory rather than the archive it was never part of.
+  const rootLogs = path.join(rootDir, 'logs');
+  if (!isEvaluationRepoRoot(rootDir, fileSystem) && fileSystem.existsSync(rootLogs)) candidates.push(rootLogs);
+
+  const dataHome = resolveEvaluationDataHome(env);
+  if (fileSystem.existsSync(dataHome)) candidates.push(path.join(dataHome, 'logs'));
+
+  candidates.push(rootLogs);
+  return [...new Set(candidates)];
+}
+
+/**
  * Where the dialogue logs and their sibling artifacts go. Same shape as
  * `resolveEvaluationDbPath` above, and for the same reason: one rule per kind of
  * path, held in one place. The store used to keep its own copy of this, which
  * left a relative `EVAL_LOGS_DIR` meaning `<rootDir>/x` to a reader and `x`
  * relative to the working directory to a writer.
  */
-export function resolveEvaluationLogsRoot(rootDir, explicitPath = null, { env = process.env, fileSystem = fs } = {}) {
-  if (!rootDir) throw new Error('rootDir is required');
+export function resolveEvaluationLogsRoot(rootDir, explicitPath = null, options = {}) {
+  return resolveEvaluationLogsRootCandidates(rootDir, explicitPath, options)[0];
+}
 
-  const explicit = explicitPath || env.EVAL_LOGS_DIR;
-  if (explicit) return resolvePathFromRoot(rootDir, explicit);
-
-  // A run handed over as a folder — logs, no checkout — reads from its own logs
-  // directory rather than the archive it was never part of.
-  const rootLogs = path.join(rootDir, 'logs');
-  if (!isEvaluationRepoRoot(rootDir, fileSystem) && fileSystem.existsSync(rootLogs)) return rootLogs;
-
-  const dataHome = resolveEvaluationDataHome(env);
-  if (fileSystem.existsSync(dataHome)) return path.join(dataHome, 'logs');
-
-  return rootLogs;
+function asDialoguesDir(logsRoot) {
+  return path.basename(logsRoot) === 'tutor-dialogues' ? logsRoot : path.join(logsRoot, 'tutor-dialogues');
 }
 
 export function resolveTutorDialoguesDir(rootDir, explicitPath = null) {
-  const logsRoot = resolveEvaluationLogsRoot(rootDir, explicitPath);
-  return path.basename(logsRoot) === 'tutor-dialogues' ? logsRoot : path.join(logsRoot, 'tutor-dialogues');
+  return asDialoguesDir(resolveEvaluationLogsRoot(rootDir, explicitPath));
+}
+
+/**
+ * Every dialogue-trace directory this checkout could mean, best first.
+ *
+ * Readers that search rather than resolve want this: traces from an older run
+ * may sit under a root that is no longer preferred. Four scripts each wrote out
+ * their own version of this list, and no two agreed — which is the whole reason
+ * the order lives in one place now. A script with a genuinely extra root (a
+ * sibling private checkout, a second pinned runtime) appends it to this list
+ * instead of restating the shared part.
+ */
+export function resolveTutorDialoguesDirCandidates(rootDir, explicitPath = null, options = {}) {
+  return resolveEvaluationLogsRootCandidates(rootDir, explicitPath, options).map(asDialoguesDir);
 }
 
 export function resolveEvaluationSecondaryArtifactDir(rootDir, name, explicitPath = null) {

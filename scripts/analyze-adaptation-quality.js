@@ -11,6 +11,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import Database from 'better-sqlite3';
 import { scoredTutorTurnAfterTrigger } from './lib/trapTurnConvention.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -56,7 +57,7 @@ function parseArgs(argv = process.argv.slice(2)) {
     out: value('out'),
     markdown: value('markdown') || value('md'),
     dbPath: value('db', process.env.EVAL_DB_PATH || DEFAULT_DB_PATH),
-    logsDir: value('logs-dir', path.join(process.env.EVAL_LOGS_DIR || path.join(REPO_ROOT, 'logs'), 'tutor-dialogues')),
+    logsDir: value('logs-dir', resolveTutorDialoguesDir(REPO_ROOT)),
     json: flag('json'),
   };
 }
