@@ -10,7 +10,11 @@ import {
   summarizeSarcasmDeterminateNegationGrid,
   validateSarcasmDeterminateNegationGridPlan,
 } from '../services/sarcasmDeterminateNegationGrid.js';
-import { followUpCommands, generationCommand } from '../scripts/run-sarcasm-determinate-negation-grid.js';
+import {
+  followUpCommands,
+  generationCommand,
+  isPositiveLocalOutcome,
+} from '../scripts/run-sarcasm-determinate-negation-grid.js';
 import { evaluateRegisterStanceFidelity, findNamedTargetClaim } from '../services/registerStanceFidelity.js';
 import { evaluateNegationRecoveryDeterministic } from '../services/negationRecovery.js';
 
@@ -40,6 +44,7 @@ function completeAnalyses() {
           countsAsInvalidViolation: false,
         },
         recovery: faithful ? { recovered: repeat === 1 } : null,
+        positiveOutcome: repeat !== 3,
       });
     }
   }
@@ -77,6 +82,63 @@ describe('sarcasm determinate-negation grid', () => {
     const incomplete = summarizeSarcasmDeterminateNegationGrid(missingRecovery);
     assert.equal(incomplete.status, 'INCOMPLETE');
     assert.ok(incomplete.errors.some((error) => error.includes('missing negation-recovery verdict')));
+  });
+
+  it('fails closed when a row carries no positive-local-outcome verdict', () => {
+    // Regression: the field was read but never set, so both positive counters
+    // sat at zero and a half-measured report still read COMPLETE.
+    const missingOutcome = completeAnalyses();
+    delete missingOutcome[0].positiveOutcome;
+    const report = summarizeSarcasmDeterminateNegationGrid(missingOutcome);
+    assert.equal(report.status, 'INCOMPLETE');
+    assert.ok(report.errors.some((error) => error.includes('missing positive-local-outcome verdict')));
+
+    const nulled = completeAnalyses();
+    nulled[1].positiveOutcome = null;
+    assert.equal(summarizeSarcasmDeterminateNegationGrid(nulled).status, 'INCOMPLETE');
+  });
+
+  it('counts the recovery-by-outcome 2x2 that estimand 3 asks for', () => {
+    const report = summarizeSarcasmDeterminateNegationGrid(completeAnalyses());
+    const totals = (key) => report.byTarget.reduce((sum, bucket) => sum + bucket[key], 0);
+    // Per target: repeat 1 faithful+recovered+positive, repeat 2 excluded,
+    // repeat 3 faithful+not-recovered+negative. Five targets.
+    assert.equal(totals('recoveredAndPositive'), 5);
+    assert.equal(totals('recoveredAndNegative'), 0);
+    assert.equal(totals('notRecoveredAndPositive'), 0);
+    assert.equal(totals('notRecoveredAndNegative'), 5);
+    assert.equal(totals('recoveredAndPositive') + totals('notRecoveredAndNegative'), totals('recoveryScored'));
+  });
+
+  it('classifies positive local outcomes exactly as the matrix reporter does', () => {
+    // The two definitions must not drift: estimand 3 is a comparison against
+    // the parent grid, so it has to use the parent's verdict vocabulary.
+    for (const verdict of [
+      'candidate_router_breakthrough',
+      'candidate_nonrouter_breakthrough',
+      'productive_frustration_work',
+      'owned_generation_with_residual',
+    ]) {
+      assert.equal(isPositiveLocalOutcome(verdict), true, verdict);
+    }
+    for (const verdict of [
+      'no_breakthrough',
+      'partial_uptake',
+      'missing_target_resistance',
+      'missing_post_learner_turn',
+      '',
+    ]) {
+      assert.equal(isPositiveLocalOutcome(verdict), false, verdict);
+    }
+    const matrixSource = fs.readFileSync(
+      path.join(ROOT, 'scripts/report-charisma-desire-breakthrough-matrix.js'),
+      'utf8',
+    );
+    const body = matrixSource.slice(matrixSource.indexOf('function isPositiveOutcome'));
+    const clause = body.slice(0, body.indexOf('}'));
+    assert.ok(clause.includes("includes('candidate')"), 'matrix reporter changed its candidate clause');
+    assert.ok(clause.includes('productive_frustration_work'), 'matrix reporter changed its frustration clause');
+    assert.ok(clause.includes('owned_generation_with_residual'), 'matrix reporter changed its generation clause');
   });
 
   it('withholds the faithful label from determinate sarcasm without a named target claim', () => {
