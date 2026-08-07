@@ -17,11 +17,8 @@ import {
   parseJudgeResponse,
   resolveRubricYamlPath,
 } from '../services/rubricEvaluator.js';
-import {
-  getEngagementRegisterDefinition,
-  getRegisterRubricPath,
-  resolveEngagementRegister,
-} from '../services/engagementRegisterRegistry.js';
+import { getEngagementRegisterDefinition, resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
+import { resolveStanceInstrument } from '../services/stancePayloadComparability.js';
 import {
   applyNegativeRegisterScoreGuardrails,
   evaluateRegisterStanceFidelity,
@@ -129,12 +126,11 @@ function getRecognitionQuality(turnScore) {
   return typeof entry === 'number' ? entry : (entry?.score ?? null);
 }
 
+// Which rubric scores this stance, including the charismatic fallback, lives in
+// services/stancePayloadComparability.js — the same resolver the cross-stance
+// reports print, so a report cannot name an instrument this judge never opened.
 function rubricPathForRegister(registerName) {
-  const direct = getRegisterRubricPath(registerName);
-  if (direct) return direct;
-  const canonical = resolveEngagementRegister(registerName)?.register || registerName;
-  if (canonical === 'charismatic') return 'config/evaluation-rubric-charisma.yaml';
-  return null;
+  return resolveStanceInstrument(registerName).path;
 }
 
 function makeSlices(row, { registerFilter = null } = {}) {
