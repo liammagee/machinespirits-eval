@@ -271,20 +271,38 @@ function parseVerdict(raw) {
   }
 }
 
-/** Paced call with backoff: rapid back-to-back CLI calls draw exit-1 failures. */
+/**
+ * Paced call with backoff: rapid back-to-back CLI calls draw exit-1 failures.
+ *
+ * Two failure shapes, and they want opposite treatment. A healthy score takes
+ * about seven seconds. The other shape is a hang, where the CLI never answers
+ * and the call sits there until the timeout kills it. Waiting longer does not
+ * rescue a hang, it only makes it dearer, so the leash is short and the
+ * retries are many. A first pass ran at a 120s timeout with 20s-a-step
+ * backoff and spent roughly seven minutes of quota per score collected.
+ */
+const CALL_TIMEOUT_MS = 45000;
+const CALL_ATTEMPTS = 6;
+
+/** How long the last answered call took, so the run reports its own health. */
+let lastCallMs = 0;
+
 async function judgeCall(prompt) {
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < CALL_ATTEMPTS; attempt++) {
+    const start = Date.now();
     try {
-      return await callModelCliText({
+      const text = await callModelCliText({
         provider: 'claude-code',
         model: 'sonnet',
         prompt,
         role: 'guard-validity-probe',
-        timeoutMs: 120000,
+        timeoutMs: CALL_TIMEOUT_MS,
       });
+      lastCallMs = Date.now() - start;
+      return text;
     } catch (error) {
-      console.error(`  call failed (${error.message}), attempt ${attempt + 1}/4`);
-      await new Promise((r) => setTimeout(r, 20000 * (attempt + 1)));
+      console.error(`  call failed (${error.message}), attempt ${attempt + 1}/${CALL_ATTEMPTS}`);
+      await new Promise((r) => setTimeout(r, 5000 * (attempt + 1)));
     }
   }
   return '';
@@ -541,7 +559,7 @@ async function judge(n, family = null) {
       }) + '\n',
     );
     console.log(
-      `${String(queue.length).padStart(3)} left | ${candidate === 'draft' ? 'draft   ' : 'template'} overall=${scores.overall} ${item.id}`,
+      `${String(queue.length).padStart(3)} left | ${candidate === 'draft' ? 'draft   ' : 'template'} overall=${scores.overall} | ${String(Math.round(lastCallMs / 1000)).padStart(3)}s | ${item.id}`,
     );
     await new Promise((r) => setTimeout(r, 8000));
   }
