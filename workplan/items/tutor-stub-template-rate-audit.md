@@ -1,7 +1,7 @@
 ---
 id: tutor-stub-template-rate-audit
 title: Stamp every cited tutor-stub run with its measured template rate
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -27,6 +27,8 @@ links:
   items:
     - guard-regime-fallback-census-at-scale
     - guard-validity-study
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/576
 tags:
   - tutor-stub
   - guards
@@ -190,3 +192,6 @@ first-draft reader result is unchanged.
   tests 69/69, source-only workplan validation 460/460, and formatting/diff
   checks pass. The broad discourse audit retains three pre-existing
   evaluation-store source-fingerprint failures also present on `main`.
+- 2026-08-08 — Closed after PR #576 merged as `42627134`; the corrected paper
+  qualification, catalog stamps, and independent re-audit are present on
+  `main`.

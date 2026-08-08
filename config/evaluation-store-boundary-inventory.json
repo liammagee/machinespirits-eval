@@ -3,7 +3,7 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 9,
+    "liveAndPackageConsumerCount": 5,
     "archivedConsumerCount": 4,
     "testConsumerCount": 14
   },
@@ -54,26 +54,6 @@
     },
     {
       "path": "scripts/prompt-lab.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/run-adaptive-cell-smoke.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/run-adaptive-persistence-smoke.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/run-dialogue-engine-trap-baseline.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/run-id-director-trap-pilot.js",
       "classification": "operational-script",
       "modes": ["namespace"]
     },

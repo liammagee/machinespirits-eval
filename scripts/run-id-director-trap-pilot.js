@@ -30,17 +30,17 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'yaml';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { createHash } from 'crypto';
 
-import * as evaluationStore from '../services/evaluationStore.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import * as idDirectorEngine from '../services/idDirectorEngine.js';
 import * as realLLM from '../services/adaptiveTutor/realLLM.js';
-import { createAdaptiveRun } from '../services/adaptiveTutor/persistence.js';
+import { createAdaptivePersistence } from '../services/adaptiveTutor/persistence.js';
 import { createBudgetTracker } from '../services/adaptiveTutor/budgetTracker.js';
 import { learnerTurnIndexForTutorTurn } from './lib/trapTurnConvention.js';
 import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
+import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -82,7 +82,7 @@ function toHiddenState(scenario) {
   };
 }
 
-async function runScenario({ runId, scenario, profile, profileName, agentConfig, verbose }) {
+async function runScenario({ evaluationStore, runId, scenario, profile, profileName, agentConfig, verbose }) {
   const hidden = toHiddenState(scenario);
   const maxTurns = scenario.max_turns ?? 4;
 
@@ -241,19 +241,16 @@ function parseFlag(args, name, fallback = undefined) {
   return fallback;
 }
 
-async function main() {
-  const args = process.argv.slice(2);
+export async function main(
+  args = process.argv.slice(2),
+  { rootDir = REPO_ROOT, env = process.env, evaluationStore = null, createStore } = {},
+) {
   const profileName = parseFlag(args, 'profile', 'cell_106_id_director_pedagogy_tuned');
   const scenarioFilter = parseFlag(args, 'scenarios');
   const runsPerConfig = Number(parseFlag(args, 'runs', '1'));
   const maxCostUsdRaw = parseFlag(args, 'max-cost');
   const maxCostUsd = maxCostUsdRaw != null ? Number(maxCostUsdRaw) : null;
   const verbose = args.includes('--verbose');
-
-  // Inject evalConfigLoader so the id-director engine sees claude-code as
-  // configured (its CLI manages auth; tutor-core's getProviderConfig flips it
-  // to isConfigured=false because no api_key_env / base_url is set).
-  idDirectorEngine.__setDeps({ tutorConfig: evalConfigLoader });
 
   const profile = evalConfigLoader.getTutorProfile(profileName);
   if (!profile) {
@@ -270,23 +267,6 @@ async function main() {
     hyperparameters: profile.ego?.hyperparameters || {},
   };
 
-  // Route the synthetic learner's callRole('learnerTurn', ...) through the
-  // same provider/model as the tutor side. Without this, realLLM falls back
-  // to module-default config which would cross-route to OpenRouter for a
-  // claude-code cell.
-  realLLM.setActiveCellConfig({
-    provider: agentConfig.provider,
-    modelAlias: agentConfig.model,
-    temperature: agentConfig.hyperparameters?.temperature,
-    maxTokens: agentConfig.hyperparameters?.max_tokens,
-  });
-
-  let tracker = null;
-  if (maxCostUsd != null && maxCostUsd > 0) {
-    tracker = createBudgetTracker({ maxUsd: maxCostUsd });
-    realLLM.setActiveBudgetTracker(tracker);
-  }
-
   let scenarios = loadScenarios('config/adaptive-trap-scenarios.yaml');
   if (scenarioFilter) {
     const want = new Set(scenarioFilter.split(',').map((s) => s.trim()));
@@ -296,62 +276,99 @@ async function main() {
     throw new Error(`no scenarios matched filter '${scenarioFilter ?? '(none)'}'`);
   }
 
-  const totalScenarios = scenarios.length * runsPerConfig;
-  const run = createAdaptiveRun({
-    description: `id-director trap pilot (${profileName})`,
-    totalScenarios,
-    profileName,
-    llmMode: 'real',
-    metadata: {
-      profileName,
-      scenarioSource: 'config/adaptive-trap-scenarios.yaml',
-      maxCostUsd,
-      architecture: 'id_director',
-    },
-  });
-  const runId = run.id;
+  return withEvaluationScriptStore(
+    async (store) => {
+      const { createAdaptiveRun } = createAdaptivePersistence({ evaluationStore: store });
 
-  console.log(
-    `[id-director-trap] runId=${runId} profile=${profileName} ` +
-      `provider=${agentConfig.provider} model=${agentConfig.model} ` +
-      `scenarios=${scenarios.length} runsPerConfig=${runsPerConfig}`,
-  );
-
-  let persisted = 0;
-  let failed = 0;
-  for (const scenario of scenarios) {
-    for (let r = 0; r < runsPerConfig; r++) {
-      const variantId = runsPerConfig > 1 ? `${scenario.id}__r${r}` : scenario.id;
+      let tracker = null;
       try {
-        const out = await runScenario({
-          runId,
-          scenario: { ...scenario, id: variantId },
-          profile,
-          profileName,
-          agentConfig,
-          verbose,
+        // Inject evalConfigLoader so the id-director engine sees claude-code as
+        // configured (its CLI manages auth; tutor-core's getProviderConfig flips it
+        // to isConfigured=false because no api_key_env / base_url is set).
+        idDirectorEngine.__setDeps({ tutorConfig: evalConfigLoader });
+
+        // Route the synthetic learner's callRole('learnerTurn', ...) through the
+        // same provider/model as the tutor side. Without this, realLLM falls back
+        // to module-default config which would cross-route to OpenRouter for a
+        // claude-code cell.
+        realLLM.setActiveCellConfig({
+          provider: agentConfig.provider,
+          modelAlias: agentConfig.model,
+          temperature: agentConfig.hyperparameters?.temperature,
+          maxTokens: agentConfig.hyperparameters?.max_tokens,
         });
-        persisted++;
-        // eslint-disable-next-line no-constant-condition
-        if (verbose || true) {
-          console.log(`[id-director-trap]   ✓ ${variantId} (turns=${out.turns}, dialogue=${out.dialogueId})`);
+
+        if (maxCostUsd != null && maxCostUsd > 0) {
+          tracker = createBudgetTracker({ maxUsd: maxCostUsd });
+          realLLM.setActiveBudgetTracker(tracker);
         }
-      } catch (err) {
-        failed++;
-        console.error(`[id-director-trap]   ✗ ${variantId}: ${err.message}`);
-        if (verbose) console.error(err.stack);
+
+        const totalScenarios = scenarios.length * runsPerConfig;
+        const run = createAdaptiveRun({
+          description: `id-director trap pilot (${profileName})`,
+          totalScenarios,
+          profileName,
+          llmMode: 'real',
+          metadata: {
+            profileName,
+            scenarioSource: 'config/adaptive-trap-scenarios.yaml',
+            maxCostUsd,
+            architecture: 'id_director',
+          },
+        });
+        const runId = run.id;
+
+        console.log(
+          `[id-director-trap] runId=${runId} profile=${profileName} ` +
+            `provider=${agentConfig.provider} model=${agentConfig.model} ` +
+            `scenarios=${scenarios.length} runsPerConfig=${runsPerConfig}`,
+        );
+
+        let persisted = 0;
+        let failed = 0;
+        for (const scenario of scenarios) {
+          for (let runIndex = 0; runIndex < runsPerConfig; runIndex++) {
+            const variantId = runsPerConfig > 1 ? `${scenario.id}__r${runIndex}` : scenario.id;
+            try {
+              const out = await runScenario({
+                evaluationStore: store,
+                runId,
+                scenario: { ...scenario, id: variantId },
+                profile,
+                profileName,
+                agentConfig,
+                verbose,
+              });
+              persisted++;
+              console.log(`[id-director-trap]   ✓ ${variantId} (turns=${out.turns}, dialogue=${out.dialogueId})`);
+            } catch (err) {
+              failed++;
+              console.error(`[id-director-trap]   ✗ ${variantId}: ${err.message}`);
+              if (verbose) console.error(err.stack);
+            }
+          }
+        }
+
+        console.log(`[id-director-trap] runId=${runId} persisted=${persisted}/${totalScenarios} failed=${failed}`);
+        return 0;
+      } finally {
+        realLLM.clearActiveCellConfig();
+        if (tracker) realLLM.clearActiveBudgetTracker();
+        idDirectorEngine.__resetDeps();
       }
-    }
-  }
-
-  realLLM.clearActiveCellConfig();
-  if (tracker) realLLM.clearActiveBudgetTracker();
-  idDirectorEngine.__resetDeps();
-
-  console.log(`[id-director-trap] runId=${runId} persisted=${persisted}/${totalScenarios} failed=${failed}`);
+    },
+    { rootDir, env, evaluationStore, createStore },
+  );
 }
 
-main().catch((err) => {
-  console.error('[id-director-trap] FATAL:', err);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().then(
+    (code) => {
+      process.exitCode = code;
+    },
+    (error) => {
+      console.error('[id-director-trap] FATAL:', error);
+      process.exitCode = 1;
+    },
+  );
+}

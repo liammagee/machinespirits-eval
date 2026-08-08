@@ -1,7 +1,7 @@
 ---
 id: refactor-operational-score-store-ownership
 title: Give operational scoring scripts explicit evaluation-store ownership
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -29,6 +29,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-longitudinal-report-store-ownership
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/575
 tags:
   - refactoring
   - evaluation
@@ -78,3 +80,5 @@ Log:
   risk coverage passes all five groups, and lint, formatting, manifest,
   source-only workplan, static-cycle, diff, and boundary gates pass. Independent
   symmetry review found no payload, rubric, trace-label, or aggregation drift.
+- 2026-08-08 — Closed after PR #575 merged as `f2cb04fc`; the four scoring
+  tools and the nine-consumer boundary ratchet are present on `main`.

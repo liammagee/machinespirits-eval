@@ -263,3 +263,26 @@ store per invocation:
 The executable inventory is now 27 consumers: nine live/package, four archived
 one-offs, and 14 tests. The live remainder is eight operational scripts plus
 the package entrypoint.
+
+## Operational run-launcher ownership follow-up (2026-08-08)
+
+The two adaptive smokes and two trap/pilot launchers now share the explicit
+standalone-script lifecycle:
+
+1. `run-adaptive-cell-smoke` constructs an injected adaptive runner around its
+   owned store, while `run-adaptive-persistence-smoke` constructs the matching
+   persistence adapter. Both retain their isolated temporary databases, mock
+   model admission, trace checks, and persisted-row assertions.
+2. `run-dialogue-engine-trap-baseline` and `run-id-director-trap-pilot` validate
+   their profile and scenario selection before SQLite startup, then use one
+   store for adaptive run creation and every result/trace mutation.
+3. All four export naturally completing entrypoints and publish
+   `process.exitCode` only after the bounded store operation has closed. The two
+   model-capable adapters now clear active model, budget, and id-director
+   dependencies in `finally` on success or failure.
+
+The launchers no longer import the compatibility facade. Deterministic adaptive
+smokes pass against isolated databases, invalid trap profiles remain
+database-free, and the executable inventory is now 23 consumers: five
+live/package, four archived one-offs, and 14 tests. The live remainder is four
+operational scripts plus the package entrypoint.
