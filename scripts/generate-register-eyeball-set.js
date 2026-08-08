@@ -15,10 +15,11 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { callModelCliText } from '../services/cliProviderBridge.js';
 import { buildSetPlan, blindOrder, CONDITIONS, LEARNER_TURNS } from '../services/registerEyeballSet.js';
 
 const DEFAULT_OUT = 'exports/register-eyeball-set';
+const PROVIDER = 'codex';
 const MODEL = 'gpt-5.5';
 const CONCURRENCY = 4;
 const CALL_TIMEOUT_MS = 5 * 60 * 1000;
@@ -35,58 +36,27 @@ function parseArgs(argv) {
   return args;
 }
 
-/** One codex call, one draw. Rejects rather than retrying — a retry would be a second draw. */
-function callCodex(prompt) {
-  return new Promise((resolve, reject) => {
-    const child = spawn('codex', ['exec', '--skip-git-repo-check', '-c', `model=${MODEL}`, prompt], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    let stdout = '';
-    let stderr = '';
-    const timer = setTimeout(() => {
-      child.kill('SIGKILL');
-      reject(new Error(`codex call timed out after ${CALL_TIMEOUT_MS}ms`));
-    }, CALL_TIMEOUT_MS);
-    child.stdout.on('data', (chunk) => {
-      stdout += chunk;
-    });
-    child.stderr.on('data', (chunk) => {
-      stderr += chunk;
-    });
-    child.on('error', (error) => {
-      clearTimeout(timer);
-      reject(error);
-    });
-    child.on('close', (code) => {
-      clearTimeout(timer);
-      if (code !== 0) {
-        reject(new Error(`codex exited ${code}: ${stderr.trim().slice(0, 500)}`));
-        return;
-      }
-      resolve(stdout);
-    });
-  });
-}
-
 /**
- * `codex exec` prints a session banner and a "codex" marker before the reply.
- * Everything after the last marker line is the model's own text.
+ * One call, one draw. Rejects rather than retrying — a retry would be a second
+ * draw, and the set's whole claim is that it did not shop for a better one.
+ *
+ * The call goes through `cliProviderBridge`, which is what every other paid
+ * caller in the repo uses: it spawns from an empty temp directory so the writer
+ * cannot pick up this repo's ambient agent instructions, parses the event
+ * stream rather than scraping the banner out of stdout, and registers the launch
+ * with the model-CLI launch manifest. The committed artefacts under
+ * `tests/fixtures/register-eyeball-set/` predate this and were drawn through a
+ * hand-rolled `codex exec` without that isolation — a rerun is a fresh draw, not
+ * a reproduction, so the fixtures stand as the record of what was read.
  */
-function extractReply(raw) {
-  const lines = raw.split('\n');
-  let start = 0;
-  for (let i = lines.length - 1; i >= 0; i -= 1) {
-    if (/^\[[\d-]{10}T[\d:]{8}\]\s+codex\s*$/.test(lines[i].trim()) || lines[i].trim() === 'codex') {
-      start = i + 1;
-      break;
-    }
-  }
-  return lines
-    .slice(start)
-    .join('\n')
-    .replace(/^\[[\d-]{10}T[\d:]{8}\][^\n]*$/gm, '')
-    .replace(/^\s*tokens used:.*$/gim, '')
-    .trim();
+function callWriter(prompt) {
+  return callModelCliText({
+    provider: PROVIDER,
+    model: MODEL,
+    prompt,
+    role: 'register-eyeball-set-writer',
+    timeoutMs: CALL_TIMEOUT_MS,
+  });
 }
 
 async function runPool(items, worker, concurrency) {
@@ -179,8 +149,7 @@ async function main() {
     cells,
     async (cell) => {
       try {
-        const raw = await callCodex(cell.prompt);
-        cell.reply = extractReply(raw);
+        cell.reply = (await callWriter(cell.prompt)).trim();
         console.log(`  ${cell.id} ${cell.condition}/${cell.learnerKind} — ${cell.reply.length} chars`);
       } catch (error) {
         cell.reply = null;

@@ -11,6 +11,7 @@ import { routeEngagementMode } from '../services/engagementModeRouter.js';
 import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
 import { evaluateRegisterStanceFidelity } from '../services/registerStanceFidelity.js';
+import { lookupMannerPresence } from '../services/registerMannerPresenceReader.js';
 import { summarizeNegativeRegisterEffects } from '../services/negativeRegisterEffectGrid.js';
 import { renderStancePayloadComparability } from '../services/stancePayloadComparability.js';
 
@@ -692,11 +693,22 @@ function analyzeRows(rows, scenarios) {
     const routeHit = routerSelectedRegister === 'charismatic';
     const registerRubricScore = getRegisterRubricScore(row, tutorRegister, resistanceTurn);
     const registerRubricResult = getRegisterRubricResult(row, tutorRegister, resistanceTurn);
+    // Cache-only, so this report stays a zero-call step. Whatever
+    // `scripts/read-negative-register-manner-presence.js` has already read for
+    // this exact pair of turns lands here; anything unread lands as
+    // `not_supplied`, which the effect grid then fails closed on rather than
+    // summing an unmeasured row into a measured total.
+    const presenceReading = lookupMannerPresence({
+      registerName: tutorRegister,
+      learnerMessage: preLearner,
+      tutorMessage,
+    });
     const stanceFidelity = evaluateRegisterStanceFidelity({
       registerName: tutorRegister,
       learnerMessage: preLearner,
       tutorMessage,
       postLearnerMessage: postLearner,
+      presenceReading,
     });
     const scored = scoreTransition({
       targetSignal,
@@ -1657,6 +1669,19 @@ function buildReport({ generatedAt, errors, analyses, effectGrid = null }) {
   }
   lines.push('');
   return lines.join('\n');
+}
+
+/**
+ * The same row walk this report runs, for a caller that needs the turns it
+ * picks. The manner-presence reader has to ask about exactly the turns the
+ * report will later look the answers up for — a cache key is the two turns'
+ * text, so a second copy of the slice convention would silently read one turn
+ * and report on another. Sharing the walk makes that impossible rather than
+ * unlikely.
+ */
+export function analyzeCharismaDesireRuns(runIds) {
+  const scenarios = readYaml(SCENARIO_PATH)?.scenarios || {};
+  return analyzeRows(loadRows(runIds), scenarios);
 }
 
 export function main() {

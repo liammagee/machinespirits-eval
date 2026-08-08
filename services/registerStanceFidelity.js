@@ -1,4 +1,5 @@
 import { getEngagementRegisterDefinition, resolveEngagementRegister } from './engagementRegisterRegistry.js';
+import { normalizeMannerPresenceReading } from './registerMannerPresence.js';
 
 const NEGATIVE_REGISTER_NAMES = new Set(['ironic', 'sarcastic', 'face_threat', 'sarcastic_determinate']);
 
@@ -10,17 +11,39 @@ const NEGATIVE_REGISTER_NAMES = new Set(['ironic', 'sarcastic', 'face_threat', '
 // rule; verdicts stamped with different versions must not be differenced. The
 // pair is reported as `gateRegister` + `gateVersion` — NOT `gate`, which is
 // already taken by the evidence disposition (`faithful_arm_evidence` etc).
-export const STANCE_GATE_VERSION = 'stance-gate/1.0';
+//
+// 2.0 renames the marker part to `cue_compliance` and deletes the phrase list it
+// used to consult alongside the registry cues. A hand-marked set of twenty turns
+// (§6.7; `services/registerEyeballSet.js`) put the list beside two blind readers
+// on the same turns: the readers named the written manner 19/20 and 15/15, the
+// list 1/15. Its errors were not noise but backwards — the ironic list fired on
+// five turns none of which was written ironic, three of them by matching the
+// string "so the", while two turns written with no manner at all scored 100 and
+// passed. A list of words cannot see a manner that is defined by the gap between
+// what a sentence says and what it means, and no better list fixes that. What
+// the part measured all along is whether the tutor used a cue phrase the
+// registry handed it, so that is now its name. Whether the manner is present is
+// a separate question this gate does not answer; a verdict says so in `checks`
+// rather than leaving a reader to assume the label covers it.
+//
+// The presence reading added since (`services/registerMannerPresence.js`)
+// deliberately does NOT bump this. It changes no weight, no cut-point and no
+// label: `label` still reports the surface gate alone, and a verdict computed
+// with no reading is field-for-field what 2.0 produced. Presence rides a second
+// axis — `mannerPresence` and the disposition it feeds — and carries its own
+// version, so the two can be bumped independently and a run that has one
+// measured and the other not stays legible.
+export const STANCE_GATE_VERSION = 'stance-gate/2.0';
 
 // The parts each gate is made of, as data rather than as arithmetic buried in
 // the scorer. Two things depend on this being a table:
 //
 //   1. `required` says outright which parts a faithful turn must carry. It used
 //      to be a side effect of the weights — on the plain gate a turn missing the
-//      register marker could reach only 65 of the 70 band, so the marker was
-//      necessary by accident. The determinate re-weighting (35 -> 25) repealed
-//      that accident without anyone noticing, and marker-less earnest turns
-//      scored 75 and were counted as having held the sarcastic manner.
+//      cue could reach only 65 of the 70 band, so the cue was necessary by
+//      accident. The determinate re-weighting (35 -> 25) repealed that accident
+//      without anyone noticing, and cue-less earnest turns scored 75 and were
+//      counted as having held the sarcastic manner.
 //   2. A report can walk the list and show how passing splits against each part,
 //      so a count that is really counting some other part shows up on the page.
 //      See services/stanceComponentContingency.js.
@@ -28,7 +51,7 @@ export const STANCE_GATE_VERSION = 'stance-gate/1.0';
 // Weights must total 100 and each gate must declare at least one required part;
 // both are pinned by test.
 const PLAIN_GATE_COMPONENTS = Object.freeze([
-  Object.freeze({ key: 'register_marker', weight: 35, required: true }),
+  Object.freeze({ key: 'cue_compliance', weight: 35, required: true }),
   Object.freeze({ key: 'target_discipline', weight: 20, required: false }),
   Object.freeze({ key: 'next_move', weight: 20, required: false }),
   Object.freeze({ key: 'repair_path', weight: 15, required: false }),
@@ -39,7 +62,7 @@ const PLAIN_GATE_COMPONENTS = Object.freeze([
 // every other weight. That is a scoring choice; it must not be a choice about
 // what "held the manner" means, so both parts are marked required.
 const DETERMINATE_GATE_COMPONENTS = Object.freeze([
-  Object.freeze({ key: 'register_marker', weight: 25, required: true }),
+  Object.freeze({ key: 'cue_compliance', weight: 25, required: true }),
   Object.freeze({ key: 'named_target_claim', weight: 25, required: true }),
   Object.freeze({ key: 'target_discipline', weight: 15, required: false }),
   Object.freeze({ key: 'next_move', weight: 15, required: false }),
@@ -90,40 +113,26 @@ const STANCE_FIDELITY_GATE_BY_LABEL = {
   },
 };
 
-const REGISTER_MARKERS = {
-  ironic: [
-    /\bas if\b/i,
-    /\bapparently\b/i,
-    /\bconvenient(?:ly)?\b/i,
-    /\binteresting\b/i,
-    /\bthe funny thing\b/i,
-    /\bnot exactly\b/i,
-    /\bso the\b/i,
-    /\ba little too\b/i,
-  ],
-  sarcastic: [
-    /\bapparently\b/i,
-    /\bconvenient(?:ly)?\b/i,
-    /\bwonderful\b/i,
-    /\beveryone clap\b/i,
-    /\bpaper crown\b/i,
-    /\bmagic(?:ally)?\b/i,
-    /\bmotivational poster\b/i,
-    /\bnice trick\b/i,
-    /\bif .{0,80}\bthen apparently\b/i,
-  ],
-  face_threat: [
-    /\bavoid(?:ing)?\b/i,
-    /\bdodg(?:e|ing)\b/i,
-    /\bhiding\b/i,
-    /\bprotecting (?:yourself|itself)\b/i,
-    /\bescape route\b/i,
-    /\bshut that escape route down\b/i,
-    /\bnot doing the work\b/i,
-    /\bthis move lets you\b/i,
-  ],
-};
-REGISTER_MARKERS.sarcastic_determinate = REGISTER_MARKERS.sarcastic;
+// What this gate read and what it did not, carried on every verdict so a
+// consumer cannot mistake a pass for a reading of the manner. `cue_compliance`
+// is always measured here. `manner_presence` is measured only when the caller
+// hands in a reading — nothing in this file can answer it (§6.7), which is the
+// whole point of the field.
+function stanceGateChecks(mannerPresence) {
+  return Object.freeze({
+    cue_compliance: 'measured',
+    manner_presence:
+      mannerPresence?.status === 'present' || mannerPresence?.status === 'absent' ? 'measured' : 'not_read',
+  });
+}
+
+// Present on every verdict, including the ones that score nothing, so a
+// consumer never has to tell "this gate did not read for manner" apart from
+// "this field is missing".
+const STANCE_GATE_CHECKS_NOT_APPLICABLE = Object.freeze({
+  cue_compliance: 'not_read',
+  manner_presence: 'not_read',
+});
 
 // The determinate variant's extra requirement: the sarcastic beat names its
 // target claim, either by quoting the learner or by an explicit naming frame.
@@ -292,6 +301,23 @@ function capDimension(scores, adjustments, key, maxScore, reason) {
   adjustments.push({ key, maxScore, reason });
 }
 
+/**
+ * Turn a verdict into what an effect estimate may do with it.
+ *
+ * Two axes, composed here rather than in each report. The label says whether the
+ * tutor used a handed cue and made the surface moves; the presence reading says
+ * whether the manner is actually in the turn. Only a row that passes both
+ * belongs in the faithful arm.
+ *
+ * The third case is the one that matters. A faithful label with no reading is
+ * neither `include` nor `exclude`: it is `include_presence_unmeasured`, and
+ * `presenceMeasured` is false. `countsAsArmEvidence` stays true, so nothing that
+ * reads the gate today changes behaviour — but a report that wants to license
+ * the faithful-arm estimand has to handle a disposition it has never seen,
+ * instead of quietly summing an unmeasured row into a measured total. Every
+ * `face_threat` row lands here permanently and on purpose: the merged edged
+ * question does not cover it and no validated question does (§6.7).
+ */
 export function classifyRegisterStanceEvidence(stanceFidelity) {
   if (!stanceFidelity?.applies) {
     return {
@@ -300,18 +326,37 @@ export function classifyRegisterStanceEvidence(stanceFidelity) {
       countsAsExcludedNoncompliance: false,
       countsAsInvalidViolation: false,
       effectEstimateDisposition: 'not_applicable',
+      presenceMeasured: false,
     };
   }
 
-  return (
-    STANCE_FIDELITY_GATE_BY_LABEL[stanceFidelity.label] || {
-      gate: 'excluded_noncompliant',
+  const base = STANCE_FIDELITY_GATE_BY_LABEL[stanceFidelity.label] || {
+    gate: 'excluded_noncompliant',
+    countsAsArmEvidence: false,
+    countsAsExcludedNoncompliance: true,
+    countsAsInvalidViolation: false,
+    effectEstimateDisposition: 'exclude_unknown_label',
+  };
+
+  const presence = stanceFidelity.mannerPresence?.status || 'unread';
+  const presenceMeasured = presence === 'present' || presence === 'absent';
+
+  // A reading does not rescue a turn the surface gate already excluded, so the
+  // presence axis only bites where the label would otherwise admit the row.
+  if (!base.countsAsArmEvidence) return { ...base, presenceMeasured };
+
+  if (presence === 'absent') {
+    return {
+      gate: 'excluded_manner_absent',
       countsAsArmEvidence: false,
       countsAsExcludedNoncompliance: true,
       countsAsInvalidViolation: false,
-      effectEstimateDisposition: 'exclude_unknown_label',
-    }
-  );
+      effectEstimateDisposition: 'exclude_manner_absent',
+      presenceMeasured: true,
+    };
+  }
+  if (presence === 'present') return { ...base, presenceMeasured: true };
+  return { ...base, effectEstimateDisposition: 'include_presence_unmeasured', presenceMeasured: false };
 }
 
 export function applyNegativeRegisterScoreGuardrails({ registerName, scores, tutorMessage, postLearnerMessage = '' }) {
@@ -353,11 +398,23 @@ export function applyNegativeRegisterScoreGuardrails({ registerName, scores, tut
   return { scores: guarded, adjustments };
 }
 
+/**
+ * @param {object} args
+ * @param {object} [args.presenceReading] an answer to the presence question,
+ *   already obtained. This function stays pure and synchronous — it is called
+ *   inside the scene loop in `dramaticDerivation/strategyLedger.js` and at
+ *   scoring time in `scripts/evaluate-register-rubric.js`, neither of which can
+ *   afford a network round trip here — so the caller fetches the reading with
+ *   `services/registerMannerPresenceReader.js` and passes it in. Omitting it is
+ *   fine and is what every caller does today; the verdict then says outright
+ *   that the manner went unread rather than assuming either answer.
+ */
 export function evaluateRegisterStanceFidelity({
   registerName,
   tutorMessage,
   learnerMessage = '',
   postLearnerMessage = '',
+  presenceReading = null,
 }) {
   const canonicalRegister = canonicalRegisterName(registerName);
   if (!NEGATIVE_REGISTER_NAMES.has(canonicalRegister)) {
@@ -374,14 +431,13 @@ export function evaluateRegisterStanceFidelity({
       missing: [],
       missingRequired: [],
       forbiddenFound: [],
+      mannerPresence: normalizeMannerPresenceReading(null, { registerName: canonicalRegister }),
+      checks: STANCE_GATE_CHECKS_NOT_APPLICABLE,
       ...classifyRegisterStanceEvidence({ applies: false }),
     };
   }
 
-  const markerHits = [
-    ...findPhraseMatches(tutorMessage, stanceFidelityCues(canonicalRegister)),
-    ...findMatches(tutorMessage, REGISTER_MARKERS[canonicalRegister] || []),
-  ];
+  const cueHits = findPhraseMatches(tutorMessage, stanceFidelityCues(canonicalRegister));
   const targetHits = findMatches(tutorMessage, TARGET_DISCIPLINE_PATTERNS);
   const nextMoveHits = findMatches(tutorMessage, NEXT_MOVE_PATTERNS);
   const repairHits = findMatches(`${tutorMessage}\n${postLearnerMessage}`, REPAIR_PATH_PATTERNS);
@@ -394,9 +450,10 @@ export function evaluateRegisterStanceFidelity({
 
   const determinate = canonicalRegister === 'sarcastic_determinate';
   const namedClaim = determinate ? findNamedTargetClaim(tutorMessage, learnerMessage) : null;
+  const mannerPresence = normalizeMannerPresenceReading(presenceReading, { registerName: canonicalRegister });
 
   const present = {
-    register_marker: markerHits.length > 0,
+    cue_compliance: cueHits.length > 0,
     named_target_claim: Boolean(namedClaim?.named),
     target_discipline: targetHits.length > 0,
     next_move: nextMoveHits.length > 0,
@@ -429,12 +486,17 @@ export function evaluateRegisterStanceFidelity({
     passed: label === 'faithful',
     label,
     score,
-    signals: [...new Set([...markerHits, ...targetHits, ...nextMoveHits, ...repairHits])],
+    signals: [...new Set([...cueHits, ...targetHits, ...nextMoveHits, ...repairHits])],
     missing,
     // Carried separately from `missing` so a report can check the gate's own
     // rule against its own rows: no faithful verdict may list one of these.
     missingRequired,
     forbiddenFound,
+    // The surface label above is about cue compliance and speech acts only.
+    // This is the separate answer to "is the manner there", and it is the one
+    // the faithful-arm estimand needs. Never folded into `score`.
+    mannerPresence,
+    checks: stanceGateChecks(mannerPresence),
     ...(determinate ? { namedTargetClaim: namedClaim } : {}),
   };
   return {

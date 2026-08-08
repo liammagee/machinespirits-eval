@@ -28,6 +28,52 @@ const READER_MODEL = 'claude-sonnet-5';
 const CONCURRENCY = 4;
 
 /**
+ * The phrase list this set was built to audit, copied here verbatim from
+ * `REGISTER_MARKERS` in `services/registerStanceFidelity.js` at gate version
+ * `stance-gate/1.0`. The audit found against it (§6.7) and gate 2.0 deleted it,
+ * so the script keeps its own pinned copy: an audit that reaches into live code
+ * stops reproducing its own finding the moment that code is fixed.
+ *
+ * The `score` and `passed` columns still come from the live gate and still move
+ * with it. Their committed values in `tests/fixtures/register-eyeball-set/` are
+ * gate 1.0's; a rerun under 2.0 will not reproduce them, and the two must not be
+ * differenced.
+ */
+const AUDITED_PHRASE_LIST = Object.freeze({
+  ironic: [
+    /\bas if\b/i,
+    /\bapparently\b/i,
+    /\bconvenient(?:ly)?\b/i,
+    /\binteresting\b/i,
+    /\bthe funny thing\b/i,
+    /\bnot exactly\b/i,
+    /\bso the\b/i,
+    /\ba little too\b/i,
+  ],
+  sarcastic: [
+    /\bapparently\b/i,
+    /\bconvenient(?:ly)?\b/i,
+    /\bwonderful\b/i,
+    /\beveryone clap\b/i,
+    /\bpaper crown\b/i,
+    /\bmagic(?:ally)?\b/i,
+    /\bmotivational poster\b/i,
+    /\bnice trick\b/i,
+    /\bif .{0,80}\bthen apparently\b/i,
+  ],
+  face_threat: [
+    /\bavoid(?:ing)?\b/i,
+    /\bdodg(?:e|ing)\b/i,
+    /\bhiding\b/i,
+    /\bprotecting (?:yourself|itself)\b/i,
+    /\bescape route\b/i,
+    /\bshut that escape route down\b/i,
+    /\bnot doing the work\b/i,
+    /\bthis move lets you\b/i,
+  ],
+});
+
+/**
  * One plain sentence per manner — what a person marking the set would be told,
  * and nothing more. Definitions describe the move, never the wording, so a
  * reader has to read rather than match.
@@ -115,7 +161,7 @@ function renderReport(rows) {
     '# Register eyeball set — machine readings',
     '',
     `Reader: \`${READER_PROVIDER}/${READER_MODEL}\`, blind to the condition, one question at a time.`,
-    'Word list: `evaluateRegisterStanceFidelity`, the marker component only.',
+    'Word list: the phrase list gate 1.0 matched on, pinned in this script. Gate score from the live gate.',
     '',
     '| id | wrote | reader: ironic | reader: sarcastic | reader: face threat | word list | gate score |',
     '| --- | --- | --- | --- | --- | --- | --- |',
@@ -197,9 +243,10 @@ async function main() {
         ...row,
         wordList: {
           gateManner,
-          markerFound: !(verdict.missing || []).includes('register_marker'),
+          markerFound: (AUDITED_PHRASE_LIST[gateManner] || []).some((pattern) => pattern.test(cell.reply)),
           score: verdict.score,
           passed: verdict.passed,
+          gateVersion: verdict.gateVersion,
         },
       };
     });
