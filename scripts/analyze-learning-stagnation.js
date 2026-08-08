@@ -19,6 +19,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -108,7 +109,7 @@ function getFlag(name, defaultValue = false) {
 }
 
 const dbOverride = getOption('db');
-const logsDir = getOption('logs', path.join(ROOT_DIR, 'logs', 'tutor-dialogues'));
+const logsDir = getOption('logs', resolveTutorDialoguesDir(ROOT_DIR));
 const judge = getOption('judge');
 const metricVersion = getOption('metric-version', 'within-test-v2-aligned-proxy');
 const jsonOutPath = getOption('json');

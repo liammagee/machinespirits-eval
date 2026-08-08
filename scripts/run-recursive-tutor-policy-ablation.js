@@ -16,6 +16,7 @@ import yaml from 'yaml';
 import { runReplay } from './replay-discursive-transcript.js';
 import { buildReplayPanelPackage } from './run-discursive-replay-panel.js';
 import { summarizePanelScores } from './run-discursive-replay-loop.js';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
@@ -1020,7 +1021,7 @@ export async function runPolicyAblation(rawArgs = process.argv.slice(2)) {
     policyMemoryMaxChars: args.policyMemoryMaxChars,
     itemIds: [],
     runId: null,
-    db: path.join(ROOT, 'data', 'evaluations.db'),
+    db: resolveEvaluationDbPath(ROOT),
     feedbackByItem: {},
   };
   const s0OutDir = path.join(args.outDir, `${safeSlug(familyId)}__${safeSlug(siblingId)}__S0-no-policy-replay`);

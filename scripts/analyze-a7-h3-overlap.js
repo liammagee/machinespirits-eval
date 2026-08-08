@@ -36,6 +36,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -44,7 +45,7 @@ const args = process.argv.slice(2);
 const tsIdx = args.indexOf('--timestamp');
 const TIMESTAMP = tsIdx !== -1 ? args[tsIdx + 1] : '1777173286';
 
-const evalDb = new Database(path.join(REPO_ROOT, 'data', 'evaluations.db'), { readonly: true });
+const evalDb = new Database(resolveEvaluationDbPath(REPO_ROOT), { readonly: true });
 const tutorDb = new Database(
   process.env.AUTH_DB_PATH ||
     path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite'),

@@ -53,6 +53,7 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -69,7 +70,7 @@ function expandHome(p) {
   return p && p.startsWith('~') ? path.join(os.homedir(), p.slice(1)) : p;
 }
 
-const DB_PATH = expandHome(getOption('db', process.env.EVAL_DB_PATH || path.join(ROOT, 'data', 'evaluations.db')));
+const DB_PATH = expandHome(getOption('db', resolveEvaluationDbPath(ROOT)));
 const RUNS = getOption('runs', 'eval-2026-03-01-aea2abfb,eval-2026-03-02-45163390')
   .split(',')
   .map((s) => s.trim())

@@ -33,6 +33,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { execSync } from 'node:child_process';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -140,7 +141,7 @@ function loadTranscript(runId, scenario) {
     return null;
   }
   if (!dialogueId) return null;
-  const logPath = path.join(ROOT, 'logs', 'tutor-dialogues', `${dialogueId}.json`);
+  const logPath = path.join(resolveTutorDialoguesDir(ROOT), `${dialogueId}.json`);
   if (!fs.existsSync(logPath)) return null;
   let log;
   try {

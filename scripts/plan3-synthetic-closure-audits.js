@@ -13,7 +13,12 @@ import path from 'node:path';
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { resolveTutorDialoguesDirCandidates } from '../services/evaluationDataPaths.js';
+import {
+  resolveEvaluationDbPath,
+  resolvePathFromRoot,
+  resolveTutorDialoguesDir,
+  resolveTutorDialoguesDirCandidates,
+} from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -94,15 +99,14 @@ function discoverInputs(args) {
   const dbPath =
     args.dbPath ||
     firstExisting([
-      process.env.EVAL_DB_PATH,
-      path.join(ROOT_DIR, 'data', 'evaluations.db'),
-      ROOT_DIR === STABLE_ROOT ? null : path.join(STABLE_ROOT, 'data', 'evaluations.db'),
+      resolveEvaluationDbPath(ROOT_DIR),
+      ROOT_DIR === STABLE_ROOT ? null : resolvePathFromRoot(STABLE_ROOT, 'data/evaluations.db'),
     ]);
   const logsDir =
     args.logsDir ||
     firstExisting([
       ...resolveTutorDialoguesDirCandidates(ROOT_DIR),
-      ROOT_DIR === STABLE_ROOT ? null : path.join(STABLE_ROOT, 'logs', 'tutor-dialogues'),
+      ROOT_DIR === STABLE_ROOT ? null : resolveTutorDialoguesDir(STABLE_ROOT),
     ]);
   return {
     dbPath,
