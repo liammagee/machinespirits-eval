@@ -1,24 +1,24 @@
 {
-  "generated": "2026-08-07T22:47:22.494Z",
+  "generated": "2026-08-07T23:32:26.241Z",
   "counts": {
-    "total": 455,
+    "total": 458,
     "byStatus": {
-      "done": 414,
+      "done": 416,
       "blocked": 6,
       "dropped": 8,
       "active": 5,
       "archived": 4,
-      "triaged": 10,
+      "triaged": 11,
       "review": 8
     },
     "byType": {
       "research": 74,
-      "experiment": 74,
+      "experiment": 76,
       "infra": 95,
       "maintenance": 192,
       "content": 3,
       "ops": 10,
-      "paper": 7
+      "paper": 8
     }
   },
   "items": [
@@ -206,6 +206,34 @@
         "tutor-stub",
         "guards"
       ]
+    },
+    {
+      "id": "ironic-question-flood-target",
+      "title": "Irony against question-flooding — the one cell worth a second draw",
+      "status": "triaged",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "Step 1 is a second draw of one cell already run — three rows, ironic tutor against question-flooding, same stacks and judges — reported through the existing grid reporter under the plain stance gate. It passes only if the report states the two draws' counts side by side and the fields that make them comparable are read out of the database rather than asserted. No paper claim from step 1; a claim needs step 2, and step 2 needs a size argued from step 1's spread.",
+      "claim_status": "speculative",
+      "links": {
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "runs": [
+          "eval-2026-08-05-87fe3664",
+          "eval-2026-07-02-5c4d52e6",
+          "eval-2026-07-02-67be317c"
+        ],
+        "items": [
+          "negative-register-effect-estimation-grid",
+          "sarcasm-mood-floor-replication",
+          "sarcasm-determinate-negation-grid"
+        ]
+      }
     },
     {
       "id": "sarcasm-worktree-shadow-db-disposal",
@@ -14807,6 +14835,28 @@
       ]
     },
     {
+      "id": "register-axis-confound-paper-edits",
+      "title": "Say which \"registers\" are tones and which are arguments, in the paper",
+      "status": "done",
+      "type": "paper",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "§6.7 states, where the register list is introduced, that its entries span argumentative demands, tones and delivery styles; and the judge-repair sentence marks 68.1 as coming from a different rubric than the three negative arms. No figure moves.",
+      "claim_status": "exploratory",
+      "links": {
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "items": [
+          "stance-payload-comparability",
+          "sarcasm-mood-floor-replication"
+        ]
+      }
+    },
+    {
       "id": "repetition-audit-misses-reworded-stall",
       "title": "The repetition audit catches verbatim looping and misses a reworded stall",
       "status": "done",
@@ -14935,6 +14985,37 @@
         "stance-fidelity",
         "determinate-negation"
       ]
+    },
+    {
+      "id": "sarcasm-mood-floor-replication",
+      "title": "Does the mood floor reproduce? — replication check on the composition split",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "A repo-resident report re-scores cell 202's plain mood rows from both runs under one gate and one fold, reads the provenance fields out of the database rather than asserting a match, and reports whether the 0/6 that motivated this sub-line reproduces. Any claim lands in paper §6.7 first.",
+      "claim_status": "exploratory",
+      "links": {
+        "notes": [
+          "notes/2026-08-08-sarcasm-mood-floor-replication-preregistration.md",
+          "notes/2026-08-07-sarcasm-precondition-preregistration.md",
+          "notes/2026-08-06-sarcasm-determinate-negation-preregistration.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "runs": [
+          "eval-2026-08-06-4de45d05",
+          "eval-2026-08-07-e3dffab2"
+        ],
+        "items": [
+          "sarcasm-precondition-claim-bearing-mood",
+          "sarcasm-determinate-negation-grid"
+        ]
+      }
     },
     {
       "id": "sarcasm-precondition-claim-bearing-mood",

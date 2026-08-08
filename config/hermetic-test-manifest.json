@@ -413,6 +413,7 @@
         "tests/runPoeticsProductionBatch.test.js",
         "tests/sarcasmDeterminateGateProvenance.test.js",
         "tests/sarcasmDeterminateNegationGrid.test.js",
+        "tests/sarcasmMoodFloorReplication.test.js",
         "tests/sarcasmPreconditionGrid.test.js",
         "tests/scaffoldLifecycle.test.js",
         "tests/scorePoeticsCalibration.test.js",
