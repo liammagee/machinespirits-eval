@@ -405,15 +405,23 @@ export function createStatisticsRepository({
     const scenarios = new Set([...results1.map((row) => row.scenario_id), ...results2.map((row) => row.scenario_id)]);
 
     for (const scenarioId of scenarios) {
-      const result1 = results1.find((row) => row.scenario_id === scenarioId) || {};
-      const result2 = results2.find((row) => row.scenario_id === scenarioId) || {};
+      const result1 = results1.find((row) => row.scenario_id === scenarioId);
+      const result2 = results2.find((row) => row.scenario_id === scenarioId);
+      const config1Score = result1?.avg_score ?? null;
+      const config2Score = result2?.avg_score ?? null;
+      const hasCompletePair = config1Score !== null && config2Score !== null;
       comparison.push({
         scenarioId,
-        config1Score: result1.avg_score || null,
-        config2Score: result2.avg_score || null,
-        difference: (result1.avg_score || 0) - (result2.avg_score || 0),
-        winner:
-          result1.avg_score > result2.avg_score ? 'config1' : result2.avg_score > result1.avg_score ? 'config2' : 'tie',
+        config1Score,
+        config2Score,
+        difference: hasCompletePair ? config1Score - config2Score : null,
+        winner: hasCompletePair
+          ? config1Score > config2Score
+            ? 'config1'
+            : config2Score > config1Score
+              ? 'config2'
+              : 'tie'
+          : null,
       });
     }
 
@@ -423,6 +431,7 @@ export function createStatisticsRepository({
         config1Wins: comparison.filter((entry) => entry.winner === 'config1').length,
         config2Wins: comparison.filter((entry) => entry.winner === 'config2').length,
         ties: comparison.filter((entry) => entry.winner === 'tie').length,
+        incomplete: comparison.filter((entry) => entry.winner === null).length,
         config1AvgScore: results1.reduce((sum, row) => sum + row.avg_score, 0) / (results1.length || 1),
         config2AvgScore: results2.reduce((sum, row) => sum + row.avg_score, 0) / (results2.length || 1),
       },
