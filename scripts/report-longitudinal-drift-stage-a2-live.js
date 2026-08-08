@@ -34,6 +34,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_JSON = path.join(ROOT, 'exports/longitudinal-drift-stage-a2.json');
 const OUT_MD = path.join(ROOT, 'exports/longitudinal-drift-stage-a2.md');
@@ -44,8 +46,7 @@ const multiturnScenarioId = (n) => `longitudinal_drift_session_${n}_multiturn`;
 const VALIDITY_CURRENT_RATE = 2 / 3; // pad-ON current-reference rate must reach this
 const ADAPTATION_GAP_ROWS = 2 / 3; // pad-ON stale-rate < pad-OFF stale-rate, gap >= this fraction of eligible rows
 
-async function loadDeps() {
-  const evaluationStore = await import('../services/evaluationStore.js');
+async function loadDeps(evaluationStore = null) {
   const { getScenario } = await import('../services/evalConfigLoader.js');
   const checker = await import('../services/longitudinalDriftChecker.js');
   const { getWritingPad, getRecognitionMoments } = await import('../tutor-core/services/writingPadService.js');
@@ -164,136 +165,145 @@ function padContentTrace(deps, learnerId) {
 }
 
 async function runScore(args) {
-  const deps = await loadDeps();
   const learnerIdIdx = args.indexOf('--learner-id');
   const learnerId = learnerIdIdx >= 0 ? args[learnerIdIdx + 1] : null;
   const triples = parseScoreTriples(args);
   if (triples.length === 0) {
     console.error('No padon:/padoff: triples supplied.');
-    process.exit(1);
+    return 1;
   }
 
-  const padon = await scoreArm(deps, 'padon', triples);
-  const padoff = await scoreArm(deps, 'padoff', triples);
-  const trace = padContentTrace(deps, learnerId);
+  return withEvaluationScriptStore(
+    async (evaluationStore) => {
+      const deps = await loadDeps(evaluationStore);
 
-  // Frozen §7.4 gates.
-  const validityPass =
-    padon.summary.currentReferenceRate != null && padon.summary.currentReferenceRate >= VALIDITY_CURRENT_RATE;
+      const padon = await scoreArm(deps, 'padon', triples);
+      const padoff = await scoreArm(deps, 'padoff', triples);
+      const trace = padContentTrace(deps, learnerId);
 
-  const padOnStale = padon.summary.staleReferenceRate;
-  const padOffStale = padoff.summary.staleReferenceRate;
-  const staleEligible = Math.max(padon.summary.staleEligibleRows, padoff.summary.staleEligibleRows);
-  const rateGap = padOnStale != null && padOffStale != null ? padOffStale - padOnStale : null;
-  const rowGap = rateGap != null ? rateGap * staleEligible : null;
-  const adaptationDirectional =
-    padOnStale != null &&
-    padOffStale != null &&
-    padOnStale < padOffStale &&
-    rowGap != null &&
-    rowGap >= ADAPTATION_GAP_ROWS;
+      // Frozen §7.4 gates.
+      const validityPass =
+        padon.summary.currentReferenceRate != null && padon.summary.currentReferenceRate >= VALIDITY_CURRENT_RATE;
 
-  const structuralRedFlag = padOffStale != null && padOffStale > 0;
+      const padOnStale = padon.summary.staleReferenceRate;
+      const padOffStale = padoff.summary.staleReferenceRate;
+      const staleEligible = Math.max(padon.summary.staleEligibleRows, padoff.summary.staleEligibleRows);
+      const rateGap = padOnStale != null && padOffStale != null ? padOffStale - padOnStale : null;
+      const rowGap = rateGap != null ? rateGap * staleEligible : null;
+      const adaptationDirectional =
+        padOnStale != null &&
+        padOffStale != null &&
+        padOnStale < padOffStale &&
+        rowGap != null &&
+        rowGap >= ADAPTATION_GAP_ROWS;
 
-  const report = {
-    checkerVersion: deps.checker.LONGITUDINAL_DRIFT_CHECKER_VERSION,
-    thresholds: { validityCurrentRate: VALIDITY_CURRENT_RATE, adaptationGapRows: ADAPTATION_GAP_ROWS },
-    padon,
-    padoff,
-    gates: {
-      validity: { pass: validityPass, padOnCurrentRate: padon.summary.currentReferenceRate },
-      adaptationDirectional: {
-        consistentWithSignal: adaptationDirectional,
-        padOnStaleRate: padOnStale,
-        padOffStaleRate: padOffStale,
-        rateGap,
-        rowGap,
-        note: 'directional-report-only at this n; neither confirms nor refutes',
-      },
-      structuralRedFlag,
+      const structuralRedFlag = padOffStale != null && padOffStale > 0;
+
+      const report = {
+        checkerVersion: deps.checker.LONGITUDINAL_DRIFT_CHECKER_VERSION,
+        thresholds: { validityCurrentRate: VALIDITY_CURRENT_RATE, adaptationGapRows: ADAPTATION_GAP_ROWS },
+        padon,
+        padoff,
+        gates: {
+          validity: { pass: validityPass, padOnCurrentRate: padon.summary.currentReferenceRate },
+          adaptationDirectional: {
+            consistentWithSignal: adaptationDirectional,
+            padOnStaleRate: padOnStale,
+            padOffStaleRate: padOffStale,
+            rateGap,
+            rowGap,
+            note: 'directional-report-only at this n; neither confirms nor refutes',
+          },
+          structuralRedFlag,
+        },
+        padContentTrace: trace,
+      };
+
+      fs.writeFileSync(OUT_JSON, JSON.stringify(report, null, 2));
+
+      const fmtRate = (r) => (r == null ? 'n/a' : r.toFixed(2));
+      const armLine = (label, s) =>
+        `| ${label} | ${s.usable}/${s.n} | ${s.currentReferenceHits}/${s.usable} (${fmtRate(s.currentReferenceRate)}) | ` +
+        `${s.staleReferenceHits}/${s.staleEligibleRows} (${fmtRate(s.staleReferenceRate)}) | ${s.instrumentFailures} |`;
+
+      const md = [
+        '# Longitudinal Drift — Stage A2 (pad-feeding, multi-turn) live scoring',
+        '',
+        `Checker \`longitudinalDriftChecker@${report.checkerVersion}\` · deterministic, judge-free · opening tutor turn only`,
+        '',
+        '| Arm | Usable | Current-ref hits (rate) | Stale-ref hits (rate) | Instrument failures |',
+        '| --- | ---: | :---: | :---: | ---: |',
+        armLine('pad-ON (cell_40, learner-id)', padon.summary),
+        armLine('pad-OFF (cell_93, no learner-id)', padoff.summary),
+        '',
+        '## Frozen §7.4 gates',
+        '',
+        `- **Instrument-precondition (session-1 gate)**: applied separately via \`--gate\` before this scoring; ` +
+          `pad-content trace below records the settled count.`,
+        `- **Primary-outcome validity** (pad-ON current-reference ≥ ${VALIDITY_CURRENT_RATE.toFixed(2)}): ` +
+          `**${validityPass ? 'PASS' : 'FAIL'}** (pad-ON current-reference ${fmtRate(padon.summary.currentReferenceRate)}).`,
+        `- **Adaptation signal** (directional-report-only; pad-ON stale < pad-OFF stale with gap ≥ ${ADAPTATION_GAP_ROWS.toFixed(2)} rows): ` +
+          `pad-ON stale ${fmtRate(padOnStale)}, pad-OFF stale ${fmtRate(padOffStale)}, row-gap ${rowGap == null ? 'n/a' : rowGap.toFixed(2)} — ` +
+          `${adaptationDirectional ? 'CONSISTENT WITH a signal (not confirmed at this n)' : 'no directional signal'}.`,
+        `- **Structural red flag** (pad-OFF stale > 0): ${structuralRedFlag ? '**RAISED**' : 'none'}.`,
+        '',
+        '## Pad-content secondary trace (pad-ON)',
+        '',
+        trace == null
+          ? '_(no learner-id supplied)_'
+          : !trace.padExists
+            ? `_(no pad row for ${trace.learnerId})_`
+            : [
+                `Pad \`${trace.learnerId}\`: total_recognition_moments **${trace.totalRecognitionMoments}**, ` +
+                  `raw moments **${trace.rawMomentCount}**, updated ${trace.updatedAt}.`,
+                '',
+                ...(trace.moments.length
+                  ? [
+                      '| voice | need | strategy | transformative | layer |',
+                      '| --- | --- | --- | :---: | --- |',
+                      ...trace.moments.map(
+                        (m) =>
+                          `| ${m.voice ?? '—'} | ${m.need ?? '—'} | ${m.strategy ?? '—'} | ${m.transformative} | ${m.layer ?? '—'} |`,
+                      ),
+                    ]
+                  : ['_(pad exists but no recognition moments recorded)_']),
+              ].join('\n'),
+        '',
+      ].join('\n');
+
+      fs.writeFileSync(OUT_MD, md);
+      console.log(md);
+      console.log(`\nWrote ${path.relative(ROOT, OUT_JSON)} and ${path.relative(ROOT, OUT_MD)}`);
+      return 0;
     },
-    padContentTrace: trace,
-  };
-
-  fs.writeFileSync(OUT_JSON, JSON.stringify(report, null, 2));
-
-  const fmtRate = (r) => (r == null ? 'n/a' : r.toFixed(2));
-  const armLine = (label, s) =>
-    `| ${label} | ${s.usable}/${s.n} | ${s.currentReferenceHits}/${s.usable} (${fmtRate(s.currentReferenceRate)}) | ` +
-    `${s.staleReferenceHits}/${s.staleEligibleRows} (${fmtRate(s.staleReferenceRate)}) | ${s.instrumentFailures} |`;
-
-  const md = [
-    '# Longitudinal Drift — Stage A2 (pad-feeding, multi-turn) live scoring',
-    '',
-    `Checker \`longitudinalDriftChecker@${report.checkerVersion}\` · deterministic, judge-free · opening tutor turn only`,
-    '',
-    '| Arm | Usable | Current-ref hits (rate) | Stale-ref hits (rate) | Instrument failures |',
-    '| --- | ---: | :---: | :---: | ---: |',
-    armLine('pad-ON (cell_40, learner-id)', padon.summary),
-    armLine('pad-OFF (cell_93, no learner-id)', padoff.summary),
-    '',
-    '## Frozen §7.4 gates',
-    '',
-    `- **Instrument-precondition (session-1 gate)**: applied separately via \`--gate\` before this scoring; ` +
-      `pad-content trace below records the settled count.`,
-    `- **Primary-outcome validity** (pad-ON current-reference ≥ ${VALIDITY_CURRENT_RATE.toFixed(2)}): ` +
-      `**${validityPass ? 'PASS' : 'FAIL'}** (pad-ON current-reference ${fmtRate(padon.summary.currentReferenceRate)}).`,
-    `- **Adaptation signal** (directional-report-only; pad-ON stale < pad-OFF stale with gap ≥ ${ADAPTATION_GAP_ROWS.toFixed(2)} rows): ` +
-      `pad-ON stale ${fmtRate(padOnStale)}, pad-OFF stale ${fmtRate(padOffStale)}, row-gap ${rowGap == null ? 'n/a' : rowGap.toFixed(2)} — ` +
-      `${adaptationDirectional ? 'CONSISTENT WITH a signal (not confirmed at this n)' : 'no directional signal'}.`,
-    `- **Structural red flag** (pad-OFF stale > 0): ${structuralRedFlag ? '**RAISED**' : 'none'}.`,
-    '',
-    '## Pad-content secondary trace (pad-ON)',
-    '',
-    trace == null
-      ? '_(no learner-id supplied)_'
-      : !trace.padExists
-        ? `_(no pad row for ${trace.learnerId})_`
-        : [
-            `Pad \`${trace.learnerId}\`: total_recognition_moments **${trace.totalRecognitionMoments}**, ` +
-              `raw moments **${trace.rawMomentCount}**, updated ${trace.updatedAt}.`,
-            '',
-            ...(trace.moments.length
-              ? [
-                  '| voice | need | strategy | transformative | layer |',
-                  '| --- | --- | --- | :---: | --- |',
-                  ...trace.moments.map(
-                    (m) =>
-                      `| ${m.voice ?? '—'} | ${m.need ?? '—'} | ${m.strategy ?? '—'} | ${m.transformative} | ${m.layer ?? '—'} |`,
-                  ),
-                ]
-              : ['_(pad exists but no recognition moments recorded)_']),
-          ].join('\n'),
-    '',
-  ].join('\n');
-
-  fs.writeFileSync(OUT_MD, md);
-  console.log(md);
-  console.log(`\nWrote ${path.relative(ROOT, OUT_JSON)} and ${path.relative(ROOT, OUT_MD)}`);
-  return 0;
+    { rootDir: ROOT },
+  );
 }
 
-async function main() {
-  const args = process.argv.slice(2);
+export async function main(args = process.argv.slice(2)) {
   if (args.includes('--gate')) {
     const learnerId = args[args.indexOf('--gate') + 1];
     if (!learnerId) {
       console.error('--gate requires a <learnerId>.');
-      process.exit(1);
+      return 1;
     }
-    process.exit(await runGate(learnerId));
+    return runGate(learnerId);
   }
   if (args.includes('--score')) {
-    process.exit(await runScore(args));
+    return runScore(args);
   }
   console.error('Usage: --gate <learnerId>  |  --score padon:1:<runId> ... [--learner-id <id>]');
-  process.exit(1);
+  return 1;
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith('report-longitudinal-drift-stage-a2-live.js');
 if (isMain) {
-  main().catch((err) => {
-    console.error(err.stack || String(err));
-    process.exit(1);
-  });
+  main()
+    .then((code) => {
+      process.exitCode = code;
+    })
+    .catch((err) => {
+      console.error(err.stack || String(err));
+      process.exitCode = 1;
+    });
 }

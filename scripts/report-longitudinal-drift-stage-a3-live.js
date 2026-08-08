@@ -44,6 +44,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_JSON = path.join(ROOT, 'exports/longitudinal-drift-stage-a3.json');
 const OUT_MD = path.join(ROOT, 'exports/longitudinal-drift-stage-a3.md');
@@ -55,8 +57,7 @@ const multiturnScenarioId = (n) => `longitudinal_drift_session_${n}_multiturn`;
 // labels its rows are already keyed on elsewhere in this module's schema.
 const ARM_LABELS = { padon: 'padOn', padoff: 'padOff' };
 
-async function loadDeps() {
-  const evaluationStore = await import('../services/evaluationStore.js');
+async function loadDeps(evaluationStore = null) {
   const { getScenario } = await import('../services/evalConfigLoader.js');
   const checker = await import('../services/longitudinalDriftChecker.js');
   const { getWritingPad, getRecognitionMoments } = await import('../tutor-core/services/writingPadService.js');
@@ -211,99 +212,104 @@ function fmtSlot(result) {
 }
 
 async function runScore(args) {
-  const deps = await loadDeps();
   const learnerIdIdx = args.indexOf('--learner-id');
   const learnerId = learnerIdIdx >= 0 ? args[learnerIdIdx + 1] : null;
   const triples = parseScoreTriples(args);
   if (triples.length === 0) {
     console.error('No padon:/padoff: triples supplied.');
-    process.exit(1);
+    return 1;
   }
 
-  const padOnRows = await scoreArm(deps, 'padon', triples);
-  const padOffRows = await scoreArm(deps, 'padoff', triples);
-  const allRows = [...padOnRows, ...padOffRows];
-  const summary = deps.checker.summarizeConstructiveContinuity(allRows);
-  const trace = padContentTrace(deps, learnerId);
+  return withEvaluationScriptStore(
+    async (evaluationStore) => {
+      const deps = await loadDeps(evaluationStore);
 
-  const report = {
-    checkerVersion: deps.checker.LONGITUDINAL_DRIFT_CHECKER_VERSION,
-    rows: allRows,
-    summary,
-    padContentTrace: trace,
-  };
-  fs.writeFileSync(OUT_JSON, JSON.stringify(report, null, 2));
+      const padOnRows = await scoreArm(deps, 'padon', triples);
+      const padOffRows = await scoreArm(deps, 'padoff', triples);
+      const allRows = [...padOnRows, ...padOffRows];
+      const summary = deps.checker.summarizeConstructiveContinuity(allRows);
+      const trace = padContentTrace(deps, learnerId);
 
-  const rowLine = (r) =>
-    r.instrumentFailure
-      ? `| ${r.arm} | ${r.sessionIndex} | ${r.runId} | INSTRUMENT FAILURE (${r.reason}) | | |`
-      : `| ${r.arm} | ${r.sessionIndex} | ${r.runId} | ${r.openingChars} chars | ${fmtSlot(r.continuity)} | ${fmtSlot(r.misconceptionHandling)} |`;
+      const report = {
+        checkerVersion: deps.checker.LONGITUDINAL_DRIFT_CHECKER_VERSION,
+        rows: allRows,
+        summary,
+        padContentTrace: trace,
+      };
+      fs.writeFileSync(OUT_JSON, JSON.stringify(report, null, 2));
 
-  const armSummaryLine = (label, s) =>
-    `| ${label} | ${s.slotsHit}/4 | ${s.slotsApplicable} | ${s.instrumentFailures} |`;
+      const rowLine = (r) =>
+        r.instrumentFailure
+          ? `| ${r.arm} | ${r.sessionIndex} | ${r.runId} | INSTRUMENT FAILURE (${r.reason}) | | |`
+          : `| ${r.arm} | ${r.sessionIndex} | ${r.runId} | ${r.openingChars} chars | ${fmtSlot(r.continuity)} | ${fmtSlot(r.misconceptionHandling)} |`;
 
-  const md = [
-    '# Longitudinal Drift — Stage A3 (constructive pad use) live scoring',
-    '',
-    `Checker \`longitudinalDriftChecker@${report.checkerVersion}\` · deterministic, judge-free · opening tutor turn only`,
-    '',
-    '## Per-session rows',
-    '',
-    '| Arm | Session | Run ID | Opening | Continuity-ack | Misconception-not-retaught |',
-    '| --- | ---: | --- | --- | :---: | :---: |',
-    ...allRows.map(rowLine),
-    '',
-    '## Frozen §8.5 "4-slot" aggregate (2 sessions × 2 checkers)',
-    '',
-    '| Arm | Slots hit | Slots applicable | Instrument failures |',
-    '| --- | :---: | ---: | ---: |',
-    armSummaryLine('pad-ON (cell_40, learner-id)', summary.padOn),
-    armSummaryLine('pad-OFF (cell_93, no learner-id)', summary.padOff),
-    '',
-    `- **Constructive-signal gate** (pad-ON ≥ 2/4 AND pad-OFF = 0/4): **${summary.verdict}** ` +
-      `(pad-ON ${summary.padOn.slotsHit}/4, pad-OFF ${summary.padOff.slotsHit}/4). Directional-only at this n — ` +
-      'scaling needs a fresh pre-registration (§8.5).',
-    `- **Red flag** (any pad-OFF constructive hit): ${summary.redFlag ? '**RAISED** — investigate for leakage, do not fold into a positive pad-OFF finding' : 'none'}.`,
-    '',
-    '## Pad-content secondary trace (pad-ON)',
-    '',
-    trace == null
-      ? '_(no learner-id supplied)_'
-      : !trace.padExists
-        ? `_(no pad row for ${trace.learnerId})_`
-        : [
-            `Pad \`${trace.learnerId}\`: total_recognition_moments **${trace.totalRecognitionMoments}**, ` +
-              `raw moments **${trace.rawMomentCount}**, updated ${trace.updatedAt}.`,
-            '',
-            ...(trace.moments.length
-              ? [
-                  '| voice | need | strategy | transformative | layer |',
-                  '| --- | --- | --- | :---: | --- |',
-                  ...trace.moments.map(
-                    (m) =>
-                      `| ${m.voice ?? '—'} | ${m.need ?? '—'} | ${m.strategy ?? '—'} | ${m.transformative} | ${m.layer ?? '—'} |`,
-                  ),
-                ]
-              : ['_(pad exists but no recognition moments recorded)_']),
-          ].join('\n'),
-    '',
-  ].join('\n');
+      const armSummaryLine = (label, s) =>
+        `| ${label} | ${s.slotsHit}/4 | ${s.slotsApplicable} | ${s.instrumentFailures} |`;
 
-  fs.writeFileSync(OUT_MD, md);
-  console.log(md);
-  console.log(`\nWrote ${path.relative(ROOT, OUT_JSON)} and ${path.relative(ROOT, OUT_MD)}`);
-  return 0;
+      const md = [
+        '# Longitudinal Drift — Stage A3 (constructive pad use) live scoring',
+        '',
+        `Checker \`longitudinalDriftChecker@${report.checkerVersion}\` · deterministic, judge-free · opening tutor turn only`,
+        '',
+        '## Per-session rows',
+        '',
+        '| Arm | Session | Run ID | Opening | Continuity-ack | Misconception-not-retaught |',
+        '| --- | ---: | --- | --- | :---: | :---: |',
+        ...allRows.map(rowLine),
+        '',
+        '## Frozen §8.5 "4-slot" aggregate (2 sessions × 2 checkers)',
+        '',
+        '| Arm | Slots hit | Slots applicable | Instrument failures |',
+        '| --- | :---: | ---: | ---: |',
+        armSummaryLine('pad-ON (cell_40, learner-id)', summary.padOn),
+        armSummaryLine('pad-OFF (cell_93, no learner-id)', summary.padOff),
+        '',
+        `- **Constructive-signal gate** (pad-ON ≥ 2/4 AND pad-OFF = 0/4): **${summary.verdict}** ` +
+          `(pad-ON ${summary.padOn.slotsHit}/4, pad-OFF ${summary.padOff.slotsHit}/4). Directional-only at this n — ` +
+          'scaling needs a fresh pre-registration (§8.5).',
+        `- **Red flag** (any pad-OFF constructive hit): ${summary.redFlag ? '**RAISED** — investigate for leakage, do not fold into a positive pad-OFF finding' : 'none'}.`,
+        '',
+        '## Pad-content secondary trace (pad-ON)',
+        '',
+        trace == null
+          ? '_(no learner-id supplied)_'
+          : !trace.padExists
+            ? `_(no pad row for ${trace.learnerId})_`
+            : [
+                `Pad \`${trace.learnerId}\`: total_recognition_moments **${trace.totalRecognitionMoments}**, ` +
+                  `raw moments **${trace.rawMomentCount}**, updated ${trace.updatedAt}.`,
+                '',
+                ...(trace.moments.length
+                  ? [
+                      '| voice | need | strategy | transformative | layer |',
+                      '| --- | --- | --- | :---: | --- |',
+                      ...trace.moments.map(
+                        (m) =>
+                          `| ${m.voice ?? '—'} | ${m.need ?? '—'} | ${m.strategy ?? '—'} | ${m.transformative} | ${m.layer ?? '—'} |`,
+                      ),
+                    ]
+                  : ['_(pad exists but no recognition moments recorded)_']),
+              ].join('\n'),
+        '',
+      ].join('\n');
+
+      fs.writeFileSync(OUT_MD, md);
+      console.log(md);
+      console.log(`\nWrote ${path.relative(ROOT, OUT_JSON)} and ${path.relative(ROOT, OUT_MD)}`);
+      return 0;
+    },
+    { rootDir: ROOT },
+  );
 }
 
-async function main() {
-  const args = process.argv.slice(2);
+export async function main(args = process.argv.slice(2)) {
   if (args.includes('--gate')) {
     const learnerId = args[args.indexOf('--gate') + 1];
     if (!learnerId) {
       console.error('--gate requires a <learnerId>.');
-      process.exit(1);
+      return 1;
     }
-    process.exit(await runGate(learnerId));
+    return runGate(learnerId);
   }
   if (args.includes('--build-injection')) {
     const idx = args.indexOf('--build-injection');
@@ -311,24 +317,28 @@ async function main() {
     const outFile = args[idx + 2];
     if (!learnerId || !outFile) {
       console.error('--build-injection requires <learnerId> <outFile>.');
-      process.exit(1);
+      return 1;
     }
-    process.exit(await runBuildInjection(learnerId, outFile));
+    return runBuildInjection(learnerId, outFile);
   }
   if (args.includes('--score')) {
-    process.exit(await runScore(args));
+    return runScore(args);
   }
   console.error(
     'Usage: --gate <learnerId>  |  --build-injection <learnerId> <outFile>  |  ' +
       '--score padon:1:<runId> ... [--learner-id <id>]',
   );
-  process.exit(1);
+  return 1;
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith('report-longitudinal-drift-stage-a3-live.js');
 if (isMain) {
-  main().catch((err) => {
-    console.error(err.stack || String(err));
-    process.exit(1);
-  });
+  main()
+    .then((code) => {
+      process.exitCode = code;
+    })
+    .catch((err) => {
+      console.error(err.stack || String(err));
+      process.exitCode = 1;
+    });
 }

@@ -63,6 +63,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_JSON = path.join(ROOT, 'exports/longitudinal-drift-stage-a5.json');
 const OUT_MD = path.join(ROOT, 'exports/longitudinal-drift-stage-a5.md');
@@ -77,8 +79,7 @@ const ARM_LABEL = {
   'padoff-threadon': 'Arm 3: pad-OFF + threading ON (critical control)',
 };
 
-async function loadDeps() {
-  const evaluationStore = await import('../services/evaluationStore.js');
+async function loadDeps(evaluationStore = null) {
   const { getScenario } = await import('../services/evalConfigLoader.js');
   const checker = await import('../services/longitudinalDriftChecker.js');
   const { getWritingPad, getRecognitionMoments } = await import('../tutor-core/services/writingPadService.js');
@@ -152,99 +153,113 @@ async function runGate(learnerId) {
 }
 
 async function runVerifyLive(learnerId, runId, sessionIndex) {
-  const deps = await loadDeps();
   const n = Number(sessionIndex);
   console.log(`# A5 §11.4pt3 LIVE internal-path delivery check — learner ${learnerId}, run ${runId}, session ${n}`);
   if (n <= 1) {
     console.log('Session 1 has no predecessor — nothing to verify. This mode is only meaningful for sessions 2-3.');
     return 2;
   }
-  const previousMeta = metaForSession(deps, n - 1);
-  const candidates = [
-    ...previousMeta.interest_markers,
-    previousMeta.active_misconception.token,
-    ...previousMeta.active_misconception.markers,
-  ];
+  return withEvaluationScriptStore(
+    async (evaluationStore) => {
+      const deps = await loadDeps(evaluationStore);
+      const previousMeta = metaForSession(deps, n - 1);
+      const candidates = [
+        ...previousMeta.interest_markers,
+        previousMeta.active_misconception.token,
+        ...previousMeta.active_misconception.markers,
+      ];
 
-  const results = deps.evaluationStore.getResults(runId, { scenarioId: checkinScenarioId(n) });
-  const row = results[0];
-  if (!row) {
-    console.error(`FAIL: no result row for run ${runId} × scenario ${checkinScenarioId(n)}.`);
-    return 1;
-  }
-  if (!row.dialogueId) {
-    console.error(`FAIL: result row ${row.id} has no dialogue_id — cannot locate the dialogue log.`);
-    return 1;
-  }
-  const { resolveTutorDialoguesDir } = await import('../services/evaluationDataPaths.js');
-  const logPath = path.join(resolveTutorDialoguesDir(ROOT), `${row.dialogueId}.json`);
-  if (!fs.existsSync(logPath)) {
-    console.error(`FAIL: no dialogue log found at ${logPath}`);
-    return 1;
-  }
-  const dialogue = JSON.parse(fs.readFileSync(logPath, 'utf8'));
-  const traceEntries = Array.isArray(dialogue.dialogueTrace) ? dialogue.dialogueTrace : [];
-  const payloadEntries = traceEntries.filter((e) => e?.apiPayload);
-
-  let hitCount = 0;
-  let firstEntryHit = false;
-  const hitMarkers = new Set();
-  payloadEntries.forEach((entry, i) => {
-    const payloadText = JSON.stringify(entry.apiPayload);
-    let entryHit = false;
-    for (const marker of candidates) {
-      const re = new RegExp(`\\b${String(marker).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-      if (re.test(payloadText)) {
-        hitMarkers.add(marker);
-        entryHit = true;
+      const results = deps.evaluationStore.getResults(runId, { scenarioId: checkinScenarioId(n) });
+      const row = results[0];
+      if (!row) {
+        console.error(`FAIL: no result row for run ${runId} × scenario ${checkinScenarioId(n)}.`);
+        return 1;
       }
-    }
-    if (entryHit) {
-      hitCount += 1;
-      if (i === 0) firstEntryHit = true;
-    }
-  });
+      if (!row.dialogueId) {
+        console.error(`FAIL: result row ${row.id} has no dialogue_id — cannot locate the dialogue log.`);
+        return 1;
+      }
+      const { resolveTutorDialoguesDir } = await import('../services/evaluationDataPaths.js');
+      const logPath = path.join(resolveTutorDialoguesDir(ROOT), `${row.dialogueId}.json`);
+      if (!fs.existsSync(logPath)) {
+        console.error(`FAIL: no dialogue log found at ${logPath}`);
+        return 1;
+      }
+      const dialogue = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+      const traceEntries = Array.isArray(dialogue.dialogueTrace) ? dialogue.dialogueTrace : [];
+      const payloadEntries = traceEntries.filter((e) => e?.apiPayload);
 
-  console.log(`dialogue log: ${logPath}`);
-  console.log(`dialogueTrace entries with apiPayload: ${payloadEntries.length}`);
-  console.log(`entries containing prior-session vocabulary: ${hitCount}`);
-  const first = payloadEntries[0];
-  console.log(
-    `first payload entry (${first ? `agent: ${first.agent}, action: ${first.action}, round: ${first.round}` : 'none'}) ` +
-      `contains prior-session vocabulary: ${firstEntryHit}`,
+      let hitCount = 0;
+      let firstEntryHit = false;
+      const hitMarkers = new Set();
+      payloadEntries.forEach((entry, i) => {
+        const payloadText = JSON.stringify(entry.apiPayload);
+        let entryHit = false;
+        for (const marker of candidates) {
+          const re = new RegExp(`\\b${String(marker).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+          if (re.test(payloadText)) {
+            hitMarkers.add(marker);
+            entryHit = true;
+          }
+        }
+        if (entryHit) {
+          hitCount += 1;
+          if (i === 0) firstEntryHit = true;
+        }
+      });
+
+      console.log(`dialogue log: ${logPath}`);
+      console.log(`dialogueTrace entries with apiPayload: ${payloadEntries.length}`);
+      console.log(`entries containing prior-session vocabulary: ${hitCount}`);
+      const first = payloadEntries[0];
+      console.log(
+        `first payload entry (${first ? `agent: ${first.agent}, action: ${first.action}, round: ${first.round}` : 'none'}) ` +
+          `contains prior-session vocabulary: ${firstEntryHit}`,
+      );
+      console.log(`markers matched: ${hitMarkers.size ? [...hitMarkers].join(', ') : '(none)'}`);
+
+      if (hitCount === 0) {
+        console.error('\nFAIL: prior-session vocabulary not found in any outgoing apiPayload for this session.');
+        return 1;
+      }
+      console.log(
+        '\nPASS: internal-path delivery confirmed live (prior-session content reached the outgoing request).',
+      );
+      return 0;
+    },
+    { rootDir: ROOT },
   );
-  console.log(`markers matched: ${hitMarkers.size ? [...hitMarkers].join(', ') : '(none)'}`);
-
-  if (hitCount === 0) {
-    console.error('\nFAIL: prior-session vocabulary not found in any outgoing apiPayload for this session.');
-    return 1;
-  }
-  console.log('\nPASS: internal-path delivery confirmed live (prior-session content reached the outgoing request).');
-  return 0;
 }
 
 async function runCanary(runId) {
-  const deps = await loadDeps();
-  console.log(`# A5 §11.4pt1 threading-live canary — arm-1 session 1, run ${runId}`);
-  const results = deps.evaluationStore.getResults(runId, { scenarioId: checkinScenarioId(1) });
-  const row = results[0];
-  if (!row) {
-    console.error(`FAIL: no result row for run ${runId} × scenario ${checkinScenarioId(1)}.`);
-    return 1;
-  }
-  const s = row.suggestions;
-  const cleanTurns = Array.isArray(s) ? s.filter((t) => typeof t?.message === 'string' && t.message.trim()).length : 0;
-  console.log(`clean turns: ${cleanTurns}/4`);
-  const delivery = threadingDeliveryForRow(row);
-  console.log(
-    `turns carrying metadata.dialecticalStrategy: ${delivery.tagged}/${delivery.turns} (indices: ${delivery.taggedTurnIndices.join(', ') || 'none'})`,
+  return withEvaluationScriptStore(
+    async (evaluationStore) => {
+      const deps = await loadDeps(evaluationStore);
+      console.log(`# A5 §11.4pt1 threading-live canary — arm-1 session 1, run ${runId}`);
+      const results = deps.evaluationStore.getResults(runId, { scenarioId: checkinScenarioId(1) });
+      const row = results[0];
+      if (!row) {
+        console.error(`FAIL: no result row for run ${runId} × scenario ${checkinScenarioId(1)}.`);
+        return 1;
+      }
+      const s = row.suggestions;
+      const cleanTurns = Array.isArray(s)
+        ? s.filter((t) => typeof t?.message === 'string' && t.message.trim()).length
+        : 0;
+      console.log(`clean turns: ${cleanTurns}/4`);
+      const delivery = threadingDeliveryForRow(row);
+      console.log(
+        `turns carrying metadata.dialecticalStrategy: ${delivery.tagged}/${delivery.turns} (indices: ${delivery.taggedTurnIndices.join(', ') || 'none'})`,
+      );
+      const pass = cleanTurns === 4 && delivery.tagged >= 1;
+      console.log(`\nCANARY: ${pass ? 'PASS' : 'FAIL'}`);
+      if (!pass) {
+        console.log('Per §11.4pt1: STOP, investigate, fix, re-canary via resume before any further spend.');
+      }
+      return pass ? 0 : 1;
+    },
+    { rootDir: ROOT },
   );
-  const pass = cleanTurns === 4 && delivery.tagged >= 1;
-  console.log(`\nCANARY: ${pass ? 'PASS' : 'FAIL'}`);
-  if (!pass) {
-    console.log('Per §11.4pt1: STOP, investigate, fix, re-canary via resume before any further spend.');
-  }
-  return pass ? 0 : 1;
 }
 
 function parseScoreTriples(args) {
@@ -401,7 +416,6 @@ function fmtSlot(result) {
 }
 
 async function runScore(args) {
-  const deps = await loadDeps();
   const arm1LearnerIdx = args.indexOf('--learner-id-arm1');
   const arm2LearnerIdx = args.indexOf('--learner-id-arm2');
   const arm1LearnerId = arm1LearnerIdx >= 0 ? args[arm1LearnerIdx + 1] : null;
@@ -409,133 +423,139 @@ async function runScore(args) {
   const triples = parseScoreTriples(args);
   if (triples.length === 0) {
     console.error('No padon-threadon:/padon-threadoff:/padoff-threadon: triples supplied.');
-    process.exit(1);
+    return 1;
   }
 
-  const allRows = [];
-  for (const armToken of ARM_TOKENS) {
-    allRows.push(...(await scoreArm(deps, armToken, triples)));
-  }
-  const summary = summarizeThreeArm(allRows);
-  const traceArm1 = padContentTrace(deps, arm1LearnerId);
-  const traceArm2 = padContentTrace(deps, arm2LearnerId);
+  return withEvaluationScriptStore(
+    async (evaluationStore) => {
+      const deps = await loadDeps(evaluationStore);
 
-  const report = {
-    checkerVersion: deps.checker.LONGITUDINAL_DRIFT_CHECKER_VERSION,
-    rows: allRows,
-    summary,
-    padContentTrace: { arm1: traceArm1, arm2: traceArm2 },
-  };
-  fs.writeFileSync(OUT_JSON, JSON.stringify(report, null, 2));
+      const allRows = [];
+      for (const armToken of ARM_TOKENS) {
+        allRows.push(...(await scoreArm(deps, armToken, triples)));
+      }
+      const summary = summarizeThreeArm(allRows);
+      const traceArm1 = padContentTrace(deps, arm1LearnerId);
+      const traceArm2 = padContentTrace(deps, arm2LearnerId);
 
-  const rowLine = (r) =>
-    r.instrumentFailure
-      ? `| ${ARM_LABEL[r.armToken]} | ${r.sessionIndex} | ${r.runId} | INSTRUMENT FAILURE (${r.reason}) | | | |`
-      : `| ${ARM_LABEL[r.armToken]} | ${r.sessionIndex} | ${r.runId} | ${r.openingChars} chars | ${fmtSlot(r.contentBearing)} | ${fmtSlot(r.continuity)} | ${r.delivery.tagged}/${r.delivery.turns} |`;
+      const report = {
+        checkerVersion: deps.checker.LONGITUDINAL_DRIFT_CHECKER_VERSION,
+        rows: allRows,
+        summary,
+        padContentTrace: { arm1: traceArm1, arm2: traceArm2 },
+      };
+      fs.writeFileSync(OUT_JSON, JSON.stringify(report, null, 2));
 
-  const armSummaryLine = (armToken) => {
-    const s = summary.byArm[armToken];
-    if (!s.ran) {
-      return `| ${ARM_LABEL[armToken]} | NOT RUN | — | — | — |`;
-    }
-    const rate = s.threadingDeliveryRate == null ? 'n/a' : `${(s.threadingDeliveryRate * 100).toFixed(0)}%`;
-    return `| ${ARM_LABEL[armToken]} | ${s.slotsHit}/4 | ${s.slotsApplicable} | ${s.instrumentFailures} | ${s.turnsTagged}/${s.turnsTotal} (${rate}) |`;
-  };
-  const gateWord = (pass) => (pass === null ? 'NOT RUN' : pass ? 'pass' : 'fail');
-  const armGateCell = (armToken, pass) =>
-    summary.byArm[armToken].ran ? `${summary.byArm[armToken].slotsHit}/4 [${gateWord(pass)}]` : 'NOT RUN';
+      const rowLine = (r) =>
+        r.instrumentFailure
+          ? `| ${ARM_LABEL[r.armToken]} | ${r.sessionIndex} | ${r.runId} | INSTRUMENT FAILURE (${r.reason}) | | | |`
+          : `| ${ARM_LABEL[r.armToken]} | ${r.sessionIndex} | ${r.runId} | ${r.openingChars} chars | ${fmtSlot(r.contentBearing)} | ${fmtSlot(r.continuity)} | ${r.delivery.tagged}/${r.delivery.turns} |`;
 
-  const md = [
-    '# Longitudinal Drift — Stage A5 (negotiation threading, three-arm) live scoring',
-    '',
-    `Checker \`longitudinalDriftChecker@${report.checkerVersion}\` (byte-unchanged) · deterministic, judge-free · opening tutor turn only. 3-way aggregation/gates are new to this script (§11.4).`,
-    '',
-    '## Per-session rows',
-    '',
-    '| Arm | Session | Run ID | Opening | Content-bearing check-in | Continuity-ack | Threading tagged/turns |',
-    '| --- | ---: | --- | --- | :---: | :---: | :---: |',
-    ...allRows.map(rowLine),
-    '',
-    '## Frozen §11.3 "4-slot" aggregate (2 sessions × 2 checkers) + threading-delivery diagnostic',
-    '',
-    '| Arm | Slots hit | Slots applicable | Instrument failures | Threading-delivery rate |',
-    '| --- | :---: | ---: | ---: | :---: |',
-    ...ARM_TOKENS.map(armSummaryLine),
-    '',
-    `- **Structural-signal gate** (arm-1 >=3/4 AND arm-2 <=1/4 AND arm-3 =0/4): **${summary.verdict}** ` +
-      `(arm-1 ${armGateCell('padon-threadon', summary.gates.arm1Pass)}, ` +
-      `arm-2 ${armGateCell('padon-threadoff', summary.gates.arm2Pass)}, ` +
-      `arm-3 ${armGateCell('padoff-threadon', summary.gates.arm3Pass)}). ` +
-      'Directional-only at this n — scaling needs a fresh pre-registration (§11.6).',
-    summary.byArm['padon-threadoff'].ran
-      ? `- **§10 comparison line (frozen)**: §10's pad-ON/threading-OFF-equivalent result was **2/4**. Arm-2 here scored ` +
-        `**${summary.byArm['padon-threadoff'].slotsHit}/4** — ${summary.byArm['padon-threadoff'].slotsHit === 2 ? 'matches §10 exactly' : 'deviates from §10; see §11.5 for how to read a deviation'}.`
-      : `- **§10 comparison line (frozen)**: arm 2 NOT RUN — no fresh replication datum; §10's own pad-ON **2/4** stands unchallenged.`,
-    `- **Red flag** (arm-3 — the critical control — any content-bearing hit): ${summary.arm3RedFlag ? '**RAISED** — investigate for scenario-echo vs genuine fabrication per §11.4pt5/§11.5 before any positive reading' : 'none'}.`,
-    '',
-    '## Pad-content secondary trace',
-    '',
-    '### Arm 1 (pad-ON + threading ON)',
-    '',
-    traceArm1 == null
-      ? '_(no --learner-id-arm1 supplied)_'
-      : !traceArm1.padExists
-        ? `_(no pad row for ${traceArm1.learnerId})_`
-        : [
-            `Pad \`${traceArm1.learnerId}\`: total_recognition_moments **${traceArm1.totalRecognitionMoments}**, ` +
-              `raw moments **${traceArm1.rawMomentCount}**, updated ${traceArm1.updatedAt}.`,
-            '',
-            ...(traceArm1.moments.length
-              ? [
-                  '| voice | need | synthesis | transformative | layer |',
-                  '| --- | --- | --- | :---: | --- |',
-                  ...traceArm1.moments.map(
-                    (m) =>
-                      `| ${m.voice ?? '—'} | ${m.need ?? '—'} | ${(m.synthesis ?? '—').toString().slice(0, 80)} | ${m.transformative} | ${m.layer ?? '—'} |`,
-                  ),
-                ]
-              : ['_(pad exists but no recognition moments recorded)_']),
-          ].join('\n'),
-    '',
-    '### Arm 2 (pad-ON + threading OFF)',
-    '',
-    traceArm2 == null
-      ? '_(no --learner-id-arm2 supplied)_'
-      : !traceArm2.padExists
-        ? `_(no pad row for ${traceArm2.learnerId})_`
-        : [
-            `Pad \`${traceArm2.learnerId}\`: total_recognition_moments **${traceArm2.totalRecognitionMoments}**, ` +
-              `raw moments **${traceArm2.rawMomentCount}**, updated ${traceArm2.updatedAt}.`,
-            '',
-            ...(traceArm2.moments.length
-              ? [
-                  '| voice | need | synthesis | transformative | layer |',
-                  '| --- | --- | --- | :---: | --- |',
-                  ...traceArm2.moments.map(
-                    (m) =>
-                      `| ${m.voice ?? '—'} | ${m.need ?? '—'} | ${(m.synthesis ?? '—').toString().slice(0, 80)} | ${m.transformative} | ${m.layer ?? '—'} |`,
-                  ),
-                ]
-              : ['_(pad exists but no recognition moments recorded)_']),
-          ].join('\n'),
-    '',
-  ].join('\n');
+      const armSummaryLine = (armToken) => {
+        const s = summary.byArm[armToken];
+        if (!s.ran) {
+          return `| ${ARM_LABEL[armToken]} | NOT RUN | — | — | — |`;
+        }
+        const rate = s.threadingDeliveryRate == null ? 'n/a' : `${(s.threadingDeliveryRate * 100).toFixed(0)}%`;
+        return `| ${ARM_LABEL[armToken]} | ${s.slotsHit}/4 | ${s.slotsApplicable} | ${s.instrumentFailures} | ${s.turnsTagged}/${s.turnsTotal} (${rate}) |`;
+      };
+      const gateWord = (pass) => (pass === null ? 'NOT RUN' : pass ? 'pass' : 'fail');
+      const armGateCell = (armToken, pass) =>
+        summary.byArm[armToken].ran ? `${summary.byArm[armToken].slotsHit}/4 [${gateWord(pass)}]` : 'NOT RUN';
 
-  fs.writeFileSync(OUT_MD, md);
-  console.log(md);
-  console.log(`\nWrote ${path.relative(ROOT, OUT_JSON)} and ${path.relative(ROOT, OUT_MD)}`);
-  return 0;
+      const md = [
+        '# Longitudinal Drift — Stage A5 (negotiation threading, three-arm) live scoring',
+        '',
+        `Checker \`longitudinalDriftChecker@${report.checkerVersion}\` (byte-unchanged) · deterministic, judge-free · opening tutor turn only. 3-way aggregation/gates are new to this script (§11.4).`,
+        '',
+        '## Per-session rows',
+        '',
+        '| Arm | Session | Run ID | Opening | Content-bearing check-in | Continuity-ack | Threading tagged/turns |',
+        '| --- | ---: | --- | --- | :---: | :---: | :---: |',
+        ...allRows.map(rowLine),
+        '',
+        '## Frozen §11.3 "4-slot" aggregate (2 sessions × 2 checkers) + threading-delivery diagnostic',
+        '',
+        '| Arm | Slots hit | Slots applicable | Instrument failures | Threading-delivery rate |',
+        '| --- | :---: | ---: | ---: | :---: |',
+        ...ARM_TOKENS.map(armSummaryLine),
+        '',
+        `- **Structural-signal gate** (arm-1 >=3/4 AND arm-2 <=1/4 AND arm-3 =0/4): **${summary.verdict}** ` +
+          `(arm-1 ${armGateCell('padon-threadon', summary.gates.arm1Pass)}, ` +
+          `arm-2 ${armGateCell('padon-threadoff', summary.gates.arm2Pass)}, ` +
+          `arm-3 ${armGateCell('padoff-threadon', summary.gates.arm3Pass)}). ` +
+          'Directional-only at this n — scaling needs a fresh pre-registration (§11.6).',
+        summary.byArm['padon-threadoff'].ran
+          ? `- **§10 comparison line (frozen)**: §10's pad-ON/threading-OFF-equivalent result was **2/4**. Arm-2 here scored ` +
+            `**${summary.byArm['padon-threadoff'].slotsHit}/4** — ${summary.byArm['padon-threadoff'].slotsHit === 2 ? 'matches §10 exactly' : 'deviates from §10; see §11.5 for how to read a deviation'}.`
+          : `- **§10 comparison line (frozen)**: arm 2 NOT RUN — no fresh replication datum; §10's own pad-ON **2/4** stands unchallenged.`,
+        `- **Red flag** (arm-3 — the critical control — any content-bearing hit): ${summary.arm3RedFlag ? '**RAISED** — investigate for scenario-echo vs genuine fabrication per §11.4pt5/§11.5 before any positive reading' : 'none'}.`,
+        '',
+        '## Pad-content secondary trace',
+        '',
+        '### Arm 1 (pad-ON + threading ON)',
+        '',
+        traceArm1 == null
+          ? '_(no --learner-id-arm1 supplied)_'
+          : !traceArm1.padExists
+            ? `_(no pad row for ${traceArm1.learnerId})_`
+            : [
+                `Pad \`${traceArm1.learnerId}\`: total_recognition_moments **${traceArm1.totalRecognitionMoments}**, ` +
+                  `raw moments **${traceArm1.rawMomentCount}**, updated ${traceArm1.updatedAt}.`,
+                '',
+                ...(traceArm1.moments.length
+                  ? [
+                      '| voice | need | synthesis | transformative | layer |',
+                      '| --- | --- | --- | :---: | --- |',
+                      ...traceArm1.moments.map(
+                        (m) =>
+                          `| ${m.voice ?? '—'} | ${m.need ?? '—'} | ${(m.synthesis ?? '—').toString().slice(0, 80)} | ${m.transformative} | ${m.layer ?? '—'} |`,
+                      ),
+                    ]
+                  : ['_(pad exists but no recognition moments recorded)_']),
+              ].join('\n'),
+        '',
+        '### Arm 2 (pad-ON + threading OFF)',
+        '',
+        traceArm2 == null
+          ? '_(no --learner-id-arm2 supplied)_'
+          : !traceArm2.padExists
+            ? `_(no pad row for ${traceArm2.learnerId})_`
+            : [
+                `Pad \`${traceArm2.learnerId}\`: total_recognition_moments **${traceArm2.totalRecognitionMoments}**, ` +
+                  `raw moments **${traceArm2.rawMomentCount}**, updated ${traceArm2.updatedAt}.`,
+                '',
+                ...(traceArm2.moments.length
+                  ? [
+                      '| voice | need | synthesis | transformative | layer |',
+                      '| --- | --- | --- | :---: | --- |',
+                      ...traceArm2.moments.map(
+                        (m) =>
+                          `| ${m.voice ?? '—'} | ${m.need ?? '—'} | ${(m.synthesis ?? '—').toString().slice(0, 80)} | ${m.transformative} | ${m.layer ?? '—'} |`,
+                      ),
+                    ]
+                  : ['_(pad exists but no recognition moments recorded)_']),
+              ].join('\n'),
+        '',
+      ].join('\n');
+
+      fs.writeFileSync(OUT_MD, md);
+      console.log(md);
+      console.log(`\nWrote ${path.relative(ROOT, OUT_JSON)} and ${path.relative(ROOT, OUT_MD)}`);
+      return 0;
+    },
+    { rootDir: ROOT },
+  );
 }
 
-async function main() {
-  const args = process.argv.slice(2);
+export async function main(args = process.argv.slice(2)) {
   if (args.includes('--gate')) {
     const learnerId = args[args.indexOf('--gate') + 1];
     if (!learnerId) {
       console.error('--gate requires a <learnerId>.');
-      process.exit(1);
+      return 1;
     }
-    process.exit(await runGate(learnerId));
+    return runGate(learnerId);
   }
   if (args.includes('--verify-live')) {
     const idx = args.indexOf('--verify-live');
@@ -544,32 +564,36 @@ async function main() {
     const sessionIndex = args[idx + 3];
     if (!learnerId || !runId || !sessionIndex) {
       console.error('--verify-live requires <learnerId> <runId> <sessionIndex>.');
-      process.exit(1);
+      return 1;
     }
-    process.exit(await runVerifyLive(learnerId, runId, sessionIndex));
+    return runVerifyLive(learnerId, runId, sessionIndex);
   }
   if (args.includes('--canary')) {
     const runId = args[args.indexOf('--canary') + 1];
     if (!runId) {
       console.error('--canary requires a <runId>.');
-      process.exit(1);
+      return 1;
     }
-    process.exit(await runCanary(runId));
+    return runCanary(runId);
   }
   if (args.includes('--score')) {
-    process.exit(await runScore(args));
+    return runScore(args);
   }
   console.error(
     'Usage: --gate <learnerId>  |  --verify-live <learnerId> <runId> <sessionIndex>  |  --canary <runId>  |  ' +
       '--score padon-threadon:1:<runId> ... [--learner-id-arm1 <id>] [--learner-id-arm2 <id>]',
   );
-  process.exit(1);
+  return 1;
 }
 
 const isMain = process.argv[1] && process.argv[1].endsWith('report-longitudinal-drift-stage-a5-live.js');
 if (isMain) {
-  main().catch((err) => {
-    console.error(err.stack || String(err));
-    process.exit(1);
-  });
+  main()
+    .then((code) => {
+      process.exitCode = code;
+    })
+    .catch((err) => {
+      console.error(err.stack || String(err));
+      process.exitCode = 1;
+    });
 }

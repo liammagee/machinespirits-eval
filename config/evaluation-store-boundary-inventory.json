@@ -3,7 +3,7 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 17,
+    "liveAndPackageConsumerCount": 13,
     "archivedConsumerCount": 4,
     "testConsumerCount": 14
   },
@@ -71,26 +71,6 @@
       "path": "scripts/prompt-lab.js",
       "classification": "operational-script",
       "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/report-longitudinal-drift-stage-a2-live.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/report-longitudinal-drift-stage-a3-live.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/report-longitudinal-drift-stage-a4-live.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/report-longitudinal-drift-stage-a5-live.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
     },
     {
       "path": "scripts/run-adaptive-cell-smoke.js",
