@@ -40,6 +40,7 @@ ignored. A failed command stops the run unless `--keep-going` is supplied.
 ## Faster and offline forms
 
 ```bash
+npm test
 npm run ci:local:quick
 npm run ci:local -- --no-install --offline
 npm run ci:local -- --lane lint,validation,workplan --no-install
@@ -47,12 +48,31 @@ npm run ci:local -- --dry-run
 npm run ci:local -- --list
 ```
 
+`npm test` is the comprehensive fast local code gate: it runs the root files in
+one hermetic Node process, then runs the in-housed tutor-core suite. The full
+local-CI profile deliberately runs the two root shards sequentially to match
+the hosted matrix contract, so it can take longer even though the selected test
+coverage is identical.
+
 `quick` omits the root/core suites, PTY/lifecycle lanes, risk coverage, and
 surface acceptance. It is a development check, not merge evidence.
 
 `--offline` suppresses only the managed archive/tag fetch. `refs:check` still
 runs against the refs already present locally. `--no-install` reuses the
 current dependency tree instead of rebuilding it from the lockfile.
+
+For a test-performance profile, retain the hermetic runner's normally temporary
+per-file timing and TAP reports under the ignored test-output root:
+
+```bash
+npm run test:root -- --quiet --report-dir .test-tmp/hermetic-profile
+```
+
+Use a different report directory for each concurrently isolated run. The
+production database and dialogue logs remain isolated in a separate temporary
+root and are still removed after the run. Node 22 records file wall time plus
+aggregate test duration; Node 20 labels its aggregate-duration fallback because
+that runtime does not emit a file-scoped completion summary.
 
 To reproduce the PR-body link locally, save the final body and add:
 
