@@ -2275,7 +2275,17 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       engagementModeRouter,
       engagementRegisterArm,
       engagementState,
-      idConstruction: construction, // bonus: surface for trace logging downstream
+      // `generated_prompt` here is what the tutor actually received, manner
+      // block and all — not the id-director's raw output. Every reader of the
+      // stored trace means "the shipped prompt" by it, and before the manner
+      // block existed the two were the same string, so old rows still read
+      // straight. The raw output is kept alongside it.
+      idConstruction: {
+        ...construction,
+        generated_prompt: egoSystemPrompt,
+        id_written_prompt: construction.generated_prompt,
+        manner_block_appended: egoSystemPrompt !== construction.generated_prompt,
+      },
     },
     dialogueTrace: trace,
   };

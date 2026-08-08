@@ -100,6 +100,10 @@ not to the tutor. Whatever the id-director writes replaces the tutor's system
 prompt outright (`services/idDirectorEngine.js:1926`), with nothing appended. So
 the manner reaches the performer only if the author chose to carry it through.
 
-Follow-on registered separately: see the two-condition run in the discussion
-below, which separates the earlier turns from the reviewer pass for the sarcasm
-half of the loss.
+**The follow-on shrank from three suspects to one before it cost anything.** The
+reviewer's verdict is stored per turn: of the 23 rows that came back edged
+alone, it passed 20 untouched, so it cannot have flattened them. The earlier
+turns die on a read of the code — these cells run single-prompt, and on that
+path `extractLearnerInputs` returns an empty message history, so the tutor never
+saw them. What is left is the learner's own message, the one input this probe
+dropped. Registered as [register-manner-learner-turn](register-manner-learner-turn.md).
