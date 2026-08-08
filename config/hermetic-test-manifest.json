@@ -324,6 +324,7 @@
         "tests/labellingSaveQueue.test.js",
         "tests/latentKernelFilter.test.js",
         "tests/learnerMemoryService.test.js",
+        "tests/learnerProfileWorldDeconfound.test.js",
         "tests/learnerTurnTargets.test.js",
         "tests/legacyChatAssistProposal.test.js",
         "tests/legacyChatEngineBoundary.test.js",
