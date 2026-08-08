@@ -7,7 +7,7 @@ priority: P1
 owner: codex
 source: review
 created: 2026-07-24
-updated: 2026-08-07
+updated: 2026-08-09
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -137,6 +137,7 @@ links:
     - refactor-operational-run-store-ownership
     - refactor-operational-ingest-seed-store-ownership
     - refactor-token-budget-store-ownership
+    - refactor-prompt-lab-store-ownership
 tags:
   - refactoring
   - testing
@@ -1714,3 +1715,13 @@ Log:
   orchestration, one bounded report store, deterministic mixed-shape report
   coverage, and the full local contract green. Only prompt-lab and the public
   package compatibility entrypoint still consume the legacy facade directly.
+- 2026-08-09 — PR #588 merged the token-budget ownership slice. Closed that
+  child and activated `refactor-prompt-lab-store-ownership` from refreshed main
+  `87dba4dc`; prompt-lab is the final operational facade consumer and the last
+  macro migration before deciding the public package compatibility boundary.
+- 2026-08-09 — Completed `refactor-prompt-lab-store-ownership` to review:
+  prompt-lab now owns one bounded store per session command, has database-free
+  admission and injectable filesystem/child-run seams, and all local contracts
+  pass. The legacy facade now has no operational consumers; only the public
+  package compatibility entrypoint remains for an explicit retain-or-retire
+  decision after this slice merges.

@@ -5,12 +5,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { jsonrepair } from 'jsonrepair';
 import { tutorConfigLoader, unifiedAIProvider } from '../tutor-core/index.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import * as learnerConfigLoader from '../services/learnerConfigLoader.js';
-import * as evaluationStore from '../services/evaluationStore.js';
+import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
 import promptRecommendationService from '../services/promptRecommendationService.js';
 import { resolveEvalProfile } from '../services/evaluationRunner.js';
 import { callModelCliText } from '../services/cliProviderBridge.js';
@@ -18,7 +18,6 @@ import { callModelCliText } from '../services/cliProviderBridge.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
-const CLI_PATH = path.join(ROOT, 'scripts', 'eval-cli.js');
 const SESSION_ROOT = path.join(ROOT, 'tmp', 'prompt-lab');
 const PROMPTS_ENV = 'MACHINESPIRITS_PROMPTS_DIR';
 const TUTOR_CORE_ROOT = fs.realpathSync(path.join(ROOT, 'tutor-core'));
@@ -31,9 +30,9 @@ const DEFAULT_RUNS_PER_ITERATION = 1;
 const VALID_TARGETS = new Set(['tutor', 'learner', 'both']);
 const VALID_CLIS = new Set(['claude', 'gemini', 'codex']);
 
-const args = process.argv.slice(2);
-const command = args[0] || 'help';
-const isDirectExecution = process.argv[1] ? path.resolve(process.argv[1]) === __filename : false;
+const SESSION_COMMANDS = new Set(['fork', 'run', 'status', 'recommend', 'autotune', 'import', 'reset', 'diff']);
+let args = [];
+let activeSessionRoot = SESSION_ROOT;
 
 function getOption(name, fallback = null) {
   const idx = args.indexOf(`--${name}`);
@@ -154,7 +153,7 @@ function defaultSessionId(profileName, scenarioId, modelRef) {
 }
 
 function sessionDir(sessionId) {
-  return path.join(SESSION_ROOT, sessionId);
+  return path.join(activeSessionRoot, sessionId);
 }
 
 function sessionFile(sessionId) {
@@ -178,12 +177,14 @@ function recommendationFile(sessionId, recommendationId) {
 }
 
 function requireLatestSessionId() {
-  ensureDir(SESSION_ROOT);
+  if (!fs.existsSync(activeSessionRoot)) {
+    throw new Error('No prompt-lab sessions found. Run `node scripts/prompt-lab.js init` first.');
+  }
   const entries = fs
-    .readdirSync(SESSION_ROOT, { withFileTypes: true })
+    .readdirSync(activeSessionRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => {
-      const fullPath = path.join(SESSION_ROOT, entry.name);
+      const fullPath = path.join(activeSessionRoot, entry.name);
       return {
         name: entry.name,
         mtimeMs: fs.statSync(fullPath).mtimeMs,
@@ -671,13 +672,13 @@ function saveSession(session) {
   writeJson(sessionFile(session.sessionId), session);
 }
 
-function loadSession(sessionId) {
+function loadSession(sessionId, evaluationStore) {
   const manifestPath = sessionFile(sessionId);
   if (!fs.existsSync(manifestPath)) {
     throw new Error(`Session not found: ${sessionId}`);
   }
   const session = readJson(manifestPath);
-  let changed = ensureBaselineSnapshot(session) || refreshSessionSummaries(session);
+  let changed = ensureBaselineSnapshot(session) || refreshSessionSummaries(session, evaluationStore);
   if (!Number.isInteger(session.runsPerIteration) || session.runsPerIteration < 1) {
     session.runsPerIteration = DEFAULT_RUNS_PER_ITERATION;
     changed = true;
@@ -720,7 +721,7 @@ function extractRunId(output) {
   return match ? match[1] : null;
 }
 
-function getRunRows(runId, profileName, scenarioId) {
+function getRunRows(evaluationStore, runId, profileName, scenarioId) {
   return evaluationStore
     .getResults(runId, { profileName, scenarioId })
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
@@ -861,8 +862,8 @@ function aggregateRunRows(rows) {
   };
 }
 
-function summarizeRun(runId, profileName, scenarioId) {
-  const results = getRunRows(runId, profileName, scenarioId);
+function summarizeRun(evaluationStore, runId, profileName, scenarioId) {
+  const results = getRunRows(evaluationStore, runId, profileName, scenarioId);
 
   if (results.length > 0) {
     return aggregateRunRows(results);
@@ -903,20 +904,20 @@ function summarizeRun(runId, profileName, scenarioId) {
   };
 }
 
-function refreshSessionSummaries(session) {
+function refreshSessionSummaries(session, evaluationStore) {
   let changed = false;
   const hasTargetDims = session.targetDimensions?.length > 0;
 
   for (const iteration of session.iterations || []) {
     if (!iteration.runId) continue;
-    const updatedSummary = summarizeRun(iteration.runId, session.profileName, session.scenarioId);
+    const updatedSummary = summarizeRun(evaluationStore, iteration.runId, session.profileName, session.scenarioId);
     if (JSON.stringify(iteration.summary || null) !== JSON.stringify(updatedSummary)) {
       iteration.summary = updatedSummary;
       changed = true;
     }
 
     if (hasTargetDims) {
-      const rows = getRunRows(iteration.runId, session.profileName, session.scenarioId);
+      const rows = getRunRows(evaluationStore, iteration.runId, session.profileName, session.scenarioId);
       const latestRows = selectLatestRowsPerDialogue(rows);
       const newTds = computeTargetDimScoreFromRows(latestRows, session.targetDimensions);
       if (iteration.targetDimScore !== newTds) {
@@ -1732,6 +1733,7 @@ function updateRecommendationMeta(session, recommendationId, patch) {
 
 async function generateRecommendation(session, options = {}) {
   const {
+    evaluationStore,
     basis = 'best',
     recommenderRef = null,
     recommenderCli = null,
@@ -1752,6 +1754,7 @@ async function generateRecommendation(session, options = {}) {
   }
 
   const basisResults = getRunRows(
+    evaluationStore,
     basisIteration.runId,
     session.profileName,
     basisIteration.scenarioId || session.scenarioId,
@@ -2315,6 +2318,7 @@ function printRecommendationSummary(artifact, options = {}) {
 }
 
 async function runSessionIteration(session, options = {}) {
+  const { evaluationStore, rootDir = ROOT, env = process.env, runChild = runChildProcess } = options;
   const judgeWasOverridden = options.judgeRef != null || options.judgeCli != null || options.judgeCliModel != null;
   const judgeSelection = parseJudgeSelection(
     {
@@ -2349,7 +2353,7 @@ async function runSessionIteration(session, options = {}) {
 
   const description = `Prompt Lab ${session.sessionId} iter ${iteration}`;
   const childArgs = [
-    CLI_PATH,
+    path.join(rootDir, 'scripts', 'eval-cli.js'),
     'run',
     '--profile',
     session.profileName,
@@ -2393,8 +2397,8 @@ async function runSessionIteration(session, options = {}) {
     '  Note: eval-cli may still print its generic factorial banner; prompt-lab is running one fixed profile/scenario here.',
   );
   console.log('  Launching eval-cli...\n');
-  const childEnv = { ...process.env, [PROMPTS_ENV]: session.promptDir };
-  const { code, stdout, stderr } = await runChildProcess('node', childArgs, { cwd: ROOT, env: childEnv });
+  const childEnv = { ...env, [PROMPTS_ENV]: session.promptDir };
+  const { code, stdout, stderr } = await runChild('node', childArgs, { cwd: rootDir, env: childEnv });
   const runId = extractRunId(stdout + '\n' + stderr);
 
   if (code !== 0) {
@@ -2404,11 +2408,11 @@ async function runSessionIteration(session, options = {}) {
     throw new Error('Could not extract run ID from eval-cli output');
   }
 
-  const summary = summarizeRun(runId, session.profileName, scenarioId);
+  const summary = summarizeRun(evaluationStore, runId, session.profileName, scenarioId);
   const hasTargetDims = session.targetDimensions?.length > 0;
   let targetDimScore = null;
   if (hasTargetDims) {
-    const rows = getRunRows(runId, session.profileName, scenarioId);
+    const rows = getRunRows(evaluationStore, runId, session.profileName, scenarioId);
     const latestRows = selectLatestRowsPerDialogue(rows);
     targetDimScore = computeTargetDimScoreFromRows(latestRows, session.targetDimensions);
   }
@@ -2587,8 +2591,8 @@ async function handleInit() {
   console.log(`  3. Or ask for a model rewrite: node scripts/prompt-lab.js recommend --session ${sessionId}`);
 }
 
-async function handleFork() {
-  const sourceSession = loadSession(resolveSessionId());
+async function handleFork(evaluationStore) {
+  const sourceSession = loadSession(resolveSessionId(), evaluationStore);
   const fromSpec = getOption('from', 'current');
   const resolvedIteration = ['current', 'baseline'].includes(fromSpec)
     ? null
@@ -2663,9 +2667,11 @@ async function handleFork() {
   console.log(`  2. Or branch-autotune immediately: node scripts/prompt-lab.js autotune --session ${sessionId}`);
 }
 
-async function handleRun() {
-  const session = loadSession(resolveSessionId());
+async function handleRun(evaluationStore, runtime = {}) {
+  const session = loadSession(resolveSessionId(), evaluationStore);
   await runSessionIteration(session, {
+    ...runtime,
+    evaluationStore,
     scenarioId: getOption('scenario', session.scenarioId),
     modelRef: getOption('model', session.modelRef),
     judgeRef: getOption('judge', null),
@@ -2683,12 +2689,13 @@ async function handleRun() {
   });
 }
 
-async function handleRecommend() {
-  const session = loadSession(resolveSessionId());
+async function handleRecommend(evaluationStore) {
+  const session = loadSession(resolveSessionId(), evaluationStore);
   const cliGuidance = getOption('guidance', null);
   if (cliGuidance) session.guidance = cliGuidance;
   const targetScope = normalizeTargetScope(getOption('target', 'both'));
   const artifact = await generateRecommendation(session, {
+    evaluationStore,
     basis: getOption('basis', 'best'),
     recommenderRef: getOption('recommender', null),
     recommenderCli: getOption('recommender-cli', null),
@@ -2707,8 +2714,8 @@ async function handleRecommend() {
   }
 }
 
-async function handleAutotune() {
-  const session = loadSession(resolveSessionId());
+async function handleAutotune(evaluationStore, runtime = {}) {
+  const session = loadSession(resolveSessionId(), evaluationStore);
   // Allow CLI --target-dims and --guidance to override session's stored values
   const cliTargetDims = parseTargetDims(getOption('target-dims', null));
   if (cliTargetDims) session.targetDimensions = cliTargetDims;
@@ -2756,6 +2763,8 @@ async function handleAutotune() {
   if (!getBestScoredIteration(session)) {
     console.log('\nNo scored baseline iteration found. Running a baseline iteration first.\n');
     const baselineEntry = await runSessionIteration(session, {
+      ...runtime,
+      evaluationStore,
       scenarioId: session.scenarioId,
       modelRef: session.modelRef,
       judgeRef: judgeSelection.judgeRef,
@@ -2773,7 +2782,7 @@ async function handleAutotune() {
   }
 
   for (let pass = 1; pass <= rounds; pass++) {
-    const refreshed = loadSession(session.sessionId);
+    const refreshed = loadSession(session.sessionId, evaluationStore);
     const basisIteration = resolveIterationSpec(refreshed, basisMode);
     if (!basisIteration) {
       throw new Error('Autotune requires at least one scored iteration.');
@@ -2800,6 +2809,7 @@ async function handleAutotune() {
     const recommendationStartedAt = Date.now();
 
     const artifact = await generateRecommendation(refreshed, {
+      evaluationStore,
       basis: basisMode,
       recommenderRef,
       recommenderCli,
@@ -2830,6 +2840,8 @@ async function handleAutotune() {
     console.log('  Step 3/4: Run benchmark iteration');
     const evaluationStartedAt = Date.now();
     const entry = await runSessionIteration(refreshed, {
+      ...runtime,
+      evaluationStore,
       scenarioId: refreshed.scenarioId,
       modelRef: refreshed.modelRef,
       judgeRef: judgeSelection.judgeRef,
@@ -2845,7 +2857,7 @@ async function handleAutotune() {
     });
     console.log(`  Step 3/4 complete in ${formatDuration(Date.now() - evaluationStartedAt)}`);
 
-    const latestSession = loadSession(refreshed.sessionId);
+    const latestSession = loadSession(refreshed.sessionId, evaluationStore);
     // Propagate targetDimensions to latestSession in case it was loaded fresh from disk
     latestSession.targetDimensions = refreshed.targetDimensions;
     const latestEntry = getIterationByNumber(latestSession, entry.iteration);
@@ -2909,19 +2921,19 @@ async function handleAutotune() {
     }
   }
 
-  const finished = loadSession(session.sessionId);
+  const finished = loadSession(session.sessionId, evaluationStore);
   console.log('');
   printIterationTable(finished);
 }
 
-async function handleImport() {
-  const session = loadSession(resolveSessionId());
+async function handleImport(evaluationStore) {
+  const session = loadSession(resolveSessionId(), evaluationStore);
   const runId = getOption('run-id', null);
   if (!runId) throw new Error('--run-id is required');
   const modelRef = getOption('model', session.modelRef);
   const notes = getOption('notes', null);
 
-  const rows = getRunRows(runId, session.profileName, session.scenarioId);
+  const rows = getRunRows(evaluationStore, runId, session.profileName, session.scenarioId);
   if (rows.length === 0) {
     // Try without profile filter in case the run used a different profile name
     const allRows = evaluationStore.getResults(runId, { scenarioId: session.scenarioId });
@@ -2982,8 +2994,8 @@ async function handleImport() {
   console.log(`  Rows: ${latestRows.length}`);
 }
 
-async function handleReset() {
-  const session = loadSession(resolveSessionId());
+async function handleReset(evaluationStore) {
+  const session = loadSession(resolveSessionId(), evaluationStore);
   const fromSpec = getOption('from', 'baseline');
   const sourceDir = resolvePromptDirSpec(session, fromSpec);
 
@@ -2997,8 +3009,8 @@ async function handleReset() {
   }
 }
 
-async function handleDiff() {
-  const session = loadSession(resolveSessionId());
+async function handleDiff(evaluationStore) {
+  const session = loadSession(resolveSessionId(), evaluationStore);
   const fromSpec = getOption('from', 'baseline');
   const toSpec = getOption('to', 'current');
   const fromDir = resolvePromptDirSpec(session, fromSpec);
@@ -3024,8 +3036,8 @@ async function handleDiff() {
   }
 }
 
-async function handleStatus() {
-  const session = loadSession(resolveSessionId());
+async function handleStatus(evaluationStore) {
+  const session = loadSession(resolveSessionId(), evaluationStore);
   printPromptFiles(session);
   printIterationTable(session);
   printRecommendationTable(session);
@@ -3047,39 +3059,86 @@ async function handleStatus() {
   }
 }
 
-async function main() {
-  ensureDir(SESSION_ROOT);
-
+async function dispatchCommand(command, evaluationStore = null, runtime = {}) {
   switch (command) {
     case 'init':
       await handleInit();
-      return;
+      return 0;
     case 'fork':
-      await handleFork();
-      return;
+      await handleFork(evaluationStore);
+      return 0;
     case 'run':
-      await handleRun();
-      return;
+      await handleRun(evaluationStore, runtime);
+      return 0;
     case 'status':
-      await handleStatus();
-      return;
+      await handleStatus(evaluationStore);
+      return 0;
     case 'recommend':
-      await handleRecommend();
-      return;
+      await handleRecommend(evaluationStore);
+      return 0;
     case 'autotune':
-      await handleAutotune();
-      return;
+      await handleAutotune(evaluationStore, runtime);
+      return 0;
     case 'import':
-      await handleImport();
-      return;
+      await handleImport(evaluationStore);
+      return 0;
     case 'reset':
-      await handleReset();
-      return;
+      await handleReset(evaluationStore);
+      return 0;
     case 'diff':
-      await handleDiff();
-      return;
+      await handleDiff(evaluationStore);
+      return 0;
     default:
       usage();
+      return 0;
+  }
+}
+
+function preflightSessionCommand(command) {
+  if (!SESSION_COMMANDS.has(command)) return;
+  if (command === 'import' && !getOption('run-id', null)) {
+    throw new Error('--run-id is required');
+  }
+  const sessionId = resolveSessionId();
+  if (!fs.existsSync(sessionFile(sessionId))) {
+    throw new Error(`Session not found: ${sessionId}`);
+  }
+}
+
+export async function main(
+  rawArgs = process.argv.slice(2),
+  {
+    evaluationStore = null,
+    createStore,
+    rootDir = ROOT,
+    env = process.env,
+    sessionRoot = path.join(rootDir, 'tmp', 'prompt-lab'),
+    runChild = runChildProcess,
+  } = {},
+) {
+  const previousArgs = args;
+  const previousSessionRoot = activeSessionRoot;
+  args = [...rawArgs];
+  activeSessionRoot = sessionRoot;
+
+  try {
+    const command = args[0] || 'help';
+    if (command === 'init') return await dispatchCommand(command);
+    if (!SESSION_COMMANDS.has(command)) return await dispatchCommand(command);
+
+    preflightSessionCommand(command);
+    return await withEvaluationScriptStore(
+      async (store) => dispatchCommand(command, store, { rootDir, env, runChild }),
+      {
+        rootDir,
+        env,
+        evaluationStore,
+        createStore,
+      },
+    );
+  } finally {
+    args = previousArgs;
+    activeSessionRoot = previousSessionRoot;
   }
 }
 
@@ -3093,9 +3152,14 @@ export {
   validatePromptCandidate,
 };
 
-if (isDirectExecution) {
-  main().catch((error) => {
-    console.error(`\nError: ${error.message}`);
-    process.exit(1);
-  });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().then(
+    (code) => {
+      process.exitCode = code;
+    },
+    (error) => {
+      console.error(`\nError: ${error.message}`);
+      process.exitCode = 1;
+    },
+  );
 }

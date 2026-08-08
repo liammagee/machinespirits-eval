@@ -1,13 +1,13 @@
 ---
 id: refactor-token-budget-store-ownership
 title: Give token-budget reporting explicit evaluation-store ownership
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-08
-updated: 2026-08-08
+updated: 2026-08-09
 branch: codex/refactor-token-budget-store-ownership
 verification: >-
   Import safety, argument and child-run parity, database-free help and failed
@@ -19,6 +19,8 @@ claim_status: planned
 depends_on:
   - refactor-operational-ingest-seed-store-ownership
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/588
   notes:
     - docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md
   code:
@@ -81,3 +83,6 @@ Log:
   sandboxed full run failed only because HTTP tests could not bind loopback;
   the authorized rerun was wholly green. No model call or production data
   write occurred; direct facade ownership is now two live/package consumers.
+- 2026-08-09 — PR #588 merged as `d8a266ff`; generated workplan views were
+  refreshed on `main` at `87dba4dc`. All declared verification and CI gates
+  passed, so this ownership slice is done.

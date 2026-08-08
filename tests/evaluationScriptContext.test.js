@@ -39,6 +39,7 @@ const OWNED_RUN_SCRIPTS = [
 ];
 const OWNED_INGEST_SEED_SCRIPTS = ['scripts/ingest-pilot-sessions.js', 'scripts/seed-db.js'];
 const OWNED_TOKEN_BUDGET_SCRIPTS = ['scripts/test-token-budget.js'];
+const OWNED_PROMPT_LAB_SCRIPTS = ['scripts/prompt-lab.js'];
 
 after(() => {
   for (const tempDir of tempDirs) fs.rmSync(tempDir, { recursive: true, force: true });
@@ -186,6 +187,43 @@ describe('evaluation operational-script context', () => {
       assert.match(source, /export async function main/u, relativePath);
       assert.doesNotMatch(source, /process\.exit\(/u, relativePath);
     }
+  });
+
+  it('gives prompt-lab orchestration an explicit, naturally closing store boundary', () => {
+    for (const relativePath of OWNED_PROMPT_LAB_SCRIPTS) {
+      const source = fs.readFileSync(path.join(ROOT_DIR, relativePath), 'utf8');
+      assert.doesNotMatch(source, /from ['"]\.\.\/services\/evaluationStore\.js['"]/u, relativePath);
+      assert.match(source, /withEvaluationScriptStore/u, relativePath);
+      assert.match(source, /export async function main/u, relativePath);
+      assert.doesNotMatch(source, /process\.exit\(/u, relativePath);
+    }
+  });
+
+  it('keeps direct prompt-lab help and invalid session admission database-free', () => {
+    const fixture = makeContext('prompt-lab-cli-admission');
+    const env = {
+      ...process.env,
+      EVAL_DB_PATH: fixture.databasePath,
+      EVAL_LOGS_DIR: fixture.logsRoot,
+      MS_DATA_HOME: path.join(fixture.tempDir, 'data-home'),
+    };
+    const help = spawnSync(process.execPath, ['scripts/prompt-lab.js', '--help'], {
+      cwd: ROOT_DIR,
+      env,
+      encoding: 'utf8',
+    });
+    assert.equal(help.status, 0, help.stderr);
+    assert.match(help.stdout, /Prompt Lab/u);
+    assert.equal(fs.existsSync(fixture.databasePath), false);
+
+    const missing = spawnSync(
+      process.execPath,
+      ['scripts/prompt-lab.js', 'status', '--session', 'missing-store-ownership-fixture'],
+      { cwd: ROOT_DIR, env, encoding: 'utf8' },
+    );
+    assert.equal(missing.status, 1, missing.stderr);
+    assert.match(missing.stderr, /Session not found/u);
+    assert.equal(fs.existsSync(fixture.databasePath), false);
   });
 
   it('keeps token-budget help and failed-generation paths database-free', async () => {
