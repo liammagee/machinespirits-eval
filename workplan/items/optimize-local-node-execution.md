@@ -1,13 +1,13 @@
 ---
 id: optimize-local-node-execution
 title: Reduce measured local Node development-loop latency
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
 source: manual
 created: 2026-08-08
-updated: 2026-08-08
+updated: 2026-08-09
 branch: codex/local-node-speedups
 verification: >-
   Cold and warm benchmarks, cache-invalidation checks, focused runner tests,
@@ -18,6 +18,8 @@ verification: >-
 claim_status: planned
 depends_on: []
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/586
   items:
     - codebase-refactoring-program
 tags:
@@ -86,3 +88,6 @@ Log:
 - 2026-08-08 — After safely fast-forwarding three non-overlapping upstream
   commits, the comprehensive optimized local gate passed 637 root files / 8,143
   tests and 11 tutor-core files / 137 tests, with zero failures or skips.
+- 2026-08-09 — PR #586 merged as `bba5e70c`. The declared performance,
+  invalidation, file-accounting, compatibility, isolation, and failure-visibility
+  checks were green, so this bounded local-execution optimization is done.
