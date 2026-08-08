@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-08T21:11:46.451Z",
+  "generated": "2026-08-08T21:13:45.977Z",
   "counts": {
-    "total": 465,
+    "total": 466,
     "byStatus": {
-      "done": 437,
+      "done": 438,
       "blocked": 6,
       "dropped": 9,
       "active": 1,
@@ -15,7 +15,7 @@
       "research": 75,
       "experiment": 77,
       "infra": 96,
-      "maintenance": 196,
+      "maintenance": 197,
       "content": 3,
       "ops": 10,
       "paper": 8
@@ -263,7 +263,8 @@
           "refactor-longitudinal-report-store-ownership",
           "refactor-operational-score-store-ownership",
           "refactor-operational-run-store-ownership",
-          "refactor-operational-ingest-seed-store-ownership"
+          "refactor-operational-ingest-seed-store-ownership",
+          "refactor-token-budget-store-ownership"
         ]
       },
       "tags": [
@@ -477,8 +478,8 @@
       "milestone": "paper-2-0"
     },
     {
-      "id": "refactor-operational-ingest-seed-store-ownership",
-      "title": "Give pilot ingestion and seed data explicit evaluation-store ownership",
+      "id": "refactor-token-budget-store-ownership",
+      "title": "Give token-budget reporting explicit evaluation-store ownership",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -486,11 +487,11 @@
       "source": "review",
       "created": "2026-08-08",
       "updated": "2026-08-08",
-      "branch": "codex/refactor-operational-ingest-seed-store-ownership",
-      "verification": "Lifecycle, help and empty-data admission, pilot helper, seed persistence, database-path isolation, boundary inventory, hermetic root and tutor-core, risk coverage, source, lint, formatting, manifest, and cycle gates prove both scripts own and close their evaluation stores without changing persisted pilot or seed payloads.",
+      "branch": "codex/refactor-token-budget-store-ownership",
+      "verification": "Import safety, argument and child-run parity, database-free help and failed generation, injected versus owned-store disposal, deterministic report rendering, boundary inventory, hermetic, risk coverage, source, lint, formatting, manifest, and cycle gates prove token-budget reporting owns one bounded evaluation store without changing its experiment or report semantics.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-operational-run-store-ownership"
+        "refactor-operational-ingest-seed-store-ownership"
       ],
       "links": {
         "notes": [
@@ -498,25 +499,21 @@
         ],
         "code": [
           "services/evaluationStore/scriptContext.js",
-          "services/evaluationDataPaths.js",
           "config/evaluation-store-boundary-inventory.json",
-          "scripts/ingest-pilot-sessions.js",
-          "scripts/seed-db.js",
+          "scripts/test-token-budget.js",
           "tests/evaluationScriptContext.test.js",
-          "tests/evaluationStoreBoundaryInventory.test.js",
-          "tests/pilot.test.js"
+          "tests/evaluationStoreBoundaryInventory.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-operational-run-store-ownership"
+          "refactor-operational-ingest-seed-store-ownership"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
         "operational-scripts",
-        "pilot",
-        "seed-data",
+        "token-budget",
         "dependency-injection",
         "lifecycle",
         "maintainability"
@@ -3578,6 +3575,56 @@
         "provenance",
         "message-chain",
         "hermetic"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-operational-ingest-seed-store-ownership",
+      "title": "Give pilot ingestion and seed data explicit evaluation-store ownership",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/refactor-operational-ingest-seed-store-ownership",
+      "verification": "Lifecycle, help and empty-data admission, pilot helper, seed persistence, database-path isolation, boundary inventory, hermetic root and tutor-core, risk coverage, source, lint, formatting, manifest, and cycle gates prove both scripts own and close their evaluation stores without changing persisted pilot or seed payloads.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-operational-run-store-ownership"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/583"
+        ],
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore/scriptContext.js",
+          "services/evaluationDataPaths.js",
+          "config/evaluation-store-boundary-inventory.json",
+          "scripts/ingest-pilot-sessions.js",
+          "scripts/seed-db.js",
+          "tests/evaluationScriptContext.test.js",
+          "tests/evaluationStoreBoundaryInventory.test.js",
+          "tests/pilot.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-operational-run-store-ownership"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "operational-scripts",
+        "pilot",
+        "seed-data",
+        "dependency-injection",
+        "lifecycle",
+        "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
     },
