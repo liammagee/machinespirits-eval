@@ -1,12 +1,12 @@
 {
-  "generated": "2026-08-08T12:12:48.416Z",
+  "generated": "2026-08-08T12:23:45.833Z",
   "counts": {
     "total": 464,
     "byStatus": {
-      "done": 436,
+      "done": 437,
       "blocked": 6,
       "dropped": 8,
-      "active": 2,
+      "active": 1,
       "archived": 4,
       "triaged": 5,
       "review": 3
@@ -303,26 +303,6 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "harness-untangling-contract-split",
-      "title": "Untangling 2: split the standing text into a safety contract and a teaching charter",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-02",
-      "updated": "2026-08-04",
-      "verification": "Gate registered before any change: stage 1 — the two documents concatenated reproduce the current speaker prompt BYTE-EXACTLY (unit test pins it); no behavior change is permitted at this stage. Stage 2 (later, separately gated) — divergence: teaching-charter edits must leave a frozen-replay leak probe at zero, and safety edits must leave the repertoire scorecard unchanged.",
-      "claim_status": "methods",
-      "depends_on": [
-        "adaptation-plan-3-phase-s"
-      ],
-      "tags": [
-        "tutor-stub",
-        "harness"
-      ]
     },
     {
       "id": "a1-human-learner-validation",
@@ -12527,6 +12507,26 @@
           "https://github.com/liammagee/machinespirits-eval/pull/444"
         ]
       },
+      "tags": [
+        "tutor-stub",
+        "harness"
+      ]
+    },
+    {
+      "id": "harness-untangling-contract-split",
+      "title": "Untangling 2: split the standing text into a safety contract and a teaching charter",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-02",
+      "updated": "2026-08-08",
+      "verification": "Gate registered before any change: stage 1 — the two documents concatenated reproduce the current speaker prompt BYTE-EXACTLY (unit test pins it); no behavior change is permitted at this stage. Stage 2 (later, separately gated) — divergence: teaching-charter edits must leave a frozen-replay leak probe at zero, and safety edits must leave the repertoire scorecard unchanged.",
+      "claim_status": "methods",
+      "depends_on": [
+        "adaptation-plan-3-phase-s"
+      ],
       "tags": [
         "tutor-stub",
         "harness"
