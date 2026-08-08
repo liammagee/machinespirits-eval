@@ -1,13 +1,14 @@
 ---
 id: learner-profile-world-deconfound
 title: "Deconfound the learner-profile recovery: cross personas and worlds"
-status: triaged
+status: active
 type: experiment
 priority: P1
-owner: claude
+owner: codex
 source: manual
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-09
+branch: codex/learner-profile-world-deconfound
 verification: "Design-stage card. Before any paid dialogue: the transplanted
   persona briefs are user-adjudicated, the crossed cells and readings below
   are frozen unchanged, and the operator has explicitly authorized the paid
@@ -15,6 +16,11 @@ verification: "Design-stage card. Before any paid dialogue: the transplanted
   before any reading."
 claim_status: methods
 links:
+  config:
+    - config/learner-profile-world-deconfound.yaml
+  code:
+    - scripts/review-learner-profile-world-deconfound.js
+    - tests/learnerProfileWorldDeconfound.test.js
   notes:
     - notes/2026-08-03-adaptive-causality-living-log.md
   paper:
@@ -86,3 +92,24 @@ operator authorization at freeze, like every paid run since the grid.
 authored personas (three at most); transplanted briefs are adaptations,
 not new blind authoring; no human-learning claim. A pass licenses the
 publication closeout's crossed holdout design, not a routing policy.
+
+## Log
+
+- 2026-08-09 — Activated in an isolated worktree from post-PR-#588 main. The
+  first slice is free design work only: locate the two ratified source persona
+  briefs, author surface-only cross-world transplants, and expose the exact
+  diff for user adjudication. No model call or paid run is authorized.
+- 2026-08-09 — Recovered the exact private briefs from the sealed August
+  traces, froze both originals, and authored the record-keeper-in-Rowan and
+  tenant-in-Alder transplants. Each cell also overrides the target world's
+  public learner voice so the original world-specific persona cannot leak back
+  into the learner prompt. A zero-model review command validates the 2x2
+  crossing, five repeats per new cell, model seats, schedules, source-surface
+  exclusions, 80% reading, pending human adjudication, and absent paid
+  authorization. The proposed scope omits a third persona: the full 2x2 already
+  breaks the original confound and keeps the first run to ten dialogues.
+- 2026-08-09 — Provenance audit found that the original 88% L1 reading used
+  pressure trigger v4 plus quiet detector qd-v1, while the current tree contains
+  qd-v2. The design now pins qd-v1 and both source commits and makes exact-v1
+  restoration plus reproduction of 56/64 an explicit pre-certificate gate.
+  Merging this design does not itself make the paid experiment launch-ready.
