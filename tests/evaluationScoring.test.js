@@ -25,6 +25,11 @@ const testDbPath = path.join(
   `eval-scoring-test-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.db`,
 );
 process.env.EVAL_DB_PATH = testDbPath;
+const testLogsPath = path.join(
+  os.tmpdir(),
+  `eval-scoring-logs-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+);
+process.env.EVAL_LOGS_DIR = testLogsPath;
 
 const {
   createRun,
@@ -73,6 +78,9 @@ after(() => {
   } catch (e) {
     /* ignore */
   }
+  fs.rmSync(testLogsPath, { recursive: true, force: true });
+  delete process.env.EVAL_DB_PATH;
+  delete process.env.EVAL_LOGS_DIR;
 });
 
 function makeRun(description = 'test run') {

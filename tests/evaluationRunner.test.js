@@ -13,7 +13,7 @@
  * functions directly, avoiding the need to mock ESM modules or make real API calls.
  */
 
-import { describe, it } from 'node:test';
+import { after, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   CANONICAL_EVAL_PROFILES,
@@ -668,10 +668,20 @@ describe('storeRejudgment column propagation', () => {
 // Both are tested by scanning the source code for DB write calls.
 
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const TEST_STORE_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'evaluation-runner-store-'));
+process.env.EVAL_DB_PATH = path.join(TEST_STORE_ROOT, 'evaluations.db');
+process.env.EVAL_LOGS_DIR = path.join(TEST_STORE_ROOT, 'logs');
+
+after(() => {
+  fs.rmSync(TEST_STORE_ROOT, { recursive: true, force: true });
+  delete process.env.EVAL_DB_PATH;
+  delete process.env.EVAL_LOGS_DIR;
+});
 
 describe('evaluate / rejudge scoring parity', () => {
   // DB update functions that write score columns.

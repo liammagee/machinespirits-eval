@@ -27,6 +27,8 @@ import path from 'path';
 // Set up isolated test database BEFORE importing evaluationStore.
 const testDbPath = path.join(os.tmpdir(), `eval-prov-test-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.db`);
 process.env.EVAL_DB_PATH = testDbPath;
+const testLogsPath = path.join(os.tmpdir(), `eval-prov-logs-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`);
+process.env.EVAL_LOGS_DIR = testLogsPath;
 
 const evaluationStore = await import('../services/evaluationStore.js');
 const {
@@ -76,6 +78,8 @@ after(() => {
     /* ignore */
   }
   delete process.env.EVAL_DB_PATH;
+  fs.rmSync(testLogsPath, { recursive: true, force: true });
+  delete process.env.EVAL_LOGS_DIR;
 });
 
 // Helper: create a run and a minimal result row, return { runId, resultId }

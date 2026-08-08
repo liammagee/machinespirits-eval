@@ -120,7 +120,7 @@
     {
       "path": "tests/checkpointE2E.test.js",
       "classification": "test",
-      "modes": ["default"]
+      "modes": ["dynamic"]
     },
     {
       "path": "tests/cliBridgeDialogueEngine.test.js",
@@ -130,7 +130,7 @@
     {
       "path": "tests/dynamicDimensions.test.js",
       "classification": "test",
-      "modes": ["named"]
+      "modes": ["dynamic"]
     },
     {
       "path": "tests/evaluationRunner.test.js",

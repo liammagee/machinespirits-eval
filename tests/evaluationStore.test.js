@@ -23,6 +23,8 @@ import path from 'path';
 // so evaluationStore.js would open the production DB instead of the temp one.
 const testDbPath = path.join(os.tmpdir(), `eval-test-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.db`);
 process.env.EVAL_DB_PATH = testDbPath;
+const testLogsPath = path.join(os.tmpdir(), `eval-test-logs-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`);
+process.env.EVAL_LOGS_DIR = testLogsPath;
 
 const {
   createRun,
@@ -99,6 +101,8 @@ after(() => {
   }
   // Restore env
   delete process.env.EVAL_DB_PATH;
+  fs.rmSync(testLogsPath, { recursive: true, force: true });
+  delete process.env.EVAL_LOGS_DIR;
 });
 
 // ============================================================================
