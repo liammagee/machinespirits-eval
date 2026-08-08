@@ -136,6 +136,7 @@ links:
     - refactor-operational-score-store-ownership
     - refactor-operational-run-store-ownership
     - refactor-operational-ingest-seed-store-ownership
+    - refactor-token-budget-store-ownership
 tags:
   - refactoring
   - testing
@@ -1705,3 +1706,11 @@ Log:
   bounded disposal, isolated persistence parity, and the full local contract
   green. Direct facade ownership is down to three live/package consumers:
   prompt-lab, token-budget probing, and the package compatibility entrypoint.
+- 2026-08-08 — PR #583 merged the pilot-ingestion and seed-data cohort. Closed
+  that child and activated `refactor-token-budget-store-ownership` from
+  refreshed main `8742fdd3`; token-budget reporting is the final small
+  operational script before the separate prompt-lab macro migration.
+- 2026-08-08 — The token-budget ownership slice reached review with import-safe
+  orchestration, one bounded report store, deterministic mixed-shape report
+  coverage, and the full local contract green. Only prompt-lab and the public
+  package compatibility entrypoint still consume the legacy facade directly.

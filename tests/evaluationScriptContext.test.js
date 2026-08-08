@@ -38,6 +38,7 @@ const OWNED_RUN_SCRIPTS = [
   'scripts/run-id-director-trap-pilot.js',
 ];
 const OWNED_INGEST_SEED_SCRIPTS = ['scripts/ingest-pilot-sessions.js', 'scripts/seed-db.js'];
+const OWNED_TOKEN_BUDGET_SCRIPTS = ['scripts/test-token-budget.js'];
 
 after(() => {
   for (const tempDir of tempDirs) fs.rmSync(tempDir, { recursive: true, force: true });
@@ -175,6 +176,180 @@ describe('evaluation operational-script context', () => {
       assert.match(source, /export async function main/u, relativePath);
       assert.doesNotMatch(source, /process\.exit\(/u, relativePath);
     }
+  });
+
+  it('gives token-budget reporting an explicit, naturally closing store boundary', () => {
+    for (const relativePath of OWNED_TOKEN_BUDGET_SCRIPTS) {
+      const source = fs.readFileSync(path.join(ROOT_DIR, relativePath), 'utf8');
+      assert.doesNotMatch(source, /\.\.\/services\/evaluationStore\.js/u, relativePath);
+      assert.match(source, /withEvaluationScriptStore/u, relativePath);
+      assert.match(source, /export async function main/u, relativePath);
+      assert.doesNotMatch(source, /process\.exit\(/u, relativePath);
+    }
+  });
+
+  it('keeps token-budget help and failed-generation paths database-free', async () => {
+    const { main } = await import('../scripts/test-token-budget.js');
+    const messages = [];
+    const logger = {
+      log: (...values) => messages.push(values.join(' ')),
+      warn: (...values) => messages.push(values.join(' ')),
+      error: (...values) => messages.push(values.join(' ')),
+    };
+    let storesCreated = 0;
+    const createStore = () => {
+      storesCreated++;
+      throw new Error('evaluation store should not open');
+    };
+
+    assert.equal(await main(['--help'], { createStore, logger }), 0);
+    assert.match(messages.join('\n'), /--report-only/u);
+
+    assert.equal(
+      await main(['--levels', '256', '--runs', '1'], {
+        createStore,
+        execFile: () => {
+          throw new Error('expected generation failure');
+        },
+        logger,
+      }),
+      0,
+    );
+    assert.equal(storesCreated, 0);
+  });
+
+  it('preserves token-budget run arguments and extracts completed run IDs without a parent store', async () => {
+    const { parseTokenBudgetArgs, runAllLevels } = await import('../scripts/test-token-budget.js');
+    const options = parseTokenBudgetArgs([
+      '--model',
+      'openrouter.test-model',
+      '--levels',
+      '256,1024',
+      '--runs',
+      '2',
+      '--profiles',
+      'cell_a,cell_b',
+      '--parallelism',
+      '3',
+      '--skip-judge',
+    ]);
+    const calls = [];
+    const runIds = await runAllLevels(options, {
+      cliPath: '/repo/scripts/eval-cli.js',
+      cwd: '/repo',
+      env: { EVAL_DB_PATH: '/tmp/evaluations.db' },
+      execFile: (executable, args, execOptions) => {
+        calls.push({ executable, args, execOptions });
+        return `Run ID: eval-2026-08-08-${calls.length === 1 ? 'aaa11111' : 'bbb22222'}`;
+      },
+      logger: { log() {}, warn() {}, error() {} },
+    });
+
+    assert.deepEqual(runIds, ['eval-2026-08-08-aaa11111', 'eval-2026-08-08-bbb22222']);
+    assert.equal(calls.length, 2);
+    assert.equal(calls[0].executable, process.execPath);
+    assert.deepEqual(calls[0].args, [
+      '/repo/scripts/eval-cli.js',
+      'run',
+      '--profiles',
+      'cell_a,cell_b',
+      '--runs',
+      '2',
+      '--max-tokens',
+      '256',
+      '--model',
+      'openrouter.test-model',
+      '--parallelism',
+      '3',
+      '--description',
+      'Token budget test: max_tokens=256',
+      '--skip-rubric',
+    ]);
+    assert.equal(calls[0].execOptions.cwd, '/repo');
+    assert.equal(calls[0].execOptions.env.EVAL_DB_PATH, '/tmp/evaluations.db');
+  });
+
+  it('builds token-budget reports from one injected store and closes only owned stores', async () => {
+    const fixture = makeContext('token-budget-report');
+    const outputDir = path.join(fixture.tempDir, 'exports');
+    const rowsByRun = new Map([
+      [
+        'eval-low',
+        [
+          {
+            hyperparameters: { max_tokens: 256 },
+            profileName: 'cell_1_base_single_unified',
+            tutorFirstTurnScore: 70,
+            outputTokens: 250,
+            apiCalls: 1,
+          },
+          {
+            hyperparameters: { max_tokens: 256 },
+            profileName: 'cell_5_recog_single_unified',
+            tutorFirstTurnScore: 80,
+            outputTokens: 100,
+            apiCalls: 1,
+          },
+        ],
+      ],
+      [
+        'eval-high',
+        [
+          {
+            hyperparameters: JSON.stringify({ max_tokens: 1024 }),
+            profile_name: 'cell_1_base_single_unified',
+            tutor_first_turn_score: 90,
+            output_tokens: 500,
+            api_calls: 1,
+          },
+          {
+            hyperparameters: JSON.stringify({ max_tokens: 1024 }),
+            profile_name: 'cell_5_recog_single_unified',
+            tutor_first_turn_score: 92,
+            output_tokens: 1000,
+            api_calls: 1,
+          },
+        ],
+      ],
+    ]);
+    let closes = 0;
+    const store = {
+      getResults: (runId) => rowsByRun.get(runId) ?? [],
+      close: () => {
+        closes++;
+      },
+    };
+    const logger = { log() {}, warn() {}, error() {} };
+    const { main } = await import('../scripts/test-token-budget.js');
+    const args = ['--report-only', 'eval-low,eval-high', '--model', 'openrouter.test-model', '--runs', '2'];
+    const now = () => new Date('2026-08-08T00:00:00.000Z');
+
+    assert.equal(await main(args, { evaluationStore: store, outputDir, now, logger }), 0);
+    assert.equal(closes, 0);
+
+    const outputPath = path.join(outputDir, 'token-budget-sensitivity-2026-08-08T00-00-00.md');
+    const report = fs.readFileSync(outputPath, 'utf8');
+    assert.match(report, /\*\*Model:\*\* test-model/u);
+    assert.match(report, /\*\*Run IDs:\*\* eval-low, eval-high/u);
+    assert.match(report, /\| 256 \| cell_1_base_single_unified \| 1 \| 70\.0 \| 0\.0 \| 100% \|/u);
+    assert.match(report, /\| 1024 \| cell_5_recog_single_unified \| 1 \| 92\.0 \| 0\.0 \| 100% \|/u);
+
+    assert.equal(await main(args, { createStore: () => store, outputDir, now, logger }), 0);
+    assert.equal(closes, 1);
+
+    let failureCloses = 0;
+    const failingStore = {
+      getResults: () => {
+        throw new Error('expected report read failure');
+      },
+      close: () => {
+        failureCloses++;
+      },
+    };
+    await assert.rejects(main(args, { createStore: () => failingStore, outputDir, now, logger }), {
+      message: 'expected report read failure',
+    });
+    assert.equal(failureCloses, 1);
   });
 
   it('keeps help and empty pilot-ingestion paths database-free', async () => {
