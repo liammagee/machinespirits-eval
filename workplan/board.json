@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-08T07:05:23.291Z",
+  "generated": "2026-08-08T07:06:39.250Z",
   "counts": {
     "total": 460,
     "byStatus": {
@@ -8,8 +8,8 @@
       "dropped": 8,
       "active": 3,
       "archived": 4,
-      "triaged": 9,
-      "review": 1
+      "triaged": 7,
+      "review": 3
     },
     "byType": {
       "research": 74,
@@ -205,54 +205,6 @@
         "maintenance",
         "data-integrity",
         "worktrees"
-      ]
-    },
-    {
-      "id": "scripts-adopt-shared-data-path-resolvers",
-      "title": "Move the 52 scripts that build their own data paths onto the shared resolvers",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "verification": "The allowlist in the hardcoded-path guard is empty, and a spot check from a worktree shows each converted script opening the same file the store writes.",
-      "claim_status": "methods",
-      "links": {
-        "items": [
-          "scripts-hardcoded-data-path-guard",
-          "eval-db-writer-reader-path-split"
-        ]
-      },
-      "tags": [
-        "infra",
-        "data-integrity",
-        "backlog"
-      ]
-    },
-    {
-      "id": "store-opening-tests-own-their-paths",
-      "title": "Keep every store-opening test isolated when it is run on its own",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "verification": "A test that opens an evaluation store without setting its own database and logs paths fails the suite, so `node --test tests/<file>` can never reach the shared archive.",
-      "claim_status": "methods",
-      "links": {
-        "items": [
-          "eval-db-writer-reader-path-split",
-          "scripts-hardcoded-data-path-guard"
-        ]
-      },
-      "tags": [
-        "infra",
-        "data-integrity",
-        "testing"
       ]
     },
     {
@@ -686,6 +638,65 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "scripts-adopt-shared-data-path-resolvers",
+      "title": "Move the 52 scripts that build their own data paths onto the shared resolvers",
+      "status": "review",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/scripts-adopt-shared-data-path-resolvers",
+      "verification": "The allowlist in the hardcoded-path guard is empty, and a spot check from a worktree shows each converted script opening the same file the store writes.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "config/evaluation-data-path-allowlist.json",
+          "tests/evaluationDataPathGuard.test.js",
+          "services/evaluationDataPaths.js"
+        ],
+        "items": [
+          "scripts-hardcoded-data-path-guard",
+          "eval-db-writer-reader-path-split"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "backlog"
+      ]
+    },
+    {
+      "id": "store-opening-tests-own-their-paths",
+      "title": "Keep every store-opening test isolated when it is run on its own",
+      "status": "review",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/store-opening-tests-own-their-paths",
+      "verification": "A test that opens an evaluation store without setting its own database and logs paths fails the suite, so `node --test tests/<file>` can never reach the shared archive.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "scripts/check-test-store-paths.js",
+          "tests/testStorePathOwnership.test.js"
+        ],
+        "items": [
+          "eval-db-writer-reader-path-split",
+          "scripts-hardcoded-data-path-guard"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "testing"
+      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
