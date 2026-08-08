@@ -58,6 +58,14 @@ function parseShard(value) {
   return { index, total };
 }
 
+function parseTestConcurrency(value) {
+  const concurrency = Number(value);
+  if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 64) {
+    throw new Error(`Invalid test concurrency "${value}"; expected an integer from 1 to 64`);
+  }
+  return concurrency;
+}
+
 export function selectTestShard(files, shard) {
   if (!shard) return [...files];
   return files.filter((file) => {
@@ -80,6 +88,7 @@ export function parseRunnerArgs(argv = []) {
   let quiet = false;
   let shard = null;
   let reportDir = null;
+  let testConcurrency = null;
   const forwarded = [];
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -104,6 +113,11 @@ export function parseRunnerArgs(argv = []) {
     } else if (argument.startsWith('--report-dir=')) {
       reportDir = argument.slice('--report-dir='.length);
       if (!reportDir) throw new Error('--report-dir requires a path');
+    } else if (argument === '--test-concurrency') {
+      testConcurrency = parseTestConcurrency(argv[index + 1]);
+      index += 1;
+    } else if (argument.startsWith('--test-concurrency=')) {
+      testConcurrency = parseTestConcurrency(argument.slice('--test-concurrency='.length));
     } else if (argument === '--shard') {
       shard = parseShard(argv[index + 1]);
       index += 1;
@@ -124,6 +138,9 @@ export function parseRunnerArgs(argv = []) {
     throw new Error('Hermetic core tests reserve --reporter/--outputFile for manifest accounting');
   }
   if (shard && suite === 'core') throw new Error('Test sharding is supported only for the root suite');
+  if (testConcurrency && suite === 'core') {
+    throw new Error('Test concurrency is supported only for the root suite');
+  }
   if (shard && forwarded.length > 0) {
     throw new Error('Test sharding cannot be combined with explicit test paths or forwarded runner arguments');
   }
@@ -134,7 +151,7 @@ export function parseRunnerArgs(argv = []) {
   if (forwarded.length > 0 && suite === 'all') suite = 'root';
   if (shard && suite === 'all') suite = 'root';
 
-  return { suite, forceExit, printEnv, quiet, shard, reportDir, forwarded };
+  return { suite, forceExit, printEnv, quiet, shard, reportDir, testConcurrency, forwarded };
 }
 
 export function createIsolatedPaths(root) {
@@ -159,6 +176,7 @@ export function buildRootTestArgs({
   forceExit = false,
   forwarded = [],
   testFiles,
+  testConcurrency,
   timingPath,
   tapPath,
 } = {}) {
@@ -184,7 +202,13 @@ export function buildRootTestArgs({
             : []),
         ]
       : ['--test-reporter=tap'];
-  return ['--test', ...reporters, ...(forceExit ? ['--test-force-exit'] : []), ...selectedFiles];
+  return [
+    '--test',
+    ...reporters,
+    ...(forceExit ? ['--test-force-exit'] : []),
+    ...(testConcurrency ? [`--test-concurrency=${testConcurrency}`] : []),
+    ...selectedFiles,
+  ];
 }
 
 export function buildCoreTestArgs({ projectRoot = PROJECT_ROOT, forwarded = [], reportPath } = {}) {
@@ -229,6 +253,7 @@ export function buildTestPhases(options, projectRoot = PROJECT_ROOT, reportRoot 
         forceExit: options.forceExit,
         forwarded: options.forwarded,
         testFiles: options.shard ? selectedFiles : undefined,
+        testConcurrency: options.testConcurrency,
         timingPath: path.join(reportRoot, 'root-node-test-timings.jsonl'),
         tapPath: path.join(reportRoot, 'root-node-test-output.tap'),
       }),
