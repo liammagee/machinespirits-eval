@@ -134,6 +134,8 @@ links:
     - refactor-operational-log-reader-injection
     - refactor-longitudinal-report-store-ownership
     - refactor-operational-score-store-ownership
+    - refactor-operational-run-store-ownership
+    - refactor-operational-ingest-seed-store-ownership
 tags:
   - refactoring
   - testing
@@ -1695,3 +1697,11 @@ Log:
   contract are green; the direct facade inventory is down to five live/package
   consumers. Pilot ingestion plus seed data is the next coherent write-bearing
   cohort, while prompt-lab remains a separate macro migration.
+- 2026-08-08 — Started `refactor-operational-ingest-seed-store-ownership` from
+  post-PR-#581 main `7562e0a3`; PR #580 independently repairs the out-of-order
+  review closeout. This slice removes the two small write-bearing utilities
+  before the separate prompt-lab macro migration.
+- 2026-08-08 — The pilot-ingestion and seed-data cohort reached review with
+  bounded disposal, isolated persistence parity, and the full local contract
+  green. Direct facade ownership is down to three live/package consumers:
+  prompt-lab, token-budget probing, and the package compatibility entrypoint.

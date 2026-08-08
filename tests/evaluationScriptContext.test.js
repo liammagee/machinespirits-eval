@@ -37,6 +37,7 @@ const OWNED_RUN_SCRIPTS = [
   'scripts/run-dialogue-engine-trap-baseline.js',
   'scripts/run-id-director-trap-pilot.js',
 ];
+const OWNED_INGEST_SEED_SCRIPTS = ['scripts/ingest-pilot-sessions.js', 'scripts/seed-db.js'];
 
 after(() => {
   for (const tempDir of tempDirs) fs.rmSync(tempDir, { recursive: true, force: true });
@@ -163,6 +164,177 @@ describe('evaluation operational-script context', () => {
       assert.match(source, /withEvaluationScriptStore/u, relativePath);
       assert.match(source, /export async function main/u, relativePath);
       assert.doesNotMatch(source, /process\.exit\(/u, relativePath);
+    }
+  });
+
+  it('gives ingestion and seed-data scripts explicit, naturally closing store boundaries', () => {
+    for (const relativePath of OWNED_INGEST_SEED_SCRIPTS) {
+      const source = fs.readFileSync(path.join(ROOT_DIR, relativePath), 'utf8');
+      assert.doesNotMatch(source, /\.\.\/services\/evaluationStore\.js/u, relativePath);
+      assert.match(source, /withEvaluationScriptStore/u, relativePath);
+      assert.match(source, /export async function main/u, relativePath);
+      assert.doesNotMatch(source, /process\.exit\(/u, relativePath);
+    }
+  });
+
+  it('keeps help and empty pilot-ingestion paths database-free', async () => {
+    const { main } = await import('../scripts/ingest-pilot-sessions.js');
+    let storesCreated = 0;
+    const createStore = () => {
+      storesCreated++;
+      throw new Error('evaluation store should not open');
+    };
+
+    assert.equal(await main(['--help'], { createStore }), 0);
+    assert.equal(
+      await main([], {
+        createStore,
+        pilotStore: { listSessions: () => [] },
+      }),
+      0,
+    );
+    assert.equal(storesCreated, 0);
+  });
+
+  it('leaves injected ingest and seed stores open on bounded early returns', async () => {
+    const ingestStore = {
+      database: { prepare: () => ({ get: () => ({ run_id: 'existing-run' }) }) },
+      close: () => {
+        throw new Error('host-owned ingest store must remain open');
+      },
+    };
+    const pilotStore = {
+      listSessions: () => [{ id: 'pilot-1' }],
+    };
+    const { main: ingest } = await import('../scripts/ingest-pilot-sessions.js');
+    assert.equal(await ingest([], { evaluationStore: ingestStore, pilotStore }), 0);
+
+    const seedStore = {
+      getRun: () => ({ id: 'seed-sample-factorial' }),
+      close: () => {
+        throw new Error('host-owned seed store must remain open');
+      },
+    };
+    const { main: seed } = await import('../scripts/seed-db.js');
+    assert.equal(await seed([], { evaluationStore: seedStore }), 0);
+  });
+
+  it('closes ingest and seed stores created for bounded early returns', async () => {
+    let ingestCloses = 0;
+    const ingestStore = {
+      database: { prepare: () => ({ get: () => ({ run_id: 'existing-run' }) }) },
+      close: () => {
+        ingestCloses++;
+      },
+    };
+    const { main: ingest } = await import('../scripts/ingest-pilot-sessions.js');
+    assert.equal(
+      await ingest([], {
+        createStore: () => ingestStore,
+        pilotStore: { listSessions: () => [{ id: 'pilot-1' }] },
+      }),
+      0,
+    );
+    assert.equal(ingestCloses, 1);
+
+    let seedCloses = 0;
+    const seedStore = {
+      getRun: () => ({ id: 'seed-sample-factorial' }),
+      close: () => {
+        seedCloses++;
+      },
+    };
+    const { main: seed } = await import('../scripts/seed-db.js');
+    assert.equal(await seed([], { createStore: () => seedStore }), 0);
+    assert.equal(seedCloses, 1);
+  });
+
+  it('ingests a pilot transcript into one isolated store and matching logs root', async () => {
+    const fixture = makeContext('pilot-ingest');
+    const env = {
+      ...process.env,
+      EVAL_DB_PATH: fixture.databasePath,
+      EVAL_LOGS_DIR: fixture.logsRoot,
+      MS_DATA_HOME: path.join(fixture.tempDir, 'data-home'),
+    };
+    const store = createEvaluationStore({ rootDir: ROOT_DIR, env });
+    const session = {
+      id: 'pilot-ingest-1',
+      condition_cell: 'cell_1_base_single_unified',
+      scenario_lecture_ref: '101-lecture-1',
+      participant_pid_hash: 'participant-hash',
+      tutoring_started_at: 1,
+      tutoring_completed_at: 2,
+      total_tutoring_ms: 1,
+    };
+    const turns = [
+      { role: 'learner', content: 'I am unsure about equivalent fractions.' },
+      {
+        role: 'tutor',
+        content: 'Let us compare the numerator and denominator changes.',
+        latency_ms: 10,
+        input_tokens: 20,
+        output_tokens: 10,
+      },
+    ];
+    const pilotStore = {
+      listSessions: () => [session],
+      listTurns: () => turns,
+    };
+    const { main } = await import('../scripts/ingest-pilot-sessions.js');
+
+    try {
+      assert.equal(
+        await main([], {
+          evaluationStore: store,
+          pilotStore,
+          env,
+          rootDir: ROOT_DIR,
+          now: () => new Date('2026-08-08T00:00:00.000Z'),
+        }),
+        0,
+      );
+      const runs = store.listRuns();
+      assert.equal(runs.length, 1);
+      assert.equal(runs[0].status, 'completed');
+      const rows = store.getResults(runs[0].id);
+      assert.equal(rows.length, 1);
+      assert.equal(rows[0].learnerId, session.id);
+      assert.equal(rows[0].learnerArchitecture, 'human_pilot');
+      assert.equal(store.isOpen, true);
+      assert.equal(fs.existsSync(path.join(fixture.logsRoot, 'tutor-dialogues', `pilot-${session.id}.json`)), true);
+    } finally {
+      store.close();
+    }
+  });
+
+  it('persists the eight-row seed dataset in an isolated CLI database', () => {
+    const fixture = makeContext('seed-cli');
+    const env = {
+      ...process.env,
+      EVAL_DB_PATH: fixture.databasePath,
+      EVAL_LOGS_DIR: fixture.logsRoot,
+      MS_DATA_HOME: path.join(fixture.tempDir, 'data-home'),
+    };
+    const result = spawnSync(process.execPath, ['scripts/seed-db.js'], {
+      cwd: ROOT_DIR,
+      env,
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /8 factorial cells, 1 scenario each/u);
+
+    const store = createEvaluationStore({ rootDir: ROOT_DIR, env });
+    try {
+      const runs = store.listRuns();
+      assert.equal(runs.length, 1);
+      assert.equal(runs[0].status, 'completed');
+      assert.equal(runs[0].totalTests, 8);
+      const rows = store.getResults(runs[0].id);
+      assert.equal(rows.length, 8);
+      assert.equal(new Set(rows.map((row) => row.profileName)).size, 8);
+    } finally {
+      store.close();
     }
   });
 
