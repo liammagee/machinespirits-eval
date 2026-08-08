@@ -1,5 +1,5 @@
 schema: machinespirits.tutor-stub.learner-profile-world-deconfound.v1
-status: awaiting_user_adjudication
+status: adjudicated
 created: 2026-08-09
 
 claim_boundary: >-
@@ -8,8 +8,16 @@ claim_boundary: >-
   a routing policy, or a third persona.
 
 freeze:
-  user_adjudication: pending
-  third_persona: proposed_omit
+  user_adjudication: approved
+  adjudicated_on: 2026-08-09
+  approved_artifacts:
+    record_keeper:
+      transplant_prompt_sha256: c3df7ed04d779a7168aa19c6a5ce4c0a3aa9d17b57a192c997ea3e4851e924a6
+      public_learner_voice_sha256: 819331a334d6b616a0a582447f99886697cea029f572862a90bfb4bac5581a02
+    tenant:
+      transplant_prompt_sha256: f7dbe74d7d0539bd2233da6f41b70a1eae6d3655f2d2e33c929ceeb0e4414115
+      public_learner_voice_sha256: d7504cd63d9c9d7d7294d0d152dddb866160ef86d08ed94785d566e0bd0ce4f5
+  third_persona: omit
   third_persona_reason: >-
     The complete two-persona by two-world crossing already breaks the original
     one-persona-per-world confound. Omitting a third persona keeps the first

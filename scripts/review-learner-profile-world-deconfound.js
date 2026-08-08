@@ -135,10 +135,11 @@ export function readLearnerProfileWorldDeconfoundDesign(configPath = DEFAULT_CON
 
 export function validateLearnerProfileWorldDeconfoundDesign(design, { root = ROOT } = {}) {
   requireValue(design?.schema === EXPECTED_SCHEMA, `schema must be ${EXPECTED_SCHEMA}`);
-  requireValue(design.status === 'awaiting_user_adjudication', 'status must remain awaiting_user_adjudication');
-  requireValue(design.freeze?.user_adjudication === 'pending', 'user adjudication must remain pending');
+  requireValue(design.status === 'adjudicated', 'status must remain adjudicated');
+  requireValue(design.freeze?.user_adjudication === 'approved', 'user adjudication must remain approved');
+  requireValue(/^\d{4}-\d{2}-\d{2}$/u.test(design.freeze?.adjudicated_on), 'adjudicated_on must be a date');
   requireValue(design.freeze?.paid_authorization === 'not_authorized', 'paid calls must remain not_authorized');
-  requireValue(design.freeze?.third_persona === 'proposed_omit', 'third-persona choice must remain proposed_omit');
+  requireValue(design.freeze?.third_persona === 'omit', 'third-persona choice must remain omit');
 
   validateFile(root, design.runtime?.baseline_manifest, 'baseline manifest');
   const recoveryInstrument = design.runtime?.recovery_instrument;
@@ -158,6 +159,18 @@ export function validateLearnerProfileWorldDeconfoundDesign(design, { root = ROO
   requireValue(design.runtime?.attempts_per_job === 1, 'attempts_per_job must be exactly 1 before authorization');
 
   const personaReports = Object.keys(EXPECTED_CELLS).map((personaId) => validatePersona(design, personaId, root));
+  for (const personaReport of personaReports) {
+    const approved = design.freeze?.approved_artifacts?.[personaReport.id];
+    requireValue(approved, `${personaReport.id} approved artifact hashes are required`);
+    requireValue(
+      approved.transplant_prompt_sha256 === personaReport.transplantPromptSha256,
+      `${personaReport.id} transplanted private brief changed after adjudication`,
+    );
+    requireValue(
+      approved.public_learner_voice_sha256 === personaReport.publicLearnerVoiceSha256,
+      `${personaReport.id} public learner voice changed after adjudication`,
+    );
+  }
   const cells = design.paid_design?.cells;
   requireValue(Array.isArray(cells) && cells.length === 2, 'paid design must contain exactly two crossed cells');
   const seen = new Set();
@@ -190,6 +203,7 @@ export function validateLearnerProfileWorldDeconfoundDesign(design, { root = ROO
     schema: design.schema,
     status: design.status,
     userAdjudication: design.freeze.user_adjudication,
+    adjudicatedOn: design.freeze.adjudicated_on,
     paidAuthorization: design.freeze.paid_authorization,
     thirdPersona: design.freeze.third_persona,
     dialogues,
@@ -219,7 +233,9 @@ export function renderLearnerProfileWorldDeconfoundReview(design, report) {
     '',
     'This is a zero-model review surface. It cannot launch either crossed cell.',
     '',
-    '## Proposed scope decision',
+    `Adjudicated: **${report.userAdjudication}** on ${report.adjudicatedOn}.`,
+    '',
+    '## Approved scope decision',
     '',
     `Third persona: **${report.thirdPersona}**. ${design.freeze.third_persona_reason}`,
   ];
@@ -259,13 +275,10 @@ export function renderLearnerProfileWorldDeconfoundReview(design, report) {
     `- Recovery instrument: ${report.recoveryInstrument.pressure} plus ${report.recoveryInstrument.quietVersion}.`,
     '- The current tree contains qd-v2. Restore exact qd-v1 as a frozen replay artifact and reproduce the original 56/64 reading before certification.',
     '',
-    '## Decisions required before a runner or certificate',
+    '## Remaining gates before a runner or certificate',
     '',
-    '1. Accept or revise the record-keeper transplant.',
-    '2. Accept or revise the tenant transplant.',
-    '3. Confirm the proposed omission of a third persona.',
-    '4. Restore and validate the exact qd-v1 replay instrument.',
-    '5. Separately authorize the ten paid dialogues and their named external payloads.',
+    '1. Restore and validate the exact qd-v1 replay instrument.',
+    '2. Separately authorize the ten paid dialogues and their named external payloads.',
   );
   return `${blocks.join('\n')}\n`;
 }
@@ -289,7 +302,7 @@ export function main(argv = process.argv.slice(2)) {
   if (args.json) process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   else if (args.check) {
     process.stdout.write(
-      `learner-profile world deconfound: valid zero-model design; ${report.dialogues} paid dialogues remain unauthorized; user adjudication pending\n`,
+      `learner-profile world deconfound: valid adjudicated zero-model design; ${report.dialogues} paid dialogues remain unauthorized; qd-v1 restoration pending\n`,
     );
   } else process.stdout.write(renderLearnerProfileWorldDeconfoundReview(design, report));
   return report;
