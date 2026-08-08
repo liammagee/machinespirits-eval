@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-08T22:31:54.477Z",
+  "generated": "2026-08-08T22:36:22.502Z",
   "counts": {
     "total": 467,
     "byStatus": {
       "done": 442,
       "blocked": 6,
       "dropped": 9,
-      "active": 1,
+      "active": 2,
       "archived": 4,
-      "triaged": 3,
+      "triaged": 2,
       "review": 2
     },
     "byType": {
@@ -22,36 +22,6 @@
     }
   },
   "items": [
-    {
-      "id": "learner-profile-world-deconfound",
-      "title": "Deconfound the learner-profile recovery: cross personas and worlds",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "Design-stage card. Before any paid dialogue: the transplanted persona briefs are user-adjudicated, the crossed cells and readings below are frozen unchanged, and the operator has explicitly authorized the paid run. The run is attended; delivery is verified per the golden contract before any reading.",
-      "claim_status": "methods",
-      "links": {
-        "notes": [
-          "notes/2026-08-03-adaptive-causality-living-log.md"
-        ],
-        "paper": [
-          "docs/research/paper-full-2.0.md#624-the-four-locks-why-nothing-beat-the-bare-tutor-and-what-opened-when-each-was-removed-post-hoc-except-the-claim-gate-development-tier"
-        ],
-        "items": [
-          "adaptive-causality-crossed-effects"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "learner-profiles",
-        "deconfound",
-        "prereg"
-      ]
-    },
     {
       "id": "guard-findings-feed-forward",
       "title": "Feed guard findings into the next turn's request instead of redrafting this one",
@@ -248,6 +218,44 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "learner-profile-world-deconfound",
+      "title": "Deconfound the learner-profile recovery: cross personas and worlds",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-09",
+      "branch": "codex/learner-profile-world-deconfound",
+      "verification": "Design-stage card. Before any paid dialogue: the transplanted persona briefs are user-adjudicated, the crossed cells and readings below are frozen unchanged, and the operator has explicitly authorized the paid run. The run is attended; delivery is verified per the golden contract before any reading.",
+      "claim_status": "methods",
+      "links": {
+        "config": [
+          "config/learner-profile-world-deconfound.yaml"
+        ],
+        "code": [
+          "scripts/review-learner-profile-world-deconfound.js",
+          "tests/learnerProfileWorldDeconfound.test.js"
+        ],
+        "notes": [
+          "notes/2026-08-03-adaptive-causality-living-log.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#624-the-four-locks-why-nothing-beat-the-bare-tutor-and-what-opened-when-each-was-removed-post-hoc-except-the-claim-gate-development-tier"
+        ],
+        "items": [
+          "adaptive-causality-crossed-effects"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "learner-profiles",
+        "deconfound",
+        "prereg"
+      ]
     },
     {
       "id": "a1-human-learner-validation",
