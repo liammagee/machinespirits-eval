@@ -1,27 +1,67 @@
 {
-  "generated": "2026-08-08T23:38:18.384Z",
+  "generated": "2026-08-08T23:44:14.000Z",
   "counts": {
-    "total": 470,
+    "total": 471,
     "byStatus": {
-      "done": 443,
+      "done": 444,
       "blocked": 6,
       "dropped": 9,
-      "review": 3,
+      "review": 2,
       "active": 2,
       "archived": 4,
-      "triaged": 3
+      "triaged": 4
     },
     "byType": {
       "research": 75,
       "experiment": 77,
       "infra": 98,
-      "maintenance": 199,
+      "maintenance": 200,
       "content": 3,
       "ops": 10,
       "paper": 8
     }
   },
   "items": [
+    {
+      "id": "refactor-tutor-stub-adapter-tail",
+      "title": "Finish the tutor-stub adapter boundary",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/refactor-tutor-stub-adapter-tail",
+      "verification": "The tutor-stub entrypoint is at most 2,000 lines and contains no application function above 300 lines; focused command, policy, host, terminal, process, browser/Electron, hermetic, risk-coverage, source, lint, formatting, manifest, and cycle gates preserve exact public behavior and lifecycle.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md"
+        ],
+        "code": [
+          "scripts/tutor-stub.js",
+          "services/tutorStubSessionRuntime.js",
+          "services/tutorStubSessionHost.js",
+          "services/tutorStubProcessSessionFactory.js"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "cli",
+        "application-context",
+        "terminal",
+        "lifecycle",
+        "maintainability"
+      ],
+      "milestone": "tutor-super-app"
+    },
     {
       "id": "strict-policy-null-sweep",
       "title": "Re-read the nulls that were measured while the guard wrote the tutor's turns",
@@ -118,7 +158,8 @@
       "depends_on": [],
       "links": {
         "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md"
         ],
         "items": [
           "refactor-required-run-manifest",
@@ -238,7 +279,8 @@
           "refactor-operational-ingest-seed-store-ownership",
           "refactor-token-budget-store-ownership",
           "refactor-prompt-lab-store-ownership",
-          "refactor-evaluation-store-package-compatibility-boundary"
+          "refactor-evaluation-store-package-compatibility-boundary",
+          "refactor-tutor-stub-adapter-tail"
         ]
       },
       "tags": [
@@ -488,49 +530,6 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
-    },
-    {
-      "id": "refactor-evaluation-store-package-compatibility-boundary",
-      "title": "Decide and enforce the evaluation-store package compatibility boundary",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/refactor-evaluation-store-package-compatibility-boundary",
-      "verification": "Published-package and host-consumer evidence supports an explicit retain or retire decision; package-root, service-subpath, lazy-start, explicit-factory, zero-migration-target, boundary-inventory, hermetic, source, lint, formatting, manifest, and cycle gates enforce the chosen policy.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-prompt-lab-store-ownership"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
-        ],
-        "code": [
-          "index.js",
-          "README.md",
-          "scripts/audit-evaluation-store-boundary.js",
-          "config/evaluation-store-boundary-inventory.json",
-          "tests/evaluationStoreBoundaryInventory.test.js"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-prompt-lab-store-ownership"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "evaluation",
-        "package-api",
-        "compatibility",
-        "dependency-injection",
-        "lifecycle",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
@@ -3048,6 +3047,52 @@
         "interaction",
         "persistence",
         "sqlite",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-store-package-compatibility-boundary",
+      "title": "Decide and enforce the evaluation-store package compatibility boundary",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/refactor-evaluation-store-package-compatibility-boundary",
+      "verification": "Published-package and host-consumer evidence supports an explicit retain or retire decision; package-root, service-subpath, lazy-start, explicit-factory, zero-migration-target, boundary-inventory, hermetic, source, lint, formatting, manifest, and cycle gates enforce the chosen policy.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-prompt-lab-store-ownership"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/593"
+        ],
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "index.js",
+          "README.md",
+          "scripts/audit-evaluation-store-boundary.js",
+          "config/evaluation-store-boundary-inventory.json",
+          "tests/evaluationStoreBoundaryInventory.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-prompt-lab-store-ownership"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "package-api",
+        "compatibility",
+        "dependency-injection",
+        "lifecycle",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
