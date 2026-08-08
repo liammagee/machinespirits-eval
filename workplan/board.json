@@ -1,7 +1,7 @@
 {
-  "generated": "2026-08-08T11:47:16.133Z",
+  "generated": "2026-08-08T12:12:48.416Z",
   "counts": {
-    "total": 463,
+    "total": 464,
     "byStatus": {
       "done": 436,
       "blocked": 6,
@@ -9,13 +9,13 @@
       "active": 2,
       "archived": 4,
       "triaged": 5,
-      "review": 2
+      "review": 3
     },
     "byType": {
       "research": 75,
       "experiment": 77,
       "infra": 95,
-      "maintenance": 195,
+      "maintenance": 196,
       "content": 3,
       "ops": 10,
       "paper": 8
@@ -290,7 +290,9 @@
           "refactor-eval-routes-store-injection",
           "refactor-operational-log-reader-injection",
           "refactor-longitudinal-report-store-ownership",
-          "refactor-operational-score-store-ownership"
+          "refactor-operational-score-store-ownership",
+          "refactor-operational-run-store-ownership",
+          "refactor-operational-ingest-seed-store-ownership"
         ]
       },
       "tags": [
@@ -522,6 +524,53 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "refactor-operational-ingest-seed-store-ownership",
+      "title": "Give pilot ingestion and seed data explicit evaluation-store ownership",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/refactor-operational-ingest-seed-store-ownership",
+      "verification": "Lifecycle, help and empty-data admission, pilot helper, seed persistence, database-path isolation, boundary inventory, hermetic root and tutor-core, risk coverage, source, lint, formatting, manifest, and cycle gates prove both scripts own and close their evaluation stores without changing persisted pilot or seed payloads.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-operational-run-store-ownership"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore/scriptContext.js",
+          "services/evaluationDataPaths.js",
+          "config/evaluation-store-boundary-inventory.json",
+          "scripts/ingest-pilot-sessions.js",
+          "scripts/seed-db.js",
+          "tests/evaluationScriptContext.test.js",
+          "tests/evaluationStoreBoundaryInventory.test.js",
+          "tests/pilot.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-operational-run-store-ownership"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "operational-scripts",
+        "pilot",
+        "seed-data",
+        "dependency-injection",
+        "lifecycle",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
