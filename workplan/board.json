@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-08T23:01:21.467Z",
+  "generated": "2026-08-08T23:25:08.360Z",
   "counts": {
     "total": 469,
     "byStatus": {
@@ -260,7 +260,7 @@
       "source": "manual",
       "created": "2026-08-06",
       "updated": "2026-08-09",
-      "branch": "codex/learner-profile-world-deconfound",
+      "branch": "codex/learner-profile-world-deconfound-adjudication",
       "verification": "Design-stage card. Before any paid dialogue: the transplanted persona briefs are user-adjudicated, the crossed cells and readings below are frozen unchanged, and the operator has explicitly authorized the paid run. The run is attended; delivery is verified per the golden contract before any reading.",
       "claim_status": "methods",
       "links": {
