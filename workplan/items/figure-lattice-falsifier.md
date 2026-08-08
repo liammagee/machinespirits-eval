@@ -30,6 +30,9 @@ links:
     - notes/2026-08-06-pedagogical-figure-ontology.md
   paper:
     - docs/research/paper-full-2.0.md#713-the-unit-ladder-a-seven-level-ontology-for-the-pedagogical-instrumentation
+    - docs/research/paper-full-2.0.md#714-the-ontologys-own-falsifier-pedagogical-figures-do-not-separate-on-the-features-the-harness-logs
+  items:
+    - reply-feature-stamps
 ---
 
 # The figure-lattice falsifier

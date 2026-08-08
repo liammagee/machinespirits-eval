@@ -1,7 +1,7 @@
 ---
 id: reply-feature-stamps
 title: 'Reply-feature stamps: measure what the tutor reply did, blind to the card'
-status: active
+status: done
 type: infra
 priority: P2
 owner: claude
@@ -66,9 +66,35 @@ verification: "Terminal, same day, pure computation. New unit suite
   falsifier's own flat rows are unaffected — its five forced quiet:flat
   turns are the planted bored learner at t11, 4 to 11 words each — so
   runs A/B/B' stand as recorded; the six quiet:confused rows in
-  repertoire-tags were not checked and nothing is claimed about them."
+  repertoire-tags were not checked and nothing is claimed about them.
+  THE CLEAN TEST RAN (2026-08-08, attended paid run, exit 0). Instrument
+  first: rf-v2 adds three card-blind columns (abstract-label, plain-
+  speech, bucketed echo), frozen and committed at 81870a57 BEFORE the
+  test corpus existed; the metaphor column was refused for want of
+  evidence (15 comparison frames in 1172 calibration replies, 14 of them
+  the same two phrasings). Corpus: scripts/run-figure-clean-test.js, 7
+  fresh dialogues in world_030_rowan_flat on the pinned recipe, 63
+  turns, 34 carded turns kept after the quiet-card gate. Reader:
+  scripts/analyze-figure-holdout.js, registered bar in its header —
+  top-1 against 1/K, one-sided exact binomial, pass at p < 0.05, no
+  post-hoc drops. Result on the draft text (primary): 14 of 34 = 41.2%
+  against 20%, p = 0.0039; top-2 25 of 34 = 73.5% against 40%, p =
+  0.0001; a within-corpus label shuffle averages 20.2% and reaches
+  41.2% on 0.3% of draws. Per move: settled_claim 4/6, stake 4/7,
+  grievance 3/7, demand 2/7, mockery 1/7. Sitting below leave-one-out's
+  54.2% is the expected direction. Shipped text is a NULL and stays
+  reported: 7 of 21 = 33.3% against 25%, p = 0.26, and it is
+  handicapped by construction — the exact-source guard replaced every
+  grievance draft, so training holds no grievance class while the test
+  set holds 4 grievance turns. Reader fix mid-run (eac0717c): the
+  overlap check keyed on dialogue+turn labels, which collide across
+  corpora that both number latin-d0..d6; it now keys on normalised
+  reply text, and the two corpora share no reply. Artifacts exports/
+  crossed-effects/figure-holdout-draft.json and -shipped.json."
 claim_status: methods
 links:
+  paper:
+    - docs/research/paper-full-2.0.md#714-the-ontologys-own-falsifier-pedagogical-figures-do-not-separate-on-the-features-the-harness-logs
   notes:
     - notes/2026-08-06-pedagogical-figure-ontology.md
   items:
@@ -663,34 +689,84 @@ not a second attempt at this one.
 reader already makes for every corpus: a dialogue that never completed,
 and on the shipped reading a turn where the guard shipped its template.
 
+## Result (2026-08-08): the profile holds out of sample
+
+Corpus: 7 dialogues, 63 turns, 34 carded turns kept (7 each except the
+settled claim at 6 — one slot did not fire).
+`exports/tutor-stub-outcome/figure-clean-test`, manifest beside the
+traces.
+
+**Draft reading, the registered primary. PASS.** The profile fitted on
+the 24 fresh-shadow turns names the ordered move first on **14 of 34 =
+41.2%** against the 20% bar, one-sided exact binomial **p = 0.0039**,
+and has it in the top two on 25 of 34 = 73.5% against 40%, p = 0.0001.
+Shuffling the held-out labels 400 times gives a mean of 20.2% and
+reaches 41.2% in 0.3% of trials. `figure-holdout-draft.json`.
+
+Per move: settled claim 4/6, stake 4/7, grievance 3/7, demand 2/7,
+plain words 1/7. The order is roughly the leave-one-out order, and
+plain words is last in both — the move whose only marker used to be an
+absence still ends up bottom, so `plain-speech` firing on 3 of 6
+training turns did not carry.
+
+The 41.2% sits below the leave-one-out 54.2%, which is the expected
+direction: fitting and scoring inside one corpus flatters the reader.
+The claim the clean test licenses is the smaller one, and it is the
+one that was in doubt.
+
+**Shipped reading. NULL, and handicapped.** 7 of 21 = 33.3% against a
+25% bar, p = 0.26. `figure-holdout-shipped.json`. The guard replaced
+every grievance draft in the training corpus, so the shipped profile
+has four classes, not five, while its test set still holds 4 grievance
+turns that cannot be named right by construction. Reported, not leaned
+on, per the registration.
+
+One reader fix during the run, recorded because it touched a printed
+line: the overlap check keyed on dialogue name plus turn number, and
+both corpora number their dialogues `latin-d0` to `latin-d6`, so it
+reported 4 shared turns between corpora that share none. It now
+compares reply text. No effect on any score.
+
+## Paper: §7.14 added
+
+The result went to the paper as a new section rather than to §7.13,
+which keeps its interpretive status. §7.14 carries the falsifier runs
+(0/7, 0/6, 1/7, 0/7 and the two-arm control), the merges, the recovery
+follow-up with both readings, and the two apparatus facts. Paper
+version 3.0.272.
+
+What went in and what did not: the 0/7 and its merges are the
+contribution, because §7.13 registered that falsifier and never
+reported it firing. The 41.2% goes in as the weak standard that
+survives, scoped to one world, one tutor role, five move cards and one
+model pairing. The 54.2% goes in only as the thing the clean test was
+needed to check. Nothing about the two quiet cards goes in at all —
+their turns were ordered at states the learner was not in, so they have
+no result to report.
+
 ## Next
 
-- **Now:** run the clean test, attended. `node scripts/run-figure-clean-test.js`
-  spends seven dialogues on the pinned recipe, ordering the five move
-  cards seven times each. It stops on the first failure and leaves a
-  manifest either way.
-- **Then read it once:** `node scripts/analyze-figure-holdout.js --test
-  exports/tutor-stub-outcome/figure-clean-test`. Draft reading is
-  primary. The bar is registered above and does not move.
-- **Prune nothing, still.** All three candidates this card once named are
-  withdrawn. `mockery` — the instrument had no column for what the move
-  is about, and now that the column exists it is `abstract-label`, not
-  metaphor; the move's own recall is unchanged at 2 of 6. `quiet:flat`
-  and `quiet:confused` — every one of their 8 turns ordered a state the
-  learner was not in, so their scores say nothing about the moves. No
-  move has evidence against it, and two are untested.
-- **The shipped reading stays blocked and that is fine.** The
-  exact-source contract is the wall and it stays; buying more dialogues
-  to work around a filter correlated with the figures would only build a
-  worse corpus. The clean test is on drafts for the same reason the
-  training profile was.
-- **The two quiet moves need a different experiment, not more turns.**
-  They can only be ordered when the detector says the learner is in that
-  state, and over 62 turns it said so three times. Testing them means
-  writing a learner that goes quiet on purpose, which is a separate card.
-- **Paper:** nothing until the clean test reads. §7.13 is the home for
-  whatever survives — the corrected chance reading of 1 in 7, the
-  unreproducibility of the calibration corpus, and, if the profile holds,
-  the fact that a card-blind reader recovers which move was ordered from
-  the reply alone. If it does not hold, that is the §7.13 sentence
-  instead, and it is the more useful one.
+- **Prune nothing.** All three candidates this card once named are
+  withdrawn. The plain-words move — the instrument had no column for
+  what the move was thought to be about, and now that the column exists
+  it is the procedure vocabulary, not metaphor; the move is recovered
+  1 of 7 held out and 2 of 6 leave-one-out, which is weak but is not
+  evidence the card does nothing. The two quiet cards — every one of
+  their 8 turns ordered a state the learner was not in, so their
+  scores say nothing about the moves.
+- **The two quiet cards need a different experiment, not more turns.**
+  They can only be ordered when the detector says the learner is in
+  that state, and over 62 turns it said so three times. Testing them
+  means writing a learner that goes quiet on purpose. Separate card.
+- **The shipped reading stays blocked and that is the right answer.**
+  The exact-source contract is the wall and it stays. Buying dialogues
+  to get past a filter that correlates with the figures would build a
+  worse corpus, and the shipped profile is missing a whole class.
+- **Do not re-run the held-out test on this stack.** The bar was fixed
+  before the corpus and it passed; running it again with a different
+  seed or a wider square would be picking the reading afterwards.
+- **Open, if the line continues:** whether the profile transfers to a
+  second world. Everything here is one world, one tutor role, five
+  cards, one model pairing, and §7.14 says so.
+- **Card status:** the work this card registered is done — instrument
+  frozen, clean test bought and read, result in the paper.
