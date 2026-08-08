@@ -1,13 +1,13 @@
 ---
 id: guard-validity-study
 title: Test whether the guards' vetoes pick the better turn
-status: review
+status: done
 type: research
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-06
-updated: 2026-08-07
+updated: 2026-08-08
 verification: >-
   For a sample of vetoed drafts, a blind pairwise comparison between the vetoed
   draft and what actually shipped, scored by a judge that never sees which is
@@ -173,3 +173,6 @@ is atomic, so no context leaks between items. Attended run on the Max plan.
   included. Decision per the plan: the main pass scores each candidate alone
   on anchored 1–5 questions; visible pairs are out. Six items lost to a burst
   of CLI failures; the main pass needs requeue-and-resume, not just retries.
+- 2026-08-08 — Closed after the 108-pair final readout and 33-turn repair
+  recheck satisfied the declared per-family comparison, with the card's
+  one-author/one-judge/one-run scope limits retained.
