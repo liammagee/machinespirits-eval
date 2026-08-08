@@ -1,7 +1,7 @@
 ---
 id: refactor-prompt-lab-store-ownership
 title: Give prompt-lab orchestration explicit evaluation-store ownership
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -20,6 +20,8 @@ claim_status: planned
 depends_on:
   - refactor-token-budget-store-ownership
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/591
   notes:
     - docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md
   code:
@@ -88,3 +90,7 @@ Log:
   zero operational facade consumers and one live/package consumer: the public
   package compatibility entrypoint. No model call or production data write
   occurred.
+- 2026-08-09 — PR #591 merged as `dead5be9`; the serialized workplan refresh
+  landed at `614fd1c4`. All declared verification and CI gates passed, so this
+  ownership slice is done and the package-compatibility decision may proceed
+  independently from refreshed `main`.

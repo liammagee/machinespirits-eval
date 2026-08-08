@@ -15,6 +15,12 @@ const pkg = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8'));
 
 // Core evaluation services
 export * as evaluationRunner from './services/evaluationRunner.js';
+/**
+ * Retained package compatibility namespace. Published clients have received
+ * this root export since at least v0.3.0; it remains lazy and import-safe.
+ * New hosts should prefer the explicit createEvaluationStore factory exported
+ * from ./services/evaluationStore/createEvaluationStore.
+ */
 export * as evaluationStore from './services/evaluationStore.js';
 export * as rubricEvaluator from './services/rubricEvaluator.js';
 export * as evalConfigLoader from './services/evalConfigLoader.js';
