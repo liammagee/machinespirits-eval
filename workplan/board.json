@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-08T07:43:23.670Z",
+  "generated": "2026-08-08T08:12:55.000Z",
   "counts": {
     "total": 461,
     "byStatus": {
-      "done": 429,
+      "done": 431,
       "blocked": 6,
       "dropped": 8,
       "active": 2,
       "archived": 4,
-      "triaged": 7,
-      "review": 5
+      "triaged": 6,
+      "review": 4
     },
     "byType": {
       "research": 74,
@@ -108,35 +108,6 @@
         "guards",
         "fallible-learner"
       ]
-    },
-    {
-      "id": "repair-evaluation-config-comparison-missing-side-winner",
-      "title": "Define missing-side winner semantics in configuration comparison",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "review",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "Configuration-comparison tests prove the reviewed policy for scenarios missing from either side, including score, difference, winner, and overall win/tie counts, without changing complete-pair behavior.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "services/evaluationStore/statisticsRepository.js",
-          "tests/evaluationStoreStatisticsRepository.test.js"
-        ],
-        "items": [
-          "refactor-evaluation-store-statistics-repository"
-        ]
-      },
-      "tags": [
-        "evaluation",
-        "statistics",
-        "correctness",
-        "compatibility"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "tutor-stub-correspondence-guard-vocabulary",
@@ -655,6 +626,36 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
+      "id": "repair-evaluation-config-comparison-missing-side-winner",
+      "title": "Define missing-side winner semantics in configuration comparison",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-08",
+      "branch": "codex/repair-evaluation-config-comparison-missing-side-winner",
+      "verification": "Configuration-comparison tests prove the reviewed policy for scenarios missing from either side, including score, difference, winner, and overall win/tie counts, without changing complete-pair behavior.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "services/evaluationStore/statisticsRepository.js",
+          "tests/evaluationStoreStatisticsRepository.test.js"
+        ],
+        "items": [
+          "refactor-evaluation-store-statistics-repository"
+        ]
+      },
+      "tags": [
+        "evaluation",
+        "statistics",
+        "correctness",
+        "compatibility"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "tutor-stub-template-rate-audit",
       "title": "Stamp every cited tutor-stub run with its measured template rate",
       "status": "review",
@@ -683,65 +684,6 @@
         "tutor-stub",
         "guards",
         "paper"
-      ]
-    },
-    {
-      "id": "scripts-adopt-shared-data-path-resolvers",
-      "title": "Move the 52 scripts that build their own data paths onto the shared resolvers",
-      "status": "review",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "branch": "codex/scripts-adopt-shared-data-path-resolvers",
-      "verification": "The allowlist in the hardcoded-path guard is empty, and a spot check from a worktree shows each converted script opening the same file the store writes.",
-      "claim_status": "methods",
-      "links": {
-        "code": [
-          "config/evaluation-data-path-allowlist.json",
-          "tests/evaluationDataPathGuard.test.js",
-          "services/evaluationDataPaths.js"
-        ],
-        "items": [
-          "scripts-hardcoded-data-path-guard",
-          "eval-db-writer-reader-path-split"
-        ]
-      },
-      "tags": [
-        "infra",
-        "data-integrity",
-        "backlog"
-      ]
-    },
-    {
-      "id": "store-opening-tests-own-their-paths",
-      "title": "Keep every store-opening test isolated when it is run on its own",
-      "status": "review",
-      "type": "infra",
-      "priority": "P3",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "branch": "codex/store-opening-tests-own-their-paths",
-      "verification": "A test that opens an evaluation store without setting its own database and logs paths fails the suite, so `node --test tests/<file>` can never reach the shared archive.",
-      "claim_status": "methods",
-      "links": {
-        "code": [
-          "scripts/check-test-store-paths.js",
-          "tests/testStorePathOwnership.test.js"
-        ],
-        "items": [
-          "eval-db-writer-reader-path-split",
-          "scripts-hardcoded-data-path-guard"
-        ]
-      },
-      "tags": [
-        "infra",
-        "data-integrity",
-        "testing"
       ]
     },
     {
@@ -15206,6 +15148,39 @@
       ]
     },
     {
+      "id": "scripts-adopt-shared-data-path-resolvers",
+      "title": "Move the 52 scripts that build their own data paths onto the shared resolvers",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/scripts-adopt-shared-data-path-resolvers",
+      "verification": "The allowlist in the hardcoded-path guard is empty, and a spot check from a worktree shows each converted script opening the same file the store writes.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "config/evaluation-data-path-allowlist.json",
+          "tests/evaluationDataPathGuard.test.js",
+          "services/evaluationDataPaths.js"
+        ],
+        "prs": [
+          574
+        ],
+        "items": [
+          "scripts-hardcoded-data-path-guard",
+          "eval-db-writer-reader-path-split"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "backlog"
+      ]
+    },
+    {
       "id": "stance-payload-comparability",
       "title": "Say what each stance was asked to do, wherever two stances are differenced",
       "status": "done",
@@ -15235,6 +15210,38 @@
         "registers",
         "stance-fidelity",
         "provenance"
+      ]
+    },
+    {
+      "id": "store-opening-tests-own-their-paths",
+      "title": "Keep every store-opening test isolated when it is run on its own",
+      "status": "done",
+      "type": "infra",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/store-opening-tests-own-their-paths",
+      "verification": "A test that opens an evaluation store without setting its own database and logs paths fails the suite, so `node --test tests/<file>` can never reach the shared archive.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "scripts/check-test-store-paths.js",
+          "tests/testStorePathOwnership.test.js"
+        ],
+        "prs": [
+          573
+        ],
+        "items": [
+          "eval-db-writer-reader-path-split",
+          "scripts-hardcoded-data-path-guard"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "testing"
       ]
     },
     {
