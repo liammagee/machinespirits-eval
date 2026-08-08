@@ -1,7 +1,7 @@
 {
-  "generated": "2026-08-08T12:23:45.833Z",
+  "generated": "2026-08-08T12:31:51.929Z",
   "counts": {
-    "total": 464,
+    "total": 465,
     "byStatus": {
       "done": 437,
       "blocked": 6,
@@ -9,12 +9,12 @@
       "active": 1,
       "archived": 4,
       "triaged": 5,
-      "review": 3
+      "review": 4
     },
     "byType": {
       "research": 75,
       "experiment": 77,
-      "infra": 95,
+      "infra": 96,
       "maintenance": 196,
       "content": 3,
       "ops": 10,
@@ -592,6 +592,34 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "optimize-local-node-execution",
+      "title": "Reduce measured local Node development-loop latency",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/local-node-speedups",
+      "verification": "Cold and warm benchmarks, cache-invalidation checks, focused runner tests, hermetic manifest accounting, workplan source validation, lint, formatting, and diff checks prove faster repeated local gates without reducing file coverage, Node 20/22 compatibility, deterministic isolation, or failure visibility.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "performance",
+        "ci"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "tutor-stub-correspondence-guard-vocabulary",
