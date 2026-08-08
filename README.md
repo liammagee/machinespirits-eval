@@ -135,6 +135,25 @@ Starts an Express server on port 8081 (configurable via `PORT` env var) with eva
 import { evaluationRunner, evaluationStore, rubricEvaluator } from '@machinespirits/eval';
 ```
 
+The root `evaluationStore` namespace is retained for compatibility with
+published package clients. It opens the default SQLite store lazily on the
+first operation. New application hosts should own and close an explicit store:
+
+```javascript
+import { createEvaluationStore } from '@machinespirits/eval/services/evaluationStore/createEvaluationStore';
+
+const evaluationStore = createEvaluationStore({ rootDir: process.cwd() });
+try {
+  // Pass evaluationStore to the runner, routes, or repository consumer.
+} finally {
+  evaluationStore.close();
+}
+```
+
+Removing the compatibility namespace is a major-version change. Internal
+runtime code must use explicit store injection rather than adding new facade
+consumers.
+
 ## Project Structure
 
 ```

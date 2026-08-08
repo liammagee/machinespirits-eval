@@ -286,3 +286,57 @@ smokes pass against isolated databases, invalid trap profiles remain
 database-free, and the executable inventory is now 23 consumers: five
 live/package, four archived one-offs, and 14 tests. The live remainder is four
 operational scripts plus the package entrypoint.
+
+## Final operational ownership follow-ups (2026-08-08 to 2026-08-09)
+
+The final four operational consumers moved behind the same explicit script
+boundary in three slices:
+
+1. Pilot ingestion and seed-data commands validate database-free early returns,
+   then share one owned or injected store across their write-bearing paths.
+2. Token-budget reporting keeps child generation store-free and acquires one
+   bounded store only while projecting completed run data.
+3. Prompt Lab shares one store across session refresh, recommendation basis,
+   run aggregation, autotune, and import commands while help, initialization,
+   and invalid admission remain database-free.
+
+No operational or application-runtime source now imports the facade. The
+inventory is 19 consumers: one package boundary, four archived one-offs, and 14
+compatibility tests.
+
+## Package compatibility decision (2026-08-09)
+
+**Decision: retain the root `evaluationStore` namespace as an intentional
+package compatibility boundary. It is not an outstanding migration target.**
+
+Evidence:
+
+- The public npm package has six published versions (`0.1.0` through `0.3.0`).
+  The audited [`0.3.0` package](https://www.npmjs.com/package/@machinespirits/eval/v/0.3.0)
+  exports `evaluationStore` from the package root with the same namespace form
+  used today.
+- The private Machine Spirits host installs `@machinespirits/eval@^0.2.1` and
+  discovers it as an extension package. Authenticated GitHub code search found
+  no direct host call to the root store namespace, but installation plus a
+  published API means absence of a visible call is not evidence that the API
+  can be removed safely.
+- The current root and service-subpath imports are side-effect free and resolve
+  to identical function bindings. The existing facade starts the historical
+  default store only on first operation, so retaining it does not reopen the
+  application-lifecycle defect this refactor removed.
+
+Policy:
+
+1. Existing package clients may continue to use `evaluationStore` from the
+   root or service subpath.
+2. New hosts use
+   `@machinespirits/eval/services/evaluationStore/createEvaluationStore`, own
+   its lifecycle explicitly, and inject it into runners/routes/consumers.
+3. No new application-runtime or operational facade consumer may be added; the
+   inventory fails if the migration-target count rises above zero.
+4. Removing the published compatibility namespace requires an explicit
+   deprecation window and a major package version.
+
+The store-boundary refactoring arm is therefore complete once the Prompt Lab
+and this package-policy slice merge: zero migration targets, one deliberately
+retained public boundary.

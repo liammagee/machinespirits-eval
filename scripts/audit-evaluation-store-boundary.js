@@ -8,6 +8,13 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const ROOT_DIR = path.resolve(path.dirname(__filename), '..');
 const DEFAULT_INVENTORY_PATH = path.join(ROOT_DIR, 'config', 'evaluation-store-boundary-inventory.json');
+const RETAINED_PACKAGE_COMPATIBILITY = Object.freeze({
+  status: 'retained',
+  publishedPackage: '@machinespirits/eval',
+  preferredNewConsumer: '@machinespirits/eval/services/evaluationStore/createEvaluationStore',
+  removalPolicy: 'major-version-only',
+});
+const NON_MIGRATION_CLASSIFICATIONS = new Set(['archived-oneoff', 'retained-package-compatibility', 'test']);
 
 function trackedSourceFiles(rootDir) {
   const output = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {
@@ -45,7 +52,7 @@ function importModes(source) {
 }
 
 function classifyConsumer(file) {
-  if (file === 'index.js') return 'package-entrypoint';
+  if (file === 'index.js') return 'retained-package-compatibility';
   if (file.startsWith('scripts/archive/')) return 'archived-oneoff';
   if (file.startsWith('tests/') || file.includes('/__tests__/')) return 'test';
   if (file.startsWith('scripts/')) return 'operational-script';
@@ -97,6 +104,10 @@ export function buildActualInventory(rootDir = ROOT_DIR) {
       liveAndPackageConsumerCount: consumers.filter(
         (consumer) => !['archived-oneoff', 'test'].includes(consumer.classification),
       ).length,
+      migrationTargetConsumerCount: consumers.filter(
+        (consumer) => !NON_MIGRATION_CLASSIFICATIONS.has(consumer.classification),
+      ).length,
+      retainedCompatibilityConsumerCount: consumerCount('retained-package-compatibility'),
       archivedConsumerCount: consumerCount('archived-oneoff'),
       testConsumerCount: consumerCount('test'),
     },
@@ -107,6 +118,7 @@ export function buildActualInventory(rootDir = ROOT_DIR) {
       servicesPattern: packageJson.exports?.['./services/*'] ?? null,
       rootNamespaceReexport:
         /export\s+\*\s+as\s+evaluationStore\s+from\s+['"]\.\/services\/evaluationStore\.js['"]/.test(indexSource),
+      compatibility: RETAINED_PACKAGE_COMPATIBILITY,
     },
   };
 }
@@ -147,7 +159,9 @@ function printSummary(inventory) {
 
   console.log('Evaluation store boundary inventory: current');
   console.log(`  facade lines: ${inventory.characterization.sourceLineCount}`);
-  console.log(`  tracked consumers: ${inventory.consumers.length} (${liveCount} live/package)`);
+  console.log(
+    `  tracked consumers: ${inventory.consumers.length} (${inventory.characterization.migrationTargetConsumerCount} migration targets; ${liveCount} live/package)`,
+  );
   for (const [classification, count] of Object.entries(counts).sort()) {
     console.log(`  ${classification}: ${count}`);
   }

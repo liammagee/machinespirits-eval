@@ -138,6 +138,7 @@ links:
     - refactor-operational-ingest-seed-store-ownership
     - refactor-token-budget-store-ownership
     - refactor-prompt-lab-store-ownership
+    - refactor-evaluation-store-package-compatibility-boundary
 tags:
   - refactoring
   - testing
@@ -1725,3 +1726,19 @@ Log:
   pass. The legacy facade now has no operational consumers; only the public
   package compatibility entrypoint remains for an explicit retain-or-retire
   decision after this slice merges.
+- 2026-08-09 — Activated
+  `refactor-evaluation-store-package-compatibility-boundary` from reviewed PR
+  #591 head while GitHub still reports that dependency open. Npm publication,
+  the published root namespace, and the private host installation justify
+  retaining the lazy facade as a semver-governed public boundary while the
+  inventory ratchets all internal migration targets at zero.
+- 2026-08-09 — Completed the package-compatibility decision to review. The
+  103-line lazy facade remains as one intentional published boundary; all
+  application-runtime and operational migration targets are zero, new hosts
+  are directed to explicit store ownership, and complete local contracts pass.
+  This closes the evaluation-store refactoring arm once PR #591 and this child
+  merge.
+- 2026-08-09 — PR #591 merged as `dead5be9` and the generated workplan refresh
+  as `614fd1c4`, closing Prompt Lab ownership. The reviewed package-boundary
+  child can now rebase onto current main and publish as the final
+  evaluation-store refactoring slice.
