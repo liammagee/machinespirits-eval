@@ -35,6 +35,11 @@
  * Usage:
  *   node scripts/analyze-figure-holdout.js --test <dir> [--train <dir>]
  *                                          [--source draft|shipped] [--trials N] [--seed N]
+ *                                          [--label <tag>]
+ *
+ * `--label` only renames the artifact, so a second corpus read with the same
+ * unchanged reader does not overwrite the first one's file. It touches no fit,
+ * no ranking and no bar. Default is empty, which writes the original name.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -49,7 +54,7 @@ const DEFAULT_TRAIN = path.join(ROOT, 'exports', 'tutor-stub-outcome', 'figure-f
 const DEFAULT_TEST = path.join(ROOT, 'exports', 'tutor-stub-outcome', 'figure-clean-test');
 
 function parseArgs(argv) {
-  const out = { train: DEFAULT_TRAIN, test: DEFAULT_TEST, source: 'draft', trials: 400, seed: 20260808 };
+  const out = { train: DEFAULT_TRAIN, test: DEFAULT_TEST, source: 'draft', trials: 400, seed: 20260808, label: '' };
   for (let i = 0; i < argv.length; i += 1) {
     const [k, inline] = argv[i].split('=');
     const val = inline !== undefined ? inline : argv[i + 1];
@@ -71,6 +76,11 @@ function parseArgs(argv) {
       if (inline === undefined) i += 1;
     } else if (k === '--seed') {
       out.seed = Number(val);
+      if (inline === undefined) i += 1;
+    } else if (k === '--label') {
+      // Filename only. Kept to word characters so it cannot walk out of the
+      // exports directory.
+      out.label = String(val ?? '').replace(/[^A-Za-z0-9_-]/g, '');
       if (inline === undefined) i += 1;
     }
   }
@@ -248,7 +258,7 @@ function main() {
     `\nREGISTERED READING: ${passed ? 'the profile HOLDS on turns it was not built from.' : 'NULL — the profile does not hold on turns it was not built from.'}`,
   );
 
-  const out = `figure-holdout-${args.source}.json`;
+  const out = args.label ? `figure-holdout-${args.label}-${args.source}.json` : `figure-holdout-${args.source}.json`;
   fs.writeFileSync(
     path.join(CE, out),
     JSON.stringify(
@@ -256,6 +266,7 @@ function main() {
         generated: 'held-out test of figure recovery (workplan card: reply-feature-stamps)',
         preRegistered:
           'Bar fixed before the test corpus existed: one-sided exact binomial on top-1 against 1/K, pass at p < 0.05.',
+        label: args.label || null,
         source: args.source,
         train: path.relative(ROOT, args.train),
         test: path.relative(ROOT, args.test),

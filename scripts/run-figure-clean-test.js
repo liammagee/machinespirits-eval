@@ -34,8 +34,15 @@
  * stops on the first failure, so a quota wall leaves a partial corpus with a
  * manifest rather than a silent hole.
  *
+ * Second use, added 2026-08-08 (card: figure-transfer-second-world). The same
+ * design run in a DIFFERENT world asks whether the profile learned the form of
+ * five tactics or the vocabulary of one argument. `--recipe` and `--world-dir`
+ * make that the only difference; every default below is what the clean test
+ * ran with, so the original command still reproduces the original corpus.
+ *
  * Usage:
  *   node scripts/run-figure-clean-test.js [--out <dir>] [--dialogues N] [--dry-run]
+ *                                         [--recipe <path>] [--world-dir <id>]
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -49,9 +56,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // quiet cards removed.
 const MOVES = ['settled_claim', 'stake', 'demand', 'mockery', 'grievance'];
 const SLOTS = [4, 5, 6, 7, 8];
-const RECIPE = path.resolve(ROOT, '..', 'ms-figure-pinned', 'corpus-recipe.json');
+const DEFAULT_RECIPE = path.resolve(ROOT, '..', 'ms-figure-pinned', 'corpus-recipe.json');
 const DEFAULT_OUT = path.join(ROOT, 'exports', 'tutor-stub-outcome', 'figure-clean-test');
-const WORLD_DIR = 'world_030_rowan_flat';
+const DEFAULT_WORLD_DIR = 'world_030_rowan_flat';
 
 /** Dialogue r orders MOVES[(slot index + r) mod 5] — one rotation per dialogue. */
 export function scheduleFor(rotation) {
@@ -59,12 +66,24 @@ export function scheduleFor(rotation) {
 }
 
 function parseArgs(argv) {
-  const out = { outDir: DEFAULT_OUT, dialogues: 7, dryRun: false };
+  const out = {
+    outDir: DEFAULT_OUT,
+    dialogues: 7,
+    dryRun: false,
+    recipe: DEFAULT_RECIPE,
+    worldDir: DEFAULT_WORLD_DIR,
+  };
   for (let i = 0; i < argv.length; i += 1) {
     const [k, inline] = argv[i].split('=');
     const val = inline !== undefined ? inline : argv[i + 1];
     if (k === '--out') {
       out.outDir = path.resolve(val);
+      if (inline === undefined) i += 1;
+    } else if (k === '--recipe') {
+      out.recipe = path.resolve(val);
+      if (inline === undefined) i += 1;
+    } else if (k === '--world-dir') {
+      out.worldDir = val;
       if (inline === undefined) i += 1;
     } else if (k === '--dialogues') {
       out.dialogues = Number(val);
@@ -78,11 +97,14 @@ function parseArgs(argv) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  if (!fs.existsSync(RECIPE)) {
-    console.error(`pinned recipe missing: ${RECIPE}`);
+  if (!fs.existsSync(args.recipe)) {
+    console.error(`pinned recipe missing: ${args.recipe}`);
     console.error('The training corpus ran from it, so without it this is a different run, not a clean test.');
     process.exit(1);
   }
+  // Which of the two registered runs this is. Same design either way; only the
+  // world (and so the recipe) differs, and the manifest should say which.
+  const transfer = args.worldDir !== DEFAULT_WORLD_DIR;
 
   const plan = Array.from({ length: args.dialogues }, (_, d) => ({
     dialogue: `latin-d${d}`,
@@ -92,11 +114,13 @@ function main() {
 
   const manifest = {
     schema: 'machinespirits.tutor-stub.figure-clean-test.v1',
-    card: 'reply-feature-stamps',
-    purpose:
-      'Held-out test: a profile trained on the 24 move turns of figure-fresh-shadow, applied to turns generated after rf-v2 was frozen.',
+    card: transfer ? 'figure-transfer-second-world' : 'reply-feature-stamps',
+    purpose: transfer
+      ? `Transfer test: the same profile trained on the 24 move turns of figure-fresh-shadow, applied to turns from a second world (${args.worldDir}), asking whether it learned the form of five tactics or the vocabulary of one argument.`
+      : 'Held-out test: a profile trained on the 24 move turns of figure-fresh-shadow, applied to turns generated after rf-v2 was frozen.',
     instrument: 'rf-v2',
-    recipe: path.relative(ROOT, RECIPE),
+    world: args.worldDir,
+    recipe: path.relative(ROOT, args.recipe),
     driftAcknowledged: true,
     moves: MOVES,
     slots: SLOTS,
@@ -117,12 +141,12 @@ function main() {
   console.log(`wrote ${path.relative(ROOT, manifestPath)}`);
 
   for (const step of plan) {
-    const traceDir = path.join(args.outDir, 'traces', WORLD_DIR, step.dialogue);
+    const traceDir = path.join(args.outDir, 'traces', args.worldDir, step.dialogue);
     const cmd = [
       'node',
       'scripts/tutor-stub.js',
       '--recipe',
-      path.relative(ROOT, RECIPE),
+      path.relative(ROOT, args.recipe),
       '--acknowledge-drift',
       '--trace-dir',
       path.relative(ROOT, traceDir),
