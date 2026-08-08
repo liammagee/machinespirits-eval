@@ -1,7 +1,7 @@
 ---
 id: refactor-operational-run-store-ownership
 title: Give operational run launchers explicit evaluation-store ownership
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -29,6 +29,8 @@ links:
     - scripts/run-id-director-trap-pilot.js
     - tests/evaluationScriptContext.test.js
     - tests/evaluationStoreBoundaryInventory.test.js
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/581
   items:
     - codebase-refactoring-program
     - refactor-operational-score-store-ownership
@@ -85,3 +87,5 @@ Log:
   sole loopback `EPERM` passed on the authorized rerun; no paid model call or
   production data write occurred. The inventory is now five live/package
   consumers, including four operational scripts.
+- 2026-08-08 — Closed after PR #581 merged as `99d8d603`; the four launchers
+  and five-consumer boundary ratchet are present on `main`.
