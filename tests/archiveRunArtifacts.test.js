@@ -1,0 +1,106 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+
+import { archiveRun, resolveArchiveDir, runDirs } from '../scripts/archive-run-artifacts.js';
+
+/** A run laid out the way the pilot runner writes one: reports and results at
+ *  the top, per-call traces in their own directory. */
+function makeRun(root, name) {
+  const dir = path.join(root, 'exports', 'tutor-stub-outcome', name);
+  fs.mkdirSync(path.join(dir, 'traces', 'world_030_rowan_flat'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'results.jsonl'), '{"world":"world_030_rowan_flat","turnCount":9}\n');
+  fs.writeFileSync(path.join(dir, 'report.md'), '# report\n');
+  fs.writeFileSync(path.join(dir, 'traces', 'world_030_rowan_flat', 'd1.jsonl'), '{"event":"turn_complete"}\n');
+  return dir;
+}
+
+function withTempCwd(fn) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'archive-run-'));
+  const dest = fs.mkdtempSync(path.join(os.tmpdir(), 'archive-dest-'));
+  const cwd = process.cwd();
+  process.chdir(root);
+  try {
+    fn({ root, dest });
+  } finally {
+    process.chdir(cwd);
+    fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(dest, { recursive: true, force: true });
+  }
+}
+
+test('copies the light layer as-is and packs traces into one archive', () => {
+  withTempCwd(({ dest }) => {
+    const run = makeRun(process.cwd(), 'pilot-1');
+    const summary = archiveRun(run, { dest });
+
+    assert.equal(summary.copied, 2, 'results.jsonl and report.md');
+    assert.equal(summary.packed, 1, 'one traces directory');
+    const out = path.join(dest, 'exports', 'tutor-stub-outcome', 'pilot-1');
+    assert.equal(fs.readFileSync(path.join(out, 'report.md'), 'utf8'), '# report\n');
+    assert.ok(fs.existsSync(path.join(out, 'results.jsonl')), 'transcripts land unpacked and greppable');
+    assert.ok(fs.existsSync(path.join(out, 'traces.tgz')), 'traces land packed');
+    assert.ok(!fs.existsSync(path.join(out, 'traces')), 'and not also unpacked');
+  });
+});
+
+test('a second pass copies nothing, so a resumed run is cheap to re-archive', () => {
+  withTempCwd(({ dest }) => {
+    const run = makeRun(process.cwd(), 'pilot-1');
+    archiveRun(run, { dest });
+    const again = archiveRun(run, { dest });
+    assert.equal(again.copied, 0);
+    assert.equal(again.packed, 0);
+    assert.equal(again.skipped, 3);
+    assert.equal(again.missing, 0);
+  });
+});
+
+test('check reports what is missing and writes nothing', () => {
+  withTempCwd(({ dest }) => {
+    const run = makeRun(process.cwd(), 'pilot-1');
+    const summary = archiveRun(run, { dest, check: true });
+    assert.equal(summary.missing, 3);
+    assert.equal(summary.copied, 0);
+    assert.equal(summary.packed, 0);
+    assert.deepEqual(fs.readdirSync(dest), []);
+  });
+});
+
+test('light-only leaves the traces behind, which is what a finished run copies', () => {
+  withTempCwd(({ dest }) => {
+    const run = makeRun(process.cwd(), 'pilot-1');
+    const summary = archiveRun(run, { dest, lightOnly: true });
+    assert.equal(summary.copied, 2);
+    assert.equal(summary.packed, 0);
+    const out = path.join(dest, 'exports', 'tutor-stub-outcome', 'pilot-1');
+    assert.ok(fs.existsSync(path.join(out, 'results.jsonl')));
+    assert.ok(!fs.existsSync(path.join(out, 'traces.tgz')));
+  });
+});
+
+test('a run whose blocks sit one level down is found by --all', () => {
+  withTempCwd(() => {
+    const parent = path.join(process.cwd(), 'exports', 'tutor-stub-outcome');
+    makeRun(process.cwd(), path.join('phaseB', 'bare--world_030'));
+    makeRun(process.cwd(), path.join('phaseB', 'contract--world_030'));
+    const found = runDirs(parent, true);
+    assert.deepEqual(
+      found.map((d) => path.basename(d)),
+      ['phaseB'],
+    );
+  });
+});
+
+test('a missing archive directory resolves to null rather than a stray path', () => {
+  const previous = process.env.EVAL_ARCHIVE_DIR;
+  process.env.EVAL_ARCHIVE_DIR = path.join(os.tmpdir(), 'no-such-archive-dir-0f1a');
+  try {
+    assert.equal(resolveArchiveDir(), null);
+  } finally {
+    if (previous === undefined) delete process.env.EVAL_ARCHIVE_DIR;
+    else process.env.EVAL_ARCHIVE_DIR = previous;
+  }
+});
