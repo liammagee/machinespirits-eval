@@ -8,7 +8,7 @@ owner: codex
 source: manual
 created: 2026-08-06
 updated: 2026-08-09
-branch: codex/learner-profile-world-deconfound
+branch: codex/learner-profile-world-deconfound-adjudication
 verification: "Design-stage card. Before any paid dialogue: the transplanted
   persona briefs are user-adjudicated, the crossed cells and readings below
   are frozen unchanged, and the operator has explicitly authorized the paid
@@ -113,3 +113,8 @@ publication closeout's crossed holdout design, not a routing policy.
   qd-v2. The design now pins qd-v1 and both source commits and makes exact-v1
   restoration plus reproduction of 56/64 an explicit pre-certificate gate.
   Merging this design does not itself make the paid experiment launch-ready.
+- 2026-08-09 — After reviewing the zero-model design output, the user approved
+  both exact transplanted persona briefs and their public learner-voice
+  overrides, and confirmed omission of a third persona. The approved prompt
+  and voice hashes are now frozen in the design. Paid authorization remains
+  absent; the next gate is exact qd-v1 restoration and 56/64 reproduction.
