@@ -119,6 +119,8 @@
     "prompt-lab:diff": "node scripts/prompt-lab.js diff",
     "model-shootout": "node scripts/model-shootout.js",
     "shootout:model": "node scripts/model-shootout.js",
+    "archive:runs": "node scripts/archive-run-artifacts.js --all exports/tutor-stub-outcome",
+    "archive:check": "node scripts/archive-run-artifacts.js --check --all exports/tutor-stub-outcome",
     "analyze:recognition-definitions": "node scripts/analyze-recognition-definitions.js",
     "analyze:effects": "node scripts/analyze-eval-results.js",
     "negative-register:grid": "node scripts/run-negative-register-effect-estimation-grid.js",
