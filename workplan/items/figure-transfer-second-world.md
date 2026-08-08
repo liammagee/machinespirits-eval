@@ -14,8 +14,12 @@ verification: 'PASS on the registered primary. A profile fitted on 24 move
   binomial p = 0.0039; 400 label shuffles average 19.8% and none reach
   41.2%. Secondaries: top-two 19/34 = 55.9% vs 40%, p = 0.044; shipped-text
   arm a registered NULL at 5/24 = 20.8% vs 25%, p = 0.75. Train and test
-  share no reply text (checked, 0). Per-move recall does NOT carry over:
-  grievance rises from 3/7 to 6/7, demand falls from 2/7 to 0/7. Artifacts
+  share no reply text (checked, 0). Per-move recall shifts but does not
+  separate at 6-7 turns per move (largest Fisher p = 0.27), so it is
+  reported untested. Post-hoc, pooled over both worlds: demand is misread
+  as the conditional stake on 9 of its 12 wrong guesses against 3
+  expected, p = 0.0004 — an instrument observation, not a world one.
+  Artifacts
   exports/crossed-effects/figure-holdout-transfer-{draft,shipped}.json.'
 claim_status: scope-bound
 links:
@@ -154,13 +158,27 @@ shared reply text between training and test, and between this test set and
 the first one. The n of 34 is the design — 35 forced cards minus the one
 turn per corpus whose dialogue did not complete.
 
-**What transfers is the total, not the composition.** World 030 read
-settled claim best (4/6) and mockery worst (1/7). Tideway reads grievance
-best (6/7) and demand not at all (0/7). So the reader is picking up
-something that survives a change of vocabulary, but which of the five
-tactics it can name changes with the world. That is a limit on the result,
-not a challenge to it, and it is worth saying in the paper alongside the
-number.
+**The per-move columns shift but do not separate.** World 030 read the
+settled claim best (4/6) and the switch to plain words worst (1/7);
+Tideway reads grievance best (6/7) and the demand not at all (0/7). At six
+or seven turns per move none of those differences is distinguishable from
+noise — the largest, grievance 3/7 against 6/7, gives Fisher p = 0.27 —
+so they are reported without a test and no per-move signature is claimed
+in either direction.
+
+**What the two worlds agree on is a confusion, found after the reading.**
+Pooling both corpora, the demand's wrong guesses land on the conditional
+stake 9 times in 12 (3 of 5 in world 030, 6 of 7 in Tideway) against 3
+expected if wrong guesses spread evenly over the four other moves,
+p = 0.0004. The stake's wrong guesses land on the demand 3 in 6, and the
+switch to plain words is absorbed by that pair on 10 of its 11 misses. The
+turns show why: the Tideway tutor states its demands as conditionals —
+"the load trace itself, showing whether movement began at the north joint
+before anywhere else on the deck. If it does, the batch — not the
+signature — carries the twist; if it doesn't, this joint isn't yet the
+first failure" — which is the form the stake card names. This is a
+hypothesis about the reply stamp's columns, not a tested result, and it is
+the live follow-up rather than a comparison of the two worlds.
 
 **What this licenses.** §7.14's scope line loosens from one world to two.
 The weak reading of the figure claim — that a card-blind reader recovers
