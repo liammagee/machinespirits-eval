@@ -223,3 +223,23 @@ the facade:
 This removes six direct operational facade consumers. The executable inventory
 is now 35 consumers: 17 live/package, four archived one-offs, and 14 tests. The
 live remainder is 16 operational scripts plus the package entrypoint.
+
+## Longitudinal live-report ownership follow-up (2026-08-08)
+
+The four A2-A5 longitudinal live reports now acquire the evaluation store only
+around modes that read result rows:
+
+1. `withEvaluationScriptStore()` creates one store for a bounded asynchronous
+   operation and closes it in `finally`; an injected host-owned store is never
+   closed by the helper.
+2. A2-A5 score modes, A4-A5 live-verification modes, and A5 canary mode use that
+   boundary. Invalid score invocations return before opening SQLite.
+3. Gate and injection-building modes retain their existing Writing Pad access
+   but do not acquire an evaluation store. CLI entrypoints publish
+   `process.exitCode` only after the owned operation and close have completed.
+
+The reports no longer import the compatibility facade. Import and usage paths
+are regression-tested against a missing explicitly selected database, while
+success and failure paths prove owned stores close exactly once. The executable
+inventory is now 31 consumers: 13 live/package, four archived one-offs, and 14
+tests. The live remainder is 12 operational scripts plus the package entrypoint.

@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { after, describe, it } from 'node:test';
 
-import { createEvaluationScriptContext } from '../services/evaluationStore/scriptContext.js';
+import { createEvaluationScriptContext, withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
 import { createEvaluationStore } from '../services/evaluationStore/createEvaluationStore.js';
 
 const ROOT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -18,6 +18,12 @@ const MIGRATED_SCRIPTS = [
   'scripts/code-dialectical-modulation.js',
   'scripts/generate-paper-figures.js',
   'scripts/render-sequence-diagram.js',
+];
+const OWNED_STORE_SCRIPTS = [
+  'scripts/report-longitudinal-drift-stage-a2-live.js',
+  'scripts/report-longitudinal-drift-stage-a3-live.js',
+  'scripts/report-longitudinal-drift-stage-a4-live.js',
+  'scripts/report-longitudinal-drift-stage-a5-live.js',
 ];
 
 after(() => {
@@ -72,12 +78,84 @@ describe('evaluation operational-script context', () => {
     assert.deepEqual(second.context.dialogueLogs.loadDialogueLog(dialogueId), { host: 'second' });
   });
 
+  it('closes stores it creates after success and failure', async () => {
+    for (const shouldThrow of [false, true]) {
+      let closes = 0;
+      const store = { close: () => (closes += 1) };
+      const operation = async (receivedStore) => {
+        assert.equal(receivedStore, store);
+        if (shouldThrow) throw new Error('expected failure');
+        return 'done';
+      };
+      const invocation = withEvaluationScriptStore(operation, {
+        rootDir: ROOT_DIR,
+        createStore: () => store,
+      });
+
+      if (shouldThrow) await assert.rejects(invocation, /expected failure/u);
+      else assert.equal(await invocation, 'done');
+      assert.equal(closes, 1);
+    }
+  });
+
+  it('does not close a host-owned injected store', async () => {
+    let closes = 0;
+    const store = { close: () => (closes += 1) };
+
+    const result = await withEvaluationScriptStore(async (receivedStore) => receivedStore, {
+      evaluationStore: store,
+    });
+
+    assert.equal(result, store);
+    assert.equal(closes, 0);
+  });
+
+  it('fails closed when no script operation is supplied', async () => {
+    await assert.rejects(withEvaluationScriptStore(null), {
+      name: 'TypeError',
+      message: 'withEvaluationScriptStore requires an operation function',
+    });
+  });
+
   it('removes the legacy facade from every migrated operational script', () => {
     for (const relativePath of MIGRATED_SCRIPTS) {
       const source = fs.readFileSync(path.join(ROOT_DIR, relativePath), 'utf8');
       assert.doesNotMatch(source, /from ['"]\.\.\/services\/evaluationStore\.js['"]/u, relativePath);
       assert.match(source, /createEvaluationScriptContext/u, relativePath);
       assert.match(source, /dialogueLogs\.loadDialogueLog/u, relativePath);
+    }
+  });
+
+  it('gives each longitudinal live report an explicit, naturally closing store boundary', () => {
+    for (const relativePath of OWNED_STORE_SCRIPTS) {
+      const source = fs.readFileSync(path.join(ROOT_DIR, relativePath), 'utf8');
+      assert.doesNotMatch(source, /\.\.\/services\/evaluationStore\.js/u, relativePath);
+      assert.match(source, /withEvaluationScriptStore/u, relativePath);
+      assert.doesNotMatch(source, /process\.exit\(/u, relativePath);
+    }
+  });
+
+  it('rejects longitudinal usage and empty score requests before opening a database', () => {
+    const cases = OWNED_STORE_SCRIPTS.flatMap((relativePath) => [
+      { relativePath, args: [], expectedStatus: 1, stderrPattern: /Usage:/u },
+      { relativePath, args: ['--score'], expectedStatus: 1, stderrPattern: /No .* triples supplied/u },
+    ]);
+
+    for (const { relativePath, args, expectedStatus, stderrPattern } of cases) {
+      const fixture = makeContext(`${path.basename(relativePath, '.js')}-${args.length}`);
+      const result = spawnSync(process.execPath, [relativePath, ...args], {
+        cwd: ROOT_DIR,
+        env: {
+          ...process.env,
+          EVAL_DB_PATH: fixture.databasePath,
+          EVAL_LOGS_DIR: fixture.logsRoot,
+          MS_DATA_HOME: path.join(fixture.tempDir, 'data-home'),
+        },
+        encoding: 'utf8',
+      });
+      assert.equal(result.status, expectedStatus, result.stderr);
+      assert.match(result.stderr, stderrPattern, relativePath);
+      assert.equal(fs.existsSync(fixture.databasePath), false, relativePath);
     }
   });
 

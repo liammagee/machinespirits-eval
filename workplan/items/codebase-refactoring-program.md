@@ -132,6 +132,7 @@ links:
     - refactor-adaptive-tutor-store-injection
     - refactor-eval-routes-store-injection
     - refactor-operational-log-reader-injection
+    - refactor-longitudinal-report-store-ownership
 tags:
   - refactoring
   - testing
@@ -1672,3 +1673,12 @@ Log:
 - 2026-08-07 — Published operational dialogue-log injection as PR #542 at
   `cffa5249` after a clean rebase onto current main. Longitudinal A2-A5 live
   report ownership remains the next migration cohort.
+- 2026-08-08 — PR #542 merged. Activated
+  `refactor-longitudinal-report-store-ownership` from refreshed main for the
+  four A2-A5 live reports: scoring, verification, and canary modes will own a
+  bounded store while validation-only modes remain evaluation-store-free.
+- 2026-08-08 — The longitudinal live-report cohort reached review with bounded
+  success/failure disposal and natural CLI completion. Direct facade ownership
+  is down to 13 live/package consumers with complete hermetic and risk parity
+  green; the remaining 12 operational scripts should now be grouped by their
+  mutation and orchestration responsibilities rather than migrated en masse.
