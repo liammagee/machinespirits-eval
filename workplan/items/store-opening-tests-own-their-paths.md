@@ -1,7 +1,7 @@
 ---
 id: store-opening-tests-own-their-paths
 title: Keep every store-opening test isolated when it is run on its own
-status: review
+status: done
 type: infra
 priority: P3
 owner: codex
@@ -15,6 +15,8 @@ links:
   code:
     - scripts/check-test-store-paths.js
     - tests/testStorePathOwnership.test.js
+  prs:
+    - 573
   items:
     - eval-db-writer-reader-path-split
     - scripts-hardcoded-data-path-guard
@@ -53,3 +55,6 @@ each sets its own paths or uses `:memory:` — the sibling of
   and `EVAL_LOGS_DIR`, or to use an in-memory store. Eight previously hidden
   dependencies on the suite-wide sandbox were repaired. All eighteen pass the
   guard, and every changed test passes when run directly.
+- 2026-08-08 — Closed after PR #573 merged. The full Node 20/22 matrix,
+  risk-coverage, lint, workplan, validation, loopback, and tutor-surface checks
+  all passed on the merged implementation.

@@ -1,7 +1,7 @@
 ---
 id: scripts-adopt-shared-data-path-resolvers
 title: Move the 52 scripts that build their own data paths onto the shared resolvers
-status: review
+status: done
 type: infra
 priority: P3
 owner: codex
@@ -16,6 +16,8 @@ links:
     - config/evaluation-data-path-allowlist.json
     - tests/evaluationDataPathGuard.test.js
     - services/evaluationDataPaths.js
+  prs:
+    - 574
   items:
     - scripts-hardcoded-data-path-guard
     - eval-db-writer-reader-path-split
@@ -56,3 +58,6 @@ first — those are the ones paid runs are read through.
   Every changed script passes `node --check`; representative analysis,
   consolidator, log-reader, and worktree-closeout paths all resolved the same
   isolated data home as the store.
+- 2026-08-08 — Closed after PR #574 merged. Both path allowlists are empty,
+  the worktree smoke checks proved shared archive resolution, and every hosted
+  check passed.
