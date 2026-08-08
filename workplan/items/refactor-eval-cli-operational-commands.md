@@ -1,13 +1,13 @@
 ---
 id: refactor-eval-cli-operational-commands
 title: Extract eval-cli operational command modules
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-05
-updated: 2026-08-05
+updated: 2026-08-08
 branch: codex/refactor-eval-cli-operational-commands
 verification: The eval-cli facade dispatches read, monitoring, lifecycle, resume, export, configuration-validation, and play commands through bounded modules while their arguments, stdout/stderr, exit codes, long-running cleanup, data selection, and side effects remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass.
 claim_status: planned
@@ -81,3 +81,5 @@ Log:
 - 2026-08-06 — Rebased without conflict onto `origin/main` at `3d5c0ded`,
   reran the focused and static gates, and opened the reviewed slice as PR #514.
   The implementation commit is `72747dec` before this PR-link follow-up.
+- 2026-08-08 — Closed after PR #514 merged; the operational command registry
+  and bounded owners are present on `main` with the recorded parity gates green.

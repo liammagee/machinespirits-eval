@@ -88,5 +88,6 @@ Log:
   generated workplan views occurred.
 - 2026-08-07 — Rebased cleanly onto current main `d437f7fb`, revalidated all 57
   focused tests and static gates, and opened PR #542 at `cffa5249`.
-- 2026-08-08 — PR #542 merged. The passive log-reader context is now the
-  foundation for the longitudinal report ownership follow-up.
+- 2026-08-08 — Closed after PR #542 merged; the passive script context and six
+  migrated consumers are present on `main` with the recorded isolation gates
+  and now underpin the merged longitudinal-report ownership follow-up.

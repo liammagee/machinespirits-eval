@@ -1,13 +1,13 @@
 ---
 id: guard-regime-fallback-census-at-scale
 title: At scale the guard regime ships canned text on most turns
-status: active
+status: done
 type: infra
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-08
 verification: >-
   DONE (2026-08-07, scripts/census-guard-template-rate.js): reads guard
   accounting out of any run's traces and reports, per condition, turns,
@@ -226,3 +226,5 @@ a description of strict. Full account on `tutor-stub-template-rate-audit`.
   `response_configuration` 587 findings (second-largest), `leak` 68,
   `release_delivery` 20; the seven already listed are unchanged. And the 62%
   is a strict-policy figure, not a harness constant — see Scope.
+- 2026-08-08 — Closed: the reusable census, policy-stamped all-run readout,
+  corrected family accounting, and Phase-B reproduction satisfy verification.
