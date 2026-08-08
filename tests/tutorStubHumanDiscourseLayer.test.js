@@ -8,9 +8,17 @@ import { fileURLToPath } from 'node:url';
 import * as pty from 'node-pty';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const dryRunCache = new Map();
 
 function tutorStubDryRun(extraArgs = [], env = {}) {
-  return JSON.parse(
+  const cacheKey = JSON.stringify([
+    extraArgs,
+    Object.entries(env).sort(([left], [right]) => left.localeCompare(right)),
+  ]);
+  const cached = dryRunCache.get(cacheKey);
+  if (cached) return structuredClone(cached);
+
+  const config = JSON.parse(
     execFileSync(
       process.execPath,
       [
@@ -26,6 +34,8 @@ function tutorStubDryRun(extraArgs = [], env = {}) {
       { cwd: ROOT, encoding: 'utf8', env: { ...process.env, ...env } },
     ),
   );
+  dryRunCache.set(cacheKey, config);
+  return structuredClone(config);
 }
 
 function plainTerminalText(value) {
