@@ -31,12 +31,16 @@ function completeAnalyses() {
       for (let repeat = 1; repeat <= NEGATIVE_REGISTER_EFFECT_GRID.repeats; repeat += 1) {
         const faithful = repeat !== 2;
         const invalid = repeat === 3 && profileIndex === 2;
+        const arm = ['ironic', 'sarcastic', 'face_threat'][profileIndex];
+        // Face threat has no validated presence question, so its rows are
+        // permanently unread and say why; the two edged arms get a reading.
+        const edged = arm !== 'face_threat';
         analyses.push({
           rowId: `${profileIndex}-${targetSignal}-${repeat}`,
           profileName,
           scenarioId,
           targetSignal,
-          arm: ['ironic', 'sarcastic', 'face_threat'][profileIndex],
+          arm,
           verdict: repeat === 1 ? 'candidate_router_breakthrough' : 'partial_uptake',
           tutorV22Score: 70 + profileIndex,
           tutorRubricVersion: '2.2',
@@ -48,6 +52,10 @@ function completeAnalyses() {
             countsAsArmEvidence: faithful && !invalid,
             countsAsExcludedNoncompliance: !faithful,
             countsAsInvalidViolation: invalid,
+            presenceMeasured: edged,
+            mannerPresence: edged
+              ? { status: 'present', reason: null }
+              : { status: 'unread', reason: 'register_not_edged' },
           },
         });
       }
@@ -96,6 +104,62 @@ describe('negative-register effect estimation grid', () => {
     assert.equal(faceThreat.assignedPositiveOutcomes, 5);
     assert.equal(faceThreat.faithfulPositiveOutcomes, 5);
     assert.equal(faceThreat.assignedTutorV22Mean, 72);
+  });
+
+  /**
+   * The faithful bucket used to be reported under a name that reads as manner
+   * while measuring cue compliance (§6.7). Each arm now says which of the two
+   * its count is, so the number cannot be read as the other one.
+   */
+  it('says per arm whether the faithful count means manner or cue compliance', () => {
+    const report = summarizeNegativeRegisterEffects(completeAnalyses());
+    const ironic = report.byArm.find((row) => row.key === 'ironic');
+    const faceThreat = report.byArm.find((row) => row.key === 'face_threat');
+
+    assert.equal(report.status, 'COMPLETE');
+    assert.equal(ironic.faithfulArmMeaning, 'manner_read');
+    assert.equal(ironic.faithfulPresenceMeasured, ironic.faithfulRows);
+    assert.deepEqual(ironic.faithfulPresenceReasons, {});
+
+    // Never licensable as manner, and not an error either — there is no
+    // question to run, so the limit is carried in the field rather than in a
+    // status that would then be red forever.
+    assert.equal(faceThreat.faithfulArmMeaning, 'cue_compliance_only');
+    assert.equal(faceThreat.faithfulPresenceMeasured, 0);
+    assert.deepEqual(faceThreat.faithfulPresenceReasons, { register_not_edged: 5 });
+  });
+
+  it('fails closed when a faithful row in an edged arm has no manner reading', () => {
+    const analyses = completeAnalyses();
+    const ironicFaithful = analyses.find((row) => row.arm === 'ironic' && row.stanceFidelity.countsAsArmEvidence);
+    ironicFaithful.stanceFidelity.presenceMeasured = false;
+    ironicFaithful.stanceFidelity.mannerPresence = { status: 'unread', reason: 'not_supplied' };
+    const report = summarizeNegativeRegisterEffects(analyses);
+
+    assert.equal(report.status, 'INCOMPLETE');
+    assert.match(report.errors.join('\n'), /ironic: 1 of 10 faithful rows have no manner-presence reading/);
+    assert.match(report.errors.join('\n'), /1 not_supplied/);
+    // The exempt reason is not smuggled into the same complaint.
+    assert.ok(!report.errors.join('\n').includes('face_threat: '));
+    assert.equal(report.byArm.find((row) => row.key === 'ironic').faithfulArmMeaning, 'cue_compliance_only');
+  });
+
+  /**
+   * Verdicts written before the presence axis existed carry neither field. They
+   * are a gap to close, not a pass — a report that quietly counted them would
+   * be the §6.7 mistake again, one layer up.
+   */
+  it('treats a verdict with no presence fields as unread rather than measured', () => {
+    const analyses = completeAnalyses();
+    for (const row of analyses) {
+      delete row.stanceFidelity.presenceMeasured;
+      delete row.stanceFidelity.mannerPresence;
+    }
+    const report = summarizeNegativeRegisterEffects(analyses);
+
+    assert.equal(report.status, 'INCOMPLETE');
+    assert.match(report.errors.join('\n'), /face_threat: 5 of 5 faithful rows .*\(5 no_presence_field\)/);
+    for (const arm of report.byArm) assert.equal(arm.faithfulArmMeaning, 'cue_compliance_only');
   });
 
   it('fails closed when coverage or required scores are incomplete', () => {

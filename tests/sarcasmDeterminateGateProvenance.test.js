@@ -109,7 +109,7 @@ test('the register marker is required on both gates, not merely heavy', () => {
   };
 
   const determinate = evaluateRegisterStanceFidelity({ registerName: 'sarcastic_determinate', ...args });
-  assert.ok(determinate.missing.includes('register_marker'), 'fixture must lack the register marker');
+  assert.ok(determinate.missing.includes('cue_compliance'), 'fixture must lack the register marker');
   assert.equal(determinate.namedTargetClaim.named, true, 'fixture must name a target claim');
   assert.equal(determinate.score, 75, 'the arithmetic that used to admit this turn is unchanged');
   assert.equal(determinate.label, 'weak_or_warm_in_costume', 'a marker-less turn cannot be faithful');
@@ -135,7 +135,7 @@ test('no weighting can let a marker-less turn reach the faithful band on either 
       'move is to name the concrete element that does the work.',
     postLearnerMessage: 'The feature is that the material pushes back and keeps the result.',
   });
-  assert.ok(decomposed.missing.includes('register_marker'));
+  assert.ok(decomposed.missing.includes('cue_compliance'));
   assert.ok(decomposed.score >= 70, 'the score still clears the band — the label rule is what stops it');
   assert.equal(decomposed.passed, false);
 
