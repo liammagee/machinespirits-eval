@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-08T22:16:49.711Z",
+  "generated": "2026-08-08T22:31:54.477Z",
   "counts": {
-    "total": 466,
+    "total": 467,
     "byStatus": {
-      "done": 441,
+      "done": 442,
       "blocked": 6,
       "dropped": 9,
       "active": 1,
@@ -15,7 +15,7 @@
       "research": 75,
       "experiment": 77,
       "infra": 96,
-      "maintenance": 197,
+      "maintenance": 198,
       "content": 3,
       "ops": 10,
       "paper": 8
@@ -112,7 +112,7 @@
       "owner": "codex",
       "source": "review",
       "created": "2026-07-24",
-      "updated": "2026-08-07",
+      "updated": "2026-08-09",
       "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
       "claim_status": "planned",
       "depends_on": [],
@@ -236,7 +236,8 @@
           "refactor-operational-score-store-ownership",
           "refactor-operational-run-store-ownership",
           "refactor-operational-ingest-seed-store-ownership",
-          "refactor-token-budget-store-ownership"
+          "refactor-token-budget-store-ownership",
+          "refactor-prompt-lab-store-ownership"
         ]
       },
       "tags": [
@@ -450,20 +451,20 @@
       "milestone": "paper-2-0"
     },
     {
-      "id": "refactor-token-budget-store-ownership",
-      "title": "Give token-budget reporting explicit evaluation-store ownership",
+      "id": "refactor-prompt-lab-store-ownership",
+      "title": "Give prompt-lab orchestration explicit evaluation-store ownership",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "branch": "codex/refactor-token-budget-store-ownership",
-      "verification": "Import safety, argument and child-run parity, database-free help and failed generation, injected versus owned-store disposal, deterministic report rendering, boundary inventory, hermetic, risk coverage, source, lint, formatting, manifest, and cycle gates prove token-budget reporting owns one bounded evaluation store without changing its experiment or report semantics.",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/refactor-prompt-lab-store-ownership",
+      "verification": "Import safety, store-free help and invalid admission, shared command-store injection, owned and host-owned disposal, prompt-lab recovery and aggregation parity, boundary inventory, hermetic, risk coverage, source, lint, formatting, manifest, and cycle gates prove the complete prompt-lab command family owns one bounded evaluation store without changing session or scoring semantics.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-operational-ingest-seed-store-ownership"
+        "refactor-token-budget-store-ownership"
       ],
       "links": {
         "notes": [
@@ -472,20 +473,21 @@
         "code": [
           "services/evaluationStore/scriptContext.js",
           "config/evaluation-store-boundary-inventory.json",
-          "scripts/test-token-budget.js",
+          "scripts/prompt-lab.js",
+          "tests/prompt-lab-recovery.test.js",
           "tests/evaluationScriptContext.test.js",
           "tests/evaluationStoreBoundaryInventory.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-operational-ingest-seed-store-ownership"
+          "refactor-token-budget-store-ownership"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
         "operational-scripts",
-        "token-budget",
+        "prompt-lab",
         "dependency-injection",
         "lifecycle",
         "maintainability"
@@ -3928,6 +3930,52 @@
         "routes",
         "sse",
         "lifecycle"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-token-budget-store-ownership",
+      "title": "Give token-budget reporting explicit evaluation-store ownership",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-08",
+      "updated": "2026-08-09",
+      "branch": "codex/refactor-token-budget-store-ownership",
+      "verification": "Import safety, argument and child-run parity, database-free help and failed generation, injected versus owned-store disposal, deterministic report rendering, boundary inventory, hermetic, risk coverage, source, lint, formatting, manifest, and cycle gates prove token-budget reporting owns one bounded evaluation store without changing its experiment or report semantics.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-operational-ingest-seed-store-ownership"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/588"
+        ],
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore/scriptContext.js",
+          "config/evaluation-store-boundary-inventory.json",
+          "scripts/test-token-budget.js",
+          "tests/evaluationScriptContext.test.js",
+          "tests/evaluationStoreBoundaryInventory.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-operational-ingest-seed-store-ownership"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "operational-scripts",
+        "token-budget",
+        "dependency-injection",
+        "lifecycle",
+        "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
     },
