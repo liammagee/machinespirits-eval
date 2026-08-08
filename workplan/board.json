@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-07T23:32:26.241Z",
+  "generated": "2026-08-08T00:35:41.409Z",
   "counts": {
     "total": 458,
     "byStatus": {
-      "done": 416,
+      "done": 418,
       "blocked": 6,
       "dropped": 8,
-      "active": 5,
+      "active": 4,
       "archived": 4,
-      "triaged": 11,
+      "triaged": 10,
       "review": 8
     },
     "byType": {
@@ -206,34 +206,6 @@
         "tutor-stub",
         "guards"
       ]
-    },
-    {
-      "id": "ironic-question-flood-target",
-      "title": "Irony against question-flooding — the one cell worth a second draw",
-      "status": "triaged",
-      "type": "experiment",
-      "priority": "P3",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "verification": "Step 1 is a second draw of one cell already run — three rows, ironic tutor against question-flooding, same stacks and judges — reported through the existing grid reporter under the plain stance gate. It passes only if the report states the two draws' counts side by side and the fields that make them comparable are read out of the database rather than asserted. No paper claim from step 1; a claim needs step 2, and step 2 needs a size argued from step 1's spread.",
-      "claim_status": "speculative",
-      "links": {
-        "paper": [
-          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
-        ],
-        "runs": [
-          "eval-2026-08-05-87fe3664",
-          "eval-2026-07-02-5c4d52e6",
-          "eval-2026-07-02-67be317c"
-        ],
-        "items": [
-          "negative-register-effect-estimation-grid",
-          "sarcasm-mood-floor-replication",
-          "sarcasm-determinate-negation-grid"
-        ]
-      }
     },
     {
       "id": "sarcasm-worktree-shadow-db-disposal",
@@ -496,28 +468,6 @@
         "tutor-stub",
         "harness"
       ]
-    },
-    {
-      "id": "reply-feature-stamps",
-      "title": "Reply-feature stamps: measure what the tutor reply did, blind to the card",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-07",
-      "updated": "2026-08-08",
-      "verification": "Terminal, same day, pure computation. New unit suite (services/__tests__/tutorStubReplyFeatures.test.js, 10 tests) plus wiring tests in tests/tutorStubTurnOrchestration.test.js (4 tests) — all pass; lint clean; test manifest updated. Retrospective read-back over the falsifier's 122 turns (run C of scripts/analyze-figure- lattice.js): 1/7 separated, up from 0/7, with runs A/B/B' asserted to reproduce their recorded numbers first. That read-back is CALIBRATION, not a clean test — the act patterns were widened after reading three labelled replies from the same corpus. The clean test needed fresh turns carrying the live stamp. One such corpus was run (7 dialogues, 62 turns, cards forced in a Latin square, TUTOR_STUB_GUARD_POLICY= shadow_advisory) and READ TWICE: scripts/analyze-figure-lattice- fresh.js, artifacts exports/crossed-effects/figure-lattice-fresh.json (shipped text) and -draft.json (--source draft). Both NULL. Shipped: 19 turns survive the guard, 6 figures, 1 separated and that one is a single-turn figure on one attribute; a label shuffle of these same turns reaches 1 on 92% of draws. Draft (the tutor's own first attempt, logged on all 32 carded turns including the 13 the guard vetoed, so the whole balanced square is readable at zero cost): 32 turns, all 7 figures, 4-6 each, 0 separated, against a within-corpus label shuffle that separates 0.00 with a maximum of 0 over 400 draws — so one separated figure would have cleared, and none did. Instrument checks pass in both: live stamp equals a fresh recompute on every turn where it applies (19 of 19 shipped, 14 of 14 draft), and the card-identity sanity run separates 6/6 and 7/7. Post-hoc graded reading, not the registered criterion: grievance misses separation by one foreign turn (every grievance draft credits and contrasts), which some figure matches on 0.5% of 2000 shuffles. Guard cost recorded separately — 39% of turns shipped the deterministic template, and the audit that fails them is the exact-source evidence contract that should stay hard — but the draft reading shows the guard was not the cause of the null. THEN THE STANDARD CHANGED, after the null and declared as such: separation asks for exclusive fingerprints, which rhetorical moves do not have, so the test became whether the ordered move can be guessed from the reply. scripts/analyze-figure-recovery.js, artifact exports/ crossed-effects/figure-recovery-draft.json, leave-one-out naive Bayes over the same stamp columns with a uniform class prior. 37.5% first guess against 14.3% chance, 56.3% in the top two against 28.6%, against a within-corpus label shuffle scoring 13.2% mean and 34.4% maximum over 400 draws, p = 0.000. Four of seven moves are readable blind (grievance 4/4, demand 3/5, settled_claim 2/4, stake 3/5 in top two); quiet:flat is unreadable on every measure. Not pre-registered, and the clean test is still fresh turns. The earlier recommendation to prune mockery is WITHDRAWN — the stamp measures word length and has no column for cryptic metaphor, which is what that move is about; three of its six drafts announce plain speech in words, on 3 of 32 turns corpus- wide with no false positives. SECOND WITHDRAWAL (2026-08-08, terminal, pure computation over the stored traces): the recommendation to prune quiet:flat is withdrawn too. All four of its turns ordered the lure at a learner who was mid-argument — 19w/22.7 avg, 19w/21.3, 15w/23.0, 22w/20.3, three of four ending in a question, against a flat rule of 45% of the running length AND under 12 words AND no question. Replaying the merged gate (services/tutorStubCardForce.js, #559) over those four turns withholds 4 of 4. So the 0-of-4 recovery score measures a false order, not the move, and the move is untested rather than weak. The falsifier's own flat rows are unaffected — its five forced quiet:flat turns are the planted bored learner at t11, 4 to 11 words each — so runs A/B/B' stand as recorded; the six quiet:confused rows in repertoire-tags were not checked and nothing is claimed about them.",
-      "claim_status": "methods",
-      "links": {
-        "notes": [
-          "notes/2026-08-06-pedagogical-figure-ontology.md"
-        ],
-        "items": [
-          "figure-lattice-falsifier",
-          "pedagogical-figure-ontology"
-        ]
-      }
     },
     {
       "id": "tutor-stub-template-rate-audit",
@@ -12264,7 +12214,11 @@
           "notes/2026-08-06-pedagogical-figure-ontology.md"
         ],
         "paper": [
-          "docs/research/paper-full-2.0.md#713-the-unit-ladder-a-seven-level-ontology-for-the-pedagogical-instrumentation"
+          "docs/research/paper-full-2.0.md#713-the-unit-ladder-a-seven-level-ontology-for-the-pedagogical-instrumentation",
+          "docs/research/paper-full-2.0.md#714-the-ontologys-own-falsifier-pedagogical-figures-do-not-separate-on-the-features-the-harness-logs"
+        ],
+        "items": [
+          "reply-feature-stamps"
         ]
       }
     },
@@ -13520,6 +13474,31 @@
       "branch": "codex/repair-codex-session-capacity-and-cursors"
     },
     {
+      "id": "reply-feature-stamps",
+      "title": "Reply-feature stamps: measure what the tutor reply did, blind to the card",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-08",
+      "verification": "Terminal, same day, pure computation. New unit suite (services/__tests__/tutorStubReplyFeatures.test.js, 10 tests) plus wiring tests in tests/tutorStubTurnOrchestration.test.js (4 tests) — all pass; lint clean; test manifest updated. Retrospective read-back over the falsifier's 122 turns (run C of scripts/analyze-figure- lattice.js): 1/7 separated, up from 0/7, with runs A/B/B' asserted to reproduce their recorded numbers first. That read-back is CALIBRATION, not a clean test — the act patterns were widened after reading three labelled replies from the same corpus. The clean test needed fresh turns carrying the live stamp. One such corpus was run (7 dialogues, 62 turns, cards forced in a Latin square, TUTOR_STUB_GUARD_POLICY= shadow_advisory) and READ TWICE: scripts/analyze-figure-lattice- fresh.js, artifacts exports/crossed-effects/figure-lattice-fresh.json (shipped text) and -draft.json (--source draft). Both NULL. Shipped: 19 turns survive the guard, 6 figures, 1 separated and that one is a single-turn figure on one attribute; a label shuffle of these same turns reaches 1 on 92% of draws. Draft (the tutor's own first attempt, logged on all 32 carded turns including the 13 the guard vetoed, so the whole balanced square is readable at zero cost): 32 turns, all 7 figures, 4-6 each, 0 separated, against a within-corpus label shuffle that separates 0.00 with a maximum of 0 over 400 draws — so one separated figure would have cleared, and none did. Instrument checks pass in both: live stamp equals a fresh recompute on every turn where it applies (19 of 19 shipped, 14 of 14 draft), and the card-identity sanity run separates 6/6 and 7/7. Post-hoc graded reading, not the registered criterion: grievance misses separation by one foreign turn (every grievance draft credits and contrasts), which some figure matches on 0.5% of 2000 shuffles. Guard cost recorded separately — 39% of turns shipped the deterministic template, and the audit that fails them is the exact-source evidence contract that should stay hard — but the draft reading shows the guard was not the cause of the null. THEN THE STANDARD CHANGED, after the null and declared as such: separation asks for exclusive fingerprints, which rhetorical moves do not have, so the test became whether the ordered move can be guessed from the reply. scripts/analyze-figure-recovery.js, artifact exports/ crossed-effects/figure-recovery-draft.json, leave-one-out naive Bayes over the same stamp columns with a uniform class prior. 37.5% first guess against 14.3% chance, 56.3% in the top two against 28.6%, against a within-corpus label shuffle scoring 13.2% mean and 34.4% maximum over 400 draws, p = 0.000. Four of seven moves are readable blind (grievance 4/4, demand 3/5, settled_claim 2/4, stake 3/5 in top two); quiet:flat is unreadable on every measure. Not pre-registered, and the clean test is still fresh turns. The earlier recommendation to prune mockery is WITHDRAWN — the stamp measures word length and has no column for cryptic metaphor, which is what that move is about; three of its six drafts announce plain speech in words, on 3 of 32 turns corpus- wide with no false positives. SECOND WITHDRAWAL (2026-08-08, terminal, pure computation over the stored traces): the recommendation to prune quiet:flat is withdrawn too. All four of its turns ordered the lure at a learner who was mid-argument — 19w/22.7 avg, 19w/21.3, 15w/23.0, 22w/20.3, three of four ending in a question, against a flat rule of 45% of the running length AND under 12 words AND no question. Replaying the merged gate (services/tutorStubCardForce.js, #559) over those four turns withholds 4 of 4. So the 0-of-4 recovery score measures a false order, not the move, and the move is untested rather than weak. The falsifier's own flat rows are unaffected — its five forced quiet:flat turns are the planted bored learner at t11, 4 to 11 words each — so runs A/B/B' stand as recorded; the six quiet:confused rows in repertoire-tags were not checked and nothing is claimed about them. THE CLEAN TEST RAN (2026-08-08, attended paid run, exit 0). Instrument first: rf-v2 adds three card-blind columns (abstract-label, plain- speech, bucketed echo), frozen and committed at 81870a57 BEFORE the test corpus existed; the metaphor column was refused for want of evidence (15 comparison frames in 1172 calibration replies, 14 of them the same two phrasings). Corpus: scripts/run-figure-clean-test.js, 7 fresh dialogues in world_030_rowan_flat on the pinned recipe, 63 turns, 34 carded turns kept after the quiet-card gate. Reader: scripts/analyze-figure-holdout.js, registered bar in its header — top-1 against 1/K, one-sided exact binomial, pass at p < 0.05, no post-hoc drops. Result on the draft text (primary): 14 of 34 = 41.2% against 20%, p = 0.0039; top-2 25 of 34 = 73.5% against 40%, p = 0.0001; a within-corpus label shuffle averages 20.2% and reaches 41.2% on 0.3% of draws. Per move: settled_claim 4/6, stake 4/7, grievance 3/7, demand 2/7, mockery 1/7. Sitting below leave-one-out's 54.2% is the expected direction. Shipped text is a NULL and stays reported: 7 of 21 = 33.3% against 25%, p = 0.26, and it is handicapped by construction — the exact-source guard replaced every grievance draft, so training holds no grievance class while the test set holds 4 grievance turns. Reader fix mid-run (eac0717c): the overlap check keyed on dialogue+turn labels, which collide across corpora that both number latin-d0..d6; it now keys on normalised reply text, and the two corpora share no reply. Artifacts exports/ crossed-effects/figure-holdout-draft.json and -shipped.json.",
+      "claim_status": "methods",
+      "links": {
+        "paper": [
+          "docs/research/paper-full-2.0.md#714-the-ontologys-own-falsifier-pedagogical-figures-do-not-separate-on-the-features-the-harness-logs"
+        ],
+        "notes": [
+          "notes/2026-08-06-pedagogical-figure-ontology.md"
+        ],
+        "items": [
+          "figure-lattice-falsifier",
+          "pedagogical-figure-ontology"
+        ]
+      }
+    },
+    {
       "id": "repoint-learner-deliberation-claim-fingerprint",
       "title": "Re-point the learner-deliberation claim fingerprint at the trace-schema module",
       "status": "done",
@@ -14710,6 +14689,35 @@
         "ci",
         "hermetic"
       ]
+    },
+    {
+      "id": "ironic-question-flood-target",
+      "title": "Irony against question-flooding — the one cell worth a second draw",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "unassigned",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "Step 1 is a second draw of one cell already run — three rows, ironic tutor against question-flooding, same stacks and judges — reported through the existing grid reporter under the plain stance gate. It passes only if the report states the two draws' counts side by side and the fields that make them comparable are read out of the database rather than asserted. No paper claim from step 1; a claim needs step 2, and step 2 needs a size argued from step 1's spread.",
+      "claim_status": "speculative",
+      "links": {
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "runs": [
+          "eval-2026-08-07-45154bac",
+          "eval-2026-08-05-87fe3664",
+          "eval-2026-07-02-5c4d52e6",
+          "eval-2026-07-02-67be317c"
+        ],
+        "items": [
+          "negative-register-effect-estimation-grid",
+          "sarcasm-mood-floor-replication",
+          "sarcasm-determinate-negation-grid"
+        ]
+      }
     },
     {
       "id": "keep-the-repo-dotenv-out-of-the-keyless-cli-tests",
