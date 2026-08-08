@@ -3,7 +3,7 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 5,
+    "liveAndPackageConsumerCount": 3,
     "archivedConsumerCount": 4,
     "testConsumerCount": 14
   },
@@ -48,17 +48,7 @@
       "modes": ["namespace"]
     },
     {
-      "path": "scripts/ingest-pilot-sessions.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
       "path": "scripts/prompt-lab.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/seed-db.js",
       "classification": "operational-script",
       "modes": ["namespace"]
     },
