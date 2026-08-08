@@ -1,16 +1,21 @@
 ---
 id: scripts-hardcoded-data-path-guard
 title: A test that fails when a script builds its own database or logs path
-status: triaged
+status: review
 type: infra
 priority: P2
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-08-08
 updated: 2026-08-08
+branch: codex/scripts-hardcoded-data-path-guard
 verification: A new script that writes `path.join(root, 'data', 'evaluations.db')` or `path.join(root, 'logs', 'tutor-dialogues')` fails `npm test`, and the failure message names the resolver to call instead.
 claim_status: methods
 links:
+  code:
+    - scripts/check-evaluation-data-paths.js
+    - config/evaluation-data-path-allowlist.json
+    - tests/evaluationDataPathGuard.test.js
   items:
     - eval-db-writer-reader-path-split
     - eval-logs-root-single-resolver
@@ -39,5 +44,16 @@ Two details worth getting right:
   "not allowed" gets worked around with a differently-spelled join.
 
 Current size of the allowlist, measured 2026-08-08 on `origin/main`: 45 scripts
-for the database path, 7 for the logs path, counting only files that build a
-path and import no shared resolver.
+construct the database path and 13 construct the logs path. Six do both, so the
+union is 52 scripts: the 45 database builders plus seven additional log-only
+builders.
+
+## Log
+
+- 2026-08-08 — Reached review with an Acorn-backed constructive-call scanner,
+  a shrinking category-specific allowlist, a standalone
+  `npm run eval-data-paths:check` command, and a required root test. The
+  baseline is 52 unique scripts: 45 construct the database path and 13
+  construct the dialogue-log path, with six overlaps and seven additional
+  log-only scripts. Detector, allowlist, manifest, lint, formatting, workplan,
+  and diff checks pass.
