@@ -73,6 +73,11 @@ function emptyTally() {
     turns: 0,
     template: 0,
     modelAsWritten: 0,
+    // Cards the run was made to play. Counted because the sweep below found
+    // this to be the one measured thing that sorts the shadow runs: the three
+    // that force a card on roughly every second turn are the three at 35-39%
+    // template, and nothing else stored comes above 11%.
+    cardsForced: 0,
     byKind: new Map(),
     byFamily: new Map(),
     format: null,
@@ -93,6 +98,8 @@ function bump(map, key, passed) {
 
 function tallyAccounting(rows, tally) {
   for (const row of rows) {
+    // A withheld force never reached the tutor, so it is not pressure on it.
+    if (row.type === 'tutor_card_force' && row.withheld !== true) tally.cardsForced += 1;
     if (row.type !== 'tutor_response_guard_accounting') continue;
     const acc = row.accounting;
     if (!acc) continue;
@@ -168,11 +175,73 @@ function pct(part, whole) {
   return whole ? `${Math.round((part / whole) * 100)}%` : '—';
 }
 
+/**
+ * One line per run under a parent directory, sorted by how hard the run pushed
+ * the tutor to play a card. A single run's rate cannot be read on its own: what
+ * makes 38% mean something is that every other stored run with the same policy
+ * sits at 4-11%, and the three that do not are the three forcing a card on
+ * every second turn.
+ */
+function sweep(parent, { minTurns = 30 } = {}) {
+  const rows = [];
+  for (const entry of fs.readdirSync(parent, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const { byCondition } = censusRun(path.join(parent, entry.name));
+    const t = emptyTally();
+    for (const [, c] of byCondition) {
+      t.turns += c.turns;
+      t.template += c.template;
+      t.modelAsWritten += c.modelAsWritten;
+      t.cardsForced += c.cardsForced;
+      for (const p of c.policies) t.policies.add(p);
+    }
+    if (t.turns < minTurns) continue;
+    rows.push({
+      run: entry.name,
+      policy: [...t.policies].sort().join('+') || 'unknown',
+      turns: t.turns,
+      cards: t.cardsForced,
+      cardRate: t.cardsForced / t.turns,
+      templateRate: t.template / t.turns,
+      modelRate: t.modelAsWritten / t.turns,
+    });
+  }
+  rows.sort((a, b) => b.cardRate - a.cardRate || b.templateRate - a.templateRate);
+  return rows;
+}
+
 function main() {
   const args = process.argv.slice(2);
+  const sweepAt = args.includes('--sweep') ? args[args.indexOf('--sweep') + 1] : null;
+  if (sweepAt) {
+    const rows = sweep(sweepAt);
+    if (!rows.length) {
+      console.log(`${sweepAt}: no run directory under it carries enough tutor turns to compare.`);
+      return;
+    }
+    console.log(`${sweepAt} — runs of 30 turns or more, densest card pressure first\n`);
+    console.log('| run | policy | turns | cards forced | per turn | template | model as written |');
+    console.log(`|${'---|'.repeat(7)}`);
+    for (const r of rows) {
+      console.log(
+        `| ${r.run} | ${r.policy} | ${r.turns} | ${r.cards} | ${pct(r.cards, r.turns)} | ` +
+          `${pct(Math.round(r.templateRate * r.turns), r.turns)} | ${pct(Math.round(r.modelRate * r.turns), r.turns)} |`,
+      );
+    }
+    const jsonOut = args.includes('--json') ? args[args.indexOf('--json') + 1] : null;
+    if (jsonOut) {
+      fs.mkdirSync(path.dirname(jsonOut), { recursive: true });
+      fs.writeFileSync(jsonOut, JSON.stringify({ parent: sweepAt, runs: rows }, null, 1) + '\n');
+      console.log(`\nwrote ${jsonOut}`);
+    }
+    return;
+  }
   const runDir = args.find((a) => !a.startsWith('--'));
   if (!runDir) {
-    console.error('usage: node scripts/census-guard-template-rate.js <runDir> [--json out.json] [--quiet]');
+    console.error(
+      'usage: node scripts/census-guard-template-rate.js <runDir> [--json out.json] [--quiet]\n' +
+        '       node scripts/census-guard-template-rate.js --sweep <parentDir> [--json out.json]',
+    );
     process.exit(1);
   }
   if (!fs.existsSync(runDir)) {

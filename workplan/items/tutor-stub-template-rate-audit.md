@@ -108,6 +108,41 @@ categories, which stay hard under the shadow policy too — so the flip under
 consideration does not touch them, and about one first draft in eight will
 keep being stopped whatever is decided.
 
+## The §7.14 corpora, stamped 2026-08-08
+
+The three tutor-stub runs behind §7.14's figure reader were generated after
+the census and were not in it. Stamped now:
+
+| run | turns | template | model as written |
+|---|---|---|---|
+| figure-fresh-shadow (training) | 62 | 39% | 45% |
+| figure-clean-test (held-out) | 63 | 35% | 49% |
+| figure-transfer-tideway (second world) | 63 | 38% | 52% |
+
+All three ran under the shadow policy, where every other stored run sits at
+4–11%. So the spread the census called small has a top end worth naming, and
+these three runs are all of it.
+
+Ruled out as the cause: the catalog version (the training corpus is v6 like
+the low runs, the other two v7, and all three land together), forcing a card
+as a fact about a turn (inside these runs the forced turns are no worse than
+the rest, and the direction flips between corpora), and forcing a card as a
+fact about a dialogue (elsewhere, dialogues with a forced card land where
+dialogues without one land).
+
+What does sort the runs is how often a card is forced, counted per turn. The
+figure corpora force five cards into eight or nine turns, about 53%; the next
+densest stored run forces 22% and sits at 7% template. `--sweep` on the census
+script prints that table for any parent directory of runs. Two limits: nothing
+stored falls between 22% and 53%, so the shape between them is unknown, and
+the three dense runs are the only three from this launcher, so density is not
+separated from everything else they share.
+
+This changes nothing in §7.14's primary result, which reads first drafts —
+written by the model whatever the guard does with them afterwards. It supplies
+the missing number for the secondary: §7.14 twice calls the shipped-text arm
+handicapped, and the handicap is that 35–38% of turns shipped the template.
+
 ## What step 3 now has to say
 
 The table is in the guard catalog. The paper pass still waits on the validity
@@ -125,3 +160,10 @@ elsewhere.
   correction to how these rates were being read: the template rate is set by
   the guard policy, not the tutor family. Table in the guard catalog. Paper
   pass still gated on `guard-validity-study`.
+- 2026-08-08 — the three §7.14 figure corpora stamped, having been generated
+  after the census ran. They are the top of the shadow range at 35–39% against
+  4–11% everywhere else, and the one measured thing that sorts the runs is how
+  often a card is forced per turn. Census script gained `--sweep` so the
+  cross-run table reproduces. Table in the guard catalog. Paper pass still
+  gated on `guard-validity-study`; when it runs, §7.14's shipped-text arm now
+  has a number for the handicap it already names twice.

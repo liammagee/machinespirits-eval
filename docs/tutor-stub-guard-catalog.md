@@ -217,6 +217,58 @@ the shadow policy as well as the strict one, so they are already inside the
 the policy is a decision about the quality families only; roughly one first
 draft in eight is stopped for a reason that will keep stopping it.
 
+## What the 4–39% shadow spread turns out to be (2026-08-08)
+
+The census above notes in passing that shadow runs land anywhere from 4% to
+39% template and treats the spread as small next to the policy gap. Stamping
+the three corpora behind §7.14 puts a name on the top of that range.
+
+| run | turns | template | model as written | policy |
+|---|---|---|---|---|
+| figure-fresh-shadow (training) | 62 | 39% | 45% | shadow, catalog v6 |
+| figure-clean-test (held-out) | 63 | 35% | 49% | shadow, catalog v7 |
+| figure-transfer-tideway (second world) | 63 | 38% | 52% | shadow, catalog v7 |
+
+Every other stored shadow run sits at 4–11%. Three things it is not. Not the
+catalog version: the training corpus ran at v6 like the 4–11% runs, the other
+two at v7, and all three land together. Not card-forcing as a fact about a
+turn: inside these runs the forced turns are no worse than the rest (38%
+against 31% in the held-out corpus, 29% against 48% in the second world, in
+opposite directions). Not card-forcing as a fact about a dialogue either:
+elsewhere, dialogues that forced at least one card land at 4–7%, the same as
+dialogues that forced none.
+
+The one measured thing that separates them is **how often a card is forced**,
+counted per turn rather than per dialogue. Every shadow run with 30 turns or
+more:
+
+| cards forced per turn | runs | template |
+|---|---|---|
+| 52–54% | 3 (the figure corpora) | 35–39% |
+| 4–22% | 5 | 4–8% |
+| none | 8 | 5–11% |
+
+The figure corpora force five cards into dialogues that run eight or nine
+turns. The next densest run forces a card on 22% of turns and sits at 7%.
+Below that the rate stops responding to cards at all — the eight runs that
+force none land at 5–11%, overlapping the runs that force some.
+
+Two limits on reading that as the cause. There is no run between 22% and 52%,
+so the shape between them is unknown; a threshold and a steep rise fit the
+same points. And the three dense runs are the only three from this launcher,
+sharing a world family, a slot window and a set of switches, so density cannot
+be separated from the rest of what they have in common without a run built to
+do it. What can be said is narrower: at the density §7.14's corpora were run
+at, a third of turns end at the template, and no other stored run comes close.
+
+**What this does to §7.14.** Nothing to the primary result. The reader is
+fitted on first drafts, which the model writes whatever the guard later does
+with them, and the draft reading is the registered primary for that reason.
+It does explain the secondary. §7.14 twice calls the shipped-text arm
+handicapped without giving a number; the number is that on 35–38% of turns
+the shipped text was the template rather than the tutor's own words. Any
+future run built on forced cards should expect the same and budget for it.
+
 ## The design rule this yields
 
 Binary where it is a transaction, graded where it is a judgment. Families 1,
