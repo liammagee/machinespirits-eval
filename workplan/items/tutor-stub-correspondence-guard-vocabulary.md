@@ -1,18 +1,21 @@
 ---
 id: tutor-stub-correspondence-guard-vocabulary
 title: "Evidence-correspondence guard can never clear in a plain-language world"
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
 source: manual
 created: 2026-08-06
-updated: 2026-08-08
+updated: 2026-08-09
 branch: codex/tutor-stub-correspondence-guard-vocabulary
 verification: "A unit test that takes world-030's own p_dye surface as the
   permitted text and asserts the matching tutor sentence is allowed. It must
   fail on the current code and pass after the fix."
 claim_status: methods
+links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/582
 tags:
   - tutor-stub
   - guards
@@ -91,3 +94,6 @@ Option 1 is preferred: it removes the coupling between a guard and a costume.
   same-endpoint/different-relation controls remain blocked. The focused
   tutor-stub sweep passed 81/81 alongside ESLint, Prettier, import-cycle, and
   source-only workplan checks.
+- 2026-08-09 — PR #582 merged as `7b2eadcf`. Its structured-fact authorization
+  and negative controls satisfy the card's verification, so the vocabulary
+  coupling defect is closed.
