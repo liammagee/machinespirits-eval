@@ -25,6 +25,12 @@ const OWNED_STORE_SCRIPTS = [
   'scripts/report-longitudinal-drift-stage-a4-live.js',
   'scripts/report-longitudinal-drift-stage-a5-live.js',
 ];
+const OWNED_SCORE_SCRIPTS = [
+  'scripts/evaluate-charisma.js',
+  'scripts/evaluate-register-rubric.js',
+  'scripts/evaluate-learner-standalone.js',
+  'scripts/score-d4-first-turns.js',
+];
 
 after(() => {
   for (const tempDir of tempDirs) fs.rmSync(tempDir, { recursive: true, force: true });
@@ -135,6 +141,15 @@ describe('evaluation operational-script context', () => {
     }
   });
 
+  it('gives each operational scorer an explicit, naturally closing store boundary', () => {
+    for (const relativePath of OWNED_SCORE_SCRIPTS) {
+      const source = fs.readFileSync(path.join(ROOT_DIR, relativePath), 'utf8');
+      assert.doesNotMatch(source, /\.\.\/services\/evaluationStore\.js/u, relativePath);
+      assert.match(source, /withEvaluationScriptStore/u, relativePath);
+      assert.doesNotMatch(source, /process\.exit\(/u, relativePath);
+    }
+  });
+
   it('rejects longitudinal usage and empty score requests before opening a database', () => {
     const cases = OWNED_STORE_SCRIPTS.flatMap((relativePath) => [
       { relativePath, args: [], expectedStatus: 1, stderrPattern: /Usage:/u },
@@ -156,6 +171,75 @@ describe('evaluation operational-script context', () => {
       assert.equal(result.status, expectedStatus, result.stderr);
       assert.match(result.stderr, stderrPattern, relativePath);
       assert.equal(fs.existsSync(fixture.databasePath), false, relativePath);
+    }
+  });
+
+  it('rejects operational-scoring usage before opening a database', () => {
+    for (const relativePath of OWNED_SCORE_SCRIPTS) {
+      const fixture = makeContext(`${path.basename(relativePath, '.js')}-usage`);
+      const result = spawnSync(process.execPath, [relativePath], {
+        cwd: ROOT_DIR,
+        env: {
+          ...process.env,
+          EVAL_DB_PATH: fixture.databasePath,
+          EVAL_LOGS_DIR: fixture.logsRoot,
+          MS_DATA_HOME: path.join(fixture.tempDir, 'data-home'),
+        },
+        encoding: 'utf8',
+      });
+      assert.equal(result.status, 1, result.stderr);
+      assert.match(result.stderr, /Usage:/u, relativePath);
+      assert.equal(fs.existsSync(fixture.databasePath), false, relativePath);
+    }
+  });
+
+  it('runs deterministic empty-run scorer paths against an isolated database without model calls', () => {
+    const fixture = makeContext('score-cli');
+    const env = {
+      ...process.env,
+      EVAL_DB_PATH: fixture.databasePath,
+      EVAL_LOGS_DIR: fixture.logsRoot,
+      MS_DATA_HOME: path.join(fixture.tempDir, 'data-home'),
+      ANTHROPIC_API_KEY: '',
+      OPENAI_API_KEY: '',
+      OPENROUTER_API_KEY: '',
+    };
+    const store = createEvaluationStore({ rootDir: ROOT_DIR, env });
+    store.close();
+
+    const cases = [
+      ['scripts/evaluate-charisma.js', ['missing-run'], 1, /No results for run/u],
+      ['scripts/evaluate-register-rubric.js', ['missing-run', '--check'], 0, /Rows: 0/u],
+      ['scripts/evaluate-learner-standalone.js', ['missing-run'], 1, /No dialogue results found/u],
+      ['scripts/score-d4-first-turns.js', ['missing-run'], 1, /Run not found/u],
+    ];
+
+    for (const [relativePath, args, expectedStatus, outputPattern] of cases) {
+      const result = spawnSync(process.execPath, [relativePath, ...args], {
+        cwd: ROOT_DIR,
+        env,
+        encoding: 'utf8',
+      });
+      assert.equal(result.status, expectedStatus, `${relativePath}\n${result.stderr}`);
+      assert.match(`${result.stdout}\n${result.stderr}`, outputPattern, relativePath);
+    }
+  });
+
+  it('leaves injected scorer stores open on deterministic no-row paths', async () => {
+    const cases = [
+      ['../scripts/evaluate-charisma.js', ['missing-run'], { getResults: () => [] }, 1],
+      ['../scripts/evaluate-register-rubric.js', ['missing-run', '--check'], { getResults: () => [] }, 0],
+      ['../scripts/evaluate-learner-standalone.js', ['missing-run'], { getResults: () => [] }, 1],
+      ['../scripts/score-d4-first-turns.js', ['missing-run'], { getRun: () => null }, 1],
+    ];
+
+    for (const [modulePath, args, methods, expectedCode] of cases) {
+      let closes = 0;
+      const injectedStore = { ...methods, close: () => (closes += 1) };
+      const { main } = await import(modulePath);
+      const code = await main(args, { evaluationStore: injectedStore, rootDir: ROOT_DIR });
+      assert.equal(code, expectedCode, modulePath);
+      assert.equal(closes, 0, modulePath);
     }
   });
 

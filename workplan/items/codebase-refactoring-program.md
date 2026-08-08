@@ -133,6 +133,7 @@ links:
     - refactor-eval-routes-store-injection
     - refactor-operational-log-reader-injection
     - refactor-longitudinal-report-store-ownership
+    - refactor-operational-score-store-ownership
 tags:
   - refactoring
   - testing
