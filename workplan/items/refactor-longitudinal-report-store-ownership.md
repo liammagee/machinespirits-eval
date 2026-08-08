@@ -1,7 +1,7 @@
 ---
 id: refactor-longitudinal-report-store-ownership
 title: Give longitudinal live reports explicit evaluation-store ownership
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -79,3 +79,5 @@ Log:
   reruns. No model calls, production writes, or generated board changes
   occurred.
 - 2026-08-08 — Opened PR #571 from validated source commit `39b4bd7e`.
+- 2026-08-08 — Closed after PR #571 merged as `e41aa8e8`; the bounded A2-A5
+  store lifecycle and 31-consumer boundary ratchet are present on `main`.

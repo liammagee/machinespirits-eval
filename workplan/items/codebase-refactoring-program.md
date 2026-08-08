@@ -133,6 +133,10 @@ links:
     - refactor-eval-routes-store-injection
     - refactor-operational-log-reader-injection
     - refactor-longitudinal-report-store-ownership
+    - refactor-operational-score-store-ownership
+    - refactor-operational-run-store-ownership
+    - refactor-operational-ingest-seed-store-ownership
+    - refactor-token-budget-store-ownership
 tags:
   - refactoring
   - testing
@@ -1682,3 +1686,31 @@ Log:
   is down to 13 live/package consumers with complete hermetic and risk parity
   green; the remaining 12 operational scripts should now be grouped by their
   mutation and orchestration responsibilities rather than migrated en masse.
+- 2026-08-08 — PR #575 merged the operational scoring cohort and reduced the
+  direct facade inventory to nine live/package consumers. Closed that child
+  and activated `refactor-operational-run-store-ownership` from refreshed main
+  `adb85c32` for the two adaptive smokes and two trap/pilot launchers; ingestion,
+  seed, prompt-lab, token-budget, package compatibility, archive, and test
+  consumers remain later bounded cohorts.
+- 2026-08-08 — The operational run-launcher cohort reached review with the two
+  adaptive smokes and two trap/pilot adapters explicitly owning and closing one
+  injected store per invocation. Deterministic smokes and the complete local
+  contract are green; the direct facade inventory is down to five live/package
+  consumers. Pilot ingestion plus seed data is the next coherent write-bearing
+  cohort, while prompt-lab remains a separate macro migration.
+- 2026-08-08 — Started `refactor-operational-ingest-seed-store-ownership` from
+  post-PR-#581 main `7562e0a3`; PR #580 independently repairs the out-of-order
+  review closeout. This slice removes the two small write-bearing utilities
+  before the separate prompt-lab macro migration.
+- 2026-08-08 — The pilot-ingestion and seed-data cohort reached review with
+  bounded disposal, isolated persistence parity, and the full local contract
+  green. Direct facade ownership is down to three live/package consumers:
+  prompt-lab, token-budget probing, and the package compatibility entrypoint.
+- 2026-08-08 — PR #583 merged the pilot-ingestion and seed-data cohort. Closed
+  that child and activated `refactor-token-budget-store-ownership` from
+  refreshed main `8742fdd3`; token-budget reporting is the final small
+  operational script before the separate prompt-lab macro migration.
+- 2026-08-08 — The token-budget ownership slice reached review with import-safe
+  orchestration, one bounded report store, deterministic mixed-shape report
+  coverage, and the full local contract green. Only prompt-lab and the public
+  package compatibility entrypoint still consume the legacy facade directly.

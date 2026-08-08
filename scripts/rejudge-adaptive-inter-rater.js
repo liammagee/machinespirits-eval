@@ -52,13 +52,13 @@ import { callModelCliText } from '../services/cliProviderBridge.js';
 import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import { GRADER_VERSION, buildPrompt, extractJsonEnvelope } from './lib/adaptiveGraderPrompt.js';
-import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
 process.chdir(REPO_ROOT);
 
-const DB_PATH = process.env.EVAL_DB_PATH || path.join(REPO_ROOT, 'data', 'evaluations.db');
+const DB_PATH = resolveEvaluationDbPath(REPO_ROOT);
 
 const DIMS = ['trigger_recognition', 'strategy_execution', 'strategy_quality', 'pedagogical_coherence'];
 // DB column names, parallel to DIMS:

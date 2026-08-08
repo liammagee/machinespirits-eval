@@ -14,11 +14,12 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import { parseEpochArg, dialogueMatchesEpoch, printEpochBanner } from '../services/epochFilter.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const LOGS_DIR = join(ROOT, 'logs', 'tutor-dialogues');
+const LOGS_DIR = resolveTutorDialoguesDir(ROOT);
 
 // ── CLI args ────────────────────────────────────────────────────────────────
 

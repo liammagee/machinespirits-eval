@@ -28,11 +28,12 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import yaml from 'yaml';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DB_PATH = path.join(ROOT_DIR, 'data', 'evaluations.db');
+const DB_PATH = resolveEvaluationDbPath(ROOT_DIR);
 const CONFIG_DIR = path.join(ROOT_DIR, 'config');
 
 // ── CLI args ──

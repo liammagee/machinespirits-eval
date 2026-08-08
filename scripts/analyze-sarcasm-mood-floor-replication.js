@@ -175,7 +175,7 @@ function summarize(rows) {
       passed: verdict.passed,
       score: verdict.score,
       missing: verdict.missing,
-      markerPresent: !verdict.missing.includes('register_marker'),
+      cuePhraseUsed: !verdict.missing.includes('cue_compliance'),
       passedDeterminate: determinate.passed,
       namedTargetClaim: determinate.namedTargetClaim?.named === true,
     };
@@ -188,7 +188,7 @@ function summarize(rows) {
     held: scored.filter((row) => row.passed).length,
     heldDeterminate: scored.filter((row) => row.passedDeterminate).length,
     named: scored.filter((row) => row.namedTargetClaim).length,
-    markerPresent: scored.filter((row) => row.markerPresent).length,
+    cuePhraseUsed: scored.filter((row) => row.cuePhraseUsed).length,
     rows: scored,
   };
 }
@@ -221,12 +221,12 @@ function renderMarkdown(data) {
       'is matched; the gate reads message text, so the judge cannot enter either.',
   );
   lines.push('');
-  lines.push('| run | held the manner | named a claim | register marker present |');
+  lines.push('| run | held the manner | named a claim | used a handed cue phrase |');
   lines.push('| --- | --- | --- | --- |');
   for (const arm of data.replication.arms) {
     lines.push(
       `| \`${arm.runId}\` ${arm.note} | **${fraction(arm.summary)}** | ${fraction(arm.summary, 'named')} | ` +
-        `${fraction(arm.summary, 'markerPresent')} |`,
+        `${fraction(arm.summary, 'cuePhraseUsed')} |`,
     );
   }
   lines.push('');
@@ -343,7 +343,7 @@ export function main() {
     ['held the manner (plain gate)', 'held'],
     ['held the manner (determinate gate — the registered measure)', 'heldDeterminate'],
     ['named a claim (the manipulation check)', 'named'],
-    ['register marker present', 'markerPresent'],
+    ['used a handed cue phrase', 'cuePhraseUsed'],
   ].map(([label, field]) => ({
     label,
     plain: fraction(second, field),

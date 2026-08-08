@@ -29,30 +29,34 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import Database from 'better-sqlite3';
 
-import * as pilotStore from '../services/pilotStore.js';
-import * as evaluationStore from '../services/evaluationStore.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
+import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DIALOGUE_LOGS_DIR = resolveTutorDialoguesDir(ROOT_DIR);
 
 // ─── CLI parsing ──────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
-  const out = { dryRun: false, sessionId: null, runId: null, force: false };
-  for (let i = 2; i < argv.length; i++) {
+  const out = { dryRun: false, sessionId: null, runId: null, force: false, help: false };
+  for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--dry-run') out.dryRun = true;
     else if (a === '--force') out.force = true;
     else if (a === '--session') out.sessionId = argv[++i];
     else if (a === '--run-id') out.runId = argv[++i];
     else if (a === '--help' || a === '-h') {
-      console.log(`
+      out.help = true;
+    }
+  }
+  return out;
+}
+
+function printHelp() {
+  console.log(`
 ingest-pilot-sessions — bring completed pilot sessions into evaluation_results
 
 Usage:
@@ -69,20 +73,12 @@ Options:
 Output: a run ID. Then run:
   node scripts/eval-cli.js evaluate <runId>
 `);
-      process.exit(0);
-    }
-  }
-  return out;
 }
 
 // ─── Idempotency ──────────────────────────────────────────────────────────
 
-const dbPath = process.env.EVAL_DB_PATH || path.join(ROOT_DIR, 'data', 'evaluations.db');
-const db = new Database(dbPath, { readonly: false });
-db.pragma('journal_mode = WAL');
-
-function findExistingIngestion(sessionId) {
-  return db
+function findExistingIngestion(evaluationStore, sessionId) {
+  return evaluationStore.database
     .prepare(
       `SELECT id, run_id, dialogue_id FROM evaluation_results
        WHERE learner_id = ? AND learner_architecture = 'human_pilot'
@@ -321,145 +317,176 @@ function buildResultPayload(session, turns, profile, dialogueLog) {
 
 // ─── Main ingestion ───────────────────────────────────────────────────────
 
-async function main() {
-  const args = parseArgs(process.argv);
-
-  if (!fs.existsSync(DIALOGUE_LOGS_DIR)) {
-    fs.mkdirSync(DIALOGUE_LOGS_DIR, { recursive: true });
+export async function main(
+  argv = process.argv.slice(2),
+  {
+    evaluationStore = null,
+    pilotStore = null,
+    env = process.env,
+    rootDir = ROOT_DIR,
+    createStore,
+    fileSystem = fs,
+    configLoader = evalConfigLoader,
+    now = () => new Date(),
+  } = {},
+) {
+  const args = parseArgs(argv);
+  if (args.help) {
+    printHelp();
+    return 0;
   }
 
-  const tutorAgents = evalConfigLoader.loadTutorAgents();
-  const profiles = tutorAgents?.profiles || {};
+  const pilotSessionStore = pilotStore || (await import('../services/pilotStore.js'));
 
   // Pull eligible sessions
   let sessions;
   if (args.sessionId) {
-    const s = pilotStore.getSession(args.sessionId);
-    sessions = s ? [s] : [];
+    const session = pilotSessionStore.getSession(args.sessionId);
+    sessions = session ? [session] : [];
     if (!sessions.length) {
       console.error(`Session ${args.sessionId} not found`);
-      process.exit(1);
+      return 1;
     }
   } else {
-    sessions = pilotStore.listSessions({ status: 'completed', limit: 1000 });
+    sessions = pilotSessionStore.listSessions({ status: 'completed', limit: 1000 });
   }
 
   if (sessions.length === 0) {
     console.log('No completed pilot sessions found.');
-    process.exit(0);
+    return 0;
   }
 
-  // Filter for already-ingested sessions
-  const eligible = [];
-  const skipped = [];
-  for (const s of sessions) {
-    const existing = findExistingIngestion(s.id);
-    if (existing && !args.force) {
-      skipped.push({ session: s, existing });
-      continue;
-    }
-    eligible.push(s);
-  }
+  return withEvaluationScriptStore(
+    async (store) => {
+      // Filter for already-ingested sessions
+      const eligible = [];
+      const skipped = [];
+      for (const session of sessions) {
+        const existing = findExistingIngestion(store, session.id);
+        if (existing && !args.force) {
+          skipped.push({ session, existing });
+          continue;
+        }
+        eligible.push(session);
+      }
 
-  if (eligible.length === 0 && !args.force) {
-    console.log(`All ${sessions.length} session(s) already ingested.`);
-    if (skipped.length) {
-      const runIds = [...new Set(skipped.map((s) => s.existing.run_id))];
-      console.log(`Existing run ID(s): ${runIds.join(', ')}`);
-    }
-    process.exit(0);
-  }
+      if (eligible.length === 0 && !args.force) {
+        console.log(`All ${sessions.length} session(s) already ingested.`);
+        if (skipped.length) {
+          const runIds = [...new Set(skipped.map((entry) => entry.existing.run_id))];
+          console.log(`Existing run ID(s): ${runIds.join(', ')}`);
+        }
+        return 0;
+      }
 
-  console.log(
-    `Eligible sessions: ${eligible.length}${skipped.length ? ` (skipping ${skipped.length} already-ingested)` : ''}`,
+      console.log(
+        `Eligible sessions: ${eligible.length}${skipped.length ? ` (skipping ${skipped.length} already-ingested)` : ''}`,
+      );
+      if (args.dryRun) {
+        for (const session of eligible) {
+          const turns = pilotSessionStore.listTurns(session.id);
+          const pairs = pairTurns(turns);
+          console.log(
+            `  ${session.id}  cell=${session.condition_cell}  pairs=${pairs.length}  total_ms=${session.total_tutoring_ms}`,
+          );
+        }
+        console.log('\n(dry run — no files written, no DB writes)');
+        return 0;
+      }
+
+      const tutorAgents = configLoader.loadTutorAgents();
+      const profiles = tutorAgents?.profiles || {};
+      const dialogueLogsDir = resolveTutorDialoguesDir(rootDir, null, { env, fileSystem });
+      if (!fileSystem.existsSync(dialogueLogsDir)) {
+        fileSystem.mkdirSync(dialogueLogsDir, { recursive: true });
+      }
+
+      // Resolve or create run
+      let runId = args.runId;
+      if (!runId) {
+        const timestamp = now().toISOString();
+        const conditionCounts = {};
+        for (const session of eligible) {
+          conditionCounts[session.condition_cell] = (conditionCounts[session.condition_cell] || 0) + 1;
+        }
+        const run = store.createRun({
+          description: `A1 human pilot ingestion ${timestamp.slice(0, 10)} (${eligible.length} sessions)`,
+          totalScenarios: 1,
+          totalConfigurations: Object.keys(conditionCounts).length,
+          metadata: {
+            kind: 'human_pilot',
+            source: 'pilot_sessions',
+            ingestedAt: timestamp,
+            conditionCounts,
+            gitCommit: null,
+          },
+        });
+        runId = run.id;
+        console.log(`Created run: ${runId}`);
+      } else {
+        const existing = store.getRun(runId);
+        if (!existing) {
+          console.error(`Run ${runId} not found`);
+          return 1;
+        }
+        console.log(`Appending to existing run: ${runId}`);
+      }
+
+      let inserted = 0;
+      let logsWritten = 0;
+      for (const session of eligible) {
+        const turns = pilotSessionStore.listTurns(session.id);
+        if (turns.length < 2) {
+          console.log(`  skip ${session.id}: only ${turns.length} turn(s)`);
+          continue;
+        }
+        const profile = profiles[session.condition_cell];
+        if (!profile) {
+          console.warn(`  skip ${session.id}: cell ${session.condition_cell} not found in tutor-agents.yaml`);
+          continue;
+        }
+
+        const dialogueLog = buildDialogueLog(session, turns, profile);
+        if (dialogueLog.rounds === 0) {
+          console.log(`  skip ${session.id}: no learner→tutor pairs`);
+          continue;
+        }
+
+        const logPath = path.join(dialogueLogsDir, `${dialogueLog.dialogueId}.json`);
+        fileSystem.writeFileSync(logPath, JSON.stringify(dialogueLog, null, 2));
+        logsWritten++;
+
+        const payload = buildResultPayload(session, turns, profile, dialogueLog);
+        const rowId = store.storeResult(runId, payload);
+        inserted++;
+        console.log(`  ✓ ${session.id}  cell=${session.condition_cell}  pairs=${dialogueLog.rounds}  → row ${rowId}`);
+      }
+
+      store.updateRun(runId, {
+        status: 'completed',
+        totalTests: inserted,
+        completedAt: now().toISOString(),
+      });
+
+      console.log(`\nIngested ${inserted} session(s); wrote ${logsWritten} dialogue log file(s).`);
+      console.log(`\nNext: node scripts/eval-cli.js evaluate ${runId}`);
+      return 0;
+    },
+    { rootDir, env, evaluationStore, createStore },
   );
-  if (args.dryRun) {
-    for (const s of eligible) {
-      const turns = pilotStore.listTurns(s.id);
-      const pairs = pairTurns(turns);
-      console.log(`  ${s.id}  cell=${s.condition_cell}  pairs=${pairs.length}  total_ms=${s.total_tutoring_ms}`);
-    }
-    console.log('\n(dry run — no files written, no DB writes)');
-    process.exit(0);
-  }
-
-  // Resolve or create run
-  let runId = args.runId;
-  if (!runId) {
-    const date = new Date().toISOString().slice(0, 10);
-    const conditionCounts = {};
-    for (const s of eligible) {
-      conditionCounts[s.condition_cell] = (conditionCounts[s.condition_cell] || 0) + 1;
-    }
-    const run = evaluationStore.createRun({
-      description: `A1 human pilot ingestion ${date} (${eligible.length} sessions)`,
-      totalScenarios: 1,
-      totalConfigurations: Object.keys(conditionCounts).length,
-      metadata: {
-        kind: 'human_pilot',
-        source: 'pilot_sessions',
-        ingestedAt: new Date().toISOString(),
-        conditionCounts,
-        gitCommit: null,
-      },
-    });
-    runId = run.id;
-    console.log(`Created run: ${runId}`);
-  } else {
-    const existing = evaluationStore.getRun(runId);
-    if (!existing) {
-      console.error(`Run ${runId} not found`);
-      process.exit(1);
-    }
-    console.log(`Appending to existing run: ${runId}`);
-  }
-
-  let inserted = 0;
-  let logsWritten = 0;
-  for (const session of eligible) {
-    const turns = pilotStore.listTurns(session.id);
-    if (turns.length < 2) {
-      console.log(`  skip ${session.id}: only ${turns.length} turn(s)`);
-      continue;
-    }
-    const profile = profiles[session.condition_cell];
-    if (!profile) {
-      console.warn(`  skip ${session.id}: cell ${session.condition_cell} not found in tutor-agents.yaml`);
-      continue;
-    }
-
-    const dialogueLog = buildDialogueLog(session, turns, profile);
-    if (dialogueLog.rounds === 0) {
-      console.log(`  skip ${session.id}: no learner→tutor pairs`);
-      continue;
-    }
-
-    const logPath = path.join(DIALOGUE_LOGS_DIR, `${dialogueLog.dialogueId}.json`);
-    fs.writeFileSync(logPath, JSON.stringify(dialogueLog, null, 2));
-    logsWritten++;
-
-    const payload = buildResultPayload(session, turns, profile, dialogueLog);
-    const rowId = evaluationStore.storeResult(runId, payload);
-    inserted++;
-    console.log(`  ✓ ${session.id}  cell=${session.condition_cell}  pairs=${dialogueLog.rounds}  → row ${rowId}`);
-  }
-
-  evaluationStore.updateRun(runId, {
-    status: 'completed',
-    totalTests: inserted,
-    completedAt: new Date().toISOString(),
-  });
-
-  console.log(`\nIngested ${inserted} session(s); wrote ${logsWritten} dialogue log file(s).`);
-  console.log(`\nNext: node scripts/eval-cli.js evaluate ${runId}`);
 }
 
 // Only run when invoked as a script, not when imported (e.g. by tests).
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  main().catch((err) => {
-    console.error('[ingest-pilot-sessions] error:', err);
-    process.exit(1);
-  });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().then(
+    (code) => {
+      process.exitCode = code;
+    },
+    (error) => {
+      console.error('[ingest-pilot-sessions] error:', error);
+      process.exitCode = 1;
+    },
+  );
 }
 
 export { pairTurns, buildDialogueLog, buildResultPayload };

@@ -79,7 +79,13 @@ export function cleanTutorStubCharacterRestatement(text) {
     : TUTOR_STUB_CHARACTER_RESTATEMENT_BRIDGE;
 }
 
-export function auditTutorStubCharacterRestatement({ previousText, text, characterId, permittedText = '' } = {}) {
+export function auditTutorStubCharacterRestatement({
+  previousText,
+  text,
+  characterId,
+  permittedText = '',
+  permittedFacts = [],
+} = {}) {
   const previous = oneLine(previousText);
   const candidate = oneLine(text);
   const body = candidate.replace(/^let me rephrase that[.!:]?\s*/iu, '').trim();
@@ -111,6 +117,7 @@ export function auditTutorStubCharacterRestatement({ previousText, text, charact
   const evidenceAssertionAudit = auditTutorStubEvidenceAssertions({
     text: candidate,
     permittedText: [permittedText, previous].filter(Boolean).join('\n'),
+    permittedFacts,
   });
   issues.push(...evidenceAssertionAudit.issues);
   return {

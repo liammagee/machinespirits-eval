@@ -15,6 +15,7 @@ import { compileTutorStubPerformanceObligationContract } from './tutorStubPerfor
 import { projectTutorStubSpeakerPublicPremise } from './tutorStubSpeakerPublicPremise.js';
 import { auditTutorStubGenerousInferenceResponse } from './tutorStubGenerousInference.js';
 import { splitTutorStubPublicWords } from './tutorStubPublicText.js';
+import { tutorStubPublicEvidenceTextForAssertion } from './tutorStubPublicEvidence.js';
 import { tutorStubPublicProvenanceText } from './tutorStubPublicProvenance.js';
 import { auditTutorStubQuestionSupportResponse } from './tutorStubQuestionSupport.js';
 import {
@@ -355,7 +356,16 @@ export function auditTutorStubFrozenLeak({
     });
   }
 
-  const evidenceAssertionAudit = auditTutorStubEvidenceAssertions({ text, permittedText: publicText });
+  const evidenceAssertionAudit = auditTutorStubEvidenceAssertions({
+    text,
+    permittedText: tutorStubPublicEvidenceTextForAssertion({
+      world,
+      publicPremiseIds: available,
+      priorTurns,
+      learnerText,
+    }),
+    permittedFacts: publicFactsAtTurn(world, tutorTurn, available),
+  });
   leaks.push(...evidenceAssertionAudit.issues);
   return {
     ok: leaks.length === 0,

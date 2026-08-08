@@ -120,6 +120,21 @@ function addScore(bucket, prefix, value) {
   bucket[`${prefix}Count`] += 1;
 }
 
+// The one reason a faithful row can lack a manner reading without the report
+// calling it a gap. Face threat has no validated presence question — on the
+// hand-marked set the reader called it on eleven turns where the hand marks
+// called it on five, and once on a control (§6.7) — so there is nothing to run.
+// Every other reason means a registered measure was not taken.
+const PRESENCE_REASON_NO_QUESTION = 'register_not_edged';
+
+function unreadPresenceReason(stance) {
+  if (!stance) return 'no_stance_verdict';
+  if (stance.presenceMeasured) return null;
+  // A verdict written before the presence axis existed has neither field, and
+  // says so under its own name rather than borrowing one of the gate's reasons.
+  return stance.mannerPresence?.reason || 'no_presence_field';
+}
+
 function emptyEffectBucket(key) {
   return {
     key,
@@ -135,14 +150,31 @@ function emptyEffectBucket(key) {
     faithfulTutorV22Count: 0,
     faithfulRegisterSum: 0,
     faithfulRegisterCount: 0,
+    faithfulPresenceMeasured: 0,
+    faithfulPresenceUnmeasured: 0,
+    faithfulPresenceReasons: {},
     excludedNoncompliance: 0,
     invalidViolations: 0,
   };
 }
 
+/**
+ * What a faithful count is made of, said in the report rather than inferred
+ * from the field name. `manner_read` means every faithful row had a reader
+ * answer the presence question, so the count means "used a handed cue AND the
+ * manner is there". `cue_compliance_only` means it does not — which is the
+ * whole of the §6.7 finding, since a cue-compliance count read as a manner
+ * count is exactly the mistake the hand-marked set caught.
+ */
+function faithfulArmMeaning(bucket) {
+  if (!bucket.faithfulRows) return 'no_faithful_rows';
+  return bucket.faithfulPresenceUnmeasured ? 'cue_compliance_only' : 'manner_read';
+}
+
 function finalizeEffectBucket(bucket) {
   return {
     ...bucket,
+    faithfulArmMeaning: faithfulArmMeaning(bucket),
     assignedPositiveRate: bucket.assignedRows ? bucket.assignedPositiveOutcomes / bucket.assignedRows : null,
     assignedTutorV22Mean: bucket.assignedTutorV22Count
       ? bucket.assignedTutorV22Sum / bucket.assignedTutorV22Count
@@ -190,6 +222,13 @@ export function summarizeNegativeRegisterEffects(analyses) {
         bucket.faithfulPositiveOutcomes += positive ? 1 : 0;
         addScore(bucket, 'faithfulTutorV22', row.tutorV22Score);
         addScore(bucket, 'faithfulRegister', row.registerRubricScore);
+        const unreadReason = unreadPresenceReason(row.stanceFidelity);
+        if (unreadReason) {
+          bucket.faithfulPresenceUnmeasured += 1;
+          bucket.faithfulPresenceReasons[unreadReason] = (bucket.faithfulPresenceReasons[unreadReason] || 0) + 1;
+        } else {
+          bucket.faithfulPresenceMeasured += 1;
+        }
       }
       bucket.excludedNoncompliance += row.stanceFidelity?.countsAsExcludedNoncompliance ? 1 : 0;
       bucket.invalidViolations += row.stanceFidelity?.countsAsInvalidViolation ? 1 : 0;
@@ -220,6 +259,29 @@ export function summarizeNegativeRegisterEffects(analyses) {
   }
   if (rows.some((row) => !row.stanceFidelity?.applies))
     errors.push('one or more rows are missing stance-fidelity classification');
+
+  // A presence reading is a registered measure for the edged arms, so a faithful
+  // row without one fails the report the same way a missing rubric score does:
+  // the faithful bucket would otherwise report cue compliance under a name that
+  // reads as manner.
+  //
+  // `register_not_edged` is the one reason exempted, because it is not a measure
+  // anyone failed to take — face threat has no validated presence question at
+  // all. Erroring on it would leave the status red permanently and stop it
+  // telling anyone anything, so that arm carries its limit in
+  // `faithfulArmMeaning` instead, where a consumer has to read it to use the
+  // number.
+  for (const bucket of byArm.values()) {
+    const gaps = Object.entries(bucket.faithfulPresenceReasons).filter(
+      ([reason]) => reason !== PRESENCE_REASON_NO_QUESTION,
+    );
+    const unread = gaps.reduce((total, [, count]) => total + count, 0);
+    if (!unread) continue;
+    const detail = gaps.map(([reason, count]) => `${count} ${reason}`).join(', ');
+    errors.push(
+      `${bucket.key}: ${unread} of ${bucket.faithfulRows} faithful rows have no manner-presence reading (${detail}); read them before licensing this arm`,
+    );
+  }
 
   // Each faithful count next to what it is made of, per gate — the three arms
   // carry three different gates, so the split is grouped rather than pooled.

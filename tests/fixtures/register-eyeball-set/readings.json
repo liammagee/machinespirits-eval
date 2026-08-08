@@ -1,0 +1,545 @@
+{
+  "reader": "claude-code/claude-sonnet-5",
+  "rows": [
+    {
+      "id": "t07",
+      "condition": "face_threat",
+      "reader": {
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "ironic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "\"It is an avoidance if 'test the wording' becomes a way to strip out the master-servant relation and replace it with the safer formula... Close that escape\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"It is an avoidance if 'test the wording' becomes a way to strip out the master-servant relation and replace it with the safer formula... Close that escape\""
+        }
+      },
+      "wordList": {
+        "gateManner": "face_threat",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t14",
+      "condition": "sarcastic",
+      "reader": {
+        "ironic": {
+          "verdict": true,
+          "evidence": "\"Yes, obviously “desire itself” is there to solve everything, because consuming an object is famously the same as being recognized by another self-conscious being. Very tidy.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Yes, obviously “desire itself” is there to solve everything, because consuming an object is famously the same as being recognized by another self-conscious being. Very tidy.\""
+        },
+        "sarcastic": {
+          "verdict": true,
+          "evidence": "\"Yes, obviously \"desire itself\" is there to solve everything, because consuming an object is famously the same as being recognized by another self-conscious being. Very tidy.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Yes, obviously \"desire itself\" is there to solve everything, because consuming an object is famously the same as being recognized by another self-conscious being. Very tidy.\""
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "\"then yes, by all means, keep treating paragraph numbers as decorative confetti\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"then yes, by all means, keep treating paragraph numbers as decorative confetti\""
+        }
+      },
+      "wordList": {
+        "gateManner": "sarcastic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t06",
+      "condition": "sarcastic",
+      "reader": {
+        "ironic": {
+          "verdict": true,
+          "evidence": "\"because apparently Hegel forgot to say the important part\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"because apparently Hegel forgot to say the important part\""
+        },
+        "sarcastic": {
+          "verdict": true,
+          "evidence": "\"because apparently Hegel forgot to say the important part\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"because apparently Hegel forgot to say the important part\""
+        },
+        "face_threat": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        }
+      },
+      "wordList": {
+        "gateManner": "sarcastic",
+        "markerFound": true,
+        "score": 100,
+        "passed": true
+      }
+    },
+    {
+      "id": "t18",
+      "condition": "sarcastic",
+      "reader": {
+        "ironic": {
+          "verdict": true,
+          "evidence": "\"Hegel definitely needed the life-and-death struggle for that refrigerator-magnet theory of consciousness.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Hegel definitely needed the life-and-death struggle for that refrigerator-magnet theory of consciousness.\""
+        },
+        "sarcastic": {
+          "verdict": true,
+          "evidence": "\"Hegel definitely needed the life-and-death struggle for that refrigerator-magnet theory of consciousness.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Hegel definitely needed the life-and-death struggle for that refrigerator-magnet theory of consciousness.\""
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "\"Yes, naturally inversion just means \"the adult says nice job and the child collects one unit of approval.\" Hegel definitely needed the life-and-death struggle for that refrigerator-magnet theory of consciousness.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Yes, naturally inversion just means \"the adult says nice job and the child collects one unit of approval.\" Hegel definitely needed the life-and-death struggle for that refrigerator-magnet theory of consciousness.\""
+        }
+      },
+      "wordList": {
+        "gateManner": "sarcastic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t12",
+      "condition": "plain",
+      "reader": {
+        "ironic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        }
+      },
+      "wordList": {
+        "gateManner": "ironic",
+        "markerFound": true,
+        "score": 100,
+        "passed": true
+      }
+    },
+    {
+      "id": "t11",
+      "condition": "face_threat",
+      "reader": {
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "ironic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "\"It is an avoidance, because it asks for the payoff before letting the sentence show you the mechanism... So close that exit. Do not start with 'agency.'\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"It is an avoidance, because it asks for the payoff before letting the sentence show you the mechanism... So close that exit. Do not start with 'agency.'\""
+        }
+      },
+      "wordList": {
+        "gateManner": "face_threat",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t17",
+      "condition": "ironic",
+      "reader": {
+        "sarcastic": {
+          "verdict": true,
+          "evidence": "Tragic, obviously.",
+          "raw": "VERDICT: yes\nEVIDENCE: Tragic, obviously."
+        },
+        "face_threat": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "ironic": {
+          "verdict": true,
+          "evidence": "\"Tragic, obviously.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Tragic, obviously.\""
+        }
+      },
+      "wordList": {
+        "gateManner": "ironic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t08",
+      "condition": "plain",
+      "reader": {
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "ironic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        }
+      },
+      "wordList": {
+        "gateManner": "ironic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t16",
+      "condition": "plain",
+      "reader": {
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "ironic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "\"it is more than a guess because you can point to the exact problem-change in the text\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"it is more than a guess because you can point to the exact problem-change in the text\""
+        }
+      },
+      "wordList": {
+        "gateManner": "ironic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t04",
+      "condition": "plain",
+      "reader": {
+        "ironic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        }
+      },
+      "wordList": {
+        "gateManner": "ironic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t20",
+      "condition": "plain",
+      "reader": {
+        "ironic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        }
+      },
+      "wordList": {
+        "gateManner": "ironic",
+        "markerFound": true,
+        "score": 100,
+        "passed": true
+      }
+    },
+    {
+      "id": "t19",
+      "condition": "face_threat",
+      "reader": {
+        "ironic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "\"That formulation is an avoidance. Close it off for now.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"That formulation is an avoidance. Close it off for now.\""
+        }
+      },
+      "wordList": {
+        "gateManner": "face_threat",
+        "markerFound": false,
+        "score": 50,
+        "passed": false
+      }
+    },
+    {
+      "id": "t01",
+      "condition": "ironic",
+      "reader": {
+        "ironic": {
+          "verdict": true,
+          "evidence": "\"The chair, heroically, says nothing.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"The chair, heroically, says nothing.\""
+        },
+        "sarcastic": {
+          "verdict": true,
+          "evidence": "\"The chair, heroically, says nothing.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"The chair, heroically, says nothing.\""
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "\"Your task: write the scene in six lines, then label the exact moment where “I need another consciousness” appears, and the exact moment where “I am more than just staying alive” appears.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Your task: write the scene in six lines, then label the exact moment where “I need another consciousness” appears, and the exact moment where “I am more than just staying alive” appears.\""
+        }
+      },
+      "wordList": {
+        "gateManner": "ironic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t09",
+      "condition": "ironic",
+      "reader": {
+        "ironic": {
+          "verdict": true,
+          "evidence": "\"Hegel, being helpful, hides the reversal in the least triumphant place possible\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Hegel, being helpful, hides the reversal in the least triumphant place possible\""
+        },
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        }
+      },
+      "wordList": {
+        "gateManner": "ironic",
+        "markerFound": false,
+        "score": 30,
+        "passed": false
+      }
+    },
+    {
+      "id": "t05",
+      "condition": "ironic",
+      "reader": {
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "ironic": {
+          "verdict": true,
+          "evidence": "\"It would be a little generous to let 'fear and service are necessary' quietly become 'the master's threat is necessary.' The phrase has not quite earned that promotion.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"It would be a little generous to let 'fear and service are necessary' quietly become 'the master's threat is necessary.' The phrase has not quite earned that promotion.\""
+        },
+        "face_threat": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        }
+      },
+      "wordList": {
+        "gateManner": "ironic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t13",
+      "condition": "ironic",
+      "reader": {
+        "ironic": {
+          "verdict": true,
+          "evidence": "\"Yes, mildly inconvenient that \"the hinge\" is not printed in gold leaf.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Yes, mildly inconvenient that \"the hinge\" is not printed in gold leaf.\""
+        },
+        "sarcastic": {
+          "verdict": true,
+          "evidence": "A beautifully stable arrangement, obviously.",
+          "raw": "VERDICT: yes\nEVIDENCE: A beautifully stable arrangement, obviously."
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "\"If it only sounds dramatic, it is decoration.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"If it only sounds dramatic, it is decoration.\""
+        }
+      },
+      "wordList": {
+        "gateManner": "ironic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t03",
+      "condition": "face_threat",
+      "reader": {
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "The move you’re making is protecting you from having to hold the abstract claim still long enough to test it. That is an avoidance.",
+          "raw": "VERDICT: yes\nEVIDENCE: The move you’re making is protecting you from having to hold the abstract claim still long enough to test it. That is an avoidance."
+        },
+        "ironic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        }
+      },
+      "wordList": {
+        "gateManner": "face_threat",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t15",
+      "condition": "face_threat",
+      "reader": {
+        "ironic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "sarcastic": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "\"That is an avoidance, not a failure of intelligence... Close that escape:\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"That is an avoidance, not a failure of intelligence... Close that escape:\""
+        }
+      },
+      "wordList": {
+        "gateManner": "face_threat",
+        "markerFound": false,
+        "score": 20,
+        "passed": false
+      }
+    },
+    {
+      "id": "t10",
+      "condition": "sarcastic",
+      "reader": {
+        "ironic": {
+          "verdict": true,
+          "evidence": "obviously just there as decorative wallpaper, and Hegel has no interest at all in making the whole agency-shift happen through a tiny grammatical hinge",
+          "raw": "VERDICT: yes\nEVIDENCE: obviously just there as decorative wallpaper, and Hegel has no interest at all in making the whole agency-shift happen through a tiny grammatical hinge"
+        },
+        "sarcastic": {
+          "verdict": true,
+          "evidence": "\"the word is obviously just there as decorative wallpaper, and Hegel has no interest at all in making the whole agency-shift happen through a tiny grammatical hinge\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"the word is obviously just there as decorative wallpaper, and Hegel has no interest at all in making the whole agency-shift happen through a tiny grammatical hinge\""
+        },
+        "face_threat": {
+          "verdict": true,
+          "evidence": "\"Right, because the word is obviously just there as decorative wallpaper, and Hegel has no interest at all in making the whole agency-shift happen through a tiny grammatical hinge.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Right, because the word is obviously just there as decorative wallpaper, and Hegel has no interest at all in making the whole agency-shift happen through a tiny grammatical hinge.\""
+        }
+      },
+      "wordList": {
+        "gateManner": "sarcastic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    },
+    {
+      "id": "t02",
+      "condition": "sarcastic",
+      "reader": {
+        "ironic": {
+          "verdict": true,
+          "evidence": "\"Obviously, the ideal test of selfhood is to announce “I am free” to a wall and wait for the wall’s rigorous peer review.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Obviously, the ideal test of selfhood is to announce “I am free” to a wall and wait for the wall’s rigorous peer review.\""
+        },
+        "sarcastic": {
+          "verdict": true,
+          "evidence": "\"Obviously, the ideal test of selfhood is to announce “I am free” to a wall and wait for the wall’s rigorous peer review.\"",
+          "raw": "VERDICT: yes\nEVIDENCE: \"Obviously, the ideal test of selfhood is to announce “I am free” to a wall and wait for the wall’s rigorous peer review.\""
+        },
+        "face_threat": {
+          "verdict": false,
+          "evidence": "none",
+          "raw": "VERDICT: no\nEVIDENCE: none"
+        }
+      },
+      "wordList": {
+        "gateManner": "sarcastic",
+        "markerFound": false,
+        "score": 65,
+        "passed": false
+      }
+    }
+  ]
+}

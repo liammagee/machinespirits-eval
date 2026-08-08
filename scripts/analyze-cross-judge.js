@@ -16,9 +16,11 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, '..', 'data', 'evaluations.db');
+const ROOT = path.resolve(__dirname, '..');
+const DB_PATH = resolveEvaluationDbPath(ROOT);
 
 // --- CLI args ---
 const args = process.argv.slice(2);

@@ -20,6 +20,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import { getScenario, setRubricPathOverride, clearRubricPathOverride } from '../services/evalConfigLoader.js';
 import {
   buildPerTurnTutorEvaluationPrompt,
@@ -31,8 +32,8 @@ import { callModelCliText } from '../services/cliProviderBridge.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const DB_PATH = join(ROOT, 'data', 'evaluations.db');
-const LOG_DIR = join(ROOT, 'logs', 'tutor-dialogues');
+const DB_PATH = resolveEvaluationDbPath(ROOT);
+const LOG_DIR = resolveTutorDialoguesDir(ROOT);
 const RUBRICS_DIR = join(ROOT, 'config', 'rubrics');
 
 // ── CLI Parsing ──────────────────────────────────────────────────────────────

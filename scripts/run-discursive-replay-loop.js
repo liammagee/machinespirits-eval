@@ -15,10 +15,11 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { runReplay } from './replay-discursive-transcript.js';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const ROOT = path.resolve(path.dirname(__filename), '..');
-const DEFAULT_DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT, 'data', 'evaluations.db');
+const DEFAULT_DB_PATH = resolveEvaluationDbPath(ROOT);
 const DEFAULT_ITEM_CONCURRENCY = 2;
 const DEFAULT_SCORE_CONCURRENCY = 1;
 

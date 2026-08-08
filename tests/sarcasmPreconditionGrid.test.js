@@ -219,10 +219,10 @@ describe('sarcasm precondition grid', () => {
     // marker scored 75 and was counted as having held the sarcastic manner.
     const analyses = supportedAnalyses();
     analyses[0].stanceFidelity.passed = true;
-    analyses[0].stanceFidelity.missing = ['register_marker'];
+    analyses[0].stanceFidelity.missing = ['cue_compliance'];
     const report = summarizeSarcasmPreconditionGrid(analyses);
     assert.equal(report.status, 'INCOMPLETE');
-    assert.ok(report.errors.some((error) => /counted faithful without register_marker/.test(error)));
+    assert.ok(report.errors.some((error) => /counted faithful without cue_compliance/.test(error)));
   });
 
   it('fails closed when a row carries no named-claim component', () => {

@@ -1,13 +1,13 @@
 ---
 id: refactor-eval-cli-generation-commands
 title: Extract eval-cli generation, chat, and rejudge commands
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-08
 branch: codex/refactor-eval-cli-generation-commands
 verification: The eval-cli facade dispatches quick/test, run, chat, and rejudge through bounded command owners while generation selection, model guards, adaptive budgets, live reporting, chat tools, rubric overrides, judge provenance, arguments, stdout/stderr, and exit codes remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass.
 claim_status: planned
@@ -87,3 +87,5 @@ Log:
   gates remained green without conflict.
 - 2026-08-06 — Opened the reviewed follow-up as PR #515 after the post-rebase
   implementation commit `056c2149` passed all required local gates.
+- 2026-08-08 — Closed after PR #515 merged; the bounded generation, chat, and
+  rejudge owners are present on `main` with the recorded parity gates green.

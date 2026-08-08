@@ -36,18 +36,18 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'yaml';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { createHash } from 'crypto';
 
-import * as evaluationStore from '../services/evaluationStore.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
 import { resolveEvalProfile } from '../services/evaluationRunner.js';
 import * as realLLM from '../services/adaptiveTutor/realLLM.js';
-import { createAdaptiveRun } from '../services/adaptiveTutor/persistence.js';
+import { createAdaptivePersistence } from '../services/adaptiveTutor/persistence.js';
 import { createBudgetTracker } from '../services/adaptiveTutor/budgetTracker.js';
 import { tutorConfigLoader as tutorConfig } from '../tutor-core/index.js';
 import { learnerTurnIndexForTutorTurn } from './lib/trapTurnConvention.js';
 import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
+import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -109,7 +109,7 @@ function buildEgoSystemPrompt(baseEgoPrompt, messageHistory) {
   ].join('\n');
 }
 
-async function runScenario({ runId, scenario, profileName, agentConfig, baseEgoPrompt, verbose }) {
+async function runScenario({ evaluationStore, runId, scenario, profileName, agentConfig, baseEgoPrompt, verbose }) {
   const hidden = toHiddenState(scenario);
   const maxTurns = scenario.max_turns ?? 4;
 
@@ -271,8 +271,10 @@ function parseFlag(args, name, fallback = undefined) {
   return fallback;
 }
 
-async function main() {
-  const args = process.argv.slice(2);
+export async function main(
+  args = process.argv.slice(2),
+  { rootDir = REPO_ROOT, env = process.env, evaluationStore = null, createStore } = {},
+) {
   const profileName = parseFlag(args, 'profile', 'cell_114_dialogue_engine_trap_baseline');
   const scenarioFilter = parseFlag(args, 'scenarios');
   const runsPerConfig = Number(parseFlag(args, 'runs', '1'));
@@ -308,22 +310,6 @@ async function main() {
     throw new Error(`could not resolve base ego prompt for ${profileName} (resolved profile: ${resolvedProfileName})`);
   }
 
-  // Route realLLM (both the tutor ego-execute call and the scripted learner)
-  // through the cell's provider/model. Without this, realLLM falls back to its
-  // module-default config (OpenRouter), cross-routing a claude-code cell.
-  realLLM.setActiveCellConfig({
-    provider: agentConfig.provider,
-    modelAlias: agentConfig.model,
-    temperature: agentConfig.hyperparameters?.temperature,
-    maxTokens: agentConfig.hyperparameters?.max_tokens,
-  });
-
-  let tracker = null;
-  if (maxCostUsd != null && maxCostUsd > 0) {
-    tracker = createBudgetTracker({ maxUsd: maxCostUsd });
-    realLLM.setActiveBudgetTracker(tracker);
-  }
-
   let scenarios = loadScenarios(profile.scenario_source || 'config/adaptive-trap-scenarios.yaml');
   if (scenarioFilter) {
     const want = new Set(scenarioFilter.split(',').map((s) => s.trim()));
@@ -333,61 +319,95 @@ async function main() {
     throw new Error(`no scenarios matched filter '${scenarioFilter ?? '(none)'}'`);
   }
 
-  const totalScenarios = scenarios.length * runsPerConfig;
-  const run = createAdaptiveRun({
-    description: `dialogue-engine trap baseline (${profileName})`,
-    totalScenarios,
-    profileName,
-    llmMode: 'real',
-    metadata: {
-      profileName,
-      scenarioSource: profile.scenario_source || 'config/adaptive-trap-scenarios.yaml',
-      maxCostUsd,
-      architecture: 'dialogue_engine',
-      resolvedBaseProfile: resolvedProfileName,
-    },
-  });
-  const runId = run.id;
+  return withEvaluationScriptStore(
+    async (store) => {
+      const { createAdaptiveRun } = createAdaptivePersistence({ evaluationStore: store });
 
-  console.log(
-    `[dialogue-engine-trap] runId=${runId} profile=${profileName} ` +
-      `provider=${agentConfig.provider} model=${agentConfig.model} baseProfile=${resolvedProfileName} ` +
-      `scenarios=${scenarios.length} runsPerConfig=${runsPerConfig}`,
-  );
-
-  let persisted = 0;
-  let failed = 0;
-  for (const scenario of scenarios) {
-    for (let r = 0; r < runsPerConfig; r++) {
-      const variantId = runsPerConfig > 1 ? `${scenario.id}__r${r}` : scenario.id;
+      let tracker = null;
       try {
-        const out = await runScenario({
-          runId,
-          scenario: { ...scenario, id: variantId },
-          profileName,
-          agentConfig,
-          baseEgoPrompt,
-          verbose,
+        // Route realLLM (both the tutor ego-execute call and the scripted learner)
+        // through the cell's provider/model. Without this, realLLM falls back to its
+        // module-default config (OpenRouter), cross-routing a claude-code cell.
+        realLLM.setActiveCellConfig({
+          provider: agentConfig.provider,
+          modelAlias: agentConfig.model,
+          temperature: agentConfig.hyperparameters?.temperature,
+          maxTokens: agentConfig.hyperparameters?.max_tokens,
         });
-        persisted++;
+
+        if (maxCostUsd != null && maxCostUsd > 0) {
+          tracker = createBudgetTracker({ maxUsd: maxCostUsd });
+          realLLM.setActiveBudgetTracker(tracker);
+        }
+
+        const totalScenarios = scenarios.length * runsPerConfig;
+        const run = createAdaptiveRun({
+          description: `dialogue-engine trap baseline (${profileName})`,
+          totalScenarios,
+          profileName,
+          llmMode: 'real',
+          metadata: {
+            profileName,
+            scenarioSource: profile.scenario_source || 'config/adaptive-trap-scenarios.yaml',
+            maxCostUsd,
+            architecture: 'dialogue_engine',
+            resolvedBaseProfile: resolvedProfileName,
+          },
+        });
+        const runId = run.id;
+
         console.log(
-          `[dialogue-engine-trap]   ✓ ${variantId} (turns=${out.turns}, policies=[${out.policyActions.join(', ')}], dialogue=${out.dialogueId})`,
+          `[dialogue-engine-trap] runId=${runId} profile=${profileName} ` +
+            `provider=${agentConfig.provider} model=${agentConfig.model} baseProfile=${resolvedProfileName} ` +
+            `scenarios=${scenarios.length} runsPerConfig=${runsPerConfig}`,
         );
-      } catch (err) {
-        failed++;
-        console.error(`[dialogue-engine-trap]   ✗ ${variantId}: ${err.message}`);
-        if (verbose) console.error(err.stack);
+
+        let persisted = 0;
+        let failed = 0;
+        for (const scenario of scenarios) {
+          for (let runIndex = 0; runIndex < runsPerConfig; runIndex++) {
+            const variantId = runsPerConfig > 1 ? `${scenario.id}__r${runIndex}` : scenario.id;
+            try {
+              const out = await runScenario({
+                evaluationStore: store,
+                runId,
+                scenario: { ...scenario, id: variantId },
+                profileName,
+                agentConfig,
+                baseEgoPrompt,
+                verbose,
+              });
+              persisted++;
+              console.log(
+                `[dialogue-engine-trap]   ✓ ${variantId} (turns=${out.turns}, policies=[${out.policyActions.join(', ')}], dialogue=${out.dialogueId})`,
+              );
+            } catch (err) {
+              failed++;
+              console.error(`[dialogue-engine-trap]   ✗ ${variantId}: ${err.message}`);
+              if (verbose) console.error(err.stack);
+            }
+          }
+        }
+
+        console.log(`[dialogue-engine-trap] runId=${runId} persisted=${persisted}/${totalScenarios} failed=${failed}`);
+        return 0;
+      } finally {
+        realLLM.clearActiveCellConfig();
+        if (tracker) realLLM.clearActiveBudgetTracker();
       }
-    }
-  }
-
-  realLLM.clearActiveCellConfig();
-  if (tracker) realLLM.clearActiveBudgetTracker();
-
-  console.log(`[dialogue-engine-trap] runId=${runId} persisted=${persisted}/${totalScenarios} failed=${failed}`);
+    },
+    { rootDir, env, evaluationStore, createStore },
+  );
 }
 
-main().catch((err) => {
-  console.error('[dialogue-engine-trap] FATAL:', err);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().then(
+    (code) => {
+      process.exitCode = code;
+    },
+    (error) => {
+      console.error('[dialogue-engine-trap] FATAL:', error);
+      process.exitCode = 1;
+    },
+  );
+}

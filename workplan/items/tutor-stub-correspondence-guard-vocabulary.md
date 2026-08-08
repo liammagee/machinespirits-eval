@@ -1,17 +1,21 @@
 ---
 id: tutor-stub-correspondence-guard-vocabulary
 title: "Evidence-correspondence guard can never clear in a plain-language world"
-status: triaged
+status: done
 type: infra
 priority: P2
-owner: claude
+owner: codex
 source: manual
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-09
+branch: codex/tutor-stub-correspondence-guard-vocabulary
 verification: "A unit test that takes world-030's own p_dye surface as the
   permitted text and asserts the matching tutor sentence is allowed. It must
   fail on the current code and pass after the fix."
 claim_status: methods
+links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/582
 tags:
   - tutor-stub
   - guards
@@ -79,3 +83,17 @@ Option 1 is preferred: it removes the coupling between a guard and a costume.
   (`tutor-fallible-learner-closure-prereg`). Confirmed by feeding the guard
   world-030's own clue text and watching the correct closing sentence blocked,
   then cleared by a one-word change to the clue. Filed; no fix attempted.
+- 2026-08-08 — revalidated against current `main` and picked up for the
+  structured-fact authorization fix. The exact World-030 sentence still fails
+  with released prose alone and clears only when the prose is rewritten into
+  the guard's hardcoded vocabulary.
+- 2026-08-08 — implemented narrow structured-fact authorization across the
+  live response guard, frozen replay, and in-session character restatement. A
+  grounded two-place fact now licenses only a candidate that names its
+  relation and both endpoints in order; unreleased, endpoint-reversed, and
+  same-endpoint/different-relation controls remain blocked. The focused
+  tutor-stub sweep passed 81/81 alongside ESLint, Prettier, import-cycle, and
+  source-only workplan checks.
+- 2026-08-09 — PR #582 merged as `7b2eadcf`. Its structured-fact authorization
+  and negative controls satisfy the card's verification, so the vocabulary
+  coupling defect is closed.

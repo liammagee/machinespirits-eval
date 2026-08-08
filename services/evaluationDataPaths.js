@@ -102,8 +102,8 @@ function asDialoguesDir(logsRoot) {
   return path.basename(logsRoot) === 'tutor-dialogues' ? logsRoot : path.join(logsRoot, 'tutor-dialogues');
 }
 
-export function resolveTutorDialoguesDir(rootDir, explicitPath = null) {
-  return asDialoguesDir(resolveEvaluationLogsRoot(rootDir, explicitPath));
+export function resolveTutorDialoguesDir(rootDir, explicitPath = null, options = {}) {
+  return asDialoguesDir(resolveEvaluationLogsRoot(rootDir, explicitPath, options));
 }
 
 /**

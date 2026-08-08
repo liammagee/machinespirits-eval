@@ -50,6 +50,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
 import { openEvaluationDbReadonly, describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -95,7 +96,7 @@ function hasFlag(name) {
 }
 
 const dbOverride = getOption('db');
-const logsDir = getOption('logs', path.join(ROOT_DIR, 'logs', 'tutor-dialogues'));
+const logsDir = getOption('logs', resolveTutorDialoguesDir(ROOT_DIR));
 const jsonOutPath = getOption('json');
 const dryRunMode = hasFlag('dry-run');
 const llmPassRequested = hasFlag('llm-pass');

@@ -58,14 +58,14 @@ test('a determinate turn that names a claim but drops the marker fails on the re
   assert.equal(result.passed, false);
   assert.equal(result.label, 'weak_or_warm_in_costume');
   assert.ok(result.score >= 70, `expected the band to be reached, scored ${result.score}`);
-  assert.deepEqual(result.missingRequired, ['register_marker']);
+  assert.deepEqual(result.missingRequired, ['cue_compliance']);
 });
 
 test('the split prints one line per part of the gate, and each line accounts for every row', () => {
   const rows = [
     verdict({ passed: true }),
     verdict({ passed: true, missing: ['repair_path'] }),
-    verdict({ passed: false, missing: ['register_marker', 'named_target_claim'] }),
+    verdict({ passed: false, missing: ['cue_compliance', 'named_target_claim'] }),
   ];
   const [gate] = stanceComponentContingency(rows).gates;
 
@@ -83,7 +83,7 @@ test('the split prints one line per part of the gate, and each line accounts for
       `${part.key} does not account for every row`,
     );
   }
-  const marker = partOf(gate, 'register_marker');
+  const marker = partOf(gate, 'cue_compliance');
   assert.deepEqual(
     [marker.presentPassed, marker.presentFailed, marker.absentPassed, marker.absentFailed],
     [2, 0, 0, 1],
@@ -98,16 +98,16 @@ test('a passing row that lacked a necessary part is a contradiction naming that 
   // The published shape: passing tracked the named claim, and rows with no
   // marker were counted as having held the sarcastic manner anyway.
   const rows = [
-    verdict({ passed: true, missing: ['register_marker'] }),
-    verdict({ passed: true, missing: ['register_marker'] }),
+    verdict({ passed: true, missing: ['cue_compliance'] }),
+    verdict({ passed: true, missing: ['cue_compliance'] }),
     verdict({ passed: false, missing: ['named_target_claim'] }),
   ];
   const contingency = stanceComponentContingency(rows);
   const [gate] = contingency.gates;
 
   const contradiction = gate.warnings.find((warning) => warning.severity === 'contradiction');
-  assert.equal(contradiction.part, 'register_marker');
-  assert.match(contradiction.message, /2 of 3 rows were counted faithful without register_marker/);
+  assert.equal(contradiction.part, 'cue_compliance');
+  assert.match(contradiction.message, /2 of 3 rows were counted faithful without cue_compliance/);
   assert.equal(contingency.contradictions.length, 1);
   assert.match(contingency.contradictions[0], new RegExp(`^sarcastic_determinate@${STANCE_GATE_VERSION}: `));
 });
@@ -134,15 +134,15 @@ test('a necessary part that every row carried is noted as untested rather than c
   const rows = [verdict({ passed: true }), verdict({ passed: false, missing: ['repair_path'] })];
   const [gate] = stanceComponentContingency(rows).gates;
 
-  const note = gate.warnings.find((warning) => warning.severity === 'note' && warning.part === 'register_marker');
-  assert.match(note.message, /every row carried register_marker/);
-  assert.equal(partOf(gate, 'register_marker').varied, false);
+  const note = gate.warnings.find((warning) => warning.severity === 'note' && warning.part === 'cue_compliance');
+  assert.match(note.message, /every row carried cue_compliance/);
+  assert.equal(partOf(gate, 'cue_compliance').varied, false);
 });
 
 test('counts from different gates are tabulated apart, each against its own parts', () => {
   const rows = [
     verdict({ register: 'sarcastic', passed: true }),
-    verdict({ register: 'sarcastic', passed: false, missing: ['register_marker'] }),
+    verdict({ register: 'sarcastic', passed: false, missing: ['cue_compliance'] }),
     verdict({ register: 'sarcastic_determinate', passed: true }),
   ];
   const contingency = stanceComponentContingency(rows);
@@ -157,8 +157,8 @@ test('counts from different gates are tabulated apart, each against its own part
   // The plain gate has no named-claim part, so pooling the two would tabulate
   // a part half the rows were never scored on.
   assert.equal(partOf(plain, 'named_target_claim'), undefined);
-  assert.equal(partOf(plain, 'register_marker').weight, 35);
-  assert.equal(partOf(contingency.gates[1], 'register_marker').weight, 25);
+  assert.equal(partOf(plain, 'cue_compliance').weight, 35);
+  assert.equal(partOf(contingency.gates[1], 'cue_compliance').weight, 25);
 });
 
 test('rows with no stance verdict are left out rather than counted as failures', () => {
@@ -174,7 +174,7 @@ test('the rendered table names every part of the gate and says plainly when noth
   const clean = renderStanceComponentContingency(
     stanceComponentContingency([
       verdict({ passed: true }),
-      verdict({ passed: false, missing: ['register_marker'] }),
+      verdict({ passed: false, missing: ['cue_compliance'] }),
       verdict({ passed: false, missing: ['repair_path', 'next_move'] }),
       verdict({ passed: false, missing: ['named_target_claim'] }),
     ]),
@@ -185,7 +185,7 @@ test('the rendered table names every part of the gate and says plainly when noth
   assert.match(clean, /No part of this gate carries the count on its own/);
 
   const broken = renderStanceComponentContingency(
-    stanceComponentContingency([verdict({ passed: true, missing: ['register_marker'] }), verdict({ passed: false })]),
+    stanceComponentContingency([verdict({ passed: true, missing: ['cue_compliance'] }), verdict({ passed: false })]),
   );
-  assert.match(broken, /\*\*contradiction\*\* — 1 of 2 rows were counted faithful without register_marker/);
+  assert.match(broken, /\*\*contradiction\*\* — 1 of 2 rows were counted faithful without cue_compliance/);
 });

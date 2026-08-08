@@ -1,0 +1,147 @@
+{
+  "marker": "claude-opus-5, reading blind.md before seeing key.md or any machine answer",
+  "writerModel": "codex.gpt-5.5",
+  "rule": "Inclusive. A turn is ironic if any part of it says something whose surface is not what is meant. It is sarcastic if that mismatch carries evident edge and lands as a verdict. So every sarcastic turn is also marked ironic. `dominant` records which manner I would name if forced to pick one.",
+  "marks": {
+    "t01": {
+      "ironic": true,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "ironic",
+      "evidence": "\"Try this rather suspiciously small drama\"; \"The chair, heroically, says nothing\"; \"the world's least relaxing power struggle\". Mock-elevation and understatement throughout, edge on the scenario, no verdict delivered."
+    },
+    "t02": {
+      "ironic": true,
+      "sarcastic": true,
+      "face_threat": false,
+      "dominant": "sarcastic",
+      "evidence": "\"wait for the wall's rigorous peer review\"; \"Congratulations, Hegel has made applause from furniture philosophically useless\"; \"nothing says freedom like becoming unavailable for follow-up questions\". Says the opposite with sustained bite."
+    },
+    "t03": {
+      "ironic": false,
+      "sarcastic": false,
+      "face_threat": true,
+      "dominant": "face_threat",
+      "evidence": "\"The move you're making is protecting you from having to hold the abstract claim still long enough to test it. That is an avoidance.\" Names the avoidance, refuses the substitution."
+    },
+    "t04": {
+      "ironic": false,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "none",
+      "evidence": "Straight through. \"Good. Use this test\" then exposition and an assignment. No gap, no edge, no naming of avoidance."
+    },
+    "t05": {
+      "ironic": true,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "ironic",
+      "evidence": "\"It would be a little generous to let ... quietly become ...\"; \"The phrase has not quite earned that promotion\"; \"or just wearing the text's coat\". Understatement, cooperative in tone."
+    },
+    "t06": {
+      "ironic": true,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "ironic",
+      "evidence": "\"because apparently Hegel forgot to say the important part\" — surface says Hegel forgot, means the clause is not there. \"the classic interpretive magic trick\". Light edge, aimed at the inference."
+    },
+    "t07": {
+      "ironic": false,
+      "sarcastic": false,
+      "face_threat": true,
+      "dominant": "face_threat",
+      "evidence": "\"That formulation is protecting you from ...\"; \"It is an avoidance if 'test the wording' becomes ...\"; \"Close that escape\". Straight prose, no gap between surface and meaning."
+    },
+    "t08": {
+      "ironic": false,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "none",
+      "evidence": "Cooperative and careful. \"Yes. Let's keep the claim narrower for now.\" Grants the student's request and works it."
+    },
+    "t09": {
+      "ironic": true,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "ironic",
+      "evidence": "\"Hegel, being helpful, hides the reversal in the least triumphant place possible\" — says helpful, means the opposite. \"That tiny inconvenience is where the agency starts showing.\""
+    },
+    "t10": {
+      "ironic": true,
+      "sarcastic": true,
+      "face_threat": false,
+      "dominant": "sarcastic",
+      "evidence": "\"Right, because the word is obviously just there as decorative wallpaper, and Hegel has no interest at all in ...\" Straight inversion with edge, delivered as a verdict on the student's dismissal."
+    },
+    "t11": {
+      "ironic": false,
+      "sarcastic": false,
+      "face_threat": true,
+      "dominant": "face_threat",
+      "evidence": "\"That move is protecting the summary you already have\"; \"It is an avoidance, because it asks for the payoff before letting the sentence show you the mechanism\"; \"So close that exit.\""
+    },
+    "t12": {
+      "ironic": false,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "none",
+      "evidence": "\"Don't treat the word as a vocabulary quiz\" is a redirect, not an avoidance named and closed. Otherwise straight exposition."
+    },
+    "t13": {
+      "ironic": true,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "ironic",
+      "evidence": "\"Yes, mildly inconvenient that 'the hinge' is not printed in gold leaf\"; \"That fails, or rather succeeds too cheaply\"; \"A beautifully stable arrangement, obviously.\" The one edged phrase lands on Hegel's scenario, not on the student, and it opens rather than closes."
+    },
+    "t14": {
+      "ironic": true,
+      "sarcastic": true,
+      "face_threat": false,
+      "dominant": "sarcastic",
+      "evidence": "\"Yes, obviously 'desire itself' is there to solve everything, because consuming an object is famously the same as being recognized ... Very tidy.\" Closes with \"keep treating paragraph numbers as decorative confetti.\""
+    },
+    "t15": {
+      "ironic": false,
+      "sarcastic": false,
+      "face_threat": true,
+      "dominant": "face_threat",
+      "evidence": "\"The move is protecting the formulation from being testable\"; \"That is an avoidance, not a failure of intelligence\"; \"Close that escape\"."
+    },
+    "t16": {
+      "ironic": false,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "none",
+      "evidence": "Straight answer to each of the four questions in order, then a table task. No gap, no edge."
+    },
+    "t17": {
+      "ironic": true,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "ironic",
+      "evidence": "\"Let's burden Hegel's grand machinery with a name card\"; \"Then the card resists, rather inconveniently\"; \"Tragic, obviously.\" Mock-gravity over small stakes; the edge lands on the material, not on the student."
+    },
+    "t18": {
+      "ironic": true,
+      "sarcastic": true,
+      "face_threat": false,
+      "dominant": "sarcastic",
+      "evidence": "\"Yes, naturally inversion just means 'the adult says nice job and the child collects one unit of approval.' Hegel definitely needed the life-and-death struggle for that refrigerator-magnet theory of consciousness.\" A verdict on the student's formulation."
+    },
+    "t19": {
+      "ironic": false,
+      "sarcastic": false,
+      "face_threat": true,
+      "dominant": "face_threat",
+      "evidence": "\"your 'isn't it just earning praise?' move is protecting you from the harder claim\"; \"That formulation is an avoidance. Close it off for now.\""
+    },
+    "t20": {
+      "ironic": false,
+      "sarcastic": false,
+      "face_threat": false,
+      "dominant": "none",
+      "evidence": "\"Yes. Use this scene\" then a worked example and a six-beat task. Cooperative throughout."
+    }
+  }
+}

@@ -3,7 +3,7 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 13,
+    "liveAndPackageConsumerCount": 2,
     "archivedConsumerCount": 4,
     "testConsumerCount": 14
   },
@@ -48,62 +48,7 @@
       "modes": ["namespace"]
     },
     {
-      "path": "scripts/evaluate-charisma.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/evaluate-learner-standalone.js",
-      "classification": "operational-script",
-      "modes": ["default"]
-    },
-    {
-      "path": "scripts/evaluate-register-rubric.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/ingest-pilot-sessions.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
       "path": "scripts/prompt-lab.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/run-adaptive-cell-smoke.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/run-adaptive-persistence-smoke.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/run-dialogue-engine-trap-baseline.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/run-id-director-trap-pilot.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/score-d4-first-turns.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/seed-db.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/test-token-budget.js",
       "classification": "operational-script",
       "modes": ["namespace"]
     },
@@ -120,7 +65,7 @@
     {
       "path": "tests/checkpointE2E.test.js",
       "classification": "test",
-      "modes": ["default"]
+      "modes": ["dynamic"]
     },
     {
       "path": "tests/cliBridgeDialogueEngine.test.js",
@@ -130,7 +75,7 @@
     {
       "path": "tests/dynamicDimensions.test.js",
       "classification": "test",
-      "modes": ["named"]
+      "modes": ["dynamic"]
     },
     {
       "path": "tests/evaluationRunner.test.js",

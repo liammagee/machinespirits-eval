@@ -104,6 +104,16 @@ test('logs root follows explicit, env, canonical data home, then repo fallback',
   });
 });
 
+test('tutor dialogue path honors an injected script environment', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-path-root-'));
+  const logsRoot = path.join(root, 'injected-logs');
+
+  assert.equal(
+    resolveTutorDialoguesDir(root, null, { env: { EVAL_LOGS_DIR: logsRoot } }),
+    path.join(logsRoot, 'tutor-dialogues'),
+  );
+});
+
 test('logs root preserves local logs for non-repo artifact roots', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-path-root-'));
   const dataHome = fs.mkdtempSync(path.join(os.tmpdir(), 'ms-path-home-'));

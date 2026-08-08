@@ -32,6 +32,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -63,7 +64,7 @@ function parseCliArgs(argv) {
 
 const { options: cliOpts, flags: cliFlags, runIds: cliRunIds } = parseCliArgs(process.argv.slice(2));
 
-const dbPath = cliOpts.db || path.join(ROOT_DIR, 'data', 'evaluations.db');
+const dbPath = resolveEvaluationDbPath(ROOT_DIR, cliOpts.db);
 const jsonOut = cliOpts.json || null;
 const judge = cliOpts.judge || null;
 const minTurns = parseInt(cliOpts['min-turns'] || '3', 10);

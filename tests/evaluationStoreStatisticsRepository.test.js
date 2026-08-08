@@ -338,15 +338,14 @@ describe('evaluation-store statistics repository', () => {
       );
       assert.deepEqual(compared.comparison, [
         { scenarioId: 'scenario-a', config1Score: 80, config2Score: 70, difference: 10, winner: 'config1' },
-        { scenarioId: 'scenario-b', config1Score: null, config2Score: 90, difference: -90, winner: 'config2' },
-        // Historical behavior: a scenario absent from config 1 compares
-        // undefined directly and is labelled tie even though difference uses 0.
-        { scenarioId: 'scenario-c', config1Score: null, config2Score: 100, difference: -100, winner: 'tie' },
+        { scenarioId: 'scenario-b', config1Score: 0, config2Score: 90, difference: -90, winner: 'config2' },
+        { scenarioId: 'scenario-c', config1Score: null, config2Score: 100, difference: null, winner: null },
       ]);
       assert.deepEqual(compared.overall, {
         config1Wins: 1,
         config2Wins: 1,
-        ties: 1,
+        ties: 0,
+        incomplete: 1,
         config1AvgScore: 40,
         config2AvgScore: 260 / 3,
       });
@@ -358,6 +357,63 @@ describe('evaluation-store statistics repository', () => {
       assert.deepEqual(repository.getFactorialCellData('eval-projections', { scoreColumn: 'unsafe_sql' }), {
         r0_t0_l0: [80, 0],
         r1_t1_l1: [70, 90],
+      });
+    } finally {
+      db.close();
+    }
+  });
+
+  it('excludes either missing side from winner, difference, and win/tie counts', () => {
+    const { db, repository, seedRun, seedResult } = createHarness();
+    try {
+      seedRun('eval-missing-sides');
+      seedResult('eval-missing-sides', {
+        scenarioId: 'left-missing',
+        provider: 'provider-b',
+        model: 'model-b',
+        profileName: 'profile-b',
+        tutorFirstTurnScore: 100,
+      });
+      seedResult('eval-missing-sides', {
+        scenarioId: 'right-missing',
+        provider: 'provider-a',
+        model: 'model-a',
+        tutorFirstTurnScore: 60,
+      });
+      seedResult('eval-missing-sides', {
+        scenarioId: 'complete-tie',
+        provider: 'provider-a',
+        model: 'model-a',
+        tutorFirstTurnScore: 50,
+      });
+      seedResult('eval-missing-sides', {
+        scenarioId: 'complete-tie',
+        provider: 'provider-b',
+        model: 'model-b',
+        profileName: 'profile-b',
+        tutorFirstTurnScore: 50,
+      });
+
+      const compared = repository.compareConfigs(
+        'eval-missing-sides',
+        { provider: 'provider-a', model: 'model-a' },
+        { provider: 'provider-b', model: 'model-b' },
+      );
+      const comparisonByScenario = [...compared.comparison].sort((left, right) =>
+        left.scenarioId.localeCompare(right.scenarioId),
+      );
+      assert.deepEqual(comparisonByScenario, [
+        { scenarioId: 'complete-tie', config1Score: 50, config2Score: 50, difference: 0, winner: 'tie' },
+        { scenarioId: 'left-missing', config1Score: null, config2Score: 100, difference: null, winner: null },
+        { scenarioId: 'right-missing', config1Score: 60, config2Score: null, difference: null, winner: null },
+      ]);
+      assert.deepEqual(compared.overall, {
+        config1Wins: 0,
+        config2Wins: 0,
+        ties: 1,
+        incomplete: 2,
+        config1AvgScore: 55,
+        config2AvgScore: 75,
       });
     } finally {
       db.close();

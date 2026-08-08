@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import Database from 'better-sqlite3';
-import { resolveCanonicalEvaluationDbPath } from '../services/evaluationDataPaths.js';
+import { resolveCanonicalEvaluationDbPath, resolvePathFromRoot } from '../services/evaluationDataPaths.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TEST_RUN_DESCRIPTIONS = new Set([
@@ -20,7 +20,7 @@ const TEST_RUN_DESCRIPTIONS = new Set([
 
 const { values: args } = parseArgs({
   options: {
-    'local-db': { type: 'string', default: path.join(ROOT, 'data', 'evaluations.db') },
+    'local-db': { type: 'string', default: resolvePathFromRoot(ROOT, 'data/evaluations.db') },
     'canonical-db': { type: 'string', default: resolveCanonicalEvaluationDbPath() },
     config: { type: 'string', default: path.join(ROOT, 'config', 'evaluation-data-closeout.json') },
     apply: { type: 'boolean', default: false },
