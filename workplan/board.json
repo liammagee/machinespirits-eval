@@ -1,7 +1,7 @@
 {
-  "generated": "2026-08-08T07:06:39.250Z",
+  "generated": "2026-08-08T07:27:51.164Z",
   "counts": {
-    "total": 460,
+    "total": 461,
     "byStatus": {
       "done": 429,
       "blocked": 6,
@@ -9,13 +9,13 @@
       "active": 3,
       "archived": 4,
       "triaged": 7,
-      "review": 3
+      "review": 4
     },
     "byType": {
       "research": 74,
       "experiment": 77,
       "infra": 95,
-      "maintenance": 193,
+      "maintenance": 194,
       "content": 3,
       "ops": 10,
       "paper": 8
@@ -336,7 +336,8 @@
           "refactor-adaptive-tutor-store-injection",
           "refactor-eval-routes-store-injection",
           "refactor-operational-log-reader-injection",
-          "refactor-longitudinal-report-store-ownership"
+          "refactor-longitudinal-report-store-ownership",
+          "refactor-operational-score-store-ownership"
         ]
       },
       "tags": [
@@ -597,6 +598,49 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
+    },
+    {
+      "id": "refactor-operational-score-store-ownership",
+      "title": "Give operational scoring scripts explicit evaluation-store ownership",
+      "status": "review",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/refactor-operational-score-store-ownership",
+      "verification": "Lifecycle, usage-before-database, isolated empty-run CLI, boundary-inventory, focused scoring-helper, hermetic root and tutor-core, risk-coverage, source, lint, formatting, manifest, and cycle gates prove four scoring tools own and close their stores without changing score construction or persistence.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-longitudinal-report-store-ownership"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore/scriptContext.js",
+          "scripts/evaluate-charisma.js",
+          "scripts/evaluate-register-rubric.js",
+          "scripts/evaluate-learner-standalone.js",
+          "scripts/score-d4-first-turns.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-longitudinal-report-store-ownership"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "operational-scripts",
+        "scoring",
+        "dependency-injection",
+        "lifecycle",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
