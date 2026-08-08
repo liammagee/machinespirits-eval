@@ -15,14 +15,16 @@ import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import os from 'node:os';
 
-import { writeCheckpoint, listCheckpoints, resumeEvaluation } from '../services/evaluationRunner.js';
-import evaluationStore from '../services/evaluationStore.js';
+const TEST_DATA_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'checkpoint-e2e-'));
+const TEST_LOGS_ROOT = path.join(TEST_DATA_ROOT, 'logs');
+process.env.EVAL_DB_PATH = path.join(TEST_DATA_ROOT, 'evaluations.db');
+process.env.EVAL_LOGS_DIR = TEST_LOGS_ROOT;
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const EVAL_ROOT = path.resolve(__dirname, '..');
-const CHECKPOINTS_DIR = path.join(EVAL_ROOT, 'logs', 'checkpoints');
+const { writeCheckpoint, listCheckpoints, resumeEvaluation } = await import('../services/evaluationRunner.js');
+const { default: evaluationStore } = await import('../services/evaluationStore.js');
+const CHECKPOINTS_DIR = path.join(TEST_LOGS_ROOT, 'checkpoints');
 
 const TEST_SCENARIO = 'mood_frustration_to_breakthrough';
 const TEST_PROFILE = 'cell_3_base_multi_unified';
@@ -164,6 +166,9 @@ describe('Checkpoint E2E: resume from planted checkpoint', () => {
         fs.rmdirSync(cpDir);
       }
     }
+    fs.rmSync(TEST_DATA_ROOT, { recursive: true, force: true });
+    delete process.env.EVAL_DB_PATH;
+    delete process.env.EVAL_LOGS_DIR;
   });
 
   it('resume completes successfully', () => {

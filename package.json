@@ -81,6 +81,7 @@
     "eval": "node scripts/eval-cli.js",
     "eval-store:boundary-check": "node scripts/audit-evaluation-store-boundary.js",
     "eval-data-paths:check": "node scripts/check-evaluation-data-paths.js",
+    "test-store-paths:check": "node scripts/check-test-store-paths.js",
     "eval:quick": "node scripts/eval-cli.js quick",
     "eval:test": "node scripts/eval-cli.js test",
     "wp": "node scripts/workplan.js",

@@ -137,6 +137,8 @@ describe('Prompt versioning: all prompt files tagged', () => {
 // Set up isolated test database BEFORE importing evaluationStore
 const testDbPath = path.join(os.tmpdir(), `eval-prompt-ver-test-${Date.now()}.db`);
 process.env.EVAL_DB_PATH = testDbPath;
+const testLogsPath = path.join(os.tmpdir(), `eval-prompt-ver-logs-${Date.now()}`);
+process.env.EVAL_LOGS_DIR = testLogsPath;
 
 const evaluationStore = await import('../services/evaluationStore.js');
 
@@ -157,6 +159,9 @@ describe('Prompt versioning: DB storage', () => {
     } catch {
       /* ignore */
     }
+    fs.rmSync(testLogsPath, { recursive: true, force: true });
+    delete process.env.EVAL_DB_PATH;
+    delete process.env.EVAL_LOGS_DIR;
   });
 
   it('storeResult stores prompt version columns', () => {
