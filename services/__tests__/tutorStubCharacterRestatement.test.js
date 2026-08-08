@@ -64,3 +64,14 @@ test('character-restatement audit requires changed wording, the live question, a
   assert.equal(changedSource.ok, false);
   assert.ok(changedSource.issues.some((issue) => issue.type === 'quoted_source_changed'));
 });
+
+test('a character restatement may realize an already-public structured relation in new words', () => {
+  const audit = auditTutorStubCharacterRestatement({
+    previousText: 'Blue dye follows the basin pipe and appears at the kitchen water mark.',
+    text: 'Let me rephrase that. The dye traces a path from the basin hose to the kitchen ceiling mark.',
+    characterId: 'record_keeper',
+    permittedFacts: [['tracedPathTo', 'basinFeedHose', 'kitchenCeiling']],
+  });
+
+  assert.equal(audit.ok, true);
+});

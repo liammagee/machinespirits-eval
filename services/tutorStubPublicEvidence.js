@@ -17,6 +17,26 @@ export function projectTutorStubLearnerPublicEvidenceState(rows = []) {
   };
 }
 
+export function tutorStubPublicEvidenceTextForAssertion({
+  world = null,
+  publicPremiseIds = [],
+  priorTurns = [],
+  learnerText = '',
+} = {}) {
+  if (!world) return '';
+  const available =
+    publicPremiseIds instanceof Set
+      ? publicPremiseIds
+      : new Set((Array.isArray(publicPremiseIds) ? publicPremiseIds : []).filter(Boolean));
+  const releasedSurface = [...available].map((premiseId) => world.premiseById.get(premiseId)?.surface || '').join('\n');
+  const transcript = (Array.isArray(priorTurns) ? priorTurns : [])
+    .flatMap((turn) => [turn?.learner || '', turn?.tutor || ''])
+    .join('\n');
+  return [world.question, world.setting, world.openingFrame?.situation, releasedSurface, transcript, learnerText].join(
+    '\n',
+  );
+}
+
 export function createTutorStubPublicEvidenceModel({ committedReleaseRows, currentReleaseRows } = {}) {
   const committedRows = typeof committedReleaseRows === 'function' ? committedReleaseRows : () => [];
   const currentRows = typeof currentReleaseRows === 'function' ? currentReleaseRows : () => [];
@@ -77,18 +97,12 @@ export function createTutorStubPublicEvidenceModel({ committedReleaseRows, curre
   function publicEvidenceTextForAssertion(world, tutorTurn, learnerText = '', state = null, publicPremiseIds = null) {
     if (!world) return '';
     const available = candidatePublicPremiseIds({ state, world, tutorTurn, publicPremiseIds });
-    const releasedSurface = [...available]
-      .map((premiseId) => world.premiseById.get(premiseId)?.surface || '')
-      .join('\n');
-    const transcript = (state?.turns || []).flatMap((turn) => [turn?.learner || '', turn?.tutor || '']).join('\n');
-    return [
-      world.question,
-      world.setting,
-      world.openingFrame?.situation,
-      releasedSurface,
-      transcript,
+    return tutorStubPublicEvidenceTextForAssertion({
+      world,
+      publicPremiseIds: available,
+      priorTurns: state?.turns || [],
       learnerText,
-    ].join('\n');
+    });
   }
 
   return Object.freeze({

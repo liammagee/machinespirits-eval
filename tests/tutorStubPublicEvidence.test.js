@@ -5,6 +5,7 @@ import {
   createTutorStubPublicEvidenceModel,
   projectTutorStubLearnerPublicEvidenceState,
   projectTutorStubPublicReleaseLedger,
+  tutorStubPublicEvidenceTextForAssertion,
 } from '../services/tutorStubPublicEvidence.js';
 
 function fixtureWorld() {
@@ -100,6 +101,19 @@ test('guard-visible prose includes released surfaces and public dialogue only', 
     assert.match(text, /Now what\?/u);
     assert.doesNotMatch(text, /bears a mark/u);
   }
+});
+
+test('the assertion projection excludes generic rule glosses that do not release a specific correspondence', () => {
+  const world = fixtureWorld();
+  world.rules[0].gloss = 'A visible object traces to its available record.';
+  const text = tutorStubPublicEvidenceTextForAssertion({
+    world,
+    publicPremiseIds: ['p1'],
+    priorTurns: [],
+  });
+
+  assert.doesNotMatch(text, /traces to its available record/u);
+  assert.match(text, /The coin was seen\./u);
 });
 
 test('missing worlds fail closed to empty public projections', () => {

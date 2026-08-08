@@ -1,4 +1,21 @@
+import { tutorStubSplitSymbolWords } from './tutorStubFactModel.js';
+
 export const TUTOR_STUB_EVIDENCE_ASSERTION_AUDIT_SCHEMA = 'machinespirits.tutor-stub.evidence-assertion-audit.v1';
+
+const RELATION_SYMBOL_STOPWORDS = new Set([
+  'are',
+  'be',
+  'by',
+  'for',
+  'from',
+  'has',
+  'have',
+  'in',
+  'is',
+  'of',
+  'on',
+  'to',
+]);
 
 function evidenceTokenRoot(value) {
   const token = String(value || '').toLowerCase();
@@ -8,6 +25,20 @@ function evidenceTokenRoot(value) {
   if (token.length >= 7 && token.endsWith('es')) return token.slice(0, -2);
   if (token.length >= 6 && token.endsWith('s')) return token.slice(0, -1);
   return token;
+}
+
+function structuredTokenRoot(value) {
+  const token = String(value || '').toLowerCase();
+  if (token.length >= 5 && token.endsWith('ied')) return `${token.slice(0, -3)}y`;
+  if (token.length >= 5 && token.endsWith('ing')) return token.slice(0, -3);
+  if (token.length >= 5 && token.endsWith('ed')) return token.slice(0, -2);
+  if (token.length >= 5 && token.endsWith('es')) return token.slice(0, -2);
+  if (token.length >= 4 && token.endsWith('s')) return token.slice(0, -1);
+  return token;
+}
+
+function structuredTokenRoots(value) {
+  return tutorStubSplitSymbolWords(value).map(structuredTokenRoot).filter(Boolean);
 }
 
 /** Treat inflections of an already-public clue word as public, not future leakage. */
@@ -91,7 +122,36 @@ function assertedCorrespondence(value) {
   );
 }
 
-function publiclySupported(candidate, publicClauses) {
+function structuredFactSupports(candidate, fact) {
+  // Structured authorization is deliberately narrow: a grounded two-place
+  // fact must contribute its relation and both ordered endpoints. This lets a
+  // released fact cross prose costumes without turning any shared noun into a
+  // blanket correspondence licence.
+  if (!Array.isArray(fact) || fact.length !== 3) return false;
+  const [relation, ...argumentsList] = fact;
+  const candidateRoots = structuredTokenRoots(candidate);
+  const relationRoot = structuredTokenRoots(relation).find((token) => !RELATION_SYMBOL_STOPWORDS.has(token));
+  if (!relationRoot || !candidateRoots.includes(relationRoot)) return false;
+
+  const argumentRoots = argumentsList.map((argument, argumentIndex) => {
+    const otherRoots = new Set(
+      argumentsList.flatMap((other, otherIndex) => (otherIndex === argumentIndex ? [] : structuredTokenRoots(other))),
+    );
+    return structuredTokenRoots(argument).filter((token) => token.length >= 3 && !otherRoots.has(token));
+  });
+  if (argumentRoots.some((roots) => roots.length === 0)) return false;
+
+  let afterIndex = -1;
+  for (const roots of argumentRoots) {
+    const nextIndex = candidateRoots.findIndex((token, index) => index > afterIndex && roots.includes(token));
+    if (nextIndex < 0) return false;
+    afterIndex = nextIndex;
+  }
+  return true;
+}
+
+function publiclySupported(candidate, publicClauses, permittedFacts) {
+  if (permittedFacts.some((fact) => structuredFactSupports(candidate, fact))) return true;
   const candidateTokens = evidenceTokens(candidate);
   return publicClauses.some((clause) => {
     if (SINGLE_DIE_RELATION_PATTERN.test(candidate) && SINGLE_DIE_RELATION_PATTERN.test(clause)) {
@@ -103,11 +163,12 @@ function publiclySupported(candidate, publicClauses) {
   });
 }
 
-export function auditTutorStubEvidenceAssertions({ text = '', permittedText = '' } = {}) {
+export function auditTutorStubEvidenceAssertions({ text = '', permittedText = '', permittedFacts = [] } = {}) {
   const publicClauses = contextualizedEvidenceClauses(permittedText);
+  const publicFacts = Array.isArray(permittedFacts) ? permittedFacts : [];
   const issues = contextualizedEvidenceClauses(text)
     .filter(assertedCorrespondence)
-    .filter((clause) => !publiclySupported(clause, publicClauses))
+    .filter((clause) => !publiclySupported(clause, publicClauses, publicFacts))
     .map((clause) => ({
       type: 'unsupported_evidence_correspondence',
       reason: 'states that public exhibits match or trace to one another before that correspondence is public',

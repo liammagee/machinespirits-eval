@@ -953,9 +953,8 @@ const {
 });
 
 const publicEvidenceModel = createTutorStubPublicEvidenceModel({ committedReleaseRows, currentReleaseRows });
-const { answerTermForWorld } = publicEvidenceModel;
+const { answerTermForWorld, publicFactsAtTurn } = publicEvidenceModel;
 const { auditTutorResponseLeak } = createTutorStubResponseLeakAudit({ publicEvidenceModel });
-
 const tutorStubRecipeModelIdentity = createTutorStubRecipeModelIdentityResolver({
   resolveModel,
   getProviderConfig,
@@ -2577,6 +2576,7 @@ async function main() {
     printTutorStubFeatureMap,
     printTutorStubReleaseNotes,
     printWithConcurrentTerminal,
+    publicFactsAtTurn,
     registerEmpiricalPrior,
     registerOverlayThreshold,
     registerPalette,
