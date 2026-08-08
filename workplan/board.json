@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-08T22:58:24.581Z",
+  "generated": "2026-08-08T23:01:21.467Z",
   "counts": {
-    "total": 468,
+    "total": 469,
     "byStatus": {
       "done": 443,
       "blocked": 6,
       "dropped": 9,
       "active": 2,
       "archived": 4,
-      "triaged": 2,
+      "triaged": 3,
       "review": 2
     },
     "byType": {
       "research": 75,
       "experiment": 77,
-      "infra": 96,
+      "infra": 97,
       "maintenance": 199,
       "content": 3,
       "ops": 10,
@@ -22,6 +22,36 @@
     }
   },
   "items": [
+    {
+      "id": "strict-policy-null-sweep",
+      "title": "Re-read the nulls that were measured while the guard wrote the tutor's turns",
+      "status": "triaged",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "A table in the guard catalog listing every tutor-stub null cited in paper-full-2.0.md whose run predates the 2026-08-07 delivery flip, each marked with where its treatment lived (the tutor's prose, or somewhere the guard never touched), a template rate where traces survive, and one of three verdicts: safe, diluted, or unrecoverable. Every null marked diluted carries a caveat in place in the paper. No re-run is part of this card.",
+      "claim_status": "planned",
+      "links": {
+        "code": [
+          "scripts/census-guard-template-rate.js",
+          "services/tutorStubGuardDisposition.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "tutor-stub-template-rate-audit",
+          "phase-b-rerun-under-flipped-policy",
+          "guard-policy-default-flip"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "paper"
+      ]
+    },
     {
       "id": "guard-findings-feed-forward",
       "title": "Feed guard findings into the next turn's request instead of redrafting this one",
