@@ -1,7 +1,7 @@
 ---
 id: scripts-hardcoded-data-path-guard
 title: A test that fails when a script builds its own database or logs path
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -16,6 +16,8 @@ links:
     - scripts/check-evaluation-data-paths.js
     - config/evaluation-data-path-allowlist.json
     - tests/evaluationDataPathGuard.test.js
+  prs:
+    - 572
   items:
     - eval-db-writer-reader-path-split
     - eval-logs-root-single-resolver
@@ -57,3 +59,5 @@ builders.
   construct the dialogue-log path, with six overlaps and seven additional
   log-only scripts. Detector, allowlist, manifest, lint, formatting, workplan,
   and diff checks pass.
+- 2026-08-08 — Closed after PR #572 merged. The guard and its shrinking
+  allowlist are on `main`, and every required hosted check passed.
