@@ -1,20 +1,20 @@
 {
-  "generated": "2026-08-08T23:25:08.360Z",
+  "generated": "2026-08-08T23:38:18.384Z",
   "counts": {
-    "total": 469,
+    "total": 470,
     "byStatus": {
       "done": 443,
       "blocked": 6,
       "dropped": 9,
+      "review": 3,
       "active": 2,
       "archived": 4,
-      "triaged": 3,
-      "review": 2
+      "triaged": 3
     },
     "byType": {
       "research": 75,
       "experiment": 77,
-      "infra": 97,
+      "infra": 98,
       "maintenance": 199,
       "content": 3,
       "ops": 10,
@@ -572,6 +572,35 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "calibrate-local-node-test-concurrency",
+      "title": "Calibrate local Node root-test concurrency",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/calibrate-local-node-test-concurrency",
+      "verification": "Repeated unrestricted hermetic root-suite profiles compared default/14 with 4, 6, 8, and repeated 10-worker runs while all valid profiles preserved 638 files, 8,157 passing tests, zero failures/skips, isolated stores, and exact manifest accounting; focused runner/local-CI contract, tutor-core, lint, format, workplan, and diff gates cover the retained optional control without changing the existing Node 20/22 CI topology.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "items": [
+          "optimize-local-node-execution"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "performance"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
