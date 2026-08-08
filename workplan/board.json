@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-08T12:31:51.929Z",
+  "generated": "2026-08-08T21:11:46.451Z",
   "counts": {
     "total": 465,
     "byStatus": {
       "done": 437,
       "blocked": 6,
-      "dropped": 8,
+      "dropped": 9,
       "active": 1,
       "archived": 4,
-      "triaged": 5,
+      "triaged": 4,
       "review": 4
     },
     "byType": {
@@ -22,35 +22,6 @@
     }
   },
   "items": [
-    {
-      "id": "guard-delivery-prefer-model-over-canned",
-      "title": "When every draft fails, ship the closest model draft instead of the template",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "DONE (2026-08-06, scripts/replay-guard-fallback-delivery.js): a replay over the fallible-phaseB traces that, for each of the 717 fallback turns, picks the least-vetoed model draft and reports what would have shipped and which findings would have ridden along. Then a paired live run on one cell under both delivery rules, comparing fallback rate, closure rate and turns to closure. The safety families must show zero deliveries carrying a leak, clue-bookkeeping or closure finding under either rule.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "services/tutorStubFirstDraftOuterLoop.js",
-          "services/tutorStubGuardDisposition.js",
-          "services/tutorStubTutorTurnPipeline.js"
-        ],
-        "items": [
-          "guard-regime-fallback-census-at-scale",
-          "guard-validity-study",
-          "tutor-stub-terminal-fallback-delivery-boundary"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
     {
       "id": "learner-profile-world-deconfound",
       "title": "Deconfound the learner-profile recovery: cross personas and worlds",
@@ -15644,6 +15615,40 @@
         "planning",
         "workplan",
         "plan-2"
+      ]
+    },
+    {
+      "id": "guard-delivery-prefer-model-over-canned",
+      "title": "When every draft fails, ship the closest model draft instead of the template",
+      "status": "dropped",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-08",
+      "verification": "DROPPED 2026-08-08 after reconciliation with merged PRs #546 and #557: shadow-advisory delivery already ships the model's words by default, and the principal residual source-anchoring tail was separately repaired, judged, and demoted. PR #585 closed unmerged because its pre-#557 residual was stale and its category exclusion could override intentionally hard conversational findings without a current-catalog replay.",
+      "links": {
+        "code": [
+          "services/tutorStubFirstDraftOuterLoop.js",
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubTutorTurnPipeline.js"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-validity-study",
+          "guard-policy-default-flip",
+          "tutor-stub-terminal-fallback-delivery-boundary"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/546",
+          "https://github.com/liammagee/machinespirits-eval/pull/557",
+          "https://github.com/liammagee/machinespirits-eval/pull/585"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
       ]
     },
     {
