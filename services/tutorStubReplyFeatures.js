@@ -28,10 +28,30 @@
  *
  * Pure service: no env, no fs, no console, no state. Deterministic, so it
  * replays identically over recorded dialogues and over live turns.
+ *
+ * rf-v2 (2026-08-08) adds three columns — `abstractLabel`, `plainSpeech` and
+ * a bucketed `echo` — and is frozen here BEFORE the corpus meant to test it
+ * exists. That order is the whole point. rf-v1's act patterns were widened
+ * after reading three labelled replies, which made every number the falsifier
+ * produced a calibration rather than a test. Anything added later must be
+ * added the same way: written from the card text and the role prompt, checked
+ * against the corpus only for an unlabelled firing rate, and never near the
+ * turns it will be scored on.
+ *
+ * One column asked for and NOT added: cryptic metaphor. The card recommending
+ * it (workplan/items/reply-feature-stamps.md) described the swap-in-plain-
+ * words move as dropping metaphor, and that reading is wrong twice over. The
+ * move's own instruction says "the procedure vocabulary gone", and the
+ * learner-side pressure it answers mocks a register ("who talks like that",
+ * "ledger-speak"), not an image. Measured, a comparison column would also be
+ * dead: over the 1172 replies of the four falsifier runs, a simile frame fires
+ * on 12, and 11 of those 12 are `call it` (7) and `the way the` (4) — naming
+ * and manner, not pictures. `as if` fires once and `like a` never.
+ * `abstractLabel` is what that column should have been.
  */
 
 export const TUTOR_STUB_REPLY_FEATURES_SCHEMA = 'machinespirits.tutor-stub.reply-features.v1';
-export const TUTOR_STUB_REPLY_FEATURES_VERSION = 'rf-v1';
+export const TUTOR_STUB_REPLY_FEATURES_VERSION = 'rf-v2';
 
 /**
  * The acts. One flag each, all that apply — a reply commonly does two or
@@ -140,6 +160,50 @@ const STAKE_ANTECEDENT = /\bif\b/i;
 const STAKE_CONSEQUENT =
   /\b(?:then\b|i(?:'ll| will)\b|you (?:can|may|should)\b|we (?:can|will)\b|it (?:stands|holds|can be|will be)\b|send\b|write it\b)/i;
 
+/**
+ * The procedure vocabulary — added at rf-v2, before the corpus it is meant to
+ * be tested on existed.
+ *
+ * Provenance, because it decides whether the column counts. Every word here is
+ * named in `prompts/tutors/dramatic-detective.md`, which tells the tutor to
+ * "prefer concrete public language over abstract labels such as condition,
+ * rule, reading, route, or whole case", plus `procedure` from the mockery
+ * card's own instruction, "the procedure vocabulary gone". No reply was read
+ * to build it. The one thing checked against text was the unlabelled firing
+ * rate over the four falsifier runs — 285 of 1172 replies, 24.3% — which says
+ * only that the column is neither dead nor universal, and says nothing about
+ * which card was in force.
+ *
+ * Why it is not the word-length column again: only 52 of those 285 also score
+ * `latinate:high`, so four fifths of the replies carrying a procedure word are
+ * not otherwise marked as Latin-rooted. `rule`, `reading`, `route` and `case`
+ * are short Anglo-Saxon words that the suffix test cannot see.
+ *
+ * Limit worth recording: these are generic English, so a world where a reading
+ * is a thing on a dial would score concrete talk as abstract. No world written
+ * so far does that, and the alternative — a world-specific list — would break
+ * the rule that keeps this instrument runnable on worlds not yet written.
+ */
+const ABSTRACT_LABEL = /\b(?:conditions?|rules?|readings?|routes?|whole case|procedures?|procedural)\b/i;
+
+/**
+ * The tutor saying, in the reply, that it is switching to plain speech.
+ *
+ * Carried over unchanged from `scripts/analyze-figure-recovery.js`, where it
+ * lived as an off-by-default post-hoc flag written after reading three
+ * labelled replies. Moving it into the frozen instrument does not launder that
+ * history: on the corpus it was written from it stays post-hoc, and the card
+ * records it as such. On turns generated after this commit it is prospective,
+ * which is the only reason to move it. Byte-identical to the script's version
+ * so the two readings stay comparable.
+ *
+ * Not a rename of `restate`. On the four falsifier runs it fires on 86 of 1172
+ * replies and 81 of those 86 carry no restate flag, because restate wants a
+ * rewording and this wants only the announcement of one.
+ */
+const PLAIN_SPEECH =
+  /\b(no jargon|plain talk|plain and simple|plain english|in plain|simply put|plainly|straight talk|no fancy)\b/i;
+
 // Cut points for the two measured properties. Both sit near the quartiles
 // of the first corpus these ran on (the 124 recorded carded replies of the
 // crossed, repertoire, lost-retest and flat-promotion runs), so each bucket
@@ -155,6 +219,14 @@ const LONG_SENTENCE_WORDS = 24;
 
 const LOW_LATINATE_RATE = 0.008;
 const HIGH_LATINATE_RATE = 0.02;
+
+// How much of the learner's own vocabulary comes back. Measured since rf-v1
+// and thrown away before the lattice saw it, which was an oversight: taking a
+// learner's words back is what two of the seven moves are partly made of. The
+// cuts are the tertiles of the same four falsifier runs — p33 0.30, p67 0.50
+// — read off the spread with the cards hidden, as the two above were.
+const LOW_ECHO_RATE = 0.3;
+const HIGH_ECHO_RATE = 0.5;
 
 const LATINATE_SUFFIX = /(?:tions?|sions?|ments?|ances?|ences?|ities|ity|ise[sd]?|ize[sd]?|ical|ically|ative|atory)$/i;
 
@@ -249,6 +321,9 @@ export function describeTutorStubReplyFeatures(replyText, { learnerText = null }
             : 'none';
 
   const tutorCommits = anyMatch(TUTOR_COMMITS, text);
+  const abstractLabel = ABSTRACT_LABEL.test(text);
+  const plainSpeech = PLAIN_SPEECH.test(text);
+  const learnerEcho = echoedLearnerWords(text, learnerText);
 
   return {
     schema: TUTOR_STUB_REPLY_FEATURES_SCHEMA,
@@ -257,6 +332,17 @@ export function describeTutorStubReplyFeatures(replyText, { learnerText = null }
     stakes,
     authority,
     tutorCommits,
+    abstractLabel,
+    plainSpeech,
+    // Null when there is no learner turn to compare against, so a missing
+    // reading stays missing instead of being scored as a low one.
+    echo: learnerEcho
+      ? learnerEcho.rate < LOW_ECHO_RATE
+        ? 'low'
+        : learnerEcho.rate >= HIGH_ECHO_RATE
+          ? 'high'
+          : 'medium'
+      : null,
     sentenceLength:
       meanSentenceWords <= SHORT_SENTENCE_WORDS
         ? 'short'
@@ -270,7 +356,7 @@ export function describeTutorStubReplyFeatures(replyText, { learnerText = null }
       questions: questionCount,
       meanSentenceWords: round3(meanSentenceWords),
       latinateRate: round3(latinateRate),
-      learnerEcho: echoedLearnerWords(text, learnerText),
+      learnerEcho,
     },
   };
 }
@@ -287,7 +373,10 @@ export function tutorStubReplyFeatureAttributes(features) {
   if (features.stakes) out.push('stakes');
   if (features.authority) out.push(`authority:${features.authority}`);
   if (features.tutorCommits) out.push('tutor-commits');
+  if (features.abstractLabel) out.push('abstract-label');
+  if (features.plainSpeech) out.push('plain-speech');
   if (features.sentenceLength) out.push(`sentences:${features.sentenceLength}`);
   if (features.latinate) out.push(`latinate:${features.latinate}`);
+  if (features.echo) out.push(`echo:${features.echo}`);
   return out;
 }

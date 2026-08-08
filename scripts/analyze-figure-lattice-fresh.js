@@ -40,7 +40,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { describeTutorStubReplyFeatures, tutorStubReplyFeatureAttributes } from '../services/tutorStubReplyFeatures.js';
+import {
+  TUTOR_STUB_REPLY_FEATURES_VERSION,
+  describeTutorStubReplyFeatures,
+  tutorStubReplyFeatureAttributes,
+} from '../services/tutorStubReplyFeatures.js';
 import { analyze, buildContext } from './analyze-figure-lattice.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -133,6 +137,7 @@ export function readDialogue(file, source) {
   const objects = [];
   const dropped = { template: [], incomplete: [], noStamp: [], noDraft: [] };
   const mismatches = [];
+  const staleStamps = new Set();
   let stampChecked = 0;
 
   // `withheld` marks a quiet card that came due but did not ship, because she
@@ -189,8 +194,14 @@ export function readDialogue(file, source) {
     // report the guard's edit as an instrument fault. Where it does not apply
     // the turn is still read -- the lattice is built from the recompute either
     // way -- but it is not counted as checked.
+    // It also only applies when the stamp came from the instrument now
+    // loaded. A trace written under rf-v1 carries fewer columns by design, so
+    // comparing it to an rf-v2 recompute would report the upgrade as a fault
+    // and stop the reader on every older corpus.
     const live = stamp ? tutorStubReplyFeatureAttributes(stamp).sort() : null;
-    const comparable = stamp && norm(reply) === norm(shipped);
+    const sameInstrument = stamp?.version === TUTOR_STUB_REPLY_FEATURES_VERSION;
+    const comparable = stamp && sameInstrument && norm(reply) === norm(shipped);
+    if (stamp && !sameInstrument) staleStamps.add(stamp.version || 'unversioned');
     if (comparable) {
       const recomputed = tutorStubReplyFeatureAttributes(
         describeTutorStubReplyFeatures(reply, { learnerText: learner }),
@@ -241,6 +252,7 @@ export function readDialogue(file, source) {
     objects,
     dropped,
     mismatches,
+    staleStamps,
     stampChecked,
     turns: events.filter((e) => e.type === 'turn_complete').length,
   };
@@ -316,6 +328,7 @@ function main() {
   const objects = [];
   const dropped = { template: [], incomplete: [], noStamp: [], noDraft: [] };
   const mismatches = [];
+  const staleStamps = new Set();
   let turnsTotal = 0;
   let stampChecked = 0;
   for (const f of files.sort()) {
@@ -323,6 +336,7 @@ function main() {
     objects.push(...r.objects);
     for (const k of Object.keys(dropped)) dropped[k].push(...r.dropped[k]);
     mismatches.push(...r.mismatches);
+    for (const v of r.staleStamps) staleStamps.add(v);
     stampChecked += r.stampChecked;
     turnsTotal += r.turns;
   }
@@ -350,6 +364,14 @@ function main() {
     process.exit(1);
   }
   console.log(`live stamp matches recompute on ${stampChecked} of ${objects.length} kept turns`);
+  if (staleStamps.size) {
+    // Not a fault: the reading below is a recompute either way. But a corpus
+    // stamped by an older instrument was never checked against itself, so say
+    // so rather than let the count above imply it was.
+    console.log(
+      `  (unchecked: stamped by ${[...staleStamps].sort().join(', ')}, this reader is ${TUTOR_STUB_REPLY_FEATURES_VERSION})`,
+    );
+  }
 
   if (isDraft) {
     const fate = objects.reduce((m, o) => ({ ...m, [o.shippedAs]: (m[o.shippedAs] || 0) + 1 }), {});

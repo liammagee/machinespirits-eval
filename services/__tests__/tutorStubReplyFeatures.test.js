@@ -85,6 +85,43 @@ test('the learner echo counts their content words coming back, and needs their t
   assert.equal(describeTutorStubReplyFeatures('The paper strip.').counts.learnerEcho, null);
 });
 
+test('the procedure vocabulary is seen where word length misses it', () => {
+  const label = (text) => describeTutorStubReplyFeatures(text).abstractLabel;
+  // Every word here is one the tutor role prompt names as an abstract label.
+  assert.equal(label('The condition holds on that route.'), true);
+  assert.equal(label('Take the reading as the rule for the whole case.'), true);
+  assert.equal(label('That is the procedure.'), true);
+  assert.equal(label('Water got in upstairs and ran along the timber.'), false);
+
+  // The point of a separate column: these are short Anglo-Saxon words, so the
+  // Latin-suffix count cannot see them.
+  const both = describeTutorStubReplyFeatures('The rule and the route both hold.');
+  assert.equal(both.abstractLabel, true);
+  assert.equal(both.latinate, 'low');
+});
+
+test('announcing plain speech is its own column, not a second name for restating', () => {
+  const plain = (text) => describeTutorStubReplyFeatures(text);
+  assert.equal(plain('Plain talk: the pipe let go.').plainSpeech, true);
+  assert.equal(plain('Simply put, water found the lowest joint.').plainSpeech, true);
+  assert.equal(plain('It is a hairline split.').plainSpeech, false);
+
+  // The two columns overlap on some phrases and not others, which is why both
+  // are kept: "put plainly" is a restating too, "plain talk" is only the
+  // announcement. On the four falsifier runs, 81 of the 86 replies announcing
+  // plain speech carried no restate flag.
+  assert.equal(plain('Put plainly, the hose let go.').acts.restate, true);
+  assert.equal(plain('Plain talk: the pipe let go.').acts.restate, false);
+});
+
+test('the learner echo buckets at the stated cut points, and stays null without their turn', () => {
+  const learnerText = 'The paper strip came back dry, so the shower pan cannot be leaking there.';
+  const echo = (reply) => describeTutorStubReplyFeatures(reply, { learnerText }).echo;
+  assert.equal(echo('Water moves downhill.'), 'low');
+  assert.equal(echo('The paper strip came back dry, so the shower pan is not leaking there.'), 'high');
+  assert.equal(describeTutorStubReplyFeatures('The paper strip.').echo, null);
+});
+
 test('the attribute list carries present features only, and no counts', () => {
   const attributes = tutorStubReplyFeatureAttributes(
     describeTutorStubReplyFeatures('The entry says otherwise. What do you make of that?'),
