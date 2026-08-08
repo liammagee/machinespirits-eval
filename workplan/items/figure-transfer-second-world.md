@@ -18,9 +18,13 @@ verification: 'PASS on the registered primary. A profile fitted on 24 move
   separate at 6-7 turns per move (largest Fisher p = 0.27), so it is
   reported untested. Post-hoc, pooled over both worlds: demand is misread
   as the conditional stake on 9 of its 12 wrong guesses against 3
-  expected, p = 0.0004 — an instrument observation, not a world one.
-  Artifacts
-  exports/crossed-effects/figure-holdout-transfer-{draft,shipped}.json.'
+  expected, p = 0.0004. The cause is the reader, not either world — the
+  stake is its default class, taking 24 of 68 first places against 13
+  actual stake turns and scoring highest on a turn drawn at random. The
+  conditional-stake column fires on 1 of 100 carded turns, so it is not
+  the cause. Artifacts
+  exports/crossed-effects/figure-holdout-transfer-{draft,shipped}.json and
+  figure-reader-bias.json.'
 claim_status: scope-bound
 links:
   notes:
@@ -171,14 +175,30 @@ Pooling both corpora, the demand's wrong guesses land on the conditional
 stake 9 times in 12 (3 of 5 in world 030, 6 of 7 in Tideway) against 3
 expected if wrong guesses spread evenly over the four other moves,
 p = 0.0004. The stake's wrong guesses land on the demand 3 in 6, and the
-switch to plain words is absorbed by that pair on 10 of its 11 misses. The
-turns show why: the Tideway tutor states its demands as conditionals —
-"the load trace itself, showing whether movement began at the north joint
-before anywhere else on the deck. If it does, the batch — not the
-signature — carries the twist; if it doesn't, this joint isn't yet the
-first failure" — which is the form the stake card names. This is a
-hypothesis about the reply stamp's columns, not a tested result, and it is
-the live follow-up rather than a comparison of the two worlds.
+switch to plain words is absorbed by that pair on 10 of its 11 misses.
+
+The cause is the reader, not the worlds — and not the column that looks
+like the obvious suspect. `node scripts/analyze-figure-reader-bias.js`
+asks three questions of the corpora already on disk. First: the
+conditional-stake column, the one that catches "if you check X, then Y",
+fires on **1 of the 100 carded turns** in the three corpora, so it carries
+no weight in either direction. Second: the stake is guessed 12 times out
+of 34 in **both** worlds while it is ordered 7 times and 6 times, so this
+is not something either world does. Third: the stake is the reader's
+default class. Pooled over the 68 test turns it takes 24 first places
+against 13 actual stake turns, and it gives the highest average score of
+the five classes to a turn drawn at random — −12.89 in log units against
+−13.87 for the demand and −15.39 for the grievance. Its fitted profile is
+the profile of a typical reply: medium-length sentences at 0.86, the
+highest of the five, and long ones at 0.14, the lowest. With four to six
+training turns per class and 22 features scored including their absences,
+the flattest class collects the turns the sharper ones do not claim.
+
+This caps the reader rather than inflating it: the label shuffle re-fits
+nothing, so it carries the same bias and still averages 19.8%. All of it
+was found after the reading and is recorded as a diagnosis of the
+instrument, not a tested claim. It points the next design at a larger
+training square rather than a third world.
 
 **What this licenses.** §7.14's scope line loosens from one world to two.
 The weak reading of the figure claim — that a card-blind reader recovers
