@@ -31,6 +31,12 @@ const OWNED_SCORE_SCRIPTS = [
   'scripts/evaluate-learner-standalone.js',
   'scripts/score-d4-first-turns.js',
 ];
+const OWNED_RUN_SCRIPTS = [
+  'scripts/run-adaptive-cell-smoke.js',
+  'scripts/run-adaptive-persistence-smoke.js',
+  'scripts/run-dialogue-engine-trap-baseline.js',
+  'scripts/run-id-director-trap-pilot.js',
+];
 
 after(() => {
   for (const tempDir of tempDirs) fs.rmSync(tempDir, { recursive: true, force: true });
@@ -150,6 +156,16 @@ describe('evaluation operational-script context', () => {
     }
   });
 
+  it('gives each operational run launcher an explicit, naturally closing store boundary', () => {
+    for (const relativePath of OWNED_RUN_SCRIPTS) {
+      const source = fs.readFileSync(path.join(ROOT_DIR, relativePath), 'utf8');
+      assert.doesNotMatch(source, /\.\.\/services\/evaluationStore\.js/u, relativePath);
+      assert.match(source, /withEvaluationScriptStore/u, relativePath);
+      assert.match(source, /export async function main/u, relativePath);
+      assert.doesNotMatch(source, /process\.exit\(/u, relativePath);
+    }
+  });
+
   it('rejects longitudinal usage and empty score requests before opening a database', () => {
     const cases = OWNED_STORE_SCRIPTS.flatMap((relativePath) => [
       { relativePath, args: [], expectedStatus: 1, stderrPattern: /Usage:/u },
@@ -189,6 +205,31 @@ describe('evaluation operational-script context', () => {
       });
       assert.equal(result.status, 1, result.stderr);
       assert.match(result.stderr, /Usage:/u, relativePath);
+      assert.equal(fs.existsSync(fixture.databasePath), false, relativePath);
+    }
+  });
+
+  it('rejects invalid trap-launcher profiles before opening a database or calling a model', () => {
+    for (const relativePath of [
+      'scripts/run-dialogue-engine-trap-baseline.js',
+      'scripts/run-id-director-trap-pilot.js',
+    ]) {
+      const fixture = makeContext(`${path.basename(relativePath, '.js')}-invalid-profile`);
+      const result = spawnSync(process.execPath, [relativePath, '--profile=missing-profile'], {
+        cwd: ROOT_DIR,
+        env: {
+          ...process.env,
+          EVAL_DB_PATH: fixture.databasePath,
+          EVAL_LOGS_DIR: fixture.logsRoot,
+          MS_DATA_HOME: path.join(fixture.tempDir, 'data-home'),
+          ANTHROPIC_API_KEY: '',
+          OPENAI_API_KEY: '',
+          OPENROUTER_API_KEY: '',
+        },
+        encoding: 'utf8',
+      });
+      assert.equal(result.status, 1, result.stderr);
+      assert.match(result.stderr, /profile missing-profile not found/u, relativePath);
       assert.equal(fs.existsSync(fixture.databasePath), false, relativePath);
     }
   });
