@@ -79,6 +79,7 @@ export function parseRunnerArgs(argv = []) {
   let printEnv = false;
   let quiet = false;
   let shard = null;
+  let reportDir = null;
   const forwarded = [];
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -96,6 +97,13 @@ export function parseRunnerArgs(argv = []) {
       printEnv = true;
     } else if (argument === '--quiet') {
       quiet = true;
+    } else if (argument === '--report-dir') {
+      reportDir = argv[index + 1];
+      if (!reportDir || reportDir.startsWith('--')) throw new Error('--report-dir requires a path');
+      index += 1;
+    } else if (argument.startsWith('--report-dir=')) {
+      reportDir = argument.slice('--report-dir='.length);
+      if (!reportDir) throw new Error('--report-dir requires a path');
     } else if (argument === '--shard') {
       shard = parseShard(argv[index + 1]);
       index += 1;
@@ -126,7 +134,7 @@ export function parseRunnerArgs(argv = []) {
   if (forwarded.length > 0 && suite === 'all') suite = 'root';
   if (shard && suite === 'all') suite = 'root';
 
-  return { suite, forceExit, printEnv, quiet, shard, forwarded };
+  return { suite, forceExit, printEnv, quiet, shard, reportDir, forwarded };
 }
 
 export function createIsolatedPaths(root) {
@@ -185,6 +193,7 @@ export function buildCoreTestArgs({ projectRoot = PROJECT_ROOT, forwarded = [], 
     resolveVitestEntryPoint(projectRoot),
     'run',
     ...testFiles,
+    '--exclude=.claude/worktrees/**',
     '--reporter=default',
     '--reporter=json',
     `--outputFile.json=${reportPath}`,
@@ -497,6 +506,8 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
   const manifest = loadTestManifest(PROJECT_ROOT);
   const manifestState = validateTestManifest(manifest, PROJECT_ROOT);
   const hermeticRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'machinespirits-tests-'));
+  const reportRoot = options.reportDir ? path.resolve(PROJECT_ROOT, options.reportDir) : hermeticRoot;
+  if (options.reportDir) fs.mkdirSync(reportRoot, { recursive: true });
   const isolatedPaths = createIsolatedPaths(hermeticRoot);
   const env = {
     ...process.env,
@@ -525,7 +536,7 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
       return 0;
     }
 
-    for (const phase of buildTestPhases(options, PROJECT_ROOT, hermeticRoot)) {
+    for (const phase of buildTestPhases(options, PROJECT_ROOT, reportRoot)) {
       const result = await runPhase({
         ...phase,
         env,
@@ -577,6 +588,9 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
       }
       printPhaseSummary(phase.phase, phaseSummary);
       if (result.code !== 0) return result.code;
+    }
+    if (options.reportDir) {
+      console.log(`[test:hermetic] reports: ${path.relative(PROJECT_ROOT, reportRoot) || '.'}`);
     }
     return 0;
   } finally {
