@@ -1,7 +1,7 @@
 ---
 id: ironic-question-flood-target
 title: Irony against question-flooding — the one cell worth a second draw
-status: active
+status: done
 type: experiment
 priority: P3
 owner: unassigned
@@ -14,6 +14,7 @@ links:
   paper:
     - docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy
   runs:
+    - eval-2026-08-07-45154bac
     - eval-2026-08-05-87fe3664
     - eval-2026-07-02-5c4d52e6
     - eval-2026-07-02-67be317c
@@ -80,6 +81,42 @@ clears it for a design, 2 of 3 is inconclusive.** The background it is read
 against is 3 of 12 — the ironic tutor on the other four targets in the first
 draw. Nothing here licenses a paper claim; a second sweep licenses writing a
 design.
+
+## Step 1 result — 0 of 3. The thread closes.
+
+Run `eval-2026-08-07-45154bac`, 2026-08-08. Three rows generated, none failed,
+all three scored under both rubrics. Report:
+`exports/ironic-question-flood-redraw/eval-2026-08-07-45154bac.md`.
+
+| draw | run | held the manner |
+| --- | --- | --- |
+| first | `eval-2026-08-05-87fe3664` | 3/3 |
+| second | `eval-2026-08-07-45154bac` | 0/3 |
+
+Two-sided Fisher exact between the draws p = 0.10. The two draws are matched
+on the things that would otherwise explain the gap: same profile, same
+configuration hash, same prompt hash, both writing seats on `codex.gpt-5.5`,
+same judge, same gate and same slice. All read out of the database, not
+asserted.
+
+All three new rows missed for one reason — no marker of the assigned manner in
+the tutor's turn. The tutor did not write ironically at all, where in the first
+draw it did so three times out of three. The first draw's 3/3 was a draw.
+
+Two things worth carrying forward:
+
+- **The register judge and the text gate disagreed cleanly here.** The judge
+  scored these same three turns 91, 55 and 72.5, while the gate found no
+  ironic marker in any of them. The judge is scoring how well the turn reads;
+  the gate is checking whether the assigned manner is present. On rows where
+  the manner is simply absent, a high judge score is not evidence against the
+  gate.
+- **This is the second time on this line that a clean sweep did not survive
+  its own second draw** — the mood floor went 0/6 to 4/7, this went 3/3 to
+  0/3. At three rows the ironic tutor's manner-holding is not stable enough
+  for any cell of that size to be read as a signal, however it comes out.
+
+Step 2 is not written and will not be. The card closes.
 
 ## Why it is worth keeping open at all
 
