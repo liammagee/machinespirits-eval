@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-08T06:05:56.769Z",
+  "generated": "2026-08-08T06:06:57.552Z",
   "counts": {
     "total": 460,
     "byStatus": {
@@ -8,8 +8,8 @@
       "dropped": 8,
       "active": 4,
       "archived": 4,
-      "triaged": 10,
-      "review": 8
+      "triaged": 9,
+      "review": 9
     },
     "byType": {
       "research": 74,
@@ -137,30 +137,6 @@
         "compatibility"
       ],
       "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "scripts-hardcoded-data-path-guard",
-      "title": "A test that fails when a script builds its own database or logs path",
-      "status": "triaged",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "unassigned",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "verification": "A new script that writes `path.join(root, 'data', 'evaluations.db')` or `path.join(root, 'logs', 'tutor-dialogues')` fails `npm test`, and the failure message names the resolver to call instead.",
-      "claim_status": "methods",
-      "links": {
-        "items": [
-          "eval-db-writer-reader-path-split",
-          "eval-logs-root-single-resolver"
-        ]
-      },
-      "tags": [
-        "infra",
-        "data-integrity",
-        "guardrail"
-      ]
     },
     {
       "id": "tutor-stub-correspondence-guard-vocabulary",
@@ -1014,6 +990,36 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "scripts-hardcoded-data-path-guard",
+      "title": "A test that fails when a script builds its own database or logs path",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/scripts-hardcoded-data-path-guard",
+      "verification": "A new script that writes `path.join(root, 'data', 'evaluations.db')` or `path.join(root, 'logs', 'tutor-dialogues')` fails `npm test`, and the failure message names the resolver to call instead.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "scripts/check-evaluation-data-paths.js",
+          "config/evaluation-data-path-allowlist.json",
+          "tests/evaluationDataPathGuard.test.js"
+        ],
+        "items": [
+          "eval-db-writer-reader-path-split",
+          "eval-logs-root-single-resolver"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "guardrail"
+      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
