@@ -32,11 +32,15 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
-import { resolveTutorDialoguesDirCandidates } from '../services/evaluationDataPaths.js';
+import {
+  resolveEvaluationDbPath,
+  resolvePathFromRoot,
+  resolveTutorDialoguesDirCandidates,
+} from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
-const DB_PATH = process.env.EVAL_DB_PATH || path.join(REPO_ROOT, 'data', 'evaluations.db');
+const DB_PATH = resolveEvaluationDbPath(REPO_ROOT);
 
 const args = process.argv.slice(2);
 const VERBOSE = args.includes('--verbose');
@@ -50,7 +54,7 @@ const OUT_PATH =
 // runs land in the local logs dir. Try both.
 const LOG_DIRS = [
   ...resolveTutorDialoguesDirCandidates(REPO_ROOT),
-  path.join(REPO_ROOT, '..', 'machinespirits-eval-private', 'logs', 'tutor-dialogues'),
+  resolvePathFromRoot(path.resolve(REPO_ROOT, '..', 'machinespirits-eval-private'), 'logs/tutor-dialogues'),
 ];
 
 // The four headline cells + the runs whose strict_shift the paper reports.

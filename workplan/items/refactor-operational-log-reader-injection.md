@@ -1,13 +1,13 @@
 ---
 id: refactor-operational-log-reader-injection
 title: Inject dialogue-log repositories into operational scripts
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-07
-updated: 2026-08-07
+updated: 2026-08-08
 branch: codex/refactor-readonly-script-store-injection
 verification: >-
   Passive context, cross-root isolation, operational CLI, boundary-inventory,
@@ -31,6 +31,7 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-eval-routes-store-injection
+    - refactor-longitudinal-report-store-ownership
   prs:
     - https://github.com/liammagee/machinespirits-eval/pull/542
 tags:
@@ -87,3 +88,6 @@ Log:
   generated workplan views occurred.
 - 2026-08-07 — Rebased cleanly onto current main `d437f7fb`, revalidated all 57
   focused tests and static gates, and opened PR #542 at `cffa5249`.
+- 2026-08-08 — Closed after PR #542 merged; the passive script context and six
+  migrated consumers are present on `main` with the recorded isolation gates
+  and now underpin the merged longitudinal-report ownership follow-up.

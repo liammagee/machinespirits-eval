@@ -29,12 +29,13 @@ import { readFileSync, existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { buildLearnerHolisticEvaluationPrompt } from '../services/learnerRubricEvaluator.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.join(__dirname, '..');
-const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
-const LOGS_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
+const DB_PATH = resolveEvaluationDbPath(ROOT);
+const LOGS_DIR = resolveTutorDialoguesDir(ROOT);
 
 const args = process.argv.slice(2);
 const getOption = (name, def) => {

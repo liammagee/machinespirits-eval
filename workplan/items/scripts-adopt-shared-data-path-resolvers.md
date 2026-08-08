@@ -1,16 +1,23 @@
 ---
 id: scripts-adopt-shared-data-path-resolvers
 title: Move the 52 scripts that build their own data paths onto the shared resolvers
-status: triaged
+status: done
 type: infra
 priority: P3
-owner: unassigned
+owner: codex
 source: manual
 created: 2026-08-08
 updated: 2026-08-08
+branch: codex/scripts-adopt-shared-data-path-resolvers
 verification: The allowlist in the hardcoded-path guard is empty, and a spot check from a worktree shows each converted script opening the same file the store writes.
 claim_status: methods
 links:
+  code:
+    - config/evaluation-data-path-allowlist.json
+    - tests/evaluationDataPathGuard.test.js
+    - services/evaluationDataPaths.js
+  prs:
+    - 574
   items:
     - scripts-hardcoded-data-path-guard
     - eval-db-writer-reader-path-split
@@ -40,3 +47,17 @@ mistake is confined to one small diff.
 
 Worth doing the ones the sarcasm and charisma-desire report scripts depend on
 first — those are the ones paid runs are read through.
+
+## Log
+
+- 2026-08-08 — Reached review after migrating all 52 allowlisted scripts onto
+  `resolveEvaluationDbPath()`, `resolveTutorDialoguesDir()`, their candidate
+  variants, or the shared low-level root resolver where local-shadow semantics
+  are intentional. The 45 database-path and 13 dialogue-log constructions
+  (six scripts did both) are gone, and both allowlist categories are empty.
+  Every changed script passes `node --check`; representative analysis,
+  consolidator, log-reader, and worktree-closeout paths all resolved the same
+  isolated data home as the store.
+- 2026-08-08 — Closed after PR #574 merged. Both path allowlists are empty,
+  the worktree smoke checks proved shared archive resolution, and every hosted
+  check passed.

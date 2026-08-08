@@ -27,9 +27,11 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = process.env.EVAL_DB_PATH || path.join(__dirname, '..', 'data', 'evaluations.db');
+const ROOT = path.resolve(__dirname, '..');
+const DB_PATH = resolveEvaluationDbPath(ROOT);
 const RUN_IDS = process.argv.slice(2).length
   ? process.argv.slice(2)
   : ['eval-2026-05-30-f4e36e14', 'eval-2026-05-30-a9e12d4b'];

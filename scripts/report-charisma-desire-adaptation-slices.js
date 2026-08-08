@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 import yaml from 'yaml';
 
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import {
   buildTutorCharismaEvaluationPrompt,
   calculateTutorCharismaScore,
@@ -21,9 +22,9 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
-const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
+const DB_PATH = resolveEvaluationDbPath(ROOT);
 const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-scenarios.yaml');
-const LOGS_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
+const LOGS_DIR = resolveTutorDialoguesDir(ROOT);
 const CACHE_PATH = path.join(ROOT, 'exports', 'charisma-desire-adaptation-slices.json');
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-adaptation-slices-summary.md');
 

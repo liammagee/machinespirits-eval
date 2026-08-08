@@ -84,7 +84,7 @@ describe('evaluationStore boundary inventory', () => {
     }
     assert.deepEqual(counts, {
       'package-entrypoint': 1,
-      'operational-script': 16,
+      'operational-script': 8,
       'archived-oneoff': 4,
       test: 14,
     });

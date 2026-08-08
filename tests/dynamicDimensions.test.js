@@ -1,14 +1,16 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  createRun,
-  storeResult,
-  getRunStats,
-  updateResultScores,
-  updateResultTutorScores,
-  deleteRun,
-} from '../services/evaluationStore.js';
-import { generateReport } from '../services/evaluationRunner.js';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+const TEST_DATA_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'dynamic-dimensions-'));
+process.env.EVAL_DB_PATH = path.join(TEST_DATA_ROOT, 'evaluations.db');
+process.env.EVAL_LOGS_DIR = path.join(TEST_DATA_ROOT, 'logs');
+
+const { createRun, storeResult, getRunStats, updateResultScores, updateResultTutorScores, deleteRun } =
+  await import('../services/evaluationStore.js');
+const { generateReport } = await import('../services/evaluationRunner.js');
 
 describe('Dynamic Dimensions Support', () => {
   const testRunIds = [];
@@ -21,6 +23,9 @@ describe('Dynamic Dimensions Support', () => {
         /* ignore */
       }
     }
+    fs.rmSync(TEST_DATA_ROOT, { recursive: true, force: true });
+    delete process.env.EVAL_DB_PATH;
+    delete process.env.EVAL_LOGS_DIR;
   });
 
   it('aggregates Rubric 2.2+ dimensions from tutor_scores in getRunStats', () => {

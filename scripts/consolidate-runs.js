@@ -27,12 +27,13 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { parseEpochArg, printEpochBanner } from '../services/epochFilter.js';
 import { consolidateRuns } from '../services/runConsolidator.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
+const DB_PATH = resolveEvaluationDbPath(ROOT);
 const MANIFESTS_DIR = path.join(ROOT, 'logs', 'run-manifests');
 
 // ── CLI ─────────────────────────────────────────────────────────────────────

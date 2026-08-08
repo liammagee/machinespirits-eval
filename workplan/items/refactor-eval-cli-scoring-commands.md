@@ -1,13 +1,13 @@
 ---
 id: refactor-eval-cli-scoring-commands
 title: Extract the eval-cli scoring command family
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-08
 branch: codex/refactor-eval-cli-scoring-commands
 verification: The eval-cli executable is a bounded dispatcher with no scoring logic; evaluate, backfill-first-turn, evaluate-learner, and evaluate-dialogue use explicit bounded owners while tutor/learner symmetry, score shapes, judge and rubric provenance, selection, follow mode, output, errors, and storage writes remain unchanged under exact process parity, focused and zero-skip hermetic, coverage-risk, lint, format, manifest, workplan, and zero-cycle gates plus symmetry review.
 claim_status: planned
@@ -89,3 +89,5 @@ Log:
   `f54785aa`, reran the 162-test focused set and all affected static/workplan
   gates, and opened the reviewed macro slice as PR #517. The final
   implementation commit is `00b2b308` before this PR-link follow-up.
+- 2026-08-08 — Closed after PR #517 merged; the scoring facade decomposition
+  and tutor/learner symmetry checks are present on `main`.

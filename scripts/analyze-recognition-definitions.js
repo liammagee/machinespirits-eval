@@ -21,12 +21,13 @@ import 'dotenv/config';
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 
-const DEFAULT_DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT_DIR, 'data', 'evaluations.db');
+const DEFAULT_DB_PATH = resolveEvaluationDbPath(ROOT_DIR);
 const DEFAULT_RUN_IDS = ['eval-2026-02-06-81f2d5a1', 'eval-2026-02-06-ac9ea8f5'];
 const DEFAULT_JUDGE_PATTERN = 'claude-opus%';
 const DEFAULT_BALANCED_PER_CELL = 30;

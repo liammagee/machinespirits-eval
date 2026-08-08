@@ -3,7 +3,7 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 17,
+    "liveAndPackageConsumerCount": 9,
     "archivedConsumerCount": 4,
     "testConsumerCount": 14
   },
@@ -48,21 +48,6 @@
       "modes": ["namespace"]
     },
     {
-      "path": "scripts/evaluate-charisma.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/evaluate-learner-standalone.js",
-      "classification": "operational-script",
-      "modes": ["default"]
-    },
-    {
-      "path": "scripts/evaluate-register-rubric.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
       "path": "scripts/ingest-pilot-sessions.js",
       "classification": "operational-script",
       "modes": ["namespace"]
@@ -71,26 +56,6 @@
       "path": "scripts/prompt-lab.js",
       "classification": "operational-script",
       "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/report-longitudinal-drift-stage-a2-live.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/report-longitudinal-drift-stage-a3-live.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/report-longitudinal-drift-stage-a4-live.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
-    },
-    {
-      "path": "scripts/report-longitudinal-drift-stage-a5-live.js",
-      "classification": "operational-script",
-      "modes": ["dynamic"]
     },
     {
       "path": "scripts/run-adaptive-cell-smoke.js",
@@ -109,11 +74,6 @@
     },
     {
       "path": "scripts/run-id-director-trap-pilot.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/score-d4-first-turns.js",
       "classification": "operational-script",
       "modes": ["namespace"]
     },
@@ -140,7 +100,7 @@
     {
       "path": "tests/checkpointE2E.test.js",
       "classification": "test",
-      "modes": ["default"]
+      "modes": ["dynamic"]
     },
     {
       "path": "tests/cliBridgeDialogueEngine.test.js",
@@ -150,7 +110,7 @@
     {
       "path": "tests/dynamicDimensions.test.js",
       "classification": "test",
-      "modes": ["named"]
+      "modes": ["dynamic"]
     },
     {
       "path": "tests/evaluationRunner.test.js",

@@ -324,7 +324,7 @@ manner or counts cue compliance only.
 
 ## Landed in the paper
 
-v3.0.275 (2026-08-08). §6.7 gains "What the fidelity counts count" — the set, the
+v3.0.277 (2026-08-08). §6.7 gains "What the fidelity counts count" — the set, the
 three readings, and what follows for the counts already reported. §8.9 gains two
 scope conditions: a phrase list cannot measure a manner defined by the gap
 between what a sentence says and what it means, and the ironic and sarcastic arms
@@ -332,7 +332,7 @@ are overlapping extensions. §7.13's ladder mention of 18/45 is qualified in
 place. Nothing is retracted: the assigned-arm estimates never consulted the gate,
 and the faithful-arm ones are unlicensed pending a re-reading of stored rows.
 
-v3.0.277 (2026-08-08). That re-reading has run, so §6.7 gains "What a re-reading
+v3.0.279 (2026-08-08). That re-reading has run, so §6.7 gains "What a re-reading
 of the stored rows found": the 62 turns, the two-thirds overlap, the two errors
 and what each costs, the two-stage correction 18/45 → 17/45 → 12/45 with the
 per-arm split, the 9/12 outcome figure, why face threat is exempt, why the

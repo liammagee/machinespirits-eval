@@ -11,12 +11,12 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import Database from 'better-sqlite3';
 import { scoredTutorTurnAfterTrigger } from './lib/trapTurnConvention.js';
-import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
-const DEFAULT_DB_PATH = path.join(REPO_ROOT, 'data', 'evaluations.db');
-const DEFAULT_LOGS_DIR = path.join(REPO_ROOT, 'logs', 'tutor-dialogues');
+const DEFAULT_DB_PATH = resolveEvaluationDbPath(REPO_ROOT);
+const DEFAULT_LOGS_DIR = resolveTutorDialoguesDir(REPO_ROOT);
 
 const QUALITY_FIELDS = Object.freeze([
   'tutorLastTurnScore',

@@ -1,13 +1,13 @@
 ---
 id: local-ci-pr-creation-gate
 title: Gate repository PR creation with adaptive local CI
-status: review
+status: done
 type: infra
 priority: P1
 owner: codex
 source: manual
 created: 2026-08-07
-updated: 2026-08-07
+updated: 2026-08-08
 branch: codex/local-ci-pr-create
 verification: "A repository PR command validates clean committed state and the final workplan-linked body, passes quick local CI before any push/PR write, detects hosted checks without duplicating the full suite, falls back to full local CI when checks do not appear, and is covered by zero-network orchestration tests."
 depends_on:
@@ -17,6 +17,7 @@ links:
     - local-ci-parity-runner
   prs:
     - 538
+    - 540
 tags:
   - ci
   - developer-experience
@@ -59,3 +60,6 @@ Log:
   was merged while that fallback was still running; this follow-up replaces
   the broken restoration with npm's bundled `node-gyp` directly and reruns the
   full gate on the repaired commit.
+- 2026-08-08 — Closed after PRs #538 and #540 merged. The wrapper and repaired
+  native restoration are both on `main`; the declared zero-network tests and
+  local admission gates passed.

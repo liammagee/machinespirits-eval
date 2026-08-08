@@ -1,13 +1,13 @@
 ---
 id: guard-policy-default-flip
 title: Make the shadow-advisory guard column the default delivery policy
-status: review
+status: done
 type: infra
 priority: P1
 owner: claude
 source: manual
 created: 2026-08-06
-updated: 2026-08-07
+updated: 2026-08-08
 verification: >-
   DONE 2026-08-07. The live default is shadow_advisory with strict as the opt-in
   (pipeline plus CLI, pinned at the source by test); evidence-safety,
@@ -118,3 +118,6 @@ did not land here; it stays with `tutor-stub-template-rate-audit`.
   suite green at 2009 tests. Three planned items deliberately not done, with
   reasons above. `phase-b-rerun-under-flipped-policy` is now unblocked on this
   card and still gated on the user's go-ahead for the spend.
+- 2026-08-08 — Closed: the default flip and its safety invariants are on
+  `main`, and the deliberately deferred analysis work remains separately
+  tracked by `tutor-stub-template-rate-audit`.
