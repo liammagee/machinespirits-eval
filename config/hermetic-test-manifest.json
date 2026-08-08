@@ -278,6 +278,7 @@
         "tests/evalRoutesImport.test.js",
         "tests/evalSignature.test.js",
         "tests/evaluationDataCloseout.test.js",
+        "tests/evaluationDataPathGuard.test.js",
         "tests/evaluationDataPaths.test.js",
         "tests/evaluationDbPathAgreement.test.js",
         "tests/evaluationLogsPathAgreement.test.js",
