@@ -98,6 +98,7 @@ export function createTutorStubResponseLeakAudit({ publicEvidenceModel } = {}) {
     candidatePublicPremiseIds,
     entailsFactAtTurn,
     publicEvidenceTextForAssertion,
+    publicFactsAtTurn,
     publicTextForTurn,
   } = publicEvidenceModel;
 
@@ -216,6 +217,7 @@ export function createTutorStubResponseLeakAudit({ publicEvidenceModel } = {}) {
     const evidenceAssertionAudit = auditTutorStubEvidenceAssertions({
       text,
       permittedText: publicEvidenceTextForAssertion(world, tutorTurn, learnerText, state, available),
+      permittedFacts: publicFactsAtTurn(world, tutorTurn, state, available),
     });
     for (const issue of evidenceAssertionAudit.issues) {
       leaks.push({ type: issue.type, reason: issue.reason, text: issue.text });

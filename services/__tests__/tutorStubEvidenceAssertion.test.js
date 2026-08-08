@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
+import { loadWorld } from '../dramaticDerivation/world.js';
 import { auditTutorStubEvidenceAssertions, tutorStubPrivateTokenAlreadyPublic } from '../tutorStubEvidenceAssertion.js';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 test('an inflection of a current clue word is not mistaken for future evidence', () => {
   const publicTokens = new Set(['notch', 'mended', 'square']);
@@ -171,4 +176,39 @@ test('accepts a same-strain conclusion only when that strain correspondence is p
 
   assert.equal(auditTutorStubEvidenceAssertions({ text, permittedText }).ok, true);
   assert.equal(auditTutorStubEvidenceAssertions({ text, permittedText: '' }).ok, false);
+});
+
+test('allows world-030 correspondence wording from its released structured fact', () => {
+  const world = loadWorld(path.join(ROOT, 'config/drama-derivation/world-030-rowan-flat.yaml'));
+  const premise = world.premiseById.get('p_dye');
+  const text = 'The dye traces a path from the hose split to the ceiling mark.';
+
+  assert.equal(
+    auditTutorStubEvidenceAssertions({ text, permittedText: premise.surface }).ok,
+    false,
+    'the authored plain-language surface alone reproduces the vocabulary mismatch',
+  );
+  assert.equal(
+    auditTutorStubEvidenceAssertions({ text, permittedText: premise.surface, permittedFacts: [premise.fact] }).ok,
+    true,
+    'the released tracedPathTo fact licenses the same relation in different prose',
+  );
+  assert.equal(
+    auditTutorStubEvidenceAssertions({
+      text,
+      permittedText: premise.surface,
+      permittedFacts: [['pressureRoseDuring', 'basinFeedHose', 'kitchenCeiling']],
+    }).ok,
+    false,
+    'shared endpoints without the asserted relation do not license the claim',
+  );
+  assert.equal(
+    auditTutorStubEvidenceAssertions({
+      text: 'The ceiling mark traces a path to the basin hose split.',
+      permittedText: premise.surface,
+      permittedFacts: [premise.fact],
+    }).ok,
+    false,
+    'a directed fact does not license the same endpoints in reverse',
+  );
 });
