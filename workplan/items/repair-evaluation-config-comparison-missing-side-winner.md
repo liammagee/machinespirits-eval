@@ -1,7 +1,7 @@
 ---
 id: repair-evaluation-config-comparison-missing-side-winner
 title: Define missing-side winner semantics in configuration comparison
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: codex
@@ -18,6 +18,8 @@ links:
   code:
     - services/evaluationStore/statisticsRepository.js
     - tests/evaluationStoreStatisticsRepository.test.js
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/578
   items:
     - refactor-evaluation-store-statistics-repository
 tags:
@@ -50,3 +52,5 @@ win/tie semantics.
   explicit incomplete-count accounting, preserved zero scores, and an
   unchanged complete-pair winner contract. The focused statistics-repository
   suite passes 6/6.
+- 2026-08-08 — Closed after PR #578 merged. The full Node 20/22 matrix,
+  risk-coverage, workplan, validation, lint, and loopback checks all passed.
