@@ -92,6 +92,12 @@ const PROMPTS_DIR = path.resolve(__engineDir, '..', 'prompts');
 const _deps = {
   tutorConfig: defaultTutorConfig,
   tutorWritingPad: defaultTutorWritingPad,
+  // Every model call in this file goes through here, so a test can stub it and
+  // read back which provider and model each seat actually asked for. That is
+  // the only way to check the id and ego seats from outside — the run's own
+  // record of the models is written by the runner, not by this engine, and the
+  // two drifted apart unnoticed for the whole of the August 2026 register work.
+  callAI: callAIWithCliBridge,
 };
 
 function normalizeEngagementRegisterArm(value) {
@@ -220,11 +226,13 @@ export function appendTutorMannerBlock(generatedPrompt, engagementState) {
 export function __setDeps(overrides = {}) {
   if (overrides.tutorConfig) _deps.tutorConfig = overrides.tutorConfig;
   if (overrides.tutorWritingPad) _deps.tutorWritingPad = overrides.tutorWritingPad;
+  if (overrides.callAI) _deps.callAI = overrides.callAI;
 }
 
 export function __resetDeps() {
   _deps.tutorConfig = defaultTutorConfig;
   _deps.tutorWritingPad = defaultTutorWritingPad;
+  _deps.callAI = callAIWithCliBridge;
 }
 
 const FALLBACK_GENERATED_PROMPT =
@@ -751,7 +759,7 @@ export async function classifyLearnerRegister({ learnerMessage, recentHistory, c
     '</current_learner_message>',
   ].join('\n');
 
-  const response = await callAIWithCliBridge(
+  const response = await _deps.callAI(
     classifierConfig,
     classifierConfig.prompt,
     userMessage,
@@ -1737,6 +1745,28 @@ function buildIdRunnerUserMessage({
 }
 
 /**
+ * Put a run's requested model in place of the one the cell YAML names.
+ *
+ * The id and ego calls below read their provider and model from the cell block
+ * in config/tutor-agents.yaml. A run launched with --ego-model, --tutor-model,
+ * --superego-model or --model asks for something else, and until 2026-08-08
+ * that ask never arrived here: the run stored the requested model in
+ * ego_model while calling the YAML's. The runner now hands the request over
+ * (resolvedConfig.tutorModelOverrides) and this puts it in place.
+ *
+ * Everything else about the cell — the prompt file, the staging, the
+ * temperature and token ceiling — stays as the YAML has it.
+ *
+ * @param {Object|null} cell - ego or superego block from the cell profile
+ * @param {{provider: string, model: string}|null} [override]
+ * @returns {Object|null}
+ */
+function applyModelOverride(cell, override) {
+  if (!cell || !override?.provider || !override?.model) return cell;
+  return { ...cell, provider: override.provider, model: override.model, resolvedModel: override.model };
+}
+
+/**
  * Generate a single id-directed tutor suggestion.
  *
  * Returns a result object matching the shape of tutorApi.generateSuggestions:
@@ -1762,8 +1792,8 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     );
   }
 
-  const idCell = evalCellProfile.superego;
-  const egoCell = evalCellProfile.ego;
+  const idCell = applyModelOverride(evalCellProfile.superego, resolvedConfig?.tutorModelOverrides?.superego);
+  const egoCell = applyModelOverride(evalCellProfile.ego, resolvedConfig?.tutorModelOverrides?.ego);
   if (!idCell?.prompt_file || !idCell?.model) {
     return {
       success: false,
@@ -1958,7 +1988,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     prompt: idStaticPrompt,
     isConfigured: idProviderConfig.isConfigured,
   };
-  const idResponse = await callAIWithCliBridge(idAgentConfig, idStaticPrompt, idUserMessage, 'tutor_id', {});
+  const idResponse = await _deps.callAI(idAgentConfig, idStaticPrompt, idUserMessage, 'tutor_id', {});
   // tutorDialogueEngine.callAI returns { text, model, provider, latencyMs,
   // inputTokens, outputTokens, ... } — fields are flat, not nested under
   // a `usage` object as some other LLM SDKs use.
@@ -2006,7 +2036,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   // For multi-turn cells, pass messageHistory so the ego sees the conversation
   // context. The ego's *system prompt* is the id's authored prompt; the user
   // turn is the most recent learner message.
-  let egoResponse = await callAIWithCliBridge(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
+  let egoResponse = await _deps.callAI(egoAgentConfig, egoSystemPrompt, learnerMessage, 'tutor_ego', {
     messageHistory: messageHistory.length > 0 ? messageHistory : null,
   });
   totalInputTokens += egoResponse?.inputTokens || 0;
@@ -2019,7 +2049,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
   if (!externalMessage) {
     console.warn('[idDirectorEngine.runnerAdapter] Empty ego output, retrying with learner-facing output reminder.');
     egoRetried = true;
-    egoResponse = await callAIWithCliBridge(
+    egoResponse = await _deps.callAI(
       egoAgentConfig,
       egoSystemPrompt,
       buildEgoRetryPrompt(learnerMessage),
@@ -2062,7 +2092,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
       curriculumContext,
       tutorResponse: externalMessage,
     });
-    let verifierResponse = await callAIWithCliBridge(
+    let verifierResponse = await _deps.callAI(
       verifierAgentConfig,
       agencyReturnVerifierPrompt,
       verifierUserMessage,
@@ -2076,7 +2106,7 @@ export async function generateIdDirectedSuggestion(context, resolvedConfig, eval
     let verifierRetried = false;
     if (!(verifierResponse?.text || '').trim()) {
       verifierRetried = true;
-      verifierResponse = await callAIWithCliBridge(
+      verifierResponse = await _deps.callAI(
         verifierAgentConfig,
         agencyReturnVerifierPrompt,
         buildAgencyReturnVerifierRetryUserMessage(verifierUserMessage),
