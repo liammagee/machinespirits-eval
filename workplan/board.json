@@ -1,14 +1,14 @@
 {
-  "generated": "2026-08-08T21:29:41.167Z",
+  "generated": "2026-08-08T22:16:49.711Z",
   "counts": {
     "total": 466,
     "byStatus": {
-      "done": 440,
+      "done": 441,
       "blocked": 6,
       "dropped": 9,
       "active": 1,
       "archived": 4,
-      "triaged": 4,
+      "triaged": 3,
       "review": 2
     },
     "byType": {
@@ -50,34 +50,6 @@
         "learner-profiles",
         "deconfound",
         "prereg"
-      ]
-    },
-    {
-      "id": "phase-b-rerun-under-flipped-policy",
-      "title": "Re-run the Phase-B contract contrast with the guards not scripting the tutor",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-07",
-      "verification": "PARKED ON QUOTA — guard-policy-default-flip landed 2026-08-07 and the user parked the run the same day until codex quota is free again. It needs no further decision, only headroom. Then: the same registered design (frozen cells, bare vs contract vs empty plan, n = 12 per version per cell, same models, learner blind), under boundaryPolicy shadow_advisory. Primary endpoint unchanged. Reported against the original as a pair: strict-harness verdict and open-harness verdict, never pooled.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "services/tutorStubGuardDisposition.js"
-        ],
-        "items": [
-          "guard-policy-default-flip",
-          "guard-validity-study",
-          "tutor-fallible-learner-closure-prereg"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards",
-        "fallible-learner"
       ]
     },
     {
@@ -13228,6 +13200,34 @@
       "milestone": "literature-triage",
       "branch": "codex/workplan-board-triage",
       "claim_status": "future"
+    },
+    {
+      "id": "phase-b-rerun-under-flipped-policy",
+      "title": "Re-run the Phase-B contract contrast with the guards not scripting the tutor",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-08",
+      "verification": "RAN AND CLOSED 2026-08-08. The same registered design (frozen cells, bare vs contract vs empty plan, n = 12 per version per cell, same models, learner blind), under boundaryPolicy shadow_advisory. Primary endpoint unchanged: legitimate closure, contract vs bare, pooled over the three frozen cells, two-sided Fisher exact, alpha = 0.05. Reported against the original as a pair: strict-harness verdict and open-harness verdict, never pooled. Verdict: contract 12/36 against bare 24/36, p = 0.0091 — with the tutor speaking its own plan the contract lowers closure by 33 points, where the strict-harness original found the two versions level.",
+      "claim_status": "scope-bound",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js"
+        ],
+        "items": [
+          "guard-policy-default-flip",
+          "guard-validity-study",
+          "tutor-fallible-learner-closure-prereg"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "fallible-learner"
+      ]
     },
     {
       "id": "point-of-action-gate-grader",
