@@ -1,21 +1,21 @@
 {
-  "generated": "2026-08-08T08:58:45.824Z",
+  "generated": "2026-08-08T11:18:22.067Z",
   "counts": {
-    "total": 462,
+    "total": 463,
     "byStatus": {
-      "done": 432,
+      "done": 434,
       "blocked": 6,
       "dropped": 8,
       "active": 2,
       "archived": 4,
       "triaged": 6,
-      "review": 4
+      "review": 3
     },
     "byType": {
       "research": 75,
       "experiment": 77,
       "infra": 95,
-      "maintenance": 194,
+      "maintenance": 195,
       "content": 3,
       "ops": 10,
       "paper": 8
@@ -542,8 +542,8 @@
       "milestone": "paper-2-0"
     },
     {
-      "id": "refactor-operational-score-store-ownership",
-      "title": "Give operational scoring scripts explicit evaluation-store ownership",
+      "id": "refactor-operational-run-store-ownership",
+      "title": "Give operational run launchers explicit evaluation-store ownership",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -551,11 +551,11 @@
       "source": "review",
       "created": "2026-08-08",
       "updated": "2026-08-08",
-      "branch": "codex/refactor-operational-score-store-ownership",
-      "verification": "Lifecycle, usage-before-database, isolated empty-run CLI, boundary-inventory, focused scoring-helper, hermetic root and tutor-core, risk-coverage, source, lint, formatting, manifest, and cycle gates prove four scoring tools own and close their stores without changing score construction or persistence.",
+      "branch": "codex/refactor-operational-run-store-ownership",
+      "verification": "Lifecycle, database-path isolation, adaptive and trap smoke regressions, boundary inventory, hermetic root and tutor-core, risk coverage, source, lint, formatting, manifest, and cycle gates prove four launchers own and close their stores without changing run orchestration or persisted rows.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-longitudinal-report-store-ownership"
+        "refactor-operational-score-store-ownership"
       ],
       "links": {
         "notes": [
@@ -563,21 +563,24 @@
         ],
         "code": [
           "services/evaluationStore/scriptContext.js",
-          "scripts/evaluate-charisma.js",
-          "scripts/evaluate-register-rubric.js",
-          "scripts/evaluate-learner-standalone.js",
-          "scripts/score-d4-first-turns.js"
+          "config/evaluation-store-boundary-inventory.json",
+          "scripts/run-adaptive-cell-smoke.js",
+          "scripts/run-adaptive-persistence-smoke.js",
+          "scripts/run-dialogue-engine-trap-baseline.js",
+          "scripts/run-id-director-trap-pilot.js",
+          "tests/evaluationScriptContext.test.js",
+          "tests/evaluationStoreBoundaryInventory.test.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-longitudinal-report-store-ownership"
+          "refactor-operational-score-store-ownership"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
         "operational-scripts",
-        "scoring",
+        "adaptive-tutor",
         "dependency-injection",
         "lifecycle",
         "maintainability"
@@ -654,37 +657,6 @@
         "compatibility"
       ],
       "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "tutor-stub-template-rate-audit",
-      "title": "Stamp every cited tutor-stub run with its measured template rate",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-08",
-      "branch": "codex/paper-guard-template-rate-pass",
-      "verification": "A table, checked into the guard catalog doc, lists every recoverable cited tutor-stub run with its template rate and model-as-written rate measured from its own traces by the census/replay script. Paper sections that read tutor prose off a guarded run carry the rate, `boundaryPolicy`, and catalog version beside the claim; unrecoverable or unstamped observations are explicit, and no comparison pools different regimes. Paper 2.0 v3.0.276 records the completed pass after `guard-validity-study` concluded.",
-      "claim_status": "methods",
-      "links": {
-        "code": [
-          "scripts/census-guard-template-rate.js",
-          "scripts/replay-guard-fallback-delivery.js",
-          "docs/tutor-stub-guard-catalog.md",
-          "docs/research/paper-full-2.0.md"
-        ],
-        "items": [
-          "guard-regime-fallback-census-at-scale",
-          "guard-validity-study"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards",
-        "paper"
-      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -3700,6 +3672,52 @@
         "operational-scripts",
         "dialogue-logs",
         "dependency-injection",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-operational-score-store-ownership",
+      "title": "Give operational scoring scripts explicit evaluation-store ownership",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/refactor-operational-score-store-ownership",
+      "verification": "Lifecycle, usage-before-database, isolated empty-run CLI, boundary-inventory, focused scoring-helper, hermetic root and tutor-core, risk-coverage, source, lint, formatting, manifest, and cycle gates prove four scoring tools own and close their stores without changing score construction or persistence.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-longitudinal-report-store-ownership"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore/scriptContext.js",
+          "scripts/evaluate-charisma.js",
+          "scripts/evaluate-register-rubric.js",
+          "scripts/evaluate-learner-standalone.js",
+          "scripts/score-d4-first-turns.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-longitudinal-report-store-ownership"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/575"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "operational-scripts",
+        "scoring",
+        "dependency-injection",
+        "lifecycle",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -14311,6 +14329,40 @@
         "sessions",
         "resume",
         "provenance"
+      ]
+    },
+    {
+      "id": "tutor-stub-template-rate-audit",
+      "title": "Stamp every cited tutor-stub run with its measured template rate",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-08",
+      "branch": "codex/paper-guard-template-rate-pass",
+      "verification": "A table, checked into the guard catalog doc, lists every recoverable cited tutor-stub run with its template rate and model-as-written rate measured from its own traces by the census/replay script. Paper sections that read tutor prose off a guarded run carry the rate, `boundaryPolicy`, and catalog version beside the claim; unrecoverable or unstamped observations are explicit, and no comparison pools different regimes. Paper 2.0 v3.0.276 records the completed pass after `guard-validity-study` concluded.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "scripts/census-guard-template-rate.js",
+          "scripts/replay-guard-fallback-delivery.js",
+          "docs/tutor-stub-guard-catalog.md",
+          "docs/research/paper-full-2.0.md"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-validity-study"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/576"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "paper"
       ]
     },
     {
