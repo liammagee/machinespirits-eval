@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-08T05:43:34.248Z",
+  "generated": "2026-08-08T06:05:56.769Z",
   "counts": {
-    "total": 459,
+    "total": 460,
     "byStatus": {
-      "done": 419,
+      "done": 420,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
@@ -15,7 +15,7 @@
       "research": 74,
       "experiment": 77,
       "infra": 95,
-      "maintenance": 192,
+      "maintenance": 193,
       "content": 3,
       "ops": 10,
       "paper": 8
@@ -407,7 +407,8 @@
           "refactor-evaluation-runner-cli-store-injection",
           "refactor-adaptive-tutor-store-injection",
           "refactor-eval-routes-store-injection",
-          "refactor-operational-log-reader-injection"
+          "refactor-operational-log-reader-injection",
+          "refactor-longitudinal-report-store-ownership"
         ]
       },
       "tags": [
@@ -929,20 +930,20 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "refactor-operational-log-reader-injection",
-      "title": "Inject dialogue-log repositories into operational scripts",
+      "id": "refactor-longitudinal-report-store-ownership",
+      "title": "Give longitudinal live reports explicit evaluation-store ownership",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
       "owner": "codex",
       "source": "review",
-      "created": "2026-08-07",
-      "updated": "2026-08-07",
-      "branch": "codex/refactor-readonly-script-store-injection",
-      "verification": "Passive context, cross-root isolation, operational CLI, boundary-inventory, hermetic, risk-coverage, lint, formatting, and root regressions prove six scripts no longer depend on the legacy facade without model calls, shared production writes, or generated workplan views.",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/refactor-longitudinal-store-ownership",
+      "verification": "Lifecycle unit tests, missing-database CLI checks, boundary inventory, longitudinal checker regressions, hermetic root and tutor-core suites, risk coverage, source, lint, formatting, and cycle gates prove A2-A5 close owned stores without changing their scoring or report contracts.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-eval-routes-store-injection"
+        "refactor-operational-log-reader-injection"
       ],
       "links": {
         "notes": [
@@ -950,27 +951,25 @@
         ],
         "code": [
           "services/evaluationStore/scriptContext.js",
-          "scripts/analyze-insight-action-gap.js",
-          "scripts/assess-transcripts.js",
-          "scripts/audit-message-chain.js",
-          "scripts/code-dialectical-modulation.js",
-          "scripts/generate-paper-figures.js",
-          "scripts/render-sequence-diagram.js"
+          "scripts/report-longitudinal-drift-stage-a2-live.js",
+          "scripts/report-longitudinal-drift-stage-a3-live.js",
+          "scripts/report-longitudinal-drift-stage-a4-live.js",
+          "scripts/report-longitudinal-drift-stage-a5-live.js"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-eval-routes-store-injection"
+          "refactor-operational-log-reader-injection"
         ],
         "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/542"
+          "https://github.com/liammagee/machinespirits-eval/pull/571"
         ]
       },
       "tags": [
         "refactoring",
         "evaluation",
         "operational-scripts",
-        "dialogue-logs",
         "dependency-injection",
+        "lifecycle",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -3678,6 +3677,54 @@
         "provenance",
         "message-chain",
         "hermetic"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-operational-log-reader-injection",
+      "title": "Inject dialogue-log repositories into operational scripts",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-07",
+      "updated": "2026-08-08",
+      "branch": "codex/refactor-readonly-script-store-injection",
+      "verification": "Passive context, cross-root isolation, operational CLI, boundary-inventory, hermetic, risk-coverage, lint, formatting, and root regressions prove six scripts no longer depend on the legacy facade without model calls, shared production writes, or generated workplan views.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-eval-routes-store-injection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore/scriptContext.js",
+          "scripts/analyze-insight-action-gap.js",
+          "scripts/assess-transcripts.js",
+          "scripts/audit-message-chain.js",
+          "scripts/code-dialectical-modulation.js",
+          "scripts/generate-paper-figures.js",
+          "scripts/render-sequence-diagram.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-eval-routes-store-injection",
+          "refactor-longitudinal-report-store-ownership"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/542"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "operational-scripts",
+        "dialogue-logs",
+        "dependency-injection",
+        "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
     },
