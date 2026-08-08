@@ -3,7 +3,7 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 3,
+    "liveAndPackageConsumerCount": 2,
     "archivedConsumerCount": 4,
     "testConsumerCount": 14
   },
@@ -49,11 +49,6 @@
     },
     {
       "path": "scripts/prompt-lab.js",
-      "classification": "operational-script",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/test-token-budget.js",
       "classification": "operational-script",
       "modes": ["namespace"]
     },
