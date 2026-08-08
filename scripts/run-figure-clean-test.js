@@ -32,7 +32,10 @@
  *
  * Attended, not fire-and-forget: dialogues run one at a time and the script
  * stops on the first failure, so a quota wall leaves a partial corpus with a
- * manifest rather than a silent hole.
+ * manifest rather than a silent hole. Rerunning finishes the corpus rather
+ * than paying for it twice — a dialogue whose trace already reached `run_end`
+ * is skipped, and a half-written trace stops the script instead of gaining a
+ * second file beside it, which would feed the reader the same turns twice.
  *
  * Second use, added 2026-08-08 (card: figure-transfer-second-world). The same
  * design run in a DIFFERENT world asks whether the profile learned the form of
@@ -59,6 +62,21 @@ const SLOTS = [4, 5, 6, 7, 8];
 const DEFAULT_RECIPE = path.resolve(ROOT, '..', 'ms-figure-pinned', 'corpus-recipe.json');
 const DEFAULT_OUT = path.join(ROOT, 'exports', 'tutor-stub-outcome', 'figure-clean-test');
 const DEFAULT_WORLD_DIR = 'world_030_rowan_flat';
+
+/**
+ * What a dialogue's trace directory already holds: 'done' if some trace in it
+ * ran to `run_end`, 'partial' if traces exist but none finished, 'none' if the
+ * dialogue has not been run.
+ */
+export function traceState(dir) {
+  if (!fs.existsSync(dir)) return 'none';
+  const files = fs.readdirSync(dir).filter((name) => name.endsWith('.jsonl'));
+  if (!files.length) return 'none';
+  for (const name of files) {
+    if (fs.readFileSync(path.join(dir, name), 'utf8').includes('"type":"run_end"')) return 'done';
+  }
+  return 'partial';
+}
 
 /** Dialogue r orders MOVES[(slot index + r) mod 5] — one rotation per dialogue. */
 export function scheduleFor(rotation) {
@@ -142,6 +160,16 @@ function main() {
 
   for (const step of plan) {
     const traceDir = path.join(args.outDir, 'traces', args.worldDir, step.dialogue);
+    const state = traceState(traceDir);
+    if (state === 'done') {
+      console.log(`\n${step.dialogue}: already finished, skipping.`);
+      continue;
+    }
+    if (state === 'partial') {
+      console.error(`\n${step.dialogue} has a trace that never reached run_end: ${path.relative(ROOT, traceDir)}`);
+      console.error('Delete it and rerun. Leaving it would give the reader that dialogue twice.');
+      process.exit(1);
+    }
     const cmd = [
       'node',
       'scripts/tutor-stub.js',
