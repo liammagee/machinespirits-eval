@@ -29,6 +29,8 @@ links:
   items:
     - codebase-refactoring-program
     - refactor-operational-log-reader-injection
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/571
 tags:
   - refactoring
   - evaluation
@@ -76,3 +78,4 @@ Log:
   loopback `EPERM` was environmental and passed on authorized unrestricted
   reruns. No model calls, production writes, or generated board changes
   occurred.
+- 2026-08-08 — Opened PR #571 from validated source commit `39b4bd7e`.
