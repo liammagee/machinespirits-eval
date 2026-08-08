@@ -26,6 +26,7 @@ import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 import { callModelCliText } from '../services/cliProviderBridge.js';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 // ── Constants ────────────────────────────────────────────────────────────
 
@@ -898,7 +899,7 @@ Options:
 async function main() {
   const opts = parseArgs();
 
-  const dbPath = path.join(process.cwd(), 'data', 'evaluations.db');
+  const dbPath = resolveEvaluationDbPath(process.cwd());
   if (!fs.existsSync(dbPath)) {
     console.error('Database not found:', dbPath);
     process.exit(1);

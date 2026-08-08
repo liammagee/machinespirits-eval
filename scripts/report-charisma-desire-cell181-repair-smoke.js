@@ -5,11 +5,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
 
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
 const DEFAULT_RUN_ID = 'eval-2026-06-27-a9a4c920';
-const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
+const DB_PATH = resolveEvaluationDbPath(ROOT);
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-cell181-repair-smoke-summary.md');
 
 const TARGET_PROFILE = 'cell_181_id_director_charisma_engagement_router_contract_repair_verified';

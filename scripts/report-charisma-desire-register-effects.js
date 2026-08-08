@@ -7,11 +7,12 @@ import { fileURLToPath } from 'node:url';
 import Database from 'better-sqlite3';
 
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
-const DB_PATH = path.join(ROOT, 'data', 'evaluations.db');
+const DB_PATH = resolveEvaluationDbPath(ROOT);
 const CACHE_PATH = path.join(ROOT, 'exports', 'charisma-desire-adaptation-slices.json');
 const JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-register-effects.json');
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-register-effects-summary.md');

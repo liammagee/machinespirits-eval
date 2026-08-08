@@ -37,6 +37,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -48,7 +49,7 @@ const nIdx = args.indexOf('--n-per-arc');
 const N_PER_ARC = nIdx !== -1 ? parseInt(args[nIdx + 1], 10) : 1;
 const SEED = 42;
 
-const evalDb = new Database(path.join(REPO_ROOT, 'data', 'evaluations.db'), { readonly: true });
+const evalDb = new Database(resolveEvaluationDbPath(REPO_ROOT), { readonly: true });
 const tutorDb = new Database(
   process.env.AUTH_DB_PATH ||
     path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite'),

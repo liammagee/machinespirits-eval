@@ -49,8 +49,8 @@ test('hardcoded evaluation path detector sees constructive joins and ignores doc
   );
 });
 
-test('repository scripts add no hardcoded evaluation paths beyond the shrinking allowlist', () => {
+test('repository scripts use shared resolvers instead of hardcoded evaluation paths', () => {
   const result = checkEvaluationDataPaths();
   assert.deepEqual(formatEvaluationDataPathErrors(result), [], formatEvaluationDataPathErrors(result).join('\n'));
-  assert.equal(new Set(result.findings.map((finding) => finding.file)).size, 52);
+  assert.equal(result.findings.length, 0);
 });

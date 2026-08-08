@@ -34,7 +34,7 @@ import Database from 'better-sqlite3';
 import * as pilotStore from '../services/pilotStore.js';
 import * as evaluationStore from '../services/evaluationStore.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
-import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,7 +77,7 @@ Output: a run ID. Then run:
 
 // ─── Idempotency ──────────────────────────────────────────────────────────
 
-const dbPath = process.env.EVAL_DB_PATH || path.join(ROOT_DIR, 'data', 'evaluations.db');
+const dbPath = resolveEvaluationDbPath(ROOT_DIR);
 const db = new Database(dbPath, { readonly: false });
 db.pragma('journal_mode = WAL');
 

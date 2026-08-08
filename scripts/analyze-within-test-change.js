@@ -33,7 +33,7 @@ import Database from 'better-sqlite3';
 import { runThreeWayANOVA } from '../services/anovaStats.js';
 import { calculateLearnerOverallScore } from '../services/learnerRubricEvaluator.js';
 import { calculateOverallScore } from '../services/rubricEvaluator.js';
-import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
+import { resolveEvaluationDbPath, resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import { describeMissingEvaluationDb } from '../services/evaluationDbReadonly.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -86,7 +86,7 @@ function hasFlag(name) {
 // Writer script (persists metrics by default), so it resolves the path itself
 // instead of using the readonly helper; the open still never creates the file.
 const dbPath = resolveEvaluationDbPath(ROOT_DIR, getOption('db'));
-const logsDir = getOption('logs', path.join(ROOT_DIR, 'logs', 'tutor-dialogues'));
+const logsDir = getOption('logs', resolveTutorDialoguesDir(ROOT_DIR));
 const jsonOutPath = getOption('json');
 const metricVersion = getOption('metric-version', 'within-test-v2-aligned-proxy');
 

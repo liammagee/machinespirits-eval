@@ -33,6 +33,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import * as evaluationStore from '../services/evaluationStore.js';
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import {
   buildTutorCharismaEvaluationPrompt,
   calculateTutorCharismaScore,
@@ -47,7 +48,7 @@ const EVAL_ROOT = path.resolve(__dirname, '..');
 // Dialogue logs land in logs/tutor-dialogues/<dialogueId>.json — see
 // dialogueLogService.js. Earlier code paths used logs/transcripts/ which
 // holds processed transcript exports rather than raw turn-by-turn logs.
-const LOGS_DIR = path.join(EVAL_ROOT, 'logs', 'tutor-dialogues');
+const LOGS_DIR = resolveTutorDialoguesDir(EVAL_ROOT);
 
 function parseArgs(argv) {
   const args = argv.slice(2);

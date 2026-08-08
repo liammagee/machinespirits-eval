@@ -28,12 +28,13 @@ import yaml from 'yaml';
 import { jsonrepair } from 'jsonrepair';
 import { detectCliVersion, modelProvenance } from './lib/cliProvenance.js';
 import { callAIWithCliBridge } from '../services/cliProviderBridge.js';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { callExternalModelCliText } from '../services/modelCliProcessPolicy.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const DEFAULT_DB_PATH = process.env.EVAL_DB_PATH || path.join(ROOT_DIR, 'data', 'evaluations.db');
+const DEFAULT_DB_PATH = resolveEvaluationDbPath(ROOT_DIR);
 const DEFAULT_TIMEOUT_MS = 360_000;
 const DEFAULT_AGY_TIMEOUT_MS = 600_000;
 const DEFAULT_CODEX_EFFORT = process.env.CODEX_REASONING_EFFORT || 'xhigh';

@@ -18,13 +18,14 @@ import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 
 const MANIFEST_PATH = join(ROOT, 'config', 'paper-manifest.json');
-const DB_PATH = join(ROOT, 'data', 'evaluations.db');
+const DB_PATH = resolveEvaluationDbPath(ROOT);
 const PAPER_PATH = join(ROOT, 'docs', 'research', 'paper-full.md');
 
 const doGenerate = process.argv.includes('--generate');

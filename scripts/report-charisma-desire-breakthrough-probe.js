@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import yaml from 'yaml';
 
+import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
 import { routeEngagementMode } from '../services/engagementModeRouter.js';
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
 import { openEvaluationDbReadonly } from '../services/evaluationDbReadonly.js';
@@ -15,7 +16,7 @@ const ROOT = path.resolve(__dirname, '..');
 
 const SCENARIO_PATH = path.join(ROOT, 'config', 'charisma-recognition-desire-scenarios.yaml');
 const LEARNER_AGENTS_PATH = path.join(ROOT, 'config', 'learner-agents.yaml');
-const LOGS_DIR = path.join(ROOT, 'logs', 'tutor-dialogues');
+const LOGS_DIR = resolveTutorDialoguesDir(ROOT);
 const REPORT_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-probe-summary.md');
 const JSON_PATH = path.join(ROOT, 'exports', 'charisma-desire-breakthrough-probe.json');
 

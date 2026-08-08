@@ -15,6 +15,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 import { parseEpochArg, getEpochFilter, printEpochBanner } from '../services/epochFilter.js';
 
 // Statistical helpers
@@ -72,7 +73,7 @@ async function main() {
   console.log('='.repeat(70));
   console.log('');
 
-  const dbPath = path.join(process.cwd(), 'data', 'evaluations.db');
+  const dbPath = resolveEvaluationDbPath(process.cwd());
   if (!fs.existsSync(dbPath)) {
     console.error('Database not found:', dbPath);
     process.exit(1);

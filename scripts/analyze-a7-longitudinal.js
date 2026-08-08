@@ -39,13 +39,14 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
+import { resolveEvaluationDbPath } from '../services/evaluationDataPaths.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..');
 
 // ─── DBs ─────────────────────────────────────────────────────────────────
-const evalDbPath = process.env.EVAL_DB_PATH || path.join(REPO_ROOT, 'data', 'evaluations.db');
+const evalDbPath = resolveEvaluationDbPath(REPO_ROOT);
 const tutorDbPath =
   process.env.AUTH_DB_PATH ||
   path.join(REPO_ROOT, 'node_modules', '@machinespirits', 'tutor-core', 'data', 'lms.sqlite');
