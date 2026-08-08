@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-08T00:35:41.409Z",
+  "generated": "2026-08-08T04:21:23.383Z",
   "counts": {
-    "total": 458,
+    "total": 459,
     "byStatus": {
-      "done": 418,
+      "done": 419,
       "blocked": 6,
       "dropped": 8,
       "active": 4,
@@ -13,7 +13,7 @@
     },
     "byType": {
       "research": 74,
-      "experiment": 76,
+      "experiment": 77,
       "infra": 95,
       "maintenance": 192,
       "content": 3,
@@ -12219,6 +12219,31 @@
         ],
         "items": [
           "reply-feature-stamps"
+        ]
+      }
+    },
+    {
+      "id": "figure-transfer-second-world",
+      "title": "Figure transfer: does the move reader hold in a second world?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "PASS on the registered primary. A profile fitted on 24 move turns from world_030_rowan_flat reads 14 of 34 move turns from world_031_tideway_makerspace, 41.2% against a 20% bar, one-sided exact binomial p = 0.0039; 400 label shuffles average 19.8% and none reach 41.2%. Secondaries: top-two 19/34 = 55.9% vs 40%, p = 0.044; shipped-text arm a registered NULL at 5/24 = 20.8% vs 25%, p = 0.75. Train and test share no reply text (checked, 0). Per-move recall shifts but does not separate at 6-7 turns per move (largest Fisher p = 0.27), so it is reported untested. Post-hoc, pooled over both worlds: demand is misread as the conditional stake on 9 of its 12 wrong guesses against 3 expected, p = 0.0004 — an instrument observation, not a world one. Artifacts exports/crossed-effects/figure-holdout-transfer-{draft,shipped}.json.",
+      "claim_status": "scope-bound",
+      "links": {
+        "notes": [
+          "notes/2026-08-06-pedagogical-figure-ontology.md"
+        ],
+        "paper": [
+          "docs/research/paper-full-2.0.md#714-the-ontologys-own-falsifier-pedagogical-figures-do-not-separate-on-the-features-the-harness-logs"
+        ],
+        "items": [
+          "reply-feature-stamps",
+          "figure-lattice-falsifier"
         ]
       }
     },
