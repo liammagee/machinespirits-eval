@@ -1,7 +1,7 @@
 ---
 id: refactor-operational-ingest-seed-store-ownership
 title: Give pilot ingestion and seed data explicit evaluation-store ownership
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -19,6 +19,8 @@ claim_status: planned
 depends_on:
   - refactor-operational-run-store-ownership
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/583
   notes:
     - docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md
   code:
@@ -93,3 +95,6 @@ Log:
   authorized rerun. No model call or production data write occurred; direct
   facade ownership is now three live/package consumers including two
   operational scripts.
+- 2026-08-08 — PR #583 merged as `14b47be2`; the generated workplan views were
+  refreshed on `main` at `8742fdd3`. All declared verification was green, so
+  this ownership slice is done.
