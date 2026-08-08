@@ -45,6 +45,7 @@ test('default hermetic run selects root and in-housed core suites', () => {
     quiet: false,
     shard: null,
     reportDir: null,
+    testConcurrency: null,
     forwarded: [],
   });
   const projectRoot = path.resolve('.');
@@ -76,6 +77,7 @@ test('explicit historical test paths remain scoped to the root suite', () => {
     quiet: false,
     shard: null,
     reportDir: null,
+    testConcurrency: null,
     forwarded: ['tests/workplan.test.js'],
   });
 });
@@ -88,6 +90,7 @@ test('suite and force-exit controls are parsed without leaking into child args',
     quiet: false,
     shard: null,
     reportDir: null,
+    testConcurrency: null,
     forwarded: [],
   });
   // The forced exit is now opt-in, and the flag that used to disable it stays
@@ -107,11 +110,36 @@ test('an explicit report directory is retained by the parent instead of forwarde
     quiet: true,
     shard: null,
     reportDir: '.test-tmp/hermetic-profile',
+    testConcurrency: null,
     forwarded: [],
   });
   assert.equal(parseRunnerArgs(['--report-dir=.test-tmp/other-profile']).reportDir, '.test-tmp/other-profile');
   assert.throws(() => parseRunnerArgs(['--report-dir']), /requires a path/u);
   assert.throws(() => parseRunnerArgs(['--report-dir=']), /requires a path/u);
+});
+
+test('bounded root concurrency is parsed and passed to Node without replacing explicit test selection', () => {
+  const options = parseRunnerArgs(['--suite', 'root', '--test-concurrency=8', 'tests/workplan.test.js']);
+  assert.equal(options.testConcurrency, 8);
+  assert.deepEqual(options.forwarded, ['tests/workplan.test.js']);
+
+  const phase = buildTestPhases(options, path.resolve('.'), '/tmp/hermetic-reports')[0];
+  assert.deepEqual(phase.selectedFiles, ['tests/workplan.test.js']);
+  assert.ok(phase.args.includes('--test-concurrency=8'));
+  assert.equal(phase.args.at(-1), 'tests/workplan.test.js');
+
+  const fullPhase = buildTestPhases(
+    parseRunnerArgs(['--suite', 'root', '--test-concurrency=8']),
+    path.resolve('.'),
+    '/tmp/hermetic-reports',
+  )[0];
+  assert.deepEqual(fullPhase.selectedFiles, discoverRootTestFiles());
+  assert.deepEqual(fullPhase.args.slice(-fullPhase.selectedFiles.length), fullPhase.selectedFiles);
+
+  assert.equal(parseRunnerArgs(['--test-concurrency', '4']).testConcurrency, 4);
+  assert.throws(() => parseRunnerArgs(['--test-concurrency=0']), /Invalid test concurrency/u);
+  assert.throws(() => parseRunnerArgs(['--test-concurrency=1.5']), /Invalid test concurrency/u);
+  assert.throws(() => parseRunnerArgs(['--suite', 'core', '--test-concurrency=8']), /only for the root suite/u);
 });
 
 test('root sharding is deterministic, exhaustive, and isolated from forwarded runner arguments', () => {
@@ -145,6 +173,7 @@ test('root sharding is deterministic, exhaustive, and isolated from forwarded ru
     quiet: true,
     shard: { index: 1, total: 2 },
     reportDir: null,
+    testConcurrency: null,
     forwarded: [],
   });
   const phase = buildTestPhases(options, path.resolve('.'), '/tmp/hermetic-reports')[0];

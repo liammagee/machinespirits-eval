@@ -74,6 +74,18 @@ root and are still removed after the run. Node 22 records file wall time plus
 aggregate test duration; Node 20 labels its aggregate-duration fallback because
 that runtime does not emit a file-scoped completion summary.
 
+To calibrate this machine's root-test worker count without weakening hermetic
+selection or file accounting, add a bounded Node concurrency value:
+
+```bash
+npm run test:root -- --quiet --test-concurrency=8 \
+  --report-dir .test-tmp/hermetic-profile-c8
+```
+
+This control applies only to the root Node phase. The routine default should be
+changed only from repeated same-checkout profiles; subprocess- and PTY-heavy
+tests can make the machine's logical-CPU count an inefficient worker count.
+
 To reproduce the PR-body link locally, save the final body and add:
 
 ```bash
