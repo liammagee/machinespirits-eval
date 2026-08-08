@@ -1,16 +1,22 @@
 ---
 id: figure-transfer-second-world
 title: 'Figure transfer: does the move reader hold in a second world?'
-status: active
+status: done
 type: experiment
 priority: P2
 owner: claude
 source: manual
 created: 2026-08-08
 updated: 2026-08-08
-verification: 'REGISTERED, NOT YET RUN. This block is written before the
-  test corpus exists and is the thing the result gets checked against.
-  Filled in after the read.'
+verification: 'PASS on the registered primary. A profile fitted on 24 move
+  turns from world_030_rowan_flat reads 14 of 34 move turns from
+  world_031_tideway_makerspace, 41.2% against a 20% bar, one-sided exact
+  binomial p = 0.0039; 400 label shuffles average 19.8% and none reach
+  41.2%. Secondaries: top-two 19/34 = 55.9% vs 40%, p = 0.044; shipped-text
+  arm a registered NULL at 5/24 = 20.8% vs 25%, p = 0.75. Train and test
+  share no reply text (checked, 0). Per-move recall does NOT carry over:
+  grievance rises from 3/7 to 6/7, demand falls from 2/7 to 0/7. Artifacts
+  exports/crossed-effects/figure-holdout-transfer-{draft,shipped}.json.'
 claim_status: scope-bound
 links:
   notes:
@@ -120,6 +126,47 @@ Registration first, then the corpus, then one read.
 3. `node scripts/analyze-figure-holdout.js --test
    exports/tutor-stub-outcome/figure-transfer-tideway --label transfer`
    Training corpus is the default, which is the same 24 turns. Read once.
+
+## Result, read once on 2026-08-08
+
+**Primary: PASS.** 14 of 34 = 41.2% first guess right, against the 1-in-5
+bar. One-sided exact binomial p = 0.0039. The profile carried 22 of its
+features into the new world.
+
+**Secondaries, as registered.**
+
+- Top two: 19 of 34 = 55.9% against 40%, p = 0.044. Weaker than world
+  030's 73.5%.
+- Label shuffle inside the test corpus: 400 draws average 19.8%, best
+  38.2%, and none reach 41.2%.
+- Shipped text: 5 of 24 = 20.8% against 25%, p = 0.75. A null, and
+  handicapped the same way it was last time — the exact-source guard left
+  the training profile with no grievance class while three grievance
+  turns sit in the test set.
+- Per move: grievance 6/7, stake 3/6, settled claim 3/7, mockery 2/7,
+  demand 0/7.
+
+**The identical total is a coincidence, checked.** World 030's held-out
+read was also 14 of 34. Two things say this is a different corpus rather
+than a rerun of the old one: the reader was pointed at
+`exports/tutor-stub-outcome/figure-transfer-tideway`, and it found zero
+shared reply text between training and test, and between this test set and
+the first one. The n of 34 is the design — 35 forced cards minus the one
+turn per corpus whose dialogue did not complete.
+
+**What transfers is the total, not the composition.** World 030 read
+settled claim best (4/6) and mockery worst (1/7). Tideway reads grievance
+best (6/7) and demand not at all (0/7). So the reader is picking up
+something that survives a change of vocabulary, but which of the five
+tactics it can name changes with the world. That is a limit on the result,
+not a challenge to it, and it is worth saying in the paper alongside the
+number.
+
+**What this licenses.** §7.14's scope line loosens from one world to two.
+The weak reading of the figure claim — that a card-blind reader recovers
+the ordered move above chance from the reply alone — survives a change of
+world. It still says nothing about the strong reading, which failed 0 of
+7, and nothing about the two quiet cards, which remain untested.
 
 ## Runtime, checked before the run
 
