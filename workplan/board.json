@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-08T06:06:57.552Z",
+  "generated": "2026-08-08T07:05:23.291Z",
   "counts": {
     "total": 460,
     "byStatus": {
-      "done": 420,
+      "done": 429,
       "blocked": 6,
       "dropped": 8,
-      "active": 4,
+      "active": 3,
       "archived": 4,
       "triaged": 9,
-      "review": 9
+      "review": 1
     },
     "byType": {
       "research": 74,
@@ -397,36 +397,6 @@
       "milestone": "evaluation-infrastructure"
     },
     {
-      "id": "guard-regime-fallback-census-at-scale",
-      "title": "At scale the guard regime ships canned text on most turns",
-      "status": "active",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "verification": "DONE (2026-08-07, scripts/census-guard-template-rate.js): reads guard accounting out of any run's traces and reports, per condition, turns, fallback rate, model-as-written rate, pass rate by candidate kind and the finding count by guard family, stamped with the counter used and the guard policy the run ran under. Reproduces every number recorded below on fallible-phaseB, and corrects the family table — see the log.",
-      "claim_status": "methods",
-      "links": {
-        "code": [
-          "services/tutorStubGuardDisposition.js",
-          "services/tutorStubFirstDraftOuterLoop.js",
-          "services/tutorStubTurnProgressionContract.js",
-          "docs/tutor-stub-guard-catalog.md"
-        ],
-        "items": [
-          "guard-ladder-ships-canned-text-on-most-turns",
-          "tutor-fallible-learner-closure-prereg",
-          "tutor-stub-correspondence-guard-vocabulary"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
-    {
       "id": "harness-untangling-contract-split",
       "title": "Untangling 2: split the standing text into a safety contract and a teaching charter",
       "status": "active",
@@ -677,280 +647,6 @@
       "milestone": "paper-2-0"
     },
     {
-      "id": "guard-policy-default-flip",
-      "title": "Make the shadow-advisory guard column the default delivery policy",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-07",
-      "verification": "DONE 2026-08-07. The live default is shadow_advisory with strict as the opt-in (pipeline plus CLI, pinned at the source by test); evidence-safety, clue-bookkeeping and closure findings still veto, pinned exhaustively in services/__tests__/tutorStubGuardDisposition.test.js; and one fixture runs under both policies in tests/tutorStubGuardAccounting.test.js, delivering a fixed template under strict and the model's own draft under the default with the same findings recorded either way. The catalog bump and the advance-window change were deliberately not done — reasons on the card.",
-      "claim_status": "settled",
-      "links": {
-        "code": [
-          "services/tutorStubGuardDisposition.js",
-          "services/tutorStubTutorTurnPipeline.js",
-          "docs/tutor-stub-guard-catalog.md"
-        ],
-        "items": [
-          "guard-validity-study",
-          "guard-regime-fallback-census-at-scale",
-          "guard-delivery-prefer-model-over-canned"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
-    {
-      "id": "guard-validity-study",
-      "title": "Test whether the guards' vetoes pick the better turn",
-      "status": "review",
-      "type": "research",
-      "priority": "P1",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-07",
-      "verification": "For a sample of vetoed drafts, a blind pairwise comparison between the vetoed draft and what actually shipped, scored by a judge that never sees which is which or why either was chosen. Reported per guard family: how often the vetoed draft was preferred. A family preferred above chance is a family whose veto is costing more than it saves.",
-      "claim_status": "scope-bound",
-      "links": {
-        "code": [
-          "services/tutorStubGuardDisposition.js",
-          "docs/tutor-stub-guard-catalog.md"
-        ],
-        "items": [
-          "guard-regime-fallback-census-at-scale",
-          "guard-delivery-prefer-model-over-canned"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
-    {
-      "id": "local-ci-pr-creation-gate",
-      "title": "Gate repository PR creation with adaptive local CI",
-      "status": "review",
-      "type": "infra",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-07",
-      "updated": "2026-08-07",
-      "branch": "codex/local-ci-pr-create",
-      "verification": "A repository PR command validates clean committed state and the final workplan-linked body, passes quick local CI before any push/PR write, detects hosted checks without duplicating the full suite, falls back to full local CI when checks do not appear, and is covered by zero-network orchestration tests.",
-      "depends_on": [
-        "local-ci-parity-runner"
-      ],
-      "links": {
-        "items": [
-          "local-ci-parity-runner"
-        ],
-        "prs": [
-          538
-        ]
-      },
-      "tags": [
-        "ci",
-        "developer-experience",
-        "github",
-        "reliability"
-      ]
-    },
-    {
-      "id": "refactor-eval-cli-generation-commands",
-      "title": "Extract eval-cli generation, chat, and rejudge commands",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "branch": "codex/refactor-eval-cli-generation-commands",
-      "verification": "The eval-cli facade dispatches quick/test, run, chat, and rejudge through bounded command owners while generation selection, model guards, adaptive budgets, live reporting, chat tools, rubric overrides, judge provenance, arguments, stdout/stderr, and exit codes remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-eval-cli-operational-commands"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
-        ],
-        "code": [
-          "scripts/eval-cli.js",
-          "scripts/eval-cli/commands/generationIndex.js",
-          "scripts/eval-cli/commands/quickCommand.js",
-          "scripts/eval-cli/commands/runCommand.js",
-          "scripts/eval-cli/commands/chatCommand.js",
-          "scripts/eval-cli/commands/chatTools.js",
-          "scripts/eval-cli/commands/rejudgeCommand.js",
-          "tests/eval-cli-smoke.test.js",
-          "tests/dryRun.test.js",
-          "tests/evalCliGenerationCommands.test.js"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-eval-cli-operational-commands"
-        ],
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/515"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "evaluation",
-        "cli",
-        "generation",
-        "rejudge",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "refactor-eval-cli-operational-commands",
-      "title": "Extract eval-cli operational command modules",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-05",
-      "updated": "2026-08-05",
-      "branch": "codex/refactor-eval-cli-operational-commands",
-      "verification": "The eval-cli facade dispatches read, monitoring, lifecycle, resume, export, configuration-validation, and play commands through bounded modules while their arguments, stdout/stderr, exit codes, long-running cleanup, data selection, and side effects remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-evaluation-resume-rejudge-runtime"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
-        ],
-        "code": [
-          "scripts/eval-cli.js",
-          "scripts/eval-cli/commands/index.js",
-          "scripts/eval-cli/runProgressPresentation.js",
-          "scripts/eval-cli/runsPresentation.js",
-          "scripts/eval-cli/tracePresentation.js",
-          "tests/eval-cli-smoke.test.js",
-          "tests/evalCliOperationalCommands.test.js",
-          "tests/dryRun.test.js"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-evaluation-resume-rejudge-runtime"
-        ],
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/514"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "evaluation",
-        "cli",
-        "command-dispatch",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "refactor-eval-cli-scoring-commands",
-      "title": "Extract the eval-cli scoring command family",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-06",
-      "updated": "2026-08-06",
-      "branch": "codex/refactor-eval-cli-scoring-commands",
-      "verification": "The eval-cli executable is a bounded dispatcher with no scoring logic; evaluate, backfill-first-turn, evaluate-learner, and evaluate-dialogue use explicit bounded owners while tutor/learner symmetry, score shapes, judge and rubric provenance, selection, follow mode, output, errors, and storage writes remain unchanged under exact process parity, focused and zero-skip hermetic, coverage-risk, lint, format, manifest, workplan, and zero-cycle gates plus symmetry review.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-eval-cli-generation-commands"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
-        ],
-        "code": [
-          "scripts/eval-cli.js",
-          "scripts/eval-cli/commands/",
-          "scripts/eval-cli/scoringCommandDependencies.js",
-          "tests/eval-cli-smoke.test.js",
-          "tests/evalCliScoringCommands.test.js",
-          "tests/evaluationScoring.test.js"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-eval-cli-generation-commands"
-        ],
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/517"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "evaluation",
-        "cli",
-        "scoring",
-        "symmetry",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "refactor-longitudinal-report-store-ownership",
-      "title": "Give longitudinal live reports explicit evaluation-store ownership",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "branch": "codex/refactor-longitudinal-store-ownership",
-      "verification": "Lifecycle unit tests, missing-database CLI checks, boundary inventory, longitudinal checker regressions, hermetic root and tutor-core suites, risk coverage, source, lint, formatting, and cycle gates prove A2-A5 close owned stores without changing their scoring or report contracts.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-operational-log-reader-injection"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
-        ],
-        "code": [
-          "services/evaluationStore/scriptContext.js",
-          "scripts/report-longitudinal-drift-stage-a2-live.js",
-          "scripts/report-longitudinal-drift-stage-a3-live.js",
-          "scripts/report-longitudinal-drift-stage-a4-live.js",
-          "scripts/report-longitudinal-drift-stage-a5-live.js"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-operational-log-reader-injection"
-        ],
-        "prs": [
-          "https://github.com/liammagee/machinespirits-eval/pull/571"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "evaluation",
-        "operational-scripts",
-        "dependency-injection",
-        "lifecycle",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
       "title": "Calibrate rubric v3.0 and run held-out acceptance",
       "status": "review",
@@ -990,36 +686,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "scripts-hardcoded-data-path-guard",
-      "title": "A test that fails when a script builds its own database or logs path",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "branch": "codex/scripts-hardcoded-data-path-guard",
-      "verification": "A new script that writes `path.join(root, 'data', 'evaluations.db')` or `path.join(root, 'logs', 'tutor-dialogues')` fails `npm test`, and the failure message names the resolver to call instead.",
-      "claim_status": "methods",
-      "links": {
-        "code": [
-          "scripts/check-evaluation-data-paths.js",
-          "config/evaluation-data-path-allowlist.json",
-          "tests/evaluationDataPathGuard.test.js"
-        ],
-        "items": [
-          "eval-db-writer-reader-path-split",
-          "eval-logs-root-single-resolver"
-        ]
-      },
-      "tags": [
-        "infra",
-        "data-integrity",
-        "guardrail"
-      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -2018,6 +1684,92 @@
       "milestone": "paper-2-evidence-cleanup"
     },
     {
+      "id": "guard-policy-default-flip",
+      "title": "Make the shadow-advisory guard column the default delivery policy",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-08",
+      "verification": "DONE 2026-08-07. The live default is shadow_advisory with strict as the opt-in (pipeline plus CLI, pinned at the source by test); evidence-safety, clue-bookkeeping and closure findings still veto, pinned exhaustively in services/__tests__/tutorStubGuardDisposition.test.js; and one fixture runs under both policies in tests/tutorStubGuardAccounting.test.js, delivering a fixed template under strict and the model's own draft under the default with the same findings recorded either way. The catalog bump and the advance-window change were deliberately not done — reasons on the card.",
+      "claim_status": "settled",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubTutorTurnPipeline.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-validity-study",
+          "guard-regime-fallback-census-at-scale",
+          "guard-delivery-prefer-model-over-canned"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
+      "id": "guard-regime-fallback-census-at-scale",
+      "title": "At scale the guard regime ships canned text on most turns",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-08",
+      "verification": "DONE (2026-08-07, scripts/census-guard-template-rate.js): reads guard accounting out of any run's traces and reports, per condition, turns, fallback rate, model-as-written rate, pass rate by candidate kind and the finding count by guard family, stamped with the counter used and the guard policy the run ran under. Reproduces every number recorded below on fallible-phaseB, and corrects the family table — see the log.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js",
+          "services/tutorStubFirstDraftOuterLoop.js",
+          "services/tutorStubTurnProgressionContract.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-ladder-ships-canned-text-on-most-turns",
+          "tutor-fallible-learner-closure-prereg",
+          "tutor-stub-correspondence-guard-vocabulary"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
+      "id": "guard-validity-study",
+      "title": "Test whether the guards' vetoes pick the better turn",
+      "status": "done",
+      "type": "research",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-08",
+      "verification": "For a sample of vetoed drafts, a blind pairwise comparison between the vetoed draft and what actually shipped, scored by a judge that never sees which is which or why either was chosen. Reported per guard family: how often the vetoed draft was preferred. A family preferred above chance is a family whose veto is costing more than it saves.",
+      "claim_status": "scope-bound",
+      "links": {
+        "code": [
+          "services/tutorStubGuardDisposition.js",
+          "docs/tutor-stub-guard-catalog.md"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-delivery-prefer-model-over-canned"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ]
+    },
+    {
       "id": "harden-cli-provider-process-isolation",
       "title": "Isolate CLI model providers from secrets and fail closed on tool use",
       "status": "done",
@@ -2325,6 +2077,37 @@
       "tags": [
         "ci",
         "developer-experience",
+        "reliability"
+      ]
+    },
+    {
+      "id": "local-ci-pr-creation-gate",
+      "title": "Gate repository PR creation with adaptive local CI",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-07",
+      "updated": "2026-08-08",
+      "branch": "codex/local-ci-pr-create",
+      "verification": "A repository PR command validates clean committed state and the final workplan-linked body, passes quick local CI before any push/PR write, detects hosted checks without duplicating the full suite, falls back to full local CI when checks do not appear, and is covered by zero-network orchestration tests.",
+      "depends_on": [
+        "local-ci-parity-runner"
+      ],
+      "links": {
+        "items": [
+          "local-ci-parity-runner"
+        ],
+        "prs": [
+          538,
+          540
+        ]
+      },
+      "tags": [
+        "ci",
+        "developer-experience",
+        "github",
         "reliability"
       ]
     },
@@ -2802,6 +2585,149 @@
         "dialogue-logs",
         "hermetic",
         "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-eval-cli-generation-commands",
+      "title": "Extract eval-cli generation, chat, and rejudge commands",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-08",
+      "branch": "codex/refactor-eval-cli-generation-commands",
+      "verification": "The eval-cli facade dispatches quick/test, run, chat, and rejudge through bounded command owners while generation selection, model guards, adaptive budgets, live reporting, chat tools, rubric overrides, judge provenance, arguments, stdout/stderr, and exit codes remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-eval-cli-operational-commands"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/eval-cli.js",
+          "scripts/eval-cli/commands/generationIndex.js",
+          "scripts/eval-cli/commands/quickCommand.js",
+          "scripts/eval-cli/commands/runCommand.js",
+          "scripts/eval-cli/commands/chatCommand.js",
+          "scripts/eval-cli/commands/chatTools.js",
+          "scripts/eval-cli/commands/rejudgeCommand.js",
+          "tests/eval-cli-smoke.test.js",
+          "tests/dryRun.test.js",
+          "tests/evalCliGenerationCommands.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-eval-cli-operational-commands"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/515"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "cli",
+        "generation",
+        "rejudge",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-eval-cli-operational-commands",
+      "title": "Extract eval-cli operational command modules",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-05",
+      "updated": "2026-08-08",
+      "branch": "codex/refactor-eval-cli-operational-commands",
+      "verification": "The eval-cli facade dispatches read, monitoring, lifecycle, resume, export, configuration-validation, and play commands through bounded modules while their arguments, stdout/stderr, exit codes, long-running cleanup, data selection, and side effects remain unchanged; focused, zero-skip hermetic, lint, format, manifest, workplan, coverage-risk, and zero-cycle gates pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-resume-rejudge-runtime"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/eval-cli.js",
+          "scripts/eval-cli/commands/index.js",
+          "scripts/eval-cli/runProgressPresentation.js",
+          "scripts/eval-cli/runsPresentation.js",
+          "scripts/eval-cli/tracePresentation.js",
+          "tests/eval-cli-smoke.test.js",
+          "tests/evalCliOperationalCommands.test.js",
+          "tests/dryRun.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-resume-rejudge-runtime"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/514"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "cli",
+        "command-dispatch",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-eval-cli-scoring-commands",
+      "title": "Extract the eval-cli scoring command family",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-06",
+      "updated": "2026-08-08",
+      "branch": "codex/refactor-eval-cli-scoring-commands",
+      "verification": "The eval-cli executable is a bounded dispatcher with no scoring logic; evaluate, backfill-first-turn, evaluate-learner, and evaluate-dialogue use explicit bounded owners while tutor/learner symmetry, score shapes, judge and rubric provenance, selection, follow mode, output, errors, and storage writes remain unchanged under exact process parity, focused and zero-skip hermetic, coverage-risk, lint, format, manifest, workplan, and zero-cycle gates plus symmetry review.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-eval-cli-generation-commands"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md"
+        ],
+        "code": [
+          "scripts/eval-cli.js",
+          "scripts/eval-cli/commands/",
+          "scripts/eval-cli/scoringCommandDependencies.js",
+          "tests/eval-cli-smoke.test.js",
+          "tests/evalCliScoringCommands.test.js",
+          "tests/evaluationScoring.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-eval-cli-generation-commands"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/517"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "cli",
+        "scoring",
+        "symmetry",
+        "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -3641,6 +3567,51 @@
         "routes",
         "dialogue-logs",
         "hermetic"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-longitudinal-report-store-ownership",
+      "title": "Give longitudinal live reports explicit evaluation-store ownership",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/refactor-longitudinal-store-ownership",
+      "verification": "Lifecycle unit tests, missing-database CLI checks, boundary inventory, longitudinal checker regressions, hermetic root and tutor-core suites, risk coverage, source, lint, formatting, and cycle gates prove A2-A5 close owned stores without changing their scoring or report contracts.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-operational-log-reader-injection"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md"
+        ],
+        "code": [
+          "services/evaluationStore/scriptContext.js",
+          "scripts/report-longitudinal-drift-stage-a2-live.js",
+          "scripts/report-longitudinal-drift-stage-a3-live.js",
+          "scripts/report-longitudinal-drift-stage-a4-live.js",
+          "scripts/report-longitudinal-drift-stage-a5-live.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-operational-log-reader-injection"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/571"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "operational-scripts",
+        "dependency-injection",
+        "lifecycle",
+        "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -13685,6 +13656,39 @@
         "authoring"
       ],
       "branch": "codex/scenario-presentation-variety"
+    },
+    {
+      "id": "scripts-hardcoded-data-path-guard",
+      "title": "A test that fails when a script builds its own database or logs path",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "codex/scripts-hardcoded-data-path-guard",
+      "verification": "A new script that writes `path.join(root, 'data', 'evaluations.db')` or `path.join(root, 'logs', 'tutor-dialogues')` fails `npm test`, and the failure message names the resolver to call instead.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "scripts/check-evaluation-data-paths.js",
+          "config/evaluation-data-path-allowlist.json",
+          "tests/evaluationDataPathGuard.test.js"
+        ],
+        "prs": [
+          572
+        ],
+        "items": [
+          "eval-db-writer-reader-path-split",
+          "eval-logs-root-single-resolver"
+        ]
+      },
+      "tags": [
+        "infra",
+        "data-integrity",
+        "guardrail"
+      ]
     },
     {
       "id": "sepo-self-evolving-prompt-agent-for-system-prompt-optimizati",
