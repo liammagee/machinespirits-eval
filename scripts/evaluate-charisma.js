@@ -32,8 +32,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import * as evaluationStore from '../services/evaluationStore.js';
 import { resolveTutorDialoguesDir } from '../services/evaluationDataPaths.js';
+import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
 import {
   buildTutorCharismaEvaluationPrompt,
   calculateTutorCharismaScore,
@@ -51,14 +51,13 @@ const EVAL_ROOT = path.resolve(__dirname, '..');
 const LOGS_DIR = resolveTutorDialoguesDir(EVAL_ROOT);
 
 function parseArgs(argv) {
-  const args = argv.slice(2);
   const positional = [];
   const flags = {};
-  for (let i = 0; i < args.length; i++) {
-    const a = args[i];
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      const next = args[i + 1];
+      const next = argv[i + 1];
       if (next === undefined || next.startsWith('--')) {
         flags[key] = true;
       } else {
@@ -110,7 +109,7 @@ function extractTutorLastMessageAndExcerpt(dialogueLog) {
   return { tutorMessage: lastTutorMessage, dialogueExcerpt };
 }
 
-async function scoreRow(row, { judgeOverride, verbose }) {
+async function scoreRow(evaluationStore, row, { judgeOverride, verbose }) {
   const dialogueLog = loadDialogueLog(row.dialogueId);
   const { tutorMessage, dialogueExcerpt } = extractTutorLastMessageAndExcerpt(dialogueLog);
   if (!tutorMessage) {
@@ -169,14 +168,17 @@ async function scoreRow(row, { judgeOverride, verbose }) {
   return { ok: true, overall };
 }
 
-async function main() {
-  const { positional, flags } = parseArgs(process.argv);
+export async function main(
+  args = process.argv.slice(2),
+  { evaluationStore = null, env = process.env, rootDir = EVAL_ROOT } = {},
+) {
+  const { positional, flags } = parseArgs(args);
   const runId = positional[0];
   if (!runId) {
     console.error(
       'Usage: evaluate-charisma.js <runId> [--judge <model>] [--force] [--scenario <id>] [--profile <name>] [--limit <n>] [--verbose]',
     );
-    process.exit(1);
+    return 1;
   }
 
   const judgeOverride = typeof flags.judge === 'string' ? flags.judge : null;
@@ -189,77 +191,90 @@ async function main() {
   const rubric = loadTutorCharismaRubric();
   if (!rubric) {
     console.error('config/evaluation-rubric-charisma.yaml not found or unparseable.');
-    process.exit(1);
+    return 1;
   }
   console.log(
     `Charisma rubric loaded: ${rubric.name} (v${rubric.version}, ${Object.keys(rubric.dimensions).length} dimensions)`,
   );
 
-  const all = evaluationStore.getResults(runId, {});
-  if (all.length === 0) {
-    console.error(`No results for run: ${runId}`);
-    process.exit(1);
-  }
-
-  let toScore = all.filter(
-    (r) =>
-      r.success &&
-      ((Array.isArray(r.suggestions) && r.suggestions.length > 1) ||
-        Number(r.dialogueRounds) > 1 ||
-        (r.conversationMode === 'messages' && r.dialogueRounds > 1)),
-  );
-
-  if (scenarioFilter) toScore = toScore.filter((r) => r.scenarioId === scenarioFilter);
-  if (profileFilter) toScore = toScore.filter((r) => (r.profileName || '').includes(profileFilter));
-  if (!force) toScore = toScore.filter((r) => r.tutorCharismaOverallScore == null);
-  if (limit && Number.isFinite(limit)) toScore = toScore.slice(0, limit);
-
-  if (toScore.length === 0) {
-    console.log('Nothing to score (use --force to re-score rows that already have charisma scores).');
-    return;
-  }
-
-  console.log(`Scoring ${toScore.length} multi-turn row(s) for run ${runId}`);
-  console.log(`  Judge: ${judgeOverride || 'default (from evaluation-rubric.yaml)'}`);
-  console.log('');
-
-  let succeeded = 0;
-  let failed = 0;
-  const overallScores = [];
-
-  for (let i = 0; i < toScore.length; i++) {
-    const row = toScore[i];
-    const tag = `[${i + 1}/${toScore.length}]`;
-    const profileName = row.profileName || `${row.provider}/${row.model}`;
-    process.stdout.write(`${tag} ${row.scenarioId} / ${profileName} ... `);
-
-    const outcome = await scoreRow(row, { judgeOverride, verbose });
-    if (outcome.ok) {
-      succeeded++;
-      overallScores.push(outcome.overall);
-      console.log(`charisma=${outcome.overall.toFixed(1)}/100`);
-    } else {
-      failed++;
-      console.log(`FAIL (${outcome.reason})`);
-      if (verbose && outcome.raw) {
-        console.log(`    raw: ${outcome.raw}`);
+  return withEvaluationScriptStore(
+    async (store) => {
+      const all = store.getResults(runId, {});
+      if (all.length === 0) {
+        console.error(`No results for run: ${runId}`);
+        return 1;
       }
-    }
-  }
 
-  console.log('');
-  console.log(`Done. ${succeeded} succeeded, ${failed} failed.`);
-  if (overallScores.length > 0) {
-    const mean = overallScores.reduce((a, b) => a + b, 0) / overallScores.length;
-    const min = Math.min(...overallScores);
-    const max = Math.max(...overallScores);
-    console.log(
-      `  charisma overall — mean ${mean.toFixed(1)} (range ${min.toFixed(1)}–${max.toFixed(1)}, n=${overallScores.length})`,
-    );
-  }
+      let toScore = all.filter(
+        (r) =>
+          r.success &&
+          ((Array.isArray(r.suggestions) && r.suggestions.length > 1) ||
+            Number(r.dialogueRounds) > 1 ||
+            (r.conversationMode === 'messages' && r.dialogueRounds > 1)),
+      );
+
+      if (scenarioFilter) toScore = toScore.filter((r) => r.scenarioId === scenarioFilter);
+      if (profileFilter) toScore = toScore.filter((r) => (r.profileName || '').includes(profileFilter));
+      if (!force) toScore = toScore.filter((r) => r.tutorCharismaOverallScore == null);
+      if (limit && Number.isFinite(limit)) toScore = toScore.slice(0, limit);
+
+      if (toScore.length === 0) {
+        console.log('Nothing to score (use --force to re-score rows that already have charisma scores).');
+        return 0;
+      }
+
+      console.log(`Scoring ${toScore.length} multi-turn row(s) for run ${runId}`);
+      console.log(`  Judge: ${judgeOverride || 'default (from evaluation-rubric.yaml)'}`);
+      console.log('');
+
+      let succeeded = 0;
+      let failed = 0;
+      const overallScores = [];
+
+      for (let i = 0; i < toScore.length; i++) {
+        const row = toScore[i];
+        const tag = `[${i + 1}/${toScore.length}]`;
+        const profileName = row.profileName || `${row.provider}/${row.model}`;
+        process.stdout.write(`${tag} ${row.scenarioId} / ${profileName} ... `);
+
+        const outcome = await scoreRow(store, row, { judgeOverride, verbose });
+        if (outcome.ok) {
+          succeeded++;
+          overallScores.push(outcome.overall);
+          console.log(`charisma=${outcome.overall.toFixed(1)}/100`);
+        } else {
+          failed++;
+          console.log(`FAIL (${outcome.reason})`);
+          if (verbose && outcome.raw) {
+            console.log(`    raw: ${outcome.raw}`);
+          }
+        }
+      }
+
+      console.log('');
+      console.log(`Done. ${succeeded} succeeded, ${failed} failed.`);
+      if (overallScores.length > 0) {
+        const mean = overallScores.reduce((a, b) => a + b, 0) / overallScores.length;
+        const min = Math.min(...overallScores);
+        const max = Math.max(...overallScores);
+        console.log(
+          `  charisma overall — mean ${mean.toFixed(1)} (range ${min.toFixed(1)}–${max.toFixed(1)}, n=${overallScores.length})`,
+        );
+      }
+      return 0;
+    },
+    { rootDir, env, evaluationStore },
+  );
 }
 
-main().catch((err) => {
-  console.error('[evaluate-charisma] Fatal:', err);
-  process.exit(1);
-});
+const isMain = process.argv[1] && process.argv[1].endsWith('evaluate-charisma.js');
+if (isMain) {
+  main()
+    .then((code) => {
+      process.exitCode = code;
+    })
+    .catch((err) => {
+      console.error('[evaluate-charisma] Fatal:', err);
+      process.exitCode = 1;
+    });
+}

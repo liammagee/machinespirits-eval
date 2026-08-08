@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { resolveEvaluationLogsRootCandidates } from '../services/evaluationDataPaths.js';
-import * as evaluationStore from '../services/evaluationStore.js';
+import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
 import { getScenario } from '../services/evalConfigLoader.js';
 import {
   buildRegisterRubricEvaluationPrompt,
@@ -33,17 +33,16 @@ const ROOT = path.resolve(__dirname, '..');
 const LOG_ROOTS = resolveEvaluationLogsRootCandidates(ROOT);
 
 function parseArgs(argv) {
-  const args = argv.slice(2);
   const positional = [];
   const flags = {};
-  for (let i = 0; i < args.length; i += 1) {
-    const arg = args[i];
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
     if (!arg.startsWith('--')) {
       positional.push(arg);
       continue;
     }
     const key = arg.slice(2);
-    const next = args[i + 1];
+    const next = argv[i + 1];
     if (next === undefined || next.startsWith('--')) {
       flags[key] = true;
     } else {
@@ -186,7 +185,7 @@ function shouldScore(slice, { force }) {
   return force || !slice.alreadyScored;
 }
 
-async function scoreSlice(slice, { judgeModel = null }) {
+async function scoreSlice(evaluationStore, slice, { judgeModel = null }) {
   const rubric = loadRubricYaml(slice.rubricPath);
   if (!rubric?.dimensions) {
     return { ok: false, reason: `rubric_missing_or_invalid:${slice.rubricPath}` };
@@ -302,14 +301,17 @@ async function scoreSlice(slice, { judgeModel = null }) {
   return { ok: true, overall };
 }
 
-async function main() {
-  const { positional, flags } = parseArgs(process.argv);
+export async function main(
+  args = process.argv.slice(2),
+  { evaluationStore = null, env = process.env, rootDir = ROOT } = {},
+) {
+  const { positional, flags } = parseArgs(args);
   const runId = positional[0];
   if (!runId) {
     console.error(
       'Usage: evaluate-register-rubric.js <runId> [--register <name>] [--judge <model>] [--scenario <id>] [--profile <name>] [--limit <n>] [--force] [--check]',
     );
-    process.exit(1);
+    return 1;
   }
 
   const registerFilter = typeof flags.register === 'string' ? flags.register : null;
@@ -320,62 +322,74 @@ async function main() {
   const checkOnly = flags.check === true;
   const limit = typeof flags.limit === 'string' ? Number.parseInt(flags.limit, 10) : null;
 
-  let rows = evaluationStore.getResults(runId, {});
-  rows = rows.filter((row) => row.success);
-  if (scenarioFilter) rows = rows.filter((row) => row.scenarioId === scenarioFilter);
-  if (profileFilter) rows = rows.filter((row) => (row.profileName || '').includes(profileFilter));
+  return withEvaluationScriptStore(
+    async (store) => {
+      let rows = store.getResults(runId, {});
+      rows = rows.filter((row) => row.success);
+      if (scenarioFilter) rows = rows.filter((row) => row.scenarioId === scenarioFilter);
+      if (profileFilter) rows = rows.filter((row) => (row.profileName || '').includes(profileFilter));
 
-  let slices = rows.flatMap((row) => makeSlices(row, { registerFilter }));
-  const totalEligible = slices.length;
-  slices = slices.filter((slice) => shouldScore(slice, { force }));
-  if (limit && Number.isFinite(limit)) slices = slices.slice(0, limit);
+      let slices = rows.flatMap((row) => makeSlices(row, { registerFilter }));
+      const totalEligible = slices.length;
+      slices = slices.filter((slice) => shouldScore(slice, { force }));
+      if (limit && Number.isFinite(limit)) slices = slices.slice(0, limit);
 
-  console.log(`Rows: ${rows.length}`);
-  console.log(`Eligible register slices: ${totalEligible}`);
-  console.log(`Pending register slices: ${slices.length}`);
-  if (registerFilter) console.log(`Register filter: ${registerFilter}`);
-  if (checkOnly) {
-    const byRegister = new Map();
-    for (const slice of rows.flatMap((row) => makeSlices(row, { registerFilter }))) {
-      const current = byRegister.get(slice.registerName) || { eligible: 0, pending: 0 };
-      current.eligible += 1;
-      if (shouldScore(slice, { force })) current.pending += 1;
-      byRegister.set(slice.registerName, current);
-    }
-    for (const [register, counts] of [...byRegister.entries()].sort()) {
-      console.log(`${register}: eligible=${counts.eligible} pending=${counts.pending}`);
-    }
-    return;
-  }
+      console.log(`Rows: ${rows.length}`);
+      console.log(`Eligible register slices: ${totalEligible}`);
+      console.log(`Pending register slices: ${slices.length}`);
+      if (registerFilter) console.log(`Register filter: ${registerFilter}`);
+      if (checkOnly) {
+        const byRegister = new Map();
+        for (const slice of rows.flatMap((row) => makeSlices(row, { registerFilter }))) {
+          const current = byRegister.get(slice.registerName) || { eligible: 0, pending: 0 };
+          current.eligible += 1;
+          if (shouldScore(slice, { force })) current.pending += 1;
+          byRegister.set(slice.registerName, current);
+        }
+        for (const [register, counts] of [...byRegister.entries()].sort()) {
+          console.log(`${register}: eligible=${counts.eligible} pending=${counts.pending}`);
+        }
+        return 0;
+      }
 
-  if (!slices.length) {
-    console.log('Nothing to score.');
-    return;
-  }
+      if (!slices.length) {
+        console.log('Nothing to score.');
+        return 0;
+      }
 
-  let succeeded = 0;
-  let failed = 0;
-  for (let i = 0; i < slices.length; i += 1) {
-    const slice = slices[i];
-    process.stdout.write(
-      `[${i + 1}/${slices.length}] ${slice.runId} ${slice.profileName} ${slice.scenarioId} ${slice.registerName} ${slice.sliceKey} ... `,
-    );
-    const result = await scoreSlice(slice, { judgeModel });
-    if (result.ok) {
-      succeeded += 1;
-      console.log(result.overall.toFixed(1));
-    } else {
-      failed += 1;
-      console.log(`FAIL ${result.reason}`);
-    }
-  }
+      let succeeded = 0;
+      let failed = 0;
+      for (let i = 0; i < slices.length; i += 1) {
+        const slice = slices[i];
+        process.stdout.write(
+          `[${i + 1}/${slices.length}] ${slice.runId} ${slice.profileName} ${slice.scenarioId} ${slice.registerName} ${slice.sliceKey} ... `,
+        );
+        const result = await scoreSlice(store, slice, { judgeModel });
+        if (result.ok) {
+          succeeded += 1;
+          console.log(result.overall.toFixed(1));
+        } else {
+          failed += 1;
+          console.log(`FAIL ${result.reason}`);
+        }
+      }
 
-  console.log(`Scored: ${succeeded}`);
-  console.log(`Failed: ${failed}`);
-  if (failed) process.exitCode = 1;
+      console.log(`Scored: ${succeeded}`);
+      console.log(`Failed: ${failed}`);
+      return failed ? 1 : 0;
+    },
+    { rootDir, env, evaluationStore },
+  );
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+const isMain = process.argv[1] && process.argv[1].endsWith('evaluate-register-rubric.js');
+if (isMain) {
+  main()
+    .then((code) => {
+      process.exitCode = code;
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exitCode = 1;
+    });
+}

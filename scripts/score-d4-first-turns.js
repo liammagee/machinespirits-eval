@@ -3,9 +3,11 @@
 import 'dotenv/config';
 
 import { createHash } from 'crypto';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import * as evaluationStore from '../services/evaluationStore.js';
 import * as evalConfigLoader from '../services/evalConfigLoader.js';
+import { withEvaluationScriptStore } from '../services/evaluationStore/scriptContext.js';
 import {
   buildPerTurnTutorEvaluationPrompt,
   calculateBaseScore,
@@ -15,38 +17,11 @@ import {
 } from '../services/rubricEvaluator.js';
 import { callModelCliText } from '../services/cliProviderBridge.js';
 
-const args = process.argv.slice(2);
-const runId = args.find((arg) => !arg.startsWith('--'));
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-if (!runId) {
-  console.error('Usage: node scripts/score-d4-first-turns.js <runId> [--limit N] [--timeout-ms N] [--parallelism N]');
-  process.exit(1);
-}
-
-function option(name, fallback = null) {
+function option(args, name, fallback = null) {
   const idx = args.indexOf(`--${name}`);
   return idx >= 0 && args[idx + 1] ? args[idx + 1] : fallback;
-}
-
-const limit = Number(option('limit', 0));
-const timeoutMs = Number(option('timeout-ms', 120000));
-const parallelism = Math.max(1, Number(option('parallelism', 1)));
-const judgeModel = option('model', 'sonnet');
-const judgeModelLabel = `claude-code/${judgeModel}`;
-
-const run = evaluationStore.getRun(runId);
-if (!run) {
-  console.error(`Run not found: ${runId}`);
-  process.exit(1);
-}
-
-if (run.metadata?.scenariosFile && !process.env.EVAL_SCENARIOS_FILE) {
-  process.env.EVAL_SCENARIOS_FILE = run.metadata.scenariosFile;
-  console.error(`[d4-first-turn] Restored EVAL_SCENARIOS_FILE: ${run.metadata.scenariosFile}`);
-}
-if (run.metadata?.contentPath && !process.env.EVAL_CONTENT_PATH) {
-  process.env.EVAL_CONTENT_PATH = run.metadata.contentPath;
-  console.error(`[d4-first-turn] Restored EVAL_CONTENT_PATH: ${run.metadata.contentPath}`);
 }
 
 function firstSuggestion(result, dialogueLog) {
@@ -99,7 +74,7 @@ function normalizeScores(parsed) {
   return normalized;
 }
 
-async function callClaude(prompt) {
+async function callClaude(prompt, { judgeModel, timeoutMs }) {
   return await callModelCliText({
     provider: 'claude-code',
     model: judgeModel,
@@ -109,7 +84,7 @@ async function callClaude(prompt) {
   });
 }
 
-async function scoreResult(result, index, total) {
+async function scoreResult(evaluationStore, result, index, total, { judgeModel, judgeModelLabel, timeoutMs }) {
   const scenario = evalConfigLoader.getScenario(result.scenarioId);
   if (!scenario) throw new Error(`scenario not found: ${result.scenarioId}`);
 
@@ -137,7 +112,7 @@ async function scoreResult(result, index, total) {
   if (!prompt) throw new Error('could not build first-turn prompt');
 
   const started = Date.now();
-  const stdout = await callClaude(prompt);
+  const stdout = await callClaude(prompt, { judgeModel, timeoutMs });
   const parsed = parseJudgeResponse(stdout);
   const scores = normalizeScores(parsed);
   const tutorFirstTurnScore =
@@ -204,47 +179,89 @@ async function scoreResult(result, index, total) {
   );
 }
 
-async function main() {
-  let rows = evaluationStore
-    .getResults(runId)
-    .filter((row) => row.success && row.tutorFirstTurnScore == null)
-    .sort((a, b) => a.id - b.id);
-
-  if (limit > 0) rows = rows.slice(0, limit);
-
-  console.log(
-    `[d4-first-turn] Scoring ${rows.length} unscored row(s) for ${runId} with ${judgeModelLabel}, timeout ${timeoutMs}ms, parallelism ${parallelism}`,
-  );
-
-  let ok = 0;
-  let failed = 0;
-  let next = 0;
-
-  async function worker() {
-    while (next < rows.length) {
-      const index = next;
-      next += 1;
-      const row = rows[index];
-      try {
-        await scoreResult(row, index + 1, rows.length);
-        ok += 1;
-      } catch (error) {
-        failed += 1;
-        const profile = row.profileName || `${row.provider}/${row.model}`;
-        console.error(
-          `[${index + 1}/${rows.length}] ${row.scenarioId} / ${profile} / ${row.id} ... FAIL: ${error.message}`,
-        );
-      }
-    }
+export async function main(
+  args = process.argv.slice(2),
+  { evaluationStore = null, env = process.env, rootDir = ROOT } = {},
+) {
+  const runId = args.find((arg) => !arg.startsWith('--'));
+  if (!runId) {
+    console.error('Usage: node scripts/score-d4-first-turns.js <runId> [--limit N] [--timeout-ms N] [--parallelism N]');
+    return 1;
   }
 
-  await Promise.all(Array.from({ length: Math.min(parallelism, rows.length) }, () => worker()));
+  const limit = Number(option(args, 'limit', 0));
+  const timeoutMs = Number(option(args, 'timeout-ms', 120000));
+  const parallelism = Math.max(1, Number(option(args, 'parallelism', 1)));
+  const judgeModel = option(args, 'model', 'sonnet');
+  const judgeModelLabel = `claude-code/${judgeModel}`;
 
-  console.log(`[d4-first-turn] Done. succeeded=${ok} failed=${failed}`);
-  if (failed > 0) process.exitCode = 1;
+  return withEvaluationScriptStore(
+    async (store) => {
+      const run = store.getRun(runId);
+      if (!run) {
+        console.error(`Run not found: ${runId}`);
+        return 1;
+      }
+
+      if (run.metadata?.scenariosFile && !env.EVAL_SCENARIOS_FILE) {
+        env.EVAL_SCENARIOS_FILE = run.metadata.scenariosFile;
+        console.error(`[d4-first-turn] Restored EVAL_SCENARIOS_FILE: ${run.metadata.scenariosFile}`);
+      }
+      if (run.metadata?.contentPath && !env.EVAL_CONTENT_PATH) {
+        env.EVAL_CONTENT_PATH = run.metadata.contentPath;
+        console.error(`[d4-first-turn] Restored EVAL_CONTENT_PATH: ${run.metadata.contentPath}`);
+      }
+
+      let rows = store
+        .getResults(runId)
+        .filter((row) => row.success && row.tutorFirstTurnScore == null)
+        .sort((a, b) => a.id - b.id);
+
+      if (limit > 0) rows = rows.slice(0, limit);
+
+      console.log(
+        `[d4-first-turn] Scoring ${rows.length} unscored row(s) for ${runId} with ${judgeModelLabel}, timeout ${timeoutMs}ms, parallelism ${parallelism}`,
+      );
+
+      let ok = 0;
+      let failed = 0;
+      let next = 0;
+
+      async function worker() {
+        while (next < rows.length) {
+          const index = next;
+          next += 1;
+          const row = rows[index];
+          try {
+            await scoreResult(store, row, index + 1, rows.length, { judgeModel, judgeModelLabel, timeoutMs });
+            ok += 1;
+          } catch (error) {
+            failed += 1;
+            const profile = row.profileName || `${row.provider}/${row.model}`;
+            console.error(
+              `[${index + 1}/${rows.length}] ${row.scenarioId} / ${profile} / ${row.id} ... FAIL: ${error.message}`,
+            );
+          }
+        }
+      }
+
+      await Promise.all(Array.from({ length: Math.min(parallelism, rows.length) }, () => worker()));
+
+      console.log(`[d4-first-turn] Done. succeeded=${ok} failed=${failed}`);
+      return failed > 0 ? 1 : 0;
+    },
+    { rootDir, env, evaluationStore },
+  );
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+const isMain = process.argv[1] && process.argv[1].endsWith('score-d4-first-turns.js');
+if (isMain) {
+  main()
+    .then((code) => {
+      process.exitCode = code;
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exitCode = 1;
+    });
+}
