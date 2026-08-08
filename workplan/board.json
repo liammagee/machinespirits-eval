@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-08T04:21:23.383Z",
+  "generated": "2026-08-08T05:43:34.248Z",
   "counts": {
     "total": 459,
     "byStatus": {
@@ -12232,7 +12232,7 @@
       "source": "manual",
       "created": "2026-08-08",
       "updated": "2026-08-08",
-      "verification": "PASS on the registered primary. A profile fitted on 24 move turns from world_030_rowan_flat reads 14 of 34 move turns from world_031_tideway_makerspace, 41.2% against a 20% bar, one-sided exact binomial p = 0.0039; 400 label shuffles average 19.8% and none reach 41.2%. Secondaries: top-two 19/34 = 55.9% vs 40%, p = 0.044; shipped-text arm a registered NULL at 5/24 = 20.8% vs 25%, p = 0.75. Train and test share no reply text (checked, 0). Per-move recall shifts but does not separate at 6-7 turns per move (largest Fisher p = 0.27), so it is reported untested. Post-hoc, pooled over both worlds: demand is misread as the conditional stake on 9 of its 12 wrong guesses against 3 expected, p = 0.0004 — an instrument observation, not a world one. Artifacts exports/crossed-effects/figure-holdout-transfer-{draft,shipped}.json.",
+      "verification": "PASS on the registered primary. A profile fitted on 24 move turns from world_030_rowan_flat reads 14 of 34 move turns from world_031_tideway_makerspace, 41.2% against a 20% bar, one-sided exact binomial p = 0.0039; 400 label shuffles average 19.8% and none reach 41.2%. Secondaries: top-two 19/34 = 55.9% vs 40%, p = 0.044; shipped-text arm a registered NULL at 5/24 = 20.8% vs 25%, p = 0.75. Train and test share no reply text (checked, 0). Per-move recall shifts but does not separate at 6-7 turns per move (largest Fisher p = 0.27), so it is reported untested. Post-hoc, pooled over both worlds: demand is misread as the conditional stake on 9 of its 12 wrong guesses against 3 expected, p = 0.0004. The cause is the reader, not either world — the stake is its default class, taking 24 of 68 first places against 13 actual stake turns and scoring highest on a turn drawn at random. The conditional-stake column fires on 1 of 100 carded turns, so it is not the cause. Artifacts exports/crossed-effects/figure-holdout-transfer-{draft,shipped}.json and figure-reader-bias.json.",
       "claim_status": "scope-bound",
       "links": {
         "notes": [
