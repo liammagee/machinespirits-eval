@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-08T08:55:51.922Z",
+  "generated": "2026-08-08T08:58:45.824Z",
   "counts": {
     "total": 462,
     "byStatus": {
-      "done": 431,
+      "done": 432,
       "blocked": 6,
       "dropped": 8,
       "active": 2,
       "archived": 4,
       "triaged": 6,
-      "review": 5
+      "review": 4
     },
     "byType": {
       "research": 75,
@@ -624,34 +624,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "register-presence-hand-marked-set",
-      "title": "A hand-marked set, so reading decides whether a manner is present",
-      "status": "review",
-      "type": "research",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "branch": "register-presence-hand-marked-set",
-      "verification": "Twenty tutor turns, five real learner turns crossed with four writing conditions (ironic, sarcastic, face threat, and a plain control with no manner named), one draw each, no cue phrases in any prompt. A person marks all twenty before seeing the key or any machine answer. Then a blind reader on a different model family, then the word list, answer the same question. The step passes if all three readings are recorded against the same turns with hit rates and false-alarm rates reported separately — a reading that says yes to everything must be visible as such. No claim about the negative-register experiments follows from this step; it is a check on the instrument, not a result about tutoring.",
-      "claim_status": "speculative",
-      "links": {
-        "paper": [
-          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
-        ],
-        "runs": [
-          "eval-2026-08-05-87fe3664"
-        ],
-        "items": [
-          "ironic-question-flood-target",
-          "negative-register-effect-estimation-grid",
-          "register-taxonomy-negative-registers",
-          "register-axis-confound-paper-edits"
-        ]
-      }
     },
     {
       "id": "repair-evaluation-config-comparison-missing-side-winner",
@@ -13465,6 +13437,34 @@
         "strategy-refusal",
         "superego"
       ]
+    },
+    {
+      "id": "register-presence-hand-marked-set",
+      "title": "A hand-marked set, so reading decides whether a manner is present",
+      "status": "done",
+      "type": "research",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "branch": "register-presence-hand-marked-set",
+      "verification": "Twenty tutor turns, five real learner turns crossed with four writing conditions (ironic, sarcastic, face threat, and a plain control with no manner named), one draw each, no cue phrases in any prompt. A person marks all twenty before seeing the key or any machine answer. Then a blind reader on a different model family, then the word list, answer the same question. The step passes if all three readings are recorded against the same turns with hit rates and false-alarm rates reported separately — a reading that says yes to everything must be visible as such. No claim about the negative-register experiments follows from this step; it is a check on the instrument, not a result about tutoring.",
+      "claim_status": "speculative",
+      "links": {
+        "paper": [
+          "docs/research/paper-full-2.0.md#67-architectural-extension-the-id-director-family-and-charismatic-pedagogy"
+        ],
+        "runs": [
+          "eval-2026-08-05-87fe3664"
+        ],
+        "items": [
+          "ironic-question-flood-target",
+          "negative-register-effect-estimation-grid",
+          "register-taxonomy-negative-registers",
+          "register-axis-confound-paper-edits"
+        ]
+      }
     },
     {
       "id": "register-router-codex-check",

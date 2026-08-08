@@ -1,7 +1,7 @@
 ---
 id: register-presence-hand-marked-set
 title: A hand-marked set, so reading decides whether a manner is present
-status: review
+status: done
 type: research
 priority: P2
 owner: claude
