@@ -21,6 +21,8 @@ import { test, describe, beforeEach, afterEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  appendTutorMannerBlock,
+  buildTutorMannerBlock,
   parseIdConstruction,
   parseAgencyReturnVerification,
   extractPreviousPersona,
@@ -142,6 +144,50 @@ describe('parseAgencyReturnVerification', () => {
     assert.equal(result.parse_status, 'fallback');
     assert.equal(result.passes, true);
     assert.match(result.parse_failure_reason, /missing_repaired_response/);
+  });
+});
+
+// ─── appendTutorMannerBlock ──────────────────────────────────────────────────
+//
+// The registry's stance contract used to reach the id-director and stop there,
+// since whatever the id-director writes becomes the tutor's whole system
+// prompt. The 2026-08-08 isolation probe put a number on that: only 5 of 14
+// flat ironic turns could produce an edge from their shipped prompt even sent
+// alone, against 18 of 21 for the two sarcastic registers.
+describe('appendTutorMannerBlock', () => {
+  test('appends the register contract after the written persona', () => {
+    const persona = 'You are an ironic guide who treats teaching as a bid.';
+    const out = appendTutorMannerBlock(persona, { selected_register: 'ironic' });
+
+    assert.ok(out.startsWith(persona), 'the id-director persona still opens the prompt');
+    assert.match(out, /How to write this turn \(ironic\)/);
+    assert.match(out, /Socratic irony/);
+    // The manner is the last thing read, not buried mid-prompt.
+    assert.ok(out.indexOf('Socratic irony') > out.indexOf(persona));
+  });
+
+  test('carries the cue family and the forbidden phrases', () => {
+    const out = appendTutorMannerBlock('persona', { selected_register: 'ironic' });
+    // The contract tells the tutor to use one cue from a named family, so the
+    // family has to travel with it — a contract pointing at an unseen list is
+    // worse than none.
+    assert.match(out, /the small irony is/);
+    assert.match(out, /Never write:/);
+    assert.match(out, /obviously you/);
+  });
+
+  test('leaves the prompt untouched when the register has no contract', () => {
+    const persona = 'You are an attentive tutor.';
+    assert.equal(appendTutorMannerBlock(persona, {}), persona);
+    assert.equal(appendTutorMannerBlock(persona, null), persona);
+    assert.equal(appendTutorMannerBlock(persona, { selected_register: 'no_such_register' }), persona);
+    assert.equal(buildTutorMannerBlock({}), null);
+  });
+
+  test('sarcastic gets its own contract, not the ironic one', () => {
+    const out = appendTutorMannerBlock('persona', { selected_register: 'sarcastic' });
+    assert.match(out, /How to write this turn \(sarcastic\)/);
+    assert.doesNotMatch(out, /Socratic irony/);
   });
 });
 

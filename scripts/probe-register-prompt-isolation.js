@@ -237,7 +237,9 @@ export async function runIsolationProbe({
   for (const target of slice) {
     index += 1;
     const written = await writeIsolatedReply({ prompt: target.prompt, cacheDir, timeoutMs });
-    const reading = await readMannerPresence({
+    // `readMannerPresence` nests its answer; `writeIsolatedReply` spreads its
+    // own. Destructure, or every row reads back `undefined`.
+    const { reading } = await readMannerPresence({
       registerName: target.registerName,
       learnerMessage: target.learnerMessage,
       tutorMessage: written.reply,

@@ -68,4 +68,38 @@ Plan hash printed by the dry run, fixed before the first call:
 
 ## Outcome
 
-Pending the attended run.
+Ran 2026-08-08 on the fixed plan hash, all 35 rows, none unread.
+
+**23 of 35 came back edged.** These same turns were flat 35 out of 35 in the
+pipeline, so the shipped prompt is enough most of the time and something in the
+harness sands the manner off. But the split by register is the real finding:
+
+| register | edged alone | in the run |
+|---|---|---|
+| ironic | 5 / 14 | 0 / 14 |
+| sarcastic | 5 / 6 | 0 / 6 |
+| sarcastic_determinate | 13 / 15 | 0 / 15 |
+
+Sarcasm survives being sent alone; irony mostly does not. So there are two
+separate losses, not one. Sarcasm's edge is lost downstream of a prompt that
+still carries it. Irony's edge is already gone by the time the prompt ships.
+
+That fits what the two instructions ask for. Sarcasm says the opposite with
+evident edge, which has to sit on the surface of the words. Irony understates,
+feigns puzzlement, and lets the material expose itself — a manner an author can
+absorb into the instruction without ever asking the performer for it.
+
+Row 34065 shows the absorption. The registry's contract asks for Socratic irony;
+the shipped prompt opens "The small irony is that the steps you asked for remain
+dead precisely because they lack a scene where they might fail", then spends its
+length on a school-gate scene and two questions. The tutor was handed an ironic
+sentence and a task. It did the task.
+
+**Where the manner is lost.** The registry's contract goes to the id-director,
+not to the tutor. Whatever the id-director writes replaces the tutor's system
+prompt outright (`services/idDirectorEngine.js:1926`), with nothing appended. So
+the manner reaches the performer only if the author chose to carry it through.
+
+Follow-on registered separately: see the two-condition run in the discussion
+below, which separates the earlier turns from the reviewer pass for the sarcasm
+half of the loss.
