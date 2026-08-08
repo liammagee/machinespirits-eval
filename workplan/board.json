@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-08T23:44:14.000Z",
+  "generated": "2026-08-08T23:49:43.261Z",
   "counts": {
-    "total": 471,
+    "total": 472,
     "byStatus": {
-      "done": 444,
+      "done": 445,
       "blocked": 6,
       "dropped": 9,
       "review": 2,
@@ -14,7 +14,7 @@
     "byType": {
       "research": 75,
       "experiment": 77,
-      "infra": 98,
+      "infra": 99,
       "maintenance": 200,
       "content": 3,
       "ops": 10,
@@ -9478,6 +9478,35 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "run-artifact-archiving",
+      "title": "Copy run artifacts out of exports/ so they stop vanishing",
+      "status": "done",
+      "type": "infra",
+      "priority": "P1",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "DONE 2026-08-09. `scripts/archive-run-artifacts.js` copies a run's reports and results.jsonl as-is and packs each traces directory into one tarball, writing into the private archive repo and never outside it; re-running copies only what is new. Six tests pin the behaviour. The 25 tutor-stub runs on this machine are archived (284M, committed there as `167f2004`). The contract outcome pilot runner copies its own light layer when a run ends, so the transcripts no longer depend on anyone remembering.",
+      "claim_status": "settled",
+      "links": {
+        "code": [
+          "scripts/archive-run-artifacts.js",
+          "scripts/run-contract-outcome-pilot.js",
+          "tests/archiveRunArtifacts.test.js"
+        ],
+        "items": [
+          "phase-b-rerun-under-flipped-policy",
+          "strict-policy-null-sweep"
+        ]
+      },
+      "tags": [
+        "infra",
+        "tutor-stub",
+        "provenance"
+      ]
     },
     {
       "id": "scriptorium-evidence-workbenches",
