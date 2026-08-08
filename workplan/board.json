@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-08T07:27:51.164Z",
+  "generated": "2026-08-08T07:43:23.670Z",
   "counts": {
     "total": 461,
     "byStatus": {
       "done": 429,
       "blocked": 6,
       "dropped": 8,
-      "active": 3,
+      "active": 2,
       "archived": 4,
       "triaged": 7,
-      "review": 4
+      "review": 5
     },
     "byType": {
       "research": 74,
@@ -370,35 +370,6 @@
       ]
     },
     {
-      "id": "tutor-stub-template-rate-audit",
-      "title": "Stamp every cited tutor-stub run with its measured template rate",
-      "status": "active",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-07",
-      "verification": "A table, checked into the guard catalog doc, listing every tutor-stub run cited in paper-full-2.0.md with its template rate and model-as-written rate measured from its own traces by the census/replay script. Paper §s that read tutor prose off a guarded run carry the rate beside the claim. The paper edit itself waits for guard-validity-study to conclude so the whole account lands in one pass.",
-      "claim_status": "methods",
-      "links": {
-        "code": [
-          "scripts/census-guard-template-rate.js",
-          "scripts/replay-guard-fallback-delivery.js",
-          "docs/tutor-stub-guard-catalog.md"
-        ],
-        "items": [
-          "guard-regime-fallback-census-at-scale",
-          "guard-validity-study"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards",
-        "paper"
-      ]
-    },
-    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -682,6 +653,37 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
+    },
+    {
+      "id": "tutor-stub-template-rate-audit",
+      "title": "Stamp every cited tutor-stub run with its measured template rate",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-08",
+      "branch": "codex/paper-guard-template-rate-pass",
+      "verification": "A table, checked into the guard catalog doc, lists every recoverable cited tutor-stub run with its template rate and model-as-written rate measured from its own traces by the census/replay script. Paper sections that read tutor prose off a guarded run carry the rate, `boundaryPolicy`, and catalog version beside the claim; unrecoverable or unstamped observations are explicit, and no comparison pools different regimes. Paper 2.0 v3.0.276 records the completed pass after `guard-validity-study` concluded.",
+      "claim_status": "methods",
+      "links": {
+        "code": [
+          "scripts/census-guard-template-rate.js",
+          "scripts/replay-guard-fallback-delivery.js",
+          "docs/tutor-stub-guard-catalog.md",
+          "docs/research/paper-full-2.0.md"
+        ],
+        "items": [
+          "guard-regime-fallback-census-at-scale",
+          "guard-validity-study"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "paper"
+      ]
     },
     {
       "id": "scripts-adopt-shared-data-path-resolvers",
