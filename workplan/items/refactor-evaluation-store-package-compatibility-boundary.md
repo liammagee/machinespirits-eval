@@ -1,7 +1,7 @@
 ---
 id: refactor-evaluation-store-package-compatibility-boundary
 title: Decide and enforce the evaluation-store package compatibility boundary
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -18,6 +18,8 @@ claim_status: planned
 depends_on:
   - refactor-prompt-lab-store-ownership
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/593
   notes:
     - docs/next-steps/2026-08-06-evaluation-store-boundary-inventory.md
   code:
@@ -83,3 +85,6 @@ Log:
 - 2026-08-09 — PR #591 subsequently merged as `dead5be9` and its generated
   view refresh landed as `614fd1c4`; the dependency is now closed. This branch
   is ready to rebase from its reviewed stacked head onto that refreshed main.
+- 2026-08-09 — PR #593 merged as `f72dbc17`; generated workplan views refreshed
+  at `ca4c092e`. The retained 103-line package facade is now the documented
+  compatibility boundary, while every internal migration target remains zero.
