@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-08T21:13:45.977Z",
+  "generated": "2026-08-08T21:29:41.167Z",
   "counts": {
     "total": 466,
     "byStatus": {
-      "done": 438,
+      "done": 440,
       "blocked": 6,
       "dropped": 9,
       "active": 1,
       "archived": 4,
       "triaged": 4,
-      "review": 4
+      "review": 2
     },
     "byType": {
       "research": 75,
@@ -560,53 +560,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "optimize-local-node-execution",
-      "title": "Reduce measured local Node development-loop latency",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "branch": "codex/local-node-speedups",
-      "verification": "Cold and warm benchmarks, cache-invalidation checks, focused runner tests, hermetic manifest accounting, workplan source validation, lint, formatting, and diff checks prove faster repeated local gates without reducing file coverage, Node 20/22 compatibility, deterministic isolation, or failure visibility.",
-      "claim_status": "planned",
-      "depends_on": [],
-      "links": {
-        "items": [
-          "codebase-refactoring-program"
-        ]
-      },
-      "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "performance",
-        "ci"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "tutor-stub-correspondence-guard-vocabulary",
-      "title": "Evidence-correspondence guard can never clear in a plain-language world",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-08",
-      "branch": "codex/tutor-stub-correspondence-guard-vocabulary",
-      "verification": "A unit test that takes world-030's own p_dye surface as the permitted text and asserts the matching tutor sentence is allowed. It must fail on the current code and pass after the fix.",
-      "claim_status": "methods",
-      "tags": [
-        "tutor-stub",
-        "guards",
-        "worlds"
-      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -13150,6 +13103,37 @@
       "milestone": "paper-2-evidence-cleanup"
     },
     {
+      "id": "optimize-local-node-execution",
+      "title": "Reduce measured local Node development-loop latency",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-09",
+      "branch": "codex/local-node-speedups",
+      "verification": "Cold and warm benchmarks, cache-invalidation checks, focused runner tests, hermetic manifest accounting, workplan source validation, lint, formatting, and diff checks prove faster repeated local gates without reducing file coverage, Node 20/22 compatibility, deterministic isolation, or failure visibility.",
+      "claim_status": "planned",
+      "depends_on": [],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/586"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "performance",
+        "ci"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "paper-workplan-closure-audit-2026-06-24",
       "title": "Paper/workplan closure audit for current main",
       "status": "done",
@@ -14289,6 +14273,30 @@
       "tags": [
         "tutor-stub",
         "closure"
+      ]
+    },
+    {
+      "id": "tutor-stub-correspondence-guard-vocabulary",
+      "title": "Evidence-correspondence guard can never clear in a plain-language world",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-09",
+      "branch": "codex/tutor-stub-correspondence-guard-vocabulary",
+      "verification": "A unit test that takes world-030's own p_dye surface as the permitted text and asserts the matching tutor sentence is allowed. It must fail on the current code and pass after the fix.",
+      "claim_status": "methods",
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/582"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards",
+        "worlds"
       ]
     },
     {
