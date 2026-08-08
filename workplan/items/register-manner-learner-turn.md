@@ -153,7 +153,32 @@ the standing rule calls stack-bounded until replicated. The learner-turn probe
 above is unaffected — it ran the writer it says it ran — but it was asking why
 `codex.gpt-5.5` output differed from a run that was never `codex.gpt-5.5`.
 
-Open, for the operator to decide: whether the id-director should honour
-`--ego-model`/`--tutor-model` or fail closed when it cannot, whether §6.7/§8.9
-get corrected in place or re-run on a strong stack, and what the corrected
-register grid costs.
+## What was decided
+
+The operator settled all three on 2026-08-08.
+
+**The id-director honours the override.** `applyModelOverride` copies the run's
+per-seat override onto the cell block before either call is built, so `--ego-model`
+reaches the ego and `--tutor-model` reaches both. Absent an override the seat
+still takes what the YAML names, unchanged.
+
+**The warning fires on the models a run will call, not on what it asked for.**
+`hasExplicitTutorOverride` is gone; `effectiveStack` resolves each seat through
+its override first and flags the pairing that survives. An override now silences
+the warning only for the seat it replaces, so `--ego-model codex.gpt-5.5` on a
+weak cell still names the kimi superego.
+
+Both are pinned by tests that read the models off the calls rather than off the
+run's record — `services/__tests__/idDirectorModelOverride.test.js` stubs the
+engine's one model-call seam and asserts the provider and model each seat asked
+for; `services/__tests__/stackDefaultWarning.test.js` and
+`tests/resolveConfigModels.test.js` cover the other half.
+
+**§6.7 and §8.9 are corrected in place, not re-run.** No count moves: the turns
+were generated, stored and scored as reported. What changes is the stack they are
+bounded to. §6.7 gains a paragraph naming the models actually called and the seat
+map; §8.9 gains a seventh scope condition. Paper v3.0.280.
+
+**The corrected grid is not being paid for yet.** A 15-row single-register check
+on a strong writer goes first, to see whether the edge survives before the full
+~60-row grid is bought.
