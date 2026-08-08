@@ -47,7 +47,7 @@ function readTraceEvents(traceDir) {
 
 // `boundaryPolicy: null` runs whatever the CLI's own default is, which is how
 // the paired test at the end reads the live regime rather than restating it.
-function runGuardFixture(mode, { boundaryPolicy = 'strict' } = {}) {
+function runGuardFixture(mode, { boundaryPolicy = 'strict', closestCandidate = false } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), `tutor-stub-guard-${mode}-`));
   const fakeCodex = path.join(tmp, 'codex');
   fs.writeFileSync(
@@ -141,6 +141,7 @@ process.stdin.on('end', () => {
       // Strict is the opt-in from 2026-08-07; these fixtures are written
       // against the ladder it drives.
       ...(boundaryPolicy ? { TUTOR_STUB_GUARD_POLICY: boundaryPolicy } : {}),
+      ...(closestCandidate ? { TUTOR_STUB_GUARD_CLOSEST_CANDIDATE: '1' } : {}),
       FAKE_CODEX_FIXTURE_MODE: mode,
     },
   });
@@ -283,6 +284,26 @@ test('tutor guard accounting records the failed repair and final deterministic f
   assert.equal(closeout.finalTurn.leakOk, true);
   assert.match(stdout, /safe fallback used/u);
   assert.doesNotMatch(stdout, /leak-guard/u);
+});
+
+test('closest-candidate delivery never selects a draft carrying an evidence-safety finding', () => {
+  const { events } = runGuardFixture('fallback', {
+    boundaryPolicy: null,
+    closestCandidate: true,
+  });
+  const accounting = events.find((row) => row.type === 'tutor_response_guard_accounting')?.accounting;
+
+  assert.equal(accounting.outcome, 'guarded_deterministic_fallback');
+  assert.equal(accounting.finalDelivery.source, 'deterministic_fallback');
+  assert.equal(
+    events.some((row) => row.type === 'tutor_response_closest_model_candidate'),
+    false,
+  );
+  assert.ok(
+    accounting.attempts
+      .filter((attempt) => attempt.kind !== 'deterministic_fallback')
+      .every((attempt) => attempt.audits.deliveryDecision.hardIssues.some((issue) => issue.guard === 'leak')),
+  );
 });
 
 test('a dramatic fallback replaces non-answering uptake with a licensed writable entry', () => {

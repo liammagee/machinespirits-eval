@@ -197,7 +197,7 @@ export function createTutorStubRecoveryAccountingRuntime({
   }
 
   function tutorGuardAttemptEnvelope({ kind, attempt, response, audits = null, repairedSpans = [] }) {
-    return projectTutorStubGuardAttemptEnvelope({
+    const envelope = projectTutorStubGuardAttemptEnvelope({
       kind,
       attempt,
       response,
@@ -205,6 +205,17 @@ export function createTutorStubRecoveryAccountingRuntime({
       issues: audits ? tutorStubGuardIssueRows(audits) : [],
       repairedSpans,
     });
+    // The persisted envelope intentionally stays compact, but terminal
+    // closest-candidate selection may need the original runtime response
+    // (prompt snapshot, usage and delivery configuration included). Keep that
+    // reference non-enumerable so JSON traces and accounting remain unchanged.
+    Object.defineProperty(envelope, 'runtimeResponse', {
+      value: response,
+      enumerable: false,
+      configurable: false,
+      writable: false,
+    });
+    return envelope;
   }
 
   function buildTutorGuardAccounting({
@@ -277,6 +288,7 @@ export function createTutorStubRecoveryAccountingRuntime({
         },
         audits: finalAudits,
         auditOk: finalAudits?.deliveryOk ?? finalAudits?.ok ?? null,
+        selection: jsonClone(response?.guardCandidateSelection || null),
       },
     });
   }

@@ -65,6 +65,7 @@
         "services/__tests__/tutorStubEvalIntegrity.test.js",
         "services/__tests__/tutorStubEvidenceAssertion.test.js",
         "services/__tests__/tutorStubGenerousInference.test.js",
+        "services/__tests__/tutorStubGuardCandidateRanking.test.js",
         "services/__tests__/tutorStubGuardDisposition.test.js",
         "services/__tests__/tutorStubGuardRecovery.test.js",
         "services/__tests__/tutorStubJson.test.js",

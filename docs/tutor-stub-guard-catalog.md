@@ -419,8 +419,15 @@ The sample held that shape, so the regime is:
    stamps never pool either.
 
 Point 1 is now the default and point 4 is the standing rule. Point 2's five
-channels are unbuilt except the last, which the census provides. Point 3's loop
-ran once, on this flip.
+channels are unbuilt except the last, which the census provides, and the
+closest-candidate ranking tail, which is implemented but opt-in pending its
+paired live gate. `TUTOR_STUB_GUARD_CLOSEST_CANDIDATE=1` ranks only the model
+drafts the ladder already generated; evidence-safety, clue-bookkeeping,
+semantic-closure, and unknown findings exclude a draft before ranking. Eligible
+drafts are ordered by remaining shadow hard findings, then strict hard findings,
+then generation order, with the full selection stamped in guard accounting.
+The deterministic template remains the default tail until that gate passes.
+Point 3's loop ran once, on this flip.
 
 Cards: `guard-policy-default-flip` (done 2026-08-07),
 `guard-findings-feed-forward`, `tutor-stub-template-rate-audit`,

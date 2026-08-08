@@ -36,6 +36,11 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
   // every delivery decision records the policy it was made under. Compare runs
   // by that stamp, never by run date.
   const guardBoundaryPolicy = dependencies.guardBoundaryPolicy === 'strict' ? 'strict' : 'shadow_advisory';
+  // The closest-candidate tail is separately gated from the boundary-column
+  // flip. It can only operate under the live shadow column; strict remains the
+  // stable control that ends at the deterministic template.
+  const closestCandidateDelivery =
+    dependencies.closestCandidateDelivery === true && guardBoundaryPolicy === 'shadow_advisory';
   const {
     PROGRAM2_COMMITTEE_SCHEMA,
     appendTraceEvent,
@@ -217,10 +222,12 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
   const runTutorTerminalDelivery = createTutorStubTutorTerminalRuntime({
     appendTraceEvent,
     attachTutorGuardAccounting,
+    authorizeTutorStubRankedCandidate: dependencies.authorizeTutorStubRankedCandidate,
     auditTutorStubDialogueClosureResponse,
     auditTutorStubQuestionSupportResponse,
     buildTutorGuardAccounting,
     clueInsertion: dependencies.clueInsertion,
+    closestCandidateDelivery,
     composeClueSpanReplacement: dependencies.composeClueSpanReplacement,
     currentReleaseRows,
     deterministicGenerousInferenceFallback,
@@ -234,6 +241,7 @@ export function createTutorStubTutorTurnPipeline(dependencies = {}) {
     deterministicTutorStubWritableEntryUptake,
     exactTutorRepairSpans,
     prepareTutorStubDueClueUptake,
+    rankTutorStubGuardCandidates: dependencies.rankTutorStubGuardCandidates,
     renderTutorStubDueSource: dependencies.renderTutorStubDueSource,
     stateRunDebugId,
     tutorGuardAttemptEnvelope,

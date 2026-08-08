@@ -16,7 +16,9 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
     deterministicTutorStubTurnProgressionUptake,
     deterministicTutorStubWritableEntryUptake,
     exactTutorRepairSpans,
+    authorizeTutorStubRankedCandidate,
     prepareTutorStubDueClueUptake,
+    rankTutorStubGuardCandidates,
     stateRunDebugId,
     tutorGuardAttemptEnvelope,
     tutorStubActorialPerformanceMayBeAdvisory,
@@ -26,6 +28,7 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
     tutorStubTerminalFallbackFailureMessage,
     worldLedgerTerm,
   } = dependencies;
+  const closestCandidateDelivery = dependencies.closestCandidateDelivery === true;
 
   return function runTutorTerminalDelivery({
     response,
@@ -148,6 +151,72 @@ export function createTutorStubTutorTerminalRuntime(dependencies = {}) {
             finalAudits: insertionAudits,
           });
         }
+      }
+    }
+
+    // Tail selection after the live shadow-policy flip. If every generated
+    // draft still fails, prefer the least-marked model-derived candidate only
+    // when none of its remaining hard findings belongs to evidence safety,
+    // clue bookkeeping, semantic closure, or the fail-closed unknown bucket.
+    // This is opt-in until the card's paired live check is complete.
+    if (
+      closestCandidateDelivery &&
+      typeof rankTutorStubGuardCandidates === 'function' &&
+      typeof authorizeTutorStubRankedCandidate === 'function'
+    ) {
+      const ranking = rankTutorStubGuardCandidates(attempts);
+      const selectedAttempt = ranking.selectedAttempt;
+      const rankedAudits = selectedAttempt ? authorizeTutorStubRankedCandidate(selectedAttempt.audits, ranking) : null;
+      if (selectedAttempt && rankedAudits) {
+        const selection = {
+          schema: ranking.schema,
+          policy: ranking.policy,
+          selected: ranking.selected,
+          candidates: ranking.candidates,
+        };
+        const runtimeResponse = selectedAttempt.runtimeResponse || {};
+        const rankedResponse = {
+          ...runtimeResponse,
+          text: String(selectedAttempt.candidate?.text || runtimeResponse.text || '').trim(),
+          provider: runtimeResponse.provider || selectedAttempt.provider || null,
+          model: runtimeResponse.model || selectedAttempt.model || null,
+          latencyMs: Number(runtimeResponse.latencyMs || selectedAttempt.generation?.latencyMs || 0),
+          usage: runtimeResponse.usage || selectedAttempt.generation?.usage || null,
+          tokenUsageAvailable:
+            runtimeResponse.tokenUsageAvailable ?? selectedAttempt.generation?.tokenUsageAvailable ?? null,
+          deliveryResponseConfiguration:
+            runtimeResponse.deliveryResponseConfiguration || selectedAttempt.deliveryConfiguration || null,
+          responseConfigurationTransition:
+            runtimeResponse.responseConfigurationTransition || selectedAttempt.configurationTransition || null,
+          recoveryCandidateKind: selectedAttempt.kind,
+          repaired: Number(selectedAttempt.attempt || 0) > 0,
+          deterministicFallback: false,
+          closestModelCandidate: true,
+          guardCandidateSelection: selection,
+        };
+        attachTutorDraftAudits(rankedResponse, rankedAudits);
+        if (canStreamTutor) rankedResponse.guardedStreamReplay = true;
+        appendTraceEvent(trace, {
+          type: 'tutor_response_closest_model_candidate',
+          role: roleBase,
+          turn: tutorTurn,
+          selection,
+          overriddenHardIssues: rankedAudits.deliveryDecision?.rankedCandidateOverride?.overriddenHardIssues || [],
+          publicTranscriptChanged: false,
+        });
+        return attachTutorGuardAccounting({
+          response: rankedResponse,
+          state,
+          trace,
+          tutorTurn,
+          role: roleBase,
+          guards,
+          attempts,
+          repairsApplied,
+          finalSource: 'closest_model_candidate',
+          finalAudits: rankedAudits,
+          outcome: 'guarded_closest_model_candidate_selected',
+        });
       }
     }
 

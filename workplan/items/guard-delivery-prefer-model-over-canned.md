@@ -1,24 +1,28 @@
 ---
 id: guard-delivery-prefer-model-over-canned
 title: When every draft fails, ship the closest model draft instead of the template
-status: triaged
+status: active
 type: infra
 priority: P1
-owner: claude
+owner: codex
 source: manual
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-08
+branch: codex/guard-delivery-prefer-model-over-canned
 verification: >-
-  DONE (2026-08-06, scripts/replay-guard-fallback-delivery.js): a replay over
-  the fallible-phaseB traces that, for each of the 717 fallback
-  turns, picks the least-vetoed model draft and reports what would have shipped
-  and which findings would have ridden along. Then a paired live run on one
-  cell under both delivery rules, comparing fallback rate, closure rate and
-  turns to closure. The safety families must show zero deliveries carrying a
-  leak, clue-bookkeeping or closure finding under either rule.
+  Stage 1 DONE (2026-08-06, scripts/replay-guard-fallback-delivery.js): replay
+  all 717 fallible-phaseB fallback turns and report what the least-vetoed model
+  draft would have shipped. Stage 2: the opt-in live selector reproduces that
+  ordering, never selects a candidate with evidence-safety, clue-bookkeeping,
+  closure, or unknown findings, and stamps its selection in the trace. Final
+  gate: one paired live cell under template-tail and closest-candidate-tail,
+  comparing fallback rate, closure rate and turns to closure with zero contract
+  findings delivered in either arm.
 claim_status: planned
 links:
   code:
+    - scripts/replay-guard-fallback-delivery.js
+    - services/tutorStubGuardCandidateRanking.js
     - services/tutorStubFirstDraftOuterLoop.js
     - services/tutorStubGuardDisposition.js
     - services/tutorStubTutorTurnPipeline.js
@@ -176,3 +180,10 @@ does not. The replay says what would ship. It cannot say whether it is better.
   findings order them and the least-marked ships — guards choosing among the
   model's own versions, never between the model and a script. Gated with the
   rest on the full validity-study readout.
+- 2026-08-08 — validity and default-flip prerequisites are closed. Stage 2 is
+  now active on `codex/guard-delivery-prefer-model-over-canned`: an opt-in
+  `TUTOR_STUB_GUARD_CLOSEST_CANDIDATE=1` tail ranks already-generated drafts by
+  shadow hard findings, strict hard findings, then generation order. Any draft
+  carrying an evidence-safety, clue-bookkeeping, semantic-closure, or unknown
+  finding is ineligible at every rank. The deterministic template remains the
+  default until the paired live gate runs.

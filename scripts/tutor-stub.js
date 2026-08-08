@@ -271,6 +271,10 @@ import {
   tutorStubTerminalFallbackFailureMessage,
 } from '../services/tutorStubGuardDisposition.js';
 import {
+  authorizeTutorStubRankedCandidate,
+  rankTutorStubGuardCandidates,
+} from '../services/tutorStubGuardCandidateRanking.js';
+import {
   auditTutorStubSelfCorrectionDisclosure,
   detectTutorStubSelfCorrectionDisclosure,
   tutorStubDisclosableGuardCorrection,
@@ -1796,6 +1800,7 @@ const callTutor = createTutorStubTutorTurnPipeline({
   PROGRAM2_COMMITTEE_SCHEMA,
   appendTraceEvent,
   attachTutorGuardAccounting,
+  authorizeTutorStubRankedCandidate,
   auditTutorResponseLeak,
   auditTutorStubDialogueClosureResponse,
   auditTutorStubDramaticReleaseResponse,
@@ -1845,6 +1850,7 @@ const callTutor = createTutorStubTutorTurnPipeline({
   jsonClone,
   prepareTutorStubDueClueUptake,
   providerSupportsStreaming,
+  rankTutorStubGuardCandidates,
   reconcileTutorStubPointOfActionHandoffEligibility,
   recoverTutorStubDuplicateInstructionLines,
   recoverTutorStubSpeakerPrompt,
@@ -1868,6 +1874,10 @@ const callTutor = createTutorStubTutorTurnPipeline({
   // Default flipped to shadow_advisory on 2026-08-07 (guard-policy-default-flip).
   // TUTOR_STUB_GUARD_POLICY=strict restores the old vetoing regime.
   guardBoundaryPolicy: process.env.TUTOR_STUB_GUARD_POLICY === 'strict' ? 'strict' : 'shadow_advisory',
+  // Opt-in tail while guard-delivery-prefer-model-over-canned completes its
+  // paired live check. Contract findings remain absolute; eligible quality
+  // findings rank the already-generated model candidates.
+  closestCandidateDelivery: process.env.TUTOR_STUB_GUARD_CLOSEST_CANDIDATE === '1',
   // Q3: TUTOR_STUB_CORRUPT_RELIEF=1 demotes ALL hard guard issues to
   // advisory at deliberately-corrupted turns so the model's repair ships.
   corruptReliefTurn: (turn) => process.env.TUTOR_STUB_CORRUPT_RELIEF === '1' && automatedLearnerCorruptionEnabled(turn),

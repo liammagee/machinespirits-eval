@@ -28,31 +28,7 @@ import {
   decideTutorStubGuardDelivery,
   TUTOR_STUB_GUARD_BOUNDARY_POLICIES,
 } from '../services/tutorStubGuardDisposition.js';
-
-// The three contract families, named by the catalog's own `category` rather
-// than by guard. Guard name is the wrong handle: `dramatic_release` carries
-// duplicate delivery and source drift (contracts) alongside costume checks
-// (judgments), so a guard-level filter lets clue bookkeeping through.
-// `unknown` joins them because an unrecognized finding fails closed.
-const SAFETY_CATEGORIES = new Set([
-  'public_evidence_integrity',
-  'clue_transaction_integrity',
-  'semantic_closure_integrity',
-  'unknown',
-]);
-
-function safetyFindings(decision) {
-  return decision.dispositions.filter((d) => SAFETY_CATEGORIES.has(d.category) && d.effectiveDisposition === 'hard');
-}
-
-const LADDER = [
-  'original_candidate',
-  'plain_recovery_candidate',
-  'self_correction_candidate',
-  'composition_repair_candidate',
-  'actorial_part_repair_candidate',
-  'source_voice_repair_candidate',
-];
+import { rankTutorStubGuardCandidates } from '../services/tutorStubGuardCandidateRanking.js';
 
 function traceFiles(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -149,10 +125,8 @@ function main() {
 
           const drafts = (accounting.attempts || [])
             .filter((a) => a.kind !== 'deterministic_fallback')
-            .sort((a, b) => LADDER.indexOf(a.kind) - LADDER.indexOf(b.kind));
+            .sort((a, b) => Number(a.attempt || 0) - Number(b.attempt || 0));
 
-          let chosen = null;
-          let rule = null;
           for (const draft of drafts) {
             const rows = tutorStubGuardIssueRows(draft.audits);
             const strict = decide(rows, TUTOR_STUB_GUARD_BOUNDARY_POLICIES.strict);
@@ -161,38 +135,22 @@ function main() {
             // findings the live ladder saw, and its numbers cannot be trusted.
             if (strict.ok === (draft.auditOk === true)) stats.rebuildAgrees++;
             else stats.rebuildDisagrees++;
-
-            const relaxed = decide(rows, TUTOR_STUB_GUARD_BOUNDARY_POLICIES.shadowAdvisory);
-            if (relaxed.ok) {
-              chosen = { draft, rows, decision: relaxed, strict };
-              rule = 'relaxed';
-              break;
-            }
           }
-          if (!chosen) {
-            let best = null;
-            for (const draft of drafts) {
-              const rows = tutorStubGuardIssueRows(draft.audits);
-              const relaxed = decide(rows, TUTOR_STUB_GUARD_BOUNDARY_POLICIES.shadowAdvisory);
-              if (safetyFindings(relaxed).length) continue;
-              const strict = decide(rows, TUTOR_STUB_GUARD_BOUNDARY_POLICIES.strict);
-              const score = [relaxed.hardIssues.length, strict.hardIssues.length];
-              if (!best || score[0] < best.score[0] || (score[0] === best.score[0] && score[1] < best.score[1])) {
-                best = { draft, rows, decision: relaxed, strict, score };
+          const ranking = rankTutorStubGuardCandidates(drafts);
+          const chosen = ranking.selectedAttempt
+            ? {
+                draft: ranking.selectedAttempt,
+                decision: ranking.selectedDecision,
               }
-            }
-            if (best) {
-              chosen = best;
-              rule = 'closest';
-            }
-          }
+            : null;
+          const rule = ranking.selected?.score?.shadowHard === 0 ? 'relaxed' : 'closest';
 
           if (!chosen) {
             stats.stillTemplate++;
             cellStats.template++;
             continue;
           }
-          if (safetyFindings(chosen.decision).length) stats.safetyBreaches++;
+          if (ranking.selected.contractBlockers.length) stats.safetyBreaches++;
           if (rule === 'relaxed') {
             stats.relaxedShips++;
             cellStats.relaxed++;

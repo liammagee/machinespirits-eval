@@ -116,9 +116,14 @@ test('pipeline delegates extracted responsibilities to bounded implementation ow
 test('the live guard policy defaults to shadow_advisory, with strict as the opt-in', () => {
   const pipeline = serviceSource('tutorStubTutorTurnPipeline.js');
   assert.match(pipeline, /dependencies\.guardBoundaryPolicy === 'strict' \? 'strict' : 'shadow_advisory'/u);
+  assert.match(
+    pipeline,
+    /dependencies\.closestCandidateDelivery === true && guardBoundaryPolicy === 'shadow_advisory'/u,
+  );
 
   const cli = readFileSync(path.join(ROOT, 'scripts', 'tutor-stub.js'), 'utf8');
   assert.match(cli, /TUTOR_STUB_GUARD_POLICY === 'strict' \? 'strict' : 'shadow_advisory'/u);
+  assert.match(cli, /TUTOR_STUB_GUARD_CLOSEST_CANDIDATE === '1'/u);
 });
 
 test('direct passthrough preserves public replay, request metadata, and model-call tracing', async () => {
