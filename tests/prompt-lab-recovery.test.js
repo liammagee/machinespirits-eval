@@ -1,13 +1,212 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 import {
   aggregateRunRows,
   applyPromptEditOperations,
+  main,
   parseJsonResponse,
   recoverPromptCandidate,
   validatePromptCandidate,
 } from '../scripts/prompt-lab.js';
+
+function makeSilentConsole() {
+  const originalLog = console.log;
+  console.log = () => {};
+  return () => {
+    console.log = originalLog;
+  };
+}
+
+function writePromptLabSession(sessionRoot, sessionId = 'ownership-fixture') {
+  const sessionDir = path.join(sessionRoot, sessionId);
+  const baselineDir = path.join(sessionDir, 'baseline', 'prompts');
+  const promptDir = path.join(sessionDir, 'prompts');
+  fs.mkdirSync(baselineDir, { recursive: true });
+  fs.mkdirSync(promptDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(sessionDir, 'session.json'),
+    `${JSON.stringify(
+      {
+        sessionId,
+        createdAt: '2026-08-09T00:00:00.000Z',
+        updatedAt: '2026-08-09T00:00:00.000Z',
+        profileName: 'cell_prompt_lab_test',
+        scenarioId: 'prompt_lab_scenario',
+        modelRef: 'mock.prompt-lab',
+        judgeRef: null,
+        judgeCli: 'codex',
+        judgeCliModel: null,
+        judgeSource: 'default',
+        parallelism: 1,
+        runsPerIteration: 1,
+        promptDir,
+        baselineDir,
+        resolvedTutorProfileName: 'budget',
+        learnerProfileName: 'unified',
+        promptFiles: [],
+        iterations: [
+          {
+            iteration: 1,
+            runId: 'eval-prompt-lab-fixture',
+            scenarioId: 'prompt_lab_scenario',
+            summary: null,
+          },
+        ],
+        recommendations: [],
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  return path.join(sessionDir, 'session.json');
+}
+
+test('prompt-lab help and invalid session admission stay store- and filesystem-free', async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prompt-lab-admission-'));
+  const sessionRoot = path.join(tempDir, 'sessions');
+  let storesCreated = 0;
+  const restoreConsole = makeSilentConsole();
+
+  try {
+    const createStore = () => {
+      storesCreated++;
+      throw new Error('evaluation store should not open');
+    };
+    assert.equal(await main([], { createStore, sessionRoot }), 0);
+    await assert.rejects(main(['status', '--session', 'missing'], { createStore, sessionRoot }), /Session not found/u);
+    await assert.rejects(main(['import'], { createStore, sessionRoot }), /--run-id is required/u);
+    assert.equal(storesCreated, 0);
+    assert.equal(fs.existsSync(sessionRoot), false);
+  } finally {
+    restoreConsole();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test('prompt-lab status shares one store and closes only script-owned stores', async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prompt-lab-store-'));
+  const sessionRoot = path.join(tempDir, 'sessions');
+  const manifestPath = writePromptLabSession(sessionRoot);
+  let closes = 0;
+  const store = {
+    getResults: () => [
+      {
+        id: 1,
+        dialogueId: 'dialogue-1',
+        createdAt: '2026-08-09T00:01:00.000Z',
+        success: true,
+        tutorFirstTurnScore: 72,
+        tutorOverallScore: null,
+        latencyMs: 100,
+        inputTokens: 10,
+        outputTokens: 5,
+        cost: 0,
+        judgeModel: 'codex-cli/auto',
+        scoringMethod: 'rubric',
+      },
+    ],
+    getRunStats: () => [],
+    getScenarioStats: () => [],
+    close: () => {
+      closes++;
+    },
+  };
+  const restoreConsole = makeSilentConsole();
+
+  try {
+    const command = ['status', '--session', 'ownership-fixture'];
+    assert.equal(await main(command, { evaluationStore: store, sessionRoot }), 0);
+    assert.equal(closes, 0);
+    assert.equal(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).iterations[0].summary.primaryScore, 72);
+
+    assert.equal(await main(command, { createStore: () => store, sessionRoot }), 0);
+    assert.equal(closes, 1);
+
+    let failureCloses = 0;
+    const failingStore = {
+      getResults: () => {
+        throw new Error('expected prompt-lab read failure');
+      },
+      close: () => {
+        failureCloses++;
+      },
+    };
+    await assert.rejects(main(command, { createStore: () => failingStore, sessionRoot }), {
+      message: 'expected prompt-lab read failure',
+    });
+    assert.equal(failureCloses, 1);
+  } finally {
+    restoreConsole();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test('prompt-lab run preserves child arguments while forwarding the injected environment', async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prompt-lab-run-'));
+  const sessionRoot = path.join(tempDir, 'sessions');
+  const manifestPath = writePromptLabSession(sessionRoot);
+  const childCalls = [];
+  const store = {
+    getResults: () => [
+      {
+        id: 1,
+        dialogueId: 'dialogue-1',
+        createdAt: '2026-08-09T00:01:00.000Z',
+        success: true,
+        tutorFirstTurnScore: 75,
+        tutorOverallScore: null,
+        latencyMs: 100,
+        inputTokens: 10,
+        outputTokens: 5,
+        cost: 0,
+        judgeModel: null,
+        scoringMethod: 'mock',
+      },
+    ],
+    getRunStats: () => [],
+    getScenarioStats: () => [],
+    close: () => {
+      throw new Error('host-owned prompt-lab store must remain open');
+    },
+  };
+  const restoreConsole = makeSilentConsole();
+
+  try {
+    const code = await main(['run', '--session', 'ownership-fixture', '--dry-run', '--skip-rubric'], {
+      evaluationStore: store,
+      sessionRoot,
+      rootDir: '/injected/repository',
+      env: { EVAL_DB_PATH: '/isolated/evaluations.db', CUSTOM_PROMPT_LAB_ENV: 'yes' },
+      runChild: async (command, childArgs, options) => {
+        childCalls.push({ command, childArgs, options });
+        return { code: 0, stdout: 'Run ID: eval-2026-08-09-abc12345\n', stderr: '' };
+      },
+    });
+
+    assert.equal(code, 0);
+    assert.equal(childCalls.length, 1);
+    assert.equal(childCalls[0].command, 'node');
+    assert.equal(childCalls[0].childArgs[0], '/injected/repository/scripts/eval-cli.js');
+    assert.equal(childCalls[0].childArgs.includes('--dry-run'), true);
+    assert.equal(childCalls[0].childArgs.includes('--skip-rubric'), true);
+    assert.equal(childCalls[0].options.cwd, '/injected/repository');
+    assert.equal(childCalls[0].options.env.EVAL_DB_PATH, '/isolated/evaluations.db');
+    assert.equal(childCalls[0].options.env.CUSTOM_PROMPT_LAB_ENV, 'yes');
+    assert.match(childCalls[0].options.env.MACHINESPIRITS_PROMPTS_DIR, /ownership-fixture\/prompts$/u);
+
+    const session = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    assert.equal(session.iterations.length, 2);
+    assert.equal(session.iterations[1].runId, 'eval-2026-08-09-abc12345');
+    assert.equal(session.iterations[1].summary.primaryScore, 75);
+  } finally {
+    restoreConsole();
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
 
 test('validatePromptCandidate accepts indented closing section tags', () => {
   const reference = `# Tutor Prompt

@@ -3,7 +3,7 @@
   "facade": "services/evaluationStore.js",
   "characterization": {
     "sourceLineCount": 103,
-    "liveAndPackageConsumerCount": 2,
+    "liveAndPackageConsumerCount": 1,
     "archivedConsumerCount": 4,
     "testConsumerCount": 14
   },
@@ -45,11 +45,6 @@
     {
       "path": "scripts/archive/oneoff/inspect-judge-prompt.js",
       "classification": "archived-oneoff",
-      "modes": ["namespace"]
-    },
-    {
-      "path": "scripts/prompt-lab.js",
-      "classification": "operational-script",
       "modes": ["namespace"]
     },
     {
