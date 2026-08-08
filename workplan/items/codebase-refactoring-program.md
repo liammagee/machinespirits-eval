@@ -20,6 +20,7 @@ depends_on: []
 links:
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
+    - docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md
   items:
     - refactor-required-run-manifest
     - refactor-v-series-fixtures
@@ -139,6 +140,7 @@ links:
     - refactor-token-budget-store-ownership
     - refactor-prompt-lab-store-ownership
     - refactor-evaluation-store-package-compatibility-boundary
+    - refactor-tutor-stub-adapter-tail
 tags:
   - refactoring
   - testing
@@ -1742,3 +1744,14 @@ Log:
   as `614fd1c4`, closing Prompt Lab ownership. The reviewed package-boundary
   child can now rebase onto current main and publish as the final
   evaluation-store refactoring slice.
+- 2026-08-09 — Reconciled the full programme after PR #593 merged as
+  `f72dbc17`, then refreshed the snapshot through PR #595 and generated-view
+  commit `3ed950d9`. The 118 previously linked children are now all done. Fresh
+  metrics record 4,953 repository files, 2,476 source files, 868,019 source code
+  lines, zero import cycles, zero evaluation-store migration targets, and a
+  synchronized 638-root/11-core required-file manifest with no allowed skips.
+  The parent remains active: tutor-stub is 2,699 lines and its roughly 705-line
+  `main()` misses the two R3 exit ceilings, while later R4-R8 phases remain
+  partial or uninstantiated. Triaged `refactor-tutor-stub-adapter-tail` as the
+  sole next slice; require a new evidence refresh before activating any
+  subsequent macro phase.
