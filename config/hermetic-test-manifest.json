@@ -401,6 +401,7 @@
         "tests/registerMannerPresenceReader.test.js",
         "tests/registerRouter.test.js",
         "tests/registerStanceFidelity.test.js",
+        "tests/registerStrongStackReplication.test.js",
         "tests/regression-bug-007.test.js",
         "tests/releasePackaging.test.js",
         "tests/removePublicSpeechQuotes.test.js",
