@@ -31,9 +31,15 @@ const V30_SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first
 const V31_SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-working-screens-v11.yaml');
 const V32_SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-diagnostic-screens-v12.yaml');
 const V33_SCREEN_PATH = path.join(ROOT, 'config', 'tutor-stub-campaigns', 'first-draft-diagnostic-screens-v13.yaml');
+const yamlTemplateCache = new Map();
 
 function loadYaml(filePath) {
-  return YAML.parse(fs.readFileSync(filePath, 'utf8'));
+  let template = yamlTemplateCache.get(filePath);
+  if (!template) {
+    template = YAML.parse(fs.readFileSync(filePath, 'utf8'));
+    yamlTemplateCache.set(filePath, template);
+  }
+  return structuredClone(template);
 }
 
 function fixture(tmp) {

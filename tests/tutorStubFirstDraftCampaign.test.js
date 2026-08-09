@@ -1693,6 +1693,41 @@ test(
   },
 );
 
+test('working-screen world cache invalidates when a source file changes', V_SERIES_REPO_SOURCE_FIXTURE_OPTS, () => {
+  const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'first-draft-world-cache-'));
+  try {
+    fs.symlinkSync(path.join(repoRoot, 'tests'), path.join(tmp, 'tests'), 'dir');
+    fs.symlinkSync(path.join(repoRoot, 'services'), path.join(tmp, 'services'), 'dir');
+    const worldDir = path.join(tmp, 'config', 'drama-derivation');
+    fs.mkdirSync(worldDir, { recursive: true });
+    const worldFiles = [
+      'world-009-ravensmark.yaml',
+      'world-022-foxtrot-jukebox.yaml',
+      'world-025-tallow-street.yaml',
+      'world-028-larkspur-fridge.yaml',
+    ];
+    for (const file of worldFiles) {
+      fs.copyFileSync(path.join(repoRoot, 'config', 'drama-derivation', file), path.join(worldDir, file));
+    }
+
+    const configPath = path.join(repoRoot, 'config/tutor-stub-campaigns/first-draft-working-screens-v8.yaml');
+    const config = loadTutorStubFirstDraftCampaign(configPath, { root: repoRoot }).config;
+    assert.equal(validateTutorStubFirstDraftCampaign({ config, root: tmp }).valid, true);
+
+    const changedPath = path.join(worldDir, 'world-025-tallow-street.yaml');
+    const changed = YAML.parse(fs.readFileSync(changedPath, 'utf8'));
+    changed.id = `${changed.id.slice(0, -1)}x`;
+    fs.writeFileSync(changedPath, YAML.stringify(changed));
+    assert.throws(
+      () => validateTutorStubFirstDraftCampaign({ config, root: tmp }),
+      /expected exactly one world file for world_025_tallow_street, found 0/u,
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test(
   'V8 activation preflight recompiles the legacy frozen request before checking typed contracts',
   V_SERIES_REPO_SOURCE_FIXTURE_OPTS,
