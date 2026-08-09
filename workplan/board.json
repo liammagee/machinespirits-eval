@@ -1,15 +1,14 @@
 {
-  "generated": "2026-08-09T15:55:29.152Z",
+  "generated": "2026-08-09T16:02:18.832Z",
   "counts": {
     "total": 492,
     "byStatus": {
       "done": 463,
       "blocked": 6,
-      "dropped": 9,
+      "dropped": 10,
       "review": 4,
       "active": 5,
-      "archived": 4,
-      "triaged": 1
+      "archived": 4
     },
     "byType": {
       "research": 75,
@@ -22,33 +21,6 @@
     }
   },
   "items": [
-    {
-      "id": "guard-findings-feed-forward",
-      "title": "Feed guard findings into the next turn's request instead of redrafting this one",
-      "status": "triaged",
-      "type": "research",
-      "priority": "P3",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-06",
-      "updated": "2026-08-07",
-      "verification": "UNGATED but demoted — the flip landed and already delivered the subtractive half, so only the additive half is left to test. Run when there is spare quota and no better claim in the queue: an instrumented run where each tutor request carries the previous turn's findings as one line each, against a control without the lines. Readout: finding recurrence turn over turn, and the quality instruments per condition. The retry ladder stays for contract findings only.",
-      "claim_status": "planned",
-      "links": {
-        "code": [
-          "services/tutorStubTutorTurnPipeline.js",
-          "services/tutorStubFirstDraftContract.js"
-        ],
-        "items": [
-          "guard-policy-default-flip",
-          "guard-validity-study"
-        ]
-      },
-      "tags": [
-        "tutor-stub",
-        "guards"
-      ]
-    },
     {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
@@ -16902,6 +16874,37 @@
         "dropped"
       ],
       "milestone": "poetics-followups"
+    },
+    {
+      "id": "guard-findings-feed-forward",
+      "title": "Feed guard findings into the next turn's request instead of redrafting this one",
+      "status": "dropped",
+      "type": "research",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-06",
+      "updated": "2026-08-10",
+      "verification": "Tested but not adopted: the sealed 12-dialogue paired A1 screen completed without technical failure, but feed-forward recurrence was 40.4% against 39.4% for control and the quality guardrails did not improve. Keep the mechanism opt-in and off by default; do not rerun without a new prospective hypothesis.",
+      "claim_status": "killed",
+      "links": {
+        "code": [
+          "services/tutorStubTutorTurnPipeline.js",
+          "services/tutorStubFirstDraftContract.js"
+        ],
+        "exports": [
+          "exports/tutor-stub-guard-feed-forward/pilot-a1/report.md"
+        ],
+        "items": [
+          "guard-policy-default-flip",
+          "guard-validity-study"
+        ]
+      },
+      "tags": [
+        "tutor-stub",
+        "guards"
+      ],
+      "branch": "codex/guard-findings-feed-forward"
     },
     {
       "id": "refusal-defense-adjudication",
