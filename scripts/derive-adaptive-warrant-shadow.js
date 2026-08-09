@@ -256,10 +256,18 @@ function deriveSessionShadow(session, sessionIndex) {
     // learner turn (session tails often leave the last learner turn uncommitted).
     let signal = current.learnerSignal;
     let signalCarried = false;
+    let signalTurn = turn;
     for (let back = i; back >= 0 && signal.primary === 'absent'; back -= 1) {
       signal = facts.get(turns[back]).learnerSignal;
       signalCarried = back !== i;
+      signalTurn = turns[back];
     }
+
+    // A carried signal is consumed once a revision has answered it: if the
+    // strategy changed at or after the signal's turn, the old request no
+    // longer grounds an immediate warrant against the NEW strategy.
+    const signalConsumed =
+      signalCarried && decisions.some((d) => d.decided.startsWith('revise') && d.turn >= signalTurn);
 
     // Evidence inside the streak: tutor-turn trouble through N-1, learner
     // register complaints through N.
@@ -277,7 +285,7 @@ function deriveSessionShadow(session, sessionIndex) {
     }
 
     const masked = signal.primary === 'engaged_analytic';
-    const immediate = signal.primary === 'repair_request' || signal.primary === 'stall';
+    const immediate = !signalConsumed && (signal.primary === 'repair_request' || signal.primary === 'stall');
     const registerEscalation = complaintTurns.length >= REGISTER_ESCALATION_THRESHOLD;
     const accumulated = !masked && troubleTurns.length >= ACCUMULATED_TROUBLE_THRESHOLD;
 
