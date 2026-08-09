@@ -68,11 +68,17 @@
       "id": "evaluator-provenance",
       "label": "Evaluator and provenance integrity",
       "runner": "node",
-      "sources": ["services/rubricEvaluator.js", "services/evalSignature.js"],
+      "sources": [
+        "services/rubricEvaluator.js",
+        "services/dialogueTranscriptProjection.js",
+        "services/evalSignature.js"
+      ],
       "tests": [
+        "services/__tests__/dialogueTranscript.test.js",
         "services/__tests__/rubricEvaluatorSanitization.test.js",
         "services/__tests__/rubricFallbackProvenance.test.js",
         "services/__tests__/rubricScoring.test.js",
+        "tests/dialogueTranscriptProjectionBoundary.test.js",
         "tests/rubricEvaluator.test.js",
         "tests/evalSignature.test.js"
       ],

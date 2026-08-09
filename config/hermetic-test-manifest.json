@@ -201,6 +201,7 @@
         "tests/desktopWindowState.test.js",
         "tests/diagnosePoeticsAdaptationFailures.test.js",
         "tests/dialecticalEngine.test.js",
+        "tests/dialogueTranscriptProjectionBoundary.test.js",
         "tests/dialogueStructure.test.js",
         "tests/dialogueTraceAnalyzer.test.js",
         "tests/discursiveGameOntology.test.js",
