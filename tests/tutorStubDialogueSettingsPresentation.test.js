@@ -97,7 +97,7 @@ test('default settings projection pins all 23 lines, exact bytes, and input immu
   const output = terminalBytes(lines);
 
   assert.equal(lines.length, 23);
-  assert.equal(sha256(output), 'de1e3f6c7b7553acac4ccbc4835ad3c30d723914a1d065f91f7c8e2e19d3494e');
+  assert.equal(sha256(output), '26613d8f2227af1aa0547e5aa80c26218b7b19c298bd888c30abebcf2bccb329');
   assert.match(output, /one model for all roles: off — roles selected separately/u);
   assert.match(output, /style range is saved but not used by this approach/u);
   assert.match(output, /training reuse: training candidate/u);
@@ -149,7 +149,7 @@ test('alternate settings projection covers combined roles, directed axes, disabl
     }),
   );
 
-  assert.equal(sha256(output), 'b23a724d900ee66d3d6ddd3f2a5cb3910b64e625534472eea20958655523437b');
+  assert.equal(sha256(output), '3c503835f5fcc7a21b593c644e217f3da1d0f1a0c931be23e88d2a92f65feac0');
   assert.match(output, /active; also performs learner interpretation/u);
   assert.match(output, /inactive; combined into reasoning tracker/u);
   assert.match(output, /frontier-only responses/u);
@@ -191,8 +191,8 @@ test('real default and configured /settings commands preserve exact no-model ter
     {
       name: 'default',
       args: [],
-      bytes: 2131,
-      hash: '8b1e655838355028d7562d4b3cc135ab41567b286e51c78fdddc4fccb453c03a',
+      bytes: 2155,
+      hash: 'f8a8958b34727c698b96cff06713660909683839ef625ea934b7331b2e1c0fa8',
     },
     {
       name: 'configured',
@@ -213,8 +213,8 @@ test('real default and configured /settings commands preserve exact no-model ter
         '--motion',
         'full',
       ],
-      bytes: 1960,
-      hash: '62ee02afda20311a0b6ac1af068e8373dd7bb5a3ffdb5e94448047ce0d2b543c',
+      bytes: 1984,
+      hash: '80ba187f29aec97ce5e68a77d5d21f9ff49091607b630c671b570d4fa7859de9',
     },
   ];
 

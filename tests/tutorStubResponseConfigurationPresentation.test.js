@@ -129,6 +129,30 @@ test('response-configuration projection distinguishes adaptive temperature from 
   assert.doesNotMatch(output, /random performance|light adaptation/u);
 });
 
+test('response-configuration projection exposes the edge-timing transition and menu', () => {
+  const output = terminalBytes(
+    projectTutorStubResponseConfigurationLines(
+      {
+        selection: {
+          engagement_stance: 'precise',
+          edge_timing: {
+            phase: 'uptake',
+            resistance_signal: null,
+            previous_register: 'ironic',
+            selected_register: 'precise',
+            edge_eligible: false,
+            edge_suppressed_reason: 'uptake_closes_edge',
+            router_register_menu: ['plain', 'precise', 'ironic', 'sarcastic'],
+          },
+        },
+      },
+      { colors: COLORS },
+    ),
+  );
+  assert.match(output, /edge timing: ironic → precise; phase uptake; signal none; edge closed \(uptake_closes_edge\)/u);
+  assert.match(output, /edge timing menu: plain, precise, ironic, sarcastic/u);
+});
+
 test('real technical-debug process preserves exact response-configuration terminal bytes', async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-stub-response-configuration-presentation-'));
   try {

@@ -437,12 +437,16 @@ describe('runIdDirectedTurn', () => {
     queuedResponses.push(
       {
         content: JSON.stringify({
-          generated_prompt: 'Use one dry reversal on the weak formula, then hand back one concrete repair. ' + 'A '.repeat(60),
+          generated_prompt:
+            'Use one dry reversal on the weak formula, then hand back one concrete repair. ' + 'A '.repeat(60),
           persona_delta: 'from warm challenge to dry resistance interruption',
         }),
         usage: { inputTokens: 0, outputTokens: 0 },
       },
-      { content: 'Wonderful formula. Now test the premise it conveniently skips.', usage: { inputTokens: 0, outputTokens: 0 } },
+      {
+        content: 'Wonderful formula. Now test the premise it conveniently skips.',
+        usage: { inputTokens: 0, outputTokens: 0 },
+      },
     );
 
     const result = await runIdDirectedTurn({

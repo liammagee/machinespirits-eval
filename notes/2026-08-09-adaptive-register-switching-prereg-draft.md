@@ -1,9 +1,10 @@
 # Does switching into an edged register at the right moment help? — Frozen Pre-Registration
 
-Status: **FROZEN — no model calls made.** Frozen plan SHA-256:
+Status: **FROZEN — Stage 1 complete; Stage 2 not authorized.** Frozen plan SHA-256:
 `da2723e47de143305e88a9a7b26688f6f58e4958e0b310ed4d7e147cd9734845`.
-The apparatus and zero-call plan are built; Stage 1 remains locked pending the
-operator's explicit approval of that hash. Stage 2 is not authorized.
+The operator approved exactly that hash. The attended Stage 1 pilot and its
+fail-closed report completed without restart or widening. Stage 2 remains
+locked behind a separate operator decision.
 
 ## Where this comes from
 
@@ -115,6 +116,34 @@ the operator's later Stage-2 decision, not authorization to run it.
   switches indiscriminately, stop and fix routing before buying outcomes.
 - **Stage 2, the three-arm batch**, only after Stage 1 passes and the frozen
   power table is accepted by the operator.
+
+## Stage 1 result — 2026-08-09
+
+Run `eval-2026-08-09-b09e5a10` completed all 10 planned adaptive-arm rows. The
+fail-closed report returned `COMPLETE / PASS_STAGE1` with no missing registered
+Stage 1 measures and `stage2Authorized: false`.
+
+| Registered check | Result | Disposition |
+|---|---:|---|
+| Tutor-seat provenance | 90/90 `codex/gpt-5.5` | pass |
+| Router switching | 18 register switches across 30 turns | pass |
+| Resistance timing | edged on 10/13 resistance turns | pass |
+| Uptake timing | edged on 0/7 uptake turns | pass |
+| Other-turn leakage | 0 edged choices | pass |
+| Ironic fidelity | 4/4 cue-compliant; 4/4 manner-present; register-rubric mean 95.125 | pass |
+| Sarcastic fidelity | 6/6 cue-compliant; 5/6 manner-present; register-rubric mean 84.333 | one delivery miss, reported separately |
+
+This passes the **technical manipulation check only**: the cell-scoped router
+can select edged registers during resistance, closes them on uptake, and
+usually realizes the selected manner. It does not establish that timed edge
+improves conversion or learning. Registered measures 5–8 were not collected
+in Stage 1 and no Stage 2 row has been authorized.
+
+The deterministic timing map is now exposed as an opt-in tutor-stub overlay,
+`--register-policy field+edge_timing` (or `/settings policy add edge_timing`).
+Its normal trace records the active menu, timing choice, final applied style,
+and any later hard-guard override. This is an inspectable research seam, not a
+validated default policy.
 
 ## Registered limits, stated now
 

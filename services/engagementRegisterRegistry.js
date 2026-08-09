@@ -71,8 +71,7 @@ export function getEngagementStanceNames({ includeArmAssigned = true, routerRegi
   const cellScopedMenu = new Set(normalizeRouterRegisterMenu(routerRegisterMenu, definitions));
   return Object.entries(definitions)
     .filter(
-      ([name, definition]) =>
-        includeArmAssigned || definition.router_selectable !== false || cellScopedMenu.has(name),
+      ([name, definition]) => includeArmAssigned || definition.router_selectable !== false || cellScopedMenu.has(name),
     )
     .map(([name]) => name);
 }

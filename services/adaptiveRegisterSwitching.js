@@ -19,12 +19,54 @@ const EDGED_REGISTERS = Object.freeze(['ironic', 'sarcastic']);
 // is the first integer n reaching .80; `balancedNPerArm` rounds upward to a
 // multiple of five so every controlled target receives the same repeats.
 export const ADAPTIVE_REGISTER_SWITCHING_POWER = Object.freeze([
-  Object.freeze({ warmRate: 0.5, adaptiveRate: 0.65, delta: 0.15, minimumNPerArm: 183, balancedNPerArm: 185, balancedPower: 0.8102 }),
-  Object.freeze({ warmRate: 0.5, adaptiveRate: 0.7, delta: 0.2, minimumNPerArm: 102, balancedNPerArm: 105, balancedPower: 0.8153 }),
-  Object.freeze({ warmRate: 0.5, adaptiveRate: 0.75, delta: 0.25, minimumNPerArm: 64, balancedNPerArm: 65, balancedPower: 0.8090 }),
-  Object.freeze({ warmRate: 0.5, adaptiveRate: 0.8, delta: 0.3, minimumNPerArm: 44, balancedNPerArm: 45, balancedPower: 0.8154 }),
-  Object.freeze({ warmRate: 0.5, adaptiveRate: 0.85, delta: 0.35, minimumNPerArm: 32, balancedNPerArm: 35, balancedPower: 0.8522 }),
-  Object.freeze({ warmRate: 0.5, adaptiveRate: 0.9, delta: 0.4, minimumNPerArm: 23, balancedNPerArm: 25, balancedPower: 0.8326 }),
+  Object.freeze({
+    warmRate: 0.5,
+    adaptiveRate: 0.65,
+    delta: 0.15,
+    minimumNPerArm: 183,
+    balancedNPerArm: 185,
+    balancedPower: 0.8102,
+  }),
+  Object.freeze({
+    warmRate: 0.5,
+    adaptiveRate: 0.7,
+    delta: 0.2,
+    minimumNPerArm: 102,
+    balancedNPerArm: 105,
+    balancedPower: 0.8153,
+  }),
+  Object.freeze({
+    warmRate: 0.5,
+    adaptiveRate: 0.75,
+    delta: 0.25,
+    minimumNPerArm: 64,
+    balancedNPerArm: 65,
+    balancedPower: 0.809,
+  }),
+  Object.freeze({
+    warmRate: 0.5,
+    adaptiveRate: 0.8,
+    delta: 0.3,
+    minimumNPerArm: 44,
+    balancedNPerArm: 45,
+    balancedPower: 0.8154,
+  }),
+  Object.freeze({
+    warmRate: 0.5,
+    adaptiveRate: 0.85,
+    delta: 0.35,
+    minimumNPerArm: 32,
+    balancedNPerArm: 35,
+    balancedPower: 0.8522,
+  }),
+  Object.freeze({
+    warmRate: 0.5,
+    adaptiveRate: 0.9,
+    delta: 0.4,
+    minimumNPerArm: 23,
+    balancedNPerArm: 25,
+    balancedPower: 0.8326,
+  }),
 ]);
 
 export const ADAPTIVE_REGISTER_SWITCHING = Object.freeze({
@@ -117,7 +159,9 @@ function canonicalJson(value) {
 }
 
 export function hashAdaptiveRegisterSwitching(value) {
-  return createHash('sha256').update(JSON.stringify(canonicalJson(value))).digest('hex');
+  return createHash('sha256')
+    .update(JSON.stringify(canonicalJson(value)))
+    .digest('hex');
 }
 
 function jobsFor(arms, repeatsPerScenario) {
@@ -205,9 +249,15 @@ export function validateAdaptiveRegisterSwitchingPlan(plan) {
     errors.push('registered measures 1-8 are not all present in order');
   }
   const proposedPower = grid.powerTable.find(
-    (row) => row.warmRate === grid.stage2.proposedContrast.warmRate && row.adaptiveRate === grid.stage2.proposedContrast.adaptiveRate,
+    (row) =>
+      row.warmRate === grid.stage2.proposedContrast.warmRate &&
+      row.adaptiveRate === grid.stage2.proposedContrast.adaptiveRate,
   );
-  if (!proposedPower || proposedPower.balancedNPerArm !== grid.stage2.plannedRowsPerArm || proposedPower.balancedPower < 0.8) {
+  if (
+    !proposedPower ||
+    proposedPower.balancedNPerArm !== grid.stage2.plannedRowsPerArm ||
+    proposedPower.balancedPower < 0.8
+  ) {
     errors.push('Stage-2 row count is not backed by the frozen exact-power table');
   }
   return { ok: errors.length === 0, errors };
@@ -238,9 +288,12 @@ export function checkAdaptiveTutorStackProvenance(dialogues, { grid = ADAPTIVE_R
       const pair = `${provider}/${model}`;
       observed.set(pair, (observed.get(pair) || 0) + 1);
       if (provider !== expectedProvider || model !== expectedModel) {
-        errors.push(`${label}: ${entry.agent}/${entry.action || 'call'} called ${pair}, plan says ${grid.generation.tutorModel}`);
+        errors.push(
+          `${label}: ${entry.agent}/${entry.action || 'call'} called ${pair}, plan says ${grid.generation.tutorModel}`,
+        );
       }
-      if (/nemotron|kimi/iu.test(pair)) errors.push(`${label}: forbidden tutor stack observed at ${entry.agent}: ${pair}`);
+      if (/nemotron|kimi/iu.test(pair))
+        errors.push(`${label}: forbidden tutor stack observed at ${entry.agent}: ${pair}`);
     }
     for (const seat of expectedSeats) {
       if (!dialogueSeats.has(seat)) errors.push(`${label}: no ${seat} tutor-seat call found`);
@@ -321,12 +374,14 @@ export function summarizeAdaptiveRegisterSwitchingStage1(dialogues, { provenance
     for (const turn of turns) {
       turnCount += 1;
       const label = `${dialogue.rowId || dialogue.dialogueId}:turn_${turn.turn}`;
-      if (!sameMenu(turn.routerMenu, expectedMenu)) errors.push(`${label}: router menu does not match the frozen adaptive menu`);
+      if (!sameMenu(turn.routerMenu, expectedMenu))
+        errors.push(`${label}: router menu does not match the frozen adaptive menu`);
       if (!turn.selectedRegister) errors.push(`${label}: no selected register recorded`);
       if (turn.routerSelectedRegister !== turn.selectedRegister) {
         errors.push(`${label}: selected register and router choice disagree`);
       }
-      if (!turn.routerMenu?.includes(turn.selectedRegister)) errors.push(`${label}: selected register is outside the recorded menu`);
+      if (!turn.routerMenu?.includes(turn.selectedRegister))
+        errors.push(`${label}: selected register is outside the recorded menu`);
       if (previousRegister && previousRegister !== turn.selectedRegister) registerSwitches += 1;
       previousRegister = turn.selectedRegister || previousRegister;
 
@@ -350,7 +405,9 @@ export function summarizeAdaptiveRegisterSwitchingStage1(dialogues, { provenance
       } else {
         bucket.gateIdentities.add(`${stance.gateRegister}@${stance.gateVersion}`);
         if (stance.gateRegister !== turn.selectedRegister || stance.gateVersion !== grid.measurement.gateVersion) {
-          errors.push(`${label}: ${turn.selectedRegister} was not scored under its own ${grid.measurement.gateVersion} gate`);
+          errors.push(
+            `${label}: ${turn.selectedRegister} was not scored under its own ${grid.measurement.gateVersion} gate`,
+          );
         }
         if (stance.passed) bucket.cueCompliant += 1;
         if (stance.passed && stance.missingRequired?.length) {
@@ -376,13 +433,17 @@ export function summarizeAdaptiveRegisterSwitchingStage1(dialogues, { provenance
         bucket.registerScoreCount += 1;
       }
       if (turn.registerJudgeModel !== grid.scoring.registerJudge) {
-        errors.push(`${label}: register judge is ${turn.registerJudgeModel || 'missing'}, not ${grid.scoring.registerJudge}`);
+        errors.push(
+          `${label}: register judge is ${turn.registerJudgeModel || 'missing'}, not ${grid.scoring.registerJudge}`,
+        );
       }
     }
   }
   for (const scenario of grid.scenarios) {
     if (scenarioCounts.get(scenario) !== grid.stage1.repeatsPerScenario) {
-      errors.push(`${scenario}: expected ${grid.stage1.repeatsPerScenario} rows, found ${scenarioCounts.get(scenario) || 0}`);
+      errors.push(
+        `${scenario}: expected ${grid.stage1.repeatsPerScenario} rows, found ${scenarioCounts.get(scenario) || 0}`,
+      );
     }
   }
   if (!resistanceTurns) errors.push('no resistance turns observed');

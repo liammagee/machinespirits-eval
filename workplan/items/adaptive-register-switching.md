@@ -1,17 +1,19 @@
 ---
 id: adaptive-register-switching
 title: Does switching into an edged register at the right moment help?
-status: blocked
+status: review
 type: experiment
 priority: P3
 owner: codex
 source: manual
 created: 2026-08-09
-updated: 2026-08-09
+updated: 2026-08-10
+branch: codex/adaptive-edge-timing-cli
 verification: Frozen plan, router seam, cells, runner, and fail-closed report
-  validate; Stage 1 completes only when the approved 10-row adaptive pilot has
-  a complete measures 1-4 report and its pass/kill decision is recorded.
-blocked_by: Explicit operator approval of frozen Stage-1 plan SHA
+  validate; the approved 10-row Stage 1 pilot completed measures 1-4 with a
+  PASS_STAGE1 decision; the opt-in tutor-stub edge-timing overlay, trace,
+  settings, help, and analysis projections pass focused tests; Stage 2 remains
+  unauthorized.
 claim_status: exploratory
 depends_on:
   - register-mock-praise-probe
@@ -20,6 +22,11 @@ links:
     - notes/2026-08-09-adaptive-register-switching-prereg-draft.md
   exports:
     - exports/adaptive-register-switching/plan.json
+  code:
+    - services/tutorStubEdgeTimingPolicy.js
+    - docs/tutor-stub-cli.md
+  runs:
+    - eval-2026-08-09-b09e5a10
 tags:
   - register
   - manner
@@ -50,4 +57,21 @@ Built the cell-scoped router-menu seam and cells 204/205; edged registers stay
 `router_selectable: false` globally. Added a Stage-1-only SHA-gated runner and
 zero-call fail-closed report carrying registered measures 1-8, with measures
 1-4 collected in Stage 1 and 5-8 explicitly withheld for Stage 2. No model
-calls made. Blocked at the explicit operator-approval gate.
+calls made at freeze time; the item then stopped at the explicit
+operator-approval gate.
+
+2026-08-10 Codex: the operator approved the frozen SHA and the attended Stage 1
+pilot completed as `eval-2026-08-09-b09e5a10`, 10/10 rows, without restart or
+widening. The fail-closed report returned `COMPLETE / PASS_STAGE1`: all 90
+tutor-seat calls used `codex/gpt-5.5`; the router made 18 switches, chose an
+edged register on 10/13 resistance turns and 0/7 uptake turns, and leaked no
+edged choice onto other turns. Ironic delivery was cue-compliant and
+manner-present on 4/4 turns; sarcastic delivery was cue-compliant on 6/6 and
+manner-present on 5/6, with the miss retained as a delivery failure. Measures
+5-8 remain uncollected and Stage 2 remains unauthorized.
+
+2026-08-10 Codex: folded the frozen timing map into tutor-stub as the opt-in
+`edge_timing` register-policy overlay. The normal selection trace and CLI now
+show the active style menu, matched resistance/uptake phase, timing choice,
+final applied style, and any later hard-guard override. It is explicitly not a
+default or a validated learning policy.

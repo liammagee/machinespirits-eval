@@ -182,6 +182,55 @@ export function projectTutorStubTurnAnalysisLines({
         registerSelection.selected_register ||
         'No teaching style was stored.',
     );
+    if (registerSelection.edge_timing?.phase && registerSelection.edge_timing.phase !== 'other') {
+      const timing = registerSelection.edge_timing;
+      const previous = timing.previous_register || 'initial';
+      const selected =
+        timing.final_selected_register ||
+        timing.selected_register ||
+        registerSelection.engagement_stance ||
+        registerSelection.selected_register;
+      appendAnalysisLine(
+        lines,
+        C,
+        'style shift',
+        previous === selected ? `${selected} held` : `${previous} -> ${selected}`,
+      );
+      appendAnalysisLine(
+        lines,
+        C,
+        'edge timing',
+        `${timing.phase}${timing.resistance_signal ? `; ${tutorStubDisplayDiagnosticLabel(timing.resistance_signal)}` : ''}; ${
+          timing.edge_eligible
+            ? timing.activated === false
+              ? timing.primary_aligned
+                ? 'timing choice matched the primary style'
+                : `edged style was a candidate but ${tutorStubPlainPolicyLabel(
+                    timing.composition_winner || 'primary_policy',
+                  )} stayed in control`
+              : 'edged style eligible'
+            : timing.edge_suppressed_reason
+              ? `edge closed because ${tutorStubDisplayDiagnosticLabel(timing.edge_suppressed_reason)}`
+              : 'non-edged style selected'
+        }`,
+      );
+      appendAnalysisLine(
+        lines,
+        C,
+        'style menu',
+        (timing.router_register_menu || []).map(tutorStubDisplayDiagnosticLabel).join(', '),
+      );
+      if (timing.post_timing_override) {
+        appendAnalysisLine(
+          lines,
+          C,
+          'final style guard',
+          `${tutorStubDisplayDiagnosticLabel(timing.post_timing_override.source)} selected ${tutorStubDisplayDiagnosticLabel(
+            timing.post_timing_override.selected_register,
+          )}`,
+        );
+      }
+    }
     appendAnalysisLine(
       lines,
       C,

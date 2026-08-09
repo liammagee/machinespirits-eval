@@ -67,6 +67,7 @@ export function buildTutorStubExplanatoryDebugFrame(state, turn) {
       step_compression: turn.humanDiscourseFrame?.proofDebt?.elision || null,
       question_support: turn.humanDiscourseFrame?.questionSupport || null,
       clue_release_pacing: turn.releasePacing || null,
+      edge_timing: selection?.edge_timing || null,
     },
     policy_input_for_this_tutor_turn: {
       field: policyCalculation.features?.field || null,

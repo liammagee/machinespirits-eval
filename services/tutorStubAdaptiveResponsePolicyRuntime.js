@@ -4,6 +4,7 @@ export function createTutorStubAdaptiveResponsePolicyRuntime(dependencies = {}, 
     DYNAMICAL_SYSTEM_REGISTER_AFFINITY,
     DYNAMICAL_SYSTEM_TEMPERATURE,
     TUTOR_STUB_REGISTER_POLICY_COMPOSITION_SCHEMA,
+    buildTutorStubEdgeTimingSelection,
     buildContinuousEngagementStanceVector,
     buildContinuousRegisterPolicyMetadata,
     buildDynamicalSystemRegisterScores,
@@ -644,7 +645,13 @@ export function createTutorStubAdaptiveResponsePolicyRuntime(dependencies = {}, 
     };
   }
 
-  function composeRegisterPolicySelection({ primarySelection, state, classification, tutorLearnerDag }) {
+  function composeRegisterPolicySelection({
+    primarySelection,
+    state,
+    classification,
+    tutorLearnerDag,
+    learnerText = '',
+  }) {
     const overlays = Array.isArray(state.register?.overlays) ? state.register.overlays : [];
     if (!overlays.length) return primarySelection;
     const primaryRegister = primarySelection?.selected_register || primarySelection?.engagement_stance || null;
@@ -658,12 +665,20 @@ export function createTutorStubAdaptiveResponsePolicyRuntime(dependencies = {}, 
               tutorLearnerDag,
               deterministic: true,
             })
-          : fieldEngagementStanceSelection({
-              state,
-              classification,
-              tutorLearnerDag,
-              deterministic: true,
-            });
+          : overlay === 'field'
+            ? fieldEngagementStanceSelection({
+                state,
+                classification,
+                tutorLearnerDag,
+                deterministic: true,
+              })
+            : buildTutorStubEdgeTimingSelection({
+                state,
+                classification,
+                tutorLearnerDag,
+                learnerText,
+                primaryRegister,
+              });
       const evaluation = evaluateTutorStubRegisterPolicyOverlay({
         overlay,
         state,
@@ -694,9 +709,22 @@ export function createTutorStubAdaptiveResponsePolicyRuntime(dependencies = {}, 
       activated_overlay: winner?.policy || null,
       activated_strength: winner?.signal_strength ?? null,
     };
+    const edgeTimingEvaluation = evaluated.find((entry) => entry.policy === 'edge_timing') || null;
+    const edgeTiming = edgeTimingEvaluation?.candidate?.edge_timing
+      ? {
+          ...edgeTimingEvaluation.candidate.edge_timing,
+          eligible: edgeTimingEvaluation.eligible,
+          activated: winner?.policy === 'edge_timing',
+          primary_aligned:
+            edgeTimingEvaluation.selected_register !== null &&
+            edgeTimingEvaluation.selected_register === primaryRegister,
+          composition_winner: winner?.policy || 'primary_policy',
+        }
+      : null;
     if (!winner) {
       return {
         ...primarySelection,
+        ...(edgeTiming ? { edge_timing: edgeTiming } : {}),
         policy_composition: composition,
       };
     }
@@ -710,6 +738,7 @@ export function createTutorStubAdaptiveResponsePolicyRuntime(dependencies = {}, 
       register_reason: reason,
       engagement_stance_reason: reason,
       source: `register_policy_overlay_${winner.policy}`,
+      ...(edgeTiming ? { edge_timing: edgeTiming } : {}),
       policy_composition: composition,
     };
   }

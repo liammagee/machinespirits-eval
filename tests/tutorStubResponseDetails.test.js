@@ -13,6 +13,7 @@ import {
   tutorStubPlainStrategyText,
   tutorStubResponseCheckTriggerAreas,
   tutorStubResponseMetadataLine,
+  tutorStubResponseStyleTransitionLine,
 } from '../services/tutorStubResponseDetails.js';
 import { readTutorStubApplicationSource } from './helpers/tutorStubSourceContract.js';
 
@@ -77,6 +78,7 @@ test('teaching-policy labels retain every authored mapping and the readable fall
         'bland',
         'random',
         'negative',
+        'edge_timing',
       ].map((policy) => [policy, tutorStubPlainPolicyLabel(policy)]),
     ),
     {
@@ -91,10 +93,61 @@ test('teaching-policy labels retain every authored mapping and the readable fall
       bland: 'fixed plain baseline',
       random: 'random control',
       negative: 'negative-register control',
+      edge_timing: 'resistance-timed edge',
     },
   );
   assert.equal(tutorStubPlainPolicyLabel('new_policy'), 'new policy');
   assert.equal(tutorStubPlainPolicyLabel(null), 'unknown policy');
+});
+
+test('response details expose a terminal-only edge-timing transition', () => {
+  assert.equal(
+    tutorStubResponseStyleTransitionLine({
+      registerSelection: {
+        edge_timing: {
+          phase: 'resistance',
+          resistance_signal: 'question_flood',
+          previous_register: 'brisk',
+          selected_register: 'ironic',
+          edge_eligible: true,
+        },
+      },
+    }),
+    'style shift > brisk → ironic · resistance · question flood · edge eligible',
+  );
+  assert.equal(
+    tutorStubResponseStyleTransitionLine({
+      registerSelection: {
+        edge_timing: {
+          phase: 'uptake',
+          previous_register: 'ironic',
+          selected_register: 'precise',
+          edge_eligible: false,
+          edge_suppressed_reason: 'uptake_closes_edge',
+        },
+      },
+    }),
+    'style shift > ironic → precise · uptake · edge closed: uptake closes edge',
+  );
+  assert.equal(
+    tutorStubResponseStyleTransitionLine({
+      registerSelection: {
+        edge_timing: {
+          phase: 'resistance',
+          resistance_signal: 'boredom',
+          previous_register: 'brisk',
+          selected_register: 'sarcastic',
+          final_selected_register: 'warm',
+          edge_eligible: true,
+          activated: false,
+          primary_aligned: false,
+          composition_winner: 'field',
+        },
+      },
+    }),
+    'style shift > brisk → warm · resistance · boredom · edge candidate not applied: current interaction-state choice stayed in control',
+  );
+  assert.equal(tutorStubResponseStyleTransitionLine({ registerSelection: {} }), null);
 });
 
 test('policy-signal vocabulary retains every authored learner-facing explanation', () => {

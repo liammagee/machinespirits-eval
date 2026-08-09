@@ -542,6 +542,7 @@ import {
   parseTutorStubRegisterPolicyStack,
   tutorStubRegisterPolicyStackId,
 } from './tutorStubRegisterPolicyComposition.js';
+import { buildTutorStubEdgeTimingSelection, finalizeTutorStubEdgeTimingDecision } from './tutorStubEdgeTimingPolicy.js';
 import { sampleTutorStubPolicyDistribution } from './tutorStubPolicySampler.js';
 import { captureGitProvenanceSummary, hashCanonicalJson } from './experimentRunArtifacts.js';
 import { buildTutorStubStateObservation } from './adaptiveTutor/tutorStubStateAdapter.js';
@@ -1202,12 +1203,14 @@ export async function runTutorStubCliApplicationHost({
     buildStateRegisterScores,
     buildTrajectoryRegisterScores,
     buildTutorStubLightAdaptationDecision,
+    buildTutorStubEdgeTimingSelection,
     buildTutorStubResponseConfiguration,
     committedReleaseRows,
     continuousEngagementStanceInstruction,
     currentReleaseRows,
     displayDiagnosticLabel,
     evaluateTutorStubRegisterPolicyOverlay,
+    finalizeTutorStubEdgeTimingDecision,
     getActorialPartDefinitions,
     getEngagementStanceDefinition,
     getEngagementStanceDefinitions,

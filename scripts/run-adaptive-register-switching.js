@@ -23,10 +23,7 @@ import {
 import { openEvaluationDbReadonly } from '../services/evaluationDbReadonly.js';
 import { resolveEngagementRegister } from '../services/engagementRegisterRegistry.js';
 import { mannerPresenceApplies } from '../services/registerMannerPresence.js';
-import {
-  lookupMannerPresence,
-  readMannerPresence,
-} from '../services/registerMannerPresenceReader.js';
+import { lookupMannerPresence, readMannerPresence } from '../services/registerMannerPresenceReader.js';
 import { evaluateRegisterStanceFidelity } from '../services/registerStanceFidelity.js';
 import { findDialogueLog } from './dump-turn-prompts.js';
 
@@ -108,20 +105,8 @@ export function generationCommand() {
 export function followUpCommands(runId = '<runId>', expectedSha = '<clean-commit-sha>') {
   const authorization = ['--launch-approved', '--expected-sha', expectedSha];
   return [
-    [
-      process.execPath,
-      'scripts/run-adaptive-register-switching.js',
-      '--score-register-run',
-      runId,
-      ...authorization,
-    ],
-    [
-      process.execPath,
-      'scripts/run-adaptive-register-switching.js',
-      '--read-manner-run',
-      runId,
-      ...authorization,
-    ],
+    [process.execPath, 'scripts/run-adaptive-register-switching.js', '--score-register-run', runId, ...authorization],
+    [process.execPath, 'scripts/run-adaptive-register-switching.js', '--read-manner-run', runId, ...authorization],
     [process.execPath, 'scripts/run-adaptive-register-switching.js', '--report-run', runId],
   ];
 }
@@ -226,7 +211,10 @@ export function stage1Dialogues(runId, options = {}) {
         const state = traceTurn.engagementState || {};
         const selectedRegister = canonicalRegister(state.selected_register || state.selected_mode);
         const routerSelectedRegister = canonicalRegister(
-          state.router_selected_register || state.router_selected_mode || state.selected_register || state.selected_mode,
+          state.router_selected_register ||
+            state.router_selected_mode ||
+            state.selected_register ||
+            state.selected_mode,
         );
         const resistance = Boolean(state.resistance_signal);
         const phase = resistance ? 'resistance' : seenResistance ? 'uptake' : 'other';
@@ -357,9 +345,11 @@ function runReport(runId, outputDir) {
   console.log(`[register-switch] Stage 1 report ${report.status} (${report.observedRows}/${report.expectedRows} rows)`);
   console.log(
     `[register-switch] provenance ${provenance.seatCalls} tutor-seat calls: ` +
-      `${Object.entries(provenance.observed)
-        .map(([pair, count]) => `${pair} x${count}`)
-        .join(', ') || 'none'}`,
+      `${
+        Object.entries(provenance.observed)
+          .map(([pair, count]) => `${pair} x${count}`)
+          .join(', ') || 'none'
+      }`,
   );
   const behavior = report.routerBehavior;
   console.log(

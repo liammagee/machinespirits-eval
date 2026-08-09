@@ -35,8 +35,9 @@ Key choices and defaults:
 - QA policy suites: `core` is the routine baseline + discrete adaptive comparison (`bland,dynamic,state,field,trajectory,dynamical_system,empirical_dynamical_system`); `controls` is `negative,bland,random`; `pressure` is the cheap `field,negative` screen for pressure-sensitive learner profiles; `sentinel` is the representative five-policy ladder (`bland,field,trajectory,dynamical_system,negative`) for the 60-dialogue sentinel-profile `n=3` comparison; `frontier` adds the richer/continuous state policies against `bland`; `audit` is the expensive all-policy sweep. `focused` aliases `core`; `full`/`all` alias `audit`.
 - Trajectory policy: `--register-policy trajectory` leaves `field` unchanged and adds recent finite-difference velocity/slope/acceleration/risk-trend adjustments for benchmarking against `field`.
 - Dynamical-system policy: `--register-policy dynamical_system` maps a continuous state/derivative vector through theory priors plus within-dialogue empirical efficacy corrections; `dynamical-system` is accepted as an alias.
-- Composed register policies: append `+state`, `+field`, or both to an adaptive
-  primary, for example `--register-policy dynamical_system+state+field`. The
+- Composed register policies: append `+state`, `+field`, `+edge_timing`, or an
+  ordered combination to an adaptive primary, for example
+  `--register-policy field+edge_timing`. The
   primary selects first. Each overlay then makes a deterministic counter-choice
   and receives a normalized turn-change score; only an overlay at or above
   `--register-overlay-threshold` (default `0.7`) that recommends a different
@@ -44,6 +45,16 @@ Key choices and defaults:
   order breaking ties. `bland`, `random`, and `negative` reject overlays so
   control arms remain uncontaminated. Auto-eval accepts composed policy ids in
   `--policies`, such as `--policies bland,dynamical_system+state+field`.
+- Resistance-timed edge overlay: `+edge_timing` is opt-in and deterministic. It
+  maps publicly expressed boredom or rote parroting to sarcasm, irrelevance or
+  a question flood to irony, frustration to a non-edged charismatic stance,
+  and content-bearing uptake to precise/plain consolidation. Plain-language
+  repair and exposed affect close the edge; explicit register direction and
+  existing hard guards retain precedence. The register-selection trace records
+  the active menu, timing choice, final applied register, and any later guard.
+  Inspect the plain transition with `/analysis` and the full envelope with
+  `/analysis technical`. This is the frozen Stage 1 timing seam, not a validated
+  learning policy and not a default.
 - Empirical dynamical-system policy: run `node scripts/build-tutor-stub-register-priors.js` first, then use `--register-policy empirical_dynamical_system` to add cross-run prior corrections; `empirical-dynamical-system` is accepted as an alias.
 - Continuous dynamical-system policies: `continuous_dynamical_system` and `continuous_empirical_dynamical_system` keep `selected_register` and `register_vector` as compatibility aliases while using `engagement_stance` and a weighted engagement-stance blend internally; hyphen aliases are accepted. The empirical variant uses the same register-priors file as `empirical_dynamical_system`.
 - Adaptive-performance temperature: default `0.15`. Use the backward-compatible `--register-temperature <n>` launch flag or `/settings stance-temp <n>` (`/settings temp` remains an alias). Lower values sharpen the dominant engagement stance and independently selected actorial part; higher values broaden those two distributions. Action family, audience register, lexical accessibility, and scene immersion remain deterministic and are never temperature-scaled. The supported range is `0.05` to `3.0`. Live changes invalidate and regenerate mixed suggestion analysis/prefetch state.
@@ -749,10 +760,10 @@ Useful variants:
   learner profile and live settings. Record both the `history_clear` boundary
   and `interactive_dialogue_reset` provenance. `/clear` is a backward-compatible
   alias.
-- `/settings policy add state` and `/settings policy add field` add live
-  strong-change overlays without replacing the primary policy. Use `/settings
-  policy remove <state|field>`, `/settings policy clear`, or `/settings policy
-  threshold <0..1>` to adjust them. Changes invalidate mixed learner analysis
+- `/settings policy add state`, `/settings policy add field`, and `/settings
+  policy add edge_timing` add live overlays without replacing the primary
+  policy. Use `/settings policy remove <state|field|edge_timing>`, `/settings
+  policy clear`, or `/settings policy threshold <0..1>` to adjust them. Changes invalidate mixed learner analysis
   and tutor-prefetch caches, apply from the next turn, survive `/reset`, and are
   recorded in traces, `/analysis technical`, and transcript HTML.
 - `/settings dropout 0.15` gives each eligible accumulated public premise a

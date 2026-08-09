@@ -498,8 +498,13 @@ export function createTutorStubLiveSettingsController(dependencies) {
           motion: draft.motion,
           noColor: args['no-color'],
         });
-      } else if (action.id === 'state_overlay' || action.id === 'field_overlay') {
-        const overlay = action.id === 'state_overlay' ? 'state' : 'field';
+      } else if (
+        action.id === 'state_overlay' ||
+        action.id === 'field_overlay' ||
+        action.id === 'edge_timing_overlay'
+      ) {
+        const overlay =
+          action.id === 'state_overlay' ? 'state' : action.id === 'field_overlay' ? 'field' : 'edge_timing';
         draft.overlays = draft.overlays.includes(overlay)
           ? draft.overlays.filter((entry) => entry !== overlay)
           : [...draft.overlays, overlay];

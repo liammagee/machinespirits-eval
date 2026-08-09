@@ -372,3 +372,36 @@ test('the debug-report runtime retains live preparation and terminal ownership a
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test('technical analysis exposes the complete edge-timing decision envelope', () => {
+  const output = terminalBytes(
+    projectTutorStubTechnicalAnalysisLines({
+      turn: { turn: 2 },
+      registerSelection: {
+        engagement_stance: 'ironic',
+        edge_timing: {
+          phase: 'resistance',
+          resistance_signal: 'question_flood',
+          previous_register: 'brisk',
+          primary_register: 'warm',
+          selected_register: 'ironic',
+          final_selected_register: 'ironic',
+          edge_eligible: true,
+          activated: true,
+          applied: true,
+          decision_strength: 1,
+          edge_suppressed_reason: null,
+          router_register_menu: ['plain', 'precise', 'ironic', 'sarcastic'],
+          admitted_edged_registers: ['ironic', 'sarcastic'],
+          mapping: 'adaptive-register-switching-stage1',
+        },
+      },
+    }),
+  );
+  assert.match(output, /edge timing: phase=resistance; signal=question_flood; previous=brisk; primary=warm/u);
+  assert.match(
+    output,
+    /timingSelected=ironic; finalSelected=ironic; eligible=true; activated=true; applied=true; strength=1; suppressed=none/u,
+  );
+  assert.match(output, /edge timing menu: menu=plain,precise,ironic,sarcastic; admitted=ironic,sarcastic/u);
+});

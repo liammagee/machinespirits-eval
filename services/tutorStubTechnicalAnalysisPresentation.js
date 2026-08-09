@@ -278,6 +278,39 @@ export function projectTutorStubTechnicalAnalysisLines({
     }
     appendAnalysisLine(lines, C, 'reviewer signal', registerSelection.reviewer_signal || 'unknown');
     appendAnalysisLine(lines, C, 'register reason', registerSelection.register_reason);
+    if (registerSelection.edge_timing) {
+      const timing = registerSelection.edge_timing;
+      appendAnalysisLine(
+        lines,
+        C,
+        'edge timing',
+        `phase=${timing.phase}; signal=${timing.resistance_signal || 'none'}; previous=${
+          timing.previous_register || 'none'
+        }; primary=${timing.primary_register || 'none'}; timingSelected=${
+          timing.selected_register || 'none'
+        }; finalSelected=${timing.final_selected_register || timing.selected_register || 'none'}; eligible=${
+          timing.edge_eligible
+        }; activated=${timing.activated === true}; applied=${timing.applied === true}; strength=${
+          timing.decision_strength
+        }; suppressed=${timing.edge_suppressed_reason || 'none'}`,
+      );
+      if (timing.post_timing_override) {
+        appendAnalysisLine(
+          lines,
+          C,
+          'post-timing guard',
+          `source=${timing.post_timing_override.source}; selected=${timing.post_timing_override.selected_register}`,
+        );
+      }
+      appendAnalysisLine(
+        lines,
+        C,
+        'edge timing menu',
+        `menu=${timing.router_register_menu?.join(',') || 'none'}; admitted=${
+          timing.admitted_edged_registers?.join(',') || 'none'
+        }; mapping=${timing.mapping || 'unknown'}`,
+      );
+    }
     if (registerSelection.policy_composition) {
       const composition = registerSelection.policy_composition;
       appendAnalysisLine(

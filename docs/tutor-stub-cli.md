@@ -569,7 +569,11 @@ restores the active appearance and discards the preview; choosing
 ## Dialogue-first response details
 
 The compact model, token, and tutor-style line is shown before each tutor
-utterance, followed by a live foreground timing breakdown such as:
+utterance. When the opt-in resistance-timed edge policy makes or confirms a
+timing decision, a second compact line shows the previous and selected style,
+the resistance/uptake phase, the matched signal, and whether the edged menu was
+open. These terminal-only details are followed by a live foreground timing
+breakdown such as:
 
 ```text
 time > wait 30.7s · analysis 13.9s · tutor 16.8s · local <0.1s
@@ -706,6 +710,46 @@ or sarcasm. The optional `--safe-registers` flag narrows only automatic routing;
 direct `/register` choices still expose every non-simulated register. The more
 severe `face_threat` condition remains simulated-only and is rejected by the
 interactive command surface.
+
+### Resistance-timed edge
+
+Stage 1 of the adaptive-register-switching experiment established that the
+router could admit irony/sarcasm for matched resistance, keep them off uptake
+turns, and realize the selected manner. Tutor-stub exposes that frozen timing
+map as an opt-in policy overlay; it is not the default and does not claim a
+learning benefit:
+
+```bash
+npm run tutor:stub -- --register-policy field+edge_timing
+```
+
+The standard human-facing launcher already resolves the complete
+non-simulated palette, including `ironic` and `sarcastic`; leave that palette
+implicit because learner-safe labs reject an explicit `--register-palette all`
+override even when their resolved menu is the same.
+
+The mapping is deterministic and zero-call: boredom or rote parroting admits
+sarcasm; irrelevance or a question flood admits irony; frustration stays
+non-edged; and content-bearing uptake closes the edge and prefers a precise or
+plain stance. Comprehension repair, exposed or vulnerable affect, closure,
+explicit `/register` direction, authored evidence, the independent teaching
+action, and response safety retain priority.
+
+Use `/settings policy add edge_timing` or the **Resistance-timed edge** row in
+the keyboard settings panel to enable it for a running session. `/analysis`
+shows the shift, phase, reason, and active menu in plain language;
+`/analysis technical` retains the exact decision envelope. The compact response
+details line looks like:
+
+```text
+style shift > brisk → ironic · resistance · irrelevance · edge eligible
+```
+
+On uptake it reports the edge closing, for example `ironic → precise`. The
+decision is stored in the normal register-selection trace and transcript
+analysis, but never enters public tutor or learner speech. The live CLI uses no
+paid manner-presence reader; its existing deterministic response-configuration
+audit reports whether the selected style became transcript-visible.
 
 Launch-time aliases provide the same distinction:
 

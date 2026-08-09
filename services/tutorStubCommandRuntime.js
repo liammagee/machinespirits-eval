@@ -465,7 +465,9 @@ export function createTutorStubCommandRuntime(dependencies = {}) {
             label: 'register overlay threshold',
           });
         } else {
-          throw new Error('use policy add <state|field>, remove <state|field>, clear, or threshold <0-1>');
+          throw new Error(
+            'use policy add <state|field|edge_timing>, remove <state|field|edge_timing>, clear, or threshold <0-1>',
+          );
         }
         parseTutorStubRegisterPolicyStack(tutorStubRegisterPolicyStackId(state.register.policy, nextOverlays));
       } catch (error) {
@@ -527,7 +529,7 @@ export function createTutorStubCommandRuntime(dependencies = {}) {
     }
     if (![...temperatureNames, ...dropoutNames, ...releaseSpeedNames].includes(setting) || parts.length !== 2) {
       console.log(
-        `${C.red}settings error:${C.reset} use /settings, /settings model [provider.alias], /settings stance-temp <n>, /settings dropout <0-1>, /settings light on|off, /settings release-speed <0.5-2>, /settings policy add <state|field>, or /settings forget`,
+        `${C.red}settings error:${C.reset} use /settings, /settings model [provider.alias], /settings stance-temp <n>, /settings dropout <0-1>, /settings light on|off, /settings release-speed <0.5-2>, /settings policy add <state|field|edge_timing>, or /settings forget`,
       );
       console.log(
         `${C.dim}  examples: /settings model codex.gpt-5.6-luna | /settings temp 0.4 | /settings dropout 0.15 | /settings light off | /settings release-speed 1.5${C.reset}\n`,

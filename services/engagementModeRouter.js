@@ -68,6 +68,29 @@ function buildResistanceSignalPatterns() {
   }));
 }
 
+export function hasEngagementResistanceSignal(source) {
+  const groups = buildResistanceSignalPatterns();
+  const challengePatterns = groups.flatMap((group) => group.patterns);
+  return (
+    challengePatterns.some((pattern) => pattern.test(source)) || (String(source || '').match(/\?/g) || []).length >= 3
+  );
+}
+
+export function detectEngagementResistanceSignal(source) {
+  const groups = buildResistanceSignalPatterns();
+  const questionCount = (String(source || '').match(/\?/g) || []).length;
+  const challengePatterns = groups.flatMap((group) => group.patterns);
+  for (const group of groups) {
+    if (group.questionFlood && questionCount >= 3) {
+      return { signal: group.signal, evidence: firstMatch(source, group.patterns) || 'multiple questions' };
+    }
+    if (group.patterns.some((pattern) => pattern.test(source))) {
+      return { signal: group.signal, evidence: firstMatch(source, group.patterns) };
+    }
+  }
+  return { signal: 'unspecified_resistance', evidence: firstMatch(source, challengePatterns) };
+}
+
 export function extractEngagementRegisterHistory(traceLike) {
   const entries = Array.isArray(traceLike)
     ? traceLike
@@ -231,22 +254,6 @@ export function routeEngagementMode({
     vulnerability: vulnerabilityPatterns = [],
     scaffolding: scaffoldingPatterns = [],
   } = buildRoutingPatterns();
-  const resistanceSignalPatterns = buildResistanceSignalPatterns();
-  const challengePatterns = resistanceSignalPatterns.flatMap((group) => group.patterns);
-  const hasResistanceSignal = (source) =>
-    challengePatterns.some((pattern) => pattern.test(source)) || (String(source || '').match(/\?/g) || []).length >= 3;
-  const detectResistanceSignal = (source) => {
-    const questionCount = (String(source || '').match(/\?/g) || []).length;
-    for (const group of resistanceSignalPatterns) {
-      if (group.questionFlood && questionCount >= 3) {
-        return { signal: group.signal, evidence: firstMatch(source, group.patterns) || 'multiple questions' };
-      }
-      if (group.patterns.some((pattern) => pattern.test(source))) {
-        return { signal: group.signal, evidence: firstMatch(source, group.patterns) };
-      }
-    }
-    return { signal: 'unspecified_resistance', evidence: firstMatch(source, challengePatterns) };
-  };
 
   pushFlag(riskFlags, /\b(profound|impressive|admire|status)\b/i.test(message), 'status_display');
   pushFlag(
@@ -277,8 +284,8 @@ export function routeEngagementMode({
     });
   }
 
-  if (priorPacing && hasResistanceSignal(current)) {
-    const resistance = detectResistanceSignal(message || history);
+  if (priorPacing && hasEngagementResistanceSignal(current)) {
+    const resistance = detectEngagementResistanceSignal(message || history);
     return route({
       learner_signal: 'instructional_register_exhausted',
       selected_register: selectResistanceRegister(resistance.signal, selectableMenu),
@@ -361,8 +368,8 @@ export function routeEngagementMode({
     });
   }
 
-  if (hasResistanceSignal(text)) {
-    const resistance = detectResistanceSignal(message || history);
+  if (hasEngagementResistanceSignal(text)) {
+    const resistance = detectEngagementResistanceSignal(message || history);
     return route({
       learner_signal: 'boredom_or_compliance_challenge',
       selected_register: selectResistanceRegister(resistance.signal, selectableMenu),

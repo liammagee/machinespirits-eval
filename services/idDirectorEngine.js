@@ -1083,8 +1083,7 @@ export async function runIdDirectedTurn({
   const engagementRegisterArm = normalizeEngagementRegisterArm(
     profile?.factors?.engagement_register_arm || profile?.engagement_register_arm,
   );
-  const routerRegisterMenu =
-    profile?.factors?.router_register_menu || profile?.router_register_menu || [];
+  const routerRegisterMenu = profile?.factors?.router_register_menu || profile?.router_register_menu || [];
   const idOutputContract = normalizeIdOutputContract(
     profile?.factors?.id_output_contract || profile?.id_output_contract,
   );
