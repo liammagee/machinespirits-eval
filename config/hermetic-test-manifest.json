@@ -274,6 +274,7 @@
         "tests/evalCliScoringCommands.test.js",
         "tests/evalLogRoutesDataRoot.test.js",
         "tests/evalProfileRegistry.test.js",
+        "tests/evalReadRouteInventory.test.js",
         "tests/evalRequestAdmissionRoutes.test.js",
         "tests/evalRoutesDependencyInjection.test.js",
         "tests/evalRoutesImport.test.js",
