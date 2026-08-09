@@ -240,6 +240,11 @@ Options:
   --save <path>          write transcript JSON on exit
   --trace-dir <path>     write JSONL model-call traces here
                          (default: ${STUB.traceDir})
+  --artifact-archive <off|best_effort|required>
+                         mirror redacted traces outside the worktree; required
+                         fails before model calls when no archive is available
+                         (default: ${STUB.artifactArchive || 'off'}; env
+                         TUTOR_STUB_ARTIFACT_ARCHIVE)
   --settings-file <path> local remembered interactive settings
                          (default: ${STUB.settingsFile})
   --theme <name>         terminal theme: ${TUTOR_STUB_CLI_THEME_IDS.join(', ')}

@@ -68,6 +68,7 @@ const STUB = {
   historyTurns: Number.parseInt(process.env.TUTOR_STUB_HISTORY_TURNS || '4', 10),
   memorySummary: process.env.TUTOR_STUB_MEMORY_SUMMARY !== '0',
   traceDir: process.env.TUTOR_STUB_TRACE_DIR || '.tutor-stub-traces',
+  artifactArchive: process.env.TUTOR_STUB_ARTIFACT_ARCHIVE || 'off',
   settingsFile: process.env.TUTOR_STUB_SETTINGS_FILE || '.tutor-stub-traces/last-settings.json',
   cliTheme: process.env.TUTOR_STUB_CLI_THEME || 'nocturne',
   motion: process.env.TUTOR_STUB_MOTION || 'auto',

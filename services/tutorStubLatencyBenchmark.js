@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { resolveTutorStubDiscoursePlane } from './tutorStubDiscoursePlane.js';
+import { requiredTutorStubArtifactArchiveArgs } from './tutorStubArtifactArchive.js';
 
 export const TUTOR_STUB_LATENCY_BENCHMARK_SCHEMA = 'machinespirits.tutor-stub.latency-benchmark.v1';
 export const TUTOR_STUB_LATENCY_BENCHMARK_REPORT_SCHEMA = 'machinespirits.tutor-stub.latency-benchmark-report.v2';
@@ -166,6 +167,7 @@ export function expandTutorStubLatencyBenchmark({ config, root = process.cwd(), 
             'deterministic',
             '--trace-dir',
             jobTraceDir,
+            ...requiredTutorStubArtifactArchiveArgs(),
             '--settings-file',
             path.join(jobTraceDir, 'settings.json'),
             '--no-remember-settings',

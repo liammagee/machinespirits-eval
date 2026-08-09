@@ -43,6 +43,7 @@ import {
   runCueBlindCommitteeBattery,
 } from '../services/program2CommitteeEngine.js';
 import { loadProgram2Phase5eRows } from '../services/program2Phase5ePilotBundle.js';
+import { requiredTutorStubArtifactArchiveArgs } from '../services/tutorStubArtifactArchive.js';
 import {
   evaluateProgram2LiveFutility,
   validateProgram2CertificateEvidenceBindings,
@@ -245,6 +246,7 @@ function commandForJob(
     job.id,
     '--trace-dir',
     traceDir,
+    ...requiredTutorStubArtifactArchiveArgs(),
     '--max-tokens',
     String(PHASE5_LIVE_PILOT_SPEC.maxTokens),
     '--history-turns',

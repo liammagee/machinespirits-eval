@@ -31,6 +31,7 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'yaml';
 
 import { loadWorld } from './dramaticDerivation/world.js';
+import { requiredTutorStubArtifactArchiveArgs } from './tutorStubArtifactArchive.js';
 
 const DEFAULT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -318,6 +319,7 @@ export function tutorStubShowcaseChildArgs({ arm, scenario, model, learner, trac
     '--no-remember-settings',
     '--trace-dir',
     traceDir,
+    ...requiredTutorStubArtifactArchiveArgs(),
   ];
   return [...shared, ...arm.flags, '--model-call-budget', String(arm.modelCallBudget)];
 }

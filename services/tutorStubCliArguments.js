@@ -104,6 +104,7 @@ export function parseTutorStubCliArguments({
       save: { type: 'string' },
       'prompt-book-context': { type: 'string' },
       'trace-dir': { type: 'string', default: stub.traceDir },
+      'artifact-archive': { type: 'string', default: stub.artifactArchive },
       'settings-file': { type: 'string', default: stub.settingsFile },
       theme: { type: 'string', default: stub.cliTheme },
       motion: { type: 'string', default: stub.motion },

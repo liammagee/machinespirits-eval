@@ -158,6 +158,7 @@ export function createIsolatedPaths(root) {
   return {
     EVAL_DB_PATH: path.join(root, 'evaluations.db'),
     EVAL_LOGS_DIR: path.join(root, 'logs'),
+    EVAL_ARCHIVE_DIR: path.join(root, 'artifact-archive'),
     EVAL_WRITING_PAD_DIR: path.join(root, 'writing-pad'),
     EVAL_EXPORTS_DIR: path.join(root, 'exports'),
     AUTH_DB_PATH: path.join(root, 'auth.db'),
@@ -534,6 +535,7 @@ export async function runHermeticTests(argv = process.argv.slice(2)) {
   const reportRoot = options.reportDir ? path.resolve(PROJECT_ROOT, options.reportDir) : hermeticRoot;
   if (options.reportDir) fs.mkdirSync(reportRoot, { recursive: true });
   const isolatedPaths = createIsolatedPaths(hermeticRoot);
+  fs.mkdirSync(isolatedPaths.EVAL_ARCHIVE_DIR, { recursive: true });
   const env = {
     ...process.env,
     ...isolatedPaths,

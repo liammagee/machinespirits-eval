@@ -402,6 +402,7 @@ test('the core phase borrows the main checkout install when a worktree has none'
 test('isolated environment covers root and tutor-core writable stores', () => {
   const paths = createIsolatedPaths('/tmp/hermetic');
   assert.equal(paths.EVAL_DB_PATH, '/tmp/hermetic/evaluations.db');
+  assert.equal(paths.EVAL_ARCHIVE_DIR, '/tmp/hermetic/artifact-archive');
   assert.equal(paths.TUTOR_CORE_LOG_DIR, '/tmp/hermetic/tutor-core-logs');
   assert.equal(paths.TUTOR_STUB_TRACE_DIR, '/tmp/hermetic/tutor-stub-traces');
 });

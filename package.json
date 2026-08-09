@@ -75,6 +75,7 @@
     "tutor:stub:ingest": "node scripts/ingest-tutor-stub-auto-evals.js",
     "tutor:stub:backfill-failures": "node scripts/backfill-tutor-stub-turn-failures.js",
     "tutor:stub:ingest-failures": "node scripts/ingest-tutor-stub-turn-failures.js",
+    "tutor:stub:artifact-archive:check": "node scripts/check-tutor-stub-artifact-lifecycle.js",
     "tutor:stub:acceptance:web": "node scripts/run-tutor-stub-surface-acceptance.mjs --host web",
     "tutor:stub:acceptance:packaged": "node scripts/run-tutor-stub-surface-acceptance.mjs --host packaged-electron",
     "tutor:stub:register-priors": "node scripts/build-tutor-stub-register-priors.js",

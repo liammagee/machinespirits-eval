@@ -45,12 +45,13 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { resolveTutorStubArtifactArchiveDirectory } from '../services/tutorStubArtifactArchive.js';
+
 const DEFAULT_ARCHIVE = path.resolve('..', 'machinespirits-eval-private');
 
 /** The archive directory, or null when there is none to write to. */
 export function resolveArchiveDir(explicit) {
-  const dir = path.resolve(explicit || process.env.EVAL_ARCHIVE_DIR || DEFAULT_ARCHIVE);
-  return fs.existsSync(dir) ? dir : null;
+  return resolveTutorStubArtifactArchiveDirectory(explicit, { cwd: process.cwd(), repoRoot: process.cwd() });
 }
 
 /** A run directory holds results.jsonl, a report, a manifest, or a traces dir. */

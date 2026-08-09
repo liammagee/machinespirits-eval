@@ -138,7 +138,9 @@ test('live-like auto-eval seals tutor, analyzer, and learner observations under 
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-auto-live-provenance-'));
   const runDir = path.join(root, 'source');
   const binDir = path.join(root, 'bin');
+  const archiveDir = path.join(root, 'archive');
   fs.mkdirSync(binDir, { recursive: true });
+  fs.mkdirSync(archiveDir, { recursive: true });
   writeFakeCodex(binDir);
   try {
     execFileSync(
@@ -176,6 +178,7 @@ test('live-like auto-eval seals tutor, analyzer, and learner observations under 
           ...process.env,
           PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
           CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+          EVAL_ARCHIVE_DIR: archiveDir,
         },
       },
     );
@@ -315,12 +318,15 @@ test('resume replaces drawless failed rows without weakening retained-row verifi
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'tutor-auto-resume-incomplete-'));
   const runDir = path.join(root, 'source');
   const binDir = path.join(root, 'bin');
+  const archiveDir = path.join(root, 'archive');
   fs.mkdirSync(binDir, { recursive: true });
+  fs.mkdirSync(archiveDir, { recursive: true });
   writeFakeCodex(binDir, { failWhenInputIncludes: 'Automated learner run 2/2 for policy field.' });
   const env = {
     ...process.env,
     PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}`,
     CLI_PROVIDER_CODEX_TIMEOUT_MS: '5000',
+    EVAL_ARCHIVE_DIR: archiveDir,
   };
   try {
     const sourceError = (() => {

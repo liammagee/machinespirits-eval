@@ -35,7 +35,15 @@ test('prospective deconfound plan builds twenty unique jobs over a balanced 2x2'
     ],
   );
   assert.match(plan.historicalBoundary, /not independently reproduced/u);
+  assert.ok(
+    plan.jobs.every((job) => {
+      const index = job.argv.indexOf('--artifact-archive');
+      return index >= 0 && job.argv[index + 1] === 'required';
+    }),
+  );
   assert.deepEqual(plan.postRunArchive, {
+    liveTracePolicy: 'required',
+    liveTraceBoundary: 'redacted events mirrored outside the worktree before continuation',
     requiredBeforeCloseout: true,
     script: 'scripts/archive-run-artifacts.js',
     command: 'node scripts/archive-run-artifacts.js <completed-cohort-output-dir>',
