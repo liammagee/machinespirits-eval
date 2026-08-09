@@ -1,7 +1,7 @@
 ---
 id: calibrate-local-node-test-concurrency
 title: Calibrate local Node root-test concurrency
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -20,6 +20,8 @@ claim_status: planned
 depends_on:
   - optimize-local-node-execution
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/596
   items:
     - optimize-local-node-execution
 tags:
@@ -76,3 +78,6 @@ Log:
   469/469 workplan sources, cached ESLint, cached Prettier, and
   `git diff --check`. Hosted Node 20/22 coverage remains unchanged and will
   exercise the runner option's compatible no-default path in CI.
+- 2026-08-09 — PR #596 merged as `c3ea1743`. The measured sweep rejected a
+  hard-coded local default while retaining the explicit profiling control, so
+  the bounded concurrency-calibration item is done.
