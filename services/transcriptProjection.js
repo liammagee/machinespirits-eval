@@ -10,7 +10,7 @@
  */
 
 import { formatTranscript } from './transcriptFormatter.js';
-import { buildDialogueFullTranscript, buildDialoguePublicTranscript } from './rubricEvaluator.js';
+import { buildDialogueFullTranscript, buildDialoguePublicTranscript } from './dialogueTranscriptProjection.js';
 import { learnerTraceStage } from './traceSchema.js';
 
 function safeJson(value) {

@@ -22,6 +22,7 @@ links:
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
     - docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md
+    - docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md
   items:
     - refactor-required-run-manifest
     - refactor-v-series-fixtures
@@ -144,6 +145,7 @@ links:
     - refactor-tutor-stub-adapter-tail
     - refactor-eval-routes-read-side-domains
     - refactor-evaluation-run-coordinator-runtime
+    - refactor-rubric-transcript-projection-runtime
 tags:
   - refactoring
   - testing
@@ -1791,3 +1793,28 @@ Log:
   parity contracts pass. The parent remains active because R4 rubric residuals
   and R5-R8 remain partial or uninstantiated; select another child only after
   this branch merges and the hotspot evidence is refreshed again.
+- 2026-08-09 — Reconciled from merged PR-#614 main `c4e7f298`. All 121 prior
+  children are done; repository metrics record 4,990 files, 2,502 source files,
+  and 871,255 source-code lines. Activated child 122,
+  `refactor-rubric-transcript-projection-runtime`: the rubric service's
+  complexity-126 full-transcript builder is the safest remaining macro because
+  public/full, historical-schema, artifact, and bilateral parity already have
+  a 2,476-line executable characterization surface.
+- 2026-08-09 — Completed child 122 locally. The rubric facade fell from 3,290
+  to 2,716 lines and retains compatibility exports; the extracted 552-line
+  judge-facing transcript owner has maximum complexity 23 rather than 126 and
+  is consumed directly by shared transcript tooling. Focused bilateral,
+  compatibility, artifact, historical-schema, risk, complete hermetic,
+  tutor-core, source, formatting, lint, manifest, and zero-cycle gates pass.
+  Keep the parent active because R5-R8 remain partial or uninstantiated; select
+  the next child only after this branch merges and hotspot evidence is refreshed.
+- 2026-08-09 — Rebased child 122 over Course 479 PR #615 and the serialized
+  workplan refresh at `0dffa15f`. The Course 479 Tutor Lab seam is independent
+  of the rubric transcript owner; post-rebase focused, complete hermetic,
+  source, formatting, lint, manifest, and cycle gates remain green.
+- 2026-08-09 — Rebased child 122 over independent Codex default-model PR #616
+  and its generated-view refresh at `5c2eadee`; the transcript patch remains
+  conflict-free and disjoint from the provider/tutor-stub configuration slice.
+- 2026-08-09 — Rebased child 122 over independent register/paper PR #617 and
+  its generated-view refresh at `2b26e4e8`. The transcript boundary remains
+  conflict-free; 166 focused assertions and all structural gates pass.
