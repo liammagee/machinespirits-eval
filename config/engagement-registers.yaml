@@ -276,6 +276,83 @@ engagement_stances:
       audience_alignment: speaker
       note: Sarcasm typically recruits a separate actual or implied audience that is invited to share the speaker's non-literal reading; this is a default shape, not a universal requirement.
 
+  sarcastic_mock_praise:
+    valence: negative
+    router_selectable: false
+    # Assigned-arm experiment register (cell 203). Kept out of every automatic
+    # tutor-stub palette so the live chat surface is unchanged.
+    #
+    # Why it exists. On the strong-stack re-run of the plain sarcastic arm
+    # (eval-2026-08-08-6021754f, paper v3.0.281) the writer used a handed cue in
+    # all fifteen turns and a reader called eleven of them edged. Reading the
+    # four flat ones afterwards, what the eleven had and the four lacked was a
+    # mock-compliment: praise in the words that the sentence then takes back.
+    # Ten of eleven edged turns carried one; one of four flat turns did. All
+    # four flat turns satisfied the plain register's realization requirement
+    # with one of the two entries in its cue family that grant no praise at all
+    # -- "the formula can sound like understanding while doing none of the work"
+    # and "the answer vending machine" are diagnoses, and a tutor can write one
+    # and then teach straight.
+    #
+    # So this register asks for the device the plain one only makes available,
+    # and drops the two non-praise cues that let a turn comply without it. That
+    # is two changes at once and they are deliberately a package: the question
+    # is whether asking raises the reading, not which half of the ask did it.
+    experiment_arm_only: true
+    public_signature: "Pay the learner's own weak claim one beat of straight-faced praise, then let the same sentence take the praise back on the public evidence, and offer an immediate repair move."
+    contrast: "Unlike sarcastic, the cutting beat must be praise that is withdrawn, not a bare diagnosis of the gap; naming the fault without ever granting it merit is noncompliance."
+    reviewer_cues: |
+      Choose when the learner's move can be complimented in words whose
+      withdrawal does the teaching: the praise has to be aimed at what the
+      learner actually just said, and the rest of the sentence has to make the
+      compliment untenable.
+    stance_contract: |
+      Use dry sarcastic edge as a compliment you withdraw. Pay the learner's own
+      move one beat of straight-faced praise -- call it clever, tidy, efficient,
+      wonderful -- and then, in the same breath, let the public evidence make
+      that praise untenable, so the gap is legible without your ever stating it
+      flatly. Stay aimed at the work, claim, formula, or dodge, never the
+      learner's person, and include one concrete next move so uptake and
+      recognition cost remain measurable. Realization requirement: the turn must
+      contain praise that is granted and then taken back, using one visible cue
+      from the stance_fidelity_cues family before the repair path. Diagnosing
+      the fault without ever granting it merit does not satisfy this register --
+      that is the plain sarcastic arm, and here it is noncompliance.
+    stance_fidelity_cues:
+      - "wonderful"
+      - "conveniently"
+      - "apparently"
+      - "nice trick"
+    required_moves:
+      - praise granted to the learner's own move
+      - the same praise withdrawn on public evidence
+      - target aimed at idea or work
+      - concrete next move
+    forbidden_phrases:
+      - obviously you
+      - even you
+      - if you were paying attention
+      - lazy
+      - stupid
+      - clueless
+      - pathetic
+      - embarrassing
+    recognition_guardrail: |
+      This register is allowed to create measurable recognition cost, but it must
+      not become abuse. Person-directed contempt, identity attack, or capacity
+      insult invalidates the arm.
+    risk_flags:
+      - face_threat
+      - misrecognition_cost
+      - contempt_drift
+    rubric: config/rubrics/registers/irony-sarcasm.yaml
+    pragmatics:
+      address_structure: triadic
+      audience_presence: implied
+      audience_distinct_from_hearer: true
+      audience_alignment: speaker
+      note: Same triadic default as sarcastic; the mock-praise variant fixes which beat carries the non-literal reading, not who overhears it.
+
   sarcastic_determinate:
     valence: negative
     router_selectable: false
@@ -441,6 +518,10 @@ legacy_register_aliases:
     action_family: challenge_resistance
   sarcastic_determinate_challenge:
     register: sarcastic_determinate
+    request_type: resistance_or_low_agency
+    action_family: challenge_resistance
+  sarcastic_mock_praise_challenge:
+    register: sarcastic_mock_praise
     request_type: resistance_or_low_agency
     action_family: challenge_resistance
   face_threat_challenge:

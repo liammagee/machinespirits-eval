@@ -1,71 +1,27 @@
 {
-  "generated": "2026-08-09T01:24:19.554Z",
+  "generated": "2026-08-09T14:29:28.412Z",
   "counts": {
-    "total": 479,
+    "total": 490,
     "byStatus": {
-      "done": 449,
+      "done": 461,
       "blocked": 6,
       "dropped": 9,
-      "review": 6,
-      "active": 2,
+      "active": 7,
+      "review": 2,
       "archived": 4,
-      "triaged": 3
+      "triaged": 1
     },
     "byType": {
       "research": 75,
-      "experiment": 77,
+      "experiment": 82,
       "infra": 105,
-      "maintenance": 201,
-      "content": 3,
+      "maintenance": 206,
+      "content": 4,
       "ops": 10,
       "paper": 8
     }
   },
   "items": [
-    {
-      "id": "refactor-eval-routes-read-side-domains",
-      "title": "Extract read-only evaluation domain routers",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "verification": "Thirty non-metered GET endpoints move from evalRoutes into bounded domain registrars while exact paths, mount order, auth, request-local dependencies, status codes, payloads, errors, and shutdown behavior remain unchanged; focused route/import/admission/lifecycle tests, complete hermetic and risk coverage, source, lint, formatting, manifest, and zero-cycle gates pass.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-tutor-stub-adapter-tail"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
-          "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md"
-        ],
-        "code": [
-          "routes/evalRoutes.js",
-          "tests/api-routes.test.js",
-          "tests/evalLogRoutesDataRoot.test.js",
-          "tests/evalRoutesDependencyInjection.test.js",
-          "tests/evalRoutesImport.test.js"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-eval-routes-store-injection",
-          "refactor-sse-lifecycle",
-          "bound-remaining-metered-eval-api-surfaces"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "evaluation",
-        "routes",
-        "read-model",
-        "dependency-injection",
-        "maintainability"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
     {
       "id": "guard-findings-feed-forward",
       "title": "Feed guard findings into the next turn's request instead of redrafting this one",
@@ -94,30 +50,6 @@
       ]
     },
     {
-      "id": "sarcasm-worktree-shadow-db-disposal",
-      "title": "Dispose of the shadow database the sarcasm worktree wrote",
-      "status": "triaged",
-      "type": "maintenance",
-      "priority": "P3",
-      "owner": "human",
-      "source": "manual",
-      "created": "2026-08-08",
-      "updated": "2026-08-08",
-      "verification": "The worktree's `data/evaluations.db` is gone, after the owner confirms the archive holds everything it held.",
-      "claim_status": "methods",
-      "links": {
-        "items": [
-          "eval-db-writer-reader-path-split",
-          "sarcasm-precondition-claim-bearing-mood"
-        ]
-      },
-      "tags": [
-        "maintenance",
-        "data-integrity",
-        "worktrees"
-      ]
-    },
-    {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
       "status": "active",
@@ -134,7 +66,8 @@
       "links": {
         "notes": [
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
-          "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md"
+          "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md"
         ],
         "items": [
           "refactor-required-run-manifest",
@@ -256,7 +189,11 @@
           "refactor-prompt-lab-store-ownership",
           "refactor-evaluation-store-package-compatibility-boundary",
           "refactor-tutor-stub-adapter-tail",
-          "refactor-eval-routes-read-side-domains"
+          "refactor-eval-routes-read-side-domains",
+          "refactor-evaluation-run-coordinator-runtime",
+          "refactor-rubric-transcript-projection-runtime",
+          "refactor-dramatic-derivation-run-state",
+          "refactor-dramatic-derivation-role-transitions"
         ]
       },
       "tags": [
@@ -267,6 +204,31 @@
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "course-479-externalization",
+      "title": "Tutor Lab instrument for course 479 (Fall 2026)",
+      "status": "active",
+      "type": "content",
+      "priority": "P1",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "A Tutor Lab chat is live on machinespirits.org before day 1: tutor-core runs behind a website route, each turn shows draft/critique/revision, students can switch critic setting (off/advisory/adversarial) and prompt stance (recognition/placebo/enhanced/naive), access is class-keyed with a per-session budget; courses/479-fall-2026 has a course page pointing at it; students need no access to this repo.",
+      "claim_status": "methods",
+      "depends_on": [],
+      "links": {
+        "notes": [
+          "COURSE-479-PLAN.md"
+        ]
+      },
+      "tags": [
+        "course",
+        "teaching",
+        "externalization",
+        "content-philosophy"
+      ]
     },
     {
       "id": "learner-profile-world-deconfound",
@@ -310,6 +272,129 @@
         "learner-profiles",
         "deconfound",
         "prereg"
+      ]
+    },
+    {
+      "id": "register-manner-learner-turn",
+      "title": "Does the learner's own message pull the tutor out of the register?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "The set is fixed and its plan hash printed by --dry-run before the first paid call. Every reply is read by the same pinned reader on the same versioned question over the same learner turn as both earlier readings. The verdict is the count of replies the reader calls edged, reported whichever way it falls.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-manner-prompt-isolation"
+      ],
+      "links": {
+        "scripts": [
+          "scripts/probe-register-learner-turn.js",
+          "scripts/dump-turn-prompts.js"
+        ],
+        "exports": [
+          "exports/register-prompt-isolation/full-35.json"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director"
+      ]
+    },
+    {
+      "id": "register-manner-prompt-isolation",
+      "title": "Where the edge is lost — send the flat turn's own prompt to the writer alone",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-08",
+      "verification": "The set is fixed and its plan hash printed by --dry-run before the first paid call. Both sides are read by the same pinned reader on the same versioned question over the same learner turn. The verdict is the count of isolated replies the reader calls edged, reported whichever way it falls.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-presence-hand-marked-set"
+      ],
+      "links": {
+        "scripts": [
+          "scripts/probe-register-prompt-isolation.js"
+        ],
+        "exports": [
+          "exports/negative-register-manner-presence/eval-2026-08-05-87fe3664_eval-2026-08-06-4de45d05_eval-2026-08-07-45154bac_eval-2026-08-07-e3dffab2.json"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director"
+      ]
+    },
+    {
+      "id": "register-strong-stack-replication",
+      "title": "Does the sarcastic edge survive a strong writer?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "The plan is frozen and its SHA printed by --dry-run before the first paid call. The report is zero-call and fails closed on four registered measures, one of which reads the tutor stack off the dialogue traces rather than off the model columns. The comparison against the parent sarcastic arm is fixed in the plan before the run exists.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-manner-learner-turn",
+        "register-presence-hand-marked-set"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-09-register-strong-stack-replication-preregistration.md"
+        ],
+        "services": [
+          "services/registerStrongStackReplication.js"
+        ],
+        "scripts": [
+          "scripts/run-register-strong-stack-replication.js"
+        ],
+        "tests": [
+          "tests/registerStrongStackReplication.test.js"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director",
+        "provenance"
+      ]
+    },
+    {
+      "id": "adaptive-register-switching",
+      "title": "Does switching into an edged register at the right moment help?",
+      "status": "active",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "Design is a DRAFT pre-registration only — no apparatus, no plan hash, nothing bought. Freeze requires the exact power table, the cell-scoped router-menu change built and tested, and operator sign-off on the row count.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-mock-praise-probe"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "router",
+        "adaptivity"
       ]
     },
     {
@@ -555,164 +640,31 @@
       "milestone": "adaptive-tutor-evidence-v1"
     },
     {
-      "id": "calibrate-local-node-test-concurrency",
-      "title": "Calibrate local Node root-test concurrency",
+      "id": "bump-codex-default-to-gpt-5-6-luna",
+      "title": "Make GPT-5.6 Luna the default Codex ChatGPT-account model",
       "status": "review",
-      "type": "infra",
+      "type": "maintenance",
       "priority": "P2",
       "owner": "codex",
       "source": "manual",
       "created": "2026-08-09",
       "updated": "2026-08-09",
-      "branch": "codex/calibrate-local-node-test-concurrency",
-      "verification": "Repeated unrestricted hermetic root-suite profiles compared default/14 with 4, 6, 8, and repeated 10-worker runs while all valid profiles preserved 638 files, 8,157 passing tests, zero failures/skips, isolated stores, and exact manifest accounting; focused runner/local-CI contract, tutor-core, lint, format, workplan, and diff gates cover the retained optional control without changing the existing Node 20/22 CI topology.",
-      "claim_status": "planned",
-      "depends_on": [
-        "optimize-local-node-execution"
-      ],
+      "branch": "codex/bump-codex-default-luna",
+      "verification": "Reading the Codex provider configuration and dry-running the generic tutor-stub auto-eval, QA-matrix, and ABM-panel launchers selects codex.gpt-5.6-luna for every otherwise-unpinned Codex role; explicit model overrides still win; frozen experiment pins and historical artifacts remain unchanged; focused config, launcher, workplan, lint, and format checks pass.",
       "links": {
-        "items": [
-          "optimize-local-node-execution"
+        "code": [
+          "config/providers.yaml",
+          "scripts/run-tutor-stub-auto-eval.js",
+          "scripts/run-tutor-stub-qa-matrix.js",
+          "scripts/run-tutor-stub-abm-panel.js",
+          ".codex/skills/ms-tutor-stub-eval/SKILL.md"
         ]
       },
       "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "performance"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "reduce-character-dag-test-latency",
-      "title": "Reduce Character-DAG framework test latency",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/reduce-character-dag-test-latency",
-      "verification": "Two unrestricted isolated before-runs averaged 18.29s and two after-runs averaged 4.87s, a 73.4% reduction while all passed 13/13 tests; terminal-state equivalence, focused adaptive coverage, counterfactual smoke, comprehensive hermetic root/core, lint, formatting, workplan, manifest, and diff checks pass.",
-      "claim_status": "planned",
-      "depends_on": [
-        "optimize-local-node-execution"
-      ],
-      "links": {
-        "items": [
-          "optimize-local-node-execution",
-          "calibrate-local-node-test-concurrency",
-          "reduce-human-discourse-test-processes",
-          "reduce-first-draft-outer-loop-test-time",
-          "reduce-interactive-turn-test-latency"
-        ]
-      },
-      "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "character-dag",
+        "models",
+        "codex",
         "tutor-stub"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "reduce-first-draft-outer-loop-test-time",
-      "title": "Reduce first-draft outer-loop test latency",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/reduce-first-draft-outer-loop-test-time",
-      "verification": "Two unrestricted isolated before-runs averaged 26.23s and two after-runs averaged 7.92s, a 69.8% wall-time reduction while all runs passed 43/43 tests; cache invalidation, combined focused tests, comprehensive hermetic root/core suites, lint, formatting, workplan, and diff checks pass.",
-      "claim_status": "planned",
-      "depends_on": [
-        "optimize-local-node-execution"
-      ],
-      "links": {
-        "items": [
-          "optimize-local-node-execution",
-          "calibrate-local-node-test-concurrency",
-          "reduce-human-discourse-test-processes"
-        ]
-      },
-      "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "tutor-stub",
-        "first-draft"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "reduce-human-discourse-test-processes",
-      "title": "Reduce redundant human-discourse test process launches",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/reduce-human-discourse-test-processes",
-      "verification": "An unrestricted 25.99s isolated baseline versus 23.00s and 23.25s cached reruns shows lower human-discourse latency while all three pass 43/43 tests; the comprehensive hermetic root/core suites, retained CLI/PTY boundaries, exact accounting, lint, formatting, workplan, and diff checks all pass.",
-      "claim_status": "planned",
-      "depends_on": [
-        "optimize-local-node-execution"
-      ],
-      "links": {
-        "items": [
-          "optimize-local-node-execution",
-          "calibrate-local-node-test-concurrency"
-        ]
-      },
-      "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "subprocess",
-        "tutor-stub"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "reduce-interactive-turn-test-latency",
-      "title": "Reduce interactive tutor-turn test latency",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/reduce-interactive-turn-test-latency",
-      "verification": "Two unrestricted isolated before-runs averaged 25.01s and two after-runs averaged 19.58s, a 21.7% reduction while all passed 16/16 tests; provider, PTY-cohort, comprehensive hermetic root/core, lint, formatting, workplan, manifest, and diff checks preserve every interactive contract.",
-      "claim_status": "planned",
-      "depends_on": [
-        "optimize-local-node-execution"
-      ],
-      "links": {
-        "items": [
-          "optimize-local-node-execution",
-          "calibrate-local-node-test-concurrency",
-          "reduce-human-discourse-test-processes",
-          "reduce-first-draft-outer-loop-test-time"
-        ]
-      },
-      "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "subprocess",
-        "pty",
-        "tutor-stub"
-      ],
-      "milestone": "evaluation-infrastructure"
+      ]
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -2644,6 +2596,94 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-dramatic-derivation-role-transitions",
+      "title": "Extract dramatic-derivation role transition coordinators",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-09",
+      "updated": "2026-08-10",
+      "branch": "codex/refactor-dramatic-derivation-turn-transitions",
+      "verification": "364/364 direct role/runDrama assertions, 8,285/8,285 hermetic root tests, 137/137 tutor-core tests, and all eight risk groups pass. Role owners reach 89.99% line/67.49% branch/89.47% function coverage, every new function is complexity 26 or lower, and source, format, lint, manifest, and cycle gates pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-dramatic-derivation-run-state"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md"
+        ],
+        "code": [
+          "services/dramaticDerivation/engine.js",
+          "services/dramaticDerivation/runState.js",
+          "services/dramaticDerivation/directorTransition.js",
+          "services/dramaticDerivation/tutorTransition.js",
+          "services/dramaticDerivation/learnerTransition.js",
+          "tests/dramaticDerivationRoleTransitions.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ],
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/619"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "dramatic-derivation",
+        "role-transitions",
+        "runtime"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-dramatic-derivation-run-state",
+      "title": "Extract the dramatic-derivation run-state and lifecycle boundary",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/refactor-dramatic-derivation-run-state",
+      "verification": "360/360 direct runDrama assertions, 8,281/8,281 hermetic root tests, 137/137 tutor-core tests, and all seven risk groups pass. The new owners reach 79.12% line/64.48% branch/78.33% function coverage with maximum function complexity 12; source, formatting, lint, manifest, and zero-cycle gates pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-rubric-transcript-projection-runtime"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md"
+        ],
+        "code": [
+          "services/dramaticDerivation/engine.js",
+          "services/dramaticDerivation/runState.js",
+          "services/dramaticDerivation/runLifecycle.js",
+          "services/dramaticDerivation/runResult.js",
+          "tests/dramaticDerivationRunStateBoundary.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "dramatic-derivation",
+        "runtime-state",
+        "lifecycle"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-eval-cli-generation-commands",
       "title": "Extract eval-cli generation, chat, and rejudge commands",
       "status": "done",
@@ -2828,6 +2868,60 @@
       "milestone": "evaluation-infrastructure"
     },
     {
+      "id": "refactor-eval-routes-read-side-domains",
+      "title": "Extract read-only evaluation domain routers",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/refactor-eval-routes-read-side-domains",
+      "verification": "An exact 50-route order ratchet and 69 focused assertions preserve all 30 delegated non-metered GET contracts; both complete hermetic root shards, all 137 tutor-core tests, all five risk-coverage groups, source, formatting, lint, manifest, and zero-cycle gates pass on current main.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-tutor-stub-adapter-tail"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md"
+        ],
+        "code": [
+          "routes/evalRoutes.js",
+          "routes/evalAnalysisReadRoutes.js",
+          "routes/evalConfigurationReadRoutes.js",
+          "routes/evalFileReadRoutes.js",
+          "routes/evalInteractionReadRoutes.js",
+          "routes/evalLogReadRoutes.js",
+          "routes/evalMonitoringReadRoutes.js",
+          "routes/evalReadRouteInventory.js",
+          "routes/evalRunReadRoutes.js",
+          "tests/evalReadRouteInventory.test.js",
+          "tests/api-routes.test.js",
+          "tests/evalLogRoutesDataRoot.test.js",
+          "tests/evalRoutesDependencyInjection.test.js",
+          "tests/evalRoutesImport.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-eval-routes-store-injection",
+          "refactor-sse-lifecycle",
+          "bound-remaining-metered-eval-api-surfaces"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "routes",
+        "read-model",
+        "dependency-injection",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refactor-eval-routes-store-injection",
       "title": "Inject evaluation-store ownership into eval routes",
       "status": "done",
@@ -2918,6 +3012,51 @@
         "resume",
         "rejudge",
         "provenance",
+        "maintainability"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-evaluation-run-coordinator-runtime",
+      "title": "Extract the evaluation run coordinator runtime",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/refactor-evaluation-run-coordinator-runtime",
+      "verification": "Four direct coordinator tests at 97.19% lines, 80.49% branches, and 95.45% functions plus 83 focused runner assertions, API/admission/checkpoint/store coverage, both hermetic root shards, 137 tutor-core tests, all six risk groups, source, formatting, lint, manifest, and zero-cycle gates preserve the complete run contract without provider calls or production-data writes.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-eval-routes-read-side-domains"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-09-codebase-refactoring-post-read-routes-reconciliation.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md"
+        ],
+        "code": [
+          "services/evaluationRunner.js",
+          "services/evaluationRunRuntime.js",
+          "tests/evaluationRunRuntime.test.js",
+          "config/coverage-risk-floors.json",
+          "tests/evaluationRunner.test.js",
+          "tests/evaluationRunnerDependencyInjection.test.js"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-evaluation-turn-execution",
+          "refactor-evaluation-resume-rejudge-runtime",
+          "refactor-evaluation-runner-cli-store-injection"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "orchestration",
+        "dependency-injection",
         "maintainability"
       ],
       "milestone": "evaluation-infrastructure"
@@ -4184,6 +4323,48 @@
         "json",
         "hermetic",
         "refactoring"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-rubric-transcript-projection-runtime",
+      "title": "Extract the rubric dialogue transcript projection runtime",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/refactor-post-run-coordinator-reconciliation",
+      "verification": "166 focused transcript/projection assertions, direct facade and bilateral ordering checks, 95.47% line/84.58% branch/97.22% function owner coverage, all six risk groups, 8,199 hermetic root tests, 137 tutor-core tests, source, formatting, lint, synchronized manifest, and zero-cycle gates preserve the judge-facing contract without provider calls or production-data writes.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-evaluation-run-coordinator-runtime"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-post-read-routes-reconciliation.md"
+        ],
+        "code": [
+          "services/rubricEvaluator.js",
+          "services/dialogueTranscriptProjection.js",
+          "services/transcriptProjection.js",
+          "services/__tests__/dialogueTranscript.test.js",
+          "tests/dialogueTranscriptProjectionBoundary.test.js",
+          "config/coverage-risk-floors.json"
+        ],
+        "items": [
+          "codebase-refactoring-program"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "evaluation",
+        "rubric",
+        "transcripts",
+        "symmetry"
       ],
       "milestone": "evaluation-infrastructure"
     },
@@ -11555,6 +11736,38 @@
       ]
     },
     {
+      "id": "calibrate-local-node-test-concurrency",
+      "title": "Calibrate local Node root-test concurrency",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/calibrate-local-node-test-concurrency",
+      "verification": "Repeated unrestricted hermetic root-suite profiles compared default/14 with 4, 6, 8, and repeated 10-worker runs while all valid profiles preserved 638 files, 8,157 passing tests, zero failures/skips, isolated stores, and exact manifest accounting; focused runner/local-CI contract, tutor-core, lint, format, workplan, and diff gates cover the retained optional control without changing the existing Node 20/22 CI topology.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/596"
+        ],
+        "items": [
+          "optimize-local-node-execution"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "performance"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "character-dag-drama-framework-synthetic-contrast",
       "title": "Character-DAG drama framework synthetic contrast",
       "status": "done",
@@ -13877,6 +14090,149 @@
       ]
     },
     {
+      "id": "reduce-character-dag-test-latency",
+      "title": "Reduce Character-DAG framework test latency",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/reduce-character-dag-test-latency",
+      "verification": "Two unrestricted isolated before-runs averaged 18.29s and two after-runs averaged 4.87s, a 73.4% reduction while all passed 13/13 tests; terminal-state equivalence, focused adaptive coverage, counterfactual smoke, comprehensive hermetic root/core, lint, formatting, workplan, manifest, and diff checks pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/609"
+        ],
+        "items": [
+          "optimize-local-node-execution",
+          "calibrate-local-node-test-concurrency",
+          "reduce-human-discourse-test-processes",
+          "reduce-first-draft-outer-loop-test-time",
+          "reduce-interactive-turn-test-latency"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "character-dag",
+        "tutor-stub"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "reduce-first-draft-outer-loop-test-time",
+      "title": "Reduce first-draft outer-loop test latency",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/reduce-first-draft-outer-loop-test-time",
+      "verification": "Two unrestricted isolated before-runs averaged 26.23s and two after-runs averaged 7.92s, a 69.8% wall-time reduction while all runs passed 43/43 tests; cache invalidation, combined focused tests, comprehensive hermetic root/core suites, lint, formatting, workplan, and diff checks pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/601"
+        ],
+        "items": [
+          "optimize-local-node-execution",
+          "calibrate-local-node-test-concurrency",
+          "reduce-human-discourse-test-processes"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "tutor-stub",
+        "first-draft"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "reduce-human-discourse-test-processes",
+      "title": "Reduce redundant human-discourse test process launches",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/reduce-human-discourse-test-processes",
+      "verification": "An unrestricted 25.99s isolated baseline versus 23.00s and 23.25s cached reruns shows lower human-discourse latency while all three pass 43/43 tests; the comprehensive hermetic root/core suites, retained CLI/PTY boundaries, exact accounting, lint, formatting, workplan, and diff checks all pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/599"
+        ],
+        "items": [
+          "optimize-local-node-execution",
+          "calibrate-local-node-test-concurrency"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "subprocess",
+        "tutor-stub"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "reduce-interactive-turn-test-latency",
+      "title": "Reduce interactive tutor-turn test latency",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/reduce-interactive-turn-test-latency",
+      "verification": "Two unrestricted isolated before-runs averaged 25.01s and two after-runs averaged 19.58s, a 21.7% reduction while all passed 16/16 tests; provider, PTY-cohort, comprehensive hermetic root/core, lint, formatting, workplan, manifest, and diff checks preserve every interactive contract.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/604"
+        ],
+        "items": [
+          "optimize-local-node-execution",
+          "calibrate-local-node-test-concurrency",
+          "reduce-human-discourse-test-processes",
+          "reduce-first-draft-outer-loop-test-time"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "subprocess",
+        "pty",
+        "tutor-stub"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "refresh-weber-id-charisma-recognition-thread",
       "title": "Refresh Weber/id-charisma thread around being recognized",
       "status": "done",
@@ -13983,6 +14339,42 @@
         "derivation",
         "strategy-refusal",
         "superego"
+      ]
+    },
+    {
+      "id": "register-mock-praise-probe",
+      "title": "Does asking for the mock-compliment directly raise the manner reading?",
+      "status": "done",
+      "type": "experiment",
+      "priority": "P2",
+      "owner": "claude",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "verification": "The plan is frozen and its SHA printed by --dry-run before the first paid call. The report is zero-call and fails closed on the registered measures, one of which reads the tutor stack off the dialogue traces rather than off the model columns. The manipulation check is answered before any verdict, and the plan states before the run that the primary cannot separate at this size.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-strong-stack-replication"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-09-register-mock-praise-preregistration.md"
+        ],
+        "services": [
+          "services/registerMockPraiseProbe.js"
+        ],
+        "scripts": [
+          "scripts/run-register-mock-praise-probe.js"
+        ],
+        "tests": [
+          "tests/registerMockPraiseProbe.test.js"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "id-director",
+        "provenance"
       ]
     },
     {
@@ -15811,6 +16203,31 @@
         "negative-registers",
         "stance-fidelity",
         "determinate-negation"
+      ]
+    },
+    {
+      "id": "sarcasm-worktree-shadow-db-disposal",
+      "title": "Dispose of the shadow database the sarcasm worktree wrote",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P3",
+      "owner": "human",
+      "source": "manual",
+      "created": "2026-08-08",
+      "updated": "2026-08-09",
+      "branch": "codex/close-sarcasm-shadow-db-disposal",
+      "verification": "The worktree's `data/evaluations.db` is gone, after the owner confirms the archive holds everything it held.",
+      "claim_status": "methods",
+      "links": {
+        "items": [
+          "eval-db-writer-reader-path-split",
+          "sarcasm-precondition-claim-bearing-mood"
+        ]
+      },
+      "tags": [
+        "maintenance",
+        "data-integrity",
+        "worktrees"
       ]
     },
     {

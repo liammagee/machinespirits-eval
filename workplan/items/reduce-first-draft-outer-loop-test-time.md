@@ -1,7 +1,7 @@
 ---
 id: reduce-first-draft-outer-loop-test-time
 title: Reduce first-draft outer-loop test latency
-status: review
+status: done
 type: infra
 priority: P2
 owner: codex
@@ -18,6 +18,8 @@ claim_status: planned
 depends_on:
   - optimize-local-node-execution
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/601
   items:
     - optimize-local-node-execution
     - calibrate-local-node-test-concurrency
@@ -80,3 +82,6 @@ Log:
   hermetic gate passed 639 root files / 8,164 tests and 11 tutor-core files /
   137 tests with zero failures or skips; focused ESLint and Prettier checks
   also pass.
+- 2026-08-09 — PR #601 merged as `46edd784`. Cache invalidation and the full
+  hermetic gate preserve the fail-closed contract, so the first-draft latency
+  slice is done.

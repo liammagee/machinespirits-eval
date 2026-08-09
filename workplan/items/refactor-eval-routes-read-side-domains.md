@@ -1,19 +1,19 @@
 ---
 id: refactor-eval-routes-read-side-domains
 title: Extract read-only evaluation domain routers
-status: triaged
+status: done
 type: maintenance
 priority: P1
 owner: codex
 source: review
 created: 2026-08-09
 updated: 2026-08-09
+branch: codex/refactor-eval-routes-read-side-domains
 verification: >-
-  Thirty non-metered GET endpoints move from evalRoutes into bounded domain
-  registrars while exact paths, mount order, auth, request-local dependencies,
-  status codes, payloads, errors, and shutdown behavior remain unchanged;
-  focused route/import/admission/lifecycle tests, complete hermetic and risk
-  coverage, source, lint, formatting, manifest, and zero-cycle gates pass.
+  An exact 50-route order ratchet and 69 focused assertions preserve all 30
+  delegated non-metered GET contracts; both complete hermetic root shards, all
+  137 tutor-core tests, all five risk-coverage groups, source, formatting,
+  lint, manifest, and zero-cycle gates pass on current main.
 claim_status: planned
 depends_on:
   - refactor-tutor-stub-adapter-tail
@@ -23,6 +23,15 @@ links:
     - docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md
   code:
     - routes/evalRoutes.js
+    - routes/evalAnalysisReadRoutes.js
+    - routes/evalConfigurationReadRoutes.js
+    - routes/evalFileReadRoutes.js
+    - routes/evalInteractionReadRoutes.js
+    - routes/evalLogReadRoutes.js
+    - routes/evalMonitoringReadRoutes.js
+    - routes/evalReadRouteInventory.js
+    - routes/evalRunReadRoutes.js
+    - tests/evalReadRouteInventory.test.js
     - tests/api-routes.test.js
     - tests/evalLogRoutesDataRoot.test.js
     - tests/evalRoutesDependencyInjection.test.js
@@ -84,3 +93,14 @@ Log:
   route/host integration tests plus the 22-test API regression. This read-only
   extraction is preferred over the higher-risk runner, rubric, dramatic-role,
   and state-changing route families.
+- 2026-08-09 — Activated from post-PR-#607 main `e7c29d1e` in an isolated
+  worktree. Begin with an executable endpoint inventory before moving route
+  handlers; generated workplan views remain out of scope.
+- 2026-08-09 — Completed on rebased main `b4091496`. Eight bounded registrars
+  now own the 30 non-metered GET endpoints while the compatibility router keeps
+  all metered, streaming, Codex, and state-changing routes. The facade falls
+  from 3,802 to 2,773 lines; the largest new owner is 214 lines. The exact
+  50-route method/order contract, 69 focused assertions, both hermetic root
+  shards, 137 tutor-core tests, five risk-coverage groups, source, formatting,
+  lint, synchronized manifest, and zero-cycle gates pass without provider calls,
+  production-data writes, or generated workplan-view changes.

@@ -7,6 +7,7 @@ import {
   buildAbmAutoLearnerProfile,
   buildPanelDraws,
   normalizeRegisterPolicy,
+  parseCliArgs,
   REGISTER_POLICIES,
   selectedPersonaIds,
   summarizePanelRows,
@@ -30,6 +31,13 @@ describe('tutor-stub ABM panel helpers', () => {
     assert.equal(autoTurnsArg({ turns: 'until-grounded', 'until-grounded': false }), 'until-grounded');
     assert.equal(autoTurnsArg({ turns: '8', 'until-grounded': false }), '8');
     assert.equal(autoTurnsArg({ turns: '8', 'until-grounded': true }), 'until-grounded');
+  });
+
+  it('defaults otherwise-unpinned Codex roles to GPT-5.6 Luna', () => {
+    const args = parseCliArgs([]);
+    assert.equal(args.model, 'codex.gpt-5.6-luna');
+    assert.equal(args['analysis-model'], 'codex.gpt-5.6-luna');
+    assert.equal(args['auto-learner-model'], 'codex.gpt-5.6-luna');
   });
 
   it('accepts all tutor-stub register policies used by panel comparisons', () => {

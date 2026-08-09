@@ -22,6 +22,7 @@ links:
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
     - docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md
+    - docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md
   items:
     - refactor-required-run-manifest
     - refactor-v-series-fixtures
@@ -143,6 +144,10 @@ links:
     - refactor-evaluation-store-package-compatibility-boundary
     - refactor-tutor-stub-adapter-tail
     - refactor-eval-routes-read-side-domains
+    - refactor-evaluation-run-coordinator-runtime
+    - refactor-rubric-transcript-projection-runtime
+    - refactor-dramatic-derivation-run-state
+    - refactor-dramatic-derivation-role-transitions
 tags:
   - refactoring
   - testing
@@ -1769,3 +1774,77 @@ Log:
   triaged continuation: it moves the 30 non-metered GET routes behind bounded
   domain registrars while leaving paid work, mutation, SSE, and Codex-session
   behavior frozen in the compatibility router.
+- 2026-08-09 — Completed the accepted read-side router child on rebased main
+  `b4091496`: all 120 linked children are now done. The shared evaluation
+  facade is 2,773 lines, its 30 non-metered GET endpoints have bounded domain
+  owners, and exact route order plus the complete parity contract is green.
+  Keep the parent active because R4 runner/rubric residuals and R5-R8 remain
+  partial or uninstantiated; require a fresh hotspot and workplan
+  reconciliation before selecting the next implementation child.
+- 2026-08-09 — Reconciled from merged PR-#612 main `e5ea93df`. All 120 prior
+  children are done; repository metrics record 4,986 files, 2,500 source files,
+  870,784 source-code lines, zero cycles across 557 files, and a synchronized
+  hermetic manifest. Activated `refactor-evaluation-run-coordinator-runtime` as
+  child 121: the runner's 572-line, complexity-93 coordinator has stronger
+  characterization than the larger dramatic, rubric, browser, and auto-eval
+  hotspots, so it is the next bounded R4 macro rather than another small or
+  mutation-heavy route slice.
+- 2026-08-09 — Completed child 121 locally: `runEvaluation()` now delegates to
+  a 534-line, complexity-17 injected coordinator and the facade is 1,744 lines.
+  Direct coverage is ratcheted as a sixth risk group; the focused and complete
+  parity contracts pass. The parent remains active because R4 rubric residuals
+  and R5-R8 remain partial or uninstantiated; select another child only after
+  this branch merges and the hotspot evidence is refreshed again.
+- 2026-08-09 — Reconciled from merged PR-#614 main `c4e7f298`. All 121 prior
+  children are done; repository metrics record 4,990 files, 2,502 source files,
+  and 871,255 source-code lines. Activated child 122,
+  `refactor-rubric-transcript-projection-runtime`: the rubric service's
+  complexity-126 full-transcript builder is the safest remaining macro because
+  public/full, historical-schema, artifact, and bilateral parity already have
+  a 2,476-line executable characterization surface.
+- 2026-08-09 — Completed child 122 locally. The rubric facade fell from 3,290
+  to 2,716 lines and retains compatibility exports; the extracted 552-line
+  judge-facing transcript owner has maximum complexity 23 rather than 126 and
+  is consumed directly by shared transcript tooling. Focused bilateral,
+  compatibility, artifact, historical-schema, risk, complete hermetic,
+  tutor-core, source, formatting, lint, manifest, and zero-cycle gates pass.
+  Keep the parent active because R5-R8 remain partial or uninstantiated; select
+  the next child only after this branch merges and hotspot evidence is refreshed.
+- 2026-08-09 — Rebased child 122 over Course 479 PR #615 and the serialized
+  workplan refresh at `0dffa15f`. The Course 479 Tutor Lab seam is independent
+  of the rubric transcript owner; post-rebase focused, complete hermetic,
+  source, formatting, lint, manifest, and cycle gates remain green.
+- 2026-08-09 — Rebased child 122 over independent Codex default-model PR #616
+  and its generated-view refresh at `5c2eadee`; the transcript patch remains
+  conflict-free and disjoint from the provider/tutor-stub configuration slice.
+- 2026-08-09 — Rebased child 122 over independent register/paper PR #617 and
+  its generated-view refresh at `2b26e4e8`. The transcript boundary remains
+  conflict-free; 166 focused assertions and all structural gates pass.
+- 2026-08-09 — PR #618 merged child 122 and the generated workplan refresh
+  advanced main to `5527016a`. Fresh R5 evidence records the 2,885-line
+  dramatic engine and complexity-544 `runDrama()`, with 19 direct test files
+  and a green 71/71 canonical derivation baseline. Activated child 123,
+  `refactor-dramatic-derivation-run-state`, to establish the explicit state and
+  lifecycle/result boundary before extracting role transitions.
+- 2026-08-09 — Completed child 123 locally. Explicit run-state, outer
+  lifecycle, and result-projection owners reduce the dramatic engine to 2,425
+  lines and `runDrama()` complexity to 454; all 360 direct assertions, 8,281
+  hermetic root tests, 137 tutor-core tests, seven risk groups, and structural
+  gates pass. Keep the parent active: after this child merges, the next R5
+  macro should extract the director/tutor/learner turn-transition coordinators
+  against the now-explicit state contract, starting with the director action,
+  release, pacing, and role-view seam rather than changing role policy.
+- 2026-08-09 — Opened child 123 as PR #619 at `4d05590a`; initial CI is queued
+  or running and GitHub reports the PR mergeable. Activated stacked child 124,
+  `refactor-dramatic-derivation-role-transitions`, from that exact head so the
+  new state contract remains an explicit dependency. Its target is the three
+  role response-application paths, leaving post-learner lifecycle policy in
+  the engine for a later R5 slice.
+- 2026-08-10 — Completed stacked child 124 locally. Named director, tutor, and
+  learner transition owners reduce the dramatic engine from 2,425 to 1,622
+  lines and `runDrama()` complexity from 454 to 123 while 364 direct tests,
+  8,285 hermetic root tests, 137 tutor-core tests, eight risk groups, and all
+  structural gates pass. Keep the parent active. After PR #619 and this child
+  merge, the next R5 macro should extract the post-learner scene-close, stall,
+  decay, and live-monitor lifecycle against the same explicit run state; view
+  construction can then be assessed as the remaining engine responsibility.
