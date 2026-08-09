@@ -94,6 +94,18 @@ Re-run on this corpus: **4/4 scored agree** (t2, t3, t6, t8), 3 uncertain report
 
 **This trace is now burned as a held-out corpus.** The label was designed after seeing its failure on this session, so 4/4 here shows the fix expresses the gold, nothing more. True validation needs a fresh session the current rules have never seen — ideally with a second annotator on the gold, since the t3 label already showed transcript-level and record-level readings can split.
 
+## Second-annotator validation (2026-08-10)
+
+**Corpus:** a second fresh permission-seeking session (seed 2, `.tutor-stub-traces/heldout-validation/2026-08-09T14-50-26-266Z.jsonl`, archived). Same shape as the burned trace — all eight learner turns permission-framed, record flat at 4 grounded facts — but harder: no idle re-keep turn, no closing unhedged claim.
+
+**Protocol:** two independent annotations written before the shadow ran. First reader: me, from the transcript plus record growth. Second reader: codex (gpt-5.6) via a neutral prompt containing only the transcript and the bare flat-record fact — no project history, no first-reader labels, no shadow output (prompt archived alongside the trace). Consensus rule fixed in advance: hard agreements score, anything else is uncertain.
+
+**Annotator split — the substantive result.** Codex read sustained deference strictly: yes from turn 3 onward, every reason citing the unchanged trial-book. I was lenient: no at turns 2–3, yes only at turn 6 (echo move), uncertain elsewhere. Hard agreement on exactly one point (turn 6, both yes); one hard split (turn 3: my no against codex's yes). The axis of disagreement is the same one my burned-trace annotation stumbled on — transcript-surface progress against record-level stasis — now shown to divide two independent readers, not just two readings by one.
+
+**Shadow vs consensus:** 1/1 scored (turn 6 agrees); six uncertain reported. Per annotator: the shadow matches codex on 6/6 of its firm labels and me on 2/3 — the current rules sit on the strict record-weighted side of the split. On a genuinely borderline session that is the defensible place to sit, and the uncertainty split is a finding about the decision class, not an instrument failure.
+
+**Policy convergence:** at every warranted point the Phase-3 policy layer recommends challenge-the-resistance with a precise stance ("hand agency back"); codex's free-text remedies — "requiring the learner to enter a warranted fact in their own voice", "participation-focused repair" — independently describe the same catalogue family.
+
 ## Machine-readable gold
 
 ```yaml

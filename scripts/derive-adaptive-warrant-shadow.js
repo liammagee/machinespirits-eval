@@ -41,6 +41,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
+import { recommendRepairPolicy } from '../services/adaptiveWarrantPolicy.js';
+
 export const ADAPTIVE_WARRANT_SHADOW_SCHEMA = 'machinespirits.tutor-stub.adaptive-warrant-shadow.v0.1';
 
 const REPETITION_DEFEATER_THRESHOLD = 0.35;
@@ -353,6 +355,25 @@ function deriveSessionShadow(session, sessionIndex) {
       current.selection.part !== prior.selection.part ||
       current.selection.tactic !== prior.selection.tactic;
 
+    // Phase 3/4: at warranted points, recommend a repair policy (action
+    // family) and a stance hint, and compare with what the stub actually
+    // selected at this turn. Sustained deference = the last three decision-time
+    // signals all carry the permission-framed deferral label.
+    const recentSignals = [turns[i - 2], turns[i - 1], turn]
+      .filter((t) => t !== undefined)
+      .map((t) => facts.get(t).learnerSignal);
+    const deferenceSustained =
+      recentSignals.length === 3 && recentSignals.every((s) => s.labels.includes('low_agency_deferral'));
+    const policy = revisionWarranted
+      ? recommendRepairPolicy({
+          signal,
+          warrantBasis,
+          divergence,
+          strategyInForce: prior.selection.action_family,
+          deferenceSustained,
+        })
+      : null;
+
     decisions.push({
       turn,
       strategy_in_force: prior.selection.action_family,
@@ -366,6 +387,10 @@ function deriveSessionShadow(session, sessionIndex) {
       revision_warranted: revisionWarranted,
       register_revision_warranted: registerRevisionWarranted,
       warrant_basis: warrantBasis,
+      policy,
+      policy_matches_actual: policy ? policy.family === current.selection.action_family : null,
+      stance_hint_matches_actual: policy?.stance_hint ? policy.stance_hint === current.selection.stance : null,
+      actual_selection: current.selection,
       verdict: revisionWarranted
         ? revised
           ? 'warranted_and_revised'
@@ -444,6 +469,12 @@ function formatDecision(decision) {
     `trouble: ${trouble} | complaints: ${decision.complaint_turns.length}`,
     `div: ${div}`,
     `warrant: ${decision.warrant_basis}${decision.register_revision_warranted ? ' + register_warrant' : ''}`,
+    ...(decision.policy
+      ? [
+          `policy: ${decision.policy.family} [stance ${decision.policy.stance_hint}] — ${decision.policy.rationale}`,
+          `        vs actual ${decision.actual_selection.action_family}/${decision.actual_selection.stance}: family ${decision.policy_matches_actual ? 'MATCH' : 'differs'}, stance ${decision.stance_hint_matches_actual ? 'MATCH' : 'differs'}`,
+        ]
+      : []),
     `→ ${decision.verdict}`,
   ].join('\n        ');
 }
