@@ -1,7 +1,7 @@
 ---
 id: refactor-dramatic-derivation-release-arbitration
 title: Extract dramatic-derivation tutor release arbitration
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -19,6 +19,8 @@ claim_status: planned
 depends_on:
   - refactor-dramatic-derivation-post-turn-lifecycle
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/626
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
     - docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md
@@ -81,3 +83,5 @@ Log:
   root run exposed loopback `EPERM` plus a pre-existing 10-second passthrough
   timing flake under heavy contention; permissioned bounded shards and the
   isolated passthrough file are fully green.
+- 2026-08-10 — PR #626 merged the verified extraction to `main`; the card is
+  complete.

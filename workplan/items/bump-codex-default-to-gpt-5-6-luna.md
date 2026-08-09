@@ -1,13 +1,13 @@
 ---
 id: bump-codex-default-to-gpt-5-6-luna
 title: Make GPT-5.6 Luna the default Codex ChatGPT-account model
-status: review
+status: done
 type: maintenance
 priority: P2
 owner: codex
 source: manual
 created: 2026-08-09
-updated: 2026-08-09
+updated: 2026-08-10
 branch: codex/bump-codex-default-luna
 verification: >-
   Reading the Codex provider configuration and dry-running the generic tutor-stub
@@ -16,6 +16,8 @@ verification: >-
   frozen experiment pins and historical artifacts remain unchanged; focused
   config, launcher, workplan, lint, and format checks pass.
 links:
+  prs:
+    - https://github.com/liammagee/machinespirits-eval/pull/616
   code:
     - config/providers.yaml
     - scripts/run-tutor-stub-auto-eval.js
@@ -46,3 +48,5 @@ generic automated launchers that still default to GPT-5.5.
   launcher, and warning tests passed (94/94); a zero-model ABM dry run emitted
   Luna for tutor, classifier, learner record, and learner; workplan source,
   lint, and format checks passed.
+- 2026-08-10 — PR #616 is merged and the verified default change is present on
+  `main`; the card is complete.
