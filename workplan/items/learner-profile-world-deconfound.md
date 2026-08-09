@@ -231,3 +231,13 @@ publication closeout's crossed holdout design, not a routing policy.
   were respectively 45%/75%, 40%/50%, 35%/55%, 45%/55%, and 45%/60% at
   2/4/6/8/10 turns. Per-cell profiles and all predictions are preserved in
   private archive commit `b36f25a2`.
+- 2026-08-10 — Reviewed the held alternative implementation in PR #610 against
+  the selected paid-launch branch. The selected path remains authoritative: it
+  alone preserves attended checkpoints and resume, binds every continuation to
+  the certified plan and runner source, and blocks outcome reading until a
+  named private-archive commit is verified. Ported PR #610's useful additional
+  defenses: the paid contract now explicitly reasserts one attempt per job and
+  the frozen 220-call admission bound, while both launch and analysis refuse a
+  nominally successful job unless exactly one JSONL trace contains exactly one
+  `run_end`. The temporary paid authorization remains returned to
+  `not_authorized`; no further model call is licensed.

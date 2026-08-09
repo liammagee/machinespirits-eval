@@ -62,6 +62,12 @@ function readJsonl(filePath) {
   }
 }
 
+export function validateSealedTraceEvents(events, label = 'trace') {
+  const runEnds = events.filter((event) => event?.type === 'run_end');
+  if (runEnds.length !== 1) fail(`${label} must contain exactly one run_end event, found ${runEnds.length}`);
+  return events;
+}
+
 function sha256(bytes) {
   return crypto.createHash('sha256').update(bytes).digest('hex');
 }
@@ -181,7 +187,8 @@ function loadProspectiveCohort({ cohortDir, archiveRepo, archiveCommit }) {
     const names = fs.existsSync(traceDir) ? fs.readdirSync(traceDir).filter((name) => name.endsWith('.jsonl')) : [];
     if (names.length !== 1) fail(`${job.id} must have exactly one valid JSONL trace, found ${names.length}`);
     const trace = path.join(traceDir, names[0]);
-    return { ...job, trace, events: readJsonl(trace) };
+    const events = validateSealedTraceEvents(readJsonl(trace), job.id);
+    return { ...job, trace, events };
   });
 
   const cells = new Map();

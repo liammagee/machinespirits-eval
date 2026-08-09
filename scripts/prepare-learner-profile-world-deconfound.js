@@ -492,6 +492,7 @@ function optionValue(job, flag) {
 function assertPaidPlanContract(plan) {
   if (plan.jobs.length !== 20 || Object.keys(plan.worlds).length !== 4)
     fail('paid materialization is not the frozen 20-job 2x2');
+  if (plan.attemptsPerJob !== 1) fail('paid materialization must retain exactly one attempt per job');
   if (new Set(plan.jobs.map(({ id }) => id)).size !== 20) fail('paid materialization contains duplicate job ids');
   for (const job of plan.jobs) {
     if (optionValue(job, '--model') !== EXPECTED_MODELS.tutor) fail(`${job.id} tutor seat drifted`);
@@ -504,6 +505,8 @@ function assertPaidPlanContract(plan) {
     }
     if (optionValue(job, '--artifact-archive') !== 'required')
       fail(`${job.id} durable artifact archive is not required`);
+    if (optionValue(job, '--model-call-budget') !== '220')
+      fail(`${job.id} model-call admission bound drifted from 220`);
   }
 }
 
@@ -540,6 +543,34 @@ function readJson(filePath, label) {
   } catch (error) {
     fail(`${label} is unreadable: ${error.message}`);
   }
+}
+
+function collectFiles(directory, predicate) {
+  if (!fs.existsSync(directory)) return [];
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const item = path.join(directory, entry.name);
+    return entry.isDirectory() ? collectFiles(item, predicate) : predicate(item) ? [item] : [];
+  });
+}
+
+function validateCompletedJobTrace(job, { root = ROOT } = {}) {
+  const repositoryRoot = path.resolve(root);
+  const traceDir = path.resolve(root, job.traceDir);
+  if (traceDir !== repositoryRoot && !traceDir.startsWith(`${repositoryRoot}${path.sep}`)) {
+    fail(`${job.id} trace directory leaves the repository`);
+  }
+  const traces = collectFiles(traceDir, (item) => item.endsWith('.jsonl'));
+  if (traces.length !== 1) fail(`${job.id} must seal exactly one JSONL trace, found ${traces.length}`);
+  let events;
+  try {
+    const text = fs.readFileSync(traces[0], 'utf8').trim();
+    events = text ? text.split('\n').map((line) => JSON.parse(line)) : [];
+  } catch (error) {
+    fail(`${job.id} trace is not valid JSONL: ${error.message}`);
+  }
+  const runEnds = events.filter((event) => event?.type === 'run_end');
+  if (runEnds.length !== 1) fail(`${job.id} trace must contain exactly one run_end event, found ${runEnds.length}`);
+  return traces[0];
 }
 
 export function writeLearnerProfileWorldDeconfoundRunManifest(plan, gate, { root = ROOT } = {}) {
@@ -583,7 +614,7 @@ export function writeLearnerProfileWorldDeconfoundRunManifest(plan, gate, { root
   return { manifest, manifestPath };
 }
 
-function validateRunState(state, plan, gate) {
+function validateRunState(state, plan, gate, { root = ROOT } = {}) {
   if (state.schema !== RUN_STATE_SCHEMA) fail('paid run state schema drifted');
   if (state.frozenPlanHash !== gate.frozenPlanHash || state.materializedPlanHash !== plan.planHash) {
     fail('paid run state belongs to a different frozen plan');
@@ -595,6 +626,8 @@ function validateRunState(state, plan, gate) {
     fail('paid run state contains an unknown completed job');
   }
   if (new Set(state.completedJobs).size !== state.completedJobs.length) fail('paid run state repeats a completed job');
+  const jobs = new Map(plan.jobs.map((job) => [job.id, job]));
+  for (const id of state.completedJobs) validateCompletedJobTrace(jobs.get(id), { root });
   if (state.activeJob) fail(`paid run stopped with ${state.activeJob} in flight; refusing an automatic retry`);
   if (state.failedJob) fail(`paid run has failed job ${state.failedJob.id}; refusing an automatic retry`);
 }
@@ -622,7 +655,7 @@ export function runLearnerProfileWorldDeconfoundPaidPlan(
   let state;
   if (fs.existsSync(statePath)) {
     state = readJson(statePath, 'paid run state');
-    validateRunState(state, plan, gate);
+    validateRunState(state, plan, gate, { root });
   } else {
     state = {
       schema: RUN_STATE_SCHEMA,
@@ -666,19 +699,28 @@ export function runLearnerProfileWorldDeconfoundPaidPlan(
       result = { status: null, signal: null, error };
     }
     attempted += 1;
-    if (result?.status !== 0) {
+    let traceError = null;
+    if (result?.status === 0) {
+      try {
+        validateCompletedJobTrace(job, { root });
+      } catch (error) {
+        traceError = error;
+      }
+    }
+    if (result?.status !== 0 || traceError) {
       state.status = 'failed';
       state.activeJob = null;
       state.failedJob = {
         id: job.id,
         exitCode: result?.status ?? null,
         signal: result?.signal ?? null,
-        error: result?.error?.message ?? null,
+        error: traceError?.message ?? result?.error?.message ?? null,
       };
       state.updatedAt = new Date().toISOString();
       writeJsonAtomic(statePath, state);
       appendRunEvent(eventsPath, { type: 'job_failed', job: job.id, ...state.failedJob });
-      fail(`${job.id} failed; checkpoint sealed and automatic retry refused`);
+      const detail = state.failedJob.error ? `: ${state.failedJob.error}` : '';
+      fail(`${job.id} failed; checkpoint sealed and automatic retry refused${detail}`);
     }
 
     state.completedJobs.push(job.id);

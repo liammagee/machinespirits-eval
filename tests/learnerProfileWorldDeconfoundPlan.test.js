@@ -12,6 +12,7 @@ import {
   verifyLearnerProfileWorldDeconfoundDelivery,
   writeLearnerProfileWorldDeconfoundPlan,
 } from '../scripts/prepare-learner-profile-world-deconfound.js';
+import { validateSealedTraceEvents } from '../scripts/analyze-learner-profile-world-deconfound.js';
 import { readLearnerProfileWorldDeconfoundDesign } from '../scripts/review-learner-profile-world-deconfound.js';
 
 import yaml from 'yaml';
@@ -182,6 +183,9 @@ test('paid runner checkpoints, resumes without repeating jobs, and seals outcome
     const calls = [];
     const spawnJob = (job) => {
       calls.push(job.id);
+      const traceDir = path.resolve(ROOT, job.traceDir);
+      fs.mkdirSync(traceDir, { recursive: true });
+      fs.writeFileSync(path.join(traceDir, `${job.id}.jsonl`), '{"type":"run_end"}\n');
       return { status: 0, signal: null };
     };
 
@@ -212,6 +216,42 @@ test('paid runner checkpoints, resumes without repeating jobs, and seals outcome
     assert.equal(final.state.archiveRequired, true);
     assert.equal(new Set(calls).size, 20);
     assert.equal(calls.length, 20);
+  } finally {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  }
+});
+
+test('paid runner and analyzer require one explicitly sealed trace per completed job', () => {
+  fs.mkdirSync(path.join(ROOT, '.test-tmp'), { recursive: true });
+  const outputDir = fs.mkdtempSync(path.join(ROOT, '.test-tmp', 'learner-profile-world-paid-unsealed-'));
+  try {
+    const plan = buildLearnerProfileWorldDeconfoundPlan(readLearnerProfileWorldDeconfoundDesign(), {
+      root: ROOT,
+      outputDir,
+      sourceSha: '0123456789abcdef0123456789abcdef01234567',
+    });
+    const gate = {
+      frozenPlanHash: FROZEN_PLAN_HASH,
+      certificateSha256: 'c'.repeat(64),
+      launchSourceSha: '3'.repeat(40),
+    };
+    assert.throws(
+      () =>
+        runLearnerProfileWorldDeconfoundPaidPlan(plan, gate, {
+          root: ROOT,
+          checkpointEvery: 1,
+          spawnJob: (job) => {
+            const traceDir = path.resolve(ROOT, job.traceDir);
+            fs.mkdirSync(traceDir, { recursive: true });
+            fs.writeFileSync(path.join(traceDir, `${job.id}.jsonl`), '{"type":"turn"}\n');
+            return { status: 0, signal: null };
+          },
+        }),
+      /trace must contain exactly one run_end event/u,
+    );
+    assert.throws(() => validateSealedTraceEvents([{ type: 'turn' }], 'fixture'), /exactly one run_end/u);
+    assert.throws(() => validateSealedTraceEvents([{ type: 'run_end' }, { type: 'run_end' }], 'fixture'), /found 2/u);
+    assert.equal(validateSealedTraceEvents([{ type: 'run_end' }], 'fixture').length, 1);
   } finally {
     fs.rmSync(outputDir, { recursive: true, force: true });
   }
