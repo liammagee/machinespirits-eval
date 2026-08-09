@@ -516,6 +516,10 @@ function isPositiveOutcome(row) {
   );
 }
 
+export function isPositiveCharismaDesireOutcome(row) {
+  return isPositiveOutcome(row);
+}
+
 function validateScenarios(scenarios, learnerAgents) {
   const errors = [];
   for (const scenarioId of CONTROLLED_SCENARIOS) {
@@ -671,10 +675,10 @@ function loadRoleIsolationRunMap(runIds = []) {
   return byRunId;
 }
 
-function analyzeRows(rows, scenarios) {
+export function analyzeCharismaDesireRows(rows, scenarios, { loadLog = loadDialogueLog } = {}) {
   return rows.map((row) => {
     const scenario = resolveControlledScenario(scenarios, row.scenario_id);
-    const log = loadDialogueLog(row);
+    const log = loadLog(row);
     const targetSignal = scenario.resistance_signal_target || '';
     const resistanceTurn = findResistanceTurn({ scenario, log, targetSignal });
     const postTurn = resistanceTurn + 1;
@@ -853,7 +857,7 @@ function summarize(analyses) {
       item.candidates += candidate ? 1 : 0;
       item.productiveFrustration += productiveFrustration ? 1 : 0;
       item.roteOwnedGeneration += roteOwnedGeneration ? 1 : 0;
-      item.positiveOutcomes += isPositiveOutcome(row) ? 1 : 0;
+      item.positiveOutcomes += isPositiveCharismaDesireOutcome(row) ? 1 : 0;
       item.routeHits += row.routeHit ? 1 : 0;
       item.targetMatches += row.targetMatched ? 1 : 0;
       item.gateMatches += row.learnerGateMatched ? 1 : 0;
@@ -885,7 +889,7 @@ function summarize(analyses) {
         item.stanceFidelityScoreSum += Number(row.stanceFidelity.score || 0);
         item.stanceFidelityEvidenceRows += row.stanceFidelity.countsAsArmEvidence ? 1 : 0;
         item.stanceFidelityEvidencePositiveOutcomes +=
-          row.stanceFidelity.countsAsArmEvidence && isPositiveOutcome(row) ? 1 : 0;
+          row.stanceFidelity.countsAsArmEvidence && isPositiveCharismaDesireOutcome(row) ? 1 : 0;
         item.stanceFidelityExcludedNoncompliance += row.stanceFidelity.countsAsExcludedNoncompliance ? 1 : 0;
         item.stanceFidelityInvalidViolations += row.stanceFidelity.countsAsInvalidViolation ? 1 : 0;
       }
@@ -913,7 +917,8 @@ function summarizeStanceGate(analyses) {
     const item = byArm.get(row.arm);
     item.assignedRows += 1;
     item.faithfulRows += row.stanceFidelity.countsAsArmEvidence ? 1 : 0;
-    item.faithfulPositiveOutcomes += row.stanceFidelity.countsAsArmEvidence && isPositiveOutcome(row) ? 1 : 0;
+    item.faithfulPositiveOutcomes +=
+      row.stanceFidelity.countsAsArmEvidence && isPositiveCharismaDesireOutcome(row) ? 1 : 0;
     item.excludedNoncompliance += row.stanceFidelity.countsAsExcludedNoncompliance ? 1 : 0;
     item.invalidViolations += row.stanceFidelity.countsAsInvalidViolation ? 1 : 0;
     item.scoreSum += Number(row.stanceFidelity.score || 0);
@@ -923,8 +928,9 @@ function summarizeStanceGate(analyses) {
   return {
     rows: rows.length,
     faithfulRows: rows.filter((row) => row.stanceFidelity.countsAsArmEvidence).length,
-    faithfulPositiveOutcomes: rows.filter((row) => row.stanceFidelity.countsAsArmEvidence && isPositiveOutcome(row))
-      .length,
+    faithfulPositiveOutcomes: rows.filter(
+      (row) => row.stanceFidelity.countsAsArmEvidence && isPositiveCharismaDesireOutcome(row),
+    ).length,
     excludedNoncompliance: rows.filter((row) => row.stanceFidelity.countsAsExcludedNoncompliance).length,
     invalidViolations: rows.filter((row) => row.stanceFidelity.countsAsInvalidViolation).length,
     byArm: [...byArm.values()],
@@ -1048,7 +1054,7 @@ function addRoleIsolationRow(summary, row) {
   summary.postGenerated += row.postGenerated ? 1 : 0;
   summary.eligible += eligible ? 1 : 0;
   summary.candidates += row.verdict.includes('candidate') ? 1 : 0;
-  summary.positiveOutcomes += isPositiveOutcome(row) ? 1 : 0;
+  summary.positiveOutcomes += isPositiveCharismaDesireOutcome(row) ? 1 : 0;
   summary.routeHits += row.routeHit ? 1 : 0;
   summary.targetMatches += row.targetMatched ? 1 : 0;
   summary.gateMatches += row.learnerGateMatched ? 1 : 0;
@@ -1681,7 +1687,7 @@ function buildReport({ generatedAt, errors, analyses, effectGrid = null }) {
  */
 export function analyzeCharismaDesireRuns(runIds) {
   const scenarios = readYaml(SCENARIO_PATH)?.scenarios || {};
-  return analyzeRows(loadRows(runIds), scenarios);
+  return analyzeCharismaDesireRows(loadRows(runIds), scenarios);
 }
 
 export function main() {
@@ -1700,7 +1706,7 @@ export function main() {
   const errors = validateScenarios(scenarios, learnerAgents);
   const rows = loadRows(runIds);
   const roleIsolationRuns = loadRoleIsolationRunMap(rows.map((row) => row.run_id));
-  const analyses = analyzeRows(rows, scenarios).map((row) => {
+  const analyses = analyzeCharismaDesireRows(rows, scenarios).map((row) => {
     const roleIsolationArm = roleIsolationRuns.get(row.runId);
     if (!roleIsolationArm) return row;
     return {
@@ -1750,7 +1756,7 @@ export function main() {
   }
 
   const candidates = analyses.filter((row) => row.verdict.includes('candidate'));
-  const positiveOutcomes = analyses.filter(isPositiveOutcome);
+  const positiveOutcomes = analyses.filter(isPositiveCharismaDesireOutcome);
   console.log('Scenario set: charisma_desire_resistance_breakthrough_controlled');
   console.log(`Status: ${errors.length ? 'FAIL' : analyses.length ? 'ANALYZED_ROWS' : 'READY_NO_ROWS'}`);
   console.log(`Controlled scenarios: ${CONTROLLED_SCENARIOS.length}`);

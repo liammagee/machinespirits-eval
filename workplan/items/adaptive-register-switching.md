@@ -1,19 +1,19 @@
 ---
 id: adaptive-register-switching
 title: Does switching into an edged register at the right moment help?
-status: review
+status: active
 type: experiment
 priority: P3
 owner: codex
 source: manual
 created: 2026-08-09
 updated: 2026-08-10
-branch: codex/adaptive-edge-timing-cli
-verification: Frozen plan, router seam, cells, runner, and fail-closed report
+branch: codex/adaptive-register-switching-stage2
+verification: Frozen plan, router seam, cells, runners, and fail-closed reports
   validate; the approved 10-row Stage 1 pilot completed measures 1-4 with a
   PASS_STAGE1 decision; the opt-in tutor-stub edge-timing overlay, trace,
-  settings, help, and analysis projections pass focused tests; Stage 2 remains
-  unauthorized.
+  settings, help, and analysis projections pass focused tests; Stage 2 is
+  separately authorized and its exact 105-row launch is pending a clean SHA.
 claim_status: exploratory
 depends_on:
   - register-mock-praise-probe
@@ -25,6 +25,8 @@ links:
   code:
     - services/tutorStubEdgeTimingPolicy.js
     - docs/tutor-stub-cli.md
+    - services/adaptiveRegisterSwitchingStage2.js
+    - scripts/run-adaptive-register-switching-stage2.js
   runs:
     - eval-2026-08-09-b09e5a10
 tags:
@@ -68,10 +70,21 @@ edged register on 10/13 resistance turns and 0/7 uptake turns, and leaked no
 edged choice onto other turns. Ironic delivery was cue-compliant and
 manner-present on 4/4 turns; sarcastic delivery was cue-compliant on 6/6 and
 manner-present on 5/6, with the miss retained as a delivery failure. Measures
-5-8 remain uncollected and Stage 2 remains unauthorized.
+Measures 5-8 remained uncollected and Stage 2 remained unauthorized at that
+checkpoint.
 
 2026-08-10 Codex: folded the frozen timing map into tutor-stub as the opt-in
 `edge_timing` register-policy overlay. The normal selection trace and CLI now
 show the active style menu, matched resistance/uptake phase, timing choice,
 final applied style, and any later hard-guard override. It is explicitly not a
 default or a validated learning policy.
+
+2026-08-10 Codex: the operator separately authorized Stage 2 against the same
+frozen plan SHA. Added a Stage-2-only runner that admits exactly the frozen 105
+jobs (35 per arm; seven per arm-scenario) only when the stored Stage-1
+`COMPLETE / PASS_STAGE1` artifact, approved plan SHA, and clean launch-commit
+SHA all validate. Outcome scoring is serial on the frozen Claude Sonnet 5
+judge; each edged register retains its own rubric and manner gate; the final
+report fails closed on any missing measure, keys its decision only to
+adaptive-versus-router-warm, and has no Stage-3 mode. No paid Stage-2 call was
+made while adding this gate.

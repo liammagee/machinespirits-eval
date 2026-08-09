@@ -1,10 +1,11 @@
 # Does switching into an edged register at the right moment help? — Frozen Pre-Registration
 
-Status: **FROZEN — Stage 1 complete; Stage 2 not authorized.** Frozen plan SHA-256:
+Status: **FROZEN — Stage 1 complete; Stage 2 separately authorized, launch pending.** Frozen plan SHA-256:
 `da2723e47de143305e88a9a7b26688f6f58e4958e0b310ed4d7e147cd9734845`.
 The operator approved exactly that hash. The attended Stage 1 pilot and its
-fail-closed report completed without restart or widening. Stage 2 remains
-locked behind a separate operator decision.
+fail-closed report completed without restart or widening. On 2026-08-10 the
+operator separately authorized the frozen 105-row Stage 2 batch; this changes
+authorization only, not the design, measures, power table, or plan hash.
 
 ## Where this comes from
 
@@ -161,14 +162,20 @@ validated default policy.
 ## Frozen apparatus
 
 - Plan and fail-closed measures: `services/adaptiveRegisterSwitching.js`.
-- Stage-1-only runner: `scripts/run-adaptive-register-switching.js`.
+- Frozen Stage-1-only runner: `scripts/run-adaptive-register-switching.js`.
+- Separately gated Stage-2 runner and report:
+  `scripts/run-adaptive-register-switching-stage2.js` and
+  `services/adaptiveRegisterSwitchingStage2.js`.
 - Adaptive arm: `cell_204_id_director_adaptive_edged_register_switching`.
 - Router-warm control: `cell_205_id_director_router_warm_register_control`.
 - Always-edged comparator: existing
   `cell_197_id_director_sarcastic_challenge_breakthrough_dynamic_verified`.
-- The runner has no Stage-2 launch mode. Every paid Stage-1 mode requires
+- The Stage-1 runner has no Stage-2 launch mode. Every paid Stage-1 mode requires
   `--launch-approved --expected-sha <clean-commit>`; `--report-run` is a
   zero-call read-only report.
+- The Stage-2-only runner requires the approved plan SHA, the completed
+  Stage-1 report, and its own clean-commit SHA before every paid mode. It
+  carries no Stage-3 launch mode.
 
 ## Deviations
 
@@ -177,3 +184,11 @@ unchanged, unpinned router menu. The frozen design names it **router-warm
 control** to match the actual policy; its architecture is unchanged from the
 draft description. Further deviations are recorded, not patched around, in
 the workplan card and the paper.
+
+The Stage-2 runner was added only after the separate 2026-08-10 authorization.
+It reuses the frozen 105 jobs and registered measures unchanged, requires the
+stored `COMPLETE / PASS_STAGE1` artifact as launch evidence, and makes the
+adaptive-versus-router-warm Fisher contrast the sole decision-bearing test.
+The adaptive-versus-pinned contrast remains secondary; learner change remains
+descriptive because no continuous inferential test was preregistered. This is
+an execution seam, not a design deviation.
