@@ -1,12 +1,12 @@
 {
-  "generated": "2026-08-09T00:24:28.285Z",
+  "generated": "2026-08-09T00:38:03.177Z",
   "counts": {
-    "total": 474,
+    "total": 475,
     "byStatus": {
       "done": 447,
       "blocked": 6,
       "dropped": 9,
-      "review": 3,
+      "review": 4,
       "active": 2,
       "archived": 4,
       "triaged": 3
@@ -14,7 +14,7 @@
     "byType": {
       "research": 75,
       "experiment": 77,
-      "infra": 101,
+      "infra": 102,
       "maintenance": 200,
       "content": 3,
       "ops": 10,
@@ -568,6 +568,38 @@
         "local-development",
         "testing",
         "performance"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "reduce-first-draft-outer-loop-test-time",
+      "title": "Reduce first-draft outer-loop test latency",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/reduce-first-draft-outer-loop-test-time",
+      "verification": "Two unrestricted isolated before-runs averaged 26.23s and two after-runs averaged 7.92s, a 69.8% wall-time reduction while all runs passed 43/43 tests; cache invalidation, combined focused tests, comprehensive hermetic root/core suites, lint, formatting, workplan, and diff checks pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "items": [
+          "optimize-local-node-execution",
+          "calibrate-local-node-test-concurrency",
+          "reduce-human-discourse-test-processes"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "tutor-stub",
+        "first-draft"
       ],
       "milestone": "evaluation-infrastructure"
     },
