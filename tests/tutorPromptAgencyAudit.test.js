@@ -49,9 +49,12 @@ test('report states the evidence boundary and reproducible prompt-mirror discrep
 
   assert.match(markdown, /not evidence about tutor behaviour or learner outcomes/i);
   assert.match(markdown, /No prompt changes are proposed by this audit/);
+  // tutor-ego-placebo.md was in this list until 2026-08-09, when the
+  // course-479 freeze synced the bundled copy from authoritative prompts/
+  // (version 1.1) — that drift is repaired, not newly ignored.
   assert.deepEqual(
     audit.inventory.mirror_drift.map(({ file }) => file),
-    ['tutor-ego-placebo.md', 'tutor-ego-recognition-nomem.md'],
+    ['tutor-ego-recognition-nomem.md'],
   );
 });
 

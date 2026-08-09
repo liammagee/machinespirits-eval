@@ -107,7 +107,7 @@ audits:
       - { dimension: D2, status: protective, snippet: "Must use exact IDs from curriculum context.", rationale: "Forbids unsupported action identifiers." }
       - { dimension: D4, status: protective, snippet: "Must use exact IDs from curriculum context.", rationale: "Constrains actions to provided targets." }
   - file: tutor-ego-placebo.md
-    sha256: ba142564ca3f3cfc3f2a4d57b647efcece47d7ae3f55a6c1ae19c581f055c509
+    sha256: 6f7a60ffe80f2a3ed0d2f02f98297afdccb33c963aaeecd64b4124f21fc7b5bd
     findings:
       - { dimension: D2, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Forbids fabricated curriculum references." }
       - { dimension: D4, status: protective, snippet: "Always extract actual IDs from the curriculum context - never invent IDs.", rationale: "Constrains navigation to valid targets." }
