@@ -1,7 +1,7 @@
 ---
 id: strict-policy-null-sweep
 title: Re-read the nulls that were measured while the guard wrote the tutor's turns
-status: active
+status: done
 type: infra
 priority: P1
 owner: claude
@@ -15,7 +15,7 @@ verification: >-
   guard never touched), a template rate where traces survive, and one of three
   verdicts: safe, diluted, or unrecoverable. Every null marked diluted carries
   a caveat in place in the paper. No re-run is part of this card.
-claim_status: planned
+claim_status: settled
 links:
   code:
     - scripts/census-guard-template-rate.js
@@ -172,3 +172,13 @@ no re-run follows from it.
   — the table into `docs/tutor-stub-guard-catalog.md`, plus dating §7.4.5's
   strict-delivery claim in the paper. No caveat is owed to any null, because
   none of them came back diluted.
+- 2026-08-09 — step 4 done in one pass, and the card closes. The table sits in
+  `docs/tutor-stub-guard-catalog.md` under "The nulls measured before the flip,
+  one row each", after the section on which runs survive the flip. Six rows:
+  §6.16 and §6.17 safe with a rate, §6.18's addendum and §6.21 unrecoverable,
+  §6.19 and §6.20/§6.22 safe on their face. No caveat went into the paper,
+  because no null came back diluted. The only paper edit is the date the sweep
+  turned up on the way past: §7.4.5's V17 matrix and §8.5's scope note both
+  describe strict delivery as the harness default, which it stopped being on
+  2026-08-07, so both now say when they ran and that strict is opt-in from
+  then. Paper at v3.0.281 with the matching Appendix F entry.
