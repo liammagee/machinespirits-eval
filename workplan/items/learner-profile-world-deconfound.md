@@ -8,19 +8,25 @@ owner: codex
 source: manual
 created: 2026-08-06
 updated: 2026-08-09
-branch: codex/learner-profile-world-deconfound-adjudication
-verification: "Design-stage card. Before any paid dialogue: the transplanted
-  persona briefs are user-adjudicated, the crossed cells and readings below
-  are frozen unchanged, and the operator has explicitly authorized the paid
-  run. The run is attended; delivery is verified per the golden contract
-  before any reading."
+branch: codex/learner-profile-world-deconfound-qd-v1-replay
+verification: "The approved persona transplants and exact qd-v1 are frozen and
+  hash-pinned. The replacement is one prospective balanced 2-persona x 2-world
+  x 5 cohort with no historical pooling; zero-model tutor-stub dry-runs verify
+  delivery for all four cells. Merge before clean-main certification; twenty
+  paid dialogues remain separately unauthorized."
 claim_status: methods
 links:
   config:
     - config/learner-profile-world-deconfound.yaml
+    - config/learner-profile-recovery-l1.json
   code:
     - scripts/review-learner-profile-world-deconfound.js
+    - scripts/replay-learner-profile-recovery-l1.js
+    - scripts/prepare-learner-profile-world-deconfound.js
+    - services/tutorStubQuietDetectorV1.js
     - tests/learnerProfileWorldDeconfound.test.js
+    - tests/learnerProfileRecoveryL1.test.js
+    - tests/learnerProfileWorldDeconfoundPlan.test.js
   notes:
     - notes/2026-08-03-adaptive-causality-living-log.md
   paper:
@@ -59,19 +65,23 @@ both transplants before any run, as R1's re-authored directives were.
 Option, decided at freeze: a third authored persona in one existing
 world, the log's strongest version of the test.
 
-**D2 — the crossed cells (paid, attended, local).** Tenant in world-033
-and record-keeper in world-030, k=5 dialogues per cell (10 paid
-dialogues; plus 5 per third-persona cell if authored). Frozen baseline
-full stack from the manifest, same seats as the crossed experiment
+**D2 — the prospective balanced cells (paid, attended, local).** Both
+personas in both worlds, k=5 dialogues per cell (20 paid dialogues).
+This regenerates the two source-world cells beside the two crossed cells,
+so all four cells share one source revision and runtime. Frozen baseline
+full stack from the manifest, same seats as the earlier crossed experiment
 (sonnet speaking, terra learner), worlds on their ratified schedules,
 delivery verified in shipped prompts before any outcome is read. No
 detector, card, or schedule changes — the instrument must meet the new
-cells as it met the old.
+cohort unchanged. Before closeout, archive the completed light artifacts and
+trace bundle outside ignored `exports/` with the repository's run-artifact
+archiver.
 
 **D3 — the recovery reading (free, replay).** Replay the standing
-profile instrument (trigger plus quiet detector, per-dialogue
-state-frequency estimates) over old and new dialogues together;
-leave-one-out classification of PERSONA across all four cells.
+profile instrument (trigger plus exact qd-v1 quiet detector, per-dialogue
+state-frequency estimates) over the prospective cohort only; leave-one-out
+classification of PERSONA across all four cells, with the identical classifier
+run against WORLD as a diagnostic. Historical dialogues are not pooled.
 
 **Readings, fixed now.** Persona recovered across worlds at or above the
 original 80% bar = the signal travels with the learner pattern;
@@ -83,10 +93,10 @@ interaction = reported as the measured bound, unspun. Whatever the
 branch, per-cell state-frequency profiles are published beside the
 classification so the basis of the verdict is inspectable.
 
-**Cost and venue.** About 10 paid dialogues (15 with the third persona)
-plus free replays; attended; runs in a local session (the CLI bridges
-and recorded artifacts live there). The paid launch needs explicit
-operator authorization at freeze, like every paid run since the grid.
+**Cost and venue.** Exactly 20 paid dialogues plus free replays; attended;
+runs in a local session (the CLI bridges and recorded artifacts live there).
+The paid launch needs explicit operator authorization after the delivery plan
+is verified, like every paid run since the grid.
 
 **Limits, stated now.** Simulated learners; one tutor stack; two
 authored personas (three at most); transplanted briefs are adaptations,
@@ -118,3 +128,50 @@ publication closeout's crossed holdout design, not a routing policy.
   overrides, and confirmed omission of a third persona. The approved prompt
   and voice hashes are now frozen in the design. Paid authorization remains
   absent; the next gate is exact qd-v1 restoration and 56/64 reproduction.
+- 2026-08-09 — Restored qd-v1 byte-for-byte from both named source commits
+  (matching SHA-256 `318da00f…6c4`) and converted the recovered scratch command
+  into a tracked, zero-model, fail-closed replay. The historical console output
+  is recoverable (56/64 overall; 50/64, 49/64, 51/64, 54/64, and 53/64 at
+  2/4/6/8/10 turns), but the ignored vector JSON and original 64 trace files
+  are absent from the current checkout and local artifact searches. Therefore
+  the original result has not been independently reproduced: raw-trace recovery
+  remains a pre-certificate gate, and no paid call is authorized.
+- 2026-08-09 — Exhausted the practical recovery paths: no local checkout,
+  Trash/CloudStorage/Spotlight result, Time Machine data snapshot, remote
+  instrumentation/archive ref, or GitHub Actions artifact contains the missing
+  corpus (Actions retains only `risk-coverage`). The missing data also made the
+  planned old-plus-new final reading impossible. At the user's direction to
+  unblock what is possible, replaced that dependency with a prospective
+  balanced 2x2: both personas in both worlds, five dialogues per cell, all
+  generated under one source/runtime and analyzed without historical pooling.
+  The historical 56/64 remains provenance-attested motivation for the frozen
+  80% bar, not a rerun or cohort input. This doubles the prospective scope from
+  10 to 20 dialogues; it does not authorize any paid call.
+- 2026-08-09 — Added the zero-model prospective launch-plan builder. It derives
+  one world overlay per cell so the approved public learner voice replaces the
+  canonical world's persona voice, pins the matching private brief, expands
+  five deterministic jobs per cell, preserves the Sonnet/Terra/Sol seats and
+  metered admission, and can dry-run one job from each cell to prove delivery.
+  The builder has no paid launch mode and reports `not_authorized` throughout.
+- 2026-08-09 — Prepared the prospective draft plan and passed delivery checks
+  for all four cells (20 unique jobs total). Each dry-run resolved the intended
+  world and model seats, carried the exact private brief in the session recipe,
+  exposed the frozen public learner voice in the world prompt, and passed
+  metered research-use admission. No provider call ran. The free apparatus gate
+  is complete; the remaining sequence is merge, clean-main certificate, then
+  separate authorization for the 20-dialogue paid cohort.
+- 2026-08-09 — Integrated the newly merged run-artifact safeguard into the
+  frozen plan: a completed cohort cannot be closed out while its primary traces
+  remain only under ignored `exports/`. The plan names the exact archive script
+  and requires both the light artifacts and compressed traces to be preserved.
+- 2026-08-09 — Picked up in the Claude session at the user's direction; the
+  user re-read both transplanted briefs there and approved both unchanged,
+  ratifying the recorded adjudication. One provenance fix on the way to merge:
+  the two pinned qd-v1 source commits were wrong — neither 0ee6b9c2 nor
+  e86a2d66 contains the detector file at all. The true span is 146a7b21
+  (creates qd-v1, 2026-08-01) through 8e2addab (last commit carrying the
+  qd-v1 bytes before the qd-v2 flip at a98d9c56). The frozen artifact was
+  checked byte-identical against both true commits, so the restoration
+  stands; only the recorded pins move, in the design YAML and the replay
+  manifest. Tests 11/11 and the replay's fail-closed corpus report were
+  re-run after the transfer.

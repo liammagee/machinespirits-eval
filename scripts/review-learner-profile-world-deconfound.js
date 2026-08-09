@@ -21,7 +21,7 @@ import yaml from 'yaml';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_CONFIG = path.join(ROOT, 'config', 'learner-profile-world-deconfound.yaml');
-const EXPECTED_SCHEMA = 'machinespirits.tutor-stub.learner-profile-world-deconfound.v1';
+const EXPECTED_SCHEMA = 'machinespirits.tutor-stub.learner-profile-world-deconfound.v2';
 const WORLD_FILES = Object.freeze({
   world_030_rowan_flat: 'config/drama-derivation/world-030-rowan-flat.yaml',
   world_033_alder_row_redoubt: 'config/drama-derivation/world-033-alder-row-redoubt.yaml',
@@ -29,6 +29,12 @@ const WORLD_FILES = Object.freeze({
 const EXPECTED_CELLS = Object.freeze({
   record_keeper: 'world_030_rowan_flat',
   tenant: 'world_033_alder_row_redoubt',
+});
+const EXPECTED_PAID_CELLS = Object.freeze({
+  record_keeper_in_alder: Object.freeze({ persona: 'record_keeper', world: 'world_033_alder_row_redoubt' }),
+  record_keeper_in_rowan: Object.freeze({ persona: 'record_keeper', world: 'world_030_rowan_flat' }),
+  tenant_in_rowan: Object.freeze({ persona: 'tenant', world: 'world_030_rowan_flat' }),
+  tenant_in_alder: Object.freeze({ persona: 'tenant', world: 'world_033_alder_row_redoubt' }),
 });
 const REQUIRED_BRIEF_HEADINGS = Object.freeze([
   'Who this is:',
@@ -123,6 +129,7 @@ function validatePersona(design, personaId, root) {
     sourceWorld: expectedSource,
     targetWorld: expectedTarget,
     sourcePromptSha256: sha256(persona.source.private_brief),
+    sourcePublicLearnerVoiceSha256: sha256(sourceWorld.learner_voice),
     transplantPromptSha256: sha256(persona.transplant.private_brief),
     publicLearnerVoiceSha256: sha256(persona.transplant.public_learner_voice),
     invariants: [...persona.conduct_invariants],
@@ -135,19 +142,36 @@ export function readLearnerProfileWorldDeconfoundDesign(configPath = DEFAULT_CON
 
 export function validateLearnerProfileWorldDeconfoundDesign(design, { root = ROOT } = {}) {
   requireValue(design?.schema === EXPECTED_SCHEMA, `schema must be ${EXPECTED_SCHEMA}`);
-  requireValue(design.status === 'adjudicated', 'status must remain adjudicated');
+  requireValue(
+    design.status === 'prospective_balanced_delivery_verified',
+    'status must remain prospective_balanced_delivery_verified',
+  );
   requireValue(design.freeze?.user_adjudication === 'approved', 'user adjudication must remain approved');
   requireValue(/^\d{4}-\d{2}-\d{2}$/u.test(design.freeze?.adjudicated_on), 'adjudicated_on must be a date');
   requireValue(design.freeze?.paid_authorization === 'not_authorized', 'paid calls must remain not_authorized');
   requireValue(design.freeze?.third_persona === 'omit', 'third-persona choice must remain omit');
+  requireValue(
+    design.freeze?.scope_amendment?.status === 'approved_for_design' &&
+      design.freeze.scope_amendment.source === 'user_directed_unblock',
+    'prospective balanced scope amendment must remain approved for design only',
+  );
+  requireValue(
+    design.freeze?.delivery_verification?.status === 'verified' &&
+      design.freeze.delivery_verification.mode === 'tutor_stub_dry_run' &&
+      design.freeze.delivery_verification.cells_verified === 4 &&
+      design.freeze.delivery_verification.no_model_calls === true,
+    'all four prospective cells must retain zero-model delivery verification',
+  );
 
   validateFile(root, design.runtime?.baseline_manifest, 'baseline manifest');
   const recoveryInstrument = design.runtime?.recovery_instrument;
   validateFile(root, recoveryInstrument?.pressure, 'pressure instrument');
+  validateFile(root, recoveryInstrument?.replay_manifest, 'recovery replay manifest');
+  validateFile(root, recoveryInstrument?.quiet_artifact, 'qd-v1 replay artifact');
   requireValue(recoveryInstrument?.quiet_version === 'qd-v1', 'quiet instrument must remain qd-v1');
   requireValue(
-    recoveryInstrument?.status === 'restore_exact_before_certificate',
-    'qd-v1 must remain an explicit pre-certificate restoration gate',
+    recoveryInstrument?.status === 'restored_exact_prospective_rebaseline',
+    'qd-v1 must remain restored for the prospective rebaseline',
   );
   requireValue(
     Array.isArray(recoveryInstrument?.quiet_source_commits) &&
@@ -163,6 +187,14 @@ export function validateLearnerProfileWorldDeconfoundDesign(design, { root = ROO
     const approved = design.freeze?.approved_artifacts?.[personaReport.id];
     requireValue(approved, `${personaReport.id} approved artifact hashes are required`);
     requireValue(
+      approved.source_prompt_sha256 === personaReport.sourcePromptSha256,
+      `${personaReport.id} source private brief changed after prospective freeze`,
+    );
+    requireValue(
+      approved.source_public_learner_voice_sha256 === personaReport.sourcePublicLearnerVoiceSha256,
+      `${personaReport.id} source public learner voice changed after prospective freeze`,
+    );
+    requireValue(
       approved.transplant_prompt_sha256 === personaReport.transplantPromptSha256,
       `${personaReport.id} transplanted private brief changed after adjudication`,
     );
@@ -172,16 +204,21 @@ export function validateLearnerProfileWorldDeconfoundDesign(design, { root = ROO
     );
   }
   const cells = design.paid_design?.cells;
-  requireValue(Array.isArray(cells) && cells.length === 2, 'paid design must contain exactly two crossed cells');
+  requireValue(
+    design.paid_design?.cohort_basis === 'prospective_balanced_2x2',
+    'paid design must remain a prospective balanced 2x2',
+  );
+  requireValue(Array.isArray(cells) && cells.length === 4, 'paid design must contain exactly four balanced cells');
   const seen = new Set();
   let dialogues = 0;
   for (const cell of cells) {
+    const expected = EXPECTED_PAID_CELLS[cell.id];
     requireValue(
-      EXPECTED_CELLS[cell.persona] === cell.world,
-      `unexpected crossed cell ${cell.persona} in ${cell.world}`,
+      expected?.persona === cell.persona && expected.world === cell.world,
+      `unexpected prospective cell ${cell.id}: ${cell.persona} in ${cell.world}`,
     );
-    requireValue(!seen.has(cell.persona), `duplicate crossed cell for ${cell.persona}`);
-    seen.add(cell.persona);
+    requireValue(!seen.has(cell.id), `duplicate prospective cell ${cell.id}`);
+    seen.add(cell.id);
     requireValue(cell.repeats === 5, `${cell.id} must remain at five dialogues`);
     const schedulePath = validateFile(root, cell.stress_schedule, `${cell.id} stress schedule`);
     const schedule = readYaml(schedulePath);
@@ -191,13 +228,18 @@ export function validateLearnerProfileWorldDeconfoundDesign(design, { root = ROO
     );
     dialogues += cell.repeats;
   }
-  requireValue(dialogues === 10, `crossed design must total ten dialogues, got ${dialogues}`);
-  requireValue(design.paid_design?.new_dialogues === dialogues, 'new_dialogues must equal the crossed-cell total');
+  requireValue(seen.size === Object.keys(EXPECTED_PAID_CELLS).length, 'prospective design is missing a balanced cell');
+  requireValue(dialogues === 20, `prospective balanced design must total twenty dialogues, got ${dialogues}`);
+  requireValue(design.paid_design?.new_dialogues === dialogues, 'new_dialogues must equal the balanced-cell total');
   requireValue(
     design.readings?.classifier?.includes('leave-one-out'),
     'reading must retain leave-one-out classification',
   );
   requireValue(design.readings?.pass_bar === 0.8, 'pass bar must remain 0.8');
+  requireValue(
+    design.readings?.world_diagnostic?.includes('leave-one-out'),
+    'world diagnostic must retain the matched leave-one-out classifier',
+  );
 
   return {
     schema: design.schema,
@@ -206,10 +248,15 @@ export function validateLearnerProfileWorldDeconfoundDesign(design, { root = ROO
     adjudicatedOn: design.freeze.adjudicated_on,
     paidAuthorization: design.freeze.paid_authorization,
     thirdPersona: design.freeze.third_persona,
+    scopeAmendment: design.freeze.scope_amendment.status,
+    deliveryVerification: design.freeze.delivery_verification.status,
     dialogues,
+    cells: cells.map(({ id, persona, world, repeats }) => ({ id, persona, world, repeats })),
     recoveryInstrument: {
       pressure: recoveryInstrument.pressure,
       quietVersion: recoveryInstrument.quiet_version,
+      replayManifest: recoveryInstrument.replay_manifest,
+      quietArtifact: recoveryInstrument.quiet_artifact,
       status: recoveryInstrument.status,
     },
     models: {
@@ -267,18 +314,20 @@ export function renderLearnerProfileWorldDeconfoundReview(design, report) {
     '',
     '## Frozen paid design after adjudication',
     '',
-    `- ${report.dialogues} new dialogues: five per crossed cell.`,
+    `- ${report.dialogues} new dialogues: five in each cell of a prospective balanced 2 personas × 2 worlds cohort.`,
     `- Tutor: ${report.models.tutor}; learner: ${report.models.learner}; analysis: ${report.models.analysis}.`,
-    '- Existing source-world dialogues are reused; no source cell is rerun.',
+    '- Both source-world and crossed cells are generated together; no historical dialogue is pooled into the verdict.',
     '- Delivery is verified before outcomes are read.',
     '- The original 80% persona-recovery bar and all world/partial branches remain unchanged.',
     `- Recovery instrument: ${report.recoveryInstrument.pressure} plus ${report.recoveryInstrument.quietVersion}.`,
-    '- The current tree contains qd-v2. Restore exact qd-v1 as a frozen replay artifact and reproduce the original 56/64 reading before certification.',
+    `- Exact qd-v1 replay artifact: ${report.recoveryInstrument.quietArtifact}.`,
+    `- Frozen replay manifest: ${report.recoveryInstrument.replayManifest}.`,
+    '- The original ignored 64-dialogue corpus and vector artifact are absent. The saved 56/64 result is provenance-attested historical motivation only, not an independent rerun or an input to this cohort.',
     '',
-    '## Remaining gates before a runner or certificate',
+    '## Remaining gates before paid launch',
     '',
-    '1. Restore and validate the exact qd-v1 replay instrument.',
-    '2. Separately authorize the ten paid dialogues and their named external payloads.',
+    '1. Merge this source-only apparatus and generate a certificate pinned to the resulting clean main SHA.',
+    '2. Separately authorize the twenty paid dialogues and their named external payloads.',
   );
   return `${blocks.join('\n')}\n`;
 }
@@ -302,7 +351,7 @@ export function main(argv = process.argv.slice(2)) {
   if (args.json) process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   else if (args.check) {
     process.stdout.write(
-      `learner-profile world deconfound: valid adjudicated zero-model design; ${report.dialogues} paid dialogues remain unauthorized; qd-v1 restoration pending\n`,
+      `learner-profile world deconfound: prospective balanced design ready for clean-main certification; ${report.dialogues} paid dialogues remain unauthorized; delivery verified 4/4; exact qd-v1 restored; no historical corpus dependency\n`,
     );
   } else process.stdout.write(renderLearnerProfileWorldDeconfoundReview(design, report));
   return report;
