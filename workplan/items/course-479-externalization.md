@@ -45,3 +45,11 @@ Completion boundary:
   each publish.
 - The eval repo's paid surfaces (poetics job launcher, pilot UI) stay off the
   student path.
+
+2026-08-09 Claude: Seam check PASSED — see `TUTOR-CORE-SEAM-CHECK.md`. Bare
+copy of tutor-core installed and ran the full ego/superego loop standalone
+with a stub model (draft, rejection, revision, approval). Deliberation trace
+and per-stage streaming come free. Added `tests/tutorCoreSeamGuard.test.js`
+so the one-way rule now fails a build instead of a code review. Next: freeze
+the course-479 stance profiles so tutor-core loads them without the eval
+repo's prompt loader.
