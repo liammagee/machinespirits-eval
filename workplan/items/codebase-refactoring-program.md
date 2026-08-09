@@ -150,6 +150,7 @@ links:
     - refactor-dramatic-derivation-role-transitions
     - refactor-dramatic-derivation-post-turn-lifecycle
     - refactor-dramatic-derivation-release-arbitration
+    - refactor-dramatic-derivation-strategy-ledger-prompt
 tags:
   - refactoring
   - testing
@@ -1879,3 +1880,16 @@ Log:
   `llmRoles.js` macro between the complexity-68 strategy-ledger prompt section
   and a broader tutor-turn prompt-construction owner; keep the final engine
   view seam deferred unless new hotspot evidence raises it again.
+- 2026-08-10 — PR #626 merged child 126 as `70847563`; activated child 127,
+  `refactor-dramatic-derivation-strategy-ledger-prompt`, from refreshed main
+  `9342e250`. It extracts the complexity-68 scene-strategy prompt projector as
+  the narrower next `llmRoles.js` boundary while preserving prompt text,
+  ordering, model-call inputs, ledgers, and tutor/learner runtime shapes.
+- 2026-08-10 — Completed child 127 locally after rebasing onto current main
+  `e4242ca6`. The complexity-68 strategy-ledger prompt closure is now a
+  189-line, complexity-16 pure owner with 100% line and function coverage;
+  `llmRoles.js` fell from 5,221 to 5,085 lines. All 617 focused assertions,
+  8,357 hermetic root tests, 137 tutor-core tests, eleven risk groups, and
+  structural gates pass. After merge, refresh hotspot evidence before choosing
+  the broader tutor-turn prompt-construction owner; keep the final engine view
+  seam deferred unless it again becomes a leading hotspot.

@@ -115,6 +115,18 @@
       "floors": { "lines": 90, "branches": 80, "functions": 90 }
     },
     {
+      "id": "dramatic-derivation-strategy-ledger-prompt",
+      "label": "Dramatic derivation tutor strategy-ledger prompt",
+      "runner": "node",
+      "sources": ["services/dramaticDerivation/tutorStrategyLedgerPrompt.js"],
+      "tests": [
+        "tests/dramaticDerivationTutorStrategyLedgerPrompt.test.js",
+        "tests/dramaticDerivationStrategyLedger.test.js",
+        "tests/lemmaLayer.test.js"
+      ],
+      "floors": { "lines": 90, "branches": 80, "functions": 90 }
+    },
+    {
       "id": "admin-auth",
       "label": "Admin routes and authentication",
       "runner": "node",

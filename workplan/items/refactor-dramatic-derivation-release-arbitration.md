@@ -1,7 +1,7 @@
 ---
 id: refactor-dramatic-derivation-release-arbitration
 title: Extract dramatic-derivation tutor release arbitration
-status: review
+status: done
 type: maintenance
 priority: P1
 owner: codex
@@ -81,3 +81,6 @@ Log:
   root run exposed loopback `EPERM` plus a pre-existing 10-second passthrough
   timing flake under heavy contention; permissioned bounded shards and the
   isolated passthrough file are fully green.
+- 2026-08-10 — PR #626 merged as `70847563`; the source-only generated-board
+  refresh followed on main. Closed this child and activated the strategy-ledger
+  prompt extraction from refreshed main `9342e250`.
