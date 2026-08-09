@@ -1,15 +1,15 @@
 {
-  "generated": "2026-08-09T01:24:19.554Z",
+  "generated": "2026-08-09T01:40:53.656Z",
   "counts": {
     "total": 479,
     "byStatus": {
-      "done": 449,
+      "done": 454,
       "blocked": 6,
       "dropped": 9,
-      "review": 6,
       "active": 2,
       "archived": 4,
-      "triaged": 3
+      "triaged": 3,
+      "review": 1
     },
     "byType": {
       "research": 75,
@@ -553,166 +553,6 @@
         "human-labelling"
       ],
       "milestone": "adaptive-tutor-evidence-v1"
-    },
-    {
-      "id": "calibrate-local-node-test-concurrency",
-      "title": "Calibrate local Node root-test concurrency",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/calibrate-local-node-test-concurrency",
-      "verification": "Repeated unrestricted hermetic root-suite profiles compared default/14 with 4, 6, 8, and repeated 10-worker runs while all valid profiles preserved 638 files, 8,157 passing tests, zero failures/skips, isolated stores, and exact manifest accounting; focused runner/local-CI contract, tutor-core, lint, format, workplan, and diff gates cover the retained optional control without changing the existing Node 20/22 CI topology.",
-      "claim_status": "planned",
-      "depends_on": [
-        "optimize-local-node-execution"
-      ],
-      "links": {
-        "items": [
-          "optimize-local-node-execution"
-        ]
-      },
-      "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "performance"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "reduce-character-dag-test-latency",
-      "title": "Reduce Character-DAG framework test latency",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/reduce-character-dag-test-latency",
-      "verification": "Two unrestricted isolated before-runs averaged 18.29s and two after-runs averaged 4.87s, a 73.4% reduction while all passed 13/13 tests; terminal-state equivalence, focused adaptive coverage, counterfactual smoke, comprehensive hermetic root/core, lint, formatting, workplan, manifest, and diff checks pass.",
-      "claim_status": "planned",
-      "depends_on": [
-        "optimize-local-node-execution"
-      ],
-      "links": {
-        "items": [
-          "optimize-local-node-execution",
-          "calibrate-local-node-test-concurrency",
-          "reduce-human-discourse-test-processes",
-          "reduce-first-draft-outer-loop-test-time",
-          "reduce-interactive-turn-test-latency"
-        ]
-      },
-      "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "character-dag",
-        "tutor-stub"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "reduce-first-draft-outer-loop-test-time",
-      "title": "Reduce first-draft outer-loop test latency",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/reduce-first-draft-outer-loop-test-time",
-      "verification": "Two unrestricted isolated before-runs averaged 26.23s and two after-runs averaged 7.92s, a 69.8% wall-time reduction while all runs passed 43/43 tests; cache invalidation, combined focused tests, comprehensive hermetic root/core suites, lint, formatting, workplan, and diff checks pass.",
-      "claim_status": "planned",
-      "depends_on": [
-        "optimize-local-node-execution"
-      ],
-      "links": {
-        "items": [
-          "optimize-local-node-execution",
-          "calibrate-local-node-test-concurrency",
-          "reduce-human-discourse-test-processes"
-        ]
-      },
-      "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "tutor-stub",
-        "first-draft"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "reduce-human-discourse-test-processes",
-      "title": "Reduce redundant human-discourse test process launches",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/reduce-human-discourse-test-processes",
-      "verification": "An unrestricted 25.99s isolated baseline versus 23.00s and 23.25s cached reruns shows lower human-discourse latency while all three pass 43/43 tests; the comprehensive hermetic root/core suites, retained CLI/PTY boundaries, exact accounting, lint, formatting, workplan, and diff checks all pass.",
-      "claim_status": "planned",
-      "depends_on": [
-        "optimize-local-node-execution"
-      ],
-      "links": {
-        "items": [
-          "optimize-local-node-execution",
-          "calibrate-local-node-test-concurrency"
-        ]
-      },
-      "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "subprocess",
-        "tutor-stub"
-      ],
-      "milestone": "evaluation-infrastructure"
-    },
-    {
-      "id": "reduce-interactive-turn-test-latency",
-      "title": "Reduce interactive tutor-turn test latency",
-      "status": "review",
-      "type": "infra",
-      "priority": "P2",
-      "owner": "codex",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "branch": "codex/reduce-interactive-turn-test-latency",
-      "verification": "Two unrestricted isolated before-runs averaged 25.01s and two after-runs averaged 19.58s, a 21.7% reduction while all passed 16/16 tests; provider, PTY-cohort, comprehensive hermetic root/core, lint, formatting, workplan, manifest, and diff checks preserve every interactive contract.",
-      "claim_status": "planned",
-      "depends_on": [
-        "optimize-local-node-execution"
-      ],
-      "links": {
-        "items": [
-          "optimize-local-node-execution",
-          "calibrate-local-node-test-concurrency",
-          "reduce-human-discourse-test-processes",
-          "reduce-first-draft-outer-loop-test-time"
-        ]
-      },
-      "tags": [
-        "node",
-        "local-development",
-        "testing",
-        "subprocess",
-        "pty",
-        "tutor-stub"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "adaptive-eval-immutable-provenance",
@@ -11555,6 +11395,38 @@
       ]
     },
     {
+      "id": "calibrate-local-node-test-concurrency",
+      "title": "Calibrate local Node root-test concurrency",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/calibrate-local-node-test-concurrency",
+      "verification": "Repeated unrestricted hermetic root-suite profiles compared default/14 with 4, 6, 8, and repeated 10-worker runs while all valid profiles preserved 638 files, 8,157 passing tests, zero failures/skips, isolated stores, and exact manifest accounting; focused runner/local-CI contract, tutor-core, lint, format, workplan, and diff gates cover the retained optional control without changing the existing Node 20/22 CI topology.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/596"
+        ],
+        "items": [
+          "optimize-local-node-execution"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "performance"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
       "id": "character-dag-drama-framework-synthetic-contrast",
       "title": "Character-DAG drama framework synthetic contrast",
       "status": "done",
@@ -13875,6 +13747,149 @@
         "tests",
         "tutor-stub"
       ]
+    },
+    {
+      "id": "reduce-character-dag-test-latency",
+      "title": "Reduce Character-DAG framework test latency",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/reduce-character-dag-test-latency",
+      "verification": "Two unrestricted isolated before-runs averaged 18.29s and two after-runs averaged 4.87s, a 73.4% reduction while all passed 13/13 tests; terminal-state equivalence, focused adaptive coverage, counterfactual smoke, comprehensive hermetic root/core, lint, formatting, workplan, manifest, and diff checks pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/609"
+        ],
+        "items": [
+          "optimize-local-node-execution",
+          "calibrate-local-node-test-concurrency",
+          "reduce-human-discourse-test-processes",
+          "reduce-first-draft-outer-loop-test-time",
+          "reduce-interactive-turn-test-latency"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "character-dag",
+        "tutor-stub"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "reduce-first-draft-outer-loop-test-time",
+      "title": "Reduce first-draft outer-loop test latency",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/reduce-first-draft-outer-loop-test-time",
+      "verification": "Two unrestricted isolated before-runs averaged 26.23s and two after-runs averaged 7.92s, a 69.8% wall-time reduction while all runs passed 43/43 tests; cache invalidation, combined focused tests, comprehensive hermetic root/core suites, lint, formatting, workplan, and diff checks pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/601"
+        ],
+        "items": [
+          "optimize-local-node-execution",
+          "calibrate-local-node-test-concurrency",
+          "reduce-human-discourse-test-processes"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "tutor-stub",
+        "first-draft"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "reduce-human-discourse-test-processes",
+      "title": "Reduce redundant human-discourse test process launches",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/reduce-human-discourse-test-processes",
+      "verification": "An unrestricted 25.99s isolated baseline versus 23.00s and 23.25s cached reruns shows lower human-discourse latency while all three pass 43/43 tests; the comprehensive hermetic root/core suites, retained CLI/PTY boundaries, exact accounting, lint, formatting, workplan, and diff checks all pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/599"
+        ],
+        "items": [
+          "optimize-local-node-execution",
+          "calibrate-local-node-test-concurrency"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "subprocess",
+        "tutor-stub"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "reduce-interactive-turn-test-latency",
+      "title": "Reduce interactive tutor-turn test latency",
+      "status": "done",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/reduce-interactive-turn-test-latency",
+      "verification": "Two unrestricted isolated before-runs averaged 25.01s and two after-runs averaged 19.58s, a 21.7% reduction while all passed 16/16 tests; provider, PTY-cohort, comprehensive hermetic root/core, lint, formatting, workplan, manifest, and diff checks preserve every interactive contract.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/604"
+        ],
+        "items": [
+          "optimize-local-node-execution",
+          "calibrate-local-node-test-concurrency",
+          "reduce-human-discourse-test-processes",
+          "reduce-first-draft-outer-loop-test-time"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "subprocess",
+        "pty",
+        "tutor-stub"
+      ],
+      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "refresh-weber-id-charisma-recognition-thread",
