@@ -1,13 +1,13 @@
 {
-  "generated": "2026-08-09T15:10:40.521Z",
+  "generated": "2026-08-09T15:46:51.500Z",
   "counts": {
     "total": 491,
     "byStatus": {
       "done": 463,
       "blocked": 6,
       "dropped": 9,
-      "active": 6,
-      "review": 2,
+      "review": 3,
+      "active": 5,
       "archived": 4,
       "triaged": 1
     },
@@ -328,33 +328,6 @@
       ]
     },
     {
-      "id": "adaptive-register-switching",
-      "title": "Does switching into an edged register at the right moment help?",
-      "status": "active",
-      "type": "experiment",
-      "priority": "P3",
-      "owner": "claude",
-      "source": "manual",
-      "created": "2026-08-09",
-      "updated": "2026-08-09",
-      "verification": "Design is a DRAFT pre-registration only — no apparatus, no plan hash, nothing bought. Freeze requires the exact power table, the cell-scoped router-menu change built and tested, and operator sign-off on the row count.",
-      "claim_status": "exploratory",
-      "depends_on": [
-        "register-mock-praise-probe"
-      ],
-      "links": {
-        "notes": [
-          "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
-        ]
-      },
-      "tags": [
-        "register",
-        "manner",
-        "router",
-        "adaptivity"
-      ]
-    },
-    {
       "id": "a1-human-learner-validation",
       "title": "Human-learner validation pilot (real learning gains)",
       "status": "blocked",
@@ -621,6 +594,44 @@
         "models",
         "codex",
         "tutor-stub"
+      ]
+    },
+    {
+      "id": "adaptive-register-switching",
+      "title": "Does switching into an edged register at the right moment help?",
+      "status": "review",
+      "type": "experiment",
+      "priority": "P3",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-10",
+      "branch": "codex/adaptive-edge-timing-cli",
+      "verification": "Frozen plan, router seam, cells, runner, and fail-closed report validate; the approved 10-row Stage 1 pilot completed measures 1-4 with a PASS_STAGE1 decision; the opt-in tutor-stub edge-timing overlay, trace, settings, help, and analysis projections pass focused tests; Stage 2 remains unauthorized.",
+      "claim_status": "exploratory",
+      "depends_on": [
+        "register-mock-praise-probe"
+      ],
+      "links": {
+        "notes": [
+          "notes/2026-08-09-adaptive-register-switching-prereg-draft.md"
+        ],
+        "exports": [
+          "exports/adaptive-register-switching/plan.json"
+        ],
+        "code": [
+          "services/tutorStubEdgeTimingPolicy.js",
+          "docs/tutor-stub-cli.md"
+        ],
+        "runs": [
+          "eval-2026-08-09-b09e5a10"
+        ]
+      },
+      "tags": [
+        "register",
+        "manner",
+        "router",
+        "adaptivity"
       ]
     },
     {
