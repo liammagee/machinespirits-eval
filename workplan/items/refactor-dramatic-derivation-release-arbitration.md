@@ -19,8 +19,6 @@ claim_status: planned
 depends_on:
   - refactor-dramatic-derivation-post-turn-lifecycle
 links:
-  prs:
-    - https://github.com/liammagee/machinespirits-eval/pull/626
   notes:
     - docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md
     - docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md
@@ -83,5 +81,6 @@ Log:
   root run exposed loopback `EPERM` plus a pre-existing 10-second passthrough
   timing flake under heavy contention; permissioned bounded shards and the
   isolated passthrough file are fully green.
-- 2026-08-10 — PR #626 merged the verified extraction to `main`; the card is
-  complete.
+- 2026-08-10 — PR #626 merged as `70847563`; the source-only generated-board
+  refresh followed on main. Closed this child and activated the strategy-ledger
+  prompt extraction from refreshed main `9342e250`.

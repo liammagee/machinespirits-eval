@@ -1,9 +1,9 @@
 {
-  "generated": "2026-08-09T16:02:18.832Z",
+  "generated": "2026-08-09T16:22:27.268Z",
   "counts": {
-    "total": 492,
+    "total": 493,
     "byStatus": {
-      "done": 463,
+      "done": 464,
       "blocked": 6,
       "dropped": 10,
       "review": 4,
@@ -14,7 +14,7 @@
       "research": 75,
       "experiment": 82,
       "infra": 105,
-      "maintenance": 208,
+      "maintenance": 209,
       "content": 4,
       "ops": 10,
       "paper": 8
@@ -167,7 +167,8 @@
           "refactor-dramatic-derivation-run-state",
           "refactor-dramatic-derivation-role-transitions",
           "refactor-dramatic-derivation-post-turn-lifecycle",
-          "refactor-dramatic-derivation-release-arbitration"
+          "refactor-dramatic-derivation-release-arbitration",
+          "refactor-dramatic-derivation-strategy-ledger-prompt"
         ]
       },
       "tags": [
@@ -502,8 +503,8 @@
       "milestone": "paper-2-0"
     },
     {
-      "id": "refactor-dramatic-derivation-release-arbitration",
-      "title": "Extract dramatic-derivation tutor release arbitration",
+      "id": "refactor-dramatic-derivation-strategy-ledger-prompt",
+      "title": "Extract dramatic-derivation strategy-ledger tutor prompt",
       "status": "review",
       "type": "maintenance",
       "priority": "P1",
@@ -511,11 +512,11 @@
       "source": "review",
       "created": "2026-08-10",
       "updated": "2026-08-10",
-      "branch": "codex/refactor-dramatic-derivation-release-arbitration",
-      "verification": "8/8 direct release assertions, 609/609 focused dramatic/lemma/register assertions, 8,304/8,304 hermetic root tests, 137/137 tutor-core tests, and all ten risk groups pass. The release owner reaches 94.99% line/88.08% branch/ 94.29% function coverage; every new function is complexity 27 or lower; lint, format, manifest, source-workplan, diff, and zero-cycle gates pass.",
+      "branch": "codex/refactor-dramatic-derivation-strategy-ledger-prompt",
+      "verification": "8/8 direct prompt assertions, 617/617 focused dramatic/lemma/register assertions, 8,357/8,357 hermetic root tests, 137/137 tutor-core tests, and all eleven risk groups pass. The prompt owner reaches 100% line/95.24% branch/ 100% function coverage; every new function is complexity 16 or lower; lint, format, manifest, source-workplan, diff, and zero-cycle gates pass.",
       "claim_status": "planned",
       "depends_on": [
-        "refactor-dramatic-derivation-post-turn-lifecycle"
+        "refactor-dramatic-derivation-release-arbitration"
       ],
       "links": {
         "notes": [
@@ -524,20 +525,21 @@
         ],
         "code": [
           "services/dramaticDerivation/llmRoles.js",
-          "services/dramaticDerivation/tutorReleaseArbitration.js",
-          "tests/dramaticDerivationTutorReleaseArbitration.test.js",
+          "services/dramaticDerivation/tutorStrategyLedgerPrompt.js",
+          "tests/dramaticDerivationTutorStrategyLedgerPrompt.test.js",
           "config/coverage-risk-floors.json",
           "config/hermetic-test-manifest.json"
         ],
         "items": [
           "codebase-refactoring-program",
-          "refactor-dramatic-derivation-post-turn-lifecycle"
+          "refactor-dramatic-derivation-release-arbitration"
         ]
       },
       "tags": [
         "refactoring",
         "dramatic-derivation",
-        "release",
+        "strategy-ledger",
+        "prompt",
         "llm-roles"
       ],
       "milestone": "evaluation-infrastructure"
@@ -2669,6 +2671,47 @@
         "dramatic-derivation",
         "lifecycle",
         "runtime"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-dramatic-derivation-release-arbitration",
+      "title": "Extract dramatic-derivation tutor release arbitration",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "branch": "codex/refactor-dramatic-derivation-release-arbitration",
+      "verification": "8/8 direct release assertions, 609/609 focused dramatic/lemma/register assertions, 8,304/8,304 hermetic root tests, 137/137 tutor-core tests, and all ten risk groups pass. The release owner reaches 94.99% line/88.08% branch/ 94.29% function coverage; every new function is complexity 27 or lower; lint, format, manifest, source-workplan, diff, and zero-cycle gates pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-dramatic-derivation-post-turn-lifecycle"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md"
+        ],
+        "code": [
+          "services/dramaticDerivation/llmRoles.js",
+          "services/dramaticDerivation/tutorReleaseArbitration.js",
+          "tests/dramaticDerivationTutorReleaseArbitration.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-dramatic-derivation-post-turn-lifecycle"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "dramatic-derivation",
+        "release",
+        "llm-roles"
       ],
       "milestone": "evaluation-infrastructure"
     },
