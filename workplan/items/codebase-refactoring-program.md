@@ -8,7 +8,7 @@ owner: codex
 source: review
 created: 2026-07-24
 updated: 2026-08-10
-branch: codex/refactor-post-strategy-ledger-reconciliation
+branch: codex/refactor-post-tutor-prompt-reconciliation
 verification: >-
   Every accepted refactoring slice has a linked child card and parity gate;
   root plus in-housed tutor-core tests run from one clean-install contract;
@@ -24,6 +24,7 @@ links:
     - docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md
     - docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md
     - docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md
+    - docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md
   items:
     - refactor-required-run-manifest
     - refactor-v-series-fixtures
@@ -153,6 +154,7 @@ links:
     - refactor-dramatic-derivation-release-arbitration
     - refactor-dramatic-derivation-strategy-ledger-prompt
     - refactor-dramatic-derivation-tutor-prompt-construction
+    - refactor-tutor-stub-auto-eval-report-assets
 tags:
   - refactoring
   - testing
@@ -1911,3 +1913,14 @@ Log:
   hermetic shards, tutor-core, twelve risk groups, and structural gates pass.
   After merge, refresh the hotspot evidence before selecting another R5 seam;
   otherwise advance to the R6 auto-eval or browser-presentation macro.
+- 2026-08-10 — PR #629 merged child 128 as `f6c148d5`; the generated-view
+  refresh advanced `main` to `db5b5958`. Fresh evidence closes the currently
+  justified R5 prompt-only sequence: `llmRoles.js` is 4,566 lines and its tutor
+  runtime remains complexity 493, but the complete dramatic suite covers it at
+  91.11% lines, 79.90% branches, and 87.77% functions and the remaining logic
+  interleaves mutable planning, release/lemma enforcement, two model calls,
+  revision, and state commits. Added child 129,
+  `refactor-tutor-stub-auto-eval-report-assets`, as the sole triaged
+  continuation. Its R6 boundary moves the 2,151-line report CSS owner and
+  944-line index client owner out of the 11,351-line auto-eval executable while
+  freezing emitted asset bytes, CLI behavior, report data, and write paths.
