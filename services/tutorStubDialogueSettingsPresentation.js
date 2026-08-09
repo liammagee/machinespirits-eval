@@ -66,7 +66,7 @@ export function projectTutorStubDialogueSettingsLines({ settings = {}, trainingR
     `${C.dim}  clue release speed: ${settings.releasePacing.baseSpeed}x base; ${settings.releasePacing.effectiveSpeed}x now (${settings.releasePacing.direction}); adapts to explicit learner requests${C.reset}`,
     `${C.dim}  reuse these settings next time: ${settings.rememberedSettings.enabled ? 'yes' : 'no'}; ${settings.rememberedSettings.status}${C.reset}`,
     ...trainingReuseLines,
-    `${C.dim}  advanced overrides: /settings policy add state|field · remove state|field · clear · threshold 0.7${C.reset}`,
+    `${C.dim}  advanced overrides: /settings policy add state|field|edge_timing · remove state|field|edge_timing · clear · threshold 0.7${C.reset}`,
     `${C.dim}  use /settings models, /settings models all <ref>, /settings model, /settings temp 1.0, /settings dropout 0.15, /settings light on|off, /settings training-reuse on|off, /settings release-speed 1.5, /settings theme nocturne, /settings motion subtle, or /settings forget${C.reset}\n`,
   );
 

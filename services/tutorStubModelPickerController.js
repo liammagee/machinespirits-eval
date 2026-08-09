@@ -495,6 +495,12 @@ export function createTutorStubModelPickerController(dependencies = {}) {
         description: 'Let a strong change in the conversation as a whole alter the teaching style.',
       },
       {
+        id: 'edge_timing_overlay',
+        label: 'Resistance-timed edge',
+        value: overlays.has('edge_timing') ? 'on' : 'off',
+        description: 'Use irony or sarcasm only for matched resistance, and close the edge on uptake.',
+      },
+      {
         id: 'overlay_threshold',
         label: 'Override sensitivity',
         value: String(

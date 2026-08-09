@@ -215,8 +215,10 @@ const NORMAL_SETTINGS_COMPLETIONS = [
   '/settings forget',
   '/settings policy add state',
   '/settings policy add field',
+  '/settings policy add edge_timing',
   '/settings policy remove state',
   '/settings policy remove field',
+  '/settings policy remove edge_timing',
   '/settings policy clear',
   '/settings policy threshold ',
 ];

@@ -65,7 +65,7 @@ test('launch help projection is byte-stable and uses every supplied runtime defa
 
   assert.equal(
     createHash('sha256').update(help).digest('hex'),
-    'c9bddf0cedf953b2eba58fb876f5b952d48528b8e1a281e32414b83b89fdc19b',
+    '21ef7439b5e1514cd4423b5f5c1a577ff204fd8bed17cbba001bbe8c9128dad9',
   );
   assert.match(help, /^Usage:\n {2}npm run tutor:stub -- \[options\]/u);
   assert.match(help, /fixture-tutor@v9/u);
@@ -75,6 +75,7 @@ test('launch help projection is byte-stable and uses every supplied runtime defa
   assert.match(help, /--committee-fallback-policy <v1\|v2\|cue_blind>/u);
   assert.match(help, /--point-of-action-opportunity-protocol <off\|first_admissible_warrant_v1>/u);
   assert.match(help, /fixture-register-policy/u);
+  assert.match(help, /field\+edge_timing/u);
   assert.match(help, /fixture-light, fixture-dark/u);
   assert.match(help, /fixture-still, fixture-moving/u);
   assert.match(help, /fixture-voice-a or fixture-voice-b/u);

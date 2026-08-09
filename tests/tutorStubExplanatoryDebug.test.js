@@ -122,6 +122,7 @@ test('explanatory debug frame preserves the frozen public, policy-input, field, 
     step_compression: { applied: true, count: 1 },
     question_support: { modality: 'embedded_public_hint' },
     clue_release_pacing: { baseSpeed: 1, effectiveSpeed: 1.25, direction: 'accelerate' },
+    edge_timing: null,
   });
   assert.deepEqual(frame.policy_input_for_this_tutor_turn, {
     field: { relation: 'mixed', beforeScore: 0.2, afterScore: 0.35 },

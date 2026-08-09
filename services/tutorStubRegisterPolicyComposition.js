@@ -14,7 +14,7 @@ export const TUTOR_STUB_REGISTER_PRIMARY_POLICIES = Object.freeze([
   'negative',
 ]);
 
-export const TUTOR_STUB_REGISTER_OVERLAY_POLICIES = Object.freeze(['state', 'field']);
+export const TUTOR_STUB_REGISTER_OVERLAY_POLICIES = Object.freeze(['state', 'field', 'edge_timing']);
 export const DEFAULT_TUTOR_STUB_REGISTER_OVERLAY_THRESHOLD = 0.7;
 
 const CONTROL_POLICIES = new Set(['bland', 'random', 'negative']);
@@ -179,6 +179,21 @@ function fieldChangeSignal(candidate) {
   };
 }
 
+function edgeTimingSignal(candidate) {
+  const decision = candidate?.edge_timing || null;
+  const strength = Number(decision?.decision_strength || 0);
+  return {
+    strength: Number(Math.max(0, Math.min(1, strength)).toFixed(3)),
+    reasons: [
+      `phase ${decision?.phase || 'other'}`,
+      decision?.resistance_signal ? `resistance signal ${decision.resistance_signal}` : null,
+      decision?.edge_eligible ? 'edged register eligible' : null,
+      decision?.edge_suppressed_reason ? `edge suppressed: ${decision.edge_suppressed_reason}` : null,
+    ].filter(Boolean),
+    details: decision,
+  };
+}
+
 export function evaluateTutorStubRegisterPolicyOverlay({
   overlay,
   state,
@@ -194,7 +209,9 @@ export function evaluateTutorStubRegisterPolicyOverlay({
       ? stateChangeSignal({ state, classification })
       : normalizedOverlay === 'field'
         ? fieldChangeSignal(candidate)
-        : { strength: 0, reasons: [`unsupported overlay ${normalizedOverlay}`] };
+        : normalizedOverlay === 'edge_timing'
+          ? edgeTimingSignal(candidate)
+          : { strength: 0, reasons: [`unsupported overlay ${normalizedOverlay}`] };
   const selectedRegister = candidate?.selected_register || candidate?.engagement_stance || null;
   const differsFromPrimary = Boolean(selectedRegister && selectedRegister !== primaryRegister);
   return {

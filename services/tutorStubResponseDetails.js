@@ -61,6 +61,7 @@ export function tutorStubPlainPolicyLabel(policy) {
     bland: 'fixed plain baseline',
     random: 'random control',
     negative: 'negative-register control',
+    edge_timing: 'resistance-timed edge',
   };
   return labels[policy] || String(policy || 'unknown policy').replaceAll('_', ' ');
 }
@@ -172,4 +173,35 @@ export function tutorStubResponseMetadataLine(meta) {
     .join('');
   const tutor = meta.tutorRef ? `, tutor ${meta.tutorRef}` : '';
   return `${meta.provider}/${meta.model}, ${meta.latencyMs || 0}ms, ${tokens}${cost}${effort}${register}${randomPerformance}${lightAdaptation}${directedPerformance}${pace}${guard}${stream}${cache}${tutor}`;
+}
+
+export function tutorStubResponseStyleTransitionLine(meta) {
+  const selection = meta?.registerSelection || null;
+  const edgeTiming = selection?.edge_timing || selection?.response_configuration?.edge_timing || null;
+  if (!edgeTiming || edgeTiming.phase === 'other' || !edgeTiming.selected_register) return null;
+  const previous = edgeTiming.previous_register || null;
+  const selected = edgeTiming.final_selected_register || edgeTiming.selected_register;
+  const transition = previous
+    ? previous === selected
+      ? `${tutorStubDisplayDiagnosticLabel(selected)} held`
+      : `${tutorStubDisplayDiagnosticLabel(previous)} → ${tutorStubDisplayDiagnosticLabel(selected)}`
+    : `initial → ${tutorStubDisplayDiagnosticLabel(selected)}`;
+  const signal = edgeTiming.resistance_signal
+    ? ` · ${tutorStubDisplayDiagnosticLabel(edgeTiming.resistance_signal)}`
+    : '';
+  const edge = edgeTiming.edge_eligible
+    ? edgeTiming.activated === false
+      ? edgeTiming.primary_aligned
+        ? 'edge timing matched the primary style'
+        : `edge candidate not applied: ${tutorStubPlainPolicyLabel(
+            edgeTiming.composition_winner || 'primary_policy',
+          )} stayed in control`
+      : 'edge eligible'
+    : edgeTiming.edge_suppressed_reason
+      ? `edge closed: ${tutorStubDisplayDiagnosticLabel(edgeTiming.edge_suppressed_reason)}`
+      : 'non-edged stance';
+  const override = edgeTiming.post_timing_override
+    ? ` · ${tutorStubDisplayDiagnosticLabel(edgeTiming.post_timing_override.source)} guard applied`
+    : '';
+  return `style shift > ${transition} · ${edgeTiming.phase}${signal} · ${edge}${override}`;
 }

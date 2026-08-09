@@ -239,3 +239,25 @@ test('the debug-report runtime keeps normalization, technical dispatch, and term
     fs.rmSync(tmp, { recursive: true, force: true });
   }
 });
+
+test('plain turn analysis exposes edge timing, transition, and active menu', () => {
+  const output = terminalBytes(
+    projectTutorStubTurnAnalysisLines({
+      turn: { turn: 2 },
+      registerSelection: {
+        engagement_stance: 'ironic',
+        edge_timing: {
+          phase: 'resistance',
+          resistance_signal: 'irrelevance',
+          previous_register: 'brisk',
+          selected_register: 'ironic',
+          edge_eligible: true,
+          router_register_menu: ['plain', 'precise', 'ironic', 'sarcastic'],
+        },
+      },
+    }),
+  );
+  assert.match(output, /style shift: brisk -> ironic/u);
+  assert.match(output, /edge timing: resistance; irrelevance; edged style eligible/u);
+  assert.match(output, /style menu: plain, precise, ironic, sarcastic/u);
+});

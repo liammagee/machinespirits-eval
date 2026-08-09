@@ -108,12 +108,14 @@ Options:
                          bland fixes a plain non-adaptive baseline register;
                          random samples uniformly from the active palette;
                          negative samples only ironic, sarcastic, face_threat
-                         (default: ${STUB.registerPolicy}); append +state and/or
-                         +field to add strong-change overlays, for example
-                         dynamical_system+state+field
+                         (default: ${STUB.registerPolicy}); append +state,
+                         +field, and/or +edge_timing to add overlays. The
+                         edge_timing overlay admits irony/sarcasm only for
+                         matched resistance and closes the edge on uptake, for
+                         example field+edge_timing
   --register-overlay-threshold <n>
                          minimum normalized turn-change strength in [0,1]
-                         before an added state/field policy may override the
+                         before an added state/field/edge_timing policy may override the
                          primary policy (default: ${STUB.registerOverlayThreshold})
   --safe-registers       limit automatic tutor-register selection to the
                          conservative router palette; explicit /register keeps

@@ -1,5 +1,6 @@
 import {
   getEngagementRegisterNames,
+  getRouterSelectableEngagementRegisterNames,
   getResistanceSignalDefinitions,
   getResistanceStrategies,
   getRoutingPatternGroups,
@@ -65,6 +66,29 @@ function buildResistanceSignalPatterns() {
     patterns: compilePatterns(definition.patterns || []),
     questionFlood: definition.question_flood === true,
   }));
+}
+
+export function hasEngagementResistanceSignal(source) {
+  const groups = buildResistanceSignalPatterns();
+  const challengePatterns = groups.flatMap((group) => group.patterns);
+  return (
+    challengePatterns.some((pattern) => pattern.test(source)) || (String(source || '').match(/\?/g) || []).length >= 3
+  );
+}
+
+export function detectEngagementResistanceSignal(source) {
+  const groups = buildResistanceSignalPatterns();
+  const questionCount = (String(source || '').match(/\?/g) || []).length;
+  const challengePatterns = groups.flatMap((group) => group.patterns);
+  for (const group of groups) {
+    if (group.questionFlood && questionCount >= 3) {
+      return { signal: group.signal, evidence: firstMatch(source, group.patterns) || 'multiple questions' };
+    }
+    if (group.patterns.some((pattern) => pattern.test(source))) {
+      return { signal: group.signal, evidence: firstMatch(source, group.patterns) };
+    }
+  }
+  return { signal: 'unspecified_resistance', evidence: firstMatch(source, challengePatterns) };
 }
 
 export function extractEngagementRegisterHistory(traceLike) {
@@ -140,6 +164,7 @@ function routedRegister({
   resistance_signal = null,
   resistance_strategy = null,
   resistance_move = null,
+  router_register_menu = null,
 }) {
   const requestType = canonicalRequestType(learner_signal);
   const resolvedRegister = resolveEngagementRegister(selected_register, { fallback: 'precise' });
@@ -148,6 +173,12 @@ function routedRegister({
   const legacySelectedRegister =
     resolvedRegister?.legacy_selected_register ||
     legacyRegisterFor({ register: canonicalRegister, requestType, actionFamily: resolvedActionFamily });
+  const routerMenu = Array.isArray(router_register_menu)
+    ? [...router_register_menu]
+    : getRouterSelectableEngagementRegisterNames();
+  if (!routerMenu.includes(canonicalRegister)) {
+    throw new Error(`engagement router selected ${canonicalRegister} outside its per-turn menu`);
+  }
   const routed = {
     register_ontology_version: getRegisterOntologyVersion(),
     request_type: requestType,
@@ -156,6 +187,9 @@ function routedRegister({
     learner_signal,
     selected_register: canonicalRegister,
     selected_mode: canonicalRegister,
+    router_selected_register: canonicalRegister,
+    router_selected_mode: canonicalRegister,
+    router_register_menu: routerMenu,
     legacy_selected_register: legacySelectedRegister,
     register_reason,
     mode_reason: register_reason,
@@ -175,12 +209,32 @@ function responseStrategyForSignal(signal) {
   return strategies[signal] || strategies.unspecified_resistance;
 }
 
+/**
+ * Cell-scoped edged registers are eligible only on the resistance route. The
+ * signal-to-register order is registered here so a wider menu cannot turn into
+ * an untraceable random pin: boredom/rote can take dry sarcasm; irrelevance or
+ * a question flood can take Socratic irony; frustration stays charismatic.
+ */
+export function selectResistanceRegister(resistanceSignal, routerRegisterMenu) {
+  const preferences = {
+    boredom: ['sarcastic', 'ironic', 'charismatic'],
+    rote_parroting: ['sarcastic', 'ironic', 'charismatic'],
+    irrelevance: ['ironic', 'sarcastic', 'charismatic'],
+    question_flood: ['ironic', 'sarcastic', 'charismatic'],
+    frustration: ['charismatic'],
+    unspecified_resistance: ['charismatic'],
+  };
+  const ordered = preferences[resistanceSignal] || preferences.unspecified_resistance;
+  return ordered.find((registerName) => routerRegisterMenu.includes(registerName)) || 'charismatic';
+}
+
 export function routeEngagementMode({
   learnerMessage = '',
   recentHistory = '',
   curriculumContext = '',
   modeHistory = [],
   registerHistory = [],
+  routerRegisterMenu = [],
 } = {}) {
   const message = normalizeText(learnerMessage);
   const history = normalizeText(recentHistory);
@@ -188,6 +242,8 @@ export function routeEngagementMode({
   const text = lowerText(`${message} ${history}`);
   const current = lowerText(message);
   const previousModes = normalizeRegisterHistory([...modeHistory, ...registerHistory]);
+  const selectableMenu = getRouterSelectableEngagementRegisterNames(routerRegisterMenu);
+  const route = (spec) => routedRegister({ ...spec, router_register_menu: selectableMenu });
   const riskFlags = [];
 
   const {
@@ -198,22 +254,6 @@ export function routeEngagementMode({
     vulnerability: vulnerabilityPatterns = [],
     scaffolding: scaffoldingPatterns = [],
   } = buildRoutingPatterns();
-  const resistanceSignalPatterns = buildResistanceSignalPatterns();
-  const challengePatterns = resistanceSignalPatterns.flatMap((group) => group.patterns);
-  const hasResistanceSignal = (source) =>
-    challengePatterns.some((pattern) => pattern.test(source)) || (String(source || '').match(/\?/g) || []).length >= 3;
-  const detectResistanceSignal = (source) => {
-    const questionCount = (String(source || '').match(/\?/g) || []).length;
-    for (const group of resistanceSignalPatterns) {
-      if (group.questionFlood && questionCount >= 3) {
-        return { signal: group.signal, evidence: firstMatch(source, group.patterns) || 'multiple questions' };
-      }
-      if (group.patterns.some((pattern) => pattern.test(source))) {
-        return { signal: group.signal, evidence: firstMatch(source, group.patterns) };
-      }
-    }
-    return { signal: 'unspecified_resistance', evidence: firstMatch(source, challengePatterns) };
-  };
 
   pushFlag(riskFlags, /\b(profound|impressive|admire|status)\b/i.test(message), 'status_display');
   pushFlag(
@@ -232,7 +272,7 @@ export function routeEngagementMode({
   const priorPlain = previousModes.includes('plain') || previousModes.includes('warm');
   if (simplificationPatterns.some((pattern) => pattern.test(current)) && priorPlain) {
     pushFlag(riskFlags, true, 'flat_protocol');
-    return routedRegister({
+    return route({
       learner_signal: 'plain_simplification_followup',
       selected_register: 'warm',
       action_family: 'reanchor_lived_stake',
@@ -244,11 +284,11 @@ export function routeEngagementMode({
     });
   }
 
-  if (priorPacing && hasResistanceSignal(current)) {
-    const resistance = detectResistanceSignal(message || history);
-    return routedRegister({
+  if (priorPacing && hasEngagementResistanceSignal(current)) {
+    const resistance = detectEngagementResistanceSignal(message || history);
+    return route({
       learner_signal: 'instructional_register_exhausted',
-      selected_register: 'charismatic',
+      selected_register: selectResistanceRegister(resistance.signal, selectableMenu),
       action_family: 'challenge_resistance',
       register_reason:
         'The learner first asked for instruction but now signals a resistant condition, so the tutor should switch from scaffolding to the resistance-specific challenge register.',
@@ -261,7 +301,7 @@ export function routeEngagementMode({
   }
 
   if (vulnerabilityPatterns.some((pattern) => pattern.test(current))) {
-    return routedRegister({
+    return route({
       learner_signal: 'vulnerability_or_moral_exposure',
       selected_register: 'witnessing',
       action_family: 'receive_vulnerability',
@@ -274,7 +314,7 @@ export function routeEngagementMode({
   }
 
   if (transferPatterns.some((pattern) => pattern.test(current)) || /\bcampus faq\b/i.test(curriculum)) {
-    return routedRegister({
+    return route({
       learner_signal: 'transfer_demand_or_named_material',
       selected_register: 'plain',
       action_family: 'ground_in_material',
@@ -287,7 +327,7 @@ export function routeEngagementMode({
   }
 
   if (authorityPatterns.some((pattern) => pattern.test(current))) {
-    return routedRegister({
+    return route({
       learner_signal: 'authority_refusal_or_status_challenge',
       selected_register: 'precise',
       action_family: 'answer_accountably',
@@ -303,7 +343,7 @@ export function routeEngagementMode({
     plainPatterns.some((pattern) => pattern.test(current)) ||
     simplificationPatterns.some((pattern) => pattern.test(current))
   ) {
-    return routedRegister({
+    return route({
       learner_signal: 'plain_language_request',
       selected_register: 'plain',
       action_family: 'compress_sayback',
@@ -316,7 +356,7 @@ export function routeEngagementMode({
   }
 
   if (scaffoldingPatterns.some((pattern) => pattern.test(current))) {
-    return routedRegister({
+    return route({
       learner_signal: 'stepwise_support_request',
       selected_register: 'brisk',
       action_family: 'stage_next_step',
@@ -328,11 +368,11 @@ export function routeEngagementMode({
     });
   }
 
-  if (hasResistanceSignal(text)) {
-    const resistance = detectResistanceSignal(message || history);
-    return routedRegister({
+  if (hasEngagementResistanceSignal(text)) {
+    const resistance = detectEngagementResistanceSignal(message || history);
+    return route({
       learner_signal: 'boredom_or_compliance_challenge',
-      selected_register: 'charismatic',
+      selected_register: selectResistanceRegister(resistance.signal, selectableMenu),
       action_family: 'challenge_resistance',
       register_reason:
         'The public turn shows low engagement or performative compliance, so the reviewer selects sharper contrast while preserving a refusal path.',
@@ -344,7 +384,7 @@ export function routeEngagementMode({
     });
   }
 
-  return routedRegister({
+  return route({
     learner_signal: 'conceptual_clarity_request',
     selected_register: 'precise',
     action_family: 'clarify_distinction',
