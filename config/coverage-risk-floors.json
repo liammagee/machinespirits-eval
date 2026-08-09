@@ -101,6 +101,20 @@
       "floors": { "lines": 80, "branches": 64, "functions": 82 }
     },
     {
+      "id": "dramatic-derivation-release-arbitration",
+      "label": "Dramatic derivation tutor release arbitration",
+      "runner": "node",
+      "sources": ["services/dramaticDerivation/tutorReleaseArbitration.js"],
+      "tests": [
+        "tests/dramaticDerivationTutorReleaseArbitration.test.js",
+        "tests/dramaticDerivationConfront.test.js",
+        "tests/dramaticDerivationConductPolicy.test.js",
+        "tests/dramaticDerivationRuntimeMonitor.test.js",
+        "tests/lemmaLayer.test.js"
+      ],
+      "floors": { "lines": 90, "branches": 80, "functions": 90 }
+    },
+    {
       "id": "admin-auth",
       "label": "Admin routes and authentication",
       "runner": "node",

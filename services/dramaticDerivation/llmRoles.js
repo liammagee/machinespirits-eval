@@ -25,7 +25,7 @@
  */
 
 import { closure, entails, factKey, matchPattern } from './chainer.js';
-import { pacingGuardDecision, releaseSolvency, safeReleaseTurns } from './pacing.js';
+import { releaseSolvency, safeReleaseTurns } from './pacing.js';
 import {
   normalizeRhetoricalPolicyConfig,
   recommendRhetoricalMove,
@@ -55,7 +55,8 @@ import { createRuntimeMonitor } from './runtimeMonitor.js';
 // The Step-1 V arm. Imported here, NOT in pacing.js — visiblePacing.js's own audit
 // test forbids it from importing back the other way, so the hidden/visible seam
 // stays one-directional and the no-hidden-state property is mechanically checkable.
-import { visibleGuardDecision, visibleSurfaceFeatures, isStalling } from './visiblePacing.js';
+import { visibleSurfaceFeatures, isStalling } from './visiblePacing.js';
+import { matchFrontierClaim, resolveTutorRelease } from './tutorReleaseArbitration.js';
 
 const TUTOR_FIGURES = [...RHETORICAL_FIGURES];
 const TUTOR_INTENTS = ['orient', 'release', 'consolidate', 'test', 'counter_mirror', 'stage_recognition'];
@@ -376,24 +377,6 @@ function parseJsonLoose(text) {
 }
 
 /** One call + one repair attempt, with role/turn context on failure. */
-/**
- * Tolerant frontier-claim matcher (LEMMA instrument): exact label, then
- * normalized label, then UNIQUE predicate-name match. Returns the frontier
- * entry or null. "default" is handled by callers (explicit delegation).
- */
-function matchFrontierClaim(frontier, claimed) {
-  if (!claimed) return null;
-  const norm = (x) => x.toLowerCase().replace(/\s+/g, '');
-  const predOf = (x) => x.split('(')[0];
-  let match =
-    frontier.find((f) => f.label === claimed) || frontier.find((f) => norm(f.label) === norm(claimed)) || null;
-  if (!match) {
-    const byPred = frontier.filter((f) => norm(predOf(f.label)) === norm(predOf(claimed)));
-    if (byPred.length === 1) match = byPred[0];
-  }
-  return match;
-}
-
 async function callJson(client, role, turn, { system, user, meta }) {
   const first = await client.call(role, { system, user, meta });
   try {
@@ -3767,325 +3750,31 @@ export function makeLlmTutor(
     // recorded (claimed/played/forced/overridden/reason) for the adherence
     // instruments; the decision is made ONCE, on the draft — a superego
     // revision restages manner, never the evidence calendar.
-    const normalizeRelease = (out) => {
-      if (!releaseAuthority) return { release: entry ? entry.premise : null };
-      const claimed = typeof out.release === 'string' && out.release.trim() ? out.release.trim() : null;
-      const validClaim = claimed && playable.some((e) => e.premise === claimed) ? claimed : null;
-      const guard = pacingGuard
-        ? runtimeMonitor
-          ? runtimeMonitor.hiddenPacingDecision({
-              ledger: view.ledger,
-              turn: view.turn,
-              playable,
-              validClaim,
-              forcedPlay,
-            })
-          : pacingGuardDecision(world, view.ledger, {
-              turn: view.turn,
-              playable,
-              validClaim,
-              forcedPlay,
-              latitude: RELEASE_LATITUDE,
-            })
-        : null;
-      // V's decision channel — the Step-1 form-match. Same {played, blocked,
-      // forcedSafe} contract the rest of this function consumes; the input is the
-      // page (view.ledger + view.transcript), not view's proof state. Mutually
-      // exclusive with the hidden guard at build, so at most one is set — the rest
-      // reads whichever is active.
-      const vGuard =
-        visibleGuard || visiblePushProbeGuard || visibleConsolidationGuard
-          ? visibleGuardDecision(world, view, { turn: view.turn, playable, validClaim, forcedPlay })
-          : null;
-      let activeGuard = guard || vGuard;
-      let hybridGuard = null;
-      let consolidationGuard = null;
-      if (visiblePushProbeGuard) {
-        const visiblePush =
-          Boolean(vGuard?.forcedSafe) && vGuard?.forcedBy === 'visible_stall' && typeof vGuard.played === 'string';
-        const hiddenSafeTurns = visiblePush ? guard?.safeTurns?.[vGuard.played] || [] : [];
-        const hiddenSafeAtCurrentTurn = hiddenSafeTurns.includes(view.turn);
-        const hiddenForcedDifferent = Boolean(
-          guard?.forcedSafe && guard.played && vGuard?.played && guard.played !== vGuard.played,
-        );
-        const accepted = visiblePush && hiddenSafeAtCurrentTurn && !hiddenForcedDifferent;
-        activeGuard = accepted ? vGuard : guard;
-        hybridGuard = {
-          mode: 'hidden_default_visible_stall_probe',
-          accepted,
-          played: accepted ? vGuard.played : guard?.played || null,
-          visibleCandidate: vGuard?.played || vGuard?.candidate || null,
-          hiddenCandidate: guard?.played || guard?.candidate || null,
-          hiddenSafeAtCurrentTurn: Boolean(hiddenSafeAtCurrentTurn),
-          hiddenForcedDifferent,
-          reason: accepted
-            ? `${vGuard.played} visible-stall push accepted: hidden guard also marks t${view.turn} safe`
-            : visiblePush
-              ? hiddenSafeAtCurrentTurn
-                ? 'visible-stall push rejected: hidden guard has a different forced-safe release'
-                : `${vGuard.played} visible-stall push rejected: hidden guard does not mark t${view.turn} safe`
-              : 'visible probe ignored: only visible_stall forced-safe pushes can override hidden',
-        };
-      }
-      if (visibleConsolidationGuard) {
-        const visibleHold = Boolean(vGuard?.blocked);
-        const hiddenForced = Boolean(guard?.forcedSafe);
-        const held = visibleHold && !hiddenForced;
-        activeGuard = held ? vGuard : guard;
-        consolidationGuard = {
-          mode: 'hidden_default_visible_hold_consolidation',
-          held,
-          played: held ? null : guard?.played || null,
-          visibleCandidate: vGuard?.candidate || null,
-          hiddenCandidate: guard?.played || guard?.candidate || null,
-          hiddenForced,
-          visibleStalling: Boolean(vGuard?.visibleFeatures?.stalling),
-          visiblePushIgnored: Boolean(vGuard?.forcedSafe && vGuard?.forcedBy === 'visible_stall'),
-          promptAdvisory: visibleConsolidation?.lines || [],
-          reason: held
-            ? 'visible hold accepted: prior exhibit is not yet taken up and hidden is not forcing a release'
-            : vGuard?.forcedSafe && vGuard?.forcedBy === 'visible_stall'
-              ? 'visible stall push ignored: v4 never accelerates release'
-              : hiddenForced && visibleHold
-                ? 'visible hold ignored: hidden guard is forcing a release'
-                : 'visible consolidation advisory only; hidden guard remains release authority',
-        };
-      }
-      const proofClosingFallback =
-        pacingGuard && !vGuard && !validClaim && !activeGuard?.played
-          ? pacingRows
-              .filter(
-                (row) =>
-                  row.current?.safe === true &&
-                  Number.isFinite(row.current.forcedTurn) &&
-                  row.current.forcedTurn <= view.turn,
-              )
-              .sort((a, b) => a.turn - b.turn)[0] || null
-          : null;
-      if (proofClosingFallback) {
-        activeGuard = {
-          ...(guard || {}),
-          played: proofClosingFallback.premise,
-          blocked: false,
-          forcedSafe: true,
-          forcedBy: 'proof_closing_candidate',
-          candidate: null,
-          candidateSolvency: null,
-          playedSolvency: proofClosingFallback.current,
-          safeTurns: guard?.safeTurns || Object.fromEntries(pacingRows.map((row) => [row.premise, row.safeTurns])),
-          alternative: proofClosingFallback.premise,
-          reason: `${proofClosingFallback.premise} closes the proof at t${view.turn}`,
-        };
-      }
-      let candidatePlayed = activeGuard ? activeGuard.played : forcedPlay ? forcedPlay.premise : validClaim;
-      // LEMMA BINDING (bind mode; LEMMA-LAYER-PREREGISTRATION.md): the scene-
-      // opening frontier choice is adjudicated first (the same call may claim
-      // a release under the NEW choice); then the tutor's VOLUNTARY
-      // out-of-support proof claims need a "lemma_departure" tag — untagged
-      // ones drop to a hold. Harness-forced plays (hold limits, guard
-      // rescues) pass through binding and are logged, never blocked.
-      const lemmaInfo = view.lemmaLayer || null;
-      const lemmaBind = Boolean(lemmaInfo?.config?.bind);
-      let lemmaMeta = null;
-      let lemmaGate = null;
-      if (lemmaBind) {
-        lemmaMeta = {};
-        const lemmaOpening = Boolean(view.scene && view.scene.startTurn === view.turn);
-        if (lemmaOpening && lemmaInfo.frontier.length) {
-          const claimedLemma = typeof out.active_lemma === 'string' ? out.active_lemma.trim() : null;
-          const delegated = Boolean(claimedLemma && claimedLemma.toLowerCase() === 'default');
-          const match = delegated ? null : matchFrontierClaim(lemmaInfo.frontier, claimedLemma);
-          const pick = match || lemmaInfo.frontier[0];
-          lemmaMeta.choice = {
-            key: pick.key,
-            label: pick.label,
-            by: match
-              ? out._lemmaRetried
-                ? 'tutor_retry'
-                : 'tutor'
-              : delegated
-                ? 'delegate'
-                : lemmaInfo.frontier.length === 1
-                  ? 'auto'
-                  : 'fallback',
-            raw: claimedLemma ?? null,
-            ...(out._lemmaRetried ? { firstRaw: out._lemmaFirstRaw ?? null, retried: true } : {}),
-            ...(out._lemmaRefused
-              ? {
-                  refused: true,
-                  refusalPriorPick: out._lemmaRefused.priorPick,
-                  refusalTrigger: out._lemmaRefused.trigger || 'regression',
-                  regressionsCited: out._lemmaRefused.regressions,
-                  ...(out._lemmaRefused.stallSpan != null ? { stallSpanCited: out._lemmaRefused.stallSpan } : {}),
-                  refusalAuthor: out._lemmaRefused.author || 'harness',
-                  ...(out._lemmaRefused.author === 'model'
-                    ? {
-                        refusalAuthored: Boolean(out._lemmaRefused.authored),
-                        refusalText: out._lemmaRefused.refusalText ?? null,
-                      }
-                    : {}),
-                  // A resolution reply that names no frontier lemma resolved
-                  // nothing (exploration-2 instrument note): 'unresolved',
-                  // not 'switched' — read alongside `by` (fallback/delegate).
-                  refusalOutcome: match
-                    ? match.label === out._lemmaRefused.priorPick
-                      ? 'defended'
-                      : 'switched'
-                    : 'unresolved',
-                  defense:
-                    typeof out.strategy_defense === 'string' && out.strategy_defense.trim()
-                      ? out.strategy_defense.trim()
-                      : null,
-                }
-              : {}),
-          };
-        }
-        const activeLemmaKeyNow = lemmaMeta.choice?.key || lemmaInfo.activeKey || null;
-        const activeNode = activeLemmaKeyNow
-          ? lemmaInfo.frontier.find((f) => f.key === activeLemmaKeyNow) || null
-          : null;
-        if (candidatePlayed && lemmaInfo.proofPremiseIds.includes(candidatePlayed) && activeNode) {
-          const inSupport = activeNode.support.includes(candidatePlayed);
-          if (!inSupport) {
-            const harnessForced = Boolean(
-              activeGuard?.forcedSafe || (forcedPlay && candidatePlayed === forcedPlay.premise),
-            );
-            const departureReason =
-              typeof out.lemma_departure === 'string' && out.lemma_departure.trim() ? out.lemma_departure.trim() : null;
-            if (harnessForced) {
-              lemmaMeta.forcedPassthrough = {
-                premise: candidatePlayed,
-                by: activeGuard?.forcedSafe ? 'guard' : 'hold_limit',
-              };
-            } else if (departureReason) {
-              lemmaMeta.departure = { premise: candidatePlayed, reason: departureReason };
-            } else {
-              lemmaGate = {
-                held: true,
-                premise: candidatePlayed,
-                reason: `${candidatePlayed} is outside the active lemma ${activeNode.label} and carries no lemma_departure`,
-              };
-              lemmaMeta.blocked = { premise: candidatePlayed };
-              candidatePlayed = null;
-            }
-          }
-        }
-      }
-      const candidateSched = candidatePlayed ? world.releaseSchedule.find((e) => e.premise === candidatePlayed) : null;
-      const candidateOffset = candidateSched ? view.turn - candidateSched.turn : null;
-      const candidateSolvency =
-        activeGuard?.candidate === candidatePlayed
-          ? activeGuard.candidateSolvency
-          : activeGuard?.played === candidatePlayed
-            ? activeGuard.playedSolvency
-            : null;
-      const releaseWouldCloseProofNow =
-        candidateSolvency?.safe === true &&
-        Number.isFinite(candidateSolvency.forcedTurn) &&
-        candidateSolvency.forcedTurn <= view.turn;
-      const proofControlForcesRelease = Boolean(
-        forcedPlay?.premise === candidatePlayed ||
-        activeGuard?.forcedSafe ||
-        releaseWouldCloseProofNow ||
-        topProofDebt ||
-        forcedNote ||
-        finalEntitlement?.canAssertFinal,
-      );
-      const discursiveGateCandidate =
-        highDiscursiveStrain && candidatePlayed && candidateOffset < 0 && !proofControlForcesRelease;
-      const publicContentAudit = discursiveGateCandidate
-        ? publicLineVoicesReleaseContent(view, world, candidatePlayed, out.dialogue)
-        : null;
-      const discursiveReleaseGate = discursiveGateCandidate
-        ? publicContentAudit?.voiced
-          ? {
-              held: false,
-              candidate: candidatePlayed,
-              scheduledTurn: candidateSched.turn,
-              offset: candidateOffset,
-              posture: discursiveCalibrationState.publicPosture || null,
-              pressure: discursiveCalibrationState.advisory?.pressure || null,
-              publicContentOverride: true,
-              publicContentAudit,
-              reason: `${candidatePlayed} registered despite high public strain: public line voiced the exhibit content before the scheduled turn`,
-            }
-          : {
-              held: true,
-              candidate: candidatePlayed,
-              scheduledTurn: candidateSched.turn,
-              offset: candidateOffset,
-              posture: discursiveCalibrationState.publicPosture || null,
-              pressure: discursiveCalibrationState.advisory?.pressure || null,
-              publicContentAudit,
-              reason: `${candidatePlayed} held: high public strain suppresses discretionary early release until scheduled turn ${candidateSched.turn}`,
-            }
-        : null;
-      const played = discursiveReleaseGate?.held ? null : candidatePlayed;
-      const reason =
-        typeof out.release_reason === 'string' && out.release_reason.trim() ? out.release_reason.trim() : null;
-      const sched = played ? world.releaseSchedule.find((e) => e.premise === played) : null;
-      const releaseReason =
-        discursiveReleaseGate?.reason || reason || (played && activeGuard?.reason ? activeGuard.reason : null);
-      const forced = forcedPlay && played === forcedPlay.premise ? forcedPlay.premise : null;
-      const hiddenGuardForReport = guard && !vGuard ? activeGuard || guard : guard;
-      return {
-        release: played,
-        ...(releaseReason ? { releaseReason } : {}),
-        releaseDecision: {
-          turn: view.turn,
-          windowSize: playable.length,
-          claimed,
-          invalidClaim: Boolean(claimed && !validClaim),
-          forced,
-          overridden: Boolean(
-            (forced && claimed !== forced) ||
-            (activeGuard?.forcedSafe && claimed !== activeGuard.played) ||
-            (activeGuard?.blocked && (!played || claimed !== played)) ||
-            discursiveReleaseGate?.held,
-          ),
-          played,
-          scheduledTurn: sched ? sched.turn : null,
-          offset: sched ? view.turn - sched.turn : null,
-          reason: releaseReason,
-          ...(hiddenGuardForReport
-            ? {
-                pacingGuard: {
-                  blocked: hiddenGuardForReport.blocked,
-                  forcedSafe: hiddenGuardForReport.forcedSafe,
-                  forcedBy: hiddenGuardForReport.forcedBy || null,
-                  candidate: hiddenGuardForReport.candidate || null,
-                  alternative: hiddenGuardForReport.alternative || null,
-                  alternativeTurn: hiddenGuardForReport.alternativeTurn || null,
-                  reason: hiddenGuardForReport.reason || null,
-                  candidateSolvency: hiddenGuardForReport.candidateSolvency || null,
-                  playedSolvency: hiddenGuardForReport.playedSolvency || null,
-                  safeTurns: hiddenGuardForReport.safeTurns,
-                  runtimeMonitor: hiddenGuardForReport.runtimeMonitor || null,
-                },
-              }
-            : {}),
-          ...(vGuard
-            ? {
-                visibleGuard: {
-                  blocked: vGuard.blocked,
-                  forcedSafe: vGuard.forcedSafe,
-                  forcedBy: vGuard.forcedBy || null,
-                  candidate: vGuard.candidate || null,
-                  reason: vGuard.reason || null,
-                  visibleFeatures: vGuard.visibleFeatures || null,
-                },
-              }
-            : {}),
-          ...(hybridGuard ? { hybridGuard } : {}),
-          ...(consolidationGuard ? { consolidationGuard } : {}),
-          ...(discursiveReleaseGate ? { discursiveReleaseGate } : {}),
-          ...(lemmaGate ? { lemmaGate } : {}),
-        },
-        ...(lemmaMeta && (lemmaMeta.choice || lemmaMeta.departure || lemmaMeta.blocked || lemmaMeta.forcedPassthrough)
-          ? { lemma: lemmaMeta }
-          : {}),
-      };
-    };
+    const normalizeRelease = (out) =>
+      resolveTutorRelease({
+        output: out,
+        world,
+        view,
+        releaseAuthority,
+        scheduledEntry: entry,
+        playable,
+        forcedPlay,
+        pacingGuard,
+        runtimeMonitor,
+        visibleGuard,
+        visiblePushProbeGuard,
+        visibleConsolidationGuard,
+        visibleConsolidation,
+        pacingRows,
+        topProofDebt,
+        forcedNote,
+        finalEntitlement,
+        highDiscursiveStrain,
+        discursiveCalibrationState,
+        auditPublicReleaseContent: (premiseId, dialogue) =>
+          publicLineVoicesReleaseContent(view, world, premiseId, dialogue),
+        releaseLatitude: RELEASE_LATITUDE,
+      });
     let draftOut = await callJson(client, 'tutor', view.turn, { system, user, meta });
     // FORCED CHOICE (lemma bind, scene openings): a missing/unmatched
     // "active_lemma" is bounced ONCE with a pointed demand — non-answering
