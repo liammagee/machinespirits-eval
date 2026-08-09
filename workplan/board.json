@@ -1,12 +1,12 @@
 {
-  "generated": "2026-08-09T01:23:20.821Z",
+  "generated": "2026-08-09T01:24:19.554Z",
   "counts": {
-    "total": 478,
+    "total": 479,
     "byStatus": {
       "done": 449,
       "blocked": 6,
       "dropped": 9,
-      "review": 5,
+      "review": 6,
       "active": 2,
       "archived": 4,
       "triaged": 3
@@ -14,7 +14,7 @@
     "byType": {
       "research": 75,
       "experiment": 77,
-      "infra": 104,
+      "infra": 105,
       "maintenance": 201,
       "content": 3,
       "ops": 10,
@@ -580,6 +580,40 @@
         "local-development",
         "testing",
         "performance"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "reduce-character-dag-test-latency",
+      "title": "Reduce Character-DAG framework test latency",
+      "status": "review",
+      "type": "infra",
+      "priority": "P2",
+      "owner": "codex",
+      "source": "manual",
+      "created": "2026-08-09",
+      "updated": "2026-08-09",
+      "branch": "codex/reduce-character-dag-test-latency",
+      "verification": "Two unrestricted isolated before-runs averaged 18.29s and two after-runs averaged 4.87s, a 73.4% reduction while all passed 13/13 tests; terminal-state equivalence, focused adaptive coverage, counterfactual smoke, comprehensive hermetic root/core, lint, formatting, workplan, manifest, and diff checks pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "optimize-local-node-execution"
+      ],
+      "links": {
+        "items": [
+          "optimize-local-node-execution",
+          "calibrate-local-node-test-concurrency",
+          "reduce-human-discourse-test-processes",
+          "reduce-first-draft-outer-loop-test-time",
+          "reduce-interactive-turn-test-latency"
+        ]
+      },
+      "tags": [
+        "node",
+        "local-development",
+        "testing",
+        "character-dag",
+        "tutor-stub"
       ],
       "milestone": "evaluation-infrastructure"
     },
