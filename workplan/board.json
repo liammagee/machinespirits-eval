@@ -1,26 +1,68 @@
 {
-  "generated": "2026-08-09T20:56:55.478Z",
+  "generated": "2026-08-09T21:32:59.888Z",
   "counts": {
-    "total": 494,
+    "total": 495,
     "byStatus": {
-      "done": 466,
+      "done": 467,
       "blocked": 6,
       "dropped": 10,
-      "review": 3,
+      "review": 2,
       "active": 5,
-      "archived": 4
+      "archived": 4,
+      "triaged": 1
     },
     "byType": {
       "research": 75,
       "experiment": 82,
       "infra": 105,
-      "maintenance": 210,
+      "maintenance": 211,
       "content": 4,
       "ops": 10,
       "paper": 8
     }
   },
   "items": [
+    {
+      "id": "refactor-tutor-stub-auto-eval-report-assets",
+      "title": "Extract tutor-stub auto-eval report assets",
+      "status": "triaged",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "verification": "Emitted tutor-stub report CSS and index-client JavaScript remain byte-identical and syntax-valid from index and report regeneration paths; focused reporting, complete hermetic root/core, coverage-risk, lint, formatting, manifest, workplan-source, diff, and zero-cycle gates pass without model calls or production artifact writes.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-dramatic-derivation-tutor-prompt-construction"
+      ],
+      "links": {
+        "notes": [
+          "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md"
+        ],
+        "code": [
+          "scripts/run-tutor-stub-auto-eval.js",
+          "tests/tutorStubReportingUx.test.js",
+          "tests/tutorStubAutoEvalEvidence.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-dramatic-derivation-tutor-prompt-construction"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "tutor-stub",
+        "auto-eval",
+        "reporting",
+        "presentation"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
     {
       "id": "codebase-refactoring-program",
       "title": "Execute the evidence-led codebase refactoring programme",
@@ -31,7 +73,7 @@
       "source": "review",
       "created": "2026-07-24",
       "updated": "2026-08-10",
-      "branch": "codex/refactor-post-strategy-ledger-reconciliation",
+      "branch": "codex/refactor-post-tutor-prompt-reconciliation",
       "verification": "Every accepted refactoring slice has a linked child card and parity gate; root plus in-housed tutor-core tests run from one clean-install contract; required suites cannot silently skip; import cycles fall from two to zero; hotspot, coverage, registry, duplication, and package metrics ratchet without trace, schema, route, CLI, or empirical-output drift; every deletion passes its consumer, database, paper, and artifact audit.",
       "claim_status": "planned",
       "depends_on": [],
@@ -40,7 +82,8 @@
           "docs/next-steps/2026-07-24-codebase-refactoring-review-plan.md",
           "docs/next-steps/2026-08-09-codebase-refactoring-reconciliation.md",
           "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md",
-          "docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md"
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-tutor-prompt-reconciliation.md"
         ],
         "items": [
           "refactor-required-run-manifest",
@@ -170,7 +213,8 @@
           "refactor-dramatic-derivation-post-turn-lifecycle",
           "refactor-dramatic-derivation-release-arbitration",
           "refactor-dramatic-derivation-strategy-ledger-prompt",
-          "refactor-dramatic-derivation-tutor-prompt-construction"
+          "refactor-dramatic-derivation-tutor-prompt-construction",
+          "refactor-tutor-stub-auto-eval-report-assets"
         ]
       },
       "tags": [
@@ -503,48 +547,6 @@
         "blueprint"
       ],
       "milestone": "paper-2-0"
-    },
-    {
-      "id": "refactor-dramatic-derivation-tutor-prompt-construction",
-      "title": "Extract dramatic-derivation tutor prompt construction",
-      "status": "review",
-      "type": "maintenance",
-      "priority": "P1",
-      "owner": "codex",
-      "source": "review",
-      "created": "2026-08-10",
-      "updated": "2026-08-10",
-      "branch": "codex/refactor-dramatic-derivation-tutor-prompt-construction",
-      "verification": "6/6 direct prompt assertions, 612/612 focused dramatic assertions, 8,363/8,363 hermetic root tests, 137/137 tutor-core tests, and all twelve risk groups pass. The prompt owner reaches 100% line/98.58% branch/100% function coverage; its maximum complexity is 11; lint, format, manifest, source-workplan, diff, and zero-cycle gates pass.",
-      "claim_status": "planned",
-      "depends_on": [
-        "refactor-dramatic-derivation-strategy-ledger-prompt"
-      ],
-      "links": {
-        "notes": [
-          "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md",
-          "docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md"
-        ],
-        "code": [
-          "services/dramaticDerivation/llmRoles.js",
-          "services/dramaticDerivation/tutorPrompt.js",
-          "tests/dramaticDerivationTutorPrompt.test.js",
-          "config/coverage-risk-floors.json",
-          "config/hermetic-test-manifest.json"
-        ],
-        "items": [
-          "codebase-refactoring-program",
-          "refactor-dramatic-derivation-strategy-ledger-prompt"
-        ]
-      },
-      "tags": [
-        "refactoring",
-        "dramatic-derivation",
-        "prompt",
-        "tutor",
-        "llm-roles"
-      ],
-      "milestone": "evaluation-infrastructure"
     },
     {
       "id": "rubric-v3-calibration-and-held-out-acceptance",
@@ -2816,6 +2818,51 @@
         "dramatic-derivation",
         "strategy-ledger",
         "prompt",
+        "llm-roles"
+      ],
+      "milestone": "evaluation-infrastructure"
+    },
+    {
+      "id": "refactor-dramatic-derivation-tutor-prompt-construction",
+      "title": "Extract dramatic-derivation tutor prompt construction",
+      "status": "done",
+      "type": "maintenance",
+      "priority": "P1",
+      "owner": "codex",
+      "source": "review",
+      "created": "2026-08-10",
+      "updated": "2026-08-10",
+      "branch": "codex/refactor-dramatic-derivation-tutor-prompt-construction",
+      "verification": "6/6 direct prompt assertions, 612/612 focused dramatic assertions, 8,363/8,363 hermetic root tests, 137/137 tutor-core tests, and all twelve risk groups pass. The prompt owner reaches 100% line/98.58% branch/100% function coverage; its maximum complexity is 11; lint, format, manifest, source-workplan, diff, and zero-cycle gates pass.",
+      "claim_status": "planned",
+      "depends_on": [
+        "refactor-dramatic-derivation-strategy-ledger-prompt"
+      ],
+      "links": {
+        "prs": [
+          "https://github.com/liammagee/machinespirits-eval/pull/629"
+        ],
+        "notes": [
+          "docs/next-steps/2026-08-09-codebase-refactoring-post-run-coordinator-reconciliation.md",
+          "docs/next-steps/2026-08-10-codebase-refactoring-post-strategy-ledger-reconciliation.md"
+        ],
+        "code": [
+          "services/dramaticDerivation/llmRoles.js",
+          "services/dramaticDerivation/tutorPrompt.js",
+          "tests/dramaticDerivationTutorPrompt.test.js",
+          "config/coverage-risk-floors.json",
+          "config/hermetic-test-manifest.json"
+        ],
+        "items": [
+          "codebase-refactoring-program",
+          "refactor-dramatic-derivation-strategy-ledger-prompt"
+        ]
+      },
+      "tags": [
+        "refactoring",
+        "dramatic-derivation",
+        "prompt",
+        "tutor",
         "llm-roles"
       ],
       "milestone": "evaluation-infrastructure"
