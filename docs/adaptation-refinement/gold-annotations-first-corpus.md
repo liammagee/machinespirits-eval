@@ -88,7 +88,11 @@ Two caveats:
 
 **Supporting record-level evidence the gold missed.** The learner's fact record never grew: 4 grounded facts at turn 1, 4 at turn 8. Asking to enter is not entering — the deference pattern has a real conceptual cost that the transcript's surface (correct-sounding entries, confirmed by the tutor) hides. My transcript-level gold called turn 3 "no revision warranted" partly on apparent progress the record does not show; the frozen label stands, but the record supports the shadow's stall reading more than the gold's at that point.
 
-**What follows (not yet implemented):** the signal classifier needs a deference label — interrogative permission frames ("May I / Would you have me / Should I") that defeat the engaged-analytic mask, letting accumulated no-growth trouble surface. The stub's own learner-profile catalogue already names the pattern (permission seeking); the ontology's request types likely carry a matching label to reuse.
+**Deference label added (2026-08-10, after the test).** The classifier now labels permission-framed deferral (`low_agency_deferral`, matching the ontology's resistance-or-low-agency request type). The pattern is start-anchored, which carries the pragmatic distinction rather than a tuned threshold: a turn that LEADS with the permission modal ("May I keep the entry that…") defers the whole move and stops masking; a turn that leads with content and appends a recording request ("It supports Verrell's access; may I write that…") made a claim first and stays analytic. Deference neither masks nor immediately warrants.
+
+Re-run on this corpus: **4/4 scored agree** (t2, t3, t6, t8), 3 uncertain reported — the shadow calls all three uncertain points warranted, a defensible stance on turns where annotators split. Original-gold regression stays 11/11.
+
+**This trace is now burned as a held-out corpus.** The label was designed after seeing its failure on this session, so 4/4 here shows the fix expresses the gold, nothing more. True validation needs a fresh session the current rules have never seen — ideally with a second annotator on the gold, since the t3 label already showed transcript-level and record-level readings can split.
 
 ## Machine-readable gold
 

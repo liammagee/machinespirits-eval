@@ -56,6 +56,16 @@ const REGISTER_COMPLAINT_PATTERN =
 const REPETITION_COMPLAINT_PATTERN = /\b(?:you'?re? |you are )?repeat(?:ing|ed)\b/iu;
 const ANALYTIC_MARKER_PATTERN =
   /\b(?:but|still|not|need|support|evidence|criteri|establish|baseline|because|unless|until|justify|require)\b/iu;
+// Permission-framed deferral (ontology request type: resistance_or_low_agency;
+// learner-profile catalogue: "Permission seeking"). Start-anchored on purpose:
+// an utterance that LEADS with the permission modal defers the whole move
+// ("May I keep the entry that…"), while one that leads with content and only
+// appends a recording request ("It supports X; may I write that…") made a
+// claim first and stays analytic. Deference neither masks accumulated trouble
+// nor immediately warrants — it stops the engaged-analytic mask from hiding a
+// stall behind polite, analytic-sounding surface.
+const DEFERENCE_PATTERN =
+  /^(?:may|might|should|shall|could|can|would) (?:i|we)\b|^would you (?:have|like) (?:me|us)\b|^do you want (?:me|us) to\b|^is it (?:all right|ok(?:ay)?) if (?:i|we)\b/iu;
 
 /**
  * Classify a learner turn as a decision-time signal. Multi-label where it
@@ -72,6 +82,7 @@ export function classifyLearnerSignal(text) {
   if (STALL_PATTERN.test(surface)) labels.push('stall');
   if (REGISTER_COMPLAINT_PATTERN.test(surface)) labels.push('register_complaint');
   if (REPETITION_COMPLAINT_PATTERN.test(surface)) labels.push('repetition_complaint');
+  if (DEFERENCE_PATTERN.test(surface)) labels.push('low_agency_deferral');
   const tokenCount = surface.split(/\s+/u).length;
   if (!labels.length && tokenCount >= 10 && ANALYTIC_MARKER_PATTERN.test(surface)) {
     labels.push('engaged_analytic');
@@ -82,6 +93,7 @@ export function classifyLearnerSignal(text) {
     'stall',
     'register_complaint',
     'repetition_complaint',
+    'low_agency_deferral',
     'engaged_analytic',
     'neutral',
   ];
